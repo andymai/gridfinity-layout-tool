@@ -31,7 +31,7 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
           transition-all duration-150 whitespace-nowrap
           ${
             selected === null
-              ? 'bg-accent text-on-dark shadow-sm'
+              ? 'bg-accent text-on-dark shadow-sm hover:bg-accent hover:text-on-dark'
               : 'bg-surface text-content-secondary hover:text-content hover:bg-surface-hover'
           }
         `}
@@ -62,7 +62,7 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
               transition-all duration-150 whitespace-nowrap
               ${
                 isSelected
-                  ? 'bg-accent text-on-dark shadow-sm'
+                  ? 'bg-accent text-on-dark shadow-sm hover:bg-accent hover:text-on-dark'
                   : 'bg-surface text-content-secondary hover:text-content hover:bg-surface-hover'
               }
             `}

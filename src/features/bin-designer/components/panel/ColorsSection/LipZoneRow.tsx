@@ -48,8 +48,8 @@ export function LipZoneRow({
         <span style={{ backgroundColor: corners.frontRight }} />
       </span>
       <span className="flex flex-1 flex-col text-left leading-tight">
-        <span className="text-xs text-content-secondary">{label}</span>
-        <span className="text-[10px] text-content-tertiary">
+        <span className="text-xs font-normal text-content-secondary">{label}</span>
+        <span className="text-[10px] font-normal text-content-tertiary">
           {t('binDesigner.colors.lip.fourCorners')}
         </span>
       </span>

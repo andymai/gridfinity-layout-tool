@@ -100,8 +100,10 @@ export function ColorZoneRow({
           className="w-6 h-6 rounded-md border border-stroke-subtle/60 shrink-0 shadow-inner transition-transform group-hover:scale-105"
           style={{ backgroundColor: color }}
         />
-        <span className="flex-1 text-left text-xs text-content-secondary">{label}</span>
-        <span className="font-mono text-[11px] text-content-secondary tabular-nums">{color}</span>
+        <span className="flex-1 text-left text-xs font-normal text-content-secondary">{label}</span>
+        <span className="font-mono text-[11px] font-normal text-content-secondary tabular-nums">
+          {color}
+        </span>
         <ChevronDownIcon
           size="sm"
           className="-rotate-90 text-content-tertiary transition-transform group-hover:translate-x-0.5"

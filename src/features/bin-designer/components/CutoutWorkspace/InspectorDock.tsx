@@ -118,6 +118,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
         <IconButton
           type="button"
           variant="ghost"
+          size="sm"
           touchTarget={false}
           onClick={toggleCollapsed}
           className={ICON_BTN}
@@ -167,6 +168,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
           <IconButton
             type="button"
             variant="ghost"
+            size="sm"
             touchTarget={false}
             onClick={toggleCollapsed}
             className={ICON_BTN}
@@ -184,6 +186,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
               <IconButton
                 type="button"
                 variant="ghost"
+                size="sm"
                 touchTarget={false}
                 onClick={onDuplicate}
                 disabled={!onDuplicate}
@@ -196,6 +199,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
               <IconButton
                 type="button"
                 variant="dangerGhost"
+                size="sm"
                 touchTarget={false}
                 onClick={onDelete}
                 disabled={!onDelete}

@@ -243,7 +243,7 @@ export function WallCutoutsSection() {
                   onClick={handlers.toggleLinked}
                   className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
                     linked
-                      ? 'bg-accent/10 text-accent'
+                      ? 'bg-accent/10 text-accent hover:bg-accent/10 hover:text-accent'
                       : 'bg-surface-secondary text-content-tertiary hover:text-content-secondary'
                   }`}
                 >

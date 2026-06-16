@@ -41,7 +41,8 @@ const SEGMENT_PILL_INACTIVE =
  * edge chips, eyedropper) that supply their own dimensions and want an accent
  * "on" state rather than the neutral selected-pill look.
  */
-export const SEGMENT_ACTIVE = 'bg-accent/15 text-accent ring-1 ring-accent/40';
+export const SEGMENT_ACTIVE =
+  'bg-accent/15 text-accent ring-1 ring-accent/40 hover:bg-accent/15 hover:text-accent';
 export const SEGMENT_INACTIVE =
   'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary';
 

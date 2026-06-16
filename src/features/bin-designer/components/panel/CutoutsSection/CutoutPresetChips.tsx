@@ -66,7 +66,9 @@ export function CutoutPresetChips({
               aria-label={preset.label}
               className={cn(
                 CHIP_BASE,
-                active ? 'border-accent bg-accent/15 text-accent' : CHIP_INACTIVE,
+                active
+                  ? 'border-accent bg-accent/15 text-accent hover:bg-accent/15 hover:text-accent'
+                  : CHIP_INACTIVE,
                 disabled && 'cursor-not-allowed opacity-50'
               )}
             >

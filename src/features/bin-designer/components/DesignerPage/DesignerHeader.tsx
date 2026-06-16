@@ -97,7 +97,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             <Button
               variant="ghost"
               onClick={() => setDesignListOpen(true)}
-              className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+              className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
               title={t('binDesigner.openDesignList')}
               aria-label={t('binDesigner.openDesignList')}
             >
@@ -117,7 +117,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               variant="ghost"
               onClick={() => setExportDialogOpen(true)}
               disabled={!canExport}
-              className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+              className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
               title={t('binDesigner.exportSTL')}
               aria-label={t('binDesigner.exportBinAsStl')}
             >

@@ -227,7 +227,7 @@ export function ColorsActionsMenu({
                       title={t('binDesigner.colors.applyPalette')}
                     >
                       <PaletteSwatch palette={palette} />
-                      <span className="flex-1 truncate text-content-secondary group-hover:text-content">
+                      <span className="flex-1 truncate font-normal text-content-secondary group-hover:text-content">
                         {palette.name}
                       </span>
                     </Button>
@@ -275,7 +275,7 @@ function MenuButton({
       className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-content-secondary hover:bg-surface-hover hover:text-content focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="text-content-tertiary">{icon}</span>
-      <span className="flex-1">{children}</span>
+      <span className="flex-1 font-normal">{children}</span>
     </Button>
   );
 }

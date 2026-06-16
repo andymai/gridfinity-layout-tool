@@ -57,7 +57,7 @@ function CompatibilityIssue({
       {fixable && (
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
           onClick={() => onFix(issue.id)}
           aria-label={t('binDesigner.lid.compat.fixAriaLabel', { detail: message })}
           className="shrink-0 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
@@ -182,7 +182,7 @@ export function LidSection() {
                   isAutoDisabled
                     ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
                     : effectiveActive
-                      ? 'bg-accent text-on-accent'
+                      ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                       : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
                 }`}
               >

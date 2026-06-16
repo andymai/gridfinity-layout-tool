@@ -46,7 +46,7 @@ const CHIP_BASE =
   'disabled:cursor-not-allowed disabled:opacity-50';
 
 /** Filled accent button when on. */
-const CHIP_ON = 'border-accent bg-accent text-on-accent';
+const CHIP_ON = 'border-accent bg-accent text-on-accent hover:bg-accent hover:text-on-accent';
 /** Bordered surface button when off — clearly a button, clearly not selected. */
 const CHIP_OFF =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content';

@@ -76,7 +76,7 @@ function SolidModeContent() {
       onClick={() => setCutoutEditorOpen(true)}
       className="w-full rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 p-3 text-left transition-all group"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex w-full items-center gap-3">
         {/* Mini illustration: top-view of a bin with cutout shapes */}
         <div className="flex-shrink-0 w-10 h-10 rounded bg-surface/60 border border-accent/20 flex items-center justify-center">
           <svg
