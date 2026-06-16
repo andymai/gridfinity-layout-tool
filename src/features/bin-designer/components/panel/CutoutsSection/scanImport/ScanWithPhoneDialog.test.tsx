@@ -72,6 +72,19 @@ describe('ScanWithPhoneDialog', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('skips scale-confirm and adds directly when the phone produced mm output', async () => {
+    const onClose = vi.fn();
+    render(<ScanWithPhoneDialog open onClose={onClose} />);
+    uploadSvg(
+      `<svg viewBox="0 0 100 100" data-scan-units="mm"><rect x="0" y="0" width="100" height="100"/></svg>`
+    );
+
+    await waitFor(() => expect(mockAddScanCutouts).toHaveBeenCalledOnce());
+    expect(onClose).toHaveBeenCalledOnce();
+    // No scale-confirm step is shown.
+    expect(screen.queryByLabelText('binDesigner.cutouts.scanImport.scaleLabel')).toBeNull();
+  });
+
   it('disables Add when the scale is non-positive', async () => {
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
     uploadSvg(RECT_SVG);

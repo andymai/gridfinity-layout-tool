@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "カードを基準に正しい縮尺で測定しました。",
   "scan.noCardHint": "ヒント：正確なサイズのために、道具の隣に銀行カードを置いてください。",
   "scan.takePhoto": "写真を撮る",
+  "scan.photoAlt": "スキャンした道具の写真",
   "scan.processing": "輪郭をトレース中…",
   "scan.review.title": "この輪郭で合っていますか？",
   "scan.threshold": "輪郭を調整",

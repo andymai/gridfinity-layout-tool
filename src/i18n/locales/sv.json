@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "Uppmätt i rätt skala från ditt kort.",
   "scan.noCardHint": "Tips: lägg ett bankkort bredvid verktyget för exakta mått.",
   "scan.takePhoto": "Ta ett foto",
+  "scan.photoAlt": "Foto av det skannade verktyget",
   "scan.processing": "Spårar konturen…",
   "scan.review.title": "Ser konturen rätt ut?",
   "scan.threshold": "Justera kontur",

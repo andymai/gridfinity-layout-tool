@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "Målt i riktig skala fra kortet ditt.",
   "scan.noCardHint": "Tips: legg et bankkort ved siden av verktøyet for nøyaktige mål.",
   "scan.takePhoto": "Ta et bilde",
+  "scan.photoAlt": "Bilde av det skannede verktøyet",
   "scan.processing": "Sporer omrisset …",
   "scan.review.title": "Ser dette omrisset riktig ut?",
   "scan.threshold": "Juster omriss",

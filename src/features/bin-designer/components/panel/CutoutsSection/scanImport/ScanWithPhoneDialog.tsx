@@ -69,6 +69,15 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         trackEvent('scan_import', { success: false, error_code: result.error.code });
         return;
       }
+      // The phone already rectified to true mm (a card was in frame), so the
+      // specs are to scale — add them directly and skip the scale-confirm step.
+      if (/data-scan-units\s*=\s*["']mm["']/.test(svg)) {
+        const count = addScanCutouts(result.value.specs);
+        trackEvent('scan_import', { success: true, shape_count: count, source: 'phone_mm' });
+        addToast(t('toast.scanImport.success', { count }), 'success');
+        handleClose();
+        return;
+      }
       setStage({
         kind: 'review',
         svg,
@@ -76,7 +85,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         targetText: String(round1(result.value.bounds.longest)),
       });
     },
-    [addToast, t]
+    [addToast, t, addScanCutouts, handleClose]
   );
 
   const handleFile = useCallback(

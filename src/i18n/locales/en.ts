@@ -1154,6 +1154,7 @@ const en: Record<string, string> = {
   'scan.cardMeasured': 'Measured to scale from your card.',
   'scan.noCardHint': 'Tip: place a bank card next to your tool for exact sizing.',
   'scan.takePhoto': 'Take a photo',
+  'scan.photoAlt': 'Photo of the scanned tool',
   'scan.processing': 'Tracing the outline…',
   'scan.review.title': 'Does this outline look right?',
   'scan.threshold': 'Adjust outline',

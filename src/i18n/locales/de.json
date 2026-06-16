@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "Anhand deiner Karte maßstabsgetreu vermessen.",
   "scan.noCardHint": "Tipp: Lege eine Bankkarte neben dein Werkzeug für exakte Maße.",
   "scan.takePhoto": "Foto aufnehmen",
+  "scan.photoAlt": "Foto des gescannten Werkzeugs",
   "scan.processing": "Kontur wird erfasst …",
   "scan.review.title": "Sieht diese Kontur richtig aus?",
   "scan.threshold": "Kontur anpassen",

@@ -54,11 +54,13 @@ function bounds(points: readonly Point[]): { minX: number; minY: number; w: numb
 }
 
 /** Normalize to a 0-origin viewBox so the outline imports at its true size. */
-function svgFromPoints(points: readonly Point[]): string {
+function svgFromPoints(points: readonly Point[], units: 'mm' | 'px'): string {
   const { minX, minY, w, h } = bounds(points);
   const shifted = points.map((p) => ({ x: p.x - minX, y: p.y - minY }));
+  // Tag mm output so the desktop can skip its scale-confirm step.
+  const unitsAttr = units === 'mm' ? ' data-scan-units="mm"' : '';
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round1(w)} ${round1(h)}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round1(w)} ${round1(h)}"${unitsAttr}>` +
     `<path d="${pointsToSvgPath(shifted)}"/></svg>`
   );
 }
@@ -122,7 +124,7 @@ export function ScanPage({ token }: ScanPageProps) {
 
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
-    const svg = svgFromPoints(status.scene.outputPoints);
+    const svg = svgFromPoints(status.scene.outputPoints, status.scene.units);
     setStatus({ ...status, sending: true });
     try {
       const res = await fetch(`/api/scan-session/${token}`, {
@@ -175,7 +177,7 @@ export function ScanPage({ token }: ScanPageProps) {
         <div className="flex w-full max-w-sm flex-col items-center gap-4">
           <p className="text-sm text-content-secondary">{t('scan.review.title')}</p>
           <div className="relative inline-block overflow-hidden rounded-lg border border-stroke">
-            <img src={status.photoUrl} alt="" className="block h-auto w-full" />
+            <img src={status.photoUrl} alt={t('scan.photoAlt')} className="block h-auto w-full" />
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox={`0 0 ${status.image.width} ${status.image.height}`}

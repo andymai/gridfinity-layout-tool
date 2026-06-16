@@ -16,6 +16,13 @@ describe('isScanPath', () => {
     expect(isScanPath(`/designer/${TOKEN}`)).toBe(false);
     expect(isScanPath(`/scan/${TOKEN}/extra`)).toBe(false);
   });
+
+  it('rejects non-UUIDv4 tokens (matches the backend + rewrite)', () => {
+    expect(isScanPath('/scan/not-a-uuid')).toBe(false);
+    expect(isScanPath('/scan/12345')).toBe(false);
+    // v1 UUID (version nibble 1) is rejected.
+    expect(isScanPath('/scan/3f2504e0-4f89-11d3-9a0c-0305e82c3301')).toBe(false);
+  });
 });
 
 describe('getScanToken', () => {

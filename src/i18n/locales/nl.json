@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "Op schaal gemeten met je pas.",
   "scan.noCardHint": "Tip: leg een bankpas naast je gereedschap voor exacte maten.",
   "scan.takePhoto": "Een foto maken",
+  "scan.photoAlt": "Foto van het gescande gereedschap",
   "scan.processing": "Omtrek traceren…",
   "scan.review.title": "Ziet deze omtrek er goed uit?",
   "scan.threshold": "Omtrek aanpassen",

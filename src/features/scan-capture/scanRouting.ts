@@ -5,7 +5,10 @@
  * route and hand off to the isolated `scanBoot` chunk.
  */
 
-const SCAN_PATH_RE = /^\/scan\/([^/?#]+)\/?$/;
+// UUID v4 only — matches `isValidScanToken` and the `/scan/:token` Vercel rewrite,
+// so invalid paths aren't treated as scan routes.
+const SCAN_PATH_RE =
+  /^\/scan\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i;
 
 export function isScanPath(pathname: string = window.location.pathname): boolean {
   return SCAN_PATH_RE.test(pathname);

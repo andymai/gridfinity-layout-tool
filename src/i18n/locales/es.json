@@ -2155,6 +2155,7 @@
   "scan.cardMeasured": "Medido a escala con tu tarjeta.",
   "scan.noCardHint": "Consejo: coloca una tarjeta bancaria junto a tu herramienta para un tamaño exacto.",
   "scan.takePhoto": "Tomar una foto",
+  "scan.photoAlt": "Foto de la herramienta escaneada",
   "scan.processing": "Trazando el contorno…",
   "scan.review.title": "¿El contorno se ve bien?",
   "scan.threshold": "Ajustar contorno",

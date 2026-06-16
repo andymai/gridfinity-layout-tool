@@ -91,6 +91,9 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
     return () => {
       controller.abort();
       stopPolling();
+      // Reset so reopening doesn't briefly show the previous session's QR/link.
+      setPhase('idle');
+      setUrl(null);
     };
   }, [active]);
 

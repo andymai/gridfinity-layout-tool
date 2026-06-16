@@ -3,19 +3,14 @@ import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { logger } from '../lib/logger.js';
 import { ErrorCode, methodNotAllowed } from '../lib/shared.js';
 import { scanSessionKey } from '../lib/redisKeys.js';
-import {
-  SCAN_SESSION_TTL_SECONDS,
-  isValidScanToken,
-  validateScanSvg,
-  type ScanSessionRecord,
-} from '../lib/scanSession.js';
+import { isValidScanToken, validateScanSvg, type ScanSessionRecord } from '../lib/scanSession.js';
 
 /**
  * Phone-scan handoff endpoint, keyed by session token.
  *
  *   POST  /api/scan-session/:token  — phone uploads a traced outline SVG
  *   GET   /api/scan-session/:token  — desktop polls; a `ready` result is
- *                                     delivered once, then the session is consumed
+ *                                     delivered idempotently until the TTL expires
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -63,7 +58,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         svg: validation.svg,
         createdAt: new Date().toISOString(),
       };
-      await redis.set(key, JSON.stringify(record), 'EX', SCAN_SESSION_TTL_SECONDS);
+      // KEEPTTL: keep the original expiry so an upload (or retry) near expiry
+      // can't extend the session past its advertised lifetime.
+      await redis.set(key, JSON.stringify(record), 'KEEPTTL');
       return res.status(200).json({ ok: true });
     }
 
