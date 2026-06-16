@@ -109,10 +109,28 @@ export function ShareOptionButton({
   );
 }
 
+type SwipeActionBgColor = 'bg-warning' | 'bg-success' | 'bg-accent' | 'bg-danger';
+
+/**
+ * Literal `hover:` overrides for each swipe-action badge color.
+ *
+ * `IconButton variant="ghost"` injects `hover:bg-surface-hover hover:text-content`,
+ * which would replace the colored badge and its icon color on hover. We re-assert
+ * the badge color with matching literal hover classes so the badge keeps its color
+ * (the original raw <button> had no hover treatment). Tailwind's JIT only compiles
+ * literal class strings, so these must stay literal — never `hover:${bgColor}`.
+ */
+const SWIPE_HOVER_BG: Record<SwipeActionBgColor, string> = {
+  'bg-warning': 'hover:bg-warning',
+  'bg-success': 'hover:bg-success',
+  'bg-accent': 'hover:bg-accent',
+  'bg-danger': 'hover:bg-danger',
+};
+
 interface SwipeActionButtonProps {
   readonly onClick: () => void;
   readonly iconPath: string;
-  readonly bgColor: string;
+  readonly bgColor: SwipeActionBgColor;
   readonly label: string;
   readonly disabled?: boolean;
 }
@@ -128,7 +146,7 @@ export function SwipeActionButton({
     <IconButton
       variant="ghost"
       onClick={onClick}
-      className={`w-15 h-full rounded-none ${bgColor} text-on-dark`}
+      className={`w-15 h-full rounded-none ${bgColor} ${SWIPE_HOVER_BG[bgColor]} text-on-dark hover:text-on-dark`}
       aria-label={label}
       disabled={disabled}
     >
@@ -227,11 +245,12 @@ export function PermissionSelect({
   ];
   return (
     <Select
+      fullWidth
       id={id}
       value={value}
       onValueChange={(v) => onChange(v as SharePermission)}
       options={options}
-      className={`flex-1 ${className ?? ''}`}
+      className={className}
       aria-label={ariaLabel}
     />
   );

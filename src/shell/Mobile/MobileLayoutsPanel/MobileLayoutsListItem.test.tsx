@@ -1,11 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
+import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
+
+beforeEach(() => {
+  resetAllStores();
+});
 
 vi.mock('@/shell/LayoutThumbnail', () => ({
   LayoutThumbnail: () => <div data-testid="thumbnail" />,

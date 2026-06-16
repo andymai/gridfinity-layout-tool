@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MobileCloudSharePanel } from './MobileCloudSharePanel';
+import { resetAllStores } from '@/test/testUtils';
 import * as cloudShareHook from '@/features/cloud-share/hooks/useCloudShare';
 
 vi.mock('@/i18n', () => ({
@@ -23,6 +24,7 @@ const baseHook = {
 describe('MobileCloudSharePanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetAllStores();
   });
 
   it('renders the cloud share sheet', () => {
