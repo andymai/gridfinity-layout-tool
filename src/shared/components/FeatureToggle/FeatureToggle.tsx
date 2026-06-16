@@ -75,12 +75,12 @@ export function FeatureToggle({
           aria-label={label}
           onClick={onChange}
           disabled={isDisabled}
-          className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+          className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
             isDisabled
-              ? 'cursor-not-allowed bg-stroke-subtle opacity-50'
+              ? 'cursor-not-allowed bg-stroke-subtle opacity-50 hover:bg-stroke-subtle'
               : checked
-                ? 'bg-accent'
-                : 'bg-stroke-subtle'
+                ? 'bg-accent hover:bg-accent'
+                : 'bg-stroke-subtle hover:bg-stroke-subtle'
           }`}
         >
           <span
