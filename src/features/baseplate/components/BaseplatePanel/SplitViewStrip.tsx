@@ -3,6 +3,7 @@
  * Each cell is a hoverable/selectable button corresponding to one print-bed piece.
  */
 
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { colToLetter } from '../../utils/splitPlanner';
 import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
@@ -69,10 +70,12 @@ export function SplitViewStrip({
               const isHovered = hoveredPieceLabel === label;
               const isSelected = selectedPieceLabel === label;
               return (
-                <button
+                <Button
                   key={label}
+                  variant="ghost"
                   type="button"
-                  className={`flex items-center justify-center rounded border bg-surface-elevated py-1 text-[10px] font-mono transition-shadow ${
+                  touchTarget={false}
+                  className={`flex items-center justify-center rounded border bg-surface-elevated !px-0 py-1 text-[10px] font-mono font-normal transition-shadow hover:bg-surface-elevated ${
                     isSelected
                       ? 'ring-2 ring-accent border-accent text-content-primary'
                       : isHovered
@@ -86,7 +89,7 @@ export function SplitViewStrip({
                   aria-label={t('baseplate.pieceLabel', { label })}
                 >
                   {label}
-                </button>
+                </Button>
               );
             });
           })}

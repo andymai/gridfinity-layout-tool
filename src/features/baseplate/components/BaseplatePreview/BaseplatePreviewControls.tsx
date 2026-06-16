@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { Button, IconButton } from '@/design-system';
 import { FILAMENT_COLORS } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
@@ -49,11 +50,12 @@ function ColorPickerContent({
   return (
     <div className="grid grid-cols-7 gap-1.5">
       {FILAMENT_COLORS.map(({ color, nameKey }) => (
-        <button
+        <Button
           key={color}
           type="button"
+          variant="ghost"
           onClick={() => onColorSelect(color)}
-          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+          className={`h-auto w-auto rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
             previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
           }`}
           aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
@@ -66,7 +68,7 @@ function ColorPickerContent({
             }`}
             style={{ backgroundColor: color }}
           />
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -157,20 +159,21 @@ export function BaseplatePreviewControls({
               const Icon = VIEW_MODE_ICONS[value];
               const isActive = splitViewMode === value;
               return (
-                <button
+                <Button
                   key={value}
                   type="button"
+                  variant="ghost"
                   onClick={() => onViewModeChange(value)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                  className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
                     isActive
-                      ? 'bg-accent text-on-accent'
+                      ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
                 >
                   <Icon />
                   <span>{t(labelKey)}</span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -182,13 +185,14 @@ export function BaseplatePreviewControls({
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
-              <button
+              <Button
                 key={key}
                 type="button"
+                variant="ghost"
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={t(labelKey)}
@@ -197,7 +201,7 @@ export function BaseplatePreviewControls({
               >
                 <Icon />
                 <span>{t(labelKey)}</span>
-              </button>
+              </Button>
             );
           })}
 
@@ -205,24 +209,26 @@ export function BaseplatePreviewControls({
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Reset button */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onResetView}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.resetView')}
             aria-label={t('baseplate.resetView')}
           >
             <IconReset />
             <span>{t('common.reset')}</span>
-          </button>
+          </Button>
 
           {/* X-ray toggle */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onToggleXray}
-            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
               xray
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('baseplate.toggleXray')}
@@ -231,13 +237,14 @@ export function BaseplatePreviewControls({
           >
             <IconXray />
             <span>{t('baseplate.xray')}</span>
-          </button>
+          </Button>
 
           {/* Projection toggle */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onToggleProjection}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.toggleProjection')}
             aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
             aria-pressed={projection === 'orthographic'}
@@ -248,16 +255,17 @@ export function BaseplatePreviewControls({
                 ? t('baseplate.projectionPerspective')
                 : t('baseplate.projectionOrthographic')}
             </span>
-          </button>
+          </Button>
 
           {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Color picker button */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setColorPickerOpen((v) => !v)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.filamentColor')}
             aria-label={t('baseplate.filamentColor')}
             aria-expanded={colorPickerOpen}
@@ -267,7 +275,7 @@ export function BaseplatePreviewControls({
               style={{ backgroundColor: filamentColor }}
             />
             <span>{t('common.color')}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Color picker dropdown -- outside overflow-hidden container */}
@@ -294,20 +302,21 @@ export function BaseplatePreviewControls({
             const Icon = VIEW_MODE_ICONS[value];
             const isActive = splitViewMode === value;
             return (
-              <button
+              <Button
                 key={value}
                 type="button"
+                variant="ghost"
                 onClick={() => onViewModeChange(value)}
-                className={`flex items-center justify-center gap-1 px-3 min-h-[44px] text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                className={`flex items-center justify-center gap-1 rounded-none px-3 min-h-[44px] text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 aria-pressed={isActive}
               >
                 <Icon />
                 <span>{t(labelKey)}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -319,21 +328,22 @@ export function BaseplatePreviewControls({
           const Icon = PRESET_ICONS[key];
           const isActive = activePreset === key;
           return (
-            <button
+            <IconButton
               key={key}
               type="button"
+              variant="ghost"
               onClick={() => onCameraPreset(key)}
-              className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+              className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                 isActive
-                  ? 'bg-accent text-on-accent'
+                  ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                   : 'text-content-secondary hover:bg-surface-hover hover:text-content'
               }`}
               title={t(labelKey)}
               aria-label={t(labelKey)}
-              aria-pressed={isActive}
+              pressed={isActive}
             >
               <Icon />
-            </button>
+            </IconButton>
           );
         })}
 
@@ -341,52 +351,56 @@ export function BaseplatePreviewControls({
         <div className="w-px h-5 bg-stroke-subtle/50" />
 
         {/* Reset */}
-        <button
+        <IconButton
           type="button"
+          variant="ghost"
           onClick={onResetView}
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-none text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
           title={t('baseplate.resetView')}
           aria-label={t('baseplate.resetView')}
         >
           <IconReset />
-        </button>
+        </IconButton>
 
         {/* X-ray */}
-        <button
+        <IconButton
           type="button"
+          variant="ghost"
           onClick={onToggleXray}
-          className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+          className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
             xray
-              ? 'bg-accent text-on-accent'
+              ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
               : 'text-content-secondary hover:bg-surface-hover hover:text-content'
           }`}
           title={t('baseplate.toggleXray')}
           aria-label={t('baseplate.toggleXrayKeyboardShortcut')}
-          aria-pressed={xray}
+          pressed={xray}
         >
           <IconXray />
-        </button>
+        </IconButton>
 
         {/* Projection toggle */}
-        <button
+        <IconButton
           type="button"
+          variant="ghost"
           onClick={onToggleProjection}
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-none text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
           title={t('baseplate.toggleProjection')}
           aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
-          aria-pressed={projection === 'orthographic'}
+          pressed={projection === 'orthographic'}
         >
           {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
-        </button>
+        </IconButton>
 
         {/* Spacer to push color picker to right */}
         <div className="flex-1" />
 
         {/* Color picker */}
-        <button
+        <IconButton
           type="button"
+          variant="ghost"
           onClick={() => setColorPickerOpen((v) => !v)}
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-none text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
           title={t('baseplate.filamentColor')}
           aria-label={t('baseplate.filamentColor')}
           aria-expanded={colorPickerOpen}
@@ -395,7 +409,7 @@ export function BaseplatePreviewControls({
             className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
             style={{ backgroundColor: filamentColor }}
           />
-        </button>
+        </IconButton>
       </div>
 
       {/* Mobile color picker -- bottom sheet style overlay */}

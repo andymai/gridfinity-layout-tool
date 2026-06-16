@@ -18,6 +18,7 @@ import { gridUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
+import { Button } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
@@ -213,10 +214,12 @@ export function BaseplatePage() {
         <div className="flex items-center gap-3 min-w-0">
           <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
-          <button
+          <Button
+            type="button"
+            variant="ghost"
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport || isExporting}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-normal text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
             title={t('common.export')}
             aria-label={t('common.export')}
           >
@@ -252,7 +255,7 @@ export function BaseplatePage() {
               </svg>
             )}
             <span className="hidden lg:inline">{t('common.export')}</span>
-          </button>
+          </Button>
         </div>
 
         {isDesktop && (

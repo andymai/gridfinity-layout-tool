@@ -1,4 +1,5 @@
 import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { AlertTriangleIcon, ArrowLeftIcon } from '@/design-system/Icon';
 import { focusRing, interactiveTransition } from '@/design-system/variants';
@@ -107,8 +108,9 @@ export function PaddingAnchor({
         const selected = value === anchor;
         const cellLabel = t(`baseplate.paddingAnchor.${anchor}`);
         return (
-          <button
+          <Button
             key={anchor}
+            variant="ghost"
             ref={(el) => {
               if (el) buttonRefs.current.set(anchor, el);
               else buttonRefs.current.delete(anchor);
@@ -119,13 +121,14 @@ export function PaddingAnchor({
             aria-label={cellLabel}
             title={cellLabel}
             tabIndex={rovingTabIndex(anchor, value)}
+            touchTarget={false}
             disabled={disabled}
             onClick={() => onChange(anchor)}
             onKeyDown={(e) => handleKeyDown(anchor, e)}
             className={cn(
-              'flex h-5 w-5 items-center justify-center rounded-md border',
+              'flex h-5 w-5 items-center justify-center rounded-md border !px-0 !py-0',
               selected
-                ? 'border-content bg-content text-surface'
+                ? 'border-content bg-content text-surface hover:bg-content hover:text-surface'
                 : 'border-transparent text-content-tertiary hover:border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary',
               'disabled:cursor-not-allowed disabled:opacity-50',
               interactiveTransition,
@@ -133,7 +136,7 @@ export function PaddingAnchor({
             )}
           >
             <CellGlyph anchor={anchor} />
-          </button>
+          </Button>
         );
       })}
       {showClampWarning && (
