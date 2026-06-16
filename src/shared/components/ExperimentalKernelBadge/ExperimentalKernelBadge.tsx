@@ -4,6 +4,7 @@
  * pointer-events pass through to the canvas except for the "Labs settings" link.
  */
 
+import { Button } from '@/design-system';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useLabsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -36,13 +37,14 @@ export function ExperimentalKernelBadge() {
           <span className="font-medium">{t('labs.experimentalKernel.title')}</span>
         </div>
         <span className="leading-relaxed text-info/80">{t('labs.experimentalKernel.warning')}</span>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={openDrawer}
-          className="pointer-events-auto mt-0.5 self-start text-info underline underline-offset-2 hover:text-info/80 transition-colors"
+          className="pointer-events-auto mt-0.5 h-auto self-start rounded-none bg-transparent px-0 py-0 text-xs font-normal text-info underline underline-offset-2 hover:bg-transparent hover:text-info/80"
         >
           {t('labs.experimentalKernel.labsSettings')}
-        </button>
+        </Button>
       </div>
     </div>
   );

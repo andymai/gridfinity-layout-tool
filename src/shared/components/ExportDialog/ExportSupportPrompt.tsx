@@ -4,6 +4,7 @@
  * fallback for people who won't tip.
  */
 
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -55,28 +56,35 @@ export function ExportSupportPrompt({ fileName, onDone, source }: ExportSupportP
 
       <p className="mb-3 text-sm text-content-secondary">{t('export.support.pitch')}</p>
 
-      <button
+      <Button
+        variant="primary"
+        fullWidth
         onClick={handleKofi}
-        className="btn btn-primary flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm leading-none"
+        leftIcon={
+          <img
+            src="/kofi-cup.png"
+            alt=""
+            aria-hidden="true"
+            className="kofi-cup-wiggle h-4 w-auto"
+          />
+        }
+        className="leading-none"
         style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
       >
-        <img src="/kofi-cup.png" alt="" aria-hidden="true" className="kofi-cup-wiggle h-4 w-auto" />
         {t('header.supportOnKofi')}
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="ghost"
         onClick={handleGithub}
-        className="mt-3 text-xs text-content-tertiary underline-offset-2 hover:text-content hover:underline"
+        className="mt-3 h-auto rounded-none bg-transparent px-0 py-0 text-xs font-normal text-content-tertiary underline-offset-2 hover:bg-transparent hover:text-content hover:underline"
       >
         {t('export.support.starGithub')}
-      </button>
+      </Button>
 
-      <button
-        onClick={onDone}
-        className="mt-5 w-full rounded-lg border border-stroke-subtle bg-transparent px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
-      >
+      <Button variant="secondary" fullWidth onClick={onDone} className="mt-5">
         {t('common.done')}
-      </button>
+      </Button>
     </div>
   );
 }

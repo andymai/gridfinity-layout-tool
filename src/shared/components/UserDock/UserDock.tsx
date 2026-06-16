@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
@@ -110,14 +111,16 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
             <DockAvatar seed={avatarSeed} size={24} status={avatarStatus} muted={!isAuthed} />
           </div>
         ) : (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            touchTarget={false}
             onClick={toggle}
             {...triggerProps}
             aria-label={t('dock.openMenu')}
             title={isAuthed ? user.email : t('dock.signInTooltip')}
             className={cn(
-              'w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors',
+              'w-full flex items-center justify-start gap-2 rounded-none px-3 py-2 text-sm font-normal transition-colors',
               'text-content-secondary hover:bg-surface-hover hover:text-content',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset'
             )}
@@ -128,7 +131,7 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
             </span>
             {!isAuthed && <span className="text-xs text-content-tertiary">{t('auth.signIn')}</span>}
             <Caret up={open} />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -262,10 +265,13 @@ interface MenuButtonProps {
 
 function MenuButton({ onClick, icon, children }: MenuButtonProps) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      fullWidth
+      touchTarget={false}
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none text-left"
+      className="flex items-center justify-start gap-2 px-3 py-2 rounded-md text-sm font-normal text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none text-left"
     >
       <svg
         className="w-4 h-4 text-content-tertiary"
@@ -279,7 +285,7 @@ function MenuButton({ onClick, icon, children }: MenuButtonProps) {
         ))}
       </svg>
       <span>{children}</span>
-    </button>
+    </Button>
   );
 }
 

@@ -82,15 +82,6 @@ src/features/layers/components/ActiveLayerPanel/SizeSelectorPopover.tsx
 src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.tsx
 src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
 src/features/snapshots/components/SnapshotHistory/SnapshotHistory.tsx
-src/shared/components/ExperimentalKernelBadge/ExperimentalKernelBadge.tsx
-src/shared/components/ExportDialog/ExportDialog.tsx
-src/shared/components/ExportDialog/ExportSupportPrompt.tsx
-src/shared/components/FeatureToggle/FeatureToggle.tsx
-src/shared/components/FractionalEdgeToggle/FractionalEdgeToggle.tsx
-src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
-src/shared/components/PrintBedInput/PrintBedInput.tsx
-src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
-src/shared/components/UserDock/UserDock.tsx
 src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileCloudSharePanel.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx

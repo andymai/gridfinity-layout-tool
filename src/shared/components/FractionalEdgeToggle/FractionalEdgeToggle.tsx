@@ -1,3 +1,5 @@
+import { Button } from '@/design-system';
+
 export function FractionalEdgeToggle({
   axis,
   label,
@@ -24,7 +26,8 @@ export function FractionalEdgeToggle({
     <div className="flex items-center justify-between">
       <span className="text-content-tertiary">{label}</span>
       <div className="flex rounded overflow-hidden border border-stroke-subtle">
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => onChange(axis, 'start')}
           aria-pressed={value === 'start'}
@@ -34,8 +37,9 @@ export function FractionalEdgeToggle({
           title={startTitle}
         >
           {startLabel}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => onChange(axis, 'end')}
           aria-pressed={value === 'end'}
@@ -45,7 +49,7 @@ export function FractionalEdgeToggle({
           title={endTitle}
         >
           {endLabel}
-        </button>
+        </Button>
       </div>
     </div>
   );
