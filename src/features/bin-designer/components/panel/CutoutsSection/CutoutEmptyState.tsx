@@ -5,14 +5,17 @@
  * and keyboard shortcut hints. Renders when no cutouts exist.
  */
 
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface CutoutEmptyStateProps {
   /** Sidebar uses compact sizing; workspace uses larger sizing */
   readonly variant: 'sidebar' | 'workspace';
+  /** When set, shows a "scan a real tool with your phone" call to action. */
+  readonly onScanWithPhone?: () => void;
 }
 
-export function CutoutEmptyState({ variant }: CutoutEmptyStateProps) {
+export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateProps) {
   const t = useTranslation();
   const isWorkspace = variant === 'workspace';
 
@@ -68,6 +71,33 @@ export function CutoutEmptyState({ variant }: CutoutEmptyStateProps) {
             <ShortcutHint shortcut="V" label={t('binDesigner.cutouts.shortcutSelect')} />
           )}
         </div>
+
+        {onScanWithPhone && (
+          <div className="pointer-events-auto mt-4 w-full border-t border-stroke-subtle pt-3">
+            <Button type="button" variant="secondary" size="sm" fullWidth onClick={onScanWithPhone}>
+              <span className="flex items-center justify-center gap-2">
+                <svg
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3.5" y="1" width="7" height="12" rx="1.5" />
+                  <circle cx="7" cy="4" r="0.75" fill="currentColor" stroke="none" />
+                  <path d="M6 11.25h2" />
+                </svg>
+                {t('binDesigner.cutouts.scanImport.emptyCta')}
+              </span>
+            </Button>
+            <p className="mt-1.5 text-[11px] text-content-tertiary">
+              {t('binDesigner.cutouts.scanImport.emptyHelp')}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

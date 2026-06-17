@@ -86,3 +86,8 @@ benchmarks/latest.json
 # Local scratch dirs: brepjs-verify part output and Ko-fi cover art (never committed)
 /brand/
 /brep-parts/
+
+# MediaPipe tasks-vision WASM runtime — copied from the pinned npm package at
+# build (scripts/vite-plugin-mediapipe-assets.ts), not committed. The model
+# (public/models/interactive-segmenter/) IS committed; it isn't published to npm.
+public/models/tasks-vision/

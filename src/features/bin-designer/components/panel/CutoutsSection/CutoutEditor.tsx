@@ -481,7 +481,12 @@ export function CutoutEditor() {
         className="relative rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
         onContextMenu={handleContextMenu}
       >
-        {cutouts.length === 0 && mode.type === 'idle' && <CutoutEmptyState variant="sidebar" />}
+        {cutouts.length === 0 && mode.type === 'idle' && (
+          <CutoutEmptyState
+            variant="sidebar"
+            onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+          />
+        )}
         <CutoutCanvas3D
           cutouts={cutouts}
           binWidth={binWidth}

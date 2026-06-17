@@ -363,7 +363,10 @@ export function CutoutWorkspace() {
               onContextMenu={handleContextMenu}
             >
               {cutouts.length === 0 && mode.type === 'idle' && (
-                <CutoutEmptyState variant="workspace" />
+                <CutoutEmptyState
+                  variant="workspace"
+                  onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+                />
               )}
               <CutoutCanvas3D
                 cutouts={cutouts}

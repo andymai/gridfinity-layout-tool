@@ -1,13 +1,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ok, err } from '@/core/result';
 import { ScanPage } from './ScanPage';
 
-const mockDecode = vi.fn();
+const mockDecodeCanvas = vi.fn();
+const mockImageData = vi.fn();
+const mockAutoSeed = vi.fn();
+const mockSegment = vi.fn();
+const mockTraceSegmented = vi.fn();
 const mockTrace = vi.fn();
+const mockPreload = vi.fn();
+
 vi.mock('@/shared/scanTrace', () => ({
-  decodeImageToImageData: (...args: unknown[]) => mockDecode(...args),
+  decodeImageToCanvas: (...args: unknown[]) => mockDecodeCanvas(...args),
+  imageDataFromCanvas: (...args: unknown[]) => mockImageData(...args),
+  computeAutoSeed: (...args: unknown[]) => mockAutoSeed(...args),
+  segmentAt: (...args: unknown[]) => mockSegment(...args),
+  traceSceneSegmented: (...args: unknown[]) => mockTraceSegmented(...args),
   traceScene: (...args: unknown[]) => mockTrace(...args),
+  preloadSegmenter: (...args: unknown[]) => mockPreload(...args),
   pointsToSvgPath: () => 'M0 0 L10 0 L10 10',
 }));
 
@@ -17,6 +28,7 @@ vi.mock('@/i18n', () => ({
 
 const TOKEN = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 const IMAGE = { width: 24, height: 20, data: new Uint8ClampedArray(24 * 20 * 4) };
+const MASK = { width: 24, height: 20, data: new Uint8Array(24 * 20) };
 const PTS = [
   { x: 0, y: 0 },
   { x: 25, y: 0 },
@@ -52,33 +64,48 @@ describe('ScanPage', () => {
     vi.clearAllMocks();
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
+    mockDecodeCanvas.mockResolvedValue(document.createElement('canvas'));
+    mockImageData.mockReturnValue(IMAGE);
+    mockAutoSeed.mockReturnValue({ x: 0.5, y: 0.5 });
+    mockSegment.mockResolvedValue(MASK);
+    // jsdom gives 0×0 rects by default; the tap handler needs a real box.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 100,
+      width: 100,
+      height: 100,
+      toJSON: () => ({}),
+    });
   });
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => vi.restoreAllMocks());
 
-  it('starts on the capture screen', () => {
+  it('starts on the capture screen and warms the model', () => {
     render(<ScanPage token={TOKEN} />);
     expect(screen.getByText('scan.takePhoto')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.heading')).toBeInTheDocument();
+    expect(mockPreload).toHaveBeenCalled();
   });
 
-  it('traces a photo and shows the review overlay', async () => {
-    mockDecode.mockResolvedValue(IMAGE);
-    mockTrace.mockReturnValue(ok(SCENE_MM));
+  it('segments a photo and shows the review overlay with the tap hint', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     render(<ScanPage token={TOKEN} />);
 
     selectPhoto();
 
-    expect(await screen.findByText('scan.review.title')).toBeInTheDocument();
+    expect(await screen.findByText('scan.review.tapHint')).toBeInTheDocument();
     expect(screen.getByText('scan.use')).toBeInTheDocument();
     // Two overlays: the tool outline and the detected-card highlight.
     expect(document.querySelectorAll('polygon')).toHaveLength(2);
-    // The measured millimetre readout proves the card path produced real units.
     expect(screen.getByText('binDesigner.cutouts.scanImport.resultSize')).toBeInTheDocument();
     expect(screen.getByText('scan.cardMeasured')).toBeInTheDocument();
   });
 
   it('shows the no-card hint and a single overlay when no card is detected', async () => {
-    mockDecode.mockResolvedValue(IMAGE);
-    mockTrace.mockReturnValue(ok(SCENE_PX));
+    mockTraceSegmented.mockReturnValue(ok(SCENE_PX));
     render(<ScanPage token={TOKEN} />);
 
     selectPhoto();
@@ -87,9 +114,35 @@ describe('ScanPage', () => {
     expect(document.querySelectorAll('polygon')).toHaveLength(1);
   });
 
+  it('re-segments at the tapped point', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+
+    const img = await screen.findByAltText('scan.photoAlt');
+    expect(mockSegment).toHaveBeenCalledTimes(1);
+
+    fireEvent.pointerDown(img, { clientX: 40, clientY: 60 });
+
+    await waitFor(() => expect(mockSegment).toHaveBeenCalledTimes(2));
+    // Second call seeds from the tap (40/100, 60/100), not the auto-seed.
+    expect(mockSegment).toHaveBeenLastCalledWith(expect.anything(), { x: 0.4, y: 0.6 });
+  });
+
+  it('falls back to the classical tracer when the model fails', async () => {
+    mockSegment.mockRejectedValue(new Error('model unavailable'));
+    mockTrace.mockReturnValue(ok(SCENE_PX));
+    render(<ScanPage token={TOKEN} />);
+
+    selectPhoto();
+
+    // Classical mode → no tap-to-reselect, retake guidance instead.
+    expect(await screen.findByText('scan.review.retakeHint')).toBeInTheDocument();
+    expect(mockTrace).toHaveBeenCalled();
+  });
+
   it('uploads the outline and confirms it was sent', async () => {
-    mockDecode.mockResolvedValue(IMAGE);
-    mockTrace.mockReturnValue(ok(SCENE_MM));
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -102,10 +155,11 @@ describe('ScanPage', () => {
       `/api/scan-session/${TOKEN}`,
       expect.objectContaining({ method: 'POST' })
     );
+    vi.unstubAllGlobals();
   });
 
-  it('shows a no-object error when tracing fails', async () => {
-    mockDecode.mockResolvedValue(IMAGE);
+  it('shows a no-object error when both ML and classical tracing fail', async () => {
+    mockSegment.mockRejectedValue(new Error('model unavailable'));
     mockTrace.mockReturnValue(err({ code: 'NO_OBJECT' }));
     render(<ScanPage token={TOKEN} />);
 
@@ -115,8 +169,7 @@ describe('ScanPage', () => {
   });
 
   it('reports an expired session when the upload 404s', async () => {
-    mockDecode.mockResolvedValue(IMAGE);
-    mockTrace.mockReturnValue(ok(SCENE_MM));
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }));
 
     render(<ScanPage token={TOKEN} />);
@@ -124,5 +177,6 @@ describe('ScanPage', () => {
     fireEvent.click(await screen.findByText('scan.use'));
 
     expect(await screen.findByText('scan.error.expired')).toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 });

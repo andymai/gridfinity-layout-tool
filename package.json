@@ -86,7 +86,7 @@
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1900 kB"
+      "limit": "2000 kB"
     }
   ],
   "dependencies": {
@@ -94,6 +94,7 @@
     "@liveblocks/client": "^3.19.5",
     "@liveblocks/node": "^3.19.5",
     "@liveblocks/react": "^3.19.5",
+    "@mediapipe/tasks-vision": "0.10.35",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@vercel/analytics": "^2.0.1",

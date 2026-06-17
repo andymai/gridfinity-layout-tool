@@ -99,6 +99,10 @@ export function CutoutShapeToolbar({
   const btnActive = 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40';
   const btnInactive =
     'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content-primary hover:border-stroke';
+  // The phone-scan action is special (not a drawing tool); a subtle accent tint
+  // makes it discoverable without competing with the active-tool highlight.
+  const btnAccent =
+    'border border-accent/40 bg-accent/10 text-accent hover:bg-accent/15 hover:border-accent/60';
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
   /** Conditionally wraps a button in a ToolbarTooltip (vertical mode only) */
@@ -319,7 +323,7 @@ export function CutoutShapeToolbar({
             type="button"
             variant="ghost"
             touchTarget={false}
-            className={`${btnBase} ${btnInactive}`}
+            className={`${btnBase} ${btnAccent}`}
             onClick={onScanWithPhone}
             aria-label={t('binDesigner.cutouts.scanImport.title')}
             title={!vertical ? t('binDesigner.cutouts.scanImport.title') : undefined}

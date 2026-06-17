@@ -7,6 +7,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
 import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
+import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -46,6 +47,7 @@ export default defineConfig({
     tailwindcss(),
     versionPlugin(),
     contentRoutesPlugin(),
+    mediapipeAssetsPlugin(),
     VitePWA({
       // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
       // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
@@ -99,6 +101,12 @@ export default defineConfig({
           // version.json is fetched by the PWA smoke gate to verify a fresh deploy is
           // reachable. Must always hit the network — precaching would mask stale CDN.
           'version.json',
+          // MediaPipe segmenter runtime is phone-scan-only and large. Keep its WASM
+          // loader .js out of every user's precache; it's runtime-cached on first scan.
+          'models/tasks-vision/*.js',
+          // The MediaPipe JS chunk (~130KB) is only used by the /scan phone route.
+          // Don't precache it for every (desktop) user; it lazy-loads on first scan.
+          'assets/vision_bundle-*.js',
         ],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
@@ -147,6 +155,25 @@ export default defineConfig({
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'google-fonts-stylesheets',
+            },
+          },
+          {
+            // The phone scan segmenter assets (tflite model + tasks-vision runtime)
+            // live at stable, non-hashed /models/ paths and are large. Cache them on
+            // first scan so repeat scans are instant and work offline. Listed before
+            // the generic .wasm rule so the runtime WASM lands in this dedicated cache.
+            urlPattern: /\/models\/(interactive-segmenter|tasks-vision)\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'scan-segmenter',
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+              rangeRequests: true,
             },
           },
           {

@@ -1,18 +1,23 @@
 /**
  * Trace a photo that may contain a reference card alongside the tool.
  *
- * Detects the card (on the auto threshold, so the tool slider can't lose it),
- * traces the largest *non-card* component as the tool, and — when a card is
- * present — rectifies the outline through the card homography so it comes out
- * square and in true millimetres. With no card, falls back to the raw pixel
- * outline (the desktop then asks for one real dimension).
+ * Two front doors share one tail:
+ *  - `traceScene` — classical Otsu mask (fallback when the ML segmenter can't
+ *    load). The tool is the largest non-card foreground blob.
+ *  - `traceSceneSegmented` — the tool mask comes from the tap-prompted ML
+ *    segmenter; we trust it (plus the user's tap) to have isolated the object.
+ *
+ * Both detect the card on the classical auto threshold, then run the shared
+ * `buildToolTrace` tail (largest component → contour → simplify → optional card
+ * homography). With a card present the outline is rectified to true millimetres;
+ * without one it stays in pixels and the desktop asks for a real dimension.
  */
 
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
-import type { ImageDataLike, Point, TraceError } from './types';
+import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { buildMask } from './mask';
-import { labelComponents, maskFromLabel } from './components';
+import { labelComponents, largestComponent } from './components';
 import { traceContour } from './contour';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
@@ -52,10 +57,8 @@ function pointInQuad(x: number, y: number, q: readonly Point[]): boolean {
 }
 
 /** Zero out the card region so it isn't mistaken for the tool. */
-function excludeQuad(
-  mask: { data: Uint8Array; width: number; height: number },
-  q: readonly Point[]
-): void {
+function excludeQuad(mask: Mask, q: readonly Point[]): void {
+  const data = mask.data;
   const xs = q.map((p) => p.x);
   const ys = q.map((p) => p.y);
   const minX = Math.max(0, Math.floor(Math.min(...xs)));
@@ -64,47 +67,49 @@ function excludeQuad(
   const maxY = Math.min(mask.height - 1, Math.ceil(Math.max(...ys)));
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
-      if (pointInQuad(x, y, q)) mask.data[y * mask.width + x] = 0;
+      if (pointInQuad(x, y, q)) data[y * mask.width + x] = 0;
     }
   }
 }
 
-export function traceScene(
+function defaultMinArea(width: number, height: number): number {
+  return Math.max(16, Math.round(width * height * 0.0008));
+}
+
+function defaultTolerance(width: number, height: number): number {
+  return Math.max(1, Math.hypot(width, height) * 0.004);
+}
+
+/** Detect the reference card on the classical auto threshold (slider-independent). */
+export function detectCard(
   image: ImageDataLike,
   options: SceneTraceOptions = {}
-): Result<SceneTrace, TraceError> {
+): SceneCard | null {
   const { width, height } = image;
-  if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
+  const labeled = labelComponents(buildMask(image));
+  const card = findBestCardComponent(labeled, width, height, options);
+  return card ? { corners: card.corners, fitness: card.fitness } : null;
+}
 
-  // Card detection on the auto threshold (independent of the tool slider).
-  const autoLabeled = labelComponents(buildMask(image));
-  const card = findBestCardComponent(autoLabeled, width, height, options);
-
-  // Tool mask honors the manual threshold; drop the card region.
-  const toolMask = buildMask(image, { threshold: options.threshold });
-  if (card) excludeQuad(toolMask, card.corners);
-  const toolLabeled = labelComponents(toolMask);
-
-  const minArea = options.minToolAreaPx ?? Math.max(16, Math.round(width * height * 0.0008));
-  let toolLabel = -1;
-  let toolArea = 0;
-  let toolStart: Point | null = null;
-  for (const comp of toolLabeled.components) {
-    if (comp.area >= minArea && comp.area > toolArea) {
-      toolArea = comp.area;
-      toolLabel = comp.label;
-      toolStart = comp.start;
-    }
-  }
-  if (toolLabel === -1 || !toolStart) {
+/**
+ * Shared tail: a binary tool mask + an optional card → a finished SceneTrace.
+ * Picks the largest blob, traces and simplifies it, and (when a card was found)
+ * rectifies through the card homography into true millimetres.
+ */
+export function buildToolTrace(
+  toolMask: Mask,
+  card: SceneCard | null,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = toolMask;
+  const component = largestComponent(toolMask);
+  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
+  if (component.start === null || component.area < minArea) {
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
 
-  const contour = traceContour(
-    maskFromLabel(toolLabeled.labels, toolLabel, width, height),
-    toolStart
-  );
-  const tolerance = options.simplifyTolerance ?? Math.max(1, Math.hypot(width, height) * 0.004);
+  const contour = traceContour(component.mask, component.start);
+  const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const imagePoints = simplifyRdp(contour, tolerance);
   if (imagePoints.length < 3 || polygonArea(imagePoints) < 1) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
@@ -117,10 +122,74 @@ export function traceScene(
         imagePoints,
         outputPoints: rectifyPoints(imagePoints, h),
         units: 'mm',
-        card: { corners: card.corners, fitness: card.fitness },
+        card,
       });
     }
   }
 
   return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null });
+}
+
+/** Classical fallback: Otsu tool mask (largest non-card blob), card excluded. */
+export function traceScene(
+  image: ImageDataLike,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = image;
+  if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
+
+  const card = detectCard(image, options);
+  const toolMask = buildMask(image, { threshold: options.threshold });
+  if (card) excludeQuad(toolMask, card.corners);
+  return buildToolTrace(toolMask, card, options);
+}
+
+/**
+ * ML path: the tool mask is supplied by the tap-prompted segmenter. We don't
+ * exclude the card region — the user's tap already chose the object — but we
+ * still detect the card classically to recover scale.
+ */
+export function traceSceneSegmented(
+  image: ImageDataLike,
+  toolMask: Mask,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = image;
+  if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
+  const card = detectCard(image, options);
+  return buildToolTrace(toolMask, card, options);
+}
+
+/**
+ * A normalized (0–1) seed point for the segmenter's first, no-tap pass: the
+ * centroid of the largest non-card foreground blob, falling back to the image
+ * center. The user can always tap to override it.
+ */
+export function computeAutoSeed(
+  image: ImageDataLike,
+  options: SceneTraceOptions = {}
+): { readonly x: number; readonly y: number } {
+  const { width, height } = image;
+  const center = { x: 0.5, y: 0.5 };
+  if (width <= 0 || height <= 0) return center;
+
+  const card = detectCard(image, options);
+  const mask = buildMask(image);
+  if (card) excludeQuad(mask, card.corners);
+  const component = largestComponent(mask);
+  if (component.start === null) return center;
+
+  let sx = 0;
+  let sy = 0;
+  let count = 0;
+  const data = component.mask.data;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] === 1) {
+      sx += i % width;
+      sy += (i - (i % width)) / width;
+      count++;
+    }
+  }
+  if (count === 0) return center;
+  return { x: sx / count / width, y: sy / count / height };
 }

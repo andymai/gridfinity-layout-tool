@@ -1,9 +1,17 @@
 export { traceImage, traceToPoints, pointsToSvgPath, polygonArea } from './traceImage';
-export { traceScene } from './traceScene';
+export {
+  traceScene,
+  traceSceneSegmented,
+  detectCard,
+  buildToolTrace,
+  computeAutoSeed,
+} from './traceScene';
 export type { SceneTrace, SceneCard, SceneTraceOptions } from './traceScene';
-export { decodeImageToImageData } from './decodeImage';
+export { decodeImageToCanvas, imageDataFromCanvas } from './decodeImage';
+export { segmentAt, preloadSegmenter } from './interactiveSegment';
 export type {
   ImageDataLike,
+  Mask,
   Point,
   TraceOptions,
   TraceError,
