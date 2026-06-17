@@ -7,11 +7,10 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Input, Select, Stepper, InfoIcon } from '@/design-system';
+import { Button, Select, Stepper, InfoIcon } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import { TEXT_MAX_LENGTH } from '../../../types';
 import type {
   LabelTabAlignment,
   LabelTabEdges,
@@ -19,6 +18,7 @@ import type {
   TextFontFamily,
   TextMode,
 } from '../../../types';
+import { CompartmentTextInput } from './CompartmentTextInput';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
@@ -360,21 +360,20 @@ export function LabelTabsSection() {
           </div>
         </div>
 
-        {/* Per-compartment text inputs */}
+        {/* Per-compartment text inputs. Each input defers its commit (see
+            CompartmentTextInput) so typing doesn't regenerate the bin per
+            keystroke. */}
         <ul className="flex flex-col gap-1.5">
           {state.compartmentTextRows.map((row) => (
             <li key={row.id} className="flex items-center gap-2">
               <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
                 {row.label}
               </span>
-              <Input
-                type="text"
-                size="sm"
-                value={row.value}
-                maxLength={TEXT_MAX_LENGTH}
-                onChange={(e) => handlers.setCompartmentText(row.id, e.target.value)}
+              <CompartmentTextInput
+                committedValue={row.value}
+                onCommit={(value) => handlers.setCompartmentText(row.id, value)}
                 placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                aria-label={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
+                ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
               />
             </li>
           ))}

@@ -28,10 +28,14 @@ describe('LabelTabsSection', () => {
     expect(screen.getByLabelText('Engraved text for compartment 2')).toBeInTheDocument();
   });
 
-  it('writes typed text to the store via setCompartmentText', () => {
+  it('commits typed text to the store on blur (deferred commit)', () => {
     render(<LabelTabsSection />);
     const input = screen.getByLabelText('Engraved text for compartment 1');
+    // Typing alone must NOT commit — that would regenerate the bin per keystroke.
     fireEvent.change(input, { target: { value: 'SCREWS' } });
+    expect(useDesignerStore.getState().params.compartments.compartmentTexts).toBeUndefined();
+    // Blur flushes the pending value to the store.
+    fireEvent.blur(input);
     expect(useDesignerStore.getState().params.compartments.compartmentTexts).toEqual(['SCREWS']);
   });
 

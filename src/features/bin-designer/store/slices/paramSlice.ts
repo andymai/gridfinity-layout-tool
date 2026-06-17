@@ -390,8 +390,9 @@ export function createParamSlice(set: Set, get: Get) {
       const { params } = get();
       const clamped = text.slice(0, TEXT_MAX_LENGTH);
       const prev = params.compartments.compartmentTexts ?? [];
-      // No-op guard: the UI calls this on every keystroke, so an unchanged
-      // value must not push a history entry (would be one undo step per char).
+      // No-op guard: the input commits on both idle and blur (see
+      // CompartmentTextInput), so an idle-flushed value followed by a blur must
+      // not push a second, identical history entry / regeneration.
       if ((prev[compartmentId] ?? '') === clamped) return;
 
       set((state) => {
