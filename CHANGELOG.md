@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.184.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.8...gridfinity-layout-tool-v4.184.0) (2026-06-17)
+
+
+### Features
+
+* legible cutout labels + emboss option ([#2226](https://github.com/andymai/gridfinity-layout-tool/issues/2226)) ([3a0d1ae](https://github.com/andymai/gridfinity-layout-tool/commit/3a0d1ae6ef3b260c7c06d240f6800e4d5e6be262))
+
 ## [4.183.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.7...gridfinity-layout-tool-v4.183.8) (2026-06-17)
 
 
