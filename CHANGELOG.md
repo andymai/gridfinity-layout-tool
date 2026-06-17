@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.5...gridfinity-layout-tool-v4.183.6) (2026-06-17)
+
+
+### Performance
+
+* **baseplate:** faster exports — simpler floor relief + coarser STL tessellation ([#2220](https://github.com/andymai/gridfinity-layout-tool/issues/2220)) ([f06634b](https://github.com/andymai/gridfinity-layout-tool/commit/f06634b3390e8c98d27098806a61be7e2dc89021))
+
 ## [4.183.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.4...gridfinity-layout-tool-v4.183.5) (2026-06-17)
 
 
