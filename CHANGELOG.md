@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.6...gridfinity-layout-tool-v4.183.7) (2026-06-17)
+
+
+### Performance
+
+* **baseplate:** dedupe geometrically-identical split pieces via corner signature ([#2221](https://github.com/andymai/gridfinity-layout-tool/issues/2221)) ([3064ef4](https://github.com/andymai/gridfinity-layout-tool/commit/3064ef46cecb55c00094327767e9c3cf09f75b4b))
+
 ## [4.183.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.5...gridfinity-layout-tool-v4.183.6) (2026-06-17)
 
 
