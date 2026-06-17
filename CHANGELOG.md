@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.1...gridfinity-layout-tool-v4.183.2) (2026-06-17)
+
+
+### Performance
+
+* **generation:** linear font fit + memoized text metrics ([#2210](https://github.com/andymai/gridfinity-layout-tool/issues/2210)) ([877d4bd](https://github.com/andymai/gridfinity-layout-tool/commit/877d4bddd6c7e682ac4cf7cc0d3195b158dc6282))
+
 ## [4.183.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.0...gridfinity-layout-tool-v4.183.1) (2026-06-17)
 
 
