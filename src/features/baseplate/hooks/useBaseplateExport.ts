@@ -25,6 +25,7 @@ import { useTranslation } from '@/i18n';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
+import { buildExportCacheKey, getCachedExports, putCachedExports } from '../utils/exportCache';
 import { assignGroupNames } from '../utils/pieceNaming';
 import { countConnectorKeys } from '../utils/connectorKeys';
 import { generatePrintGuide, generateStackPrintNote } from '../utils/printGuide';
@@ -194,24 +195,50 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           setExportProgress({ current: 0, total: uniqueCount });
 
           const uniqueParams = uniqueGroups.map(([, g]) => g.params);
-          let uniqueExports: ArrayBuffer[];
+          const nozzleMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
 
-          if (pool && !pool.isDestroyed && pool.size > 1) {
-            const results = await pool.exportBaseplates(
-              uniqueParams,
-              bridgeFormat,
-              (completed, pieceTotal) =>
-                setExportProgress({ current: completed, total: pieceTotal })
-            );
-            uniqueExports = results.map((r) => r.data);
-          } else {
-            uniqueExports = [];
-            for (let i = 0; i < uniqueGroups.length; i++) {
-              setExportProgress({ current: i + 1, total: uniqueCount });
-              const result = await bridge.exportBaseplate(uniqueGroups[i][1].params, bridgeFormat);
-              uniqueExports.push(result.data);
-            }
+          // Cross-session cache: skip rebuilding pieces whose identical bytes are
+          // already persisted. Only the misses go to the worker pool.
+          const cacheKeys = uniqueParams.map((p) => buildExportCacheKey(p, bridgeFormat, nozzleMm));
+          const cached = await getCachedExports(cacheKeys);
+          const missIndices: number[] = [];
+          for (let i = 0; i < cached.length; i++) {
+            if (cached[i] === undefined) missIndices.push(i);
           }
+          const cachedCount = uniqueCount - missIndices.length;
+          setExportProgress({ current: cachedCount, total: uniqueCount });
+
+          const freshByIndex = new Map<number, ArrayBuffer>();
+          const toPersist: { key: string; data: ArrayBuffer }[] = [];
+          if (missIndices.length > 0) {
+            const missParams = missIndices.map((i) => uniqueParams[i]);
+            if (pool && !pool.isDestroyed && pool.size > 1) {
+              const results = await pool.exportBaseplates(missParams, bridgeFormat, (completed) =>
+                setExportProgress({ current: cachedCount + completed, total: uniqueCount })
+              );
+              results.forEach((r, j) => {
+                const idx = missIndices[j];
+                freshByIndex.set(idx, r.data);
+                toPersist.push({ key: cacheKeys[idx], data: r.data });
+              });
+            } else {
+              for (let j = 0; j < missParams.length; j++) {
+                setExportProgress({ current: cachedCount + j + 1, total: uniqueCount });
+                const result = await bridge.exportBaseplate(missParams[j], bridgeFormat);
+                const idx = missIndices[j];
+                freshByIndex.set(idx, result.data);
+                toPersist.push({ key: cacheKeys[idx], data: result.data });
+              }
+            }
+            void putCachedExports(toPersist);
+          }
+
+          const uniqueExports: ArrayBuffer[] = cacheKeys.map((_, i) => {
+            const data = cached[i] ?? freshByIndex.get(i);
+            if (data === undefined)
+              throw new Error('Baseplate export piece missing after generation');
+            return data;
+          });
 
           // One file per unique shape. When stacking, each unique piece is baked
           // into towers of the quantity the drawer needs (group size), split into
