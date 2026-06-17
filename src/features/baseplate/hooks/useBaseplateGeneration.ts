@@ -45,6 +45,7 @@ import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling } from '../utils/splitPlanner';
+import { shouldDeferBrepPreview } from '../utils/previewComplexity';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 import type { PieceMeshEntry } from '../store/baseplatePageStore';
@@ -607,12 +608,35 @@ export function useBaseplateGeneration(): void {
       // even though the user can see the draft preview.
       setGenerationStatus('generating');
 
+      const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
+
+      // Large magnet plates can exceed the per-piece BREP budget on slower
+      // hardware — the user would wait out the whole timeout only to fall back
+      // to the (already faithful) direct-mesh. Skip that gamble: keep the
+      // instant procedural mesh on screen and mark the preview complete. Export
+      // rebuilds at full BREP fidelity via its own (larger-budget) path.
+      if (shouldDeferBrepPreview(tiling, fullParams, lastBrepMsRef.current)) {
+        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+        // Claim this epoch as final so a late async draft can't overwrite it.
+        finalizedEpochRef.current = epoch;
+        setGenerationStatus('complete');
+        trackBaseplatePreviewTiming({
+          directMeshMs: directMeshDurationRef.current,
+          previewKind: 'direct',
+          brepMs: 0,
+          pieceCount: tiling.pieces.length,
+          isSplit: tiling.isSplit,
+          wasmCold: !firstBrepDoneRef.current,
+          success: true,
+          deferred: true,
+        });
+        return;
+      }
+
       const preview = previewBridgeRef.current;
-      let tiling: BaseplateTiling;
       if (preview && !preview.isDestroyed) {
         // manifold_preview on: draft with the Manifold kernel (real generator,
         // draft quality) instead of the procedural direct-mesh.
-        tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
         setTiling(tiling);
         setSplitProgress(null);
         setDedupStats(null);
@@ -632,7 +656,7 @@ export function useBaseplateGeneration(): void {
           });
         }
       } else {
-        tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
       }
 
       void runBrepGeneration(fullParams, tiling, epoch);
@@ -726,7 +750,15 @@ export function useBaseplateGeneration(): void {
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
         const epoch = ++generationEpochRef.current;
         const tiling = computeBaseplateTiling(params, bedW, bedD);
-        void runBrepGeneration(params, tiling, epoch);
+        // Mirror runGeneration's deferral: if the stored plate is predicted too
+        // expensive, don't kick off the doomed BREP on bridge-ready — the
+        // params-change effect already left the faithful direct-mesh on screen.
+        if (shouldDeferBrepPreview(tiling, params, lastBrepMsRef.current)) {
+          finalizedEpochRef.current = epoch;
+          setGenerationStatus('complete');
+        } else {
+          void runBrepGeneration(params, tiling, epoch);
+        }
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -751,7 +783,7 @@ export function useBaseplateGeneration(): void {
         workerPoolManager.release();
       }
     };
-  }, [setWasmStatus, runBrepGeneration, t]);
+  }, [setWasmStatus, setGenerationStatus, runBrepGeneration, t]);
 
   // Re-generate on every params change. Direct-mesh runs synchronously here
   // (renders before bridge is ready); BREP runs in background once bridge exists.

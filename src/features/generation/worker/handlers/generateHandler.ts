@@ -71,7 +71,11 @@ export function handleGenerateBaseplate(message: GenerateBaseplateMessage): void
           reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
         },
         false,
-        signal
+        signal,
+        // Live preview is draft-quality: skip the underside lightweight floor
+        // cut (invisible from above, ~⅓ of build). The export path rebuilds at
+        // full quality via `exportBaseplate`.
+        true
       ),
     requestId,
     'BaseplateGen',

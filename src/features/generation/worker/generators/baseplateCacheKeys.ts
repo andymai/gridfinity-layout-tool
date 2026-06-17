@@ -21,7 +21,11 @@ import {
   effectiveClearance,
 } from './generatorConstants';
 
-export function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
+export function meshCacheKey(
+  params: BaseplateParams,
+  forExport: boolean,
+  draft: boolean = false
+): string {
   // Key on the CLAMPED effective groove clearance, not the raw fit offset, so
   // offsets that collapse to identical geometry share a cache entry (e.g. any
   // tighter-than-floor value clamps to 0). Gated on connectorNubs because the
@@ -74,7 +78,10 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
     quantize(params.cornerRadii?.tr ?? -1),
     quantize(params.cornerRadii?.bl ?? -1),
     quantize(params.cornerRadii?.br ?? -1),
-    forExport
+    forExport,
+    // Draft preview skips the lightweight floor cut, so its mesh differs from
+    // the full-geometry build for otherwise-identical params.
+    draft
   );
 }
 

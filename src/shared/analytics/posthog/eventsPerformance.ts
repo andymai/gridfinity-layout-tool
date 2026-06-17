@@ -137,6 +137,9 @@ export function trackBooleanFallbacks(payload: {
  * `pieceCount` is 1 for unsplit baseplates; >1 for split tilings.
  * `success` distinguishes completed BREP from errored/timed-out runs so
  * failures are visible in PostHog dashboards.
+ * `deferred` is true when the BREP upgrade was intentionally skipped because the
+ * plate was predicted too expensive (the faithful direct-mesh stays on screen);
+ * `brepMs` is 0 in that case. Lets us measure the fallback rate vs. real timeouts.
  */
 export function trackBaseplatePreviewTiming(payload: {
   directMeshMs: number;
@@ -146,6 +149,7 @@ export function trackBaseplatePreviewTiming(payload: {
   isSplit: boolean;
   wasmCold: boolean;
   success: boolean;
+  deferred?: boolean;
 }): void {
   trackEvent('baseplate_preview_timing', {
     direct_mesh_ms: Math.round(payload.directMeshMs * 10) / 10,
@@ -155,5 +159,6 @@ export function trackBaseplatePreviewTiming(payload: {
     is_split: payload.isSplit,
     wasm_cold: payload.wasmCold,
     success: payload.success,
+    deferred: payload.deferred ?? false,
   });
 }

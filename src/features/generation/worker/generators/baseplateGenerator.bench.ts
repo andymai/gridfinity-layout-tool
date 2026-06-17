@@ -77,6 +77,14 @@ describe('baseplate generation', () => {
   );
 
   bench(
+    '6×6 magnets (split-piece)',
+    () => {
+      getGenerateBaseplate()(defaults({ width: 6, depth: 6, magnetHoles: true }), noop, false);
+    },
+    { iterations: 3, warmupIterations: 1 }
+  );
+
+  bench(
     '3×3 magnets + connectors',
     () => {
       getGenerateBaseplate()(

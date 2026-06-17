@@ -87,29 +87,42 @@ export {
  */
 export type BaseplateProbe = (label: string, shape: Shape3D) => void;
 
-/** Generate baseplate mesh for preview or export. */
+/**
+ * Generate baseplate mesh for the live preview.
+ *
+ * `draft` builds a faster draft-quality solid (skips the underside lightweight
+ * floor cutters). The standalone-page preview passes `true`; the printed export
+ * goes through `exportBaseplate`, which always builds full geometry.
+ */
 export function generateBaseplate(
   rawParams: BaseplateParams,
   onProgress: ProgressFn,
   forExport: boolean,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  draft: boolean = false
 ): MeshData {
   const params = sanitizeParams(rawParams);
   onProgress('base', 0);
   checkCancelled(signal);
 
   // Mesh cache short-circuits BREP booleans + tessellation entirely
-  const cacheKey = meshCacheKey(params, forExport);
+  const cacheKey = meshCacheKey(params, forExport, draft);
   const cached = meshResultCache.get(cacheKey);
   if (cached !== undefined) {
     onProgress('base', 1);
     return cached;
   }
 
-  const baseplate = buildBaseplateSolid(params, forExport, (progress) => {
-    onProgress('base', progress);
-    checkCancelled(signal);
-  });
+  const baseplate = buildBaseplateSolid(
+    params,
+    forExport,
+    (progress) => {
+      onProgress('base', progress);
+      checkCancelled(signal);
+    },
+    undefined,
+    draft
+  );
 
   onProgress('base', 0.9);
   checkCancelled(signal);
@@ -194,7 +207,8 @@ export function buildBaseplateSolid(
   params: BaseplateParams,
   forExport: boolean = true,
   onProgress?: (progress: number) => void,
-  probe?: BaseplateProbe
+  probe?: BaseplateProbe,
+  draft: boolean = false
 ): Shape3D {
   const {
     width,
@@ -327,8 +341,13 @@ export function buildBaseplateSolid(
     probe?.('magnetHolesCut', baseplate);
   }
 
-  // Lightweight floor cutters (cross-shaped material removal)
-  if (magnetHoles && params.lightweight !== false) {
+  // Lightweight floor cutters (cross-shaped material removal). Skipped for the
+  // live preview (`draft`): they remove material only from the underside floor
+  // — invisible when orbiting from above — yet the filleted cross prisms are
+  // ~⅓ of build time on magnet grids. The procedural direct-mesh draft already
+  // renders a solid underside, so skipping them here also removes the
+  // direct→BREP underside pop. Export (`draft === false`) keeps them.
+  if (!draft && magnetHoles && params.lightweight !== false) {
     const floorCutters = buildLightweightFloorCutters(
       width,
       depth,
