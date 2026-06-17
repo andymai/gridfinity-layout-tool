@@ -543,9 +543,11 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-/* Hide native search clear button; inputs provide their own clear control */
-input[type='search']::-webkit-search-cancel-button,
-input[type='search']::-webkit-search-decoration {
+/* Hide native search clear button only where a custom clear control exists
+   (the combobox search inputs). Plain type="search" fields keep the browser's
+   native clear affordance. */
+input[type='search'][role='combobox']::-webkit-search-cancel-button,
+input[type='search'][role='combobox']::-webkit-search-decoration {
   -webkit-appearance: none;
   appearance: none;
 }
