@@ -27,7 +27,7 @@ import {
   cardPerspectiveSkew,
   STEEP_CARD_SKEW,
   type ImageDataLike,
-  type Mask,
+  type SoftMask,
   type Point,
   type SceneTrace,
 } from '@/shared/scanTrace';
@@ -39,7 +39,7 @@ interface ScanPageProps {
 interface ReviewState {
   readonly canvas: HTMLCanvasElement;
   readonly image: ImageDataLike;
-  readonly toolMask: Mask | null;
+  readonly toolMask: SoftMask | null;
   readonly scene: SceneTrace;
   readonly photoUrl: string;
   readonly seed: Point;
@@ -83,7 +83,7 @@ async function traceAt(
   canvas: HTMLCanvasElement,
   image: ImageDataLike,
   seed: Point
-): Promise<{ scene: SceneTrace; toolMask: Mask | null } | null> {
+): Promise<{ scene: SceneTrace; toolMask: SoftMask | null } | null> {
   try {
     const toolMask = await segmentAt(canvas, seed);
     const traced = traceSceneSegmented(image, toolMask);

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { traceScene, traceSceneSegmented, detectCard } from './traceScene';
-import type { ImageDataLike, Mask, Point } from './types';
+import { traceScene, traceSceneSegmented, detectCard, buildToolTraceSoft } from './traceScene';
+import type { SoftMask } from './softContour';
+import type { ImageDataLike, Point } from './types';
 
 // Tilted pinhole camera over the world z=0 plane (principal point at centre).
 const F = 600;
@@ -133,8 +134,8 @@ describe('traceSceneSegmented excludes the tool from card detection', () => {
     return { width: W, height: H, data };
   }
 
-  function toolMask(): Mask {
-    const data = new Uint8Array(W * H);
+  function toolMask(): SoftMask {
+    const data = new Float32Array(W * H);
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) if (inRect(x, y, TOOL)) data[y * W + x] = 1;
     }
@@ -164,5 +165,32 @@ describe('traceSceneSegmented excludes the tool from card detection', () => {
     if (!isOk(result)) return;
     expect(result.value.units).toBe('mm');
     expect(centroidX(result.value.card?.corners ?? [{ x: 0, y: 0 }])).toBeLessThan(W / 2);
+  });
+});
+
+describe('buildToolTraceSoft', () => {
+  const W = 80;
+  const H = 60;
+
+  it('traces a soft mask into a closed outline with sub-pixel vertices', () => {
+    // Interior fully foreground; a one-pixel ramp on the left edge so the 0.5
+    // crossing lands at a fractional x (proving sub-pixel, not pixel-snapped).
+    const data = new Float32Array(W * H);
+    for (let y = 15; y <= 45; y++) {
+      for (let x = 20; x <= 60; x++) data[y * W + x] = 1;
+      data[y * W + 19] = 0.25; // ramp: crosses 0.5 between x=19 and x=20 → x≈19.33
+    }
+    const r = buildToolTraceSoft({ width: W, height: H, data }, null, { smooth: false });
+    expect(isOk(r)).toBe(true);
+    if (!isOk(r)) return;
+    expect(r.value.units).toBe('px');
+    expect(r.value.imagePoints.length).toBeGreaterThanOrEqual(4);
+    const minX = Math.min(...r.value.imagePoints.map((p) => p.x));
+    expect(Number.isInteger(minX)).toBe(false);
+  });
+
+  it('reports NO_OBJECT for an empty soft mask', () => {
+    const r = buildToolTraceSoft({ width: W, height: H, data: new Float32Array(W * H) }, null, {});
+    expect(isOk(r)).toBe(false);
   });
 });

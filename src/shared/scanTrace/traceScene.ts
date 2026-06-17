@@ -24,6 +24,7 @@ import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { rectifyPoints } from './perspective';
 import { smoothPreservingCorners } from './smooth';
+import { traceSoftContour, binarize, type SoftMask } from './softContour';
 
 const DEFAULT_SMOOTH_ITERATIONS = 2;
 
@@ -102,26 +103,16 @@ export function detectCard(
   return card ? { corners: card.corners, fitness: card.fitness } : null;
 }
 
-/**
- * Shared tail: a binary tool mask + an optional card → a finished SceneTrace.
- * Picks the largest blob, traces and simplifies it, and (when a card was found)
- * rectifies through the card homography into true millimetres.
- */
-export function buildToolTrace(
-  toolMask: Mask,
+/** Simplify + smooth a raw contour and rectify through the card homography. */
+function finishTrace(
+  rawContour: readonly Point[],
+  width: number,
+  height: number,
   card: SceneCard | null,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions
 ): Result<SceneTrace, TraceError> {
-  const { width, height } = toolMask;
-  const component = largestComponent(toolMask);
-  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
-  if (component.start === null || component.area < minArea) {
-    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
-  }
-
-  const contour = traceContour(component.mask, component.start);
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const simplified = simplifyRdp(contour, tolerance);
+  const simplified = simplifyRdp(rawContour, tolerance);
   const imagePoints =
     options.smooth === false
       ? simplified
@@ -143,6 +134,40 @@ export function buildToolTrace(
   }
 
   return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null });
+}
+
+export function buildToolTrace(
+  toolMask: Mask,
+  card: SceneCard | null,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = toolMask;
+  const component = largestComponent(toolMask);
+  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
+  if (component.start === null || component.area < minArea) {
+    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
+  }
+  return finishTrace(traceContour(component.mask, component.start), width, height, card, options);
+}
+
+/**
+ * Soft-mask tool trace: a sub-pixel marching-squares contour of the segmenter's
+ * confidence field, instead of boundary-tracing a thresholded binary mask. The
+ * 0.5 iso-contour places each vertex where the model's probability actually
+ * crosses, removing the ±0.5px staircase the binary trace bakes in.
+ */
+export function buildToolTraceSoft(
+  toolSoft: SoftMask,
+  card: SceneCard | null,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = toolSoft;
+  const contour = traceSoftContour(toolSoft);
+  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
+  if (contour.length < 3 || polygonArea(contour) < minArea) {
+    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
+  }
+  return finishTrace(contour, width, height, card, options);
 }
 
 /** Classical fallback: Otsu tool mask (largest non-card blob), card excluded. */
@@ -167,13 +192,13 @@ export function traceScene(
  */
 export function traceSceneSegmented(
   image: ImageDataLike,
-  toolMask: Mask,
+  toolMask: SoftMask,
   options: SceneTraceOptions = {}
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  const card = detectCard(image, options, toolMask);
-  return buildToolTrace(toolMask, card, options);
+  const card = detectCard(image, options, binarize(toolMask));
+  return buildToolTraceSoft(toolMask, card, options);
 }
 
 /**
