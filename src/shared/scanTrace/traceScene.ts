@@ -25,6 +25,7 @@ import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from '
 import { rectifyPoints } from './perspective';
 import { smoothPreservingCorners } from './smooth';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
+import { symmetrizeIfRegular } from './symmetry';
 
 const DEFAULT_SMOOTH_ITERATIONS = 2;
 
@@ -52,6 +53,12 @@ export interface SceneTraceOptions extends CardDetectOptions {
    * the raw RDP polygon (tests use this to assert exact card-scale geometry).
    */
   readonly smooth?: boolean;
+  /**
+   * Symmetrize a manufactured tool's outline when it already reads as mirror-
+   * symmetric (default true; ignored when `smooth` is false). Gated on a
+   * symmetry score so a genuinely asymmetric tool is never forced symmetric.
+   */
+  readonly symmetrize?: boolean;
 }
 
 function pointInQuad(x: number, y: number, q: readonly Point[]): boolean {
@@ -103,7 +110,10 @@ export function detectCard(
   return card ? { corners: card.corners, fitness: card.fitness } : null;
 }
 
-/** Simplify + smooth a raw contour and rectify through the card homography. */
+/**
+ * Shared tail: simplify + smooth a raw contour, optionally symmetrize a
+ * manufactured tool's outline, and rectify through the card homography.
+ */
 function finishTrace(
   rawContour: readonly Point[],
   width: number,
@@ -113,10 +123,15 @@ function finishTrace(
 ): Result<SceneTrace, TraceError> {
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const simplified = simplifyRdp(rawContour, tolerance);
-  const imagePoints =
+  let imagePoints =
     options.smooth === false
       ? simplified
       : smoothPreservingCorners(simplified, DEFAULT_SMOOTH_ITERATIONS);
+  // Clean up the slight lopsidedness of a symmetric tool (controller, pliers).
+  // Gated internally on a symmetry score, so an asymmetric tool is untouched.
+  if (options.smooth !== false && options.symmetrize !== false) {
+    imagePoints = symmetrizeIfRegular(imagePoints);
+  }
   if (imagePoints.length < 3 || polygonArea(imagePoints) < 1) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }
