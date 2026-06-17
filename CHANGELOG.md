@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.184.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.2...gridfinity-layout-tool-v4.184.3) (2026-06-17)
+
+
+### Bug Fixes
+
+* **scan:** recover eroded-corner cards via min-area rectangle ([#2233](https://github.com/andymai/gridfinity-layout-tool/issues/2233)) ([8e9f9b0](https://github.com/andymai/gridfinity-layout-tool/commit/8e9f9b04a2b803c8f03d5c5c464f6d6d2123c740))
+
 ## [4.184.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.1...gridfinity-layout-tool-v4.184.2) (2026-06-17)
 
 
