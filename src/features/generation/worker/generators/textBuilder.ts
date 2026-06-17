@@ -36,10 +36,57 @@ export interface FitResult {
   readonly fits: boolean;
 }
 
+/** Reference size for the single linear measurement in `fitFontSize`. 1mm keeps
+ *  the per-unit-size width/height directly readable from the bbox. */
+const FIT_REFERENCE_SIZE = 1;
+/** Slack on the fit verification so float drift can't reject an exact fit. */
+const FIT_EPSILON = 1e-6;
+
+type Metrics = ReturnType<typeof textMetrics>;
+
+/** Memoize `textMetrics` — it's pure given (text, fontSize, fontFamily) and is
+ *  the dominant cost of auto-fit. Keyed on the exact size so a cache hit always
+ *  returns metrics for the size requested (the auto-fit verify and
+ *  `buildTextSolid`'s follow-up measurement use the same size, and uniform tabs
+ *  produce identical sizes for the same text). Bounded so a long session can't
+ *  grow it without limit. MUST be cleared when fonts (re)load or the kernel
+ *  switches — see `clearTextMetricsMemo`, wired into `clearAllCaches`. */
+const metricsMemo = new Map<string, Metrics>();
+const METRICS_MEMO_MAX = 512;
+
+function measureText(text: string, fontSize: number, fontFamily: TextFontFamily): Metrics {
+  const key = `${fontFamily}|${fontSize}|${text}`;
+  const cached = metricsMemo.get(key);
+  if (cached) return cached;
+  const result = textMetrics(text, { fontSize, fontFamily });
+  // Simple bounded eviction: drop the oldest entry once at capacity. Insertion
+  // order is preserved by Map, so the first key is the oldest.
+  if (metricsMemo.size >= METRICS_MEMO_MAX) {
+    const oldest = metricsMemo.keys().next().value;
+    if (oldest !== undefined) metricsMemo.delete(oldest);
+  }
+  metricsMemo.set(key, result);
+  return result;
+}
+
+/** Drop all memoized text metrics. Call when the font registry changes (font
+ *  (re)load, kernel switch) — `textMetrics` results depend on the loaded font. */
+export function clearTextMetricsMemo(): void {
+  metricsMemo.clear();
+}
+
 /**
  * Pick the largest font size whose rendered bbox fits the given width/depth
  * budget, clamped to [min, max]. Returns `{ fits: false }` if even `min`
  * overflows.
+ *
+ * `textMetrics` scales EXACTLY linearly with fontSize for the pinned brepjs
+ * build (width = glyph advance width, vertical metrics scale by
+ * `fontSize / unitsPerEm`; no hinting in this code path), so one measurement at
+ * a reference size yields the ideal size directly — no search needed. A single
+ * verify call covers the clamp-to-min overflow case and guards against any
+ * future non-linearity; if metrics ever stop being measurable we fall back to
+ * the robust binary search. Re-verify the linearity assumption on brepjs bumps.
  */
 export function fitFontSize(
   text: string,
@@ -52,20 +99,50 @@ export function fitFontSize(
   if (!text || availW <= 0 || availD <= 0 || min <= 0 || max < min) {
     return { fontSize: 0, fits: false };
   }
-  const minMetrics = textMetrics(text, { fontSize: min, fontFamily });
+  const ref = measureText(text, FIT_REFERENCE_SIZE, fontFamily);
+  if (!isOk(ref) || ref.value.width <= 0 || ref.value.height <= 0) {
+    // Degenerate measurement (missing glyphs, all-whitespace) — avoid dividing
+    // by zero and defer to the search, which has its own min-overflow guard.
+    return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
+  }
+  // width(s) = ref.width · s / FIT_REFERENCE_SIZE → solve each axis for its
+  // limiting size, take the smaller, then clamp to [min, max].
+  const sizeForW = (availW * FIT_REFERENCE_SIZE) / ref.value.width;
+  const sizeForH = (availD * FIT_REFERENCE_SIZE) / ref.value.height;
+  const size = Math.min(max, Math.max(min, Math.min(sizeForW, sizeForH)));
+
+  const check = measureText(text, size, fontFamily);
+  if (!isOk(check)) {
+    return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
+  }
+  const fits =
+    check.value.width <= availW + FIT_EPSILON && check.value.height <= availD + FIT_EPSILON;
+  return fits ? { fontSize: size, fits: true } : { fontSize: 0, fits: false };
+}
+
+/**
+ * Robust fallback: binary search to ~0.05mm precision. Only reached when a
+ * measurement isn't `isOk` (a font edge case) — kept so the builder degrades
+ * gracefully rather than producing geometry from an unverified size.
+ */
+function fitFontSizeBisect(
+  text: string,
+  fontFamily: TextFontFamily,
+  availW: number,
+  availD: number,
+  min: number,
+  max: number
+): FitResult {
+  const minMetrics = measureText(text, min, fontFamily);
   if (!isOk(minMetrics) || minMetrics.value.width > availW || minMetrics.value.height > availD) {
     return { fontSize: 0, fits: false };
   }
-  // Binary search to ~0.05mm precision. textMetrics scales linearly with
-  // fontSize so a ratio-based shortcut is possible, but the bounded loop
-  // (14 iterations) stays correct if metrics ever become non-linear
-  // (e.g. hinting changes between sizes).
   let lo = min;
   let hi = max;
   let best = min;
   for (let i = 0; i < 14; i++) {
     const mid = (lo + hi) / 2;
-    const m = textMetrics(text, { fontSize: mid, fontFamily });
+    const m = measureText(text, mid, fontFamily);
     if (!isOk(m)) break;
     if (m.value.width <= availW && m.value.height <= availD) {
       best = mid;
@@ -163,7 +240,8 @@ export function buildTextSolid(
   );
   if (!fit.fits) return null;
 
-  const metrics = textMetrics(trimmed, { fontSize: fit.fontSize, fontFamily });
+  // Reuses the memo entry from `fitFontSize`'s verify call at this exact size.
+  const metrics = measureText(trimmed, fit.fontSize, fontFamily);
   if (!isOk(metrics)) return null;
 
   // All three modes need the EPSILON lift to avoid coplanar boolean fragility:

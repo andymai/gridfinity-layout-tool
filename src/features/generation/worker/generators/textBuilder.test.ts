@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { fitFontSize, resolveEffectiveFont } from './textBuilder';
-import { loadFont } from 'brepjs';
-import { isErr } from '@/core/result';
+import { fitFontSize, resolveEffectiveFont, clearTextMetricsMemo } from './textBuilder';
+import { loadFont, textMetrics } from 'brepjs';
+import { isErr, isOk } from '@/core/result';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -62,6 +62,35 @@ describe('fitFontSize', () => {
     // @ts-expect-error — testing runtime guard with an unsupported family
     const fit = fitFontSize('A', 'comic-sans', 100, 100, 3, 20);
     expect(fit.fits).toBe(false);
+  });
+
+  it('chooses a near-maximal size: the rendered bbox fits and is bound by an axis', () => {
+    // The linear solver should land on the largest size that still fits, so the
+    // rendered bbox stays within budget and (when not clamped) touches a bound.
+    const availW = 30;
+    const availD = 10;
+    const fit = fitFontSize('SCREWS', 'atkinson', availW, availD, 3, 20);
+    expect(fit.fits).toBe(true);
+    const m = textMetrics('SCREWS', { fontSize: fit.fontSize, fontFamily: 'atkinson' });
+    expect(isOk(m)).toBe(true);
+    if (isOk(m)) {
+      expect(m.value.width).toBeLessThanOrEqual(availW + 1e-6);
+      expect(m.value.height).toBeLessThanOrEqual(availD + 1e-6);
+      // Not clamped to either bound → the limiting axis must sit right at budget.
+      if (fit.fontSize > 3 && fit.fontSize < 20) {
+        const touchesW = Math.abs(m.value.width - availW) < 0.05;
+        const touchesH = Math.abs(m.value.height - availD) < 0.05;
+        expect(touchesW || touchesH).toBe(true);
+      }
+    }
+  });
+
+  it('is deterministic and unaffected by clearing the metrics memo', () => {
+    const before = fitFontSize('BOLTS', 'atkinson', 30, 10, 3, 20);
+    clearTextMetricsMemo();
+    const after = fitFontSize('BOLTS', 'atkinson', 30, 10, 3, 20);
+    expect(after.fits).toBe(before.fits);
+    expect(after.fontSize).toBeCloseTo(before.fontSize, 6);
   });
 });
 
