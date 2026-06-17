@@ -306,9 +306,21 @@ export function ScanPage({ token }: ScanPageProps) {
               )}
             </div>
 
-            <p className="text-center text-xs text-content-tertiary">
-              {status.toolMask ? t('scan.review.tapHint') : t('scan.review.retakeHint')}
-            </p>
+            {status.toolMask ? (
+              <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">
+                <TapIcon />
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-sm font-semibold text-content-primary">
+                    {t('scan.review.confirmTitle')}
+                  </p>
+                  <p className="text-xs text-content-secondary">{t('scan.review.tapHint')}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-xs text-content-tertiary">
+                {t('scan.review.retakeHint')}
+              </p>
+            )}
           </div>
         )}
 
@@ -497,6 +509,28 @@ function CardStatusIcon({ ok }: { readonly ok: boolean }) {
           <path d="M12 17h.01" />
         </>
       )}
+    </svg>
+  );
+}
+
+/** Pointing-hand cue that the photo is tappable to re-select the tool. */
+function TapIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="mt-0.5 shrink-0 text-accent"
+    >
+      <path d="M8 13V5a2 2 0 0 1 4 0v6" />
+      <path d="M12 11V4a2 2 0 0 1 4 0v7" />
+      <path d="M16 11V6a2 2 0 0 1 4 0v8a8 8 0 0 1-8 8 8 8 0 0 1-7-4l-2.5-4a2 2 0 0 1 3.4-2.1L8 13" />
     </svg>
   );
 }

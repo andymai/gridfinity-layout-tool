@@ -101,6 +101,8 @@ describe('ScanPage', () => {
     selectPhoto();
 
     expect(await screen.findByText('scan.review.tapHint')).toBeInTheDocument();
+    // The "is this your tool?" confirm prompt makes the tap-to-reselect explicit.
+    expect(screen.getByText('scan.review.confirmTitle')).toBeInTheDocument();
     expect(screen.getByText('scan.use')).toBeInTheDocument();
     // Two overlays: the tool outline and the detected-card highlight.
     expect(document.querySelectorAll('polygon')).toHaveLength(2);
@@ -153,8 +155,9 @@ describe('ScanPage', () => {
 
     selectPhoto();
 
-    // Classical mode → no tap-to-reselect, retake guidance instead.
+    // Classical mode → no tap-to-reselect, so no confirm prompt; retake guidance instead.
     expect(await screen.findByText('scan.review.retakeHint')).toBeInTheDocument();
+    expect(screen.queryByText('scan.review.confirmTitle')).toBeNull();
     expect(mockTrace).toHaveBeenCalled();
   });
 
