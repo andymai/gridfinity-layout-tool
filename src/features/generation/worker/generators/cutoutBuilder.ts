@@ -691,6 +691,15 @@ function applyAxisAwareScoop(shape: Shape3D, cutout: Cutout, scoop: ResolvedScoo
   });
   if (edges.length === 0) return shape;
 
+  // Freeform paths have many short, varied bottom edges; the uniform all-edges
+  // fillet fails wholesale on them (one bad edge aborts the whole call), so the
+  // scoop silently no-ops. The per-edge callback filleter skips degenerate edges
+  // and shrinks the radius on short ones, so the scoop actually lands. Paths
+  // can't classify walls as W/D, so every edge gets the uniform radius.
+  if (cutout.shape === 'path') {
+    return applyCallbackFilletWithFallback(shape, edges, () => scoop.w);
+  }
+
   // Uniform path: both axes equal AND all edges on → preserve historical
   // progressive-uniform fallback so existing geometry is unchanged.
   const allEdgesOn = scoop.edges.left && scoop.edges.right && scoop.edges.front && scoop.edges.back;

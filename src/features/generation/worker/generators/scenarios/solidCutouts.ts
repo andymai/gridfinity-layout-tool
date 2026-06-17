@@ -316,6 +316,53 @@ export const solidCutouts: ScenarioCase[] = [
     },
     compareWith: mustCut,
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with scooped path cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'path',
+          x: 10,
+          y: 10,
+          width: 24,
+          depth: 24,
+          scoopRadius: 2,
+          path: [
+            { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 34, y: 12, handleIn: null, handleOut: null, symmetric: false },
+            { x: 30, y: 34, handleIn: null, handleOut: null, symmetric: false },
+            { x: 12, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        }),
+      ],
+    },
+    // The scoop must actually round the bottom edges, not silently no-op \u2014 the
+    // rounded basin adds curved facets over the same path cut without a scoop.
+    compareWith: {
+      params: {
+        style: 'solid',
+        base: SOLID_BASE,
+        cutouts: [
+          makeCutout({
+            shape: 'path',
+            x: 10,
+            y: 10,
+            width: 24,
+            depth: 24,
+            path: [
+              { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+              { x: 34, y: 12, handleIn: null, handleOut: null, symmetric: false },
+              { x: 30, y: 34, handleIn: null, handleOut: null, symmetric: false },
+              { x: 12, y: 30, handleIn: null, handleOut: null, symmetric: false },
+            ],
+          }),
+        ],
+      },
+      assert: (withScoop, noScoop) =>
+        expect(withScoop.triangleCount).toBeGreaterThan(noScoop.triangleCount),
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with curved path cutout (bezier handles)', {
     params: {
       style: 'solid',

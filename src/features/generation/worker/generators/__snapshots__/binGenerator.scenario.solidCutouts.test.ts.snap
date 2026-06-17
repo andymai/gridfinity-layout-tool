@@ -44,6 +44,8 @@ exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2564`;
 
 exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `2680`;
 
+exports[`solid cutouts > 2×2 solid with scooped path cutout 1`] = `2610`;
+
 exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `2746`;
 
 exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `2748`;
