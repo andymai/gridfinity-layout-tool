@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.180.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.179.1...gridfinity-layout-tool-v4.180.0) (2026-06-17)
+
+
+### Features
+
+* **scan-capture:** tap-prompted ML tool segmentation + phone UX overhaul ([#2202](https://github.com/andymai/gridfinity-layout-tool/issues/2202)) ([d694922](https://github.com/andymai/gridfinity-layout-tool/commit/d694922e8b74a29760adc7a1cb75e5321d566b22))
+
 ## [4.179.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.179.0...gridfinity-layout-tool-v4.179.1) (2026-06-17)
 
 
