@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.184.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.3...gridfinity-layout-tool-v4.184.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* **scan:** don't mistake a card-shaped tool for the reference card ([#2235](https://github.com/andymai/gridfinity-layout-tool/issues/2235)) ([58bd345](https://github.com/andymai/gridfinity-layout-tool/commit/58bd3450ff5cd11e75c900979fa0430db6074b69))
+
 ## [4.184.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.2...gridfinity-layout-tool-v4.184.3) (2026-06-17)
 
 
