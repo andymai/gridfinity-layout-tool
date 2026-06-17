@@ -31,7 +31,7 @@ vi.mock('@/i18n', () => ({
 
 const TOKEN = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 const IMAGE = { width: 24, height: 20, data: new Uint8ClampedArray(24 * 20 * 4) };
-const MASK = { width: 24, height: 20, data: new Uint8Array(24 * 20) };
+const MASK = { width: 24, height: 20, data: new Float32Array(24 * 20) };
 const PTS = [
   { x: 0, y: 0 },
   { x: 25, y: 0 },
