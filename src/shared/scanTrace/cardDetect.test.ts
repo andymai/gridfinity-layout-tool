@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectCardQuad } from './cardDetect';
+import { detectCardQuad, cardPerspectiveSkew, STEEP_CARD_SKEW } from './cardDetect';
 import { rectifyPoints } from './perspective';
 import type { ImageDataLike, Point } from './types';
 
@@ -133,5 +133,38 @@ describe('detectCardQuad (end-to-end, pinhole projection)', () => {
       const nearCard = card.some((e) => Math.hypot(c.x - e.x, c.y - e.y) < 4);
       expect(nearCard).toBe(true);
     });
+  });
+});
+
+describe('cardPerspectiveSkew', () => {
+  const rect = (tl: Point, tr: Point, br: Point, bl: Point): [Point, Point, Point, Point] => [
+    tl,
+    tr,
+    br,
+    bl,
+  ];
+
+  it('is ~0 for a fronto-parallel rectangle', () => {
+    const flat = rect({ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 60 }, { x: 0, y: 60 });
+    expect(cardPerspectiveSkew(flat)).toBeCloseTo(0, 6);
+  });
+
+  it('ignores in-plane rotation (opposite edges stay equal)', () => {
+    // The flat rectangle rotated 30° about the origin.
+    const rotated = rect(
+      { x: 0, y: 0 },
+      { x: 86.6, y: 50 },
+      { x: 56.6, y: 101.96 },
+      { x: -30, y: 51.96 }
+    );
+    expect(cardPerspectiveSkew(rotated)).toBeLessThan(0.01);
+  });
+
+  it('flags a keystoned quad as steep', () => {
+    // Top edge (60) much shorter than bottom (100) — a tilted shot.
+    const keystoned = rect({ x: 20, y: 0 }, { x: 80, y: 0 }, { x: 100, y: 60 }, { x: 0, y: 60 });
+    const skew = cardPerspectiveSkew(keystoned);
+    expect(skew).toBeCloseTo(0.4, 5);
+    expect(skew).toBeGreaterThan(STEEP_CARD_SKEW);
   });
 });

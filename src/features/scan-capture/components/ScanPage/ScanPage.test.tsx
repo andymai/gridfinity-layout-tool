@@ -10,6 +10,7 @@ const mockSegment = vi.fn();
 const mockTraceSegmented = vi.fn();
 const mockTrace = vi.fn();
 const mockPreload = vi.fn();
+const mockCardSkew = vi.fn(() => 0);
 
 vi.mock('@/shared/scanTrace', () => ({
   decodeImageToCanvas: (...args: unknown[]) => mockDecodeCanvas(...args),
@@ -20,6 +21,8 @@ vi.mock('@/shared/scanTrace', () => ({
   traceScene: (...args: unknown[]) => mockTrace(...args),
   preloadSegmenter: (...args: unknown[]) => mockPreload(...args),
   pointsToSvgPath: () => 'M0 0 L10 0 L10 10',
+  cardPerspectiveSkew: (...args: unknown[]) => mockCardSkew(...args),
+  STEEP_CARD_SKEW: 0.2,
 }));
 
 vi.mock('@/i18n', () => ({
@@ -68,6 +71,7 @@ describe('ScanPage', () => {
     mockImageData.mockReturnValue(IMAGE);
     mockAutoSeed.mockReturnValue({ x: 0.5, y: 0.5 });
     mockSegment.mockResolvedValue(MASK);
+    mockCardSkew.mockReturnValue(0);
     // jsdom gives 0×0 rects by default; the tap handler needs a real box.
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
       x: 0,
@@ -102,15 +106,28 @@ describe('ScanPage', () => {
     expect(document.querySelectorAll('polygon')).toHaveLength(2);
     expect(screen.getByText('binDesigner.cutouts.scanImport.resultSize')).toBeInTheDocument();
     expect(screen.getByText('scan.cardMeasured')).toBeInTheDocument();
+    // A flat shot (skew 0) shows no steep-angle caution.
+    expect(screen.queryByText('scan.cardSteepAngle')).toBeNull();
   });
 
-  it('shows the no-card hint and a single overlay when no card is detected', async () => {
+  it('cautions about accuracy when the card was shot at a steep angle', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    mockCardSkew.mockReturnValue(0.5);
+    render(<ScanPage token={TOKEN} />);
+
+    selectPhoto();
+
+    expect(await screen.findByText('scan.cardSteepAngle')).toBeInTheDocument();
+  });
+
+  it('shows the no-card warning and a single overlay when no card is detected', async () => {
     mockTraceSegmented.mockReturnValue(ok(SCENE_PX));
     render(<ScanPage token={TOKEN} />);
 
     selectPhoto();
 
-    expect(await screen.findByText('scan.noCardHint')).toBeInTheDocument();
+    expect(await screen.findByText('scan.noCardTitle')).toBeInTheDocument();
+    expect(screen.getByText('scan.noCardHint')).toBeInTheDocument();
     expect(document.querySelectorAll('polygon')).toHaveLength(1);
   });
 

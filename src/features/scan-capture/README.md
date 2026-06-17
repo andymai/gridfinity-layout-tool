@@ -16,15 +16,25 @@ SVG is uploaded. The segmentation **model asset** is fetched from our own origin
 
 ## Perspective + scale (the card)
 
-If a bank card (ISO 85.6 × 53.98 mm) is in frame next to the tool, `traceScene`
-detects it, recovers the image→mm homography from its four corners, and rectifies
-the tool outline through it. This removes keystone distortion **and** pins true
-millimetres in one step, so the shot can be taken from any angle and the desktop
-receives a correctly-sized outline (no manual scale step). The card is identified
-by an angle-invariant aspect-ratio check (≈1.586), so a rectangular tool isn't
-mistaken for it. With no card, the outline falls back to pixels and the desktop
-asks for one real dimension. The card must be a _separate_ object beside the tool
-(not underneath it).
+If a card is in frame next to the tool, `traceScene` detects it, recovers the
+image→mm homography from its four corners, and rectifies the tool outline through
+it. This removes keystone distortion **and** pins true millimetres in one step, so
+the shot can be taken from any angle and the desktop receives a correctly-sized
+outline (no manual scale step).
+
+Detection is purely **geometric** — it never reads numbers, logos, or the chip.
+It picks the cleanest quadrilateral whose perspective-corrected aspect ratio is
+≈1.586, so a rectangular tool isn't mistaken for it. That ratio is the **ISO/IEC
+7810 ID-1** format (85.6 × 53.98 mm), which virtually every wallet card shares —
+bank/credit, transit, ID, driver's licence, gift, hotel key — so any of them work
+as the reference, with or without printing on the front. A card that isn't ID-1
+sized would scale wrong; the homography assumes those exact millimetres.
+
+With no card, the outline falls back to pixels and the desktop asks for one real
+dimension. The card must be a _separate_ object beside the tool (not underneath
+it). When a card is found but the shot is steeply tilted (`cardPerspectiveSkew`
+above `STEEP_CARD_SKEW`), the phone cautions that sizing accuracy degrades and to
+shoot flatter.
 
 ## Segmentation
 

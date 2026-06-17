@@ -24,6 +24,8 @@ import {
   traceScene,
   preloadSegmenter,
   pointsToSvgPath,
+  cardPerspectiveSkew,
+  STEEP_CARD_SKEW,
   type ImageDataLike,
   type Mask,
   type Point,
@@ -207,6 +209,11 @@ export function ScanPage({ token }: ScanPageProps) {
       ? bounds(status.scene.outputPoints)
       : null;
 
+  const cardSteep =
+    status.kind === 'review' &&
+    status.scene.card !== null &&
+    cardPerspectiveSkew(status.scene.card.corners) > STEEP_CARD_SKEW;
+
   return (
     <div
       className="flex min-h-[100dvh] flex-col bg-surface text-content-primary"
@@ -274,19 +281,30 @@ export function ScanPage({ token }: ScanPageProps) {
               )}
             </div>
 
-            {measured ? (
-              <div className="flex flex-col items-center gap-0.5">
-                <p className="text-sm font-medium">
-                  {t('binDesigner.cutouts.scanImport.resultSize', {
-                    width: round1(measured.w),
-                    depth: round1(measured.h),
-                  })}
-                </p>
-                <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
-              </div>
-            ) : (
-              <p className="text-center text-xs text-content-tertiary">{t('scan.noCardHint')}</p>
-            )}
+            <div
+              className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 ${
+                measured ? 'border-success/40 bg-success/10' : 'border-warning bg-warning-muted'
+              }`}
+            >
+              <CardStatusIcon ok={measured !== null} />
+              {measured ? (
+                <div className="flex flex-col gap-0.5 text-left">
+                  <p className="text-sm font-semibold text-content-primary">
+                    {t('binDesigner.cutouts.scanImport.resultSize', {
+                      width: round1(measured.w),
+                      depth: round1(measured.h),
+                    })}
+                  </p>
+                  <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
+                  {cardSteep && <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-0.5 text-left">
+                  <p className="text-sm font-semibold text-warning">{t('scan.noCardTitle')}</p>
+                  <p className="text-xs text-content-secondary">{t('scan.noCardHint')}</p>
+                </div>
+              )}
+            </div>
 
             <p className="text-center text-xs text-content-tertiary">
               {status.toolMask ? t('scan.review.tapHint') : t('scan.review.retakeHint')}
@@ -452,6 +470,34 @@ function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslation> }) 
         <GuideTip text={t('scan.capture.tip.topDown')} />
       </ul>
     </div>
+  );
+}
+
+/** Success check or warning triangle, matching the card-status banner intent. */
+function CardStatusIcon({ ok }: { readonly ok: boolean }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`mt-0.5 shrink-0 ${ok ? 'text-success' : 'text-warning'}`}
+    >
+      {ok ? (
+        <path d="M20 6L9 17l-5-5" />
+      ) : (
+        <>
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </>
+      )}
+    </svg>
   );
 }
 

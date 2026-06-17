@@ -23,7 +23,7 @@ import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findBestCardComponent, cardHomography, type CardDetectOptions } from './cardDetect';
 import { rectifyPoints } from './perspective';
-import { chaikin } from './smooth';
+import { smoothPreservingCorners } from './smooth';
 
 const DEFAULT_SMOOTH_ITERATIONS = 2;
 
@@ -82,7 +82,10 @@ function defaultMinArea(width: number, height: number): number {
 }
 
 function defaultTolerance(width: number, height: number): number {
-  return Math.max(1, Math.hypot(width, height) * 0.004);
+  // ~0.3% of the image diagonal. Loose enough to straighten the per-pixel
+  // contour's stair-stepping on straight edges, tight enough to keep small
+  // features (a tool's notches/tips) rather than rounding them off.
+  return Math.max(1, Math.hypot(width, height) * 0.003);
 }
 
 /** Detect the reference card on the classical auto threshold (slider-independent). */
@@ -117,7 +120,9 @@ export function buildToolTrace(
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const simplified = simplifyRdp(contour, tolerance);
   const imagePoints =
-    options.smooth === false ? simplified : chaikin(simplified, DEFAULT_SMOOTH_ITERATIONS);
+    options.smooth === false
+      ? simplified
+      : smoothPreservingCorners(simplified, DEFAULT_SMOOTH_ITERATIONS);
   if (imagePoints.length < 3 || polygonArea(imagePoints) < 1) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }

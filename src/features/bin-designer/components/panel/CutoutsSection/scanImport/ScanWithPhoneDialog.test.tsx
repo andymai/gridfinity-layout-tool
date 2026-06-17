@@ -48,13 +48,15 @@ describe('ScanWithPhoneDialog', () => {
     expect(screen.getByText('binDesigner.cutouts.scanImport.upload')).toBeInTheDocument();
   });
 
-  it('moves to review with a prefilled scale after a valid upload', async () => {
+  it('moves to review with an empty scale field after a valid upload', async () => {
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
     uploadSvg(RECT_SVG);
 
+    // The field starts empty — the traced pixel extent is not a real-world
+    // measurement, so the user must enter one. Add stays disabled until they do.
     const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
-    expect((field as HTMLInputElement).value).toBe('100');
-    expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeInTheDocument();
+    expect((field as HTMLInputElement).value).toBe('');
+    expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
   });
 
   it('rescales and adds cutouts on confirm, then closes', async () => {

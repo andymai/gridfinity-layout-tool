@@ -65,6 +65,33 @@ export function cardHomography(
   return solveHomography(corners, dst);
 }
 
+/**
+ * Skew above this reads as a steeply-tilted shot — worth warning the user that
+ * sizing accuracy suffers. ~0.2 ≈ a 20% opposite-edge-length divergence, well
+ * clear of corner-detection noise on a flat shot.
+ */
+export const STEEP_CARD_SKEW = 0.2;
+
+/**
+ * How keystoned the detected card is (0 = shot straight down, higher = steeper
+ * tilt). A fronto-parallel rectangle has equal-length opposite edges; out-of-
+ * plane tilt makes them diverge, so the largest relative opposite-edge-length
+ * difference is a cheap, rotation-invariant proxy for perspective tilt.
+ *
+ * The homography still rectifies the card plane exactly, but at steep angles
+ * corner-detection error and the tool's own thickness (parallax off the card
+ * plane) degrade real-world accuracy — worth nudging the user to shoot flatter.
+ */
+export function cardPerspectiveSkew(corners: readonly [Point, Point, Point, Point]): number {
+  const [tl, tr, br, bl] = corners;
+  const len = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
+  const rel = (a: number, b: number): number => {
+    const m = Math.max(a, b);
+    return m > 0 ? Math.abs(a - b) / m : 0;
+  };
+  return Math.max(rel(len(tl, tr), len(bl, br)), rel(len(tl, bl), len(tr, br)));
+}
+
 export interface CardComponent {
   readonly label: number;
   readonly corners: readonly [Point, Point, Point, Point];
