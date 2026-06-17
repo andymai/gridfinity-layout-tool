@@ -543,6 +543,13 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+/* Hide native search clear button; inputs provide their own clear control */
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Custom scrollbar */
 .scrollbar-thin {
   scrollbar-width: thin;

@@ -71,7 +71,7 @@ export function SettingsSearch({ query, onQueryChange }: SettingsSearchProps) {
         fullWidth
         size="sm"
         className="pl-2"
-        leftIcon={<SearchIcon />}
+        leftIcon={<SearchIcon size="sm" />}
         rightIcon={
           query ? (
             <IconButton

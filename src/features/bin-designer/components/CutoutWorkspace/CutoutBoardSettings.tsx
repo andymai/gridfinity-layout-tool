@@ -35,7 +35,7 @@ export function CutoutBoardSettings({
 }: CutoutBoardSettingsProps) {
   const t = useTranslation();
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pt-3">
       {/* Selection guidance — kept distinct from the board settings below. */}
       <p className="text-[11px] leading-relaxed text-content-tertiary">
         {t('binDesigner.cutoutEditor.inspectorEmptyHint')}
