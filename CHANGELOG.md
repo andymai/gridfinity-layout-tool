@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.0...gridfinity-layout-tool-v4.183.1) (2026-06-17)
+
+
+### Performance
+
+* **bin-designer:** defer compartment text commit to idle/blur ([#2209](https://github.com/andymai/gridfinity-layout-tool/issues/2209)) ([1f24220](https://github.com/andymai/gridfinity-layout-tool/commit/1f24220ba59926db6418e819841f87aee82956d7))
+
 ## [4.183.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.182.0...gridfinity-layout-tool-v4.183.0) (2026-06-17)
 
 
