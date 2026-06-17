@@ -20,10 +20,13 @@ export interface MinAreaRect {
   readonly height: number;
 }
 
-/** Andrew's monotone-chain convex hull. Returns the hull vertices, no repeat. */
+/**
+ * Andrew's monotone-chain convex hull. Returns the hull vertices with no repeat;
+ * inputs of fewer than 3 points are returned as-is (no hull to compute).
+ */
 export function convexHull(points: readonly Point[]): Point[] {
+  if (points.length < 3) return [...points];
   const pts = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
-  if (pts.length < 3) return pts;
 
   const cross = (o: Point, a: Point, b: Point): number =>
     (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
@@ -58,7 +61,10 @@ export function minAreaRect(points: readonly Point[]): MinAreaRect | null {
   } | null = null;
 
   // The min-area rect always has one side flush with a hull edge, so test each
-  // edge's orientation and keep the tightest bounding box.
+  // edge's orientation and keep the tightest bounding box. This is O(h²) over
+  // hull vertices, but h stays small: the card rescue only calls this on
+  // components that already scored as a clean quad (fitness ≥ 0.8), whose hull
+  // is a near-rectangle — a handful of vertices, not the full contour.
   for (let i = 0; i < hull.length; i++) {
     const a = hull[i];
     const b = hull[(i + 1) % hull.length];
