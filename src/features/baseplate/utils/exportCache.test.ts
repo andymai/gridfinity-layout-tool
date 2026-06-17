@@ -48,6 +48,23 @@ describe('buildExportCacheKey', () => {
     expect(buildExportCacheKey(p, 'stl', 0.4)).toBe(buildExportCacheKey(reordered, 'stl', 0.4));
   });
 
+  it('canonicalizes unset optional params (absent ≡ undefined ≡ null)', () => {
+    // The generator reads optionals with nullish semantics, so these three
+    // forms produce identical geometry and must share a key.
+    const absent = params(); // cornerRadius simply not set
+    const undef = params({ cornerRadius: undefined });
+    const asNull = params({ cornerRadius: null as unknown as undefined });
+    const k = buildExportCacheKey(absent, 'stl', 0.4);
+    expect(buildExportCacheKey(undef, 'stl', 0.4)).toBe(k);
+    expect(buildExportCacheKey(asNull, 'stl', 0.4)).toBe(k);
+  });
+
+  it('keeps a meaningful value distinct from unset', () => {
+    const unset = buildExportCacheKey(params(), 'stl', 0.4);
+    const squared = buildExportCacheKey(params({ cornerRadius: 0 }), 'stl', 0.4);
+    expect(squared).not.toBe(unset);
+  });
+
   it('differs on geometry, format, and nozzle', () => {
     const base = params();
     const k = buildExportCacheKey(base, 'stl', 0.4);

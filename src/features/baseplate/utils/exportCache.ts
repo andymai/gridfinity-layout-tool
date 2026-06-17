@@ -69,13 +69,26 @@ function getDb(): Promise<IDBPDatabase | null> {
   return dbPromise;
 }
 
-/** Recursively key-sorted JSON so logically-equal param objects stringify identically. */
+/**
+ * Recursively key-sorted JSON so logically-equal param objects stringify
+ * identically.
+ *
+ * Object keys whose value is `null` or `undefined` are omitted, so an unset
+ * optional param is canonical regardless of how it arrives — absent, `undefined`
+ * (in-memory default), or `null` (after a JSON/storage round-trip). This matches
+ * the generator, which reads every optional baseplate param with nullish
+ * semantics (`x ?? default`, `x !== false`, truthiness), so those three forms
+ * produce byte-identical geometry and must share a key. Real values (including
+ * `false`/`0`) are always kept, so a meaningful flag never collapses into "unset".
+ */
 function stableStringify(value: unknown): string {
-  if (value === undefined) return 'null';
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (value === null || value === undefined) return 'null';
+  if (typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
   const obj = value as Record<string, unknown>;
-  const keys = Object.keys(obj).sort();
+  const keys = Object.keys(obj)
+    .filter((k) => obj[k] !== null && obj[k] !== undefined)
+    .sort();
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
 }
 
@@ -135,11 +148,14 @@ export async function putCachedExports(
   try {
     const db = await getDb();
     if (!db) return;
-    const now = nextTs();
     {
       const tx = db.transaction(STORE, 'readwrite');
+      // Distinct, increasing ts per entry so intra-batch eviction order is
+      // deterministic (a shared stamp would tie-break by key, not recency).
       await Promise.all(
-        entries.map((e) => tx.store.put({ data: e.data, size: e.data.byteLength, ts: now }, e.key))
+        entries.map((e) =>
+          tx.store.put({ data: e.data, size: e.data.byteLength, ts: nextTs() }, e.key)
+        )
       );
       await tx.done;
     }
