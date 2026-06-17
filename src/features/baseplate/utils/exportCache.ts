@@ -23,8 +23,9 @@
 
 import { openDB, type IDBPDatabase } from 'idb';
 import type { BaseplateParams, ExportFileFormat } from '@/shared/types/bin';
+import { BASEPLATE_EXPORT_DB_NAME } from '@/core/storage/storageKeys';
 
-const DB_NAME = 'gridfinity-baseplate-export-v1';
+const DB_NAME = BASEPLATE_EXPORT_DB_NAME;
 const DB_VERSION = 1;
 const STORE = 'exports';
 const TS_INDEX = 'ts';
@@ -108,6 +109,22 @@ export async function getCachedExport(key: string): Promise<ArrayBuffer | undefi
 /** Batch read; result[i] is the bytes for keys[i] or undefined on miss. */
 export async function getCachedExports(keys: string[]): Promise<(ArrayBuffer | undefined)[]> {
   return Promise.all(keys.map((k) => getCachedExport(k)));
+}
+
+/**
+ * Return cached bytes for `key`, or run `generate`, persist (best-effort), and
+ * return its result. For single exports (one plate, the connector key); the
+ * split path partitions hits/misses itself to keep the worker pool busy.
+ */
+export async function getOrExport(
+  key: string,
+  generate: () => Promise<ArrayBuffer>
+): Promise<ArrayBuffer> {
+  const hit = await getCachedExport(key);
+  if (hit !== undefined) return hit;
+  const data = await generate();
+  void putCachedExports([{ key, data }]);
+  return data;
 }
 
 /** Store export bytes, then evict oldest entries if over the byte budget. No-op on error. */

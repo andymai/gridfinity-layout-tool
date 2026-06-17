@@ -16,7 +16,19 @@
 import { clearAllData as clearIndexedDB } from './backends/indexedDB';
 import { pruneAnalyticsData } from '@/shared/analytics/posthog';
 import { clearLabelSizesCache } from '@/shared/analytics/purposeInference';
-import { SETTINGS_STORAGE_KEY } from './storageKeys';
+import { SETTINGS_STORAGE_KEY, BASEPLATE_EXPORT_DB_NAME } from './storageKeys';
+
+/** Delete a whole IndexedDB database, resolving regardless of outcome. */
+function deleteDatabase(name: string): Promise<void> {
+  return new Promise<void>((resolve) => {
+    try {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = req.onerror = req.onblocked = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}
 
 /** Keys that should be preserved during a full data clear. */
 const PRESERVED_KEYS = new Set([SETTINGS_STORAGE_KEY]);
@@ -46,4 +58,6 @@ export async function clearAllAppData(): Promise<void> {
   }
 
   await clearIndexedDB();
+  // The baseplate export byte cache lives in its own database — drop it whole.
+  await deleteDatabase(BASEPLATE_EXPORT_DB_NAME);
 }

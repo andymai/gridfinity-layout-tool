@@ -3,6 +3,7 @@ import {
   buildExportCacheKey,
   getCachedExport,
   getCachedExports,
+  getOrExport,
   putCachedExports,
   clearExportCache,
   setExportCacheMaxBytesForTests,
@@ -83,6 +84,25 @@ describe('export cache roundtrip', () => {
     await putCachedExports([{ key, data: buf(10) }]);
     await clearExportCache();
     expect(await getCachedExport(key)).toBeUndefined();
+  });
+});
+
+describe('getOrExport', () => {
+  it('runs generate on miss, persists, and skips generate on the next call', async () => {
+    const key = buildExportCacheKey(params(), 'stl', 0.4);
+    let calls = 0;
+    const generate = () => {
+      calls++;
+      return Promise.resolve(buf(42, 9));
+    };
+
+    const first = await getOrExport(key, generate);
+    expect(calls).toBe(1);
+    expect(new Uint8Array(first)[0]).toBe(9);
+
+    const second = await getOrExport(key, generate);
+    expect(calls).toBe(1); // served from cache, generate not called again
+    expect(second.byteLength).toBe(42);
   });
 });
 

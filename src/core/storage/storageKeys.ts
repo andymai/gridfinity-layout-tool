@@ -17,6 +17,11 @@ export const LIBRARY_CHANNEL_NAME = 'gridfinity-library-sync';
 
 export const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
 
+// Baseplate export byte cache (own IndexedDB database). Defined here so the
+// full-data-clear path can delete it without importing the baseplate feature
+// (core must not depend on features).
+export const BASEPLATE_EXPORT_DB_NAME = 'gridfinity-baseplate-export-v1';
+
 // Migration flags
 export const MIGRATION_FLAG_KEY = 'gridfinity-indexeddb-migrated';
 export const CLEANUP_FLAG_KEY = 'gridfinity-localstorage-cleaned';
