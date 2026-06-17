@@ -95,9 +95,10 @@ function defaultTolerance(width: number, height: number): number {
 /** Detect the reference card on the classical auto threshold (slider-independent). */
 export function detectCard(
   image: ImageDataLike,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions = {},
+  excludeMask?: Mask
 ): SceneCard | null {
-  const card = findCardAcrossChannels(image, options);
+  const card = findCardAcrossChannels(image, options, excludeMask);
   return card ? { corners: card.corners, fitness: card.fitness } : null;
 }
 
@@ -159,9 +160,10 @@ export function traceScene(
 }
 
 /**
- * ML path: the tool mask is supplied by the tap-prompted segmenter. We don't
- * exclude the card region — the user's tap already chose the object — but we
- * still detect the card classically to recover scale.
+ * ML path: the tool mask is supplied by the tap-prompted segmenter. We exclude
+ * the tool's own pixels from card detection so a card-shaped tool can't be
+ * mistaken for the reference card — the user already chose the tool, so the card
+ * must be a different object. Scale is still recovered classically.
  */
 export function traceSceneSegmented(
   image: ImageDataLike,
@@ -170,7 +172,7 @@ export function traceSceneSegmented(
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  const card = detectCard(image, options);
+  const card = detectCard(image, options, toolMask);
   return buildToolTrace(toolMask, card, options);
 }
 

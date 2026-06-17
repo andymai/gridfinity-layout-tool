@@ -10,7 +10,7 @@
  * Lightweight by design — no OpenCV. ISO-7810 card = 85.6 × 53.98 mm.
  */
 
-import type { ImageDataLike, Point } from './types';
+import type { ImageDataLike, Mask, Point } from './types';
 import { buildMask, usesAlphaMask } from './mask';
 import { labelComponents, maskFromLabel, type LabeledComponents } from './components';
 import { traceContour } from './contour';
@@ -184,13 +184,23 @@ const CARD_CHANNELS = ['luma', 'chroma'] as const;
 
 export function findCardAcrossChannels(
   image: ImageDataLike,
-  options: CardDetectOptions = {}
+  options: CardDetectOptions = {},
+  /**
+   * Pixels to drop from card candidacy (1 = exclude). When the tool is already
+   * known (the segmenter's mask), excluding it stops a card-shaped tool from
+   * being mistaken for the reference card — the card must be a different object.
+   */
+  excludeMask?: Mask
 ): CardComponent | null {
   // An alpha-driven mask ignores `channel`, so every pass is identical — sweep once.
   const channels = usesAlphaMask(image) ? (['luma'] as const) : CARD_CHANNELS;
   for (const channel of channels) {
-    const labeled = labelComponents(buildMask(image, { channel }));
-    const card = findBestCardComponent(labeled, image.width, image.height, options);
+    const mask = buildMask(image, { channel });
+    if (excludeMask) {
+      const n = Math.min(mask.data.length, excludeMask.data.length);
+      for (let i = 0; i < n; i++) if (excludeMask.data[i]) mask.data[i] = 0;
+    }
+    const card = findBestCardComponent(labelComponents(mask), image.width, image.height, options);
     if (card) return card;
   }
   return null;

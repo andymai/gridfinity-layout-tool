@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { traceScene } from './traceScene';
-import type { ImageDataLike, Point } from './types';
+import { traceScene, traceSceneSegmented, detectCard } from './traceScene';
+import type { ImageDataLike, Mask, Point } from './types';
 
 // Tilted pinhole camera over the world z=0 plane (principal point at centre).
 const F = 600;
@@ -104,5 +104,65 @@ describe('traceScene', () => {
     expect(result.value.units).toBe('px');
     expect(result.value.card).toBeNull();
     expect(result.value.outputPoints).toEqual(result.value.imagePoints);
+  });
+});
+
+describe('traceSceneSegmented excludes the tool from card detection', () => {
+  // Two card-aspect rectangles: the real card (left) and a slightly-larger
+  // rectangular tool (right). The tool sits higher, so it labels first and a
+  // naive whole-image card search picks IT — the reported failure. The tool
+  // mask should keep that from happening.
+  const W = 360;
+  const H = 260;
+  const CARD = { x0: 30, y0: 100, x1: 130, y1: 163 }; // 100×63 ≈ 1.587
+  const TOOL = { x0: 210, y0: 80, x1: 330, y1: 168 }; // 120×88 ≈ 1.36
+
+  const inRect = (x: number, y: number, r: typeof CARD): boolean =>
+    x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1;
+
+  function scene(): ImageDataLike {
+    const data = new Uint8ClampedArray(W * H * 4);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const o = (y * W + x) * 4;
+        const v = inRect(x, y, CARD) ? 235 : inRect(x, y, TOOL) ? 150 : 15;
+        data[o] = data[o + 1] = data[o + 2] = v;
+        data[o + 3] = 255;
+      }
+    }
+    return { width: W, height: H, data };
+  }
+
+  function toolMask(): Mask {
+    const data = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) if (inRect(x, y, TOOL)) data[y * W + x] = 1;
+    }
+    return { width: W, height: H, data };
+  }
+
+  const centroidX = (pts: readonly Point[]): number =>
+    pts.reduce((s, p) => s + p.x, 0) / pts.length;
+
+  it('a whole-image search picks the wrong rectangle (the tool)', () => {
+    const card = detectCard(scene());
+    expect(card).not.toBeNull();
+    if (!card) return;
+    expect(centroidX(card.corners)).toBeGreaterThan(W / 2); // the right-hand tool
+  });
+
+  it('excluding the tool mask picks the real card instead', () => {
+    const card = detectCard(scene(), {}, toolMask());
+    expect(card).not.toBeNull();
+    if (!card) return;
+    expect(centroidX(card.corners)).toBeLessThan(W / 2); // the left-hand card
+  });
+
+  it('rectifies the tool to true mm via the real card', () => {
+    const result = traceSceneSegmented(scene(), toolMask(), { smooth: false });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.units).toBe('mm');
+    expect(centroidX(result.value.card?.corners ?? [{ x: 0, y: 0 }])).toBeLessThan(W / 2);
   });
 });
