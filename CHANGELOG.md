@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.3...gridfinity-layout-tool-v4.183.4) (2026-06-17)
+
+
+### Performance
+
+* **generation:** cache per-text glyph solids across compartments ([#2211](https://github.com/andymai/gridfinity-layout-tool/issues/2211)) ([08bfaf0](https://github.com/andymai/gridfinity-layout-tool/commit/08bfaf0b720a0eb77400153c6543d2487d804844))
+
 ## [4.183.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.2...gridfinity-layout-tool-v4.183.3) (2026-06-17)
 
 
