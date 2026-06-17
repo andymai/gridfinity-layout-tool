@@ -52,9 +52,12 @@ tasks-vision WASM is copied from the pinned npm package at build by
 falls back to the classical `traceScene` (Otsu) path so the feature still works.
 
 Card detection, homography, and the contour/simplify tail are shared by both paths
-(`detectCard` + `buildToolTrace` in `traceScene.ts`). The faceted outline is **Chaikin-smoothed**
-(`smooth.ts`) into curves (a `buildToolTrace` option; tests pass `smooth: false` to assert exact
-card-scale geometry).
+(`detectCard` + the `finishTrace` tail in `traceScene.ts`). The ML path traces the segmenter's
+**soft confidence mask** sub-pixel via marching squares (`softContour.ts`); the classical path
+boundary-traces a binary mask. The faceted outline is then **smoothed by Bézier curve fitting**
+(`curveFit.ts`, via `fit-curve`) into clean arcs with crisp corners, and a symmetric tool's outline
+is **auto-symmetrized** when it scores high enough (`symmetry.ts`). Both are `smooth`-gated — tests
+pass `smooth: false` to assert exact card-scale geometry.
 
 The traced outline is the tool's **exact silhouette** — FDM fit (clearance, entry chamfer, scoop)
 is **not** baked here. It's applied at generation time as adjustable `Cutout` fields, exactly like

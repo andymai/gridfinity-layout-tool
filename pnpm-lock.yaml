@@ -83,6 +83,9 @@ importers:
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
+      fit-curve:
+        specifier: ^0.2.0
+        version: 0.2.0
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -3637,6 +3640,9 @@ packages:
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
+
+  fit-curve@0.2.0:
+    resolution: {integrity: sha512-op7ofeL13getbqL5J5ACeNxTlLWzusn4/jjEjSVA1sS7PfXWumdtNITvLuTjSobis+jZzMil2rsJ3Vhw7OxQyQ==}
 
   flat-cache@4.0.1:
     resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
@@ -9083,6 +9089,8 @@ snapshots:
     dependencies:
       locate-path: 6.0.0
       path-exists: 4.0.0
+
+  fit-curve@0.2.0: {}
 
   flat-cache@4.0.1:
     dependencies:

@@ -23,11 +23,9 @@ import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { rectifyPoints } from './perspective';
-import { smoothPreservingCorners } from './smooth';
+import { fitSmoothPolygon } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
-
-const DEFAULT_SMOOTH_ITERATIONS = 2;
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -48,9 +46,9 @@ export interface SceneTraceOptions extends CardDetectOptions {
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
   /**
-   * Smooth the faceted outline (default true): corner-preserving corner-cutting
-   * that keeps sharp corners crisp while rounding gentle curves. Pass false for
-   * the raw RDP polygon (tests use this to assert exact card-scale geometry).
+   * Smooth the faceted outline (default true): fit Bézier curves that keep sharp
+   * corners crisp while turning curved runs into clean arcs. Pass false for the
+   * raw RDP polygon (tests use this to assert exact card-scale geometry).
    */
   readonly smooth?: boolean;
   /**
@@ -124,9 +122,7 @@ function finishTrace(
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
   const simplified = simplifyRdp(rawContour, tolerance);
   let imagePoints =
-    options.smooth === false
-      ? simplified
-      : smoothPreservingCorners(simplified, DEFAULT_SMOOTH_ITERATIONS);
+    options.smooth === false ? simplified : fitSmoothPolygon(simplified, (tolerance * 0.5) ** 2);
   // Clean up the slight lopsidedness of a symmetric tool (controller, pliers).
   // Gated internally on a symmetry score, so an asymmetric tool is untouched.
   if (options.smooth !== false && options.symmetrize !== false) {
