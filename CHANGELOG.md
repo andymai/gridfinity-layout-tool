@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.7...gridfinity-layout-tool-v4.183.8) (2026-06-17)
+
+
+### Performance
+
+* **baseplate:** cross-session IndexedDB cache for split-export pieces ([#2224](https://github.com/andymai/gridfinity-layout-tool/issues/2224)) ([eabcaae](https://github.com/andymai/gridfinity-layout-tool/commit/eabcaae8c49ef4e7b46c61b88ebf58f74a1643b3))
+
 ## [4.183.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.6...gridfinity-layout-tool-v4.183.7) (2026-06-17)
 
 
