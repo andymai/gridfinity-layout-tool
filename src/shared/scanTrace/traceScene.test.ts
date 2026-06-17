@@ -83,7 +83,8 @@ function bbox(points: readonly Point[]): { w: number; h: number } {
 
 describe('traceScene', () => {
   it('rectifies the tool to true millimetres when a card is present', () => {
-    const result = traceScene(render(true));
+    // clearance/smoothing off so the assertion measures card-scale accuracy.
+    const result = traceScene(render(true), { clearanceMm: 0, smooth: false });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
 

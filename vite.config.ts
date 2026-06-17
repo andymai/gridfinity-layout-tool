@@ -159,11 +159,14 @@ export default defineConfig({
           },
           {
             // The phone scan segmenter assets (tflite model + tasks-vision runtime)
-            // live at stable, non-hashed /models/ paths and are large. Cache them on
-            // first scan so repeat scans are instant and work offline. Listed before
-            // the generic .wasm rule so the runtime WASM lands in this dedicated cache.
+            // live at stable, non-hashed /models/ paths. StaleWhileRevalidate (not
+            // CacheFirst) serves the cached copy instantly for fast/offline repeat
+            // scans while revalidating in the background — so a model or runtime bump
+            // (the WASM filename is fixed, only its bytes change) can't strand users
+            // on a stale copy or skew the WASM against a freshly-hashed JS loader.
+            // Listed before the generic .wasm rule so the runtime WASM lands here.
             urlPattern: /\/models\/(interactive-segmenter|tasks-vision)\//,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'scan-segmenter',
               expiration: {
@@ -173,7 +176,6 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [200],
               },
-              rangeRequests: true,
             },
           },
           {

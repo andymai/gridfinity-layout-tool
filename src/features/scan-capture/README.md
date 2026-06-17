@@ -41,8 +41,15 @@ tasks-vision WASM is copied from the pinned npm package at build by
 `scripts/vite-plugin-mediapipe-assets.ts`. If the model can't load, `ScanPage` silently
 falls back to the classical `traceScene` (Otsu) path so the feature still works.
 
-Card detection, homography, and the contour/simplify tail are unchanged and shared by both
-paths (`detectCard` + `buildToolTrace` in `traceScene.ts`).
+Card detection, homography, and the contour/simplify tail are shared by both paths
+(`detectCard` + `buildToolTrace` in `traceScene.ts`). The tail also bakes in an FDM **fit
+clearance** (default 0.4mm, card-scaled via mask dilation in `dilate.ts`) so the cut cavity
+is slightly larger than the tool and it drops in — freeform `path` cutouts can't carry the
+parametric `clearance`/`chamfer` fields, so the offset is baked into the geometry instead (no
+entry chamfer for paths; that isn't well-defined for an arbitrary outline). The faceted
+outline is then **Chaikin-smoothed** (`smooth.ts`) into curves. Both are skipped when no card
+sets the scale, and both are options on `buildToolTrace` (tests pass `clearanceMm: 0`,
+`smooth: false` to assert exact card-scale geometry).
 
 ## Pieces
 

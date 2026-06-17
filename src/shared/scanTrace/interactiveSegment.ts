@@ -26,11 +26,20 @@ async function getSegmenter(): Promise<InteractiveSegmenter> {
     segmenterPromise = (async () => {
       const { FilesetResolver, InteractiveSegmenter } = await import('@mediapipe/tasks-vision');
       const fileset = await FilesetResolver.forVisionTasks(WASM_BASE_PATH);
-      return InteractiveSegmenter.createFromOptions(fileset, {
-        baseOptions: { modelAssetPath: MODEL_PATH, delegate: 'GPU' },
-        outputCategoryMask: true,
-        outputConfidenceMasks: false,
-      });
+      const create = (delegate: 'GPU' | 'CPU') =>
+        InteractiveSegmenter.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: MODEL_PATH, delegate },
+          outputCategoryMask: true,
+          outputConfidenceMasks: false,
+        });
+      // Prefer the GPU (WebGL) delegate; fall back to CPU before giving up so a
+      // device with flaky WebGL still gets ML segmentation (~130ms) rather than
+      // dropping all the way to the classical tracer.
+      try {
+        return await create('GPU');
+      } catch {
+        return await create('CPU');
+      }
     })().catch((error: unknown) => {
       // Let the next call retry a transient failure (e.g. asset fetch hiccup)
       // instead of caching a rejected promise forever.

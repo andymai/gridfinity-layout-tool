@@ -21,8 +21,20 @@ import { labelComponents, largestComponent } from './components';
 import { traceContour } from './contour';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
-import { findBestCardComponent, cardHomography, type CardDetectOptions } from './cardDetect';
+import {
+  findBestCardComponent,
+  cardHomography,
+  CARD_WIDTH_MM,
+  CARD_HEIGHT_MM,
+  type CardDetectOptions,
+} from './cardDetect';
 import { rectifyPoints } from './perspective';
+import { dilateMask, cardPxPerMm } from './dilate';
+import { chaikin } from './smooth';
+
+/** Default FDM fit clearance baked into a scanned outline (mm), card-scaled. */
+const DEFAULT_CLEARANCE_MM = 0.4;
+const DEFAULT_SMOOTH_ITERATIONS = 2;
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -42,6 +54,13 @@ export interface SceneTraceOptions extends CardDetectOptions {
   readonly threshold?: number;
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
+  /**
+   * FDM fit clearance in mm baked into the outline (the cavity is grown so the
+   * real tool drops in). Only applied when a card sets the scale; 0 disables it.
+   */
+  readonly clearanceMm?: number;
+  /** Chaikin-smooth the faceted outline into curves (default true). */
+  readonly smooth?: boolean;
 }
 
 function pointInQuad(x: number, y: number, q: readonly Point[]): boolean {
@@ -102,15 +121,34 @@ export function buildToolTrace(
   options: SceneTraceOptions = {}
 ): Result<SceneTrace, TraceError> {
   const { width, height } = toolMask;
-  const component = largestComponent(toolMask);
+  let component = largestComponent(toolMask);
   const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
   if (component.start === null || component.area < minArea) {
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
 
+  // FDM fit clearance: grow the isolated silhouette by the card-scaled radius so
+  // the cut cavity is slightly larger than the tool. Needs the card's px/mm, so
+  // it only applies when a card was detected; re-isolate to refresh the start.
+  const clearanceMm = options.clearanceMm ?? DEFAULT_CLEARANCE_MM;
+  if (card && clearanceMm > 0) {
+    const pxPerMm = cardPxPerMm(
+      card.corners,
+      options.widthMm ?? CARD_WIDTH_MM,
+      options.heightMm ?? CARD_HEIGHT_MM
+    );
+    const radius = Math.round(clearanceMm * pxPerMm);
+    if (radius > 0) component = largestComponent(dilateMask(component.mask, radius));
+  }
+  if (component.start === null) {
+    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
+  }
+
   const contour = traceContour(component.mask, component.start);
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const imagePoints = simplifyRdp(contour, tolerance);
+  const simplified = simplifyRdp(contour, tolerance);
+  const imagePoints =
+    options.smooth === false ? simplified : chaikin(simplified, DEFAULT_SMOOTH_ITERATIONS);
   if (imagePoints.length < 3 || polygonArea(imagePoints) < 1) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }
