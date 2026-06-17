@@ -371,7 +371,8 @@ export function LabelTabsSection() {
               </span>
               <CompartmentTextInput
                 committedValue={row.value}
-                onCommit={(value) => handlers.setCompartmentText(row.id, value)}
+                compartmentId={row.id}
+                onCommit={handlers.setCompartmentText}
                 placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
                 ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
               />

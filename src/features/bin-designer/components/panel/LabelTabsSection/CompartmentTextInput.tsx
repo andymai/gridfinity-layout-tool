@@ -24,14 +24,20 @@ const COMMIT_IDLE_MS = 450;
 interface CompartmentTextInputProps {
   /** The committed store value; the source of truth between edits. */
   readonly committedValue: string;
+  /** Compartment id passed straight back to `onCommit`. Kept a separate prop
+   *  (rather than baked into an `onCommit` closure by the parent) so the parent
+   *  can pass the store action by reference and this component's handlers stay
+   *  referentially stable across parent re-renders. */
+  readonly compartmentId: number;
   readonly placeholder: string;
   readonly ariaLabel: string;
   /** Writes the value to the store (clamps + dedups + pushes history). */
-  readonly onCommit: (value: string) => void;
+  readonly onCommit: (compartmentId: number, value: string) => void;
 }
 
 export function CompartmentTextInput({
   committedValue,
+  compartmentId,
   placeholder,
   ariaLabel,
   onCommit,
@@ -39,6 +45,13 @@ export function CompartmentTextInput({
   const [draft, setDraft] = useState(committedValue);
   const focusedRef = useRef(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Stable as long as the store action and id are stable, so `onBlur`/`onChange`
+  // identities don't churn on every parent render.
+  const commit = useCallback(
+    (value: string) => onCommit(compartmentId, value),
+    [onCommit, compartmentId]
+  );
 
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current !== null) {
@@ -66,10 +79,10 @@ export function CompartmentTextInput({
       clearIdleTimer();
       idleTimerRef.current = setTimeout(() => {
         idleTimerRef.current = null;
-        onCommit(next);
+        commit(next);
       }, COMMIT_IDLE_MS);
     },
-    [clearIdleTimer, onCommit]
+    [clearIdleTimer, commit]
   );
 
   const handleFocus = useCallback(() => {
@@ -79,8 +92,8 @@ export function CompartmentTextInput({
   const handleBlur = useCallback(() => {
     focusedRef.current = false;
     clearIdleTimer();
-    onCommit(draft);
-  }, [clearIdleTimer, draft, onCommit]);
+    commit(draft);
+  }, [clearIdleTimer, draft, commit]);
 
   return (
     <Input

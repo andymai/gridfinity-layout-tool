@@ -13,11 +13,14 @@ describe('CompartmentTextInput', () => {
     vi.useRealTimers();
   });
 
+  const COMPARTMENT_ID = 2;
+
   function setup(committedValue = '') {
     const onCommit = vi.fn();
     const utils = render(
       <CompartmentTextInput
         committedValue={committedValue}
+        compartmentId={COMPARTMENT_ID}
         placeholder="text"
         ariaLabel="Engraved text"
         onCommit={onCommit}
@@ -38,9 +41,9 @@ describe('CompartmentTextInput', () => {
     expect(input).toHaveValue('SCR');
 
     vi.advanceTimersByTime(COMMIT_IDLE_MS);
-    // One commit for the whole burst, with the final value.
+    // One commit for the whole burst, with the final value + compartment id.
     expect(onCommit).toHaveBeenCalledTimes(1);
-    expect(onCommit).toHaveBeenCalledWith('SCR');
+    expect(onCommit).toHaveBeenCalledWith(COMPARTMENT_ID, 'SCR');
   });
 
   it('commits immediately on blur and cancels the pending idle timer', () => {
@@ -48,7 +51,7 @@ describe('CompartmentTextInput', () => {
     fireEvent.change(input, { target: { value: 'BOLTS' } });
     fireEvent.blur(input);
     expect(onCommit).toHaveBeenCalledTimes(1);
-    expect(onCommit).toHaveBeenCalledWith('BOLTS');
+    expect(onCommit).toHaveBeenCalledWith(COMPARTMENT_ID, 'BOLTS');
     // The idle timer that was pending must not fire a second commit.
     vi.advanceTimersByTime(COMMIT_IDLE_MS);
     expect(onCommit).toHaveBeenCalledTimes(1);
@@ -61,6 +64,7 @@ describe('CompartmentTextInput', () => {
     rerender(
       <CompartmentTextInput
         committedValue="NEW"
+        compartmentId={COMPARTMENT_ID}
         placeholder="text"
         ariaLabel="Engraved text"
         onCommit={onCommit}
@@ -77,6 +81,7 @@ describe('CompartmentTextInput', () => {
     rerender(
       <CompartmentTextInput
         committedValue="EXTERNAL"
+        compartmentId={COMPARTMENT_ID}
         placeholder="text"
         ariaLabel="Engraved text"
         onCommit={onCommit}
