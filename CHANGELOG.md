@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.181.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.180.0...gridfinity-layout-tool-v4.181.0) (2026-06-17)
+
+
+### Features
+
+* **bin-designer:** full fit parity (clearance + chamfer + scoop) for path cutouts ([#2204](https://github.com/andymai/gridfinity-layout-tool/issues/2204)) ([89dc283](https://github.com/andymai/gridfinity-layout-tool/commit/89dc283b3b637dfe33f29dae1e1be219da4e350d))
+
 ## [4.180.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.179.1...gridfinity-layout-tool-v4.180.0) (2026-06-17)
 
 
