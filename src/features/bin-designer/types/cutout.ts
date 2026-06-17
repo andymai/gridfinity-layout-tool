@@ -31,8 +31,12 @@ export const DEFAULT_POLYGON_SIDES = 6;
  */
 export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
 
-/** Shapes that accept an insertion {@link Cutout.clearance} offset. */
-export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot'];
+/**
+ * Shapes that accept an insertion {@link Cutout.clearance} offset. Parametric
+ * shapes grow their profile dimensions; paths offset their flattened outline
+ * outward at generation time (same polygon offset used for the path chamfer).
+ */
+export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot', 'path'];
 
 /** Largest entry-chamfer width (mm) the editor allows. */
 export const MAX_CUTOUT_CHAMFER = 5;

@@ -28,6 +28,8 @@ exports[`solid cutouts > 2×2 solid with hexagon (polygon) cutout 1`] = `2564`;
 
 exports[`solid cutouts > 2×2 solid with hexagon cutout + insertion clearance 1`] = `2568`;
 
+exports[`solid cutouts > 2×2 solid with path cutout + insertion clearance 1`] = `2548`;
+
 exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `2724`;
 
 exports[`solid cutouts > 2×2 solid with radial array (rotate-to-center) 1`] = `3336`;

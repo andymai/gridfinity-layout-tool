@@ -316,6 +316,31 @@ export const solidCutouts: ScenarioCase[] = [
     },
     compareWith: mustCut,
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with path cutout + insertion clearance', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Clearance offsets the flattened outline outward; the offset cut must
+      // still land (mustCut) and not degenerate to the bbox fallback.
+      cutouts: [
+        makeCutout({
+          shape: 'path',
+          x: 10,
+          y: 10,
+          width: 24,
+          depth: 24,
+          clearance: 0.5,
+          path: [
+            { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 34, y: 12, handleIn: null, handleOut: null, symmetric: false },
+            { x: 30, y: 34, handleIn: null, handleOut: null, symmetric: false },
+            { x: 12, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        }),
+      ],
+    },
+    compareWith: mustCut,
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with scooped path cutout', {
     params: {
       style: 'solid',

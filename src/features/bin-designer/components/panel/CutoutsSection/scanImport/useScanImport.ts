@@ -13,6 +13,9 @@ import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
+/** Default insertion clearance (mm) applied to a scanned tool outline. */
+const SCAN_DEFAULT_CLEARANCE_MM = 0.4;
+
 export interface UseScanImportReturn {
   /** Hydrate and add scan specs as cutouts in one undo transaction. Returns the count added. */
   readonly addScanCutouts: (specs: readonly ParsedCutoutSpec[], cutDepth?: number) => number;
@@ -35,13 +38,19 @@ export function useScanImport(): UseScanImportReturn {
       try {
         for (const spec of specs) {
           const cutout = specToCutout(spec, hydrationOptions);
-          // Give scanned outlines a slight self-centering entry chamfer by default
-          // (the in-plane fit clearance is already baked into the traced geometry).
-          const chamferWidth =
-            cutout.shape === 'path'
-              ? defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth)
-              : cutout.chamferWidth;
-          addCutout({ ...cutout, chamferWidth });
+          // Scanned outlines default to a fit clearance + self-centering entry
+          // chamfer (both applied at generation time, like parametric cutouts, and
+          // adjustable via the Fit controls). The traced outline itself stays the
+          // tool's exact silhouette.
+          if (cutout.shape === 'path') {
+            addCutout({
+              ...cutout,
+              clearance: SCAN_DEFAULT_CLEARANCE_MM,
+              chamferWidth: defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth),
+            });
+          } else {
+            addCutout(cutout);
+          }
         }
       } finally {
         commitTransaction();

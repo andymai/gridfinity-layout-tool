@@ -103,9 +103,8 @@ function bbox(points: readonly Point[]): { w: number; h: number } {
 
 describe('traceSceneSegmented', () => {
   it('traces the supplied tool mask and rectifies to mm via the card', () => {
-    // clearance/smoothing off so the assertion measures card-scale accuracy.
+    // smoothing off so the assertion measures card-scale accuracy.
     const result = traceSceneSegmented(renderWithCard(), toolMaskWithSpeck(), {
-      clearanceMm: 0,
       smooth: false,
     });
     expect(isOk(result)).toBe(true);
@@ -123,22 +122,6 @@ describe('traceSceneSegmented', () => {
     const empty: Mask = { width: WIDTH, height: HEIGHT, data: new Uint8Array(WIDTH * HEIGHT) };
     const result = traceSceneSegmented(renderWithCard(), empty);
     expect(isOk(result)).toBe(false);
-  });
-
-  it('bakes a fit clearance that enlarges the outline when a card is present', () => {
-    const tight = traceSceneSegmented(renderWithCard(), toolMaskWithSpeck(), {
-      clearanceMm: 0,
-      smooth: false,
-    });
-    const loose = traceSceneSegmented(renderWithCard(), toolMaskWithSpeck(), {
-      clearanceMm: 1,
-      smooth: false,
-    });
-    expect(isOk(tight) && isOk(loose)).toBe(true);
-    if (!isOk(tight) || !isOk(loose)) return;
-    // ~1mm clearance grows each side → bbox wider and taller than the exact trace.
-    expect(bbox(loose.value.outputPoints).w).toBeGreaterThan(bbox(tight.value.outputPoints).w);
-    expect(bbox(loose.value.outputPoints).h).toBeGreaterThan(bbox(tight.value.outputPoints).h);
   });
 });
 

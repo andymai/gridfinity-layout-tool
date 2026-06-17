@@ -42,14 +42,16 @@ tasks-vision WASM is copied from the pinned npm package at build by
 falls back to the classical `traceScene` (Otsu) path so the feature still works.
 
 Card detection, homography, and the contour/simplify tail are shared by both paths
-(`detectCard` + `buildToolTrace` in `traceScene.ts`). The tail also bakes in an FDM **fit
-clearance** (default 0.4mm, card-scaled via mask dilation in `dilate.ts`) so the cut cavity
-is slightly larger than the tool and it drops in — freeform `path` cutouts can't carry the
-parametric `clearance`/`chamfer` fields, so the offset is baked into the geometry instead (no
-entry chamfer for paths; that isn't well-defined for an arbitrary outline). The faceted
-outline is then **Chaikin-smoothed** (`smooth.ts`) into curves. Both are skipped when no card
-sets the scale, and both are options on `buildToolTrace` (tests pass `clearanceMm: 0`,
-`smooth: false` to assert exact card-scale geometry).
+(`detectCard` + `buildToolTrace` in `traceScene.ts`). The faceted outline is **Chaikin-smoothed**
+(`smooth.ts`) into curves (a `buildToolTrace` option; tests pass `smooth: false` to assert exact
+card-scale geometry).
+
+The traced outline is the tool's **exact silhouette** — FDM fit (clearance, entry chamfer, scoop)
+is **not** baked here. It's applied at generation time as adjustable `Cutout` fields, exactly like
+parametric cutouts: scanned outlines import with a default `clearance` + `chamferWidth` (see
+`scanImport/useScanImport.ts`), and the generator offsets the flattened path outline for the
+clearance/chamfer and fillets its bottom edges for the scoop. This keeps the phone pipeline simple
+and the fit fully tunable on the desktop.
 
 ## Pieces
 
