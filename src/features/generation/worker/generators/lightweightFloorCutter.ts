@@ -3,8 +3,9 @@
  *
  * When magnets are enabled, removes center floor material under each cell,
  * keeping only rectangular pads around the 4 magnet positions. The result is
- * a cross-shaped cutout whose inner concave corners are filleted with the
- * magnet hole radius for a clean transition.
+ * a cross-shaped cutout with sharp inner corners — the cut is a vertical prism
+ * so concave corners print cleanly, and dropping the former fillets roughly
+ * halves the per-cell boolean cost.
  */
 
 import { draw, drawRectangle, clone, unwrap, translate } from 'brepjs';
