@@ -7,6 +7,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { exteriorCorners } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
 
@@ -49,17 +50,35 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];
 
-  // Edge classification (exterior vs join) only affects geometry through
-  // connectors (placed on join edges) and corner rounding (only exterior
-  // corners round). With neither, pieces that differ only by edge label are
-  // byte-identical — so omit it and let them dedupe (key for stack-print tiles,
-  // where connectors + rounding are stripped). Padding is captured separately,
-  // so padded edge pieces still differ from interior ones.
-  const noRounding = params.cornerRadius === 0 && params.cornerRadii === undefined;
-  const edgesAffectGeometry = params.connectorNubs === true || !noRounding;
-  if (params.edges && edgesAffectGeometry) {
-    const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
-    parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
+  // Edge classification (exterior vs join) affects geometry through two
+  // independent channels — and keying on the raw labels over-distinguishes
+  // pieces that are actually identical:
+  //
+  //   - Connectors are placed on join edges, so when they're on the full edge
+  //     layout matters. Canonicalize under preferIdenticalPieces so 180°-rotated
+  //     pairs share a key — but ONLY here, where the placement actually applies
+  //     the compensating rotation (it's gated on connectorNubs too). Doing it
+  //     without connectors would merge two pieces whose meshes then get placed
+  //     un-rotated → a rounded corner on the wrong side.
+  //   - Corner rounding only rounds *exterior* corners (both adjacent edges
+  //     exterior). So with connectors off, edges matter only through which
+  //     corners round — key on that, not the raw labels, so edge and interior
+  //     pieces (no exterior corner → no rounding) dedupe with each other.
+  //
+  // With neither connectors nor rounding, edges don't affect geometry at all,
+  // so nothing is added (key for stack-print tiles). Padding is captured
+  // separately, so padded edge pieces still differ from interior ones.
+  if (params.edges) {
+    if (params.connectorNubs === true) {
+      const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
+      parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
+    } else {
+      const noRounding = params.cornerRadius === 0 && params.cornerRadii === undefined;
+      if (!noRounding) {
+        const c = exteriorCorners(params.edges);
+        parts.push(`rc:${+c.tl}${+c.tr}${+c.bl}${+c.br}`);
+      }
+    }
   }
 
   if (params.cornerRadii) {

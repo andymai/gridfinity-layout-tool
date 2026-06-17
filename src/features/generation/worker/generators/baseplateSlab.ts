@@ -6,6 +6,7 @@ import { drawRectangle, drawRoundedRectangle, draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
+import { exteriorCorners } from '@/shared/generation/baseplateCorners';
 
 /**
  * Build the 2D slab outline, rounding only exterior corners.
@@ -29,24 +30,12 @@ export function buildSlabProfile(
   const hd = totalD / 2;
   const { tl, tr, bl, br } = cornerRadii;
 
-  const isExt = (corner: 'tl' | 'tr' | 'bl' | 'br'): boolean => {
-    if (!edges) return true;
-    switch (corner) {
-      case 'tl':
-        return edges.left === 'exterior' && edges.back === 'exterior';
-      case 'tr':
-        return edges.right === 'exterior' && edges.back === 'exterior';
-      case 'bl':
-        return edges.left === 'exterior' && edges.front === 'exterior';
-      case 'br':
-        return edges.right === 'exterior' && edges.front === 'exterior';
-    }
-  };
+  const ext = exteriorCorners(edges);
 
-  const rBL = isExt('bl') && bl > 0 ? bl : 0;
-  const rBR = isExt('br') && br > 0 ? br : 0;
-  const rTR = isExt('tr') && tr > 0 ? tr : 0;
-  const rTL = isExt('tl') && tl > 0 ? tl : 0;
+  const rBL = ext.bl && bl > 0 ? bl : 0;
+  const rBR = ext.br && br > 0 ? br : 0;
+  const rTR = ext.tr && tr > 0 ? tr : 0;
+  const rTL = ext.tl && tl > 0 ? tl : 0;
 
   if (rBL === 0 && rBR === 0 && rTR === 0 && rTL === 0) {
     return drawRectangle(totalW, totalD);

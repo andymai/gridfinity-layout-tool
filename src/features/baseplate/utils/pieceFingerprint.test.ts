@@ -70,6 +70,50 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
 
+  it('dedupes edge and interior pieces that round no corner (rounded, no connectors)', () => {
+    // No connectors + rounded corners: edges matter only through which corners
+    // round. A top-edge piece (only back exterior) and an interior piece (all
+    // join) both round zero corners → identical geometry, same key.
+    const base = makeParams({ width: 3, depth: 3, cornerRadius: 4 });
+    const topEdge = {
+      ...base,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'exterior' } as const,
+    };
+    const interior = {
+      ...base,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' } as const,
+    };
+    expect(computePieceFingerprint(topEdge)).toBe(computePieceFingerprint(interior));
+  });
+
+  it('keeps pieces that round different corners distinct (rounded, no connectors)', () => {
+    const base = makeParams({ width: 3, depth: 3, cornerRadius: 4 });
+    const blCorner = {
+      ...base,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const,
+    };
+    const trCorner = {
+      ...base,
+      edges: { left: 'join', right: 'exterior', front: 'join', back: 'exterior' } as const,
+    };
+    expect(computePieceFingerprint(blCorner)).not.toBe(computePieceFingerprint(trCorner));
+  });
+
+  it('with connectors on, edge layout still distinguishes corner-equivalent pieces', () => {
+    // Connectors live on join edges, so the full layout matters even when the
+    // two pieces would share a corner-rounding signature.
+    const base = makeParams({ width: 3, depth: 3, connectorNubs: true, cornerRadius: 0 });
+    const a = {
+      ...base,
+      edges: { left: 'exterior', right: 'join', front: 'join', back: 'join' } as const,
+    };
+    const b = {
+      ...base,
+      edges: { left: 'join', right: 'exterior', front: 'join', back: 'join' } as const,
+    };
+    expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
+  });
+
   it('produces different keys when connectors differ', () => {
     const a = makeParams({ width: 3, depth: 3, connectorNubs: true });
     const b = makeParams({ width: 3, depth: 3, connectorNubs: false });
