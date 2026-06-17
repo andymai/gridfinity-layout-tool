@@ -84,9 +84,10 @@ export function clearTextMetricsMemo(): void {
  * build (width = glyph advance width, vertical metrics scale by
  * `fontSize / unitsPerEm`; no hinting in this code path), so one measurement at
  * a reference size yields the ideal size directly — no search needed. A single
- * verify call covers the clamp-to-min overflow case and guards against any
- * future non-linearity; if metrics ever stop being measurable we fall back to
- * the robust binary search. Re-verify the linearity assumption on brepjs bumps.
+ * verify call confirms the pick fits; if it doesn't (clamp-to-min overflow, or
+ * hypothetically non-linear metrics) or a measurement isn't `isOk`, we fall back
+ * to the robust binary search rather than dropping the text. Re-verify the
+ * linearity assumption on brepjs bumps.
  */
 export function fitFontSize(
   text: string,
@@ -112,18 +113,25 @@ export function fitFontSize(
   const size = Math.min(max, Math.max(min, Math.min(sizeForW, sizeForH)));
 
   const check = measureText(text, size, fontFamily);
-  if (!isOk(check)) {
-    return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
-  }
   const fits =
-    check.value.width <= availW + FIT_EPSILON && check.value.height <= availD + FIT_EPSILON;
-  return fits ? { fontSize: size, fits: true } : { fontSize: 0, fits: false };
+    isOk(check) &&
+    check.value.width <= availW + FIT_EPSILON &&
+    check.value.height <= availD + FIT_EPSILON;
+  if (fits) return { fontSize: size, fits: true };
+  // The linear pick didn't verify as fitting. With exactly-linear metrics this
+  // only happens when `size` was clamped to `min` and `min` itself overflows.
+  // Defer to the search either way: it returns fits:false for that clamp case
+  // (matching the old behavior) and, were metrics ever non-linear, would still
+  // find a smaller fitting size instead of dropping the text. Costs nothing on
+  // the common path (the early return above).
+  return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
 }
 
 /**
- * Robust fallback: binary search to ~0.05mm precision. Only reached when a
- * measurement isn't `isOk` (a font edge case) — kept so the builder degrades
- * gracefully rather than producing geometry from an unverified size.
+ * Robust fallback: binary search to ~0.05mm precision. Reached when the linear
+ * pick doesn't verify as fitting or a measurement isn't `isOk` (a font edge
+ * case) — kept so the builder degrades gracefully rather than producing
+ * geometry from an unverified size.
  */
 function fitFontSizeBisect(
   text: string,

@@ -42,6 +42,7 @@ graph TB
 - `worker/generators/insertBuilder.ts` — insert cavity cuts
 - `worker/generators/cutoutBuilder.ts` — solid-mode cutout cuts
 - `worker/generators/labelTabBuilder.ts` — label tab shelves + gussets
+- `worker/generators/textBuilder.ts` — engraved/embossed/through-cut text solids; auto-fits font size to the host (see Gotchas re: linear sizing) and resolves the stencil-font swap for through-cut
 - `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
 - `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
 - `worker/generators/handleBuilder.ts` — handle hole through-cuts in bin walls
@@ -123,6 +124,7 @@ Add new patterns by implementing `PatternCalculator` interface and registering i
 3. **Features fail silently** — tiny cells → feature skipped
 4. **WASM objects are ephemeral** — brepjs GC invalidates refs unpredictably
 5. **Wall pattern border rule** — any feature that cuts through a wall (cutouts, handles, future features) MUST have corresponding border clipping in `wallPatternBuilder.ts`. Without it, hex prisms overlap the cut region, producing jagged edges. Use `CUTOUT_BORDER_WIDTH` (1.5mm) for the expansion. See `wallPatternBuilder.ts` for the cutout and handle clipping implementations as reference.
+6. **Text auto-fit assumes linear metrics** — `textBuilder.ts` `fitFontSize` computes the font size from a single reference measurement because `textMetrics` scales _exactly_ linearly with `fontSize` in the pinned brepjs build (advance width + vertical metrics scale by `fontSize / unitsPerEm`; no hinting in this path). A `fitFontSizeBisect` fallback covers any non-linearity, but **re-verify this assumption on brepjs bumps** — if a future build introduces hinting, the one-shot estimate could mis-size before the fallback catches it.
 
 ## Adaptive Debounce
 
