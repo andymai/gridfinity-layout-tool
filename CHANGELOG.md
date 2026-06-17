@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.2...gridfinity-layout-tool-v4.183.3) (2026-06-17)
+
+
+### Bug Fixes
+
+* **print:** SplitPreview crash on half-grid (fractional) bin dimensions ([#2213](https://github.com/andymai/gridfinity-layout-tool/issues/2213)) ([7a41252](https://github.com/andymai/gridfinity-layout-tool/commit/7a4125280905780ec8c6c39a6c921d1a6eb91854))
+
 ## [4.183.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.1...gridfinity-layout-tool-v4.183.2) (2026-06-17)
 
 
