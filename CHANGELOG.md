@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.184.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.1...gridfinity-layout-tool-v4.184.2) (2026-06-17)
+
+
+### Bug Fixes
+
+* **scan:** detect color-neutral cards via chroma channel sweep ([#2230](https://github.com/andymai/gridfinity-layout-tool/issues/2230)) ([c90919b](https://github.com/andymai/gridfinity-layout-tool/commit/c90919b7065ba3eca42c00c6816d04b956464347))
+
 ## [4.184.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.0...gridfinity-layout-tool-v4.184.1) (2026-06-17)
 
 
