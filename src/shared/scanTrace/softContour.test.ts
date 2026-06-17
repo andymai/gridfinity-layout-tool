@@ -45,7 +45,7 @@ describe('traceSoftContour', () => {
   });
 
   it('places vertices sub-pixel from a soft (ramped) edge', () => {
-    // A vertical ramp crossing 0.5 between x=4 and x=5 at x≈4.25
+    // A vertical ramp crossing 0.5 between x=4 and x=5 at x=4.5
     // (val(4)=0.3, val(5)=0.7 → t=(0.5-0.3)/0.4=0.5 → x=4.5). Whole left half
     // below, right above, plus top/bottom hard edges to close the loop.
     const img = soft(10, 10, (x, y) => {

@@ -7,10 +7,14 @@
  *  - `traceSceneSegmented` — the tool mask comes from the tap-prompted ML
  *    segmenter; we trust it (plus the user's tap) to have isolated the object.
  *
- * Both detect the card on the classical auto threshold, then run the shared
- * `buildToolTrace` tail (largest component → contour → simplify → optional card
- * homography). With a card present the outline is rectified to true millimetres;
- * without one it stays in pixels and the desktop asks for a real dimension.
+ * Both detect the card on the classical auto threshold and share the
+ * `finishTrace` tail (simplify → curve-fit smooth → optional symmetry → optional
+ * card homography). They differ in how the tool contour is obtained:
+ * `traceScene` traces the largest component of a binary mask (`buildToolTrace`),
+ * while `traceSceneSegmented` traces the soft confidence mask sub-pixel via
+ * marching squares (`buildToolTraceSoft`). With a card present the outline is
+ * rectified to true millimetres; without one it stays in pixels and the desktop
+ * asks for a real dimension.
  */
 
 import type { Result } from '@/core/result';
