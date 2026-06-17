@@ -316,11 +316,15 @@ export function useBaseplateGeneration(): void {
       fullParams: FullBaseplateParams,
       bedWidthMm: number,
       bedDepthMm: number,
-      epoch: number
+      epoch: number,
+      // Callers that already computed the tiling pass it in to avoid a second
+      // computeBaseplateTiling pass (cheap, but redundant on large plates).
+      precomputedTiling?: BaseplateTiling
     ): BaseplateTiling => {
       directMeshStartRef.current = performance.now();
 
-      const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
+      const tiling =
+        precomputedTiling ?? computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
       setTiling(tiling);
       setSplitProgress(null);
       setDedupStats(null);
@@ -616,7 +620,7 @@ export function useBaseplateGeneration(): void {
       // instant procedural mesh on screen and mark the preview complete. Export
       // rebuilds at full BREP fidelity via its own (larger-budget) path.
       if (shouldDeferBrepPreview(tiling, fullParams, lastBrepMsRef.current)) {
-        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
         // Claim this epoch as final so a late async draft can't overwrite it.
         finalizedEpochRef.current = epoch;
         setGenerationStatus('complete');
@@ -651,12 +655,12 @@ export function useBaseplateGeneration(): void {
               generationEpochRef.current === epoch &&
               epoch > finalizedEpochRef.current
             ) {
-              runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+              runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
             }
           });
         }
       } else {
-        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+        runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
       }
 
       void runBrepGeneration(fullParams, tiling, epoch);

@@ -23,28 +23,30 @@ import { groupPiecesByFingerprint } from './pieceFingerprint';
 import type { BaseplateTiling } from '../types/tiling';
 
 /**
- * Largest single unique piece (in whole grid cells) above which the live BREP
- * preview is deferred. The per-piece boolean cost scales with cell count, and a
- * single piece this large risks tripping its own generation budget on slower
- * hardware. 64 = an 8×8 plate. Below this, draft-quality BREP previews land in a
- * couple of seconds on reference hardware (see baseplateGenerator bench).
+ * Largest single unique piece (in whole grid cells) at or above which the live
+ * BREP preview is deferred (the check is `>=`). The per-piece boolean cost
+ * scales with cell count, and a single piece this large risks tripping its own
+ * generation budget on slower hardware. 64 = an 8×8 plate. Below this,
+ * draft-quality BREP previews land in a couple of seconds on reference hardware
+ * (see baseplateGenerator bench).
  */
 export const DEFER_MAX_PIECE_CELLS = 64;
 
 /**
- * Total unique work (summed whole grid cells across deduped pieces) above which
- * the preview is deferred. Catches many-piece tilings that are individually
- * small but collectively long — especially when the worker pool is unavailable
- * and pieces generate sequentially. 200 ≈ six 6×6 pieces.
+ * Total unique work (summed whole grid cells across deduped pieces) at or above
+ * which the preview is deferred (the check is `>=`). Catches many-piece tilings
+ * that are individually small but collectively long — especially when the
+ * worker pool is unavailable and pieces generate sequentially. 200 ≈ six 6×6
+ * pieces.
  */
 export const DEFER_TOTAL_CELLS = 200;
 
 /**
- * Last successful BREP wall-clock (ms) above which the preview is deferred for
- * comparably-or-more complex plates. Adapts to the user's hardware: once a real
- * generation on this machine has run long, stop gambling the preview on the
- * next one. 25 s is well inside the per-piece budget but past the point where a
- * live preview is a pleasant wait.
+ * Last successful BREP wall-clock (ms) at or above which the preview is deferred
+ * for the next magnet plate, regardless of its complexity (the check is `>=`).
+ * Adapts to the user's hardware: once a real generation on this machine has run
+ * this long, stop gambling the preview on the next one. 25 s is well inside the
+ * per-piece budget but past the point where a live preview is a pleasant wait.
  */
 export const DEFER_LAST_BREP_MS = 25_000;
 

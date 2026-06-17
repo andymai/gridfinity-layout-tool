@@ -65,4 +65,15 @@ describe('meshCacheKey — draft preview', () => {
   it('defaults to the full-geometry key when draft is omitted', () => {
     expect(meshCacheKey(base(), false)).toBe(meshCacheKey(base(), false, false));
   });
+
+  it('does not fragment the cache when draft cannot change geometry', () => {
+    // No magnets ⇒ no lightweight floor cut ⇒ draft mesh == full mesh, so the
+    // draft flag must not split the LRU.
+    const noMag = (draft: boolean) => meshCacheKey(base({ magnetHoles: false }), false, draft);
+    expect(noMag(true)).toBe(noMag(false));
+    // lightweight explicitly off ⇒ likewise nothing for draft to skip.
+    const noLw = (draft: boolean) =>
+      meshCacheKey(base({ magnetHoles: true, lightweight: false }), false, draft);
+    expect(noLw(true)).toBe(noLw(false));
+  });
 });

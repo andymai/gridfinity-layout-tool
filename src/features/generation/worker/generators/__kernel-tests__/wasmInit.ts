@@ -61,7 +61,8 @@ export type GenerateBaseplateFn = (
   params: BaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   forExport: boolean,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  draft?: boolean
 ) => MeshData;
 
 // ─── Split preview ───────────────────────────────────────────────────────────
