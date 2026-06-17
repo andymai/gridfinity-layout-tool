@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.187.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.186.0...gridfinity-layout-tool-v4.187.0) (2026-06-17)
+
+
+### Features
+
+* **scan:** fit clean Bézier curves to the tool outline ([#2238](https://github.com/andymai/gridfinity-layout-tool/issues/2238)) ([8ef61fb](https://github.com/andymai/gridfinity-layout-tool/commit/8ef61fbc5c9fb6686d2a6e8cbec7429412d10f51))
+
 ## [4.186.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.185.0...gridfinity-layout-tool-v4.186.0) (2026-06-17)
 
 
