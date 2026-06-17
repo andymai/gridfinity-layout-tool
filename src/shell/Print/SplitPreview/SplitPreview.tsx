@@ -24,9 +24,14 @@ interface SplitPreviewProps {
  * Shows a grid diagram with the split pieces.
  */
 export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: SplitPreviewProps) {
+  // Half-grid bins yield fractional width/depth; allocate and scan whole cells so a
+  // fractional piece can't index a row/column the grid never allocated.
+  const cols = Math.max(0, Math.ceil(width));
+  const rows = Math.max(0, Math.ceil(depth));
+
   // Create a 2D grid to place pieces
-  const grid: (PrintPiece | null)[][] = Array.from({ length: depth }, () =>
-    Array.from({ length: width }, () => null)
+  const grid: (PrintPiece | null)[][] = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => null)
   );
 
   // Place pieces using greedy left-to-right, bottom-to-top
@@ -36,8 +41,8 @@ export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: S
   );
 
   for (const piece of piecesToPlace) {
-    outer: for (let y = 0; y < depth; y++) {
-      for (let x = 0; x < width; x++) {
+    outer: for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
         let fits = true;
         if (x + piece.width > width || y + piece.depth > depth) {
           fits = false;

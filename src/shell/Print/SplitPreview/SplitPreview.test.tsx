@@ -128,6 +128,27 @@ describe('SplitPreview', () => {
     });
   });
 
+  describe('half-grid (fractional) dimensions', () => {
+    it('renders without crashing when bin and pieces are fractional', () => {
+      const pieces = [createPiece(2.5, 0.5)];
+      expect(() => render(<SplitPreview width={2.5} depth={2.5} pieces={pieces} />)).not.toThrow();
+
+      expect(screen.getByText('2.5×0.5')).toBeInTheDocument();
+    });
+
+    it('places a fractional piece within the ceil-sized grid', () => {
+      const pieces = [createPiece(0.5, 0.5)];
+      const { container } = render(
+        <SplitPreview width={1.5} depth={1.5} pieces={pieces} cellSize={16} gap={2} />
+      );
+
+      const placed = container.querySelectorAll('[class*="absolute"]');
+      expect(placed).toHaveLength(1);
+      expect((placed[0] as HTMLElement).style.left).toBe('0px');
+      expect((placed[0] as HTMLElement).style.bottom).toBe('0px');
+    });
+  });
+
   describe('complex layouts', () => {
     it('handles mixed piece sizes', () => {
       const pieces = [createPiece(3, 2), createPiece(1, 2)];
