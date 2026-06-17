@@ -203,7 +203,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
                 min={0}
                 step={0.5}
                 value={stage.targetText}
-                error={!targetValid}
+                error={stage.targetText !== '' && !targetValid}
                 onChange={(e) => setStage({ ...stage, targetText: e.target.value })}
               />
               <p className="text-xs text-content-tertiary">

@@ -56,6 +56,8 @@ describe('ScanWithPhoneDialog', () => {
     // measurement, so the user must enter one. Add stays disabled until they do.
     const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
     expect((field as HTMLInputElement).value).toBe('');
+    // Empty-but-untouched must not look like an error yet.
+    expect(field).not.toHaveAttribute('aria-invalid');
     expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
   });
 
@@ -94,6 +96,8 @@ describe('ScanWithPhoneDialog', () => {
     const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
     fireEvent.change(field, { target: { value: '0' } });
     expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
+    // Once a non-positive value is typed, the field surfaces the error.
+    expect(field).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('toasts an error when the upload is not a usable outline', async () => {

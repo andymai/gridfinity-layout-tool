@@ -45,7 +45,11 @@ export interface SceneTraceOptions extends CardDetectOptions {
   readonly threshold?: number;
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
-  /** Chaikin-smooth the faceted outline into curves (default true). */
+  /**
+   * Smooth the faceted outline (default true): corner-preserving corner-cutting
+   * that keeps sharp corners crisp while rounding gentle curves. Pass false for
+   * the raw RDP polygon (tests use this to assert exact card-scale geometry).
+   */
   readonly smooth?: boolean;
 }
 
