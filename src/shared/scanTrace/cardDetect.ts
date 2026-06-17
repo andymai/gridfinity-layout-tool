@@ -151,8 +151,10 @@ export function findBestCardComponent(
       // hull-based, so it bridges the eroded corner and recovers the true
       // rectangle. Gate it on the rect's own aspect plus a fill ratio so a
       // non-rectangular blob can't sneak through.
+      // minAreaRect returns null for any degenerate hull, so a non-null rect
+      // always has positive dimensions.
       const rect = minAreaRect(contour);
-      if (rect && rect.height > 0) {
+      if (rect) {
         const rectAspect = rect.width / rect.height;
         const fill = comp.area / (rect.width * rect.height);
         if (Math.abs(rectAspect - targetAspect) <= aspectTolerance && fill >= MIN_RECT_FILL) {
