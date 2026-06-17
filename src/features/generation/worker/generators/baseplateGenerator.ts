@@ -427,8 +427,13 @@ export async function exportBaseplate(
     // STL ourselves — OCCT's StlAPI.Write fails on baseplate geometries.
     // brepjs already produces face-consistent winding so no per-triangle
     // correction is applied (see #1472).
-    const tol = tolerance ?? 0.01;
-    const angTol = angularTolerance ?? 5;
+    //
+    // Default linear tolerance is 0.02mm — an order of magnitude below any FDM
+    // nozzle/layer resolution (~0.1-0.4mm), so it's visually and functionally
+    // indistinguishable from the prior 0.01mm while roughly halving the
+    // tessellation triangle budget on large plates. Callers can still override.
+    const tol = tolerance ?? 0.02;
+    const angTol = angularTolerance ?? 6;
     const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };
