@@ -99,6 +99,49 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(blCorner)).not.toBe(computePieceFingerprint(trCorner));
   });
 
+  it('treats all-zero cornerRadii as no rounding (edges omitted, no connectors)', () => {
+    // cornerRadii present but every corner 0 → nothing rounds → a corner piece
+    // and an interior piece are geometrically identical and must share a key.
+    const base = makeParams({ width: 3, depth: 3, cornerRadii: { tl: 0, tr: 0, bl: 0, br: 0 } });
+    const corner = {
+      ...base,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const,
+    };
+    const interior = {
+      ...base,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' } as const,
+    };
+    expect(computePieceFingerprint(corner)).toBe(computePieceFingerprint(interior));
+  });
+
+  it('ignores an exterior corner whose radius is 0 (per-corner zero)', () => {
+    // bl is exterior but its radius is 0 → does not round; br has radius 4 but
+    // isn't exterior here → neither rounds → identical to an interior piece.
+    const base = makeParams({ width: 3, depth: 3, cornerRadii: { tl: 0, tr: 0, bl: 0, br: 4 } });
+    const blExterior = {
+      ...base,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const,
+    };
+    const interior = {
+      ...base,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' } as const,
+    };
+    expect(computePieceFingerprint(blExterior)).toBe(computePieceFingerprint(interior));
+  });
+
+  it('still distinguishes an exterior corner whose radius is > 0', () => {
+    const base = makeParams({ width: 3, depth: 3, cornerRadii: { tl: 0, tr: 0, bl: 4, br: 0 } });
+    const blRounds = {
+      ...base,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const,
+    };
+    const interior = {
+      ...base,
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' } as const,
+    };
+    expect(computePieceFingerprint(blRounds)).not.toBe(computePieceFingerprint(interior));
+  });
+
   it('with connectors on, edge layout still distinguishes corner-equivalent pieces', () => {
     // Connectors live on join edges, so the full layout matters even when the
     // two pieces would share a corner-rounding signature.

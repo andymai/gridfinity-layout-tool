@@ -7,7 +7,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { exteriorCorners } from '@/shared/generation/baseplateCorners';
+import { exteriorCorners, type CornerKey } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
 
@@ -60,23 +60,29 @@ export function computePieceFingerprint(params: BaseplateParams): string {
   //     the compensating rotation (it's gated on connectorNubs too). Doing it
   //     without connectors would merge two pieces whose meshes then get placed
   //     un-rotated → a rounded corner on the wrong side.
-  //   - Corner rounding only rounds *exterior* corners (both adjacent edges
-  //     exterior). So with connectors off, edges matter only through which
-  //     corners round — key on that, not the raw labels, so edge and interior
-  //     pieces (no exterior corner → no rounding) dedupe with each other.
+  //   - Corner rounding rounds a corner iff it is *exterior* (both adjacent
+  //     edges exterior) AND its radius > 0 — matching `buildSlabProfile` /
+  //     `resolveCornerRadii`. So with connectors off, edges matter only through
+  //     which corners actually round — key on that, not the raw labels, so edge
+  //     and interior pieces (no rounded corner) dedupe with each other.
   //
-  // With neither connectors nor rounding, edges don't affect geometry at all,
-  // so nothing is added (key for stack-print tiles). Padding is captured
-  // separately, so padded edge pieces still differ from interior ones.
+  // When no corner actually rounds (square corners, or all-zero cornerRadii),
+  // edges don't affect geometry at all, so nothing is added (key for stack-print
+  // tiles). Padding is captured separately, so padded edge pieces still differ.
   if (params.edges) {
     if (params.connectorNubs === true) {
       const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
       parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
     } else {
-      const noRounding = params.cornerRadius === 0 && params.cornerRadii === undefined;
-      if (!noRounding) {
-        const c = exteriorCorners(params.edges);
-        parts.push(`rc:${+c.tl}${+c.tr}${+c.bl}${+c.br}`);
+      // Per-corner nominal radius (mirrors resolveCornerRadii precedence:
+      // cornerRadii wins, else the uniform cornerRadius, whose absence defaults
+      // to the positive plate radius). Only the >0 test matters here.
+      const cr = params.cornerRadii;
+      const hasRadius = (k: CornerKey): boolean => (cr ? cr[k] > 0 : params.cornerRadius !== 0);
+      const ext = exteriorCorners(params.edges);
+      const rounds = (k: CornerKey): boolean => ext[k] && hasRadius(k);
+      if (rounds('tl') || rounds('tr') || rounds('bl') || rounds('br')) {
+        parts.push(`rc:${+rounds('tl')}${+rounds('tr')}${+rounds('bl')}${+rounds('br')}`);
       }
     }
   }
