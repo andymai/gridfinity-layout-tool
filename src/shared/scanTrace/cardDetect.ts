@@ -11,7 +11,7 @@
  */
 
 import type { ImageDataLike, Point } from './types';
-import { buildMask } from './mask';
+import { buildMask, usesAlphaMask } from './mask';
 import { labelComponents, maskFromLabel, type LabeledComponents } from './components';
 import { traceContour } from './contour';
 import { contourToQuad, estimateRectAspect } from './quad';
@@ -141,12 +141,35 @@ export function findBestCardComponent(
   return best;
 }
 
+/**
+ * The card is a clean quad in whichever channel happens to separate it from its
+ * background — brightness for a dark card on a pale desk, colorfulness for a
+ * neutral metal card on wood. Sweep luma first, then chroma, taking the first
+ * channel that yields an accepted card. Luma-first keeps the chroma pass purely
+ * additive: any photo a brightness threshold already solved is untouched, so
+ * adding chroma can only recover cards luma missed, never regress a working one.
+ */
+const CARD_CHANNELS = ['luma', 'chroma'] as const;
+
+export function findCardAcrossChannels(
+  image: ImageDataLike,
+  options: CardDetectOptions = {}
+): CardComponent | null {
+  for (const channel of CARD_CHANNELS) {
+    const labeled = labelComponents(buildMask(image, { channel }));
+    const card = findBestCardComponent(labeled, image.width, image.height, options);
+    if (card) return card;
+    // An alpha-driven mask ignores `channel`, so further passes are identical.
+    if (usesAlphaMask(image)) break;
+  }
+  return null;
+}
+
 export function detectCardQuad(
   image: ImageDataLike,
   options: CardDetectOptions = {}
 ): CardDetection | null {
-  const labeled = labelComponents(buildMask(image));
-  const card = findBestCardComponent(labeled, image.width, image.height, options);
+  const card = findCardAcrossChannels(image, options);
   if (!card) return null;
 
   const homography = cardHomography(card.corners, options.widthMm, options.heightMm);

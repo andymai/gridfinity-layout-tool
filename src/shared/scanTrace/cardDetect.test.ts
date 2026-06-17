@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { detectCardQuad, cardPerspectiveSkew, STEEP_CARD_SKEW } from './cardDetect';
+import {
+  detectCardQuad,
+  findBestCardComponent,
+  cardPerspectiveSkew,
+  STEEP_CARD_SKEW,
+} from './cardDetect';
+import { buildMask } from './mask';
+import { labelComponents } from './components';
 import { rectifyPoints } from './perspective';
 import type { ImageDataLike, Point } from './types';
 
@@ -89,6 +96,35 @@ function render(
   return { width, height, data };
 }
 
+type Rgb = readonly [number, number, number];
+
+/** Like `render`, but each layer carries an RGB color over a colored background. */
+function renderRgb(
+  layers: Array<{ poly: Point[]; rgb: Rgb }>,
+  background: Rgb,
+  width = 360,
+  height = 260
+): ImageDataLike {
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const o = (y * width + x) * 4;
+      let rgb = background;
+      for (const layer of layers) {
+        if (pointInPolygon({ x, y }, layer.poly)) {
+          rgb = layer.rgb;
+          break;
+        }
+      }
+      data[o] = rgb[0];
+      data[o + 1] = rgb[1];
+      data[o + 2] = rgb[2];
+      data[o + 3] = 255;
+    }
+  }
+  return { width, height, data };
+}
+
 function bbox(points: readonly Point[]): { w: number; h: number } {
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
@@ -133,6 +169,39 @@ describe('detectCardQuad (end-to-end, pinhole projection)', () => {
       const nearCard = card.some((e) => Math.hypot(c.x - e.x, c.y - e.y) < 4);
       expect(nearCard).toBe(true);
     });
+  });
+});
+
+describe('detectCardQuad on a color-neutral card (the silver-card-on-wood case)', () => {
+  // A brushed-metal card on warm wood: near-identical *luminance* (so a grayscale
+  // threshold can't separate them) but very different *chroma*. Both ~116 luma;
+  // wood is saturated (chroma 90), the card is neutral (chroma 0).
+  const WOOD: Rgb = [150, 110, 60];
+  const CARD: Rgb = [116, 116, 116];
+
+  it('luma alone cannot find the card (regression guard)', () => {
+    const image = renderRgb([{ poly: project(CARD_MM), rgb: CARD }], WOOD);
+    const labeled = labelComponents(buildMask(image)); // default channel: luma
+    expect(findBestCardComponent(labeled, image.width, image.height)).toBeNull();
+  });
+
+  it('the chroma sweep recovers the card and rectifies the tool to true mm', () => {
+    const image = renderRgb(
+      [
+        { poly: project(CARD_MM), rgb: CARD },
+        { poly: project(TOOL_MM), rgb: [40, 40, 40] },
+      ],
+      WOOD
+    );
+
+    const detection = detectCardQuad(image);
+    expect(detection).not.toBeNull();
+    if (!detection) return;
+    expect(detection.fitness).toBeGreaterThan(0.9);
+
+    const out = bbox(rectifyPoints(project(TOOL_MM), detection.homography));
+    expect(Math.abs(out.w - 25)).toBeLessThan(2.5);
+    expect(Math.abs(out.h - 45)).toBeLessThan(2.5);
   });
 });
 

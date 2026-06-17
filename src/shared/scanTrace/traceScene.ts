@@ -17,11 +17,11 @@ import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { buildMask } from './mask';
-import { labelComponents, largestComponent } from './components';
+import { largestComponent } from './components';
 import { traceContour } from './contour';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
-import { findBestCardComponent, cardHomography, type CardDetectOptions } from './cardDetect';
+import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { rectifyPoints } from './perspective';
 import { smoothPreservingCorners } from './smooth';
 
@@ -97,9 +97,7 @@ export function detectCard(
   image: ImageDataLike,
   options: SceneTraceOptions = {}
 ): SceneCard | null {
-  const { width, height } = image;
-  const labeled = labelComponents(buildMask(image));
-  const card = findBestCardComponent(labeled, width, height, options);
+  const card = findCardAcrossChannels(image, options);
   return card ? { corners: card.corners, fitness: card.fitness } : null;
 }
 
