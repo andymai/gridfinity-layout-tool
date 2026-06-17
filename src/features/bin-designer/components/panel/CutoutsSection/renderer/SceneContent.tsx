@@ -368,7 +368,7 @@ export function SceneContent({
         );
       })()}
 
-      {/* Engraved labels mirroring the printed bin-top engraving */}
+      {/* Engraved/embossed labels mirroring the printed bin-top text */}
       <CutoutLabel3D
         cutouts={cutouts}
         binWidth={binWidth}

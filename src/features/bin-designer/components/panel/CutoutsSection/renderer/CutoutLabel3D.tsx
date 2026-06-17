@@ -6,9 +6,9 @@
  * and side come from the shared `cutoutLabelPlacement` helper so the on-screen
  * text tracks the printed label. Font size is auto-fit to the available band
  * (approximated — the worker measures exact glyph metrics via brepjs). Text
- * color is chosen for contrast against the cutout fill (see
- * `contrastingTextColor`) rather than the theme, so a light filament color no
- * longer makes white labels vanish.
+ * color is chosen for contrast against the cutout fill (see `cutoutLabelColor`)
+ * rather than the theme, so a light filament color no longer makes white labels
+ * vanish.
  */
 
 import { useMemo } from 'react';
