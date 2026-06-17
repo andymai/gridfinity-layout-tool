@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.179.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.179.0...gridfinity-layout-tool-v4.179.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **design-system:** restore card button styling regressed by button migration ([#2200](https://github.com/andymai/gridfinity-layout-tool/issues/2200)) ([c5708fc](https://github.com/andymai/gridfinity-layout-tool/commit/c5708fce7b9fbc924d6d377ba961cf6b6dfe8d4e))
+
 ## [4.179.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.178.1...gridfinity-layout-tool-v4.179.0) (2026-06-16)
 
 
