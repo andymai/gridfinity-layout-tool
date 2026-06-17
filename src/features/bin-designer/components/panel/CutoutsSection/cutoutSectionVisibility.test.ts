@@ -36,10 +36,10 @@ describe('hasShapeControls', () => {
 });
 
 describe('hasFitControls', () => {
-  it('covers insert shapes and rectangle chamfer, excludes path', () => {
+  it('covers insert shapes, rectangle chamfer, and paths (clearance + chamfer)', () => {
     expect(hasFitControls(c({ shape: 'circle' }))).toBe(true);
     expect(hasFitControls(c({ shape: 'rectangle' }))).toBe(true);
-    expect(hasFitControls(c({ shape: 'path' }))).toBe(false);
+    expect(hasFitControls(c({ shape: 'path' }))).toBe(true);
   });
 });
 

@@ -34,8 +34,8 @@ describe('hasFitControls', () => {
     expect(hasFitControls(makeCutout({ shape: 'rectangle' }))).toBe(true);
   });
 
-  it('is false for a path cutout', () => {
-    expect(hasFitControls(makeCutout({ shape: 'path' }))).toBe(false);
+  it('is true for a path cutout (clearance + chamfer)', () => {
+    expect(hasFitControls(makeCutout({ shape: 'path' }))).toBe(true);
   });
 });
 
