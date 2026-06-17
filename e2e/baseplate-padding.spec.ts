@@ -1,45 +1,21 @@
-import {
-  test,
-  expect,
-  waitForAppReady,
-  getSidebar,
-  clearAllStorage,
-  resetViewport,
-  getActiveDialog,
-} from './fixtures';
+import { test, expect, clearAllStorage, resetViewport, getActiveDialog } from './fixtures';
 
 /**
  * Baseplate padding schematic tests.
  *
- * The baseplate page is gated behind the `baseplate_generator` labs flag.
- * The panel shows an "Edge Padding" section with a spatial schematic:
+ * The `/baseplate` route is reachable directly (only the sidebar entry button
+ * is labs-gated). The panel's "Padding" section shows a spatial schematic:
  * padding steppers arranged around a baseplate rectangle
  * (Back on top, Left/Right on sides, Front on bottom).
  */
 test.describe('Baseplate Padding Schematic', () => {
   test.beforeEach(async ({ page }) => {
-    // Enable the baseplate_generator labs flag before navigation
-    await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.setItem(
-        'gridfinity-labs-v1',
-        JSON.stringify({
-          enabledFeatures: { baseplate_generator: true },
-          lastModified: new Date().toISOString(),
-        })
-      );
+    await page.goto('/baseplate');
+    // The padding schematic is plain React (no 3D kernel), so its inputs render
+    // well before the WASM preview — gate on the Left padding input.
+    await expect(page.getByRole('spinbutton', { name: 'Left', exact: true })).toBeVisible({
+      timeout: 30_000,
     });
-    await page.reload();
-    await waitForAppReady(page);
-
-    // Scroll sidebar to bottom and click "Generate Baseplate"
-    const sidebar = getSidebar(page);
-    const baseplateButton = sidebar.getByRole('button', { name: /generate baseplate/i });
-    await baseplateButton.scrollIntoViewIfNeeded();
-    await baseplateButton.click();
-
-    // Wait for baseplate page to load
-    await expect(page.getByText('Edge Padding')).toBeVisible({ timeout: 5000 });
   });
 
   test.afterEach(async ({ page }) => {
@@ -54,12 +30,12 @@ test.describe('Baseplate Padding Schematic', () => {
 
   test('padding schematic renders all four steppers', async ({ page }) => {
     // Side steppers (custom SideStepper): inputs with aria-label
-    const leftInput = page.getByRole('textbox', { name: 'Left', exact: true });
-    const rightInput = page.getByRole('textbox', { name: 'Right', exact: true });
+    const leftInput = page.getByRole('spinbutton', { name: 'Left', exact: true });
+    const rightInput = page.getByRole('spinbutton', { name: 'Right', exact: true });
 
     // Horizontal steppers (design system Stepper): inputs with aria-label
-    const backInput = page.getByRole('textbox', { name: 'Back', exact: true });
-    const frontInput = page.getByRole('textbox', { name: 'Front', exact: true });
+    const backInput = page.getByRole('spinbutton', { name: 'Back', exact: true });
+    const frontInput = page.getByRole('spinbutton', { name: 'Front', exact: true });
 
     await expect(leftInput).toBeVisible({ timeout: 5000 });
     await expect(rightInput).toBeVisible({ timeout: 5000 });
@@ -69,36 +45,32 @@ test.describe('Baseplate Padding Schematic', () => {
 
   test('side stepper increment updates padding value', async ({ page }) => {
     const leftInput = page.getByLabel('Left', { exact: true });
-    const incrementButton = page.getByLabel('Left increment');
+    const incrementButton = page.getByLabel('Increase Left');
 
-    // Click increment 3 times
-    await incrementButton.click();
-    await incrementButton.click();
-    await incrementButton.click();
+    // Buttons step by 0.25mm, so 4 clicks add 1mm.
+    for (let i = 0; i < 4; i++) await incrementButton.click();
 
-    await expect(leftInput).toHaveValue('3');
+    await expect(leftInput).toHaveValue('1');
   });
 
   test('side stepper decrement reduces value', async ({ page }) => {
-    const incrementButton = page.getByLabel('Left increment');
-    const decrementButton = page.getByLabel('Left decrement');
+    const incrementButton = page.getByLabel('Increase Left');
+    const decrementButton = page.getByLabel('Decrease Left');
     const leftInput = page.getByLabel('Left', { exact: true });
 
-    // Increment 5 times
-    for (let i = 0; i < 5; i++) {
-      await incrementButton.click();
-    }
-    await expect(leftInput).toHaveValue('5');
+    // Increment 4 times → 1mm
+    for (let i = 0; i < 4; i++) await incrementButton.click();
+    await expect(leftInput).toHaveValue('1');
 
-    // Decrement 2 times
+    // Decrement 2 times → 0.5mm (two 0.25mm steps)
     await decrementButton.click();
     await decrementButton.click();
 
-    await expect(leftInput).toHaveValue('3');
+    await expect(leftInput).toHaveValue('0.5');
   });
 
   test('horizontal stepper (Back/Front) updates value', async ({ page }) => {
-    const backInput = page.getByRole('textbox', { name: 'Back', exact: true });
+    const backInput = page.getByRole('spinbutton', { name: 'Back', exact: true });
 
     // Focus, clear, type a value, and commit with Enter
     await backInput.click();
@@ -135,23 +107,26 @@ test.describe('Baseplate Padding Schematic', () => {
   });
 
   test('total dimensions update with padding', async ({ page }) => {
-    // Scope to the schematic's total text (the <p> inside the Edge Padding section)
-    const paddingSection = page.getByLabel('Edge Padding');
-    const schematicTotal = paddingSection.locator('p').filter({ hasText: /Total:/ });
+    // The click-to-edit dimensions readout shows "{w} × {d} mm" — grid-only with
+    // no padding, grid+padding once padding is added.
+    const dims = page.getByLabel('Edit baseplate dimensions');
+    await expect(dims).toBeVisible({ timeout: 5000 });
+    const readWidth = async (): Promise<number> =>
+      parseInt(((await dims.textContent()) ?? '').match(/(\d+)\s*×/)?.[1] ?? '0', 10);
+    const initialWidth = await readWidth();
+    expect(initialWidth).toBeGreaterThan(0);
 
-    // Read initial total width from the schematic caption
-    await expect(schematicTotal).toBeVisible({ timeout: 5000 });
-    const initialText = await schematicTotal.textContent();
-    const initialWidth = parseInt(initialText?.match(/Total:\s*(\d+)/)?.[1] ?? '0', 10);
-
-    // Add 5mm left + 5mm right padding via increment buttons
-    const leftIncrement = page.getByLabel('Left increment');
-    const rightIncrement = page.getByLabel('Right increment');
-    for (let i = 0; i < 5; i++) await leftIncrement.click();
-    for (let i = 0; i < 5; i++) await rightIncrement.click();
+    // Type 5mm left + 5mm right padding (step-independent vs the 0.25mm buttons).
+    const leftInput = page.getByLabel('Left', { exact: true });
+    const rightInput = page.getByLabel('Right', { exact: true });
+    await leftInput.click();
+    await leftInput.fill('5');
+    await page.keyboard.press('Enter');
+    await rightInput.click();
+    await rightInput.fill('5');
+    await page.keyboard.press('Enter');
 
     // Width should increase by 10mm (5 left + 5 right)
-    const expectedWidth = initialWidth + 10;
-    await expect(schematicTotal).toContainText(String(expectedWidth));
+    await expect(dims).toContainText(`${initialWidth + 10} ×`);
   });
 });
