@@ -23,12 +23,17 @@ export function buildFullParams(
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
 
-  // Stack printing strips connectors AND magnet holes: connectors are
-  // unsupportable overhangs in a vertical stack, and magnet pockets become
-  // downward bridges when printed upside down (audited ~10% bridge area, vs 0%
-  // for a magnet-free plate). Done here rather than by mutating stored params,
-  // so the user's settings return intact when stacking is turned off.
+  // Stack printing flips every plate above the bottom upside down. Magnet
+  // pockets become downward bridges when flipped (audited ~10% bridge area, vs
+  // 0% for a magnet-free plate), and corner rounding makes corner tiles differ
+  // from the rest, so both are stripped. Dovetail connectors survive: tongues,
+  // grooves, and the dovetail key are full-height vertical prisms that flip
+  // cleanly. Only snap clip is incompatible — its blind top pocket (sealed
+  // floor + undercut ledge) inverts into a downward bridge/overhang — so it
+  // alone is stripped. Done here rather than by mutating stored params, so the
+  // user's settings return intact when stacking is turned off.
   const stackingOn = stored.stackPrint?.enabled === true;
+  const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
 
   return {
     width,
@@ -45,10 +50,10 @@ export function buildFullParams(
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
-    connectorNubs: stackingOn ? false : stored.connectorNubs,
+    connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,
-    connectorStyle: stackingOn ? undefined : stored.connectorStyle,
+    connectorStyle: stripConnectors ? undefined : stored.connectorStyle,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
     // Corner rounding only applies to the assembled drawer's outer corners, so

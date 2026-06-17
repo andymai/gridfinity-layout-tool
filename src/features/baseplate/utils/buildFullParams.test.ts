@@ -166,18 +166,44 @@ describe('buildFullParams', () => {
       expect(result.magnetHoles).toBe(true);
     });
 
-    it('strips connectors and magnets when stacking is enabled (without mutating stored)', () => {
+    it('keeps dovetail connectors but strips magnets when stacking (vertical prisms flip cleanly)', () => {
+      const stored = {
+        ...storedBase,
+        connectorNubs: true,
+        connectorStyle: undefined, // plain dovetail
+        stackPrint: { enabled: true, gapMm: 0.2 as never },
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.connectorNubs).toBe(true);
+      expect(result.connectorStyle).toBeUndefined();
+      expect(result.magnetHoles).toBe(false); // magnet pockets bridge when flipped
+    });
+
+    it('keeps dovetail key connectors when stacking', () => {
       const stored = {
         ...withFeatures,
         stackPrint: { enabled: true, gapMm: 0.2 as never },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.connectorNubs).toBe(true);
+      expect(result.connectorStyle).toBe('dovetailKey');
+      expect(result.magnetHoles).toBe(false);
+    });
+
+    it('strips snap clip connectors when stacking (its blind pocket bridges when flipped)', () => {
+      const stored = {
+        ...storedBase,
+        connectorNubs: true,
+        connectorStyle: 'snapClip' as const,
+        stackPrint: { enabled: true, gapMm: 0.2 as never },
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(false);
       expect(result.connectorStyle).toBeUndefined();
-      expect(result.magnetHoles).toBe(false); // magnet pockets bridge when flipped
-      // Stored params are untouched, so the features return when stacking is off.
+      expect(result.magnetHoles).toBe(false);
+      // Stored params are untouched, so the style returns when stacking is off.
       expect(stored.connectorNubs).toBe(true);
-      expect(stored.magnetHoles).toBe(true);
+      expect(stored.connectorStyle).toBe('snapClip');
     });
 
     it('keeps connectors and magnets when stackPrint exists but is disabled', () => {

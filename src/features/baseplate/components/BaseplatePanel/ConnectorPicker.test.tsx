@@ -60,4 +60,48 @@ describe('ConnectorPicker', () => {
     fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowDown' });
     expect(onChange).toHaveBeenCalledWith('dovetail');
   });
+
+  describe('disabledOptions', () => {
+    it('renders the reason and marks the option disabled', () => {
+      render(
+        <ConnectorPicker
+          value="none"
+          onChange={vi.fn()}
+          disabledOptions={{ snapClip: 'No stacking' }}
+        />
+      );
+      const snap = screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' });
+      expect(snap).toBeDisabled();
+      expect(snap).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByText('No stacking')).toBeInTheDocument();
+    });
+
+    it('does not call onChange when a disabled option is clicked', () => {
+      const onChange = vi.fn();
+      render(
+        <ConnectorPicker
+          value="none"
+          onChange={onChange}
+          disabledOptions={{ snapClip: 'No stacking' }}
+        />
+      );
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' }));
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('skips disabled options in keyboard navigation', () => {
+      const onChange = vi.fn();
+      // From dovetailKey, ArrowDown would land on snapClip — but it's disabled,
+      // so it wraps to the first selectable option instead.
+      render(
+        <ConnectorPicker
+          value="dovetailKey"
+          onChange={onChange}
+          disabledOptions={{ snapClip: 'No stacking' }}
+        />
+      );
+      fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowDown' });
+      expect(onChange).toHaveBeenCalledWith('none');
+    });
+  });
 });

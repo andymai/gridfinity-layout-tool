@@ -394,14 +394,15 @@ export function BaseplatePanel() {
             enabling it strips and hides the Base controls below. */}
         <StackPrintSection stackPrint={baseplateParams.stackPrint} onChange={setStackPrint} />
 
-        {/* 3. Base — connectors, magnets, corner radius. Hidden entirely while
-            stacking (which strips all of them; the Stack section's notice says
-            why), so it never shows as an empty collapsible group. */}
-        {!stackEnabled && (
+        {/* 3. Base — connectors, magnets, corner radius. While stacking, magnets
+            and corner rounding are stripped so they hide, but connectors stay
+            reachable (dovetail styles stack fine); the group only renders when it
+            still has content, so it never shows as an empty collapsible group. */}
+        {(tiling?.isSplit || !stackEnabled) && (
           <StickyGroupHeader
             title={t('baseplate.sectionBase')}
             summary={
-              baseplateParams.magnetHoles
+              !stackEnabled && baseplateParams.magnetHoles
                 ? `\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`
                 : undefined
             }
@@ -410,9 +411,18 @@ export function BaseplatePanel() {
               {tiling?.isSplit && (
                 <ConnectorPicker
                   value={
-                    baseplateParams.connectorNubs === true
-                      ? (baseplateParams.connectorStyle ?? 'dovetail')
-                      : 'none'
+                    // Snap clip is stripped while stacking, so show it as None
+                    // (the effective state); the stored style returns on toggle-off.
+                    stackEnabled && baseplateParams.connectorStyle === 'snapClip'
+                      ? 'none'
+                      : baseplateParams.connectorNubs === true
+                        ? (baseplateParams.connectorStyle ?? 'dovetail')
+                        : 'none'
+                  }
+                  disabledOptions={
+                    stackEnabled
+                      ? { snapClip: t('baseplate.connectors.snapClipNoStack') }
+                      : undefined
                   }
                   onChange={(v: ConnectorChoice) => {
                     if (v === 'none') {
@@ -479,60 +489,64 @@ export function BaseplatePanel() {
                   }
                 />
               )}
-              <div className="border-t border-stroke-subtle pt-3">
-                <FeatureToggle
-                  label={t('baseplate.magnetHoles')}
-                  checked={baseplateParams.magnetHoles}
-                  onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
-                  valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
-                >
-                  <SliderInput
-                    label={t('baseplate.magnetDiameter')}
-                    value={baseplateParams.magnetDiameter}
-                    onChange={(v) => updateParam('magnetDiameter', mm(v))}
-                    min={1}
-                    max={20}
-                    step={0.1}
-                    unit="mm"
-                    info={t('baseplate.magnetDiameterInfo')}
-                  />
-                  <SliderInput
-                    label={t('baseplate.magnetDepth')}
-                    value={baseplateParams.magnetDepth}
-                    onChange={(v) => updateParam('magnetDepth', mm(v))}
-                    min={0.5}
-                    max={10}
-                    step={0.1}
-                    unit="mm"
-                    info={t('baseplate.magnetDepthInfo')}
-                  />
-                </FeatureToggle>
-              </div>
-              <div className="border-t border-stroke-subtle pt-3">
-                <CornerRadiusControl
-                  cornerRadius={baseplateParams.cornerRadius}
-                  cornerRadii={baseplateParams.cornerRadii}
-                  maxRadius={
-                    gridUnitMm / 2 +
-                    Math.min(
-                      Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
-                      Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
-                    )
-                  }
-                  onUniformChange={(r) => {
-                    updateParam('cornerRadius', mm(r));
-                    updateParam('cornerRadii', undefined);
-                  }}
-                  onPerCornerChange={(radii) => {
-                    updateParam('cornerRadii', {
-                      tl: mm(radii.tl),
-                      tr: mm(radii.tr),
-                      bl: mm(radii.bl),
-                      br: mm(radii.br),
-                    });
-                  }}
-                />
-              </div>
+              {!stackEnabled && (
+                <>
+                  <div className="border-t border-stroke-subtle pt-3">
+                    <FeatureToggle
+                      label={t('baseplate.magnetHoles')}
+                      checked={baseplateParams.magnetHoles}
+                      onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
+                      valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
+                    >
+                      <SliderInput
+                        label={t('baseplate.magnetDiameter')}
+                        value={baseplateParams.magnetDiameter}
+                        onChange={(v) => updateParam('magnetDiameter', mm(v))}
+                        min={1}
+                        max={20}
+                        step={0.1}
+                        unit="mm"
+                        info={t('baseplate.magnetDiameterInfo')}
+                      />
+                      <SliderInput
+                        label={t('baseplate.magnetDepth')}
+                        value={baseplateParams.magnetDepth}
+                        onChange={(v) => updateParam('magnetDepth', mm(v))}
+                        min={0.5}
+                        max={10}
+                        step={0.1}
+                        unit="mm"
+                        info={t('baseplate.magnetDepthInfo')}
+                      />
+                    </FeatureToggle>
+                  </div>
+                  <div className="border-t border-stroke-subtle pt-3">
+                    <CornerRadiusControl
+                      cornerRadius={baseplateParams.cornerRadius}
+                      cornerRadii={baseplateParams.cornerRadii}
+                      maxRadius={
+                        gridUnitMm / 2 +
+                        Math.min(
+                          Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
+                          Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
+                        )
+                      }
+                      onUniformChange={(r) => {
+                        updateParam('cornerRadius', mm(r));
+                        updateParam('cornerRadii', undefined);
+                      }}
+                      onPerCornerChange={(radii) => {
+                        updateParam('cornerRadii', {
+                          tl: mm(radii.tl),
+                          tr: mm(radii.tr),
+                          bl: mm(radii.bl),
+                          br: mm(radii.br),
+                        });
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </StickyGroupHeader>
         )}

@@ -212,4 +212,29 @@ describe('buildTowerLayers', () => {
     expect(buildTowerLayers(plate(), 0, 10.2)).toHaveLength(1);
     expect(buildTowerLayers(plate(), 3.9, 10.2)).toHaveLength(3);
   });
+
+  it('preserves an asymmetric connector protrusion through the flip', () => {
+    // A plate whose +Y edge carries a dovetail tongue protruding to Y=33 — an
+    // asymmetric footprint, the case that matters for stacked connectored tiles.
+    // The flip must keep the protrusion (not clip it) but mirror it to the -Y
+    // end so every layer still shares one bounding footprint.
+    const base: StackMeshArrays = {
+      // floor triangle (Y 0..30) + tongue tip triangle protruding to Y=33.
+      vertices: new Float32Array([0, 0, 0, 20, 0, 0, 0, 30, 0, 8, 33, 5, 12, 33, 5, 10, 30, 5]),
+      normals: new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+      edgeVertices: new Float32Array(0),
+    };
+    const layers = buildTowerLayers(base, 2, 10);
+    const upright = meshBounds(layers[0].vertices);
+    const flipped = meshBounds(layers[1].vertices);
+    // Footprint span survives the flip: Y still reaches the protrusion at 33.
+    expect(flipped.minY).toBeCloseTo(upright.minY, 5);
+    expect(flipped.maxY).toBeCloseTo(upright.maxY, 5);
+    expect(upright.maxY).toBeCloseTo(33, 5);
+    // Vertex 3 is a tongue tip: at +Y (33) when upright, mirrored to the -Y edge
+    // (0) after the flip — asymmetry is re-centered, not lost.
+    expect(layers[0].vertices[10]).toBeCloseTo(33, 5);
+    expect(layers[1].vertices[10]).toBeCloseTo(0, 5);
+  });
 });

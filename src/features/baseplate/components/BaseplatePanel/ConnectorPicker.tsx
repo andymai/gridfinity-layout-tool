@@ -55,30 +55,43 @@ interface ConnectorPickerProps {
   readonly onChange: (value: ConnectorChoice) => void;
   /** Inline controls rendered inside the selected card (Interior-section style). */
   readonly renderExpanded?: (value: ConnectorChoice) => ReactNode;
+  /**
+   * Options that can't be selected right now, mapped to the reason shown under
+   * the card. Used to disable snap clip while vertical stacking is on.
+   */
+  readonly disabledOptions?: Partial<Record<ConnectorChoice, string>>;
 }
 
-export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPickerProps) {
+export function ConnectorPicker({
+  value,
+  onChange,
+  renderExpanded,
+  disabledOptions,
+}: ConnectorPickerProps) {
   const t = useTranslation();
   const groupRef = useRef<HTMLDivElement>(null);
 
   // Radio keyboard model: arrows/Home/End move the selection and focus, matching
-  // the design-system SegmentedControl.
+  // the design-system SegmentedControl. Disabled options are skipped.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      const index = OPTIONS.findIndex((o) => o.value === value);
+      const selectable = OPTIONS.filter((o) => !disabledOptions?.[o.value]);
+      if (selectable.length === 0) return;
+      const pos = selectable.findIndex((o) => o.value === value);
       let next: number;
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (pos + 1) % selectable.length;
       else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft')
-        next = (index - 1 + OPTIONS.length) % OPTIONS.length;
+        next = (pos - 1 + selectable.length) % selectable.length;
       else if (e.key === 'Home') next = 0;
-      else if (e.key === 'End') next = OPTIONS.length - 1;
+      else if (e.key === 'End') next = selectable.length - 1;
       else return;
       e.preventDefault();
-      if (next !== index) onChange(OPTIONS[next].value);
+      const nextValue = selectable[next].value;
+      if (nextValue !== value) onChange(nextValue);
       const radios = groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
-      radios?.[next]?.focus();
+      radios?.[OPTIONS.findIndex((o) => o.value === nextValue)]?.focus();
     },
-    [value, onChange]
+    [value, onChange, disabledOptions]
   );
 
   return (
@@ -95,16 +108,20 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
         className="space-y-1.5"
       >
         {OPTIONS.map(({ value: optionValue, titleKey, descKey, Icon }) => {
+          const disabledReason = disabledOptions?.[optionValue];
+          const disabled = disabledReason !== undefined;
           const selected = optionValue === value;
-          const expanded = selected ? renderExpanded?.(optionValue) : null;
+          const expanded = selected && !disabled ? renderExpanded?.(optionValue) : null;
           return (
             <div
               key={optionValue}
               className={cn(
                 'w-full rounded-lg border p-3 transition-all duration-200 ease-in-out',
-                selected
-                  ? 'border-accent bg-accent/5'
-                  : 'border-stroke-subtle bg-surface-elevated hover:bg-surface-hover'
+                disabled
+                  ? 'border-stroke-subtle bg-surface-elevated opacity-50'
+                  : selected
+                    ? 'border-accent bg-accent/5'
+                    : 'border-stroke-subtle bg-surface-elevated hover:bg-surface-hover'
               )}
             >
               <Button
@@ -112,12 +129,17 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                 variant="ghost"
                 role="radio"
                 aria-checked={selected}
+                aria-disabled={disabled}
+                disabled={disabled}
                 aria-label={t(titleKey)}
-                tabIndex={selected ? 0 : -1}
+                tabIndex={selected && !disabled ? 0 : -1}
                 onClick={() => {
-                  if (!selected) onChange(optionValue);
+                  if (!selected && !disabled) onChange(optionValue);
                 }}
-                className="flex h-auto w-full cursor-pointer items-start justify-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                className={cn(
+                  'flex h-auto w-full items-start justify-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent',
+                  disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+                )}
               >
                 <div className="mt-0.5 flex-shrink-0 text-content-secondary">
                   <Icon />
@@ -125,6 +147,9 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                 <div className="min-w-0 flex-1">
                   <h4 className="text-sm font-medium text-content-primary">{t(titleKey)}</h4>
                   <p className="mt-0.5 text-xs text-content-secondary">{t(descKey)}</p>
+                  {disabled && (
+                    <p className="mt-0.5 text-[11px] text-content-tertiary">{disabledReason}</p>
+                  )}
                 </div>
               </Button>
 

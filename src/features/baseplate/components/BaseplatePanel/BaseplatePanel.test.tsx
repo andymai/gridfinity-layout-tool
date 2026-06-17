@@ -354,6 +354,52 @@ describe('BaseplatePanel', () => {
         expect.objectContaining({ connectorNubs: true, connectorStyle: undefined })
       );
     });
+
+    describe('while vertical stacking', () => {
+      const stacking = { enabled: true, gapMm: 0.2 } as const;
+
+      it('keeps the connector picker reachable but hides magnets and corner radius', () => {
+        mockLayoutState.layout.baseplateParams = {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          connectorNubs: true,
+          stackPrint: stacking,
+        };
+        render(<BaseplatePanel />);
+        expect(
+          screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' })
+        ).toBeChecked();
+        expect(screen.queryByText('baseplate.magnetHoles')).toBeNull();
+        expect(screen.queryByText('baseplate.cornerRadius')).toBeNull();
+      });
+
+      it('disables the snap clip option with a reason', () => {
+        mockLayoutState.layout.baseplateParams = {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          connectorNubs: true,
+          connectorStyle: 'dovetailKey',
+          stackPrint: stacking,
+        };
+        render(<BaseplatePanel />);
+        expect(
+          screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
+        ).toBeDisabled();
+        expect(screen.getByText('baseplate.connectors.snapClipNoStack')).toBeInTheDocument();
+      });
+
+      it('shows snap clip as effectively none (it is stripped while stacking)', () => {
+        mockLayoutState.layout.baseplateParams = {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          connectorNubs: true,
+          connectorStyle: 'snapClip',
+          stackPrint: stacking,
+        };
+        render(<BaseplatePanel />);
+        expect(screen.getByRole('radio', { name: 'baseplate.connectors.none' })).toBeChecked();
+        expect(
+          screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
+        ).not.toBeChecked();
+      });
+    });
   });
 
   it('renders print bed size stepper', () => {

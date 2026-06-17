@@ -2200,6 +2200,7 @@ const en: Record<string, string> = {
   'baseplate.isoView': 'Iso',
   'baseplate.connectors.label': 'Connectors',
   'baseplate.connectors.none': 'None',
+  'baseplate.connectors.snapClipNoStack': "Can't be vertically stacked",
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.dovetailKey': 'Dovetail key',
   'baseplate.connectorStyle.snapClip': 'Snap clip',

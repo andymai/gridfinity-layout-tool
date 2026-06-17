@@ -255,8 +255,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             let keyData = keyResult.data;
             if (format === '3mf') {
               // The key is a discrete part (one per seam junction, count in the
-              // guide), not a plate — stacking never applies to it. Connectors
-              // are disabled while stacking, so this path only runs unstacked.
+              // guide), not a plate — stacking never applies to it. It prints
+              // flat on its own even when the plates are stacked into towers.
               const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`);
               keyData = await blob.arrayBuffer();
             }

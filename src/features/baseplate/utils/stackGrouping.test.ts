@@ -35,6 +35,29 @@ describe('stack-print grouping', () => {
     expect(groups.length).toBeGreaterThan(1);
   });
 
+  it('retains dovetail connectors while stacking; preferIdenticalPieces shrinks the group count', () => {
+    const connectored: CoreBaseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      connectorNubs: true, // dovetail (default style) — kept while stacking now
+      stackPrint: { enabled: true, gapMm: 0.2 as never },
+    };
+    // Connectors are no longer stripped, so edge position distinguishes
+    // interior/edge/corner tiles → more than one group (unlike the connector-free
+    // stack above, which dedupes to one).
+    const plain = plan(connectored, 16, 180);
+    expect(plain.groups.length).toBeGreaterThan(1);
+
+    // preferIdenticalPieces folds opposite-corner tiles together → fewer groups,
+    // recovering most of the dedup the bare stack would have had.
+    const paired = plan({ ...connectored, preferIdenticalPieces: true }, 16, 180);
+    expect(paired.groups.length).toBeLessThan(plain.groups.length);
+
+    // Every tile is still printed exactly once regardless of grouping.
+    const total = paired.groups.reduce((s, g) => s + g.quantity, 0);
+    expect(total).toBe(paired.tiling.pieces.length);
+    expect(paired.towers.reduce((s, t) => s + t.copies, 0)).toBe(total);
+  });
+
   it('leaves genuinely-unique pieces unmerged (14×14 @ 180mm has uneven tiles)', () => {
     // 14 = 4+4+3+3 → tiles of different sizes, so they can't all stack.
     const { groups, towers } = plan(stacking, 14, 180);

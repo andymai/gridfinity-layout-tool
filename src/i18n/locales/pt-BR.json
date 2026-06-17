@@ -34,6 +34,7 @@
   "baseplate.computingGeometry": "Refinando...",
   "baseplate.connectors.label": "Connectors",
   "baseplate.connectors.none": "None",
+  "baseplate.connectors.snapClipNoStack": "Não pode ser empilhado verticalmente",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
   "baseplate.connectorStyle.snapClip": "Snap clip",

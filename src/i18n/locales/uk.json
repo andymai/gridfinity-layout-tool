@@ -34,6 +34,7 @@
   "baseplate.computingGeometry": "Уточнення...",
   "baseplate.connectors.label": "Connectors",
   "baseplate.connectors.none": "None",
+  "baseplate.connectors.snapClipNoStack": "Не можна штабелювати вертикально",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
   "baseplate.connectorStyle.snapClip": "Snap clip",

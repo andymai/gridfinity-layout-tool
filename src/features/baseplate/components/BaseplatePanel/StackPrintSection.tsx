@@ -1,8 +1,10 @@
 /**
  * "Stack for printing" panel section (experimental): stack a drawer's baseplates
  * into vertical towers separated by an air gap — bottom plate upright, the rest
- * flipped. Connectors, magnet holes, and corner rounding are auto-disabled by
- * the parent when this is enabled. Rendered as a plain (non-collapsible) block.
+ * flipped. Magnet holes and corner rounding are auto-disabled by the parent when
+ * this is enabled (they bridge / break tile uniformity under the flip); dovetail
+ * connectors are kept, only snap clip is disabled. Rendered as a plain
+ * (non-collapsible) block.
  */
 
 import { mm } from '@/core/types';

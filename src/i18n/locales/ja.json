@@ -34,6 +34,7 @@
   "baseplate.computingGeometry": "最適化中…",
   "baseplate.connectors.label": "Connectors",
   "baseplate.connectors.none": "None",
+  "baseplate.connectors.snapClipNoStack": "縦積みできません",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
   "baseplate.connectorStyle.snapClip": "Snap clip",
