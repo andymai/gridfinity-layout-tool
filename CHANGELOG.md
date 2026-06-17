@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.184.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.0...gridfinity-layout-tool-v4.184.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **ui:** settings search icon sizing + cutout inspector hint spacing ([#2229](https://github.com/andymai/gridfinity-layout-tool/issues/2229)) ([9bbfda4](https://github.com/andymai/gridfinity-layout-tool/commit/9bbfda42ed20095113638e6c0c6fb9333b0b4c13))
+
 ## [4.184.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.8...gridfinity-layout-tool-v4.184.0) (2026-06-17)
 
 
