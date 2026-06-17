@@ -24,6 +24,11 @@ import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { clearSocketMeshCache } from './socketMeshCache';
 import { clearTextMetricsMemo } from './textBuilder';
+import {
+  clearTextSolidCache,
+  getTextSolidCacheStats,
+  resetTextSolidCacheStats,
+} from './textSolidCache';
 
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
@@ -226,6 +231,7 @@ export function clearAllCaches(): void {
   }
   clearSocketMeshCache();
   clearTextMetricsMemo();
+  clearTextSolidCache();
   if (patternTemplateCache) {
     patternTemplateCache.shape.delete();
     patternTemplateCache = null;
@@ -250,6 +256,7 @@ export function getAllShapeCacheStats(): CacheStats[] {
   return [
     ...staticLruCaches.map((cache) => cache.getStats()),
     ...[...featureToolCaches.values()].map((cache) => cache.getStats()),
+    getTextSolidCacheStats(),
   ];
 }
 
@@ -261,4 +268,5 @@ export function resetAllShapeCacheStats(): void {
   for (const cache of featureToolCaches.values()) {
     cache.resetStats();
   }
+  resetTextSolidCacheStats();
 }

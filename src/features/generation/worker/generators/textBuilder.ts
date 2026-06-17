@@ -28,6 +28,7 @@ import {
 } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { TextFontFamily, TextMode } from '@/shared/types/bin';
+import { getTextSolid, setTextSolid, textSolidKey } from './textSolidCache';
 
 export interface FitResult {
   /** Rendered font size in mm; `0` if `fits` is false. */
@@ -268,20 +269,64 @@ export function buildTextSolid(
         ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
         : -(options.depth + TEXT_BOOLEAN_EPSILON);
 
-  const sketches = sketchText(
+  // Reuse the canonical glyph solid (sketched at Z=0) when another compartment
+  // already built this exact text. The Z lift onto the host face is folded into
+  // the translate below — building at Z=0 then translating by `sketchOriginZ` is
+  // identical to sketching there, but the geometry is placement-independent and
+  // therefore shareable across compartments.
+  const canonical = getOrBuildCanonicalTextSolid(
+    scope,
     trimmed,
-    { fontSize: fit.fontSize, fontFamily },
-    { plane: 'XY' as PlaneName, origin: [0, 0, sketchOriginZ] }
+    fontFamily,
+    options.mode,
+    fit.fontSize,
+    options.depth,
+    options.hostThickness,
+    extrusion
   );
-  const extruded = scope.register(sketches.extrude(extrusion));
 
   // textMetrics: width is total advance; vertical bbox spans descender..ascender.
   // Visual centroid in the sketch frame = (width/2, (ascender + descender)/2).
   const visualCenterX = metrics.value.width / 2;
   const visualCenterY = (metrics.value.ascender + metrics.value.descender) / 2;
   const solid = scope.register(
-    translate(extruded, [options.centerX - visualCenterX, options.centerY - visualCenterY, 0])
+    translate(canonical, [
+      options.centerX - visualCenterX,
+      options.centerY - visualCenterY,
+      sketchOriginZ,
+    ])
   );
 
   return { solid, op: options.mode === 'emboss' ? 'fuse' : 'cut' };
+}
+
+/**
+ * Build the canonical glyph solid (sketch origin at Z=0) for the given text, or
+ * return a clone of the cached one. The returned shape is registered in `scope`
+ * so the caller can translate it and let the scope dispose it; an independent
+ * clone is what lives in the cache (never scope-registered — see textSolidCache).
+ */
+function getOrBuildCanonicalTextSolid(
+  scope: DisposalScope,
+  text: string,
+  fontFamily: TextFontFamily,
+  mode: TextMode,
+  fontSize: number,
+  depth: number,
+  hostThickness: number,
+  extrusion: number
+): Shape3D {
+  const key = textSolidKey(text, fontFamily, mode, fontSize, depth, hostThickness);
+  const hit = getTextSolid(key);
+  if (hit) return scope.register(hit);
+
+  const sketches = sketchText(
+    text,
+    { fontSize, fontFamily },
+    { plane: 'XY' as PlaneName, origin: [0, 0, 0] }
+  );
+  const extruded = sketches.extrude(extrusion);
+  // Cache an independent clone before handing the built shape to the scope.
+  setTextSolid(key, extruded);
+  return scope.register(extruded);
 }
