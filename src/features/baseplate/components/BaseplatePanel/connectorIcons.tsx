@@ -5,6 +5,8 @@
  * - None: two plates with a clean seam (no joiner).
  * - Dovetail: a wide-tipped trapezoidal tongue mating into its groove
  *   (TONGUE_BASE_HALF 1.0 → TONGUE_TIP_HALF 1.3), drawn slightly apart.
+ * - Puzzle: a jigsaw tab (narrow neck flaring to a wider rounded head) mating into
+ *   its groove — the stronger locking variant (PUZZLE_NECK_HALF → PUZZLE_HEAD_HALF).
  * - Dovetail key: the standalone double-dovetail key, a horizontal bowtie.
  * - Snap clip: the X-Z cross-section — two legs joined by a flush top bridge with
  *   a central flex slot, each leg carrying an outward barb near its tip.
@@ -51,6 +53,17 @@ export function IconConnectorDovetail() {
     <svg {...svgProps}>
       <path d="M4 8H14V12L16 10V22L14 20V24H4Z" {...solid} />
       <path d="M28 8H18V12L20 10V22L18 20V24H28Z" {...solid} />
+    </svg>
+  );
+}
+
+/** Puzzle: a jigsaw tab (narrow neck → wider rounded head) on one plate and its
+ *  matching groove on the other, drawn slightly apart so the locking joint reads. */
+export function IconConnectorPuzzle() {
+  return (
+    <svg {...svgProps}>
+      <path d="M4 8H12V13.5H14V10.5H15.5V21.5H14V18.5H12V24H4Z" {...solid} />
+      <path d="M28 8H20V13.5H18V10.5H16.5V21.5H18V18.5H20V24H28Z" {...solid} />
     </svg>
   );
 }

@@ -223,7 +223,7 @@ const baseplateParamsSchema = z.object({
   paddingAnchor: z.enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom']).optional(),
   connectorNubs: z.boolean().optional(),
   invertDovetails: z.boolean().optional(),
-  connectorStyle: z.enum(['dovetail', 'dovetailKey', 'snapClip']).optional(),
+  connectorStyle: z.enum(['dovetail', 'puzzle', 'dovetailKey', 'snapClip']).optional(),
   lightweight: z.boolean().optional(),
   syncWithLayout: z.boolean().optional(),
   baseplateWidth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),

@@ -432,7 +432,8 @@ export function BaseplatePanel() {
                     // 'dovetail' is the default, stored as undefined.
                     updateParams({
                       connectorNubs: true,
-                      connectorStyle: v === 'dovetailKey' || v === 'snapClip' ? v : undefined,
+                      connectorStyle:
+                        v === 'dovetailKey' || v === 'snapClip' || v === 'puzzle' ? v : undefined,
                     });
                   }}
                   renderExpanded={(style) =>
@@ -462,15 +463,16 @@ export function BaseplatePanel() {
                             aria-label={t('baseplate.connectorFit.label')}
                           />
                         </SettingsRow>
-                        {style === 'dovetail' && baseplateParams.preferIdenticalPieces !== true && (
-                          <Checkbox
-                            checked={baseplateParams.invertDovetails === true}
-                            onChange={(checked) =>
-                              updateParam('invertDovetails', checked || undefined)
-                            }
-                            label={t('baseplate.dovetails.invert')}
-                          />
-                        )}
+                        {(style === 'dovetail' || style === 'puzzle') &&
+                          baseplateParams.preferIdenticalPieces !== true && (
+                            <Checkbox
+                              checked={baseplateParams.invertDovetails === true}
+                              onChange={(checked) =>
+                                updateParam('invertDovetails', checked || undefined)
+                              }
+                              label={t('baseplate.dovetails.invert')}
+                            />
+                          )}
                         <Checkbox
                           checked={baseplateParams.preferIdenticalPieces === true}
                           onChange={(checked) =>

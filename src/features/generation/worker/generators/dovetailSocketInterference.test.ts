@@ -117,4 +117,13 @@ describe('integral dovetail tongue vs neighbour edge-socket interference', () =>
     );
     expect(overlap, 'tongue ∩ neighbour feet').toBeLessThan(0.02);
   }, 60_000);
+
+  it('puzzle tongues clear the neighbour feet while retaining locking material', () => {
+    const { overlap, tongueVol } = tongueFootOverlap(
+      defaults({ connectorStyle: 'puzzle', preferIdenticalPieces: true })
+    );
+    expect(overlap, 'puzzle tongue ∩ neighbour feet').toBeLessThan(0.02);
+    // The wider puzzle head keeps more locking material than the legacy dovetail.
+    expect(tongueVol, 'puzzle tongues retain locking material').toBeGreaterThan(12);
+  }, 60_000);
 });

@@ -14,6 +14,9 @@ describe('ConnectorPicker', () => {
       screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' })
     ).toBeInTheDocument();
     expect(
+      screen.getByRole('radio', { name: 'baseplate.connectorStyle.puzzle' })
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetailKey' })
     ).toBeInTheDocument();
     expect(

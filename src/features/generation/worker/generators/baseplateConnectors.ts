@@ -33,13 +33,19 @@
  */
 
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
+  PUZZLE_NECK_HALF,
+  PUZZLE_NECK_PROTRUSION,
+  PUZZLE_HEAD_HALF,
+  PUZZLE_PROTRUSION,
+  PUZZLE_ARMPIT_FILLET,
+  PUZZLE_HEAD_FILLET,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
   CLEARANCE,
@@ -122,9 +128,11 @@ function relieveTongueForSockets(
   magnetHoles: boolean,
   forExport: boolean
 ): Shape3D {
-  // Tongue half-width at the tip plus its groove clearance and a small margin —
-  // the boundary-axis reach over which a neighbour socket can touch the tongue.
-  const reach = TONGUE_TIP_HALF + TONGUE_CLEARANCE + 0.5;
+  // Widest tongue half-width (the puzzle head ≥ the legacy tip) plus groove
+  // clearance and a small margin — the boundary-axis reach over which a neighbour
+  // socket can touch the tongue. Over-reaching for the narrower legacy dovetail is
+  // harmless (only overlapping sockets are actually subtracted).
+  const reach = PUZZLE_HEAD_HALF + TONGUE_CLEARANCE + 0.5;
   // Match the slab's pocket depth: through-cut without magnets, blind (socket
   // region only) with magnets so the tongue keeps its floor/joint material.
   const throughCut = !magnetHoles;
@@ -175,6 +183,9 @@ export function buildConnectors(
   const isDovetailKey = params.connectorStyle === 'dovetailKey';
   const isSnapClip = params.connectorStyle === 'snapClip';
   const bothFemale = isDovetailKey || isSnapClip;
+  // Puzzle: an integral jigsaw-tab tongue/groove (stronger than the legacy
+  // slip-fit `dovetail`, issue #2241). Integral, so invert/paired apply normally.
+  const isPuzzle = params.connectorStyle === 'puzzle';
 
   // Snap-clip blind pockets need a minimum leg-flex depth; on a slab too thin
   // to flex, skip them (the part would snap off rather than click). The UI
@@ -282,6 +293,28 @@ export function buildConnectors(
     },
   ];
 
+  // Build a tongue/groove with the right profile for the style: the legacy
+  // trapezoid for `dovetail`/`dovetailKey`, or the rounded jigsaw lobe for
+  // `puzzle`. Both are full-height (printable, no overhang, stack-safe).
+  const mkTongue = (
+    pt: (wall: number, bp: number) => [number, number],
+    w: number,
+    bp: number,
+    d: -1 | 1
+  ): Shape3D =>
+    isPuzzle
+      ? makePuzzleTongue(pt, w, bp, d, totalHeight)
+      : makeTongue(pt, w, bp, d, P, bW, tW, totalHeight);
+  const mkGroove = (
+    pt: (wall: number, bp: number) => [number, number],
+    w: number,
+    bp: number,
+    d: -1 | 1
+  ): Shape3D =>
+    isPuzzle
+      ? makePuzzleGroove(pt, w, bp, d, cl, ext, totalHeight)
+      : makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight);
+
   // Trim a freshly-built tongue back to the wall region so it can't poke into
   // the neighbouring piece's open sockets across the seam (`bpTongue` is the
   // tongue's centre along the edge's boundary axis).
@@ -325,12 +358,12 @@ export function buildConnectors(
       } else if (paired) {
         const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
         const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
-        tongues.push(relieveTongue(makeTongue(pt, w, mBp, d, P, bW, tW, totalHeight), mBp, def));
-        grooves.push(makeGroove(pt, w, fBp, d, P, bW, tW, cl, ext, totalHeight));
+        tongues.push(relieveTongue(mkTongue(pt, w, mBp, d), mBp, def));
+        grooves.push(mkGroove(pt, w, fBp, d));
       } else if (def.isMale) {
-        tongues.push(relieveTongue(makeTongue(pt, w, bp, d, P, bW, tW, totalHeight), bp, def));
+        tongues.push(relieveTongue(mkTongue(pt, w, bp, d), bp, def));
       } else {
-        grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
+        grooves.push(mkGroove(pt, w, bp, d));
       }
     }
   }
@@ -382,6 +415,86 @@ export function makeGroove(
     .lineTo(pt(w - d * gP, bp - gT))
     .lineTo(pt(w + d * ext, bp - gB))
     .close();
+  return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
+}
+
+/**
+ * One half of a puzzle (jigsaw-tab) plan-view outline (`connectorStyle: 'puzzle'`),
+ * drawn from the wall outward in the `pd` protrusion direction: a narrow neck
+ * (half-width `PUZZLE_NECK_HALF`) flaring to a wider, rounded HEAD lobe
+ * (`PUZZLE_HEAD_HALF`). The re-entrant neck→head armpits ({@link PUZZLE_ARMPIT_FILLET})
+ * and the head's shoulder + tip corners ({@link PUZZLE_HEAD_FILLET}) are rounded so
+ * the tab reads as a clean designed lobe and the neck loses its stress riser.
+ *
+ * `clear` grows every face away from the solid (0 for the tongue, the groove
+ * clearance for the groove); `wallBack` is how far the wall end runs back AGAINST
+ * the protrusion (COPLANAR_OVERLAP into the slab for the tongue's fuse; the cut's
+ * overhang past the wall for the groove). Total reach is `PUZZLE_PROTRUSION`
+ * (= TONGUE_PROTRUSION) so bed-budget/bbox math matches the legacy dovetail.
+ */
+function puzzleOutline(
+  pt: (wall: number, bp: number) => [number, number],
+  w: number,
+  bp: number,
+  pd: -1 | 1,
+  clear: number,
+  wallBack: number
+): Drawing {
+  const nH = PUZZLE_NECK_HALF + clear;
+  const hH = PUZZLE_HEAD_HALF + clear;
+  // Shoulder moves wall-ward by the clearance so the seated head's underside keeps
+  // a per-side gap to the groove ledge it locks against.
+  const nP = PUZZLE_NECK_PROTRUSION - clear;
+  const reach = PUZZLE_PROTRUSION + clear;
+  const fA = PUZZLE_ARMPIT_FILLET;
+  const fH = PUZZLE_HEAD_FILLET;
+  return draw(pt(w - pd * wallBack, bp + nH))
+    .lineTo(pt(w + pd * nP, bp + nH))
+    .customCorner(fA) // +side armpit (re-entrant neck→head notch)
+    .lineTo(pt(w + pd * nP, bp + hH))
+    .customCorner(fH) // +side shoulder (rounds the lobe)
+    .lineTo(pt(w + pd * reach, bp + hH))
+    .customCorner(fH) // +side tip
+    .lineTo(pt(w + pd * reach, bp - hH))
+    .customCorner(fH) // −side tip
+    .lineTo(pt(w + pd * nP, bp - hH))
+    .customCorner(fH) // −side shoulder
+    .lineTo(pt(w + pd * nP, bp - nH))
+    .customCorner(fA) // −side armpit
+    .lineTo(pt(w - pd * wallBack, bp - nH))
+    .close();
+}
+
+/**
+ * Puzzle tongue (male). Protrudes in `+d`; its head, wider than the neck, is
+ * trapped against horizontal pull-out by the neck constriction in the mating
+ * groove once the pieces drop together vertically. Full-height and a constant Z
+ * cross-section, so the protrusion prints as a self-supported prism with no
+ * overhang — in either orientation, so it stack-prints cleanly too.
+ */
+function makePuzzleTongue(
+  pt: (wall: number, bp: number) => [number, number],
+  w: number,
+  bp: number,
+  d: -1 | 1,
+  totalHeight: number
+): Shape3D {
+  const profile = puzzleOutline(pt, w, bp, d, 0, COPLANAR_OVERLAP);
+  return sketch(profile, 'XY', 0).extrude(-totalHeight);
+}
+
+/** Puzzle groove (female): the tongue outline grown by `cl` on every face, carved
+ *  in `−d` (into the piece) and extended beyond the wall and in Z. */
+function makePuzzleGroove(
+  pt: (wall: number, bp: number) => [number, number],
+  w: number,
+  bp: number,
+  d: -1 | 1,
+  cl: number,
+  ext: number,
+  totalHeight: number
+): Shape3D {
+  const profile = puzzleOutline(pt, w, bp, -d as -1 | 1, cl, ext);
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
 }
 

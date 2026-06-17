@@ -109,13 +109,16 @@ export interface BaseplateParams {
   readonly preferIdenticalPieces?: boolean;
   /**
    * Connector geometry on join edges when `connectorNubs` is enabled
-   * (default 'dovetail'). 'dovetailKey' cuts a female groove on both sides of each
-   * seam and ships a separate, hammered-in dovetail key part instead of an
-   * integral male tongue. 'snapClip' cuts a blind, ledged pocket on both sides of
-   * each seam and ships a separate top-insert snap clip (a "staple") whose barbs
-   * catch the pocket ledges. Only meaningful when `connectorNubs` is true.
+   * (default 'dovetail'). 'puzzle' is a stronger integral connector — a jigsaw tab
+   * (necked tongue/groove) that mechanically locks (the legacy 'dovetail' is a
+   * near-flat slip fit; it's kept unchanged so plates already printed with it stay
+   * reproducible). 'dovetailKey' cuts a female groove on both sides of each seam
+   * and ships a separate, hammered-in dovetail key part instead of an integral
+   * male tongue. 'snapClip' cuts a blind, ledged pocket on both sides of each seam
+   * and ships a separate top-insert snap clip (a "staple") whose barbs catch the
+   * pocket ledges. Only meaningful when `connectorNubs` is true.
    */
-  readonly connectorStyle?: 'dovetail' | 'dovetailKey' | 'snapClip';
+  readonly connectorStyle?: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
   /**
    * User fit offset (mm) added to the per-side connector groove clearance to
    * compensate for printer/filament variation (issue #2024). Positive = looser,

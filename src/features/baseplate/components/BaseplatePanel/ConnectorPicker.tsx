@@ -12,11 +12,12 @@ import { useTranslation } from '@/i18n';
 import {
   IconConnectorNone,
   IconConnectorDovetail,
+  IconConnectorPuzzle,
   IconConnectorDovetailKey,
   IconConnectorSnapClip,
 } from './connectorIcons';
 
-export type ConnectorChoice = 'none' | 'dovetail' | 'dovetailKey' | 'snapClip';
+export type ConnectorChoice = 'none' | 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
 
 const OPTIONS: ReadonlyArray<{
   value: ConnectorChoice;
@@ -35,6 +36,12 @@ const OPTIONS: ReadonlyArray<{
     titleKey: 'baseplate.connectorStyle.dovetail',
     descKey: 'baseplate.connectorDesc.dovetail',
     Icon: IconConnectorDovetail,
+  },
+  {
+    value: 'puzzle',
+    titleKey: 'baseplate.connectorStyle.puzzle',
+    descKey: 'baseplate.connectorDesc.puzzle',
+    Icon: IconConnectorPuzzle,
   },
   {
     value: 'dovetailKey',

@@ -28,6 +28,46 @@ export const TONGUE_BASE_HALF = 1.0;
 /** Half-width at the protruding tip — wide end of the dovetail (mm). */
 export const TONGUE_TIP_HALF = 1.3;
 
+/**
+ * "Puzzle" connector (`connectorStyle: 'puzzle'`) — a stronger integral connector
+ * than the legacy slip-fit `dovetail`, added as its OWN style so it doesn't change
+ * the geometry of plates already printed with `dovetail` (issue #2241).
+ *
+ * The legacy dovetail is a near-flat trapezoid (tapers only 1.0 → 1.3 mm =
+ * 0.3 mm undercut/side, which FDM clearance + elephant-foot squish swallow, so it
+ * doesn't hold). The puzzle is instead a jigsaw-style tab: a narrow NECK at the
+ * wall flaring to a wider, rounded HEAD. Pulling the plates apart drags the wide
+ * head against the narrower neck channel in the mating groove, so it locks. The
+ * neck→head armpits and the head corners are rounded ({@link PUZZLE_ARMPIT_FILLET},
+ * {@link PUZZLE_HEAD_FILLET}) for a clean, designed look and to relieve the FDM
+ * stress riser at the neck.
+ *
+ *      wall │ neck │     head (rounded lobe)
+ *      ─────┤ ┌──┐ │   ╭──────────╮
+ *           │ │  ╰─┤  (            )   the shoulder ledge (HEAD_HALF − NECK_HALF
+ *      ─────┤ │  ╭─┤  (   lobe     )   per side) is the catch that resists pull-out
+ *           │ └──┘ │   ╰──────────╯
+ *           ├P_NECK┼──── P_HEAD ────┤
+ *
+ * Full-height like the legacy dovetail, and — being a constant Z cross-section —
+ * the protruding tongue prints as a self-supported vertical prism with NO overhang
+ * in either orientation, so it also stack-prints (alternate tiles flipped) cleanly.
+ * The head stays narrower than the inter-cell wall so a full-depth groove doesn't
+ * sever cells, and total reach is kept at {@link TONGUE_PROTRUSION} so the
+ * bed-budget / bbox math is shared with the legacy dovetail unchanged.
+ */
+export const PUZZLE_NECK_HALF = 0.9;
+/** Neck reach before the head flares (mm); head reach = PUZZLE_PROTRUSION − this. */
+export const PUZZLE_NECK_PROTRUSION = 0.6;
+/** Head half-width (the widest point); undercut per side = PUZZLE_HEAD_HALF − PUZZLE_NECK_HALF (mm). */
+export const PUZZLE_HEAD_HALF = 1.9;
+/** Total reach past the wall (mm). Equals the legacy reach so bed/bbox math is shared. */
+export const PUZZLE_PROTRUSION = TONGUE_PROTRUSION;
+/** Fillet at the re-entrant neck→head armpit — relieves the stress riser (mm). */
+export const PUZZLE_ARMPIT_FILLET = 0.3;
+/** Fillet at the head's shoulder + tip corners — rounds the lobe for a designed look (mm). */
+export const PUZZLE_HEAD_FILLET = 0.4;
+
 /** Per-side groove clearance for the slip-fit integral dovetail (mm). */
 export const TONGUE_CLEARANCE = 0.15;
 

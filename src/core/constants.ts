@@ -293,6 +293,7 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
       ? { preferIdenticalPieces: obj.preferIdenticalPieces }
       : {}),
     ...(obj.connectorStyle === 'dovetail' ||
+    obj.connectorStyle === 'puzzle' ||
     obj.connectorStyle === 'dovetailKey' ||
     obj.connectorStyle === 'snapClip'
       ? { connectorStyle: obj.connectorStyle }

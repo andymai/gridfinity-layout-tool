@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "baseplate.connectorStyle.puzzle",
     "binDesigner.cutouts.scanImport.resultSize",
     "baseplate.stackPrint.plates.one",
     "settings.search.inTab",

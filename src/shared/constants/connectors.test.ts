@@ -5,6 +5,11 @@ import {
   MIN_CONNECTOR_CLEARANCE,
   CONNECTOR_FIT_OFFSET_MIN,
   CONNECTOR_FIT_OFFSET_MAX,
+  TONGUE_PROTRUSION,
+  PUZZLE_NECK_HALF,
+  PUZZLE_HEAD_HALF,
+  PUZZLE_NECK_PROTRUSION,
+  PUZZLE_PROTRUSION,
   SNAP_CLIP,
   effectiveClearance,
   snapClipLevels,
@@ -46,6 +51,31 @@ describe('effectiveClearance', () => {
       DOVETAIL_KEY_CLEARANCE + 0.1,
       10
     );
+  });
+});
+
+describe('puzzle connector lock geometry (issue #2241)', () => {
+  it('flares the head wider than the neck so it cannot retract through the constriction', () => {
+    // The lock is the head overhanging the neck: pulling the plates apart drags
+    // the wide head against the narrower neck channel in the mating groove.
+    expect(PUZZLE_HEAD_HALF).toBeGreaterThan(PUZZLE_NECK_HALF);
+  });
+
+  it('provides a real per-side undercut — far more than the legacy slip-fit dovetail', () => {
+    // Legacy dovetail tapered 1.0→1.3 (0.3mm/side), swallowed by clearance + squish.
+    const undercutPerSide = PUZZLE_HEAD_HALF - PUZZLE_NECK_HALF;
+    expect(undercutPerSide).toBeGreaterThanOrEqual(0.8);
+    // …and comfortably exceed the slip-fit clearance so the catch survives it.
+    expect(undercutPerSide).toBeGreaterThan(TONGUE_CLEARANCE * 3);
+  });
+
+  it('keeps the neck a printable ligament (≥2 perimeters at the 0.4mm nozzle)', () => {
+    expect(2 * PUZZLE_NECK_HALF).toBeGreaterThanOrEqual(2 * 0.4);
+  });
+
+  it('shares the legacy reach so split-plate bed-budget / bbox math is unchanged', () => {
+    expect(PUZZLE_PROTRUSION).toBe(TONGUE_PROTRUSION);
+    expect(PUZZLE_NECK_PROTRUSION).toBeLessThan(PUZZLE_PROTRUSION);
   });
 });
 

@@ -282,8 +282,12 @@ function generatePieceTable(
     // Dovetail key and snap clip connectors are flush at the seam (both sides
     // female), so no tongue protrusion is added to the piece bbox — only the
     // integral dovetail protrudes.
+    // Integral male-tongue styles (legacy dovetail + puzzle) protrude past the
+    // wall; key/clip styles are flush at the seam. Puzzle reach == TONGUE_PROTRUSION.
     const isIntegralDovetail =
-      parentParams.connectorStyle === undefined || parentParams.connectorStyle === 'dovetail';
+      parentParams.connectorStyle === undefined ||
+      parentParams.connectorStyle === 'dovetail' ||
+      parentParams.connectorStyle === 'puzzle';
     const tongue = parentParams.connectorNubs && isIntegralDovetail ? TONGUE_PROTRUSION : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
