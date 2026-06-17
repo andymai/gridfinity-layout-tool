@@ -291,6 +291,31 @@ export const solidCutouts: ScenarioCase[] = [
       ],
     },
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered path cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Path chamfer flattens the outline and offsets it for the flared rim; the
+      // cut must still land (mustCut) and not silently fall back to an uncut bin.
+      cutouts: [
+        makeCutout({
+          shape: 'path',
+          x: 10,
+          y: 10,
+          width: 24,
+          depth: 24,
+          chamferWidth: 1.5,
+          path: [
+            { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 34, y: 12, handleIn: null, handleOut: null, symmetric: false },
+            { x: 30, y: 34, handleIn: null, handleOut: null, symmetric: false },
+            { x: 12, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        }),
+      ],
+    },
+    compareWith: mustCut,
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with curved path cutout (bezier handles)', {
     params: {
       style: 'solid',

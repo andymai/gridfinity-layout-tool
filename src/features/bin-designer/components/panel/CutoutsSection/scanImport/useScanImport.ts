@@ -9,6 +9,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
@@ -33,7 +34,14 @@ export function useScanImport(): UseScanImportReturn {
       startTransaction();
       try {
         for (const spec of specs) {
-          addCutout(specToCutout(spec, hydrationOptions));
+          const cutout = specToCutout(spec, hydrationOptions);
+          // Give scanned outlines a slight self-centering entry chamfer by default
+          // (the in-plane fit clearance is already baked into the traced geometry).
+          const chamferWidth =
+            cutout.shape === 'path'
+              ? defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth)
+              : cutout.chamferWidth;
+          addCutout({ ...cutout, chamferWidth });
         }
       } finally {
         commitTransaction();

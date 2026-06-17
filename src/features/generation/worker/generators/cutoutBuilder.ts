@@ -57,6 +57,7 @@ import {
 } from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
+import { offsetClosedPolygon } from './polygonOffset';
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
   readonly minX: number;
@@ -225,15 +226,25 @@ function buildUnrotatedCutoutShape(cutout: {
       ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - 0.2))
       : 0;
   if (chamfer > 0.05) {
-    return buildChamferedCutoutShape({
-      shape: cutout.shape,
-      w,
-      d,
-      cornerRadius: cutout.cornerRadius,
-      sides: cutout.sides,
-      cutDepth: cutout.cutDepth,
-      chamfer,
-    });
+    if (cutout.shape === 'path') {
+      // Paths can't use the parametric profile loft; flatten + offset the outline
+      // for the flared rim. On any failure, fall through to a straight extrude.
+      try {
+        return buildChamferedPathShape(cutout, chamfer);
+      } catch {
+        /* fall through to the straight `case 'path'` below */
+      }
+    } else {
+      return buildChamferedCutoutShape({
+        shape: cutout.shape,
+        w,
+        d,
+        cornerRadius: cutout.cornerRadius,
+        sides: cutout.sides,
+        cutDepth: cutout.cutDepth,
+        chamfer,
+      });
+    }
   }
 
   switch (cutout.shape) {
@@ -363,6 +374,50 @@ function buildPathCutoutShape(cutout: {
   const wire = pen.close();
 
   return sketch(wire, 'XY').extrude(cutout.cutDepth);
+}
+
+/**
+ * Entry-chamfered path cutout: a 3-section ruled loft (nominal base → nominal at
+ * `cutDepth − chamfer` → outline offset outward by `chamfer` at the top rim), so
+ * a freeform outline gets the same ~45° self-centering countersink as the
+ * parametric shapes. Throws on degenerate/self-intersecting input or a bad
+ * offset so the caller can fall back to a straight extrude.
+ */
+function buildChamferedPathShape(
+  cutout: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly depth: number;
+    readonly cutDepth: number;
+    readonly path?: readonly PathPoint[];
+  },
+  chamfer: number
+): Shape3D {
+  const path = cutout.path;
+  if (!path || path.length < MIN_PATH_POINTS) throw new Error('path: too few points');
+
+  const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
+  if (polyline.length < 3 || polylineSelfIntersects(polyline)) throw new Error('path: degenerate');
+
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  const base = polyline.map((p) => ({ x: p.x - cx, y: p.y - cy }));
+  const flared = offsetClosedPolygon(base, chamfer);
+  if (flared.length !== base.length || polylineSelfIntersects(flared)) {
+    throw new Error('path: bad offset');
+  }
+
+  const drawing = (pts: readonly { x: number; y: number }[]): Drawing => {
+    let pen = draw([pts[0].x, pts[0].y]);
+    for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
+    return pen.close();
+  };
+
+  const baseSketch = drawing(base).sketchOnPlane('XY', 0) as Sketch;
+  const straightTop = drawing(base).sketchOnPlane('XY', cutout.cutDepth - chamfer) as Sketch;
+  const flaredTop = drawing(flared).sketchOnPlane('XY', cutout.cutDepth) as Sketch;
+  return baseSketch.loftWith([straightTop, flaredTop], { ruled: true });
 }
 
 /** Flatten a closed bezier path to an open polyline for 3D generation.

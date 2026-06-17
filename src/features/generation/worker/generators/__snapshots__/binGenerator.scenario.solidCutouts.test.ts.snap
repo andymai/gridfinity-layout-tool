@@ -10,6 +10,8 @@ exports[`solid cutouts > 2×2 solid with chamfered ellipse cutout 1`] = `3044`;
 
 exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2622`;
 
+exports[`solid cutouts > 2×2 solid with chamfered path cutout 1`] = `2564`;
+
 exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `2660`;
 
 exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2928`;

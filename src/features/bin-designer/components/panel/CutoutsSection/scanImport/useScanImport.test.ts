@@ -74,6 +74,14 @@ describe('useScanImport', () => {
     const added = mockAddCutout.mock.calls[0][0];
     expect(added.shape).toBe('path');
     expect(added.path).toEqual(path);
+    // Scanned path outlines get a slight self-centering entry chamfer by default.
+    expect(added.chamferWidth).toBeGreaterThan(0);
+  });
+
+  it('does not force a default chamfer on non-path scan specs', () => {
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([spec({ shape: 'rectangle' })]);
+    expect(mockAddCutout.mock.calls[0][0].chamferWidth).toBeUndefined();
   });
 
   it('commits the transaction even if an addition throws', () => {
