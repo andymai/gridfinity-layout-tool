@@ -72,16 +72,21 @@ export function ConnectorPicker({
   const groupRef = useRef<HTMLDivElement>(null);
 
   // Radio keyboard model: arrows/Home/End move the selection and focus, matching
-  // the design-system SegmentedControl. Disabled options are skipped.
+  // the design-system SegmentedControl. Disabled options are skipped. An option
+  // is disabled when it has a reason entry (any string, including empty), so the
+  // keyboard filter and the per-card render agree.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      const selectable = OPTIONS.filter((o) => !disabledOptions?.[o.value]);
+      const selectable = OPTIONS.filter((o) => disabledOptions?.[o.value] === undefined);
       if (selectable.length === 0) return;
+      // If the current value is itself disabled, findIndex returns -1; treat that
+      // as "before the first selectable" so arrows land on a valid neighbour.
       const pos = selectable.findIndex((o) => o.value === value);
       let next: number;
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (pos + 1) % selectable.length;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight')
+        next = pos < 0 ? 0 : (pos + 1) % selectable.length;
       else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft')
-        next = (pos - 1 + selectable.length) % selectable.length;
+        next = pos < 0 ? selectable.length - 1 : (pos - 1 + selectable.length) % selectable.length;
       else if (e.key === 'Home') next = 0;
       else if (e.key === 'End') next = selectable.length - 1;
       else return;

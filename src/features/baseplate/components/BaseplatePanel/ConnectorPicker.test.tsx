@@ -89,6 +89,22 @@ describe('ConnectorPicker', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    it('treats an empty-string reason as disabled (render + keyboard agree)', () => {
+      const onChange = vi.fn();
+      render(
+        <ConnectorPicker
+          value="dovetailKey"
+          onChange={onChange}
+          disabledOptions={{ snapClip: '' }}
+        />
+      );
+      expect(
+        screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
+      ).toBeDisabled();
+      fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowDown' });
+      expect(onChange).toHaveBeenCalledWith('none');
+    });
+
     it('skips disabled options in keyboard navigation', () => {
       const onChange = vi.fn();
       // From dovetailKey, ArrowDown would land on snapClip — but it's disabled,
