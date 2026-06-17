@@ -3,6 +3,10 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
+import { loadFont } from 'brepjs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { isErr } from '@/core/result';
 import { initTestKernel } from '@/test/initTestKernel';
 
 type BuildCompartmentWallsFn = (
@@ -52,6 +56,17 @@ let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: Arr
 beforeAll(async () => {
   const { mesh: meshFn } = await import('brepjs');
   await initTestKernel();
+
+  // Cutout-label tests need the bundled Atkinson font (the textDefaults default);
+  // load from disk since the test env has no `fetch` for `?url` assets.
+  const buffer = readFileSync(
+    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+  );
+  const fontResult = await loadFont(
+    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+    'atkinson'
+  );
+  if (isErr(fontResult)) throw new Error(`Font load failed: ${fontResult.error.message}`);
 
   const mod = await import('./featureBuilder');
   buildCompartmentWalls = mod.buildCompartmentWalls;
@@ -283,12 +298,12 @@ describe('buildInsertCuts', () => {
 });
 
 describe('buildCutoutCuts', () => {
-  it('returns an empty list when no cutouts are configured', () => {
+  it('returns empty cut and fuse lists when no cutouts are configured', () => {
     const params: BinParams = { ...DEFAULT_BIN_PARAMS, cutouts: [] };
-    expect(buildCutoutCuts(params, 80, 80, 16)).toEqual([]);
+    expect(buildCutoutCuts(params, 80, 80, 16)).toEqual({ cutTools: [], fuseTools: [] });
   });
 
-  it('returns one tool per logical cutout for boolean subtraction', () => {
+  it('returns one cut tool per logical cutout for boolean subtraction', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       cutoutConfig: { topOffset: 0 },
@@ -308,9 +323,41 @@ describe('buildCutoutCuts', () => {
         },
       ],
     };
-    const tools = buildCutoutCuts(params, 80, 80, 16);
-    expect(tools).toHaveLength(1);
-    const meshed = meshShape(tools[0]);
+    const { cutTools, fuseTools } = buildCutoutCuts(params, 80, 80, 16);
+    expect(cutTools).toHaveLength(1);
+    expect(fuseTools).toHaveLength(0);
+    const meshed = meshShape(cutTools[0]);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('returns an embossed label as a fuse tool, not a cut', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'emboss' },
+      cutouts: [
+        {
+          id: 'c1',
+          shape: 'rectangle',
+          width: 15,
+          depth: 15,
+          cutDepth: 5,
+          x: 10,
+          y: 30,
+          rotation: 0,
+          cornerRadius: 0,
+          label: 'HI',
+          engraveLabel: true,
+          textSide: 'top',
+          groupId: null,
+        },
+      ],
+    };
+    const { cutTools, fuseTools } = buildCutoutCuts(params, 80, 80, 16);
+    // One cavity cut + one emboss fuse; the cavity stays subtractive.
+    expect(cutTools).toHaveLength(1);
+    expect(fuseTools).toHaveLength(1);
+    const meshed = meshShape(fuseTools[0]);
     expect(meshed.vertices.length).toBeGreaterThan(0);
   }, 30000);
 });

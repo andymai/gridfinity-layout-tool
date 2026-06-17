@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "Zoom avant",
   "binDesigner.cutoutEditor.zoomOut": "Zoom arrière",
   "binDesigner.cutoutEngraveLabel": "Graver l'étiquette",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "Les étiquettes de découpes sont toujours gravées dans le dessus du bac.",
   "binDesigner.cutoutEngraveLabelPlaceholder": "e.g. M4×20",
   "binDesigner.cutoutTextSide": "Position de l'étiquette",
   "binDesigner.cutoutTextSide.bottom": "En dessous",

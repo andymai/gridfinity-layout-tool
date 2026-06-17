@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "ズームイン",
   "binDesigner.cutoutEditor.zoomOut": "ズームアウト",
   "binDesigner.cutoutEngraveLabel": "ラベルを彫刻",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "切り欠きラベルは常にビン上部に彫刻されます。",
   "binDesigner.cutoutEngraveLabelPlaceholder": "例: M4×20",
   "binDesigner.cutoutTextSide": "ラベル位置",
   "binDesigner.cutoutTextSide.bottom": "下",

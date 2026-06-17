@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "Vergrößern",
   "binDesigner.cutoutEditor.zoomOut": "Verkleinern",
   "binDesigner.cutoutEngraveLabel": "Beschriftung gravieren",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "Aussparungs-Beschriftungen werden immer in die Behälteroberseite graviert.",
   "binDesigner.cutoutEngraveLabelPlaceholder": "e.g. M4×20",
   "binDesigner.cutoutTextSide": "Beschriftungsposition",
   "binDesigner.cutoutTextSide.bottom": "Unten",

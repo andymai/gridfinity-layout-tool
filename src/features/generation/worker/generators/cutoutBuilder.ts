@@ -940,11 +940,27 @@ function buildArrayUngroupedCutouts(
 }
 
 /**
- * Build the list of cutout cavity cut tools for a solid bin.
- * Each entry is one logical cutout (an ungrouped cutout, a fused-and-scooped
+ * Cut and fuse tool sets for a solid bin's cutouts.
+ *
+ * `cutTools` are subtractive (cavities + engraved label text); `fuseTools` are
+ * additive (embossed label text raised above the bin top). They go to separate
+ * boolean passes — booleanStage fuses first, then cuts.
+ */
+export interface CutoutTools {
+  readonly cutTools: Shape3D[];
+  readonly fuseTools: Shape3D[];
+}
+
+/** Lift the emboss clip ceiling a hair above the raised text so it isn't grazed. */
+const CUTOUT_BOOLEAN_EPSILON = 0.1;
+
+/**
+ * Build the cut and fuse tool sets for a solid bin's cutouts.
+ * Each cut entry is one logical cutout (an ungrouped cutout, a fused-and-scooped
  * group, or an engraved label) clipped to the bin interior. The pipeline
  * subtracts them from the shell via the booleanStage's cutAllBisect, which
- * recovers individual tool failures instead of dropping the whole set.
+ * recovers individual tool failures instead of dropping the whole set. Embossed
+ * labels are returned as fuse tools instead, raised above the bin top.
  *
  * @param params - Bin configuration (reads cutouts array and cutoutConfig.topOffset)
  * @param innerW - Interior width in mm (outer - 2*wall)
@@ -956,8 +972,8 @@ export function buildCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number
-): Shape3D[] {
-  if (params.cutouts.length === 0) return [];
+): CutoutTools {
+  if (params.cutouts.length === 0) return { cutTools: [], fuseTools: [] };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
@@ -970,7 +986,7 @@ export function buildCutoutCuts(
 
   // Guard: if solidSurfaceZ is non-positive, there's no valid cutting surface
   // (the solid fill is at or below floor level). Skip all cutouts.
-  if (solidSurfaceZ <= 0) return [];
+  if (solidSurfaceZ <= 0) return { cutTools: [], fuseTools: [] };
 
   const rawShapes: Shape3D[] = [];
 
@@ -1000,16 +1016,18 @@ export function buildCutoutCuts(
     if (shape) rawShapes.push(shape);
   }
 
-  // Per-cutout engraved label text on the bin top, adjacent to each cutout in
-  // the user-picked side direction. Engrave-only (emboss requires a fuse-
-  // target pass which lives in a follow-up; through-cut is meaningless on
-  // bin-top text since it would punch through the bin floor).
+  // Per-cutout label text on the bin top, adjacent to each cutout in the
+  // user-picked side direction. The design-level mode picks engrave (cut into
+  // the surface) or emboss (raised above it); through-cut falls back to engrave
+  // since punching bin-top text through the floor is meaningless. Engraved text
+  // joins the cut pile; embossed text is collected separately for fusing.
+  const rawFuseShapes: Shape3D[] = [];
   for (const cutout of params.cutouts) {
     if (cutout.hidden === true) continue;
     if (cutout.engraveLabel !== true) continue;
     const label = cutout.label.trim();
     if (label === '') continue;
-    const textShape = buildCutoutLabelEngrave(
+    const textShape = buildCutoutLabel(
       cutout,
       label,
       params.textDefaults,
@@ -1019,25 +1037,57 @@ export function buildCutoutCuts(
       innerW,
       innerD
     );
-    if (textShape) rawShapes.push(textShape);
+    if (!textShape) continue;
+    if (textShape.op === 'fuse') rawFuseShapes.push(textShape.solid);
+    else rawShapes.push(textShape.solid);
   }
 
-  if (rawShapes.length === 0) return [];
+  if (rawShapes.length === 0 && rawFuseShapes.length === 0) {
+    return { cutTools: [], fuseTools: [] };
+  }
 
   // Clip each tool individually to the bin interior so cutouts extending past
   // the walls don't punch through them. Shapes that fail to clip are skipped
-  // rather than poisoning the whole set.
+  // rather than poisoning the whole set. Cut tools live at or below the bin top,
+  // so a box spanning the fill height contains them. Embossed text rises ABOVE
+  // the top, so its clip box must be tall enough to keep the raised geometry —
+  // an interior-height box would shear it off.
+  const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ);
+  const fuseTools =
+    rawFuseShapes.length > 0
+      ? clipToInterior(
+          rawFuseShapes,
+          innerW,
+          innerD,
+          solidSurfaceZ + params.textDefaults.depth + CUTOUT_BOOLEAN_EPSILON
+        )
+      : [];
+  return { cutTools, fuseTools };
+}
+
+/**
+ * Intersect each shape with an interior box of the given height (bottom at
+ * z=0), consuming the inputs. Tools that fail to clip are dropped rather than
+ * poisoning the whole set.
+ */
+function clipToInterior(
+  shapes: Shape3D[],
+  innerW: number,
+  innerD: number,
+  boxHeight: number
+): Shape3D[] {
+  if (shapes.length === 0) return [];
   let clipBoundary: Shape3D;
   try {
-    clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
+    clipBoundary = box(innerW, innerD, boxHeight, { at: [0, 0, boxHeight / 2] });
   } catch (e) {
-    for (const s of rawShapes) s.delete();
+    for (const s of shapes) s.delete();
     throw e;
   }
 
   const clipped: Shape3D[] = [];
   try {
-    for (const shape of rawShapes) {
+    for (const shape of shapes) {
       try {
         clipped.push(unwrap(intersect(shape, clipBoundary)));
       } catch {
@@ -1052,8 +1102,14 @@ export function buildCutoutCuts(
   return clipped;
 }
 
+/** A cutout label solid plus how it must be applied to the bin. */
+interface CutoutLabelShape {
+  readonly solid: Shape3D;
+  readonly op: 'cut' | 'fuse';
+}
+
 /**
- * Engraved text adjacent to a cutout, on the bin top surface.
+ * Label text adjacent to a cutout, on the bin top surface.
  *
  * The side picker is interpreted in WORLD coordinates (top = +Y, etc.); text
  * reads left-to-right in world XY regardless of cutout rotation. The cutout
@@ -1061,12 +1117,16 @@ export function buildCutoutCuts(
  * cutout's footprint — `cutoutWorldAabb()` projects the four rotated corners
  * and takes their min/max.
  *
+ * The design-level mode selects `engrave` (recessed, returned with `op: 'cut'`)
+ * or `emboss` (raised, returned with `op: 'fuse'`). `through-cut` falls back to
+ * engrave — punching bin-top text through the floor is meaningless.
+ *
  * Placement (side gap + rotation-aware AABB) is delegated to
  * `cutoutLabelPlacement` so the 2D editor preview tracks this engraving.
  * Returns `null` when there's no room or the minimum font size won't fit —
  * better a silent skip than a visually broken engraving.
  */
-function buildCutoutLabelEngrave(
+function buildCutoutLabel(
   cutout: Cutout,
   label: string,
   textDefaults: BinParams['textDefaults'],
@@ -1075,19 +1135,20 @@ function buildCutoutLabelEngrave(
   originY: number,
   innerW: number,
   innerD: number
-): Shape3D | null {
+): CutoutLabelShape | null {
   const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
   if (!placement) return null;
   const { centerX, centerY, availW, availD } = placement;
 
-  return withScope((scope: DisposalScope): Shape3D | null => {
-    // Cutout text is engrave-only this PR. The design-level mode is
-    // intentionally ignored for cutouts (emboss-on-cutouts is a follow-up
-    // that needs a fuse-target builder; through-cut would punch the floor).
+  // Cutouts support engrave + emboss; through-cut would punch the floor, so it
+  // degrades to engrave.
+  const mode = textDefaults.mode === 'emboss' ? 'emboss' : 'engrave';
+
+  return withScope((scope: DisposalScope): CutoutLabelShape | null => {
     const result = buildTextSolid(scope, {
       text: label,
       fontFamily: textDefaults.font,
-      mode: 'engrave',
+      mode,
       availW,
       availD,
       centerX,
@@ -1099,6 +1160,7 @@ function buildCutoutLabelEngrave(
       minFontSize: textDefaults.minFontSize,
       maxFontSize: textDefaults.maxFontSize,
     });
-    return result ? unwrap(clone(result.solid)) : null;
+    if (!result) return null;
+    return { solid: unwrap(clone(result.solid)), op: result.op };
   });
 }

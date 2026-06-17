@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "Zoom inn",
   "binDesigner.cutoutEditor.zoomOut": "Zoom ut",
   "binDesigner.cutoutEngraveLabel": "Graver merkelapp",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "Utskjæringsmerkelapper graveres alltid inn i toppen.",
   "binDesigner.cutoutEngraveLabelPlaceholder": "e.g. M4×20",
   "binDesigner.cutoutTextSide": "Merkelapposisjon",
   "binDesigner.cutoutTextSide.bottom": "Under",

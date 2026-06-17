@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "Збільшити",
   "binDesigner.cutoutEditor.zoomOut": "Зменшити",
   "binDesigner.cutoutEngraveLabel": "Гравірувати напис",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "Написи отворів завжди гравіруються у верхню частину.",
   "binDesigner.cutoutEngraveLabelPlaceholder": "e.g. M4×20",
   "binDesigner.cutoutTextSide": "Положення напису",
   "binDesigner.cutoutTextSide.bottom": "Знизу",

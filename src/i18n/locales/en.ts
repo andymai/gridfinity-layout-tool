@@ -1491,8 +1491,6 @@ const en: Record<string, string> = {
   'binDesigner.textDepth': 'Text depth',
   'binDesigner.cutoutEngraveLabel': 'Engrave label',
   'binDesigner.cutoutEngraveLabelPlaceholder': 'e.g. M4×20',
-  'binDesigner.cutoutEngraveLabelEngraveOnly':
-    'Cutout labels are always engraved into the bin top.',
   'binDesigner.cutoutTextSide': 'Label position',
   'binDesigner.cutoutTextSide.top': 'Above',
   'binDesigner.cutoutTextSide.bottom': 'Below',

@@ -43,18 +43,28 @@ export const featuresStage: PipelineStage = {
       // booleanStage early-returns when ctx.solid is null; building tools
       // we'd never apply would just leak their WASM shapes.
       if (!ctx.solid) return ctx;
-      const rawTools = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
+      const { cutTools, fuseTools } = buildCutoutCuts(
+        params,
+        dim.innerW,
+        dim.innerD,
+        dim.wallHeight
+      );
       const { innerOffsetX, innerOffsetY } = dim;
-      const cutoutTools = rawTools.map((tool) => {
+      const shiftToInterior = (tool: (typeof cutTools)[number]): (typeof cutTools)[number] => {
         if (innerOffsetX === 0 && innerOffsetY === 0) return tool;
         const shifted = translate(tool, [innerOffsetX, innerOffsetY, 0]);
         tool.delete();
         return shifted;
-      });
+      };
+      const cutoutTools = cutTools.map(shiftToInterior);
+      const embossTools = fuseTools.map(shiftToInterior);
       for (const tool of cutoutTools) {
         collectOrigins(tool, FeatureTag.CUTOUT, originToTag);
       }
-      return { ...ctx, cutTargets: cutoutTools };
+      for (const tool of embossTools) {
+        collectOrigins(tool, FeatureTag.TEXT, originToTag);
+      }
+      return { ...ctx, cutTargets: cutoutTools, fuseTargets: embossTools };
     }
 
     // For non-rectangular (cellMask) bins, run only builders that have

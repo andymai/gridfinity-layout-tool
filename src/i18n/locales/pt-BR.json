@@ -278,7 +278,6 @@
   "binDesigner.cutoutEditor.zoomIn": "Aumentar zoom",
   "binDesigner.cutoutEditor.zoomOut": "Diminuir zoom",
   "binDesigner.cutoutEngraveLabel": "Gravar etiqueta",
-  "binDesigner.cutoutEngraveLabelEngraveOnly": "As etiquetas de recortes são sempre gravadas no topo.",
   "binDesigner.cutoutEngraveLabelPlaceholder": "e.g. M4×20",
   "binDesigner.cutoutTextSide": "Posição da etiqueta",
   "binDesigner.cutoutTextSide.bottom": "Abaixo",
