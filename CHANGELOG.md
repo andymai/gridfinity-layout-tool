@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.4...gridfinity-layout-tool-v4.183.5) (2026-06-17)
+
+
+### Performance
+
+* **baseplate:** draft preview + defer BREP for large plates ([#2218](https://github.com/andymai/gridfinity-layout-tool/issues/2218)) ([d988b85](https://github.com/andymai/gridfinity-layout-tool/commit/d988b85344e7fdbf71e87cc54d3538918487e087))
+
 ## [4.183.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.183.3...gridfinity-layout-tool-v4.183.4) (2026-06-17)
 
 
