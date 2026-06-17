@@ -2165,7 +2165,7 @@
   "scan.cardMeasured": "カードを基準に正しい縮尺で測定しました。",
   "scan.cardSteepAngle": "角度が急です。正確なサイズのため真上から撮影してください。",
   "scan.noCardTitle": "カードが検出されませんでした",
-  "scan.noCardHint": "正確なサイズのため、銀行・交通・IDカードを工具の横に置いてください。",
+  "scan.noCardHint": "正確なサイズを得るには、銀行・交通・IDカードを工具の横に平らに置き、無地の面で全体を画面に収めてください。",
   "scan.takePhoto": "写真を撮る",
   "scan.photoAlt": "スキャンした道具の写真",
   "scan.processing": "工具を検出しています…",

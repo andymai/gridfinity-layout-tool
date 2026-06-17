@@ -1159,7 +1159,8 @@ const en: Record<string, string> = {
   'scan.cardMeasured': 'Measured to scale from your card.',
   'scan.cardSteepAngle': 'Steep angle — shoot straighter for accurate sizing.',
   'scan.noCardTitle': 'No card detected',
-  'scan.noCardHint': 'Add a bank, transit, or ID card beside your tool for exact sizing.',
+  'scan.noCardHint':
+    'Lay a bank, transit, or ID card flat beside your tool — fully in frame, on a plain surface — for exact sizing.',
   'scan.takePhoto': 'Take a photo',
   'scan.photoAlt': 'Photo of the scanned tool',
   'scan.processing': 'Finding your tool…',

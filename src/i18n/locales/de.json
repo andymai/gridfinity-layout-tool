@@ -2165,7 +2165,7 @@
   "scan.cardMeasured": "Anhand deiner Karte maßstabsgetreu vermessen.",
   "scan.cardSteepAngle": "Steiler Winkel – fotografiere gerader für genaue Maße.",
   "scan.noCardTitle": "Keine Karte erkannt",
-  "scan.noCardHint": "Lege eine Bank-, Transit- oder Ausweiskarte neben dein Werkzeug für exakte Maße.",
+  "scan.noCardHint": "Lege eine Bank-, Transit- oder Ausweiskarte flach neben dein Werkzeug – vollständig im Bild, auf einer schlichten Oberfläche – für exakte Maße.",
   "scan.takePhoto": "Foto aufnehmen",
   "scan.photoAlt": "Foto des gescannten Werkzeugs",
   "scan.processing": "Werkzeug wird erkannt …",

@@ -15,11 +15,20 @@ import { buildMask, usesAlphaMask } from './mask';
 import { labelComponents, maskFromLabel, type LabeledComponents } from './components';
 import { traceContour } from './contour';
 import { contourToQuad, estimateRectAspect } from './quad';
+import { minAreaRect } from './minAreaRect';
 import { solveHomography, type Homography } from './perspective';
 
 export const CARD_WIDTH_MM = 85.6;
 export const CARD_HEIGHT_MM = 53.98;
 const CARD_ASPECT = CARD_WIDTH_MM / CARD_HEIGHT_MM; // ≈ 1.586
+
+/**
+ * Min fraction of its min-area rectangle a component must fill to be rescued as
+ * a card. A real card (rounded corners + minor mask erosion) fills ~0.8+; an
+ * L-shaped or triangular tool fills far less, so this rejects them even when
+ * their bounding rectangle happens to land near the card's aspect.
+ */
+const MIN_RECT_FILL = 0.7;
 
 export interface CardDetection {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -132,10 +141,30 @@ export function findBestCardComponent(
     // Reject quads whose true (perspective-corrected) shape isn't the card's
     // aspect — keeps a rectangular tool from being mistaken for the reference.
     const aspect = estimateRectAspect(quad.corners, cx, cy);
-    if (aspect === null || Math.abs(aspect - targetAspect) > aspectTolerance) continue;
+    let corners: readonly [Point, Point, Point, Point] = quad.corners;
+    let accepted = aspect !== null && Math.abs(aspect - targetAspect) <= aspectTolerance;
+
+    if (!accepted) {
+      // Rescue: a glossy/multi-colored card can mask with its full footprint yet
+      // lose a corner to a desaturated patch (logo, hologram), which skews the
+      // extreme-corner quad and throws off its aspect. The min-area rect is
+      // hull-based, so it bridges the eroded corner and recovers the true
+      // rectangle. Gate it on the rect's own aspect plus a fill ratio so a
+      // non-rectangular blob can't sneak through.
+      const rect = minAreaRect(contour);
+      if (rect && rect.height > 0) {
+        const rectAspect = rect.width / rect.height;
+        const fill = comp.area / (rect.width * rect.height);
+        if (Math.abs(rectAspect - targetAspect) <= aspectTolerance && fill >= MIN_RECT_FILL) {
+          corners = rect.corners;
+          accepted = true;
+        }
+      }
+    }
+    if (!accepted) continue;
 
     if (!best || quad.fitness > best.fitness) {
-      best = { label: comp.label, corners: quad.corners, fitness: quad.fitness };
+      best = { label: comp.label, corners, fitness: quad.fitness };
     }
   }
   return best;

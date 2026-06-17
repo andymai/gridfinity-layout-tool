@@ -6,7 +6,9 @@ import {
   STEEP_CARD_SKEW,
 } from './cardDetect';
 import { buildMask } from './mask';
-import { labelComponents } from './components';
+import { labelComponents, maskFromLabel } from './components';
+import { traceContour } from './contour';
+import { contourToQuad, estimateRectAspect } from './quad';
 import { rectifyPoints } from './perspective';
 import type { ImageDataLike, Point } from './types';
 
@@ -202,6 +204,58 @@ describe('detectCardQuad on a color-neutral card (the silver-card-on-wood case)'
     const out = bbox(rectifyPoints(project(TOOL_MM), detection.homography));
     expect(Math.abs(out.w - 25)).toBeLessThan(2.5);
     expect(Math.abs(out.h - 45)).toBeLessThan(2.5);
+  });
+});
+
+describe('detectCardQuad with an eroded corner (glossy-logo case)', () => {
+  // A 200×126 card (aspect 1.587) with the bottom-left corner bitten out — the
+  // way a desaturated logo/hologram drops out of the threshold mask. Tuned so
+  // the extreme-corner quad still scores as a clean quad (fitness > 0.8) but its
+  // skewed aspect (~1.20) fails the gate; only the hull-based min-area-rect
+  // rescue recovers the true ~1.59 rectangle.
+  function erodedCard(): ImageDataLike {
+    const card: Point[] = [
+      { x: 40, y: 40 },
+      { x: 240, y: 40 },
+      { x: 240, y: 166 },
+      { x: 40, y: 166 },
+    ];
+    const bite: Point[] = [
+      { x: 40, y: 166 },
+      { x: 150, y: 166 },
+      { x: 40, y: 86 },
+    ];
+    return render(
+      [
+        { poly: bite, value: 15 },
+        { poly: card, value: 235 },
+      ],
+      300,
+      220
+    );
+  }
+
+  it('the extreme-corner quad alone would reject it (rescue is required)', () => {
+    const image = erodedCard();
+    const labeled = labelComponents(buildMask(image));
+    const comp = [...labeled.components].sort((a, b) => b.area - a.area)[0];
+    const contour = traceContour(
+      maskFromLabel(labeled.labels, comp.label, image.width, image.height),
+      comp.start
+    );
+    const quad = contourToQuad(contour);
+    expect(quad).not.toBeNull();
+    if (!quad) return;
+    expect(quad.fitness).toBeGreaterThan(0.8); // passes the clean-quad precondition
+    const skewed = estimateRectAspect(quad.corners, image.width / 2, image.height / 2);
+    expect(skewed).not.toBeNull();
+    if (skewed === null) return;
+    expect(Math.abs(skewed - 1.586)).toBeGreaterThan(0.3); // …but its aspect is out of tolerance
+  });
+
+  it('the min-area-rect rescue detects the card', () => {
+    const detection = detectCardQuad(erodedCard());
+    expect(detection).not.toBeNull();
   });
 });
 

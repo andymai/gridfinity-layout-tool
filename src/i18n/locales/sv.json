@@ -2165,7 +2165,7 @@
   "scan.cardMeasured": "Uppmätt i rätt skala från ditt kort.",
   "scan.cardSteepAngle": "Brant vinkel – fotografera rakare för exakt storlek.",
   "scan.noCardTitle": "Inget kort hittades",
-  "scan.noCardHint": "Lägg ett bank-, rese- eller ID-kort bredvid verktyget för exakt storlek.",
+  "scan.noCardHint": "Lägg ett bank-, rese- eller ID-kort plant bredvid verktyget – helt inom bild, på ett enfärgat underlag – för exakt storlek.",
   "scan.takePhoto": "Ta ett foto",
   "scan.photoAlt": "Foto av det skannade verktyget",
   "scan.processing": "Hittar ditt verktyg …",

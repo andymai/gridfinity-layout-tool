@@ -2165,7 +2165,7 @@
   "scan.cardMeasured": "Mesuré à l’échelle grâce à votre carte.",
   "scan.cardSteepAngle": "Angle prononcé — photographiez plus droit pour une taille précise.",
   "scan.noCardTitle": "Aucune carte détectée",
-  "scan.noCardHint": "Ajoutez une carte bancaire, de transport ou d’identité à côté de votre outil pour une taille exacte.",
+  "scan.noCardHint": "Posez une carte bancaire, de transport ou d’identité à plat à côté de votre outil — entièrement dans le cadre, sur une surface unie — pour une taille exacte.",
   "scan.takePhoto": "Prendre une photo",
   "scan.photoAlt": "Photo de l’outil scanné",
   "scan.processing": "Recherche de votre outil…",
