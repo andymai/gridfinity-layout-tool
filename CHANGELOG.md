@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.183.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.182.0...gridfinity-layout-tool-v4.183.0) (2026-06-17)
+
+
+### Features
+
+* **scan-capture:** sharper tool traces, clearer card status, safer scale ([#2207](https://github.com/andymai/gridfinity-layout-tool/issues/2207)) ([68b7d3c](https://github.com/andymai/gridfinity-layout-tool/commit/68b7d3cab54ae45be9df09e17f46137d051e1426))
+
 ## [4.182.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.181.0...gridfinity-layout-tool-v4.182.0) (2026-06-17)
 
 
