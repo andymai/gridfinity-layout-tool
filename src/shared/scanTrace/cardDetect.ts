@@ -155,12 +155,12 @@ export function findCardAcrossChannels(
   image: ImageDataLike,
   options: CardDetectOptions = {}
 ): CardComponent | null {
-  for (const channel of CARD_CHANNELS) {
+  // An alpha-driven mask ignores `channel`, so every pass is identical — sweep once.
+  const channels = usesAlphaMask(image) ? (['luma'] as const) : CARD_CHANNELS;
+  for (const channel of channels) {
     const labeled = labelComponents(buildMask(image, { channel }));
     const card = findBestCardComponent(labeled, image.width, image.height, options);
     if (card) return card;
-    // An alpha-driven mask ignores `channel`, so further passes are identical.
-    if (usesAlphaMask(image)) break;
   }
   return null;
 }
