@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.185.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.4...gridfinity-layout-tool-v4.185.0) (2026-06-17)
+
+
+### Features
+
+* **scan:** sub-pixel tool trace from the soft confidence mask ([#2240](https://github.com/andymai/gridfinity-layout-tool/issues/2240)) ([42f6374](https://github.com/andymai/gridfinity-layout-tool/commit/42f6374330a33699944a72731aa066b9691146b8))
+
 ## [4.184.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.3...gridfinity-layout-tool-v4.184.4) (2026-06-17)
 
 
