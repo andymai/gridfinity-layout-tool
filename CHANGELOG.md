@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.186.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.185.0...gridfinity-layout-tool-v4.186.0) (2026-06-17)
+
+
+### Features
+
+* **scan:** auto-symmetrize symmetric tool outlines (gated) ([#2237](https://github.com/andymai/gridfinity-layout-tool/issues/2237)) ([e64cb66](https://github.com/andymai/gridfinity-layout-tool/commit/e64cb668f7f12cb5fbae3a5b7d978ebdb89e5038))
+
 ## [4.185.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.184.4...gridfinity-layout-tool-v4.185.0) (2026-06-17)
 
 
