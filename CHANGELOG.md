@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.182.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.181.0...gridfinity-layout-tool-v4.182.0) (2026-06-17)
+
+
+### Features
+
+* **baseplate:** stack-print retains dovetail connectors ([#2206](https://github.com/andymai/gridfinity-layout-tool/issues/2206)) ([da6c6aa](https://github.com/andymai/gridfinity-layout-tool/commit/da6c6aaa79a1cd7c658a14660d58bd651c22ad39))
+
 ## [4.181.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.180.0...gridfinity-layout-tool-v4.181.0) (2026-06-17)
 
 
