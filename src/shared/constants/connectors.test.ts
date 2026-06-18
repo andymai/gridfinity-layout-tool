@@ -14,6 +14,7 @@ import {
   effectiveClearance,
   snapClipLevels,
 } from './connectors';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 describe('effectiveClearance', () => {
   it('returns the base clearance unchanged when the offset is zero', () => {
@@ -69,8 +70,8 @@ describe('puzzle connector lock geometry (issue #2241)', () => {
     expect(undercutPerSide).toBeGreaterThan(TONGUE_CLEARANCE * 3);
   });
 
-  it('keeps the neck a printable ligament (≥2 perimeters at the 0.4mm nozzle)', () => {
-    expect(2 * PUZZLE_NECK_HALF).toBeGreaterThanOrEqual(2 * 0.4);
+  it('keeps the neck a printable ligament (≥2 perimeters at the baseline nozzle)', () => {
+    expect(2 * PUZZLE_NECK_HALF).toBeGreaterThanOrEqual(2 * NOZZLE_BASELINE);
   });
 
   it('shares the legacy reach so split-plate bed-budget / bbox math is unchanged', () => {
