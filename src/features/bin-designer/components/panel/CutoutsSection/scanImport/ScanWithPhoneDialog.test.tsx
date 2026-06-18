@@ -8,9 +8,13 @@ vi.mock('./useScanImport', () => ({
 }));
 
 // Keep the cross-device session out of these tests (no network / QR import);
-// the awaiting state falls back to the manual-upload affordance.
+// the awaiting state falls back to the manual-upload affordance. A mutable
+// hoisted handle lets one test exercise the live "waiting for QR scan" branch.
+const session = vi.hoisted(() => ({
+  current: { phase: 'unavailable', url: null as string | null },
+}));
 vi.mock('./useScanSession', () => ({
-  useScanSession: () => ({ phase: 'unavailable', url: null }),
+  useScanSession: () => session.current,
 }));
 
 const mockAddToast = vi.fn();
@@ -39,6 +43,7 @@ function uploadSvg(svg: string): void {
 describe('ScanWithPhoneDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    session.current = { phase: 'unavailable', url: null };
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
   });
@@ -46,6 +51,14 @@ describe('ScanWithPhoneDialog', () => {
   it('shows the upload affordance in the awaiting state', () => {
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
     expect(screen.getByText('binDesigner.cutouts.scanImport.upload')).toBeInTheDocument();
+  });
+
+  it('shows the framing example and on-device privacy note while awaiting a QR scan', () => {
+    session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
+    render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
+    const example = screen.getByAltText('scan.capture.exampleAlt');
+    expect(example).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
   });
 
   it('moves to review with an empty scale field after a valid upload', async () => {

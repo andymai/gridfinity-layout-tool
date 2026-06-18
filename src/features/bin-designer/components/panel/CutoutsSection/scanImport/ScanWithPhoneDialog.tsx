@@ -35,6 +35,33 @@ type Stage =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
+/** Shared with the phone capture page (served from public/). */
+const SCAN_EXAMPLE_SRC = '/images/scan/scan-example.webp';
+
+/** On-device reassurance: the phone never uploads the photo, only the outline. */
+function PrivacyHint({ text }: { readonly text: string }) {
+  return (
+    <span className="flex items-center justify-center gap-1.5 text-[11px] text-content-tertiary">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="shrink-0"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      {text}
+    </span>
+  );
+}
+
 export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
@@ -155,6 +182,17 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
                   <Spinner size="sm" />
                   {t('binDesigner.cutouts.scanImport.waiting')}
                 </p>
+                <figure className="mt-1 flex w-full flex-col items-center gap-2">
+                  <img
+                    src={SCAN_EXAMPLE_SRC}
+                    alt={t('scan.capture.exampleAlt')}
+                    className="w-full max-w-[200px] rounded-lg border border-stroke-subtle"
+                    decoding="async"
+                  />
+                  <figcaption>
+                    <PrivacyHint text={t('scan.capture.privacy')} />
+                  </figcaption>
+                </figure>
               </>
             ) : (
               <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">

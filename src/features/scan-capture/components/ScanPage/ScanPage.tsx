@@ -216,7 +216,7 @@ export function ScanPage({ token }: ScanPageProps) {
 
   return (
     <div
-      className="flex min-h-[100dvh] flex-col bg-surface text-content-primary"
+      className="flex h-[100dvh] min-h-[100dvh] flex-col bg-surface text-content-primary"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <header className="shrink-0 px-5 pt-4 pb-3">
@@ -227,130 +227,134 @@ export function ScanPage({ token }: ScanPageProps) {
         />
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-5 pb-4">
-        {status.kind === 'capture' && <CaptureGuide t={t} />}
+      <main className="flex flex-1 flex-col overflow-y-auto overscroll-contain">
+        <div className="m-auto flex w-full flex-col items-center px-5 py-4">
+          {status.kind === 'capture' && <CaptureGuide t={t} />}
 
-        {status.kind === 'processing' && (
-          <div className="flex flex-col items-center gap-3 py-16 text-content-secondary">
-            <Spinner size="md" />
-            <p className="text-sm">{t('scan.processing')}</p>
-          </div>
-        )}
+          {status.kind === 'processing' && (
+            <div className="flex flex-col items-center gap-3 py-16 text-content-secondary">
+              <Spinner size="md" />
+              <p className="text-sm">{t('scan.processing')}</p>
+            </div>
+          )}
 
-        {status.kind === 'review' && (
-          <div className="flex w-full max-w-md flex-col items-center gap-3">
-            <div
-              ref={imageBoxRef}
-              onPointerDown={status.toolMask ? handleTap : undefined}
-              className={`relative w-full overflow-hidden rounded-xl border border-stroke ${
-                status.toolMask ? 'cursor-pointer' : ''
-              }`}
-            >
-              <img
-                src={status.photoUrl}
-                alt={t('scan.photoAlt')}
-                className="block h-auto w-full select-none"
-                draggable={false}
-              />
-              <svg
-                className="pointer-events-none absolute inset-0 h-full w-full"
-                viewBox={`0 0 ${status.image.width} ${status.image.height}`}
-                preserveAspectRatio="none"
-                fill="none"
+          {status.kind === 'review' && (
+            <div className="flex w-full max-w-md flex-col items-center gap-3">
+              <div
+                ref={imageBoxRef}
+                onPointerDown={status.toolMask ? handleTap : undefined}
+                className={`relative w-full overflow-hidden rounded-xl border border-stroke ${
+                  status.toolMask ? 'cursor-pointer' : ''
+                }`}
               >
-                {status.scene.card && (
+                <img
+                  src={status.photoUrl}
+                  alt={t('scan.photoAlt')}
+                  className="block h-auto w-full select-none"
+                  draggable={false}
+                />
+                <svg
+                  className="pointer-events-none absolute inset-0 h-full w-full"
+                  viewBox={`0 0 ${status.image.width} ${status.image.height}`}
+                  preserveAspectRatio="none"
+                  fill="none"
+                >
+                  {status.scene.card && (
+                    <polygon
+                      points={status.scene.card.corners.map((p) => `${p.x},${p.y}`).join(' ')}
+                      className="stroke-success"
+                      strokeWidth={2}
+                      strokeDasharray="6 4"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
                   <polygon
-                    points={status.scene.card.corners.map((p) => `${p.x},${p.y}`).join(' ')}
-                    className="stroke-success"
-                    strokeWidth={2}
-                    strokeDasharray="6 4"
+                    points={status.scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
+                    className="fill-accent/15 stroke-accent"
+                    strokeWidth={3}
                     vectorEffect="non-scaling-stroke"
                   />
+                </svg>
+                {status.resegmenting && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-surface/40">
+                    <Spinner size="sm" />
+                  </div>
                 )}
-                <polygon
-                  points={status.scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
-                  className="fill-accent/15 stroke-accent"
-                  strokeWidth={3}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-              {status.resegmenting && (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface/40">
-                  <Spinner size="sm" />
-                </div>
-              )}
-            </div>
+              </div>
 
-            <div
-              className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 ${
-                measured ? 'border-success/40 bg-success/10' : 'border-warning bg-warning-muted'
-              }`}
-            >
-              <CardStatusIcon ok={measured !== null} />
-              {measured ? (
-                <div className="flex flex-col gap-0.5 text-left">
-                  <p className="text-sm font-semibold text-content-primary">
-                    {t('binDesigner.cutouts.scanImport.resultSize', {
-                      width: round1(measured.w),
-                      depth: round1(measured.h),
-                    })}
-                  </p>
-                  <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
-                  {cardSteep && <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>}
+              <div
+                className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 ${
+                  measured ? 'border-success/40 bg-success/10' : 'border-warning bg-warning-muted'
+                }`}
+              >
+                <CardStatusIcon ok={measured !== null} />
+                {measured ? (
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <p className="text-sm font-semibold text-content-primary">
+                      {t('binDesigner.cutouts.scanImport.resultSize', {
+                        width: round1(measured.w),
+                        depth: round1(measured.h),
+                      })}
+                    </p>
+                    <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
+                    {cardSteep && (
+                      <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <p className="text-sm font-semibold text-warning">{t('scan.noCardTitle')}</p>
+                    <p className="text-xs text-content-secondary">{t('scan.noCardHint')}</p>
+                  </div>
+                )}
+              </div>
+
+              {status.toolMask ? (
+                <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">
+                  <TapIcon />
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm font-semibold text-content-primary">
+                      {t('scan.review.confirmTitle')}
+                    </p>
+                    <p className="text-xs text-content-secondary">{t('scan.review.tapHint')}</p>
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-0.5 text-left">
-                  <p className="text-sm font-semibold text-warning">{t('scan.noCardTitle')}</p>
-                  <p className="text-xs text-content-secondary">{t('scan.noCardHint')}</p>
-                </div>
+                <p className="text-center text-xs text-content-tertiary">
+                  {t('scan.review.retakeHint')}
+                </p>
               )}
             </div>
+          )}
 
-            {status.toolMask ? (
-              <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">
-                <TapIcon />
-                <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-semibold text-content-primary">
-                    {t('scan.review.confirmTitle')}
-                  </p>
-                  <p className="text-xs text-content-secondary">{t('scan.review.tapHint')}</p>
-                </div>
+          {status.kind === 'sent' && (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
               </div>
-            ) : (
-              <p className="text-center text-xs text-content-tertiary">
-                {t('scan.review.retakeHint')}
-              </p>
-            )}
-          </div>
-        )}
-
-        {status.kind === 'sent' && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
+              <p className="text-lg font-medium">{t('scan.sent.title')}</p>
+              <p className="max-w-xs text-sm text-content-secondary">{t('scan.sent.body')}</p>
             </div>
-            <p className="text-lg font-medium">{t('scan.sent.title')}</p>
-            <p className="max-w-xs text-sm text-content-secondary">{t('scan.sent.body')}</p>
-          </div>
-        )}
+          )}
 
-        {status.kind === 'error' && (
-          <div className="flex flex-col items-center gap-4 py-16 text-center">
-            <p className="max-w-xs text-sm text-content-secondary">{t(status.messageKey)}</p>
-          </div>
-        )}
+          {status.kind === 'error' && (
+            <div className="flex flex-col items-center gap-4 py-16 text-center">
+              <p className="max-w-xs text-sm text-content-secondary">{t(status.messageKey)}</p>
+            </div>
+          )}
+        </div>
       </main>
 
       <footer className="shrink-0 border-t border-stroke-subtle bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
@@ -474,13 +478,14 @@ function ProgressSteps({
 function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslation> }) {
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-5">
-      <ToolCardIllustration />
+      <ScanExamplePhoto t={t} />
       <h2 className="text-center text-base font-medium">{t('scan.capture.heading')}</h2>
       <ul className="flex w-full flex-col gap-3">
         <GuideTip text={t('scan.capture.tip.surface')} />
         <GuideTip text={t('scan.capture.tip.card')} />
         <GuideTip text={t('scan.capture.tip.topDown')} />
       </ul>
+      <PrivacyNote text={t('scan.capture.privacy')} />
     </div>
   );
 }
@@ -558,49 +563,154 @@ function GuideTip({ text }: { readonly text: string }) {
   );
 }
 
-/** Stylised top-down view: a tool and a reference card on a plain surface. */
-function ToolCardIllustration() {
+/** Asset lives in public/ so the lightweight scan bundle fetches it lazily. */
+const SCAN_EXAMPLE_SRC = '/images/scan/scan-example.webp';
+
+/**
+ * Real top-down example with anchored callouts. The photo is a baked asset; the
+ * pills and leader lines are HTML+SVG so they localise and stay crisp at any DPI.
+ */
+function ScanExamplePhoto({ t }: { readonly t: ReturnType<typeof useTranslation> }) {
   return (
-    <svg
-      width="180"
-      height="120"
-      viewBox="0 0 180 120"
-      fill="none"
+    <div className="relative w-full overflow-hidden rounded-xl border border-stroke bg-surface-elevated shadow-sm">
+      <img
+        src={SCAN_EXAMPLE_SRC}
+        alt={t('scan.capture.exampleAlt')}
+        className="block h-auto w-full select-none"
+        draggable={false}
+        decoding="async"
+      />
+
+      {/* Leader lines to the tool and card, plus the straight-down camera axis. */}
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        fill="none"
+        aria-hidden="true"
+      >
+        <line
+          x1="18"
+          y1="17"
+          x2="24"
+          y2="23"
+          className="stroke-accent"
+          strokeWidth={1.2}
+          vectorEffect="non-scaling-stroke"
+        />
+        <line
+          x1="82"
+          y1="17"
+          x2="81"
+          y2="30"
+          className="stroke-success"
+          strokeWidth={1.2}
+          vectorEffect="non-scaling-stroke"
+        />
+        <g className="stroke-content-tertiary" strokeWidth={1.2} vectorEffect="non-scaling-stroke">
+          <line x1="56" y1="18" x2="56" y2="43" strokeDasharray="3 3" />
+          <line x1="52.5" y1="39" x2="56" y2="43" />
+          <line x1="59.5" y1="39" x2="56" y2="43" />
+        </g>
+      </svg>
+
+      <AnchorDot leftPct={24} topPct={23} className="bg-accent" />
+      <AnchorDot leftPct={81} topPct={30} className="bg-success" />
+
+      <CalloutPill leftPct={18} topPct={10} tone="accent" label={t('scan.capture.label.tool')} />
+      <CalloutPill
+        leftPct={56}
+        topPct={10}
+        tone="neutral"
+        downArrow
+        label={t('scan.capture.label.topDown')}
+      />
+      <CalloutPill leftPct={82} topPct={10} tone="success" label={t('scan.capture.label.card')} />
+    </div>
+  );
+}
+
+function AnchorDot({
+  leftPct,
+  topPct,
+  className,
+}: {
+  readonly leftPct: number;
+  readonly topPct: number;
+  readonly className: string;
+}) {
+  return (
+    <span
       aria-hidden="true"
-      className="text-content-tertiary"
+      className={`absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-surface ${className}`}
+      style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+    />
+  );
+}
+
+function CalloutPill({
+  leftPct,
+  topPct,
+  tone,
+  label,
+  downArrow,
+}: {
+  readonly leftPct: number;
+  readonly topPct: number;
+  readonly tone: 'accent' | 'success' | 'neutral';
+  readonly label: string;
+  readonly downArrow?: boolean;
+}) {
+  const dotClass = tone === 'accent' ? 'bg-accent' : 'bg-success';
+  return (
+    <span
+      className="absolute flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border border-stroke-subtle bg-surface/90 px-2 py-0.5 text-[10px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
+      style={{ left: `${leftPct}%`, top: `${topPct}%` }}
     >
-      <rect
-        x="1"
-        y="1"
-        width="178"
-        height="118"
-        rx="10"
-        className="fill-surface-elevated stroke-stroke-subtle"
+      {downArrow ? (
+        <svg
+          width="9"
+          height="9"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="text-content-tertiary"
+        >
+          <path d="M12 5v14" />
+          <path d="m19 12-7 7-7-7" />
+        </svg>
+      ) : (
+        <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} aria-hidden="true" />
+      )}
+      {label}
+    </span>
+  );
+}
+
+/** Reassures the user the capture is on-device — the photo is never uploaded. */
+function PrivacyNote({ text }: { readonly text: string }) {
+  return (
+    <p className="flex items-center gap-1.5 text-center text-[11px] text-content-tertiary">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
         strokeWidth="2"
-      />
-      {/* Tool */}
-      <rect
-        x="30"
-        y="34"
-        width="34"
-        height="58"
-        rx="9"
-        className="fill-accent/15 stroke-accent"
-        strokeWidth="2.5"
-      />
-      <circle cx="47" cy="50" r="7" className="fill-accent/40 stroke-accent" strokeWidth="2" />
-      {/* Reference card */}
-      <rect
-        x="96"
-        y="40"
-        width="58"
-        height="38"
-        rx="4"
-        className="fill-success/10 stroke-success"
-        strokeWidth="2.5"
-        strokeDasharray="5 4"
-      />
-      <rect x="102" y="58" width="14" height="10" rx="2" className="fill-success/40" />
-    </svg>
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="shrink-0"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      {text}
+    </p>
   );
 }

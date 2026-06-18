@@ -37,4 +37,10 @@ describe('CutoutEmptyState', () => {
     fireEvent.click(cta);
     expect(onScanWithPhone).toHaveBeenCalledTimes(1);
   });
+
+  it('shows the framing example and on-device privacy note with the scan CTA', () => {
+    render(<CutoutEmptyState variant="sidebar" onScanWithPhone={vi.fn()} />);
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    expect(screen.getByText(/stays on your phone/i)).toBeInTheDocument();
+  });
 });

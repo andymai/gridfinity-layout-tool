@@ -94,6 +94,16 @@ describe('ScanPage', () => {
     expect(mockPreload).toHaveBeenCalled();
   });
 
+  it('shows the annotated example photo, callouts, and on-device privacy note', () => {
+    render(<ScanPage token={TOKEN} />);
+    const example = screen.getByAltText('scan.capture.exampleAlt');
+    expect(example).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    expect(screen.getByText('scan.capture.label.tool')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.label.card')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.label.topDown')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
+  });
+
   it('segments a photo and shows the review overlay with the tap hint', async () => {
     mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     render(<ScanPage token={TOKEN} />);

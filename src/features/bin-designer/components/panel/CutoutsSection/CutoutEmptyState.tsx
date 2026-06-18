@@ -74,6 +74,12 @@ export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateP
 
         {onScanWithPhone && (
           <div className="pointer-events-auto mt-4 w-full border-t border-stroke-subtle pt-3">
+            <img
+              src="/images/scan/scan-example.webp"
+              alt={t('scan.capture.exampleAlt')}
+              className="mx-auto mb-2.5 w-full max-w-[150px] rounded-lg border border-stroke-subtle"
+              decoding="async"
+            />
             <Button type="button" variant="secondary" size="sm" fullWidth onClick={onScanWithPhone}>
               <span className="flex items-center justify-center gap-2">
                 <svg
@@ -95,6 +101,22 @@ export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateP
             </Button>
             <p className="mt-1.5 text-[11px] text-content-tertiary">
               {t('binDesigner.cutouts.scanImport.emptyHelp')}
+            </p>
+            <p className="mt-1 flex items-center justify-center gap-1 text-[10px] text-content-disabled">
+              <svg
+                className="h-3 w-3 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              {t('scan.capture.privacy')}
             </p>
           </div>
         )}

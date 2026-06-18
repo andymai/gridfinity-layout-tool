@@ -1156,6 +1156,12 @@ const en: Record<string, string> = {
   'scan.capture.tip.surface': 'Lay it on a plain, uncluttered surface',
   'scan.capture.tip.card': 'Place a bank, transit, or ID card beside it for exact sizing',
   'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
+  'scan.capture.exampleAlt':
+    'Example photo: a tool and a bank card laid flat on a plain surface, photographed from straight above',
+  'scan.capture.label.tool': 'Your tool',
+  'scan.capture.label.card': 'Card for scale',
+  'scan.capture.label.topDown': 'Straight down',
+  'scan.capture.privacy': 'Your photo stays on your phone — only the outline is sent.',
   'scan.cardMeasured': 'Measured to scale from your card.',
   'scan.cardSteepAngle': 'Steep angle — shoot straighter for accurate sizing.',
   'scan.noCardTitle': 'No card detected',
