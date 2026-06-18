@@ -28,8 +28,8 @@ minimumReleaseAgeExclude:
   - '@esbuild/*'
   # dompurify >=3.4.11 patches GHSA-cmwh-pvxp-8882 (permanent ALLOWED_ATTR
   # pollution via setConfig, incomplete fix of the 3.4.7 hook-pollution patch);
-  # the override resolves to the latest 3.4.x. Excluded so the patched release
-  # can land before its 7-day cooldown elapses.
+  # the override (^3.4.11) resolves to the latest 3.x at or above the patch.
+  # Excluded so the patched release can land before its 7-day cooldown elapses.
   # TODO: remove once the resolved dompurify version has aged past the window
   # (3.4.11 published 2026-06-17 -> 2026-06-24).
   - dompurify
