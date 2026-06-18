@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Il est maintenant dans le concepteur de bacs sur votre ordinateur.",
   "scan.sent.another": "En scanner un autre",
   "scan.sent.done": "Terminé",
+  "scan.finished.title": "C’est fait !",
+  "scan.finished.body": "Vous pouvez fermer cet onglet.",
   "scan.sent.title": "Contour envoyé !",
   "scan.step.capture": "Capturer",
   "scan.step.done": "Terminé",

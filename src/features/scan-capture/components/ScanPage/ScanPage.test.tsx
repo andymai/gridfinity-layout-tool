@@ -202,6 +202,21 @@ describe('ScanPage', () => {
     vi.unstubAllGlobals();
   });
 
+  it('attempts to close the tab and shows a close hint when Done is tapped', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => {});
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    fireEvent.click(await screen.findByText('scan.sent.done'));
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText('scan.finished.body')).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
   it('shows a no-object error when both ML and classical tracing fail', async () => {
     mockSegment.mockRejectedValue(new Error('model unavailable'));
     mockTrace.mockReturnValue(err({ code: 'NO_OBJECT' }));

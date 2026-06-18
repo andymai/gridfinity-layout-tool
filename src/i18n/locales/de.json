@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Sie ist jetzt im Behälter-Designer auf deinem Computer.",
   "scan.sent.another": "Weiteres scannen",
   "scan.sent.done": "Fertig",
+  "scan.finished.title": "Alles erledigt!",
+  "scan.finished.body": "Du kannst diesen Tab schließen.",
   "scan.sent.title": "Kontur gesendet!",
   "scan.step.capture": "Aufnehmen",
   "scan.step.done": "Fertig",

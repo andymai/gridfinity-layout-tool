@@ -1962,6 +1962,8 @@
   "scan.sent.body": "パソコンのビンデザイナーに追加されました。",
   "scan.sent.another": "別をスキャン",
   "scan.sent.done": "完了",
+  "scan.finished.title": "完了しました！",
+  "scan.finished.body": "このタブを閉じても大丈夫です。",
   "scan.sent.title": "輪郭を送信しました！",
   "scan.step.capture": "撮影",
   "scan.step.done": "完了",

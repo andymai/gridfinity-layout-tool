@@ -52,6 +52,7 @@ type Status =
   | { readonly kind: 'processing' }
   | ({ readonly kind: 'review' } & ReviewState)
   | { readonly kind: 'sent' }
+  | { readonly kind: 'finished' }
   | { readonly kind: 'error'; readonly messageKey: string };
 
 type Step = 'capture' | 'review' | 'done';
@@ -200,11 +201,19 @@ export function ScanPage({ token }: ScanPageProps) {
   }, [status, token]);
 
   const reset = useCallback(() => setStatus({ kind: 'capture' }), []);
-  // Best-effort: window.close() only works on script-opened tabs.
-  const finish = useCallback(() => window.close(), []);
+  // window.close() only works on script-opened tabs, so fall through to a
+  // terminal "you can close this tab" screen when the browser ignores it.
+  const finish = useCallback(() => {
+    window.close();
+    setStatus({ kind: 'finished' });
+  }, []);
 
   const step: Step =
-    status.kind === 'sent' ? 'done' : status.kind === 'review' ? 'review' : 'capture';
+    status.kind === 'sent' || status.kind === 'finished'
+      ? 'done'
+      : status.kind === 'review'
+        ? 'review'
+        : 'capture';
 
   const measured =
     status.kind === 'review' && status.scene.units === 'mm'
@@ -351,6 +360,13 @@ export function ScanPage({ token }: ScanPageProps) {
             </div>
           )}
 
+          {status.kind === 'finished' && (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-lg font-medium">{t('scan.finished.title')}</p>
+              <p className="max-w-xs text-sm text-content-secondary">{t('scan.finished.body')}</p>
+            </div>
+          )}
+
           {status.kind === 'error' && (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
               <p className="max-w-xs text-sm text-content-secondary">{t(status.messageKey)}</p>
@@ -359,59 +375,61 @@ export function ScanPage({ token }: ScanPageProps) {
         </div>
       </main>
 
-      <footer className="shrink-0 border-t border-stroke-subtle bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-        {status.kind === 'capture' && (
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {t('scan.takePhoto')}
-          </Button>
-        )}
-
-        {status.kind === 'review' && (
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              fullWidth
-              disabled={status.sending}
-              onClick={reset}
-            >
-              {t('scan.retake')}
-            </Button>
+      {status.kind !== 'processing' && status.kind !== 'finished' && (
+        <footer className="shrink-0 border-t border-stroke-subtle bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+          {status.kind === 'capture' && (
             <Button
               type="button"
               variant="primary"
+              size="lg"
               fullWidth
-              disabled={status.sending || status.resegmenting}
-              onClick={() => void handleUse()}
+              onClick={() => fileInputRef.current?.click()}
             >
-              {status.sending ? t('scan.sending') : t('scan.use')}
+              {t('scan.takePhoto')}
             </Button>
-          </div>
-        )}
+          )}
 
-        {status.kind === 'sent' && (
-          <div className="flex gap-3">
-            <Button type="button" variant="secondary" fullWidth onClick={reset}>
-              {t('scan.sent.another')}
-            </Button>
-            <Button type="button" variant="primary" fullWidth onClick={finish}>
-              {t('scan.sent.done')}
-            </Button>
-          </div>
-        )}
+          {status.kind === 'review' && (
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                fullWidth
+                disabled={status.sending}
+                onClick={reset}
+              >
+                {t('scan.retake')}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                fullWidth
+                disabled={status.sending || status.resegmenting}
+                onClick={() => void handleUse()}
+              >
+                {status.sending ? t('scan.sending') : t('scan.use')}
+              </Button>
+            </div>
+          )}
 
-        {status.kind === 'error' && (
-          <Button type="button" variant="primary" size="lg" fullWidth onClick={reset}>
-            {t('scan.retake')}
-          </Button>
-        )}
-      </footer>
+          {status.kind === 'sent' && (
+            <div className="flex gap-3">
+              <Button type="button" variant="secondary" fullWidth onClick={reset}>
+                {t('scan.sent.another')}
+              </Button>
+              <Button type="button" variant="primary" fullWidth onClick={finish}>
+                {t('scan.sent.done')}
+              </Button>
+            </div>
+          )}
+
+          {status.kind === 'error' && (
+            <Button type="button" variant="primary" size="lg" fullWidth onClick={reset}>
+              {t('scan.retake')}
+            </Button>
+          )}
+        </footer>
+      )}
 
       <input
         ref={fileInputRef}

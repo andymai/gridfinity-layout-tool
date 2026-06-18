@@ -1180,6 +1180,8 @@ const en: Record<string, string> = {
   'scan.sent.body': 'It’s now in the bin designer on your computer.',
   'scan.sent.another': 'Scan another',
   'scan.sent.done': 'Done',
+  'scan.finished.title': 'All set!',
+  'scan.finished.body': 'You can close this tab.',
   'scan.error.decode': 'Couldn’t read that photo. Please try again.',
   'scan.error.noObject':
     'Couldn’t find a clear outline. Use a plain, high-contrast background and retake.',

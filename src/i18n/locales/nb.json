@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Det er nå i beholderdesigneren på datamaskinen din.",
   "scan.sent.another": "Skann en til",
   "scan.sent.done": "Ferdig",
+  "scan.finished.title": "Ferdig!",
+  "scan.finished.body": "Du kan lukke denne fanen.",
   "scan.sent.title": "Omriss sendt!",
   "scan.step.capture": "Ta bilde",
   "scan.step.done": "Ferdig",

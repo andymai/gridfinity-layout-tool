@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Já está no designer de caixas no seu computador.",
   "scan.sent.another": "Escanear outra",
   "scan.sent.done": "Concluído",
+  "scan.finished.title": "Tudo pronto!",
+  "scan.finished.body": "Você pode fechar esta aba.",
   "scan.sent.title": "Contorno enviado!",
   "scan.step.capture": "Capturar",
   "scan.step.done": "Concluído",

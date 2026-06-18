@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Тепер він у дизайнері контейнерів на вашому комп’ютері.",
   "scan.sent.another": "Сканувати ще",
   "scan.sent.done": "Готово",
+  "scan.finished.title": "Готово!",
+  "scan.finished.body": "Можете закрити цю вкладку.",
   "scan.sent.title": "Контур надіслано!",
   "scan.step.capture": "Зйомка",
   "scan.step.done": "Готово",

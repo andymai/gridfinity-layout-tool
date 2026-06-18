@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Hij staat nu in de bak-ontwerper op je computer.",
   "scan.sent.another": "Nog een scannen",
   "scan.sent.done": "Klaar",
+  "scan.finished.title": "Helemaal klaar!",
+  "scan.finished.body": "Je kunt dit tabblad sluiten.",
   "scan.sent.title": "Omtrek verzonden!",
   "scan.step.capture": "Vastleggen",
   "scan.step.done": "Klaar",

@@ -1962,6 +1962,8 @@
   "scan.sent.body": "Den finns nu i låddesignern på din dator.",
   "scan.sent.another": "Skanna en till",
   "scan.sent.done": "Klar",
+  "scan.finished.title": "Klart!",
+  "scan.finished.body": "Du kan stänga den här fliken.",
   "scan.sent.title": "Kontur skickad!",
   "scan.step.capture": "Ta bild",
   "scan.step.done": "Klar",
