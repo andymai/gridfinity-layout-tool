@@ -39,7 +39,9 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
     // constant `false` across the awaits below (it is flipped on cleanup).
     const aborted = (): boolean => signal.aborted;
     let interval: ReturnType<typeof setInterval> | null = null;
-    let lastCreatedAt: string | null = null;
+    // Keyed by createdAt so overlapping/out-of-order polls can't re-deliver an
+    // already-seen outline; everDelivered covers the no-createdAt fallback.
+    const deliveredStamps = new Set<string>();
     let everDelivered = false;
     const stopPolling = (): void => {
       if (interval) clearInterval(interval);
@@ -51,10 +53,10 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
         const res = await fetch(`/api/scan-session/${token}`, { signal });
         if (aborted()) return;
         if (res.status === 404) {
+          // The session lives until its TTL; a 404 means it's gone, so reflect
+          // that even after delivering — the QR is dead and can't take more.
           stopPolling();
-          // Don't flip to "expired" if an outline was already delivered (a late
-          // in-flight poll can 404 once the session expires post-pickup).
-          if (!everDelivered) setPhase('expired');
+          setPhase('expired');
           return;
         }
         if (!res.ok) return;
@@ -65,9 +67,9 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
         // createdAt (older API), fall back to delivering a single outline.
         if (data.status === 'ready' && data.svg) {
           const stamp = data.createdAt ?? null;
-          const isNew = stamp ? stamp !== lastCreatedAt : !everDelivered;
+          const isNew = stamp ? !deliveredStamps.has(stamp) : !everDelivered;
           if (isNew) {
-            lastCreatedAt = stamp;
+            if (stamp) deliveredStamps.add(stamp);
             everDelivered = true;
             onSvgRef.current(data.svg);
           }

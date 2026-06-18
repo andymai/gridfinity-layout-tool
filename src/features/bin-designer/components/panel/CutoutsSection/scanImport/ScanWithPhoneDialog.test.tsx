@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
 
 const mockAddScanCutouts = vi.fn(() => 1);
@@ -12,9 +12,13 @@ vi.mock('./useScanImport', () => ({
 // hoisted handle lets one test exercise the live "waiting for QR scan" branch.
 const session = vi.hoisted(() => ({
   current: { phase: 'unavailable', url: null as string | null },
+  onSvg: null as ((svg: string) => void) | null,
 }));
 vi.mock('./useScanSession', () => ({
-  useScanSession: () => session.current,
+  useScanSession: (_active: boolean, onSvg: (svg: string) => void) => {
+    session.onSvg = onSvg;
+    return session.current;
+  },
 }));
 
 const mockAddToast = vi.fn();
@@ -102,6 +106,30 @@ describe('ScanWithPhoneDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.queryByLabelText('binDesigner.cutouts.scanImport.scaleLabel')).toBeNull();
     expect(screen.getByText('binDesigner.cutouts.scanImport.added')).toBeInTheDocument();
+  });
+
+  it('buffers a scan that arrives during scale-confirm instead of clobbering it', async () => {
+    session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
+    render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
+
+    // First pixel scan → scale-confirm.
+    act(() => session.onSvg?.(RECT_SVG));
+    const field = await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel');
+
+    // A second pixel scan arrives mid-confirm — it must not clobber the first.
+    act(() =>
+      session.onSvg?.('<svg viewBox="0 0 50 50"><rect x="0" y="0" width="50" height="50"/></svg>')
+    );
+    expect(mockAddScanCutouts).not.toHaveBeenCalled();
+
+    fireEvent.change(field, { target: { value: '40' } });
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.add'));
+
+    // The first is added once; the buffered scan then drains into its own confirm.
+    expect(mockAddScanCutouts).toHaveBeenCalledOnce();
+    expect(
+      await screen.findByLabelText('binDesigner.cutouts.scanImport.scaleLabel')
+    ).toBeInTheDocument();
   });
 
   it('disables Add when the scale is non-positive', async () => {

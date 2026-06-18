@@ -67,6 +67,15 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
   const [added, setAdded] = useState(0);
 
+  // A scan can arrive mid scale-confirm; read the live stage from a ref (the
+  // poll fires outside render) and hold the latecomer until we're back to
+  // awaiting, rather than clobbering the in-progress confirmation.
+  const stageRef = useRef(stage);
+  useEffect(() => {
+    stageRef.current = stage;
+  }, [stage]);
+  const pendingScanRef = useRef<string | null>(null);
+
   // Preview via a Blob URL rather than a data: URL — avoids encoding a
   // potentially multi-MB SVG into a string on every render.
   const reviewSvg = stage.kind === 'review' ? stage.svg : null;
@@ -83,6 +92,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
   const handleClose = useCallback(() => {
     setStage({ kind: 'awaiting' });
     setAdded(0);
+    pendingScanRef.current = null;
     onClose();
   }, [onClose]);
 
@@ -103,6 +113,12 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         setAdded((n) => n + count);
         return;
       }
+      // A pixel-scale outline needs the scale-confirm step; if one is already in
+      // progress, hold this one rather than overwriting the user's entry.
+      if (stageRef.current.kind === 'review') {
+        pendingScanRef.current = svg;
+        return;
+      }
       // Start the field empty rather than pre-filling the traced pixel extent:
       // those pixels aren't millimetres, and accepting the prefill produced a
       // wildly oversized cutout. Forcing a measurement keeps the import to scale.
@@ -115,6 +131,15 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
     },
     [addToast, t, addScanCutouts]
   );
+
+  // Drain a scan that arrived during scale-confirm once we're back to awaiting.
+  useEffect(() => {
+    if (stage.kind !== 'awaiting') return;
+    const next = pendingScanRef.current;
+    if (!next) return;
+    pendingScanRef.current = null;
+    ingestSvg(next);
+  }, [stage.kind, ingestSvg]);
 
   const handleFile = useCallback(
     (file: File) => {
