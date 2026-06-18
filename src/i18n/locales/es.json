@@ -589,7 +589,7 @@
   "binDesigner.insertsDisableLightweight": "No se pueden combinar insertos de suelo con un suelo ligero",
   "binDesigner.interior.slotted.description": "Ranuras para divisores extraíbles",
   "binDesigner.interior.slotted.title": "Divisores removibles",
-  "binDesigner.interior.solid.description": "Huecos con forma de herramienta",
+  "binDesigner.interior.solid.description": "Recortes con forma de herramienta en la tapa: dibújalos o escanea una herramienta real con el móvil.",
   "binDesigner.interior.solid.title": "Recortes personalizados",
   "binDesigner.interior.standard.description": "Compartimentos con paredes",
   "binDesigner.interior.standard.title": "Divisores de cuadrícula",

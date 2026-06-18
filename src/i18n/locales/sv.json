@@ -589,7 +589,7 @@
   "binDesigner.insertsDisableLightweight": "Kan inte kombinera golvinsatser med lätt golv",
   "binDesigner.interior.slotted.description": "Slitsar för insättbara avdelare",
   "binDesigner.interior.slotted.title": "Borttagbara avdelare",
-  "binDesigner.interior.solid.description": "Övre urtag i verktygsform",
+  "binDesigner.interior.solid.description": "Verktygsformade urtag i ovansidan – rita dem eller skanna ett riktigt verktyg med telefonen.",
   "binDesigner.interior.solid.title": "Anpassade urtag",
   "binDesigner.interior.standard.description": "Fack med väggar",
   "binDesigner.interior.standard.title": "Rutnätsavdelare",

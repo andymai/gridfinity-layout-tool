@@ -1975,7 +1975,8 @@ const en: Record<string, string> = {
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',
-  'binDesigner.interior.solid.description': 'Top-cut tool-shaped recesses',
+  'binDesigner.interior.solid.description':
+    'Top-cut tool-shaped recesses — draw them or scan a real tool with your phone.',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.shareDesign': 'Share Design',

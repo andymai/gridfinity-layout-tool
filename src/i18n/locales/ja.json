@@ -589,7 +589,7 @@
   "binDesigner.insertsDisableLightweight": "フロアインサートと軽量フロアは併用できません",
   "binDesigner.interior.slotted.description": "差し込み式仕切り板用のスロット",
   "binDesigner.interior.slotted.title": "取り外し可能な仕切り板",
-  "binDesigner.interior.solid.description": "道具の形をした上部切り欠き",
+  "binDesigner.interior.solid.description": "上面に工具形のくぼみ。描くか、実物の工具をスマホでスキャンします。",
   "binDesigner.interior.solid.title": "カスタム切り欠き",
   "binDesigner.interior.standard.description": "壁付き区画",
   "binDesigner.interior.standard.title": "グリッド仕切り板",

@@ -589,7 +589,7 @@
   "binDesigner.insertsDisableLightweight": "Impossible de combiner des inserts de fond avec un fond allégé",
   "binDesigner.interior.slotted.description": "Fentes pour cloisons amovibles",
   "binDesigner.interior.slotted.title": "Séparateurs amovibles",
-  "binDesigner.interior.solid.description": "Évidements en forme d'outil",
+  "binDesigner.interior.solid.description": "Découpes en forme d’outil dans le dessus — dessinez-les ou scannez un outil réel avec votre téléphone.",
   "binDesigner.interior.solid.title": "Découpes personnalisées",
   "binDesigner.interior.standard.description": "Compartiments avec parois",
   "binDesigner.interior.standard.title": "Séparateurs en grille",

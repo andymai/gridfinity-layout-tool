@@ -589,7 +589,7 @@
   "binDesigner.insertsDisableLightweight": "Não é possível combinar insertos de piso com um piso leve",
   "binDesigner.interior.slotted.description": "Ranhuras para divisores inseríveis",
   "binDesigner.interior.slotted.title": "Divisores removíveis",
-  "binDesigner.interior.solid.description": "Rebaixos em forma de ferramenta",
+  "binDesigner.interior.solid.description": "Recortes em forma de ferramenta na tampa — desenhe ou escaneie uma ferramenta real com o celular.",
   "binDesigner.interior.solid.title": "Recortes personalizados",
   "binDesigner.interior.standard.description": "Compartimentos com paredes",
   "binDesigner.interior.standard.title": "Divisores em grade",
