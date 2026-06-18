@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.191.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.190.0...gridfinity-layout-tool-v4.191.0) (2026-06-18)
+
+
+### Features
+
+* **labs:** graduate vertical stack and design linking out of experimental ([#2253](https://github.com/andymai/gridfinity-layout-tool/issues/2253)) ([eca8a21](https://github.com/andymai/gridfinity-layout-tool/commit/eca8a21e61f3c2658fdabee30bddf26300d04720))
+
 ## [4.190.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.189.0...gridfinity-layout-tool-v4.190.0) (2026-06-18)
 
 
