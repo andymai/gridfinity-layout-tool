@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.192.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.191.0...gridfinity-layout-tool-v4.192.0) (2026-06-18)
+
+
+### Features
+
+* **baseplate:** add 'puzzle' locking connector style ([#2241](https://github.com/andymai/gridfinity-layout-tool/issues/2241)) ([#2246](https://github.com/andymai/gridfinity-layout-tool/issues/2246)) ([b78caa0](https://github.com/andymai/gridfinity-layout-tool/commit/b78caa012751e8b024d47b6c03f9397486e19895))
+
 ## [4.191.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.190.0...gridfinity-layout-tool-v4.191.0) (2026-06-18)
 
 ### Features
