@@ -16,6 +16,7 @@ import {
   lidWallBottomZ,
   lidTopThickness,
 } from './lidConstants';
+import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
 /** Geometric inputs derived from BinParams. */
 export interface LidInputs {
@@ -78,6 +79,16 @@ export interface LidInputs {
   readonly wallBottomZ: number;
   /** Custom-shape mask if the bin has one. Undefined = rectangular. */
   readonly cellMask: CellMask | undefined;
+  /**
+   * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
+   * perimeter, mating shell, floor, and click rails translate by this amount
+   * so they wrap the bin's overhang-shifted outer body, while the stack grid
+   * and magnet holes stay on the nominal socket grid (origin) to keep mating
+   * with the bin's base sockets. Zero for symmetric/absent overhang and for
+   * polygon bins (which suppress overhang, mirroring the box builder).
+   */
+  readonly outerOffsetX: number;
+  readonly outerOffsetY: number;
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
@@ -88,12 +99,28 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // a thin sealed ceiling above it (LID_MAGNET_CEILING).
   const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
-  // Lid outer footprint: `bin*42 - 2*Clearance` per side. The lid uses
-  // its OWN corner radius (`LID_CORNER_RADIUS = 4mm`), NOT the bin's
-  // `BOX_CORNER_RADIUS` (3.75mm) — using the bin value shifts rails,
-  // shrinks walls, and breaks lip fit.
-  const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
-  const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
+  // Polygon path activates when the mask is partially filled. A fully-filled
+  // mask is treated as rectangular (matches the bin generator's convention).
+  const cellMask = isPartialMask(params.cellMask) ? params.cellMask : undefined;
+
+  // Overhang grows the bin's outer body + stacking lip outward (and shifts it
+  // when the two opposite sides differ). The lid wraps that expanded body, so
+  // its outer footprint must grow in lockstep — otherwise the lid is sized to
+  // the nominal footprint and won't seat over the overhang. Polygon bins
+  // suppress overhang (matching boxBuilder), so the lid does too.
+  const overhang = resolveOverhang(params.overhang);
+  const expansion = !cellMask && hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+  const addW = expansion?.addW ?? 0;
+  const addD = expansion?.addD ?? 0;
+  const outerOffsetX = expansion?.offsetX ?? 0;
+  const outerOffsetY = expansion?.offsetY ?? 0;
+
+  // Lid outer footprint: `bin*42 - 2*Clearance` per side, plus the overhang
+  // expansion. The lid uses its OWN corner radius (`LID_CORNER_RADIUS = 4mm`),
+  // NOT the bin's `BOX_CORNER_RADIUS` (3.75mm) — using the bin value shifts
+  // rails, shrinks walls, and breaks lip fit.
+  const lidOuterW = params.width * gridUnitMm - 2 * fitClearance + addW;
+  const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance + addD;
   // lidCornerR and cavityInset are the same expression: both are the lid's
   // effective corner radius after clearance. `cavityInset` names the semantic
   // role (inner-face distance from outer perimeter); `lidCornerR` is used by
@@ -101,10 +128,6 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // cavityInset - LIP_BIG_TAPER = 1.85mm.
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
   const cavityInset = lidCornerR;
-
-  // Polygon path activates when the mask is partially filled. A fully-filled
-  // mask is treated as rectangular (matches the bin generator's convention).
-  const cellMask = isPartialMask(params.cellMask) ? params.cellMask : undefined;
 
   return {
     lidOuterW,
@@ -136,5 +159,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     anchorZ: lidAnchorZ(heightUnitMm, fitClearance),
     wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance),
     cellMask,
+    outerOffsetX,
+    outerOffsetY,
   };
 }

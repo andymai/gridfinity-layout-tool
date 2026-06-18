@@ -217,10 +217,13 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const { lidOuterW, lidOuterD, lidCornerR, disabledRails, clickRails, clickRailCoverage } = inputs;
+  const { outerOffsetX: offX, outerOffsetY: offY } = inputs;
   // Rail spans wall length minus corner radii on both ends, then shrunk
   // to `clickRailCoverage` (centered on the wall) to save filament.
   const railLengthX = (lidOuterW - 2 * lidCornerR) * clickRailCoverage;
   const railLengthY = (lidOuterD - 2 * lidCornerR) * clickRailCoverage;
+  // Wall midlines, shifted by the overhang offset so rails ride the lid's
+  // (possibly off-center) perimeter rather than the nominal socket grid.
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
   const corneredOuterY = lidOuterD / 2 - lidCornerR;
 
@@ -234,28 +237,33 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const wantLeft = clickRails.left && !disabledRails.has('left') && railLengthY >= MIN_RAIL_LENGTH;
 
   if (wantBack) {
-    placements.push({ centerX: 0, centerY: corneredOuterY, length: railLengthX, rotationDeg: 0 });
+    placements.push({
+      centerX: offX,
+      centerY: corneredOuterY + offY,
+      length: railLengthX,
+      rotationDeg: 0,
+    });
   }
   if (wantFront) {
     placements.push({
-      centerX: 0,
-      centerY: -corneredOuterY,
+      centerX: offX,
+      centerY: -corneredOuterY + offY,
       length: railLengthX,
       rotationDeg: 180,
     });
   }
   if (wantRight) {
     placements.push({
-      centerX: corneredOuterX,
-      centerY: 0,
+      centerX: corneredOuterX + offX,
+      centerY: offY,
       length: railLengthY,
       rotationDeg: -90,
     });
   }
   if (wantLeft) {
     placements.push({
-      centerX: -corneredOuterX,
-      centerY: 0,
+      centerX: -corneredOuterX + offX,
+      centerY: offY,
       length: railLengthY,
       rotationDeg: 90,
     });

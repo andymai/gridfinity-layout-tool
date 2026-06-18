@@ -23,19 +23,23 @@ import type { LidInputs } from './lidInputs';
  */
 export function buildOutlineDrawing(inputs: LidInputs, outerInset: number): Drawing {
   const { lidOuterW, lidOuterD, lidCornerR, gridUnitMm, fitClearance, cellMask } = inputs;
+  const { outerOffsetX, outerOffsetY } = inputs;
   const radius = Math.max(lidCornerR - outerInset, LID_MIN_CORNER_RADIUS);
 
-  if (cellMask) {
-    // Polygon path: total inset from the base (full grid) polygon =
-    // fitClearance + outerInset. The polygon helper handles the inset and
-    // corner rounding in closed form for axis-aligned polygons.
-    return buildMaskDrawingAtInset(cellMask, gridUnitMm, fitClearance + outerInset, radius);
-  }
+  const outline = cellMask
+    ? // Polygon path: total inset from the base (full grid) polygon =
+      // fitClearance + outerInset. The polygon helper handles the inset and
+      // corner rounding in closed form for axis-aligned polygons.
+      buildMaskDrawingAtInset(cellMask, gridUnitMm, fitClearance + outerInset, radius)
+    : // Rectangular path
+      drawRoundedRectangle(lidOuterW - 2 * outerInset, lidOuterD - 2 * outerInset, radius);
 
-  // Rectangular path
-  const w = lidOuterW - 2 * outerInset;
-  const d = lidOuterD - 2 * outerInset;
-  return drawRoundedRectangle(w, d, radius);
+  // Asymmetric overhang shifts the bin's outer body off the socket grid; the
+  // lid's perimeter follows so it wraps the lip. Symmetric/absent overhang
+  // (and all polygon bins) leave the offset at zero — a no-op translate.
+  return outerOffsetX !== 0 || outerOffsetY !== 0
+    ? outline.translate(outerOffsetX, outerOffsetY)
+    : outline;
 }
 
 function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {

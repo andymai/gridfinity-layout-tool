@@ -384,6 +384,86 @@ describe('lid generation and export scenarios', () => {
     });
   });
 
+  describe('overhang', () => {
+    it('grows the lid footprint to match an overhang-expanded bin body', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      const expanded = generateLid(
+        makeParams(
+          {},
+          {
+            width: 2,
+            depth: 2,
+            height: 3,
+            overhang: { left: 5, right: 5, front: 4, back: 4 },
+          }
+        )
+      );
+      expect(base).not.toBeNull();
+      expect(expanded).not.toBeNull();
+      assertStructurallyValid(expanded!, 'overhang lid');
+      const baseBB = boundingBox(base!.vertices);
+      const expBB = boundingBox(expanded!.vertices);
+      // Footprint grows by left+right (=10mm) in width and front+back (=8mm)
+      // in depth, within tessellation tolerance.
+      const widthDelta = expBB.maxX - expBB.minX - (baseBB.maxX - baseBB.minX);
+      const depthDelta = expBB.maxY - expBB.minY - (baseBB.maxY - baseBB.minY);
+      expect(widthDelta).toBeGreaterThan(9);
+      expect(widthDelta).toBeLessThan(11);
+      expect(depthDelta).toBeGreaterThan(7);
+      expect(depthDelta).toBeLessThan(9);
+    });
+
+    it('shifts the lid perimeter for asymmetric overhang (heavier side reaches further)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      const rightHeavy = generateLid(
+        makeParams(
+          {},
+          {
+            width: 2,
+            depth: 2,
+            height: 3,
+            overhang: { left: 0, right: 8, front: 0, back: 0 },
+          }
+        )
+      );
+      expect(base).not.toBeNull();
+      expect(rightHeavy).not.toBeNull();
+      assertStructurallyValid(rightHeavy!, 'asymmetric overhang lid');
+      const baseBB = boundingBox(base!.vertices);
+      const rhBB = boundingBox(rightHeavy!.vertices);
+      // All 8mm of growth is on +X (right side); the left edge barely moves —
+      // the perimeter is grown by 8 and re-centered by +4, so -X is unchanged.
+      expect(rhBB.maxX - baseBB.maxX).toBeGreaterThan(7);
+      expect(Math.abs(rhBB.minX - baseBB.minX)).toBeLessThan(1);
+    });
+
+    it('ignores overhang for polygon (cellMask) lids — matches the box builder', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const noOverhang = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      const withOverhang = generateLid(
+        makeParams(
+          {},
+          {
+            width: 3,
+            depth: 3,
+            height: 3,
+            cellMask: L_SHAPE_MASK,
+            overhang: { left: 5, right: 5, front: 5, back: 5 },
+          }
+        )
+      );
+      expect(noOverhang).not.toBeNull();
+      expect(withOverhang).not.toBeNull();
+      // Polygon bins suppress overhang in boxBuilder; the lid mirrors that, so
+      // the two meshes are identical.
+      expect(withOverhang!.triangleCount).toBe(noOverhang!.triangleCount);
+    });
+  });
+
   describe('STEP combined export (lid-only path)', () => {
     // Before the lid PR, the STEP combined-export branch was only reached
     // when dividers existed; a lid-enabled bin with no dividers now also
