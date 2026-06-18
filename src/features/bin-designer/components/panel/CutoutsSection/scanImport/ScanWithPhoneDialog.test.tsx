@@ -53,11 +53,10 @@ describe('ScanWithPhoneDialog', () => {
     expect(screen.getByText('binDesigner.cutouts.scanImport.upload')).toBeInTheDocument();
   });
 
-  it('shows the framing example and on-device privacy note while awaiting a QR scan', () => {
+  it('shows the on-device privacy note while awaiting a QR scan', () => {
     session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
-    const example = screen.getByAltText('scan.capture.exampleAlt');
-    expect(example).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    expect(screen.queryByAltText('scan.capture.exampleAlt')).toBeNull();
     expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
   });
 

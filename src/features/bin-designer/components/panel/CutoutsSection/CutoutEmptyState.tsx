@@ -74,12 +74,6 @@ export function CutoutEmptyState({ variant, onScanWithPhone }: CutoutEmptyStateP
 
         {onScanWithPhone && (
           <div className="pointer-events-auto mt-4 w-full border-t border-stroke-subtle pt-3">
-            <img
-              src="/images/scan/scan-example.webp"
-              alt={t('scan.capture.exampleAlt')}
-              className="mx-auto mb-2.5 w-full max-w-[150px] rounded-lg border border-stroke-subtle"
-              decoding="async"
-            />
             <Button type="button" variant="secondary" size="sm" fullWidth onClick={onScanWithPhone}>
               <span className="flex items-center justify-center gap-2">
                 <svg

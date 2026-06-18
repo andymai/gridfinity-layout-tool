@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ok, err } from '@/core/result';
 import { ScanPage } from './ScanPage';
 
@@ -186,6 +186,27 @@ describe('ScanPage', () => {
       expect.objectContaining({ method: 'POST' })
     );
     vi.unstubAllGlobals();
+  });
+
+  it('auto-closes the tab after a successful upload', async () => {
+    vi.useFakeTimers();
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => {});
+    try {
+      render(<ScanPage token={TOKEN} />);
+      selectPhoto();
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      fireEvent.click(screen.getByText('scan.use'));
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      expect(screen.getByText('scan.sent.title')).toBeInTheDocument();
+      expect(closeSpy).not.toHaveBeenCalled();
+      await act(() => vi.advanceTimersByTimeAsync(5000));
+      expect(closeSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
   });
 
   it('shows a no-object error when both ML and classical tracing fail', async () => {

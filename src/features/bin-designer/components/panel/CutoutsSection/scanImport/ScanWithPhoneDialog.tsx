@@ -35,10 +35,6 @@ type Stage =
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-/** Shared with the phone capture page (served from public/). */
-const SCAN_EXAMPLE_SRC = '/images/scan/scan-example.webp';
-
-/** On-device reassurance: the phone never uploads the photo, only the outline. */
 function PrivacyHint({ text }: { readonly text: string }) {
   return (
     <span className="flex items-center justify-center gap-1.5 text-[11px] text-content-tertiary">
@@ -182,17 +178,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
                   <Spinner size="sm" />
                   {t('binDesigner.cutouts.scanImport.waiting')}
                 </p>
-                <figure className="mt-1 flex w-full flex-col items-center gap-2">
-                  <img
-                    src={SCAN_EXAMPLE_SRC}
-                    alt={t('scan.capture.exampleAlt')}
-                    className="w-full max-w-[200px] rounded-lg border border-stroke-subtle"
-                    decoding="async"
-                  />
-                  <figcaption>
-                    <PrivacyHint text={t('scan.capture.privacy')} />
-                  </figcaption>
-                </figure>
+                <PrivacyHint text={t('scan.capture.privacy')} />
               </>
             ) : (
               <p className="flex items-center gap-2 py-6 text-sm text-content-secondary">
