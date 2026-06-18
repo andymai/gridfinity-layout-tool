@@ -8,12 +8,17 @@ import type { ItemEnvelope, ToolRackStructure } from '@/shared/types/item';
 
 export const MAX_RACK_FIN_ANGLE = 45;
 
+export const MIN_RACK_FINS = 2;
+
 export const DEFAULT_TOOL_RACK_STRUCTURE: ToolRackStructure = {
   kind: 'toolRack',
   floorThickness: 2,
   finAngleDeg: 20,
   finThickness: 3,
   finHeight: 25,
+  // Explicit so the panel reading and the generated preview agree from the
+  // first render — the generator only auto-derives from slotPitch when omitted.
+  finCount: 6,
   slotPitch: 16,
   slotInsetMm: 8,
   backRail: { enabled: true, height: 10, thickness: 3 },
@@ -31,7 +36,7 @@ export const toolRackSchema: z.ZodType<ToolRackStructure> = z.object({
   finAngleDeg: z.number().min(0).max(MAX_RACK_FIN_ANGLE),
   finThickness: z.number().min(0.8).max(20),
   finHeight: z.number().min(4).max(200),
-  finCount: z.number().int().min(1).max(64).optional(),
+  finCount: z.number().int().min(MIN_RACK_FINS).max(64).optional(),
   slotPitch: z.number().min(2).max(200).optional(),
   slotInsetMm: z.number().min(0).max(100),
   backRail: backRailSchema,

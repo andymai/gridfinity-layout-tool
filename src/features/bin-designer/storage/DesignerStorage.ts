@@ -94,6 +94,17 @@ export async function saveDesign(
     const tags = normalizeTags(design.tags ?? existing?.tags);
 
     const kind = design.kind ?? 'bin';
+    // Reject incomplete writes up front so a malformed call can't persist a
+    // record that later fails loadDesign() or renders blank.
+    if (kind === 'bin' && !design.params) {
+      return err(storageCorrupted(design.id ?? 'new', ['bin design missing params']));
+    }
+    if (kind !== 'bin' && (!design.envelope || !design.structure)) {
+      return err(
+        storageCorrupted(design.id ?? 'new', [`${kind} design missing envelope/structure`])
+      );
+    }
+
     const savedDesign: SavedDesign = {
       id: design.id ?? generateDesignId(),
       name: design.name,
@@ -132,8 +143,9 @@ export async function loadDesign(id: DesignId): Promise<Result<SavedDesign, Stor
       return err(storageNotFound(`Design '${id}' not found`));
     }
 
-    // Non-bin kinds carry `envelope` + `structure` (no flat `params`); the
-    // store migrates the structure via its descriptor. Return as-is.
+    // Non-bin kinds carry `envelope` + `structure` (no flat `params`).
+    // Structure migration runs later in the designer store on load, so this
+    // layer returns the row unchanged.
     if (design.kind && design.kind !== 'bin') {
       return ok(design);
     }
