@@ -114,14 +114,6 @@ export function ScanPage({ token }: ScanPageProps) {
     return () => URL.revokeObjectURL(photoUrl);
   }, [photoUrl]);
 
-  // window.close() only succeeds for script-opened tabs, so the "sent" copy
-  // keeps a manual-close fallback.
-  useEffect(() => {
-    if (status.kind !== 'sent') return;
-    const timer = setTimeout(() => window.close(), 5000);
-    return () => clearTimeout(timer);
-  }, [status.kind]);
-
   const handleFile = useCallback(async (file: File) => {
     setStatus({ kind: 'processing' });
     let canvas: HTMLCanvasElement;
@@ -208,6 +200,8 @@ export function ScanPage({ token }: ScanPageProps) {
   }, [status, token]);
 
   const reset = useCallback(() => setStatus({ kind: 'capture' }), []);
+  // Best-effort: window.close() only works on script-opened tabs.
+  const finish = useCallback(() => window.close(), []);
 
   const step: Step =
     status.kind === 'sent' ? 'done' : status.kind === 'review' ? 'review' : 'capture';
@@ -397,6 +391,17 @@ export function ScanPage({ token }: ScanPageProps) {
               onClick={() => void handleUse()}
             >
               {status.sending ? t('scan.sending') : t('scan.use')}
+            </Button>
+          </div>
+        )}
+
+        {status.kind === 'sent' && (
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" fullWidth onClick={reset}>
+              {t('scan.sent.another')}
+            </Button>
+            <Button type="button" variant="primary" fullWidth onClick={finish}>
+              {t('scan.sent.done')}
             </Button>
           </div>
         )}

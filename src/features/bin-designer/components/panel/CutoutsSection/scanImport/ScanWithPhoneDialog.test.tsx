@@ -73,7 +73,7 @@ describe('ScanWithPhoneDialog', () => {
     expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
   });
 
-  it('rescales and adds cutouts on confirm, then closes', async () => {
+  it('rescales and adds cutouts on confirm, then stays open for another scan', async () => {
     const onClose = vi.fn();
     render(<ScanWithPhoneDialog open onClose={onClose} />);
     uploadSvg(RECT_SVG);
@@ -85,6 +85,9 @@ describe('ScanWithPhoneDialog', () => {
     expect(mockAddScanCutouts).toHaveBeenCalledOnce();
     const addedSpecs = mockAddScanCutouts.mock.calls[0][0] as Array<{ width: number }>;
     expect(addedSpecs[0].width).toBeCloseTo(50, 5);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(await screen.findByText('binDesigner.cutouts.scanImport.added')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.done'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -96,9 +99,9 @@ describe('ScanWithPhoneDialog', () => {
     );
 
     await waitFor(() => expect(mockAddScanCutouts).toHaveBeenCalledOnce());
-    expect(onClose).toHaveBeenCalledOnce();
-    // No scale-confirm step is shown.
+    expect(onClose).not.toHaveBeenCalled();
     expect(screen.queryByLabelText('binDesigner.cutouts.scanImport.scaleLabel')).toBeNull();
+    expect(screen.getByText('binDesigner.cutouts.scanImport.added')).toBeInTheDocument();
   });
 
   it('disables Add when the scale is non-positive', async () => {

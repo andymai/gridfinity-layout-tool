@@ -65,6 +65,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fieldId = useId();
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
+  const [added, setAdded] = useState(0);
 
   // Preview via a Blob URL rather than a data: URL — avoids encoding a
   // potentially multi-MB SVG into a string on every render.
@@ -81,6 +82,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
 
   const handleClose = useCallback(() => {
     setStage({ kind: 'awaiting' });
+    setAdded(0);
     onClose();
   }, [onClose]);
 
@@ -98,7 +100,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         const count = addScanCutouts(result.value.specs);
         trackEvent('scan_import', { success: true, shape_count: count, source: 'phone_mm' });
         addToast(t('toast.scanImport.success', { count }), 'success');
-        handleClose();
+        setAdded((n) => n + count);
         return;
       }
       // Start the field empty rather than pre-filling the traced pixel extent:
@@ -111,7 +113,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         targetText: '',
       });
     },
-    [addToast, t, addScanCutouts, handleClose]
+    [addToast, t, addScanCutouts]
   );
 
   const handleFile = useCallback(
@@ -139,11 +141,13 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
     const count = addScanCutouts(rescaled);
     trackEvent('scan_import', { success: true, shape_count: count, target_mm: targetMm });
     addToast(t('toast.scanImport.success', { count }), 'success');
-    handleClose();
-  }, [stage, addScanCutouts, addToast, t, handleClose]);
+    setAdded((n) => n + count);
+    setStage({ kind: 'awaiting' });
+  }, [stage, addScanCutouts, addToast, t]);
 
-  // Open a handoff session (and poll it) only while awaiting a scan.
-  const scan = useScanSession(open && stage.kind === 'awaiting', ingestSvg);
+  // One handoff session for the dialog's lifetime so several tools can be
+  // scanned in a row; the scale-confirm step pauses on its own UI, not the poll.
+  const scan = useScanSession(open, ingestSvg);
 
   const targetMm = stage.kind === 'review' ? parseFloat(stage.targetText) : NaN;
   const targetValid = Number.isFinite(targetMm) && targetMm > 0;
@@ -156,6 +160,25 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
       <Dialog.Body>
         {stage.kind === 'awaiting' ? (
           <div className="flex flex-col items-center gap-4 py-2 text-center">
+            {added > 0 && (
+              <p className="flex w-full items-center justify-center gap-2 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="shrink-0"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+                {t('binDesigner.cutouts.scanImport.added', { count: added })}
+              </p>
+            )}
             {scan.phase === 'unavailable' || scan.phase === 'expired' ? (
               <p className="text-sm text-content-secondary">
                 {t(
@@ -246,17 +269,25 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
         )}
       </Dialog.Body>
       <Dialog.Footer>
-        {stage.kind === 'review' && (
-          <Button type="button" variant="ghost" onClick={() => setStage({ kind: 'awaiting' })}>
-            {t('binDesigner.cutouts.scanImport.back')}
+        {stage.kind === 'review' ? (
+          <>
+            <Button type="button" variant="ghost" onClick={() => setStage({ kind: 'awaiting' })}>
+              {t('binDesigner.cutouts.scanImport.back')}
+            </Button>
+            <Button type="button" variant="ghost" onClick={handleClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="button" variant="primary" disabled={!targetValid} onClick={handleConfirm}>
+              {t('binDesigner.cutouts.scanImport.add')}
+            </Button>
+          </>
+        ) : added > 0 ? (
+          <Button type="button" variant="primary" onClick={handleClose}>
+            {t('binDesigner.cutouts.scanImport.done')}
           </Button>
-        )}
-        <Button type="button" variant="ghost" onClick={handleClose}>
-          {t('common.cancel')}
-        </Button>
-        {stage.kind === 'review' && (
-          <Button type="button" variant="primary" disabled={!targetValid} onClick={handleConfirm}>
-            {t('binDesigner.cutouts.scanImport.add')}
+        ) : (
+          <Button type="button" variant="ghost" onClick={handleClose}>
+            {t('common.cancel')}
           </Button>
         )}
       </Dialog.Footer>

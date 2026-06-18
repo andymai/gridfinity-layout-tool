@@ -1176,9 +1176,10 @@ const en: Record<string, string> = {
   'scan.retake': 'Retake',
   'scan.use': 'Use this outline',
   'scan.sending': 'Sending…',
-  'scan.sent.title': 'Done!',
-  'scan.sent.body':
-    'Your outline is now in the bin designer on your computer. You can close this tab.',
+  'scan.sent.title': 'Outline sent!',
+  'scan.sent.body': 'It’s now in the bin designer on your computer.',
+  'scan.sent.another': 'Scan another',
+  'scan.sent.done': 'Done',
   'scan.error.decode': 'Couldn’t read that photo. Please try again.',
   'scan.error.noObject':
     'Couldn’t find a clear outline. Use a plain, high-contrast background and retake.',
@@ -1846,6 +1847,8 @@ const en: Record<string, string> = {
     'Enter the measured length so the cutout prints to scale.',
   'binDesigner.cutouts.scanImport.resultSize': '≈ {width} × {depth} mm',
   'binDesigner.cutouts.scanImport.add': 'Add to bin',
+  'binDesigner.cutouts.scanImport.added': 'Added {count} cutout(s). Scan another, or tap Done.',
+  'binDesigner.cutouts.scanImport.done': 'Done',
   'binDesigner.cutouts.scanImport.back': 'Back',
   'binDesigner.cutouts.scanImport.previewAlt': 'Traced outline preview',
   'binDesigner.cutouts.scanImport.qrAlt': 'QR code to open the scanner on your phone',

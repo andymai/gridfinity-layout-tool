@@ -2,9 +2,11 @@
  * Desktop side of the phone-scan handoff.
  *
  * While active, opens a scan session, exposes its `/scan/<token>` URL (for the
- * QR code), and polls until the phone uploads a traced outline — then hands the
- * SVG to `onSvg`. Falls back to an `unavailable` phase when the backend can't
- * relay (e.g. no Redis), so the dialog can still offer manual upload.
+ * QR code), and polls continuously, handing each newly-uploaded outline to
+ * `onSvg` (deduped by the record's `createdAt` so the same scan isn't ingested
+ * twice). This lets the phone scan several tools against one session. Falls back
+ * to an `unavailable` phase when the backend can't relay (e.g. no Redis), so the
+ * dialog can still offer manual upload.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -37,7 +39,8 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
     // constant `false` across the awaits below (it is flipped on cleanup).
     const aborted = (): boolean => signal.aborted;
     let interval: ReturnType<typeof setInterval> | null = null;
-    let delivered = false;
+    let lastCreatedAt: string | null = null;
+    let everDelivered = false;
     const stopPolling = (): void => {
       if (interval) clearInterval(interval);
       interval = null;
@@ -49,19 +52,25 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
         if (aborted()) return;
         if (res.status === 404) {
           stopPolling();
-          // Don't flip to "expired" if the outline was already delivered (a late
+          // Don't flip to "expired" if an outline was already delivered (a late
           // in-flight poll can 404 once the session expires post-pickup).
-          if (!delivered) setPhase('expired');
+          if (!everDelivered) setPhase('expired');
           return;
         }
         if (!res.ok) return;
-        const data = (await res.json()) as { status: string; svg?: string };
+        const data = (await res.json()) as { status: string; svg?: string; createdAt?: string };
         if (aborted()) return;
-        if (data.status === 'ready' && data.svg && !delivered) {
-          // Guard against overlapping polls delivering the (idempotent) result twice.
-          delivered = true;
-          stopPolling();
-          onSvgRef.current(data.svg);
+        // Each new upload overwrites the record with a fresh createdAt; deliver
+        // once per createdAt and keep polling so the phone can scan more. With no
+        // createdAt (older API), fall back to delivering a single outline.
+        if (data.status === 'ready' && data.svg) {
+          const stamp = data.createdAt ?? null;
+          const isNew = stamp ? stamp !== lastCreatedAt : !everDelivered;
+          if (isNew) {
+            lastCreatedAt = stamp;
+            everDelivered = true;
+            onSvgRef.current(data.svg);
+          }
         }
       } catch {
         // Aborted or a transient network blip — keep polling until cancelled.
