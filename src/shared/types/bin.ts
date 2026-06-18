@@ -44,6 +44,7 @@ export type {
   HandleSide,
   HandleWallSide,
   LidConfig,
+  FeatureColorConfig,
   TextMode,
   TextFontFamily,
   CutoutTextSide,

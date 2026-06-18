@@ -134,6 +134,18 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-06',
     requiresRefresh: false,
   },
+  {
+    id: 'item_kinds',
+    name: 'Non-bin items',
+    description:
+      'Design things beyond bins that sit on a Gridfinity baseplate — like an angled tool rack for pliers and tweezers. More item types coming.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Early feature. Tool racks export from their own panel but are not auto-saved, shareable, or placeable in drawer layouts yet.',
+    addedAt: '2026-06',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

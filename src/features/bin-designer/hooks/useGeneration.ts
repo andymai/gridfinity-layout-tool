@@ -13,6 +13,7 @@ import {
   trackBooleanFallbacks,
 } from '@/shared/analytics/posthog';
 import type { BinParams, GenerationResult } from '../types';
+import type { GridfinityItem } from '@/shared/types/item';
 
 type BridgeResult = Awaited<ReturnType<GenerationBridge['generate']>>;
 
@@ -75,10 +76,13 @@ export function useGeneration(): void {
   // cleared) on the next edit so the warm only runs when the user has paused.
   const warmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { params, epoch } = useDesignerStore(
+  const { params, epoch, itemKind, structure, envelope } = useDesignerStore(
     useShallow((state) => ({
       params: state.params,
       epoch: state.generation.epoch,
+      itemKind: state.itemKind,
+      structure: state.structure,
+      envelope: state.envelope,
     }))
   );
 
@@ -199,6 +203,38 @@ export function useGeneration(): void {
     [setGenerationStatus, setGenerationResult, dispatchDraft, pushPerfSnapshot, draftSkipGate]
   );
 
+  // Generate a non-bin item mesh via the generic GENERATE_ITEM path. No draft /
+  // compartment validation / export-warm — those are bin-specific.
+  const runItemGeneration = useCallback(
+    async (item: GridfinityItem) => {
+      const bridge = bridgeRef.current;
+      if (!bridge || bridge.isDestroyed) return;
+
+      const token = ++genTokenRef.current;
+      setGenerationStatus('generating');
+      try {
+        const result = await bridge.generateItem(item, () => {});
+        if (token !== genTokenRef.current) return;
+        finalizedTokenRef.current = token;
+        if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
+        setGenerationResult(toMeshPayload(result));
+        setGenerationStatus('complete');
+      } catch (e) {
+        if (e instanceof Error && e.message === 'Generation cancelled') return;
+        setGenerationResult({
+          vertices: null,
+          normals: null,
+          indices: null,
+          edgeVertices: null,
+          error: e instanceof Error ? e.message : String(e),
+          timingMs: 0,
+        });
+        setGenerationStatus('error');
+      }
+    },
+    [setGenerationStatus, setGenerationResult, pushPerfSnapshot]
+  );
+
   // Initialize bridge on mount via BridgeManager (ref-counted singleton)
   useEffect(() => {
     let cancelled = false;
@@ -238,7 +274,14 @@ export function useGeneration(): void {
         // than with the flag off. The draft joins for subsequent edits.
         const currentState = useDesignerStore.getState();
         prevEpochRef.current = currentState.generation.epoch;
-        void runGeneration(currentState.params);
+        if (currentState.itemKind !== 'bin' && currentState.structure && currentState.envelope) {
+          void runItemGeneration({
+            envelope: currentState.envelope,
+            structure: currentState.structure,
+          });
+        } else {
+          void runGeneration(currentState.params);
+        }
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -284,13 +327,17 @@ export function useGeneration(): void {
       bridgeManager.release();
       if (acquiredPreview) bridgeManager.releasePreview();
     };
-  }, [setWasmStatus, runGeneration, dispatchDraft]);
+  }, [setWasmStatus, runGeneration, runItemGeneration, dispatchDraft]);
 
   // Re-generate when epoch changes (after initialization)
   useEffect(() => {
     if (!initializedRef.current) return;
     if (epoch === prevEpochRef.current) return; // Cache hit — skip regeneration
     prevEpochRef.current = epoch;
-    void runGeneration(params);
-  }, [epoch, params, runGeneration]);
+    if (itemKind !== 'bin' && structure && envelope) {
+      void runItemGeneration({ envelope, structure });
+    } else {
+      void runGeneration(params);
+    }
+  }, [epoch, params, itemKind, structure, envelope, runGeneration, runItemGeneration]);
 }

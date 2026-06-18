@@ -177,6 +177,7 @@ export function useBinLinking(): UseBinLinkingReturn {
 
       const designName =
         registry.find((r) => r.id === designId)?.name ?? t('designLinking.toast.unknownDesign');
+      if (!designResult.value.params) return;
       const designDims = extractDesignDimensions(designResult.value.params);
       const binDims = extractBinDimensions(bins[0]);
       const comparison = compareDimensions(designDims, binDims);
@@ -231,6 +232,9 @@ export function useBinLinking(): UseBinLinkingReturn {
         return { synced: [], unlinked: [], totalLinked };
       }
 
+      if (!designResult.value.params) {
+        return { synced: [], unlinked: [], totalLinked };
+      }
       const designDims = extractDesignDimensions(designResult.value.params);
       const eligibility = checkBatchSyncEligibility(bins, designDims, layout);
 

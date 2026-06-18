@@ -14,6 +14,7 @@
  */
 
 import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
 import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generationTimeout';
@@ -24,6 +25,7 @@ export interface BridgeGenerationContext {
   readonly isDestroyed: boolean;
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
+  readonly itemCache: DedupCache;
   readonly adaptiveDebounce: AdaptiveDebounce;
   debounceTimer: ReturnType<typeof setTimeout> | null;
   generationTimer: ReturnType<typeof setTimeout> | null;
@@ -116,6 +118,62 @@ export function generateBaseplate(
       ctx.baseplateCache.pendingFingerprint = fingerprint;
       startGenerationTimeout(ctx, requestId, computeBaseplateTimeoutMs(params));
       ctx.postMessage({ type: 'GENERATE_BASEPLATE', payload: { params, requestId } });
+    };
+
+    if (debounce) {
+      ctx.debounceTimer = setTimeout(() => {
+        ctx.debounceTimer = null;
+        send();
+      }, ctx.adaptiveDebounce.getDelay());
+    } else {
+      send();
+    }
+  });
+}
+
+/** Footprint-scaled timeout for generic item generation. */
+function computeItemTimeoutMs(item: GridfinityItem): number {
+  const cells = Math.max(1, item.envelope.width * item.envelope.depth);
+  return Math.min(120_000, 20_000 + cells * 1500);
+}
+
+/**
+ * Generic item generation — mirrors `generateBaseplate` with its own dedup
+ * cache so bin and item fingerprints can't collide.
+ */
+export function generateItem(
+  ctx: BridgeGenerationContext,
+  item: GridfinityItem,
+  onProgress: ProgressCallback | undefined,
+  debounce: boolean
+): Promise<GenerationResult> {
+  if (ctx.isDestroyed) {
+    return Promise.reject(new Error('Bridge has been destroyed'));
+  }
+
+  const fingerprint = paramsFingerprint(item);
+  if (ctx.itemCache.fingerprint === fingerprint && ctx.itemCache.result) {
+    return Promise.resolve(ctx.itemCache.result);
+  }
+
+  if (ctx.debounceTimer !== null) {
+    clearTimeout(ctx.debounceTimer);
+    ctx.debounceTimer = null;
+  }
+
+  ctx.cancelCurrentRequest();
+  ctx.onProgress = onProgress ?? null;
+
+  return new Promise<GenerationResult>((resolve, reject) => {
+    ctx.pendingResolve = resolve;
+    ctx.pendingReject = reject;
+
+    const send = (): void => {
+      const requestId = ctx.nextRequestId();
+      ctx.currentRequestId = requestId;
+      ctx.itemCache.pendingFingerprint = fingerprint;
+      startGenerationTimeout(ctx, requestId, computeItemTimeoutMs(item));
+      ctx.postMessage({ type: 'GENERATE_ITEM', payload: { item, requestId } });
     };
 
     if (debounce) {

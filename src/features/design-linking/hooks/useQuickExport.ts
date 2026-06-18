@@ -46,6 +46,9 @@ export function useQuickExport(): UseQuickExportReturn {
           return;
         }
         const design = designResult.value;
+        // Only bin designs are quick-exportable via this path (non-bin items
+        // have no flat `params`).
+        if (!design.params) return;
 
         const bridge = await bridgeManager.acquire();
         try {
