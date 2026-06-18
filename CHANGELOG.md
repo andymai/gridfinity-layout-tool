@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.193.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.192.1...gridfinity-layout-tool-v4.193.0) (2026-06-18)
+
+
+### Features
+
+* **engagement:** add r/gridfinity community links with impact framing ([#2258](https://github.com/andymai/gridfinity-layout-tool/issues/2258)) ([e0e9895](https://github.com/andymai/gridfinity-layout-tool/commit/e0e9895addc89f266d0a49cd416bafbbd6c25533))
+
 ## [4.192.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.192.0...gridfinity-layout-tool-v4.192.1) (2026-06-18)
 
 
