@@ -203,7 +203,7 @@ export function ExportDialog({
         {exported && successContent ? (
           successContent
         ) : (
-          <div className="pb-2">
+          <div className="pb-[var(--space-2xl)]">
             {/* Section Title */}
             {sectionTitle && (
               <>

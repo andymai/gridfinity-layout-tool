@@ -39,7 +39,7 @@ export function ExportSupportPrompt({ fileName, onDone, source }: ExportSupportP
   };
 
   return (
-    <div className="flex flex-col items-center px-2 pb-2 pt-2 text-center">
+    <div className="flex flex-col items-center px-2 pb-[var(--space-2xl)] pt-2 text-center">
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success-muted">
         <svg
           className="h-6 w-6 text-success"
