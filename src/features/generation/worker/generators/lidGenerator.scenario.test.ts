@@ -459,8 +459,17 @@ describe('lid generation and export scenarios', () => {
       expect(noOverhang).not.toBeNull();
       expect(withOverhang).not.toBeNull();
       // Polygon bins suppress overhang in boxBuilder; the lid mirrors that, so
-      // the two meshes are identical.
+      // the two meshes are identical. triangleCount alone is a coarse proxy
+      // (distinct geometry can tessellate to the same count), so also assert
+      // the bounding boxes match — a stray overhang shift/scale would move an
+      // edge here.
       expect(withOverhang!.triangleCount).toBe(noOverhang!.triangleCount);
+      const a = boundingBox(noOverhang!.vertices);
+      const b = boundingBox(withOverhang!.vertices);
+      expect(Math.abs(b.minX - a.minX)).toBeLessThan(0.01);
+      expect(Math.abs(b.maxX - a.maxX)).toBeLessThan(0.01);
+      expect(Math.abs(b.minY - a.minY)).toBeLessThan(0.01);
+      expect(Math.abs(b.maxY - a.maxY)).toBeLessThan(0.01);
     });
   });
 
