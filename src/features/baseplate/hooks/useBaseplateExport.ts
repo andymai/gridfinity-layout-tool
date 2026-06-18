@@ -168,8 +168,15 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
       try {
         const nozzleMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
+        // STEP never stacks, so don't let buildFullParams strip the magnets,
+        // corner rounding, and connectors that stacking removes for tile
+        // uniformity — the exported solid keeps them. Clearing stackPrint (vs a
+        // separate flag) keeps the feature-stripping logic single-sourced in
+        // buildFullParams, and mirrors the panel/page's format-aware stackEnabled.
+        const exportParams =
+          format === 'step' ? { ...baseplateParams, stackPrint: undefined } : baseplateParams;
         const fullParams = buildFullParams(
-          baseplateParams,
+          exportParams,
           drawerWidth,
           drawerDepth,
           gridUnitMm,
