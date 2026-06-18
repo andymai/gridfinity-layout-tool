@@ -71,6 +71,7 @@ let mockTiling: unknown = null;
 let mockSplitViewMode = 'assembled';
 let mockHoveredPieceLabel: string | null = null;
 let mockSelectedPieceLabel: string | null = null;
+let mockExportFormat: 'stl' | 'step' | '3mf' = 'stl';
 const mockSetSplitViewMode = vi.fn();
 const mockSetHoveredPieceLabel = vi.fn();
 const mockSetSelectedPieceLabel = vi.fn();
@@ -82,6 +83,7 @@ vi.mock('../../store/baseplatePageStore', () => ({
       splitViewMode: mockSplitViewMode,
       hoveredPieceLabel: mockHoveredPieceLabel,
       selectedPieceLabel: mockSelectedPieceLabel,
+      exportFileNameConfig: { style: 'descriptive', customName: '', format: mockExportFormat },
       setSplitViewMode: mockSetSplitViewMode,
       setHoveredPieceLabel: mockSetHoveredPieceLabel,
       setSelectedPieceLabel: mockSetSelectedPieceLabel,
@@ -140,6 +142,7 @@ describe('BaseplatePanel', () => {
     mockSplitViewMode = 'assembled';
     mockHoveredPieceLabel = null;
     mockSelectedPieceLabel = null;
+    mockExportFormat = 'stl';
   });
 
   it('renders dimensions section with steppers and click-to-edit mm summary (no padding)', () => {
@@ -398,6 +401,17 @@ describe('BaseplatePanel', () => {
         expect(
           screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
         ).not.toBeChecked();
+      });
+
+      it('keeps magnets and corner radius for STEP exports (STEP never stacks)', () => {
+        mockExportFormat = 'step';
+        mockLayoutState.layout.baseplateParams = {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: stacking,
+        };
+        render(<BaseplatePanel />);
+        expect(screen.getByText('baseplate.magnetHoles')).toBeInTheDocument();
+        expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
       });
     });
   });

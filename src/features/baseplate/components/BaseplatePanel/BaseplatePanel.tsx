@@ -96,11 +96,12 @@ export function BaseplatePanel() {
     }))
   );
 
-  const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
+  const { tiling, hoveredPieceLabel, selectedPieceLabel, exportFormat } = useBaseplatePageStore(
     useShallow((s) => ({
       tiling: s.tiling,
       hoveredPieceLabel: s.hoveredPieceLabel,
       selectedPieceLabel: s.selectedPieceLabel,
+      exportFormat: s.exportFileNameConfig.format,
     }))
   );
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
@@ -141,7 +142,10 @@ export function BaseplatePanel() {
     (next: StackPrintParams | undefined) => updateParams({ stackPrint: next }),
     [updateParams]
   );
-  const stackEnabled = baseplateParams.stackPrint?.enabled === true;
+  // STEP never stacks, so the controls stacking would strip (magnets, corner
+  // rounding) stay live for STEP exports — mirror BaseplatePage's stackEnabled.
+  const stackEnabled =
+    baseplateParams.stackPrint?.enabled === true && (exportFormat ?? 'stl') !== 'step';
 
   useEffect(() => {
     const handler = () => setPrintSettingsExpanded(true);
