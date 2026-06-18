@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.0...gridfinity-layout-tool-v4.195.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* **baseplate:** make sidebar stack state format-aware ([#2264](https://github.com/andymai/gridfinity-layout-tool/issues/2264)) ([0f2f16f](https://github.com/andymai/gridfinity-layout-tool/commit/0f2f16f65354d91ea3676a0095d2df77326fc667))
+
 ## [4.195.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.194.0...gridfinity-layout-tool-v4.195.0) (2026-06-18)
 
 
