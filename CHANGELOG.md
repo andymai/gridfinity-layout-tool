@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.188.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.187.0...gridfinity-layout-tool-v4.188.0) (2026-06-18)
+
+
+### Features
+
+* **bin-designer:** non-bin item foundation + slanted tool rack (labs) ([#2247](https://github.com/andymai/gridfinity-layout-tool/issues/2247)) ([dcde999](https://github.com/andymai/gridfinity-layout-tool/commit/dcde99975af1b23acc81fbcfd80db00df63c8bf1))
+
 ## [4.187.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.186.0...gridfinity-layout-tool-v4.187.0) (2026-06-17)
 
 
