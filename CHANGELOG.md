@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.194.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.193.0...gridfinity-layout-tool-v4.194.0) (2026-06-18)
+
+
+### Features
+
+* **seo:** expand learn links and tune landing-page metadata ([#2260](https://github.com/andymai/gridfinity-layout-tool/issues/2260)) ([1f9c203](https://github.com/andymai/gridfinity-layout-tool/commit/1f9c2031327580ffcc624585142601b2290885f7))
+
 ## [4.193.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.192.1...gridfinity-layout-tool-v4.193.0) (2026-06-18)
 
 
