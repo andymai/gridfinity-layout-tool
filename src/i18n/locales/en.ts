@@ -24,10 +24,10 @@ const en: Record<string, string> = {
   // route entries in build-route-entries.ts) so the interactive tool routes
   // stay distinct from the content landing pages at /gridfinity-bin-generator
   // and /gridfinity-baseplate-generator, which own the "Generator" queries.
-  'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Generator',
+  'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Builder',
   'seo.designer.description':
     'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
-  'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Generator',
+  'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Builder',
   'seo.baseplate.description':
     'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
 

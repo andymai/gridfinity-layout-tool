@@ -110,7 +110,7 @@ function breadcrumbs(slug: string, name: string): object {
 const ROUTES: RouteEntry[] = [
   {
     slug: 'designer',
-    title: 'Gridfinity Bin Designer — Free Custom Bin Generator',
+    title: 'Gridfinity Bin Designer — Free Custom Bin Builder',
     description:
       'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
     keywords:
@@ -139,7 +139,7 @@ const ROUTES: RouteEntry[] = [
   },
   {
     slug: 'baseplate',
-    title: 'Gridfinity Baseplate Maker — Free Custom Baseplate Generator',
+    title: 'Gridfinity Baseplate Maker — Free Custom Baseplate Builder',
     description:
       'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
     keywords:
