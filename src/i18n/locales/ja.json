@@ -54,7 +54,7 @@
   "baseplate.cornerRadiusTR": "右上",
   "baseplate.cornerRadiusUnlink": "角ごとに設定",
   "baseplate.decreasePadding": "{label}を減らす",
-  "baseplate.dovetails.invert": "ダブテイルを反転",
+  "baseplate.dovetails.invert": "コネクタを反転",
   "baseplate.editDimensions": "ベースプレートの寸法を編集",
   "baseplate.editDimensionsDepth": "ベースプレートの奥行き(mm)",
   "baseplate.editDimensionsWidth": "ベースプレートの幅(mm)",

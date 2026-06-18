@@ -443,8 +443,11 @@ function puzzleOutline(
   const nH = PUZZLE_NECK_HALF + clear;
   const hH = PUZZLE_HEAD_HALF + clear;
   // Shoulder moves wall-ward by the clearance so the seated head's underside keeps
-  // a per-side gap to the groove ledge it locks against.
-  const nP = PUZZLE_NECK_PROTRUSION - clear;
+  // a per-side gap to the groove ledge it locks against. Clamp at 0: a wide nozzle
+  // plus a max positive fit offset can grow `clear` past PUZZLE_NECK_PROTRUSION,
+  // which would drive the neck→head transition behind the wall plane and invert the
+  // outline — the neck constriction (the lock) collapses, but the geometry stays valid.
+  const nP = Math.max(0, PUZZLE_NECK_PROTRUSION - clear);
   const reach = PUZZLE_PROTRUSION + clear;
   const fA = PUZZLE_ARMPIT_FILLET;
   const fH = PUZZLE_HEAD_FILLET;

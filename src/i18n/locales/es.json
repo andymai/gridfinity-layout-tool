@@ -54,7 +54,7 @@
   "baseplate.cornerRadiusTR": "Superior derecha",
   "baseplate.cornerRadiusUnlink": "Por esquina",
   "baseplate.decreasePadding": "Disminuir {label}",
-  "baseplate.dovetails.invert": "Invertir colas de milano",
+  "baseplate.dovetails.invert": "Invertir conectores",
   "baseplate.editDimensions": "Editar dimensiones de la base",
   "baseplate.editDimensionsDepth": "Profundidad de la base en mm",
   "baseplate.editDimensionsWidth": "Ancho de la base en mm",

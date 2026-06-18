@@ -54,7 +54,7 @@
   "baseplate.cornerRadiusTR": "Haut-droit",
   "baseplate.cornerRadiusUnlink": "Par coin",
   "baseplate.decreasePadding": "Diminuer {label}",
-  "baseplate.dovetails.invert": "Inverser les queues d'aronde",
+  "baseplate.dovetails.invert": "Inverser les connecteurs",
   "baseplate.editDimensions": "Modifier les dimensions de la plaque",
   "baseplate.editDimensionsDepth": "Profondeur de la plaque en mm",
   "baseplate.editDimensionsWidth": "Largeur de la plaque en mm",

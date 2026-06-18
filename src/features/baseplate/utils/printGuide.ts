@@ -284,11 +284,11 @@ function generatePieceTable(
     // integral dovetail protrudes.
     // Integral male-tongue styles (legacy dovetail + puzzle) protrude past the
     // wall; key/clip styles are flush at the seam. Puzzle reach == TONGUE_PROTRUSION.
-    const isIntegralDovetail =
+    const isIntegralTongue =
       parentParams.connectorStyle === undefined ||
       parentParams.connectorStyle === 'dovetail' ||
       parentParams.connectorStyle === 'puzzle';
-    const tongue = parentParams.connectorNubs && isIntegralDovetail ? TONGUE_PROTRUSION : 0;
+    const tongue = parentParams.connectorNubs && isIntegralTongue ? TONGUE_PROTRUSION : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =

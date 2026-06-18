@@ -54,7 +54,7 @@
   "baseplate.cornerRadiusTR": "Övre höger",
   "baseplate.cornerRadiusUnlink": "Per hörn",
   "baseplate.decreasePadding": "Minska {label}",
-  "baseplate.dovetails.invert": "Invertera laxstjärtar",
+  "baseplate.dovetails.invert": "Invertera kopplingar",
   "baseplate.editDimensions": "Redigera bottenplattans mått",
   "baseplate.editDimensionsDepth": "Bottenplattans djup i mm",
   "baseplate.editDimensionsWidth": "Bottenplattans bredd i mm",
