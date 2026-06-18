@@ -26,11 +26,12 @@ minimumReleaseAgeExclude:
   # TODO: remove after 2026-06-18 once 0.28.1 has aged past the window.
   - esbuild
   - '@esbuild/*'
-  # dompurify >=3.4.9 patches GHSA-vxr8-fq34-vvx9 (Trusted Types policy
-  # survives clearConfig); the override resolves to the latest 3.4.x. Excluded
-  # so the patched release can land before its 7-day cooldown elapses.
+  # dompurify >=3.4.11 patches GHSA-cmwh-pvxp-8882 (permanent ALLOWED_ATTR
+  # pollution via setConfig, incomplete fix of the 3.4.7 hook-pollution patch);
+  # the override resolves to the latest 3.4.x. Excluded so the patched release
+  # can land before its 7-day cooldown elapses.
   # TODO: remove once the resolved dompurify version has aged past the window
-  # (3.4.10 published 2026-06-12 -> 2026-06-19).
+  # (3.4.11 published 2026-06-17 -> 2026-06-24).
   - dompurify
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
@@ -64,7 +65,7 @@ overrides:
   '@vercel/static-config>ajv': '^8.18.0'
   'glob>minimatch': '^10.2.3'
   flatted: '^3.4.2'
-  dompurify: '^3.4.9'
+  dompurify: '^3.4.11'
   '@babel/core@<7.29.6': '^7.29.6'
   'js-yaml@<4.2.0': '^4.2.0'
   protobufjs: '^7.6.3'
