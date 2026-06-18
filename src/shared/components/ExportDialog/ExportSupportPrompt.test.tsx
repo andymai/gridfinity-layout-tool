@@ -53,6 +53,28 @@ describe('ExportSupportPrompt', () => {
     );
   });
 
+  it('opens r/gridfinity and tracks the click with the source', () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    render(<ExportSupportPrompt fileName="x.stl" onDone={vi.fn()} source="baseplate_export" />);
+
+    fireEvent.click(screen.getByText('header.redditCommunity'));
+
+    expect(trackEvent).toHaveBeenCalledWith('reddit_link_clicked', { source: 'baseplate_export' });
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://www.reddit.com/r/gridfinity/',
+      '_blank',
+      'noopener,noreferrer'
+    );
+  });
+
+  it('explains the impact of each free action', () => {
+    render(<ExportSupportPrompt fileName="x.stl" onDone={vi.fn()} source="bin_designer_export" />);
+
+    expect(screen.getByText('export.support.freeWays')).toBeInTheDocument();
+    expect(screen.getByText('export.support.githubImpact')).toBeInTheDocument();
+    expect(screen.getByText('export.support.redditImpact')).toBeInTheDocument();
+  });
+
   it('calls onDone when Done is clicked', () => {
     const onDone = vi.fn();
     render(<ExportSupportPrompt fileName="x.stl" onDone={onDone} source="bin_designer_export" />);

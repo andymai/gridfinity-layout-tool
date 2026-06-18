@@ -65,6 +65,14 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.supportOnKofi')).toBeInTheDocument();
   });
 
+  it('renders r/gridfinity community link', () => {
+    render(<HeaderSupportLinks />);
+    expect(screen.getByTitle('header.redditCommunityAria')).toHaveAttribute(
+      'href',
+      'https://www.reddit.com/r/gridfinity/'
+    );
+  });
+
   it('opens GitHub Issues on feedback click', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     render(<HeaderSupportLinks />);

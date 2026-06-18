@@ -113,6 +113,8 @@ const en: Record<string, string> = {
   'header.sendFeedback': 'Feedback',
   'header.starOnGithub': 'Star',
   'header.supportOnKofi': 'Support me on Ko-fi',
+  'header.redditCommunity': 'r/gridfinity',
+  'header.redditCommunityAria': 'Gridfinity community on Reddit',
   'header.loadingLayouts': 'Loading layouts',
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',
@@ -1334,7 +1336,10 @@ const en: Record<string, string> = {
   'export.complete': 'Export complete',
   'export.support.downloading': '{fileName} is downloading',
   'export.support.pitch': 'This tool is free and ad-free.',
-  'export.support.starGithub': 'Or star it on GitHub',
+  'export.support.freeWays': 'Two free ways to help it grow:',
+  'export.support.starGithub': 'Star on GitHub',
+  'export.support.githubImpact': 'Each star helps new makers find it',
+  'export.support.redditImpact': 'Show others what you built with it',
 
   // Baseplate-specific export keys
   'baseplate.export.splitSuccess': 'Baseplate exported ({count} pieces)',
