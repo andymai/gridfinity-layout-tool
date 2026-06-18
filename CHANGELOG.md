@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.1...gridfinity-layout-tool-v4.195.2) (2026-06-18)
+
+
+### Bug Fixes
+
+* **export:** align export dialog bottom padding to design-system token ([#2266](https://github.com/andymai/gridfinity-layout-tool/issues/2266)) ([ead72a1](https://github.com/andymai/gridfinity-layout-tool/commit/ead72a19209fc071b7673b26a323909e7296bc67))
+
 ## [4.195.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.0...gridfinity-layout-tool-v4.195.1) (2026-06-18)
 
 
