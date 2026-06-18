@@ -661,7 +661,11 @@ function CalloutPill({
   readonly label: string;
   readonly downArrow?: boolean;
 }) {
-  const dotClass = tone === 'accent' ? 'bg-accent' : 'bg-success';
+  const dotClass: Record<typeof tone, string> = {
+    accent: 'bg-accent',
+    success: 'bg-success',
+    neutral: 'bg-content-tertiary',
+  };
   return (
     <span
       className="absolute flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border border-stroke-subtle bg-surface/90 px-2 py-0.5 text-[10px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
@@ -684,7 +688,7 @@ function CalloutPill({
           <path d="m19 12-7 7-7-7" />
         </svg>
       ) : (
-        <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} aria-hidden="true" />
+        <span className={`h-1.5 w-1.5 rounded-full ${dotClass[tone]}`} aria-hidden="true" />
       )}
       {label}
     </span>

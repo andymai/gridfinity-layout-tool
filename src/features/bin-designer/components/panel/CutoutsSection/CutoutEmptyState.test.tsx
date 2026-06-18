@@ -41,6 +41,9 @@ describe('CutoutEmptyState', () => {
   it('shows the framing example and on-device privacy note with the scan CTA', () => {
     render(<CutoutEmptyState variant="sidebar" onScanWithPhone={vi.fn()} />);
     expect(screen.getByRole('img')).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    // This suite renders real i18n (no mock), so the privacy note is matched by
+    // its English copy — same convention as the CTA/shortcut assertions above.
+    // The phone/dialog suites mock i18n and assert the 'scan.capture.privacy' key.
     expect(screen.getByText(/stays on your phone/i)).toBeInTheDocument();
   });
 });
