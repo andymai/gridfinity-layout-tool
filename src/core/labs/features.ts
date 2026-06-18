@@ -127,11 +127,10 @@ export const FEATURE_FLAGS = [
     name: 'Scan a Tool with Your Phone',
     description:
       "Scan a real tool with your phone's camera and turn its outline into a cutout. Lay the tool next to a bank card and the cutout is sized to scale automatically.",
-    status: 'experimental',
+    status: 'graduated',
     risk: 'medium',
-    warning:
-      'Early feature. Works best on flat tools on a plain, high-contrast background; tracing accuracy varies with lighting and angle.',
     addedAt: '2026-06',
+    graduatedAt: '2026-06',
     requiresRefresh: false,
   },
   {
