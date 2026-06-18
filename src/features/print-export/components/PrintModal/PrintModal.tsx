@@ -455,7 +455,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-4 pb-6 border-t border-stroke-subtle print-modal-footer">
+          <div className="flex items-center justify-end gap-3 p-4 pb-[var(--space-2xl)] border-t border-stroke-subtle print-modal-footer">
             {noLayersSelected && (
               <span className="text-xs text-warning mr-auto">
                 {t('print.selectAtLeastOneLayerToPrint')}
