@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.192.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.192.0...gridfinity-layout-tool-v4.192.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* **lid:** size lids to the overhang-expanded bin body ([#2255](https://github.com/andymai/gridfinity-layout-tool/issues/2255)) ([bd1f104](https://github.com/andymai/gridfinity-layout-tool/commit/bd1f104938c6ca07f38f56a305245e73a7684095))
+
 ## [4.192.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.191.0...gridfinity-layout-tool-v4.192.0) (2026-06-18)
 
 
