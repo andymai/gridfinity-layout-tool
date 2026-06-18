@@ -20,7 +20,8 @@ import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useLocale } from '@/i18n';
+import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
@@ -42,6 +43,7 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function Sidebar() {
   const t = useTranslation();
+  const { locale } = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -534,106 +536,18 @@ export function Sidebar() {
                 {t('sidebar.learn')}
               </h2>
               <ul className="text-[11px] leading-relaxed space-y-1">
-                <li>
-                  <a
-                    href="/what-is-gridfinity"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.whatIs')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/guide"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.guide')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-generator"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.generator')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-bin-generator"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.binGenerator')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-baseplate-generator"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.baseplateGenerator')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-calculator"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.calculator')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-sizes"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.sizes')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-tool-drawer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.toolDrawer')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-kitchen-drawer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.kitchenDrawer')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/gridfinity-software"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-content-tertiary hover:text-content hover:underline"
-                  >
-                    {t('sidebar.learn.software')}
-                  </a>
-                </li>
+                {LEARN_LINKS.map((link) => (
+                  <li key={link.slug}>
+                    <a
+                      href={learnHref(link.slug, link.localized, locale)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-content-tertiary hover:text-content hover:underline"
+                    >
+                      {t(link.labelKey)}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
