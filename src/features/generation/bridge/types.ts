@@ -6,6 +6,7 @@
  */
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { GridfinityItem } from '@/shared/types/item';
 
 /** Geometry kernel backend for BREP operations */
 export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
@@ -39,11 +40,13 @@ export type WorkerMessage =
   | EstimateMessage
   | WarmMessage
   | GenerateBaseplateMessage
+  | GenerateItemMessage
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
   | CancelMessage
   | CleanupMessage
   | ExportMessage
+  | ExportItemMessage
   | ExportBaseplateMessage
   | ExportConnectorKeyMessage
   | ExportConnectorSampleMessage
@@ -103,6 +106,35 @@ export interface GenerateBaseplateMessage {
 export interface GenerateBaseplatePayload {
   readonly params: BaseplateParams;
   readonly requestId: string;
+}
+
+/**
+ * Generic item generation. Carries a `GridfinityItem` (envelope + discriminated
+ * structure); the worker resolves the generator by `structure.kind`. Adding a
+ * future item type needs no new message — just a registered generator module.
+ */
+export interface GenerateItemMessage {
+  readonly type: 'GENERATE_ITEM';
+  readonly payload: GenerateItemPayload;
+}
+
+export interface GenerateItemPayload {
+  readonly item: GridfinityItem;
+  readonly requestId: string;
+}
+
+/** Generic item export. Reuses the BASEPLATE_EXPORT_RESULT response shape. */
+export interface ExportItemMessage {
+  readonly type: 'EXPORT_ITEM';
+  readonly payload: ExportItemPayload;
+}
+
+export interface ExportItemPayload {
+  readonly item: GridfinityItem;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  readonly tolerance?: number;
+  readonly angularTolerance?: number;
 }
 
 export interface ExportBaseplateMessage {

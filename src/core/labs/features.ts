@@ -127,10 +127,21 @@ export const FEATURE_FLAGS = [
     name: 'Scan a Tool with Your Phone',
     description:
       "Scan a real tool with your phone's camera and turn its outline into a cutout. Lay the tool next to a bank card and the cutout is sized to scale automatically.",
+    status: 'graduated',
+    risk: 'medium',
+    addedAt: '2026-06',
+    graduatedAt: '2026-06',
+    requiresRefresh: false,
+  },
+  {
+    id: 'item_kinds',
+    name: 'Non-bin items',
+    description:
+      'Design things beyond bins that sit on a Gridfinity baseplate — like an angled tool rack for pliers and tweezers. More item types coming.',
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Early feature. Works best on flat tools on a plain, high-contrast background; tracing accuracy varies with lighting and angle.',
+      'Early feature. Tool racks export from their own panel but are not auto-saved, shareable, or placeable in drawer layouts yet.',
     addedAt: '2026-06',
     requiresRefresh: false,
   },

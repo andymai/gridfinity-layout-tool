@@ -53,6 +53,8 @@ export function useThumbnailRegeneration(
     void (async () => {
       for (const design of needsRegen) {
         if (controller.signal.aborted) break;
+        // Non-bin kinds have no flat `params`; skip thumbnailing for now.
+        if (!design.params) continue;
 
         const thumbnail = await regenerateThumbnail(design.params, {
           signal: controller.signal,

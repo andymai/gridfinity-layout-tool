@@ -39,6 +39,13 @@ export interface TraceOptions {
   readonly simplifyTolerance?: number;
   /** Smallest foreground area (in pixels) accepted as a real object. */
   readonly minAreaPx?: number;
+  /**
+   * Which per-pixel signal `buildMask` thresholds. `luma` (default) separates by
+   * brightness; `chroma` by colorfulness — a color-neutral object (a metal/grey
+   * card) on a saturated surface (wood) is invisible in luma but stands out in
+   * chroma. Card detection doesn't read this field; it sweeps both channels itself.
+   */
+  readonly channel?: 'luma' | 'chroma';
 }
 
 export type TraceErrorCode = 'NO_OBJECT' | 'DEGENERATE';

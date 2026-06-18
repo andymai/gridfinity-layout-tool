@@ -46,7 +46,10 @@ export function LinkDesignDialog() {
   const compatibleDesigns = useMemo(() => {
     if (!pendingLinkDesign) return [];
     const { width, depth } = pendingLinkDesign.footprint;
-    return designs.filter((d) => d.params.width === width && d.params.depth === depth);
+    // Only bin designs are linkable to layout bins (non-bin items have no `params`).
+    return designs.filter(
+      (d) => d.params !== undefined && d.params.width === width && d.params.depth === depth
+    );
   }, [designs, pendingLinkDesign]);
 
   // Further filter by search query
@@ -283,6 +286,7 @@ export function LinkDesignDialog() {
             /* Design list */
             <ul className="space-y-1.5">
               {filteredDesigns.map((design) => {
+                if (!design.params) return null;
                 const { width: dw, depth: dd, height: dh, compartments } = design.params;
                 const numCompartments = new Set(compartments.cells).size;
                 const heightMismatch = dh !== binHeight;

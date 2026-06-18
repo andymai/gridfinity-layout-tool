@@ -10,16 +10,25 @@
  * Lightweight by design — no OpenCV. ISO-7810 card = 85.6 × 53.98 mm.
  */
 
-import type { ImageDataLike, Point } from './types';
-import { buildMask } from './mask';
+import type { ImageDataLike, Mask, Point } from './types';
+import { buildMask, usesAlphaMask } from './mask';
 import { labelComponents, maskFromLabel, type LabeledComponents } from './components';
 import { traceContour } from './contour';
 import { contourToQuad, estimateRectAspect } from './quad';
+import { minAreaRect } from './minAreaRect';
 import { solveHomography, type Homography } from './perspective';
 
 export const CARD_WIDTH_MM = 85.6;
 export const CARD_HEIGHT_MM = 53.98;
 const CARD_ASPECT = CARD_WIDTH_MM / CARD_HEIGHT_MM; // ≈ 1.586
+
+/**
+ * Min fraction of its min-area rectangle a component must fill to be rescued as
+ * a card. A real card (rounded corners + minor mask erosion) fills ~0.8+; an
+ * L-shaped or triangular tool fills far less, so this rejects them even when
+ * their bounding rectangle happens to land near the card's aspect.
+ */
+const MIN_RECT_FILL = 0.7;
 
 export interface CardDetection {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -132,21 +141,76 @@ export function findBestCardComponent(
     // Reject quads whose true (perspective-corrected) shape isn't the card's
     // aspect — keeps a rectangular tool from being mistaken for the reference.
     const aspect = estimateRectAspect(quad.corners, cx, cy);
-    if (aspect === null || Math.abs(aspect - targetAspect) > aspectTolerance) continue;
+    let corners: readonly [Point, Point, Point, Point] = quad.corners;
+    let accepted = aspect !== null && Math.abs(aspect - targetAspect) <= aspectTolerance;
+
+    if (!accepted) {
+      // Rescue: a glossy/multi-colored card can mask with its full footprint yet
+      // lose a corner to a desaturated patch (logo, hologram), which skews the
+      // extreme-corner quad and throws off its aspect. The min-area rect is
+      // hull-based, so it bridges the eroded corner and recovers the true
+      // rectangle. Gate it on the rect's own aspect plus a fill ratio so a
+      // non-rectangular blob can't sneak through.
+      // minAreaRect returns null for any degenerate hull, so a non-null rect
+      // always has positive dimensions.
+      const rect = minAreaRect(contour);
+      if (rect) {
+        const rectAspect = rect.width / rect.height;
+        const fill = comp.area / (rect.width * rect.height);
+        if (Math.abs(rectAspect - targetAspect) <= aspectTolerance && fill >= MIN_RECT_FILL) {
+          corners = rect.corners;
+          accepted = true;
+        }
+      }
+    }
+    if (!accepted) continue;
 
     if (!best || quad.fitness > best.fitness) {
-      best = { label: comp.label, corners: quad.corners, fitness: quad.fitness };
+      best = { label: comp.label, corners, fitness: quad.fitness };
     }
   }
   return best;
+}
+
+/**
+ * The card is a clean quad in whichever channel happens to separate it from its
+ * background — brightness for a dark card on a pale desk, colorfulness for a
+ * neutral metal card on wood. Sweep luma first, then chroma, taking the first
+ * channel that yields an accepted card. Luma-first keeps the chroma pass purely
+ * additive: any photo a brightness threshold already solved is untouched, so
+ * adding chroma can only recover cards luma missed, never regress a working one.
+ */
+const CARD_CHANNELS = ['luma', 'chroma'] as const;
+
+export function findCardAcrossChannels(
+  image: ImageDataLike,
+  options: CardDetectOptions = {},
+  /**
+   * Pixels to drop from card candidacy (1 = exclude). When the tool is already
+   * known (the segmenter's mask), excluding it stops a card-shaped tool from
+   * being mistaken for the reference card — the card must be a different object.
+   */
+  excludeMask?: Mask
+): CardComponent | null {
+  // An alpha-driven mask ignores `channel`, so every pass is identical — sweep once.
+  const channels = usesAlphaMask(image) ? (['luma'] as const) : CARD_CHANNELS;
+  for (const channel of channels) {
+    const mask = buildMask(image, { channel });
+    if (excludeMask) {
+      const n = Math.min(mask.data.length, excludeMask.data.length);
+      for (let i = 0; i < n; i++) if (excludeMask.data[i]) mask.data[i] = 0;
+    }
+    const card = findBestCardComponent(labelComponents(mask), image.width, image.height, options);
+    if (card) return card;
+  }
+  return null;
 }
 
 export function detectCardQuad(
   image: ImageDataLike,
   options: CardDetectOptions = {}
 ): CardDetection | null {
-  const labeled = labelComponents(buildMask(image));
-  const card = findBestCardComponent(labeled, image.width, image.height, options);
+  const card = findCardAcrossChannels(image, options);
   if (!card) return null;
 
   const homography = cardHomography(card.corners, options.widthMm, options.heightMm);

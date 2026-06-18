@@ -30,6 +30,8 @@ import {
   cancelRequest,
 } from './handlers/workerContext';
 import { handleGenerate, handleWarm, handleGenerateBaseplate } from './handlers/generateHandler';
+import { handleGenerateItem, handleExportItem } from './handlers/generateItemHandler';
+import './items/registerGenerators';
 import {
   handleExport,
   handleExportBaseplate,
@@ -104,6 +106,14 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'GENERATE_BASEPLATE':
         handleGenerateBaseplate(message);
+        break;
+
+      case 'GENERATE_ITEM':
+        handleGenerateItem(message);
+        break;
+
+      case 'EXPORT_ITEM':
+        await handleExportItem(message);
         break;
 
       case 'GENERATE_SPLIT_PREVIEW':

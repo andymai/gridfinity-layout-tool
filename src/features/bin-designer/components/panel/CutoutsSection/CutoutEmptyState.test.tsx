@@ -37,4 +37,11 @@ describe('CutoutEmptyState', () => {
     fireEvent.click(cta);
     expect(onScanWithPhone).toHaveBeenCalledTimes(1);
   });
+
+  it('shows the on-device privacy note with the scan CTA, without an example image', () => {
+    render(<CutoutEmptyState variant="sidebar" onScanWithPhone={vi.fn()} />);
+    expect(screen.queryByRole('img')).toBeNull();
+    // Real i18n here (no mock) → assert English copy, like the assertions above.
+    expect(screen.getByText(/stays on your phone/i)).toBeInTheDocument();
+  });
 });

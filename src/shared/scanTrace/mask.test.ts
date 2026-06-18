@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toGrayscale, computeOtsuThreshold, buildMask } from './mask';
+import { toGrayscale, toChroma, computeOtsuThreshold, buildMask, usesAlphaMask } from './mask';
 import type { ImageDataLike } from './types';
 
 function img(
@@ -33,6 +33,14 @@ describe('toGrayscale', () => {
   });
 });
 
+describe('toChroma', () => {
+  it('scores a neutral grey ~0 and a saturated color high', () => {
+    expect(toChroma(img(1, 1, () => true, [128, 128, 128, 255]))[0]).toBe(0);
+    // Warm wood: max−min = 150 − 60.
+    expect(toChroma(img(1, 1, () => true, [150, 110, 60, 255]))[0]).toBe(90);
+  });
+});
+
 describe('computeOtsuThreshold', () => {
   it('separates a bimodal distribution', () => {
     const gray = new Uint8Array(100);
@@ -61,6 +69,13 @@ describe('buildMask', () => {
     // Opaque object, transparent background — color identical so only alpha distinguishes.
     const mask = buildMask(img(10, 10, inBlock, [120, 120, 120, 255], [120, 120, 120, 0]));
     expect(countOnes(mask)).toBe(16);
+  });
+
+  it('detects when alpha drives the mask (channel choice then moot)', () => {
+    expect(usesAlphaMask(img(10, 10, inBlock, [120, 120, 120, 255], [120, 120, 120, 0]))).toBe(
+      true
+    );
+    expect(usesAlphaMask(img(10, 10, inBlock))).toBe(false);
   });
 
   it('honors an explicit invert', () => {

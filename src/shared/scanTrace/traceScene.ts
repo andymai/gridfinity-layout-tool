@@ -7,25 +7,29 @@
  *  - `traceSceneSegmented` — the tool mask comes from the tap-prompted ML
  *    segmenter; we trust it (plus the user's tap) to have isolated the object.
  *
- * Both detect the card on the classical auto threshold, then run the shared
- * `buildToolTrace` tail (largest component → contour → simplify → optional card
- * homography). With a card present the outline is rectified to true millimetres;
- * without one it stays in pixels and the desktop asks for a real dimension.
+ * Both detect the card on the classical auto threshold and share the
+ * `finishTrace` tail (simplify → curve-fit smooth → optional symmetry → optional
+ * card homography). They differ in how the tool contour is obtained:
+ * `traceScene` traces the largest component of a binary mask (`buildToolTrace`),
+ * while `traceSceneSegmented` traces the soft confidence mask sub-pixel via
+ * marching squares (`buildToolTraceSoft`). With a card present the outline is
+ * rectified to true millimetres; without one it stays in pixels and the desktop
+ * asks for a real dimension.
  */
 
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { buildMask } from './mask';
-import { labelComponents, largestComponent } from './components';
+import { largestComponent } from './components';
 import { traceContour } from './contour';
 import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
-import { findBestCardComponent, cardHomography, type CardDetectOptions } from './cardDetect';
+import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { rectifyPoints } from './perspective';
-import { smoothPreservingCorners } from './smooth';
-
-const DEFAULT_SMOOTH_ITERATIONS = 2;
+import { fitSmoothPolygon } from './curveFit';
+import { traceSoftContour, binarize, type SoftMask } from './softContour';
+import { symmetrizeIfRegular } from './symmetry';
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -46,11 +50,17 @@ export interface SceneTraceOptions extends CardDetectOptions {
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
   /**
-   * Smooth the faceted outline (default true): corner-preserving corner-cutting
-   * that keeps sharp corners crisp while rounding gentle curves. Pass false for
-   * the raw RDP polygon (tests use this to assert exact card-scale geometry).
+   * Smooth the faceted outline (default true): fit Bézier curves that keep sharp
+   * corners crisp while turning curved runs into clean arcs. Pass false for the
+   * raw RDP polygon (tests use this to assert exact card-scale geometry).
    */
   readonly smooth?: boolean;
+  /**
+   * Symmetrize a manufactured tool's outline when it already reads as mirror-
+   * symmetric (default true; ignored when `smooth` is false). Gated on a
+   * symmetry score so a genuinely asymmetric tool is never forced symmetric.
+   */
+  readonly symmetrize?: boolean;
 }
 
 function pointInQuad(x: number, y: number, q: readonly Point[]): boolean {
@@ -95,38 +105,33 @@ function defaultTolerance(width: number, height: number): number {
 /** Detect the reference card on the classical auto threshold (slider-independent). */
 export function detectCard(
   image: ImageDataLike,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions = {},
+  excludeMask?: Mask
 ): SceneCard | null {
-  const { width, height } = image;
-  const labeled = labelComponents(buildMask(image));
-  const card = findBestCardComponent(labeled, width, height, options);
+  const card = findCardAcrossChannels(image, options, excludeMask);
   return card ? { corners: card.corners, fitness: card.fitness } : null;
 }
 
 /**
- * Shared tail: a binary tool mask + an optional card → a finished SceneTrace.
- * Picks the largest blob, traces and simplifies it, and (when a card was found)
- * rectifies through the card homography into true millimetres.
+ * Shared tail: simplify + smooth a raw contour, optionally symmetrize a
+ * manufactured tool's outline, and rectify through the card homography.
  */
-export function buildToolTrace(
-  toolMask: Mask,
+function finishTrace(
+  rawContour: readonly Point[],
+  width: number,
+  height: number,
   card: SceneCard | null,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions
 ): Result<SceneTrace, TraceError> {
-  const { width, height } = toolMask;
-  const component = largestComponent(toolMask);
-  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
-  if (component.start === null || component.area < minArea) {
-    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
-  }
-
-  const contour = traceContour(component.mask, component.start);
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const simplified = simplifyRdp(contour, tolerance);
-  const imagePoints =
-    options.smooth === false
-      ? simplified
-      : smoothPreservingCorners(simplified, DEFAULT_SMOOTH_ITERATIONS);
+  const simplified = simplifyRdp(rawContour, tolerance);
+  let imagePoints =
+    options.smooth === false ? simplified : fitSmoothPolygon(simplified, (tolerance * 0.5) ** 2);
+  // Clean up the slight lopsidedness of a symmetric tool (controller, pliers).
+  // Gated internally on a symmetry score, so an asymmetric tool is untouched.
+  if (options.smooth !== false && options.symmetrize !== false) {
+    imagePoints = symmetrizeIfRegular(imagePoints);
+  }
   if (imagePoints.length < 3 || polygonArea(imagePoints) < 1) {
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }
@@ -146,6 +151,40 @@ export function buildToolTrace(
   return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null });
 }
 
+export function buildToolTrace(
+  toolMask: Mask,
+  card: SceneCard | null,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = toolMask;
+  const component = largestComponent(toolMask);
+  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
+  if (component.start === null || component.area < minArea) {
+    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
+  }
+  return finishTrace(traceContour(component.mask, component.start), width, height, card, options);
+}
+
+/**
+ * Soft-mask tool trace: a sub-pixel marching-squares contour of the segmenter's
+ * confidence field, instead of boundary-tracing a thresholded binary mask. The
+ * 0.5 iso-contour places each vertex where the model's probability actually
+ * crosses, removing the ±0.5px staircase the binary trace bakes in.
+ */
+export function buildToolTraceSoft(
+  toolSoft: SoftMask,
+  card: SceneCard | null,
+  options: SceneTraceOptions = {}
+): Result<SceneTrace, TraceError> {
+  const { width, height } = toolSoft;
+  const contour = traceSoftContour(toolSoft);
+  const minArea = options.minToolAreaPx ?? defaultMinArea(width, height);
+  if (contour.length < 3 || polygonArea(contour) < minArea) {
+    return err({ code: 'NO_OBJECT', detail: 'No tool found' });
+  }
+  return finishTrace(contour, width, height, card, options);
+}
+
 /** Classical fallback: Otsu tool mask (largest non-card blob), card excluded. */
 export function traceScene(
   image: ImageDataLike,
@@ -161,19 +200,20 @@ export function traceScene(
 }
 
 /**
- * ML path: the tool mask is supplied by the tap-prompted segmenter. We don't
- * exclude the card region — the user's tap already chose the object — but we
- * still detect the card classically to recover scale.
+ * ML path: the tool mask is supplied by the tap-prompted segmenter. We exclude
+ * the tool's own pixels from card detection so a card-shaped tool can't be
+ * mistaken for the reference card — the user already chose the tool, so the card
+ * must be a different object. Scale is still recovered classically.
  */
 export function traceSceneSegmented(
   image: ImageDataLike,
-  toolMask: Mask,
+  toolMask: SoftMask,
   options: SceneTraceOptions = {}
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  const card = detectCard(image, options);
-  return buildToolTrace(toolMask, card, options);
+  const card = detectCard(image, options, binarize(toolMask));
+  return buildToolTraceSoft(toolMask, card, options);
 }
 
 /**

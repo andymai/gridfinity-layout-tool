@@ -64,6 +64,65 @@ describe('useScanSession', () => {
     expect(onSvg).toHaveBeenCalledWith('<svg/>');
   });
 
+  it('delivers each new outline by createdAt and keeps polling', async () => {
+    const onSvg = vi.fn();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(201, { token: 't', url: '/scan/t' }))
+      .mockResolvedValueOnce(
+        jsonResponse(200, { status: 'ready', svg: '<svg id="a"/>', createdAt: 'A' })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, { status: 'ready', svg: '<svg id="a"/>', createdAt: 'A' })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, { status: 'ready', svg: '<svg id="b"/>', createdAt: 'B' })
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderHook(() => useScanSession(true, onSvg));
+    await flush();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    expect(onSvg).toHaveBeenCalledTimes(1);
+    expect(onSvg).toHaveBeenLastCalledWith('<svg id="a"/>');
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    expect(onSvg).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    expect(onSvg).toHaveBeenCalledTimes(2);
+    expect(onSvg).toHaveBeenLastCalledWith('<svg id="b"/>');
+  });
+
+  it('marks the session expired even after delivering when polling 404s', async () => {
+    const onSvg = vi.fn();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(201, { token: 't', url: '/scan/t' }))
+      .mockResolvedValueOnce(jsonResponse(200, { status: 'ready', svg: '<svg/>', createdAt: 'A' }))
+      .mockResolvedValueOnce(jsonResponse(404, { error: 'expired' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useScanSession(true, onSvg));
+    await flush();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    expect(onSvg).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500);
+    });
+    expect(result.current.phase).toBe('expired');
+  });
+
   it('falls back to unavailable when the session cannot be created', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(503, { error: 'nope' })));
 

@@ -5,6 +5,7 @@ import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
 import type { SavedDesign } from '../../types';
+import { designFootprint } from '../../utils/designKind';
 
 interface DesignGridItemProps {
   design: SavedDesign;
@@ -61,8 +62,8 @@ export function DesignGridItem({
     onSave: onRename,
   });
 
-  const { width, depth, height, compartments } = design.params;
-  const numCompartments = new Set(compartments.cells).size;
+  const { width, depth, height } = designFootprint(design);
+  const numCompartments = design.params ? new Set(design.params.compartments.cells).size : 0;
 
   const activate = () => {
     if (selectionActive) onToggleSelect?.();
@@ -141,9 +142,9 @@ export function DesignGridItem({
             className="h-full w-full object-cover"
             draggable={false}
           />
-        ) : (
+        ) : design.params ? (
           <BinDesignThumbnail params={design.params} size={80} />
-        )}
+        ) : null}
       </div>
 
       {/* Content area */}

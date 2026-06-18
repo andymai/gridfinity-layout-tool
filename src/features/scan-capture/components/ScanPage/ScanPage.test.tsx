@@ -31,7 +31,7 @@ vi.mock('@/i18n', () => ({
 
 const TOKEN = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 const IMAGE = { width: 24, height: 20, data: new Uint8ClampedArray(24 * 20 * 4) };
-const MASK = { width: 24, height: 20, data: new Uint8Array(24 * 20) };
+const MASK = { width: 24, height: 20, data: new Float32Array(24 * 20) };
 const PTS = [
   { x: 0, y: 0 },
   { x: 25, y: 0 },
@@ -94,6 +94,16 @@ describe('ScanPage', () => {
     expect(mockPreload).toHaveBeenCalled();
   });
 
+  it('shows the annotated example photo, callouts, and on-device privacy note', () => {
+    render(<ScanPage token={TOKEN} />);
+    const example = screen.getByAltText('scan.capture.exampleAlt');
+    expect(example).toHaveAttribute('src', '/images/scan/scan-example.webp');
+    expect(screen.getByText('scan.capture.label.tool')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.label.card')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.label.topDown')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
+  });
+
   it('segments a photo and shows the review overlay with the tap hint', async () => {
     mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
     render(<ScanPage token={TOKEN} />);
@@ -101,6 +111,8 @@ describe('ScanPage', () => {
     selectPhoto();
 
     expect(await screen.findByText('scan.review.tapHint')).toBeInTheDocument();
+    // The "is this your tool?" confirm prompt makes the tap-to-reselect explicit.
+    expect(screen.getByText('scan.review.confirmTitle')).toBeInTheDocument();
     expect(screen.getByText('scan.use')).toBeInTheDocument();
     // Two overlays: the tool outline and the detected-card highlight.
     expect(document.querySelectorAll('polygon')).toHaveLength(2);
@@ -153,8 +165,9 @@ describe('ScanPage', () => {
 
     selectPhoto();
 
-    // Classical mode → no tap-to-reselect, retake guidance instead.
+    // Classical mode → no tap-to-reselect, so no confirm prompt; retake guidance instead.
     expect(await screen.findByText('scan.review.retakeHint')).toBeInTheDocument();
+    expect(screen.queryByText('scan.review.confirmTitle')).toBeNull();
     expect(mockTrace).toHaveBeenCalled();
   });
 
@@ -172,6 +185,35 @@ describe('ScanPage', () => {
       `/api/scan-session/${TOKEN}`,
       expect.objectContaining({ method: 'POST' })
     );
+    vi.unstubAllGlobals();
+  });
+
+  it('returns to capture so the user can scan another tool', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    fireEvent.click(await screen.findByText('scan.sent.another'));
+
+    expect(await screen.findByText('scan.takePhoto')).toBeInTheDocument();
+    expect(screen.getByText('scan.capture.heading')).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
+  it('attempts to close the tab and shows a close hint when Done is tapped', async () => {
+    mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => {});
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    fireEvent.click(await screen.findByText('scan.sent.done'));
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText('scan.finished.body')).toBeInTheDocument();
     vi.unstubAllGlobals();
   });
 

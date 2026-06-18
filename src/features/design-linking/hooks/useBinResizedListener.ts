@@ -103,6 +103,8 @@ export function useBinResizedListener(): void {
         }
 
         const design = designResult.value;
+        // Only bin designs link to layout bins (non-bin items have no `params`).
+        if (!design.params) return;
         const designName =
           registryRef.current.find((r) => r.id === linkedDesignId)?.name ?? design.name;
 

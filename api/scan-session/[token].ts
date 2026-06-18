@@ -94,7 +94,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Idempotent delivery: the outline stays available until the session's
         // TTL expires. Consuming it here would lose the scan if the desktop hit
         // a transient error ingesting it, with no way to retry.
-        return res.status(200).json({ status: 'ready', svg: record.svg });
+        return res.status(200).json({
+          status: 'ready',
+          svg: record.svg,
+          createdAt: record.createdAt,
+        });
       }
       return res.status(200).json({ status: 'pending' });
     }

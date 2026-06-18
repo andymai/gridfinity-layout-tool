@@ -23,6 +23,7 @@ import type {
   TextStyleDefaults,
   TextStyleOverride,
 } from '../../types';
+import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import { TEXT_MAX_LENGTH } from '../../types/text';
 import type { LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
@@ -136,6 +137,25 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params.base, partial);
+      });
+    },
+
+    // Non-bin item edits. History/undo is intentionally not wired for non-bin
+    // kinds in this transitional phase — we bump the generation epoch directly
+    // so the preview regenerates via the item path.
+    updateStructure: (partial: Partial<ItemStructure>) => {
+      set((state) => {
+        if (state.itemKind === 'bin' || !state.structure) return;
+        Object.assign(state.structure, partial);
+        state.generation.epoch += 1;
+      });
+    },
+
+    updateEnvelope: (partial: Partial<ItemEnvelope>) => {
+      set((state) => {
+        if (state.itemKind === 'bin' || !state.envelope) return;
+        Object.assign(state.envelope, partial);
+        state.generation.epoch += 1;
       });
     },
 

@@ -93,10 +93,21 @@ export async function saveDesign(
 
     const tags = normalizeTags(design.tags ?? existing?.tags);
 
+    const kind = design.kind ?? 'bin';
+    // Reject incomplete writes up front so a malformed call can't persist a
+    // record that later fails loadDesign() or renders blank.
+    if (kind === 'bin' && !design.params) {
+      return err(storageCorrupted(design.id ?? 'new', ['bin design missing params']));
+    }
+    if (kind !== 'bin' && (!design.envelope || !design.structure)) {
+      return err(
+        storageCorrupted(design.id ?? 'new', [`${kind} design missing envelope/structure`])
+      );
+    }
+
     const savedDesign: SavedDesign = {
       id: design.id ?? generateDesignId(),
       name: design.name,
-      params: design.params,
       thumbnail: design.thumbnail ?? null,
       // Set thumbnail version when saving a thumbnail
       thumbnailVersion: design.thumbnail ? THUMBNAIL_VERSION : undefined,
@@ -104,6 +115,12 @@ export async function saveDesign(
       createdAt,
       updatedAt: now,
       ...(tags.length > 0 ? { tags } : {}),
+      // Bins persist flat `params` (canonical, back-compat); non-bin kinds
+      // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
+      // bin payload can never shadow the real structure.
+      ...(kind === 'bin'
+        ? { params: design.params }
+        : { kind, envelope: design.envelope, structure: design.structure }),
     };
 
     await db.put(DESIGNS_STORE, savedDesign);
@@ -126,8 +143,14 @@ export async function loadDesign(id: DesignId): Promise<Result<SavedDesign, Stor
       return err(storageNotFound(`Design '${id}' not found`));
     }
 
+    // Non-bin kinds carry `envelope` + `structure` (no flat `params`).
+    // Structure migration runs later in the designer store on load, so this
+    // layer returns the row unchanged.
+    if (design.kind && design.kind !== 'bin') {
+      return ok(design);
+    }
+
     // Validate that params is a valid object before migration
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- params can be corrupted in IndexedDB
     if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
       const paramsType = String(design.params) === 'null' ? 'null' : typeof design.params;
       return err(storageCorrupted(id, [`Invalid params type: ${paramsType}`]));
@@ -157,14 +180,16 @@ export async function listDesigns(): Promise<Result<SavedDesign[], StorageError>
     // Filter out corrupted entries (invalid params) to avoid breaking the entire list
     const migratedDesigns = designs
       .filter((design) => {
-        // Skip entries with invalid params (null, undefined, or primitives)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime data from IndexedDB
+        // Non-bin kinds have no flat `params` — keep them as-is.
+        if (design.kind && design.kind !== 'bin') return true;
+        // Skip bin entries with invalid params (null, undefined, or primitives)
         return design.params && typeof design.params === 'object' && !Array.isArray(design.params);
       })
-      .map((design) => ({
-        ...design,
-        params: migrateParams(design.params as Partial<BinParams>),
-      }));
+      .map((design) =>
+        design.kind && design.kind !== 'bin'
+          ? design
+          : { ...design, params: migrateParams(design.params as Partial<BinParams>) }
+      );
 
     // Sort by updatedAt descending
     migratedDesigns.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -193,7 +218,10 @@ export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign,
 
   return saveDesign({
     name: newName,
-    params: { ...original.params },
+    kind: original.kind,
+    params: original.params ? { ...original.params } : undefined,
+    envelope: original.envelope,
+    structure: original.structure,
     thumbnail: original.thumbnail,
     exportFileNameConfig: original.exportFileNameConfig
       ? { ...original.exportFileNameConfig }

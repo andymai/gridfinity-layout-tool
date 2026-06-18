@@ -25,6 +25,26 @@ export function toGrayscale(img: ImageDataLike): Uint8Array {
   return gray;
 }
 
+/**
+ * Per-pixel colorfulness: max−min of the RGB channels (already 0–255). A neutral
+ * grey/metal surface scores ~0; a saturated one scores high. Lets the tracer
+ * separate a color-neutral card from a colored background that matches it in
+ * brightness — invisible to {@link toGrayscale}.
+ */
+export function toChroma(img: ImageDataLike): Uint8Array {
+  const { data } = img;
+  const n = img.width * img.height;
+  const chroma = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const o = i * 4;
+    const r = data[o];
+    const g = data[o + 1];
+    const b = data[o + 2];
+    chroma[i] = Math.max(r, g, b) - Math.min(r, g, b);
+  }
+  return chroma;
+}
+
 /** Otsu's method: the 0–255 cutoff maximizing between-class variance. */
 export function computeOtsuThreshold(gray: Uint8Array): number {
   const hist = new Uint32Array(256);
@@ -75,6 +95,14 @@ function fractionTranslucent(img: ImageDataLike): number {
   return n === 0 ? 0 : translucent / n;
 }
 
+/**
+ * True when the image carries enough real transparency that alpha drives the
+ * mask outright — in which case the luma/chroma `channel` choice is moot.
+ */
+export function usesAlphaMask(img: ImageDataLike): boolean {
+  return fractionTranslucent(img) > ALPHA_MODE_FRACTION;
+}
+
 /** True when border pixels are, on balance, darker than the threshold. */
 function borderIsDark(gray: Uint8Array, width: number, height: number, threshold: number): boolean {
   let dark = 0;
@@ -100,7 +128,7 @@ export function buildMask(img: ImageDataLike, options: TraceOptions = {}): Mask 
   const data = new Uint8Array(n);
 
   // Alpha-driven mask when the image carries real transparency.
-  if (fractionTranslucent(img) > ALPHA_MODE_FRACTION) {
+  if (usesAlphaMask(img)) {
     const cutoff = options.alphaThreshold ?? DEFAULT_ALPHA_THRESHOLD;
     for (let i = 0; i < n; i++) {
       const fg = img.data[i * 4 + 3] >= cutoff;
@@ -109,13 +137,13 @@ export function buildMask(img: ImageDataLike, options: TraceOptions = {}): Mask 
     return { width, height, data };
   }
 
-  const gray = toGrayscale(img);
-  const threshold = options.threshold ?? computeOtsuThreshold(gray);
+  const channel = options.channel === 'chroma' ? toChroma(img) : toGrayscale(img);
+  const threshold = options.threshold ?? computeOtsuThreshold(channel);
   // The object is whichever side the border is NOT.
-  const foregroundIsDark = !borderIsDark(gray, width, height, threshold);
+  const foregroundIsDark = !borderIsDark(channel, width, height, threshold);
 
   for (let i = 0; i < n; i++) {
-    const isDark = gray[i] < threshold;
+    const isDark = channel[i] < threshold;
     const fg = foregroundIsDark ? isDark : !isDark;
     data[i] = (options.invert ? !fg : fg) ? 1 : 0;
   }

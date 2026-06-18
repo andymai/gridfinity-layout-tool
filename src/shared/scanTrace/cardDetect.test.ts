@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { detectCardQuad, cardPerspectiveSkew, STEEP_CARD_SKEW } from './cardDetect';
+import {
+  detectCardQuad,
+  findBestCardComponent,
+  cardPerspectiveSkew,
+  STEEP_CARD_SKEW,
+} from './cardDetect';
+import { buildMask } from './mask';
+import { labelComponents, maskFromLabel } from './components';
+import { traceContour } from './contour';
+import { contourToQuad, estimateRectAspect } from './quad';
 import { rectifyPoints } from './perspective';
 import type { ImageDataLike, Point } from './types';
 
@@ -89,6 +98,35 @@ function render(
   return { width, height, data };
 }
 
+type Rgb = readonly [number, number, number];
+
+/** Like `render`, but each layer carries an RGB color over a colored background. */
+function renderRgb(
+  layers: Array<{ poly: Point[]; rgb: Rgb }>,
+  background: Rgb,
+  width = 360,
+  height = 260
+): ImageDataLike {
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const o = (y * width + x) * 4;
+      let rgb = background;
+      for (const layer of layers) {
+        if (pointInPolygon({ x, y }, layer.poly)) {
+          rgb = layer.rgb;
+          break;
+        }
+      }
+      data[o] = rgb[0];
+      data[o + 1] = rgb[1];
+      data[o + 2] = rgb[2];
+      data[o + 3] = 255;
+    }
+  }
+  return { width, height, data };
+}
+
 function bbox(points: readonly Point[]): { w: number; h: number } {
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
@@ -133,6 +171,91 @@ describe('detectCardQuad (end-to-end, pinhole projection)', () => {
       const nearCard = card.some((e) => Math.hypot(c.x - e.x, c.y - e.y) < 4);
       expect(nearCard).toBe(true);
     });
+  });
+});
+
+describe('detectCardQuad on a color-neutral card (the silver-card-on-wood case)', () => {
+  // A brushed-metal card on warm wood: near-identical *luminance* (so a grayscale
+  // threshold can't separate them) but very different *chroma*. Both ~116 luma;
+  // wood is saturated (chroma 90), the card is neutral (chroma 0).
+  const WOOD: Rgb = [150, 110, 60];
+  const CARD: Rgb = [116, 116, 116];
+
+  it('luma alone cannot find the card (regression guard)', () => {
+    const image = renderRgb([{ poly: project(CARD_MM), rgb: CARD }], WOOD);
+    const labeled = labelComponents(buildMask(image)); // default channel: luma
+    expect(findBestCardComponent(labeled, image.width, image.height)).toBeNull();
+  });
+
+  it('the chroma sweep recovers the card and rectifies the tool to true mm', () => {
+    const image = renderRgb(
+      [
+        { poly: project(CARD_MM), rgb: CARD },
+        { poly: project(TOOL_MM), rgb: [40, 40, 40] },
+      ],
+      WOOD
+    );
+
+    const detection = detectCardQuad(image);
+    expect(detection).not.toBeNull();
+    if (!detection) return;
+    expect(detection.fitness).toBeGreaterThan(0.9);
+
+    const out = bbox(rectifyPoints(project(TOOL_MM), detection.homography));
+    expect(Math.abs(out.w - 25)).toBeLessThan(2.5);
+    expect(Math.abs(out.h - 45)).toBeLessThan(2.5);
+  });
+});
+
+describe('detectCardQuad with an eroded corner (glossy-logo case)', () => {
+  // A 200×126 card (aspect 1.587) with the bottom-left corner bitten out — the
+  // way a desaturated logo/hologram drops out of the threshold mask. Tuned so
+  // the extreme-corner quad still scores as a clean quad (fitness > 0.8) but its
+  // skewed aspect (~1.20) fails the gate; only the hull-based min-area-rect
+  // rescue recovers the true ~1.59 rectangle.
+  function erodedCard(): ImageDataLike {
+    const card: Point[] = [
+      { x: 40, y: 40 },
+      { x: 240, y: 40 },
+      { x: 240, y: 166 },
+      { x: 40, y: 166 },
+    ];
+    const bite: Point[] = [
+      { x: 40, y: 166 },
+      { x: 150, y: 166 },
+      { x: 40, y: 86 },
+    ];
+    return render(
+      [
+        { poly: bite, value: 15 },
+        { poly: card, value: 235 },
+      ],
+      300,
+      220
+    );
+  }
+
+  it('the extreme-corner quad alone would reject it (rescue is required)', () => {
+    const image = erodedCard();
+    const labeled = labelComponents(buildMask(image));
+    const comp = [...labeled.components].sort((a, b) => b.area - a.area)[0];
+    const contour = traceContour(
+      maskFromLabel(labeled.labels, comp.label, image.width, image.height),
+      comp.start
+    );
+    const quad = contourToQuad(contour);
+    expect(quad).not.toBeNull();
+    if (!quad) return;
+    expect(quad.fitness).toBeGreaterThan(0.8); // passes the clean-quad precondition
+    const skewed = estimateRectAspect(quad.corners, image.width / 2, image.height / 2);
+    expect(skewed).not.toBeNull();
+    if (skewed === null) return;
+    expect(Math.abs(skewed - 1.586)).toBeGreaterThan(0.3); // …but its aspect is out of tolerance
+  });
+
+  it('the min-area-rect rescue detects the card', () => {
+    const detection = detectCardQuad(erodedCard());
+    expect(detection).not.toBeNull();
   });
 });
 

@@ -24,6 +24,8 @@ export interface LidMeshDataState {
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
+export type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
+import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { LidConfig } from './lid';
 import type { TextStyleDefaults, TextStyleOverride } from './text';
 import type {
@@ -833,7 +835,13 @@ export const THUMBNAIL_VERSION = 6;
 export interface SavedDesign {
   readonly id: DesignId;
   readonly name: string;
-  readonly params: BinParams;
+  /** Canonical for kind 'bin' + legacy designs; omitted for non-bin kinds. */
+  readonly params?: BinParams;
+  /** Item kind. Absent => 'bin' (back-compat). */
+  readonly kind?: ItemKind;
+  /** Envelope + structure — present for non-bin kinds. */
+  readonly envelope?: ItemEnvelope;
+  readonly structure?: ItemStructure;
   readonly thumbnail: string | null;
   /** Thumbnail format version for detecting outdated thumbnails */
   readonly thumbnailVersion?: number;
@@ -851,6 +859,11 @@ export interface SavedDesign {
 export interface DesignerState {
   // Data
   params: BinParams;
+  /** 'bin' (default) edits `params`; non-bin kinds edit `envelope` + `structure`. */
+  itemKind: ItemKind;
+  /** Envelope + structure for non-bin kinds (null when itemKind is 'bin'). */
+  envelope: ItemEnvelope | null;
+  structure: ItemStructure | null;
   generation: GenerationState;
   history: DesignerHistory;
   wasmStatus: WasmStatus;
@@ -907,8 +920,12 @@ export interface DesignerState {
   setPendingBinLink: (binId: string | null) => void;
   clearPendingBinLink: () => void;
   setNeedsThumbnailUpdate: (needed: boolean) => void;
-  newDesign: () => void;
+  newDesign: (kind?: ItemKind) => void;
   loadDesign: (design: SavedDesign) => void;
+
+  // Non-bin item actions (no-ops when itemKind is 'bin')
+  updateStructure: (partial: Partial<ItemStructure>) => void;
+  updateEnvelope: (partial: Partial<ItemEnvelope>) => void;
 
   // Compartment actions
   setCompartmentGrid: (cols: number, rows: number) => void;

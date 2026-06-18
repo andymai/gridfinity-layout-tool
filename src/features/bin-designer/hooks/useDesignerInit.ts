@@ -28,6 +28,7 @@ import {
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { isBinDesign } from '../utils/designKind';
 
 /**
  * Check if URL has createFrom=bin params (handled by useCreateFromBin).
@@ -102,7 +103,7 @@ export function useDesignerInit(): void {
           const design = result.value;
           loadDesign(design);
           setActiveDesignId(design.id);
-          syncToRegistry(design);
+          if (isBinDesign(design)) syncToRegistry(design);
         }
       } else {
         // newDesign() was called - create a fresh design
@@ -112,7 +113,7 @@ export function useDesignerInit(): void {
           // Only set the ID, params are already reset by newDesign()
           setCurrentDesignId(design.id);
           setActiveDesignId(design.id);
-          syncToRegistry(design);
+          if (isBinDesign(design)) syncToRegistry(design);
         }
       }
       hasInitialized.current = true;

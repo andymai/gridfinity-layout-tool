@@ -7,10 +7,10 @@ import { StackPrintSection } from './StackPrintSection';
 const enabled: StackPrintParams = { enabled: true, gapMm: mm(0.2) };
 
 describe('StackPrintSection', () => {
-  it('renders the toggle with the experimental badge', () => {
+  it('renders the toggle without an experimental badge', () => {
     render(<StackPrintSection stackPrint={undefined} onChange={vi.fn()} />);
     expect(screen.getByRole('switch', { name: /vertical stack/i })).toBeInTheDocument();
-    expect(screen.getByText(/Experimental/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Experimental/i)).not.toBeInTheDocument();
   });
 
   it('enables stacking with air-gap defaults when toggled on', () => {

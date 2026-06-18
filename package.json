@@ -1,7 +1,7 @@
 {
   "name": "gridfinity-layout-tool",
   "private": true,
-  "version": "4.184.1",
+  "version": "4.191.0",
   "description": "A web app for designing and planning Gridfinity drawer organizer layouts",
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -106,6 +106,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "fflate": "^0.8.3",
+    "fit-curve": "^0.2.0",
     "idb": "^8.0.3",
     "immer": "^11.1.8",
     "ioredis": "^5.11.1",
