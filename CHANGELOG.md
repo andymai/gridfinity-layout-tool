@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.189.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.188.0...gridfinity-layout-tool-v4.189.0) (2026-06-18)
+
+
+### Features
+
+* **scan:** add real annotated example photo and on-device privacy note ([#2248](https://github.com/andymai/gridfinity-layout-tool/issues/2248)) ([7514ca8](https://github.com/andymai/gridfinity-layout-tool/commit/7514ca81a7787f8b98da56e5746e917aed7f3a86))
+
 ## [4.188.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.187.0...gridfinity-layout-tool-v4.188.0) (2026-06-18)
 
 ### Features
