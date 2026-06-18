@@ -112,6 +112,51 @@
       ]
     },
     {
+      "source": "/gridfinity-generator",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/gridfinity-calculator",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/gridfinity-tool-drawer",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/gridfinity-kitchen-drawer",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/gridfinity-software",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/de/:path((?!api/).*)",
       "headers": [
         { "key": "Content-Language", "value": "de" },
@@ -265,11 +310,11 @@
       "destination": "https://us.i.posthog.com/:path"
     },
     {
-      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software)",
       "destination": "/:slug/index.html"
     },
     {
-      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk)/:slug(what-is-gridfinity|guide|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
       "destination": "/:locale/:slug/index.html"
     },
     { "source": "/designer", "destination": "/" },

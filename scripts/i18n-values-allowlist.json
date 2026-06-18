@@ -148,6 +148,8 @@
     "sidebar.github",
     "sidebar.privacy",
     "sidebar.version",
+    "sidebar.learn.generator",
+    "sidebar.learn.calculator",
     "feedback.cancel",
     "feedback.categoryBug",
     "feedback.categoryFeature",

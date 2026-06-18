@@ -256,9 +256,14 @@ const en: Record<string, string> = {
   'sidebar.learn': 'Learn',
   'sidebar.learn.whatIs': 'What is Gridfinity?',
   'sidebar.learn.guide': 'Planning Guide',
+  'sidebar.learn.generator': 'Generator',
   'sidebar.learn.binGenerator': 'Bin Generator',
   'sidebar.learn.baseplateGenerator': 'Baseplate Generator',
+  'sidebar.learn.calculator': 'Calculator',
   'sidebar.learn.sizes': 'Sizes Reference',
+  'sidebar.learn.toolDrawer': 'Tool Drawer Organizer',
+  'sidebar.learn.kitchenDrawer': 'Kitchen Drawer Organizer',
+  'sidebar.learn.software': 'Software Comparison',
 
   // Right Panel (Bin List)
   'rightPanel.expandPanel': 'Expand panel',

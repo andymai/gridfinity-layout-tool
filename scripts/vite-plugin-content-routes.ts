@@ -15,13 +15,27 @@ const SLUGS = [
   'guide',
   'privacy',
   'terms',
+  'gridfinity-generator',
+  'gridfinity-bin-generator',
+  'gridfinity-baseplate-generator',
+  'gridfinity-calculator',
+  'gridfinity-sizes',
+  'gridfinity-tool-drawer',
+  'gridfinity-kitchen-drawer',
+  'gridfinity-software',
+];
+
+// Localized variants exist only for the original content set. privacy/terms are
+// English-only, and calculator/tool-drawer/kitchen-drawer/software have no
+// translations yet — so they are omitted from the localized rewrite (mirrors vercel.json).
+const LOCALIZED_SLUGS = [
+  'what-is-gridfinity',
+  'guide',
+  'gridfinity-generator',
   'gridfinity-bin-generator',
   'gridfinity-baseplate-generator',
   'gridfinity-sizes',
 ];
-
-// privacy/terms are English-only in prod (omitted from the localized rewrite).
-const LOCALIZED_SLUGS = SLUGS.filter((s) => s !== 'privacy' && s !== 'terms');
 const LOCALES = ['de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk'];
 
 const ROUTE = new RegExp(`^/(${SLUGS.join('|')})/?$`);

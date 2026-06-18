@@ -556,6 +556,16 @@ export function Sidebar() {
                 </li>
                 <li>
                   <a
+                    href="/gridfinity-generator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.generator')}
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="/gridfinity-bin-generator"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -576,12 +586,52 @@ export function Sidebar() {
                 </li>
                 <li>
                   <a
+                    href="/gridfinity-calculator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.calculator')}
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="/gridfinity-sizes"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.sizes')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-tool-drawer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.toolDrawer')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-kitchen-drawer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.kitchenDrawer')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-software"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.software')}
                   </a>
                 </li>
               </ul>

@@ -462,6 +462,29 @@ describe('Sidebar', () => {
     });
   });
 
+  describe('learn links', () => {
+    it('links to the key landing pages with crawlable hrefs', () => {
+      render(<Sidebar />);
+
+      const expectedHrefs = [
+        '/what-is-gridfinity',
+        '/guide',
+        '/gridfinity-generator',
+        '/gridfinity-bin-generator',
+        '/gridfinity-baseplate-generator',
+        '/gridfinity-calculator',
+        '/gridfinity-sizes',
+        '/gridfinity-tool-drawer',
+        '/gridfinity-kitchen-drawer',
+        '/gridfinity-software',
+      ];
+      const hrefs = Array.from(document.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+      expectedHrefs.forEach((href) => {
+        expect(hrefs).toContain(href);
+      });
+    });
+  });
+
   describe('scroll behavior', () => {
     it('handles scroll events', () => {
       render(<Sidebar />);
