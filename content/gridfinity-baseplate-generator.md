@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Baseplate Generator — Free Online STL Creator
-description: Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.
+description: Generate a custom Gridfinity baseplate sized to your drawer — set the grid, add magnet holes and connectors, and it auto-splits to fit your print bed. 3D preview, free STL/STEP/3MF export, no account.
 keywords: gridfinity baseplate generator, gridfinity baseplate, custom gridfinity baseplate, gridfinity STL, drawer baseplate, magnet baseplate
 schema: HowTo
 breadcrumbs:

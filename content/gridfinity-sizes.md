@@ -1,6 +1,6 @@
 ---
-title: Gridfinity Sizes — Bin Dimensions & Unit Guide
-description: How big is a Gridfinity unit? 42mm grid, 7mm height increments. Quick-reference tables for bin sizes, drawer conversions, and what fits where.
+title: Gridfinity Sizes & Dimensions — 42mm Grid + 7mm Heights
+description: Every Gridfinity dimension in one place — the 42mm grid, 7mm height units, and full bin-size tables in mm and inches, plus how to convert your drawer measurements into grid units. Free quick reference.
 keywords: gridfinity sizes, gridfinity dimensions, gridfinity bin sizes, gridfinity height units, gridfinity 42mm, gridfinity grid size, standard gridfinity size, why is gridfinity 42mm
 schema: Article
 breadcrumbs:

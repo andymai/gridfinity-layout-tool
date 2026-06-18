@@ -16,19 +16,20 @@
 const en: Record<string, string> = {
   // SEO Meta Tags (dynamically injected into document head)
   'seo.h1': 'Gridfinity Planner & Layout Tool',
-  'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
+  'seo.title': 'Gridfinity Planner & Layout Tool — Free Online Drawer Organizer',
   'seo.description':
     'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
-  // Per-route title overrides — mirror the content-page titles so direct
-  // landings on /designer and /baseplate get the same SEO signal as the
-  // content-page equivalents at /gridfinity-bin-generator and
-  // /gridfinity-baseplate-generator.
-  'seo.designer.title': 'Gridfinity Bin Generator — Free Online STL Creator',
+  // Per-route title overrides for the /designer and /baseplate app routes.
+  // These deliberately use the "Designer"/"Maker" framing (matching the static
+  // route entries in build-route-entries.ts) so the interactive tool routes
+  // stay distinct from the content landing pages at /gridfinity-bin-generator
+  // and /gridfinity-baseplate-generator, which own the "Generator" queries.
+  'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Generator',
   'seo.designer.description':
-    'Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.',
-  'seo.baseplate.title': 'Gridfinity Baseplate Generator — Free Online STL Creator',
+    'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
+  'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Generator',
   'seo.baseplate.description':
-    'Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.',
+    'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
 
   // Common / Shared
   'common.save': 'Save',

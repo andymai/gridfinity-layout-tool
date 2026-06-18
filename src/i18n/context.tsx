@@ -44,16 +44,16 @@ const fallback: Translations = {
   'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
   'common.loading': 'Loading...',
-  'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
+  'seo.title': 'Gridfinity Planner & Layout Tool — Free Online Drawer Organizer',
   'seo.description':
     'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
   'seo.h1': 'Gridfinity Planner & Layout Tool',
-  'seo.designer.title': 'Gridfinity Bin Generator — Free Online STL Creator',
+  'seo.designer.title': 'Gridfinity Bin Designer — Free Custom Bin Generator',
   'seo.designer.description':
-    'Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.',
-  'seo.baseplate.title': 'Gridfinity Baseplate Generator — Free Online STL Creator',
+    'Design custom Gridfinity bins in your browser: dimensions, compartments, label tabs, wall cutouts, and base styles with a real-time 3D preview. Export STL, STEP, or 3MF. Free, no account.',
+  'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Generator',
   'seo.baseplate.description':
-    'Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.',
+    'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
 };
 
 /**
