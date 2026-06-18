@@ -1,5 +1,5 @@
 /**
- * "Stack for printing" panel section (experimental): stack a drawer's baseplates
+ * "Stack for printing" panel section: stack a drawer's baseplates
  * into vertical towers separated by an air gap — bottom plate upright, the rest
  * flipped. Magnet holes and corner rounding are auto-disabled by the parent when
  * this is enabled (they bridge / break tile uniformity under the flip); dovetail
@@ -17,7 +17,6 @@ import {
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
 interface StackPrintSectionProps {
@@ -50,7 +49,6 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
     <div className="border-b border-stroke-subtle px-4 py-3">
       <FeatureToggle
         label={t('baseplate.stackPrint.enable')}
-        badge={<ExperimentalBadge />}
         checked={enabled}
         onChange={() => onChange(enabled ? undefined : DEFAULT_STACK_PRINT)}
         primaryControls={

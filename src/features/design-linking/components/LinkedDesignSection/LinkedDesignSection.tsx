@@ -13,7 +13,6 @@ import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
 import { Button, IconButton, PlusIcon } from '@/design-system';
-import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -106,12 +105,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   if (!hasLink) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <label className={`${textSize} text-content-tertiary`}>
-            {t('designLinking.inspector.linkedDesign')}
-          </label>
-          <ExperimentalBadge />
-        </div>
+        <label className={`${textSize} text-content-tertiary`}>
+          {t('designLinking.inspector.linkedDesign')}
+        </label>
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -148,12 +144,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   if (isStale) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <label className={`${textSize} text-content-tertiary`}>
-            {t('designLinking.inspector.linkedDesign')}
-          </label>
-          <ExperimentalBadge />
-        </div>
+        <label className={`${textSize} text-content-tertiary`}>
+          {t('designLinking.inspector.linkedDesign')}
+        </label>
         <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30">
           <div className="flex items-center gap-2 mb-2">
             <svg
@@ -195,12 +188,9 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <label className={`${textSize} text-content-tertiary`}>
-          {t('designLinking.inspector.linkedDesign')}
-        </label>
-        <ExperimentalBadge />
-      </div>
+      <label className={`${textSize} text-content-tertiary`}>
+        {t('designLinking.inspector.linkedDesign')}
+      </label>
 
       <div className="flex items-center gap-3">
         {/* Thumbnail with link indicator */}

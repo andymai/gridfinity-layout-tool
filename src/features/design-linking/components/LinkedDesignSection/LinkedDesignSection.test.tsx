@@ -81,11 +81,6 @@ describe('LinkedDesignSection', () => {
     expect(screen.getByText('designLinking.inspector.linkExisting')).toBeInTheDocument();
   });
 
-  it('shows experimental badge', () => {
-    render(<LinkedDesignSection bin={testBin} variant="desktop" />);
-    expect(screen.getByText('settings.experimental')).toBeInTheDocument();
-  });
-
   it('calls showCreateDesignDialog when create button clicked', () => {
     const mockShowCreate = vi.fn();
     vi.mocked(useBinLinking).mockReturnValue({
