@@ -168,6 +168,8 @@ async function runBatch(
   try {
     for (const design of designs) {
       if (signal.aborted) break;
+      // Non-bin kinds have no flat `params`; skip thumbnailing for now.
+      if (!design.params) continue;
 
       // Pause when the user is actively generating in the designer OR when the
       // tab is hidden. Resume when both clear.

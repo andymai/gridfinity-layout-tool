@@ -40,6 +40,7 @@ export interface MessageHandlerContext {
   readonly adaptiveDebounce: AdaptiveDebounce;
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
+  readonly itemCache: DedupCache;
   readonly pendingExports: PendingExportMap;
   readonly pendingEstimates: Map<string, (predictedMs: number | null) => void>;
   clearPending: () => void;
@@ -164,9 +165,10 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
             perfSnapshot: response.perfSnapshot,
           };
 
-          // Cache for deduplication (bin or baseplate — only one is in-flight)
+          // Cache for deduplication (bin, baseplate, or item — only one is in-flight)
           ctx.commitDedupCache(ctx.binCache, result);
           ctx.commitDedupCache(ctx.baseplateCache, result);
+          ctx.commitDedupCache(ctx.itemCache, result);
 
           ctx.clearPending();
           resolve(result);

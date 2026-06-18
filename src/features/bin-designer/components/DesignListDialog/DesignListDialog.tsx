@@ -36,6 +36,7 @@ import { DesignGridItem } from '../DesignGridItem';
 import { DesignListItem } from '../DesignListItem';
 import { DesignImportView } from '../DesignImportView';
 import type { SavedDesign, BinParams } from '../../types';
+import { designFootprint } from '../../utils/designKind';
 import { useThumbnailRegeneration } from '../../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
@@ -114,6 +115,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleDownloadJSON = useCallback(
     (design: SavedDesign) => {
+      if (!design.params) return;
       downloadDesignAsFile(design.name, design.params);
       addToast({ message: t('binDesigner.downloadDesignJson'), type: 'success', duration: 2000 });
     },
@@ -198,8 +200,10 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'size': {
-          const aSize = a.params.width * a.params.depth * a.params.height;
-          const bSize = b.params.width * b.params.depth * b.params.height;
+          const af = designFootprint(a);
+          const bf = designFootprint(b);
+          const aSize = af.width * af.depth * Math.max(af.height, 1);
+          const bSize = bf.width * bf.depth * Math.max(bf.height, 1);
           return bSize - aSize;
         }
         case 'recent':
@@ -399,7 +403,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     const ids = selection.selectedIds;
     const targets = designs.filter((d) => ids.has(d.id));
     for (const d of targets) {
-      downloadDesignAsFile(d.name, d.params);
+      if (d.params) downloadDesignAsFile(d.name, d.params);
     }
     if (targets.length > 0) {
       addToast({

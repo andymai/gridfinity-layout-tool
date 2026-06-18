@@ -18,11 +18,13 @@
  */
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage, WorkerResponse, WorkerCacheStats, ExportFormat } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 import {
   generateBin as generateBinImpl,
   generateBaseplate as generateBaseplateImpl,
+  generateItem as generateItemImpl,
 } from './bridgeGeneration';
 import {
   ExportTimeoutError,
@@ -54,6 +56,7 @@ import {
   generateSplitPreviewRange as generateSplitPreviewRangeImpl,
   exportSplitBinRange as exportSplitBinRangeImpl,
   exportBaseplate as exportBaseplateImpl,
+  exportItem as exportItemImpl,
   exportConnectorKey as exportConnectorKeyImpl,
   exportConnectorSample as exportConnectorSampleImpl,
 } from './bridgeExports';
@@ -99,6 +102,7 @@ export class GenerationBridge {
   /** Size-1 dedup caches for bin and baseplate generation. */
   binCache: DedupCache = createDedupCache();
   baseplateCache: DedupCache = createDedupCache();
+  itemCache: DedupCache = createDedupCache();
 
   /** Optional callback for cache performance stats (called after each generation). */
   onCacheStats: CacheStatsCallback | null = null;
@@ -277,6 +281,7 @@ export class GenerationBridge {
     this.adaptiveDebounce.reset();
     this.binCache = createDedupCache();
     this.baseplateCache = createDedupCache();
+    this.itemCache = createDedupCache();
   }
 
   // ── Export methods (delegate to bridgeExports) ────────────────────
@@ -383,6 +388,27 @@ export class GenerationBridge {
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
     return exportBaseplateImpl(this, params, format, options);
+  }
+
+  /** Generate any registered item kind (envelope + discriminated structure). */
+  generateItem(item: GridfinityItem, onProgress?: ProgressCallback): Promise<GenerationResult> {
+    return generateItemImpl(this, item, onProgress, true);
+  }
+
+  /** Generate an item immediately (no debounce) — used for thumbnails/export warmup. */
+  generateItemImmediate(
+    item: GridfinityItem,
+    onProgress?: ProgressCallback
+  ): Promise<GenerationResult> {
+    return generateItemImpl(this, item, onProgress, false);
+  }
+
+  exportItem(
+    item: GridfinityItem,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<BaseplateExportResult> {
+    return exportItemImpl(this, item, format, options);
   }
 
   exportConnectorKey(
@@ -542,6 +568,7 @@ export class GenerationBridge {
     this.onProgress = null;
     this.binCache.pendingFingerprint = null;
     this.baseplateCache.pendingFingerprint = null;
+    this.itemCache.pendingFingerprint = null;
   }
 
   private clearGenerationTimer(): void {

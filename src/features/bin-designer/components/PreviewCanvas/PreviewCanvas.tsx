@@ -140,6 +140,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     hasMesh,
     meshError,
     params,
+    envelope,
     designName,
     canRevert,
     splitViewMode,
@@ -156,6 +157,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
       meshError: s.generation.mesh?.error ?? null,
       params: s.params,
+      envelope: s.envelope,
       designName: s.designName,
       canRevert: s.history.past.length > 0,
       splitViewMode: s.ui.splitViewMode,
@@ -228,6 +230,9 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
+  // Ghost overlays read bin sub-configs (compartments, scoop, dividers, …);
+  // gate them off for non-bin item kinds.
+  const isBinKind = useDesignerStore((s) => s.itemKind === 'bin');
   const addToast = useToastStore((s) => s.addToast);
   const { navigateToPlanner } = useDesignerRouting();
 
@@ -313,8 +318,8 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   } = useDoubleTapReset({ onDoubleTap: resetView, disabled: isDesktop });
 
   // Scene dimensions
-  const width = params.width;
-  const depth = params.depth;
+  const width = envelope?.width ?? params.width;
+  const depth = envelope?.depth ?? params.depth;
   const height = params.height;
   const totalH = height * params.heightUnitMm;
 
@@ -423,17 +428,21 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 <LidGuideLine lidOffsetMm={lidOffsetMm} />
               )}
 
-              {/* Ghost outlines during generation */}
-              <GhostWireframe />
-              <GhostDividers />
-              <GhostCompartmentPreview />
-              <GhostLabelTabs />
-              <GhostScoops />
-              <GhostSlotLines />
-              <GhostDividerPieces />
-              <GhostCutouts />
-              <GhostWallCutouts />
-              <GhostHandles />
+              {/* Ghost outlines during generation (bin-only feature overlays) */}
+              {isBinKind && (
+                <>
+                  <GhostWireframe />
+                  <GhostDividers />
+                  <GhostCompartmentPreview />
+                  <GhostLabelTabs />
+                  <GhostScoops />
+                  <GhostSlotLines />
+                  <GhostDividerPieces />
+                  <GhostCutouts />
+                  <GhostWallCutouts />
+                  <GhostHandles />
+                </>
+              )}
 
               {/* Overhang-section hover highlight — lights up the affected wall */}
               <OverhangHighlight />
@@ -450,16 +459,20 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               {!hideChrome && !showSplitPieces && (
                 <>
                   <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
-                  <BinDimensions
-                    width={width}
-                    depth={depth}
-                    height={height}
-                    gridUnitMm={params.gridUnitMm}
-                    heightUnitMm={params.heightUnitMm}
-                    stackingLip={params.base.stackingLip}
-                  />
-                  {/* Active-compartment cavity dimensions (hover/select driven) */}
-                  <CompartmentDimensions />
+                  {isBinKind && (
+                    <>
+                      <BinDimensions
+                        width={width}
+                        depth={depth}
+                        height={height}
+                        gridUnitMm={params.gridUnitMm}
+                        heightUnitMm={params.heightUnitMm}
+                        stackingLip={params.base.stackingLip}
+                      />
+                      {/* Active-compartment cavity dimensions (hover/select driven) */}
+                      <CompartmentDimensions />
+                    </>
+                  )}
                   <BinNameLabel
                     width={width}
                     depth={depth}

@@ -41,8 +41,15 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
+import { ToolRackParameterPanel } from '../panel/ToolRackSection/ToolRackParameterPanel';
 
 export function ParameterPanel() {
+  const itemKind = useDesignerStore((s) => s.itemKind);
+  if (itemKind === 'toolRack') return <ToolRackParameterPanel />;
+  return <BinParameterPanel />;
+}
+
+function BinParameterPanel() {
   const t = useTranslation();
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
@@ -56,6 +63,8 @@ export function ParameterPanel() {
   const { needsSplit } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
+  const itemKindsEnabled = useFeatureFlag('item_kinds');
+  const newDesign = useDesignerStore((s) => s.newDesign);
   const customShapeReason = t('binDesigner.shape.custom.hint');
 
   // Group expansion state — controlled so help-modal deep-links can force a
@@ -206,6 +215,14 @@ export function ParameterPanel() {
             </svg>
           </Button>
         </div>
+
+        {itemKindsEnabled && (
+          <div className="px-4 py-3 border-b border-stroke-subtle">
+            <Button variant="secondary" onClick={() => newDesign('toolRack')} className="w-full">
+              {t('binDesigner.newToolRack')}
+            </Button>
+          </div>
+        )}
 
         {/* Capture the current settings as the default for new bins, right
             where the user has been editing them. */}

@@ -62,14 +62,14 @@ export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<strin
     const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
     for (const id of designIds) {
       const result = await loadDesign(id);
-      if (isOk(result)) {
+      if (isOk(result) && result.value.params) {
         linkedDesigns.push({
           id: result.value.id,
           name: result.value.name,
           params: result.value.params,
         });
       }
-      // If design not found (deleted), just omit it
+      // If design not found (deleted) or non-bin (no params), just omit it
     }
   }
 

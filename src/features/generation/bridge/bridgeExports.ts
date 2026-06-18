@@ -9,6 +9,7 @@
  */
 
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage, ExportFormat } from './types';
 import {
   computeBaseplateExportTimeoutMs,
@@ -267,6 +268,28 @@ export function exportBaseplate(
       },
     })
   );
+}
+
+/**
+ * Generic item export. Reuses the `'export'` slot and the
+ * BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
+ */
+export function exportItem(
+  ctx: BridgeExportContext,
+  item: GridfinityItem,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(ctx, 'export', EXPORT_MAX_TIMEOUT_MS, (requestId) => ({
+    type: 'EXPORT_ITEM',
+    payload: {
+      item,
+      requestId,
+      format,
+      tolerance: options?.tolerance,
+      angularTolerance: options?.angularTolerance,
+    },
+  }));
 }
 
 /**
