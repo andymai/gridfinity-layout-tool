@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.194.0...gridfinity-layout-tool-v4.195.0) (2026-06-18)
+
+
+### Features
+
+* **seo:** de-cannibalize generator titles and rework underperforming snippets ([#2262](https://github.com/andymai/gridfinity-layout-tool/issues/2262)) ([c15a7db](https://github.com/andymai/gridfinity-layout-tool/commit/c15a7db16fcf66a30e9f4e98df770ca688a3ada8))
+
 ## [4.194.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.193.0...gridfinity-layout-tool-v4.194.0) (2026-06-18)
 
 
