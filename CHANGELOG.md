@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.190.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.189.0...gridfinity-layout-tool-v4.190.0) (2026-06-18)
+
+
+### Features
+
+* **scan:** refine example, scan multiple tools per session, desktop cleanup ([#2251](https://github.com/andymai/gridfinity-layout-tool/issues/2251)) ([bb1dcde](https://github.com/andymai/gridfinity-layout-tool/commit/bb1dcde9e8b01bae5acc9d424009426e0980863c))
+
 ## [4.189.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.188.0...gridfinity-layout-tool-v4.189.0) (2026-06-18)
 
 
