@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.2...gridfinity-layout-tool-v4.195.3) (2026-06-18)
+
+
+### Bug Fixes
+
+* **deps:** bump dompurify to 3.4.11 for GHSA-cmwh-pvxp-8882 ([#2268](https://github.com/andymai/gridfinity-layout-tool/issues/2268)) ([e2039c1](https://github.com/andymai/gridfinity-layout-tool/commit/e2039c176da972a2b20b782a3ebbe61915475dd9))
+
 ## [4.195.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.1...gridfinity-layout-tool-v4.195.2) (2026-06-18)
 
 
