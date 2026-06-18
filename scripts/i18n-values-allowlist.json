@@ -1,7 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
-    "header.redditCommunity",
+    "common.redditCommunity",
     "baseplate.connectorStyle.puzzle",
     "binDesigner.cutouts.scanImport.resultSize",
     "baseplate.stackPrint.plates.one",

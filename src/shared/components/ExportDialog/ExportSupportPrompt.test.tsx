@@ -57,7 +57,7 @@ describe('ExportSupportPrompt', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     render(<ExportSupportPrompt fileName="x.stl" onDone={vi.fn()} source="baseplate_export" />);
 
-    fireEvent.click(screen.getByText('header.redditCommunity'));
+    fireEvent.click(screen.getByText('common.redditCommunity'));
 
     expect(trackEvent).toHaveBeenCalledWith('reddit_link_clicked', { source: 'baseplate_export' });
     expect(openSpy).toHaveBeenCalledWith(

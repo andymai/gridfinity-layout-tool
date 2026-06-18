@@ -67,7 +67,7 @@ describe('HeaderSupportLinks', () => {
 
   it('renders r/gridfinity community link', () => {
     render(<HeaderSupportLinks />);
-    expect(screen.getByTitle('header.redditCommunityAria')).toHaveAttribute(
+    expect(screen.getByTitle('common.redditCommunityAria')).toHaveAttribute(
       'href',
       'https://www.reddit.com/r/gridfinity/'
     );
