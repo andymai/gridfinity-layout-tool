@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.4...gridfinity-layout-tool-v4.195.5) (2026-06-19)
+
+
+### Bug Fixes
+
+* **baseplate:** align stacked plate connectors and warn when nothing stacks ([#2274](https://github.com/andymai/gridfinity-layout-tool/issues/2274)) ([d588949](https://github.com/andymai/gridfinity-layout-tool/commit/d58894981cd128eb44ff4ca31e0ed6a7187b8fd5))
+
 ## [4.195.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.3...gridfinity-layout-tool-v4.195.4) (2026-06-19)
 
 
