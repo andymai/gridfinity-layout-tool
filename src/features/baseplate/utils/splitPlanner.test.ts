@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
 import type { BaseplateParams } from '@/shared/types/bin';
@@ -776,6 +777,35 @@ describe('pieceToBaseplateParams', () => {
     expect(
       pieceToBaseplateParams(computeBaseplateTiling(off, 256).pieces[0], off).overTile
     ).toBeFalsy();
+  });
+
+  it('swaps front/back padding for rotated pieces so the body centre negates (stack-print preview relies on this)', () => {
+    // The stack-print preview derives a flipped plate's body centre from the
+    // SAME params the mesh was generated with. For a preferIdenticalPieces 180°
+    // piece, generation swaps front/back padding, so the body centre must flip
+    // sign vs the raw piece padding — otherwise flipped rotated pieces re-misalign.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      paddingFront: 3,
+      paddingBack: 9,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const rotated = tiling.pieces.find(
+      (p) => p.placementRotationDeg === 180 && p.paddingFront !== p.paddingBack
+    );
+    if (rotated === undefined) {
+      expect.fail('Expected a rotated piece with asymmetric front/back padding');
+    }
+    const gen = pieceToBaseplateParams(rotated, parent);
+    expect(gen.paddingFront).toBe(rotated.paddingBack);
+    expect(gen.paddingBack).toBe(rotated.paddingFront);
+    expect(bodyCenterYMm(gen.paddingFront, gen.paddingBack)).toBeCloseTo(
+      -bodyCenterYMm(rotated.paddingFront, rotated.paddingBack),
+      5
+    );
   });
 
   it('defaults fractionalEdge to end when piece has none', () => {

@@ -15,6 +15,7 @@ import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
+import { pieceToBaseplateParams } from '../../utils/splitPlanner';
 import {
   stackGroupsFromTiling,
   planPhysicalStacks,
@@ -113,7 +114,14 @@ export function StackedBaseplateMeshes({
       if (isSplit) {
         source = pieceMeshes.find((p) => p.label === physical.label)?.mesh ?? null;
         const piece = tiling?.pieces.find((p) => p.label === physical.label);
-        if (piece) bodyY = bodyCenterYMm(piece.paddingFront, piece.paddingBack);
+        if (piece) {
+          // Derive the body centre from the SAME params the mesh was generated
+          // with: pieceToBaseplateParams swaps front/back padding for
+          // preferIdenticalPieces 180° pieces, so raw piece padding would give
+          // the wrong sign (the export path already uses these rotated params).
+          const genParams = pieceToBaseplateParams(piece, fullParams);
+          bodyY = bodyCenterYMm(genParams.paddingFront, genParams.paddingBack);
+        }
       }
       const arrays = source ? toMeshArrays(source) : null;
       if (arrays) {

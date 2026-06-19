@@ -70,7 +70,9 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
 
   const { status, maxPrintHeightMm } = useStackPrintStatus(gapMm);
-  const warning = stackWarning(t, status, gapMm, maxPrintHeightMm);
+  // Gate on `enabled` so the warning never surfaces while stacking is off, rather
+  // than relying on FeatureToggle hiding the controls.
+  const warning = enabled ? stackWarning(t, status, gapMm, maxPrintHeightMm) : null;
 
   const patch = (next: Partial<StackPrintParams>): void => {
     onChange({ enabled: true, gapMm, ...next });
