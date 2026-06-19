@@ -132,7 +132,7 @@ export function HeaderSupportLinks() {
         title={t('common.redditCommunityAria')}
         aria-label={t('common.redditCommunityAria')}
       >
-        <svg className="w-4 h-4" fill="#FF4500" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d={REDDIT_ICON_PATH} />
         </svg>
         <span className="hidden lg:inline">{t('common.redditCommunity')}</span>
