@@ -19,6 +19,7 @@ import {
   stackGroupsFromTiling,
   planPhysicalStacks,
   stackHeightCap,
+  bodyCenterYMm,
   type StackMeshArrays,
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
@@ -102,15 +103,21 @@ export function StackedBaseplateMeshes({
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
+    const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
+
     const towers: StackPreviewTower[] = [];
     const filteredPlan: typeof plan = [];
     for (const physical of plan) {
-      const source = isSplit
-        ? pieceMeshes.find((p) => p.label === physical.label)?.mesh
-        : singleMesh;
+      let source: Parameters<typeof toMeshArrays>[0] | null = singleMesh;
+      let bodyY = singleBodyY;
+      if (isSplit) {
+        source = pieceMeshes.find((p) => p.label === physical.label)?.mesh ?? null;
+        const piece = tiling?.pieces.find((p) => p.label === physical.label);
+        if (piece) bodyY = bodyCenterYMm(piece.paddingFront, piece.paddingBack);
+      }
       const arrays = source ? toMeshArrays(source) : null;
       if (arrays) {
-        towers.push({ mesh: arrays, copies: physical.copies });
+        towers.push({ mesh: arrays, copies: physical.copies, bodyCenterYMm: bodyY });
         filteredPlan.push(physical);
       }
     }

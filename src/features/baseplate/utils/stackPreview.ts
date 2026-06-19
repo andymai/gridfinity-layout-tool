@@ -26,6 +26,8 @@ const TOWER_GAP_UNITS = 1;
 export interface StackPreviewTower {
   readonly mesh: StackMeshArrays;
   readonly copies: number;
+  /** Connector-free body-centre Y (mm) of the plate, for flip alignment. */
+  readonly bodyCenterYMm: number;
 }
 
 export interface StackPreviewTowerLayout {
@@ -99,7 +101,7 @@ export function buildStackPreviewMeshes(
 
     // Build the tower (bottom upright, rest flipped, XY-aligned to the source
     // footprint, bottom at Z=0), then recenter it on its grid cell.
-    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride);
+    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride, m.tower.bodyCenterYMm);
     const midX = (m.bounds.minX + m.bounds.maxX) / 2;
     const midY = (m.bounds.minY + m.bounds.maxY) / 2;
     for (const layer of layers) {

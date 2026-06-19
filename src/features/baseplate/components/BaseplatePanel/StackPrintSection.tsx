@@ -14,11 +14,15 @@ import {
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
 } from '@/core/types';
+import type { StackPrintStatus } from '../../utils/stackPrint';
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
+import { Alert } from '@/design-system/Alert';
+import { AlertTriangleIcon } from '@/design-system/Icon';
+import { useStackPrintStatus } from '../../hooks/useStackPrintStatus';
 interface StackPrintSectionProps {
   readonly stackPrint: StackPrintParams | undefined;
   readonly onChange: (next: StackPrintParams | undefined) => void;
@@ -36,10 +40,37 @@ const DEFAULT_STACK_PRINT: StackPrintParams = {
   gapMm: mm(STACK_PRINT_DEFAULT_GAP_MM),
 };
 
+/** Translate a non-`ok` stack-print status into a user-facing warning string. */
+function stackWarning(
+  t: ReturnType<typeof useTranslation>,
+  status: StackPrintStatus,
+  gapMm: number,
+  maxPrintHeightMm: number
+): string | null {
+  switch (status.kind) {
+    case 'ok':
+      return null;
+    case 'singlePlate':
+      return t('baseplate.stackPrint.warning.singlePlate');
+    case 'buildHeightCapped':
+      return t('baseplate.stackPrint.warning.buildHeightCapped', {
+        gap: gapMm.toFixed(1),
+        maxHeight: Math.round(maxPrintHeightMm),
+      });
+    case 'plateTooTall':
+      return t('baseplate.stackPrint.warning.plateTooTall', {
+        maxHeight: Math.round(maxPrintHeightMm),
+      });
+  }
+}
+
 export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionProps) {
   const t = useTranslation();
   const enabled = stackPrint?.enabled === true;
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
+
+  const { status, maxPrintHeightMm } = useStackPrintStatus(gapMm);
+  const warning = stackWarning(t, status, gapMm, maxPrintHeightMm);
 
   const patch = (next: Partial<StackPrintParams>): void => {
     onChange({ enabled: true, gapMm, ...next });
@@ -53,6 +84,12 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
         onChange={() => onChange(enabled ? undefined : DEFAULT_STACK_PRINT)}
         primaryControls={
           <>
+            {warning && (
+              <Alert intent="warning" icon={<AlertTriangleIcon size="sm" />}>
+                {warning}
+              </Alert>
+            )}
+
             <p className="text-[11px] leading-relaxed text-content-secondary">
               {t('baseplate.stackPrint.hint')}
             </p>

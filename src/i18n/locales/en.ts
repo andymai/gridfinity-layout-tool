@@ -2232,6 +2232,12 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
     'A single stack of two 1×1 plates to fine-tune the air-gap separation before printing a full stack.',
+  'baseplate.stackPrint.warning.singlePlate':
+    'Vertical stacking combines repeated plates into one print, but this drawer has no repeated plates to stack — it kicks in once a larger drawer splits into identical pieces.',
+  'baseplate.stackPrint.warning.buildHeightCapped':
+    'At a {gap}mm gap, your {maxHeight}mm build height fits only one plate per stack. Lower the gap or raise the build-height limit in print settings to stack into towers.',
+  'baseplate.stackPrint.warning.plateTooTall':
+    'A single plate is taller than your {maxHeight}mm build height, so it won’t print. Raise the build-height limit in print settings.',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':

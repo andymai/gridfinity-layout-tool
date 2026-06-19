@@ -4,6 +4,9 @@ import { mm } from '@/core/types';
 import { buildStackPreviewMeshes } from './stackPreview';
 import { meshBounds, type StackMeshArrays } from './stackPrint';
 
+/** Body centre Y of plate() (footprint Y[0,30]) — passed to every tower fixture. */
+const PLATE_BODY_Y = 15;
+
 /** A 10mm-tall plate footprint 0..20 x 0..30 as an indexed mesh (2 triangles). */
 function plate(): StackMeshArrays {
   return {
@@ -25,7 +28,12 @@ describe('buildStackPreviewMeshes', () => {
   });
 
   it('stacks a single tower of N copies', () => {
-    const out = buildStackPreviewMeshes([{ mesh: plate(), copies: 3 }], airGap, 0, 42);
+    const out = buildStackPreviewMeshes(
+      [{ mesh: plate(), copies: 3, bodyCenterYMm: PLATE_BODY_Y }],
+      airGap,
+      0,
+      42
+    );
     // 2 triangles * 3 copies = 6 triangles -> 6 indices * 3 = 18 index entries
     expect(out.plates.indices.length).toBe(18);
     // height = 2*(10+0.2)+10 = 30.4
@@ -40,16 +48,26 @@ describe('buildStackPreviewMeshes', () => {
   });
 
   it('adds the separation slider distance to the stride', () => {
-    const base = buildStackPreviewMeshes([{ mesh: plate(), copies: 2 }], airGap, 0, 42);
-    const exploded = buildStackPreviewMeshes([{ mesh: plate(), copies: 2 }], airGap, 20, 42);
+    const base = buildStackPreviewMeshes(
+      [{ mesh: plate(), copies: 2, bodyCenterYMm: PLATE_BODY_Y }],
+      airGap,
+      0,
+      42
+    );
+    const exploded = buildStackPreviewMeshes(
+      [{ mesh: plate(), copies: 2, bodyCenterYMm: PLATE_BODY_Y }],
+      airGap,
+      20,
+      42
+    );
     expect(exploded.heightMm).toBeGreaterThan(base.heightMm + 19);
   });
 
   it('lays multiple towers in a centered grid', () => {
     const out = buildStackPreviewMeshes(
       [
-        { mesh: plate(), copies: 1 },
-        { mesh: plate(), copies: 1 },
+        { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
+        { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
       ],
       airGap,
       0,
@@ -84,7 +102,11 @@ describe('buildStackPreviewMeshes', () => {
     ];
     it.each(cases)('$towers towers → ${cols}×${rows} grid, centered', ({ towers, cols, rows }) => {
       const out = buildStackPreviewMeshes(
-        Array.from({ length: towers }, () => ({ mesh: plate(), copies: 1 })),
+        Array.from({ length: towers }, () => ({
+          mesh: plate(),
+          copies: 1,
+          bodyCenterYMm: PLATE_BODY_Y,
+        })),
         airGap,
         0,
         42

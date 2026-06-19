@@ -15,7 +15,7 @@ import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { export3MF, buildSTLBuffer } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildStackExportSoup } from '../utils/stackExport';
-import { planPhysicalStacks, stackHeightCap } from '../utils/stackPrint';
+import { planPhysicalStacks, stackHeightCap, bodyCenterYMm } from '../utils/stackPrint';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { StackPrintParams } from '@/core/types';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
@@ -96,10 +96,11 @@ function buildStackedFileBlob(
   name: string,
   copies: number,
   format: 'stl' | '3mf',
-  stack: StackPrintParams
+  stack: StackPrintParams,
+  bodyCenterY: number
 ): Blob {
   const { vertices, normals } = source;
-  const soup = buildStackExportSoup(vertices, normals, copies, stack);
+  const soup = buildStackExportSoup(vertices, normals, copies, stack, bodyCenterY);
 
   if (format === 'stl') {
     return new Blob([buildSTLBuffer(soup.vertices, soup.normals, name)], {
@@ -263,6 +264,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
             if (stack && stackEnabled) {
               const source = parseStlSoup(stlData);
+              const groupBodyY = bodyCenterYMm(group.params.paddingFront, group.params.paddingBack);
               const towers = planPhysicalStacks(
                 [{ label: name, quantity: group.indices.length }],
                 stackCap
@@ -274,7 +276,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                   `${baseNameNoExt}_${label}`,
                   towers[s].copies,
                   format,
-                  stack
+                  stack,
+                  groupBodyY
                 );
                 pieces.push({ data: await blob.arrayBuffer(), label });
               }
@@ -351,6 +354,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
           );
           const source = parseStlSoup(stlData);
+          const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
           const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], stackCap);
           if (towers.length === 1) {
             const blob = buildStackedFileBlob(
@@ -358,7 +362,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               baseNameNoExt,
               towers[0].copies,
               format,
-              stack
+              stack,
+              singleBodyY
             );
             triggerDownload(blob, baseName);
           } else {
@@ -370,7 +375,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 `${baseNameNoExt}_${label}`,
                 towers[s].copies,
                 format,
-                stack
+                stack,
+                singleBodyY
               );
               pieces.push({ data: await blob.arrayBuffer(), label });
             }

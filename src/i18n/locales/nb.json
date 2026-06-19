@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "Vertikal stabling slår sammen gjentatte plater til én utskrift, men denne skuffen har ingen gjentatte plater å stable – det slår inn når en større skuff deles i identiske deler.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Med en åpning på {gap}mm gir byggehøyden på {maxHeight}mm bare plass til én plate per stabel. Reduser åpningen eller øk byggehøyde-grensen i utskriftsinnstillingene for å stable i tårn.",
+  "baseplate.stackPrint.warning.plateTooTall": "En enkelt plate er høyere enn byggehøyden på {maxHeight}mm, så den lar seg ikke skrive ut. Øk byggehøyde-grensen i utskriftsinnstillingene.",
   "account.dangerZone.heading": "Faresone",
   "account.deleteAccount.button": "Slett konto",
   "account.deleteAccount.description": "Slett kontoen din, alle synkroniserte oppsett og alle synkroniserte design permanent. Lokale kopier på denne enheten beholdes.",

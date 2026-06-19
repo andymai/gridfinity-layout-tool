@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "Vertikales Stapeln fasst wiederholte Platten zu einem Druck zusammen, aber diese Schublade hat keine wiederholten Platten zum Stapeln – es greift, sobald eine größere Schublade in identische Teile aufgeteilt wird.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Bei einem Spalt von {gap}mm passt bei deiner Bauhöhe von {maxHeight}mm nur eine Platte pro Stapel. Verringere den Spalt oder erhöhe das Bauhöhen-Limit in den Druckeinstellungen, um Türme zu stapeln.",
+  "baseplate.stackPrint.warning.plateTooTall": "Eine einzelne Platte ist höher als deine Bauhöhe von {maxHeight}mm und lässt sich nicht drucken. Erhöhe das Bauhöhen-Limit in den Druckeinstellungen.",
   "account.dangerZone.heading": "Gefahrenzone",
   "account.deleteAccount.button": "Konto löschen",
   "account.deleteAccount.description": "Lösche dein Konto, alle synchronisierten Layouts und alle synchronisierten Bin-Designs dauerhaft. Lokale Kopien auf diesem Gerät bleiben erhalten.",

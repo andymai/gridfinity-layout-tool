@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "O empilhamento vertical combina placas repetidas em uma única impressão, mas esta gaveta não tem placas repetidas para empilhar — ele entra em ação quando uma gaveta maior é dividida em peças idênticas.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Com um espaço de {gap}mm, sua altura de impressão de {maxHeight}mm comporta apenas uma placa por pilha. Reduza o espaço ou aumente o limite de altura nas configurações de impressão para empilhar em torres.",
+  "baseplate.stackPrint.warning.plateTooTall": "Uma única placa é mais alta que sua altura de impressão de {maxHeight}mm, então não será impressa. Aumente o limite de altura nas configurações de impressão.",
   "account.dangerZone.heading": "Zona de perigo",
   "account.deleteAccount.button": "Excluir conta",
   "account.deleteAccount.description": "Exclui permanentemente sua conta, todos os layouts sincronizados e todos os designs sincronizados. Cópias locais neste dispositivo são mantidas.",

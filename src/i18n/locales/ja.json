@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "垂直スタックは同じプレートを1つの印刷にまとめますが、この引き出しにはスタックできる繰り返しプレートがありません。大きな引き出しが同一のピースに分割されると有効になります。",
+  "baseplate.stackPrint.warning.buildHeightCapped": "{gap}mmの隙間では、造形高さ{maxHeight}mmにスタックあたり1枚しか収まりません。隙間を小さくするか、印刷設定で造形高さの上限を上げてタワー状にスタックしてください。",
+  "baseplate.stackPrint.warning.plateTooTall": "1枚のプレートが造形高さ{maxHeight}mmより高いため印刷できません。印刷設定で造形高さの上限を上げてください。",
   "account.dangerZone.heading": "危険ゾーン",
   "account.deleteAccount.button": "アカウントを削除",
   "account.deleteAccount.description": "アカウント、同期されたすべてのレイアウト、同期されたすべてのビンデザインを完全に削除します。このデバイス上のローカルコピーは保持されます。",

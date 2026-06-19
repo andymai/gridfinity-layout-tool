@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "El apilado vertical combina placas repetidas en una sola impresión, pero este cajón no tiene placas repetidas que apilar; se activa cuando un cajón más grande se divide en piezas idénticas.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Con una separación de {gap}mm, tu altura de impresión de {maxHeight}mm solo admite una placa por pila. Reduce la separación o aumenta el límite de altura en los ajustes de impresión para apilar en torres.",
+  "baseplate.stackPrint.warning.plateTooTall": "Una sola placa es más alta que tu altura de impresión de {maxHeight}mm, así que no se imprimirá. Aumenta el límite de altura en los ajustes de impresión.",
   "account.dangerZone.heading": "Zona de peligro",
   "account.deleteAccount.button": "Eliminar cuenta",
   "account.deleteAccount.description": "Elimina permanentemente tu cuenta, todos los planos sincronizados y todos los diseños de cajón sincronizados. Las copias locales en este dispositivo se conservan.",

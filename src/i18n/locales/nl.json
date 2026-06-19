@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "Verticaal stapelen combineert herhaalde platen tot één print, maar deze lade heeft geen herhaalde platen om te stapelen — het komt van pas zodra een grotere lade in identieke stukken wordt gesplitst.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Bij een tussenruimte van {gap}mm past er bij je bouwhoogte van {maxHeight}mm maar één plaat per stapel. Verlaag de tussenruimte of verhoog de bouwhoogtelimiet in de printinstellingen om in torens te stapelen.",
+  "baseplate.stackPrint.warning.plateTooTall": "Eén plaat is hoger dan je bouwhoogte van {maxHeight}mm en kan dus niet worden geprint. Verhoog de bouwhoogtelimiet in de printinstellingen.",
   "account.dangerZone.heading": "Gevarenzone",
   "account.deleteAccount.button": "Account verwijderen",
   "account.deleteAccount.description": "Verwijder je account, alle gesynchroniseerde lay-outs en alle gesynchroniseerde ontwerpen permanent. Lokale kopieën op dit apparaat blijven behouden.",

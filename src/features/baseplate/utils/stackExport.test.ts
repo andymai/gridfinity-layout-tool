@@ -68,6 +68,22 @@ describe('buildStackExportSoup', () => {
     expect(out.vertices.length).toBe(0);
   });
 
+  it('threads bodyCenterY so a protruding-tongue plate seats squarely when flipped', () => {
+    // Body Y[0,30] (centre 15) with a tongue tip protruding to Y=33. Without the
+    // body centre the flipped copy would be dragged off-axis by the protrusion.
+    const vertices = new Float32Array([
+      0, 0, 0, 20, 0, 0, 0, 30, 0, 8, 33, 5, 12, 33, 5, 10, 30, 5,
+    ]);
+    const normals = new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    const out = buildStackExportSoup(vertices, normals, 2, airGap, 15);
+    // Second copy starts at float index 18; its tongue tip (vertex 3 → index 27+1)
+    // mirrors about the body centre to the front edge (2*15 − 33 = −3), while the
+    // body corners stay within Y[0,30].
+    expect(out.vertices[18 + 9 + 1]).toBeCloseTo(-3, 4);
+    expect(out.vertices[18 + 1]).toBeCloseTo(30, 4); // body corner Y 0 → 30
+    expect(out.vertices[18 + 7]).toBeCloseTo(0, 4); // body corner Y 30 → 0
+  });
+
   describe('triangle counts (parameterized)', () => {
     const PLATE_TRIS = 2;
     const cases: { name: string; copies: number; tris: number }[] = [

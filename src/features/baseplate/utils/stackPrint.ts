@@ -67,6 +67,47 @@ export function stackHeightCap(maxZmm: number, tileHeightMm: number, gapMm: numb
 }
 
 /**
+ * Whether a stack-print configuration actually yields stackable towers, and if
+ * not, why — so the UI can explain it instead of silently producing single-plate
+ * "towers". `cap` is the per-tower plate limit from {@link stackHeightCap}.
+ */
+export type StackPrintStatus =
+  /** Stacking combines ≥2 plates into at least one tower. */
+  | { readonly kind: 'ok' }
+  /** A single plate is taller than the printer's build height — unprintable. */
+  | { readonly kind: 'plateTooTall' }
+  /** No repeated plate to stack (single unsplit plate, or an all-unique split). */
+  | { readonly kind: 'singlePlate' }
+  /** Build height (at this gap) fits only one plate per tower. */
+  | { readonly kind: 'buildHeightCapped' };
+
+/**
+ * Classify a stack-print job. `plateTooTall` wins first (a plate that overflows
+ * the build height can't print at all); then `singlePlate` when no group holds
+ * two identical plates to combine; then `buildHeightCapped` when the height only
+ * fits one plate per tower. Otherwise stacking produces a real tower.
+ */
+export function evaluateStackPrint(
+  groups: readonly StackGroup[],
+  cap: number,
+  plateHeightMm: number,
+  maxPrintHeightMm: number
+): StackPrintStatus {
+  if (
+    Number.isFinite(plateHeightMm) &&
+    Number.isFinite(maxPrintHeightMm) &&
+    plateHeightMm > maxPrintHeightMm
+  ) {
+    return { kind: 'plateTooTall' };
+  }
+  const maxQuantity = groups.reduce((m, g) => Math.max(m, Math.floor(g.quantity)), 0);
+  if (maxQuantity <= 1) return { kind: 'singlePlate' };
+  const effectiveCap = Number.isFinite(cap) ? Math.max(1, Math.floor(cap)) : 1;
+  if (effectiveCap <= 1) return { kind: 'buildHeightCapped' };
+  return { kind: 'ok' };
+}
+
+/**
  * Derive the identical-piece groups a drawer needs. For a single (unsplit)
  * plate that's one group of quantity 1; for a split plate each fingerprint
  * group contributes its piece count, labelled by its first piece (e.g. "A1").
@@ -94,25 +135,45 @@ export function stackStrideMm(plateHeightMm: number, stack: StackPrintParams): n
 }
 
 /**
+ * Connector-free body-centre Y (mm) of a baseplate mesh in its own vertex frame.
+ * The generator draws the slab centred at the origin then shifts it only by
+ * `(paddingBack − paddingFront) / 2` — connector tongues, overTile, and
+ * fractional edges never move the body centre — so this tracks the body, not the
+ * bounding box (which a protruding tongue skews). Used to re-seat a flipped plate
+ * onto the upright one below it without dragging the body off-axis.
+ */
+export function bodyCenterYMm(paddingFrontMm: number, paddingBackMm: number): number {
+  return (paddingBackMm - paddingFrontMm) / 2;
+}
+
+/**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
  * stays upright (best bed adhesion, no overhang); every plate above it is
  * flipped upside down — community practice that minimizes overhangs while the
  * air gap lets the tower snap apart (see the baseplate README). All copies share
- * the same XY footprint and the bottom sits at Z=0.
+ * the same body footprint and the bottom sits at Z=0.
+ *
+ * `bodyCenterY` is the connector-free body centre of the plate (see
+ * {@link bodyCenterYMm}). `flipMeshUpsideDown` negates Y about 0, landing a body
+ * centred at `c` at `−c`; translating by `2c` seats the flipped body back onto
+ * the upright one. The protruding dovetail/puzzle tongue then mirrors to the
+ * opposite edge instead of dragging the body off-axis — the previous full-bbox
+ * re-centring offset every plate by the tongue protrusion (~1.5mm), so the socket
+ * grids never lined up and the tongue overhung the plate below.
  */
 export function buildTowerLayers(
   base: StackMeshArrays,
   copies: number,
-  strideMm: number
+  strideMm: number,
+  bodyCenterY = 0
 ): StackMeshArrays[] {
   const n = Math.max(1, Math.floor(copies));
   const b = meshBounds(base.vertices);
   const midZ = (b.minZ + b.maxZ) / 2;
   // Upright, floored to Z=0.
   const upright = translateMesh(base, 0, 0, -b.minZ);
-  // Flipped about its own mid-plane. The flip negates Y, so re-add (minY+maxY)
-  // to land the mirrored footprint back on the upright one, then floor to Z=0.
-  const flipped = translateMesh(flipMeshUpsideDown(base, midZ), 0, b.minY + b.maxY, -b.minZ);
+  // Flipped about its own mid-plane, re-seated on the upright body, floored to Z=0.
+  const flipped = translateMesh(flipMeshUpsideDown(base, midZ), 0, 2 * bodyCenterY, -b.minZ);
   const layers: StackMeshArrays[] = [];
   for (let i = 0; i < n; i++) {
     const src = i === 0 ? upright : flipped;

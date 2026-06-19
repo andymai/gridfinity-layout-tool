@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "L’empilage vertical regroupe les plaques répétées en une seule impression, mais ce tiroir n’a aucune plaque répétée à empiler — cela s’active dès qu’un tiroir plus grand se divise en pièces identiques.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Avec un espace de {gap}mm, votre hauteur d’impression de {maxHeight}mm ne contient qu’une plaque par pile. Réduisez l’espace ou augmentez la limite de hauteur dans les paramètres d’impression pour empiler en tours.",
+  "baseplate.stackPrint.warning.plateTooTall": "Une seule plaque est plus haute que votre hauteur d’impression de {maxHeight}mm, elle ne s’imprimera donc pas. Augmentez la limite de hauteur dans les paramètres d’impression.",
   "account.dangerZone.heading": "Zone de danger",
   "account.deleteAccount.button": "Supprimer le compte",
   "account.deleteAccount.description": "Supprime définitivement votre compte, tous les plans synchronisés et toutes les créations synchronisées. Les copies locales sur cet appareil sont conservées.",

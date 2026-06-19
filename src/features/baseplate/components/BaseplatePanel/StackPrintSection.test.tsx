@@ -31,4 +31,16 @@ describe('StackPrintSection', () => {
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
     expect(screen.getByText(/Multi-material/i)).toBeInTheDocument();
   });
+
+  it('warns when there is nothing to stack (default state has no split, single plate)', () => {
+    // With no split tiling in the store, the drawer is a single plate → stacking
+    // has nothing to combine, so the panel surfaces the inline warning.
+    render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
+    expect(screen.getByText(/no repeated plates to stack/i)).toBeInTheDocument();
+  });
+
+  it('shows no warning when stacking is disabled', () => {
+    render(<StackPrintSection stackPrint={undefined} onChange={vi.fn()} />);
+    expect(screen.queryByText(/no repeated plates to stack/i)).not.toBeInTheDocument();
+  });
 });

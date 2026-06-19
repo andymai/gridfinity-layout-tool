@@ -1,4 +1,7 @@
 {
+  "baseplate.stackPrint.warning.singlePlate": "Vertikal stapling kombinerar upprepade plattor till en enda utskrift, men den här lådan har inga upprepade plattor att stapla – det aktiveras när en större låda delas i identiska delar.",
+  "baseplate.stackPrint.warning.buildHeightCapped": "Med ett mellanrum på {gap}mm rymmer din bygghöjd på {maxHeight}mm bara en platta per stapel. Minska mellanrummet eller höj bygghöjdsgränsen i utskriftsinställningarna för att stapla i torn.",
+  "baseplate.stackPrint.warning.plateTooTall": "En enskild platta är högre än din bygghöjd på {maxHeight}mm och kan därför inte skrivas ut. Höj bygghöjdsgränsen i utskriftsinställningarna.",
   "account.dangerZone.heading": "Riskzon",
   "account.deleteAccount.button": "Radera konto",
   "account.deleteAccount.description": "Radera ditt konto, alla synkroniserade layouter och alla synkroniserade designs permanent. Lokala kopior på den här enheten behålls.",

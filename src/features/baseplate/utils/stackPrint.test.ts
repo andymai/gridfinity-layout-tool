@@ -10,6 +10,9 @@ import {
   concatMeshes,
   meshBounds,
   buildTowerLayers,
+  bodyCenterYMm,
+  evaluateStackPrint,
+  type StackGroup,
   type StackMeshArrays,
 } from './stackPrint';
 
@@ -187,7 +190,8 @@ describe('buildTowerLayers', () => {
   }
 
   it('keeps the bottom plate upright and flips the rest, all sharing one XY footprint', () => {
-    const layers = buildTowerLayers(plate(), 3, 10.2);
+    // The plate() body spans Y[0,30], so its body centre is 15.
+    const layers = buildTowerLayers(plate(), 3, 10.2, 15);
     expect(layers).toHaveLength(3);
     // Bottom plate: upright at Z[0,10], normal unchanged (down-facing).
     const b0 = meshBounds(layers[0].vertices);
@@ -198,7 +202,8 @@ describe('buildTowerLayers', () => {
     const b1 = meshBounds(layers[1].vertices);
     expect(b1.minZ).toBeCloseTo(10.2, 5);
     expect(layers[1].normals[2]).toBeCloseTo(1, 5);
-    // All copies keep the source XY footprint (flip re-aligns the negated Y).
+    // All copies keep the source XY footprint (flip re-aligns the negated Y
+    // about the body centre).
     for (const layer of layers) {
       const b = meshBounds(layer.vertices);
       expect(b.minX).toBeCloseTo(0, 5);
@@ -209,15 +214,25 @@ describe('buildTowerLayers', () => {
   });
 
   it('clamps copies to at least 1', () => {
-    expect(buildTowerLayers(plate(), 0, 10.2)).toHaveLength(1);
-    expect(buildTowerLayers(plate(), 3.9, 10.2)).toHaveLength(3);
+    expect(buildTowerLayers(plate(), 0, 10.2, 15)).toHaveLength(1);
+    expect(buildTowerLayers(plate(), 3.9, 10.2, 15)).toHaveLength(3);
   });
 
-  it('preserves an asymmetric connector protrusion through the flip', () => {
-    // A plate whose +Y edge carries a dovetail tongue protruding to Y=33 — an
-    // asymmetric footprint, the case that matters for stacked connectored tiles.
-    // The flip must keep the protrusion (not clip it) but mirror it to the -Y
-    // end so every layer still shares one bounding footprint.
+  it('defaults the body centre to 0 (origin-centred real meshes)', () => {
+    // plate() body spans Y[0,30]; with the default centre 0 the flip lands the
+    // body at Y[-30,0] — only correct for origin-centred input, which is what
+    // the default is for.
+    const layers = buildTowerLayers(plate(), 2, 10);
+    const flipped = meshBounds(layers[1].vertices);
+    expect(flipped.minY).toBeCloseTo(-30, 5);
+    expect(flipped.maxY).toBeCloseTo(0, 5);
+  });
+
+  it('re-seats the flipped body on the upright one and mirrors the tongue to the opposite edge', () => {
+    // A plate whose +Y (back) edge carries a dovetail tongue protruding to Y=33,
+    // body Y[0,30] (centre 15). The flip must re-seat the BODY on the upright one
+    // — not the bounding box — so the socket grids line up; the tongue then
+    // mirrors to the -Y (front) edge instead of dragging the body off-axis.
     const base: StackMeshArrays = {
       // floor triangle (Y 0..30) + tongue tip triangle protruding to Y=33.
       vertices: new Float32Array([0, 0, 0, 20, 0, 0, 0, 30, 0, 8, 33, 5, 12, 33, 5, 10, 30, 5]),
@@ -225,16 +240,83 @@ describe('buildTowerLayers', () => {
       indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
       edgeVertices: new Float32Array(0),
     };
-    const layers = buildTowerLayers(base, 2, 10);
-    const upright = meshBounds(layers[0].vertices);
-    const flipped = meshBounds(layers[1].vertices);
-    // Footprint span survives the flip: Y still reaches the protrusion at 33.
-    expect(flipped.minY).toBeCloseTo(upright.minY, 5);
-    expect(flipped.maxY).toBeCloseTo(upright.maxY, 5);
-    expect(upright.maxY).toBeCloseTo(33, 5);
-    // Vertex 3 is a tongue tip: at +Y (33) when upright, mirrored to the -Y edge
-    // (0) after the flip — asymmetry is re-centered, not lost.
+    const layers = buildTowerLayers(base, 2, 10, 15);
+    // Body corners (verts 0 and 2) still span exactly Y[0,30] after the flip:
+    // the body footprint is preserved (vert0 Y 0→30, vert2 Y 30→0).
+    expect(layers[1].vertices[1]).toBeCloseTo(30, 5);
+    expect(layers[1].vertices[7]).toBeCloseTo(0, 5);
+    // Vertex 3 is the tongue tip: +Y (33) upright, mirrored about the body centre
+    // to the -Y edge (2*15 − 33 = −3) after the flip — not clipped, not centred
+    // on the bounding box.
     expect(layers[0].vertices[10]).toBeCloseTo(33, 5);
-    expect(layers[1].vertices[10]).toBeCloseTo(0, 5);
+    expect(layers[1].vertices[10]).toBeCloseTo(-3, 5);
+  });
+
+  it('does not shift an origin-centred body off-axis when a tongue protrudes (regression)', () => {
+    // Real baseplate meshes are body-centred at the origin (slabOffsetY≈0). A
+    // front tongue protruding to Y=-18 skews the bounding box, which the old
+    // full-bbox re-centring used to chase — offsetting every flipped plate by the
+    // protrusion. With the default body centre (0) the body stays put.
+    const base: StackMeshArrays = {
+      // body Y[-15,15] + tongue tip protruding to Y=-18 on the front edge.
+      vertices: new Float32Array([
+        -10, -15, 0, 10, -15, 0, 0, 15, 0, -2, -18, 4, 2, -18, 4, 0, -15, 4,
+      ]),
+      normals: new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+      edgeVertices: new Float32Array(0),
+    };
+    const layers = buildTowerLayers(base, 2, 8); // default bodyCenterY = 0
+    // Upright and flipped body corners (verts 0/1 at Y=-15, vert2 at Y=15) keep
+    // the same span; the body centre stays at 0 (no off-axis drift).
+    expect(layers[1].vertices[1]).toBeCloseTo(15, 5); // vert0 Y: -15 → 15
+    expect(layers[1].vertices[7]).toBeCloseTo(-15, 5); // vert2 Y: 15 → -15
+    // Tongue mirrors front→back: -18 → +18.
+    expect(layers[0].vertices[10]).toBeCloseTo(-18, 5);
+    expect(layers[1].vertices[10]).toBeCloseTo(18, 5);
+  });
+});
+
+describe('bodyCenterYMm', () => {
+  it('is 0 for symmetric or zero padding', () => {
+    expect(bodyCenterYMm(0, 0)).toBe(0);
+    expect(bodyCenterYMm(5, 5)).toBe(0);
+  });
+
+  it('tracks padding asymmetry: (back − front) / 2', () => {
+    expect(bodyCenterYMm(0, 10)).toBeCloseTo(5, 5); // more back padding → +Y
+    expect(bodyCenterYMm(8, 0)).toBeCloseTo(-4, 5); // front-only padding → −Y
+  });
+});
+
+describe('evaluateStackPrint', () => {
+  const g = (label: string, quantity: number): StackGroup => ({ label, quantity });
+
+  it('is ok when a group has ≥2 plates and the cap fits at least 2', () => {
+    expect(evaluateStackPrint([g('A', 4)], 8, 5, 250)).toEqual({ kind: 'ok' });
+  });
+
+  it('flags a single unsplit plate as nothing to stack', () => {
+    expect(evaluateStackPrint([g('plate', 1)], 48, 5, 250)).toEqual({ kind: 'singlePlate' });
+  });
+
+  it('flags an all-unique split (no repeated plate) as nothing to stack', () => {
+    expect(evaluateStackPrint([g('A', 1), g('B', 1)], 48, 5, 250)).toEqual({
+      kind: 'singlePlate',
+    });
+  });
+
+  it('flags a build height that fits only one plate per tower', () => {
+    expect(evaluateStackPrint([g('A', 6)], 1, 5, 5)).toEqual({ kind: 'buildHeightCapped' });
+  });
+
+  it('prioritises plateTooTall over everything when a plate overflows the build height', () => {
+    expect(evaluateStackPrint([g('A', 6)], 1, 300, 250)).toEqual({ kind: 'plateTooTall' });
+  });
+
+  it('treats a non-finite cap as 1 (build-height capped) when there is something to stack', () => {
+    expect(evaluateStackPrint([g('A', 6)], Number.NaN, 5, 250)).toEqual({
+      kind: 'buildHeightCapped',
+    });
   });
 });
