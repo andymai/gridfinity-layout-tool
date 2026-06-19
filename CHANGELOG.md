@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.195.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.3...gridfinity-layout-tool-v4.195.4) (2026-06-19)
+
+
+### Bug Fixes
+
+* **header:** tint reddit support icon with currentColor to match row ([#2272](https://github.com/andymai/gridfinity-layout-tool/issues/2272)) ([4b12a57](https://github.com/andymai/gridfinity-layout-tool/commit/4b12a5778989de7a6d9e5ae6b066eaca4caad02c))
+
 ## [4.195.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.2...gridfinity-layout-tool-v4.195.3) (2026-06-18)
 
 
