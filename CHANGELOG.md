@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.196.0...gridfinity-layout-tool-v4.197.0) (2026-06-20)
+
+
+### Features
+
+* **bin-designer:** choose which side the half-unit foot sits on ([#2279](https://github.com/andymai/gridfinity-layout-tool/issues/2279)) ([1431fca](https://github.com/andymai/gridfinity-layout-tool/commit/1431fca07463dae354861569e268dc9669b97d44))
+
 ## [4.196.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.5...gridfinity-layout-tool-v4.196.0) (2026-06-20)
 
 
