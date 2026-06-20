@@ -52,8 +52,8 @@ export const MIN_DIM = 0.5;
  *
  * `distToEdge` is the along-wall distance from the divider centre to the cutout
  * edge (positive when the divider is OUTSIDE the span). The ramp only smooths a
- * divider sitting RIGHT at the opening edge — i.e. with at most one wall
- * thickness of clear wall ("sliver") between the divider face and the cutout.
+ * divider sitting RIGHT at the opening edge — i.e. with strictly less than one
+ * wall thickness of clear wall ("sliver") between the divider face and the cutout.
  * A divider with more clear wall than that is its own structure and must stay
  * full height (GH #2276).
  *
