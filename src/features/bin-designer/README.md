@@ -43,7 +43,9 @@ graph TB
 - `utils/zoneLabels.ts` — ColorZone → i18n key + flat `updateFeatureColors` patch helpers
 - `hooks/useSwapZoneWithToast.ts` — wraps `pickSwapZone` with a localized success toast
 - `components/preview/LidMesh/` — renders the lid mesh in the preview, with explode-aware
-  positioning, opacity interpolation, and mutual hover highlight pairing with `BinMesh`
+  positioning, opacity interpolation, and mutual hover highlight pairing with `BinMesh`. In
+  multi-color mode it paints the lid with its zone color (`featureColors.lid`) to match the
+  exporter, rather than the body color
 - `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views
 - `components/preview/LidExplodeSlider/` — slider that lifts the lid off the bin (replaces view-mode pills)
 - `store/designer.ts` — design state and parameter mutations (composed from slices)

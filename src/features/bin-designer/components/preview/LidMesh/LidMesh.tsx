@@ -51,7 +51,8 @@ function opacityForOffset(offsetMm: number): number {
 }
 
 interface LidMeshProps {
-  /** Base color for the lid (matches bin material). */
+  /** Fallback lid color (the bin's body material), used only when multi-color
+   *  mode is off; in multi-color mode the lid follows `featureColors.lid`. */
   color: string;
   /** Distance the lid is lifted above its mated position, in mm. 0 = closed. */
   lidOffsetMm: number;
