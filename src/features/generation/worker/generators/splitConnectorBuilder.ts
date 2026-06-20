@@ -168,7 +168,15 @@ export interface CutFace {
   readonly axis: 'x' | 'y';
   readonly position: number;
   readonly isMale: boolean;
-  readonly binEdgeLength: number;
+  /**
+   * Perpendicular coordinates of the bin's two exterior walls this cut crosses.
+   * These are the *actual* body edges, which an overhang pushes outward and can
+   * make asymmetric (left ≠ right) — not the nominal ±footprint/2. Connector
+   * placement keys off these so overhung walls are detected and the connector
+   * lands on the true outer face (#1949).
+   */
+  readonly binEdgeMin: number;
+  readonly binEdgeMax: number;
   readonly pieceEdgeLength: number;
   readonly pieceCenterOffset: number;
   readonly perpendicularCuts: readonly number[];
@@ -262,8 +270,11 @@ export function computeCutFaces(
   row: number,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
-  outerW: number,
-  outerD: number,
+  // Actual body edges (overhang-inclusive, possibly asymmetric), not ±footprint/2.
+  binEdgeXMin: number,
+  binEdgeXMax: number,
+  binEdgeYMin: number,
+  binEdgeYMax: number,
   pieceW: number,
   pieceD: number,
   pieceCenterX: number,
@@ -271,14 +282,18 @@ export function computeCutFaces(
 ): CutFace[] {
   const faces: CutFace[] = [];
 
+  // An x-axis cut runs along Y, so its perimeter walls are the bin's Y edges; a
+  // y-axis cut runs along X and crosses the X edges.
   const xFaceBase = {
-    binEdgeLength: outerD,
+    binEdgeMin: binEdgeYMin,
+    binEdgeMax: binEdgeYMax,
     pieceEdgeLength: pieceD,
     pieceCenterOffset: pieceCenterY,
     perpendicularCuts: cutPlanesY,
   } as const;
   const yFaceBase = {
-    binEdgeLength: outerW,
+    binEdgeMin: binEdgeXMin,
+    binEdgeMax: binEdgeXMax,
     pieceEdgeLength: pieceW,
     pieceCenterOffset: pieceCenterX,
     perpendicularCuts: cutPlanesX,
@@ -509,7 +524,7 @@ function addWallConnectors(
 
 /** A perimeter wall a cut crosses, with the directions a connector needs to orient itself. */
 interface PerimeterWall {
-  /** Perpendicular coordinate of the wall (±binEdgeLength/2). */
+  /** Perpendicular coordinate of the wall's outer face (a bin edge). */
   readonly perimeter: number;
   /** Sign pointing toward the bin center — the only direction a connector may thicken. */
   readonly inward: -1 | 1;
@@ -519,19 +534,21 @@ interface PerimeterWall {
 
 /**
  * The exterior perimeter walls a cut face crosses. A cut crosses a perimeter
- * wall wherever this piece's perpendicular span reaches the bin boundary
- * (±half); interior pieces touch neither. Shared by all wall-connector builders.
+ * wall wherever this piece's perpendicular span reaches a bin edge
+ * (`binEdgeMin`/`binEdgeMax` — overhang-inclusive, so an overhung wall still
+ * qualifies); interior pieces touch neither. Shared by all wall-connector builders.
  */
 function perimeterWalls(face: CutFace): PerimeterWall[] {
-  const half = face.binEdgeLength / 2;
   const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
   const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
   const tol = 1e-3;
   const bodySign = face.isMale ? -1 : 1;
 
   const walls: PerimeterWall[] = [];
-  if (Math.abs(pieceMin + half) < tol) walls.push({ perimeter: -half, inward: 1, bodySign });
-  if (Math.abs(pieceMax - half) < tol) walls.push({ perimeter: half, inward: -1, bodySign });
+  if (Math.abs(pieceMin - face.binEdgeMin) < tol)
+    walls.push({ perimeter: face.binEdgeMin, inward: 1, bodySign });
+  if (Math.abs(pieceMax - face.binEdgeMax) < tol)
+    walls.push({ perimeter: face.binEdgeMax, inward: -1, bodySign });
   return walls;
 }
 
