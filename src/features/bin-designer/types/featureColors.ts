@@ -339,6 +339,17 @@ export function activeLipCells(counts: {
 }
 
 /**
+ * True when every active lip cell shares one color — i.e. the grid renders as a
+ * single color and the seam split can be skipped (no boundaries to honor).
+ */
+export function lipCellsUniform(lip: LipColorConfig): boolean {
+  const active = activeLipCells({ corners: lip.corners, bands: lip.bands });
+  if (active.length <= 1) return true;
+  const first = lip.cells[active[0]];
+  return active.every((zone) => lip.cells[zone] === first);
+}
+
+/**
  * The set of zones whose color a user can actually see in the current
  * configuration. Used uniformly by the panel (row visibility), the 3D
  * preview (multi-color gating), and the 3MF exporter — keeping them

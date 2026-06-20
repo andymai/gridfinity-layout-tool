@@ -88,7 +88,11 @@ function clipHalfspace(
   keepBelow: boolean
 ): Vec3[] {
   const out: Vec3[] = [];
-  const inside = (p: Vec3) => (keepBelow ? p[axis] <= c + EPS : p[axis] >= c - EPS);
+  // Complementary at the boundary so the below/above halves partition the
+  // polygon rather than overlap: a point on the plane belongs to "below" only.
+  // An inclusive slab on both sides would emit an on-seam triangle in BOTH
+  // halves, duplicating geometry and inflating area.
+  const inside = (p: Vec3) => (keepBelow ? p[axis] <= c + EPS : p[axis] > c + EPS);
   for (let i = 0; i < poly.length; i++) {
     const cur = poly[i];
     const next = poly[(i + 1) % poly.length];
@@ -215,10 +219,12 @@ export function lipGridIsNonTrivial(counts: {
  * Single source of truth for lip color assignment, shared by the preview
  * (`buildMultiColorGroups`) and the 3MF exporter (`materialMapping`).
  *
- * - Non-trivial grid: re-tessellate the lip via {@link splitLipMesh} →
- *   returns new flat `positions` plus per-output-triangle zones.
- * - Trivial grid (or no lip): classify each input triangle in place →
- *   `positions` is null (caller keeps its original geometry).
+ * - Non-trivial grid with differing cell colors: re-tessellate the lip via
+ *   {@link splitLipMesh} → returns new flat `positions` plus per-output zones.
+ * - Trivial grid, no lip, or a non-trivial grid whose active cells all share
+ *   one color (`lipUniform`): classify each input triangle in place →
+ *   `positions` is null (caller keeps its original geometry). Splitting a
+ *   uniform grid only adds avoidable CPU/memory — there are no seams to honor.
  *
  * Both callers feed the same `getTriangle`/`geom`/`counts`, so the resulting
  * `triZones` (and therefore colors) are identical across preview and export.
@@ -229,10 +235,11 @@ export function computeLipColoredMesh(input: {
   readonly getTriangle: (i: number) => Tri;
   readonly geom: LipGeom | null;
   readonly counts: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
+  readonly lipUniform?: boolean;
 }): { triZones: ColorZone[]; positions: Float32Array | null; normals: Float32Array | null } {
-  const { triangleCount, faceGroups, getTriangle, geom, counts } = input;
+  const { triangleCount, faceGroups, getTriangle, geom, counts, lipUniform } = input;
 
-  if (geom && lipGridIsNonTrivial(counts)) {
+  if (geom && lipGridIsNonTrivial(counts) && !lipUniform) {
     const r = splitLipMesh({ triangleCount, faceGroups, getTriangle, geom, counts });
     return { triZones: r.triZones, positions: r.positions, normals: r.normals };
   }

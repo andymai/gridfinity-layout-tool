@@ -24,6 +24,7 @@ import {
   ZONE_ORDER,
   getZoneColor,
   isSingleColor,
+  lipCellsUniform,
   zoneIndex,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig, HoverableZone } from '../types/featureColors';
@@ -69,24 +70,17 @@ function coalesceGroups(triZones: readonly ColorZone[]): MeshFaceGroup[] {
   return groups;
 }
 
-/**
- * Build the material groups, per-zone colors, per-triangle zones, and (when
- * the lip grid is split) replacement geometry for the preview.
- *
- * Returns null when the design is single-color across all active zones.
- */
-export function buildMultiColorGroups(
+/** Per-triangle centroid + flat-triangle accessors over an indexed mesh, plus lip geom. */
+function meshAccessors(
   faceGroups: readonly FaceGroupData[],
   vertices: Float32Array,
-  indices: Uint32Array,
-  featureColors: FeatureColorConfig,
-  activeZones: ReadonlySet<ColorZone>
-): MultiColorGroupsResult | null {
-  if (isSingleColor(featureColors, activeZones)) return null;
-
+  indices: Uint32Array
+): {
+  triangleCount: number;
+  geom: ReturnType<typeof computeLipGeom>;
+  getTriangle: (i: number) => number[];
+} {
   const triangleCount = indices.length / 3;
-  const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
-
   const triangleXYZ = (triIdx: number) => {
     const i = triIdx * 3;
     const a = indices[i] * 3;
@@ -98,9 +92,6 @@ export function buildMultiColorGroups(
       z: (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3,
     };
   };
-
-  const geom = computeLipGeom(faceGroups, triangleXYZ);
-
   const getTriangle = (i: number): number[] => {
     const base = i * 3;
     const a = indices[base] * 3;
@@ -118,6 +109,52 @@ export function buildMultiColorGroups(
       vertices[c + 2],
     ];
   };
+  return { triangleCount, geom: computeLipGeom(faceGroups, triangleXYZ), getTriangle };
+}
+
+/**
+ * Per-original-triangle zones for canvas hit-testing (eyedropper/swap), built
+ * even when the design is currently single-color. `buildMultiColorGroups`
+ * returns null in that state, so without this the tools couldn't resolve a
+ * clicked zone to start editing (the "just enabled multi-color, no colors
+ * changed yet" case). Classifies in place over the un-split mesh, matching the
+ * geometry rendered when there's no split override.
+ */
+export function buildHitTestZones(
+  faceGroups: readonly FaceGroupData[],
+  vertices: Float32Array,
+  indices: Uint32Array,
+  featureColors: FeatureColorConfig
+): ColorZone[] {
+  const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
+  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
+  return computeLipColoredMesh({
+    triangleCount,
+    faceGroups,
+    getTriangle,
+    geom,
+    counts,
+    lipUniform: true,
+  }).triZones;
+}
+
+/**
+ * Build the material groups, per-zone colors, per-triangle zones, and (when
+ * the lip grid is split) replacement geometry for the preview.
+ *
+ * Returns null when the design is single-color across all active zones.
+ */
+export function buildMultiColorGroups(
+  faceGroups: readonly FaceGroupData[],
+  vertices: Float32Array,
+  indices: Uint32Array,
+  featureColors: FeatureColorConfig,
+  activeZones: ReadonlySet<ColorZone>
+): MultiColorGroupsResult | null {
+  if (isSingleColor(featureColors, activeZones)) return null;
+
+  const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
+  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
 
   const { triZones, positions, normals } = computeLipColoredMesh({
     triangleCount,
@@ -125,6 +162,7 @@ export function buildMultiColorGroups(
     getTriangle,
     geom,
     counts,
+    lipUniform: lipCellsUniform(featureColors.lip),
   });
   const meshOverride: MultiColorGroupsResult['meshOverride'] =
     positions && normals ? { vertices: positions, normals, indices: null } : null;

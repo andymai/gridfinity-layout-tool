@@ -10,6 +10,7 @@ import {
   getZoneColor,
   isSingleColor,
   lipCellZone,
+  lipCellsUniform,
   makeUniformLipCells,
   normalizePaletteLip,
   parseLipCell,
@@ -132,6 +133,19 @@ describe('activeLipCells', () => {
       'lip:frontLeft:1',
     ]);
     expect(activeLipCells({ corners: 4, bands: 4 })).toHaveLength(16);
+  });
+});
+
+describe('lipCellsUniform', () => {
+  it('is true for 1×1 and for a multi-cell grid whose active cells match', () => {
+    expect(lipCellsUniform(lip())).toBe(true);
+    expect(lipCellsUniform(lip(makeUniformLipCells('#112233'), 2, 2))).toBe(true);
+  });
+
+  it('is false when an active cell differs, and ignores inactive cells', () => {
+    expect(lipCellsUniform(lip({ 'lip:backLeft:0': '#ff0000' }, 2, 1))).toBe(false);
+    // The differing cell is inactive at 1×1, so the grid still reads uniform.
+    expect(lipCellsUniform(lip({ 'lip:backRight:3': '#ff0000' }, 1, 1))).toBe(true);
   });
 });
 

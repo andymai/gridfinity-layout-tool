@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
-import { buildMultiColorGroups, hoveredMaterialIndices } from './multiColorGroups';
+import {
+  buildHitTestZones,
+  buildMultiColorGroups,
+  hoveredMaterialIndices,
+} from './multiColorGroups';
 import { LIP_CELL_ZONES, ZONE_ORDER, makeUniformLipCells, zoneIndex } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig, LipColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
@@ -160,6 +164,27 @@ describe('buildMultiColorGroups', () => {
       count: 9,
       materialIndex: zoneIndex('labelTab'),
     });
+  });
+});
+
+describe('buildHitTestZones', () => {
+  it('resolves a zone per original triangle even when single-color', () => {
+    // buildMultiColorGroups returns null here (all one color), but the canvas
+    // eyedropper/swap still needs to map a click to a zone to start editing.
+    const { vertices, indices } = meshFromCentroids([
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+    ]);
+    const faceGroups: FaceGroupData[] = [
+      { start: 0, count: 3, tag: FeatureTag.SCOOP },
+      { start: 3, count: 3, tag: FeatureTag.LIP },
+    ];
+    expect(buildMultiColorGroups(faceGroups, vertices, indices, colors(), allZones)).toBeNull();
+
+    const zones = buildHitTestZones(faceGroups, vertices, indices, colors());
+    expect(zones).toHaveLength(2);
+    expect(zones[0]).toBe('scoop');
+    expect(zones[1]).toBe('lip:frontLeft:0');
   });
 });
 

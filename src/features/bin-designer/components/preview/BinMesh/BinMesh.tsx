@@ -22,6 +22,7 @@ import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import {
+  buildHitTestZones,
   buildMultiColorGroups,
   hoveredMaterialIndices,
 } from '@/features/bin-designer/utils/multiColorGroups';
@@ -276,13 +277,18 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   // the same `hoveredColorZone` glow path the panel uses.
   const toolActive = colorTool !== null && multiColorEnabled;
 
-  // Hit-test reads the per-rendered-triangle zones that `buildMultiColorGroups`
-  // already computed (and that match the rendered split geometry), so a click
-  // resolves to exactly the cell shown — no second, divergent classification.
+  // Hit-test reads per-rendered-triangle zones so a click resolves to exactly
+  // the cell shown — no second, divergent classification. When multi-color is
+  // on but every zone still shares one color, `buildMultiColorGroups` returns
+  // null (nothing to group); fall back to an in-place classification over the
+  // un-split mesh so the eyedropper/swap can still pick a zone to start editing.
   const zoneResolver = useMemo(() => {
-    if (!toolActive || !multiColorData) return null;
-    return buildZoneResolver(multiColorData.triZones);
-  }, [toolActive, multiColorData]);
+    if (!toolActive) return null;
+    if (multiColorData) return buildZoneResolver(multiColorData.triZones);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs)
+    if (!faceGroups || !featureColors || !vertices || !indices) return null;
+    return buildZoneResolver(buildHitTestZones(faceGroups, vertices, indices, featureColors));
+  }, [toolActive, multiColorData, faceGroups, featureColors, vertices, indices]);
 
   const handlePointerMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {

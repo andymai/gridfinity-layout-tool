@@ -5,10 +5,10 @@
  */
 
 import { parseLipCell } from '../types/featureColors';
-import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
+import type { ColorZone, FeatureColorConfig, LipCellZone, LipCorner } from '../types/featureColors';
 import type { TFunction } from '@/i18n';
 
-const LIP_CORNER_KEY: Record<string, string> = {
+const LIP_CORNER_KEY: Record<LipCorner, string> = {
   frontLeft: 'binDesigner.colors.zone.lip.frontLeft',
   frontRight: 'binDesigner.colors.zone.lip.frontRight',
   backRight: 'binDesigner.colors.zone.lip.backRight',
@@ -19,7 +19,9 @@ const LIP_CORNER_KEY: Record<string, string> = {
 export function zoneTranslationKey(zone: ColorZone): string {
   const cell = parseLipCell(zone);
   if (cell) return LIP_CORNER_KEY[cell.corner];
-  switch (zone) {
+  // Lip cells are handled above; the remaining zones are the non-lip ones.
+  const nonLip = zone as Exclude<ColorZone, LipCellZone>;
+  switch (nonLip) {
     case 'body':
       return 'binDesigner.colors.zone.body';
     case 'labelTab':
@@ -34,9 +36,12 @@ export function zoneTranslationKey(zone: ColorZone): string {
       return 'binDesigner.colors.zone.text';
     case 'lid':
       return 'binDesigner.colors.zone.lid';
-    default:
-      // Lip cells are handled above; this is unreachable for valid zones.
+    default: {
+      // Compile-time exhaustiveness: a new non-lip zone must be handled above.
+      const _exhaustive: never = nonLip;
+      void _exhaustive;
       return 'binDesigner.colors.zone.body';
+    }
   }
 }
 
@@ -73,7 +78,8 @@ export type ZoneColorPatch =
  */
 export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
   if (parseLipCell(zone)) return { lip: { cells: { [zone]: hex } } };
-  switch (zone) {
+  const nonLip = zone as Exclude<ColorZone, LipCellZone>;
+  switch (nonLip) {
     case 'body':
       return { body: hex };
     case 'labelTab':
@@ -88,7 +94,11 @@ export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
       return { text: hex };
     case 'lid':
       return { lid: hex };
-    default:
+    default: {
+      // Compile-time exhaustiveness: a new non-lip zone must be handled above.
+      const _exhaustive: never = nonLip;
+      void _exhaustive;
       return { body: hex };
+    }
   }
 }

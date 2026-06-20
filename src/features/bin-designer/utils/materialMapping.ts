@@ -12,6 +12,7 @@ import type { ThreeMFColorConfig } from '@/shared/generation/export';
 import {
   getZoneColor,
   isSingleColor,
+  lipCellsUniform,
   normalizeHex,
   resolveColorMapping,
 } from '../types/featureColors';
@@ -76,6 +77,7 @@ export function buildTriangleMaterialIndices(
     getTriangle,
     geom,
     counts,
+    lipUniform: lipCellsUniform(featureColors.lip),
   });
 
   const materialIndexForZone = (zone: ColorZone): number =>

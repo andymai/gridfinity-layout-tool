@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { splitLipMesh, lipGridIsNonTrivial } from './lipSeamSplitter';
+import { splitLipMesh, lipGridIsNonTrivial, computeLipColoredMesh } from './lipSeamSplitter';
 import { FeatureTag } from '@/shared/types/generation';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { LipGeom } from './lipCornerClassifier';
@@ -88,5 +88,43 @@ describe('lipSeamSplitter', () => {
     });
     expect(res.triZones).toEqual(['scoop']);
     expect(Array.from(res.positions)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+  });
+
+  it('does not duplicate a triangle lying on a seam plane', () => {
+    // Horizontal quad at z=5, coincident with the bands=2 seam (z = minZ + 5).
+    // An inclusive-both halfspace test would emit it in both halves, doubling area.
+    const onSeam: number[][] = [
+      [-10, 5, 5, 10, 5, 5, 10, -5, 5],
+      [-10, 5, 5, 10, -5, 5, -10, -5, 5],
+    ];
+    const res = splitLipMesh({
+      triangleCount: onSeam.length,
+      faceGroups: [{ start: 0, count: 6, tag: FeatureTag.LIP }],
+      getTriangle: (i) => onSeam[i],
+      geom: GEOM,
+      counts: { corners: 1, bands: 2 },
+    });
+    const inputArea = onSeam.reduce((s, t) => s + triArea(t), 0);
+    let outArea = 0;
+    for (let i = 0; i < res.triZones.length; i++)
+      outArea += triArea(res.positions.subarray(i * 9, i * 9 + 9));
+    expect(outArea).toBeCloseTo(inputArea, 4);
+  });
+
+  it('skips the split when the grid is uniform (lipUniform), classifying in place', () => {
+    const base = {
+      triangleCount: QUAD.length,
+      faceGroups: FACE_GROUPS,
+      getTriangle: (i: number) => QUAD[i],
+      geom: GEOM,
+      counts: { corners: 2 as const, bands: 2 as const },
+    };
+    // Differing colors → re-tessellate (positions populated).
+    expect(computeLipColoredMesh(base).positions).not.toBeNull();
+    // Uniform → no seams to honor: classify in place (positions null), one zone
+    // per original triangle.
+    const uniform = computeLipColoredMesh({ ...base, lipUniform: true });
+    expect(uniform.positions).toBeNull();
+    expect(uniform.triZones).toHaveLength(QUAD.length);
   });
 });
