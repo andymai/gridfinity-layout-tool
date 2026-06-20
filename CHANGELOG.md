@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.196.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.5...gridfinity-layout-tool-v4.196.0) (2026-06-20)
+
+
+### Features
+
+* **cutouts:** improve label visibility and add fine-tuned placement ([#2277](https://github.com/andymai/gridfinity-layout-tool/issues/2277)) ([8c98508](https://github.com/andymai/gridfinity-layout-tool/commit/8c9850872aaa06b1c28f10ca31ff952f851d5fa7))
+
 ## [4.195.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.195.4...gridfinity-layout-tool-v4.195.5) (2026-06-19)
 
 
