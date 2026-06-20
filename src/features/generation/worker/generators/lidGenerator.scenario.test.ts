@@ -221,6 +221,65 @@ describe('lid generation and export scenarios', () => {
     assertStructurallyValid(result!, '2.5×2 lid');
   });
 
+  describe('fractional foot edge — magnet hole alignment', () => {
+    // A 2.5×1 lid floor is X-symmetric apart from the magnet holes, which only
+    // cut the full (1u) cells. So the side the holes cluster on is a proxy for
+    // where the bin's half foot sits: 'end' (½ sliver on +X) puts the full
+    // cells — and their magnets — on −X; 'start' mirrors that. Counting mesh
+    // vertices either side of X=0 gives an integer bias that flips with the
+    // edge, proving cutMagnetHoles honours fractionalEdge end-to-end (and thus
+    // the lid magnets stay mated with the bin's base sockets, GH #2271).
+    const vertexBiasX = (vertices: ArrayLike<number>): number => {
+      let left = 0;
+      let right = 0;
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (vertices[i] < -1e-6) left++;
+        else if (vertices[i] > 1e-6) right++;
+      }
+      return left - right;
+    };
+
+    it('shifts magnet holes to the opposite side when the edge flips', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const lid = (edge: 'start' | 'end') =>
+        generateLid(
+          makeParams(
+            { magnetHoles: true, stackableTop: true },
+            { width: 2.5, depth: 1, height: 3, fractionalEdgeX: edge }
+          )
+        );
+      const end = lid('end');
+      const start = lid('start');
+      expect(end).not.toBeNull();
+      expect(start).not.toBeNull();
+      assertStructurallyValid(end!, '2.5×1 lid (edge=end)');
+      assertStructurallyValid(start!, '2.5×1 lid (edge=start)');
+
+      // 'end' → full cells (with magnets) on −X ⇒ left-biased; 'start' mirrors.
+      expect(vertexBiasX(end!.vertices)).toBeGreaterThan(0);
+      expect(vertexBiasX(start!.vertices)).toBeLessThan(0);
+    });
+
+    it('leaves whole-unit lids identical regardless of the edge setting', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const lid = (edge: 'start' | 'end') =>
+        generateLid(
+          makeParams(
+            { magnetHoles: true, stackableTop: true },
+            { width: 2, depth: 1, height: 3, fractionalEdgeX: edge }
+          )
+        );
+      const end = lid('end');
+      const start = lid('start');
+      expect(end).not.toBeNull();
+      expect(start).not.toBeNull();
+      // No fractional cell ⇒ same decomposition ⇒ identical, symmetric mesh.
+      expect(start!.triangleCount).toBe(end!.triangleCount);
+      expect(vertexBiasX(end!.vertices)).toBe(0);
+      expect(vertexBiasX(start!.vertices)).toBe(0);
+    });
+  });
+
   it('per-side click rails — disabling sides reduces the rail count monotonically', async () => {
     // Regression for the per-side rail refactor: each disabled side
     // should remove exactly one rail's worth of geometry. We don't need

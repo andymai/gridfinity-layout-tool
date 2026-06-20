@@ -124,6 +124,20 @@ describe('resolveLidInputs', () => {
     expect(resolveLidInputs(makeParams({ clickRailCoverage: 75 })).clickRailCoverage).toBe(0.75);
     expect(resolveLidInputs(makeParams({ clickRailCoverage: 50 })).clickRailCoverage).toBe(0.5);
   });
+
+  it('threads fractionalEdgeX/Y from BinParams so magnet holes follow the bin foot', () => {
+    const inputs = resolveLidInputs(
+      makeParams({}, { width: 2.5, depth: 2.5, fractionalEdgeX: 'start', fractionalEdgeY: 'end' })
+    );
+    expect(inputs.fractionalEdgeX).toBe('start');
+    expect(inputs.fractionalEdgeY).toBe('end');
+  });
+
+  it('defaults the fractional edge to "end"', () => {
+    const inputs = resolveLidInputs(makeParams({}));
+    expect(inputs.fractionalEdgeX).toBe('end');
+    expect(inputs.fractionalEdgeY).toBe('end');
+  });
 });
 
 describe('chamferApexXForCavityWall', () => {
