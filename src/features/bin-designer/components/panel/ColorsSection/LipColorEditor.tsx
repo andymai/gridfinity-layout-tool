@@ -85,7 +85,10 @@ export function LipColorEditor({
       <div className="flex items-center gap-3">
         <LipGridDiagram lip={lip} hovered={hovered} onHover={onHover} />
         <div className="flex flex-1 flex-col gap-1.5">
-          <label className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+          {/* Not a <label>: it wraps a radiogroup, and a label leaks its text
+              onto the group's first radio (e.g. "Corners Corners"). The span is
+              the visible label; the SegmentedControl carries its own aria-label. */}
+          <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
             <span>{t('binDesigner.colors.lip.cornersLabel')}</span>
             <SegmentedControl
               size="sm"
@@ -94,8 +97,8 @@ export function LipColorEditor({
               value={String(lip.corners)}
               onChange={(v) => onSetCorners(toAxis(v))}
             />
-          </label>
-          <label className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
             <span>{t('binDesigner.colors.lip.bandsLabel')}</span>
             <SegmentedControl
               size="sm"
@@ -104,7 +107,7 @@ export function LipColorEditor({
               value={String(lip.bands)}
               onChange={(v) => onSetBands(toAxis(v))}
             />
-          </label>
+          </div>
         </div>
       </div>
 

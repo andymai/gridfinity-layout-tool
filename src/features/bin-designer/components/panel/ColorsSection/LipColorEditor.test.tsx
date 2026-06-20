@@ -57,4 +57,20 @@ describe('LipColorEditor', () => {
     fireEvent.click(within(group).getByText('2'));
     expect(props.onSetBands).toHaveBeenCalledWith(2);
   });
+
+  it('names each segment by its value, not the wrapping label', () => {
+    // A <label> wrapping the radiogroup would leak its text onto the first
+    // radio (accessible name "Corners Corners"), so the value-1 segment would
+    // be unreachable by name. Each segment must be named by its own value.
+    renderEditor({ lip: lip(1, 1) });
+    for (const groupLabel of [
+      'binDesigner.colors.lip.cornersLabel',
+      'binDesigner.colors.lip.bandsLabel',
+    ]) {
+      const group = screen.getByRole('radiogroup', { name: groupLabel });
+      for (const value of ['1', '2', '4']) {
+        expect(within(group).getByRole('radio', { name: value })).toBeDefined();
+      }
+    }
+  });
 });
