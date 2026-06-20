@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.3...gridfinity-layout-tool-v4.197.4) (2026-06-20)
+
+
+### Bug Fixes
+
+* **generation:** keep the label-tab shelf top tagged for multi-color ([#2288](https://github.com/andymai/gridfinity-layout-tool/issues/2288)) ([da8cc3a](https://github.com/andymai/gridfinity-layout-tool/commit/da8cc3aa6b773dc94fdfa8942772a7d8a8ff7c25))
+
 ## [4.197.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.2...gridfinity-layout-tool-v4.197.3) (2026-06-20)
 
 
