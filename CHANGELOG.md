@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.0...gridfinity-layout-tool-v4.197.1) (2026-06-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** align wall cutouts and handles to tilted dividers ([#2282](https://github.com/andymai/gridfinity-layout-tool/issues/2282)) ([f98339c](https://github.com/andymai/gridfinity-layout-tool/commit/f98339cd00d6227b3c3b3a11bcd24696303f5eed))
+
 ## [4.197.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.196.0...gridfinity-layout-tool-v4.197.0) (2026-06-20)
 
 
