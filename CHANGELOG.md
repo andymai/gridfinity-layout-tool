@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.198.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.7...gridfinity-layout-tool-v4.198.0) (2026-06-20)
+
+
+### Features
+
+* **bin-designer:** color stacking lip by quadrant × band grid ([#2294](https://github.com/andymai/gridfinity-layout-tool/issues/2294)) ([181724b](https://github.com/andymai/gridfinity-layout-tool/commit/181724b819ac83edd47c05542065477889cb345e)), closes [#1654](https://github.com/andymai/gridfinity-layout-tool/issues/1654)
+
 ## [4.197.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.6...gridfinity-layout-tool-v4.197.7) (2026-06-20)
 
 
