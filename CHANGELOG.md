@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.1...gridfinity-layout-tool-v4.197.2) (2026-06-20)
+
+
+### Bug Fixes
+
+* **generation:** only blend divider ends genuinely adjacent to wall cutouts ([#2283](https://github.com/andymai/gridfinity-layout-tool/issues/2283)) ([a9d904e](https://github.com/andymai/gridfinity-layout-tool/commit/a9d904e1af18e6132c1a8e5557749ef550b0caf1))
+
 ## [4.197.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.0...gridfinity-layout-tool-v4.197.1) (2026-06-20)
 
 
