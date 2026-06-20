@@ -45,13 +45,21 @@ interface LipColorEditorProps {
 const AXIS_OPTIONS = LIP_AXIS_COUNTS.map((n) => ({ value: String(n), label: String(n) }));
 const toAxis = (v: string): LipAxisCount => (v === '2' ? 2 : v === '4' ? 4 : 1);
 
+// Literal keys (not built by template) so the unused-i18n checker sees them.
+const FOUR_CORNER_KEY: Record<LipCorner, string> = {
+  frontLeft: 'binDesigner.colors.lip.frontLeft',
+  frontRight: 'binDesigner.colors.lip.frontRight',
+  backRight: 'binDesigner.colors.lip.backRight',
+  backLeft: 'binDesigner.colors.lip.backLeft',
+};
+
 /** Corner label key by active corner count (1 = whole lip, 2 = front/back). */
 function cornerLabelKey(corner: LipCorner, corners: LipAxisCount): string {
   if (corners === 1) return 'binDesigner.colors.lip';
   if (corners === 2) {
     return corner === 'frontLeft' ? 'binDesigner.colors.lip.front' : 'binDesigner.colors.lip.back';
   }
-  return `binDesigner.colors.lip.${corner}`;
+  return FOUR_CORNER_KEY[corner];
 }
 
 export function LipColorEditor({
