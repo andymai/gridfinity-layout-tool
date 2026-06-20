@@ -64,13 +64,25 @@ import {
  */
 export const MIN_FOOT_TILE_MM = MIN_PRINTABLE_TILE_MM;
 
+/**
+ * Which side a fractional (half-unit) foot column/row sits on. `'end'` (default)
+ * places it at the positive coordinate side; `'start'` at the negative side.
+ */
+export interface FractionalEdge {
+  readonly x: 'start' | 'end';
+  readonly y: 'start' | 'end';
+}
+
+export const DEFAULT_FRACTIONAL_EDGE: FractionalEdge = { x: 'end', y: 'end' };
+
 export function forEachSocketCell(
   gridW: number,
   gridD: number,
   mask: CellMask | undefined,
   gridUnitMm: number,
   globalHalfSockets: boolean,
-  callback: (cell: CellInfo) => void
+  callback: (cell: CellInfo) => void,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): void {
   if (globalHalfSockets) {
     forEachCell(gridW, gridD, callback, { halfSockets: true, gridUnitMm });
@@ -88,6 +100,8 @@ export function forEachSocketCell(
       gridUnitMm,
       fractional: true,
       minFractionUnits: MIN_FOOT_TILE_MM / gridUnitMm,
+      fractionalEdgeX: fractionalEdge.x,
+      fractionalEdgeY: fractionalEdge.y,
     });
     return;
   }
@@ -134,7 +148,7 @@ export function forEachSocketCell(
         });
       }
     },
-    { gridUnitMm }
+    { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
   );
 }
 /**
@@ -265,7 +279,8 @@ export function baseSocketShapeKey(
   forExport: boolean,
   halfSockets: boolean,
   gridUnitMm: number,
-  cellMask?: CellMask
+  cellMask?: CellMask,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): string {
   const usingMask = isPartialMask(cellMask);
   return socketCacheKey(
@@ -279,7 +294,9 @@ export function baseSocketShapeKey(
     forExport,
     halfSockets,
     gridUnitMm,
-    usingMask ? hashMask(cellMask) : undefined
+    usingMask ? hashMask(cellMask) : undefined,
+    fractionalEdge.x,
+    fractionalEdge.y
   );
 }
 
@@ -294,7 +311,8 @@ export function buildBaseSocket(
   forExport = false,
   halfSockets = false,
   gridUnitMm: number = SIZE,
-  cellMask?: CellMask
+  cellMask?: CellMask,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
@@ -312,7 +330,8 @@ export function buildBaseSocket(
     forExport,
     halfSockets,
     gridUnitMm,
-    cellMask
+    cellMask,
+    fractionalEdge
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -342,23 +361,31 @@ export function buildBaseSocket(
     // Build and position each cell socket
     const cellSockets: Shape3D[] = [];
 
-    forEachSocketCell(gridW, gridD, cellMask, gridUnitMm, halfSockets, (cell) => {
-      if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
-      // Use simplified 3-section socket for preview, full 5-section for export
-      // NOTE: cellSockets are NOT scope-registered because fuseAll may return
-      // one of its inputs when given a single element. They're deleted manually.
-      const cellSocket = translate(
-        scope.register(
-          forExport
-            ? buildSingleCellSocket(cellW_mm, cellD_mm)
-            : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
-        ),
-        [cell.centerX, cell.centerY, 0]
-      );
-      cellSockets.push(cellSocket);
-    });
+    forEachSocketCell(
+      gridW,
+      gridD,
+      cellMask,
+      gridUnitMm,
+      halfSockets,
+      (cell) => {
+        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
+        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+        // Use simplified 3-section socket for preview, full 5-section for export
+        // NOTE: cellSockets are NOT scope-registered because fuseAll may return
+        // one of its inputs when given a single element. They're deleted manually.
+        const cellSocket = translate(
+          scope.register(
+            forExport
+              ? buildSingleCellSocket(cellW_mm, cellD_mm)
+              : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+          ),
+          [cell.centerX, cell.centerY, 0]
+        );
+        cellSockets.push(cellSocket);
+      },
+      fractionalEdge
+    );
 
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');
@@ -402,7 +429,7 @@ export function buildBaseSocket(
             );
           }
         },
-        { gridUnitMm }
+        { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
       );
     }
 

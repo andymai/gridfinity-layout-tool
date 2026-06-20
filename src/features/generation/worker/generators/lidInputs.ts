@@ -38,6 +38,13 @@ export interface LidInputs {
   readonly magnetDepth: number;
   readonly cellsX: number;
   readonly cellsY: number;
+  /**
+   * Which side the half-unit cell sits on for fractional bins. Mirrors the
+   * bin's base-socket placement so the lid's magnet holes line up with the
+   * feet of the bin stacked on top. See {@link BinParams.fractionalEdgeX}.
+   */
+  readonly fractionalEdgeX: 'start' | 'end';
+  readonly fractionalEdgeY: 'start' | 'end';
   readonly gridUnitMm: number;
   readonly heightUnitMm: number;
   /**
@@ -145,6 +152,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetDepth: params.base.magnetDepth,
     cellsX: params.width,
     cellsY: params.depth,
+    fractionalEdgeX: params.fractionalEdgeX,
+    fractionalEdgeY: params.fractionalEdgeY,
     gridUnitMm,
     heightUnitMm,
     // Per-side rail skips derived from feature conflicts (label tabs,

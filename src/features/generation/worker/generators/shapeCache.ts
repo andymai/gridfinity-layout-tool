@@ -111,8 +111,16 @@ export function socketCacheKey(
   forExport: boolean,
   halfSockets: boolean,
   gridUnitMm: number = GRIDFINITY.GRID_SIZE,
-  maskHash?: string
+  maskHash?: string,
+  fractionalEdgeX: 'start' | 'end' = 'end',
+  fractionalEdgeY: 'start' | 'end' = 'end'
 ): string {
+  // Only append when non-default so 'end'/'end' keys stay byte-identical to
+  // pre-feature keys (no needless cache invalidation; existing tests stable).
+  const fracSegments =
+    fractionalEdgeX === 'end' && fractionalEdgeY === 'end'
+      ? []
+      : [`frac:${fractionalEdgeX}:${fractionalEdgeY}`];
   return compactKey(
     buildCacheKey(
       'v2',
@@ -126,7 +134,8 @@ export function socketCacheKey(
       quantize(screwRadius),
       forExport,
       halfSockets,
-      maskHash ?? 'rect'
+      maskHash ?? 'rect',
+      ...fracSegments
     )
   );
 }

@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
+import type * as SocketBuilder from './socketBuilder';
 import { initTestKernel } from '@/test/initTestKernel';
 
 type BuildCellSocketFn = (cellW_mm: number, cellD_mm: number) => Shape3D;
@@ -19,6 +20,7 @@ type BuildBaseSocketFn = (
 let buildBaseSocket: BuildBaseSocketFn;
 let buildSingleCellSocket: BuildCellSocketFn;
 let buildSimplifiedCellSocket: BuildCellSocketFn;
+let forEachSocketCell: typeof SocketBuilder.forEachSocketCell;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
@@ -30,9 +32,37 @@ beforeAll(async () => {
   buildBaseSocket = mod.buildBaseSocket;
   buildSingleCellSocket = mod.buildSingleCellSocket;
   buildSimplifiedCellSocket = mod.buildSimplifiedCellSocket;
+  forEachSocketCell = mod.forEachSocketCell;
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
 }, 30000);
+
+describe('forEachSocketCell fractional edge', () => {
+  // Collect the emitted cells for a 2.5×1 grid and locate the 0.5u sliver.
+  const collect = (edge?: { x: 'start' | 'end'; y: 'start' | 'end' }) => {
+    const cells: { widthUnits: number; centerX: number }[] = [];
+    forEachSocketCell(2.5, 1, undefined, 42, false, (c) => cells.push(c), edge);
+    return cells;
+  };
+  const halfCellX = (cells: { widthUnits: number; centerX: number }[]) =>
+    cells.find((c) => Math.abs(c.widthUnits - 0.5) < 1e-6)?.centerX;
+
+  it('defaults the half foot to the positive (right) side', () => {
+    const x = halfCellX(collect());
+    expect(x).toBeDefined();
+    expect(x as number).toBeGreaterThan(0);
+  });
+
+  it('places the half foot on the negative (left) side when edge.x is "start"', () => {
+    const x = halfCellX(collect({ x: 'start', y: 'end' }));
+    expect(x).toBeDefined();
+    expect(x as number).toBeLessThan(0);
+  });
+
+  it('emits the same number of cells regardless of edge', () => {
+    expect(collect().length).toBe(collect({ x: 'start', y: 'end' }).length);
+  });
+});
 
 describe('buildSingleCellSocket', () => {
   it('builds a valid solid for a full-size cell', () => {

@@ -11,6 +11,8 @@ export function useDimensionsSection() {
     width,
     depth,
     height,
+    fractionalEdgeX,
+    fractionalEdgeY,
     gridUnitMm,
     heightUnitMm,
     halfGridMode,
@@ -22,6 +24,8 @@ export function useDimensionsSection() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      fractionalEdgeX: s.params.fractionalEdgeX,
+      fractionalEdgeY: s.params.fractionalEdgeY,
       gridUnitMm: s.params.gridUnitMm,
       heightUnitMm: s.params.heightUnitMm,
       halfGridMode: s.ui.halfGridMode,
@@ -85,6 +89,13 @@ export function useDimensionsSection() {
     [halfGridMode, toggleHalfGridMode, setParam]
   );
 
+  const handleFractionalEdgeChange = useCallback(
+    (axis: 'x' | 'y', position: 'start' | 'end') => {
+      setParam(axis === 'x' ? 'fractionalEdgeX' : 'fractionalEdgeY', position);
+    },
+    [setParam]
+  );
+
   return {
     state: {
       width,
@@ -97,6 +108,10 @@ export function useDimensionsSection() {
       dimensionStep,
       minWidth,
       minDepth,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      hasFractionalWidth: isFractional(width),
+      hasFractionalDepth: isFractional(depth),
     },
     handlers: {
       setParam: handleSetParam,
@@ -105,6 +120,7 @@ export function useDimensionsSection() {
       handleHeightStep,
       handleSwapDimensions,
       toggleHalfGridMode,
+      handleFractionalEdgeChange,
     },
     t,
   };

@@ -18,8 +18,17 @@ import { isCellFilled } from './lidStackGrid';
 import type { LidInputs } from './lidInputs';
 
 export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm, magnetDiameter, magnetDepth, topThickness, cellMask } =
-    inputs;
+  const {
+    cellsX,
+    cellsY,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    gridUnitMm,
+    magnetDiameter,
+    magnetDepth,
+    topThickness,
+    cellMask,
+  } = inputs;
   const radius = magnetDiameter / 2;
 
   // Capping at `topThickness - ceiling` is defensive in case `topThickness`
@@ -60,7 +69,7 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
         );
       }
     },
-    { gridUnitMm }
+    { gridUnitMm, fractionalEdgeX, fractionalEdgeY }
   );
 
   if (cutters.length === 0) return body;

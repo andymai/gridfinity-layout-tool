@@ -142,4 +142,31 @@ describe('useDimensionsSection', () => {
     expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
     expect(useDesignerStore.getState().params.width).toBe(1.5);
   });
+
+  it('flags fractional dimensions so the edge toggles can show', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 2.5, depth: 2 },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    expect(result.current.state.hasFractionalWidth).toBe(true);
+    expect(result.current.state.hasFractionalDepth).toBe(false);
+  });
+
+  it('handleFractionalEdgeChange writes the chosen edge to the store', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 2.5 },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleFractionalEdgeChange('x', 'start');
+    });
+    expect(useDesignerStore.getState().params.fractionalEdgeX).toBe('start');
+
+    act(() => {
+      result.current.handlers.handleFractionalEdgeChange('y', 'start');
+    });
+    expect(useDesignerStore.getState().params.fractionalEdgeY).toBe('start');
+  });
 });

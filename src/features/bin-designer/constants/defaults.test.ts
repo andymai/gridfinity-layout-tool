@@ -148,6 +148,18 @@ describe('migrateParams', () => {
     expectOk(validateBinParams(result));
   });
 
+  it('backfills fractional edge defaults to "end" for legacy designs', () => {
+    const result = migrateParams({ width: 2.5 });
+    expect(result.fractionalEdgeX).toBe('end');
+    expect(result.fractionalEdgeY).toBe('end');
+  });
+
+  it('preserves an explicit fractional edge choice', () => {
+    const result = migrateParams({ width: 2.5, fractionalEdgeX: 'start' } as any);
+    expect(result.fractionalEdgeX).toBe('start');
+    expect(result.fractionalEdgeY).toBe('end');
+  });
+
   it('should produce valid params from legacy format', () => {
     const result = migrateParams({
       width: 2,

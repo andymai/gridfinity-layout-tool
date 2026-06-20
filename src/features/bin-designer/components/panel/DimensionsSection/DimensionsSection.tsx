@@ -9,6 +9,7 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Checkbox, IconButton, Stepper } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
+import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDimensionsSection } from './useDimensionsSection';
 
@@ -73,6 +74,40 @@ export function DimensionsSection() {
           {state.widthMm.toFixed(0)} × {state.depthMm.toFixed(0)} × {state.heightMm.toFixed(0)} mm
         </span>
       </div>
+
+      {/* Half-unit foot placement — shown when a dimension is fractional. Lets a
+          2.5×2 bin put its half foot on either side without rotating the print. */}
+      {(state.hasFractionalWidth || state.hasFractionalDepth) && (
+        <div className="space-y-1.5 text-xs">
+          <div className="text-content-tertiary text-[10px]">
+            {t('sidebar.halfUnitEdgePosition')}
+          </div>
+          {state.hasFractionalWidth && (
+            <FractionalEdgeToggle
+              axis="x"
+              label={t('common.width')}
+              value={state.fractionalEdgeX}
+              onChange={handlers.handleFractionalEdgeChange}
+              startTitle={t('sidebar.halfBinLeft')}
+              startLabel={t('sidebar.left')}
+              endTitle={t('sidebar.halfBinRight')}
+              endLabel={t('sidebar.right')}
+            />
+          )}
+          {state.hasFractionalDepth && (
+            <FractionalEdgeToggle
+              axis="y"
+              label={t('common.depth')}
+              value={state.fractionalEdgeY}
+              onChange={handlers.handleFractionalEdgeChange}
+              startTitle={t('sidebar.halfBinBottom')}
+              startLabel={t('sidebar.bottom')}
+              endTitle={t('sidebar.halfBinTop')}
+              endLabel={t('sidebar.top')}
+            />
+          )}
+        </div>
+      )}
 
       {/* Height */}
       <div>

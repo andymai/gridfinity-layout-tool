@@ -504,6 +504,10 @@ export interface BinParams {
   readonly width: number;
   readonly depth: number;
   readonly height: number;
+  /** Side the half-unit foot column sits on for fractional `width`: `'end'` (default) = right, `'start'` = left. Lets a 2.5×2 bin pick the side without rotating the print (which moves the front scoop). */
+  readonly fractionalEdgeX: 'start' | 'end';
+  /** Side the half-unit foot row sits on for fractional `depth`: `'end'` (default) = back, `'start'` = front. */
+  readonly fractionalEdgeY: 'start' | 'end';
   /** Grid unit size in mm (default 42mm per Gridfinity spec) */
   readonly gridUnitMm: number;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */

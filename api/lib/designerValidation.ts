@@ -90,6 +90,8 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'width',
   'depth',
   'height',
+  'fractionalEdgeX',
+  'fractionalEdgeY',
   'gridUnitMm',
   'heightUnitMm',
   'wallThickness',

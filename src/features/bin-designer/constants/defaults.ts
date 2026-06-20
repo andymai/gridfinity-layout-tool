@@ -273,6 +273,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   width: 2,
   depth: 2,
   height: 3,
+  fractionalEdgeX: 'end',
+  fractionalEdgeY: 'end',
   gridUnitMm: 42,
   heightUnitMm: 7,
   wallThickness: 1.2,

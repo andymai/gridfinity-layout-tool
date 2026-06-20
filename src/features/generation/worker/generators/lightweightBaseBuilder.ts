@@ -43,6 +43,8 @@ import {
   buildSingleCellSocket,
   buildSimplifiedCellSocket,
   forEachSocketCell,
+  DEFAULT_FRACTIONAL_EDGE,
+  type FractionalEdge,
 } from './socketBuilder';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 
@@ -124,7 +126,8 @@ export function buildLightweightBase(
   halfSockets = false,
   gridUnitMm: number = SIZE,
   cellMask?: CellMask,
-  openFloorDrawings?: readonly Drawing[]
+  openFloorDrawings?: readonly Drawing[],
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   const cellInMask = (
@@ -186,37 +189,45 @@ export function buildLightweightBase(
     const voids: Shape3D[] = [];
     const openingTools: Shape3D[] = [];
 
-    forEachSocketCell(gridW, gridD, cellMask, gridUnitMm, halfSockets, (cell) => {
-      if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
-      feet.push(
-        translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [cell.centerX, cell.centerY, 0])
-      );
-
-      const innerW = cellW_mm - 2 * wallThickness;
-      const innerD = cellD_mm - 2 * wallThickness;
-      // Wall thickness too large for this cell — keep the solid foot (no cavity,
-      // best-effort) so the base never collapses to nothing.
-      if (innerW <= 0.2 || innerD <= 0.2) return;
-
-      // Inner foot shifted by ±wt: a uniform-wt offset of the foot (socket insets
-      // are absolute). The shift leaves a wt floor at the closed end; for 'up' it
-      // also pokes a slug above the foot top, reused as the floor-opening tool.
-      const innerFoot = scope.register(buildFoot(innerW, innerD));
-      voids.push(
-        translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
-      );
-      if (openDir === 'up') {
-        openingTools.push(
-          translate(scope.register(unwrap(clone(innerFoot))), [
-            cell.centerX,
-            cell.centerY,
-            wallThickness,
-          ])
+    forEachSocketCell(
+      gridW,
+      gridD,
+      cellMask,
+      gridUnitMm,
+      halfSockets,
+      (cell) => {
+        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
+        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+        feet.push(
+          translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [cell.centerX, cell.centerY, 0])
         );
-      }
-    });
+
+        const innerW = cellW_mm - 2 * wallThickness;
+        const innerD = cellD_mm - 2 * wallThickness;
+        // Wall thickness too large for this cell — keep the solid foot (no cavity,
+        // best-effort) so the base never collapses to nothing.
+        if (innerW <= 0.2 || innerD <= 0.2) return;
+
+        // Inner foot shifted by ±wt: a uniform-wt offset of the foot (socket insets
+        // are absolute). The shift leaves a wt floor at the closed end; for 'up' it
+        // also pokes a slug above the foot top, reused as the floor-opening tool.
+        const innerFoot = scope.register(buildFoot(innerW, innerD));
+        voids.push(
+          translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
+        );
+        if (openDir === 'up') {
+          openingTools.push(
+            translate(scope.register(unwrap(clone(innerFoot))), [
+              cell.centerX,
+              cell.centerY,
+              wallThickness,
+            ])
+          );
+        }
+      },
+      fractionalEdge
+    );
 
     if (feet.length === 0) {
       throw new Error('Lightweight base: at least one cell required');
@@ -245,32 +256,40 @@ export function buildLightweightBase(
         (withMagnet ? magnetDepth : SOCKET_HEIGHT) + (withMagnet ? MAGNET_FLOOR : 0);
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
-      forEachSocketCell(gridW, gridD, cellMask, gridUnitMm, false, (cell) => {
-        if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-        const cellPads = buildCellPads(scope, holeRadius, floorDepth, openDir);
-        for (const p of cellPads) pads.push(translate(p, [cell.centerX, cell.centerY, 0]));
-        for (const [dx, dy] of MAGNET_OFFSETS) {
-          if (withMagnet) {
-            drills.push(
-              translate(scope.register(cylinder(magnetRadius, magnetDepth)), [
-                cell.centerX + dx,
-                cell.centerY + dy,
-                -SOCKET_HEIGHT,
-              ])
-            );
+      forEachSocketCell(
+        gridW,
+        gridD,
+        cellMask,
+        gridUnitMm,
+        false,
+        (cell) => {
+          if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+          if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
+          const cellPads = buildCellPads(scope, holeRadius, floorDepth, openDir);
+          for (const p of cellPads) pads.push(translate(p, [cell.centerX, cell.centerY, 0]));
+          for (const [dx, dy] of MAGNET_OFFSETS) {
+            if (withMagnet) {
+              drills.push(
+                translate(scope.register(cylinder(magnetRadius, magnetDepth)), [
+                  cell.centerX + dx,
+                  cell.centerY + dy,
+                  -SOCKET_HEIGHT,
+                ])
+              );
+            }
+            if (withScrew) {
+              drills.push(
+                translate(scope.register(cylinder(screwRadius, SOCKET_HEIGHT + 0.01)), [
+                  cell.centerX + dx,
+                  cell.centerY + dy,
+                  -SOCKET_HEIGHT,
+                ])
+              );
+            }
           }
-          if (withScrew) {
-            drills.push(
-              translate(scope.register(cylinder(screwRadius, SOCKET_HEIGHT + 0.01)), [
-                cell.centerX + dx,
-                cell.centerY + dy,
-                -SOCKET_HEIGHT,
-              ])
-            );
-          }
-        }
-      });
+        },
+        fractionalEdge
+      );
       if (pads.length > 0) {
         const padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
         const padded = unwrap(fuse(base, padUnion));

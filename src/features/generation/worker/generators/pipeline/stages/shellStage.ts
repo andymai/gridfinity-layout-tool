@@ -84,7 +84,8 @@ export const shellStage: PipelineStage = {
         dim.halfSockets,
         params.gridUnitMm,
         params.cellMask,
-        openFloorDrawings
+        openFloorDrawings,
+        { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -235,7 +236,8 @@ export const shellStage: PipelineStage = {
           true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
           dim.halfSockets,
           params.gridUnitMm,
-          params.cellMask
+          params.cellMask,
+          { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -245,6 +247,10 @@ export const shellStage: PipelineStage = {
     let feetFused = false;
     try {
       if (dim.overhang.feet && hasOverhang(dim.overhang)) {
+        // Overhang feet are gap-fill tiling around the nominal grid (they don't
+        // mate with baseplate sockets), so they keep the default 'end'
+        // decomposition regardless of fractionalEdge — only the seam tiling at a
+        // fractional edge differs cosmetically, never the socket mating.
         feet = buildOverhangFeet(params.width, params.depth, dim.overhang, params.gridUnitMm, true);
         if (feet) {
           const withFeet = unwrap(fuse(socket, feet));
@@ -284,7 +290,8 @@ export const shellStage: PipelineStage = {
             true,
             dim.halfSockets,
             params.gridUnitMm,
-            params.cellMask
+            params.cellMask,
+            { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };

@@ -59,6 +59,64 @@ describe('socketCacheKey', () => {
     expect(a).not.toBe(b);
   });
 
+  it('default fractional edge ("end") leaves the key unchanged', () => {
+    // Positional args: ..., gridUnitMm, maskHash, fractionalEdgeX, fractionalEdgeY
+    const withDefault = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false);
+    const explicitEnd = socketCacheKey(
+      2.5,
+      2,
+      false,
+      false,
+      3.1,
+      2.0,
+      1.5,
+      false,
+      false,
+      undefined,
+      undefined,
+      'end',
+      'end'
+    );
+    expect(explicitEnd).toBe(withDefault);
+  });
+
+  it('differs when the fractional edge changes', () => {
+    const end = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false);
+    const startX = socketCacheKey(
+      2.5,
+      2,
+      false,
+      false,
+      3.1,
+      2.0,
+      1.5,
+      false,
+      false,
+      undefined,
+      undefined,
+      'start',
+      'end'
+    );
+    const startY = socketCacheKey(
+      2.5,
+      2,
+      false,
+      false,
+      3.1,
+      2.0,
+      1.5,
+      false,
+      false,
+      undefined,
+      undefined,
+      'end',
+      'start'
+    );
+    expect(startX).not.toBe(end);
+    expect(startY).not.toBe(end);
+    expect(startX).not.toBe(startY);
+  });
+
   it('includes all parameters in key', () => {
     const key = socketCacheKey(1.5, 2.5, true, true, 3.1, 2.4, 1.75, true, true);
     expect(key).toMatch(/^v2\|/);
