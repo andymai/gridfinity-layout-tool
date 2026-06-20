@@ -26,6 +26,7 @@ import {
   dividerTouchesWall,
   getWallFaceInfo,
   isPerpendicular,
+  isRampAdjacent,
   type DividerInfo,
   type OuterWallCutoutInfo,
 } from './dividerBlendTypes';
@@ -92,7 +93,7 @@ export function buildDividerBlends(
           const distToLeft = cutout.cutLeft - dividerPos;
           const distToRight = dividerPos - cutout.cutRight;
 
-          if (distToLeft > -halfThick && distToLeft < cutout.userCutHeight) {
+          if (isRampAdjacent(distToLeft, divider.thickness)) {
             try {
               const cut = buildRampCut(divider, cutout, wallHeight);
               if (cut) cuts.push(cut);
@@ -100,7 +101,7 @@ export function buildDividerBlends(
               /* graceful degradation */
             }
           }
-          if (distToRight > -halfThick && distToRight < cutout.userCutHeight) {
+          if (isRampAdjacent(distToRight, divider.thickness)) {
             try {
               const cut = buildRampCut(divider, cutout, wallHeight);
               if (cut) cuts.push(cut);
@@ -194,12 +195,11 @@ export function computeRampZones(
     if (!dividerTouchesWall(divider, wallCutout)) continue;
 
     const dividerPos = divider.posAlongPerp;
-    const halfThick = divider.thickness / 2;
     const distToLeft = wallCutout.cutLeft - dividerPos;
     const distToRight = dividerPos - wallCutout.cutRight;
 
     // Left-adjacent ramp
-    if (distToLeft > -halfThick && distToLeft < wallCutout.userCutHeight) {
+    if (isRampAdjacent(distToLeft, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({
@@ -211,7 +211,7 @@ export function computeRampZones(
     }
 
     // Right-adjacent ramp
-    if (distToRight > -halfThick && distToRight < wallCutout.userCutHeight) {
+    if (isRampAdjacent(distToRight, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({

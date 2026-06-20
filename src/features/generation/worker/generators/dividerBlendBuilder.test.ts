@@ -200,16 +200,16 @@ describe('computeRampZones', () => {
     expect(computeRampZones('back', BASE_PARAMS, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
   });
 
-  it('returns ramp zones for adjacent dividers (#1345 note: junction zones handle non-cutout case)', () => {
+  it('returns ramp zones only for dividers genuinely at a cutout edge', () => {
     // 3×1 grid: dividers at ±INNER_W/3 (~±13.6mm).
-    // Narrow cutout (15% width = 12.24mm): edges at ±6.12mm.
-    // Distance from cutout edge to divider1: 13.6 - 6.12 = 7.48mm.
-    // userCutHeight at 80% depth: (21-1.2)*0.8 = 15.84mm > 7.48mm → adjacent!
+    // Wide cutout (30% width = 24.48mm): edges at ±12.24mm.
+    // Gap from cutout edge to nearest divider: 13.6 - 12.24 = 1.36mm — a
+    // sub-wall sliver → the ramp blends the divider end.
     const params = makeParams({
       compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
       walls: {
         ...BASE_PARAMS.walls,
-        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 15, depth: 80 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 30, depth: 80 },
       },
     });
     const zones = computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
@@ -223,6 +223,22 @@ describe('computeRampZones', () => {
         })
       );
     }
+  });
+
+  it('does NOT ramp a divider that is clear of the opening (#2276)', () => {
+    // Same 3×1 grid, dividers at ±13.6mm. Narrow cutout (15% = 12.24mm) with
+    // edges at ±6.12mm leaves a 7.48mm gap of clear wall to the nearest
+    // divider. The old code ramped it anyway because 7.48 < userCutHeight
+    // (15.84mm at 80% depth) — a tall cutout slanting a straight divider a
+    // whole compartment away. A tall/narrow cutout must not change this.
+    const params = makeParams({
+      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+      walls: {
+        ...BASE_PARAMS.walls,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 15, depth: 80 },
+      },
+    });
+    expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
   });
 });
 

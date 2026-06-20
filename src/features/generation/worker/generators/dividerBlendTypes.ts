@@ -46,6 +46,28 @@ export interface DividerInfo {
 /** Minimum geometry dimension to avoid degenerate shapes (mm). */
 export const MIN_DIM = 0.5;
 
+/**
+ * Whether a perpendicular divider sits close enough to a cutout edge for the
+ * Case 2 blend ramp to apply.
+ *
+ * `distToEdge` is the along-wall distance from the divider centre to the cutout
+ * edge (positive when the divider is OUTSIDE the span). The ramp only smooths a
+ * divider sitting RIGHT at the opening edge — i.e. with at most one wall
+ * thickness of clear wall ("sliver") between the divider face and the cutout.
+ * A divider with more clear wall than that is its own structure and must stay
+ * full height (GH #2276).
+ *
+ * The previous test used `cutout.userCutHeight` — a VERTICAL dimension — as this
+ * horizontal gap, so a tall cutout ramped dividers a whole compartment away,
+ * producing the reported "slant at the end" on a straight divider.
+ */
+export function isRampAdjacent(distToEdge: number, thickness: number): boolean {
+  const halfThick = thickness / 2;
+  // Outside the span, but the remaining wall sliver (distToEdge - halfThick) is
+  // thinner than one wall thickness.
+  return distToEdge > -halfThick && distToEdge < halfThick + thickness;
+}
+
 /** Tolerance for matching divider endpoints to wall face coordinates (mm). */
 export const WALL_TOUCH_TOL = 0.01;
 
