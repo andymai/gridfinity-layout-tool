@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.6...gridfinity-layout-tool-v4.197.7) (2026-06-20)
+
+
+### Bug Fixes
+
+* **split:** generate wall connectors on overhung split walls ([#2295](https://github.com/andymai/gridfinity-layout-tool/issues/2295)) ([50e440f](https://github.com/andymai/gridfinity-layout-tool/commit/50e440fdafc2cc52c13f5a6540d034c4faffcb25))
+
 ## [4.197.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.5...gridfinity-layout-tool-v4.197.6) (2026-06-20)
 
 
