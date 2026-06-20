@@ -33,6 +33,12 @@ minimumReleaseAgeExclude:
   # TODO: remove once the resolved dompurify version has aged past the window
   # (3.4.11 published 2026-06-17 -> 2026-06-24).
   - dompurify
+  # undici 7.28.0 / 6.27.0 (2026-06-15) are the first versions patched against
+  # the SOCKS5 TLS-bypass + cross-origin routing (GHSA-vmh5-mc38-953g,
+  # GHSA-hm92-r4w5-c3mj, GHSA-vxpw-j846-p89q) and Set-Cookie injection cluster;
+  # allow them through before the 7-day window elapses.
+  # TODO: remove after 2026-06-22 once both have aged past the window.
+  - undici
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -49,7 +55,9 @@ peerDependencyRules:
     vite-plugin-pwa>vite: '^8.0.0'
 
 overrides:
-  '@vercel/node>undici': '^7.20.0'
+  '@vercel/node>undici': '^7.28.0'
+  'undici@<6.27.0': '^6.27.0'
+  'undici@>=7.0.0 <7.28.0': '^7.28.0'
   path-to-regexp: '6.3.0'
   '@rollup/plugin-replace>magic-string': '0.30.21'
   '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
