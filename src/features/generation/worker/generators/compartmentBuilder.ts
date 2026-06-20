@@ -445,7 +445,7 @@ function buildTiltedWallSegment(
  * fused run that crosses pair changes would silently apply the first pair's
  * override to the entire wall.
  */
-function findPairAwareRuns(
+export function findPairAwareRuns(
   count: number,
   key: (i: number) => string | null
 ): Array<{ start: number; end: number; pairKey: string }> {
@@ -477,11 +477,11 @@ function findPairAwareRuns(
 }
 
 /** Canonical-pair key for an override lookup map. */
-function overrideKey(a: number, b: number): string {
+export function overrideKey(a: number, b: number): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-function buildOverrideLookup(
+export function buildOverrideLookup(
   overrides: readonly DividerOverride[] | undefined
 ): Map<string, DividerOverride> {
   const lookup = new Map<string, DividerOverride>();
@@ -490,6 +490,91 @@ function buildOverrideLookup(
     lookup.set(overrideKey(o.compartmentA, o.compartmentB), o);
   }
   return lookup;
+}
+
+/** One interior divider wall segment, resolved to mm in bin-centered coords. */
+export interface InteriorDividerSegment {
+  /** Axis-projected segment length (mm). */
+  readonly segLen: number;
+  /** Midpoint X of the (possibly tilted) segment. */
+  readonly x: number;
+  /** Midpoint Y of the (possibly tilted) segment. */
+  readonly y: number;
+  /** In-plane rotation (deg) aligned to the wall: 90 for straight vertical
+   *  dividers, 0 for straight horizontal, tilted by the override otherwise. */
+  readonly rotateZ: number;
+}
+
+/**
+ * Enumerate every interior divider wall segment with its tilt-resolved
+ * placement, honouring `dividerOverrides`. Shared source of truth so features
+ * that decorate dividers (wall cutouts, handles) land ON the wall instead of at
+ * the original grid line when a divider is tilted (GH #2276). Pure — no WASM.
+ */
+export function interiorDividerSegments(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): InteriorDividerSegment[] {
+  const { cols, rows, cells } = params.compartments;
+  const out: InteriorDividerSegment[] = [];
+  if (cols <= 1 && rows <= 1) return out;
+
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
+  const RAD2DEG = 180 / Math.PI;
+
+  // Vertical dividers (between columns) run along Y; straight ⇒ rotateZ 90.
+  for (let boundary = 1; boundary < cols; boundary++) {
+    const xPos = -innerW / 2 + boundary * cellW;
+    const runs = findPairAwareRuns(rows, (row) => {
+      const leftId = cells[row * cols + (boundary - 1)];
+      const rightId = cells[row * cols + boundary];
+      return leftId !== rightId ? overrideKey(leftId, rightId) : null;
+    });
+    for (const { start, end, pairKey } of runs) {
+      const segLen = (end - start) * cellD;
+      const midY = -innerD / 2 + (start + (end - start) / 2) * cellD;
+      const ov = lookup.get(pairKey);
+      out.push(
+        ov
+          ? {
+              segLen,
+              x: xPos + (ov.offsetStart + ov.offsetEnd) / 2,
+              y: midY,
+              rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
+            }
+          : { segLen, x: xPos, y: midY, rotateZ: 90 }
+      );
+    }
+  }
+
+  // Horizontal dividers (between rows) run along X; straight ⇒ rotateZ 0.
+  for (let boundary = 1; boundary < rows; boundary++) {
+    const yPos = -innerD / 2 + boundary * cellD;
+    const runs = findPairAwareRuns(cols, (col) => {
+      const topId = cells[(boundary - 1) * cols + col];
+      const bottomId = cells[boundary * cols + col];
+      return topId !== bottomId ? overrideKey(topId, bottomId) : null;
+    });
+    for (const { start, end, pairKey } of runs) {
+      const segLen = (end - start) * cellW;
+      const midX = -innerW / 2 + (start + (end - start) / 2) * cellW;
+      const ov = lookup.get(pairKey);
+      out.push(
+        ov
+          ? {
+              segLen,
+              x: midX,
+              y: yPos + (ov.offsetStart + ov.offsetEnd) / 2,
+              rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
+            }
+          : { segLen, x: midX, y: yPos, rotateZ: 0 }
+      );
+    }
+  }
+  return out;
 }
 
 /**

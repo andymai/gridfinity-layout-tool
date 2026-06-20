@@ -60,6 +60,40 @@ describe('tilted dividers through full pipeline', () => {
     expect(Math.abs(sumAbsY(tilted.vertices) - sumAbsY(straight.vertices))).toBeGreaterThan(10);
   }, 60_000);
 
+  const TILT = [{ compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 }];
+
+  const hasFiniteGeometry = (verts: Float32Array | null): boolean => {
+    if (!verts || verts.length === 0) return false;
+    for (let i = 0; i < verts.length; i++) {
+      if (!Number.isFinite(verts[i])) return false;
+    }
+    return true;
+  };
+
+  it('tilted divider + interior wall cutout builds valid geometry (#2276)', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin({
+      ...baseParams,
+      walls: {
+        ...baseParams.walls,
+        enabled: true,
+        interior: { ...baseParams.walls.left, enabled: true },
+      },
+      compartments: { ...baseParams.compartments, dividerOverrides: TILT },
+    });
+    expect(hasFiniteGeometry(result.vertices)).toBe(true);
+  }, 60_000);
+
+  it('tilted divider + interior handle holes build valid geometry (#2276)', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin({
+      ...baseParams,
+      handles: { ...baseParams.handles, enabled: true, interior: true },
+      compartments: { ...baseParams.compartments, dividerOverrides: TILT },
+    });
+    expect(hasFiniteGeometry(result.vertices)).toBe(true);
+  }, 60_000);
+
   it('cavity floor reflects the tilt — points exist only at off-axis Y positions', () => {
     const generateBin = getGenerateBin();
     const tilted = generateBin({

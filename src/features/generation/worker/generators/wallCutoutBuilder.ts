@@ -20,7 +20,7 @@ import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
-import { findWallSegments } from './compartmentBuilder';
+import { interiorDividerSegments } from './compartmentBuilder';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
@@ -199,6 +199,48 @@ export function buildWallCutoutCuts(
   });
 }
 
+/** A single interior-divider cutout window, resolved in bin-centered mm. */
+export interface InteriorDividerCutout {
+  /** Cut span along the divider's length. */
+  readonly cutW: number;
+  /** Cut depth (vertical, into the wall from its top). */
+  readonly cutH: number;
+  readonly x: number;
+  readonly y: number;
+  /** In-plane rotation (deg) so the window lies in the (possibly tilted) wall. */
+  readonly rotateZ: number;
+}
+
+/**
+ * Resolve the interior-divider cutout windows for a bin.
+ *
+ * Crucially, this honours `dividerOverrides` (tilted dividers): each window is
+ * translated to the tilted segment's midpoint and rotated to lie IN the wall.
+ * Without this the cutout is carved at the original grid line while the wall is
+ * tilted, so it slices the divider at a slant (GH #2276). Pure + exported so the
+ * geometry can be asserted without a WASM build.
+ */
+export function computeInteriorDividerCutouts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): InteriorDividerCutout[] {
+  const cfg = params.walls.interior;
+  if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
+  if (cfg.width <= 0 || cfg.depth <= 0) return [];
+
+  const interiorH = wallHeight - params.wallThickness;
+  const out: InteriorDividerCutout[] = [];
+  for (const seg of interiorDividerSegments(params, innerW, innerD)) {
+    const cutW = seg.segLen * (cfg.width / 100);
+    const cutH = interiorH * (cfg.depth / 100);
+    if (cutW < 0.1 || cutH < 0.1) continue;
+    out.push({ cutW, cutH, x: seg.x, y: seg.y, rotateZ: seg.rotateZ });
+  }
+  return out;
+}
+
 function buildWallCutoutCutsInScope(
   scope: DisposalScope,
   params: BinParams,
@@ -284,82 +326,25 @@ function buildWallCutoutCutsInScope(
   // compartmentWallsFeature is filtered out for custom shapes and the
   // corresponding divider walls won't exist. Cutting where there's no
   // material would be wasted boolean work (and risks carving the shell
-  // if a cut crosses it).
-  if (params.walls.interior.enabled && !isPartialMask(params.cellMask)) {
-    const { effectiveWidth, effectiveDepth } = resolveEffective('interior');
-    if (effectiveWidth > 0 && effectiveDepth > 0) {
-      const { cols, rows, cells } = params.compartments;
-      if (cols > 1 || rows > 1) {
-        const cellW = innerW / cols;
-        const cellD = innerD / rows;
-        const interiorH = wallHeight - wallThickness;
-
-        const addDividerCutouts = (
-          boundaryCount: number,
-          segCount: number,
-          getCellIds: (boundary: number, i: number) => [number, number],
-          getPosition: (
-            boundary: number,
-            start: number,
-            end: number
-          ) => { x: number; y: number; rotateZ: number },
-          segCellSize: number
-        ): void => {
-          for (let boundary = 1; boundary < boundaryCount; boundary++) {
-            const segments = findWallSegments(segCount, (i) => {
-              const [id1, id2] = getCellIds(boundary, i);
-              return id1 !== id2;
-            });
-
-            for (const [start, end] of segments) {
-              const segLength = (end - start) * segCellSize;
-              const cutW = segLength * (effectiveWidth / 100);
-              const cutH = interiorH * (effectiveDepth / 100);
-              if (cutW < 0.1 || cutH < 0.1) continue;
-
-              cutShapes.push(
-                buildSingleCutoutInScope(
-                  scope,
-                  cutoutShape,
-                  cutW,
-                  cutH,
-                  overshoot,
-                  extrudeDepth,
-                  wallHeight,
-                  getPosition(boundary, start, end)
-                )
-              );
-            }
-          }
-        };
-
-        // Vertical divider walls (between columns)
-        addDividerCutouts(
-          cols,
-          rows,
-          (boundary, row) => [cells[row * cols + (boundary - 1)], cells[row * cols + boundary]],
-          (boundary, start, end) => ({
-            x: -innerW / 2 + boundary * cellW,
-            y: -innerD / 2 + (start + (end - start) / 2) * cellD,
-            rotateZ: 90,
-          }),
-          cellD
-        );
-
-        // Horizontal divider walls (between rows)
-        addDividerCutouts(
-          rows,
-          cols,
-          (boundary, col) => [cells[(boundary - 1) * cols + col], cells[boundary * cols + col]],
-          (boundary, start, end) => ({
-            x: -innerW / 2 + (start + (end - start) / 2) * cellW,
-            y: -innerD / 2 + boundary * cellD,
-            rotateZ: 0,
-          }),
-          cellW
-        );
-      }
-    }
+  // if a cut crosses it). Placement honours tilted dividers (dividerOverrides)
+  // so the window lands ON the angled wall instead of slicing it at a slant.
+  for (const c of computeInteriorDividerCutouts(params, innerW, innerD, wallHeight)) {
+    cutShapes.push(
+      buildSingleCutoutInScope(
+        scope,
+        cutoutShape,
+        c.cutW,
+        c.cutH,
+        overshoot,
+        extrudeDepth,
+        wallHeight,
+        {
+          x: c.x,
+          y: c.y,
+          rotateZ: c.rotateZ,
+        }
+      )
+    );
   }
 
   // Inline fuse so the fused intermediate is registered in `scope` — the
@@ -398,7 +383,10 @@ export const wallCutoutsFeature: FeatureBuilder = {
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
-        params.compartments.cells.join(',')
+        params.compartments.cells.join(','),
+        // Tilted dividers move interior cutouts off the grid line — without this
+        // a tilt change would reuse the stale grid-aligned cut (GH #2276).
+        stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );
   },

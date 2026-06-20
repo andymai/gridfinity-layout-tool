@@ -14,7 +14,7 @@ import { translate, rotate, withScope, clone, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams, HandleCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { findWallSegments } from './compartmentBuilder';
+import { interiorDividerSegments } from './compartmentBuilder';
 import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
@@ -234,80 +234,39 @@ function buildHandleHolesInScope(
   // Interior wall handles — skipped on polygon bins (compartment walls are
   // filtered out for custom shapes, so there's nothing to cut through).
   if (interior && !isPolygon) {
-    const { cols, rows, cells } = params.compartments;
+    const { cols, rows } = params.compartments;
     if (cols > 1 || rows > 1) {
-      const cellW = innerW / cols;
-      const cellD = innerD / rows;
       const geom = computeHandleHoleGeometry(interiorHeight, globalHeight, verticalPosition);
 
       if (geom.effectiveHeight >= 1) {
-        const addInteriorHandles = (
-          boundaryCount: number,
-          segCount: number,
-          getCellIds: (boundary: number, i: number) => [number, number],
-          getWallDef: (boundary: number, start: number, end: number) => HandleWallDef,
-          segCellSize: number
-        ): void => {
-          for (let boundary = 1; boundary < boundaryCount; boundary++) {
-            const segments = findWallSegments(segCount, (i) => {
-              const [id1, id2] = getCellIds(boundary, i);
-              return id1 !== id2;
-            });
-
-            for (const [start, end] of segments) {
-              const segSpan = (end - start) * segCellSize;
-              const handleW = segSpan * (globalWidth / 100);
-              const offsets = computeMultiHandleOffsets(count, segSpan, handleW);
-              const wallDef = getWallDef(boundary, start, end);
-
-              for (const offset of offsets) {
-                const hole = buildHoleCut(
-                  scope,
-                  shape,
-                  handleW,
-                  offset,
-                  geom.effectiveHeight,
-                  globalRadius,
-                  extrudeDepth,
-                  geom.centerZ,
-                  wallDef
-                );
-                if (hole) allHoles.push(hole);
-              }
-            }
+        // Placement honours tilted dividers (dividerOverrides) so handle holes
+        // distribute along the angled wall, not the original grid line (#2276).
+        for (const seg of interiorDividerSegments(params, innerW, innerD)) {
+          const handleW = seg.segLen * (globalWidth / 100);
+          const offsets = computeMultiHandleOffsets(count, seg.segLen, handleW);
+          // Interior walls always use global config — `side` is unused for lookups.
+          const wallDef: HandleWallDef = {
+            side: 'front',
+            wallSpan: seg.segLen,
+            x: seg.x,
+            y: seg.y,
+            rotateZ: seg.rotateZ,
+          };
+          for (const offset of offsets) {
+            const hole = buildHoleCut(
+              scope,
+              shape,
+              handleW,
+              offset,
+              geom.effectiveHeight,
+              globalRadius,
+              extrudeDepth,
+              geom.centerZ,
+              wallDef
+            );
+            if (hole) allHoles.push(hole);
           }
-        };
-
-        // Vertical dividers (between columns)
-        addInteriorHandles(
-          cols,
-          rows,
-          (boundary, row) => [cells[row * cols + (boundary - 1)], cells[row * cols + boundary]],
-          (boundary, start, end) => ({
-            // Interior walls always use global config — side field unused for lookups
-            side: 'front' as const,
-            wallSpan: (end - start) * cellD,
-            x: -innerW / 2 + boundary * cellW,
-            y: -innerD / 2 + (start + (end - start) / 2) * cellD,
-            rotateZ: 90,
-          }),
-          cellD
-        );
-
-        // Horizontal dividers (between rows)
-        addInteriorHandles(
-          rows,
-          cols,
-          (boundary, col) => [cells[(boundary - 1) * cols + col], cells[boundary * cols + col]],
-          (boundary, start, end) => ({
-            side: 'front' as const,
-            wallSpan: (end - start) * cellW,
-            x: -innerW / 2 + (start + (end - start) / 2) * cellW,
-            y: -innerD / 2 + boundary * cellD,
-            rotateZ: 0,
-          }),
-          cellW
-        );
+        }
       }
     }
   }
@@ -354,7 +313,9 @@ export const handlesFeature: FeatureBuilder = {
         dim.hasLip,
         params.handles.interior
           ? `${params.compartments.cols}x${params.compartments.rows}:${params.compartments.cells.join(',')}`
-          : ''
+          : '',
+        // Tilted dividers move interior handle holes off the grid line (#2276).
+        params.handles.interior ? stableSerialize(params.compartments.dividerOverrides ?? []) : ''
       )
     );
   },
