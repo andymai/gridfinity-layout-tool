@@ -85,6 +85,9 @@ export function forEachSocketCell(
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): void {
   if (globalHalfSockets) {
+    // Half-sockets decomposes every cell into uniform 0.5u feet, so the grid is
+    // symmetric and `fractionalEdge` has no foot to reposition — intentionally
+    // omitted (the UI hides the edge controls in this mode).
     forEachCell(gridW, gridD, callback, { halfSockets: true, gridUnitMm });
     return;
   }

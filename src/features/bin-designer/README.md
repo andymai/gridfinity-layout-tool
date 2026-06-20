@@ -81,6 +81,21 @@ graph TB
   `paramsNeedHalfGridMode` (fractional dimensions OR `hasHalfBinDetail(mask)`),
   so reopening a design or undoing past a dimension change never leaves the
   UI toggles out of sync with the underlying shape.
+- **Fractional foot edge** (`params.fractionalEdgeX` / `fractionalEdgeY`): for a
+  bin with a fractional dimension (e.g. 2.5u), which side the half-unit foot
+  column/row sits on — `'end'` (default) = right/back, `'start'` = left/front.
+  Mirrors the baseplate's drawer-level option and lets a 2.5×2 bin place its
+  half foot on either side **without** rotating the print (rotation would move
+  the front-facing finger scoop to the back). Default `'end'` keeps existing
+  geometry byte-identical (the socket cache key appends `frac:x:y` only when
+  non-default). The setting is threaded through every cell iterator that must
+  agree on foot placement — base sockets + their magnet/screw holes, the
+  lightweight base, and lid magnets — so they never drift apart. **No effect with
+  `base.halfSockets`** (every foot is already a uniform 0.5u cell, so there's no
+  single half foot to move) — the `DimensionsSection` toggle hides in that mode.
+  Overhang gap-fill feet keep the default decomposition since they don't mate
+  with baseplate sockets. `migrateParams` backfills `'end'` for legacy designs;
+  `handleSwapDimensions` swaps the two edges along with width/depth.
 - **Click-lock lid**: optional companion piece generated alongside the bin
   when `params.lid.enabled && params.base.stackingLip`. Source of truth lives
   in the worker (`generation/worker/generators/lidBuilder.ts` +

@@ -35,4 +35,17 @@ describe('DimensionsSection', () => {
     // Depth is whole — no front/back (bottom/top) toggle.
     expect(screen.queryByText('Bottom')).not.toBeInTheDocument();
   });
+
+  it('hides the edge control in half-sockets mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2.5,
+        depth: 2,
+        base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+      },
+    });
+    render(<DimensionsSection />);
+    expect(screen.queryByText('Half-unit edge position')).not.toBeInTheDocument();
+  });
 });

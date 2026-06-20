@@ -153,6 +153,45 @@ describe('useDimensionsSection', () => {
     expect(result.current.state.hasFractionalDepth).toBe(false);
   });
 
+  it('hides the edge toggles in half-sockets mode (uniform half feet)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2.5,
+        depth: 1.5,
+        base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+      },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    expect(result.current.state.hasFractionalWidth).toBe(false);
+    expect(result.current.state.hasFractionalDepth).toBe(false);
+  });
+
+  it('swaps the fractional edge with its axis when dimensions are swapped', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2.5,
+        depth: 1,
+        fractionalEdgeX: 'start',
+        fractionalEdgeY: 'end',
+      },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleSwapDimensions();
+    });
+
+    const params = useDesignerStore.getState().params;
+    expect(params.width).toBe(1);
+    expect(params.depth).toBe(2.5);
+    // The 'start' preference followed width → depth.
+    expect(params.fractionalEdgeX).toBe('end');
+    expect(params.fractionalEdgeY).toBe('start');
+  });
+
   it('handleFractionalEdgeChange writes the chosen edge to the store', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 2.5 },
