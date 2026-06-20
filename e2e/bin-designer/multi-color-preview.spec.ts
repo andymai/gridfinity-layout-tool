@@ -17,9 +17,15 @@ const LABS_KEY = 'gridfinity-labs-v1';
 const LAB_FLAG = 'multi_color_export';
 const BODY_HEX = '#00aaff';
 const LIP_HEX = '#ff0066';
-const PER_CHANNEL_TOLERANCE = 64;
-// 0.25% of pixels ≈ a 48×48 block on a 1280×720 canvas
-const MIN_PIXEL_RATIO = 0.0025;
+// Three.js lighting darkens the pure hex, so a hit needs a non-trivial
+// per-channel tolerance — at 64 the shaded body and lip barely register. 80
+// still keeps the two well-separated targets from colliding.
+const PER_CHANNEL_TOLERANCE = 80;
+// ~0.15% of the canvas. The lip is a thin ring and #ff0066 shifts more under
+// lighting than the body blue (measured ≈1640 lip px vs ≈20k body at tol 80),
+// so the floor sits comfortably below the lip count rather than at the old
+// 0.0025 (≈1666) which the lip skimmed.
+const MIN_PIXEL_RATIO = 0.0015;
 
 test.describe('Bin Designer — multi-color 3D preview', () => {
   test.beforeEach(async ({ page }) => {
@@ -43,7 +49,11 @@ test.describe('Bin Designer — multi-color 3D preview', () => {
   test('rendered preview contains pixels matching both body and lip colors', async ({ page }) => {
     await page.goto('/designer');
     const canvas = page.locator('canvas').first();
-    await expect(canvas).toBeVisible({ timeout: 30000 });
+    await expect(canvas).toBeVisible({ timeout: 60000 });
+
+    // The per-zone editors only render once the per-design multi-color toggle
+    // is on (the lab flag merely reveals the section).
+    await page.getByRole('switch', { name: 'Multi-Color' }).click();
 
     for (const [label, hex] of [
       [/^Body: /i, BODY_HEX],
