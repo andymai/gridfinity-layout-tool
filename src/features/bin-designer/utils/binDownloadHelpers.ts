@@ -160,21 +160,29 @@ export function buildSinglePiece3MF(
   if (isErr(parseResult)) {
     throw new Error(getUserMessage(parseResult.error));
   }
-  const { vertices, normals } = parseResult.value;
+  let { vertices, normals } = parseResult.value;
 
   let colorConfig: ThreeMFColorConfig | undefined;
   /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
   if (applyMultiColor && params.featureColors?.enabled && faceGroups) {
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
-    colorConfig =
-      buildTriangleMaterialIndices(
-        faceGroups,
-        params.featureColors,
-        triangleCount,
-        vertices,
-        computeActiveZones(params)
-      ) ?? undefined;
+    const mapping = buildTriangleMaterialIndices(
+      faceGroups,
+      params.featureColors,
+      triangleCount,
+      vertices,
+      computeActiveZones(params)
+    );
+    if (mapping) {
+      colorConfig = mapping.config;
+      // A split lip grid re-tessellates the lip; use the replacement geometry
+      // so triangle count matches the per-triangle paint_color indices.
+      if (mapping.vertices && mapping.normals) {
+        vertices = mapping.vertices;
+        normals = mapping.normals;
+      }
+    }
   }
 
   return export3MF(vertices, normals, {
@@ -311,14 +319,22 @@ export function buildMultiObject3MF(
     let colorConfig: ThreeMFColorConfig | undefined;
     if (i === 0 && multiColorEnabled && faceGroups) {
       const triangleCount = vertices.length / 9;
-      colorConfig =
-        buildTriangleMaterialIndices(
-          faceGroups,
-          params.featureColors,
-          triangleCount,
-          vertices,
-          computeActiveZones(params)
-        ) ?? undefined;
+      const mapping = buildTriangleMaterialIndices(
+        faceGroups,
+        params.featureColors,
+        triangleCount,
+        vertices,
+        computeActiveZones(params)
+      );
+      if (mapping) {
+        colorConfig = mapping.config;
+        // Split lip grid → use the re-tessellated geometry so the bin object's
+        // triangle count matches its per-triangle paint_color indices.
+        if (mapping.vertices && mapping.normals) {
+          vertices = mapping.vertices;
+          normals = mapping.normals;
+        }
+      }
       binHasColorConfig = colorConfig !== undefined;
     } else if (i > 0 && multiColorEnabled && binHasColorConfig) {
       const zone = pieceZone(piece.label);

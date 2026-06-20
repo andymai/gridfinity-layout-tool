@@ -1,19 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
 import { buildTriangleMaterialIndices } from './materialMapping';
-import { ZONE_ORDER } from '../types/featureColors';
-import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
+import { ZONE_ORDER, makeUniformLipCells } from '../types/featureColors';
+import type { ColorZone, FeatureColorConfig, LipColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
 
 const SINGLE = '#d4d8dc';
 const allZones: ReadonlySet<ColorZone> = new Set(ZONE_ORDER);
 
-/** Build a featureColors config that's single-color by default; pass overrides to differentiate zones. */
+function lip(
+  cells: Record<string, string> = {},
+  corners: 1 | 2 | 4 = 1,
+  bands: 1 | 2 | 4 = 1
+): LipColorConfig {
+  return { corners, bands, cells: { ...makeUniformLipCells(SINGLE), ...cells } };
+}
+
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
     enabled: false,
     body: SINGLE,
-    lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
+    lip: lip(),
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
@@ -24,9 +31,9 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
   };
 }
 
-/** Build a degenerate triangle (all 3 verts at the same XY); centroid = (x, y, 0). */
+/** Tiny (non-degenerate) triangle centered at (x, y, 0). */
 function tri(x: number, y: number): number[] {
-  return [x, y, 0, x, y, 0, x, y, 0];
+  return [x - 0.1, y - 0.1, 0, x + 0.1, y - 0.1, 0, x, y + 0.1, 0];
 }
 
 describe('buildTriangleMaterialIndices', () => {
@@ -36,8 +43,7 @@ describe('buildTriangleMaterialIndices', () => {
     expect(buildTriangleMaterialIndices(faceGroups, colors(), 3, vertices, allZones)).toBeNull();
   });
 
-  it('maps non-lip face groups to their zone color', () => {
-    // labelTab (green) vs body (white)
+  it('maps non-lip face groups to their zone color (no geometry override)', () => {
     const featureColors = colors({ labelTab: '#00ff00' });
     const faceGroups: FaceGroupData[] = [
       { start: 0, count: 9, tag: FeatureTag.BASE },
@@ -53,39 +59,40 @@ describe('buildTriangleMaterialIndices', () => {
     ]);
 
     const result = buildTriangleMaterialIndices(faceGroups, featureColors, 6, vertices, allZones);
-
     expect(result).not.toBeNull();
-    expect(result?.materials.map((m) => m.color)).toEqual([SINGLE, '#00ff00']);
-    expect(result?.triangleMaterialIndices).toEqual([0, 0, 0, 1, 1, 1]);
+    expect(result?.vertices).toBeUndefined();
+    expect(result?.config.materials.map((m) => m.color)).toEqual([SINGLE, '#00ff00']);
+    expect(result?.config.triangleMaterialIndices).toEqual([0, 0, 0, 1, 1, 1]);
   });
 
-  it('splits LIP triangles into four corner zones by centroid quadrant', () => {
-    // Four lip-corner colors: distinct hexes
+  it('splits a 4-corner lip and returns replacement geometry + normals', () => {
     const featureColors = colors({
-      lip: {
-        frontLeft: '#ff0000',
-        frontRight: '#00ff00',
-        backRight: '#0000ff',
-        backLeft: '#ffffff',
-      },
+      lip: lip(
+        {
+          'lip:frontLeft:0': '#ff0000',
+          'lip:frontRight:0': '#00ff00',
+          'lip:backRight:0': '#0000ff',
+          'lip:backLeft:0': '#ffffff',
+        },
+        4,
+        1
+      ),
     });
-    // Four LIP triangles, one in each quadrant of bbox [0..100] × [0..100]
     const vertices = new Float32Array([
-      ...tri(10, 10), // front-left (low x, low y)
-      ...tri(90, 10), // front-right (high x, low y)
+      ...tri(10, 10), // front-left
+      ...tri(90, 10), // front-right
       ...tri(90, 90), // back-right
       ...tri(10, 90), // back-left
     ]);
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
 
     const result = buildTriangleMaterialIndices(faceGroups, featureColors, 4, vertices, allZones);
-
     expect(result).not.toBeNull();
-    // Materials: body, then 4 distinct corner colors. resolveColorMapping
-    // walks lip:fL, lip:fR, lip:bR, lip:bL — so indices 1..4 line up with
-    // that order.
-    const idxFor = (hex: string) => result!.materials.findIndex((m) => m.color === hex);
-    expect(result?.triangleMaterialIndices).toEqual([
+    // Split path → replacement geometry with matching-length normals.
+    expect(result?.vertices).toBeInstanceOf(Float32Array);
+    expect(result?.normals?.length).toBe(result?.vertices?.length);
+    const idxFor = (hex: string) => result!.config.materials.findIndex((m) => m.color === hex);
+    expect(result?.config.triangleMaterialIndices).toEqual([
       idxFor('#ff0000'),
       idxFor('#00ff00'),
       idxFor('#0000ff'),
@@ -94,11 +101,7 @@ describe('buildTriangleMaterialIndices', () => {
   });
 
   it('maps SOCKET → base, SCOOP → scoop, DIVIDER → dividers', () => {
-    const featureColors = colors({
-      base: '#aa0000',
-      scoop: '#00aa00',
-      dividers: '#0000aa',
-    });
+    const featureColors = colors({ base: '#aa0000', scoop: '#00aa00', dividers: '#0000aa' });
     const faceGroups: FaceGroupData[] = [
       { start: 0, count: 3, tag: FeatureTag.SOCKET },
       { start: 3, count: 3, tag: FeatureTag.SCOOP },
@@ -107,10 +110,9 @@ describe('buildTriangleMaterialIndices', () => {
     const vertices = new Float32Array([...tri(0, 0), ...tri(1, 1), ...tri(2, 2)]);
 
     const result = buildTriangleMaterialIndices(faceGroups, featureColors, 3, vertices, allZones);
-
     expect(result).not.toBeNull();
-    const idxFor = (hex: string) => result!.materials.findIndex((m) => m.color === hex);
-    expect(result?.triangleMaterialIndices).toEqual([
+    const idxFor = (hex: string) => result!.config.materials.findIndex((m) => m.color === hex);
+    expect(result?.config.triangleMaterialIndices).toEqual([
       idxFor('#aa0000'),
       idxFor('#00aa00'),
       idxFor('#0000aa'),

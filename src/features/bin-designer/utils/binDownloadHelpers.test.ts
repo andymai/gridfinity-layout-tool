@@ -27,9 +27,9 @@ vi.mock('@/features/bin-designer/utils/stlParser', () => ({
 }));
 
 vi.mock('@/features/bin-designer/utils/materialMapping', () => ({
+  // New return shape: `{ config, vertices?, normals? }`. No split geometry here.
   buildTriangleMaterialIndices: () => ({
-    materials: [{ id: 0, color: '#ffffff' }],
-    triangleMaterialIds: new Uint8Array([0]),
+    config: { materials: [{ color: '#ffffff' }], triangleMaterialIndices: [0] },
   }),
 }));
 

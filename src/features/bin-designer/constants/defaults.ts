@@ -19,8 +19,8 @@ import type {
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
-import type { FeatureColorConfig } from '../types/featureColors';
-import { normalizeHex } from '../types/featureColors';
+import type { FeatureColorConfig, LipAxisCount } from '../types/featureColors';
+import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
@@ -165,10 +165,9 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   enabled: false,
   body: '#d4d8dc',
   lip: {
-    frontLeft: '#d4d8dc',
-    frontRight: '#d4d8dc',
-    backRight: '#d4d8dc',
-    backLeft: '#d4d8dc',
+    corners: 1,
+    bands: 1,
+    cells: makeUniformLipCells('#d4d8dc'),
   },
   labelTab: '#d4d8dc',
   base: '#d4d8dc',
@@ -178,11 +177,26 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   lid: '#d4d8dc',
 } as const;
 
+/** Old per-corner lip object (pre quadrant×band grid). */
+interface LegacyLipCorners {
+  frontLeft?: string;
+  frontRight?: string;
+  backRight?: string;
+  backLeft?: string;
+}
+
+/** New quadrant×band lip grid (current shape, possibly partial on reload). */
+interface GridLipInput {
+  corners?: number;
+  bands?: number;
+  cells?: { [cellId: string]: string };
+}
+
 interface LegacyFeatureColorInput {
   enabled?: boolean;
   body?: string;
-  /** Legacy single-color string or the new 4-corner object. */
-  lip?: string | Partial<FeatureColorConfig['lip']>;
+  /** Legacy single-color string, legacy 4-corner object, or the new grid. */
+  lip?: string | LegacyLipCorners | GridLipInput;
   labelTab?: string;
   base?: string;
   scoop?: string;
@@ -194,6 +208,48 @@ interface LegacyFeatureColorInput {
 function resolveColor(raw: string | undefined, fallback: string): string {
   if (raw === undefined) return fallback;
   return LEGACY_SLOT_COLORS[raw] ?? raw;
+}
+
+/** Clamp an arbitrary number to the nearest allowed lip axis count {1,2,4}. */
+function clampAxisCount(n: number | undefined): LipAxisCount {
+  if (n === 2) return 2;
+  if (n === 4) return 4;
+  return 1;
+}
+
+function isGridLip(lip: LegacyLipCorners | GridLipInput): lip is GridLipInput {
+  return 'cells' in lip || 'corners' in lip || 'bands' in lip;
+}
+
+/**
+ * Resolve the lip grid from any of the three eras. Always returns the full
+ * 16-cell grid so callers never see a partial config.
+ */
+function migrateLip(raw: LegacyFeatureColorInput['lip'], body: string): FeatureColorConfig['lip'] {
+  // Era 1: single hex string → uniform 1×1.
+  if (typeof raw === 'string') {
+    return { corners: 1, bands: 1, cells: makeUniformLipCells(resolveColor(raw, body)) };
+  }
+  if (raw && typeof raw === 'object') {
+    // Era 3: already the grid shape → backfill missing cells from body, clamp counts.
+    if (isGridLip(raw)) {
+      const cells = makeUniformLipCells(body);
+      if (raw.cells) {
+        for (const id of LIP_CELL_ZONES) {
+          if (typeof raw.cells[id] === 'string') cells[id] = raw.cells[id];
+        }
+      }
+      return { corners: clampAxisCount(raw.corners), bands: clampAxisCount(raw.bands), cells };
+    }
+    // Era 2: legacy 4-corner object. The per-corner editor was rolled back to a
+    // single mirrored picker, so mismatched corners were unreachable from the
+    // UI; canonicalize to frontLeft → a uniform 1×1 grid (the visible look the
+    // rolled-back single picker already produced; discussion #1654).
+    const fl = raw.frontLeft ?? body;
+    return { corners: 1, bands: 1, cells: makeUniformLipCells(fl) };
+  }
+  // Missing → uniform body, 1×1.
+  return { corners: 1, bands: 1, cells: makeUniformLipCells(body) };
 }
 
 /**
@@ -211,31 +267,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const body = resolveColor(raw.body, DEFAULT_FEATURE_COLOR_CONFIG.body);
   const labelTab = resolveColor(raw.labelTab, body);
 
-  let lip: FeatureColorConfig['lip'];
-  if (typeof raw.lip === 'string') {
-    const single = resolveColor(raw.lip, body);
-    lip = { frontLeft: single, frontRight: single, backRight: single, backLeft: single };
-  } else if (raw.lip && typeof raw.lip === 'object') {
-    const fl = raw.lip.frontLeft ?? body;
-    const fr = raw.lip.frontRight ?? body;
-    const br = raw.lip.backRight ?? body;
-    const bl = raw.lip.backLeft ?? body;
-    // The per-corner editor is rolled back to a single picker (mirrors
-    // hex into all four slots). Designs saved with mismatched corners
-    // become unreachable from the UI but the 3D preview + 3MF exporter
-    // still honor the mismatch — canonicalize to `frontLeft` so all
-    // three surfaces agree (discussion #1654 bug #3).
-    const normalizedFl = normalizeHex(fl);
-    const allMatch =
-      normalizedFl === normalizeHex(fr) &&
-      normalizedFl === normalizeHex(br) &&
-      normalizedFl === normalizeHex(bl);
-    lip = allMatch
-      ? { frontLeft: fl, frontRight: fr, backRight: br, backLeft: bl }
-      : { frontLeft: fl, frontRight: fl, backRight: fl, backLeft: fl };
-  } else {
-    lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
-  }
+  const lip = migrateLip(raw.lip, body);
 
   const base = resolveColor(raw.base, body);
   const scoop = resolveColor(raw.scoop, body);
@@ -253,7 +285,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const hasCustomColor =
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
     [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
-    [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
+    LIP_CELL_ZONES.some((id) => isCustom(lip.cells[id] ?? body));
 
   return {
     enabled: raw.enabled ?? hasCustomColor,

@@ -22,6 +22,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore, useToastStore } from '@/core/store';
 import { COLOR_PALETTE_CONSTRAINTS } from '@/core/store/settings.types';
 import type { SavedColorPalette } from '@/core/store/settings.types';
+import { normalizePaletteLip, lipCellZone } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
@@ -80,10 +81,9 @@ export function ColorsActionsMenu({
       colors: {
         body: featureColors.body,
         lip: {
-          frontLeft: featureColors.lip.frontLeft,
-          frontRight: featureColors.lip.frontRight,
-          backRight: featureColors.lip.backRight,
-          backLeft: featureColors.lip.backLeft,
+          corners: featureColors.lip.corners,
+          bands: featureColors.lip.bands,
+          cells: { ...featureColors.lip.cells },
         },
         labelTab: featureColors.labelTab,
         base: featureColors.base,
@@ -281,12 +281,14 @@ function MenuButton({
 }
 
 function PaletteSwatch({ palette }: { palette: SavedColorPalette }) {
-  // 5-stripe summary: body / lip-fL / lip-fR / labelTab / base. Compact
-  // enough to scan a list, distinctive enough to remember the palette.
+  // 5-stripe summary: body / two lip cells / labelTab / base. Compact enough
+  // to scan a list, distinctive enough to remember the palette. Tolerant of
+  // legacy (4-corner) and current (grid) persisted lip shapes.
+  const lip = normalizePaletteLip(palette.colors.lip, palette.colors.body);
   const stripes: string[] = [
     palette.colors.body,
-    palette.colors.lip.frontLeft,
-    palette.colors.lip.frontRight,
+    lip.cells[lipCellZone('frontLeft', 0)],
+    lip.cells[lipCellZone('frontRight', 0)],
     palette.colors.labelTab,
     palette.colors.base,
   ];

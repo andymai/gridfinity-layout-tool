@@ -1,0 +1,92 @@
+import { describe, it, expect } from 'vitest';
+import { splitLipMesh, lipGridIsNonTrivial } from './lipSeamSplitter';
+import { FeatureTag } from '@/shared/types/generation';
+import type { FaceGroupData } from '@/shared/types/generation';
+import type { LipGeom } from './lipCornerClassifier';
+
+function triArea(t: ArrayLike<number>): number {
+  const ux = t[3] - t[0],
+    uy = t[4] - t[1],
+    uz = t[5] - t[2];
+  const vx = t[6] - t[0],
+    vy = t[7] - t[1],
+    vz = t[8] - t[2];
+  const cx = uy * vz - uz * vy;
+  const cy = uz * vx - ux * vz;
+  const cz = ux * vy - uy * vx;
+  return 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
+}
+
+/** A back wall quad (y=5, x∈[-10,10], z∈[0,10]) as two lip triangles. */
+const QUAD: number[][] = [
+  [-10, 5, 0, 10, 5, 0, 10, 5, 10],
+  [-10, 5, 0, 10, 5, 10, -10, 5, 10],
+];
+const GEOM: LipGeom = { cx: 0, cy: 0, minZ: 0, maxZ: 10 };
+const FACE_GROUPS: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.LIP }];
+
+function run(counts: { corners: 1 | 2 | 4; bands: 1 | 2 | 4 }) {
+  return splitLipMesh({
+    triangleCount: QUAD.length,
+    faceGroups: FACE_GROUPS,
+    getTriangle: (i) => QUAD[i],
+    geom: GEOM,
+    counts,
+  });
+}
+
+describe('lipSeamSplitter', () => {
+  it('flags non-trivial grids only when an axis exceeds 1', () => {
+    expect(lipGridIsNonTrivial({ corners: 1, bands: 1 })).toBe(false);
+    expect(lipGridIsNonTrivial({ corners: 2, bands: 1 })).toBe(true);
+    expect(lipGridIsNonTrivial({ corners: 1, bands: 2 })).toBe(true);
+  });
+
+  it('conserves total area when splitting (2 corners × 2 bands)', () => {
+    const inputArea = QUAD.reduce((s, t) => s + triArea(t), 0);
+    const { positions, triZones } = run({ corners: 2, bands: 2 });
+    let outArea = 0;
+    for (let i = 0; i < triZones.length; i++)
+      outArea += triArea(positions.subarray(i * 9, i * 9 + 9));
+    expect(outArea).toBeCloseTo(inputArea, 4);
+  });
+
+  it('emits sub-triangles that each lie wholly in one cell (no straddling seams)', () => {
+    const { positions, triZones } = run({ corners: 4, bands: 2 });
+    // Seam planes for this quad: x=0 (corners=4) and z=5 (bands=2). y=0 split
+    // doesn't bisect the all-back quad. Every sub-triangle must stay on one
+    // side of x=0 and z=5.
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions.subarray(i * 9, i * 9 + 9);
+      const xs = [t[0], t[3], t[6]];
+      const zs = [t[2], t[5], t[8]];
+      const allXNeg = xs.every((x) => x <= 1e-6);
+      const allXPos = xs.every((x) => x >= -1e-6);
+      const allZLo = zs.every((z) => z <= 5 + 1e-6);
+      const allZHi = zs.every((z) => z >= 5 - 1e-6);
+      expect(allXNeg || allXPos).toBe(true);
+      expect(allZLo || allZHi).toBe(true);
+    }
+  });
+
+  it('produces all four expected cells for the back wall (2×2)', () => {
+    const { triZones } = run({ corners: 4, bands: 2 });
+    const unique = new Set(triZones);
+    expect(unique).toContain('lip:backLeft:0');
+    expect(unique).toContain('lip:backLeft:1');
+    expect(unique).toContain('lip:backRight:0');
+    expect(unique).toContain('lip:backRight:1');
+  });
+
+  it('passes non-lip triangles through unchanged with their tag zone', () => {
+    const res = splitLipMesh({
+      triangleCount: 1,
+      faceGroups: [{ start: 0, count: 3, tag: FeatureTag.SCOOP }],
+      getTriangle: () => [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      geom: GEOM,
+      counts: { corners: 4, bands: 4 },
+    });
+    expect(res.triZones).toEqual(['scoop']);
+    expect(Array.from(res.positions)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+  });
+});

@@ -19,7 +19,8 @@ import { useTranslation } from '@/i18n';
 interface SlicerHandoffPreviewProps {
   featureColors: FeatureColorConfig;
   activeZones: ReadonlySet<ColorZone>;
-  zoneLabels: Record<ColorZone, string>;
+  /** Human label for a zone (lip cells included — there are up to 16). */
+  zoneLabel: (zone: ColorZone) => string;
 }
 
 interface Filament {
@@ -30,7 +31,7 @@ interface Filament {
 function buildFilaments(
   featureColors: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone>,
-  labels: Record<ColorZone, string>
+  label: (zone: ColorZone) => string
 ): Filament[] {
   // Walk ZONE_ORDER so this stays in lockstep with the 3MF exporter's
   // `resolveColorMapping` — both must enumerate the same zones in the same
@@ -42,9 +43,9 @@ function buildFilaments(
     const hex = normalizeHex(getZoneColor(featureColors, z));
     const existing = byHex.get(hex);
     if (existing) {
-      existing.zones.push(labels[z]);
+      existing.zones.push(label(z));
     } else {
-      byHex.set(hex, { color: hex, zones: [labels[z]] });
+      byHex.set(hex, { color: hex, zones: [label(z)] });
     }
   }
   return [...byHex.values()];
@@ -53,12 +54,12 @@ function buildFilaments(
 export function SlicerHandoffPreview({
   featureColors,
   activeZones,
-  zoneLabels,
+  zoneLabel,
 }: SlicerHandoffPreviewProps) {
   const t = useTranslation();
   const [open, setOpen] = useState(false);
   const panelId = useId();
-  const filaments = buildFilaments(featureColors, activeZones, zoneLabels);
+  const filaments = buildFilaments(featureColors, activeZones, zoneLabel);
 
   if (filaments.length < 2) return null;
 

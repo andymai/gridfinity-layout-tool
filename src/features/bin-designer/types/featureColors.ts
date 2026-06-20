@@ -1,10 +1,12 @@
 /**
  * Feature color types for multi-color bin design.
  *
- * Each non-lip zone stores a hex color directly. The lip splits into
- * four corner zones (front-left, front-right, back-right, back-left)
- * snapped to the outer bbox of the bin's footprint — even on multi-cell
- * and custom-shape bins, there are always exactly 4 lip-corner zones.
+ * Each non-lip zone stores a hex color directly. The lip is a 2-D grid:
+ * an XY corner quadrant (front-left, front-right, back-right, back-left)
+ * crossed with a Z height band (bottom→top). The user picks an active
+ * corner count (1/2/4) and band count (1/2/4); the full 4×4 = 16 cells are
+ * always stored so changing counts is non-destructive. Classification
+ * collapses a raycast/centroid hit down to the active grid's canonical cell.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
@@ -13,6 +15,12 @@ import type { BaseStyle } from './index';
 /** Lip corner identifier — quadrant of the outer XY bbox. */
 export type LipCorner = 'frontLeft' | 'frontRight' | 'backRight' | 'backLeft';
 
+/** Lip band index — 0 = bottom (meets body), increasing upward to the rim. */
+export type LipBand = 0 | 1 | 2 | 3;
+
+/** Active corner / band counts. 1 collapses that axis to a single color. */
+export type LipAxisCount = 1 | 2 | 4;
+
 export const LIP_CORNERS: readonly LipCorner[] = [
   'frontLeft',
   'frontRight',
@@ -20,11 +28,20 @@ export const LIP_CORNERS: readonly LipCorner[] = [
   'backLeft',
 ] as const;
 
+export const LIP_BANDS: readonly LipBand[] = [0, 1, 2, 3] as const;
+
+export const LIP_AXIS_COUNTS: readonly LipAxisCount[] = [1, 2, 4] as const;
+
+/**
+ * Lip color grid. `cells` always holds all 16 `lip:<corner>:<band>` entries
+ * (uniform shape, no optional keys) so toggling `corners`/`bands` never drops
+ * a stored color — collapsed cells stay dormant and reappear when the count
+ * grows back. `corners`/`bands` are the *active* axis sizes.
+ */
 export interface LipColorConfig {
-  readonly frontLeft: string;
-  readonly frontRight: string;
-  readonly backRight: string;
-  readonly backLeft: string;
+  readonly corners: LipAxisCount;
+  readonly bands: LipAxisCount;
+  readonly cells: { readonly [cellId: string]: string };
 }
 
 export interface FeatureColorConfig {
@@ -57,19 +74,19 @@ export interface FeatureColorConfig {
   readonly lid: string;
 }
 
+/** A lip cell zone id, `lip:${corner}:${band}`. */
+export type LipCellZone = `lip:${LipCorner}:${LipBand}`;
+
 /**
  * All editable color zones — each backed by exactly one hex color.
  *
- * Lip is split into four `lip:*` zones; the bare 'lip' identifier is
- * reserved for hover (highlighting the whole lip on group-header hover)
- * and is not a settable color slot.
+ * The lip splits into 16 `lip:<corner>:<band>` cells; the bare 'lip'
+ * identifier is reserved for hover (highlighting the whole lip on
+ * group-header hover) and is not a settable color slot.
  */
 export type ColorZone =
   | 'body'
-  | 'lip:frontLeft'
-  | 'lip:frontRight'
-  | 'lip:backRight'
-  | 'lip:backLeft'
+  | LipCellZone
   | 'labelTab'
   | 'base'
   | 'scoop'
@@ -80,17 +97,108 @@ export type ColorZone =
 /** Hover target — accepts every ColorZone plus the lip group header. */
 export type HoverableZone = ColorZone | 'lip';
 
+export function lipCellZone(corner: LipCorner, band: LipBand): LipCellZone {
+  return `lip:${corner}:${band}` as const;
+}
+
+/** All 16 lip cell ids in canonical order (corner-major, band-minor). */
+export const LIP_CELL_ZONES: readonly LipCellZone[] = LIP_CORNERS.flatMap((corner) =>
+  LIP_BANDS.map((band) => lipCellZone(corner, band))
+);
+
+const LIP_CELL_RE = /^lip:(frontLeft|frontRight|backRight|backLeft):([0-3])$/;
+
+/** Parse a lip cell zone id back to its corner/band, or null if not a lip cell. */
+export function parseLipCell(zone: string): { corner: LipCorner; band: LipBand } | null {
+  const m = LIP_CELL_RE.exec(zone);
+  if (!m) return null;
+  return { corner: m[1] as LipCorner, band: Number(m[2]) as LipBand };
+}
+
+/**
+ * Collapse a raw (corner, band) to the canonical cell of the active grid.
+ * Corner: 1 → frontLeft; 2 → front/back (frontLeft / backLeft); 4 → as-is.
+ * Band: already classified into `0..bands-1` by `classifyLipBand`, so the
+ * band index is canonical — only the corner axis needs folding here.
+ */
+export function collapseLipCell(
+  corner: LipCorner,
+  band: LipBand,
+  counts: { corners: LipAxisCount; bands: LipAxisCount }
+): LipCellZone {
+  let c: LipCorner = corner;
+  if (counts.corners === 1) {
+    c = 'frontLeft';
+  } else if (counts.corners === 2) {
+    // Front/back split: collapse left/right within each half to the left key.
+    c = corner === 'frontRight' ? 'frontLeft' : corner === 'backRight' ? 'backLeft' : corner;
+  }
+  return lipCellZone(c, band);
+}
+
+/** All 16 cells set to the same hex — used for defaults and migration. */
+export function makeUniformLipCells(hex: string): { [cellId: string]: string } {
+  const cells: { [cellId: string]: string } = {};
+  for (const id of LIP_CELL_ZONES) cells[id] = hex;
+  return cells;
+}
+
+function clampLipAxis(n: unknown): LipAxisCount {
+  return n === 2 ? 2 : n === 4 ? 4 : 1;
+}
+
+/**
+ * Apply a partial lip patch, merging `cells` entry-by-entry so a single-cell
+ * write (or a corner/band count change) never drops the other stored cells —
+ * count changes stay non-destructive.
+ */
+export function mergeLipConfig(
+  current: LipColorConfig,
+  patch: Partial<LipColorConfig>
+): LipColorConfig {
+  return {
+    ...current,
+    ...patch,
+    cells: patch.cells ? { ...current.cells, ...patch.cells } : current.cells,
+  };
+}
+
+/**
+ * Coerce a persisted lip value of any era (legacy 4-corner object, or the
+ * current grid) into a full {@link LipColorConfig}. Used when applying a saved
+ * color palette, whose stored lip shape isn't run through the design migrator.
+ */
+export function normalizePaletteLip(raw: unknown, fallback: string): LipColorConfig {
+  if (raw && typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if ('cells' in o || 'corners' in o || 'bands' in o) {
+      const cells = makeUniformLipCells(fallback);
+      const rawCells = o.cells;
+      if (rawCells && typeof rawCells === 'object') {
+        for (const id of LIP_CELL_ZONES) {
+          const v = (rawCells as Record<string, unknown>)[id];
+          if (typeof v === 'string') cells[id] = v;
+        }
+      }
+      return { corners: clampLipAxis(o.corners), bands: clampLipAxis(o.bands), cells };
+    }
+    // Legacy 4-corner palette → canonicalize to a uniform 1×1 grid.
+    const fl = typeof o.frontLeft === 'string' ? o.frontLeft : fallback;
+    return { corners: 1, bands: 1, cells: makeUniformLipCells(fl) };
+  }
+  return { corners: 1, bands: 1, cells: makeUniformLipCells(fallback) };
+}
+
 /**
  * Canonical zone ordering. Used as both the iteration order for full-zone
  * walks and the index for the 3D preview's per-zone material array — body
  * at 0 makes it the natural fallback for triangles outside any face group.
+ * The 16 lip cells occupy fixed slots so `zoneIndex` stays stable when the
+ * user changes corner/band counts (no material-index churn mid-session).
  */
 export const ZONE_ORDER: readonly ColorZone[] = [
   'body',
-  'lip:frontLeft',
-  'lip:frontRight',
-  'lip:backRight',
-  'lip:backLeft',
+  ...LIP_CELL_ZONES,
   'labelTab',
   'base',
   'scoop',
@@ -120,24 +228,15 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
       return c.text;
     case 'lid':
       return c.lid;
-    case 'lip:frontLeft':
-      return c.lip.frontLeft;
-    case 'lip:frontRight':
-      return c.lip.frontRight;
-    case 'lip:backRight':
-      return c.lip.backRight;
-    case 'lip:backLeft':
-      return c.lip.backLeft;
+    default:
+      // lip cell — fall back to body for a missing/legacy cell.
+      return c.lip.cells[z] ?? c.body;
   }
-}
-
-export function lipCornerZone(corner: LipCorner): ColorZone {
-  return `lip:${corner}` as const;
 }
 
 /**
  * Maps a non-LIP FeatureTag to its ColorZone. LIP returns null because
- * lip faces need centroid-based classification into one of four corners.
+ * lip faces need centroid-based classification into one of the grid cells.
  */
 export function featureTagToColorZone(tag: number): ColorZone | null {
   switch (tag) {
@@ -212,6 +311,31 @@ export interface ActiveZonesParams {
     readonly compartmentTexts?: readonly string[];
   };
   readonly cutouts?: readonly { readonly engraveLabel?: boolean; readonly label: string }[];
+  /**
+   * Active lip color-grid sizes. Determines which lip cells are exposed as
+   * editable/active zones. Absent → treated as a uniform 1×1 lip (single
+   * canonical cell), matching the pre-grid behavior.
+   */
+  readonly featureColors?: {
+    readonly lip: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
+  };
+}
+
+/** Canonical active lip cells for the given corner/band counts. */
+/** Active corner quadrants, in left→right display order, for a corner count. */
+export function activeCornerColumns(corners: LipAxisCount): LipCorner[] {
+  if (corners === 1) return ['frontLeft'];
+  if (corners === 2) return ['frontLeft', 'backLeft'];
+  return ['frontLeft', 'frontRight', 'backRight', 'backLeft'];
+}
+
+export function activeLipCells(counts: {
+  corners: LipAxisCount;
+  bands: LipAxisCount;
+}): LipCellZone[] {
+  const corners = activeCornerColumns(counts.corners);
+  const bands = LIP_BANDS.slice(0, counts.bands);
+  return corners.flatMap((corner) => bands.map((band) => lipCellZone(corner, band)));
 }
 
 /**
@@ -219,7 +343,7 @@ export interface ActiveZonesParams {
  * configuration. Used uniformly by the panel (row visibility), the 3D
  * preview (multi-color gating), and the 3MF exporter — keeping them
  * aligned prevents drift like "preview reports single-color while the
- * exporter writes a multi-material 3MF because of a stale lip corner".
+ * exporter writes a multi-material 3MF because of a stale lip cell".
  */
 export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone> {
   const cells = p.compartments.cells;
@@ -234,7 +358,8 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const zones = new Set<ColorZone>(['body']);
   if (p.base.style !== 'flat') zones.add('base');
   if (p.base.stackingLip) {
-    for (const corner of LIP_CORNERS) zones.add(lipCornerZone(corner));
+    const grid = p.featureColors?.lip ?? { corners: 1, bands: 1 };
+    for (const cell of activeLipCells(grid)) zones.add(cell);
   }
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');

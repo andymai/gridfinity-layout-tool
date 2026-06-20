@@ -14,7 +14,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { zoneTranslationKey } from '@/features/bin-designer/utils/zoneLabels';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
@@ -256,21 +256,7 @@ export function ExportDialog() {
           <SlicerHandoffPreview
             featureColors={params.featureColors}
             activeZones={computeActiveZones(params)}
-            zoneLabels={
-              {
-                body: t('binDesigner.colors.body'),
-                'lip:frontLeft': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.frontLeft')}`,
-                'lip:frontRight': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.frontRight')}`,
-                'lip:backRight': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.backRight')}`,
-                'lip:backLeft': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.backLeft')}`,
-                labelTab: t('binDesigner.colors.labelTab'),
-                base: t('binDesigner.colors.base'),
-                scoop: t('binDesigner.colors.scoop'),
-                dividers: t('binDesigner.colors.dividers'),
-                text: t('binDesigner.colors.text'),
-                lid: t('binDesigner.colors.lid'),
-              } satisfies Record<ColorZone, string>
-            }
+            zoneLabel={(zone) => t(zoneTranslationKey(zone))}
           />
         ) : null
       }

@@ -3,20 +3,33 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ColorsSection } from './ColorsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
-import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
+import type {
+  FeatureColorConfig,
+  LipColorConfig,
+} from '@/features/bin-designer/types/featureColors';
 
 const SINGLE = '#d4d8dc';
+
+function lip(
+  cells: Record<string, string> = {},
+  corners: 1 | 2 | 4 = 1,
+  bands: 1 | 2 | 4 = 1
+): LipColorConfig {
+  return { corners, bands, cells: { ...makeUniformLipCells(SINGLE), ...cells } };
+}
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
     enabled: true,
     body: SINGLE,
-    lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
+    lip: lip(),
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
     dividers: SINGLE,
     text: SINGLE,
+    lid: SINGLE,
     ...overrides,
   };
 }
@@ -31,12 +44,7 @@ describe('ColorsSection', () => {
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: false },
         featureColors: colors({
           body: '#3b82f6',
-          lip: {
-            frontLeft: '#ef4444',
-            frontRight: '#ef4444',
-            backRight: '#ef4444',
-            backLeft: '#ef4444',
-          },
+          lip: lip(makeUniformLipCells('#ef4444')),
           labelTab: '#22c55e',
         }),
       },
@@ -108,52 +116,46 @@ describe('ColorsSection', () => {
     expect(screen.getByText('Dividers')).toBeDefined();
   });
 
-  describe('single lip color', () => {
-    it('does not expose per-corner sub-rows (per-corner UI is rolled back)', () => {
+  describe('lip color grid', () => {
+    it('shows a single "Stacking Lip" cell at 1×1 (no corner labels)', () => {
       render(<ColorsSection />);
-      // Whichever way the user interacts with the lip row, none of the
-      // four corner labels should ever appear in the panel.
-      fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
       expect(screen.queryByText('Front-left')).toBeNull();
       expect(screen.queryByText('Front-right')).toBeNull();
       expect(screen.queryByText('Back-right')).toBeNull();
       expect(screen.queryByText('Back-left')).toBeNull();
     });
 
-    it("mirrors the picker's hex into all four lip corners on change", () => {
-      // Seed with mismatched corners so we can prove the writer overwrites
-      // every corner — not just the canonical one the picker reads from.
+    it('exposes the four corner cells at 4 corners', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
           base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
-          featureColors: colors({
-            lip: {
-              frontLeft: '#aaaaaa',
-              frontRight: '#bbbbbb',
-              backRight: '#cccccc',
-              backLeft: '#dddddd',
-            },
-          }),
+          featureColors: colors({ lip: lip({}, 4, 1) }),
+        },
+      });
+      render(<ColorsSection />);
+      expect(screen.getByText('Front-left')).toBeDefined();
+      expect(screen.getByText('Front-right')).toBeDefined();
+      expect(screen.getByText('Back-right')).toBeDefined();
+      expect(screen.getByText('Back-left')).toBeDefined();
+    });
+
+    it('writes the canonical lip cell on change (no mirroring)', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+          featureColors: colors({ lip: lip(makeUniformLipCells('#aaaaaa')) }),
         },
       });
       render(<ColorsSection />);
 
-      // Drive a real color commit through the rendered ColorZoneRow →
-      // ColorPicker pipeline so the section's inline onChange handler is
-      // actually exercised. A direct store call would still pass even if
-      // the handler regressed to writing a single corner — the whole
-      // point of the mirror is the section, not the store action.
+      // Drive a real commit through the rendered cell → ColorPicker pipeline.
       fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
-      // The picker renders 'Red' (#ef4444) as a preset filament swatch;
-      // clicking it routes through ColorsSection's onChange.
-      fireEvent.click(screen.getByTitle('Red'));
+      fireEvent.click(screen.getByTitle('Red')); // #ef4444 preset
 
       const after = useDesignerStore.getState().params.featureColors;
-      expect(after.lip.frontLeft).toBe('#ef4444');
-      expect(after.lip.frontRight).toBe('#ef4444');
-      expect(after.lip.backRight).toBe('#ef4444');
-      expect(after.lip.backLeft).toBe('#ef4444');
+      expect(after.lip.cells['lip:frontLeft:0']).toBe('#ef4444');
     });
   });
 

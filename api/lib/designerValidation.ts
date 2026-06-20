@@ -353,12 +353,40 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'lid',
 ]);
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
+const ALLOWED_LIP_GRID_KEYS = new Set<string>(['corners', 'bands', 'cells']);
+const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
+const LIP_CELL_KEY_RE = /^lip:(frontLeft|frontRight|backRight|backLeft):[0-3]$/;
 
 /**
- * Accepts the legacy `lip: string` shape (migrated client-side into four
- * matching corners) or the new 4-corner object. Rejects unknown keys at
- * both levels so a crafted share can't smuggle attacker-controlled junk
- * past the top-level size cap.
+ * Validate the current quadrant×band lip grid shape `{ corners, bands, cells }`.
+ * `cells` maps `lip:<corner>:<band>` ids to hex colors.
+ */
+function validateLipGrid(lip: Record<string, unknown>): string | null {
+  for (const key of Object.keys(lip)) {
+    if (!ALLOWED_LIP_GRID_KEYS.has(key)) return `featureColors.lip has unknown key: ${key}`;
+  }
+  for (const axis of ['corners', 'bands'] as const) {
+    const v = lip[axis];
+    if (v !== undefined && (!isNumber(v) || !VALID_LIP_AXIS_COUNTS.has(v))) {
+      return `featureColors.lip.${axis} must be 1, 2, or 4`;
+    }
+  }
+  const cells = lip.cells;
+  if (cells !== undefined) {
+    if (!isObject(cells)) return 'featureColors.lip.cells must be an object';
+    for (const [id, color] of Object.entries(cells)) {
+      if (!LIP_CELL_KEY_RE.test(id)) return `featureColors.lip.cells has unknown cell: ${id}`;
+      if (!isValidColor(color)) return `featureColors.lip.cells.${id} must be a hex color`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Accepts three lip shapes so older and newer clients both sync: the legacy
+ * `lip: string`, the legacy 4-corner object, or the current quadrant×band
+ * grid `{ corners, bands, cells }`. Rejects unknown keys at every level so a
+ * crafted share can't smuggle attacker-controlled junk past the size cap.
  */
 function validateFeatureColors(value: unknown): string | null {
   if (!isObject(value)) return 'featureColors must be an object';
@@ -384,18 +412,25 @@ function validateFeatureColors(value: unknown): string | null {
     if (isString(lip)) {
       if (!isValidColor(lip)) return 'featureColors.lip must be a hex color';
     } else if (isObject(lip)) {
-      for (const key of Object.keys(lip)) {
-        if (!ALLOWED_LIP_CORNER_KEYS.has(key)) {
-          return `featureColors.lip has unknown corner: ${key}`;
+      // New grid shape if it carries any grid key; otherwise legacy 4-corner.
+      const isGrid = 'corners' in lip || 'bands' in lip || 'cells' in lip;
+      if (isGrid) {
+        const err = validateLipGrid(lip);
+        if (err) return err;
+      } else {
+        for (const key of Object.keys(lip)) {
+          if (!ALLOWED_LIP_CORNER_KEYS.has(key)) {
+            return `featureColors.lip has unknown corner: ${key}`;
+          }
         }
-      }
-      for (const corner of LIP_CORNERS) {
-        if (lip[corner] !== undefined && !isValidColor(lip[corner])) {
-          return `featureColors.lip.${corner} must be a hex color`;
+        for (const corner of LIP_CORNERS) {
+          if (lip[corner] !== undefined && !isValidColor(lip[corner])) {
+            return `featureColors.lip.${corner} must be a hex color`;
+          }
         }
       }
     } else {
-      return 'featureColors.lip must be a hex color or 4-corner object';
+      return 'featureColors.lip must be a hex color, 4-corner object, or grid';
     }
   }
 

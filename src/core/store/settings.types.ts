@@ -285,11 +285,16 @@ export interface SavedColorPalette {
   readonly createdAt: string;
   readonly colors: {
     readonly body: string;
+    /**
+     * Lip color grid (quadrant × band). Structural shape mirroring
+     * `LipColorConfig` — inlined to avoid a core→features import. Older
+     * palettes persisted the 4-corner shape; `normalizePaletteLip` converts
+     * them at read time.
+     */
     readonly lip: {
-      readonly frontLeft: string;
-      readonly frontRight: string;
-      readonly backRight: string;
-      readonly backLeft: string;
+      readonly corners: number;
+      readonly bands: number;
+      readonly cells: { readonly [cellId: string]: string };
     };
     readonly labelTab: string;
     readonly base: string;

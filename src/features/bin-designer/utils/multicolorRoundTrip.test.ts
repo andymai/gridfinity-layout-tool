@@ -33,7 +33,12 @@ import {
   buildMultiObject3MF,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { normalizeHex, resolveColorMapping } from '@/features/bin-designer/types/featureColors';
+import {
+  makeUniformLipCells,
+  normalizeHex,
+  resolveColorMapping,
+} from '@/features/bin-designer/types/featureColors';
+import type { LipColorConfig } from '@/features/bin-designer/types/featureColors';
 import { FILAMENT_PAINT_CODES } from '@/features/generation/export/threemfExporter';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { ThreeMFPrintSettings } from '@/shared/generation/export';
@@ -74,7 +79,9 @@ function buildBinarySTL(triangles: readonly number[]): ArrayBuffer {
 
 /** Single degenerate triangle at (x, y, 0). */
 function tri(x: number, y: number): number[] {
-  return [x, y, 0, x, y, 0, x, y, 0];
+  // Tiny non-degenerate triangle centered at (x, y); centroid = (x, y, 0). A
+  // zero-area triangle would be dropped by the lip seam splitter.
+  return [x - 0.1, y - 0.1, 0, x + 0.1, y - 0.1, 0, x, y + 0.1, 0];
 }
 
 async function blobToModelXml(blob: Blob): Promise<string> {
@@ -136,12 +143,11 @@ const PRINT_SETTINGS: ThreeMFPrintSettings = {
  */
 function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinParams {
   const body = overrides.body ?? DEFAULT_BIN_PARAMS.featureColors.body;
-  const lipOverride = overrides.lip;
-  const lip = {
-    frontLeft: lipOverride?.frontLeft ?? body,
-    frontRight: lipOverride?.frontRight ?? body,
-    backRight: lipOverride?.backRight ?? body,
-    backLeft: lipOverride?.backLeft ?? body,
+  const lipOverride = overrides.lip as Partial<LipColorConfig> | undefined;
+  const lip: LipColorConfig = {
+    corners: lipOverride?.corners ?? 1,
+    bands: lipOverride?.bands ?? 1,
+    cells: { ...makeUniformLipCells(body), ...(lipOverride?.cells ?? {}) },
   };
   return {
     ...DEFAULT_BIN_PARAMS,
@@ -290,10 +296,14 @@ describe('multicolor 3MF round-trip', () => {
       const params = withColors({
         body: '#000000',
         lip: {
-          frontLeft: '#fa0000',
-          frontRight: '#00fa00',
-          backRight: '#0000fa',
-          backLeft: '#ffffff',
+          corners: 4,
+          bands: 1,
+          cells: {
+            'lip:frontLeft:0': '#fa0000',
+            'lip:frontRight:0': '#00fa00',
+            'lip:backRight:0': '#0000fa',
+            'lip:backLeft:0': '#ffffff',
+          },
         },
       });
       // Four lip triangles, one per quadrant of bbox [0..100] × [0..100].

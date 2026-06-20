@@ -8,8 +8,14 @@ import {
 } from '../constants/defaults';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { validateBinParams } from '../utils/validation';
+import { makeUniformLipCells } from '../types/featureColors';
 import { expectOk } from '@/test/testUtils';
 import type { BinParams } from '../types';
+
+/** Expected migrated lip: a uniform 1×1 grid of `hex`. */
+function uniformLip(hex: string) {
+  return { corners: 1, bands: 1, cells: makeUniformLipCells(hex) };
+}
 
 describe('extractStyleDefaults', () => {
   it('omits every per-design geometry key', () => {
@@ -440,12 +446,7 @@ describe('migrateParams', () => {
     expect(result.featureColors).toEqual({
       enabled: false,
       body: '#d4d8dc',
-      lip: {
-        frontLeft: '#d4d8dc',
-        frontRight: '#d4d8dc',
-        backRight: '#d4d8dc',
-        backLeft: '#d4d8dc',
-      },
+      lip: uniformLip('#d4d8dc'),
       labelTab: '#d4d8dc',
       base: '#d4d8dc',
       scoop: '#d4d8dc',
@@ -461,12 +462,7 @@ describe('migrateParams', () => {
       featureColors: legacy,
     });
     expect(result.featureColors.body).toBe('#3b82f6');
-    expect(result.featureColors.lip).toEqual({
-      frontLeft: '#22c55e',
-      frontRight: '#22c55e',
-      backRight: '#22c55e',
-      backLeft: '#22c55e',
-    });
+    expect(result.featureColors.lip).toEqual(uniformLip('#22c55e'));
     expect(result.featureColors.labelTab).toBe('#d4d8dc');
     // Legacy design had diverged colors but no `enabled` field — back-fill to true
     // so its multi-color look is preserved post-migration.
@@ -493,15 +489,11 @@ describe('migrateParams', () => {
       labelTab: '#222222',
     };
     const result = migrateParams({ featureColors: mismatched });
-    expect(result.featureColors.lip).toEqual({
-      frontLeft: '#ff00ff',
-      frontRight: '#ff00ff',
-      backRight: '#ff00ff',
-      backLeft: '#ff00ff',
-    });
+    // Legacy 4-corner object canonicalizes to a uniform 1×1 grid on frontLeft.
+    expect(result.featureColors.lip).toEqual(uniformLip('#ff00ff'));
   });
 
-  it('preserves lip corners when they already match (no spurious mutation)', () => {
+  it('migrates a matching legacy 4-corner lip to a uniform grid', () => {
     const matched = {
       enabled: true,
       body: '#222222',
@@ -513,26 +505,30 @@ describe('migrateParams', () => {
       },
     };
     const result = migrateParams({ featureColors: matched });
-    expect(result.featureColors.lip).toEqual({
-      frontLeft: '#ff0000',
-      frontRight: '#ff0000',
-      backRight: '#ff0000',
-      backLeft: '#ff0000',
-    });
+    expect(result.featureColors.lip).toEqual(uniformLip('#ff0000'));
   });
 
-  it('expands the legacy single-color lip into four matching corners', () => {
-    // Pre-corner-lip designs stored `lip` as a single hex string. All four
-    // corners must inherit that value so existing designs render unchanged.
+  it('expands the legacy single-color lip string into a uniform grid', () => {
+    // Pre-corner-lip designs stored `lip` as a single hex string. The whole
+    // grid inherits that value so existing designs render unchanged.
     const legacy = { body: '#222', lip: '#ff0000', labelTab: '#0f0' };
     const result = migrateParams({ featureColors: legacy });
-    expect(result.featureColors.lip).toEqual({
-      frontLeft: '#ff0000',
-      frontRight: '#ff0000',
-      backRight: '#ff0000',
-      backLeft: '#ff0000',
-    });
+    expect(result.featureColors.lip).toEqual(uniformLip('#ff0000'));
     expect(result.featureColors.enabled).toBe(true);
+  });
+
+  it('passes a new grid lip through migration and backfills missing cells', () => {
+    const grid = {
+      enabled: true,
+      body: '#000000',
+      lip: { corners: 4, bands: 2, cells: { 'lip:backRight:1': '#abcdef' } },
+    };
+    const result = migrateParams({ featureColors: grid });
+    expect(result.featureColors.lip.corners).toBe(4);
+    expect(result.featureColors.lip.bands).toBe(2);
+    expect(result.featureColors.lip.cells['lip:backRight:1']).toBe('#abcdef');
+    // Unspecified cells backfill from body.
+    expect(result.featureColors.lip.cells['lip:frontLeft:0']).toBe('#000000');
   });
 
   it('preserves explicit enabled:false even when colors are diverged', () => {
@@ -556,12 +552,7 @@ describe('migrateParams', () => {
     const hex = {
       enabled: true,
       body: '#ef4444',
-      lip: {
-        frontLeft: '#3b82f6',
-        frontRight: '#3b82f6',
-        backRight: '#3b82f6',
-        backLeft: '#3b82f6',
-      },
+      lip: uniformLip('#3b82f6'),
       labelTab: '#22c55e',
       base: '#ef4444',
       scoop: '#ef4444',
@@ -573,7 +564,9 @@ describe('migrateParams', () => {
     };
     const firstPass = migrateParams({ featureColors: hex });
     const secondPass = migrateParams(firstPass);
-    expect(secondPass.featureColors).toEqual(hex);
+    // Idempotent: a grid lip passes through unchanged on re-migration.
+    expect(secondPass.featureColors).toEqual(firstPass.featureColors);
+    expect(secondPass.featureColors.lip).toEqual(uniformLip('#3b82f6'));
   });
 
   it('inherits body for missing zones and auto-enables when body was customized', () => {
@@ -583,9 +576,8 @@ describe('migrateParams', () => {
     const partial = { body: '#3b82f6' } as unknown as typeof DEFAULT_BIN_PARAMS.featureColors;
     const result = migrateParams({ featureColors: partial });
     expect(result.featureColors.body).toBe('#3b82f6');
-    // Lip corners with no input → inherit body color (no surprise visual change).
-    expect(result.featureColors.lip.frontLeft).toBe('#3b82f6');
-    expect(result.featureColors.lip.frontRight).toBe('#3b82f6');
+    // Lip cells with no input → inherit body color (no surprise visual change).
+    expect(result.featureColors.lip).toEqual(uniformLip('#3b82f6'));
     // New zones similarly inherit body so older designs match what they showed before.
     expect(result.featureColors.base).toBe('#3b82f6');
     expect(result.featureColors.scoop).toBe('#3b82f6');

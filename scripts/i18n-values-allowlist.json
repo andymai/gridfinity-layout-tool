@@ -55,6 +55,8 @@
     "binDesigner.colors.base",
     "binDesigner.colors.group.exterior",
     "binDesigner.colors.group.interior",
+    "binDesigner.colors.lip.bandN",
+    "binDesigner.colors.lip.front",
     "binDesigner.colors.slicerHandoff.filament",
     "binDesigner.layout",
     "binDesigner.radius",

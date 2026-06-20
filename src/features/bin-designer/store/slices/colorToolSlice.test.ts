@@ -28,10 +28,15 @@ describe('color-tool slice', () => {
           dividers: '#dddddd',
           labelTab: '#eeeeee',
           lip: {
-            frontLeft: '#111111',
-            frontRight: '#222222',
-            backRight: '#333333',
-            backLeft: '#444444',
+            corners: 4,
+            bands: 1,
+            cells: {
+              ...DEFAULT_FEATURE_COLOR_CONFIG.lip.cells,
+              'lip:frontLeft:0': '#111111',
+              'lip:frontRight:0': '#222222',
+              'lip:backRight:0': '#333333',
+              'lip:backLeft:0': '#444444',
+            },
           },
         },
       },
@@ -125,36 +130,43 @@ describe('color-tool slice', () => {
       expect(params.featureColors.base).toBe('#aaaaaa');
     });
 
-    it('mirrors the swapped color across all four corners when one zone is lip', () => {
-      // body=#aaaaaa, lip corners=#111111/#222222/#333333/#444444 from seed.
-      // Swap body ↔ a lip corner: lip should adopt #aaaaaa across all four
-      // slots (mirror-on-write keeps the lip visually uniform), and body
-      // takes whichever corner color was read as the canonical lip color.
+    it('swaps a single lip cell with another zone (no mirroring)', () => {
+      // body=#aaaaaa; lip:frontRight:0=#222222 from seed. Swap body ↔ that cell:
+      // only the one cell changes; the other cells stay put.
       useDesignerStore.getState().setColorTool('swap-pick-first');
       useDesignerStore.getState().pickSwapZone('body');
-      useDesignerStore.getState().pickSwapZone('lip:frontRight');
+      useDesignerStore.getState().pickSwapZone('lip:frontRight:0');
 
       const { params } = useDesignerStore.getState();
       expect(params.featureColors.body).toBe('#222222');
-      expect(params.featureColors.lip.frontLeft).toBe('#aaaaaa');
-      expect(params.featureColors.lip.frontRight).toBe('#aaaaaa');
-      expect(params.featureColors.lip.backRight).toBe('#aaaaaa');
-      expect(params.featureColors.lip.backLeft).toBe('#aaaaaa');
+      expect(params.featureColors.lip.cells['lip:frontRight:0']).toBe('#aaaaaa');
+      // Other cells untouched.
+      expect(params.featureColors.lip.cells['lip:frontLeft:0']).toBe('#111111');
+      expect(params.featureColors.lip.cells['lip:backRight:0']).toBe('#333333');
     });
 
-    it('cancels when both picks are lip corners (visually one zone after rollback)', () => {
+    it('swaps two distinct lip cells', () => {
       useDesignerStore.getState().setColorTool('swap-pick-first');
-      useDesignerStore.getState().pickSwapZone('lip:frontLeft');
-      const result = useDesignerStore.getState().pickSwapZone('lip:backRight');
+      useDesignerStore.getState().pickSwapZone('lip:frontLeft:0');
+      const result = useDesignerStore.getState().pickSwapZone('lip:backRight:0');
+
+      expect(result).not.toBeNull();
+      const { params, history } = useDesignerStore.getState();
+      expect(history.past).toHaveLength(1);
+      expect(params.featureColors.lip.cells['lip:frontLeft:0']).toBe('#333333');
+      expect(params.featureColors.lip.cells['lip:backRight:0']).toBe('#111111');
+    });
+
+    it('cancels when the same lip cell is picked twice', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      useDesignerStore.getState().pickSwapZone('lip:frontLeft:0');
+      const result = useDesignerStore.getState().pickSwapZone('lip:frontLeft:0');
 
       expect(result).toBeNull();
       const state = useDesignerStore.getState();
       expect(state.ui.colorTool).toBeNull();
-      expect(state.ui.swapFirstZone).toBeNull();
       expect(state.history.past).toHaveLength(0);
-      // Lip colors unchanged
-      expect(state.params.featureColors.lip.frontLeft).toBe('#111111');
-      expect(state.params.featureColors.lip.backRight).toBe('#333333');
+      expect(state.params.featureColors.lip.cells['lip:frontLeft:0']).toBe('#111111');
     });
 
     it('records one history entry per swap (single undo restores both zones)', () => {

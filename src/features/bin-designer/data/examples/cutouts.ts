@@ -36,12 +36,7 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
         right: DISABLED_WALL_CUTOUT,
       },
       featureColors: coloredFeatures({
-        lip: {
-          frontLeft: PALETTE.amber,
-          frontRight: PALETTE.amber,
-          backRight: PALETTE.amber,
-          backLeft: PALETTE.amber,
-        },
+        lip: PALETTE.amber,
       }),
     },
     metrics: { width: 2, depth: 4, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },

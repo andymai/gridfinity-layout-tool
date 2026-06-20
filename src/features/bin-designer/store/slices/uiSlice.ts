@@ -14,8 +14,8 @@ import type {
   DividerTiltPreview,
   OverhangHighlightSide,
 } from '../../types';
-import type { ColorZone, HoverableZone, LipCorner } from '../../types/featureColors';
-import { LIP_CORNERS, lipCornerZone } from '../../types/featureColors';
+import type { ColorZone, HoverableZone } from '../../types/featureColors';
+import { parseLipCell } from '../../types/featureColors';
 import { isFractional } from '@/core/constants';
 import { pushHistoryEntry } from '../helpers';
 
@@ -159,10 +159,9 @@ export function createUISlice(set: Set) {
         if (state.ui.colorTool !== 'swap-pick-second') return;
 
         const first = state.ui.swapFirstZone;
-        const bothLip = first !== null && lipCornerOf(first) && lipCornerOf(zone);
-        if (!first || first === zone || bothLip) {
-          // Picking the same zone twice OR two lip corners (visually one
-          // zone after the per-corner rollback) is a no-op cancel.
+        if (!first || first === zone) {
+          // Picking the same zone twice (incl. two hits in the same lip cell,
+          // which resolve to one canonical zone id) is a no-op cancel.
           state.ui.colorTool = null;
           state.ui.swapFirstZone = null;
           state.ui.hoveredColorZone = null;
@@ -208,9 +207,8 @@ export function createUISlice(set: Set) {
 /**
  * Swap two zones' colors in place on the FeatureColorConfig draft.
  *
- * Lip corner zones live nested under `lip.{corner}`, so reading and
- * writing both ends needs a small adapter — top-level zones map 1:1 to
- * keys on FeatureColorConfig.
+ * Lip cell zones (`lip:<corner>:<band>`) live in the `lip.cells` map; all
+ * other zones map 1:1 to top-level keys on FeatureColorConfig.
  */
 function applyZoneSwap(
   colors: Draft<DesignerState['params']['featureColors']>,
@@ -223,21 +221,14 @@ function applyZoneSwap(
   writeZone(colors, b, colorA);
 }
 
-function lipCornerOf(zone: ColorZone): LipCorner | null {
-  for (const corner of LIP_CORNERS) {
-    if (lipCornerZone(corner) === zone) return corner;
-  }
-  return null;
-}
+type SimpleZone = 'body' | 'labelTab' | 'base' | 'scoop' | 'dividers' | 'text' | 'lid';
 
 function readZone(
   colors: Draft<DesignerState['params']['featureColors']>,
   zone: ColorZone
 ): string {
-  const corner = lipCornerOf(zone);
-  if (corner) return colors.lip[corner];
-  // body | labelTab | base | scoop | dividers — direct properties
-  return colors[zone as 'body' | 'labelTab' | 'base' | 'scoop' | 'dividers'];
+  if (parseLipCell(zone)) return colors.lip.cells[zone] ?? colors.body;
+  return colors[zone as SimpleZone];
 }
 
 function writeZone(
@@ -245,14 +236,11 @@ function writeZone(
   zone: ColorZone,
   hex: string
 ): void {
-  if (lipCornerOf(zone)) {
-    // The per-corner lip UI is rolled back to a single visual zone; mirror
-    // any corner-targeted write across all four slots so the lip stays
-    // visually uniform regardless of which corner the raycast hit.
-    for (const corner of LIP_CORNERS) {
-      colors.lip[corner] = hex;
-    }
+  if (parseLipCell(zone)) {
+    // Write the single canonical cell the resolver returned — collapse to the
+    // active grid already happened at classification time, so no mirroring.
+    colors.lip.cells[zone] = hex;
     return;
   }
-  colors[zone as 'body' | 'labelTab' | 'base' | 'scoop' | 'dividers'] = hex;
+  colors[zone as SimpleZone] = hex;
 }

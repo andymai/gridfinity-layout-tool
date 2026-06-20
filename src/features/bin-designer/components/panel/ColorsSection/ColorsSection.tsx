@@ -1,9 +1,6 @@
 /**
- * Lip renders as a single color row — the per-corner UI is rolled back
- * pending a fix. The underlying 4-corner schema is preserved: the single
- * picker mirrors the chosen hex to every corner so geometry, preview,
- * and 3MF export keep working unchanged. When per-corner editing is
- * restored, LipZoneRow / LipCornerDiagram are still available.
+ * The lip is edited by `LipColorEditor` — a Corners × Bands grid (see that
+ * component). All other zones render as single `ColorZoneRow`s.
  *
  * Hidden-feature zones don't render at all — no greyed-out rows. The
  * zone editors are gated on the per-design featureColors.enabled toggle
@@ -16,9 +13,11 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import {
-  LIP_CORNERS,
+  activeLipCells,
   computeActiveZones,
-  lipCornerZone,
+  lipCellZone,
+  makeUniformLipCells,
+  normalizePaletteLip,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import type { SavedColorPalette } from '@/core/store/settings.types';
@@ -33,6 +32,7 @@ import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
+import { LipColorEditor } from './LipColorEditor';
 
 const RECENT_COLORS_LIMIT = 8;
 
@@ -63,6 +63,9 @@ export function ColorsSection() {
     scoopEnabled,
     lidEnabled,
     cells,
+    lipCorners,
+    lipBands,
+    hoveredColorZone,
     colorTool,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -73,6 +76,11 @@ export function ColorsSection() {
       scoopEnabled: s.params.scoop.enabled,
       lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+      lipCorners: s.params.featureColors?.lip.corners ?? 1,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+      lipBands: s.params.featureColors?.lip.bands ?? 1,
+      hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
   );
@@ -89,10 +97,11 @@ export function ColorsSection() {
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
         compartments: { cells },
+        featureColors: { lip: { corners: lipCorners, bands: lipBands } },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells]
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells, lipCorners, lipBands]
   );
-  const hasLip = activeZones.has('lip:frontLeft');
+  const hasLip = activeZones.has(lipCellZone('frontLeft', 0));
   const hasLabelTabs = activeZones.has('labelTab');
   const hasBase = activeZones.has('base');
   const hasScoop = activeZones.has('scoop');
@@ -118,19 +127,13 @@ export function ColorsSection() {
     });
   }, []);
 
-  // Canonical lip color shown in the single-color picker. Reading from
-  // frontLeft means a saved design with mismatched corners snaps to a
-  // single hex on the next user edit (mirrored across all four corners)
-  // without us mutating the store on mount.
-  const lipColor = featureColors.lip.frontLeft;
-
   const colorsByZone = useMemo(() => {
     const map = new Map<ColorZone, string>();
     map.set('body', featureColors.body);
     if (hasBase) map.set('base', featureColors.base);
     if (hasLip) {
-      for (const corner of LIP_CORNERS) {
-        map.set(lipCornerZone(corner), featureColors.lip[corner]);
+      for (const cell of activeLipCells({ corners: lipCorners, bands: lipBands })) {
+        map.set(cell, featureColors.lip.cells[cell] ?? featureColors.body);
       }
     }
     if (hasLabelTabs) map.set('labelTab', featureColors.labelTab);
@@ -138,7 +141,17 @@ export function ColorsSection() {
     if (hasDividers) map.set('dividers', featureColors.dividers);
     if (hasLid) map.set('lid', featureColors.lid);
     return map;
-  }, [featureColors, hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers, hasLid]);
+  }, [
+    featureColors,
+    hasBase,
+    hasLip,
+    hasLabelTabs,
+    hasScoop,
+    hasDividers,
+    hasLid,
+    lipCorners,
+    lipBands,
+  ]);
 
   // Bump a tick whenever a group's visible-zone count grows. ColorGroup
   // auto-opens on each tick change so a newly-enabled feature is never
@@ -197,12 +210,7 @@ export function ColorsSection() {
   const handleMatchAllToBody = useCallback(() => {
     startTransaction();
     updateFeatureColors({
-      lip: {
-        frontLeft: featureColors.body,
-        frontRight: featureColors.body,
-        backRight: featureColors.body,
-        backLeft: featureColors.body,
-      },
+      lip: { cells: makeUniformLipCells(featureColors.body) },
       labelTab: featureColors.body,
       base: featureColors.body,
       scoop: featureColors.body,
@@ -221,7 +229,8 @@ export function ColorsSection() {
       startTransaction();
       updateFeatureColors({
         body: palette.colors.body,
-        lip: palette.colors.lip,
+        // Tolerate legacy (4-corner) and current (grid) persisted palettes.
+        lip: normalizePaletteLip(palette.colors.lip, palette.colors.body),
         labelTab: palette.colors.labelTab,
         base: palette.colors.base,
         scoop: palette.colors.scoop,
@@ -279,40 +288,23 @@ export function ColorsSection() {
                 (hex) => updateFeatureColors({ body: hex })
               )}
               {hasLip && (
-                // Lip uses the umbrella 'lip' hover target so the whole lip
-                // glows on row hover. The picker writes the chosen hex into
-                // all four corner slots — the per-corner schema stays valid
-                // and the per-corner UI can be restored without a migration.
-                <ColorZoneRow
-                  zone="lip"
-                  label={t('binDesigner.colors.lip')}
-                  color={lipColor}
-                  defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft}
-                  otherColors={buildOtherColors('lip:frontLeft', colorsByZone)}
+                <LipColorEditor
+                  lip={featureColors.lip}
                   bodyColor={featureColors.body}
+                  hovered={hoveredColorZone}
                   recentColors={recentColors}
-                  onChange={(hex) => {
+                  swapActive={swapActive}
+                  otherColorsFor={(zone) => buildOtherColors(zone, colorsByZone)}
+                  onSetCorners={(corners) => updateFeatureColors({ lip: { corners } })}
+                  onSetBands={(bands) => updateFeatureColors({ lip: { bands } })}
+                  onChangeCell={(zone, hex) => {
                     remember(hex);
-                    updateFeatureColors({
-                      lip: {
-                        frontLeft: hex,
-                        frontRight: hex,
-                        backRight: hex,
-                        backLeft: hex,
-                      },
-                    });
+                    updateFeatureColors({ lip: { cells: { [zone]: hex } } });
                   }}
                   onHover={setHoveredColorZone}
                   onGestureStart={startTransaction}
                   onGestureEnd={commitTransaction}
-                  // During swap mode, route the lip click into the state machine
-                  // through `lip:frontLeft` — the canonical representative for
-                  // the now-single-color lip (mirror-on-write means picking any
-                  // corner spreads to all four). Without this override the row
-                  // would open the picker mid-swap.
-                  onClickOverride={
-                    swapActive ? () => swapZoneWithToast('lip:frontLeft') : undefined
-                  }
+                  onSwap={(zone) => swapZoneWithToast(zone)}
                 />
               )}
               {hasBase &&

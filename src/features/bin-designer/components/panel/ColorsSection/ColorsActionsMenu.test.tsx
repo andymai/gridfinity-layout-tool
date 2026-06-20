@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SETTINGS } from '@/core/store/settings.types';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
 vi.mock('@/i18n', () => ({
@@ -16,7 +17,7 @@ vi.mock('@/design-system/Popover/Popover', () => ({
 const fc: FeatureColorConfig = {
   enabled: false,
   body: '#aaaaaa',
-  lip: { frontLeft: '#aaaaaa', frontRight: '#aaaaaa', backRight: '#aaaaaa', backLeft: '#aaaaaa' },
+  lip: { corners: 1, bands: 1, cells: makeUniformLipCells('#aaaaaa') },
   labelTab: '#aaaaaa',
   base: '#aaaaaa',
   scoop: '#aaaaaa',

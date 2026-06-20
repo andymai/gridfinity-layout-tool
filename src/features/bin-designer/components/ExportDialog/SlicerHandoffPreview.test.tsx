@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
 vi.mock('@/i18n', () => ({
@@ -14,24 +15,21 @@ vi.mock('@/i18n', () => ({
   },
 }));
 
-const zoneLabels: Record<ColorZone, string> = {
+const LABELS: Partial<Record<ColorZone, string>> = {
   body: 'Body',
-  'lip:frontLeft': 'Lip · FL',
-  'lip:frontRight': 'Lip · FR',
-  'lip:backRight': 'Lip · BR',
-  'lip:backLeft': 'Lip · BL',
   labelTab: 'Label',
   base: 'Base',
   scoop: 'Scoop',
   dividers: 'Dividers',
   text: 'Text',
 };
+const zoneLabel = (z: ColorZone): string => LABELS[z] ?? z;
 
 function buildColors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
     enabled: true,
     body: '#ffffff',
-    lip: { frontLeft: '#ffffff', frontRight: '#ffffff', backRight: '#ffffff', backLeft: '#ffffff' },
+    lip: { corners: 1, bands: 1, cells: makeUniformLipCells('#ffffff') },
     labelTab: '#ffffff',
     base: '#ffffff',
     scoop: '#ffffff',
@@ -48,7 +46,7 @@ describe('SlicerHandoffPreview', () => {
       <SlicerHandoffPreview
         featureColors={buildColors()}
         activeZones={new Set(['body', 'base'])}
-        zoneLabels={zoneLabels}
+        zoneLabel={zoneLabel}
       />
     );
     expect(container.firstChild).toBeNull();
@@ -60,7 +58,7 @@ describe('SlicerHandoffPreview', () => {
       <SlicerHandoffPreview
         featureColors={buildColors({ base: '#0000ff' })}
         activeZones={new Set<ColorZone>(['body', 'labelTab', 'base'])}
-        zoneLabels={zoneLabels}
+        zoneLabel={zoneLabel}
       />
     );
     fireEvent.click(screen.getByRole('button'));
@@ -80,7 +78,7 @@ describe('SlicerHandoffPreview', () => {
       <SlicerHandoffPreview
         featureColors={buildColors({ text: '#ff0000' })}
         activeZones={new Set<ColorZone>(['body', 'text'])}
-        zoneLabels={zoneLabels}
+        zoneLabel={zoneLabel}
       />
     );
     fireEvent.click(screen.getByRole('button'));

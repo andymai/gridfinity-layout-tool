@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
 const mockDownloadBin = vi.fn().mockResolvedValue(undefined);
@@ -311,22 +312,11 @@ describe('ExportDialog', () => {
       enabled?: boolean;
     }) {
       const single = '#3b82f6';
-      const lipSingle = {
-        frontLeft: single,
-        frontRight: single,
-        backRight: single,
-        backLeft: single,
-      };
       const featureColors = multiColor
         ? {
             enabled,
             body: single,
-            lip: {
-              frontLeft: '#ef4444',
-              frontRight: '#ef4444',
-              backRight: '#ef4444',
-              backLeft: '#ef4444',
-            },
+            lip: { corners: 1 as const, bands: 1 as const, cells: makeUniformLipCells('#ef4444') },
             labelTab: '#22c55e',
             base: single,
             scoop: single,
@@ -335,7 +325,7 @@ describe('ExportDialog', () => {
         : {
             enabled,
             body: single,
-            lip: lipSingle,
+            lip: { corners: 1 as const, bands: 1 as const, cells: makeUniformLipCells(single) },
             labelTab: single,
             base: single,
             scoop: single,

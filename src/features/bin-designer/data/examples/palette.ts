@@ -1,5 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 
 /**
  * Cohesive gallery palette — a graphite body plus a small set of harmonious
@@ -16,7 +17,8 @@ export const PALETTE = {
 } as const;
 
 type ZoneOverrides = Partial<Omit<FeatureColorConfig, 'enabled' | 'lip'>> & {
-  readonly lip?: Partial<FeatureColorConfig['lip']>;
+  /** Uniform lip color (gallery examples don't use the per-cell grid). */
+  readonly lip?: string;
 };
 
 /**
@@ -38,10 +40,9 @@ export function coloredFeatures(overrides: ZoneOverrides = {}): FeatureColorConf
     text: overrides.text ?? body,
     lid: overrides.lid ?? body,
     lip: {
-      frontLeft: overrides.lip?.frontLeft ?? body,
-      frontRight: overrides.lip?.frontRight ?? body,
-      backRight: overrides.lip?.backRight ?? body,
-      backLeft: overrides.lip?.backLeft ?? body,
+      corners: 1,
+      bands: 1,
+      cells: makeUniformLipCells(overrides.lip ?? body),
     },
   };
 }

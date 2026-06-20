@@ -3,9 +3,16 @@ import { ZONE_ORDER } from '../types/featureColors';
 import { zoneColorPatch, zoneTranslationKey } from './zoneLabels';
 
 describe('zoneLabels', () => {
-  it('produces a unique translation key for every ColorZone', () => {
-    const keys = ZONE_ORDER.map(zoneTranslationKey);
-    expect(new Set(keys).size).toBe(ZONE_ORDER.length);
+  it('produces a non-empty translation key for every ColorZone', () => {
+    // Lip cells intentionally share a corner label (band isn't in the key), so
+    // keys aren't unique per zone — but every zone must resolve to some key.
+    for (const zone of ZONE_ORDER) expect(zoneTranslationKey(zone)).toBeTruthy();
+  });
+
+  it('gives non-lip zones distinct keys', () => {
+    const nonLip = ZONE_ORDER.filter((z) => !z.startsWith('lip:'));
+    const keys = nonLip.map(zoneTranslationKey);
+    expect(new Set(keys).size).toBe(nonLip.length);
   });
 
   it('zoneColorPatch maps non-lip zones to flat updateFeatureColors patches', () => {
@@ -16,24 +23,14 @@ describe('zoneLabels', () => {
     expect(zoneColorPatch('labelTab', '#abcdef')).toEqual({ labelTab: '#abcdef' });
   });
 
-  it('zoneColorPatch mirrors any lip-corner zone into all four corner slots', () => {
-    // Post per-corner-rollback: the lip is visually a single zone, so the
-    // eyedropper patch for any specific corner mirrors across all four.
-    expect(zoneColorPatch('lip:frontLeft', '#aa0000')).toEqual({
-      lip: {
-        frontLeft: '#aa0000',
-        frontRight: '#aa0000',
-        backRight: '#aa0000',
-        backLeft: '#aa0000',
-      },
+  it('zoneColorPatch writes a single lip cell (no mirroring)', () => {
+    // Lip cells are independent zones now; the patch targets just the one
+    // canonical cell the resolver returned.
+    expect(zoneColorPatch('lip:frontLeft:0', '#aa0000')).toEqual({
+      lip: { cells: { 'lip:frontLeft:0': '#aa0000' } },
     });
-    expect(zoneColorPatch('lip:backRight', '#bb0000')).toEqual({
-      lip: {
-        frontLeft: '#bb0000',
-        frontRight: '#bb0000',
-        backRight: '#bb0000',
-        backLeft: '#bb0000',
-      },
+    expect(zoneColorPatch('lip:backRight:2', '#bb0000')).toEqual({
+      lip: { cells: { 'lip:backRight:2': '#bb0000' } },
     });
   });
 });

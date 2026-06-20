@@ -68,12 +68,7 @@ export const HERO_EXAMPLES: ExampleDesign[] = [
       featureColors: coloredFeatures({
         labelTab: PALETTE.amber,
         scoop: PALETTE.coral,
-        lip: {
-          frontLeft: PALETTE.amber,
-          frontRight: PALETTE.amber,
-          backRight: PALETTE.amber,
-          backLeft: PALETTE.amber,
-        },
+        lip: PALETTE.amber,
       }),
     },
     metrics: { width: 3, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },

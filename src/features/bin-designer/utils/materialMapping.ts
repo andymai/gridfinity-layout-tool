@@ -1,29 +1,37 @@
 /**
- * 3MF export material mapping. LIP triangles are subdivided per corner
- * via centroid quadrant — see `lipCornerClassifier`.
+ * 3MF export material mapping. The lip is colored by a quadrant × band grid;
+ * when that grid is non-trivial the lip triangles are split along the seam
+ * planes (shared with the preview via {@link computeLipColoredMesh}) so the
+ * exported `paint_color` boundaries are geometrically exact. Splitting changes
+ * the triangle count, so the mapping returns the replacement flat vertices +
+ * normals the caller must hand to the 3MF writer.
  */
 
-import { FeatureTag } from '@/shared/types/generation';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { ThreeMFColorConfig } from '@/shared/generation/export';
 import {
-  featureTagToColorZone,
   getZoneColor,
   isSingleColor,
-  lipCornerZone,
   normalizeHex,
   resolveColorMapping,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
-import { classifyLipCorner, computeLipBBoxCenter } from './lipCornerClassifier';
+import { computeLipGeom } from './lipCornerClassifier';
+import { computeLipColoredMesh } from './lipSeamSplitter';
+
+export interface BinColorMapping {
+  readonly config: ThreeMFColorConfig;
+  /** Replacement geometry when the lip grid was split (flat, 9 floats/tri). */
+  readonly vertices?: Float32Array;
+  readonly normals?: Float32Array;
+}
 
 /**
- * `vertices` is the flat STL-style array (9 floats per triangle) — read
- * only to compute centroids for LIP triangles. `activeZones` filters out
- * zones whose feature isn't enabled, so a stale color on a hidden zone
- * (e.g. a lip corner recolor on a stacking-lip-off bin) doesn't trip
- * multi-color export. Matches the preview's gating. Returns null when
- * the design is single-color (no color group section needed).
+ * Build the 3MF color config (and, when the lip grid is split, the replacement
+ * geometry). `vertices` is the flat STL-style array (9 floats per triangle).
+ * `activeZones` filters zones whose feature isn't enabled so a stale color on a
+ * hidden zone doesn't trip multi-color export. Returns null when the design is
+ * single-color (no color section needed).
  */
 export function buildTriangleMaterialIndices(
   faceGroups: readonly FaceGroupData[],
@@ -31,50 +39,52 @@ export function buildTriangleMaterialIndices(
   triangleCount: number,
   vertices: Float32Array,
   activeZones: ReadonlySet<ColorZone>
-): ThreeMFColorConfig | null {
+): BinColorMapping | null {
   if (isSingleColor(featureColors, activeZones)) return null;
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
-
   const materials = colors.map((color) => ({ color }));
-  const indices = new Array<number>(triangleCount).fill(defaultIndex);
+  const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
 
-  const triangleXY = (triIdx: number) => {
-    const i = triIdx * 9;
+  const getTriangle = (i: number): number[] => {
+    const b = i * 9;
+    return [
+      vertices[b],
+      vertices[b + 1],
+      vertices[b + 2],
+      vertices[b + 3],
+      vertices[b + 4],
+      vertices[b + 5],
+      vertices[b + 6],
+      vertices[b + 7],
+      vertices[b + 8],
+    ];
+  };
+  const triangleXYZ = (i: number) => {
+    const b = i * 9;
     return {
-      x: (vertices[i] + vertices[i + 3] + vertices[i + 6]) / 3,
-      y: (vertices[i + 1] + vertices[i + 4] + vertices[i + 7]) / 3,
+      x: (vertices[b] + vertices[b + 3] + vertices[b + 6]) / 3,
+      y: (vertices[b + 1] + vertices[b + 4] + vertices[b + 7]) / 3,
+      z: (vertices[b + 2] + vertices[b + 5] + vertices[b + 8]) / 3,
     };
   };
 
-  const lipCenter = computeLipBBoxCenter(faceGroups, triangleXY);
+  const geom = computeLipGeom(faceGroups, triangleXYZ);
+  const { triZones, positions, normals } = computeLipColoredMesh({
+    triangleCount,
+    faceGroups,
+    getTriangle,
+    geom,
+    counts,
+  });
 
-  const materialIndexForZone = (zone: ColorZone): number => {
-    // `colorToIndex` is keyed by `normalizeHex` output.
-    return colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? defaultIndex;
-  };
+  const materialIndexForZone = (zone: ColorZone): number =>
+    colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? defaultIndex;
+  const triangleMaterialIndices = triZones.map(materialIndexForZone);
 
-  for (const group of faceGroups) {
-    const triStart = group.start / 3;
-    const triEnd = triStart + group.count / 3;
-
-    if (group.tag === FeatureTag.LIP && lipCenter) {
-      const { cx, cy } = lipCenter;
-      for (let i = triStart; i < triEnd; i++) {
-        const { x, y } = triangleXY(i);
-        const corner = classifyLipCorner(x, y, cx, cy);
-        indices[i] = materialIndexForZone(lipCornerZone(corner));
-      }
-      continue;
-    }
-
-    const zone = featureTagToColorZone(group.tag);
-    if (zone === null) continue; // LIP without bbox center — leave at default
-    const matIdx = materialIndexForZone(zone);
-    for (let i = triStart; i < triEnd; i++) {
-      indices[i] = matIdx;
-    }
+  const config: ThreeMFColorConfig = { materials, triangleMaterialIndices };
+  if (positions && normals) {
+    return { config, vertices: positions, normals };
   }
-
-  return { materials, triangleMaterialIndices: indices };
+  return { config };
 }

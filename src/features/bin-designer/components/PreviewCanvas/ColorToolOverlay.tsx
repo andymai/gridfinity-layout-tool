@@ -18,10 +18,9 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import {
-  LIP_CORNERS,
   computeActiveZones,
   getZoneColor,
-  lipCornerZone,
+  parseLipCell,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
@@ -29,9 +28,10 @@ import { zoneTranslationKey, zoneColorPatch } from '@/features/bin-designer/util
 import { ColorPicker } from '@/features/bin-designer/components/panel/ColorsSection/ColorPicker';
 
 function defaultForZone(zone: ColorZone): string {
+  if (parseLipCell(zone)) {
+    return DEFAULT_FEATURE_COLOR_CONFIG.lip.cells[zone] ?? DEFAULT_FEATURE_COLOR_CONFIG.body;
+  }
   switch (zone) {
-    case 'body':
-      return DEFAULT_FEATURE_COLOR_CONFIG.body;
     case 'labelTab':
       return DEFAULT_FEATURE_COLOR_CONFIG.labelTab;
     case 'base':
@@ -44,14 +44,8 @@ function defaultForZone(zone: ColorZone): string {
       return DEFAULT_FEATURE_COLOR_CONFIG.text;
     case 'lid':
       return DEFAULT_FEATURE_COLOR_CONFIG.lid;
-    case 'lip:frontLeft':
-      return DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft;
-    case 'lip:frontRight':
-      return DEFAULT_FEATURE_COLOR_CONFIG.lip.frontRight;
-    case 'lip:backRight':
-      return DEFAULT_FEATURE_COLOR_CONFIG.lip.backRight;
-    case 'lip:backLeft':
-      return DEFAULT_FEATURE_COLOR_CONFIG.lip.backLeft;
+    default:
+      return DEFAULT_FEATURE_COLOR_CONFIG.body;
   }
 }
 
@@ -130,8 +124,11 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
         compartments: { cells },
+        featureColors: {
+          lip: { corners: featureColors.lip.corners, bands: featureColors.lip.bands },
+        },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells]
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells, featureColors.lip]
   );
 
   const otherColors = useMemo(() => {
@@ -147,12 +144,9 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
       seen.add(key);
       result.push(hex);
     };
-    collect('body');
-    for (const corner of LIP_CORNERS) collect(lipCornerZone(corner));
-    collect('labelTab');
-    collect('base');
-    collect('scoop');
-    collect('dividers');
+    // Iterate the active zone set directly — it already contains exactly the
+    // visible lip cells for the current grid (plus the other active zones).
+    for (const zone of activeZones) collect(zone);
     return result;
   }, [pickerOverlay, featureColors, activeZones]);
 

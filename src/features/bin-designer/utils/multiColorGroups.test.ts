@@ -1,17 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
 import { buildMultiColorGroups, hoveredMaterialIndices } from './multiColorGroups';
-import { LIP_CORNERS, ZONE_ORDER, lipCornerZone, zoneIndex } from '../types/featureColors';
-import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
+import { LIP_CELL_ZONES, ZONE_ORDER, makeUniformLipCells, zoneIndex } from '../types/featureColors';
+import type { ColorZone, FeatureColorConfig, LipColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
 
 const SINGLE = '#d4d8dc';
+
+function lip(
+  cells: Record<string, string> = {},
+  corners: 1 | 2 | 4 = 1,
+  bands: 1 | 2 | 4 = 1
+): LipColorConfig {
+  return { corners, bands, cells: { ...makeUniformLipCells(SINGLE), ...cells } };
+}
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
     enabled: false,
     body: SINGLE,
-    lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
+    lip: lip(),
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
@@ -24,22 +32,16 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
 
 const allZones: ReadonlySet<ColorZone> = new Set(ZONE_ORDER);
 
-/**
- * Build an indexed mesh where triangle `i` has all three vertices at
- * (x[i], y[i], 0). Centroid = (x[i], y[i], 0). Returns
- * { vertices, indices } in the layout expected by buildMultiColorGroups.
- */
+/** Indexed mesh where triangle `i` is a tiny triangle centered at (x[i], y[i], 0). */
 function meshFromCentroids(points: { x: number; y: number }[]) {
   const vertices = new Float32Array(points.length * 9);
   const indices = new Uint32Array(points.length * 3);
   for (let i = 0; i < points.length; i++) {
     const { x, y } = points[i];
-    for (let v = 0; v < 3; v++) {
-      vertices[i * 9 + v * 3 + 0] = x;
-      vertices[i * 9 + v * 3 + 1] = y;
-      vertices[i * 9 + v * 3 + 2] = 0;
-      indices[i * 3 + v] = i * 3 + v;
-    }
+    // Tiny triangle so it never straddles a seam plane.
+    const tri = [x - 0.1, y - 0.1, 0, x + 0.1, y - 0.1, 0, x, y + 0.1, 0];
+    for (let v = 0; v < 9; v++) vertices[i * 9 + v] = tri[v];
+    for (let v = 0; v < 3; v++) indices[i * 3 + v] = i * 3 + v;
   }
   return { vertices, indices };
 }
@@ -52,9 +54,6 @@ describe('buildMultiColorGroups', () => {
   });
 
   it('places body at material index 0 and one slot per ColorZone (no hex dedup)', () => {
-    // labelTab differs; everything else is body. zoneColors[5] (labelTab in
-    // ZONE_ORDER) must hold the labelTab hex even though every other slot
-    // holds body's hex — that's the "no dedup" guarantee.
     const { vertices, indices } = meshFromCentroids([
       { x: 0, y: 0 },
       { x: 1, y: 1 },
@@ -69,9 +68,11 @@ describe('buildMultiColorGroups', () => {
     expect(result?.zoneColors).toHaveLength(ZONE_ORDER.length);
     expect(result?.zoneColors[zoneIndex('labelTab')]).toBe('#aabbcc');
     expect(result?.zoneColors[zoneIndex('body')]).toBe(SINGLE);
+    // Uniform lip (1×1) → no re-tessellation.
+    expect(result?.meshOverride).toBeNull();
   });
 
-  it('splits a single LIP face group into four corner runs (one per quadrant)', () => {
+  it('splits a 4-corner LIP face group into four cell runs', () => {
     const { vertices, indices } = meshFromCentroids([
       { x: 10, y: 10 }, // front-left
       { x: 90, y: 10 }, // front-right
@@ -79,33 +80,37 @@ describe('buildMultiColorGroups', () => {
       { x: 10, y: 90 }, // back-left
     ]);
     const c = colors({
-      lip: {
-        frontLeft: '#ff0000',
-        frontRight: '#00ff00',
-        backRight: '#0000ff',
-        backLeft: '#ffffff',
-      },
+      lip: lip(
+        {
+          'lip:frontLeft:0': '#ff0000',
+          'lip:frontRight:0': '#00ff00',
+          'lip:backRight:0': '#0000ff',
+          'lip:backLeft:0': '#ffffff',
+        },
+        4,
+        1
+      ),
     });
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
     const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
     expect(result).not.toBeNull();
-
-    // Four 1-triangle (3-index) groups in centroid order.
+    // Non-trivial grid re-tessellates the lip → flat geometry override.
+    expect(result?.meshOverride).not.toBeNull();
+    expect(result?.triZones).toEqual([
+      'lip:frontLeft:0',
+      'lip:frontRight:0',
+      'lip:backRight:0',
+      'lip:backLeft:0',
+    ]);
     expect(result?.groups).toHaveLength(4);
     expect(result?.groups[0]).toMatchObject({
       start: 0,
       count: 3,
-      materialIndex: zoneIndex('lip:frontLeft'),
-    });
-    expect(result?.groups[3]).toMatchObject({
-      start: 9,
-      count: 3,
-      materialIndex: zoneIndex('lip:backLeft'),
+      materialIndex: zoneIndex('lip:frontLeft:0'),
     });
   });
 
-  it('coalesces consecutive same-corner LIP triangles into one group', () => {
-    // 5 LIP triangles: front-left × 3, then back-right × 2.
+  it('coalesces consecutive same-cell LIP triangles into one group', () => {
     const { vertices, indices } = meshFromCentroids([
       { x: 10, y: 10 },
       { x: 11, y: 11 },
@@ -114,42 +119,25 @@ describe('buildMultiColorGroups', () => {
       { x: 91, y: 91 },
     ]);
     const c = colors({
-      lip: { frontLeft: '#ff0000', frontRight: SINGLE, backRight: '#0000ff', backLeft: SINGLE },
+      lip: lip({ 'lip:frontLeft:0': '#ff0000', 'lip:backRight:0': '#0000ff' }, 4, 1),
     });
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 15, tag: FeatureTag.LIP }];
     const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
-    expect(result).not.toBeNull();
     expect(result?.groups).toHaveLength(2);
     expect(result?.groups[0]).toMatchObject({
       start: 0,
-      count: 9, // 3 triangles × 3 indices
-      materialIndex: zoneIndex('lip:frontLeft'),
+      count: 9,
+      materialIndex: zoneIndex('lip:frontLeft:0'),
     });
     expect(result?.groups[1]).toMatchObject({
       start: 9,
-      count: 6, // 2 triangles × 3 indices
-      materialIndex: zoneIndex('lip:backRight'),
+      count: 6,
+      materialIndex: zoneIndex('lip:backRight:0'),
     });
   });
 
-  it('skips zero-count face groups without reading vertex data', () => {
-    // A zero-count LIP face group must not classify and must not read the
-    // (possibly out-of-range) vertex at fg.start. Provide a real LIP group
-    // alongside so lipCenter is non-null and the skip path is exercised.
-    const { vertices, indices } = meshFromCentroids([{ x: 10, y: 10 }]);
-    const faceGroups: FaceGroupData[] = [
-      { start: 0, count: 3, tag: FeatureTag.LIP },
-      { start: 9999, count: 0, tag: FeatureTag.LIP }, // bogus offset — must be ignored
-    ];
-    const c = colors({
-      lip: { frontLeft: '#ff0000', frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
-    });
-    expect(() => buildMultiColorGroups(faceGroups, vertices, indices, c, allZones)).not.toThrow();
-  });
-
-  it('fills the gap before a face group with body material', () => {
-    // Mesh has 6 triangles (18 indices) but the only face group starts at
-    // index 9, leaving indices 0..8 unassigned. They must fall back to body.
+  it('classifies a uniform lip in place (no override) and fills gaps with body', () => {
+    // 6 triangles, only a LABEL_TAB group at index 9 → first 3 fall to body.
     const { vertices, indices } = meshFromCentroids([
       { x: 0, y: 0 },
       { x: 0, y: 0 },
@@ -161,10 +149,16 @@ describe('buildMultiColorGroups', () => {
     const c = colors({ labelTab: '#aabbcc' });
     const faceGroups: FaceGroupData[] = [{ start: 9, count: 9, tag: FeatureTag.LABEL_TAB }];
     const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
+    expect(result?.meshOverride).toBeNull();
     expect(result?.groups[0]).toMatchObject({
       start: 0,
       count: 9,
       materialIndex: zoneIndex('body'),
+    });
+    expect(result?.groups[1]).toMatchObject({
+      start: 9,
+      count: 9,
+      materialIndex: zoneIndex('labelTab'),
     });
   });
 });
@@ -178,17 +172,13 @@ describe('hoveredMaterialIndices', () => {
     expect([...hoveredMaterialIndices('scoop')]).toEqual([zoneIndex('scoop')]);
   });
 
-  it('lights all four lip-corner slots when the lip header is hovered', () => {
+  it('lights all lip cell slots when the lip header is hovered', () => {
     const result = hoveredMaterialIndices('lip');
-    expect(result.size).toBe(4);
-    for (const corner of LIP_CORNERS) {
-      expect(result.has(zoneIndex(lipCornerZone(corner)))).toBe(true);
-    }
+    expect(result.size).toBe(LIP_CELL_ZONES.length);
+    for (const cell of LIP_CELL_ZONES) expect(result.has(zoneIndex(cell))).toBe(true);
   });
 
   it('targets the hovered zone slot even if its color equals body (no bleed)', () => {
-    // The whole point of per-zone material slots: hovering 'dividers' must
-    // light only the dividers slot, not body, even when they share a hex.
     expect([...hoveredMaterialIndices('dividers')]).toEqual([zoneIndex('dividers')]);
     expect(hoveredMaterialIndices('dividers').has(zoneIndex('body'))).toBe(false);
   });

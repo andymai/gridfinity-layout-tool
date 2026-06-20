@@ -25,7 +25,7 @@ import type {
 } from '../../types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import { TEXT_MAX_LENGTH } from '../../types/text';
-import type { LipColorConfig } from '../../types/featureColors';
+import { mergeLipConfig, type LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import {
@@ -255,7 +255,9 @@ export function createParamSlice(set: Set, get: Get) {
         pushHistoryEntry(state);
         const current = state.params.featureColors;
         const { lip: lipPatch, ...rest } = patch;
-        const nextLip: LipColorConfig = lipPatch ? { ...current.lip, ...lipPatch } : current.lip;
+        const nextLip: LipColorConfig = lipPatch
+          ? mergeLipConfig(current.lip, lipPatch)
+          : current.lip;
         state.params.featureColors = {
           ...current,
           ...rest,
