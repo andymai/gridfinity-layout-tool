@@ -605,11 +605,10 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        // `v4`: #1898 added `edges` + `inset` to LabelTabConfig. The full
-        // config is already serialized via `stableSerialize(params.label)`,
-        // so the bump is belt-and-suspenders — invalidates any older entry
-        // a returning user might have in IndexedDB.
-        'v4',
+        // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
+        // face tags changed), so older IndexedDB entries must be invalidated.
+        // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
+        'v5',
         dim.shellKey,
         stableSerialize(params.label),
         quantize(dim.innerW),

@@ -48,7 +48,8 @@ describe('label tab shelf-top color tag (#1654)', () => {
         const zs = [0, 1, 2].map((k) => verts[idx[fg.start + t * 3 + k] * 3 + 2]);
         if (!zs.every((z) => z >= top)) continue;
         if (fg.tag === FeatureTag.LABEL_TAB) labelTop++;
-        else if (fg.tag === 255 || fg.tag === FeatureTag.BASE) bodyTop++;
+        // UNKNOWN (255) and BASE (0) both render as the body color.
+        else if (fg.tag === FeatureTag.UNKNOWN || fg.tag === FeatureTag.BASE) bodyTop++;
       }
     }
 
