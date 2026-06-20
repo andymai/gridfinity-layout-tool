@@ -56,7 +56,7 @@ peerDependencyRules:
 
 overrides:
   '@vercel/node>undici': '^7.28.0'
-  'undici@<6.27.0': '^6.27.0'
+  'undici@>=6.0.0 <6.27.0': '^6.27.0'
   'undici@>=7.0.0 <7.28.0': '^7.28.0'
   path-to-regexp: '6.3.0'
   '@rollup/plugin-replace>magic-string': '0.30.21'
