@@ -217,8 +217,8 @@ export interface InteriorDividerCutout {
  * Crucially, this honours `dividerOverrides` (tilted dividers): each window is
  * translated to the tilted segment's midpoint and rotated to lie IN the wall.
  * Without this the cutout is carved at the original grid line while the wall is
- * tilted, so it slices the divider at a slant (GH #2276). Pure + exported so the
- * geometry can be asserted without a WASM build.
+ * tilted, so it slices the divider at a slant. Pure + exported so the geometry
+ * can be asserted without a WASM build.
  */
 export function computeInteriorDividerCutouts(
   params: BinParams,
@@ -338,11 +338,7 @@ function buildWallCutoutCutsInScope(
         overshoot,
         extrudeDepth,
         wallHeight,
-        {
-          x: c.x,
-          y: c.y,
-          rotateZ: c.rotateZ,
-        }
+        c
       )
     );
   }
@@ -384,8 +380,8 @@ export const wallCutoutsFeature: FeatureBuilder = {
         params.compartments.cols,
         params.compartments.rows,
         params.compartments.cells.join(','),
-        // Tilted dividers move interior cutouts off the grid line — without this
-        // a tilt change would reuse the stale grid-aligned cut (GH #2276).
+        // Tilted dividers move interior cutouts off the grid line; omitting this
+        // would reuse the stale grid-aligned cut.
         stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );

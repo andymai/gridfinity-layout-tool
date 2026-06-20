@@ -12,7 +12,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
-import { findWallSegments } from './compartmentBuilder';
+import { findWallSegments, buildOverrideLookup, overrideKey } from './compartmentBuilder';
 import type { DividerInfo, OuterWallCutoutInfo } from './dividerBlendTypes';
 
 /**
@@ -100,6 +100,11 @@ export function collectDividers(params: BinParams, innerW: number, innerD: numbe
   const canBuildVertical = effectiveCellW >= thickness * 2;
   const canBuildHorizontal = effectiveCellD >= thickness * 2;
 
+  // Tilted dividers don't fit DividerInfo's axis-aligned `posAlongPerp` model,
+  // so blends/junction clips skip them (matching label tabs/scoops/inserts,
+  // which also degrade gracefully on tilt). Non-overridden bins are unaffected.
+  const overrides = buildOverrideLookup(params.compartments.dividerOverrides);
+
   const dividers: DividerInfo[] = [];
 
   // Vertical dividers (between columns, run along Y)
@@ -109,7 +114,7 @@ export function collectDividers(params: BinParams, innerW: number, innerD: numbe
       const segments = findWallSegments(rows, (row) => {
         const leftId = cells[row * cols + (colBoundary - 1)];
         const rightId = cells[row * cols + colBoundary];
-        return leftId !== rightId;
+        return leftId !== rightId && !overrides.has(overrideKey(leftId, rightId));
       });
       for (const [start, end] of segments) {
         dividers.push({
@@ -129,7 +134,7 @@ export function collectDividers(params: BinParams, innerW: number, innerD: numbe
       const segments = findWallSegments(cols, (col) => {
         const topId = cells[(rowBoundary - 1) * cols + col];
         const bottomId = cells[rowBoundary * cols + col];
-        return topId !== bottomId;
+        return topId !== bottomId && !overrides.has(overrideKey(topId, bottomId));
       });
       for (const [start, end] of segments) {
         dividers.push({

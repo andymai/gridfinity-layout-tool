@@ -294,7 +294,10 @@ export const dividerBlendFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
-        dim.hasLip
+        dim.hasLip,
+        // Tilted dividers are excluded from blends, so a tilt change alters
+        // which junctions blend and must invalidate the cached cut.
+        stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );
   },

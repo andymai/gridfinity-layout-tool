@@ -494,11 +494,9 @@ export function buildOverrideLookup(
 
 /** One interior divider wall segment, resolved to mm in bin-centered coords. */
 export interface InteriorDividerSegment {
-  /** Axis-projected segment length (mm). */
+  /** Axis-projected segment length (mm) — not the longer true diagonal. */
   readonly segLen: number;
-  /** Midpoint X of the (possibly tilted) segment. */
   readonly x: number;
-  /** Midpoint Y of the (possibly tilted) segment. */
   readonly y: number;
   /** In-plane rotation (deg) aligned to the wall: 90 for straight vertical
    *  dividers, 0 for straight horizontal, tilted by the override otherwise. */
@@ -509,7 +507,7 @@ export interface InteriorDividerSegment {
  * Enumerate every interior divider wall segment with its tilt-resolved
  * placement, honouring `dividerOverrides`. Shared source of truth so features
  * that decorate dividers (wall cutouts, handles) land ON the wall instead of at
- * the original grid line when a divider is tilted (GH #2276). Pure — no WASM.
+ * the original grid line when a divider is tilted. Pure — no WASM.
  */
 export function interiorDividerSegments(
   params: BinParams,
@@ -525,10 +523,26 @@ export function interiorDividerSegments(
   const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
   const RAD2DEG = 180 / Math.PI;
 
+  // Without overrides, merge contiguous wall cells into one run (historical
+  // behavior — one window per span). Only split per compartment pair when tilts
+  // exist, since each tilted pair is its own angled wall segment.
+  const hasOverrides = lookup.size > 0;
+  const runsFor = (
+    count: number,
+    pairOf: (i: number) => string | null
+  ): Array<{ start: number; end: number; pairKey: string }> =>
+    hasOverrides
+      ? findPairAwareRuns(count, pairOf)
+      : findWallSegments(count, (i) => pairOf(i) !== null).map(([start, end]) => ({
+          start,
+          end,
+          pairKey: '',
+        }));
+
   // Vertical dividers (between columns) run along Y; straight ⇒ rotateZ 90.
   for (let boundary = 1; boundary < cols; boundary++) {
     const xPos = -innerW / 2 + boundary * cellW;
-    const runs = findPairAwareRuns(rows, (row) => {
+    const runs = runsFor(rows, (row) => {
       const leftId = cells[row * cols + (boundary - 1)];
       const rightId = cells[row * cols + boundary];
       return leftId !== rightId ? overrideKey(leftId, rightId) : null;
@@ -553,7 +567,7 @@ export function interiorDividerSegments(
   // Horizontal dividers (between rows) run along X; straight ⇒ rotateZ 0.
   for (let boundary = 1; boundary < rows; boundary++) {
     const yPos = -innerD / 2 + boundary * cellD;
-    const runs = findPairAwareRuns(cols, (col) => {
+    const runs = runsFor(cols, (col) => {
       const topId = cells[(boundary - 1) * cols + col];
       const bottomId = cells[boundary * cols + col];
       return topId !== bottomId ? overrideKey(topId, bottomId) : null;

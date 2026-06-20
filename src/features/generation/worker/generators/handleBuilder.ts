@@ -239,8 +239,8 @@ function buildHandleHolesInScope(
       const geom = computeHandleHoleGeometry(interiorHeight, globalHeight, verticalPosition);
 
       if (geom.effectiveHeight >= 1) {
-        // Placement honours tilted dividers (dividerOverrides) so handle holes
-        // distribute along the angled wall, not the original grid line (#2276).
+        // Placement honours tilted dividers so handle holes distribute along the
+        // angled wall, not the original grid line.
         for (const seg of interiorDividerSegments(params, innerW, innerD)) {
           const handleW = seg.segLen * (globalWidth / 100);
           const offsets = computeMultiHandleOffsets(count, seg.segLen, handleW);
@@ -314,7 +314,7 @@ export const handlesFeature: FeatureBuilder = {
         params.handles.interior
           ? `${params.compartments.cols}x${params.compartments.rows}:${params.compartments.cells.join(',')}`
           : '',
-        // Tilted dividers move interior handle holes off the grid line (#2276).
+        // Tilted dividers move interior handle holes off the grid line.
         params.handles.interior ? stableSerialize(params.compartments.dividerOverrides ?? []) : ''
       )
     );
