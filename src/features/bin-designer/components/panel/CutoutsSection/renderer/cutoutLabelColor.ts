@@ -47,14 +47,18 @@ function contrastRatio(l1: number, l2: number): number {
  * borderline background.
  */
 export function cutoutLabelColors(binColor: string): CutoutLabelColors {
-  // getHexString returns sRGB bytes regardless of three's color management, so
-  // the WCAG math below operates in the sRGB space it expects.
+  // getHexString returns sRGB bytes regardless of three's color management.
   const hex = new THREE.Color(binColor).getHexString();
-  const r = (parseInt(hex.slice(0, 2), 16) / 255) * CUT_FILL_DARKEN;
-  const g = (parseInt(hex.slice(2, 4), 16) / 255) * CUT_FILL_DARKEN;
-  const b = (parseInt(hex.slice(4, 6), 16) / 255) * CUT_FILL_DARKEN;
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
 
-  const fillLum = relativeLuminance(r, g, b);
+  // CutoutShapeMesh darkens the cut floor with THREE.Color.multiplyScalar, which
+  // scales LINEAR components — so the factor belongs in linear space. Relative
+  // luminance is already the linearized weighted sum, so scaling it by
+  // CUT_FILL_DARKEN equals linearize → ×0.7 → re-encode → linearize again, and
+  // keeps the contrast decision aligned with the actual displayed fill.
+  const fillLum = CUT_FILL_DARKEN * relativeLuminance(r, g, b);
   const whiteContrast = contrastRatio(fillLum, 1);
   const blackContrast = contrastRatio(fillLum, 0);
 
