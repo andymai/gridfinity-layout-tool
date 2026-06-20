@@ -25,6 +25,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { binLipTopWorldZ, lidAnchorZ } from './lidAnchorZ';
 
 /** Opacity bands for closed vs exploded views. */
@@ -62,13 +63,15 @@ interface LidMeshProps {
 export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }: LidMeshProps) {
   const { invalidate } = useThree();
 
-  const { lidMesh, lidGroupZ } = useDesignerStore(
+  const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
       const { height, heightUnitMm, base } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
       const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+        featureColors: s.params.featureColors ?? null,
         // Mated position: lid local Z = anchorZ aligns with the bin's
         // lip top. The lid group (where local Z=0 lands) is then
         // lipTopZ - anchorZ; anchorZ is negative, so the lid floor sits
@@ -86,10 +89,16 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     edgeVertices: lidMesh?.edgeVertices ?? null,
   });
 
+  // In multi-color mode the lid is a single zone (`featureColors.lid`); the
+  // exporter already paints the whole lid object that color, so the preview
+  // must match instead of falling back to the body material (GH #1654).
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
+  const lidColor = featureColors?.enabled ? getZoneColor(featureColors, 'lid') : color;
+
   const baseOpacity = opacityForOffset(lidOffsetMm);
   const matProps = useMemo(
     () => ({
-      color,
+      color: lidColor,
       roughness: 0.45,
       metalness: 0,
       wireframe,
@@ -109,7 +118,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
       polygonOffsetFactor: 4,
       polygonOffsetUnits: 4,
     }),
-    [color, wireframe, hasPrecomputedNormals, baseOpacity, xray]
+    [lidColor, wireframe, hasPrecomputedNormals, baseOpacity, xray]
   );
 
   // Invalidate the R3F frame when any visual input changes.

@@ -28,11 +28,15 @@ vi.mock('three', () => {
     setAttribute = vi.fn();
     setIndex = vi.fn();
     computeVertexNormals = vi.fn();
+    clearGroups = vi.fn();
+    addGroup = vi.fn();
     dispose = vi.fn();
   }
   return {
     BufferGeometry: MockBufferGeometry,
+    EdgesGeometry: MockBufferGeometry,
     BufferAttribute: vi.fn(),
+    Float32BufferAttribute: vi.fn(),
     Color: vi.fn(),
     DoubleSide: 'DoubleSide',
     FrontSide: 'FrontSide',
@@ -59,6 +63,54 @@ describe('LidMesh', () => {
   it('renders nothing when no mesh is generated yet (regardless of offset)', () => {
     const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={15} wireframe={false} />);
     expect(container.firstChild).toBeNull();
+  });
+});
+
+describe('LidMesh color (#1654)', () => {
+  const tri = {
+    vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+    normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+    indices: new Uint32Array([0, 1, 2]),
+    edgeVertices: new Float32Array([0, 0, 0, 1, 0, 0]),
+  };
+
+  function seedLidMesh(): void {
+    useDesignerStore.setState({
+      generation: {
+        status: 'complete',
+        mesh: { ...tri, error: null, timingMs: 1, lidMesh: { ...tri, triangleCount: 1 } },
+        progress: 0,
+        epoch: 0,
+      },
+    });
+  }
+
+  const lidMaterialColor = (container: HTMLElement): string | null | undefined =>
+    container.querySelector('meshStandardMaterial')?.getAttribute('color');
+
+  it('paints the lid with the lid zone color when multi-color is enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled: true, lid: '#ff0000' },
+      },
+    });
+    seedLidMesh();
+    const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={0} wireframe={false} />);
+    // Body fallback ("#cccccc") would be the bug; the lid must follow its zone.
+    expect(lidMaterialColor(container)).toBe('#ff0000');
+  });
+
+  it('falls back to the body color when multi-color is disabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled: false, lid: '#ff0000' },
+      },
+    });
+    seedLidMesh();
+    const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={0} wireframe={false} />);
+    expect(lidMaterialColor(container)).toBe('#cccccc');
   });
 });
 
