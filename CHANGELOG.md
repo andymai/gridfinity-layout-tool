@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.2...gridfinity-layout-tool-v4.197.3) (2026-06-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** paint the lid its zone color in the multi-color preview ([#2286](https://github.com/andymai/gridfinity-layout-tool/issues/2286)) ([1ca3fb8](https://github.com/andymai/gridfinity-layout-tool/commit/1ca3fb86800ba12836093bcde4b8858f67975a49))
+
 ## [4.197.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.1...gridfinity-layout-tool-v4.197.2) (2026-06-20)
 
 
