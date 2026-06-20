@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Hinten rechts",
   "binDesigner.colors.lip.backLeft": "Hinten links",
   "binDesigner.colors.lip.bandN": "Band {n}",
+  "binDesigner.colors.lip.splitZones": "In Farbzonen aufteilen",
   "binDesigner.colors.lip.bandsLabel": "Bänder",
   "binDesigner.colors.lip.cornersLabel": "Ecken",
   "binDesigner.colors.lip.front": "Vorne",

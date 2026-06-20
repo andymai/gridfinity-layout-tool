@@ -1669,6 +1669,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.lip.cornersLabel': 'Corners',
   'binDesigner.colors.lip.bandsLabel': 'Bands',
   'binDesigner.colors.lip.bandN': 'Band {n}',
+  'binDesigner.colors.lip.splitZones': 'Split into color zones',
   'binDesigner.colors.labelTab': 'Label Tab',
   'binDesigner.colors.base': 'Base',
   'binDesigner.colors.scoop': 'Scoop',

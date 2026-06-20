@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Bak-höger",
   "binDesigner.colors.lip.backLeft": "Bak-vänster",
   "binDesigner.colors.lip.bandN": "Band {n}",
+  "binDesigner.colors.lip.splitZones": "Dela i färgzoner",
   "binDesigner.colors.lip.bandsLabel": "Band",
   "binDesigner.colors.lip.cornersLabel": "Hörn",
   "binDesigner.colors.lip.front": "Fram",

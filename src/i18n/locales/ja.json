@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "奥-右",
   "binDesigner.colors.lip.backLeft": "奥-左",
   "binDesigner.colors.lip.bandN": "バンド {n}",
+  "binDesigner.colors.lip.splitZones": "カラーゾーンに分割",
   "binDesigner.colors.lip.bandsLabel": "バンド",
   "binDesigner.colors.lip.cornersLabel": "コーナー",
   "binDesigner.colors.lip.front": "前",

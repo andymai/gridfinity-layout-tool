@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Achter-rechts",
   "binDesigner.colors.lip.backLeft": "Achter-links",
   "binDesigner.colors.lip.bandN": "Band {n}",
+  "binDesigner.colors.lip.splitZones": "In kleurzones verdelen",
   "binDesigner.colors.lip.bandsLabel": "Banden",
   "binDesigner.colors.lip.cornersLabel": "Hoeken",
   "binDesigner.colors.lip.front": "Voor",

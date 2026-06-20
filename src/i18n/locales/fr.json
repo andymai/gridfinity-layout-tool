@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Arrière-droite",
   "binDesigner.colors.lip.backLeft": "Arrière-gauche",
   "binDesigner.colors.lip.bandN": "Bande {n}",
+  "binDesigner.colors.lip.splitZones": "Diviser en zones de couleur",
   "binDesigner.colors.lip.bandsLabel": "Bandes",
   "binDesigner.colors.lip.cornersLabel": "Coins",
   "binDesigner.colors.lip.front": "Avant",

@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Bak-høyre",
   "binDesigner.colors.lip.backLeft": "Bak-venstre",
   "binDesigner.colors.lip.bandN": "Bånd {n}",
+  "binDesigner.colors.lip.splitZones": "Del i fargesoner",
   "binDesigner.colors.lip.bandsLabel": "Bånd",
   "binDesigner.colors.lip.cornersLabel": "Hjørner",
   "binDesigner.colors.lip.front": "Front",

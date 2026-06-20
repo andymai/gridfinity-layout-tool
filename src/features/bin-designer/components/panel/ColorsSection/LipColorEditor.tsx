@@ -1,8 +1,10 @@
 /**
- * Stacking-lip color editor: a Corners × Bands grid. The user picks how many
- * corner quadrants (1/2/4) and height bands (1/2/4) to color, then sets each
- * resulting cell. Counts are non-destructive — the underlying 16-cell store
- * persists, so collapsing then re-expanding round-trips colors.
+ * Stacking-lip color editor. Defaults to a single lip color — most users want
+ * one — and hides the Corners × Bands grid behind a "Split into color zones"
+ * opt-in. When split, the user picks how many corner quadrants (1/2/4) and
+ * height bands (1/2/4) to color, then sets each resulting cell. Counts are
+ * non-destructive — the underlying 16-cell store persists, so collapsing then
+ * re-expanding round-trips colors.
  *
  * Reuses ColorZoneRow per active cell so each cell inherits the full picker
  * (presets, recent colors, eyedropper/swap interplay, undo-coalescing
@@ -10,6 +12,8 @@
  * row; here each cell fires its own zone so the matching region glows.
  */
 
+import { useState } from 'react';
+import { Checkbox } from '@/design-system';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
 import {
@@ -78,38 +82,55 @@ export function LipColorEditor({
   onSwap,
 }: LipColorEditorProps) {
   const t = useTranslation();
+  const isMultiCell = lip.corners > 1 || lip.bands > 1;
+  const [splitOpen, setSplitOpen] = useState(false);
+  // Show the grid when the user opts in, or when a loaded design already has
+  // multiple zones (so its colors are visible/editable without re-opting in).
+  const showGrid = splitOpen || isMultiCell;
   const cells = activeLipCells({ corners: lip.corners, bands: lip.bands });
+
+  const handleToggleSplit = (checked: boolean) => {
+    setSplitOpen(checked);
+    if (!checked) {
+      // Collapse to a single color. Cells persist (non-destructive), so
+      // re-opening and raising a count restores the previous zone colors.
+      if (lip.corners !== 1) onSetCorners(1);
+      if (lip.bands !== 1) onSetBands(1);
+    }
+  };
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <LipGridDiagram lip={lip} hovered={hovered} onHover={onHover} />
-        <div className="flex flex-1 flex-col gap-1.5">
-          {/* Not a <label>: it wraps a radiogroup, and a label leaks its text
-              onto the group's first radio (e.g. "Corners Corners"). The span is
-              the visible label; the SegmentedControl carries its own aria-label. */}
-          <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
-            <span>{t('binDesigner.colors.lip.cornersLabel')}</span>
-            <SegmentedControl
-              size="sm"
-              aria-label={t('binDesigner.colors.lip.cornersLabel')}
-              options={AXIS_OPTIONS}
-              value={String(lip.corners)}
-              onChange={(v) => onSetCorners(toAxis(v))}
-            />
-          </div>
-          <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
-            <span>{t('binDesigner.colors.lip.bandsLabel')}</span>
-            <SegmentedControl
-              size="sm"
-              aria-label={t('binDesigner.colors.lip.bandsLabel')}
-              options={AXIS_OPTIONS}
-              value={String(lip.bands)}
-              onChange={(v) => onSetBands(toAxis(v))}
-            />
+      {showGrid && (
+        <div className="flex items-center gap-3">
+          <LipGridDiagram lip={lip} hovered={hovered} onHover={onHover} />
+          <div className="flex flex-1 flex-col gap-1.5">
+            {/* Not a <label>: it wraps a radiogroup, and a label leaks its text
+                onto the group's first radio (e.g. "Corners Corners"). The span is
+                the visible label; the SegmentedControl carries its own aria-label. */}
+            <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+              <span>{t('binDesigner.colors.lip.cornersLabel')}</span>
+              <SegmentedControl
+                size="sm"
+                aria-label={t('binDesigner.colors.lip.cornersLabel')}
+                options={AXIS_OPTIONS}
+                value={String(lip.corners)}
+                onChange={(v) => onSetCorners(toAxis(v))}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2 text-[11px] text-content-secondary">
+              <span>{t('binDesigner.colors.lip.bandsLabel')}</span>
+              <SegmentedControl
+                size="sm"
+                aria-label={t('binDesigner.colors.lip.bandsLabel')}
+                options={AXIS_OPTIONS}
+                value={String(lip.bands)}
+                onChange={(v) => onSetBands(toAxis(v))}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-0.5">
         {cells.map((zone) => {
@@ -139,6 +160,15 @@ export function LipColorEditor({
           );
         })}
       </div>
+
+      <label className="flex w-fit items-center gap-2 text-[11px] text-content-secondary">
+        <Checkbox
+          checked={showGrid}
+          onChange={handleToggleSplit}
+          aria-label={t('binDesigner.colors.lip.splitZones')}
+        />
+        {t('binDesigner.colors.lip.splitZones')}
+      </label>
     </div>
   );
 }

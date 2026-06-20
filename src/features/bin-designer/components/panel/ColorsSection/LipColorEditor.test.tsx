@@ -31,21 +31,58 @@ function renderEditor(overrides: Partial<Parameters<typeof LipColorEditor>[0]> =
   return props;
 }
 
-describe('LipColorEditor', () => {
-  it('renders one cell row per active grid cell', () => {
-    renderEditor({ lip: lip(2, 2) });
-    // 2 corners × 2 bands = 4 cells; each label includes the band key
-    // (mocked t returns the raw key, not interpolated copy).
-    expect(screen.getAllByText(/binDesigner\.colors\.lip\.bandN/)).toHaveLength(4);
-  });
+const revealGrid = () =>
+  fireEvent.click(screen.getByRole('checkbox', { name: 'binDesigner.colors.lip.splitZones' }));
 
-  it('shows a single "Stacking Lip" label at 1×1', () => {
+describe('LipColorEditor', () => {
+  it('defaults to a single lip color with the grid controls hidden', () => {
     renderEditor({ lip: lip(1, 1) });
     expect(screen.getByText('binDesigner.colors.lip')).toBeDefined();
+    expect(
+      screen.queryByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
+    ).toBeNull();
+    expect(
+      screen.getByRole('checkbox', {
+        name: 'binDesigner.colors.lip.splitZones',
+      }).checked
+    ).toBe(false);
+  });
+
+  it('reveals the Corners/Bands grid when split is enabled', () => {
+    renderEditor({ lip: lip(1, 1) });
+    revealGrid();
+    expect(
+      screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
+    ).toBeDefined();
+    expect(
+      screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.bandsLabel' })
+    ).toBeDefined();
+  });
+
+  it('auto-shows the grid for a design that already has multiple zones', () => {
+    renderEditor({ lip: lip(2, 2) });
+    // No opt-in needed — controls render and the toggle reads as enabled.
+    expect(
+      screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
+    ).toBeDefined();
+    expect(screen.getAllByText(/binDesigner\.colors\.lip\.bandN/)).toHaveLength(4);
+    expect(
+      screen.getByRole('checkbox', {
+        name: 'binDesigner.colors.lip.splitZones',
+      }).checked
+    ).toBe(true);
+  });
+
+  it('collapsing the split resets the lip to a single color', () => {
+    const props = renderEditor({ lip: lip(2, 2) });
+    revealGrid(); // already shown (multi-cell); clicking unchecks it
+    expect(props.onSetCorners).toHaveBeenCalledWith(1);
+    expect(props.onSetBands).toHaveBeenCalledWith(1);
   });
 
   it('fires onSetCorners when the Corners control changes', () => {
     const props = renderEditor({ lip: lip(1, 1) });
+    revealGrid();
     const group = screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' });
     fireEvent.click(within(group).getByText('4'));
     expect(props.onSetCorners).toHaveBeenCalledWith(4);
@@ -53,6 +90,7 @@ describe('LipColorEditor', () => {
 
   it('fires onSetBands when the Bands control changes', () => {
     const props = renderEditor({ lip: lip(1, 1) });
+    revealGrid();
     const group = screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.bandsLabel' });
     fireEvent.click(within(group).getByText('2'));
     expect(props.onSetBands).toHaveBeenCalledWith(2);
@@ -62,7 +100,7 @@ describe('LipColorEditor', () => {
     // A <label> wrapping the radiogroup would leak its text onto the first
     // radio (accessible name "Corners Corners"), so the value-1 segment would
     // be unreachable by name. Each segment must be named by its own value.
-    renderEditor({ lip: lip(1, 1) });
+    renderEditor({ lip: lip(2, 2) });
     for (const groupLabel of [
       'binDesigner.colors.lip.cornersLabel',
       'binDesigner.colors.lip.bandsLabel',

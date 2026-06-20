@@ -241,6 +241,7 @@
   "binDesigner.colors.lip.backRight": "Atrás-der.",
   "binDesigner.colors.lip.backLeft": "Atrás-izq.",
   "binDesigner.colors.lip.bandN": "Banda {n}",
+  "binDesigner.colors.lip.splitZones": "Dividir en zonas de color",
   "binDesigner.colors.lip.bandsLabel": "Bandas",
   "binDesigner.colors.lip.cornersLabel": "Esquinas",
   "binDesigner.colors.lip.front": "Frente",
