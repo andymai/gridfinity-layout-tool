@@ -6,6 +6,7 @@
 
 import { parseLipCell } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
+import type { TFunction } from '@/i18n';
 
 const LIP_CORNER_KEY: Record<string, string> = {
   frontLeft: 'binDesigner.colors.zone.lip.frontLeft',
@@ -37,6 +38,21 @@ export function zoneTranslationKey(zone: ColorZone): string {
       // Lip cells are handled above; this is unreachable for valid zones.
       return 'binDesigner.colors.zone.body';
   }
+}
+
+/**
+ * Human-facing label for a zone. For a lip cell in a multi-band grid the band
+ * number is appended, so two cells in the same corner (which share a corner
+ * key) don't render identical labels — e.g. in the slicer handoff filament
+ * list, where every active cell is shown side by side.
+ */
+export function zoneLabel(zone: ColorZone, t: TFunction, lipBands = 1): string {
+  const base = t(zoneTranslationKey(zone));
+  const cell = parseLipCell(zone);
+  if (cell && lipBands > 1) {
+    return `${base} · ${t('binDesigner.colors.lip.bandN', { n: cell.band + 1 })}`;
+  }
+  return base;
 }
 
 /** Patch shape accepted by `updateFeatureColors` for a single zone. */

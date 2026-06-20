@@ -14,7 +14,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
-import { zoneTranslationKey } from '@/features/bin-designer/utils/zoneLabels';
+import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
@@ -256,7 +256,7 @@ export function ExportDialog() {
           <SlicerHandoffPreview
             featureColors={params.featureColors}
             activeZones={computeActiveZones(params)}
-            zoneLabel={(zone) => t(zoneTranslationKey(zone))}
+            zoneLabel={(zone) => zoneLabel(zone, t, params.featureColors.lip.bands)}
           />
         ) : null
       }
