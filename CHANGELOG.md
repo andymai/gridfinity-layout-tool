@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.197.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.4...gridfinity-layout-tool-v4.197.5) (2026-06-20)
+
+
+### Bug Fixes
+
+* **deps:** bump transitive undici to patched 6.27.0/7.28.0 ([#2290](https://github.com/andymai/gridfinity-layout-tool/issues/2290)) ([25090b2](https://github.com/andymai/gridfinity-layout-tool/commit/25090b20f62d458053a61b24c0e4412b2746f895))
+
 ## [4.197.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.3...gridfinity-layout-tool-v4.197.4) (2026-06-20)
 
 
