@@ -48,6 +48,8 @@ export type {
   TextMode,
   TextFontFamily,
   CutoutTextSide,
+  CutoutTextAnchor,
+  CutoutTextOffset,
   TextStyleDefaults,
   TextStyleOverride,
   DividerOverride,

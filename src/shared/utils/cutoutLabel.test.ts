@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { cutoutWorldAabb, cutoutLabelPlacement } from './cutoutLabel';
+import { cutoutWorldAabb, cutoutLabelPlacement, resolveCutoutTextAnchor } from './cutoutLabel';
+import type { Cutout } from '@/shared/types/bin';
 
 type AabbInput = Parameters<typeof cutoutWorldAabb>[0];
 
-const base: AabbInput & { textSide?: 'top' | 'bottom' | 'left' | 'right' } = {
+const base: AabbInput & Partial<Pick<Cutout, 'textSide' | 'textAnchor' | 'textOffset'>> = {
   x: 40,
   y: 40,
   width: 20,
@@ -89,6 +90,58 @@ describe('cutoutLabelPlacement', () => {
     expect(cutoutLabelPlacement(flush, W, D)).toBeNull();
   });
 
+  it('places a top-right corner label in the diagonal gap past the corner', () => {
+    const p = cutoutLabelPlacement({ ...base, textAnchor: 'top-right' }, W, D);
+    expect(p?.centerX).toBeCloseTo(80); // (60 + 100)/2
+    expect(p?.centerY).toBeCloseTo(75); // (50 + 100)/2
+    expect(p?.availW).toBeCloseTo(40); // 100 - 60
+    expect(p?.availD).toBeCloseTo(50); // 100 - 50
+  });
+
+  it('places a bottom-left corner label past the front-left corner', () => {
+    const p = cutoutLabelPlacement({ ...base, textAnchor: 'bottom-left' }, W, D);
+    expect(p?.centerX).toBeCloseTo(20); // (0 + 40)/2
+    expect(p?.centerY).toBeCloseTo(20); // (0 + 40)/2
+    expect(p?.availW).toBeCloseTo(40);
+    expect(p?.availD).toBeCloseTo(40);
+  });
+
+  it('places a center (on-face) label over the cutout footprint', () => {
+    const p = cutoutLabelPlacement({ ...base, textAnchor: 'center' }, W, D);
+    expect(p?.centerX).toBeCloseTo(50);
+    expect(p?.centerY).toBeCloseTo(45);
+    expect(p?.availW).toBeCloseTo(20); // cutout width
+    expect(p?.availD).toBeCloseTo(10); // cutout depth
+  });
+
+  it('on-face center always has room even flush against a wall', () => {
+    const flush = { ...base, y: D - base.depth, textAnchor: 'center' as const };
+    expect(cutoutLabelPlacement(flush, W, D)).not.toBeNull();
+  });
+
+  it('applies textOffset as a free nudge from the anchored center', () => {
+    const anchored = cutoutLabelPlacement({ ...base, textAnchor: 'top' }, W, D);
+    const nudged = cutoutLabelPlacement(
+      { ...base, textAnchor: 'top', textOffset: { x: 5, y: -3 } },
+      W,
+      D
+    );
+    expect(nudged?.centerX).toBeCloseTo((anchored?.centerX ?? 0) + 5);
+    expect(nudged?.centerY).toBeCloseTo((anchored?.centerY ?? 0) - 3);
+    // Offset doesn't change the auto-fit band.
+    expect(nudged?.availW).toBeCloseTo(anchored?.availW ?? 0);
+  });
+
+  it('textAnchor wins over a legacy textSide; bands match the migrated side', () => {
+    const viaAnchor = cutoutLabelPlacement({ ...base, textAnchor: 'left' }, W, D);
+    const viaSide = cutoutLabelPlacement({ ...base, textSide: 'left' }, W, D);
+    expect(viaAnchor).toEqual(viaSide);
+    // Anchor takes precedence when both are present.
+    const both = cutoutLabelPlacement({ ...base, textSide: 'left', textAnchor: 'top' }, W, D);
+    const topOnly = cutoutLabelPlacement({ ...base, textAnchor: 'top' }, W, D);
+    expect(both).toEqual(topOnly);
+  });
+
   it('produces the same band in the editor frame and the bin-centered frame', () => {
     const editor = cutoutLabelPlacement({ ...base, textSide: 'top' }, W, D, 0, 0);
     const centered = cutoutLabelPlacement({ ...base, textSide: 'top' }, W, D, -W / 2, -D / 2);
@@ -98,5 +151,26 @@ describe('cutoutLabelPlacement', () => {
     expect(centered.availD).toBeCloseTo(editor.availD);
     expect(centered.centerX).toBeCloseTo(editor.centerX - W / 2);
     expect(centered.centerY).toBeCloseTo(editor.centerY - D / 2);
+  });
+});
+
+describe('resolveCutoutTextAnchor', () => {
+  it('returns the explicit anchor when present', () => {
+    expect(resolveCutoutTextAnchor({ textAnchor: 'bottom-right' })).toBe('bottom-right');
+  });
+
+  it('migrates each legacy side onto its edge-center anchor', () => {
+    expect(resolveCutoutTextAnchor({ textSide: 'top' })).toBe('top');
+    expect(resolveCutoutTextAnchor({ textSide: 'bottom' })).toBe('bottom');
+    expect(resolveCutoutTextAnchor({ textSide: 'left' })).toBe('left');
+    expect(resolveCutoutTextAnchor({ textSide: 'right' })).toBe('right');
+  });
+
+  it('prefers an explicit anchor over a legacy side', () => {
+    expect(resolveCutoutTextAnchor({ textSide: 'left', textAnchor: 'center' })).toBe('center');
+  });
+
+  it('defaults to top when neither is set', () => {
+    expect(resolveCutoutTextAnchor({})).toBe('top');
   });
 });

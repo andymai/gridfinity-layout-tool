@@ -149,6 +149,7 @@ export function CutoutWorkspace() {
     drawingPreview,
     pathDrawingPreview,
     startDrag,
+    startLabelDrag,
     startResize,
     startRotation,
     startGroupRotation,
@@ -396,6 +397,7 @@ export function CutoutWorkspace() {
                   }
                 }}
                 onDragStart={startDrag}
+                onLabelDragStart={startLabelDrag}
                 onResizeStart={startResize}
                 onRotateStart={startRotation}
                 onGroupRotateStart={startGroupRotation}

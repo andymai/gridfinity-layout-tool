@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "binDesigner.cutoutTextAngle",
     "common.redditCommunity",
     "baseplate.connectorStyle.puzzle",
     "binDesigner.cutouts.scanImport.resultSize",

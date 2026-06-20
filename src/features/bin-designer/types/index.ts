@@ -40,10 +40,12 @@ export type {
   TextMode,
   TextFontFamily,
   CutoutTextSide,
+  CutoutTextAnchor,
+  CutoutTextOffset,
   TextStyleDefaults,
   TextStyleOverride,
 } from './text';
-export { TEXT_MAX_LENGTH } from './text';
+export { TEXT_MAX_LENGTH, TEXT_SIDE_TO_ANCHOR, DEFAULT_CUTOUT_TEXT_ANCHOR } from './text';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords

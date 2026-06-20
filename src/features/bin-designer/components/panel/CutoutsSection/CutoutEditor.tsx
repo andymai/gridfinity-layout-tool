@@ -110,6 +110,7 @@ export function CutoutEditor() {
     drawingPreview,
     pathDrawingPreview,
     startDrag,
+    startLabelDrag,
     startResize,
     startRotation,
     startGroupRotation,
@@ -508,6 +509,7 @@ export function CutoutEditor() {
           onSelectCutout={selectCutout}
           onDoubleClickCutout={handleDoubleClick}
           onDragStart={startDrag}
+          onLabelDragStart={startLabelDrag}
           onResizeStart={startResize}
           onRotateStart={startRotation}
           onGroupRotateStart={startGroupRotation}

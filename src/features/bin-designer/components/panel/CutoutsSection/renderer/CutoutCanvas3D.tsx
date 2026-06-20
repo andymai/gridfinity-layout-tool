@@ -86,6 +86,7 @@ export interface CutoutCanvas3DProps {
   readonly onSelectCutout: (id: string, additive: boolean) => void;
   readonly onDoubleClickCutout: (id: string) => void;
   readonly onDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
+  readonly onLabelDragStart?: (id: string, mmX: number, mmY: number) => void;
   readonly onResizeStart: (id: string, handle: ResizeHandle, mmX: number, mmY: number) => void;
   readonly onRotateStart: (id: string, startAngle: number) => void;
   readonly onGroupRotateStart: (startAngle: number) => void;
@@ -132,6 +133,7 @@ export function CutoutCanvas3D({
   onSelectCutout,
   onDoubleClickCutout,
   onDragStart,
+  onLabelDragStart,
   onResizeStart,
   onRotateStart,
   onGroupRotateStart,
@@ -194,6 +196,12 @@ export function CutoutCanvas3D({
   const memoizedDragStart = useMemo(
     () => (mode.type === 'idle' ? onDragStart : undefined),
     [mode.type, onDragStart]
+  );
+
+  // Labels are grabbable only from idle, mirroring body-drag gating above.
+  const memoizedLabelDragStart = useMemo(
+    () => (mode.type === 'idle' ? onLabelDragStart : undefined),
+    [mode.type, onLabelDragStart]
   );
 
   const selectedCutout =
@@ -299,6 +307,7 @@ export function CutoutCanvas3D({
         isDragging={isDragging}
         isInteracting={isInteracting}
         memoizedDragStart={memoizedDragStart}
+        onLabelDragStart={memoizedLabelDragStart}
         selectedCutout={selectedCutout}
         tooltipInfo={tooltipInfo}
         groupBounds={groupBounds}

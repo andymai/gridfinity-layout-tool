@@ -126,6 +126,23 @@ export function useCutoutPointerHandlers(
           });
           break;
 
+        case 'dragging-label': {
+          // Free-nudge the label: new offset = start offset + cursor delta,
+          // snapped to the grid. Lives in the cutout's `textOffset` preview so
+          // the engraved label follows live (CutoutLabel3D reads the override).
+          const dx = mmX - mode.startMmX;
+          const dy = mmY - mode.startMmY;
+          if (dx !== 0 || dy !== 0) pastDeadZoneRef.current = true;
+          const x = snap(mode.startOffsetX + dx);
+          const y = snap(mode.startOffsetY + dy);
+          setPreview((prev) => {
+            const next = new Map(prev);
+            next.set(mode.cutoutId, { ...next.get(mode.cutoutId), textOffset: { x, y } });
+            return next;
+          });
+          break;
+        }
+
         case 'resizing':
           handleResizeMove(mode, event, cutouts, bounds, snap, pastDeadZoneRef, {
             setPreview,
@@ -306,6 +323,7 @@ export function useCutoutPointerHandlers(
         return;
 
       case 'dragging':
+      case 'dragging-label':
       case 'resizing':
       case 'rotating':
       case 'group-rotating':

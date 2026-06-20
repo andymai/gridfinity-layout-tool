@@ -48,6 +48,14 @@ export type InteractionMode =
       readonly offsets: ReadonlyMap<string, { readonly dx: number; readonly dy: number }>;
     }
   | {
+      readonly type: 'dragging-label';
+      readonly cutoutId: string;
+      readonly startMmX: number;
+      readonly startMmY: number;
+      readonly startOffsetX: number;
+      readonly startOffsetY: number;
+    }
+  | {
       readonly type: 'resizing';
       readonly cutoutId: string;
       readonly handle: ResizeHandle;

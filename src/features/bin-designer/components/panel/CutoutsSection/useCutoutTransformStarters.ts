@@ -27,6 +27,7 @@ interface UseCutoutTransformStartersOptions {
 
 export interface CutoutTransformStarters {
   readonly startDrag: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
+  readonly startLabelDrag: (id: string, mmX: number, mmY: number) => void;
   readonly startResize: (id: string, handle: ResizeHandle, mmX: number, mmY: number) => void;
   readonly startRotation: (id: string, startAngle: number) => void;
   readonly startGroupRotation: (startAngle: number) => void;
@@ -93,6 +94,26 @@ export function useCutoutTransformStarters({
       setMode({ type: 'dragging', startX: mmX, startY: mmY, offsets });
     },
     [selection, cutouts, onAdd, setSelection, setMode, pastDeadZoneRef]
+  );
+
+  const startLabelDrag = useCallback(
+    (id: string, mmX: number, mmY: number) => {
+      // Locked cutouts can't have their label moved either.
+      const target = cutouts.find((c) => c.id === id);
+      if (!target || target.locked) return;
+      setSelection(new Set([id]));
+      const offset = target.textOffset ?? { x: 0, y: 0 };
+      pastDeadZoneRef.current = false;
+      setMode({
+        type: 'dragging-label',
+        cutoutId: id,
+        startMmX: mmX,
+        startMmY: mmY,
+        startOffsetX: offset.x,
+        startOffsetY: offset.y,
+      });
+    },
+    [cutouts, setSelection, setMode, pastDeadZoneRef]
   );
 
   const startResize = useCallback(
@@ -171,5 +192,12 @@ export function useCutoutTransformStarters({
     [cutouts, selection, setMode, pastDeadZoneRef]
   );
 
-  return { startDrag, startResize, startRotation, startGroupRotation, startGroupScale };
+  return {
+    startDrag,
+    startLabelDrag,
+    startResize,
+    startRotation,
+    startGroupRotation,
+    startGroupScale,
+  };
 }

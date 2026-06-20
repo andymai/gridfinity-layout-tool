@@ -86,6 +86,7 @@ export interface SceneContentProps {
   readonly isDragging: boolean;
   readonly isInteracting: boolean;
   readonly memoizedDragStart?: (id: string, mmX: number, mmY: number, altKey?: boolean) => void;
+  readonly onLabelDragStart?: (id: string, mmX: number, mmY: number) => void;
   readonly selectedCutout: Cutout | null;
   readonly tooltipInfo: TooltipInfo | null;
   readonly groupBounds: GroupBoundsData | null;
@@ -144,6 +145,7 @@ export function SceneContent({
   isDragging,
   isInteracting,
   memoizedDragStart,
+  onLabelDragStart,
   selectedCutout,
   tooltipInfo,
   groupBounds,
@@ -368,13 +370,15 @@ export function SceneContent({
         );
       })()}
 
-      {/* Engraved/embossed labels mirroring the printed bin-top text */}
+      {/* Engraved/embossed labels mirroring the printed bin-top text. Grab-to-move
+          is gated to idle mode by the parent (mirrors memoizedDragStart). */}
       <CutoutLabel3D
         cutouts={cutouts}
         binWidth={binWidth}
         binDepth={binDepth}
         binColor={binColor}
         preview={preview}
+        onLabelDragStart={onLabelDragStart}
       />
 
       {/* Lock badges on locked cutouts */}

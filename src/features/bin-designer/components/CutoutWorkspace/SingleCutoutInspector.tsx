@@ -7,11 +7,12 @@
 import type {
   Cutout,
   CutoutArrayConfig,
-  CutoutTextSide,
+  CutoutTextAnchor,
   TextMode,
 } from '@/features/bin-designer/types';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { resolveCutoutTextAnchor } from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
@@ -30,7 +31,19 @@ import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Button, Collapsible, Input, SliderInput } from '@/design-system';
 
-const SIDE_OPTIONS: readonly CutoutTextSide[] = ['top', 'bottom', 'left', 'right'] as const;
+/** 3×3 anchor grid in reading order; the glyph hints the position, the
+ *  i18n'd aria-label names it. `center` = label sits over the cutout face. */
+const ANCHOR_GRID: readonly { anchor: CutoutTextAnchor; glyph: string }[] = [
+  { anchor: 'top-left', glyph: '↖' },
+  { anchor: 'top', glyph: '↑' },
+  { anchor: 'top-right', glyph: '↗' },
+  { anchor: 'left', glyph: '←' },
+  { anchor: 'center', glyph: '▣' },
+  { anchor: 'right', glyph: '→' },
+  { anchor: 'bottom-left', glyph: '↙' },
+  { anchor: 'bottom', glyph: '↓' },
+  { anchor: 'bottom-right', glyph: '↘' },
+] as const;
 /** Cutout labels support recessed + raised text; through-cut would punch the floor. */
 const CUTOUT_TEXT_MODES: readonly Extract<TextMode, 'engrave' | 'emboss'>[] = [
   'engrave',
@@ -237,6 +250,8 @@ export function SingleCutoutInspector({
           <CutoutEngraveLabelControls
             key={`${cutout.id}-text`}
             cutout={cutout}
+            binWidth={binWidth}
+            binDepth={binDepth}
             disabled={disabled}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
           />
@@ -248,23 +263,30 @@ export function SingleCutoutInspector({
 
 interface CutoutEngraveLabelControlsProps {
   readonly cutout: Cutout;
+  readonly binWidth: number;
+  readonly binDepth: number;
   readonly disabled: boolean;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
 }
 
 /**
- * Compact label controls: text input, style (engrave/emboss) picker, and side
- * picker. Style + font + depth use the design-level `textDefaults`; per-instance
- * overrides are deferred to a follow-up. Through-cut is omitted here — it would
- * punch bin-top text through the floor, so the generator degrades it to engrave.
+ * Compact label controls: text input, style (engrave/emboss) picker, 9-point
+ * anchor grid, free X/Y nudge, and label angle. Style + font + depth use the
+ * design-level `textDefaults`; placement (anchor/offset/angle) is per-cutout and
+ * flows through `cutoutLabelPlacement` to the engraved geometry. Through-cut is
+ * omitted — it would punch bin-top text through the floor, so the generator
+ * degrades it to engrave.
  */
 function CutoutEngraveLabelControls({
   cutout,
+  binWidth,
+  binDepth,
   disabled,
   onUpdate,
 }: CutoutEngraveLabelControlsProps) {
   const t = useTranslation();
-  const side = cutout.textSide ?? 'top';
+  const anchor = resolveCutoutTextAnchor(cutout);
+  const offset = cutout.textOffset ?? { x: 0, y: 0 };
   const textMode = useDesignerStore((s) => s.params.textDefaults.mode);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
   // Through-cut isn't offered for cutouts; show it as engrave so the picker
@@ -302,24 +324,60 @@ function CutoutEngraveLabelControls({
           </Button>
         ))}
       </div>
-      <div
-        role="group"
-        aria-label={t('binDesigner.cutoutTextSide')}
-        className={SEGMENT_GROUP_CLASS}
-      >
-        {SIDE_OPTIONS.map((opt) => (
-          <Button
-            key={opt}
-            type="button"
-            variant="ghost"
-            disabled={disabled}
-            onClick={() => onUpdate({ textSide: opt })}
-            aria-pressed={side === opt}
-            className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(side === opt)}`}
-          >
-            {t(`binDesigner.cutoutTextSide.${opt}`)}
-          </Button>
-        ))}
+      <div className="space-y-1">
+        <span className="text-[10px] text-text-muted">{t('binDesigner.cutoutTextAnchor')}</span>
+        <div
+          role="group"
+          aria-label={t('binDesigner.cutoutTextAnchor')}
+          className="grid w-fit grid-cols-3 gap-0.5"
+        >
+          {ANCHOR_GRID.map(({ anchor: opt, glyph }) => (
+            <Button
+              key={opt}
+              type="button"
+              variant="ghost"
+              disabled={disabled}
+              onClick={() => onUpdate({ textAnchor: opt })}
+              aria-pressed={anchor === opt}
+              aria-label={t(`binDesigner.cutoutTextAnchor.${opt}`)}
+              className={`h-6 w-6 p-0 text-xs leading-none ${getSegmentClass(anchor === opt)}`}
+            >
+              {glyph}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1">
+        <CompactNumberInput
+          label={t('binDesigner.cutoutTextOffsetX')}
+          value={offset.x}
+          onChange={(x) => onUpdate({ textOffset: { x, y: offset.y } })}
+          min={-binWidth}
+          max={binWidth}
+          step={0.5}
+          unit="mm"
+          disabled={disabled}
+        />
+        <CompactNumberInput
+          label={t('binDesigner.cutoutTextOffsetY')}
+          value={offset.y}
+          onChange={(y) => onUpdate({ textOffset: { x: offset.x, y } })}
+          min={-binDepth}
+          max={binDepth}
+          step={0.5}
+          unit="mm"
+          disabled={disabled}
+        />
+        <CompactNumberInput
+          label={t('binDesigner.cutoutTextAngle')}
+          value={cutout.textAngle ?? 0}
+          onChange={(angle) => onUpdate({ textAngle: ((angle % 360) + 360) % 360 })}
+          min={0}
+          max={359}
+          step={1}
+          unit="°"
+          disabled={disabled}
+        />
       </div>
     </div>
   );

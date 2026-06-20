@@ -262,15 +262,21 @@ export function useCutoutInteraction({
     startTransaction,
   });
 
-  const { startDrag, startResize, startRotation, startGroupRotation, startGroupScale } =
-    useCutoutTransformStarters({
-      cutouts,
-      selection,
-      setSelection,
-      onAdd,
-      setMode,
-      pastDeadZoneRef,
-    });
+  const {
+    startDrag,
+    startLabelDrag,
+    startResize,
+    startRotation,
+    startGroupRotation,
+    startGroupScale,
+  } = useCutoutTransformStarters({
+    cutouts,
+    selection,
+    setSelection,
+    onAdd,
+    setMode,
+    pastDeadZoneRef,
+  });
 
   // ── Sub-hook: pointer move/up dispatcher ──────────────────────────
 
@@ -397,6 +403,7 @@ export function useCutoutInteraction({
     pathDrawingPreview,
     segmentHover,
     startDrag,
+    startLabelDrag,
     startResize,
     startRotation,
     startGroupRotation,

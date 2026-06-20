@@ -6,7 +6,7 @@
  * (`CutoutLabel3D`) so the on-screen label tracks the printed engraving.
  */
 
-import type { Cutout } from '@/shared/types/bin';
+import type { Cutout, CutoutTextAnchor } from '@/shared/types/bin';
 
 export interface CutoutAabb {
   readonly minX: number;
@@ -68,66 +68,92 @@ export interface CutoutLabelPlacement {
   readonly availD: number;
 }
 
+/** One axis of the 3×3 anchor grid: `low`/`high` are the outer gaps, `center`
+ *  spans the cutout's own footprint on that axis. */
+type Zone = 'low' | 'center' | 'high';
+
+const ANCHOR_ZONES: Record<CutoutTextAnchor, { h: Zone; v: Zone }> = {
+  'top-left': { h: 'low', v: 'high' },
+  top: { h: 'center', v: 'high' },
+  'top-right': { h: 'high', v: 'high' },
+  left: { h: 'low', v: 'center' },
+  center: { h: 'center', v: 'center' },
+  right: { h: 'high', v: 'center' },
+  'bottom-left': { h: 'low', v: 'low' },
+  bottom: { h: 'center', v: 'low' },
+  'bottom-right': { h: 'high', v: 'low' },
+};
+
 /**
- * Where a cutout's engraved label sits, and how much room it has, in the gap
- * between the cutout's rotated AABB and the bin interior boundary on the
- * chosen side.
+ * Effective 9-point anchor: explicit `textAnchor` wins; otherwise the legacy
+ * `textSide` migrates onto its edge-center anchor; otherwise `'top'`.
+ */
+export function resolveCutoutTextAnchor(
+  cutout: Pick<Cutout, 'textAnchor' | 'textSide'>
+): CutoutTextAnchor {
+  if (cutout.textAnchor) return cutout.textAnchor;
+  // Reading the deprecated field is the migration path it exists for.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  switch (cutout.textSide) {
+    case 'bottom':
+      return 'bottom';
+    case 'left':
+      return 'left';
+    case 'right':
+      return 'right';
+    default:
+      return 'top';
+  }
+}
+
+/** Available extent + band center on one axis, given the cutout's projected
+ *  span (`lo`/`hi`) and the interior bounds (`iLo`/`iHi`). */
+function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) {
+  switch (zone) {
+    case 'low':
+      return { avail: lo - iLo, center: (iLo + lo) / 2 };
+    case 'high':
+      return { avail: iHi - hi, center: (hi + iHi) / 2 };
+    case 'center':
+      return { avail: hi - lo, center: (lo + hi) / 2 };
+  }
+}
+
+/**
+ * Where a cutout's engraved label sits, and how much room it has, for the
+ * resolved 9-point anchor (see {@link resolveCutoutTextAnchor}). The eight
+ * outer anchors land in the gap between the cutout's rotation-aware AABB and the
+ * bin interior; `center` sits over the cutout footprint itself. A `textOffset`
+ * then nudges the center freely (and may push it past the band — by design, for
+ * fine-tuning and drag).
  *
- * The side is interpreted in WORLD coordinates (top = +Y, right = +X, …); the
- * label text itself reads left-to-right regardless of cutout rotation, so
- * `availW` is always the band's X extent and `availD` its Y extent. Returns
- * `null` when the chosen side has no room.
+ * The anchor is interpreted in WORLD coordinates (top = +Y, right = +X, …); the
+ * label text reads left-to-right regardless of cutout rotation, so `availW` is
+ * always the band's X extent and `availD` its Y extent. Returns `null` when the
+ * chosen band has no room (before the offset is applied).
  */
 export function cutoutLabelPlacement(
-  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth' | 'rotation' | 'textSide'>,
+  cutout: Pick<
+    Cutout,
+    'x' | 'y' | 'width' | 'depth' | 'rotation' | 'textSide' | 'textAnchor' | 'textOffset'
+  >,
   innerW: number,
   innerD: number,
   originX = 0,
   originY = 0
 ): CutoutLabelPlacement | null {
-  const side = cutout.textSide ?? 'top';
+  const zones = ANCHOR_ZONES[resolveCutoutTextAnchor(cutout)];
   const { minX, maxX, minY, maxY } = cutoutWorldAabb(cutout, originX, originY);
 
-  const interiorMinX = originX;
-  const interiorMaxX = originX + innerW;
-  const interiorMinY = originY;
-  const interiorMaxY = originY + innerD;
+  const x = axisBand(zones.h, minX, maxX, originX, originX + innerW);
+  const y = axisBand(zones.v, minY, maxY, originY, originY + innerD);
+  if (x.avail <= 0 || y.avail <= 0) return null;
 
-  let availW: number;
-  let availD: number;
-  let centerX: number;
-  let centerY: number;
-  switch (side) {
-    case 'top':
-      availW = maxX - minX;
-      availD = interiorMaxY - maxY;
-      centerX = (minX + maxX) / 2;
-      centerY = (maxY + interiorMaxY) / 2;
-      break;
-    case 'bottom':
-      availW = maxX - minX;
-      availD = minY - interiorMinY;
-      centerX = (minX + maxX) / 2;
-      centerY = (interiorMinY + minY) / 2;
-      break;
-    case 'left':
-      availW = minX - interiorMinX;
-      availD = maxY - minY;
-      centerX = (interiorMinX + minX) / 2;
-      centerY = (minY + maxY) / 2;
-      break;
-    case 'right':
-      availW = interiorMaxX - maxX;
-      availD = maxY - minY;
-      centerX = (maxX + interiorMaxX) / 2;
-      centerY = (minY + maxY) / 2;
-      break;
-    default:
-      // Defensive: corrupt/hand-edited data could carry a side outside the
-      // union, leaving the placement fields unassigned. Bail rather than
-      // return garbage.
-      return null;
-  }
-  if (availW <= 0 || availD <= 0) return null;
-  return { centerX, centerY, availW, availD };
+  const offset = cutout.textOffset;
+  return {
+    centerX: x.center + (offset?.x ?? 0),
+    centerY: y.center + (offset?.y ?? 0),
+    availW: x.avail,
+    availD: y.avail,
+  };
 }

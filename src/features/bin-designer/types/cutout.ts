@@ -3,7 +3,7 @@
  * bezier path points, scoop edges, and the positioned {@link Cutout} instance.
  */
 
-import type { CutoutTextSide, TextStyleOverride } from './text';
+import type { CutoutTextSide, CutoutTextAnchor, CutoutTextOffset, TextStyleOverride } from './text';
 
 /**
  * Shape of a top-down cutout into solid bin body.
@@ -288,11 +288,30 @@ export interface Cutout {
    */
   readonly engraveLabel?: boolean;
   /**
-   * Which side of the cutout the engraved label sits on, in WORLD coordinates
-   * (top = +Y, does not rotate with the cutout — see {@link CutoutTextSide}).
-   * Defaults to 'top'. Ignored when `engraveLabel` is false.
+   * @deprecated Superseded by {@link textAnchor}. Read only to migrate
+   * pre-anchor designs (via `TEXT_SIDE_TO_ANCHOR`); new writes set `textAnchor`
+   * and leave this untouched. Ignored when `textAnchor` is present.
    */
   readonly textSide?: CutoutTextSide;
+  /**
+   * Nine-point anchor positioning the engraved label relative to the cutout, in
+   * WORLD coordinates (does not rotate with the cutout — see
+   * {@link CutoutTextAnchor}). Defaults to 'top'; migrated from the legacy
+   * {@link textSide} when absent. Ignored when `engraveLabel` is false.
+   */
+  readonly textAnchor?: CutoutTextAnchor;
+  /**
+   * Free fine-tune nudge (mm, WORLD coords) added to the anchored label center.
+   * Default {x:0,y:0}. Set by the X/Y offset inputs and by dragging the label
+   * in the 2D editor. Ignored when `engraveLabel` is false.
+   */
+  readonly textOffset?: CutoutTextOffset;
+  /**
+   * Label rotation in degrees about its own center (0 = upright/world-up;
+   * positive = counter-clockwise). Default 0. Ignored when `engraveLabel` is
+   * false.
+   */
+  readonly textAngle?: number;
   /**
    * Optional per-cutout style override. When omitted, the design-level
    * `BinParams.textDefaults` apply. Ignored when `engraveLabel` is false.

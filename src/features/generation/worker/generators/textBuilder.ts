@@ -21,6 +21,7 @@ import {
   sketchText,
   textMetrics,
   translate,
+  rotate,
   getFont,
   type Shape3D,
   type DisposalScope,
@@ -202,6 +203,13 @@ export interface BuildTextSolidOptions {
   readonly minFontSize: number;
   /** Auto-fit ceiling in mm. */
   readonly maxFontSize: number;
+  /**
+   * Optional rotation in degrees about the text's own center (the visual
+   * centroid placed at `centerX`/`centerY`). Default 0 (upright). The sign
+   * matches the cutout-rotation convention (negated about +Z) so a label tracks
+   * the 2D editor preview. Auto-fit still measures the unrotated glyph run.
+   */
+  readonly angleDeg?: number;
 }
 
 /** Lift sketches above the host top face so booleans don't touch coincident
@@ -289,13 +297,25 @@ export function buildTextSolid(
   // Visual centroid in the sketch frame = (width/2, (ascender + descender)/2).
   const visualCenterX = metrics.value.width / 2;
   const visualCenterY = (metrics.value.ascender + metrics.value.descender) / 2;
-  const solid = scope.register(
-    translate(canonical, [
-      options.centerX - visualCenterX,
-      options.centerY - visualCenterY,
-      sketchOriginZ,
-    ])
-  );
+
+  const angle = options.angleDeg ?? 0;
+  let solid: Shape3D;
+  if (angle === 0) {
+    solid = scope.register(
+      translate(canonical, [
+        options.centerX - visualCenterX,
+        options.centerY - visualCenterY,
+        sketchOriginZ,
+      ])
+    );
+  } else {
+    // Rotate about the glyph's own center: recenter at the origin, spin about
+    // +Z (negated to match the cutout-rotation convention), then place at the
+    // target center. Intermediates are scope-registered for disposal.
+    const centered = scope.register(translate(canonical, [-visualCenterX, -visualCenterY, 0]));
+    const rotated = scope.register(rotate(centered, -angle, { axis: [0, 0, 1] }));
+    solid = scope.register(translate(rotated, [options.centerX, options.centerY, sketchOriginZ]));
+  }
 
   return { solid, op: options.mode === 'emboss' ? 'fuse' : 'cut' };
 }

@@ -1159,6 +1159,7 @@ function buildCutoutLabel(
       margin: textDefaults.margin,
       minFontSize: textDefaults.minFontSize,
       maxFontSize: textDefaults.maxFontSize,
+      angleDeg: cutout.textAngle ?? 0,
     });
     if (!result) return null;
     return { solid: unwrap(clone(result.solid)), op: result.op };
