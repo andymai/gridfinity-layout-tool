@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.200.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.199.0...gridfinity-layout-tool-v4.200.0) (2026-06-21)
+
+
+### Features
+
+* **baseplate:** smarter split — optimize for fewest build-plate loads ([#2303](https://github.com/andymai/gridfinity-layout-tool/issues/2303)) ([9fcd0c6](https://github.com/andymai/gridfinity-layout-tool/commit/9fcd0c6479b6525e2afff8803d2987eaed8b9c9f))
+
 ## [4.199.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.198.1...gridfinity-layout-tool-v4.199.0) (2026-06-21)
 
 
