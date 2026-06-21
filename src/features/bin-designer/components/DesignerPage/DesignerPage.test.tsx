@@ -94,6 +94,15 @@ describe('DesignerPage', () => {
     expect(screen.getByTestId('preview-canvas')).toBeInTheDocument();
   });
 
+  it('caps the page at viewport height so only the inner panel scrolls', () => {
+    // Without overflow-hidden on the h-screen root, content bleeds past the
+    // viewport and the whole document scrolls instead of the parameter panel.
+    const { container } = render(<DesignerPage />);
+    const root = container.firstChild as HTMLElement;
+    expect(root.className).toContain('h-screen');
+    expect(root.className).toContain('overflow-hidden');
+  });
+
   it('renders header support links on desktop', () => {
     render(<DesignerPage />);
     expect(screen.getByTestId('header-support-links')).toBeInTheDocument();

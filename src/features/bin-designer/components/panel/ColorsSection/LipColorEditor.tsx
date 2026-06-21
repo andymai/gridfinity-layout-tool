@@ -161,14 +161,16 @@ export function LipColorEditor({
         })}
       </div>
 
-      <label className="flex w-fit items-center gap-2 text-[11px] text-content-secondary">
-        <Checkbox
-          checked={showGrid}
-          onChange={handleToggleSplit}
-          aria-label={t('binDesigner.colors.lip.splitZones')}
-        />
-        {t('binDesigner.colors.lip.splitZones')}
-      </label>
+      {/* Checkbox supplies its own <label htmlFor>; wrapping it in another
+          <label> nests labels and makes the visually-hidden input the labeled
+          control, which scrolls the panel to its bottom on click. */}
+      <Checkbox
+        size="sm"
+        className="w-fit"
+        checked={showGrid}
+        onChange={handleToggleSplit}
+        label={t('binDesigner.colors.lip.splitZones')}
+      />
     </div>
   );
 }

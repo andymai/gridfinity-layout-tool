@@ -74,7 +74,7 @@ export function DesignerPage() {
   const shareLoading = useShareLoading();
 
   return (
-    <div className="flex h-screen flex-col bg-surface">
+    <div className="flex h-screen flex-col overflow-hidden bg-surface">
       {/* Mobile title bar */}
       {!isDesktop && <MobileTitleBar />}
 

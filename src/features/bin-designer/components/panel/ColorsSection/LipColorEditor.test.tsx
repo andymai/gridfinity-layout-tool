@@ -59,6 +59,21 @@ describe('LipColorEditor', () => {
     ).toBeDefined();
   });
 
+  it('toggles the split by clicking the visible label text (no nested label)', () => {
+    // The Checkbox renders its own <label htmlFor>. Wrapping it in a second
+    // <label> nested two labels, making the visually-hidden input the labeled
+    // control — clicking it scrolled the panel to its bottom. Clicking the
+    // visible text must route through a single label and reveal the grid.
+    renderEditor({ lip: lip(1, 1) });
+    expect(
+      screen.queryByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
+    ).toBeNull();
+    fireEvent.click(screen.getByText('binDesigner.colors.lip.splitZones'));
+    expect(
+      screen.getByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
+    ).toBeDefined();
+  });
+
   it('auto-shows the grid for a design that already has multiple zones', () => {
     renderEditor({ lip: lip(2, 2) });
     // No opt-in needed — controls render and the toggle reads as enabled.
