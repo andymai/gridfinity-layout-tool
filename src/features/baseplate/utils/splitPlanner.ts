@@ -278,7 +278,6 @@ interface TilingCandidate {
   colSizes: number[];
   rowSizes: number[];
   pieceCount: number;
-  bedLoads: number;
   cost: number;
   variance: number;
 }
@@ -332,7 +331,8 @@ function findMinPieceTiling(
  * candidate by `MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount`
  * (symmetry breaks ties). Since `bedLoads ≥ 1`, a candidate's cost is at least
  * `pieceCount + MAX_EXTRA_PIECES_PER_BED_LOAD`, bounding the search. Returns the
- * best (colSizes, rowSizes, bedLoads) or a single-piece fallback.
+ * best (colSizes, rowSizes) or a single-piece fallback; the caller recomputes
+ * the final bed-load count after display reordering.
  */
 function findOptimalTiling(
   totalWidth: number,
@@ -340,16 +340,10 @@ function findOptimalTiling(
   gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
-): { colSizes: number[]; rowSizes: number[]; bedLoads: number } {
+): { colSizes: number[]; rowSizes: number[] } {
   const coarse = findMinPieceTiling(totalWidth, totalDepth, gridUnitMm, xAxis, yAxis);
   if (!coarse) {
-    const colSizes = [totalWidth];
-    const rowSizes = [totalDepth];
-    return {
-      colSizes,
-      rowSizes,
-      bedLoads: tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis),
-    };
+    return { colSizes: [totalWidth], rowSizes: [totalDepth] };
   }
 
   const coarseBedLoads = tilingBedLoads(coarse.colSizes, coarse.rowSizes, gridUnitMm, xAxis, yAxis);
@@ -357,7 +351,7 @@ function findOptimalTiling(
   // Large plate: the coarse split already packs near-optimally and the packing
   // search would be costly — keep it.
   if (coarse.pieceCount > PACKING_SEARCH_MAX_PIECES) {
-    return { colSizes: coarse.colSizes, rowSizes: coarse.rowSizes, bedLoads: coarseBedLoads };
+    return { colSizes: coarse.colSizes, rowSizes: coarse.rowSizes };
   }
 
   const maxCols = Math.ceil(totalWidth);
@@ -368,7 +362,6 @@ function findOptimalTiling(
     colSizes: coarse.colSizes,
     rowSizes: coarse.rowSizes,
     pieceCount: coarse.pieceCount,
-    bedLoads: coarseBedLoads,
     cost: MAX_EXTRA_PIECES_PER_BED_LOAD * coarseBedLoads + coarse.pieceCount,
     variance: coarse.variance,
   };
@@ -396,12 +389,12 @@ function findOptimalTiling(
       const cost = MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount;
       const variance = symmetryScore(colSizes) + symmetryScore(rowSizes);
       if (cost < best.cost || (cost === best.cost && variance < best.variance)) {
-        best = { colSizes, rowSizes, pieceCount, bedLoads, cost, variance };
+        best = { colSizes, rowSizes, pieceCount, cost, variance };
       }
     }
   }
 
-  return { colSizes: best.colSizes, rowSizes: best.rowSizes, bedLoads: best.bedLoads };
+  return { colSizes: best.colSizes, rowSizes: best.rowSizes };
 }
 
 /**
@@ -508,11 +501,13 @@ export function computeBaseplateTiling(
     palindromic
   );
 
-  const {
-    colSizes: rawColSizes,
-    rowSizes: rawRowSizes,
-    bedLoads,
-  } = findOptimalTiling(width, depth, gridUnitMm, xAxis, yAxis);
+  const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
+    width,
+    depth,
+    gridUnitMm,
+    xAxis,
+    yAxis
+  );
 
   // Reorder for display: largest pieces at front/left, fractional edges pinned.
   // Under preferIdenticalPieces, arrange palindromically so outer positions match.
@@ -528,6 +523,12 @@ export function computeBaseplateTiling(
     fractionalEdgeY === 'start',
     palindromic
   );
+
+  // Recompute on the FINAL (reordered) sizes: reordering can move a chunk
+  // between an edge position (padding overhead) and a middle one (tongue only),
+  // which shifts a piece's physical footprint — so the search-time count isn't
+  // guaranteed to match the tiling actually emitted.
+  const bedLoads = tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis);
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
   const colOffsets = cumulativeOffsets(colSizes);
@@ -594,8 +595,6 @@ export function computeBaseplateTiling(
     rows: rowSizes.length,
     totalWidthUnits: width,
     totalDepthUnits: depth,
-    // Reordering only permutes chunk sizes (same multiset), so the packed
-    // bed-load count is unchanged from the search result.
     bedLoads,
     stackCount: 1,
     stackSeparatorThickness: 0,
