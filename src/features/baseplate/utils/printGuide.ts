@@ -239,6 +239,7 @@ function generateHeader(
     `  Grid unit:    ${params.gridUnitMm}mm`,
     `  Features:     ${featureStr}`,
     `  Total pieces: ${totalPieces}${totalPieces > 1 ? ` (${uniqueCount} unique)` : ''}`,
+    `  Build-plate loads: ${tiling.bedLoads}`,
   ];
 
   // Surface the connector fit offset whenever connectors are on and the user

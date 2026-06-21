@@ -151,14 +151,12 @@ function partitionAxis(
     return intPart > 0 ? [intPart] : null;
   }
 
-  // For numChunks >= 2, distribute integer units as evenly as possible.
   const maxPerPos: number[] = Array.from({ length: numChunks }, (_, i) => {
     if (i === 0) return maxFirst;
     if (i === numChunks - 1) return maxLast;
     return maxMiddle;
   });
 
-  // Total capacity check — bail early if the partition is impossible.
   const totalCapacity = maxPerPos.reduce((a, b) => a + b, 0);
   if (totalCapacity < intPart) return null;
 
@@ -225,32 +223,12 @@ function allPiecesFit(
   return chunkSizesFit(colSizes, gridUnitMm, xAxis) && chunkSizesFit(rowSizes, gridUnitMm, yAxis);
 }
 
-function chunkSizesFit(sizes: number[], gridUnitMm: number, axis: AxisConfig): boolean {
-  const last = sizes.length - 1;
-  for (let i = 0; i < sizes.length; i++) {
-    const padStart = i === 0 ? axis.paddingStart : 0;
-    const padEnd = i === last ? axis.paddingEnd : 0;
-    // Join edges (interior sides) carry a male tongue's protrusion if the convention
-    // assigns male to that side. Female sides cut into the slab and add nothing.
-    const tongueStart = i === 0 ? 0 : axis.startMaleMm;
-    const tongueEnd = i === last ? 0 : axis.endMaleMm;
-    const sizeMm = sizes[i] * gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
-    if (sizeMm > axis.bedMm + 0.001) return false;
-  }
-  return true;
-}
-
-/** Variance of an array — lower = more symmetric/equal. */
-function symmetryScore(sizes: number[]): number {
-  if (sizes.length <= 1) return 0;
-  const mean = sizes.reduce((a, b) => a + b, 0) / sizes.length;
-  return sizes.reduce((sum, s) => sum + (s - mean) ** 2, 0) / sizes.length;
-}
-
 /**
  * Per-position physical size (mm) of each chunk on an axis — grid units plus
- * edge padding and join-edge tongue protrusion. Mirrors {@link chunkSizesFit}
- * so the packed footprints match the actual STL bounding boxes.
+ * edge padding and join-edge tongue protrusion (matches the actual STL bounding
+ * boxes). First/last chunks carry their exterior padding; join edges (interior
+ * sides) carry a male tongue's protrusion when the convention assigns male to
+ * that side, while female sides cut into the slab and add nothing.
  */
 function axisChunkMm(sizes: number[], gridUnitMm: number, axis: AxisConfig): number[] {
   const last = sizes.length - 1;
@@ -261,6 +239,17 @@ function axisChunkMm(sizes: number[], gridUnitMm: number, axis: AxisConfig): num
     const tongueEnd = i === last ? 0 : axis.endMaleMm;
     return s * gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
   });
+}
+
+function chunkSizesFit(sizes: number[], gridUnitMm: number, axis: AxisConfig): boolean {
+  return axisChunkMm(sizes, gridUnitMm, axis).every((mm) => mm <= axis.bedMm + 0.001);
+}
+
+/** Variance of an array — lower = more symmetric/equal. */
+function symmetryScore(sizes: number[]): number {
+  if (sizes.length <= 1) return 0;
+  const mean = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+  return sizes.reduce((sum, s) => sum + (s - mean) ** 2, 0) / sizes.length;
 }
 
 /** Build-plate loads to print a candidate tiling, packing pieces per bed. */
@@ -433,6 +422,8 @@ function computePaddingReductionHint(
   const reduceY = Math.min(yAxis.paddingStart, yAxis.paddingEnd);
 
   // Find smallest reduction along an axis that saves pieces; null if none works.
+  // Uses the full packing-aware tiling (not the cheaper min-piece search) so the
+  // "saves N pieces" hint matches the split the user actually sees after reducing.
   const trySaving = (maxR: number, build: (r: number) => { x: AxisConfig; y: AxisConfig }) => {
     for (let r = 1; r <= maxR; r++) {
       const { x, y } = build(r);
@@ -462,7 +453,6 @@ function computePaddingReductionHint(
 
   if (candidates.length === 0) return null;
 
-  // Pick best: most pieces saved, then smallest reduction
   candidates.sort((a, b) => b.piecesSaved - a.piecesSaved || a.reductionMm - b.reductionMm);
   return candidates[0];
 }

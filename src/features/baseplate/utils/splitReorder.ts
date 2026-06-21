@@ -40,8 +40,8 @@ export function reorderForDisplay(
 ): number[] {
   if (sizes.length <= 1) return sizes;
 
-  // Use the same per-position constraints as partitionAxis so dovetail tongues
-  // are accounted for when reshuffling chunks across positions (#1498).
+  // `caps` come from the same axisCapacity used by partitionAxis, so dovetail
+  // tongues are accounted for when reshuffling chunks across positions (#1498).
   const { maxFirst, maxLast, maxMiddle } = caps;
   const fracIdx = sizes.findIndex(isFractional);
 

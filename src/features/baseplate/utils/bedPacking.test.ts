@@ -59,6 +59,17 @@ describe('estimateBedLoads', () => {
     expect(estimateBedLoads(pieces, BED, BED)).toBe(2);
   });
 
+  it('an oversize piece claims its own bed and does not absorb later small pieces', () => {
+    // The oversize piece must not leave a reusable empty bed: it gets bed 1
+    // alone, and the two quarter-bed pieces share bed 2.
+    const pieces: Footprint[] = [
+      { w: 300, d: 300 },
+      { w: 120, d: 120 },
+      { w: 120, d: 120 },
+    ];
+    expect(estimateBedLoads(pieces, BED, BED)).toBe(2);
+  });
+
   it('packs a 2×2 grid of quarter-bed pieces onto one bed', () => {
     const q: Footprint = { w: 120, d: 120 };
     expect(estimateBedLoads([q, q, q, q], BED, BED)).toBe(1);

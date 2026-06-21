@@ -285,8 +285,10 @@ describe('groupPiecesByFingerprint', () => {
   // ─── preferIdenticalPieces canonicalization (#1640) ──────────────────────
 
   it('collapses opposite-corner pieces into a single group under the flag', () => {
-    // 10×10 → 2×2 grid. Without canonicalization there are 4 distinct edge
-    // layouts (one per corner). With the flag, A1≡C2 and A2≡C1 → 2 groups.
+    // 10×10 → 2×2 grid (its 2×3 alternative saves no bed load, so the
+    // packing-aware planner keeps 2×2 — see splitPlanner.test). Without
+    // canonicalization there are 4 distinct edge layouts (one per corner). With
+    // the flag, A1≡C2 and A2≡C1 → 2 groups.
     const params = makeParams({
       width: 10,
       depth: 10,

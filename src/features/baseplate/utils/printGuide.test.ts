@@ -110,6 +110,8 @@ describe('generatePrintGuide', () => {
 
     // Should show "X (Y unique)" format
     expect(guide).toMatch(/Total pieces: \d+\s+\(\d+ unique\)/);
+    // ...and the build-plate load count.
+    expect(guide).toMatch(/Build-plate loads: \d+/);
   });
 
   it('lists padding details for padded pieces', () => {

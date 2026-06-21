@@ -39,13 +39,16 @@ function placeInBin(
   bedW: number,
   bedD: number
 ): boolean {
-  // Existing shelves: fit if some orientation's height ≤ shelf height and
-  // width ≤ remaining bed width.
+  // Rotation is allowed per orientation (slicers can rotate parts), so this is
+  // more permissive than the planner's natural-orientation fit check — it only
+  // ever improves packing density, never invalidates a load count.
+  const orientations = [
+    { w: longSide, h: shortSide },
+    { w: shortSide, h: longSide },
+  ] as const;
+
   for (const shelf of bin.shelves) {
-    for (const [w, h] of [
-      [longSide, shortSide],
-      [shortSide, longSide],
-    ] as const) {
+    for (const { w, h } of orientations) {
       if (h <= shelf.height + EPS && w <= bedW - shelf.usedW + EPS) {
         shelf.usedW += w;
         return true;
@@ -53,14 +56,10 @@ function placeInBin(
     }
   }
 
-  // New shelf: pick the orientation with the smaller height (saves vertical
-  // budget) among those whose width fits the bed; the shelf must fit the
-  // remaining bed depth.
+  // New shelf: the smaller-height orientation that fits the bed width saves
+  // vertical budget; the shelf must fit the remaining bed depth.
   let best: { w: number; h: number } | null = null;
-  for (const [w, h] of [
-    [longSide, shortSide],
-    [shortSide, longSide],
-  ] as const) {
+  for (const { w, h } of orientations) {
     if (w <= bedW + EPS && (best === null || h < best.h)) best = { w, h };
   }
   if (best && bin.usedD + best.h <= bedD + EPS) {
@@ -73,8 +72,9 @@ function placeInBin(
 
 /**
  * Number of bed loads needed to print `pieces`, packing as many as fit per bed.
- * A piece that fits no orientation of an empty bed still gets its own bed (the
- * planner's fit check prevents that upstream, but we stay total here).
+ * A piece that fits no orientation of an empty bed still gets its own (full)
+ * bed — the planner's fit check prevents that upstream, but the count stays
+ * total for any caller.
  */
 export function estimateBedLoads(pieces: readonly Footprint[], bedW: number, bedD: number): number {
   const items = pieces
@@ -94,7 +94,11 @@ export function estimateBedLoads(pieces: readonly Footprint[], bedW: number, bed
     }
     if (!placed) {
       const bin: Bin = { shelves: [], usedD: 0 };
-      placeInBin(bin, it.long, it.short, bedW, bedD);
+      if (!placeInBin(bin, it.long, it.short, bedW, bedD)) {
+        // Oversize piece — claim the whole bed so no later piece reuses it.
+        bin.shelves.push({ height: bedD, usedW: bedW });
+        bin.usedD = bedD;
+      }
       bins.push(bin);
     }
   }
