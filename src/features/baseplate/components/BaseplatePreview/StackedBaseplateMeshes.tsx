@@ -11,6 +11,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StackPrintParams } from '@/core/types';
+import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
@@ -99,7 +100,11 @@ export function StackedBaseplateMeshes({
       fractionalEdgeY,
       nozzleSizeMm
     );
-    const groups = stackGroupsFromTiling(tiling, fullParams, stack.copies ?? 1);
+    const groups = stackGroupsFromTiling(
+      tiling,
+      fullParams,
+      stack.copies ?? STACK_PRINT_DEFAULT_COPIES
+    );
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;

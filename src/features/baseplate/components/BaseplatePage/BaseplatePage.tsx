@@ -29,7 +29,7 @@ import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNamin
 import { buildFullParams } from '../../utils/buildFullParams';
 import { stackGroupsFromTiling, planPhysicalStacks, stackHeightCap } from '../../utils/stackPrint';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { STACK_PRINT_DEFAULT_GAP_MM } from '@/core/types';
+import { STACK_PRINT_DEFAULT_GAP_MM, STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import {
@@ -141,7 +141,7 @@ export function BaseplatePage() {
   // describe the stacks instead. STEP never stacks.
   const stackEnabled = baseplateParams.stackPrint?.enabled === true && activeFormat !== 'step';
   const stackGapMm = baseplateParams.stackPrint?.gapMm ?? STACK_PRINT_DEFAULT_GAP_MM;
-  const stackCopies = baseplateParams.stackPrint?.copies ?? 1;
+  const stackCopies = baseplateParams.stackPrint?.copies ?? STACK_PRINT_DEFAULT_COPIES;
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
     const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);

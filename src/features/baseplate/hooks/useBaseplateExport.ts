@@ -18,6 +18,7 @@ import { buildStackExportSoup } from '../utils/stackExport';
 import { planPhysicalStacks, stackHeightCap, bodyCenterYMm } from '../utils/stackPrint';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { StackPrintParams } from '@/core/types';
+import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
@@ -162,7 +163,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       const stack = baseplateParams.stackPrint;
       const stackEnabled = stack?.enabled === true && format !== 'step';
       // Whole-layout multiplier: scales every unique piece's tower count.
-      const copies = Math.max(1, Math.floor(stack?.copies ?? 1));
+      const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
       const stackCap = stackHeightCap(
         useSettingsStore.getState().settings.printSettings.maxPrintHeightMm,
         GRIDFINITY_SPEC.SOCKET_HEIGHT,
