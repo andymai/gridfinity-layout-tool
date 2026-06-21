@@ -44,6 +44,14 @@ export function SplitViewStrip({
         </span>
       </div>
 
+      <div className="px-4 pb-1">
+        <span className="text-[11px] text-content-secondary">
+          {t(tiling.bedLoads === 1 ? 'baseplate.bedLoads.one' : 'baseplate.bedLoads.other', {
+            count: tiling.bedLoads,
+          })}
+        </span>
+      </div>
+
       {tiling.paddingReductionHint && (
         <div className="mx-4 mb-2 rounded bg-accent/10 px-2.5 py-1.5 text-[11px] text-accent">
           {t('baseplate.paddingHint', {

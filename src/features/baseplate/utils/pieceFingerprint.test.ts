@@ -285,11 +285,11 @@ describe('groupPiecesByFingerprint', () => {
   // ─── preferIdenticalPieces canonicalization (#1640) ──────────────────────
 
   it('collapses opposite-corner pieces into a single group under the flag', () => {
-    // 10×8 → 2×2 grid. Without canonicalization there are 4 distinct edge
+    // 10×10 → 2×2 grid. Without canonicalization there are 4 distinct edge
     // layouts (one per corner). With the flag, A1≡C2 and A2≡C1 → 2 groups.
     const params = makeParams({
       width: 10,
-      depth: 8,
+      depth: 10,
       connectorNubs: true,
       preferIdenticalPieces: true,
     });
@@ -306,7 +306,7 @@ describe('groupPiecesByFingerprint', () => {
   });
 
   it('keeps the 4-corner pieces distinct when the flag is off (baseline)', () => {
-    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: false });
+    const params = makeParams({ width: 10, depth: 10, preferIdenticalPieces: false });
     const tiling = computeBaseplateTiling(params, 256);
     const groups = groupPiecesByFingerprint(tiling.pieces, params);
     expect(groups.size).toBe(4);
@@ -344,7 +344,7 @@ describe('groupPiecesByFingerprint', () => {
     // at one of the world corners.)
     const params = makeParams({
       width: 10,
-      depth: 8,
+      depth: 10,
       connectorNubs: true,
       preferIdenticalPieces: true,
       cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
@@ -360,7 +360,7 @@ describe('groupPiecesByFingerprint', () => {
     // meshes are genuine rotations of each other and dedup correctly.
     const params = makeParams({
       width: 10,
-      depth: 8,
+      depth: 10,
       connectorNubs: true,
       preferIdenticalPieces: true,
       cornerRadii: { tl: 1, tr: 2, bl: 2, br: 1 },

@@ -2,10 +2,15 @@
  * Baseplate split planner — pure functions for computing how a large baseplate
  * should be tiled into printable pieces.
  *
- * The algorithm jointly optimizes both axes to minimize total piece count.
- * For each candidate (numCols × numRows) it verifies every piece fits the bed
- * with its edge-specific padding, then picks the tiling with fewest pieces.
- * Ties are broken by symmetry (prefer equal-sized pieces).
+ * The algorithm jointly optimizes both axes to minimize the number of
+ * build-plate loads (print jobs) — packing as many pieces as fit per bed — so
+ * users print in the fewest bed swaps. Because smaller pieces pack tighter,
+ * fewer bed loads usually means more pieces; a per-load piece budget
+ * ({@link MAX_EXTRA_PIECES_PER_BED_LOAD}) caps that trade so the planner won't
+ * fragment into many tiny tiles just to shave a load. For each candidate
+ * (numCols × numRows) it verifies every piece fits the bed with its
+ * edge-specific padding, scores `LOAD_WEIGHT * bedLoads + pieceCount`, and
+ * breaks ties by symmetry (prefer equal-sized pieces).
  *
  * Fractional half-unit edges are absorbed into the outermost piece when they
  * fit, otherwise become a separate piece.
@@ -22,9 +27,24 @@ import type {
   PaddingReductionHint,
   PieceEdges,
 } from '../types/tiling';
+import { estimateBedLoads, type Footprint } from './bedPacking';
+import { FRACTIONAL_THRESHOLD, isFractional, reorderForDisplay } from './splitReorder';
 
-/** Threshold for detecting a fractional half-unit (avoids floating-point noise). */
-const FRACTIONAL_THRESHOLD = 0.49;
+/**
+ * Max extra pieces worth one saved build-plate load. Doubles as the bed-load
+ * weight in the tiling cost (`LOAD_WEIGHT * bedLoads + pieceCount`): a finer
+ * split that removes a load wins only if it adds fewer than this many pieces,
+ * so the planner pursues fewer bed swaps without fragmenting into tiny tiles.
+ */
+const MAX_EXTRA_PIECES_PER_BED_LOAD = 4;
+
+/**
+ * Only run the packing-aware refinement when the coarsest split has at most this
+ * many pieces. Beyond it the plate dwarfs the bed (pieces already tile beds
+ * tightly, so packing can't save loads) and the per-candidate packing cost
+ * would balloon — so large plates keep the fast min-piece tiling.
+ */
+const PACKING_SEARCH_MAX_PIECES = 16;
 
 /**
  * Per-axis configuration: bed budget, padding, and dovetail overhang on each end.
@@ -227,18 +247,103 @@ function symmetryScore(sizes: number[]): number {
   return sizes.reduce((sum, s) => sum + (s - mean) ** 2, 0) / sizes.length;
 }
 
+/**
+ * Per-position physical size (mm) of each chunk on an axis — grid units plus
+ * edge padding and join-edge tongue protrusion. Mirrors {@link chunkSizesFit}
+ * so the packed footprints match the actual STL bounding boxes.
+ */
+function axisChunkMm(sizes: number[], gridUnitMm: number, axis: AxisConfig): number[] {
+  const last = sizes.length - 1;
+  return sizes.map((s, i) => {
+    const padStart = i === 0 ? axis.paddingStart : 0;
+    const padEnd = i === last ? axis.paddingEnd : 0;
+    const tongueStart = i === 0 ? 0 : axis.startMaleMm;
+    const tongueEnd = i === last ? 0 : axis.endMaleMm;
+    return s * gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
+  });
+}
+
+/** Build-plate loads to print a candidate tiling, packing pieces per bed. */
+function tilingBedLoads(
+  colSizes: number[],
+  rowSizes: number[],
+  gridUnitMm: number,
+  xAxis: AxisConfig,
+  yAxis: AxisConfig
+): number {
+  const colMm = axisChunkMm(colSizes, gridUnitMm, xAxis);
+  const rowMm = axisChunkMm(rowSizes, gridUnitMm, yAxis);
+  const footprints: Footprint[] = [];
+  for (const d of rowMm) for (const w of colMm) footprints.push({ w, d });
+  return estimateBedLoads(footprints, xAxis.bedMm, yAxis.bedMm);
+}
+
+interface MinPieceCandidate {
+  colSizes: number[];
+  rowSizes: number[];
+  pieceCount: number;
+  variance: number;
+}
+
 interface TilingCandidate {
   colSizes: number[];
   rowSizes: number[];
   pieceCount: number;
-  score: number;
+  bedLoads: number;
+  cost: number;
+  variance: number;
 }
 
 /**
- * Find the optimal grid tiling: minimum pieces where every piece fits the bed.
+ * Coarsest feasible tiling: minimum piece count where every piece fits the bed,
+ * symmetry breaking ties. Fast (no packing) — used as both the baseline answer
+ * for large plates and the seed for the packing-aware refinement.
+ */
+function findMinPieceTiling(
+  totalWidth: number,
+  totalDepth: number,
+  gridUnitMm: number,
+  xAxis: AxisConfig,
+  yAxis: AxisConfig
+): MinPieceCandidate | null {
+  const maxCols = Math.ceil(totalWidth);
+  const maxRows = Math.ceil(totalDepth);
+  let best: MinPieceCandidate | null = null;
+
+  for (let nc = 1; nc <= maxCols; nc++) {
+    if (best && nc > best.pieceCount) break;
+    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, xAxis);
+    if (!colSizes) continue;
+
+    for (let nr = 1; nr <= maxRows; nr++) {
+      const pieceCount = nc * nr;
+      if (best && pieceCount > best.pieceCount) break;
+      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, yAxis);
+      if (!rowSizes) continue;
+      if (allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) {
+        const variance = symmetryScore(colSizes) + symmetryScore(rowSizes);
+        if (!best || pieceCount < best.pieceCount || variance < best.variance) {
+          best = { colSizes, rowSizes, pieceCount, variance };
+        }
+        break;
+      }
+    }
+  }
+  return best;
+}
+
+/**
+ * Find the optimal grid tiling: fewest build-plate loads (with a per-load piece
+ * budget), where every piece fits the bed.
  *
- * Searches over (numCols, numRows) pairs, partitioning each axis as evenly as
- * possible. Returns the best (colSizes, rowSizes) or a single-piece fallback.
+ * First finds the coarsest (min-piece) tiling. When that already has many
+ * pieces the plate dwarfs the bed — its big pieces tile beds tightly, so
+ * packing-aware refinement can't help and would be expensive; we return it
+ * directly. Otherwise we search (numCols, numRows) pairs, scoring each feasible
+ * candidate by `MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount`
+ * (symmetry breaks ties). Since `bedLoads ≥ 1`, a candidate's cost is at least
+ * `pieceCount + MAX_EXTRA_PIECES_PER_BED_LOAD`, bounding the search. Returns the
+ * best (colSizes, rowSizes, bedLoads) or a single-piece fallback.
  */
 function findOptimalTiling(
   totalWidth: number,
@@ -246,43 +351,68 @@ function findOptimalTiling(
   gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
-): { colSizes: number[]; rowSizes: number[] } {
+): { colSizes: number[]; rowSizes: number[]; bedLoads: number } {
+  const coarse = findMinPieceTiling(totalWidth, totalDepth, gridUnitMm, xAxis, yAxis);
+  if (!coarse) {
+    const colSizes = [totalWidth];
+    const rowSizes = [totalDepth];
+    return {
+      colSizes,
+      rowSizes,
+      bedLoads: tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis),
+    };
+  }
+
+  const coarseBedLoads = tilingBedLoads(coarse.colSizes, coarse.rowSizes, gridUnitMm, xAxis, yAxis);
+
+  // Large plate: the coarse split already packs near-optimally and the packing
+  // search would be costly — keep it.
+  if (coarse.pieceCount > PACKING_SEARCH_MAX_PIECES) {
+    return { colSizes: coarse.colSizes, rowSizes: coarse.rowSizes, bedLoads: coarseBedLoads };
+  }
+
   const maxCols = Math.ceil(totalWidth);
   const maxRows = Math.ceil(totalDepth);
 
-  let best: TilingCandidate | null = null;
+  // Seed with the coarse tiling so the cost prune is tight from the start.
+  let best: TilingCandidate = {
+    colSizes: coarse.colSizes,
+    rowSizes: coarse.rowSizes,
+    pieceCount: coarse.pieceCount,
+    bedLoads: coarseBedLoads,
+    cost: MAX_EXTRA_PIECES_PER_BED_LOAD * coarseBedLoads + coarse.pieceCount,
+    variance: coarse.variance,
+  };
 
   for (let nc = 1; nc <= maxCols; nc++) {
-    // Early exit: nc alone exceeds best piece count (nc * 1 > best).
-    // Use > not >= so we still evaluate nc×1 candidates for symmetry tiebreaks.
-    if (best && nc > best.pieceCount) break;
+    // Lower-bound prune: this column count alone (nr=1, 1 bed load) can't beat
+    // the best cost found so far. `>` not `>=` so equal-cost candidates still
+    // get evaluated for the symmetry tiebreak.
+    if (nc + MAX_EXTRA_PIECES_PER_BED_LOAD > best.cost) break;
 
     const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, xAxis);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
-      if (best && pieceCount > best.pieceCount) break;
+      // pieceCount keeps growing with nr; once even a 1-load split can't beat
+      // best, no larger nr will either.
+      if (pieceCount + MAX_EXTRA_PIECES_PER_BED_LOAD > best.cost) break;
 
       const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, yAxis);
       if (!rowSizes) continue;
+      if (!allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) continue;
 
-      if (allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) {
-        const score = symmetryScore(colSizes) + symmetryScore(rowSizes);
-        if (
-          !best ||
-          pieceCount < best.pieceCount ||
-          (pieceCount === best.pieceCount && score < best.score)
-        ) {
-          best = { colSizes, rowSizes, pieceCount, score };
-        }
-        break;
+      const bedLoads = tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis);
+      const cost = MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount;
+      const variance = symmetryScore(colSizes) + symmetryScore(rowSizes);
+      if (cost < best.cost || (cost === best.cost && variance < best.variance)) {
+        best = { colSizes, rowSizes, pieceCount, bedLoads, cost, variance };
       }
     }
   }
 
-  if (!best) return { colSizes: [totalWidth], rowSizes: [totalDepth] };
-  return { colSizes: best.colSizes, rowSizes: best.rowSizes };
+  return { colSizes: best.colSizes, rowSizes: best.rowSizes, bedLoads: best.bedLoads };
 }
 
 /**
@@ -388,27 +518,23 @@ export function computeBaseplateTiling(
     palindromic
   );
 
-  const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
-    width,
-    depth,
-    gridUnitMm,
-    xAxis,
-    yAxis
-  );
+  const {
+    colSizes: rawColSizes,
+    rowSizes: rawRowSizes,
+    bedLoads,
+  } = findOptimalTiling(width, depth, gridUnitMm, xAxis, yAxis);
 
   // Reorder for display: largest pieces at front/left, fractional edges pinned.
   // Under preferIdenticalPieces, arrange palindromically so outer positions match.
   const colSizes = reorderForDisplay(
     rawColSizes,
-    gridUnitMm,
-    xAxis,
+    axisCapacity(gridUnitMm, xAxis),
     fractionalEdgeX === 'start',
     palindromic
   );
   const rowSizes = reorderForDisplay(
     rawRowSizes,
-    gridUnitMm,
-    yAxis,
+    axisCapacity(gridUnitMm, yAxis),
     fractionalEdgeY === 'start',
     palindromic
   );
@@ -478,6 +604,9 @@ export function computeBaseplateTiling(
     rows: rowSizes.length,
     totalWidthUnits: width,
     totalDepthUnits: depth,
+    // Reordering only permutes chunk sizes (same multiset), so the packed
+    // bed-load count is unchanged from the search result.
+    bedLoads,
     stackCount: 1,
     stackSeparatorThickness: 0,
     paddingReductionHint,
@@ -561,149 +690,10 @@ function edgeKey(edges: BaseplatePiece['edges']): string {
   return `${edges.left}|${edges.right}|${edges.front}|${edges.back}`;
 }
 
-/**
- * Reorder sizes for display: largest pieces at lowest indices (front/left),
- * while respecting edge constraints and fractional edge placement.
- *
- * When `fractionAtStart` is true and a fractional piece exists, it is pinned to
- * position 0 with the remaining pieces sorted descending.
- *
- * When `preferIdenticalPieces` is true, the integer-sized pieces are arranged
- * palindromically so opposite outer positions have identical sizes — this lets
- * A1 ≡ C2 and A2 ≡ C1 share a canonical fingerprint under 180° rotation.
- */
-function reorderForDisplay(
-  sizes: number[],
-  gridUnitMm: number,
-  axis: AxisConfig,
-  fractionAtStart: boolean,
-  preferIdenticalPieces: boolean
-): number[] {
-  if (sizes.length <= 1) return sizes;
-
-  // Use the same per-position constraints as partitionAxis so dovetail tongues
-  // are accounted for when reshuffling chunks across positions (#1498).
-  const { maxFirst, maxLast, maxMiddle } = axisCapacity(gridUnitMm, axis);
-  const fracIdx = sizes.findIndex(isFractional);
-
-  // Pin fractional piece to position 0 (only if it fits there).
-  if (fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxFirst) {
-    const rest = sizes.filter((_, i) => i !== fracIdx);
-    const inner = preferIdenticalPieces
-      ? palindromizeWithEdges(rest, maxMiddle, maxLast, maxMiddle)
-      : sortDescWithEdges(rest, maxMiddle, maxLast);
-    return [sizes[fracIdx], ...inner];
-  }
-
-  // Pin fractional piece to last position (prevents middle placement).
-  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxLast) {
-    const rest = sizes.filter((_, i) => i !== fracIdx);
-    const inner = preferIdenticalPieces
-      ? palindromizeWithEdges(rest, maxFirst, maxMiddle, maxMiddle)
-      : sortDescWithEdges(rest, maxFirst, maxMiddle);
-    return [...inner, sizes[fracIdx]];
-  }
-
-  if (preferIdenticalPieces) {
-    return palindromizeWithEdges(sizes, maxFirst, maxLast, maxMiddle);
-  }
-
-  return sortDescWithEdges(sizes, maxFirst, maxLast);
-}
-
-/**
- * Arrange sizes palindromically (sizes[i] = sizes[n-1-i] where possible) while
- * respecting edge constraints. Pairs equal values at outermost positions first,
- * then works inward.
- *
- * Returns sortDescWithEdges' result if no palindromic arrangement satisfies the
- * edge caps — the fitting checker would otherwise reject the tiling.
- */
-function palindromizeWithEdges(
-  sizes: readonly number[],
-  maxFirst: number,
-  maxLast: number,
-  maxMiddle: number
-): number[] {
-  if (sizes.length <= 1) return [...sizes];
-
-  const n = sizes.length;
-
-  // Collect every value that can participate in a true palindromic pair (it
-  // appears 2+ times in the multiset). What's left over after pairing — the
-  // odd-count remainders — must occupy middle slots since no slot at the
-  // outer edges can be the half of a matching pair. This finds palindromes
-  // even when the unique value is the largest: [5, 4, 4] → pairs [(4,4)],
-  // leftovers [5] → result [4, 5, 4].
-  const freq = new Map<number, number>();
-  for (const s of sizes) freq.set(s, (freq.get(s) ?? 0) + 1);
-  const pairs: number[] = [];
-  const leftovers: number[] = [];
-  for (const [value, count] of freq) {
-    for (let i = 0; i < Math.floor(count / 2); i++) pairs.push(value);
-    if (count % 2 === 1) leftovers.push(value);
-  }
-  pairs.sort((a, b) => b - a); // largest pairs at outermost slots
-  leftovers.sort((a, b) => b - a);
-
-  const result = new Array<number>(n);
-  let left = 0;
-  let right = n - 1;
-  for (const value of pairs) {
-    if (left >= right) break;
-    result[left++] = value;
-    result[right--] = value;
-  }
-  for (const value of leftovers) {
-    if (left > right) break;
-    result[left++] = value;
-  }
-
-  // Fall back to the baseline sort if the palindromic layout would overrun a
-  // first/last edge cap OR a middle cap (middle slots can have stricter caps
-  // than edges when both join sides claim tongue protrusion — only matters
-  // for non-standard small gridUnitMm where floor(bed/gu) > floor((bed-P)/gu)).
-  const middleOverflow = (): boolean => {
-    for (let i = 1; i < n - 1; i++) if (result[i] > maxMiddle) return true;
-    return false;
-  };
-  if (result[0] > maxFirst || result[n - 1] > maxLast || middleOverflow()) {
-    return sortDescWithEdges([...sizes], maxFirst, maxLast);
-  }
-  return result;
-}
-
-/**
- * Sort sizes descending while ensuring position 0 fits within paddingFirst
- * and the last position fits within paddingLast.
- *
- * Falls back to the original order if constraints cannot be satisfied.
- */
-function sortDescWithEdges(sizes: number[], maxFirst: number, maxLast: number): number[] {
-  const pool = [...sizes].sort((a, b) => b - a);
-
-  const firstIdx = pool.findIndex((v) => v <= maxFirst);
-  if (firstIdx < 0) return sizes;
-  const first = pool.splice(firstIdx, 1)[0];
-
-  if (pool.length === 0 || pool[pool.length - 1] <= maxLast) {
-    return [first, ...pool];
-  }
-
-  const validLastIdx = pool.findIndex((v) => v <= maxLast);
-  if (validLastIdx < 0) return sizes;
-  const lastPiece = pool.splice(validLastIdx, 1)[0];
-  return [first, ...pool, lastPiece];
-}
-
 function cumulativeOffsets(sizes: number[]): number[] {
   const offsets: number[] = [0];
   for (let i = 1; i < sizes.length; i++) {
     offsets.push(offsets[i - 1] + sizes[i - 1]);
   }
   return offsets;
-}
-
-function isFractional(value: number): boolean {
-  return value - Math.floor(value) >= FRACTIONAL_THRESHOLD;
 }

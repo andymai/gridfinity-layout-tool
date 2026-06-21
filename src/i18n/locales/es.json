@@ -138,6 +138,8 @@
   "baseplate.sideView": "Lado",
   "baseplate.splitInfo": "{count} piezas",
   "baseplate.splitReason": "Dividido para cama de {printBed}mm",
+  "baseplate.bedLoads.one": "Se imprime en 1 carga de cama",
+  "baseplate.bedLoads.other": "Se imprime en {count} cargas de cama",
   "baseplate.stackPrint.enable": "Pila vertical",
   "baseplate.stackPrint.exportBanner": "Impresión apilada: {stacks} pilas ({plates} placas) se exportan como un ZIP con guía de impresión.",
   "baseplate.stackPrint.gap.info": "Espacio de aire entre placas apiladas, aproximadamente 0,2 mm (una capa). Mantén la altura de capa del slicer en ese espacio o menos, o las placas se fusionan. No se necesitan soportes. Prueba con una pila pequeña primero.",

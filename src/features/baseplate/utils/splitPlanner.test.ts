@@ -155,10 +155,12 @@ describe('computeBaseplateTiling', () => {
 
   // ─── Both-axis splits ──────────────────────────────────────────────────
 
-  it('both-axis split (10x8)', () => {
+  it('both-axis split (10x10)', () => {
+    // 10×10 stays a clean 2×2: its 2×3 alternative's pieces are too deep to pair
+    // on the bed, so the packing-aware planner gains no load and keeps 2×2.
     const params = makeParams({
       width: 10,
-      depth: 8,
+      depth: 10,
       paddingLeft: 2,
       paddingRight: 3,
       paddingFront: 4,
@@ -191,6 +193,33 @@ describe('computeBaseplateTiling', () => {
     expect(b2.paddingRight).toBe(3);
     expect(b2.paddingFront).toBe(0);
     expect(b2.paddingBack).toBe(5);
+  });
+
+  // ─── Packing-aware split (build-plate loads) ────────────────────────────
+
+  it('reports bedLoads = 1 for a single (unsplit) plate', () => {
+    const tiling = computeBaseplateTiling(makeParams({ width: 4, depth: 4 }), 256);
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.bedLoads).toBe(1);
+  });
+
+  it('chooses a finer split to save a build-plate load when the trade is cheap', () => {
+    // 10×8: the coarse 2×2 (4 pieces) prints 1-per-bed = 4 loads, but a 2×3
+    // (6 pieces) packs its shallower pieces two-per-bed → 3 loads. Saving a
+    // load for 2 extra pieces is within the per-load piece budget, so the
+    // packing-aware planner picks the 2×3.
+    const tiling = computeBaseplateTiling(makeParams({ width: 10, depth: 8 }), 256);
+    expect(tiling.cols).toBe(2);
+    expect(tiling.rows).toBe(3);
+    expect(tiling.bedLoads).toBe(3);
+  });
+
+  it('does not over-fragment when finer pieces would not pack better', () => {
+    // 10×10: a 2×3's pieces are still too deep to pair on the bed, so it saves
+    // no load — the planner keeps the coarse 2×2 rather than adding pieces.
+    const tiling = computeBaseplateTiling(makeParams({ width: 10, depth: 10 }), 256);
+    expect(tiling.cols).toBe(2);
+    expect(tiling.rows).toBe(2);
   });
 
   // ─── Symmetry preference ───────────────────────────────────────────────
@@ -398,7 +427,7 @@ describe('computeBaseplateTiling', () => {
   // ─── Labels and offsets ────────────────────────────────────────────────
 
   it('labels follow grid coordinates (2x2)', () => {
-    const params = makeParams({ width: 10, depth: 8 });
+    const params = makeParams({ width: 10, depth: 10 });
     const tiling = computeBaseplateTiling(params, 256);
     const labels = tiling.pieces.map((p) => p.label).sort();
     expect(labels).toEqual(['A1', 'A2', 'B1', 'B2']);
@@ -822,7 +851,7 @@ describe('pieceToBaseplateParams', () => {
   });
 
   it('passes through edge classification to params', () => {
-    const parent = makeParams({ width: 10, depth: 8 });
+    const parent = makeParams({ width: 10, depth: 10 });
     const tiling = computeBaseplateTiling(parent, 256);
 
     // A1 (front-left corner): left+front exterior, right+back join
@@ -991,11 +1020,11 @@ describe('preferIdenticalPieces', () => {
   });
 
   it('marks opposite-corner pieces with placementRotationDeg=180', () => {
-    // 10×8 → 2×2 grid. Under the flag, A1≡C2 share canonical edges and one is
+    // 10×10 → 2×2 grid. Under the flag, A1≡C2 share canonical edges and one is
     // rendered rotated 180°.
     const params = makeParams({
       width: 10,
-      depth: 8,
+      depth: 10,
       connectorNubs: true,
       preferIdenticalPieces: true,
     });

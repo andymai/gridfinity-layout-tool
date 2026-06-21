@@ -138,6 +138,8 @@
   "baseplate.sideView": "Côté",
   "baseplate.splitInfo": "{count} pièces",
   "baseplate.splitReason": "Découpé pour le plateau de {printBed}mm",
+  "baseplate.bedLoads.one": "Imprimé en 1 plateau",
+  "baseplate.bedLoads.other": "Imprimé en {count} plateaux",
   "baseplate.stackPrint.enable": "Pile verticale",
   "baseplate.stackPrint.exportBanner": "Impression empilée : {stacks} piles ({plates} plaques) exportées dans un ZIP avec guide d'impression.",
   "baseplate.stackPrint.gap.info": "Espace d'air entre les plaques empilées, environ 0,2 mm (une couche). Gardez la hauteur de couche du slicer sous cet espace ou les plaques fusionnent. Pas de support nécessaire. Testez d'abord avec une petite pile.",

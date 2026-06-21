@@ -47,6 +47,7 @@ const baseTiling: BaseplateTiling = {
   totalDepthUnits: 6,
   stackCount: 1,
   stackSeparatorThickness: 0,
+  bedLoads: 1,
 };
 
 describe('SplitViewStrip', () => {
@@ -63,6 +64,16 @@ describe('SplitViewStrip', () => {
     render(<SplitViewStrip {...defaultProps} />);
     expect(screen.getByText('baseplate.splitInfo')).toBeInTheDocument();
     expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
+  });
+
+  it('renders the build-plate load count (singular at 1)', () => {
+    render(<SplitViewStrip {...defaultProps} />);
+    expect(screen.getByText('baseplate.bedLoads.one')).toBeInTheDocument();
+  });
+
+  it('renders the build-plate load count (plural above 1)', () => {
+    render(<SplitViewStrip {...defaultProps} tiling={{ ...baseTiling, bedLoads: 3 }} />);
+    expect(screen.getByText('baseplate.bedLoads.other')).toBeInTheDocument();
   });
 
   it('renders one button per piece', () => {

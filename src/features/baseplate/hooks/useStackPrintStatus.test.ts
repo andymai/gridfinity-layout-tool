@@ -40,6 +40,7 @@ function tiling(pieces: BaseplatePiece[]): BaseplateTiling {
     totalDepthUnits: 2,
     stackCount: 1,
     stackSeparatorThickness: 0,
+    bedLoads: 1,
     paddingReductionHint: null,
   };
 }

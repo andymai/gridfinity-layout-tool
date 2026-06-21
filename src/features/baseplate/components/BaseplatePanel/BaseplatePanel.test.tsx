@@ -122,6 +122,7 @@ const splitTiling: BaseplateTiling = {
   totalDepthUnits: 6,
   stackCount: 1,
   stackSeparatorThickness: 0,
+  bedLoads: 1,
 };
 
 describe('BaseplatePanel', () => {

@@ -138,6 +138,8 @@
   "baseplate.sideView": "Side",
   "baseplate.splitInfo": "{count} deler",
   "baseplate.splitReason": "Delt for {printBed}mm printplate",
+  "baseplate.bedLoads.one": "Skrives ut på 1 platelasting",
+  "baseplate.bedLoads.other": "Skrives ut på {count} platelastinger",
   "baseplate.stackPrint.enable": "Vertikal stabel",
   "baseplate.stackPrint.exportBanner": "Stabelutskrift: {stacks} stabler ({plates} plater) eksporteres som en ZIP med utskriftsguide.",
   "baseplate.stackPrint.gap.info": "Luftspalte mellom stablede plater, ca. 0,2 mm (ett lag). Hold slicer-laghøyden på eller under dette gapet, ellers smelter platene sammen. Ingen støtte nødvendig. Test med en liten stabel først.",

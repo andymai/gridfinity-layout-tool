@@ -138,6 +138,8 @@
   "baseplate.sideView": "Lado",
   "baseplate.splitInfo": "{count} peças",
   "baseplate.splitReason": "Dividido para mesa de {printBed}mm",
+  "baseplate.bedLoads.one": "Imprime em 1 carga de mesa",
+  "baseplate.bedLoads.other": "Imprime em {count} cargas de mesa",
   "baseplate.stackPrint.enable": "Pilha vertical",
   "baseplate.stackPrint.exportBanner": "Impressão empilhada: {stacks} pilhas ({plates} placas) são exportadas em um ZIP com guia de impressão.",
   "baseplate.stackPrint.gap.info": "Fresta de ar entre placas empilhadas, cerca de 0,2 mm (uma camada). Mantenha a altura de camada do slicer na fresta ou abaixo, ou as placas se fundem. Sem suportes necessários. Teste com uma pilha pequena primeiro.",

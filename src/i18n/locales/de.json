@@ -138,6 +138,8 @@
   "baseplate.sideView": "Seite",
   "baseplate.splitInfo": "{count} Teile",
   "baseplate.splitReason": "Aufgeteilt für {printBed}mm Druckbett",
+  "baseplate.bedLoads.one": "Druckt in 1 Druckbett-Durchgang",
+  "baseplate.bedLoads.other": "Druckt in {count} Druckbett-Durchgängen",
   "baseplate.stackPrint.enable": "Vertikaler Stapel",
   "baseplate.stackPrint.exportBanner": "Stapeldruck: {stacks} Stapel ({plates} Platten) werden als ZIP mit Druckanleitung exportiert.",
   "baseplate.stackPrint.gap.info": "Luftspalt zwischen gestapelten Platten, ca. 0,2 mm (eine Schicht). Schichthöhe des Slicers auf oder unter diesem Spalt halten, sonst verschmelzen die Platten. Kein Stützmaterial nötig. Kleinen Stapel zuerst testen.",

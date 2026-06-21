@@ -138,6 +138,8 @@
   "baseplate.sideView": "Збоку",
   "baseplate.splitInfo": "{count} частин",
   "baseplate.splitReason": "Розділено для друкарського стола {printBed}мм",
+  "baseplate.bedLoads.one": "Друкується за 1 завантаження столу",
+  "baseplate.bedLoads.other": "Друкується за {count} завантажень столу",
   "baseplate.stackPrint.enable": "Вертикальний стос",
   "baseplate.stackPrint.exportBanner": "Друк стосами: {stacks} стосів ({plates} пластин) експортуються як ZIP із посібником із друку.",
   "baseplate.stackPrint.gap.info": "Повітряний зазор між пластинами, близько 0,2 мм (один шар). Тримайте висоту шару слайсера на рівні зазору або нижче, інакше пластини з'єднаються. Підтримки не потрібні. Спочатку протестуйте невеликий стос.",

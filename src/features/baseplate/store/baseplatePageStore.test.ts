@@ -172,6 +172,7 @@ describe('baseplatePageStore', () => {
       totalDepthUnits: 8,
       stackCount: 1,
       stackSeparatorThickness: 0,
+      bedLoads: 1,
       paddingReductionHint: null,
     };
 
@@ -347,6 +348,7 @@ describe('baseplatePageStore', () => {
         totalDepthUnits: 8,
         stackCount: 1,
         stackSeparatorThickness: 0,
+        bedLoads: 1,
         paddingReductionHint: null,
       });
 

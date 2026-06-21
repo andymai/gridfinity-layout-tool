@@ -62,6 +62,12 @@ export interface BaseplateTiling {
   readonly rows: number;
   readonly totalWidthUnits: number;
   readonly totalDepthUnits: number;
+  /**
+   * Estimated build-plate loads (print jobs) to make every piece, packing as
+   * many as fit per bed. 1 for an unsplit plate. The planner minimizes this
+   * (capped against over-fragmentation) so users print in the fewest bed swaps.
+   */
+  readonly bedLoads: number;
   /** Future: number of vertical stacks (default 1) */
   readonly stackCount: number;
   /** Future: separator thickness between stacks in mm (default 0) */

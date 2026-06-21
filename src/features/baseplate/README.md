@@ -29,7 +29,9 @@ graph TB
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section
 - `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
-- `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
+- `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces, minimizing **build-plate loads** (see Key Concepts)
+- `utils/bedPacking.ts` — `estimateBedLoads`: shelf First-Fit-Decreasing bin-packer (90° rotation) estimating how many bed loads a set of pieces needs
+- `utils/splitReorder.ts` — display reordering of chunk sizes (largest-first, fractional pinning, palindromic layout) — split out of the planner to keep it focused on the search
 - `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors, magnet holes, and corner rounding when stack printing is on
 - `utils/stackPrint.ts` — stack planning (groups → capped physical stacks) + `buildTowerLayers` (bottom plate upright, the rest flipped, all XY-aligned)
 - `utils/stackExport.ts` — bakes a stack into export triangle soup (single material)
@@ -40,7 +42,7 @@ graph TB
 ## Key Concepts
 
 - **Sync mode**: `syncWithLayout: true` reads drawer dims from layout store; `false` uses custom grid size
-- **Split tiling**: baseplates exceeding print bed are partitioned into labeled pieces (A1, B2, etc.)
+- **Split tiling**: baseplates exceeding print bed are partitioned into labeled pieces (A1, B2, etc.). The planner optimizes for the **fewest build-plate loads** (print jobs), not the fewest pieces: it scores each candidate grid `MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount` (`bedLoads` from `estimateBedLoads`'s shelf packing), so it will choose a finer split that packs more pieces per bed when that removes a load — but the per-load piece budget (`MAX_EXTRA_PIECES_PER_BED_LOAD`, currently 4) caps the trade so it won't fragment into tiny tiles. The packing-aware refinement only runs for small splits (`coarse.pieceCount <= PACKING_SEARCH_MAX_PIECES`); larger plates keep the fast min-piece tiling (their big pieces already tile beds tightly). `tiling.bedLoads` is surfaced in the panel ("Prints in N build-plate loads")
 - **Two-phase preview**: direct-mesh (procedural, no WASM) renders immediately on every params change; BREP (high-fidelity) silently swaps in once ready. `MeshResult.source` records which path produced the visible mesh. With the graduated `manifold_preview` path (always on), the draft phase instead runs the real `generateBaseplate` on the Manifold kernel at draft quality (`runManifoldDraftPreview`) — more faithful than the procedural approximation — falling back to direct-mesh if the preview bridge is unavailable. A `finalizedEpochRef` guards the now-async draft so a late draft can't overwrite a fresher BREP result
 - **Graceful BREP failure**: if BREP errors after a direct-mesh preview is on screen, the preview stays visible and a non-blocking toast surfaces the failure — avoids the red error overlay swallowing a still-usable canvas
 - **Epoch detection**: rapid param changes bump an epoch counter; stale in-flight results (direct or BREP) are discarded

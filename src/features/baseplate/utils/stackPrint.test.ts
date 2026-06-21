@@ -323,6 +323,7 @@ describe('stackGroupsFromTiling', () => {
       totalDepthUnits: 3,
       stackCount: 1,
       stackSeparatorThickness: 0,
+      bedLoads: 1,
       paddingReductionHint: null,
     };
   }

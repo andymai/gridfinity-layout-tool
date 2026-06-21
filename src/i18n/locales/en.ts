@@ -2200,6 +2200,8 @@ const en: Record<string, string> = {
   'baseplate.sectionView': 'View',
   'baseplate.splitInfo': '{count} pieces',
   'baseplate.splitReason': 'Split to fit {printBed}mm print bed',
+  'baseplate.bedLoads.one': 'Prints in 1 build-plate load',
+  'baseplate.bedLoads.other': 'Prints in {count} build-plate loads',
   'baseplate.paddingHint': 'Reducing {axis} padding by {mm}mm would save {count} piece(s)',
   'baseplate.paddingHintAxisX': 'left/right',
   'baseplate.paddingHintAxisY': 'front/back',

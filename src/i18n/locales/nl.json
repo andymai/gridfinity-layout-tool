@@ -138,6 +138,8 @@
   "baseplate.sideView": "Zij",
   "baseplate.splitInfo": "{count} stukken",
   "baseplate.splitReason": "Gesplitst voor {printBed}mm printbed",
+  "baseplate.bedLoads.one": "Print in 1 bedlading",
+  "baseplate.bedLoads.other": "Print in {count} bedladingen",
   "baseplate.stackPrint.enable": "Verticale stapel",
   "baseplate.stackPrint.exportBanner": "Gestapeld printen: {stacks} stapels ({plates} platen) worden geëxporteerd als een ZIP met printgids.",
   "baseplate.stackPrint.gap.info": "Luchtspeling tussen gestapelde platen, ongeveer 0,2 mm (één laag). Houd de laagdikte van de slicer op of onder deze speling anders smelten de platen samen. Geen supports nodig. Test eerst met een kleine stapel.",

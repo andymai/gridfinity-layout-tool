@@ -138,6 +138,8 @@
   "baseplate.sideView": "側面",
   "baseplate.splitInfo": "{count}個のパーツ",
   "baseplate.splitReason": "{printBed}mmのプリントベッドに収めるため分割",
+  "baseplate.bedLoads.one": "1 回のベッド印刷で完成",
+  "baseplate.bedLoads.other": "{count} 回のベッド印刷で完成",
   "baseplate.stackPrint.enable": "縦積み",
   "baseplate.stackPrint.exportBanner": "積層印刷：{stacks} スタック（{plates} 枚）を印刷ガイド付きZIPとしてエクスポートします。",
   "baseplate.stackPrint.gap.info": "積み重ねたプレート間の空気ギャップ（約0.2mm、1層分）。スライサーの積層ピッチをこのギャップ以下に保たないとプレートが融着します。サポート不要。まず小さなスタックで調整してください。",

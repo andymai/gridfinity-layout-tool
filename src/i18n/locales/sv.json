@@ -138,6 +138,8 @@
   "baseplate.sideView": "Sida",
   "baseplate.splitInfo": "{count} delar",
   "baseplate.splitReason": "Delad för att passa {printBed}mm utskriftsbädd",
+  "baseplate.bedLoads.one": "Skrivs ut på 1 bäddladdning",
+  "baseplate.bedLoads.other": "Skrivs ut på {count} bäddladdningar",
   "baseplate.stackPrint.enable": "Vertikal stapel",
   "baseplate.stackPrint.exportBanner": "Stapelutskrift: {stacks} staplar ({plates} plattor) exporteras som en ZIP med utskriftsguide.",
   "baseplate.stackPrint.gap.info": "Luftgap mellan staplade plattor, ungefär 0,2 mm (ett lager). Håll slicerns lagerhöjd vid eller under detta gap, annars smälter plattorna samman. Inga stöd behövs. Testa med en liten stapel först.",
