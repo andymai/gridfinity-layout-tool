@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.200.0...gridfinity-layout-tool-v4.201.0) (2026-06-21)
+
+
+### Features
+
+* **baseplate:** reset generator settings to defaults ([#2305](https://github.com/andymai/gridfinity-layout-tool/issues/2305)) ([8010583](https://github.com/andymai/gridfinity-layout-tool/commit/8010583c41dd2d81e850b576c10ee591cdbb7ccd))
+
 ## [4.200.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.199.0...gridfinity-layout-tool-v4.200.0) (2026-06-21)
 
 
