@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.199.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.198.1...gridfinity-layout-tool-v4.199.0) (2026-06-21)
+
+
+### Features
+
+* **baseplate:** copies field for stack-print (print one layout N times) ([#2301](https://github.com/andymai/gridfinity-layout-tool/issues/2301)) ([5e223c0](https://github.com/andymai/gridfinity-layout-tool/commit/5e223c0ae7093a226f149291c43af22ebcf04739))
+
 ## [4.198.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.198.0...gridfinity-layout-tool-v4.198.1) (2026-06-21)
 
 
