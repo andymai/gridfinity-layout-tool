@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "Aktion",
   "webgl.fallback.body": "WebGL ist deaktiviert oder wird nicht unterstützt. Aktivieren Sie die Hardwarebeschleunigung in den Browsereinstellungen, aktualisieren Sie die Grafiktreiber oder wechseln Sie den Browser.",
   "webgl.fallback.helpLink": "WebGL-Unterstützung prüfen",
-  "webgl.fallback.title": "Ihr Browser konnte 3D-Rendering nicht laden"
+  "webgl.fallback.title": "Ihr Browser konnte 3D-Rendering nicht laden",
+  "baseplate.reset": "Auf Standard zurücksetzen",
+  "baseplate.resetConfirmTitle": "Grundplatten-Einstellungen zurücksetzen?",
+  "baseplate.resetConfirmMessage": "Dadurch werden alle Grundplatten-Einstellungen auf ihre Standardwerte zurückgesetzt. Dein Bin-Layout bleibt unverändert.",
+  "baseplate.resetConfirmButton": "Zurücksetzen",
+  "toast.baseplateReset": "Grundplatten-Einstellungen auf Standard zurückgesetzt",
+  "help.target.baseplate.reset.title": "Grundplatte auf Standard zurücksetzen",
+  "help.target.baseplate.reset.description": "Setze alle Grundplatten-Einstellungen — Maße, Ränder, Magnete, Verbinder, Ecken, Stapeldruck und Druckeinstellungen — auf ihre Standardwerte zurück. Dein Bin-Layout bleibt unverändert.",
+  "help.target.baseplate.reset.keywords": "zurücksetzen|standard|standardwerte|wiederherstellen|neu anfangen|einstellungen löschen|werkseinstellungen|grundplatte"
 }

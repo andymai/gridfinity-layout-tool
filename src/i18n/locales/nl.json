@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "Actie",
   "webgl.fallback.body": "WebGL is uitgeschakeld of wordt niet ondersteund. Schakel hardwareversnelling in de browserinstellingen in, werk je grafische stuurprogramma's bij of probeer een andere browser.",
   "webgl.fallback.helpLink": "WebGL-ondersteuning controleren",
-  "webgl.fallback.title": "Je browser kon 3D-weergave niet laden"
+  "webgl.fallback.title": "Je browser kon 3D-weergave niet laden",
+  "baseplate.reset": "Standaardwaarden herstellen",
+  "baseplate.resetConfirmTitle": "Basisplaatinstellingen herstellen?",
+  "baseplate.resetConfirmMessage": "Hiermee worden alle basisplaatinstellingen teruggezet naar de standaardwaarden. Je bakkenindeling blijft ongewijzigd.",
+  "baseplate.resetConfirmButton": "Herstellen",
+  "toast.baseplateReset": "Basisplaatinstellingen teruggezet naar standaardwaarden",
+  "help.target.baseplate.reset.title": "Basisplaat terugzetten naar standaard",
+  "help.target.baseplate.reset.description": "Zet alle basisplaatinstellingen — afmetingen, marges, magneten, verbinders, hoeken, gestapeld printen en printinstellingen — terug naar de standaardwaarden. Je bakkenindeling blijft ongewijzigd.",
+  "help.target.baseplate.reset.keywords": "reset|herstellen|standaard|standaardwaarden|terugzetten|opnieuw beginnen|instellingen wissen|fabrieksinstellingen|basisplaat"
 }

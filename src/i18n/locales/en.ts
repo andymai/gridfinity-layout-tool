@@ -933,6 +933,11 @@ const en: Record<string, string> = {
     'Width and depth of your printer bed. Baseplates larger than the bed are split into tileable pieces.',
   'help.target.baseplate.printBedSize.keywords':
     'bed|bed size|print bed|printer size|printer bed|build plate|build volume|split|tile',
+  'help.target.baseplate.reset.title': 'Reset baseplate to defaults',
+  'help.target.baseplate.reset.description':
+    'Restore every baseplate setting — dimensions, padding, magnets, connectors, corners, stack printing and print settings — to its default. Your bin layout is not affected.',
+  'help.target.baseplate.reset.keywords':
+    'reset|defaults|default|restore|revert|start over|clear settings|factory|undo changes|baseplate',
   'help.target.halfBinMode.title': 'Half-grid mode',
   'help.target.halfBinMode.description':
     'Enable 0.5-unit grid increments and half-pitch sockets on new bins. Existing bins keep their current settings.',
@@ -1142,6 +1147,7 @@ const en: Record<string, string> = {
   'error.tryAgain': 'Try Again',
 
   // Toast Messages
+  'toast.baseplateReset': 'Baseplate settings reset to defaults',
   'toast.layoutCreated': 'New layout created',
   'toast.layoutDuplicated': 'Layout duplicated',
   'toast.layoutDeleted': 'Layout deleted',
@@ -2184,6 +2190,11 @@ const en: Record<string, string> = {
   'baseplate.inclPadding': 'incl. padding',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
+  'baseplate.reset': 'Reset to defaults',
+  'baseplate.resetConfirmTitle': 'Reset baseplate settings?',
+  'baseplate.resetConfirmMessage':
+    'This restores every baseplate setting to its default. Your bin layout is not affected.',
+  'baseplate.resetConfirmButton': 'Reset',
   'baseplate.generating': 'Generating...',
   'baseplate.generatingSplit': 'Refining piece {current} of {total}...',
   'baseplate.printBedSize': 'Print bed size',

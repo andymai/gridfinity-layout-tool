@@ -753,4 +753,45 @@ describe('BaseplatePanel', () => {
       expect(calls).toHaveLength(1);
     });
   });
+
+  describe('reset to defaults', () => {
+    it('renders the reset-to-defaults button', () => {
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('button', { name: 'baseplate.reset' })).toBeInTheDocument();
+    });
+
+    it('marks the button as a help-jump target so help search can deep-link to it', () => {
+      render(<BaseplatePanel />);
+      const button = screen.getByRole('button', { name: 'baseplate.reset' });
+      expect(button.closest('[data-help-target="bp-reset"]')).not.toBeNull();
+    });
+
+    it('does not reset immediately — it opens a confirmation first', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.reset' }));
+      expect(mockSetBaseplateParams).not.toHaveBeenCalled();
+      expect(screen.getByText('baseplate.resetConfirmTitle')).toBeInTheDocument();
+    });
+
+    it('restores DEFAULT_BASEPLATE_PARAMS after confirming', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        magnetHoles: true,
+        paddingLeft: 10,
+        connectorNubs: true,
+        connectorStyle: 'snapClip',
+      };
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.reset' }));
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.resetConfirmButton' }));
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith({ ...DEFAULT_BASEPLATE_PARAMS });
+    });
+
+    it('does not reset when the confirmation is cancelled', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.reset' }));
+      fireEvent.click(screen.getByRole('button', { name: 'common.cancel' }));
+      expect(mockSetBaseplateParams).not.toHaveBeenCalled();
+    });
+  });
 });

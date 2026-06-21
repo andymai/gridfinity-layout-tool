@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "Åtgärd",
   "webgl.fallback.body": "WebGL är inaktiverat eller stöds inte. Försök aktivera hårdvaruacceleration i webbläsarinställningarna, uppdatera grafikdrivrutinerna eller byt webbläsare.",
   "webgl.fallback.helpLink": "Kontrollera WebGL-stöd",
-  "webgl.fallback.title": "Din webbläsare kunde inte ladda 3D-rendering"
+  "webgl.fallback.title": "Din webbläsare kunde inte ladda 3D-rendering",
+  "baseplate.reset": "Återställ till standard",
+  "baseplate.resetConfirmTitle": "Återställa bottenplattans inställningar?",
+  "baseplate.resetConfirmMessage": "Detta återställer alla bottenplattans inställningar till standardvärdena. Din bin-layout påverkas inte.",
+  "baseplate.resetConfirmButton": "Återställ",
+  "toast.baseplateReset": "Bottenplattans inställningar återställda till standard",
+  "help.target.baseplate.reset.title": "Återställ bottenplattan till standard",
+  "help.target.baseplate.reset.description": "Återställ alla bottenplattans inställningar — mått, marginaler, magneter, kopplingar, hörn, staplad utskrift och utskriftsinställningar — till standardvärdena. Din bin-layout påverkas inte.",
+  "help.target.baseplate.reset.keywords": "återställ|standard|standardvärden|återskapa|börja om|rensa inställningar|fabrik|bottenplatta"
 }

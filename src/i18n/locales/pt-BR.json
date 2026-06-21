@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "Ação",
   "webgl.fallback.body": "O WebGL está desativado ou não é compatível. Tente ativar a aceleração de hardware nas configurações do navegador, atualizar os drivers gráficos ou trocar de navegador.",
   "webgl.fallback.helpLink": "Verificar suporte ao WebGL",
-  "webgl.fallback.title": "Seu navegador não conseguiu carregar a renderização 3D"
+  "webgl.fallback.title": "Seu navegador não conseguiu carregar a renderização 3D",
+  "baseplate.reset": "Restaurar padrões",
+  "baseplate.resetConfirmTitle": "Restaurar as configurações da placa base?",
+  "baseplate.resetConfirmMessage": "Isso restaura todas as configurações da placa base para os valores padrão. Seu layout de caixas não é afetado.",
+  "baseplate.resetConfirmButton": "Restaurar",
+  "toast.baseplateReset": "Configurações da placa base restauradas para os padrões",
+  "help.target.baseplate.reset.title": "Restaurar a placa base para os padrões",
+  "help.target.baseplate.reset.description": "Restaura todas as configurações da placa base — dimensões, margens, ímãs, conectores, cantos, impressão empilhada e configurações de impressão — para os valores padrão. Seu layout de caixas não é afetado.",
+  "help.target.baseplate.reset.keywords": "redefinir|restaurar|padrão|padrões|reverter|recomeçar|limpar configurações|fábrica|placa base"
 }

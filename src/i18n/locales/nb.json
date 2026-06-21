@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "Handling",
   "webgl.fallback.body": "WebGL er deaktivert eller støttes ikke. Prøv å aktivere maskinvareakselerasjon i nettleserinnstillingene, oppdatere grafikkdriverne eller bytte nettleser.",
   "webgl.fallback.helpLink": "Sjekk WebGL-støtte",
-  "webgl.fallback.title": "Nettleseren din kunne ikke laste 3D-gjengivelse"
+  "webgl.fallback.title": "Nettleseren din kunne ikke laste 3D-gjengivelse",
+  "baseplate.reset": "Tilbakestill til standard",
+  "baseplate.resetConfirmTitle": "Tilbakestille bunnplate-innstillingene?",
+  "baseplate.resetConfirmMessage": "Dette tilbakestiller alle bunnplate-innstillingene til standardverdiene. Bin-oppsettet ditt påvirkes ikke.",
+  "baseplate.resetConfirmButton": "Tilbakestill",
+  "toast.baseplateReset": "Bunnplate-innstillingene er tilbakestilt til standard",
+  "help.target.baseplate.reset.title": "Tilbakestill bunnplaten til standard",
+  "help.target.baseplate.reset.description": "Tilbakestill alle bunnplate-innstillingene — mål, marger, magneter, koblinger, hjørner, stabelutskrift og utskriftsinnstillinger — til standardverdiene. Bin-oppsettet ditt påvirkes ikke.",
+  "help.target.baseplate.reset.keywords": "tilbakestill|standard|standardverdier|gjenopprett|start på nytt|tøm innstillinger|fabrikk|bunnplate"
 }

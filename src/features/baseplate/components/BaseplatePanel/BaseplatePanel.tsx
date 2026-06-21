@@ -13,20 +13,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
+import { useToastStore } from '@/core/store/toast';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { RulerIcon, LayoutGridIcon } from '@/design-system/Icon';
+import { RulerIcon, LayoutGridIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput } from '@/design-system';
+import { SliderInput, Button, ConfirmDialog } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -134,6 +135,13 @@ export function BaseplatePanel() {
 
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  const handleReset = useCallback(() => {
+    useLayoutStore.getState().setBaseplateParams({ ...DEFAULT_BASEPLATE_PARAMS });
+    useToastStore.getState().addToast(t('toast.baseplateReset'), 'success', 3000);
+    setResetConfirmOpen(false);
+  }, [t]);
 
   // Stacking strips connectors functionally (in buildFullParams), not by
   // mutating stored params — so the user's connector settings return intact
@@ -652,9 +660,31 @@ export function BaseplatePanel() {
           />
         )}
 
+        <HelpTargetMarker id="bp-reset" className="px-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            fullWidth
+            leftIcon={<RotateCcwIcon />}
+            onClick={() => setResetConfirmOpen(true)}
+          >
+            {t('baseplate.reset')}
+          </Button>
+        </HelpTargetMarker>
+
         <AttributionFooter />
       </div>
       {cloudSyncEnabled && <UserDock />}
+      <ConfirmDialog
+        isOpen={resetConfirmOpen}
+        title={t('baseplate.resetConfirmTitle')}
+        message={t('baseplate.resetConfirmMessage')}
+        confirmText={t('baseplate.resetConfirmButton')}
+        cancelText={t('common.cancel')}
+        destructive
+        onConfirm={handleReset}
+        onCancel={() => setResetConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -2456,5 +2456,13 @@
   "undo.unknownAction": "操作",
   "webgl.fallback.body": "WebGLが無効か非対応です。ブラウザ設定でハードウェアアクセラレーションを有効化する、グラフィックドライバーを更新する、またはブラウザを切り替えてみてください。",
   "webgl.fallback.helpLink": "WebGLサポートを確認",
-  "webgl.fallback.title": "お使いのブラウザは3Dレンダリングを読み込めませんでした"
+  "webgl.fallback.title": "お使いのブラウザは3Dレンダリングを読み込めませんでした",
+  "baseplate.reset": "デフォルトに戻す",
+  "baseplate.resetConfirmTitle": "ベースプレートの設定をリセットしますか？",
+  "baseplate.resetConfirmMessage": "ベースプレートのすべての設定が初期値に戻ります。ビンのレイアウトには影響しません。",
+  "baseplate.resetConfirmButton": "リセット",
+  "toast.baseplateReset": "ベースプレートの設定をデフォルトに戻しました",
+  "help.target.baseplate.reset.title": "ベースプレートをデフォルトに戻す",
+  "help.target.baseplate.reset.description": "寸法、余白、マグネット、コネクタ、角、積み重ね印刷、印刷設定など、ベースプレートのすべての設定を初期値に戻します。ビンのレイアウトには影響しません。",
+  "help.target.baseplate.reset.keywords": "リセット|デフォルト|初期値|復元|やり直す|設定をクリア|工場出荷時|ベースプレート"
 }
