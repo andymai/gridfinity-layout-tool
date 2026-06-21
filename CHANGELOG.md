@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.198.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.198.0...gridfinity-layout-tool-v4.198.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop color-zones toggle from jumping the page to the bottom ([#2299](https://github.com/andymai/gridfinity-layout-tool/issues/2299)) ([60b6704](https://github.com/andymai/gridfinity-layout-tool/commit/60b6704c2701f14e1922fc914658358f36ce905f))
+
 ## [4.198.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.197.7...gridfinity-layout-tool-v4.198.0) (2026-06-20)
 
 
