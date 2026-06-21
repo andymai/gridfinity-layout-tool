@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
+import { useLayoutStore } from '@/core/store/layout';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { mm } from '@/core/types';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { useStackPrintStatus } from './useStackPrintStatus';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
@@ -67,5 +70,18 @@ describe('useStackPrintStatus', () => {
       .setTiling(tiling([piece('A1', { depthUnits: 2 }), piece('B1', { depthUnits: 3 })]));
     const { result } = renderHook(() => useStackPrintStatus(0.2));
     expect(result.current.status).toEqual({ kind: 'singlePlate' });
+  });
+
+  it('clears singlePlate and reports the plan when copies ≥ 2 on an unsplit drawer', () => {
+    // resetAllStores() doesn't touch the baseplate page store, so clear any
+    // tiling a previous test left behind to assert the true unsplit path.
+    useBaseplatePageStore.getState().setTiling(null);
+    useLayoutStore.getState().setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, gapMm: mm(0.2), copies: 3 },
+    });
+    const { result } = renderHook(() => useStackPrintStatus(0.2));
+    expect(result.current.status).toEqual({ kind: 'ok' });
+    expect(result.current.plan).toEqual([{ label: 'plate', copies: 3 }]);
   });
 });

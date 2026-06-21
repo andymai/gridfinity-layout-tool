@@ -299,6 +299,28 @@ describe('generatePrintGuide', () => {
     expect(guide).not.toMatch(/Print \d+ copies →/);
   });
 
+  it('multiplies stacked plate counts by the copies multiplier', () => {
+    // A small layout is a single un-split piece; copies turns it into a tower.
+    const params = makeParams({ width: 4, depth: 4 });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    const groupNames = assignGroupNames(groups, tiling.pieces);
+    const guideWith = (copies: number) =>
+      generatePrintGuide({
+        tiling,
+        groups,
+        groupNames,
+        parentParams: params,
+        fileExtension: '.stl',
+        baseFileName: 'bp',
+        stackPrint: { enabled: true, gapMm: 0.2 as never, copies },
+        copies,
+      });
+
+    expect(guideWith(1)).toContain('print once = 1 plate');
+    expect(guideWith(3)).toContain('print once = 3 plates');
+  });
+
   it('generateStackPrintNote produces a standalone stacking note', () => {
     const note = generateStackPrintNote({
       enabled: true,

@@ -111,17 +111,22 @@ export function evaluateStackPrint(
  * Derive the identical-piece groups a drawer needs. For a single (unsplit)
  * plate that's one group of quantity 1; for a split plate each fingerprint
  * group contributes its piece count, labelled by its first piece (e.g. "A1").
+ *
+ * `copies` duplicates the whole layout: every group's quantity is multiplied by
+ * it, so a single-plate layout with copies=3 becomes one group of quantity 3.
  */
 export function stackGroupsFromTiling(
   tiling: BaseplateTiling | null,
-  params: BaseplateParams
+  params: BaseplateParams,
+  copies = 1
 ): StackGroup[] {
-  if (!tiling || !tiling.isSplit) return [{ label: 'plate', quantity: 1 }];
+  const n = Math.max(1, Math.floor(copies));
+  if (!tiling || !tiling.isSplit) return [{ label: 'plate', quantity: n }];
   const groups = groupPiecesByFingerprint(tiling.pieces, params);
   const result: StackGroup[] = [];
   for (const group of groups.values()) {
     const label = tiling.pieces[group.indices[0]]?.label ?? 'piece';
-    result.push({ label, quantity: group.indices.length });
+    result.push({ label, quantity: group.indices.length * n });
   }
   return result;
 }

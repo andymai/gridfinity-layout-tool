@@ -161,6 +161,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       // interchange format with no slicer stacking notion, so it never stacks.
       const stack = baseplateParams.stackPrint;
       const stackEnabled = stack?.enabled === true && format !== 'step';
+      // Whole-layout multiplier: scales every unique piece's tower count.
+      const copies = Math.max(1, Math.floor(stack?.copies ?? 1));
       const stackCap = stackHeightCap(
         useSettingsStore.getState().settings.printSettings.maxPrintHeightMm,
         GRIDFINITY_SPEC.SOCKET_HEIGHT,
@@ -266,7 +268,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               const source = parseStlSoup(stlData);
               const groupBodyY = bodyCenterYMm(group.params.paddingFront, group.params.paddingBack);
               const towers = planPhysicalStacks(
-                [{ label: name, quantity: group.indices.length }],
+                [{ label: name, quantity: group.indices.length * copies }],
                 stackCap
               );
               for (let s = 0; s < towers.length; s++) {
@@ -322,6 +324,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 : undefined,
             stackPrint: stackEnabled ? stack : undefined,
             stackCap,
+            copies: stackEnabled ? copies : 1,
           });
 
           const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
@@ -355,7 +358,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           );
           const source = parseStlSoup(stlData);
           const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
-          const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], stackCap);
+          const towers = planPhysicalStacks([{ label: 'plate', quantity: copies }], stackCap);
           if (towers.length === 1) {
             const blob = buildStackedFileBlob(
               source,

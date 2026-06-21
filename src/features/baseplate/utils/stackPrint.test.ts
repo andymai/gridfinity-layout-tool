@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { mm } from '@/core/types';
 import type { StackPrintParams } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import {
   planPhysicalStacks,
   stackHeightCap,
   stackStrideMm,
+  stackGroupsFromTiling,
   translateMesh,
   flipMeshUpsideDown,
   concatMeshes,
@@ -286,6 +289,77 @@ describe('bodyCenterYMm', () => {
   it('tracks padding asymmetry: (back − front) / 2', () => {
     expect(bodyCenterYMm(0, 10)).toBeCloseTo(5, 5); // more back padding → +Y
     expect(bodyCenterYMm(8, 0)).toBeCloseTo(-4, 5); // front-only padding → −Y
+  });
+});
+
+describe('stackGroupsFromTiling', () => {
+  function splitPiece(label: string): BaseplatePiece {
+    return {
+      label,
+      col: 0,
+      row: 0,
+      widthUnits: 3,
+      depthUnits: 3,
+      gridOffsetX: 0,
+      gridOffsetY: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      fractionalEdgeX: 'none',
+      fractionalEdgeY: 'none',
+      edges: { left: 'join', right: 'join', front: 'join', back: 'join' },
+      placementRotationDeg: 0,
+    };
+  }
+
+  function splitTiling(...labels: string[]): BaseplateTiling {
+    return {
+      isSplit: true,
+      pieces: labels.map(splitPiece),
+      cols: labels.length,
+      rows: 1,
+      totalWidthUnits: 3 * labels.length,
+      totalDepthUnits: 3,
+      stackCount: 1,
+      stackSeparatorThickness: 0,
+      paddingReductionHint: null,
+    };
+  }
+
+  it('returns a single plate of quantity 1 for an unsplit layout by default', () => {
+    expect(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS)).toEqual([
+      { label: 'plate', quantity: 1 },
+    ]);
+  });
+
+  it('multiplies the single plate by the copy count', () => {
+    expect(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS, 3)).toEqual([
+      { label: 'plate', quantity: 3 },
+    ]);
+  });
+
+  it('clamps copies to a whole number ≥ 1', () => {
+    expect(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS, 0)[0].quantity).toBe(1);
+    expect(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS, 4.9)[0].quantity).toBe(4);
+  });
+
+  it('multiplies each identical-piece group by copies for a split layout', () => {
+    // Two byte-identical pieces → one fingerprint group of 2; copies=3 → 6.
+    const groups = stackGroupsFromTiling(splitTiling('A1', 'B1'), DEFAULT_BASEPLATE_PARAMS, 3);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].quantity).toBe(6);
+  });
+
+  it('feeds copies into the warning evaluator so a single plate becomes stackable', () => {
+    // copies=1: the lone plate is "nothing to stack".
+    expect(
+      evaluateStackPrint(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS, 1), 48, 5, 250)
+    ).toEqual({ kind: 'singlePlate' });
+    // copies=3: now there are repeated plates to combine.
+    expect(
+      evaluateStackPrint(stackGroupsFromTiling(null, DEFAULT_BASEPLATE_PARAMS, 3), 48, 5, 250)
+    ).toEqual({ kind: 'ok' });
   });
 });
 

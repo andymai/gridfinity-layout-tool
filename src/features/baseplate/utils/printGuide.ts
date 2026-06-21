@@ -39,6 +39,8 @@ export interface PrintGuideInput {
   readonly stackPrint?: StackPrintParams;
   /** Max tiles per stack (from the printer's build height). */
   readonly stackCap?: number;
+  /** Whole-layout copy multiplier (stacking only); ≥1, defaults to 1. */
+  readonly copies?: number;
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
@@ -57,7 +59,8 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       fileExtension,
       baseFileName,
       stackPrint,
-      input.stackCap
+      input.stackCap,
+      input.copies
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
     generateGridMap(tiling, groups, groupNames),
@@ -266,14 +269,18 @@ function generatePieceTable(
   ext: string,
   baseName: string,
   stackPrint?: StackPrintParams,
-  stackCap?: number
+  stackCap?: number,
+  copies = 1
 ): string {
   const lines = ['─── Pieces ──────────────────────────────────────', ''];
+  const copyMult = Math.max(1, Math.floor(copies));
 
   for (const [fp, group] of groups) {
     const name = names.get(fp) ?? 'unknown';
     const params = group.params;
-    const count = group.indices.length;
+    // Stacking duplicates the whole layout `copyMult` times; the non-stacked
+    // path lists physical drawer slots, so it keeps the raw piece count.
+    const count = group.indices.length * copyMult;
 
     // Slab dimensions plus dovetail tongue protrusion on join edges where the
     // tongue is male — matches the actual STL bbox so users know what fits the

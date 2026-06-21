@@ -17,13 +17,17 @@ import {
   stackGroupsFromTiling,
   stackHeightCap,
   evaluateStackPrint,
+  planPhysicalStacks,
   type StackPrintStatus,
+  type PhysicalStack,
 } from '../utils/stackPrint';
 
 export interface StackPrintStatusInfo {
   readonly status: StackPrintStatus;
   readonly gapMm: number;
   readonly maxPrintHeightMm: number;
+  /** Physical towers the current config produces — one entry per output file. */
+  readonly plan: readonly PhysicalStack[];
 }
 
 export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
@@ -48,7 +52,9 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
   const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
   const tiling = useBaseplatePageStore((s) => s.tiling);
 
-  const status = useMemo(() => {
+  const copies = baseplateParams.stackPrint?.copies ?? 1;
+
+  const { status, plan } = useMemo(() => {
     const fullParams = buildFullParams(
       baseplateParams,
       drawerWidth,
@@ -58,9 +64,12 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       fractionalEdgeY,
       nozzleSizeMm
     );
-    const groups = stackGroupsFromTiling(tiling, fullParams);
+    const groups = stackGroupsFromTiling(tiling, fullParams, copies);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
-    return evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.SOCKET_HEIGHT, maxPrintHeightMm);
+    return {
+      status: evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.SOCKET_HEIGHT, maxPrintHeightMm),
+      plan: planPhysicalStacks(groups, cap),
+    };
   }, [
     baseplateParams,
     drawerWidth,
@@ -72,7 +81,8 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     maxPrintHeightMm,
     tiling,
     gapMm,
+    copies,
   ]);
 
-  return { status, gapMm, maxPrintHeightMm };
+  return { status, gapMm, maxPrintHeightMm, plan };
 }

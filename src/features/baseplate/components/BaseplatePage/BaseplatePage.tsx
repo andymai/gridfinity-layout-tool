@@ -141,12 +141,13 @@ export function BaseplatePage() {
   // describe the stacks instead. STEP never stacks.
   const stackEnabled = baseplateParams.stackPrint?.enabled === true && activeFormat !== 'step';
   const stackGapMm = baseplateParams.stackPrint?.gapMm ?? STACK_PRINT_DEFAULT_GAP_MM;
+  const stackCopies = baseplateParams.stackPrint?.copies ?? 1;
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
-    const groups = stackGroupsFromTiling(tiling, fullParams);
+    const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stackGapMm);
     return planPhysicalStacks(groups, cap);
-  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm]);
+  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies]);
   const stackFileCount = stackPlan.length;
   const stackPlateCount = stackPlan.reduce((sum, s) => sum + s.copies, 0);
 

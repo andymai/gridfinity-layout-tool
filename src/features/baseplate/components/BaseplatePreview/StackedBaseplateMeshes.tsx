@@ -99,7 +99,7 @@ export function StackedBaseplateMeshes({
       fractionalEdgeY,
       nozzleSizeMm
     );
-    const groups = stackGroupsFromTiling(tiling, fullParams);
+    const groups = stackGroupsFromTiling(tiling, fullParams, stack.copies ?? 1);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;

@@ -6,6 +6,7 @@
     "baseplate.connectorStyle.puzzle",
     "binDesigner.cutouts.scanImport.resultSize",
     "baseplate.stackPrint.plates.one",
+    "baseplate.stackPrint.copies.label",
     "settings.search.inTab",
     "binDesigner.projectionPerspective",
     "baseplate.projectionPerspective",

@@ -13,15 +13,18 @@ import {
   STACK_PRINT_DEFAULT_GAP_MM,
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
+  STACK_PRINT_DEFAULT_COPIES,
+  STACK_PRINT_MIN_COPIES,
+  STACK_PRINT_MAX_COPIES,
 } from '@/core/types';
-import type { StackPrintStatus } from '../../utils/stackPrint';
+import type { PhysicalStack, StackPrintStatus } from '../../utils/stackPrint';
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
 import { Alert } from '@/design-system/Alert';
-import { AlertTriangleIcon } from '@/design-system/Icon';
+import { AlertTriangleIcon, CheckIcon } from '@/design-system/Icon';
 import { useStackPrintStatus } from '../../hooks/useStackPrintStatus';
 interface StackPrintSectionProps {
   readonly stackPrint: StackPrintParams | undefined;
@@ -35,10 +38,33 @@ function snapGap(value: number): Mm {
   return mm(Math.round(clamped * 100) / 100);
 }
 
+/** Clamp the copy multiplier to a whole number within the supported range. */
+function snapCopies(value: number): number {
+  return Math.max(STACK_PRINT_MIN_COPIES, Math.min(STACK_PRINT_MAX_COPIES, Math.round(value)));
+}
+
 const DEFAULT_STACK_PRINT: StackPrintParams = {
   enabled: true,
   gapMm: mm(STACK_PRINT_DEFAULT_GAP_MM),
+  copies: STACK_PRINT_DEFAULT_COPIES,
 };
+
+/**
+ * Summarise the print output (total plates + file count) so a stack that
+ * auto-splits across the build-height cap isn't surprising. Returns null when
+ * there's nothing to stack (≤1 plate) — the warnings already cover that.
+ */
+function stackOutputSummary(
+  t: ReturnType<typeof useTranslation>,
+  plan: readonly PhysicalStack[]
+): string | null {
+  const plates = plan.reduce((sum, p) => sum + p.copies, 0);
+  if (plates < 2) return null;
+  const files = plan.length;
+  if (files <= 1) return t('baseplate.stackPrint.output.oneFile', { plates });
+  const breakdown = plan.map((p) => p.copies).join('+');
+  return t('baseplate.stackPrint.output.manyFiles', { plates, files, breakdown });
+}
 
 /** Translate a non-`ok` stack-print status into a user-facing warning string. */
 function stackWarning(
@@ -68,14 +94,16 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
   const t = useTranslation();
   const enabled = stackPrint?.enabled === true;
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
+  const copies = stackPrint?.copies ?? STACK_PRINT_DEFAULT_COPIES;
 
-  const { status, maxPrintHeightMm } = useStackPrintStatus(gapMm);
+  const { status, maxPrintHeightMm, plan } = useStackPrintStatus(gapMm);
   // Gate on `enabled` so the warning never surfaces while stacking is off, rather
   // than relying on FeatureToggle hiding the controls.
   const warning = enabled ? stackWarning(t, status, gapMm, maxPrintHeightMm) : null;
+  const outputSummary = enabled && !warning ? stackOutputSummary(t, plan) : null;
 
   const patch = (next: Partial<StackPrintParams>): void => {
-    onChange({ enabled: true, gapMm, ...next });
+    onChange({ enabled: true, gapMm, copies, ...next });
   };
 
   return (
@@ -97,6 +125,23 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
             </p>
 
             <SettingsRow
+              label={t('baseplate.stackPrint.copies.label')}
+              tooltip={t('baseplate.stackPrint.copies.info')}
+            >
+              <Stepper
+                size="sm"
+                value={copies}
+                onStep={(delta) => patch({ copies: snapCopies(copies + delta) })}
+                min={STACK_PRINT_MIN_COPIES}
+                max={STACK_PRINT_MAX_COPIES}
+                step={1}
+                inputDecimals={0}
+                displayValue={String(copies)}
+                aria-label={t('baseplate.stackPrint.copies.label')}
+              />
+            </SettingsRow>
+
+            <SettingsRow
               label={t('baseplate.stackPrint.gap.label')}
               tooltip={t('baseplate.stackPrint.gap.info')}
               unit="mm"
@@ -113,6 +158,12 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
                 aria-label={t('baseplate.stackPrint.gap.label')}
               />
             </SettingsRow>
+
+            {outputSummary && (
+              <Alert intent="success" icon={<CheckIcon size="sm" />}>
+                {outputSummary}
+              </Alert>
+            )}
 
             <div className="space-y-2 rounded border border-info/30 bg-info-muted px-2.5 py-2 text-[11px] leading-relaxed text-content-secondary">
               <p className="font-semibold text-info">{t('baseplate.stackPrint.tips.heading')}</p>

@@ -51,10 +51,20 @@ export interface StackPrintParams {
   readonly enabled: boolean;
   /** Air gap between stacked copies (mm) — one print layer (~0.2mm) is typical. */
   readonly gapMm: Mm;
+  /**
+   * How many copies of the whole layout to print. Multiplies every unique
+   * baseplate piece, so a single-plate layout stacks into a tower of N. Absent
+   * ⇒ 1 (no duplication), preserving layouts saved before this field existed.
+   */
+  readonly copies?: number;
 }
 
 /** Default air gap between stacked copies — one 0.2mm layer. */
 export const STACK_PRINT_DEFAULT_GAP_MM = 0.2;
+/** Inclusive bounds + default for the whole-layout copy multiplier. */
+export const STACK_PRINT_DEFAULT_COPIES = 1;
+export const STACK_PRINT_MIN_COPIES = 1;
+export const STACK_PRINT_MAX_COPIES = 20;
 /**
  * Fallback cap on copies per physical stack, used only when no build-height
  * limit is supplied. The real per-stack cap is `stackHeightCap()`, derived from
