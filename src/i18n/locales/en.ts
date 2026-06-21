@@ -935,7 +935,7 @@ const en: Record<string, string> = {
     'bed|bed size|print bed|printer size|printer bed|build plate|build volume|split|tile',
   'help.target.baseplate.reset.title': 'Reset baseplate to defaults',
   'help.target.baseplate.reset.description':
-    'Restore every baseplate setting — dimensions, padding, magnets, connectors, corners, stack printing and print settings — to its default. Your bin layout is not affected.',
+    'Restore all baseplate settings — dimensions, padding, magnets, connectors, corners, stack printing and print settings — to their defaults. Your bin layout is not affected.',
   'help.target.baseplate.reset.keywords':
     'reset|defaults|default|restore|revert|start over|clear settings|factory|undo changes|baseplate',
   'help.target.halfBinMode.title': 'Half-grid mode',
@@ -2193,7 +2193,7 @@ const en: Record<string, string> = {
   'baseplate.reset': 'Reset to defaults',
   'baseplate.resetConfirmTitle': 'Reset baseplate settings?',
   'baseplate.resetConfirmMessage':
-    'This restores every baseplate setting to its default. Your bin layout is not affected.',
+    'This restores all baseplate settings to their defaults. Your bin layout is not affected.',
   'baseplate.resetConfirmButton': 'Reset',
   'baseplate.generating': 'Generating...',
   'baseplate.generatingSplit': 'Refining piece {current} of {total}...',
