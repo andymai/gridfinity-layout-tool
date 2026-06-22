@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.1...gridfinity-layout-tool-v4.201.2) (2026-06-22)
+
+
+### Bug Fixes
+
+* **generation:** tighten brepkit edge angular tolerance to 0.01 rad ([#2312](https://github.com/andymai/gridfinity-layout-tool/issues/2312)) ([a336353](https://github.com/andymai/gridfinity-layout-tool/commit/a33635341ec62e1402fa34237762367defe8025e))
+
 ## [4.201.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.0...gridfinity-layout-tool-v4.201.1) (2026-06-22)
 
 
