@@ -129,9 +129,9 @@ describe('wallKeyGeometry', () => {
     const explicit04 = wallKeyGeometry(1.2, 0.15, 0.4);
     expect(explicit04.keyHalfWidth).toBe(legacy.keyHalfWidth);
     expect(explicit04.protrusion).toBe(legacy.protrusion);
-    // Legacy: 1.0mm full key width (half 0.5), 1.2mm protrusion.
-    expect(legacy.keyHalfWidth).toBeCloseTo(0.5, 10);
-    expect(legacy.protrusion).toBeCloseTo(1.2, 10);
+    // Baseline: 1.6mm full key width (half 0.8), 2.4mm protrusion.
+    expect(legacy.keyHalfWidth).toBeCloseTo(0.8, 10);
+    expect(legacy.protrusion).toBeCloseTo(2.4, 10);
   });
 
   it('scales the key tongue to at least two perimeters on a wider nozzle', () => {

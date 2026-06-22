@@ -70,16 +70,17 @@ const SCARF_SLOPE = Math.tan(SCARF_ANGLE);
 const WIDTH_TAPER_SLOPE = 1.0;
 
 /** Key vertical extent as a fraction of interior wall height (lead-in tapers above it). */
-const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.8;
+const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.85;
 
 /**
- * Half-width of the slim wall key (mm). Doubled (1.0mm), this is the key's footprint
- * along the cut line — which, on a perimeter wall, is also its inward reach. Sized so the
- * reinforcing pilaster is basically flush (≈0.1mm bump) at the thickest selectable wall
- * (`WALL_THICKNESS_OPTIONS` max = 2.6mm); thinner walls still grow a pilaster. The tongue
- * stays a comfortable ~2.5 perimeters at a 0.4mm nozzle. See `wallKeyGeometry`.
+ * Half-width of the wall key (mm). Doubled (1.6mm), this is the key's footprint
+ * along the cut line — which, on a perimeter wall, is also its inward reach. Sized stocky
+ * enough that the tongue meaningfully resists splaying rather than just aligning; the
+ * reinforcing pilaster now adds material on every selectable wall (its inward reach,
+ * `pilasterPerpDepth` ≈ 3.3mm, exceeds the thickest `WALL_THICKNESS_OPTIONS` = 2.6mm).
+ * The tongue is ~4 perimeters at a 0.4mm nozzle. See `wallKeyGeometry`.
  */
-const WALL_KEY_HALF_WIDTH = 0.5;
+const WALL_KEY_HALF_WIDTH = 0.8;
 
 /**
  * Intact outer wall skin kept in front of the groove (mm). The key is anchored this far
@@ -89,8 +90,13 @@ const WALL_KEY_HALF_WIDTH = 0.5;
  */
 const WALL_KEY_OUTER_SKIN = 0.8;
 
-/** How far the key protrudes across the cut into the mating piece (mm). */
-const WALL_KEY_PROTRUSION = 1.2;
+/**
+ * How far the key protrudes across the cut into the mating piece (mm). This is the
+ * tongue's engagement depth — deeper means more glue surface and far more resistance
+ * to the halves pulling/splaying apart. Clamped down on short bins by `buildKey` so the
+ * self-supporting tip ramp always finishes below the lead-in notch.
+ */
+const WALL_KEY_PROTRUSION = 2.4;
 
 /** Lead-in chamfer at the top/tip of the key so the halves self-guide together (mm). */
 const WALL_KEY_LEADIN = 0.6;
@@ -579,7 +585,10 @@ function addKeyConnectors(
   const wallHeight = context.wallTopZ - context.floorZ;
   const heightFraction = config.ridgeHeightFraction ?? DEFAULT_WALL_KEY_HEIGHT_FRACTION;
   const keyHeight = wallHeight * heightFraction;
-  if (keyHeight < MIN_FEATURE_HEIGHT) return;
+  // The tongue needs vertical room for its lead-in notch, a self-supporting 45° tip ramp
+  // (≥ a meaningful protrusion), and a minimum flat above the ramp. Below that, a key
+  // would collapse to a degenerate profile — skip wall keys on very short bins.
+  if (keyHeight < WALL_KEY_LEADIN + MIN_FEATURE_WIDTH + MIN_FEATURE_HEIGHT) return;
 
   const nozzle = context.nozzleSizeMm ?? NOZZLE_BASELINE;
   const effClearance = scaleClearance(config.clearance, nozzle);
@@ -694,9 +703,13 @@ function buildKey(
   geom: WallKeyGeometry
 ): Shape3D {
   const halfW = geom.keyHalfWidth + inflate;
-  const protTip = cutPos + geom.protrusion + inflate;
+  // The 45° tip ramp rises `prot` above the floor and must finish below the lead-in
+  // notch (keyTop − lead). Clamp protrusion on short keys so the profile stays valid;
+  // keyHeight is identical for the male tongue and female groove, so they stay matched.
+  const prot = Math.min(geom.protrusion, keyHeight - WALL_KEY_LEADIN - MIN_FEATURE_HEIGHT);
+  const protTip = cutPos + prot + inflate;
   const keyTop = floorZ + keyHeight + inflate;
-  const lead = Math.min(WALL_KEY_LEADIN, geom.protrusion - 0.2, keyHeight / 2);
+  const lead = Math.min(WALL_KEY_LEADIN, prot - 0.2, keyHeight / 2);
   const perpC = perimeter + inward * geom.perpInset;
   const perpAxis = axis === 'x' ? 'y' : 'x';
 
@@ -708,7 +721,7 @@ function buildKey(
     .lineTo([cutPos - OVERLAP, keyTop])
     .lineTo([protTip - lead, keyTop])
     .lineTo([protTip, keyTop - lead])
-    .lineTo([protTip, floorZ + geom.protrusion])
+    .lineTo([protTip, floorZ + prot])
     .lineTo([cutPos, floorZ])
     .close();
   const raw = sketch(profile, plane, 0).extrude(2 * halfW);

@@ -81,7 +81,7 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   tongueProtrusion: 3.0,
   wallConnector: 'none',
   ridgeWidthFraction: 0.35,
-  ridgeHeightFraction: 0.8,
+  ridgeHeightFraction: 0.85,
 } as const;
 
 /** Handle cutout shapes still supported — used to coerce retired values on load. */
