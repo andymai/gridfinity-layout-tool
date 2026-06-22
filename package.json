@@ -6,6 +6,9 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=24"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/andymai/gridfinity-layout-tool.git"
