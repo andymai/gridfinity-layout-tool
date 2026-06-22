@@ -177,10 +177,16 @@ describe('fitWallKeyToHeight', () => {
     expect(fit.protrusion).toBeGreaterThanOrEqual(2 * 0.6 - 1e-9);
   });
 
-  it('clamps identically regardless of caller, so male tongue and female groove stay matched', () => {
-    // Both halves call with the same keyHeight/nozzle; the clamp is a pure function of them.
-    expect(fitWallKeyToHeight(2.0, NOMINAL).protrusion).toBe(
-      fitWallKeyToHeight(2.0, NOMINAL).protrusion
-    );
+  it('keeps the clamped protrusion within nominal and below the key top across heights', () => {
+    // The protrusion drives both the male tongue and the female groove (it has no
+    // clearance/inflate parameter), so the only invariant worth enforcing is that for
+    // every fitting height the clamp never exceeds the nominal and always leaves
+    // vertical room for the lead-in notch above the ramp (protrusion < keyHeight).
+    for (let keyHeight = 1.8; keyHeight <= 14; keyHeight += 0.1) {
+      const fit = fitWallKeyToHeight(keyHeight, NOMINAL);
+      if (!fit.fits) continue;
+      expect(fit.protrusion).toBeLessThanOrEqual(NOMINAL + 1e-9);
+      expect(fit.protrusion).toBeLessThan(keyHeight);
+    }
   });
 });
