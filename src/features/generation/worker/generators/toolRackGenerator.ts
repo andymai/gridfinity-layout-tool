@@ -35,6 +35,7 @@ import { COPLANAR_OVERLAP } from './generatorConstants';
 import { buildBaseSocket } from './socketBuilder';
 import { sketch } from './meshUtils';
 import { creaseEdges } from './utils';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { keepOuterShell } from './utils/outerShell';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -184,7 +185,7 @@ export function generateToolRack(
     const edgeVerts: ArrayLike<number> =
       getKernelCapabilities().tessellationModel === 'build-time'
         ? creaseEdges(meshResult)
-        : meshEdges(rack, { tolerance, angularTolerance: angularTolerance * 0.5 }).lines;
+        : meshEdges(rack, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
     onProgress('base', 1);
     return toIndexedMeshData(meshResult, edgeVerts);
   } finally {

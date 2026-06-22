@@ -70,6 +70,7 @@ import {
 import { snapClipLevels } from '@/shared/constants/connectors';
 import { creaseEdges } from './utils';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 
 export {
   clearBaseplateCaches,
@@ -151,11 +152,10 @@ export function generateBaseplate(
     const meshResult = mesh(baseplate, { tolerance, angularTolerance });
     // Edge extraction mirrors tessellateStage.ts: analytic B-rep edges on
     // extract-time kernels, dihedral creases on build-time (manifold) kernels.
-    const edgeAngular = angularTolerance * 0.5;
     const edgeVerts: ArrayLike<number> =
       getKernelCapabilities().tessellationModel === 'build-time'
         ? creaseEdges(meshResult)
-        : meshEdges(baseplate, { tolerance, angularTolerance: edgeAngular }).lines;
+        : meshEdges(baseplate, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
 
     onProgress('base', 1);
 

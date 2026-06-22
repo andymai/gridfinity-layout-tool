@@ -26,6 +26,7 @@ import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExpor
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
 import { creaseEdges } from './utils';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
@@ -565,7 +566,7 @@ function tessellatePiece(
         ? creaseEdges(shapeMesh)
         : meshEdges(centeredPiece, {
             tolerance: PREVIEW_TOLERANCE,
-            angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
+            angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD,
           }).lines;
       meshData = toIndexedMeshData(shapeMesh, edgeLines);
     } finally {

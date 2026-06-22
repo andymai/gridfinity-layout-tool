@@ -16,6 +16,7 @@ import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
 import { getSocketMesh, setSocketMesh, socketMeshKey } from '../../socketMeshCache';
 import { keepOuterShell } from '../../utils/outerShell';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 
 export const tessellateStage: PipelineStage = {
   name: 'merge',
@@ -65,7 +66,6 @@ export const tessellateStage: PipelineStage = {
       dim.maxDimension
     );
 
-    const edgeAngular = angularTolerance * 0.5;
     let shapeMesh = mesh(solid, { tolerance, angularTolerance });
 
     // Build-time kernels (manifold draft) have no B-rep topology, so their
@@ -75,7 +75,7 @@ export const tessellateStage: PipelineStage = {
     const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
     let edgeLines: ArrayLike<number> = buildTime
       ? creaseEdges(shapeMesh)
-      : meshEdges(solid, { tolerance, angularTolerance: edgeAngular }).lines;
+      : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
 
     // Socket still deferred — the preview path (which skips the expensive
     // socket↔body fuse) or an export whose fuse failed above. Tessellate it
@@ -97,7 +97,8 @@ export const tessellateStage: PipelineStage = {
           const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
           const socketEdges = buildTime
             ? creaseEdges(socketMesh)
-            : meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular }).lines;
+            : meshEdges(deferredSolid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD })
+                .lines;
           cached = { mesh: socketMesh, edgeLines: socketEdges };
           if (cacheKey) setSocketMesh(cacheKey, cached);
         }

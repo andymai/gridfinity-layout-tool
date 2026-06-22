@@ -13,6 +13,7 @@ import type { LidMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
 import { buildLid } from './lidBuilder';
 import { toIndexedMeshData, creaseEdges } from './utils';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
@@ -77,7 +78,7 @@ export function generateLid(
     const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
     const edgeLines = buildTime
       ? creaseEdges(shapeMesh)
-      : meshEdges(solid, { tolerance, angularTolerance: angularTolerance * 0.5 }).lines;
+      : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
     onProgress?.('merge', 1.0);
 
     return toIndexedMeshData(shapeMesh, edgeLines, originToTag);
