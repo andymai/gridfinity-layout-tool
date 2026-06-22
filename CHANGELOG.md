@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.0...gridfinity-layout-tool-v4.201.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* **generation:** pass radian angular tolerance to brepkit edge sampling ([#2310](https://github.com/andymai/gridfinity-layout-tool/issues/2310)) ([fdc2738](https://github.com/andymai/gridfinity-layout-tool/commit/fdc2738d4ebc6ac50da331b17b1c8cfe4ddf8329))
+
 ## [4.201.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.200.0...gridfinity-layout-tool-v4.201.0) (2026-06-21)
 
 
