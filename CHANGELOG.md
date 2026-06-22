@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.3...gridfinity-layout-tool-v4.201.4) (2026-06-22)
+
+
+### Bug Fixes
+
+* **generation:** beef up split-bin wall connectors so they actually lock ([#2321](https://github.com/andymai/gridfinity-layout-tool/issues/2321)) ([2bebf79](https://github.com/andymai/gridfinity-layout-tool/commit/2bebf79991026aaae83aa527312fda5edbe1d566))
+
 ## [4.201.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.2...gridfinity-layout-tool-v4.201.3) (2026-06-22)
 
 
