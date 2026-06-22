@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CutFace, BinGeometryContext } from './splitConnectorBuilder';
 import type { applySplitConnectors as ApplySplitConnectorsFn } from './splitConnectorBuilder';
-import { wallKeyGeometry } from './splitConnectorBuilder';
+import { wallKeyGeometry, fitWallKeyToHeight } from './splitConnectorBuilder';
 
 // Mock brepjs to avoid WASM loading.
 // All mock shapes have a delete() stub so disposal calls in production code
@@ -124,14 +124,14 @@ describe('wallKeyGeometry', () => {
     expect(intrusion(4.0)).toBe(0);
   });
 
-  it('matches the legacy key footprint at the 0.4mm baseline (no regression)', () => {
-    const legacy = wallKeyGeometry(1.2, 0.15);
+  it('returns the 0.4mm baseline key footprint with no nozzle scaling at/below baseline', () => {
+    const baseline = wallKeyGeometry(1.2, 0.15);
     const explicit04 = wallKeyGeometry(1.2, 0.15, 0.4);
-    expect(explicit04.keyHalfWidth).toBe(legacy.keyHalfWidth);
-    expect(explicit04.protrusion).toBe(legacy.protrusion);
+    expect(explicit04.keyHalfWidth).toBe(baseline.keyHalfWidth);
+    expect(explicit04.protrusion).toBe(baseline.protrusion);
     // Baseline: 1.6mm full key width (half 0.8), 2.4mm protrusion.
-    expect(legacy.keyHalfWidth).toBeCloseTo(0.8, 10);
-    expect(legacy.protrusion).toBeCloseTo(2.4, 10);
+    expect(baseline.keyHalfWidth).toBeCloseTo(0.8, 10);
+    expect(baseline.protrusion).toBeCloseTo(2.4, 10);
   });
 
   it('scales the key tongue to at least two perimeters on a wider nozzle', () => {
@@ -140,5 +140,47 @@ describe('wallKeyGeometry', () => {
     expect(2 * wide.keyHalfWidth).toBeGreaterThanOrEqual(2 * 0.6 - 1e-9);
     // And the intact outer skin must grow too, so a fat bead can't breach it.
     expect(wide.outerSkin).toBeGreaterThan(wallKeyGeometry(1.2, 0.15, 0.4).outerSkin - 1e-9);
+  });
+});
+
+describe('fitWallKeyToHeight', () => {
+  const NOMINAL = 2.4;
+
+  it('skips wall keys when the interior height is too short for a valid ramp', () => {
+    const fit = fitWallKeyToHeight(1.0, NOMINAL);
+    expect(fit.fits).toBe(false);
+  });
+
+  it('passes the full protrusion through on an ample wall', () => {
+    const fit = fitWallKeyToHeight(12, NOMINAL);
+    expect(fit.fits).toBe(true);
+    expect(fit.protrusion).toBeCloseTo(NOMINAL, 10);
+  });
+
+  it('clamps protrusion on a short-but-valid wall so the tip ramp stays self-supporting', () => {
+    const keyHeight = 2.0; // valid at 0.4mm (threshold 1.8mm) but too short for full 2.4mm
+    const fit = fitWallKeyToHeight(keyHeight, NOMINAL);
+    expect(fit.fits).toBe(true);
+    expect(fit.protrusion).toBeLessThan(NOMINAL);
+    expect(fit.protrusion).toBeGreaterThan(0);
+    // The ramp (rises `protrusion`) must finish strictly below the key top.
+    expect(fit.protrusion).toBeLessThan(keyHeight);
+  });
+
+  it('raises the minimum height with the nozzle (≥2-perimeter protrusion floor)', () => {
+    // 2.0mm clears the 0.4mm threshold but not the wider 0.6mm one.
+    expect(fitWallKeyToHeight(2.0, NOMINAL, 0.4).fits).toBe(true);
+    expect(fitWallKeyToHeight(2.0, NOMINAL, 0.6).fits).toBe(false);
+    // Just above the 0.6mm threshold, the clamped protrusion still clears two 0.6mm beads.
+    const fit = fitWallKeyToHeight(3.0, NOMINAL, 0.6);
+    expect(fit.fits).toBe(true);
+    expect(fit.protrusion).toBeGreaterThanOrEqual(2 * 0.6 - 1e-9);
+  });
+
+  it('clamps identically regardless of caller, so male tongue and female groove stay matched', () => {
+    // Both halves call with the same keyHeight/nozzle; the clamp is a pure function of them.
+    expect(fitWallKeyToHeight(2.0, NOMINAL).protrusion).toBe(
+      fitWallKeyToHeight(2.0, NOMINAL).protrusion
+    );
   });
 });
