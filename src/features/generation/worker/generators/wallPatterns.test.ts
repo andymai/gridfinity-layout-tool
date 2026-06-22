@@ -3,6 +3,7 @@ import {
   getSlotFreeWalls,
   getPatternDescriptors,
   CUTOUT_BORDER_WIDTH,
+  BOTTOM_SOLID_SKIRT,
   getExpandedCutoutDimensions,
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
@@ -136,6 +137,40 @@ describe('getPatternDescriptors — side field', () => {
     expect(result).not.toBeNull();
     const sides = result!.descriptors.map((d) => d.side);
     expect(sides).toEqual(['front', 'back']);
+  });
+});
+
+describe('BOTTOM_SOLID_SKIRT', () => {
+  it('matches the top keep-out / cutout border solid-margin unit (#2317)', () => {
+    expect(BOTTOM_SOLID_SKIRT).toBe(1.5);
+  });
+});
+
+describe('getPatternDescriptors — solid skirt above floor (#2317)', () => {
+  it('anchors the lowest hex a full skirt above the interior floor', () => {
+    const wallThickness = 1.0;
+    const params = makeParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      height: 5,
+      wallThickness,
+    });
+    const innerW = 42 - 2 * wallThickness;
+    const innerD = 42 - 2 * wallThickness;
+    const wallHeight = 5 * 7;
+
+    const result = getPatternDescriptors(params, innerW, innerD, wallHeight);
+    expect(result).not.toBeNull();
+    const { descriptors, calculator } = result!;
+    const R = calculator.getShapeRadius();
+
+    for (const d of descriptors) {
+      // center.y is the in-plane vertical; +translateZ gives absolute bin Z.
+      // Lowest vertex of a pointy-top hex sits R below its center. The floor
+      // slab top is at z = wallThickness, so the solid skirt above the floor
+      // is lowestVertexZ - wallThickness and must be the full BOTTOM_SOLID_SKIRT.
+      const lowestVertexZ = Math.min(...d.centers.map((c) => c.y)) - R + d.translateZ;
+      expect(lowestVertexZ - wallThickness).toBeGreaterThanOrEqual(BOTTOM_SOLID_SKIRT - 1e-6);
+    }
   });
 });
 

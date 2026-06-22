@@ -75,11 +75,15 @@ export const TOP_KEEP_OUT = 1.5;
 export const CUTOUT_BORDER_WIDTH = 1.5;
 
 /**
- * Minimum keep-out from wall bottom edge (base/floor junction).
- * Actual keep-out uses max(this, wallThickness) so pattern prisms never
- * cut into the floor at the wall-floor junction.
+ * Solid skirt left ABOVE the interior floor before the pattern starts (mm).
+ * The bottom keep-out is `wallThickness + this`: one `wallThickness` clears the
+ * floor slab, and the skirt is the actual solid band the lowest hex row anchors
+ * to. Without it the lowest webs rise straight off the wall-floor seam as
+ * unanchored fins and snap during FDM printing (#2317). Sized to match
+ * `TOP_KEEP_OUT`/`CUTOUT_BORDER_WIDTH` (~7 layers at 0.2mm) — the minimum band
+ * that prints reliably while preserving the most hex rows.
  */
-export const MIN_BOTTOM_KEEP_OUT = 1.0;
+export const BOTTOM_SOLID_SKIRT = 1.5;
 
 /**
  * Calculate wall pattern descriptors for any pattern type.
@@ -106,9 +110,9 @@ function getWallPatternDescriptors(
     return null;
   }
 
-  // Keep-out from bottom must clear the floor (shell thickness = wallThickness)
-  // so pattern prisms don't cut into the floor-wall junction.
-  const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, params.wallThickness);
+  // Clear the floor slab (one wallThickness) AND leave a solid skirt above it
+  // so the lowest hex row anchors to solid wall, not the floor seam (#2317).
+  const bottomKeepOut = params.wallThickness + BOTTOM_SOLID_SKIRT;
 
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minHeight = calculator.getMinPatternHeight();

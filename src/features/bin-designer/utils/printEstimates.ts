@@ -470,10 +470,12 @@ function computeHoneycombWallReduction(
   const HEX_RADIUS = 1.8;
   const WEB_THICKNESS = 0.8;
   const TOP_KEEP_OUT = 1.5;
-  const MIN_BOTTOM_KEEP_OUT = 1.0;
+  const BOTTOM_SOLID_SKIRT = 1.5;
 
   const wallHeight = totalH - bottomH;
-  const bottomKeepOut = Math.max(MIN_BOTTOM_KEEP_OUT, wallThickness);
+  // wallThickness clears the floor slab; the skirt is the solid band above it
+  // that anchors the lowest hex row (#2317). Mirrors wallPatterns.ts.
+  const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
   if (patternHeight < minPatternH) return 0;
