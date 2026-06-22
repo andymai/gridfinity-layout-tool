@@ -23,9 +23,9 @@ export const DRAFT_MIN_CIRCULAR_ANGLE_DEG = 20;
 /** Angular tolerance (RADIANS) for analytic edge-line sampling via `meshEdges`
  *  on extract-time kernels. UNITS MATTER: the brepkit kernel reads this as
  *  radians (its own default is ~0.35 rad ≈ 20°), so a degrees-magnitude value
- *  (e.g. 4) reads as ~229° and disables curve refinement entirely. ~0.02 rad
- *  (≈1.1°) keeps rounded corners / lip rims / scoop arcs smooth, ≈ OCCT curve
- *  density. OCCT ignores this arg (its edges follow the linear tolerance), so
- *  it only affects brepkit. Build-time (manifold) edges use creaseEdges instead
- *  and are unaffected. */
-export const EDGE_ANGULAR_TOLERANCE_RAD = 0.02;
+ *  (e.g. 4) reads as ~229° and disables curve refinement entirely. ~0.01 rad
+ *  (≈0.57°) keeps rounded corners / lip rims / scoop arcs smooth, approaching
+ *  OCCT curve density. OCCT ignores this arg (its edges follow the linear
+ *  tolerance), so it only affects brepkit. Build-time (manifold) edges use
+ *  creaseEdges instead and are unaffected. */
+export const EDGE_ANGULAR_TOLERANCE_RAD = 0.01;
