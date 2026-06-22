@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.2...gridfinity-layout-tool-v4.201.3) (2026-06-22)
+
+
+### Bug Fixes
+
+* **generation:** solid skirt above the floor for honeycomb walls ([#2317](https://github.com/andymai/gridfinity-layout-tool/issues/2317)) ([#2319](https://github.com/andymai/gridfinity-layout-tool/issues/2319)) ([d6cd2a7](https://github.com/andymai/gridfinity-layout-tool/commit/d6cd2a73c6f65785f47ea6a6c893012f9fd73ba8))
+
 ## [4.201.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.1...gridfinity-layout-tool-v4.201.2) (2026-06-22)
 
 
