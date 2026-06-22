@@ -103,7 +103,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.4.0",
     "arctic": "^3.7.0",
-    "brepjs": "18.100.0",
+    "brepjs": "18.100.1",
     "brepkit-wasm": "^2.115.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
