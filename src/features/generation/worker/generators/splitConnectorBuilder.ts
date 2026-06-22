@@ -98,8 +98,12 @@ const WALL_KEY_OUTER_SKIN = 0.8;
  */
 const WALL_KEY_PROTRUSION = 2.4;
 
-/** Lead-in chamfer at the top/tip of the key so the halves self-guide together (mm). */
-const WALL_KEY_LEADIN = 0.6;
+/**
+ * Lead-in drop at the top of the key (mm). The whole protruding span slopes down by this
+ * over its length, turning the tongue into a self-guiding wedge instead of a blunt block;
+ * the female groove inherits the same slope as a wider insertion mouth.
+ */
+const WALL_KEY_LEADIN = 1.2;
 
 /** Snug margin (mm, per side) between the key footprint and the pilaster edge. */
 const WALL_PILASTER_MARGIN = 0.6;
@@ -647,6 +651,7 @@ function addKeyConnectors(
           bodySign,
           context.floorZ,
           context.wallTopZ,
+          context.floorZ + keyHeight,
           geom
         )
       );
@@ -693,6 +698,7 @@ function buildPilaster(
   bodySign: -1 | 1,
   floorZ: number,
   wallTopZ: number,
+  keyTop: number,
   geom: WallKeyGeometry
 ): Shape3D {
   const depth = geom.pilasterPerpDepth;
@@ -702,7 +708,12 @@ function buildPilaster(
   const vTopMin = perimeter + inward * WALL_PILASTER_TOP_MIN;
   const vFloor = perimeter + inward * Math.max(0, depth - WALL_PILASTER_FLOOR_CHAMFER);
   const cham = Math.min(WALL_PILASTER_FLOOR_CHAMFER, (wallTopZ - floorZ) * 0.25);
-  const topStart = Math.max(floorZ + cham + 0.5, wallTopZ - WALL_PILASTER_TOP_TAPER);
+  // Keep the buttress at full depth through the key (the groove needs the material), then
+  // melt into the wall over the whole span above it — a longer, more graceful taper than a
+  // fixed stub, and it never starts below the groove (which would breach the seal). Falls
+  // back to the legacy `wallTopZ − TOP_TAPER` window when the key is short.
+  const taperStart = Math.max(keyTop, wallTopZ - WALL_PILASTER_TOP_TAPER);
+  const topStart = Math.min(Math.max(floorZ + cham + 0.5, taperStart), wallTopZ - 0.5);
 
   // Silhouette in (perpendicular, Z); extruded along the cut-normal (prot) axis.
   const plane = axis === 'x' ? 'YZ' : 'XZ';
@@ -745,13 +756,15 @@ function buildKey(
   const perpC = perimeter + inward * geom.perpInset;
   const perpAxis = axis === 'x' ? 'y' : 'x';
 
-  // Profile in (cut-normal, Z): 45° underside ramp (self-supporting) + a lead-in
-  // chamfer on the top/tip so the halves guide together as they press in. The key
-  // extrudes along the cut line (perpAxis), so its profile lives in the cut plane.
+  // Profile in (cut-normal, Z): the protruding span is a wedge — a 45° self-supporting
+  // underside ramp and a top that slopes down by `lead` from the seam to the tip, so the
+  // tongue reads as a sculpted point and self-guides as the halves press in. The body
+  // portion keeps a flat top (it's buried in the wall/pilaster). The key extrudes along
+  // the cut line (perpAxis), so its profile lives in the cut plane.
   const plane = axis === 'x' ? 'XZ' : 'YZ';
   const profile = draw([cutPos - OVERLAP, floorZ])
     .lineTo([cutPos - OVERLAP, keyTop])
-    .lineTo([protTip - lead, keyTop])
+    .lineTo([cutPos, keyTop])
     .lineTo([protTip, keyTop - lead])
     .lineTo([protTip, floorZ + protrusion])
     .lineTo([cutPos, floorZ])

@@ -158,7 +158,7 @@ describe('fitWallKeyToHeight', () => {
   });
 
   it('clamps protrusion on a short-but-valid wall so the tip ramp stays self-supporting', () => {
-    const keyHeight = 2.0; // valid at 0.4mm (threshold 1.8mm) but too short for full 2.4mm
+    const keyHeight = 3.0; // valid at 0.4mm (threshold 2.4mm) but too short for full 2.4mm
     const fit = fitWallKeyToHeight(keyHeight, NOMINAL);
     expect(fit.fits).toBe(true);
     expect(fit.protrusion).toBeLessThan(NOMINAL);
@@ -168,9 +168,9 @@ describe('fitWallKeyToHeight', () => {
   });
 
   it('raises the minimum height with the nozzle (≥2-perimeter protrusion floor)', () => {
-    // 2.0mm clears the 0.4mm threshold but not the wider 0.6mm one.
-    expect(fitWallKeyToHeight(2.0, NOMINAL, 0.4).fits).toBe(true);
-    expect(fitWallKeyToHeight(2.0, NOMINAL, 0.6).fits).toBe(false);
+    // 2.6mm clears the 0.4mm threshold (2.4mm) but not the wider 0.6mm one (2.9mm).
+    expect(fitWallKeyToHeight(2.6, NOMINAL, 0.4).fits).toBe(true);
+    expect(fitWallKeyToHeight(2.6, NOMINAL, 0.6).fits).toBe(false);
     // Just above the 0.6mm threshold, the clamped protrusion still clears two 0.6mm beads.
     const fit = fitWallKeyToHeight(3.0, NOMINAL, 0.6);
     expect(fit.fits).toBe(true);
