@@ -64,6 +64,15 @@ updates:
       # brepjs upgrades are coupled to the brepkit kernel investigation —
       # always pin manually, never auto-bump
       - dependency-name: 'brepjs'
+      # Each Playwright version pins one exact Chromium revision, so every
+      # minor/patch bump forces a fresh ~120MB browser download on the next
+      # `playwright install`. Bump manually so the browser cache is stable.
+      - dependency-name: 'playwright'
+        update-types:
+          ['version-update:semver-minor', 'version-update:semver-patch']
+      - dependency-name: '@playwright/*'
+        update-types:
+          ['version-update:semver-minor', 'version-update:semver-patch']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
