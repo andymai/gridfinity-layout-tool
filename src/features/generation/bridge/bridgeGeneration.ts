@@ -51,8 +51,13 @@ export interface BridgeGenerationContext {
  * terminated a wedged worker — would otherwise be silently dropped and hang.
  * Awaiting `init()` makes the request wait for a live worker; on the happy path
  * `init()` is an already-resolved cached promise, so this only defers the post
- * by a microtask. The timeout is armed after readiness so worker (re)init time
- * isn't charged against the generation budget.
+ * by a microtask.
+ *
+ * The timeout is armed up front, before awaiting `init()`, so a worker that
+ * never reports ready (init hangs, or a replacement worker that never posts
+ * INIT_READY) still trips the timeout and its hard-reset recovery instead of
+ * leaving the request pending forever. Worker (re)init is fast relative to the
+ * 30s+ budget, so charging it against the timeout is negligible.
  */
 function sendWhenReady(
   ctx: BridgeGenerationContext,
@@ -60,11 +65,11 @@ function sendWhenReady(
   timeoutMs: number,
   message: WorkerMessage
 ): void {
+  startGenerationTimeout(ctx, requestId, timeoutMs);
   void ctx.init().then(
     () => {
       // A newer request superseded this one while the worker was initializing.
       if (ctx.currentRequestId !== requestId) return;
-      startGenerationTimeout(ctx, requestId, timeoutMs);
       ctx.postMessage(message);
     },
     (err: unknown) => {

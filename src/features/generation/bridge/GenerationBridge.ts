@@ -524,9 +524,10 @@ export class GenerationBridge {
   }
 
   /**
-   * Start a timeout that cancels an in-flight export if the worker doesn't
-   * respond. On fire, sends `CANCEL`, removes the pending entry, and rejects
-   * with an `ExportTimeoutError`.
+   * Start a timeout that recovers from an in-flight export the worker never
+   * answers. On fire, removes the pending entry, hard-resets the worker (a
+   * worker wedged in a long synchronous export can't process a CANCEL, exactly
+   * as on the generation path), and rejects with an `ExportTimeoutError`.
    */
   startExportTimeout(slot: ExportSlot, requestId: string, timeoutMs: number): void {
     const pending = this.pendingExports.get(slot);
@@ -536,7 +537,9 @@ export class GenerationBridge {
       if (!current || current.requestId !== requestId) return;
       this.pendingExports.delete(slot);
       current.timer = null;
-      this.postMessage({ type: 'CANCEL', requestId });
+      // Drop this slot before resetting so hardResetWorker doesn't also reject
+      // it with the generic reset error — it gets the specific timeout error.
+      this.hardResetWorker();
       current.reject(new ExportTimeoutError());
     }, timeoutMs);
   }

@@ -499,6 +499,7 @@ describe('GenerationBridge', () => {
         (m) => (m as { type: string }).type === 'EXPORT'
       ) as { payload: { requestId: string } };
       expect(exportMsg).toBeDefined();
+      const wedged = getWorker();
 
       // Export timeout is the complexity budget (BASE 30s for a default bin)
       // scaled by EXPORT_TIMEOUT_MULTIPLIER (×4 = 120s); advance well past it.
@@ -508,11 +509,48 @@ describe('GenerationBridge', () => {
       expect(result).toBeInstanceOf(Error);
       expect((result as Error).message).toMatch(/timed out/i);
 
-      // Bridge should have sent a CANCEL with the original requestId.
-      const cancelMessages = getWorker().messages.filter(
+      // A worker wedged in a synchronous export can't process a CANCEL, so the
+      // bridge terminates it instead of posting one.
+      expect(wedged.terminated).toBe(true);
+      const cancelMessages = wedged.messages.filter(
         (m) => (m as { type: string }).type === 'CANCEL'
-      ) as { type: string; requestId: string }[];
-      expect(cancelMessages.some((m) => m.requestId === exportMsg.payload.requestId)).toBe(true);
+      );
+      expect(cancelMessages.length).toBe(0);
+    });
+
+    it('recovers the worker so generation works after an export timeout', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+      const wedged = getWorker();
+
+      const settled = bridge.exportBin(DEFAULT_BIN_PARAMS, 'stl').catch((e: unknown) => e);
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(180_000); // never answered -> timeout
+      expect(await settled).toBeInstanceOf(Error);
+      expect(wedged.terminated).toBe(true);
+
+      // Replacement worker finishes its INIT handshake, then a generation runs.
+      await vi.advanceTimersByTimeAsync(10);
+      const fresh = getWorker();
+      expect(fresh).not.toBe(wedged);
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(200);
+      const genMsg = fresh.messages.find((m) => (m as { type: string }).type === 'GENERATE') as {
+        payload: { requestId: string };
+      };
+      expect(genMsg).toBeDefined();
+      fresh.simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: genMsg.payload.requestId,
+        vertices: new Float32Array([1, 2, 3]),
+        normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
+        triangleCount: 1,
+        timingMs: 4,
+      });
+      expect((await genPromise).mesh.triangleCount).toBe(1);
     });
 
     it('clears the timeout when the export resolves', async () => {
