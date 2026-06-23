@@ -257,6 +257,36 @@ export class GenerationBridge {
     this.cancelCurrentRequest();
   }
 
+  /**
+   * Terminate the current worker and bring up a fresh one.
+   *
+   * A single-threaded WASM worker blocked inside an uninterruptible synchronous
+   * op (e.g. a long boolean union) cannot process a CANCEL message, so the only
+   * real recovery is to kill it. Used by the generation-timeout circuit breaker:
+   * without this, one over-budget generation wedges the worker and every later
+   * generation queues behind it and times out in turn. A replacement worker is
+   * started eagerly so the next generation doesn't pay the full init latency.
+   */
+  hardResetWorker(): void {
+    if (this.destroyed) return;
+    this.isWarming = false;
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+    this.initPromise = null;
+    // Any export in flight was running on the worker we just killed; reject it
+    // so its caller fails fast instead of hanging until its own export timeout.
+    for (const pending of this.pendingExports.values()) {
+      this.clearExportTimer(pending);
+      pending.reject(new Error('Worker was reset after a generation timeout'));
+    }
+    this.pendingExports.clear();
+    // Errors here surface on the next generation's init() await; swallow the
+    // unhandled rejection from this eager warm-up.
+    void this.init().catch(() => {});
+  }
+
   /** Terminate the worker and clean up all resources */
   destroy(): void {
     if (this.destroyed) return;
