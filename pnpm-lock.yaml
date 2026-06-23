@@ -68,11 +68,11 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
       brepjs:
-        specifier: 18.100.1
-        version: 18.100.1(brepkit-wasm@2.115.8)(occt-wasm@3.4.0)
+        specifier: 18.100.3
+        version: 18.100.3(brepkit-wasm@2.116.1)(occt-wasm@3.4.0)
       brepkit-wasm:
-        specifier: ^2.115.8
-        version: 2.115.8
+        specifier: ^2.116.1
+        version: 2.116.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3028,8 +3028,8 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  brepjs@18.100.1:
-    resolution: {integrity: sha512-IsEXjqCK+3m6/ty91HEH71HIZSBOFr5+EwYw8NqB0OzhzSDZN8Cqtt82w/E9PuZL3t9zIY19ykQl9r+tjs4gGA==}
+  brepjs@18.100.3:
+    resolution: {integrity: sha512-Wydh8gO8Wt7CfiCFGNG5y1gvstqzY+fTE7QHUkXWTwFPzszUdhLE0Lu/UL/olMBMPk4Ow1U2lrSNHHU7gfIGfA==}
     engines: {node: '>=24'}
     peerDependencies:
       brepjs-manifold: ^0.1.0
@@ -3046,8 +3046,8 @@ packages:
       occt-wasm:
         optional: true
 
-  brepkit-wasm@2.115.8:
-    resolution: {integrity: sha512-/dhTfYtSwtgVcImfEQGqrzOMUaXYzAFTAXpt+VX8WzVXjb5XehrRV/IoQTfVqwZB7Zk3zf479+fj+nfWly4egA==}
+  brepkit-wasm@2.116.1:
+    resolution: {integrity: sha512-qQdbVtLI21tbvPSIhbvW9L0Kfw01X16RpQ6Cn7kDFCYt8OkpSGPAJA8pHPT0qpeAqS7ws++6TeTbo5YYn4UvvA==}
 
   browserslist@4.28.2:
     resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
@@ -8407,15 +8407,15 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  brepjs@18.100.1(brepkit-wasm@2.115.8)(occt-wasm@3.4.0):
+  brepjs@18.100.3(brepkit-wasm@2.116.1)(occt-wasm@3.4.0):
     dependencies:
       flatbush: 4.6.2
       opentype.js: 1.3.4
     optionalDependencies:
-      brepkit-wasm: 2.115.8
+      brepkit-wasm: 2.116.1
       occt-wasm: 3.4.0
 
-  brepkit-wasm@2.115.8: {}
+  brepkit-wasm@2.116.1: {}
 
   browserslist@4.28.2:
     dependencies:
