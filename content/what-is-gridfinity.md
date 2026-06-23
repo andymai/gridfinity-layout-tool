@@ -1,6 +1,6 @@
 ---
-title: What is Gridfinity? Modular 3D-Printed Storage
-description: Gridfinity is a free, open-source modular storage system you 3D print. Learn how the 42mm grid and 7mm heights work — and how to organize any drawer.
+title: What is Gridfinity? 42mm Modular Storage System
+description: Gridfinity is a free, open-source modular system you 3D print on a 42mm grid. Learn how bins, baseplates, and 7mm heights work — then design yours free.
 keywords: gridfinity, what is gridfinity, drawer organizer, 3D printing, modular storage, Zack Freedman
 schema: Article
 breadcrumbs:

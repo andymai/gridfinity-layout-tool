@@ -1,6 +1,6 @@
 ---
-title: Wat is Gridfinity?
-description: Gridfinity is een gratis, open-source 3D-geprint opbergsysteem. Hoe het 42mm-raster werkt en waarom makers het gebruiken.
+title: Wat is Gridfinity? Modulair 42mm-systeem
+description: Gridfinity is een gratis, open-source modulair systeem, in 3D geprint op een 42mm-raster. Bakjes, grondplaten en 7mm-hoogtes — ontwerp je eigen gratis.
 keywords: gridfinity, wat is gridfinity, lade-organizer, 3D-print, modulaire opslag, Zack Freedman
 schema: Article
 breadcrumbs:

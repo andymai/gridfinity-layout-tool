@@ -1,6 +1,6 @@
 ---
-title: Was ist Gridfinity?
-description: Gridfinity ist ein kostenloses, quelloffenes 3D-gedrucktes Ordnungssystem. So funktioniert das 42-mm-Raster und warum Maker es nutzen.
+title: Was ist Gridfinity? Modulares 42-mm-System
+description: Gridfinity ist ein kostenloses, quelloffenes Ordnungssystem zum 3D-Drucken auf 42-mm-Raster. Bins, Grundplatten und 7-mm-Höhen — jetzt selbst gestalten.
 keywords: gridfinity, was ist gridfinity, schubladeneinsatz, 3D-Druck, modulares Ordnungssystem, Zack Freedman
 schema: Article
 breadcrumbs:

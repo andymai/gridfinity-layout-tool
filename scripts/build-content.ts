@@ -30,6 +30,13 @@ const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
 const SITE_URL = 'https://gridfinitylayouttool.com';
 
+// SERP truncation guards (see PR #2292). Google shows ~60 chars of the title and
+// ~155 of the description. Every content title carries a " | {siteName}" brand
+// suffix that is expected to truncate, so we guard the UNIQUE title — the part
+// that must stay readable — rather than the rendered length.
+const MAX_TITLE_LEN = 55;
+const MAX_DESCRIPTION_LEN = 155;
+
 const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk'] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
@@ -357,6 +364,18 @@ function generateHtml(
   const canonicalUrl = getUrl(slug, locale);
   const image = ogImage || perPageOgImage(slug) || `${SITE_URL}/og-image.png`;
   const labels = LOCALE_LABELS[locale];
+
+  const pageId = locale === DEFAULT_LOCALE ? slug : `${locale}/${slug}`;
+  if (title.length > MAX_TITLE_LEN) {
+    console.warn(
+      `⚠ ${pageId}: title ${title.length} chars (>${MAX_TITLE_LEN}) — may truncate before the " | ${labels.siteName}" suffix in SERPs`
+    );
+  }
+  if (description.length > MAX_DESCRIPTION_LEN) {
+    console.warn(
+      `⚠ ${pageId}: description ${description.length} chars (>${MAX_DESCRIPTION_LEN}) — Google truncates ~${MAX_DESCRIPTION_LEN}`
+    );
+  }
   // No localized SPA root (e.g. /de/) exists — the in-app i18n auto-detects
   // browser language from the canonical English SPA at /. Linking logo/CTA
   // to /{locale}/ would 404. Same pattern as the localized privacy/terms links.

@@ -1,6 +1,6 @@
 ---
-title: ¿Qué es Gridfinity?
-description: Gridfinity es un sistema de organización impreso en 3D, libre y de código abierto. Conoce cómo funciona la cuadrícula de 42 mm y por qué los makers lo usan.
+title: ¿Qué es Gridfinity? Sistema modular de 42 mm
+description: Gridfinity es un sistema modular libre y de código abierto, impreso en 3D en cuadrícula de 42 mm. Cajas, placas y alturas de 7 mm — diséñalo gratis.
 keywords: gridfinity, qué es gridfinity, organizador de cajón, impresión 3D, almacenamiento modular, Zack Freedman
 schema: Article
 breadcrumbs:
