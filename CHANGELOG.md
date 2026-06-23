@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.5...gridfinity-layout-tool-v4.201.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* **generation:** hard-reset wedged worker on generation timeout ([#2328](https://github.com/andymai/gridfinity-layout-tool/issues/2328)) ([9c12e6b](https://github.com/andymai/gridfinity-layout-tool/commit/9c12e6b6885fb29a0169b58e9a486f94a4f9799e))
+
 ## [4.201.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.4...gridfinity-layout-tool-v4.201.5) (2026-06-23)
 
 
