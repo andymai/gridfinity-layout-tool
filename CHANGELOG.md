@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.201.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.4...gridfinity-layout-tool-v4.201.5) (2026-06-23)
+
+
+### Bug Fixes
+
+* **seo:** rework what-is-gridfinity title/meta for CTR + add SERP length guard ([#2324](https://github.com/andymai/gridfinity-layout-tool/issues/2324)) ([e34b27a](https://github.com/andymai/gridfinity-layout-tool/commit/e34b27a3394a3740f91ce70deb91d08427ddaad4))
+
 ## [4.201.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.3...gridfinity-layout-tool-v4.201.4) (2026-06-22)
 
 
