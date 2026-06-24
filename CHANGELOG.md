@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.3...gridfinity-layout-tool-v4.202.4) (2026-06-24)
+
+
+### Bug Fixes
+
+* **wall-cutouts:** sync divider cutout alignment/offset/mm with outer walls ([#2347](https://github.com/andymai/gridfinity-layout-tool/issues/2347)) ([14525cb](https://github.com/andymai/gridfinity-layout-tool/commit/14525cb71b2dc53c4adbb0034c9d75d0a445f152))
+
 ## [4.202.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.2...gridfinity-layout-tool-v4.202.3) (2026-06-24)
 
 
