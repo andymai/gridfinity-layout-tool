@@ -18,6 +18,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
+import {
+  getOffBoardCutoutIds,
+  clampOffBoardCutouts,
+} from '../panel/CutoutsSection/offBoardCutouts';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
@@ -88,6 +92,14 @@ export function CutoutWorkspace() {
     ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
     : undefined;
 
+  // Resizing the bin can strand cutouts past the new (smaller) footprint — they
+  // are stored in absolute mm and never auto-rescaled. Flag them so the canvas
+  // can frame them and the inspector can offer a one-click clamp back in.
+  const offBoardIds = useMemo(
+    () => getOffBoardCutoutIds(cutouts, binWidth, binDepth),
+    [cutouts, binWidth, binDepth]
+  );
+
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const scanEnabled = useFeatureFlag('scan_with_phone');
@@ -135,6 +147,11 @@ export function CutoutWorkspace() {
     (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
     [cutouts, updateCutout, addCutout]
   );
+
+  const handleClampOffBoard = useCallback(() => {
+    const updates = clampOffBoardCutouts(cutouts, binWidth, binDepth);
+    if (updates.size > 0) updateCutoutsBatch(updates);
+  }, [cutouts, binWidth, binDepth, updateCutoutsBatch]);
 
   const {
     mode,
@@ -377,6 +394,7 @@ export function CutoutWorkspace() {
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}
+                offBoardIds={offBoardIds}
                 preview={preview}
                 fitCue={fitCue}
                 mode={mode}
@@ -428,6 +446,8 @@ export function CutoutWorkspace() {
           disabled={isInteracting}
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
+          offBoardCount={offBoardIds.size}
+          onClampOffBoard={handleClampOffBoard}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
           board={{

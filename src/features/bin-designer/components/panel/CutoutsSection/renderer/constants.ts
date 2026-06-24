@@ -8,6 +8,7 @@ export const RENDER_ORDER = {
   SHAPES: 10,
   GROUP_FILL: 11,
   GROUP_STROKE: 12,
+  OFF_BOARD: 15,
   SMART_GUIDES: 20,
   DRAWING_PREVIEW: 25,
   GROUP_BOUNDS: 30,
@@ -28,6 +29,8 @@ export const FIT_PADDING = 0.08;
 export const ACCENT_COLOR_HEX = '#f59e0b'; // --color-accent
 export const HANDLE_COLOR = '#fbbf24';
 export const HANDLE_STROKE_COLOR = '#ffffff';
+/** Off-board warning frame — red to stay distinct from the amber selection. */
+export const OFF_BOARD_COLOR = '#ef4444'; // --color-error
 
 /** Handle sizes in screen pixels */
 export const CORNER_HANDLE_SIZE = 10;

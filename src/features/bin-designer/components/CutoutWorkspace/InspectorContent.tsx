@@ -12,6 +12,7 @@ import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
+import { BinSizeSection } from './BinSizeSection';
 
 /** Editor-level settings surfaced in the empty (no-selection) state. */
 export interface BoardSettings {
@@ -34,6 +35,10 @@ interface InspectorContentProps {
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
   readonly board?: BoardSettings;
+  /** Count of cutouts stranded past the board after a resize (0 = none). */
+  readonly offBoardCount?: number;
+  /** Clamp every off-board cutout back inside the board. */
+  readonly onClampOffBoard?: () => void;
 }
 
 /** Effective field value, merging this cutout's live preview override. */
@@ -74,6 +79,8 @@ export function InspectorContent({
   onFitCue,
   onFlattenArray,
   board,
+  offBoardCount = 0,
+  onClampOffBoard,
 }: InspectorContentProps) {
   const t = useTranslation();
 
@@ -82,28 +89,36 @@ export function InspectorContent({
     [cutouts, selection]
   );
 
+  // Bin-size controls stay visible across every selection state so the user can
+  // resize without leaving the editor.
+  const binSize = (
+    <BinSizeSection offBoardCount={offBoardCount} onClampOffBoard={onClampOffBoard} />
+  );
+
   if (selectedCutouts.length === 0) {
-    if (board) {
-      return (
-        <CutoutBoardSettings
-          gridSize={board.gridSize}
-          onGridSizeChange={board.onGridSizeChange}
-          snapEnabled={board.snapEnabled}
-          onSnapToggle={board.onSnapToggle}
-          binWidth={binWidth}
-          binDepth={binDepth}
-          cutoutCount={cutouts.length}
-        />
-      );
-    }
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1 px-4 text-center">
-        <p className="text-xs text-content-secondary">
-          {t('binDesigner.cutoutEditor.inspectorEmptyTitle')}
-        </p>
-        <p className="text-xs text-content-tertiary">
-          {t('binDesigner.cutoutEditor.inspectorEmptyHint')}
-        </p>
+      <div className="space-y-1.5">
+        {binSize}
+        {board ? (
+          <CutoutBoardSettings
+            gridSize={board.gridSize}
+            onGridSizeChange={board.onGridSizeChange}
+            snapEnabled={board.snapEnabled}
+            onSnapToggle={board.onSnapToggle}
+            binWidth={binWidth}
+            binDepth={binDepth}
+            cutoutCount={cutouts.length}
+          />
+        ) : (
+          <div className="flex flex-col gap-1 px-1 pt-3 text-center">
+            <p className="text-xs text-content-secondary">
+              {t('binDesigner.cutoutEditor.inspectorEmptyTitle')}
+            </p>
+            <p className="text-xs text-content-tertiary">
+              {t('binDesigner.cutoutEditor.inspectorEmptyHint')}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -142,6 +157,7 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
+      {binSize}
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}

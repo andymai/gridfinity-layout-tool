@@ -280,6 +280,19 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     skip the canvas — re-mounting would just re-throw, which previously produced
     rapid error bursts. Recovery requires a page reload. Non-WebGL render errors
     still bubble to `PanelErrorBoundary`'s generic retry UI.
+20. **Resizing can strand cutouts off-board** — the cutout workspace inspector
+    now hosts the bin Width/Depth/Height controls (`BinSizeSection` wrapping the
+    shared `DimensionsSection`), so the bin can be resized mid-edit. Cutouts are
+    stored in **absolute interior-mm and are never auto-rescaled**, so shrinking
+    the footprint can leave a cutout past the new edge; the mesh builder then
+    silently clips the overhang (`cutoutBuilder.clipToInterior`). `offBoardCutouts`
+    flags strays via `getRotatedBounds` (the same AABB the drag/resize handlers
+    clamp against, so the flag and the edge agree), the canvas frames them with a
+    red `OffBoardBounds3D`, and the inspector offers a one-click clamp-back
+    ("Bring back in") that translates each stray inside (oversized cutouts pin
+    their min corner to the origin). Detection keys off each cutout's master
+    footprint — an **array** whose instances spill past the edge isn't flagged,
+    consistent with the interaction clamps.
 
 ## Thumbnail Pipeline
 

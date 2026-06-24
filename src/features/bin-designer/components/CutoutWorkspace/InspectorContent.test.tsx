@@ -45,6 +45,24 @@ vi.mock('../panel/CutoutsSection/geometry', () => ({
   }),
 }));
 
+vi.mock('./BinSizeSection', () => ({
+  BinSizeSection: ({
+    offBoardCount,
+    onClampOffBoard,
+  }: {
+    offBoardCount: number;
+    onClampOffBoard?: () => void;
+  }) => (
+    <div data-testid="bin-size-section" data-off-board-count={offBoardCount}>
+      {onClampOffBoard && (
+        <button type="button" onClick={onClampOffBoard}>
+          clamp
+        </button>
+      )}
+    </div>
+  ),
+}));
+
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'cutout1',
   shape: 'rectangle',
@@ -77,6 +95,21 @@ describe('InspectorContent', () => {
   it('renders an empty placeholder when nothing is selected', () => {
     render(<InspectorContent {...defaultProps} />);
     expect(screen.getByText('binDesigner.cutoutEditor.inspectorEmptyTitle')).toBeInTheDocument();
+  });
+
+  it('always renders the bin-size section and forwards the off-board count', () => {
+    const { rerender } = render(<InspectorContent {...defaultProps} offBoardCount={3} />);
+    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-off-board-count', '3');
+
+    rerender(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+        offBoardCount={0}
+      />
+    );
+    expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
   });
 
   it('renders X/Y/W/H inputs and rotation/depth sliders for a single selection', () => {

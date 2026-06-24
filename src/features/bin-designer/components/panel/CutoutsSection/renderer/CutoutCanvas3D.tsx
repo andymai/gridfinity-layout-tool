@@ -63,6 +63,8 @@ export interface CutoutCanvas3DProps {
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly selection: ReadonlySet<string>;
+  /** Cutouts stranded past the board edge — framed with a red warning outline. */
+  readonly offBoardIds?: ReadonlySet<string>;
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly drawingPreview: DrawingPreview | null;
@@ -120,6 +122,7 @@ export function CutoutCanvas3D({
   canvasWidth,
   canvasHeight,
   selection,
+  offBoardIds,
   preview,
   mode,
   drawingPreview,
@@ -302,6 +305,7 @@ export function CutoutCanvas3D({
         cellMask={cellMask}
         binColor={binColor}
         selection={selection}
+        offBoardIds={offBoardIds}
         preview={preview}
         mode={mode}
         isDragging={isDragging}

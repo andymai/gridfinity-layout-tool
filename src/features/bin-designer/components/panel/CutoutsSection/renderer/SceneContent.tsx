@@ -19,6 +19,7 @@ import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
+import { OffBoardBounds3D } from './OffBoardBounds3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
@@ -39,6 +40,8 @@ import { LockBadge3D } from './LockBadge3D';
 import { GroupResultMesh } from './GroupResultMesh';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+
+const EMPTY_IDS: ReadonlySet<string> = new Set();
 
 interface DrawingPreview {
   readonly x: number;
@@ -81,6 +84,8 @@ export interface SceneContentProps {
   readonly cellMask?: CellMask;
   readonly binColor: string;
   readonly selection: ReadonlySet<string>;
+  /** Cutouts stranded past the board edge — framed with a red warning outline. */
+  readonly offBoardIds?: ReadonlySet<string>;
   readonly preview: PreviewMap;
   readonly mode: InteractionMode;
   readonly isDragging: boolean;
@@ -140,6 +145,7 @@ export function SceneContent({
   cellMask,
   binColor,
   selection,
+  offBoardIds = EMPTY_IDS,
   preview,
   mode,
   isDragging,
@@ -402,6 +408,14 @@ export function SceneContent({
           const worldY = cy + localX * sin + localY * cos;
           return <LockBadge3D key={`lock-${cutout.id}`} worldX={worldX} worldY={worldY} />;
         })}
+
+      {/* Off-board warning frames for cutouts stranded past the board edge */}
+      {offBoardIds.size > 0 &&
+        cutouts
+          .filter((c) => offBoardIds.has(c.id) && !c.hidden)
+          .map((c) => (
+            <OffBoardBounds3D key={`offboard-${c.id}`} cutout={{ ...c, ...preview.get(c.id) }} />
+          ))}
 
       {/* Smart guides during drag */}
       {isDragging && (
