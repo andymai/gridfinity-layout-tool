@@ -57,8 +57,12 @@ export function LabelTabsSection() {
           touchTarget={false}
           onClick={() => setLabelsOpen((open) => !open)}
           aria-expanded={labelsOpen}
-          className="flex w-full items-center justify-start gap-1.5 px-0 py-1 text-xs font-medium text-content-secondary hover:bg-transparent"
+          className="flex w-full items-center justify-between gap-2 rounded-md border border-stroke-subtle bg-surface px-2.5 py-2 text-xs font-medium text-content hover:bg-surface-hover"
         >
+          <span className="flex items-center gap-2">
+            {t('binDesigner.compartmentLabelsList')}
+            <Badge>{state.compartmentTextRows.length}</Badge>
+          </span>
           <ChevronDownIcon
             size="xs"
             className={`text-content-tertiary transition-transform duration-200 ${
@@ -66,8 +70,6 @@ export function LabelTabsSection() {
             }`}
             aria-hidden="true"
           />
-          <span>{t('binDesigner.compartmentLabelsList')}</span>
-          <Badge>{state.compartmentTextRows.length}</Badge>
         </Button>
         {labelsOpen && (
           <ul className="mt-3 flex flex-col gap-1.5">
