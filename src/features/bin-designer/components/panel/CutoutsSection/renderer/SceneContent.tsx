@@ -19,7 +19,7 @@ import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
-import { OffBoardBounds3D } from './OffBoardBounds3D';
+import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
@@ -409,13 +409,16 @@ export function SceneContent({
           return <LockBadge3D key={`lock-${cutout.id}`} worldX={worldX} worldY={worldY} />;
         })}
 
-      {/* Off-board warning frames for cutouts stranded past the board edge */}
-      {offBoardIds.size > 0 &&
-        cutouts
-          .filter((c) => offBoardIds.has(c.id) && !c.hidden)
-          .map((c) => (
-            <OffBoardBounds3D key={`offboard-${c.id}`} cutout={{ ...c, ...preview.get(c.id) }} />
-          ))}
+      {/* Off-board warning frames — one per stranded array instance, framed at
+          its true footprint (kept in lockstep with detection). */}
+      <OffBoardFrames3D
+        cutouts={cutouts}
+        offBoardIds={offBoardIds}
+        preview={preview}
+        binWidth={binWidth}
+        binDepth={binDepth}
+        cellMask={cellMask}
+      />
 
       {/* Smart guides during drag */}
       {isDragging && (

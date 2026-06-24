@@ -33,6 +33,19 @@ const corner = (x: number, y: number): PathPoint => ({
   symmetric: true,
 });
 
+const gridArray = (cols: number, rows: number, pitchX: number, pitchY: number) =>
+  ({
+    mode: 'grid',
+    cols,
+    rows,
+    pitchX,
+    pitchY,
+    count: 1,
+    radius: 0,
+    startAngle: 0,
+    rotateToCenter: false,
+  }) as const;
+
 const BIN_W = 100;
 const BIN_D = 80;
 
@@ -100,6 +113,19 @@ describe('isCutoutOffBoard', () => {
     // …but it covers the unfilled cell, so the masked check flags it.
     expect(isCutoutOffBoard(overNotch, 100, 100, mask, cellSize)).toBe(true);
   });
+
+  it('flags an array whose outer instance spills past the edge', () => {
+    // Master fits at 70..90, but a 2-wide grid puts a second instance at 110..130.
+    const arr = createCutout({
+      x: 70,
+      y: 10,
+      width: 20,
+      depth: 20,
+      array: gridArray(2, 1, 40, 40),
+    });
+    expect(isCutoutOffBoard({ ...arr, array: undefined }, BIN_W, BIN_D)).toBe(false);
+    expect(isCutoutOffBoard(arr, BIN_W, BIN_D)).toBe(true);
+  });
 });
 
 describe('getOffBoardCutoutIds', () => {
@@ -154,6 +180,20 @@ describe('clampCutoutToBoard', () => {
     const after = { ...path, ...moved };
     expect(isCutoutOffBoard(after, BIN_W, BIN_D)).toBe(false);
   });
+
+  it('translates the master so every array instance fits', () => {
+    const arr = createCutout({
+      x: 70,
+      y: 10,
+      width: 20,
+      depth: 20,
+      array: gridArray(2, 1, 40, 40),
+    });
+    // Union spans 70..130 → shift -30 so instances land at 40..60 and 80..100.
+    expect(clampCutoutToBoard(arr, BIN_W, BIN_D)).toEqual({ x: 40, y: 10 });
+    const moved = { ...arr, ...clampCutoutToBoard(arr, BIN_W, BIN_D) };
+    expect(isCutoutOffBoard(moved, BIN_W, BIN_D)).toBe(false);
+  });
 });
 
 describe('clampOffBoardCutouts', () => {
@@ -169,14 +209,26 @@ describe('clampOffBoardCutouts', () => {
     expect(clampOffBoardCutouts([createCutout()], BIN_W, BIN_D).size).toBe(0);
   });
 
-  it('skips mask-only violations a translation cannot fix', () => {
-    // Inside the bounding rectangle but over an unfilled cell — flagged by
-    // detection, but a pure translation can't fit the concave polygon, so the
-    // clamp emits no move (the warning persists honestly).
+  it('relocates a mask-only violation into the nearest filled region', () => {
+    // Inside the bounding rectangle but over an unfilled cell — the clamp now
+    // searches for a valid cell-aligned placement and moves it there.
     const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
     const cellSize = { cellMmX: 50, cellMmY: 50 };
     const overNotch = createCutout({ id: 'notch', x: 60, y: 60, width: 30, depth: 30 });
     expect(getOffBoardCutoutIds([overNotch], 100, 100, mask, cellSize).has('notch')).toBe(true);
-    expect(clampOffBoardCutouts([overNotch], 100, 100, mask, cellSize).size).toBe(0);
+    const updates = clampOffBoardCutouts([overNotch], 100, 100, mask, cellSize);
+    expect(updates.size).toBe(1);
+    const moved = { ...overNotch, ...updates.get('notch') };
+    expect(isCutoutOffBoard(moved, 100, 100, mask, cellSize)).toBe(false);
+  });
+
+  it('leaves a cutout flagged when no valid mask placement exists', () => {
+    // 90×90 spans the whole 2×2 grid wherever placed, so it always hits the
+    // empty cell — no translation can fit it; the clamp emits nothing.
+    const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
+    const cellSize = { cellMmX: 50, cellMmY: 50 };
+    const tooBig = createCutout({ id: 'big', x: 5, y: 5, width: 90, depth: 90 });
+    expect(getOffBoardCutoutIds([tooBig], 100, 100, mask, cellSize).has('big')).toBe(true);
+    expect(clampOffBoardCutouts([tooBig], 100, 100, mask, cellSize).size).toBe(0);
   });
 });

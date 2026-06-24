@@ -286,13 +286,19 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     stored in **absolute interior-mm and are never auto-rescaled**, so shrinking
     the footprint can leave a cutout past the new edge; the mesh builder then
     silently clips the overhang (`cutoutBuilder.clipToInterior`). `offBoardCutouts`
-    flags strays via `getRotatedBounds` (the same AABB the drag/resize handlers
-    clamp against, so the flag and the edge agree), the canvas frames them with a
-    red `OffBoardBounds3D`, and the inspector offers a one-click clamp-back
-    ("Bring back in") that translates each stray inside (oversized cutouts pin
-    their min corner to the origin). Detection keys off each cutout's master
-    footprint — an **array** whose instances spill past the edge isn't flagged,
-    consistent with the interaction clamps.
+    treats a cutout as its set of **expanded array instances** (`expandCutoutArray`,
+    just the cutout itself when there's no array) and flags it if **any** instance
+    falls outside, measuring each footprint with `getCutoutBounds` from `maskFit`
+    (true vertex bounds, rotation-aware for paths — the same primitive placement
+    validation uses). A **masked** (custom-shape) bin defers to `cutoutFitsInMask`
+    so an instance over an unfilled cell is caught, not just rectangle overhang.
+    `OffBoardFrames3D` frames each off-board _instance_ in red; the inspector's
+    one-click "Bring back in" translates the **master** (instances move with it):
+    for a plain bin it pulls the instances' union inside the rectangle (oversized
+    pins the min corner to the origin); for a masked bin it searches the nearest
+    cell-aligned placement where every instance fits the polygon, and leaves the
+    cutout flagged when none exists (translation can't fit an arbitrary concave
+    region — honest rather than a silent false-fix).
 
 ## Thumbnail Pipeline
 
