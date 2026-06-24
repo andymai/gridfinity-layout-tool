@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.0...gridfinity-layout-tool-v4.202.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* **bin-designer:** carry compartment labels on grid resize + read top-left first ([#2339](https://github.com/andymai/gridfinity-layout-tool/issues/2339)) ([63988f3](https://github.com/andymai/gridfinity-layout-tool/commit/63988f3dc4e051fb8381f00a58cae2f9c486c277))
+
 ## [4.202.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.6...gridfinity-layout-tool-v4.202.0) (2026-06-24)
 
 
