@@ -11,11 +11,13 @@
  * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuseAllBisect, cutAllBisect } from 'brepjs';
+import { unwrap, fuseAllBisect, cutAllBisect, translate } from 'brepjs';
 import type { Shape3D, ValidSolid, BatchBisectTelemetry } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../utils/abort';
+import { getBinBodyCache, setBinBodyCache } from '../../shapeCache';
+import { buildCacheKey, compactKey } from '../../cacheKeyUtils';
 
 export type BooleanFallbackCategory = 'fuse' | 'cut' | 'pattern_cut';
 
@@ -88,12 +90,39 @@ export const booleanStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { signal, forExport } = ctx;
+    const { signal, forExport, featuresKey } = ctx;
     let bin = ctx.solid;
     if (!bin) return ctx;
     const originalSolid = bin;
 
     checkCancelled(signal);
+
+    const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];
+
+    // Resume cache: a metadata-only edit (label text, notes, category) leaves
+    // the shell and every feature's geometry key unchanged, so the post-boolean
+    // body is identical — skip the whole boolean stage. The key composes the
+    // shell identity, the feature geometry (`featuresKey`), and `forExport`
+    // (which drives `simplify`), so it changes whenever the booleaned body
+    // would. Disabled when `featuresKey` is null (solid mode / wall patterns,
+    // whose tools aren't captured by the key — see featuresStage).
+    const resumeKey =
+      featuresKey !== null
+        ? compactKey(buildCacheKey('binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey))
+        : null;
+
+    if (resumeKey !== null) {
+      const cached = getBinBodyCache(resumeKey);
+      if (cached) {
+        // The cached body already has features fused/cut in and carries their
+        // face-origin tags (preserved by the metadata clone). Drop the shell
+        // and the now-unused feature tools; the freshly built deferredSolid
+        // (socket) flows through unchanged.
+        originalSolid.delete();
+        for (const t of allTargets) t.delete();
+        return { ...ctx, solid: cached, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
+      }
+    }
 
     // Shared by fuse and cut passes — `simplify: forExport` merges
     // same-domain faces left behind by the n-way boolean, and `signal`
@@ -124,8 +153,14 @@ export const booleanStage: PipelineStage = {
     }
 
     if (bin !== originalSolid) originalSolid.delete();
-    const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];
     for (const t of allTargets) t.delete();
+
+    // Populate the resume cache and hand the pipeline a metadata-preserving
+    // clone — the cache owns `bin`, exactly like shellStage/getShellCache.
+    if (resumeKey !== null) {
+      setBinBodyCache(resumeKey, bin);
+      bin = translate(bin, [0, 0, 0]);
+    }
 
     return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
   },

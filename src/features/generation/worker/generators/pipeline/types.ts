@@ -103,6 +103,15 @@ export interface PipelineContext {
   readonly cutTargets: readonly Shape3D[];
   /** Pattern cut targets — applied in a separate boolean pass after cutTargets */
   readonly patternCutTargets: readonly Shape3D[];
+  /**
+   * Composite geometry-identity key for the feature targets this run, set by
+   * the features stage. Combined with `dimensions.shellKey` + `forExport` it
+   * keys the post-boolean body cache, so a metadata-only edit (no geometry
+   * change) skips the boolean stage. `null` disables that resume cache for
+   * paths whose targets aren't fully captured by feature builder keys (solid
+   * mode, wall patterns) — correctness over coverage.
+   */
+  readonly featuresKey: string | null;
   /** Final mesh output (set by tessellate stage) */
   readonly mesh: MeshData | null;
   /** Coarse LOD mesh for distance-based rendering (preview only) */

@@ -66,6 +66,12 @@ const socketCache = new LRUCache<Shape3D>('socket', 20, disposeShape);
 const lipCache = new LRUCache<Shape3D>('lip', 20, disposeShape);
 const boxCache = new LRUCache<Shape3D>('box', 20, disposeShape);
 const shellCache = new LRUCache<Shape3D>('shell', 15, disposeShape);
+// Post-boolean body (shell + features cut/fused in), keyed on shell + feature
+// geometry. Lets a metadata-only edit (label text, notes, category) reuse the
+// booleaned body and skip the whole boolean stage — mirrors the baseplate's
+// slabWithPocketsCache resume. Like shellCache it holds BASE/LIP/feature
+// face-origin tags, so reads must preserve metadata (see getBinBodyCache).
+const binBodyCache = new LRUCache<Shape3D>('bin-body', 12, disposeShape);
 
 // Per-cell-size loft templates. A uniform grid lofts one cell socket and clones
 // it per position instead of re-lofting every cell (mirrors the baseplate
@@ -104,13 +110,14 @@ function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   return cache;
 }
 
-/** Static LRU caches (socket, lip, box, shell, cell-socket template). */
+/** Static LRU caches (socket, lip, box, shell, cell-socket template, bin-body). */
 const staticLruCaches: readonly LRUCache<Shape3D>[] = [
   socketCache,
   lipCache,
   boxCache,
   shellCache,
   cellSocketTemplateCache,
+  binBodyCache,
 ];
 
 export function socketCacheKey(
@@ -181,6 +188,22 @@ export function getShellCache(key: string): Shape3D | null {
 
 export function setShellCache(key: string, shape: Shape3D): void {
   shellCache.set(key, shape);
+}
+
+/**
+ * Post-boolean body cache. Same metadata-preserving clone as `getShellCache`:
+ * `translate([0,0,0])` carries the BASE/LIP/feature face-origin tags that a bare
+ * `clone()` would drop (which would collapse the multi-color preview/export).
+ * Returns null on miss. The cache owns the stored shape; callers own the clone.
+ */
+export function getBinBodyCache(key: string): Shape3D | null {
+  const cached = binBodyCache.get(key);
+  if (cached === undefined) return null;
+  return translate(cached, [0, 0, 0]);
+}
+
+export function setBinBodyCache(key: string, shape: Shape3D): void {
+  binBodyCache.set(key, shape);
 }
 
 /** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */

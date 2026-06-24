@@ -64,7 +64,9 @@ export const featuresStage: PipelineStage = {
       for (const tool of embossTools) {
         collectOrigins(tool, FeatureTag.TEXT, originToTag);
       }
-      return { ...ctx, cutTargets: cutoutTools, fuseTargets: embossTools };
+      // Solid-mode cutout tools aren't keyed through feature builders, so the
+      // post-boolean resume cache can't safely identify them — disable it.
+      return { ...ctx, cutTargets: cutoutTools, fuseTargets: embossTools, featuresKey: null };
     }
 
     // For non-rectangular (cellMask) bins, run only builders that have
@@ -82,7 +84,8 @@ export const featuresStage: PipelineStage = {
     // Polygon bins enumerate outer polygon edges (see wallPatterns.ts) and
     // only bind clipping to the outermost edge per cardinal — non-outermost
     // step walls get pure pattern.
-    if (params.wallPattern.enabled) {
+    const wallPatternEnabled = params.wallPattern.enabled;
+    if (wallPatternEnabled) {
       const patternShapes = buildWallPatterns(ctx);
       targets.patternCutTargets.push(...patternShapes);
     }
@@ -92,6 +95,10 @@ export const featuresStage: PipelineStage = {
       fuseTargets: targets.fuseTargets,
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
+      // Wall-pattern cuts aren't keyed through feature builders, so their
+      // geometry isn't in `featuresKey` — disable the resume cache rather than
+      // risk a stale body when only the pattern changes.
+      featuresKey: wallPatternEnabled ? null : targets.featuresKey,
     };
   },
 };
