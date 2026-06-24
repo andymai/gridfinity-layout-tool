@@ -70,7 +70,7 @@ graph TB
 - `worker/generators/connectorUtils.ts` — legacy connector position computation
 - `worker/generators/generatorTypes.ts` — barrel re-export of constants/utilities
 - `worker/generators/hexGrid.ts` — hex grid layout calculations
-- `worker/generators/shapeCache.ts` — LRU cache for BREP solids
+- `worker/generators/shapeCache.ts` — LRU caches for BREP solids. Includes a per-cell-size **cell-socket template** cache: a uniform socket grid lofts one cell once and clones it per position (intrinsic-keyed, placement-invariant), turning a cold build from N lofts into 1 loft + (N−1) clones — the bin-side mirror of the baseplate `pocketTemplateCache`
 - `worker/generators/socketMeshCache.ts` — LRU cache for the deferred socket's tessellated mesh (triangles + edge lines), keyed by socket geometry identity + tolerance; reused across edits that don't change the base
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
 - `worker/generators/scenarios/` — test scenario data by category
