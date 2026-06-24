@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Zelle {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Klicken zum Teilen",
   "binDesigner.compartmentEditor.compartmentAria": "Fach {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Fach {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Fach {n}, beschriftet mit {label}",
   "binDesigner.compartmentEditor.modeLabel": "Fach-Bearbeitungsmodus",
   "binDesigner.compartmentEditor.modeDividers": "Trennwände bearbeiten",

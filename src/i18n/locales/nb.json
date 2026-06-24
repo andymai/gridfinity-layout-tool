@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Celle {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Klikk for å dele",
   "binDesigner.compartmentEditor.compartmentAria": "Rom {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Rom {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Rom {n}, merket {label}",
   "binDesigner.compartmentEditor.modeLabel": "Redigeringsmodus for rom",
   "binDesigner.compartmentEditor.modeDividers": "Rediger skillevegger",

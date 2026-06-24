@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Клітинка {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Натисніть, щоб розділити",
   "binDesigner.compartmentEditor.compartmentAria": "Відсік {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Відсік {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Відсік {n}, позначено {label}",
   "binDesigner.compartmentEditor.modeLabel": "Режим редагування відсіків",
   "binDesigner.compartmentEditor.modeDividers": "Редагувати розділювачі",

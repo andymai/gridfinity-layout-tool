@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Cel {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Klik om te splitsen",
   "binDesigner.compartmentEditor.compartmentAria": "Compartiment {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Compartiment {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Vak {n}, met label {label}",
   "binDesigner.compartmentEditor.modeLabel": "Bewerkingsmodus voor vakken",
   "binDesigner.compartmentEditor.modeDividers": "Scheidingswanden bewerken",

@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "セル{col}、{row}",
   "binDesigner.compartmentEditor.clickToSplit": "クリックして分割",
   "binDesigner.compartmentEditor.compartmentAria": "区画{n}、{dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "区画{n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "区画{n}、ラベル「{label}」",
   "binDesigner.compartmentEditor.modeLabel": "区画編集モード",
   "binDesigner.compartmentEditor.modeDividers": "仕切りを編集",

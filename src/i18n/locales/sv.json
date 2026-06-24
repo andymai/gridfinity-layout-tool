@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Cell {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Klicka för att dela",
   "binDesigner.compartmentEditor.compartmentAria": "Fack {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Fack {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Fack {n}, märkt {label}",
   "binDesigner.compartmentEditor.modeLabel": "Redigeringsläge för fack",
   "binDesigner.compartmentEditor.modeDividers": "Redigera avdelare",

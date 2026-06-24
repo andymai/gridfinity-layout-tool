@@ -294,6 +294,7 @@
   "binDesigner.compartmentEditor.cellAria": "Celda {col}, {row}",
   "binDesigner.compartmentEditor.clickToSplit": "Clic para dividir",
   "binDesigner.compartmentEditor.compartmentAria": "Compartimento {n}, {dimension}",
+  "binDesigner.compartmentEditor.compartmentAriaNumber": "Compartimento {n}",
   "binDesigner.compartmentEditor.compartmentAriaLabeled": "Compartimento {n}, etiquetado como {label}",
   "binDesigner.compartmentEditor.modeLabel": "Modo de edición de compartimentos",
   "binDesigner.compartmentEditor.modeDividers": "Editar divisores",

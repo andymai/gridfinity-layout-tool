@@ -2838,6 +2838,7 @@ const en: Record<string, string> = {
     'Compartment {n}, {dimension}, click to split',
   'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
   'binDesigner.compartmentEditor.compartmentAriaLabeled': 'Compartment {n}, labeled {label}',
+  'binDesigner.compartmentEditor.compartmentAriaNumber': 'Compartment {n}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
   'binDesigner.compartmentEditor.modeLabel': 'Compartment edit mode',
   'binDesigner.compartmentEditor.modeDividers': 'Edit dividers',

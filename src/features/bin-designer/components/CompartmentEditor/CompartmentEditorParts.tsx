@@ -138,23 +138,27 @@ export function GridCell({
   const showEmptyNumber =
     isTopLeftOfCompartment && labelMode && trimmedLabel.length === 0 && displayNumber !== undefined;
 
-  // Determine the cell's accessible label
+  // Determine the cell's accessible label. In label mode a cell IS a labeling
+  // target, so it announces the compartment number (matching the visible number
+  // and the "Comp. N" field) rather than a grid coordinate.
   const cellLabel = trimmedLabel
     ? t('binDesigner.compartmentEditor.compartmentAriaLabeled', {
         n: displayNumber ?? compartmentId + 1,
         label: trimmedLabel,
       })
-    : dimensionLabel
-      ? isSplittable
-        ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
-            n: compartmentId + 1,
-            dimension: dimensionLabel,
-          })
-        : t('binDesigner.compartmentEditor.compartmentAria', {
-            n: compartmentId + 1,
-            dimension: dimensionLabel,
-          })
-      : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
+    : labelMode && displayNumber !== undefined
+      ? t('binDesigner.compartmentEditor.compartmentAriaNumber', { n: displayNumber })
+      : dimensionLabel
+        ? isSplittable
+          ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
+              n: compartmentId + 1,
+              dimension: dimensionLabel,
+            })
+          : t('binDesigner.compartmentEditor.compartmentAria', {
+              n: compartmentId + 1,
+              dimension: dimensionLabel,
+            })
+        : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
 
   // Reveal the dimension label only when this specific cell is hovered.
   const showDimensionLabel = isHovered && dimensionLabel;
@@ -165,7 +169,7 @@ export function GridCell({
       role="button"
       tabIndex={0}
       aria-label={cellLabel}
-      aria-pressed={isSelected}
+      aria-pressed={labelMode ? isLabelSelected : isSelected}
       style={{
         backgroundColor: isSelected
           ? 'var(--color-accent)'
