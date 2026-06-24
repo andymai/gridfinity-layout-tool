@@ -12,6 +12,8 @@ import { bench, describe, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams as params, makeInsert, makeCutout } from './__kernel-tests__/scenarioTypes';
+import { buildBaseSocket } from './socketBuilder';
+import { clearAllCaches } from './shapeCache';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -328,4 +330,23 @@ describe('export (forExport=true)', () => {
     },
     { iterations: 3, warmupIterations: 1 }
   );
+});
+
+// ─── Socket grid (cold cache) ───────────────────────────────────────────────
+//
+// The whole-socket cache isn't keyed on bin height, so end-to-end bin benches
+// measure it warm after the first call. Clear all caches each iteration to time
+// the cold socket-grid build itself (cell loft + fuse + hole cut) across grid
+// sizes — the lever for any future socket-fuse change.
+describe('socket grid (cold cache)', () => {
+  const cold = (gridW: number, gridD: number, magnet: boolean, forExport: boolean) => () => {
+    clearAllCaches();
+    buildBaseSocket(gridW, gridD, magnet, false, 3.1, 2, 1.25, forExport);
+  };
+
+  bench('4×4 preview', cold(4, 4, false, false), { iterations: 10, warmupIterations: 2 });
+  bench('6×6 preview', cold(6, 6, false, false), { iterations: 10, warmupIterations: 2 });
+  bench('7×7 preview', cold(7, 7, false, false), { iterations: 8, warmupIterations: 2 });
+  bench('6×6 export', cold(6, 6, false, true), { iterations: 6, warmupIterations: 1 });
+  bench('6×6 export + magnets', cold(6, 6, true, true), { iterations: 4, warmupIterations: 1 });
 });
