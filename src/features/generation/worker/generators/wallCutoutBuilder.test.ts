@@ -190,6 +190,26 @@ describe('computeInteriorDividerCutouts', () => {
     expect(offset.y).toBeCloseTo(centered.y, 6);
   });
 
+  it('sizes a tilted divider cutout by its true diagonal length, not the projected span', () => {
+    // Symmetric ±20mm tilt on a segLen=40 vertical divider → 45° wall whose
+    // true length is hypot(40, 40). A 70% window must scale to that length.
+    const override: DividerOverride = {
+      compartmentA: 0,
+      compartmentB: 1,
+      offsetStart: -20,
+      offsetEnd: 20,
+    };
+    const base = makeParams({ cols: 2, rows: 1, cells: [0, 1] }, [override]);
+    const [cut] = computeInteriorDividerCutouts(
+      withInterior(base, { width: 70, alignment: 'center', offset: 0 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    expect(cut.rotateZ).toBeCloseTo(45, 4);
+    expect(cut.cutW).toBeCloseTo(Math.hypot(40, 40) * 0.7, 4);
+  });
+
   it('honours an absolute mm width override instead of the percentage', () => {
     const base = makeParams({ cols: 2, rows: 1, cells: [0, 1] });
     // Percentage default (70%) would give 0.7 * segLen; the mm override wins.

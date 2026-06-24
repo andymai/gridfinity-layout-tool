@@ -90,6 +90,42 @@ export const wallCutouts: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('wall cutouts', 'tilted interior divider cutout with alignment (#2323)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 2,
+      height: 5,
+      compartments: {
+        cols: 2,
+        rows: 1,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -15, offsetEnd: 15 }],
+      },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        // Right-aligned window on a tilted divider exercises the true-length
+        // span + the along-wall offset projection.
+        interior: {
+          enabled: true,
+          width: 50,
+          depth: 50,
+          alignment: 'right',
+          offset: 0,
+          widthMm: null,
+        },
+      },
+    },
+    timeout: 60_000,
+  }),
   defineScenario('wall cutouts', 'left-aligned cutout with offset and absolute mm width', {
     assert: 'structural',
     params: {

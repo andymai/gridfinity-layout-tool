@@ -496,6 +496,11 @@ export function buildOverrideLookup(
 export interface InteriorDividerSegment {
   /** Axis-projected segment length (mm) — not the longer true diagonal. */
   readonly segLen: number;
+  /** True wall length along the (possibly tilted) segment — equals `segLen`
+   *  for straight dividers, longer for tilted ones. Features that measure
+   *  distance ALONG the wall (cutout width, alignment) must use this, not the
+   *  projected `segLen`. */
+  readonly wallLen: number;
   readonly x: number;
   readonly y: number;
   /** In-plane rotation (deg) aligned to the wall: 90 for straight vertical
@@ -555,11 +560,12 @@ export function interiorDividerSegments(
         ov
           ? {
               segLen,
+              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
               x: xPos + (ov.offsetStart + ov.offsetEnd) / 2,
               y: midY,
               rotateZ: Math.atan2(segLen, ov.offsetEnd - ov.offsetStart) * RAD2DEG,
             }
-          : { segLen, x: xPos, y: midY, rotateZ: 90 }
+          : { segLen, wallLen: segLen, x: xPos, y: midY, rotateZ: 90 }
       );
     }
   }
@@ -580,11 +586,12 @@ export function interiorDividerSegments(
         ov
           ? {
               segLen,
+              wallLen: Math.hypot(segLen, ov.offsetEnd - ov.offsetStart),
               x: midX,
               y: yPos + (ov.offsetStart + ov.offsetEnd) / 2,
               rotateZ: Math.atan2(ov.offsetEnd - ov.offsetStart, segLen) * RAD2DEG,
             }
-          : { segLen, x: midX, y: yPos, rotateZ: 0 }
+          : { segLen, wallLen: segLen, x: midX, y: yPos, rotateZ: 0 }
       );
     }
   }
