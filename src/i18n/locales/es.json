@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "No hay suficiente profundidad para ambas pestañas en este compartimento. Reduce Profundidad o Sangría.",
   "binDesigner.tabDepth": "Profundidad de pestaña",
   "binDesigner.tabEdges": "Bordes de pestaña",
+  "binDesigner.tabShapeGroup": "Forma y tamaño de la pestaña",
+  "binDesigner.tabDimensionsGroup": "Dimensiones",
   "binDesigner.tabEdges.back": "Atrás",
   "binDesigner.tabEdges.both": "Ambos",
   "binDesigner.tabEdges.front": "Adelante",

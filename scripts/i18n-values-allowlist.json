@@ -30,6 +30,7 @@
     "binDesigner.designCount",
     "binDesigner.designs",
     "binDesigner.dimensions",
+    "binDesigner.tabDimensionsGroup",
     "binDesigner.dividerAutoHeight",
     "binDesigner.experimental",
     "binDesigner.multiColor.experimental",

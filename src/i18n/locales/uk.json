@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Недостатньо глибини для обох виступів у цьому відсіку. Зменшіть глибину або відступ.",
   "binDesigner.tabDepth": "Глибина виступу",
   "binDesigner.tabEdges": "Краї виступу",
+  "binDesigner.tabShapeGroup": "Форма та розмір виступу",
+  "binDesigner.tabDimensionsGroup": "Розміри",
   "binDesigner.tabEdges.back": "Задній",
   "binDesigner.tabEdges.both": "Обидва",
   "binDesigner.tabEdges.front": "Передній",

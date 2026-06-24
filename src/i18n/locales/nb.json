@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Ikke nok dybde for begge faner i dette rommet. Reduser dybde eller innrykk.",
   "binDesigner.tabDepth": "Fanedybde",
   "binDesigner.tabEdges": "Fanekanter",
+  "binDesigner.tabShapeGroup": "Faneform og -størrelse",
+  "binDesigner.tabDimensionsGroup": "Dimensjoner",
   "binDesigner.tabEdges.back": "Bak",
   "binDesigner.tabEdges.both": "Begge",
   "binDesigner.tabEdges.front": "Foran",

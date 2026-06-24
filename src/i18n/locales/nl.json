@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Niet genoeg diepte voor beide tabs in dit vak. Verklein de diepte of inspringing.",
   "binDesigner.tabDepth": "Tabdiepte",
   "binDesigner.tabEdges": "Tabranden",
+  "binDesigner.tabShapeGroup": "Tabvorm en -grootte",
+  "binDesigner.tabDimensionsGroup": "Afmetingen",
   "binDesigner.tabEdges.back": "Achter",
   "binDesigner.tabEdges.both": "Beide",
   "binDesigner.tabEdges.front": "Voor",

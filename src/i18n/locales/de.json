@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Nicht genug Tiefe für beide Halter in diesem Fach. Tiefe oder Versatz reduzieren.",
   "binDesigner.tabDepth": "Haltertiefe",
   "binDesigner.tabEdges": "Halterkanten",
+  "binDesigner.tabShapeGroup": "Halterform & -größe",
+  "binDesigner.tabDimensionsGroup": "Abmessungen",
   "binDesigner.tabEdges.back": "Hinten",
   "binDesigner.tabEdges.both": "Beide",
   "binDesigner.tabEdges.front": "Vorne",

@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Pas assez de profondeur pour les deux onglets dans ce compartiment. Réduisez la profondeur ou le retrait.",
   "binDesigner.tabDepth": "Profondeur d'onglet",
   "binDesigner.tabEdges": "Bords d'onglet",
+  "binDesigner.tabShapeGroup": "Forme et taille de l'onglet",
+  "binDesigner.tabDimensionsGroup": "Dimensions",
   "binDesigner.tabEdges.back": "Arrière",
   "binDesigner.tabEdges.both": "Les deux",
   "binDesigner.tabEdges.front": "Avant",

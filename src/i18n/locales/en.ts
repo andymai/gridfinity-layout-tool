@@ -1472,6 +1472,8 @@ const en: Record<string, string> = {
   'binDesigner.tabAlignmentHint':
     'Where the tab sits within the compartment when narrower than full width.',
   'binDesigner.tabEdges': 'Tab edges',
+  'binDesigner.tabShapeGroup': 'Tab shape & size',
+  'binDesigner.tabDimensionsGroup': 'Dimensions',
   'binDesigner.tabEdges.back': 'Back',
   'binDesigner.tabEdges.front': 'Front',
   'binDesigner.tabEdges.both': 'Both',

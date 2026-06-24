@@ -833,6 +833,8 @@
   "binDesigner.tabBothCollisionWarning": "Inte tillräckligt djup för båda flikarna i detta fack. Minska djup eller indrag.",
   "binDesigner.tabDepth": "Flikdjup",
   "binDesigner.tabEdges": "Flikkanter",
+  "binDesigner.tabShapeGroup": "Flikens form och storlek",
+  "binDesigner.tabDimensionsGroup": "Mått",
   "binDesigner.tabEdges.back": "Bak",
   "binDesigner.tabEdges.both": "Båda",
   "binDesigner.tabEdges.front": "Fram",
