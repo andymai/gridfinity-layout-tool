@@ -77,6 +77,22 @@ export function getPreviewBorderColor(previewColor: string): string {
 }
 
 /**
+ * Readable text color for a label drawn ON a compartment fill. The fill is the
+ * filament/preview color (any hue or lightness), so a theme-fixed text color
+ * can land white-on-white or black-on-black. Pick dark or light by the fill's
+ * perceptual luminance instead — hue-aware, so bright yellow gets dark text.
+ */
+export function getContrastingTextColor(previewColor: string): string {
+  const toLinear = (c: number): number =>
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const r = toLinear(parseInt(previewColor.slice(1, 3), 16) / 255);
+  const g = toLinear(parseInt(previewColor.slice(3, 5), 16) / 255);
+  const b = toLinear(parseInt(previewColor.slice(5, 7), 16) / 255);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.4 ? 'hsl(0, 0%, 13%)' : 'hsl(0, 0%, 98%)';
+}
+
+/**
  * Compartment fill color: preview color with a small per-id lightness
  * offset (±3%) so adjacent compartments are visually distinguishable
  * without breaking the unified palette.

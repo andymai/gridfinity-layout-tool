@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Modifier les séparateurs",
   "binDesigner.compartmentEditor.modeLabels": "Ajouter des étiquettes",
   "binDesigner.compartmentEditor.clickToLabel": "Cliquez sur un compartiment pour ajouter une étiquette",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Les étiquettes sont gravées sur les onglets d'étiquette.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Les étiquettes ne s'impriment que sur les onglets d'étiquette.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Activer les onglets d'étiquette",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartiment {n}, {dimension}, cliquer pour diviser",

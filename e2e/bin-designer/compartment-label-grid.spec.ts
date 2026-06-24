@@ -57,8 +57,11 @@ test.describe('Bin Designer — compartment label grid', () => {
     await expect(grid.getByText('M4', { exact: true })).toBeVisible();
     await expect(grid.getByText('M5', { exact: true })).toBeVisible();
 
-    // Labels print only on tabs — the inline prompt enables the feature.
+    // Labels print only on tabs — the inline prompt enables the feature, then
+    // the status line flips to a positive confirmation (two-sided CTA).
+    await expect(page.getByText('Labels print only on label tabs.')).toBeVisible();
     await page.getByRole('button', { name: 'Enable label tabs' }).click();
+    await expect(page.getByText('Labels engrave on the label tabs.')).toBeVisible();
 
     // The bulk list is collapsed but its header announces all 24 compartments,
     // so the remaining labels are discoverable (the original bug was that they

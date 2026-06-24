@@ -120,9 +120,6 @@ export function CompartmentEditor() {
 
   const compartmentCount = getCompartmentCount(compartments);
 
-  // In-grid label editing ("Add labels" mode). Transient view state — owns the
-  // mode flag, the edited compartment, and display numbering shared with the
-  // bulk list.
   const labeling = useCompartmentLabeling(compartments, style, compartmentCount);
 
   // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
@@ -270,9 +267,8 @@ export function CompartmentEditor() {
 
   const handleCellPointerDown = useCallback(
     (idx: number) => {
-      // In label mode a click selects the compartment for text entry; the
-      // drag-to-merge / click-to-split gestures are suspended (no drag state is
-      // set, so the pointer-up branch below stays inert).
+      // Label mode: click selects for text entry. Setting no drag state keeps
+      // the merge/split pointer-up branch inert.
       if (labeling.labelMode) {
         labeling.selectCompartment(cells[idx]);
         return;
@@ -786,29 +782,33 @@ export function CompartmentEditor() {
             )}
           </div>
 
-          {/* Labeling: the roomy editor for the selected compartment, plus a
-              reminder that labels only print when label tabs are enabled. */}
           {labeling.labelMode && (
             <>
               <CompartmentLabelField labeling={labeling} />
-              {!labelEnabled && (
-                <div className="mt-2 flex items-start gap-2 text-xs text-content-tertiary">
-                  <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+              <div className="mt-2 flex items-start gap-2 text-xs text-content-tertiary">
+                <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                {labelEnabled ? (
                   <span className="flex-1">
-                    {t('binDesigner.compartmentEditor.labelsNeedTabs')}
+                    {t('binDesigner.compartmentEditor.labelsEngraveOnTabs')}
                   </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    touchTarget={false}
-                    onClick={() => updateLabel({ enabled: true })}
-                    className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
-                  >
-                    {t('binDesigner.compartmentEditor.enableLabelTabs')}
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <>
+                    <span className="flex-1">
+                      {t('binDesigner.compartmentEditor.labelsNeedTabs')}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      touchTarget={false}
+                      onClick={() => updateLabel({ enabled: true })}
+                      className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
+                    >
+                      {t('binDesigner.compartmentEditor.enableLabelTabs')}
+                    </Button>
+                  </>
+                )}
+              </div>
             </>
           )}
         </section>

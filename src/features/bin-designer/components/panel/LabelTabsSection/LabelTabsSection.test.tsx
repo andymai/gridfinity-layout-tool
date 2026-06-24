@@ -24,12 +24,16 @@ describe('LabelTabsSection', () => {
 
   it('renders one engraved-text input per compartment', () => {
     render(<LabelTabsSection />);
+    // The bulk list is a primary control (shown when enabled); expand its
+    // counted disclosure to reach the inputs.
+    fireEvent.click(screen.getByRole('button', { name: /Compartment labels/ }));
     expect(screen.getByLabelText('Engraved text for compartment 1')).toBeInTheDocument();
     expect(screen.getByLabelText('Engraved text for compartment 2')).toBeInTheDocument();
   });
 
   it('commits typed text to the store on blur (deferred commit)', () => {
     render(<LabelTabsSection />);
+    fireEvent.click(screen.getByRole('button', { name: /Compartment labels/ }));
     const input = screen.getByLabelText('Engraved text for compartment 1');
     // Typing alone must NOT commit — that would regenerate the bin per keystroke.
     fireEvent.change(input, { target: { value: 'SCREWS' } });

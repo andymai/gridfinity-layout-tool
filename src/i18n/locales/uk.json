@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Редагувати розділювачі",
   "binDesigner.compartmentEditor.modeLabels": "Додати мітки",
   "binDesigner.compartmentEditor.clickToLabel": "Натисніть на відсік, щоб додати мітку",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Мітки гравіруються на виступах для міток.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Мітки друкуються лише на виступах для міток.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Увімкнути виступи для міток",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Відсік {n}, {dimension}, натисніть, щоб розділити",

@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Redigera avdelare",
   "binDesigner.compartmentEditor.modeLabels": "Lägg till etiketter",
   "binDesigner.compartmentEditor.clickToLabel": "Klicka på ett fack för att lägga till en etikett",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Etiketter graveras på etikettflikarna.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Etiketter skrivs endast ut på etikettflikar.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Aktivera etikettflikar",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Fack {n}, {dimension}, klicka för att dela",

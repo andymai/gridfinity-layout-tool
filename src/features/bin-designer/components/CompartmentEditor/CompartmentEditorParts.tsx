@@ -11,6 +11,7 @@ import type { CompartmentConfig } from '@/features/bin-designer/types';
 import {
   getCompartmentFill,
   getPreviewBorderColor,
+  getContrastingTextColor,
 } from '@/features/bin-designer/hooks/usePreviewColor';
 import { useTranslation } from '@/i18n';
 
@@ -116,9 +117,9 @@ export function GridCell({
   }
   const boxShadow = shadowParts.length > 0 ? shadowParts.join(', ') : 'none';
 
-  // Dimension + text labels render once per compartment, on its visual
-  // top-left cell. The dimension overlay is a divider-mode hover affordance, so
-  // it's suppressed while labeling; the text label is the labeling surface.
+  // Labels render once per compartment, on its visual top-left cell. The
+  // dimension overlay is a divider-mode hover affordance, so it's suppressed
+  // while labeling.
   const isTopLeftOfCompartment = !hasVisualTopNeighbor && !hasLeftNeighbor;
   let dimensionLabel: string | null = null;
   if (isTopLeftOfCompartment && isSplittable && !labelMode) {
@@ -138,27 +139,30 @@ export function GridCell({
   const showEmptyNumber =
     isTopLeftOfCompartment && labelMode && trimmedLabel.length === 0 && displayNumber !== undefined;
 
-  // Determine the cell's accessible label. In label mode a cell IS a labeling
-  // target, so it announces the compartment number (matching the visible number
-  // and the "Comp. N" field) rather than a grid coordinate.
-  const cellLabel = trimmedLabel
-    ? t('binDesigner.compartmentEditor.compartmentAriaLabeled', {
-        n: displayNumber ?? compartmentId + 1,
-        label: trimmedLabel,
-      })
-    : labelMode && displayNumber !== undefined
-      ? t('binDesigner.compartmentEditor.compartmentAriaNumber', { n: displayNumber })
-      : dimensionLabel
-        ? isSplittable
-          ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
-              n: compartmentId + 1,
-              dimension: dimensionLabel,
-            })
-          : t('binDesigner.compartmentEditor.compartmentAria', {
-              n: compartmentId + 1,
-              dimension: dimensionLabel,
-            })
-        : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
+  // In label mode a cell IS a labeling target, so it announces the compartment
+  // number (matching the visible number and the "Comp. N" field) rather than a
+  // grid coordinate.
+  let cellLabel: string;
+  if (trimmedLabel) {
+    cellLabel = t('binDesigner.compartmentEditor.compartmentAriaLabeled', {
+      n: displayNumber ?? compartmentId + 1,
+      label: trimmedLabel,
+    });
+  } else if (labelMode && displayNumber !== undefined) {
+    cellLabel = t('binDesigner.compartmentEditor.compartmentAriaNumber', { n: displayNumber });
+  } else if (dimensionLabel && isSplittable) {
+    cellLabel = t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
+      n: compartmentId + 1,
+      dimension: dimensionLabel,
+    });
+  } else if (dimensionLabel) {
+    cellLabel = t('binDesigner.compartmentEditor.compartmentAria', {
+      n: compartmentId + 1,
+      dimension: dimensionLabel,
+    });
+  } else {
+    cellLabel = t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
+  }
 
   // Reveal the dimension label only when this specific cell is hovered.
   const showDimensionLabel = isHovered && dimensionLabel;
@@ -183,13 +187,7 @@ export function GridCell({
             ? `inset 0 0 0 2px var(--color-accent), ${boxShadow}`
             : boxShadow,
         opacity: isSelected ? 0.8 : 1,
-        cursor: isDragging
-          ? 'crosshair'
-          : labelMode
-            ? 'pointer'
-            : isSplittable
-              ? 'pointer'
-              : 'crosshair',
+        cursor: isDragging ? 'crosshair' : labelMode || isSplittable ? 'pointer' : 'crosshair',
         // Brighten the adjacent compartments when their divider is hovered/selected.
         // Filter is composable with the existing background and avoids fighting the
         // inset-shadow border system; pulse-free since the divider hover is the
@@ -223,18 +221,24 @@ export function GridCell({
           {dimensionLabel}
         </span>
       )}
-      {/* Always-visible compartment label (truncated; full text via title). */}
+      {/* Always-visible compartment label (truncated; full text via title).
+          Text color contrasts the compartment FILL (filament color), not the
+          theme, so it never sits white-on-white / black-on-black. */}
       {showLabelText && (
         <span
           title={trimmedLabel}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1 text-center text-[10px] font-semibold leading-tight text-content"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1 text-center text-[10px] font-semibold leading-tight"
+          style={{ color: getContrastingTextColor(previewColor) }}
         >
           {trimmedLabel}
         </span>
       )}
       {/* Empty compartment: show its number while labeling. */}
       {showEmptyNumber && (
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums text-content-tertiary">
+        <span
+          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums"
+          style={{ color: getContrastingTextColor(previewColor), opacity: 0.55 }}
+        >
           {displayNumber}
         </span>
       )}

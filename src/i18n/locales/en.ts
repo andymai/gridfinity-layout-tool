@@ -2845,6 +2845,7 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.modeLabels': 'Add labels',
   'binDesigner.compartmentEditor.clickToLabel': 'Click a compartment to add a label',
   'binDesigner.compartmentEditor.labelsNeedTabs': 'Labels print only on label tabs.',
+  'binDesigner.compartmentEditor.labelsEngraveOnTabs': 'Labels engrave on the label tabs.',
   'binDesigner.compartmentEditor.enableLabelTabs': 'Enable label tabs',
   'binDesigner.compartmentEditor.sizeReadout': 'Compartment ≈ {width} × {depth} mm',
   'binDesigner.compartmentEditor.setBySize': 'Set by size',

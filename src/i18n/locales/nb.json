@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Rediger skillevegger",
   "binDesigner.compartmentEditor.modeLabels": "Legg til etiketter",
   "binDesigner.compartmentEditor.clickToLabel": "Klikk på et rom for å legge til en etikett",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Etiketter graveres på etikettfanene.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Etiketter skrives kun ut på etikettfaner.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Aktiver etikettfaner",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Rom {n}, {dimension}, klikk for å dele",

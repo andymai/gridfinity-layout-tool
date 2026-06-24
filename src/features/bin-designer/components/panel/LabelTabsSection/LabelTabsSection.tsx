@@ -5,9 +5,10 @@
  * style picker, width, depth, and alignment.
  */
 
+import { useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Select, Stepper, InfoIcon, Collapsible, Badge } from '@/design-system';
+import { Button, Select, Stepper, InfoIcon, Badge, ChevronDownIcon } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -41,6 +42,53 @@ const TEXT_DEPTH_STEP = 0.1;
 
 export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();
+  const [labelsOpen, setLabelsOpen] = useState(false);
+
+  // Bulk list goes in `primaryControls`, not a Customize child: the Customize
+  // area is clipped at a fixed max-height/overflow-hidden, so a long list (up to
+  // 144 rows) would be cut off. As a primary control it flows full-height under
+  // the panel's own scrollbar.
+  const compartmentLabels =
+    state.compartmentTextRows.length > 0 ? (
+      <div>
+        <Button
+          type="button"
+          variant="ghost"
+          touchTarget={false}
+          onClick={() => setLabelsOpen((open) => !open)}
+          aria-expanded={labelsOpen}
+          className="flex w-full items-center justify-start gap-1.5 px-0 py-1 text-xs font-medium text-content-secondary hover:bg-transparent"
+        >
+          <ChevronDownIcon
+            size="xs"
+            className={`text-content-tertiary transition-transform duration-200 ${
+              labelsOpen ? 'rotate-0' : '-rotate-90'
+            }`}
+            aria-hidden="true"
+          />
+          <span>{t('binDesigner.compartmentLabelsList')}</span>
+          <Badge>{state.compartmentTextRows.length}</Badge>
+        </Button>
+        {labelsOpen && (
+          <ul className="mt-3 flex flex-col gap-1.5">
+            {state.compartmentTextRows.map((row) => (
+              <li key={row.id} className="flex items-center gap-2">
+                <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
+                  {row.label}
+                </span>
+                <CompartmentTextInput
+                  committedValue={row.value}
+                  compartmentId={row.id}
+                  onCommit={handlers.setCompartmentText}
+                  placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
+                  ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    ) : null;
 
   return (
     <FeatureToggle
@@ -49,6 +97,7 @@ export function LabelTabsSection() {
       onChange={handlers.toggleLabelTabs}
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
+      primaryControls={compartmentLabels}
     >
       {/* Edges picker — the most fundamental choice (1 tab vs 2) and the entry
           point for the tuck-under-ledge use case (#1898). */}
@@ -359,40 +408,6 @@ export function LabelTabsSection() {
             )}
           </div>
         </div>
-
-        {/* Per-compartment text inputs as a collapsed bulk-entry list. The
-            primary path is in-grid labeling (CompartmentEditor "Add labels"
-            mode); this stays for fast keyboard/bulk entry and a screen-reader-
-            friendly linear list, collapsed so it doesn't bury the panel. Each
-            input defers its commit (see CompartmentTextInput) so typing doesn't
-            regenerate the bin per keystroke. */}
-        {state.compartmentTextRows.length > 0 && (
-          <Collapsible
-            title={t('binDesigner.compartmentLabelsList')}
-            badge={<Badge>{state.compartmentTextRows.length}</Badge>}
-            defaultExpanded={false}
-            size="sm"
-          >
-            <ul className="flex flex-col gap-1.5">
-              {state.compartmentTextRows.map((row) => (
-                <li key={row.id} className="flex items-center gap-2">
-                  <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
-                    {row.label}
-                  </span>
-                  <CompartmentTextInput
-                    committedValue={row.value}
-                    compartmentId={row.id}
-                    onCommit={handlers.setCompartmentText}
-                    placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                    ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', {
-                      n: row.displayNumber,
-                    })}
-                  />
-                </li>
-              ))}
-            </ul>
-          </Collapsible>
-        )}
       </div>
     </FeatureToggle>
   );

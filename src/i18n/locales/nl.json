@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Scheidingswanden bewerken",
   "binDesigner.compartmentEditor.modeLabels": "Labels toevoegen",
   "binDesigner.compartmentEditor.clickToLabel": "Klik op een vak om een label toe te voegen",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Labels worden in de labeltabs gegraveerd.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Labels worden alleen op labeltabs afgedrukt.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Labeltabs inschakelen",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartiment {n}, {dimension}, klik om te splitsen",

@@ -1,15 +1,3 @@
-/**
- * State + navigation for in-grid compartment labeling ("Add labels" mode).
- *
- * Owns the transient mode flag and the currently-edited compartment, plus the
- * ordering/numbering used by both the grid cells and the below-grid field so
- * the visible "Comp. N" stays in lockstep with the bulk list
- * (`useLabelTabsSection` uses the same `getCompartmentIds` order).
- *
- * Mode is deliberately NOT persisted (resets to divider editing on every open)
- * and lives here rather than in the store: it's view state, not design data.
- */
-
 import { useCallback, useMemo, useState } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
@@ -73,11 +61,9 @@ export function useCompartmentLabeling(
     return map;
   }, [orderedIds]);
 
-  // Both pieces of state are DERIVED rather than corrected in effects (avoids
-  // cascading-render setState-in-effect): the mode collapses to off whenever
-  // labeling is unavailable (slotted/solid interior, 1×1 grid), and the edited
-  // compartment falls back to the first one whenever the selection is empty or
-  // was renumbered away by a merge/split.
+  // Derived, not corrected in effects (avoids cascading-render setState-in-effect):
+  // mode collapses off when labeling is unavailable, and editingId falls back to
+  // the first compartment when the selection is empty or was renumbered by a merge/split.
   const labelMode = labelModeRaw && canLabel;
   const firstId = orderedIds.length > 0 ? orderedIds[0] : null;
   const editingId = !labelMode

@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "仕切りを編集",
   "binDesigner.compartmentEditor.modeLabels": "ラベルを追加",
   "binDesigner.compartmentEditor.clickToLabel": "区画をクリックしてラベルを追加",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "ラベルはラベルタブに刻印されます。",
   "binDesigner.compartmentEditor.labelsNeedTabs": "ラベルはラベルタブにのみ印刷されます。",
   "binDesigner.compartmentEditor.enableLabelTabs": "ラベルタブを有効にする",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "区画{n}、{dimension}、クリックして分割",

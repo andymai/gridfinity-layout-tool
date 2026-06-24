@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Editar divisores",
   "binDesigner.compartmentEditor.modeLabels": "Añadir etiquetas",
   "binDesigner.compartmentEditor.clickToLabel": "Haz clic en un compartimento para añadir una etiqueta",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Las etiquetas se graban en las pestañas de etiqueta.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Las etiquetas solo se imprimen en las pestañas de etiqueta.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Activar pestañas de etiqueta",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartimento {n}, {dimension}, clic para dividir",

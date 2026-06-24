@@ -300,6 +300,7 @@
   "binDesigner.compartmentEditor.modeDividers": "Trennwände bearbeiten",
   "binDesigner.compartmentEditor.modeLabels": "Etiketten hinzufügen",
   "binDesigner.compartmentEditor.clickToLabel": "Klicke auf ein Fach, um ein Etikett hinzuzufügen",
+  "binDesigner.compartmentEditor.labelsEngraveOnTabs": "Etiketten werden in die Etikettenhalter graviert.",
   "binDesigner.compartmentEditor.labelsNeedTabs": "Etiketten werden nur auf Etikettenhaltern gedruckt.",
   "binDesigner.compartmentEditor.enableLabelTabs": "Etikettenhalter aktivieren",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Fach {n}, {dimension}, klicken zum Teilen",

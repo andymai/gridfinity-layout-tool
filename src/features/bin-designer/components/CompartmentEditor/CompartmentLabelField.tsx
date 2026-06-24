@@ -1,17 +1,8 @@
 /**
- * The single, roomy "Comp. N [____]" editor shown below the grid in label mode.
- *
- * Deferred commit mirrors `CompartmentTextInput`: keystrokes stay local so they
- * don't bump `generation.epoch` (each commit re-serializes the whole text array
- * and rebuilds every label tab). Commit fires on idle, blur, or a navigation
- * key. Enter/Tab walk to the next compartment, Shift+Tab/Shift+Enter to the
- * previous, and arrows jump by grid position — so all N labels can be entered
- * without touching the mouse.
- *
- * The inner input is keyed by the edited compartment id so each compartment
- * remounts with a fresh draft (no resync-on-navigation effect needed); a
- * focus-guarded effect only re-syncs an external change (undo/redo) to the
- * compartment currently shown.
+ * Deferred-commit editor for the selected compartment's label: keystrokes stay
+ * local so they don't bump `generation.epoch` (each commit re-serializes the
+ * whole text array and rebuilds every label tab). The inner input is keyed by
+ * compartment id so each remounts with a fresh draft.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -72,24 +63,36 @@ function LabelInput({
     }
   }, []);
 
-  // Mount-only: focus + select so navigation lands ready to type. No setState,
-  // so this doesn't trip the cascading-render rule.
   useEffect(() => {
     inputRef.current?.focus();
     inputRef.current?.select();
   }, []);
 
-  // Re-sync only an EXTERNAL change to this same compartment (undo/redo) while
-  // it isn't being typed into — guarded so it can't clobber the active draft.
+  // Re-sync only an external change (undo/redo) while not focused, so it can't
+  // clobber the active draft.
   useEffect(() => {
     if (!focusedRef.current) setDraft(committed);
   }, [committed]);
 
-  useEffect(() => clearIdleTimer, [clearIdleTimer]);
-
   const commit = useCallback(
     (value: string) => commitText(compartmentId, value),
     [commitText, compartmentId]
+  );
+
+  // Flush an uncommitted draft on unmount: clicking another cell within the idle
+  // window can't rely on blur, since GridCell's pointerDown preventDefault (for
+  // divider drag) suppresses it. The ref keeps the unmount-only cleanup current;
+  // setCompartmentText no-ops unchanged values, so this never over-regenerates.
+  const flushRef = useRef({ commit, draft });
+  useEffect(() => {
+    flushRef.current = { commit, draft };
+  });
+  useEffect(
+    () => () => {
+      clearIdleTimer();
+      flushRef.current.commit(flushRef.current.draft);
+    },
+    [clearIdleTimer]
   );
 
   const handleChange = useCallback(

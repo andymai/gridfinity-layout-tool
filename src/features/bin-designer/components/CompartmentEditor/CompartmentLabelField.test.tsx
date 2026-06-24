@@ -96,4 +96,16 @@ describe('CompartmentLabelField', () => {
     fireEvent.blur(input);
     expect(labeling.commitText).toHaveBeenCalledWith(0, 'WASHERS');
   });
+
+  it('flushes an uncommitted draft when the field unmounts (click-away within idle window)', () => {
+    const labeling = makeLabeling();
+    const { unmount } = render(<CompartmentLabelField labeling={labeling} />);
+    const input = screen.getByRole('textbox');
+    // Type without Enter/blur — only the 450ms idle timer is pending.
+    fireEvent.change(input, { target: { value: 'PAINT' } });
+    expect(labeling.commitText).not.toHaveBeenCalled();
+    // Selecting another compartment unmounts this input (keyed by editingId).
+    unmount();
+    expect(labeling.commitText).toHaveBeenCalledWith(0, 'PAINT');
+  });
 });
