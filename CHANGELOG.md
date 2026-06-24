@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.6...gridfinity-layout-tool-v4.202.0) (2026-06-24)
+
+
+### Features
+
+* **bin-designer:** label compartments directly on the 2D grid ([#2331](https://github.com/andymai/gridfinity-layout-tool/issues/2331)) ([49f3ded](https://github.com/andymai/gridfinity-layout-tool/commit/49f3dedfaf4df65a824a8cb8f2b89b887caf2ae2))
+
 ## [4.201.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.201.5...gridfinity-layout-tool-v4.201.6) (2026-06-23)
 
 
