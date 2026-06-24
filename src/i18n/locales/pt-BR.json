@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Texto gravado",
   "binDesigner.columns": "Colunas",
   "binDesigner.compartmentEditor.cellAria": "Célula {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "{count} etiqueta(s) de compartimento removida(s)",
   "binDesigner.compartmentEditor.clickToSplit": "Clique para dividir",
   "binDesigner.compartmentEditor.compartmentAria": "Compartimento {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Compartimento {n}",

@@ -20,6 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
+import { useToastStore } from '@/core/store/toast';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { Button, Stepper, InfoIcon } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
@@ -108,6 +109,8 @@ export function CompartmentEditor() {
   // on-grid hit-target overlay hidden until the user enables editing so dense
   // grids stay legible (issue #2044).
   const angledDividersEnabled = useSettingsStore((s) => s.settings.angledDividersEnabled);
+
+  const addToast = useToastStore((s) => s.addToast);
 
   const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
     width,
@@ -323,12 +326,28 @@ export function CompartmentEditor() {
     setSelection(new Set());
   }, [isDragging, selection, cols, cells, mergeCells, splitCompartment, compartmentCellCounts]);
 
-  const handleColsChange = useCallback(
-    (newCols: number) => {
-      setCompartmentGrid(newCols, rows);
+  // All grid-dimension changes funnel through here so the "N labels cleared"
+  // warning (#2337) is shown consistently and the selection is reset once.
+  const applyGrid = useCallback(
+    (newCols: number, newRows: number) => {
+      const droppedLabels = setCompartmentGrid(newCols, newRows);
+      if (droppedLabels > 0) {
+        addToast({
+          message: t('binDesigner.compartmentEditor.labelsCleared', { count: droppedLabels }),
+          type: 'info',
+          duration: 4000,
+        });
+      }
       setSelection(new Set());
     },
-    [rows, setCompartmentGrid]
+    [setCompartmentGrid, addToast, t]
+  );
+
+  const handleColsChange = useCallback(
+    (newCols: number) => {
+      applyGrid(newCols, rows);
+    },
+    [rows, applyGrid]
   );
 
   const handleColsStep = useCallback(
@@ -338,18 +357,16 @@ export function CompartmentEditor() {
         DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next)
       );
-      setCompartmentGrid(clamped, rows);
-      setSelection(new Set());
+      applyGrid(clamped, rows);
     },
-    [cols, rows, setCompartmentGrid]
+    [cols, rows, applyGrid]
   );
 
   const handleRowsChange = useCallback(
     (newRows: number) => {
-      setCompartmentGrid(cols, newRows);
-      setSelection(new Set());
+      applyGrid(cols, newRows);
     },
-    [cols, setCompartmentGrid]
+    [cols, applyGrid]
   );
 
   const handleRowsStep = useCallback(
@@ -359,10 +376,9 @@ export function CompartmentEditor() {
         DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next)
       );
-      setCompartmentGrid(cols, clamped);
-      setSelection(new Set());
+      applyGrid(cols, clamped);
     },
-    [cols, rows, setCompartmentGrid]
+    [cols, rows, applyGrid]
   );
 
   // Size-led entry (fit-guarantee): typing a minimum opening picks the largest
@@ -378,7 +394,7 @@ export function CompartmentEditor() {
         interiorW,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
-      setCompartmentGrid(
+      applyGrid(
         solveCountForMinCavity(
           interiorW,
           thickness,
@@ -388,9 +404,8 @@ export function CompartmentEditor() {
         ),
         rows
       );
-      setSelection(new Set());
     },
-    [interiorW, thickness, rows, setCompartmentGrid]
+    [interiorW, thickness, rows, applyGrid]
   );
 
   const applyTargetDepth = useCallback(
@@ -399,7 +414,7 @@ export function CompartmentEditor() {
         interiorD,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
-      setCompartmentGrid(
+      applyGrid(
         cols,
         solveCountForMinCavity(
           interiorD,
@@ -409,9 +424,8 @@ export function CompartmentEditor() {
           DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID
         )
       );
-      setSelection(new Set());
     },
-    [interiorD, thickness, cols, setCompartmentGrid]
+    [interiorD, thickness, cols, applyGrid]
   );
 
   const handleThicknessChange = useCallback(
@@ -422,9 +436,8 @@ export function CompartmentEditor() {
   );
 
   const handleReset = useCallback(() => {
-    setCompartmentGrid(cols, rows);
-    setSelection(new Set());
-  }, [cols, rows, setCompartmentGrid]);
+    applyGrid(cols, rows);
+  }, [cols, rows, applyGrid]);
 
   const hasMergedCompartments = compartmentCount < cols * rows;
 

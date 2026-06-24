@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Гравірований текст",
   "binDesigner.columns": "Стовпці",
   "binDesigner.compartmentEditor.cellAria": "Клітинка {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "Очищено {count} підпис(ів) відсіків",
   "binDesigner.compartmentEditor.clickToSplit": "Натисніть, щоб розділити",
   "binDesigner.compartmentEditor.compartmentAria": "Відсік {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Відсік {n}",

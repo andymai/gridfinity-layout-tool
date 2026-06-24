@@ -934,7 +934,9 @@ export interface DesignerState {
   updateEnvelope: (partial: Partial<ItemEnvelope>) => void;
 
   // Compartment actions
-  setCompartmentGrid: (cols: number, rows: number) => void;
+  /** Regenerate a uniform grid. Carries labels by position where they fit and
+   *  returns the count of labels that couldn't be preserved (#2337). */
+  setCompartmentGrid: (cols: number, rows: number) => number;
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;

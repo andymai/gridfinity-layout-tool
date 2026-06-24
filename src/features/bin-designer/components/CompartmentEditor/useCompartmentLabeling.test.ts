@@ -39,12 +39,14 @@ describe('useCompartmentLabeling', () => {
   });
 
   describe('mode + selection', () => {
-    it('entering label mode selects the first compartment', () => {
+    it('entering label mode selects the first compartment (visual top-left)', () => {
+      // 3x2 grid: data rows [0,1,2] (bottom) and [3,4,5] (top). Reading order is
+      // top-left first, so the first compartment is id 3 (#2338).
       const { result } = render(createUniformGrid(3, 2, 1.2));
       expect(result.current.editingId).toBeNull();
       act(() => result.current.setLabelMode(true));
       expect(result.current.labelMode).toBe(true);
-      expect(result.current.editingId).toBe(0);
+      expect(result.current.editingId).toBe(3);
     });
 
     it('refuses to enter label mode when labeling is unavailable', () => {
@@ -64,37 +66,39 @@ describe('useCompartmentLabeling', () => {
   });
 
   describe('display numbering', () => {
-    it('maps compartment ids to 1-based display order', () => {
+    it('maps compartment ids to 1-based display order (visual top-left first)', () => {
       const { result } = render(createUniformGrid(3, 2, 1.2));
-      expect(result.current.orderedIds).toEqual([0, 1, 2, 3, 4, 5]);
-      expect(result.current.displayNumberOf(0)).toBe(1);
-      expect(result.current.displayNumberOf(5)).toBe(6);
+      // Top row [3,4,5] reads before the bottom row [0,1,2] (#2338).
+      expect(result.current.orderedIds).toEqual([3, 4, 5, 0, 1, 2]);
+      expect(result.current.displayNumberOf(3)).toBe(1);
+      expect(result.current.displayNumberOf(2)).toBe(6);
     });
   });
 
   describe('navigation', () => {
     it('advance walks forward and clamps at the last compartment', () => {
+      // Reading order is [3,4,5,0,1,2]: first = id 3, last = id 2.
       const { result } = render(createUniformGrid(3, 2, 1.2));
       act(() => result.current.setLabelMode(true));
       act(() => result.current.advance('next'));
-      expect(result.current.editingId).toBe(1);
-      act(() => result.current.selectCompartment(5));
+      expect(result.current.editingId).toBe(4);
+      act(() => result.current.selectCompartment(2));
       act(() => result.current.advance('next'));
-      expect(result.current.editingId).toBe(5); // clamped
+      expect(result.current.editingId).toBe(2); // clamped at last
     });
 
     it('advance prev clamps at the first compartment', () => {
       const { result } = render(createUniformGrid(3, 2, 1.2));
       act(() => result.current.setLabelMode(true));
       act(() => result.current.advance('prev'));
-      expect(result.current.editingId).toBe(0); // clamped
+      expect(result.current.editingId).toBe(3); // clamped at first (top-left)
     });
 
     it('moveByGrid steps right and (visually) up to the adjacent compartment', () => {
       const { result } = render(createUniformGrid(3, 2, 1.2));
-      act(() => result.current.setLabelMode(true)); // id 0 at (col0,row0)
+      act(() => result.current.setLabelMode(true)); // first = id 3 at (col0,row1)
       act(() => result.current.moveByGrid('right'));
-      expect(result.current.editingId).toBe(1); // (col1,row0)
+      expect(result.current.editingId).toBe(4); // (col1,row1)
       act(() => result.current.selectCompartment(0));
       act(() => result.current.moveByGrid('up'));
       expect(result.current.editingId).toBe(3); // (col0,row1) — visual up = higher data row
@@ -102,9 +106,9 @@ describe('useCompartmentLabeling', () => {
 
     it('moveByGrid past the grid edge is a no-op', () => {
       const { result } = render(createUniformGrid(3, 2, 1.2));
-      act(() => result.current.setLabelMode(true));
+      act(() => result.current.setLabelMode(true)); // first = id 3 at (col0,row1)
       act(() => result.current.moveByGrid('left')); // already at col 0
-      expect(result.current.editingId).toBe(0);
+      expect(result.current.editingId).toBe(3);
     });
   });
 
@@ -127,9 +131,10 @@ describe('useCompartmentLabeling', () => {
       act(() => result.current.setLabelMode(true));
       act(() => result.current.selectCompartment(5));
       expect(result.current.editingId).toBe(5);
-      // Shrink the grid so id 5 no longer exists.
+      // Shrink the grid so id 5 no longer exists. The 2x2 reading order is
+      // [2,3,0,1], so the fallback is the top-left id 2.
       rerender({ c: createUniformGrid(2, 2, 1.2), s: 'standard' });
-      expect(result.current.editingId).toBe(0);
+      expect(result.current.editingId).toBe(2);
     });
   });
 });

@@ -5,7 +5,7 @@ import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import { getCompartmentBounds, getCompartmentIds } from '../../../utils/compartments';
+import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
 import type {
   LabelTabAlignment,
   LabelTabEdges,
@@ -367,7 +367,7 @@ export function useLabelTabsSection() {
   );
 
   const compartmentTextRows = useMemo(() => {
-    const ids = getCompartmentIds(compartments);
+    const ids = getCompartmentReadingOrder(compartments);
     const texts = compartments.compartmentTexts ?? [];
     // `displayNumber` is the source of truth for what the user sees AND what
     // the aria-label announces — keep them in lockstep so a future change

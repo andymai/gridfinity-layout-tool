@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Graverad text",
   "binDesigner.columns": "Kolumner",
   "binDesigner.compartmentEditor.cellAria": "Cell {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "Rensade {count} facketikett(er)",
   "binDesigner.compartmentEditor.clickToSplit": "Klicka för att dela",
   "binDesigner.compartmentEditor.compartmentAria": "Fack {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Fack {n}",

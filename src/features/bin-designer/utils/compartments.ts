@@ -61,6 +61,29 @@ export function getCompartmentIds(config: CompartmentConfig): number[] {
   return [...new Set(config.cells)].sort((a, b) => a - b);
 }
 
+/**
+ * Compartment IDs in visual reading order: top-left first, then left-to-right
+ * and top-to-bottom — the order a user's eye scans when labeling.
+ *
+ * IDs are assigned in data-row order, but the 2D grid renders `flex-col-reverse`
+ * so data row 0 is the visual BOTTOM. Numeric `getCompartmentIds` therefore
+ * counts up from the bottom-left, which reads backwards (#2338). Here we anchor
+ * each compartment at its visual top-left cell (highest data row = `maxRow`,
+ * then leftmost `minCol`) and sort by that.
+ *
+ * Display-only: the "Comp. N" numbering on cells, the below-grid field, and the
+ * bulk list all consume this so they stay in lockstep. Validation and general
+ * iteration keep the cheaper numeric `getCompartmentIds`.
+ */
+export function getCompartmentReadingOrder(config: CompartmentConfig): number[] {
+  const entries = getCompartmentIds(config).map((id) => {
+    const bounds = getCompartmentBounds(config, id);
+    return { id, top: bounds ? bounds.maxRow : -1, left: bounds ? bounds.minCol : id };
+  });
+  entries.sort((a, b) => (a.top !== b.top ? b.top - a.top : a.left - b.left));
+  return entries.map((e) => e.id);
+}
+
 /** Get all cell indices belonging to a compartment */
 export function getCellsForCompartment(config: CompartmentConfig, compartmentId: number): number[] {
   const indices: number[] = [];
@@ -672,6 +695,44 @@ export function remapCompartmentTexts(
     if (typeof t === 'string') out[newId] = t;
   }
   return out;
+}
+
+/**
+ * Best-effort carry of per-compartment label text across a grid-DIMENSION
+ * change. `setCompartmentGrid` regenerates a fresh uniform grid, so the new
+ * IDs can't be remapped from the old ones (CLAUDE.md gotcha #6 — there is no
+ * `oldId → newId` correspondence). Instead we anchor each old compartment at
+ * its top-left cell (`minCol`, `minRow`) and carry its label to the new uniform
+ * cell at that same position — the one spatial mapping that's unambiguous.
+ *
+ * Labels whose anchor falls outside the new (smaller) grid have nowhere to land
+ * and are dropped; `droppedCount` reports how many non-empty labels were lost so
+ * the caller can warn instead of discarding them silently (#2337).
+ *
+ * Returns `texts` indexed by new compartment ID (`row * newCols + col`).
+ */
+export function carryCompartmentTextsByPosition(
+  oldConfig: CompartmentConfig,
+  newCols: number,
+  newRows: number
+): { texts: string[]; droppedCount: number } {
+  const oldTexts = oldConfig.compartmentTexts;
+  if (!oldTexts || oldTexts.length === 0) return { texts: [], droppedCount: 0 };
+
+  const texts = new Array<string>(newCols * newRows).fill('');
+  let droppedCount = 0;
+  for (const id of getCompartmentIds(oldConfig)) {
+    const label = oldTexts[id];
+    if (typeof label !== 'string' || label.length === 0) continue;
+    const bounds = getCompartmentBounds(oldConfig, id);
+    if (!bounds) continue;
+    if (bounds.minCol < newCols && bounds.minRow < newRows) {
+      texts[bounds.minRow * newCols + bounds.minCol] = label;
+    } else {
+      droppedCount++;
+    }
+  }
+  return { texts, droppedCount };
 }
 
 /**

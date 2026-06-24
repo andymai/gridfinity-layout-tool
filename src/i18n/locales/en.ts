@@ -2842,6 +2842,7 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.compartmentAriaLabeled': 'Compartment {n}, labeled {label}',
   'binDesigner.compartmentEditor.compartmentAriaNumber': 'Compartment {n}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
+  'binDesigner.compartmentEditor.labelsCleared': 'Cleared {count} compartment label(s)',
   'binDesigner.compartmentEditor.modeLabel': 'Compartment edit mode',
   'binDesigner.compartmentEditor.modeDividers': 'Edit dividers',
   'binDesigner.compartmentEditor.modeLabels': 'Add labels',

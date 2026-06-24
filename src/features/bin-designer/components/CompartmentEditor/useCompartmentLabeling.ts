@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
-  getCompartmentIds,
+  getCompartmentReadingOrder,
   getCompartmentBounds,
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
@@ -53,7 +53,7 @@ export function useCompartmentLabeling(
 
   const canLabel = style === 'standard' && compartmentCount > 1;
 
-  const orderedIds = useMemo(() => getCompartmentIds(compartments), [compartments]);
+  const orderedIds = useMemo(() => getCompartmentReadingOrder(compartments), [compartments]);
 
   const displayNumbers = useMemo(() => {
     const map = new Map<number, number>();

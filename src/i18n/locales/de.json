@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Gravierter Text",
   "binDesigner.columns": "Spalten",
   "binDesigner.compartmentEditor.cellAria": "Zelle {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "{count} Fachbeschriftung(en) gelöscht",
   "binDesigner.compartmentEditor.clickToSplit": "Klicken zum Teilen",
   "binDesigner.compartmentEditor.compartmentAria": "Fach {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Fach {n}",

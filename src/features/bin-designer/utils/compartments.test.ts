@@ -5,6 +5,8 @@ import {
   getCellId,
   cellIndex,
   getCompartmentIds,
+  getCompartmentReadingOrder,
+  carryCompartmentTextsByPosition,
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentCount,
@@ -167,6 +169,91 @@ describe('compartments', () => {
         cells: [5, 2, 8, 1],
       };
       expect(getCompartmentIds(config)).toEqual([1, 2, 5, 8]);
+    });
+  });
+
+  describe('getCompartmentReadingOrder', () => {
+    it('counts top-left first on a uniform grid (visual top = highest data row)', () => {
+      // 2 cols x 2 rows. Data layout (row-major): ids 0,1 (row0=bottom), 2,3 (row1=top).
+      // The grid renders flex-col-reverse, so the visual top row is data row 1.
+      // Reading order should therefore be top-left→right, then bottom-left→right.
+      const config = createUniformGrid(2, 2, 1.2);
+      expect(getCompartmentReadingOrder(config)).toEqual([2, 3, 0, 1]);
+    });
+
+    it('returns [0] for a single-cell grid', () => {
+      expect(getCompartmentReadingOrder(createSingleCell(1.2))).toEqual([0]);
+    });
+
+    it('anchors merged compartments at their visual top-left cell', () => {
+      // 3 cols x 2 rows; top row (data row 1) merged into one compartment.
+      const config: CompartmentConfig = {
+        cols: 3,
+        rows: 2,
+        thickness: 1.2,
+        cells: [1, 2, 3, 0, 0, 0], // row0 (bottom): 1,2,3 ; row1 (top): 0,0,0
+      };
+      // Top row first (the merged id 0), then the bottom cells left→right.
+      expect(getCompartmentReadingOrder(config)).toEqual([0, 1, 2, 3]);
+    });
+
+    it('returns the same set of ids as getCompartmentIds, only reordered', () => {
+      const config = createUniformGrid(3, 3, 1.2);
+      expect([...getCompartmentReadingOrder(config)].sort((a, b) => a - b)).toEqual(
+        getCompartmentIds(config)
+      );
+    });
+  });
+
+  describe('carryCompartmentTextsByPosition', () => {
+    it('carries labels to the same position when the grid is unchanged', () => {
+      const config: CompartmentConfig = {
+        ...createUniformGrid(2, 2, 1.2),
+        compartmentTexts: ['a', 'b', 'c', 'd'],
+      };
+      const { texts, droppedCount } = carryCompartmentTextsByPosition(config, 2, 2);
+      expect(texts).toEqual(['a', 'b', 'c', 'd']);
+      expect(droppedCount).toBe(0);
+    });
+
+    it('drops labels whose anchor falls outside a shrunken grid and counts them', () => {
+      // 3x1 grid with all three labelled, shrinking to 2x1 drops the last column.
+      const config: CompartmentConfig = {
+        ...createUniformGrid(3, 1, 1.2),
+        compartmentTexts: ['x', 'y', 'z'],
+      };
+      const { texts, droppedCount } = carryCompartmentTextsByPosition(config, 2, 1);
+      expect(texts).toEqual(['x', 'y']);
+      expect(droppedCount).toBe(1);
+    });
+
+    it('does not count empty labels as dropped', () => {
+      const config: CompartmentConfig = {
+        ...createUniformGrid(3, 1, 1.2),
+        compartmentTexts: ['x', '', ''],
+      };
+      const { texts, droppedCount } = carryCompartmentTextsByPosition(config, 2, 1);
+      expect(texts).toEqual(['x', '']);
+      expect(droppedCount).toBe(0);
+    });
+
+    it('carries a merged compartment label from its top-left anchor', () => {
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 0, 0, 0], // whole grid is one compartment, id 0
+        compartmentTexts: ['merged'],
+      };
+      // New uniform 2x2: the top-left anchor of old id 0 is (col 0, row 0) → new id 0.
+      const { texts, droppedCount } = carryCompartmentTextsByPosition(config, 2, 2);
+      expect(texts[0]).toBe('merged');
+      expect(droppedCount).toBe(0);
+    });
+
+    it('returns no texts when the source had none', () => {
+      const config = createUniformGrid(2, 2, 1.2);
+      expect(carryCompartmentTextsByPosition(config, 3, 3)).toEqual({ texts: [], droppedCount: 0 });
     });
   });
 

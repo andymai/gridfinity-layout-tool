@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Gegraveerde tekst",
   "binDesigner.columns": "Kolommen",
   "binDesigner.compartmentEditor.cellAria": "Cel {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "{count} compartimentlabel(s) gewist",
   "binDesigner.compartmentEditor.clickToSplit": "Klik om te splitsen",
   "binDesigner.compartmentEditor.compartmentAria": "Compartiment {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Compartiment {n}",

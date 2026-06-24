@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "彫刻文字",
   "binDesigner.columns": "列数",
   "binDesigner.compartmentEditor.cellAria": "セル{col}、{row}",
+  "binDesigner.compartmentEditor.labelsCleared": "{count}個の区画ラベルをクリアしました",
   "binDesigner.compartmentEditor.clickToSplit": "クリックして分割",
   "binDesigner.compartmentEditor.compartmentAria": "区画{n}、{dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "区画{n}",

@@ -4,6 +4,7 @@ export {
   getCellId,
   cellIndex,
   getCompartmentIds,
+  getCompartmentReadingOrder,
   getCellsForCompartment,
   getCompartmentBounds,
   getCompartmentCount,

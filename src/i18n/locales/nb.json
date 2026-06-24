@@ -292,6 +292,7 @@
   "binDesigner.colors.zone.text": "Gravert tekst",
   "binDesigner.columns": "Kolonner",
   "binDesigner.compartmentEditor.cellAria": "Celle {col}, {row}",
+  "binDesigner.compartmentEditor.labelsCleared": "Fjernet {count} rometikett(er)",
   "binDesigner.compartmentEditor.clickToSplit": "Klikk for å dele",
   "binDesigner.compartmentEditor.compartmentAria": "Rom {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaNumber": "Rom {n}",

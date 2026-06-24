@@ -756,16 +756,33 @@ describe('DesignerStore - compartment actions', () => {
       expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
     });
 
-    it('is cleared when the grid is resized (avoids ghost text on regenerated IDs)', () => {
+    it('carries labels by position when the grid grows (best-effort, #2337)', () => {
       const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
       setCompartmentGrid(2, 2);
-      setCompartmentText(0, 'SCREWS');
-      setCompartmentText(3, 'WASHERS');
+      setCompartmentText(0, 'SCREWS'); // (col0,row0)
+      setCompartmentText(3, 'WASHERS'); // (col1,row1)
 
-      setCompartmentGrid(3, 3);
+      // Growing to 3x3 keeps both anchors in-bounds → nothing dropped.
+      const dropped = useDesignerStore.getState().setCompartmentGrid(3, 3);
 
       const { params } = useDesignerStore.getState();
-      expect(params.compartments.compartmentTexts).toBeUndefined();
+      expect(dropped).toBe(0);
+      expect(params.compartments.compartmentTexts?.[0]).toBe('SCREWS'); // (col0,row0) → id 0
+      expect(params.compartments.compartmentTexts?.[4]).toBe('WASHERS'); // (col1,row1) → id 4
+    });
+
+    it('reports labels dropped when the grid shrinks past their position (#2337)', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(3, 1);
+      setCompartmentText(0, 'KEEP'); // (col0,row0)
+      setCompartmentText(2, 'LOSE'); // (col2,row0) — falls outside a 2-col grid
+
+      const dropped = useDesignerStore.getState().setCompartmentGrid(2, 1);
+
+      const { params } = useDesignerStore.getState();
+      expect(dropped).toBe(1);
+      expect(params.compartments.compartmentTexts?.[0]).toBe('KEEP');
+      expect(params.compartments.compartmentTexts ?? []).not.toContain('LOSE');
     });
 
     it('drops trailing empty slots from the stored array', () => {

@@ -29,6 +29,7 @@ import { mergeLipConfig, type LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import {
+  carryCompartmentTextsByPosition,
   isRectangularSelection,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
@@ -294,7 +295,7 @@ export function createParamSlice(set: Set, get: Get) {
     },
 
     // Compartment actions
-    setCompartmentGrid: (cols: number, rows: number) => {
+    setCompartmentGrid: (cols: number, rows: number): number => {
       const { params } = get();
       const result = validateCompartmentSizes(
         params.width,
@@ -305,28 +306,28 @@ export function createParamSlice(set: Set, get: Get) {
         params.compartments.thickness,
         params.gridUnitMm
       );
-      if (isErr(result)) return;
+      if (isErr(result)) return 0;
+
+      // Best-effort carry of labels by position; the rest are counted so the
+      // UI can warn instead of dropping them silently (#2337).
+      const carried = carryCompartmentTextsByPosition(params.compartments, cols, rows);
+      const hasCarried = carried.texts.some((text) => text.length > 0);
 
       set((state) => {
         pushHistoryEntry(state);
-        const cells: number[] = [];
-        for (let i = 0; i < rows * cols; i++) {
-          cells.push(i);
-        }
-        // Old per-compartment text and divider overrides would attach to
-        // unrelated cells once IDs regenerate — drop them.
-        const {
-          compartmentTexts: _dropTexts,
-          dividerOverrides: _dropOverrides,
-          ...keepCompartments
-        } = state.params.compartments;
+        const cells = Array.from({ length: rows * cols }, (_, i) => i);
+        // Divider overrides key on adjacencies the fresh uniform grid no longer
+        // has — drop them. Labels carry by position above where they fit.
+        const { compartmentTexts: _t, dividerOverrides: _o, ...keep } = state.params.compartments;
         state.params.compartments = {
-          ...keepCompartments,
+          ...keep,
           cols,
           rows,
           cells,
+          ...(hasCarried ? { compartmentTexts: carried.texts } : {}),
         };
       });
+      return carried.droppedCount;
     },
 
     mergeCells: (cellIndices: readonly number[]) => {
