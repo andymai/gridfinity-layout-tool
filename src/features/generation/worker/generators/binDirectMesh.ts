@@ -220,14 +220,23 @@ function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
   // Stacking lip: the outer face is flush (already extended to the peak). The
   // lip's inner profile starts inset by LIP_TAPER_WIDTH at the rim and tapers
   // back to flush at the peak, where it meets the outer wall in a sharp ridge.
-  const lipBaseW = Math.max(outerW - 2 * LIP_TAPER_WIDTH, MIN_RING_DIM);
-  const lipBaseD = Math.max(outerD - 2 * LIP_TAPER_WIDTH, MIN_RING_DIM);
-  const lipBaseR = Math.max(BOX_CORNER_RADIUS - LIP_TAPER_WIDTH, 0.1);
+  // The inner inset can't sit outside the cavity wall — when wallThickness
+  // reaches LIP_TAPER_WIDTH (2.6mm is a valid wall option) the lip base lands
+  // on the cavity edge and the overhang vanishes, so clamp to wallThickness to
+  // avoid an inverted/zero-area underside ring (matches the exact path, which
+  // can't overhang past its own wall either).
+  const lipInnerInset = Math.max(LIP_TAPER_WIDTH, wallThickness);
+  const lipBaseW = Math.max(outerW - 2 * lipInnerInset, MIN_RING_DIM);
+  const lipBaseD = Math.max(outerD - 2 * lipInnerInset, MIN_RING_DIM);
+  const lipBaseR = Math.max(BOX_CORNER_RADIUS - lipInnerInset, 0.1);
   const lipBasePts = roundedRectPoints(lipBaseW, lipBaseD, lipBaseR, CORNER_SEGMENTS);
 
   // Underside of the lip overhang: from the cavity edge (inset wallThickness)
-  // inward to the lip base (inset LIP_TAPER_WIDTH), facing down into the cavity.
-  addRingCap(mb, 0, 0, innerPts, lipBasePts, zWallTop, false);
+  // inward to the lip base (inset lipInnerInset), facing down into the cavity.
+  // Skipped when there's no real overhang (lip base on the cavity edge).
+  if (lipInnerInset > wallThickness + 1e-3) {
+    addRingCap(mb, 0, 0, innerPts, lipBasePts, zWallTop, false);
+  }
   // Lip inner taper rising from the base ring to the flush peak.
   addTaperedTube(mb, 0, 0, outerPts, lipBasePts, zOuterTop, zWallTop, false);
 }

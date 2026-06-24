@@ -128,8 +128,21 @@ describe('binDirectMesh — geometry sanity', () => {
       bin(),
       bin({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }),
       bin({ base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true } }),
+      // wallThickness === LIP_TAPER_WIDTH: the lip overhang collapses; the mesh
+      // must stay consistently oriented (no inverted/zero-area underside ring).
+      bin({ wallThickness: 2.6 }),
     ]) {
       expect(signedVolume(generateBinDirect(params, noop))).toBeLessThan(-1000);
+    }
+  });
+
+  it('handles a thick wall (lip overhang collapses) without degenerate faces', () => {
+    // wallThickness ≥ LIP_TAPER_WIDTH (2.6mm) makes the lip base meet the cavity
+    // edge — the overhang ring is skipped rather than emitted inverted.
+    const mesh = generateBinDirect(bin({ wallThickness: 2.6 }), noop);
+    expect(mesh.triangleCount).toBeGreaterThan(0);
+    for (let i = 0; i < mesh.vertices.length; i++) {
+      expect(Number.isFinite(mesh.vertices[i])).toBe(true);
     }
   });
 
