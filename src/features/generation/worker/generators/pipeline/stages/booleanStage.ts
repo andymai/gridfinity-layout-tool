@@ -17,7 +17,7 @@ import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
 import { checkCancelled } from '../../utils/abort';
 import { getBinBodyCache, setBinBodyCache } from '../../shapeCache';
-import { buildCacheKey, compactKey } from '../../cacheKeyUtils';
+import { compactKey } from '../../cacheKeyUtils';
 
 export type BooleanFallbackCategory = 'fuse' | 'cut' | 'pattern_cut';
 
@@ -106,9 +106,15 @@ export const booleanStage: PipelineStage = {
     // (which drives `simplify`), so it changes whenever the booleaned body
     // would. Disabled when `featuresKey` is null (solid mode / wall patterns,
     // whose tools aren't captured by the key — see featuresStage).
+    // JSON.stringify keeps the composition injective end-to-end: `shellKey` and
+    // `featuresKey` can both contain `|`, which a flat `buildCacheKey` join could
+    // collide across segment boundaries into a false hit (stale geometry).
+    // `compactKey` then hashes long keys, the same as every other cache here.
     const resumeKey =
       featuresKey !== null
-        ? compactKey(buildCacheKey('binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey))
+        ? compactKey(
+            JSON.stringify(['binbody-v1', ctx.dimensions.shellKey, forExport, featuresKey])
+          )
         : null;
 
     if (resumeKey !== null) {

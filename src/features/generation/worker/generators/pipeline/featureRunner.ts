@@ -35,6 +35,17 @@ export interface FeatureTargets {
 }
 
 /**
+ * Serialize the per-builder `[name, target, key]` triples into one composite
+ * key. Uses JSON so the result is injective: a builder key may embed user text
+ * (e.g. a label) containing `|` or `:`, and a flat delimiter join could collide
+ * two distinct feature sets into the same string — a false resume-cache hit
+ * that returns stale geometry. JSON's quoting/escaping makes that impossible.
+ */
+export function composeFeaturesKey(parts: ReadonlyArray<readonly string[]>): string {
+  return JSON.stringify(parts);
+}
+
+/**
  * Run all feature builders against the pipeline context.
  *
  * Each builder's shapes are cached, cloned, origin-tracked, and sorted
@@ -57,7 +68,11 @@ export function runFeatureBuilders(
   };
 
   const perf = ctx.perfCollector;
-  const keyParts: string[] = [];
+  // Each entry is a [name, target, key] triple. Kept structured (not a
+  // delimiter-joined string) so the JSON serialization below is injective —
+  // a builder key may embed user text (e.g. a label) containing `|` or `:`,
+  // which a flat join could collide across builders into a false cache hit.
+  const keyParts: string[][] = [];
 
   for (const builder of builders) {
     if (!builder.shouldBuild(ctx)) continue;
@@ -69,7 +84,7 @@ export function runFeatureBuilders(
     // shape — the post-boolean resume key must change if any input geometry
     // does. `target` distinguishes fuse vs cut so a builder that flips bucket
     // (same key, different op) still re-keys.
-    keyParts.push(`${builder.name}:${builder.target}:${key}`);
+    keyParts.push([builder.name, builder.target, key]);
 
     // getFeatureCache returns a clone (caller owns it), or null on miss.
     let shape = getFeatureCache(builder.name, key);
@@ -106,6 +121,6 @@ export function runFeatureBuilders(
     if (perf) perf.recordFeatureBuilder(builder.name, performance.now() - builderStart);
   }
 
-  targets.featuresKey = keyParts.join('|');
+  targets.featuresKey = composeFeaturesKey(keyParts);
   return targets;
 }
