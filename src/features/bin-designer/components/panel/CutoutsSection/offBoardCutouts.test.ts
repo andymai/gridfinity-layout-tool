@@ -75,6 +75,21 @@ describe('isCutoutOffBoard', () => {
     expect(isCutoutOffBoard(path, BIN_W, BIN_D)).toBe(true);
   });
 
+  it('accounts for rotation when measuring a path footprint', () => {
+    // A thin horizontal bar near the top edge: its unrotated bounds fit, but
+    // rotating it 90° stands it on end and pushes it past the bottom/top.
+    const bar = createCutout({
+      shape: 'path',
+      x: 10,
+      y: 75,
+      width: 50,
+      depth: 4,
+      path: [corner(10, 75), corner(60, 75), corner(60, 79), corner(10, 79)],
+    });
+    expect(isCutoutOffBoard(bar, BIN_W, BIN_D)).toBe(false);
+    expect(isCutoutOffBoard({ ...bar, rotation: 90 }, BIN_W, BIN_D)).toBe(true);
+  });
+
   it('flags a cutout over an unfilled mask cell even when inside the rectangle', () => {
     // 2×2 L-shaped mask: every cell filled except the top-right.
     const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
