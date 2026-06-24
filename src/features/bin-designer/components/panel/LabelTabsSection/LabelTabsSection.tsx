@@ -7,7 +7,7 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Select, Stepper, InfoIcon } from '@/design-system';
+import { Button, Select, Stepper, InfoIcon, Collapsible, Badge } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -360,25 +360,39 @@ export function LabelTabsSection() {
           </div>
         </div>
 
-        {/* Per-compartment text inputs. Each input defers its commit (see
-            CompartmentTextInput) so typing doesn't regenerate the bin per
-            keystroke. */}
-        <ul className="flex flex-col gap-1.5">
-          {state.compartmentTextRows.map((row) => (
-            <li key={row.id} className="flex items-center gap-2">
-              <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
-                {row.label}
-              </span>
-              <CompartmentTextInput
-                committedValue={row.value}
-                compartmentId={row.id}
-                onCommit={handlers.setCompartmentText}
-                placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
-              />
-            </li>
-          ))}
-        </ul>
+        {/* Per-compartment text inputs as a collapsed bulk-entry list. The
+            primary path is in-grid labeling (CompartmentEditor "Add labels"
+            mode); this stays for fast keyboard/bulk entry and a screen-reader-
+            friendly linear list, collapsed so it doesn't bury the panel. Each
+            input defers its commit (see CompartmentTextInput) so typing doesn't
+            regenerate the bin per keystroke. */}
+        {state.compartmentTextRows.length > 0 && (
+          <Collapsible
+            title={t('binDesigner.compartmentLabelsList')}
+            badge={<Badge>{state.compartmentTextRows.length}</Badge>}
+            defaultExpanded={false}
+            size="sm"
+          >
+            <ul className="flex flex-col gap-1.5">
+              {state.compartmentTextRows.map((row) => (
+                <li key={row.id} className="flex items-center gap-2">
+                  <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
+                    {row.label}
+                  </span>
+                  <CompartmentTextInput
+                    committedValue={row.value}
+                    compartmentId={row.id}
+                    onCommit={handlers.setCompartmentText}
+                    placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
+                    ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', {
+                      n: row.displayNumber,
+                    })}
+                  />
+                </li>
+              ))}
+            </ul>
+          </Collapsible>
+        )}
       </div>
     </FeatureToggle>
   );

@@ -21,7 +21,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
-import { Button, Stepper } from '@/design-system';
+import { Button, Stepper, InfoIcon } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
@@ -44,6 +44,9 @@ import { DividerHitTargets } from './DividerHitTargets';
 import { DividerHeightControl } from './DividerHeightControl';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { rowKeyOf } from './useDividerTiltSubsection';
+import { useCompartmentLabeling } from './useCompartmentLabeling';
+import { CompartmentLabelField } from './CompartmentLabelField';
+import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 
 const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
 
@@ -61,6 +64,8 @@ export function CompartmentEditor() {
     depth,
     gridUnitMm,
     wallThickness,
+    style,
+    labelEnabled,
     dividerTiltPreview,
     selectedDividerKey,
     hoveredDividerKey,
@@ -68,6 +73,7 @@ export function CompartmentEditor() {
     setCompartmentGrid,
     mergeCells,
     splitCompartment,
+    updateLabel,
     setPreviewCompartments,
     setPreviewSelection,
     setSelectedDividerKey,
@@ -80,6 +86,8 @@ export function CompartmentEditor() {
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
       wallThickness: s.params.wallThickness,
+      style: s.params.style,
+      labelEnabled: s.params.label.enabled,
       dividerTiltPreview: s.ui.dividerTiltPreview,
       selectedDividerKey: s.ui.selectedDividerKey,
       hoveredDividerKey: s.ui.hoveredDividerKey,
@@ -87,6 +95,7 @@ export function CompartmentEditor() {
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
       splitCompartment: s.splitCompartment,
+      updateLabel: s.updateLabel,
       setPreviewCompartments: s.setPreviewCompartments,
       setPreviewSelection: s.setPreviewSelection,
       setSelectedDividerKey: s.setSelectedDividerKey,
@@ -108,6 +117,13 @@ export function CompartmentEditor() {
   });
 
   const { cols, rows, thickness, cells } = compartments;
+
+  const compartmentCount = getCompartmentCount(compartments);
+
+  // In-grid label editing ("Add labels" mode). Transient view state — owns the
+  // mode flag, the edited compartment, and display numbering shared with the
+  // bulk list.
+  const labeling = useCompartmentLabeling(compartments, style, compartmentCount);
 
   // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
   const previewColor = usePreviewColor();
@@ -252,11 +268,21 @@ export function CompartmentEditor() {
     };
   }, [previewData, setPreviewCompartments, setPreviewSelection]);
 
-  const handleCellPointerDown = useCallback((idx: number) => {
-    setDragStart(idx);
-    setIsDragging(true);
-    setSelection(new Set([idx]));
-  }, []);
+  const handleCellPointerDown = useCallback(
+    (idx: number) => {
+      // In label mode a click selects the compartment for text entry; the
+      // drag-to-merge / click-to-split gestures are suspended (no drag state is
+      // set, so the pointer-up branch below stays inert).
+      if (labeling.labelMode) {
+        labeling.selectCompartment(cells[idx]);
+        return;
+      }
+      setDragStart(idx);
+      setIsDragging(true);
+      setSelection(new Set([idx]));
+    },
+    [labeling, cells]
+  );
 
   const handleCellPointerEnter = useCallback(
     (idx: number) => {
@@ -404,7 +430,6 @@ export function CompartmentEditor() {
     setSelection(new Set());
   }, [cols, rows, setCompartmentGrid]);
 
-  const compartmentCount = getCompartmentCount(compartments);
   const hasMergedCompartments = compartmentCount < cols * rows;
 
   // The mm fields show the smallest (worst-case interior) opening per axis — the
@@ -435,6 +460,9 @@ export function CompartmentEditor() {
 
   // Dynamic instruction text
   const instructionText = useMemo(() => {
+    if (labeling.labelMode) {
+      return t('binDesigner.compartmentEditor.clickToLabel');
+    }
     if (isDragging && selection.size >= 2) {
       if (selectionAction === 'merge')
         return t('binDesigner.compartmentEditor.releaseToMerge', { count: selection.size });
@@ -445,7 +473,7 @@ export function CompartmentEditor() {
       return t('binDesigner.compartmentEditor.clickToSplit');
     }
     return t('binDesigner.compartmentEditor.dragOrClick');
-  }, [isDragging, selection.size, selectionAction, hoveredIsSplittable, t]);
+  }, [labeling.labelMode, isDragging, selection.size, selectionAction, hoveredIsSplittable, t]);
 
   // Render the grid at the bin's true top-view proportions, scaled to fit a
   // fixed envelope. Capping width to `MAX_H * aspect` keeps the derived height
@@ -601,6 +629,36 @@ export function CompartmentEditor() {
       {/* 2D Layout editor (hidden when 1x1 grid) */}
       {(cols > 1 || rows > 1) && (
         <section>
+          {/* Mode switch: divider editing vs. labeling. Only offered for grid
+              dividers (label tabs don't apply to slotted/solid interiors). */}
+          {labeling.canLabel && (
+            <div
+              role="group"
+              aria-label={t('binDesigner.compartmentEditor.modeLabel')}
+              className={`mb-3 ${SEGMENT_GROUP_CLASS}`}
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                touchTarget={false}
+                onClick={() => labeling.setLabelMode(false)}
+                aria-pressed={!labeling.labelMode}
+                className={`flex-1 ${getSegmentClass(!labeling.labelMode)}`}
+              >
+                {t('binDesigner.compartmentEditor.modeDividers')}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                touchTarget={false}
+                onClick={() => labeling.setLabelMode(true)}
+                aria-pressed={labeling.labelMode}
+                className={`flex-1 ${getSegmentClass(labeling.labelMode)}`}
+              >
+                {t('binDesigner.compartmentEditor.modeLabels')}
+              </Button>
+            </div>
+          )}
           <div className="mb-3 flex items-center justify-between">
             <p
               id="compartment-grid-instructions"
@@ -682,6 +740,12 @@ export function CompartmentEditor() {
                           isDividerHoverHighlighted={dividerHighlightCompartments.has(
                             compartmentId
                           )}
+                          labelMode={labeling.labelMode}
+                          isLabelSelected={
+                            labeling.labelMode && labeling.editingId === compartmentId
+                          }
+                          labelText={labeling.textOf(compartmentId)}
+                          displayNumber={labeling.displayNumberOf(compartmentId)}
                           config={compartments}
                           previewColor={previewColor}
                           onPointerDown={handleCellPointerDown}
@@ -721,6 +785,32 @@ export function CompartmentEditor() {
               />
             )}
           </div>
+
+          {/* Labeling: the roomy editor for the selected compartment, plus a
+              reminder that labels only print when label tabs are enabled. */}
+          {labeling.labelMode && (
+            <>
+              <CompartmentLabelField labeling={labeling} />
+              {!labelEnabled && (
+                <div className="mt-2 flex items-start gap-2 text-xs text-content-tertiary">
+                  <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                  <span className="flex-1">
+                    {t('binDesigner.compartmentEditor.labelsNeedTabs')}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    touchTarget={false}
+                    onClick={() => updateLabel({ enabled: true })}
+                    className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
+                  >
+                    {t('binDesigner.compartmentEditor.enableLabelTabs')}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </section>
       )}
 

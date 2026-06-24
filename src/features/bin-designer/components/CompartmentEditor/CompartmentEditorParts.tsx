@@ -23,6 +23,10 @@ export function GridCell({
   isSplittable,
   isDragging,
   isDividerHoverHighlighted = false,
+  labelMode = false,
+  isLabelSelected = false,
+  labelText = '',
+  displayNumber,
   config,
   previewColor,
   onPointerDown,
@@ -39,6 +43,14 @@ export function GridCell({
    *  Optional + defaults to false so unit tests and any future call site that
    *  doesn't care about divider hover don't have to thread the prop. */
   isDividerHoverHighlighted?: boolean;
+  /** True while the editor is in "Add labels" mode (click selects to label). */
+  labelMode?: boolean;
+  /** True when this compartment is the one currently being labeled. */
+  isLabelSelected?: boolean;
+  /** Committed label text for this compartment; shown always when present. */
+  labelText?: string;
+  /** 1-based compartment number, shown on empty cells while labeling. */
+  displayNumber?: number;
   config: CompartmentConfig;
   previewColor: string;
   onPointerDown: (idx: number) => void;
@@ -104,10 +116,12 @@ export function GridCell({
   }
   const boxShadow = shadowParts.length > 0 ? shadowParts.join(', ') : 'none';
 
-  // Show dimension label on the visual top-left cell of multi-cell compartments (hover only)
+  // Dimension + text labels render once per compartment, on its visual
+  // top-left cell. The dimension overlay is a divider-mode hover affordance, so
+  // it's suppressed while labeling; the text label is the labeling surface.
   const isTopLeftOfCompartment = !hasVisualTopNeighbor && !hasLeftNeighbor;
   let dimensionLabel: string | null = null;
-  if (isTopLeftOfCompartment && isSplittable) {
+  if (isTopLeftOfCompartment && isSplittable && !labelMode) {
     const bounds = getCompartmentBounds(config, compartmentId);
     if (bounds) {
       const cWidth = bounds.maxCol - bounds.minCol + 1;
@@ -116,18 +130,31 @@ export function GridCell({
     }
   }
 
+  // The user's label is always visible (recognition over recall, and hover
+  // doesn't exist on touch). Empty compartments show their number, but only
+  // while labeling — divider editing stays an uncluttered color grid.
+  const trimmedLabel = labelText.trim();
+  const showLabelText = isTopLeftOfCompartment && trimmedLabel.length > 0;
+  const showEmptyNumber =
+    isTopLeftOfCompartment && labelMode && trimmedLabel.length === 0 && displayNumber !== undefined;
+
   // Determine the cell's accessible label
-  const cellLabel = dimensionLabel
-    ? isSplittable
-      ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
-          n: compartmentId + 1,
-          dimension: dimensionLabel,
-        })
-      : t('binDesigner.compartmentEditor.compartmentAria', {
-          n: compartmentId + 1,
-          dimension: dimensionLabel,
-        })
-    : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
+  const cellLabel = trimmedLabel
+    ? t('binDesigner.compartmentEditor.compartmentAriaLabeled', {
+        n: displayNumber ?? compartmentId + 1,
+        label: trimmedLabel,
+      })
+    : dimensionLabel
+      ? isSplittable
+        ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
+            n: compartmentId + 1,
+            dimension: dimensionLabel,
+          })
+        : t('binDesigner.compartmentEditor.compartmentAria', {
+            n: compartmentId + 1,
+            dimension: dimensionLabel,
+          })
+      : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
 
   // Reveal the dimension label only when this specific cell is hovered.
   const showDimensionLabel = isHovered && dimensionLabel;
@@ -146,9 +173,19 @@ export function GridCell({
             ? 'var(--color-accent-muted, hsl(214, 60%, 85%))'
             : fillColor,
         borderRadius: `${topLeft}px ${topRight}px ${bottomRight}px ${bottomLeft}px`,
-        boxShadow: isSelected ? `inset 0 0 0 2px var(--color-accent)` : boxShadow,
+        boxShadow: isSelected
+          ? `inset 0 0 0 2px var(--color-accent)`
+          : isLabelSelected
+            ? `inset 0 0 0 2px var(--color-accent), ${boxShadow}`
+            : boxShadow,
         opacity: isSelected ? 0.8 : 1,
-        cursor: isDragging ? 'crosshair' : isSplittable ? 'pointer' : 'crosshair',
+        cursor: isDragging
+          ? 'crosshair'
+          : labelMode
+            ? 'pointer'
+            : isSplittable
+              ? 'pointer'
+              : 'crosshair',
         // Brighten the adjacent compartments when their divider is hovered/selected.
         // Filter is composable with the existing background and avoids fighting the
         // inset-shadow border system; pulse-free since the divider hover is the
@@ -170,7 +207,7 @@ export function GridCell({
       onPointerEnter={() => onPointerEnter(idx)}
       onPointerLeave={onPointerLeave}
     >
-      {/* Dimension label - shown on hover only */}
+      {/* Dimension label - shown on hover only (divider mode) */}
       {dimensionLabel && (
         <span
           className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-bold tabular-nums transition-opacity duration-100"
@@ -180,6 +217,21 @@ export function GridCell({
           }}
         >
           {dimensionLabel}
+        </span>
+      )}
+      {/* Always-visible compartment label (truncated; full text via title). */}
+      {showLabelText && (
+        <span
+          title={trimmedLabel}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1 text-center text-[10px] font-semibold leading-tight text-content"
+        >
+          {trimmedLabel}
+        </span>
+      )}
+      {/* Empty compartment: show its number while labeling. */}
+      {showEmptyNumber && (
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums text-content-tertiary">
+          {displayNumber}
         </span>
       )}
     </div>

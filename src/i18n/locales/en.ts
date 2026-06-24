@@ -1506,6 +1506,7 @@ const en: Record<string, string> = {
   'binDesigner.angledDividers.slotIncompatible':
     "Slots aren't supported on angled dividers — coming in v2.",
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
+  'binDesigner.compartmentLabelsList': 'Compartment labels',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',
   'binDesigner.textMode.emboss': 'Emboss',
@@ -2836,7 +2837,14 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.compartmentAriaSplittable':
     'Compartment {n}, {dimension}, click to split',
   'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
+  'binDesigner.compartmentEditor.compartmentAriaLabeled': 'Compartment {n}, labeled {label}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
+  'binDesigner.compartmentEditor.modeLabel': 'Compartment edit mode',
+  'binDesigner.compartmentEditor.modeDividers': 'Edit dividers',
+  'binDesigner.compartmentEditor.modeLabels': 'Add labels',
+  'binDesigner.compartmentEditor.clickToLabel': 'Click a compartment to add a label',
+  'binDesigner.compartmentEditor.labelsNeedTabs': 'Labels print only on label tabs.',
+  'binDesigner.compartmentEditor.enableLabelTabs': 'Enable label tabs',
   'binDesigner.compartmentEditor.sizeReadout': 'Compartment ≈ {width} × {depth} mm',
   'binDesigner.compartmentEditor.setBySize': 'Set by size',
   'binDesigner.compartmentEditor.smallestOpening': 'Smallest opening (mm)',
