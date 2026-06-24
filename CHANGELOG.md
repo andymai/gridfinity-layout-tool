@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.5...gridfinity-layout-tool-v4.202.6) (2026-06-24)
+
+
+### Performance
+
+* **generation:** extend bin direct-mesh draft to magnet/screw bases ([#2334](https://github.com/andymai/gridfinity-layout-tool/issues/2334)) ([93d52b4](https://github.com/andymai/gridfinity-layout-tool/commit/93d52b417f43659e316dcc2c8af35b6dd37c2b34))
+
 ## [4.202.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.4...gridfinity-layout-tool-v4.202.5) (2026-06-24)
 
 
