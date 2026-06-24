@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.204.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.203.0...gridfinity-layout-tool-v4.204.0) (2026-06-24)
+
+
+### Features
+
+* **bin-designer:** off-board arrays + concave-mask recovery ([#2356](https://github.com/andymai/gridfinity-layout-tool/issues/2356)) ([bbca9e0](https://github.com/andymai/gridfinity-layout-tool/commit/bbca9e0462c14acef5f4f6fdbdb73c59c2eb1a0e))
+
 ## [4.203.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.6...gridfinity-layout-tool-v4.203.0) (2026-06-24)
 
 
