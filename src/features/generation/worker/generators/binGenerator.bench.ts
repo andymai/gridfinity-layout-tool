@@ -339,6 +339,10 @@ describe('export (forExport=true)', () => {
 // the cold socket-grid build itself (cell loft + fuse + hole cut) across grid
 // sizes — the lever for any future socket-fuse change.
 describe('socket grid (cold cache)', () => {
+  // The clear must live INSIDE the timed fn: vitest's bench() ignores
+  // tinybench's per-iteration beforeEach and runs setup/teardown only once per
+  // phase, so a hook would clear once → first iteration cold, rest warm. Clearing
+  // here keeps every iteration cold; the disposal cost is sub-ms vs the build.
   const cold = (gridW: number, gridD: number, magnet: boolean, forExport: boolean) => () => {
     clearAllCaches();
     buildBaseSocket(gridW, gridD, magnet, false, 3.1, 2, 1.25, forExport);

@@ -106,6 +106,9 @@ describe('baseplate generation', () => {
   // Large-plate cold builds. The unique-paddingLeft cache-defeat above
   // quantizes away for these, so clear the baseplate caches each iteration to
   // time the real cold pocket cut across grid sizes; no magnets ⇒ through-cut.
+  // The clear must live INSIDE the timed fn — vitest's bench() ignores
+  // tinybench's per-iteration beforeEach and runs setup once per phase, so a
+  // hook would leave every iteration after the first warm.
   const coldPlate = (w: number, d: number, forExport: boolean) => () => {
     clearBaseplateCaches();
     getGenerateBaseplate()(defaults({ width: w, depth: d }), noop, forExport);
