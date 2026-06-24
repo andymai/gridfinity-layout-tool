@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.1...gridfinity-layout-tool-v4.202.2) (2026-06-24)
+
+
+### Performance
+
+* **generation:** cache one cell-socket template and clone per cell ([#2340](https://github.com/andymai/gridfinity-layout-tool/issues/2340)) ([b4083da](https://github.com/andymai/gridfinity-layout-tool/commit/b4083da96a3b17baad9820c4849f29ac7d361bf8))
+
 ## [4.202.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.0...gridfinity-layout-tool-v4.202.1) (2026-06-24)
 
 
