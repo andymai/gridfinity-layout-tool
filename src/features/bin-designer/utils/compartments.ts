@@ -701,9 +701,13 @@ export function remapCompartmentTexts(
  * Best-effort carry of per-compartment label text across a grid-DIMENSION
  * change. `setCompartmentGrid` regenerates a fresh uniform grid, so the new
  * IDs can't be remapped from the old ones (CLAUDE.md gotcha #6 — there is no
- * `oldId → newId` correspondence). Instead we anchor each old compartment at
- * its top-left cell (`minCol`, `minRow`) and carry its label to the new uniform
- * cell at that same position — the one spatial mapping that's unambiguous.
+ * `oldId → newId` correspondence). Instead we anchor each old compartment at its
+ * lowest cell in data coordinates (`minCol`, `minRow`) and carry its label to
+ * the new uniform cell at that same position — the one spatial mapping that's
+ * unambiguous. Row 0 is the visual BOTTOM (the grid renders `flex-col-reverse`),
+ * so `minRow` is the compartment's visual bottom; for the common single-cell
+ * case `minRow === maxRow` so it doesn't matter. (Display numbering instead
+ * anchors at the visual TOP — see `getCompartmentReadingOrder`, #2338.)
  *
  * Labels whose anchor falls outside the new (smaller) grid have nowhere to land
  * and are dropped; `droppedCount` reports how many non-empty labels were lost so
