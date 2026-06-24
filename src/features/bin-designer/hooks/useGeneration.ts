@@ -4,6 +4,7 @@ import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
+import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
@@ -45,6 +46,25 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
 }
 
 /**
+ * Map a synchronous direct-mesh draft to the store's mesh payload. The arrays
+ * are freshly allocated by the procedural generator (no worker transfer), so
+ * they're referenced as-is; the draft carries no face groups or LOD.
+ */
+function directMeshToPayload(
+  mesh: ReturnType<typeof generateBinDirect>,
+  timingMs: number
+): GenerationResult {
+  return {
+    vertices: mesh.vertices,
+    normals: mesh.normals,
+    indices: mesh.indices,
+    edgeVertices: mesh.edgeVertices,
+    error: null,
+    timingMs,
+  };
+}
+
+/**
  * Manages the GenerationBridge lifecycle and epoch-based auto-regeneration.
  *
  * Initializes the bridge on mount, triggers generation when epoch changes,
@@ -70,6 +90,10 @@ export function useGeneration(): void {
   // Highest token whose exact result has been applied — drafts at or below it
   // are stale and dropped (covers the exact-resolves-before-draft race).
   const finalizedTokenRef = useRef(0);
+  // Highest token for which a synchronous direct-mesh draft already painted —
+  // suppresses the slower Manifold draft so a simple bin doesn't flash
+  // direct → manifold → exact (two visible swaps).
+  const directShownTokenRef = useRef(0);
   const draftSkipGate = useRef(createDraftSkipGate()).current;
   // After the exact result settles, idle-warm the export-quality (fused) shell
   // so the first export skips the deferred socket↔body fuse. Cancelled (timer
@@ -147,16 +171,35 @@ export function useGeneration(): void {
       }
       setGenerationStatus('generating');
 
+      // Instant synchronous draft (best-effort): for the common rectangular bin,
+      // emit a procedural mesh on the main thread — no kernel, no WASM round-trip
+      // — so something paints on the leading edge of an edit before the worker
+      // even starts. Gated to bins the direct path renders faithfully; a throw
+      // (degenerate input) silently degrades to the async paths below.
+      if (canBinUseDirectMesh(currentParams)) {
+        try {
+          const start = performance.now();
+          const mesh = generateBinDirect(currentParams);
+          if (token === genTokenRef.current && token > finalizedTokenRef.current) {
+            setDraftResult(directMeshToPayload(mesh, performance.now() - start));
+            directShownTokenRef.current = token;
+          }
+        } catch {
+          // No instant draft for this edit; the async draft/exact still run.
+        }
+      }
+
       // Fast draft on the leading edge (best-effort): renders while the exact
       // geometry computes. Skipped when the exact worker's cache-aware estimate
       // predicts a build faster than the gate's threshold — a draft replaced
       // almost immediately is just flicker, and the threshold drops during a
       // scrub (see draftPolicy). The estimate resolves in a few ms when the
       // worker is idle; null (no history / worker busy mid-generation /
-      // timeout) means slow, so the draft proceeds.
+      // timeout) means slow, so the draft proceeds. Suppressed when the
+      // synchronous direct mesh already painted this edit.
       const skipBelowMs = draftSkipGate();
       const preview = previewBridgeRef.current;
-      if (preview && !preview.isDestroyed) {
+      if (preview && !preview.isDestroyed && directShownTokenRef.current !== token) {
         void bridge.estimateGenerate(currentParams).then((predictedMs) => {
           if (predictedMs !== null && predictedMs < skipBelowMs) return;
           if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
@@ -200,7 +243,14 @@ export function useGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult, dispatchDraft, pushPerfSnapshot, draftSkipGate]
+    [
+      setGenerationStatus,
+      setGenerationResult,
+      setDraftResult,
+      dispatchDraft,
+      pushPerfSnapshot,
+      draftSkipGate,
+    ]
   );
 
   // Generate a non-bin item mesh via the generic GENERATE_ITEM path. No draft /

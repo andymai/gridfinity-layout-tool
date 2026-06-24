@@ -81,19 +81,21 @@ export function addPocketWalls(
 }
 
 /**
- * Outer perimeter walls — vertical walls from Z=totalHeight down to Z=0
+ * Outer perimeter walls — vertical walls from Z=zTop down to Z=zBot
  * following the outer profile. Normals point OUTWARD (away from slab center).
+ *
+ * `zBot` defaults to 0 (baseplate slab bottom). The bin body passes the socket
+ * height so its outer wall starts at the socket interface, not Z=0.
  */
 export function addOuterWalls(
   mb: MeshBuilder,
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
   offsetY: number,
-  totalHeight: number
+  zTop: number,
+  zBot = 0
 ): void {
   const n = outerPts.length;
-  const zTop = totalHeight;
-  const zBot = 0;
 
   // Shared top + bottom rings — adjacent wall quads reuse the same vertex
   // indices so `computeVertexNormals` averages face normals across the rounded

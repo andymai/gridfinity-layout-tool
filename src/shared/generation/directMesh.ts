@@ -10,3 +10,7 @@
  * orbitable preview while the BREP pipeline catches up.
  */
 export { generateBaseplateDirect } from '@/features/generation/worker/generators/baseplateDirectMesh';
+export {
+  generateBinDirect,
+  canBinUseDirectMesh,
+} from '@/features/generation/worker/generators/binDirectMesh';

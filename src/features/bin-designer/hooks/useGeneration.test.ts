@@ -37,6 +37,11 @@ vi.mock('@/shared/generation/bridge', () => ({
   createDraftSkipGate: () => () => 1000,
 }));
 
+// Pristine default params, captured before any test mutates the store singleton.
+// Tests that toggle a feature (e.g. scoop, to force a fallback path) must not
+// leak it into the next test, so beforeEach restores this.
+const PRISTINE_PARAMS = useDesignerStore.getState().params;
+
 describe('useGeneration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -71,10 +76,12 @@ describe('useGeneration', () => {
     (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockReset();
     (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    // Full store reset
+    // Full store reset — including params, so a feature toggled by one test
+    // (forcing a fallback) can't change the next test's direct-mesh eligibility.
     useDesignerStore.setState({
       wasmStatus: 'unloaded',
       generation: { status: 'idle', mesh: null, isDraft: false, progress: 0 },
+      params: PRISTINE_PARAMS,
     });
   });
 
@@ -231,8 +238,14 @@ describe('useGeneration', () => {
     expect(useDesignerStore.getState().generation.isDraft).toBe(false);
 
     // Edit now that the preview bridge is live → draft on the leading edge.
+    // Enable a scoop so the bin is NOT direct-mesh-eligible: that forces the
+    // async Manifold draft path this test exercises (a simple bin would instead
+    // paint the synchronous direct mesh — covered separately below).
     await act(async () => {
-      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, scoop: { ...s.params.scoop, enabled: true } },
+        generation: { ...s.generation, epoch: 1 },
+      }));
       await vi.advanceTimersByTimeAsync(1);
     });
 
@@ -248,6 +261,79 @@ describe('useGeneration', () => {
       await vi.advanceTimersByTimeAsync(1);
     });
 
+    gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(false);
+    expect(gen.mesh?.vertices).toBe(exactVerts);
+    expect(gen.status).toBe('complete');
+  });
+
+  it('paints a synchronous direct-mesh draft for a simple bin, suppressing the Manifold draft', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const exactVerts = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0]);
+    const meshOf = (vertices: Float32Array, timingMs = 1) => ({
+      mesh: {
+        vertices,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs,
+    });
+
+    const generateImmediate = vi.fn().mockResolvedValue(meshOf(draftVerts));
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate,
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    let resolveExact: (v: unknown) => void = () => {};
+    (mockBridge.generate as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(meshOf(exactVerts, 5000))
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveExact = r;
+        })
+      );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Edit on the default (direct-mesh-eligible) bin. The procedural mesh paints
+    // synchronously before the worker runs and the slower Manifold draft is
+    // suppressed, so a detailed draft — not the single-triangle Manifold mock —
+    // is on screen while the exact result is held open.
+    generateImmediate.mockClear();
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    let gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(true);
+    expect(gen.status).toBe('generating');
+    // The detailed direct mesh is on screen (hundreds of vertices) — never the
+    // 3-vertex Manifold draft, which is suppressed once the direct mesh paints,
+    // so the user sees a single draft→exact swap, not draft→draft→exact.
+    expect(gen.mesh?.vertices).not.toBe(draftVerts);
+    expect(gen.mesh?.vertices?.length ?? 0).toBeGreaterThan(100);
+
+    // The Manifold draft stays suppressed even after timers flush — it must
+    // never overwrite the direct mesh with its own (draftVerts) result.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50);
+    });
+    expect(useDesignerStore.getState().generation.mesh?.vertices).not.toBe(draftVerts);
+
+    // Exact lands and supersedes the direct-mesh draft.
+    await act(async () => {
+      resolveExact(meshOf(exactVerts));
+      await vi.advanceTimersByTimeAsync(1);
+    });
     gen = useDesignerStore.getState().generation;
     expect(gen.isDraft).toBe(false);
     expect(gen.mesh?.vertices).toBe(exactVerts);

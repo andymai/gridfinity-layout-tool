@@ -57,9 +57,10 @@ graph TB
 - `worker/generators/splitConnectorBuilder.ts` — split-piece joints: floor scarf lap + optional press-together wall-locking keys (#1869)
 - `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
 - `worker/generators/baseplateDirectMesh.ts` — direct mesh generation orchestrator for baseplate preview (procedural, no BREP)
+- `worker/generators/binDirectMesh.ts` — direct mesh generation for the bin preview (`generateBinDirect`: hollow body + stacking lip + tapered feet) plus `canBinUseDirectMesh`, the allowlist that gates which bins the procedural path may render (procedural, no BREP)
 - `worker/generators/directMeshBuilder.ts` — `MeshBuilder` class + `faceNormal`, `tangentVectors`, segment-count constants
 - `worker/generators/directMeshShapes.ts` — 2D primitives shared across emitters: rounded rectangles, circles, point-in-polygon
-- `worker/generators/directMeshWalls.ts` — pocket walls (with optional floor) and outer perimeter walls
+- `worker/generators/directMeshWalls.ts` — pocket walls (with optional floor) and outer perimeter walls (`addOuterWalls` takes a `zBot` so the bin body can start at the socket interface)
 - `worker/generators/directMeshFaces.ts` — top/bottom slab face = padding ring + per-cell corner gussets; closed bottom for magnet variants
 - `worker/generators/directMeshMagnets.ts` — magnet hole emitter (cancel + cylinder + floor pattern)
 - `worker/generators/directMeshConnectors.ts` — connector nub (male) and connector hole (female) emitters
@@ -106,6 +107,12 @@ Requests tagged with `requestId`; cancelled requests ignored.
 ## Manifold Draft Preview (`manifold_preview`, graduated)
 
 A second `GenerationBridge('manifold')` runs the Manifold mesh-CSG kernel at pinned draft quality in its own worker, acquired via `BridgeManager.acquirePreview()` / `releasePreview()` (ref-counted, idle-kept, independent of the exact bridge; init failure is non-fatal). Consumers render a fast coarse draft on the leading edge of an edit, then the exact occt-wasm result supersedes it. `worker/wasmInstantiator.ts:loadManifold()` dynamically imports `manifold-3d` + its WASM (`?url` for the Vite worker) and registers the kernel via brepjs `initFromManifold`. `KernelName` gains `'manifold'`. Graduated out of Labs (always on) — the flag id remains as the runtime gate (`isFeatureEnabled('manifold_preview')`, now always true) and a draft init failure degrades gracefully to the exact-only path; exports always use the exact kernel.
+
+### Synchronous direct-mesh draft (bin + baseplate)
+
+Ahead of the Manifold draft there is an even faster tier: a **synchronous, brepjs-free** procedural mesh built on the main thread (no worker, no WASM round-trip). The baseplate uses `generateBaseplateDirect`; the bin uses `generateBinDirect` (both re-exported from `@/shared/generation/directMesh`). `useGeneration` paints it on the leading edge of an edit before the worker even starts, then the exact B-rep supersedes it — and when the direct mesh paints, the slower Manifold draft is **suppressed** (via `directShownTokenRef`) so a simple bin swaps once (direct→exact), not twice.
+
+The bin path is gated by `canBinUseDirectMesh` — an **allowlist** that returns true only for bins the procedural emitters render faithfully (rectangular footprint, standard/lip base, plain feet). **Gotcha:** any new bin feature that changes the rendered shape (a base style, a cut, an interior structure, a footprint modifier) MUST be added to this gate as a fallback, or its draft will silently omit the feature. The caller also try/catches `generateBinDirect`, so a missed case degrades to "no instant draft," never a wrong mesh. The export path always uses the exact kernel.
 
 ## Patterns System
 
