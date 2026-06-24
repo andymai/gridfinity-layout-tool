@@ -37,7 +37,14 @@ import {
   type CellInfo,
 } from './generatorTypes';
 import { hasOverhang, type ResolvedOverhang } from './overhang';
-import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
+import {
+  socketCacheKey,
+  getSocketCache,
+  setSocketCache,
+  getCellSocketTemplateCache,
+  setCellSocketTemplateCache,
+} from './shapeCache';
+import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
   hasHalfBinDetail,
   hashMask,
@@ -238,6 +245,26 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
 
   return s1.loftWith([s3], { ruled: true });
 }
+
+/**
+ * Get a single cell-socket solid for the given cell size, cloning a cached loft
+ * template instead of re-lofting. On a uniform grid every full cell is the same
+ * loft, so this turns a cold socket build from N lofts into 1 loft + (N−1)
+ * clones (mirrors the baseplate `getPocketTemplate`). The key is intrinsic
+ * (cell size + profile detail), so it's placement-invariant and shared across
+ * grids. The returned clone is owned by the caller — register + translate it;
+ * the cache keeps the original.
+ */
+function getCellSocketTemplate(cellW_mm: number, cellD_mm: number, forExport: boolean): Shape3D {
+  const key = buildCacheKey('cell-socket-v1', quantize(cellW_mm), quantize(cellD_mm), forExport);
+  const cached = getCellSocketTemplateCache(key);
+  if (cached) return cached;
+  const template = forExport
+    ? buildSingleCellSocket(cellW_mm, cellD_mm)
+    : buildSimplifiedCellSocket(cellW_mm, cellD_mm);
+  return setCellSocketTemplateCache(key, template);
+}
+
 /** Fuse all cell sockets, then cut all hole tools. Disposes replaced intermediates. */
 function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D {
   let result = unwrap(fuseAll(cellSockets as ValidSolid[], { optimisation: 'commonFace' }));
@@ -374,15 +401,14 @@ export function buildBaseSocket(
         if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
         const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
         const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
-        // Use simplified 3-section socket for preview, full 5-section for export
-        // NOTE: cellSockets are NOT scope-registered because fuseAll may return
-        // one of its inputs when given a single element. They're deleted manually.
+        // Clone a cached cell-socket template (simplified for preview, full for
+        // export) instead of re-lofting every cell. The clone is registered so
+        // scope disposes it; `translate` returns the positioned socket.
+        // NOTE: cellSockets (the translated results) are NOT scope-registered
+        // because fuseAll may return one of its inputs when given a single
+        // element. They're deleted manually.
         const cellSocket = translate(
-          scope.register(
-            forExport
-              ? buildSingleCellSocket(cellW_mm, cellD_mm)
-              : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
-          ),
+          scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)),
           [cell.centerX, cell.centerY, 0]
         );
         cellSockets.push(cellSocket);
@@ -503,14 +529,11 @@ export function buildOverhangFeet(
     const sockets: Shape3D[] = frame.map((cell) => {
       const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
       const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
-      return translate(
-        scope.register(
-          forExport
-            ? buildSingleCellSocket(cellW_mm, cellD_mm)
-            : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
-        ),
-        [cell.centerX, cell.centerY, 0]
-      );
+      return translate(scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)), [
+        cell.centerX,
+        cell.centerY,
+        0,
+      ]);
     });
     const result = unwrap(fuseAll(sockets as ValidSolid[], { optimisation: 'commonFace' }));
     for (const s of sockets) {

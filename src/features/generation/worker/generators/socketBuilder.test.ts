@@ -125,4 +125,20 @@ describe('buildBaseSocket', () => {
       'at least one cell required'
     );
   });
+
+  // #2332: a uniform grid is one repeated cell loft. The template cache should
+  // loft it once and clone the rest, rather than re-lofting every cell.
+  it('lofts one cell-socket template and clones the rest for a uniform grid', async () => {
+    const { clearAllCaches, resetAllShapeCacheStats, getAllShapeCacheStats } =
+      await import('./shapeCache');
+    clearAllCaches(); // cold socketCache so the cell loop actually runs
+    resetAllShapeCacheStats();
+
+    // 3×3 uniform export grid → 9 identical full-size cells.
+    buildBaseSocket(3, 3, false, false, 3.1, 2, 1.25, true, false);
+
+    const stats = getAllShapeCacheStats().find((s) => s.name === 'cell-socket-template');
+    expect(stats?.misses).toBe(1); // one loft built
+    expect(stats?.hits).toBe(8); // remaining 8 cells cloned from it
+  }, 60000);
 });

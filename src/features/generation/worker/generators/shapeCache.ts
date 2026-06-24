@@ -67,9 +67,16 @@ const lipCache = new LRUCache<Shape3D>('lip', 20, disposeShape);
 const boxCache = new LRUCache<Shape3D>('box', 20, disposeShape);
 const shellCache = new LRUCache<Shape3D>('shell', 15, disposeShape);
 
+// Per-cell-size loft templates. A uniform grid lofts one cell socket and clones
+// it per position instead of re-lofting every cell (mirrors the baseplate
+// pocket template). Keyed on intrinsic cell size + profile detail, so it's
+// placement-invariant and shared across grids of any layout.
+const cellSocketTemplateCache = new LRUCache<Shape3D>('cell-socket-template', 16, disposeShape);
+
 const socket = createCloningAccessors(socketCache);
 const box = createCloningAccessors(boxCache);
 const lip = createCloningAccessors(lipCache);
+const cellSocketTemplate = createCloningAccessors(cellSocketTemplateCache);
 
 /** Single-entry caches — pattern template is cheap; lastSolid is always the latest */
 interface CacheEntry {
@@ -97,8 +104,14 @@ function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   return cache;
 }
 
-/** Static LRU caches (socket, lip, box, shell). */
-const staticLruCaches: readonly LRUCache<Shape3D>[] = [socketCache, lipCache, boxCache, shellCache];
+/** Static LRU caches (socket, lip, box, shell, cell-socket template). */
+const staticLruCaches: readonly LRUCache<Shape3D>[] = [
+  socketCache,
+  lipCache,
+  boxCache,
+  shellCache,
+  cellSocketTemplateCache,
+];
 
 export function socketCacheKey(
   gridW: number,
@@ -146,6 +159,14 @@ export const getBoxCache = box.get;
 export const setBoxCache = box.set;
 export const getLipCache = lip.get;
 export const setLipCache = lip.set;
+
+/**
+ * Get/set a per-cell-size socket loft template. `get` returns a clone the
+ * caller owns (register + translate it); `set` stores the original and returns
+ * a clone. Lets the socket grid clone one loft per cell instead of re-lofting.
+ */
+export const getCellSocketTemplateCache = cellSocketTemplate.get;
+export const setCellSocketTemplateCache = cellSocketTemplate.set;
 
 export function getShellCache(key: string): Shape3D | null {
   const cached = shellCache.get(key);
