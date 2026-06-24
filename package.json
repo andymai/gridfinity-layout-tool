@@ -104,7 +104,7 @@
     "@vercel/blob": "^2.4.0",
     "arctic": "^3.7.0",
     "brepjs": "18.100.3",
-    "brepkit-wasm": "^2.116.1",
+    "brepkit-wasm": "^2.119.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
