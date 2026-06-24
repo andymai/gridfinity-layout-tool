@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.4...gridfinity-layout-tool-v4.202.5) (2026-06-24)
+
+
+### Performance
+
+* **generation:** instant direct-mesh draft for the bin preview ([#2334](https://github.com/andymai/gridfinity-layout-tool/issues/2334)) ([012d627](https://github.com/andymai/gridfinity-layout-tool/commit/012d627c5f40319096169a30fc6d3093ea5743da))
+
 ## [4.202.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.3...gridfinity-layout-tool-v4.202.4) (2026-06-24)
 
 
