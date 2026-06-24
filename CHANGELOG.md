@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.202.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.2...gridfinity-layout-tool-v4.202.3) (2026-06-24)
+
+
+### Performance
+
+* **generation:** resume from a cached post-boolean body ([#2342](https://github.com/andymai/gridfinity-layout-tool/issues/2342)) ([0fdff68](https://github.com/andymai/gridfinity-layout-tool/commit/0fdff68319612c9b6e789c1b15c5fbd52b52090b))
+
 ## [4.202.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.1...gridfinity-layout-tool-v4.202.2) (2026-06-24)
 
 
