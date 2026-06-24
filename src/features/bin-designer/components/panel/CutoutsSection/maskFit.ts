@@ -9,8 +9,18 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { getRotatedBounds } from './geometry';
+import { getRotatedBounds, type Bounds } from './geometry';
 import { getPathBounds } from './pathGeometry';
+
+/**
+ * Effective axis-aligned footprint of a cutout: true vertex bounds for path
+ * shapes (whose `width`/`depth` metadata can lag the actual points) and the
+ * rotated bounds for everything else.
+ */
+export function getCutoutBounds(cutout: Cutout): Bounds {
+  if (cutout.shape === 'path' && cutout.path) return getPathBounds(cutout.path);
+  return getRotatedBounds(cutout);
+}
 
 /** Tolerance for mask-cell boundary rounding (mm). */
 const MASK_FIT_EPSILON = 0.01;
@@ -67,22 +77,6 @@ export function rectFitsInMask(
  * for consistency with the existing bin-bound clamping.
  */
 export function cutoutFitsInMask(cutout: Cutout, mask: CellMask, cellSize: MaskCellSize): boolean {
-  let minX: number;
-  let minY: number;
-  let maxX: number;
-  let maxY: number;
-  if (cutout.shape === 'path' && cutout.path) {
-    const b = getPathBounds(cutout.path);
-    minX = b.minX;
-    minY = b.minY;
-    maxX = b.maxX;
-    maxY = b.maxY;
-  } else {
-    const b = getRotatedBounds(cutout);
-    minX = b.minX;
-    minY = b.minY;
-    maxX = b.maxX;
-    maxY = b.maxY;
-  }
+  const { minX, minY, maxX, maxY } = getCutoutBounds(cutout);
   return rectFitsInMask(mask, minX, minY, maxX - minX, maxY - minY, cellSize);
 }

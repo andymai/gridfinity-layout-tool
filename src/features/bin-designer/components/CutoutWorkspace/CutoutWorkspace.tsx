@@ -87,17 +87,22 @@ export function CutoutWorkspace() {
   const { cutouts } = params;
   const { innerW: binWidth, innerD: binDepth, wallHeight } = binDimensions(params);
   // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
-  // polygon rendering aligned for non-square bins.
-  const maskCellSize = params.cellMask
-    ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
-    : undefined;
+  // polygon rendering aligned for non-square bins. Memoized so the off-board
+  // hooks below keep a stable dependency across renders.
+  const maskCellSize = useMemo(
+    () =>
+      params.cellMask
+        ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
+        : undefined,
+    [params.cellMask, binWidth, binDepth]
+  );
 
   // Resizing the bin can strand cutouts past the new (smaller) footprint — they
   // are stored in absolute mm and never auto-rescaled. Flag them so the canvas
   // can frame them and the inspector can offer a one-click clamp back in.
   const offBoardIds = useMemo(
-    () => getOffBoardCutoutIds(cutouts, binWidth, binDepth),
-    [cutouts, binWidth, binDepth]
+    () => getOffBoardCutoutIds(cutouts, binWidth, binDepth, params.cellMask, maskCellSize),
+    [cutouts, binWidth, binDepth, params.cellMask, maskCellSize]
   );
 
   const t = useTranslation();
@@ -149,9 +154,15 @@ export function CutoutWorkspace() {
   );
 
   const handleClampOffBoard = useCallback(() => {
-    const updates = clampOffBoardCutouts(cutouts, binWidth, binDepth);
+    const updates = clampOffBoardCutouts(
+      cutouts,
+      binWidth,
+      binDepth,
+      params.cellMask,
+      maskCellSize
+    );
     if (updates.size > 0) updateCutoutsBatch(updates);
-  }, [cutouts, binWidth, binDepth, updateCutoutsBatch]);
+  }, [cutouts, binWidth, binDepth, params.cellMask, maskCellSize, updateCutoutsBatch]);
 
   const {
     mode,

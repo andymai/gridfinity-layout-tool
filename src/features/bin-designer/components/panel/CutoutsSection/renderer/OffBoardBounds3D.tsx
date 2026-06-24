@@ -4,7 +4,7 @@
  * the same for every shape type. World coordinates: mm, Y-up.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometryCore';
@@ -44,6 +44,16 @@ export function OffBoardBounds3D({ cutout }: OffBoardBounds3DProps) {
     line.renderOrder = RENDER_ORDER.OFF_BOARD;
     return line;
   }, [cutout]);
+
+  // <primitive> does not auto-dispose attached objects; release the GPU
+  // resources when the line is replaced or the component unmounts.
+  useEffect(
+    () => () => {
+      lineObj.geometry.dispose();
+      (lineObj.material as THREE.Material).dispose();
+    },
+    [lineObj]
+  );
 
   return <primitive object={lineObj} />;
 }

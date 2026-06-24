@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import {
   isCutoutOffBoard,
   getOffBoardCutoutIds,
@@ -22,6 +23,14 @@ const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   locked: false,
   hidden: false,
   ...overrides,
+});
+
+const corner = (x: number, y: number): PathPoint => ({
+  x,
+  y,
+  handleIn: null,
+  handleOut: null,
+  symmetric: true,
 });
 
 const BIN_W = 100;
@@ -47,11 +56,34 @@ describe('isCutoutOffBoard', () => {
   });
 
   it('accounts for rotation widening the footprint', () => {
-    // A 20×20 square at the corner fits axis-aligned, but rotating 45° grows the
-    // AABB to ~28.3mm, pushing it past the right edge.
-    const corner = createCutout({ x: 80, y: 30, width: 20, depth: 20, rotation: 0 });
-    expect(isCutoutOffBoard(corner, BIN_W, BIN_D)).toBe(false);
-    expect(isCutoutOffBoard({ ...corner, rotation: 45 }, BIN_W, BIN_D)).toBe(true);
+    const corner20 = createCutout({ x: 80, y: 30, width: 20, depth: 20, rotation: 0 });
+    expect(isCutoutOffBoard(corner20, BIN_W, BIN_D)).toBe(false);
+    expect(isCutoutOffBoard({ ...corner20, rotation: 45 }, BIN_W, BIN_D)).toBe(true);
+  });
+
+  it('uses actual path vertices, not stale width/depth metadata', () => {
+    // In-bounds width/depth, but vertices reach past the right edge — a
+    // rectangle-only check would miss this; path bounds catch it.
+    const path = createCutout({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 20,
+      depth: 20,
+      path: [corner(90, 10), corner(110, 10), corner(110, 30), corner(90, 30)],
+    });
+    expect(isCutoutOffBoard(path, BIN_W, BIN_D)).toBe(true);
+  });
+
+  it('flags a cutout over an unfilled mask cell even when inside the rectangle', () => {
+    // 2×2 L-shaped mask: every cell filled except the top-right.
+    const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
+    const cellSize = { cellMmX: 50, cellMmY: 50 };
+    const overNotch = createCutout({ x: 60, y: 60, width: 30, depth: 30 });
+    // Inside the bounding rectangle (no mask) → not off-board…
+    expect(isCutoutOffBoard(overNotch, 100, 100)).toBe(false);
+    // …but it covers the unfilled cell, so the masked check flags it.
+    expect(isCutoutOffBoard(overNotch, 100, 100, mask, cellSize)).toBe(true);
   });
 });
 
@@ -80,10 +112,32 @@ describe('clampCutoutToBoard', () => {
     expect(clampCutoutToBoard(huge, BIN_W, BIN_D)).toEqual({ x: 0, y: 0 });
   });
 
+  it('returns null when the cutout is already inside', () => {
+    expect(clampCutoutToBoard(createCutout(), BIN_W, BIN_D)).toBeNull();
+  });
+
   it('produces an in-bounds result', () => {
     const stray = createCutout({ x: 95, y: 75, width: 20, depth: 20 });
     const moved = { ...stray, ...clampCutoutToBoard(stray, BIN_W, BIN_D) };
     expect(isCutoutOffBoard(moved, BIN_W, BIN_D)).toBe(false);
+  });
+
+  it('translates path vertices in lockstep with x/y', () => {
+    const path = createCutout({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 20,
+      depth: 20,
+      path: [corner(90, 10), corner(110, 10), corner(110, 30), corner(90, 30)],
+    });
+    const moved = clampCutoutToBoard(path, BIN_W, BIN_D);
+    // Path bounds span 90..110 → shift -10 on x; y already fits.
+    expect(moved).not.toBeNull();
+    expect(moved?.x).toBe(0);
+    expect(moved?.path?.map((p) => p.x)).toEqual([80, 100, 100, 80]);
+    const after = { ...path, ...moved };
+    expect(isCutoutOffBoard(after, BIN_W, BIN_D)).toBe(false);
   });
 });
 
@@ -98,5 +152,16 @@ describe('clampOffBoardCutouts', () => {
 
   it('returns an empty map when everything fits', () => {
     expect(clampOffBoardCutouts([createCutout()], BIN_W, BIN_D).size).toBe(0);
+  });
+
+  it('skips mask-only violations a translation cannot fix', () => {
+    // Inside the bounding rectangle but over an unfilled cell — flagged by
+    // detection, but a pure translation can't fit the concave polygon, so the
+    // clamp emits no move (the warning persists honestly).
+    const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
+    const cellSize = { cellMmX: 50, cellMmY: 50 };
+    const overNotch = createCutout({ id: 'notch', x: 60, y: 60, width: 30, depth: 30 });
+    expect(getOffBoardCutoutIds([overNotch], 100, 100, mask, cellSize).has('notch')).toBe(true);
+    expect(clampOffBoardCutouts([overNotch], 100, 100, mask, cellSize).size).toBe(0);
   });
 });
