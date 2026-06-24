@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.203.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.6...gridfinity-layout-tool-v4.203.0) (2026-06-24)
+
+
+### Features
+
+* **bin-designer:** resize the bin from inside the cutout editor ([#2354](https://github.com/andymai/gridfinity-layout-tool/issues/2354)) ([2cefc35](https://github.com/andymai/gridfinity-layout-tool/commit/2cefc35dab360330eabf606ce703e29323025b4f))
+
 ## [4.202.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.202.5...gridfinity-layout-tool-v4.202.6) (2026-06-24)
 
 
