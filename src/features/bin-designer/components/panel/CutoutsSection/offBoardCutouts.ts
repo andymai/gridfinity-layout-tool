@@ -110,8 +110,10 @@ function maskOffset(
   const u = unionBounds(instanceBounds);
   let best: { dx: number; dy: number } | null = null;
   let bestDist = Infinity;
-  for (let r = 0; r <= mask.rows; r++) {
-    for (let c = 0; c <= mask.cols; c++) {
+  // Min-corner candidates only need cells [0, cols)×[0, rows): aligning the
+  // corner to the far boundary always overhangs (rectFitsInMask rejects it).
+  for (let r = 0; r < mask.rows; r++) {
+    for (let c = 0; c < mask.cols; c++) {
       const dx = c * cellSize.cellMmX - u.minX;
       const dy = r * cellSize.cellMmY - u.minY;
       const fits = instanceBounds.every((b) =>
