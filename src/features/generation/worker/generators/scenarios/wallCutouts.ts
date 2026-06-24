@@ -60,6 +60,36 @@ export const wallCutouts: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('wall cutouts', 'interior divider cutout honours alignment + offset (#2323)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 2,
+      height: 5,
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        // Reporter's linked config: left + right outer walls and the divider all
+        // share a left-aligned, +5mm-offset window.
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: { enabled: true, width: 40, depth: 50, alignment: 'left', offset: 5, widthMm: null },
+        right: { enabled: true, width: 40, depth: 50, alignment: 'left', offset: 5, widthMm: null },
+        interior: {
+          enabled: true,
+          width: 40,
+          depth: 50,
+          alignment: 'left',
+          offset: 5,
+          widthMm: null,
+        },
+      },
+    },
+    timeout: 60_000,
+  }),
   defineScenario('wall cutouts', 'left-aligned cutout with offset and absolute mm width', {
     assert: 'structural',
     params: {

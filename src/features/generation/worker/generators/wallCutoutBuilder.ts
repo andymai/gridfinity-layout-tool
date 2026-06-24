@@ -233,10 +233,30 @@ export function computeInteriorDividerCutouts(
   const interiorH = wallHeight - params.wallThickness;
   const out: InteriorDividerCutout[] = [];
   for (const seg of interiorDividerSegments(params, innerW, innerD)) {
-    const cutW = seg.segLen * (cfg.width / 100);
+    // Match outer walls: absolute mm override clamps to the segment, otherwise
+    // percentage of the segment span.
+    const cutW =
+      cfg.widthMm !== null ? Math.min(cfg.widthMm, seg.segLen) : seg.segLen * (cfg.width / 100);
     const cutH = interiorH * (cfg.depth / 100);
     if (cutW < 0.1 || cutH < 0.1) continue;
-    out.push({ cutW, cutH, x: seg.x, y: seg.y, rotateZ: seg.rotateZ });
+    // Honour alignment + offset like outer walls. The cutout's span axis points
+    // along the (possibly tilted) divider, so project the along-wall centre
+    // offset onto the segment direction (cos/sin of its in-plane rotation).
+    const centerOffset = computeCutoutCenter(
+      seg.segLen,
+      cutW,
+      params.wallThickness,
+      cfg.alignment,
+      cfg.offset
+    );
+    const rad = (seg.rotateZ * Math.PI) / 180;
+    out.push({
+      cutW,
+      cutH,
+      x: seg.x + centerOffset * Math.cos(rad),
+      y: seg.y + centerOffset * Math.sin(rad),
+      rotateZ: seg.rotateZ,
+    });
   }
   return out;
 }

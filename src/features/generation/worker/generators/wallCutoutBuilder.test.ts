@@ -127,4 +127,78 @@ describe('computeInteriorDividerCutouts', () => {
     expect(cut.rotateZ).toBeCloseTo(expected, 4);
     expect(cut.rotateZ).not.toBe(0); // the regression: it used to stay axis-aligned
   });
+
+  // ─── Alignment / offset / mm parity with outer walls (discussion #2323) ──
+  // A linked outer config (e.g. left-aligned + offset) is copied onto the
+  // interior cutout, so the divider window must track it instead of staying
+  // centred on the divider midpoint.
+  const withInterior = (
+    params: BinParams,
+    patch: Partial<BinParams['walls']['left']>
+  ): BinParams => ({
+    ...params,
+    walls: { ...params.walls, interior: { ...params.walls.interior, ...patch } },
+  });
+
+  it('shifts a vertical divider cutout along Y for left vs right alignment', () => {
+    const base = makeParams({ cols: 2, rows: 1, cells: [0, 1] });
+    const [left] = computeInteriorDividerCutouts(
+      withInterior(base, { alignment: 'left', offset: 0 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    const [center] = computeInteriorDividerCutouts(
+      withInterior(base, { alignment: 'center', offset: 0 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    const [right] = computeInteriorDividerCutouts(
+      withInterior(base, { alignment: 'right', offset: 0 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    // Vertical divider runs along Y (rotateZ 90): alignment moves the window
+    // along Y, never off the grid line in X.
+    expect(center.y).toBeCloseTo(0, 6);
+    expect(left.y).toBeLessThan(center.y);
+    expect(right.y).toBeGreaterThan(center.y);
+    expect(left.y).toBeCloseTo(-right.y, 6);
+    expect(left.x).toBeCloseTo(0, 6);
+    expect(right.x).toBeCloseTo(0, 6);
+  });
+
+  it('shifts a horizontal divider cutout along X for the offset', () => {
+    const base = makeParams({ cols: 1, rows: 2, cells: [0, 1] });
+    const [centered] = computeInteriorDividerCutouts(
+      withInterior(base, { alignment: 'center', offset: 0 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    const [offset] = computeInteriorDividerCutouts(
+      withInterior(base, { alignment: 'center', offset: 3 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    // Horizontal divider runs along X (rotateZ 0): a +offset slides it +X.
+    expect(centered.x).toBeCloseTo(0, 6);
+    expect(offset.x).toBeCloseTo(3, 6);
+    expect(offset.y).toBeCloseTo(centered.y, 6);
+  });
+
+  it('honours an absolute mm width override instead of the percentage', () => {
+    const base = makeParams({ cols: 2, rows: 1, cells: [0, 1] });
+    // Percentage default (70%) would give 0.7 * segLen; the mm override wins.
+    const [cut] = computeInteriorDividerCutouts(
+      withInterior(base, { widthMm: 10 }),
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    expect(cut.cutW).toBeCloseTo(10, 6);
+  });
 });
