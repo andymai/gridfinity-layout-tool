@@ -7,7 +7,7 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
-import { getRotatedBounds } from '../geometryCore';
+import { getCutoutBounds } from '../maskFit';
 import { RENDER_ORDER, OFF_BOARD_COLOR } from './constants';
 
 interface OffBoardBounds3DProps {
@@ -21,7 +21,9 @@ const MARGIN_MM = 0.75;
 
 export function OffBoardBounds3D({ cutout }: OffBoardBounds3DProps) {
   const lineObj = useMemo(() => {
-    const b = getRotatedBounds(cutout);
+    // Match the detection bounds exactly (vertex-based, rotation-aware for
+    // paths) so the frame sits on the real footprint, not stale width/depth.
+    const b = getCutoutBounds(cutout);
     const x0 = b.minX - MARGIN_MM;
     const y0 = b.minY - MARGIN_MM;
     const x1 = b.maxX + MARGIN_MM;
