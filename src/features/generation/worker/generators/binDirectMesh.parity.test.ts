@@ -72,6 +72,12 @@ const cases: ReadonlyArray<readonly [string, Partial<BinParams>]> = [
   ],
   ['3×2×4 standard + lip', { width: 3, depth: 2, height: 4 }],
   ['2.5×2×3 fractional + lip', { width: 2.5, depth: 2, height: 3 }],
+  // Magnet base: the draft's body + feet must still match the exact mesh's
+  // bounding box even though the exact path bores (unseen) underside holes.
+  [
+    '2×2×3 magnet base',
+    { width: 2, depth: 2, height: 3, base: { ...buildParams({}).base, style: 'magnet' } },
+  ],
 ];
 
 describe('binDirectMesh — draft/exact parity', () => {

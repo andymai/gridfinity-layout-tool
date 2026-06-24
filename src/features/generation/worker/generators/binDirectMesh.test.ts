@@ -236,10 +236,16 @@ describe('binDirectMesh — canBinUseDirectMesh gate', () => {
     ).toBe(true);
   });
 
+  // Magnet/screw bases share the body + feet with standard; only the unseen
+  // foot-underside holes differ, so they ride the direct path.
+  for (const style of ['magnet', 'screw', 'magnet_and_screw'] as const) {
+    it(`allows ${style} base`, () => {
+      expect(canBinUseDirectMesh(bin({ base: { ...DEFAULT_BIN_PARAMS.base, style } }))).toBe(true);
+    });
+  }
+
   const base = DEFAULT_BIN_PARAMS.base;
   const fallbackCases: ReadonlyArray<readonly [string, Partial<BinParams>]> = [
-    ['magnet base', { base: { ...base, style: 'magnet' } }],
-    ['screw base', { base: { ...base, style: 'screw' } }],
     ['weighted base', { base: { ...base, style: 'weighted' } }],
     ['flat base', { base: { ...base, style: 'flat' } }],
     ['solid base', { base: { ...base, solid: true } }],

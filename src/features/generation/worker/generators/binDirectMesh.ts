@@ -342,10 +342,14 @@ export function generateBinDirect(
 export function canBinUseDirectMesh(params: BinParams): boolean {
   const { base } = params;
 
-  // Base: only the plain standard foot is emitted. Magnet/screw holes,
-  // weighted/flat bases, solid bodies and lightweight shells all change the
-  // base topology and are deferred to a follow-up slice.
-  if (base.style !== 'standard') return false;
+  // Base style: magnet/screw/magnet_and_screw share the same body + feet as
+  // standard — they only add holes to the foot UNDERSIDE, which the preview
+  // camera never sees (and which the exact mesh fills in on the swap, exactly
+  // as the baseplate draft leaves its own magnet holes for the exact pass). So
+  // they ride the direct path with solid feet. `flat` (no socket — different Z
+  // model) and `weighted` (internal weight cavity) genuinely differ, so they
+  // fall back.
+  if (base.style === 'flat' || base.style === 'weighted') return false;
   if (base.solid || base.lightweight) return false;
 
   // Body style: slotted/solid change the walls and floor.
