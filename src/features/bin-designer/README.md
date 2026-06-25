@@ -51,6 +51,15 @@ graph TB
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
+- `components/RightInspector/` — contextual inspector for standard/slotted bins: a collapsible desktop
+  column (`RightInspector`, gated by `useRightInspectorVisible` — null in cutout/solid/non-bin) and a
+  touch bottom sheet (`RightInspectorSheet`, reusing the shared `BottomSheet` in its controlled
+  `open`/`onClose` mode). Pins a selection editor (compartment / color zone / angled divider) above
+  always-on Estimates / Warnings / Export sections. Selection is store-backed (`ui.selectedCompartmentId`
+  / `selectedColorZone` / `selectedDividerKey`, mutually exclusive) and derived by `useSelectedElement`,
+  which self-heals each arm against live params (undo / mode switch / grid renumber). Reuses
+  `ColorPicker` + `zoneColorPatch`/`zoneColor` (`useColorZoneEditing`, shared `store/recentColorsStore`),
+  the help-jump dispatcher (`useDesignWarnings`), and `useExport` (instantiated once in `RightInspectorBody`)
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs (incl. optional `tags`; `updateDesignTags` replaces a design's tag set)
 - `storage/defaultParamsStorage.ts` — user's custom "default for new bins" (localStorage). Stores a style-only `Partial<BinParams>` (per-design geometry stripped via `extractStyleDefaults`/`STYLE_DEFAULT_OMIT_KEYS`); `loadDefaultParams` re-completes it via `migrateParams`. Read at the single `defaultsForNewDesign()` chokepoint so `newDesign`/`resetToDefaults` both honor it
@@ -170,7 +179,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
 5. **Solid style skips shell** - `keepFull` bypasses `.shell()`, so wallThickness is irrelevant
 6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
-   - **Per-compartment label text is edited in two places, one source of truth.** `compartments.compartmentTexts` (keyed by compartment id) feeds both the engraving (`labelTabBuilder`) and two editors: the `CompartmentEditor` "Add labels" mode (primary — `useCompartmentLabeling` + `CompartmentLabelField`, transient view state, **standard style + >1 compartment only**) and the collapsed bulk list in `LabelTabsSection` (keyboard/a11y fallback). Both call `setCompartmentText`. Labels render **always-visible** on grid cells (truncated, full text via `title`) so they're legible without hover (which doesn't exist on touch); typing a label when label tabs are off shows an inline "Enable label tabs" prompt. The text persists regardless of whether tabs are enabled or actually generate.
+   - **Per-compartment label text is edited in two places, one source of truth.** `compartments.compartmentTexts` (keyed by compartment id) feeds both the engraving (`labelTabBuilder`) and two editors: the `CompartmentEditor` "Add labels" mode (primary — `useCompartmentLabeling` + `CompartmentLabelField`, **standard style + >1 compartment only**) and the collapsed bulk list in `LabelTabsSection` (keyboard/a11y fallback). Both call `setCompartmentText`. The selected compartment is **store-backed** (`ui.selectedCompartmentId`), so the label editor and the right inspector share one selection; on **desktop** the inline `CompartmentLabelField` is suppressed (the right inspector hosts it) and `CompartmentEditor` mirrors the labeler's active compartment into the store so the inspector shows it on entering label mode. Labels render **always-visible** on grid cells (truncated, full text via `title`) so they're legible without hover (which doesn't exist on touch); typing a label when label tabs are off shows an inline "Enable label tabs" prompt. The text persists regardless of whether tabs are enabled or actually generate.
 7. **cellMask dimensions must track width × depth** - `cols` must equal
    `Math.round(width × MASK_CELLS_PER_UNIT)` and `rows` the depth equivalent.
    `paramSlice.setCellMask` rejects mismatched masks outright. When the bin
