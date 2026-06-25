@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.204.0...gridfinity-layout-tool-v4.205.0) (2026-06-25)
+
+
+### Features
+
+* **baseplate:** export one file per piece in split ZIPs ([#2360](https://github.com/andymai/gridfinity-layout-tool/issues/2360)) ([a06ed69](https://github.com/andymai/gridfinity-layout-tool/commit/a06ed6966903bcc491ff826074f0f0de20cad29f))
+
 ## [4.204.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.203.0...gridfinity-layout-tool-v4.204.0) (2026-06-24)
 
 
