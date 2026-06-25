@@ -36,7 +36,7 @@ export function EstimatesSection({ estimates, triangleCount }: EstimatesSectionP
       />
       <Row
         label={t('binDesigner.inspector.estimates.weight')}
-        value={`${Math.round(estimates.gramsFilament)} g`}
+        value={`${estimates.gramsFilament}g`}
       />
       <Row
         label={t('binDesigner.inspector.estimates.time')}

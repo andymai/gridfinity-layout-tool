@@ -73,7 +73,10 @@ export function RightInspector() {
 
   // A new selection auto-expands the rail and scrolls the pinned editor into
   // view, so a click in the 2D editor always reveals the thing it selected.
-  const selectionKey = selectionKeyOf(selected);
+  // Gated on `visible`: hooks run before the early return below, so without this
+  // a selection made while the inspector is inapplicable would still clear the
+  // collapse preference and write localStorage.
+  const selectionKey = visible ? selectionKeyOf(selected) : null;
   useEffect(() => {
     if (!selectionKey) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to an external selection change from the designer store

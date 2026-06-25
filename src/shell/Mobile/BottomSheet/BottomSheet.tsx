@@ -38,9 +38,13 @@ export function BottomSheet({ children, title, open, onClose }: BottomSheetProps
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : activeMobilePanel !== null;
   const close = useCallback(() => {
-    if (onClose) onClose();
+    // Controlled mode owns visibility via props; uncontrolled mode owns it via
+    // the mobile-panel store. Routing must follow that split, not just "is
+    // onClose set" — otherwise an uncontrolled caller that passes onClose could
+    // never close via the store.
+    if (isControlled) onClose?.();
     else closeMobilePanel();
-  }, [onClose, closeMobilePanel]);
+  }, [isControlled, onClose, closeMobilePanel]);
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
