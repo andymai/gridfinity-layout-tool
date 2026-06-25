@@ -256,9 +256,13 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             return data;
           });
 
-          // One file per unique shape. When stacking, each unique piece is baked
-          // into towers of the quantity the drawer needs (group size), split into
-          // multiple files when a stack exceeds the printable height cap.
+          // Unstacked: one file per physical drawer slot, named by its grid
+          // label (A1, B2, …), so importing the whole ZIP into a slicer drops in
+          // every piece with nothing to duplicate by hand. Identical shapes are
+          // generated once (above) and the single mesh is reused for each slot.
+          // When stacking, each unique piece is instead baked into towers of the
+          // quantity the drawer needs (group size), split into multiple files
+          // when a stack exceeds the printable height cap.
           const pieces: { data: ArrayBuffer; label: string }[] = [];
           for (let i = 0; i < uniqueGroups.length; i++) {
             const [fp, group] = uniqueGroups[i];
@@ -284,11 +288,17 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 );
                 pieces.push({ data: await blob.arrayBuffer(), label });
               }
-            } else if (format === '3mf') {
-              const blob = convertStlTo3mf(stlData, `${baseNameNoExt}_${name}`);
-              pieces.push({ data: await blob.arrayBuffer(), label: name });
-            } else {
-              pieces.push({ data: stlData, label: name });
+              continue;
+            }
+
+            // Convert the unique shape once, then reuse the bytes for every slot
+            // that shares it (the 3MF object name carries the shape's role name).
+            const pieceData =
+              format === '3mf'
+                ? await convertStlTo3mf(stlData, `${baseNameNoExt}_${name}`).arrayBuffer()
+                : stlData;
+            for (const idx of group.indices) {
+              pieces.push({ data: pieceData, label: tiling.pieces[idx].label });
             }
           }
 
@@ -333,7 +343,10 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           ]);
           triggerDownload(zip, `${baseNameNoExt}.zip`);
 
-          if (uniqueCount < totalPieces) {
+          // The unstacked ZIP now holds one file per slot (full set), so report
+          // the piece count plainly. Stacking still collapses identical slots
+          // into shared towers, where the unique-vs-total split is informative.
+          if (stackEnabled && uniqueCount < totalPieces) {
             useToastStore
               .getState()
               .addToast(

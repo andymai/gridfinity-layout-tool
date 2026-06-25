@@ -50,7 +50,7 @@ export function generatePrintGuide(input: PrintGuideInput): string {
 
   const sections = [
     generateHeader(tiling, parentParams, groupNames.size),
-    ...(stackPrint ? [generateStackingSection(stackPrint)] : []),
+    ...(stackPrint ? [generateStackingSection(stackPrint)] : [generateAssemblyIntro()]),
     generatePieceTable(
       groups,
       groupNames,
@@ -63,7 +63,7 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       input.copies
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
-    generateGridMap(tiling, groups, groupNames),
+    generateGridMap(tiling),
     generateFooter(),
   ];
 
@@ -76,6 +76,23 @@ export function generatePrintGuide(input: PrintGuideInput): string {
  */
 export function generateStackPrintNote(stack: StackPrintParams): string {
   return `${generateStackingSection(stack)}\n\n${generateFooter()}`;
+}
+
+/**
+ * Up-front instruction for the unstacked split export: the ZIP carries one file
+ * per piece (named by grid label), so the user prints every file once instead
+ * of reading a copy count and duplicating shapes by hand.
+ */
+function generateAssemblyIntro(): string {
+  return [
+    '─── How to print ────────────────────────────────',
+    '',
+    '  This ZIP has ONE FILE PER PIECE, named by its grid position (e.g. A1).',
+    '  Print every file once — nothing here needs to be duplicated by hand.',
+    '  Pieces that share an identical shape are grouped together below, so a',
+    '  reprint can use any copy. Place each piece using the assembly map at the',
+    '  bottom of this guide.',
+  ].join('\n');
 }
 
 function generateStackingSection(stack: StackPrintParams): string {
@@ -348,8 +365,7 @@ function generatePieceTable(
       features.push(`padding: ${sides.join(', ')}`);
     }
 
-    const fileName = `${baseName}_${name}${ext}`;
-    lines.push(stackPrint ? `  ${name}` : `  ${name} (${fileName})`);
+    lines.push(`  ${name}`);
     lines.push(`    Grid:      ${params.width} × ${params.depth} units`);
     lines.push(
       `    Size:      ${widthMm.toFixed(1)} × ${depthMm.toFixed(1)} × ${heightMm.toFixed(1)} mm`
@@ -371,8 +387,18 @@ function generatePieceTable(
       }
       lines.push(`    Assembles: ${positions}`);
     } else {
-      const copyText = count === 1 ? 'Print 1 copy' : `Print ${count} copies`;
-      lines.push(`    ${copyText} → ${positions}`);
+      // One file per physical slot, named by grid label. Listing the slots that
+      // share this shape lets a reprint use any copy; the assembly map places them.
+      const fileLabel =
+        group.indices.length === 1
+          ? 'Print this file once:'
+          : `Print each of these ${group.indices.length} files once:`;
+      lines.push(`    ${fileLabel}`);
+      for (const idx of group.indices) {
+        const p = pieces[idx];
+        const rot = p.placementRotationDeg === 180 ? '  (rotate 180° to seat)' : '';
+        lines.push(`      ${baseName}_${p.label}${ext}${rot}`);
+      }
     }
     lines.push('');
   }
@@ -380,31 +406,18 @@ function generatePieceTable(
   return lines.join('\n');
 }
 
-function generateGridMap(
-  tiling: BaseplateTiling,
-  groups: Map<string, PieceGroup>,
-  names: Map<string, string>
-): string {
-  // Build lookup: piece index → group name
-  const pieceNameLookup = new Map<number, string>();
-  for (const [fp, group] of groups) {
-    const name = names.get(fp) ?? '?';
-    for (const idx of group.indices) {
-      pieceNameLookup.set(idx, name);
-    }
+function generateGridMap(tiling: BaseplateTiling): string {
+  // Each cell shows its piece's grid label, which is exactly the file-name
+  // suffix (baseplate_A1.stl → "A1"), so the map doubles as a file-to-slot key.
+  const labelLookup = new Map<string, string>();
+  let maxNameLen = 3;
+  for (const p of tiling.pieces) {
+    labelLookup.set(`${p.col},${p.row}`, p.label);
+    maxNameLen = Math.max(maxNameLen, p.label.length);
   }
-
-  const maxNameLen = Math.max(...[...names.values()].map((n) => n.length), 3);
   const cellWidth = maxNameLen + 4; // "[ name  ]"
 
   const lines = ['─── Assembly Layout (front of drawer at bottom) ─', ''];
-
-  // Precompute (col, row) → piece index for O(1) lookups
-  const gridLookup = new Map<string, number>();
-  for (let i = 0; i < tiling.pieces.length; i++) {
-    const p = tiling.pieces[i];
-    gridLookup.set(`${p.col},${p.row}`, i);
-  }
 
   // Rows printed top-to-bottom (highest row at top, Row 1 at bottom)
   for (let r = tiling.rows - 1; r >= 0; r--) {
@@ -412,10 +425,8 @@ function generateGridMap(
     const cells: string[] = [];
 
     for (let c = 0; c < tiling.cols; c++) {
-      const pieceIdx = gridLookup.get(`${c},${r}`);
-      const name = pieceIdx !== undefined ? (pieceNameLookup.get(pieceIdx) ?? '?') : '?';
-      const padded = name.padEnd(maxNameLen);
-      cells.push(`[ ${padded} ]`);
+      const name = labelLookup.get(`${c},${r}`) ?? '?';
+      cells.push(`[ ${name.padEnd(maxNameLen)} ]`);
     }
 
     lines.push(`  ${rowLabel}${cells.join('')}`);

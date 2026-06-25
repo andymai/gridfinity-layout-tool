@@ -67,8 +67,22 @@ describe('generatePrintGuide', () => {
     // Should contain mm dimensions
     expect(guide).toMatch(/\d+\.\d+ × \d+\.\d+ × \d+\.\d+ mm/);
 
-    // Should mention copy counts
-    expect(guide).toMatch(/Print \d+ cop(y|ies)/);
+    // Each piece ships as its own file — the guide instructs printing every one.
+    expect(guide).toMatch(/Print (this file|each of these \d+ files) once:/);
+    expect(guide).toContain('ONE FILE PER PIECE');
+  });
+
+  it('lists one file per physical slot, named by grid label', () => {
+    const params = makeParams({ width: 12, depth: 12 });
+    const tiling = computeBaseplateTiling(params, 256);
+    const guide = buildGuide(params);
+
+    // Every drawer slot has its own file (e.g. gridfinity-baseplate_A1.stl),
+    // not a single deduped file with a copy count.
+    for (const piece of tiling.pieces) {
+      expect(guide).toContain(`gridfinity-baseplate_${piece.label}.stl`);
+    }
+    expect(guide).not.toMatch(/Print \d+ copies →/);
   });
 
   it('includes all piece positions in the guide', () => {
@@ -86,7 +100,7 @@ describe('generatePrintGuide', () => {
     const guide = buildGuide(params);
 
     expect(guide).toContain('3 × 3');
-    expect(guide).toContain('Print 1 copy');
+    expect(guide).toContain('Print this file once:');
   });
 
   it('includes footer with attribution', () => {
