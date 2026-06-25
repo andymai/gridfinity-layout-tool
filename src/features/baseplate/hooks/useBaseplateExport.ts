@@ -291,14 +291,26 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               continue;
             }
 
-            // Convert the unique shape once, then reuse the bytes for every slot
-            // that shares it (the 3MF object name carries the shape's role name).
-            const pieceData =
-              format === '3mf'
-                ? await convertStlTo3mf(stlData, `${baseNameNoExt}_${name}`).arrayBuffer()
-                : stlData;
-            for (const idx of group.indices) {
-              pieces.push({ data: pieceData, label: tiling.pieces[idx].label });
+            // STL bytes are identical across slots, so reuse the single
+            // generated buffer. For 3MF, parse the shape once but emit a
+            // per-slot file so each imported object carries its own grid label —
+            // slicers surface the embedded name, so a shared one would defeat the
+            // per-piece identification the grid-labelled files exist for. Only
+            // the lightweight XML+zip step repeats; the STL parse is done once.
+            if (format === '3mf') {
+              const soup = parseStlSoup(stlData);
+              for (const idx of group.indices) {
+                const label = tiling.pieces[idx].label;
+                const blob = export3MF(soup.vertices, soup.normals, {
+                  name: `${baseNameNoExt}_${label}`,
+                  printSettings: printSettingsFor3MF(),
+                });
+                pieces.push({ data: await blob.arrayBuffer(), label });
+              }
+            } else {
+              for (const idx of group.indices) {
+                pieces.push({ data: stlData, label: tiling.pieces[idx].label });
+              }
             }
           }
 
