@@ -17,6 +17,7 @@ import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspa
 import { CutoutDesktopOnlyBanner } from './CutoutDesktopOnlyBanner';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import { PerfOverlay } from '@/features/bin-designer/components/PerfOverlay';
+import { RightInspector } from '@/features/bin-designer/components/RightInspector';
 
 interface DesignerMainContentProps {
   isDesktop: boolean;
@@ -62,6 +63,7 @@ export function DesignerMainContent({
           <ExperimentalKernelBadge />
           <PerfOverlay />
         </div>
+        <RightInspector />
       </main>
     );
   }

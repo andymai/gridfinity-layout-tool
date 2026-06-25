@@ -17,7 +17,10 @@ const render = (config: CompartmentConfig, style = 'standard') =>
 
 describe('useCompartmentLabeling', () => {
   beforeEach(() => {
-    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS },
+      ui: { ...useDesignerStore.getState().ui, selectedCompartmentId: null },
+    });
   });
 
   describe('canLabel gating', () => {

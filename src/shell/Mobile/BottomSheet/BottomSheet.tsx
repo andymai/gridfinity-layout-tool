@@ -14,6 +14,14 @@ const RUBBER_BAND_FACTOR = 0.3;
 interface BottomSheetProps {
   children: React.ReactNode;
   title: string;
+  /**
+   * Controlled open state. When provided, the sheet ignores the mobile-panel
+   * store and is driven entirely by these props — used outside the mobile shell
+   * (e.g. the designer's right inspector on touch). Omit both to keep the
+   * original store-driven behavior.
+   */
+  open?: boolean;
+  onClose?: () => void;
 }
 
 /**
@@ -21,11 +29,18 @@ interface BottomSheetProps {
  * Features gesture dismiss (swipe down with velocity detection),
  * rubber-band overscroll, haptic feedback, and backdrop tap to close.
  */
-export function BottomSheet({ children, title }: BottomSheetProps) {
+export function BottomSheet({ children, title, open, onClose }: BottomSheetProps) {
   const t = useTranslation();
   const activeMobilePanel = useMobileStore((state) => state.activeMobilePanel);
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
   const { viewportHeight } = useResponsive();
+
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : activeMobilePanel !== null;
+  const close = useCallback(() => {
+    if (onClose) onClose();
+    else closeMobilePanel();
+  }, [onClose, closeMobilePanel]);
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
@@ -42,8 +57,6 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
   // Adaptive dismiss threshold: 15% of viewport height, capped at 80px
   // Smaller screens get smaller thresholds for easier dismissal
   const dismissThreshold = Math.min(80, Math.round(viewportHeight * 0.15));
-
-  const isOpen = activeMobilePanel !== null;
 
   // Handle swipe down to dismiss
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -116,7 +129,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
       setDragY(viewportHeight);
       // Wait for the slide-out animation to complete
       setTimeout(() => {
-        closeMobilePanel();
+        close();
         setIsDismissing(false);
         setDragY(0);
       }, 200);
@@ -128,18 +141,18 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
     lastMoveRef.current = null;
     velocityRef.current = 0;
-  }, [isDragging, dismissThreshold, closeMobilePanel, viewportHeight]);
+  }, [isDragging, dismissThreshold, close, viewportHeight]);
 
   // Close on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        closeMobilePanel();
+        close();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, closeMobilePanel]);
+  }, [isOpen, close]);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -171,7 +184,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
           backgroundColor: 'var(--overlay-medium)',
           opacity: isDragging ? 1 - Math.max(0, dragY) / 300 : isDismissing ? 0 : 1,
         }}
-        onClick={closeMobilePanel}
+        onClick={close}
         aria-hidden="true"
       />
 
@@ -222,7 +235,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
           {/* Title row */}
           <div className="w-full flex items-center justify-between px-4">
             <h2 className="text-base font-medium text-content">{title}</h2>
-            <IconButton onClick={closeMobilePanel} aria-label={t('mobile.bottomSheet.closePanel')}>
+            <IconButton onClick={close} aria-label={t('mobile.bottomSheet.closePanel')}>
               <XIcon />
             </IconButton>
           </div>

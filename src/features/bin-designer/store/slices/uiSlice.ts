@@ -100,6 +100,40 @@ export function createUISlice(set: Set) {
     setSelectedDividerKey: (key: string | null) => {
       set((state) => {
         state.ui.selectedDividerKey = key;
+        // Selection arms are mutually exclusive (last-interaction-wins): picking a
+        // divider drops any compartment/zone selected for the right inspector.
+        if (key !== null) {
+          state.ui.selectedCompartmentId = null;
+          state.ui.selectedColorZone = null;
+        }
+      });
+    },
+
+    setSelectedCompartmentId: (id: number | null) => {
+      set((state) => {
+        state.ui.selectedCompartmentId = id;
+        if (id !== null) {
+          state.ui.selectedDividerKey = null;
+          state.ui.selectedColorZone = null;
+        }
+      });
+    },
+
+    setSelectedColorZone: (zone: ColorZone | null) => {
+      set((state) => {
+        state.ui.selectedColorZone = zone;
+        if (zone !== null) {
+          state.ui.selectedDividerKey = null;
+          state.ui.selectedCompartmentId = null;
+        }
+      });
+    },
+
+    clearInspectorSelection: () => {
+      set((state) => {
+        state.ui.selectedCompartmentId = null;
+        state.ui.selectedColorZone = null;
+        state.ui.selectedDividerKey = null;
       });
     },
 
@@ -124,6 +158,12 @@ export function createUISlice(set: Set) {
     setColorTool: (tool: ColorTool) => {
       set((state) => {
         state.ui.colorTool = tool;
+        // Entering any color tool drops the inspector's zone selection so the tool
+        // owns zone clicks — the inspector and the eyedropper/swap flow are
+        // mutually exclusive surfaces for a zone.
+        if (tool !== null) {
+          state.ui.selectedColorZone = null;
+        }
         // Clear any in-flight swap pick whenever the tool changes — entering
         // eyedropper mid-swap shouldn't leave a stale first zone behind.
         if (tool !== 'swap-pick-second') {

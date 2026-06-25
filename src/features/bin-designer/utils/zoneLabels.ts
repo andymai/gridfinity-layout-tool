@@ -102,3 +102,36 @@ export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
     }
   }
 }
+
+/**
+ * Current hex for a zone. Lip cells read from the `lip.cells` map (falling back
+ * to the body color, matching how the grid resolves an unset cell); every other
+ * zone is a flat top-level slot.
+ */
+export function zoneColor(colors: FeatureColorConfig, zone: ColorZone): string {
+  if (parseLipCell(zone)) return colors.lip.cells[zone] ?? colors.body;
+  return colors[zone as Exclude<ColorZone, LipCellZone>];
+}
+
+/**
+ * Colors used by the OTHER active zones (deduped, excluding the given zone's
+ * current color). Powers the picker's "used in this design" quick-pick row;
+ * shared by the left ColorsSection rows and the right inspector's zone editor.
+ */
+export function buildOtherColors(
+  zone: ColorZone,
+  colorsByZone: ReadonlyMap<ColorZone, string>
+): string[] {
+  const current = colorsByZone.get(zone);
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const [z, c] of colorsByZone) {
+    if (z === zone) continue;
+    const key = c.toLowerCase();
+    if (key === current?.toLowerCase()) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(c);
+  }
+  return result;
+}

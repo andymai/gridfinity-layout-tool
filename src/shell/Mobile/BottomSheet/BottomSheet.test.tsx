@@ -48,6 +48,23 @@ describe('BottomSheet', () => {
     expect(container.textContent).toContain('Panel content');
   });
 
+  it('is driven by open/onClose when controlled, ignoring the store', () => {
+    // No active mobile panel — controlled mode must still render.
+    useMobileStore.setState({ activeMobilePanel: null });
+    const onClose = vi.fn();
+    const { container } = render(
+      <BottomSheet title="Controlled" open onClose={onClose}>
+        <div>Inspector content</div>
+      </BottomSheet>
+    );
+    expect(container.textContent).toContain('Inspector content');
+
+    // Escape routes to onClose, not the mobile store.
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+    expect(useMobileStore.getState().activeMobilePanel).toBeNull();
+  });
+
   it('does not render when activeMobilePanel is null', () => {
     useMobileStore.setState({ activeMobilePanel: null });
 

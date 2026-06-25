@@ -26,6 +26,10 @@ import { PipetteIcon } from '@/design-system/Icon';
 import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
+import { useRecentColorsStore } from '@/features/bin-designer/store/recentColorsStore';
+import { buildOtherColors } from '@/features/bin-designer/utils/zoneLabels';
+import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useRightInspectorVisible } from '@/features/bin-designer/components/RightInspector/useRightInspectorVisible';
 import { FeatureToggle } from '../FeatureToggle';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { ColorZoneRow } from './ColorZoneRow';
@@ -34,26 +38,9 @@ import { ColorsHintBanner } from './ColorsHintBanner';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
 import { LipColorEditor } from './LipColorEditor';
 
-const RECENT_COLORS_LIMIT = 8;
-
-function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, string>): string[] {
-  const current = colorsByZone.get(zone);
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const [z, c] of colorsByZone) {
-    if (z === zone) continue;
-    const key = c.toLowerCase();
-    if (key === current?.toLowerCase()) continue;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(c);
-  }
-  return result;
-}
-
 export function ColorsSection() {
   const t = useTranslation();
-  const [recentColors, setRecentColors] = useState<readonly string[]>([]);
+  const recentColors = useRecentColorsStore((s) => s.recentColors);
 
   const {
     featureColors: rawColors,
@@ -85,6 +72,12 @@ export function ColorsSection() {
     }))
   );
   const setColorTool = useDesignerStore((s) => s.setColorTool);
+  const setSelectedColorZone = useDesignerStore((s) => s.setSelectedColorZone);
+  const { isDesktop } = useResponsive();
+  // Route to the inspector only when it is actually mounted as the desktop
+  // column — gating on isDesktop alone sends clicks to a hidden panel (and
+  // suppresses the popover) for solid-style/non-bin designs.
+  const inspectorVisible = useRightInspectorVisible();
   const swapZoneWithToast = useSwapZoneWithToast();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = rawColors?.enabled ?? false;
@@ -117,15 +110,10 @@ export function ColorsSection() {
 
   useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
 
-  // Local LRU of recently-committed colors so the picker can offer them
-  // as quick-pick swatches even on a fresh, all-body design.
-  const remember = useCallback((hex: string) => {
-    const lower = hex.toLowerCase();
-    setRecentColors((prev) => {
-      const next = [lower, ...prev.filter((c) => c !== lower)];
-      return next.slice(0, RECENT_COLORS_LIMIT);
-    });
-  }, []);
+  // Shared session LRU of recently-committed colors so the picker can offer
+  // them as quick-pick swatches even on a fresh, all-body design — shared with
+  // the right inspector's zone editor so recent-color memory doesn't fork.
+  const remember = useRecentColorsStore((s) => s.remember);
 
   const colorsByZone = useMemo(() => {
     const map = new Map<ColorZone, string>();
@@ -202,7 +190,16 @@ export function ColorsSection() {
       onHover={setHoveredColorZone}
       onGestureStart={startTransaction}
       onGestureEnd={commitTransaction}
-      onClickOverride={swapActive ? () => swapZoneWithToast(zone) : undefined}
+      onClickOverride={
+        // Swap flow wins; otherwise a desktop click selects the zone for the
+        // inspector (the authoritative editor) instead of opening the popover.
+        // Touch and any active color tool keep their own behavior.
+        swapActive
+          ? () => swapZoneWithToast(zone)
+          : isDesktop && inspectorVisible && colorTool === null
+            ? () => setSelectedColorZone(zone)
+            : undefined
+      }
     />
   );
 

@@ -47,9 +47,13 @@ export function useCompartmentLabeling(
   compartmentCount: number
 ): CompartmentLabeling {
   const setCompartmentText = useDesignerStore((s) => s.setCompartmentText);
+  // Selection is store-backed (ui.selectedCompartmentId) so the left label
+  // editor and the right inspector share ONE selected compartment: clicking a
+  // cell here drives the inspector, and vice versa, with no divergent state.
+  const selectedId = useDesignerStore((s) => s.ui.selectedCompartmentId);
+  const setSelectedCompartmentId = useDesignerStore((s) => s.setSelectedCompartmentId);
 
   const [labelModeRaw, setLabelModeRaw] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const canLabel = style === 'standard' && compartmentCount > 1;
 
@@ -74,7 +78,10 @@ export function useCompartmentLabeling(
 
   const setLabelMode = useCallback((on: boolean) => setLabelModeRaw(on), []);
 
-  const selectCompartment = useCallback((id: number) => setSelectedId(id), []);
+  const selectCompartment = useCallback(
+    (id: number) => setSelectedCompartmentId(id),
+    [setSelectedCompartmentId]
+  );
 
   const displayNumberOf = useCallback(
     (id: number) => displayNumbers.get(id) ?? 0,
@@ -96,9 +103,9 @@ export function useCompartmentLabeling(
       // compartment back to the first reads as a glitch when ripping through
       // a long list with Enter.
       const next = Math.min(orderedIds.length - 1, Math.max(0, cur + delta));
-      setSelectedId(orderedIds[next]);
+      setSelectedCompartmentId(orderedIds[next]);
     },
-    [editingId, orderedIds]
+    [editingId, orderedIds, setSelectedCompartmentId]
   );
 
   const moveByGrid = useCallback(
@@ -113,9 +120,9 @@ export function useCompartmentLabeling(
       const row = (drow > 0 ? bounds.maxRow : bounds.minRow) + drow;
       if (col < 0 || col >= cols || row < 0 || row >= rows) return;
       const target = compartments.cells[cellIndex(cols, col, row)];
-      if (target !== editingId) setSelectedId(target);
+      if (target !== editingId) setSelectedCompartmentId(target);
     },
-    [editingId, compartments]
+    [editingId, compartments, setSelectedCompartmentId]
   );
 
   return {

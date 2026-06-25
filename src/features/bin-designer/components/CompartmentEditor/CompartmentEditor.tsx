@@ -57,7 +57,7 @@ const GRID_ENVELOPE_H_PX = 300;
 
 export function CompartmentEditor() {
   const t = useTranslation();
-  const { isMobile } = useResponsive();
+  const { isMobile, isDesktop } = useResponsive();
   const stepperSize = isMobile ? 'lg' : 'md';
   const {
     compartments,
@@ -70,6 +70,7 @@ export function CompartmentEditor() {
     dividerTiltPreview,
     selectedDividerKey,
     hoveredDividerKey,
+    selectedCompartmentId,
     setParam,
     setCompartmentGrid,
     mergeCells,
@@ -80,6 +81,7 @@ export function CompartmentEditor() {
     setSelectedDividerKey,
     setHoveredDividerKey,
     setHoveredCompartmentId,
+    setSelectedCompartmentId,
   } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
@@ -92,6 +94,7 @@ export function CompartmentEditor() {
       dividerTiltPreview: s.ui.dividerTiltPreview,
       selectedDividerKey: s.ui.selectedDividerKey,
       hoveredDividerKey: s.ui.hoveredDividerKey,
+      selectedCompartmentId: s.ui.selectedCompartmentId,
       setParam: s.setParam,
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
@@ -102,6 +105,7 @@ export function CompartmentEditor() {
       setSelectedDividerKey: s.setSelectedDividerKey,
       setHoveredDividerKey: s.setHoveredDividerKey,
       setHoveredCompartmentId: s.setHoveredCompartmentId,
+      setSelectedCompartmentId: s.setSelectedCompartmentId,
     }))
   );
 
@@ -124,6 +128,28 @@ export function CompartmentEditor() {
   const compartmentCount = getCompartmentCount(compartments);
 
   const labeling = useCompartmentLabeling(compartments, style, compartmentCount);
+
+  // Desktop suppresses the inline label field (the right inspector edits the
+  // selected compartment), so mirror the labeler's active compartment into the
+  // store — otherwise entering label mode leaves no editable field until a cell
+  // is clicked. Desktop-only: touch keeps the inline field, so seeding isn't
+  // needed there.
+  useEffect(() => {
+    if (
+      isDesktop &&
+      labeling.labelMode &&
+      labeling.editingId !== null &&
+      labeling.editingId !== selectedCompartmentId
+    ) {
+      setSelectedCompartmentId(labeling.editingId);
+    }
+  }, [
+    isDesktop,
+    labeling.labelMode,
+    labeling.editingId,
+    selectedCompartmentId,
+    setSelectedCompartmentId,
+  ]);
 
   // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
   const previewColor = usePreviewColor();
@@ -797,7 +823,12 @@ export function CompartmentEditor() {
 
           {labeling.labelMode && (
             <>
-              <CompartmentLabelField labeling={labeling} />
+              {/* On desktop the right inspector is the authoritative editor for
+                  the selected compartment's label, so the inline field is
+                  suppressed to avoid a double editor; label mode still drives
+                  selection by click. Touch keeps the inline field (no persistent
+                  inspector column). */}
+              {!isDesktop && <CompartmentLabelField labeling={labeling} />}
               <div className="mt-2 flex items-start gap-2 text-xs text-content-tertiary">
                 <InfoIcon size="xs" className="mt-0.5 shrink-0" />
                 {labelEnabled ? (

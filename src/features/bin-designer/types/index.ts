@@ -799,6 +799,20 @@ export interface DesignerUIState {
    * when nothing is hovered (the 3D view stays uncluttered at rest).
    */
   readonly hoveredCompartmentId: number | null;
+  /**
+   * Compartment durably selected for the right inspector's contextual editor,
+   * by compartment id. Distinct from `hoveredCompartmentId` (transient hover).
+   * Mutually exclusive with `selectedDividerKey`/`selectedColorZone`. A stale id
+   * after a grid mutation is dropped lazily by `useSelectedElement` (ids renumber
+   * on merge/split), so no eager clearing is needed.
+   */
+  readonly selectedCompartmentId: number | null;
+  /**
+   * Color zone durably selected for the right inspector's contextual editor.
+   * Distinct from `hoveredColorZone`. Mutually exclusive with the other two
+   * selection fields, and cleared whenever a color tool is activated.
+   */
+  readonly selectedColorZone: ColorZone | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */
@@ -1028,6 +1042,12 @@ export interface DesignerState {
   setHoveredDividerKey: (key: string | null) => void;
   setDividerTiltPreview: (preview: DividerTiltPreview | null) => void;
   setHoveredCompartmentId: (id: number | null) => void;
+  /** Durably select a compartment for the right inspector (clears divider/zone selection). */
+  setSelectedCompartmentId: (id: number | null) => void;
+  /** Durably select a color zone for the right inspector (clears divider/compartment selection). */
+  setSelectedColorZone: (zone: ColorZone | null) => void;
+  /** Clear all three right-inspector selection arms at once. */
+  clearInspectorSelection: () => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

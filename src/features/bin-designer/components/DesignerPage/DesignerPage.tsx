@@ -24,6 +24,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { DesignerHeader } from './DesignerHeader';
 import { DesignerMainContent } from './DesignerMainContent';
+import { RightInspectorSheet } from '@/features/bin-designer/components/RightInspector';
 import { MobileTitleBar } from './MobileTitleBar';
 import { ShareLoadingBanner } from './ShareLoadingBanner';
 import { useDesignNameEditor } from './useDesignNameEditor';
@@ -91,6 +92,9 @@ export function DesignerPage() {
         isLandscape={isLandscape}
         cutoutEditorOpen={cutoutEditorOpen}
       />
+
+      {/* Touch: the inspector is a bottom sheet (desktop uses the side column) */}
+      {!isDesktop && <RightInspectorSheet />}
 
       {/* Modals */}
       <ExportDialog />

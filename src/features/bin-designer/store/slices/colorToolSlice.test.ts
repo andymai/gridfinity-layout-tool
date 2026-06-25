@@ -91,6 +91,16 @@ describe('color-tool slice', () => {
       expect(useDesignerStore.getState().ui.hoveredColorZone).toBeNull();
     });
 
+    it('clears the inspector zone selection when entering a tool', () => {
+      // The eyedropper/swap flow and the right-inspector's zone editor are
+      // mutually exclusive surfaces — activating a tool drops any selected zone.
+      useDesignerStore.setState({
+        ui: { ...useDesignerStore.getState().ui, selectedColorZone: 'body' },
+      });
+      useDesignerStore.getState().setColorTool('eyedropper');
+      expect(useDesignerStore.getState().ui.selectedColorZone).toBeNull();
+    });
+
     it('clears pickerOverlay when switching to a non-eyedropper tool', () => {
       // Eyedropper → swap transition: the floating picker from eyedropper
       // would otherwise sit over the swap banner. Picker only makes sense

@@ -1,6 +1,11 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "binDesigner.inspector.title",
+    "binDesigner.inspector.compartment.label",
+    "binDesigner.inspector.estimates.filament",
+    "binDesigner.inspector.estimates.triangles",
+    "binDesigner.inspector.export.format",
     "binDesigner.cutoutTextAngle",
     "common.redditCommunity",
     "baseplate.connectorStyle.puzzle",
