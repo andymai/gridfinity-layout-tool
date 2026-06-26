@@ -55,6 +55,21 @@ export function planPhysicalStacks(
 }
 
 /**
+ * Whether a physical-stack plan maps 1:1 onto the tiling's split pieces: every
+ * tower is a single plate (`copies === 1`) carrying a distinct piece label. Only
+ * then do towers correspond to spatial piece positions (the "no stacks" preview
+ * layout). A deduped or height-capped plan fails this: `cap === 1` expands a
+ * quantity-N group into N same-label single-plate stacks, which satisfies the
+ * count/copies tests but repeats a label — so checking label distinctness (not
+ * just length) is what prevents the repeats from collapsing onto one position.
+ */
+export function isUnstackedSplit(plan: readonly PhysicalStack[], pieceCount: number): boolean {
+  if (plan.length !== pieceCount) return false;
+  if (!plan.every((s) => s.copies === 1)) return false;
+  return new Set(plan.map((s) => s.label)).size === plan.length;
+}
+
+/**
  * How many flipped tiles fit in one stack on a printer `maxZmm` tall. A stack of
  * n tiles is `n*tileHeight + (n-1)*gap` tall; returns the largest n that fits,
  * clamped to ≥1 (one tile always fits — it already fits the bed footprint).

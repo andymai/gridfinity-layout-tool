@@ -22,6 +22,7 @@ import {
   planPhysicalStacks,
   stackHeightCap,
   bodyCenterYMm,
+  isUnstackedSplit,
   type StackMeshArrays,
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
@@ -142,13 +143,10 @@ export function StackedBaseplateMeshes({
     if (towers.length === 0) return null;
 
     // "No stacks": every tower is a single plate mapping 1:1 onto the split
-    // pieces (no fingerprint dedup, no height-cap split, copies === 1). Then the
-    // towers ARE the split pieces, so position each at its tiling slot and the
-    // preview reads in assembled order instead of a square grid.
-    const noStacks =
-      isSplit &&
-      filteredPlan.length === (tiling?.pieces.length ?? 0) &&
-      filteredPlan.every((p) => p.copies === 1);
+    // pieces (no fingerprint dedup, no height-cap split — see isUnstackedSplit).
+    // Then the towers ARE the split pieces, so position each at its tiling slot
+    // and the preview reads in assembled order instead of a square grid.
+    const noStacks = isSplit && isUnstackedSplit(filteredPlan, tiling?.pieces.length ?? 0);
     const positionedTowers = noStacks
       ? towers.map((tower, i) => {
           const piece = pieceByLabel.get(filteredPlan[i].label);

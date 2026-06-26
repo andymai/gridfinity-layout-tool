@@ -5,6 +5,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import {
   planPhysicalStacks,
+  isUnstackedSplit,
   stackHeightCap,
   stackStrideMm,
   stackGroupsFromTiling,
@@ -113,6 +114,29 @@ describe('planPhysicalStacks', () => {
       const wantTotal = groups.reduce((s, g) => s + Math.max(0, Math.floor(g.quantity)), 0);
       expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(wantTotal);
     });
+  });
+});
+
+describe('isUnstackedSplit', () => {
+  const plate = (label: string, copies: number) => ({ label, copies });
+
+  it('is true when every tower is a single plate with a distinct label', () => {
+    expect(isUnstackedSplit([plate('A1', 1), plate('B1', 1), plate('A2', 1)], 3)).toBe(true);
+  });
+
+  it('is false when a label repeats (height-cap split of a deduped group)', () => {
+    // planPhysicalStacks(cap=1) expands a quantity-2 group into two same-label
+    // single-plate stacks — count + copies look 1:1 but the pieces are deduped.
+    expect(isUnstackedSplit([plate('A1', 1), plate('A1', 1)], 2)).toBe(false);
+  });
+
+  it('is false when any tower stacks more than one plate', () => {
+    expect(isUnstackedSplit([plate('A1', 2), plate('B1', 1)], 2)).toBe(false);
+  });
+
+  it('is false when the plan size does not match the piece count', () => {
+    // Two pieces deduped into one tower → not a 1:1 mapping.
+    expect(isUnstackedSplit([plate('A1', 1)], 2)).toBe(false);
   });
 });
 
