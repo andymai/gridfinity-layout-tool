@@ -119,4 +119,61 @@ describe('buildStackPreviewMeshes', () => {
       expect(b.minY).toBeCloseTo(-b.maxY, 3);
     });
   });
+
+  // "No stacks" case: each tower carries its tiling col/row, so the preview
+  // mirrors the assembled split view instead of collapsing to a square grid.
+  describe('spatial layout (matches assembled grid)', () => {
+    it('keeps a 4-wide × 1-deep split in one row, not a 2×2 square', () => {
+      const out = buildStackPreviewMeshes(
+        [0, 1, 2, 3].map((col) => ({
+          mesh: plate(),
+          copies: 1,
+          bodyCenterYMm: PLATE_BODY_Y,
+          col,
+          row: 0,
+        })),
+        airGap,
+        0,
+        42
+      );
+      // 4 cols × 1 row (the square-grid path would give 2×2 = 168×168).
+      expect(out.widthMm).toBeCloseTo(4 * 84, 4);
+      expect(out.depthMm).toBeCloseTo(1 * 84, 4);
+      // Columns increase strictly left→right; all towers share one row (Y≈0).
+      const xs = out.towerLayouts.map((l) => l.centerX);
+      expect(xs).toEqual([...xs].sort((a, b) => a - b));
+      expect(out.towerLayouts.every((l) => Math.abs(l.centerY) < 1e-6)).toBe(true);
+    });
+
+    it('orders rows front-to-back like the assembled view (row 0 at front)', () => {
+      // One column, two rows: A1 (row 0) must sit in front of A2 (row 1). The
+      // assembled view places row 0 at the smaller Y, so the preview must not
+      // flip it (the square-grid path puts row 0 on top = larger Y).
+      const out = buildStackPreviewMeshes(
+        [
+          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 0 },
+          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 1 },
+        ],
+        airGap,
+        0,
+        42
+      );
+      expect(out.towerLayouts[0].centerY).toBeLessThan(out.towerLayouts[1].centerY);
+    });
+
+    it('falls back to the square grid when any tower lacks a position', () => {
+      const out = buildStackPreviewMeshes(
+        [
+          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 0 },
+          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
+        ],
+        airGap,
+        0,
+        42
+      );
+      // 2 towers, square grid → 2 cols × 1 row.
+      expect(out.widthMm).toBeCloseTo(2 * 84, 4);
+      expect(out.depthMm).toBeCloseTo(1 * 84, 4);
+    });
+  });
 });
