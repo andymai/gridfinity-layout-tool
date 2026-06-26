@@ -41,7 +41,12 @@ if (typeof Element !== 'undefined') {
 // default. Tests covering the WebGL-unavailable path override this locally
 // with vi.spyOn.
 if (typeof HTMLCanvasElement !== 'undefined') {
-  const minimalWebGl = { isContextLost: () => false } as unknown as WebGLRenderingContext;
+  // Includes getShaderPrecisionFormat so detectWebGL()'s precision probe passes;
+  // tests covering the broken-context path override this locally with vi.spyOn.
+  const minimalWebGl = {
+    isContextLost: () => false,
+    getShaderPrecisionFormat: () => ({ precision: 23, rangeMin: 127, rangeMax: 127 }),
+  } as unknown as WebGLRenderingContext;
   const originalGetContext = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (
     this: HTMLCanvasElement,

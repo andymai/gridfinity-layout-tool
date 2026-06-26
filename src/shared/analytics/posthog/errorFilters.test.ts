@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { filterExceptionForPosthog, shouldIgnoreError } from './errorFilters';
+
+const { detectWebGL } = vi.hoisted(() => ({ detectWebGL: vi.fn() }));
+vi.mock('@/shared/webgl/detectWebGL', () => ({ detectWebGL }));
+
+beforeEach(() => {
+  // Default to "available" so non-WebGL cases behave normally.
+  detectWebGL.mockReturnValue({ available: true });
+});
 
 describe('shouldIgnoreError — message patterns', () => {
   it.each([
@@ -96,5 +104,50 @@ describe('filterExceptionForPosthog', () => {
       },
     };
     expect(filterExceptionForPosthog(e)).toBe(e);
+  });
+});
+
+describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
+  it('pins a stable fingerprint so all variants group into one issue', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: 'Error creating WebGL context.' }] },
+    };
+    const result = filterExceptionForPosthog(e);
+    expect(result).toBe(e);
+    expect(result?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
+  });
+
+  it('keeps the fingerprint stable across different stacks/mount sites', () => {
+    const designer = filterExceptionForPosthog({
+      event: '$exception',
+      properties: { $exception_values: ['Error creating WebGL context'] },
+    });
+    const baseplate = filterExceptionForPosthog({
+      event: '$exception',
+      properties: { $exception_values: ['Error creating WebGL context (designer canvas)'] },
+    });
+    expect(designer?.properties?.$exception_fingerprint).toBe(
+      baseplate?.properties?.$exception_fingerprint
+    );
+  });
+
+  it('drops the burst once detection has been flipped to unavailable', () => {
+    detectWebGL.mockReturnValue({ available: false, reason: 'context-failed' });
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: 'Error creating WebGL context.' }] },
+    };
+    expect(filterExceptionForPosthog(e)).toBeNull();
+  });
+
+  it('does not fingerprint unrelated errors', () => {
+    const e = {
+      event: '$exception',
+      properties: { $exception_list: [{ value: 'TypeError: foo is not a function' }] },
+    };
+    const result = filterExceptionForPosthog(e);
+    expect(result).toBe(e);
+    expect(result?.properties?.$exception_fingerprint).toBeUndefined();
   });
 });
