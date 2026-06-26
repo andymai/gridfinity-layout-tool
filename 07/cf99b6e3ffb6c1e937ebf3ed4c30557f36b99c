@@ -1,0 +1,34 @@
+src/features/baseplate/utils/stackPrint.ts
+  s_f3c0e77d56840f::t_b5c6afcee0d881 58-71
+  s_3a7801f96b397a::t_c677dfcd593f6b 57
+src/features/baseplate/utils/stackPrint.test.ts
+  s_f3c0e77d56840f::t_4d3b87f2b7d2e3 8
+  s_f3c0e77d56840f::t_6b1c2a6398cb2e 120-142
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_f3c0e77d56840f::t_590d11b8451b5d 25
+  s_f3c0e77d56840f::t_02ef545272ed49 146-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "07cf99b6e3ffb6c1e937ebf3ed4c30557f36b99c",
+  "prompts": {},
+  "sessions": {
+    "s_3a7801f96b397a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d87b0fde-b82d-435e-90fb-1a5c8028f43f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f3c0e77d56840f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1664a53c-4fc2-4753-8e00-91b0a5c3e9b5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
