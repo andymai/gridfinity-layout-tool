@@ -1,0 +1,28 @@
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_f3c0e77d56840f::t_8e895327d5ab7c 138-153,155
+src/features/baseplate/README.md
+  s_f3c0e77d56840f::t_eea4cdeb43fd0a 38
+src/features/baseplate/utils/stackPreview.ts
+  s_f3c0e77d56840f::t_e67b414be8b7b4 118-119,121-123
+  s_f3c0e77d56840f::t_423571ba460468 94-103
+  s_f3c0e77d56840f::t_3b69be95898af2 3-13
+  s_f3c0e77d56840f::t_fe26a0c5efa49d 40-46
+src/features/baseplate/utils/stackPreview.test.ts
+  s_f3c0e77d56840f::t_1b70bd39ac63a3 122-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "d5f3f3b5aeb38d1477e13858753915e8058ce19e",
+  "prompts": {},
+  "sessions": {
+    "s_f3c0e77d56840f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1664a53c-4fc2-4753-8e00-91b0a5c3e9b5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
