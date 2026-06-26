@@ -1,0 +1,20 @@
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_f3c0e77d56840f::t_29c1ffe669783f 154
+  s_f3c0e77d56840f::t_4289435689812b 114-118,125-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "3ff1ac2933ab6119493638cdaabbb74b04ad3bb9",
+  "prompts": {},
+  "sessions": {
+    "s_f3c0e77d56840f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1664a53c-4fc2-4753-8e00-91b0a5c3e9b5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
