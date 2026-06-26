@@ -111,14 +111,19 @@ export function StackedBaseplateMeshes({
 
     const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
 
+    // Index pieces/meshes by label once: the loop and the spatial-positioning
+    // pass below both look up by label, so a per-tower find() would be O(n²).
+    const pieceByLabel = new Map(tiling?.pieces.map((p) => [p.label, p]) ?? []);
+    const meshByLabel = new Map(pieceMeshes.map((p) => [p.label, p.mesh]));
+
     const towers: StackPreviewTower[] = [];
     const filteredPlan: typeof plan = [];
     for (const physical of plan) {
       let source: Parameters<typeof toMeshArrays>[0] | null = singleMesh;
       let bodyY = singleBodyY;
       if (isSplit) {
-        source = pieceMeshes.find((p) => p.label === physical.label)?.mesh ?? null;
-        const piece = tiling?.pieces.find((p) => p.label === physical.label);
+        source = meshByLabel.get(physical.label) ?? null;
+        const piece = pieceByLabel.get(physical.label);
         if (piece) {
           // Derive the body centre from the SAME params the mesh was generated
           // with: pieceToBaseplateParams swaps front/back padding for
@@ -146,7 +151,7 @@ export function StackedBaseplateMeshes({
       filteredPlan.every((p) => p.copies === 1);
     const positionedTowers = noStacks
       ? towers.map((tower, i) => {
-          const piece = tiling?.pieces.find((p) => p.label === filteredPlan[i].label);
+          const piece = pieceByLabel.get(filteredPlan[i].label);
           return piece ? { ...tower, col: piece.col, row: piece.row } : tower;
         })
       : towers;
