@@ -106,8 +106,10 @@ export function Sidebar() {
 
   // Listen for command palette open-settings-modal event (supports optional tab)
   useEffect(() => {
-    const handleOpenSettings = (e: CustomEvent<{ tab?: SettingsTabId }>) => {
-      setSettingsInitialTab(e.detail.tab);
+    const handleOpenSettings = (e: CustomEvent<{ tab?: SettingsTabId } | null>) => {
+      // The command-palette dispatcher fires this event without a `detail`
+      // payload, so guard against a null detail before reading `tab`.
+      setSettingsInitialTab(e.detail?.tab);
       setShowSettingsModal(true);
     };
     window.addEventListener('open-settings-modal', handleOpenSettings as EventListener);

@@ -38,9 +38,13 @@ import { binId } from '@/core/types';
 
 export type ActionHandler = (() => void) | null;
 
-/** Dispatch a nameless CustomEvent on window — used to bridge to host shells. */
-export function dispatchWindowEvent(name: string): void {
-  window.dispatchEvent(new CustomEvent(name));
+/**
+ * Dispatch a CustomEvent on window — used to bridge to host shells. An optional
+ * `detail` payload is passed through; without it the event's `detail` is `null`,
+ * so listeners must read it defensively (e.g. `e.detail?.foo`).
+ */
+export function dispatchWindowEvent(name: string, detail?: unknown): void {
+  window.dispatchEvent(new CustomEvent(name, detail === undefined ? undefined : { detail }));
 }
 
 /**

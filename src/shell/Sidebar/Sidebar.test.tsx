@@ -1,6 +1,6 @@
 import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Sidebar } from '@/shell/Sidebar';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
@@ -436,6 +436,30 @@ describe('Sidebar', () => {
       fireEvent.click(screen.getByTestId('close-settings'));
 
       expect(screen.queryByTestId('settings-modal')).not.toBeInTheDocument();
+    });
+
+    it('opens settings modal from a detail-less open-settings-modal event', async () => {
+      render(<Sidebar />);
+
+      // The command-palette dispatcher fires this event with no `detail`,
+      // which previously threw reading `e.detail.tab` on a null detail.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('open-settings-modal'));
+      });
+
+      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
+    });
+
+    it('opens settings modal from an open-settings-modal event carrying a tab', async () => {
+      render(<Sidebar />);
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent('open-settings-modal', { detail: { tab: 'account' } })
+        );
+      });
+
+      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
     });
   });
 
