@@ -221,6 +221,15 @@ export default defineConfig({
       : []),
   ],
   build: {
+    // Down-level syntax to browsers we still support. Vite 7+/8 defaults to
+    // 'baseline-widely-available' (Chrome 107 / Firefox 104 / Safari 16.0), which
+    // leaves post-Safari-16 syntax — most notably class `static { }` blocks
+    // (Safari 16.4+) — in emitted chunks. Safari 15.6 then hits a hard parse-time
+    // SyntaxError when a lazy import() pulls such a chunk (e.g. /baseplate), crashing
+    // the page. This explicit target makes esbuild/oxc transpile those forms so the
+    // browsers below can parse the output. Keep es2020 as the floor for native
+    // optional-chaining / nullish-coalescing without further down-leveling.
+    target: ['es2020', 'safari15', 'chrome87', 'firefox78', 'edge88'],
     // Generate source maps for error tracking (PostHog)
     // Use 'hidden' to generate .map files without adding sourceMappingURL comments
     // This prevents browsers from exposing source maps publicly while still allowing
