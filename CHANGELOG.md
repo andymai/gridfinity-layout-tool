@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.0...gridfinity-layout-tool-v4.205.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **webgl:** dedupe context errors and harden GL capability probe ([#2363](https://github.com/andymai/gridfinity-layout-tool/issues/2363)) ([0bb7c2c](https://github.com/andymai/gridfinity-layout-tool/commit/0bb7c2c2d447ded3a6be12f135516835c0614d6e))
+
 ## [4.205.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.204.0...gridfinity-layout-tool-v4.205.0) (2026-06-25)
 
 
