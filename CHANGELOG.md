@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.1...gridfinity-layout-tool-v4.205.2) (2026-06-27)
+
+
+### Bug Fixes
+
+* **build:** set explicit Vite build target to support Safari 15 ([#2366](https://github.com/andymai/gridfinity-layout-tool/issues/2366)) ([ba1195d](https://github.com/andymai/gridfinity-layout-tool/commit/ba1195d5105f90fa4baf63b97133333a798e16aa))
+
 ## [4.205.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.0...gridfinity-layout-tool-v4.205.1) (2026-06-27)
 
 
