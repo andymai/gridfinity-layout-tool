@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.2...gridfinity-layout-tool-v4.205.3) (2026-06-27)
+
+
+### Bug Fixes
+
+* **command-palette:** guard null CustomEvent detail when opening Settings ([#2367](https://github.com/andymai/gridfinity-layout-tool/issues/2367)) ([d469d2e](https://github.com/andymai/gridfinity-layout-tool/commit/d469d2ebd73d150c79a8b60f63a9fd8955a6202e))
+
 ## [4.205.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.1...gridfinity-layout-tool-v4.205.2) (2026-06-27)
 
 
