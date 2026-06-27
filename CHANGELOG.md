@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.3...gridfinity-layout-tool-v4.205.4) (2026-06-27)
+
+
+### Bug Fixes
+
+* **cqrs:** harden IndexedDB event store against transaction-lifetime and disk-full failures ([#2369](https://github.com/andymai/gridfinity-layout-tool/issues/2369)) ([ff38555](https://github.com/andymai/gridfinity-layout-tool/commit/ff38555fc0090a674fcbad3f38a8de1a755388f5))
+
 ## [4.205.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.2...gridfinity-layout-tool-v4.205.3) (2026-06-27)
 
 
