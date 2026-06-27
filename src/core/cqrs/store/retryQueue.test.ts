@@ -18,6 +18,7 @@ import type { EventStore } from './eventStore';
 import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
 import { layoutId } from '@/core/types';
+import { useToastStore } from '@/core/store/toast';
 
 function makeEvent(type: DomainEvent['type'] = 'bin.added', id = 'evt_1'): DomainEvent {
   return {
@@ -63,6 +64,7 @@ describe('retryQueue', () => {
   afterEach(() => {
     clearRetryQueue();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('enqueues a failed event', () => {
@@ -141,6 +143,60 @@ describe('retryQueue', () => {
     );
 
     warnSpy.mockRestore();
+  });
+
+  it('drops a disk-full failure immediately and surfaces a toast (no retries)', () => {
+    const addToast = vi.fn();
+    vi.spyOn(useToastStore, 'getState').mockReturnValue({ addToast } as never);
+    const store = createMockStore();
+    setRetryEventStore(store);
+
+    enqueueForRetry(
+      makeEvent('bin.added', 'evt_disk_full'),
+      new Error('UnknownError: Internal error. (...::FILE_ERROR_NO_SPACE)')
+    );
+
+    // Permanent failure — never enters the retry queue.
+    expect(getPendingRetryCount()).toBe(0);
+    expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error', duration: 0 }));
+  });
+
+  it('surfaces a toast when a transient failure is dropped after max attempts', async () => {
+    const addToast = vi.fn();
+    vi.spyOn(useToastStore, 'getState').mockReturnValue({ addToast } as never);
+    const appendMock = vi.fn().mockRejectedValue(new Error('transient DB error'));
+    const store = createMockStore(appendMock);
+    setRetryEventStore(store);
+
+    enqueueForRetry(makeEvent('bin.added', 'evt_transient_drop'));
+
+    // Exhaust the retry budget.
+    for (let i = 0; i < 3; i++) {
+      makeAllReady();
+      await _processRetries();
+    }
+
+    expect(getPendingRetryCount()).toBe(0);
+    expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+  });
+
+  it('stops retrying when a disk-full error surfaces mid-retry', async () => {
+    const addToast = vi.fn();
+    vi.spyOn(useToastStore, 'getState').mockReturnValue({ addToast } as never);
+    const appendMock = vi.fn().mockRejectedValue(new Error('IO error: No space left on device'));
+    const store = createMockStore(appendMock);
+    setRetryEventStore(store);
+
+    // Enqueued as transient (no error passed), then the first retry reveals the
+    // permanent disk-full condition.
+    enqueueForRetry(makeEvent('bin.added', 'evt_mid_retry_disk_full'));
+    makeAllReady();
+    await _processRetries();
+
+    // Dropped on the first failure rather than retried twice more.
+    expect(getPendingRetryCount()).toBe(0);
+    expect(appendMock).toHaveBeenCalledTimes(1);
+    expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
   });
 
   it('handles multiple events queued simultaneously', async () => {

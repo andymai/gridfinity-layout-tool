@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "Скопійовано {count} вирізів",
   "toast.dismissNotification": "Закрити сповіщення",
   "toast.dragFromStash": "Перетягніть бін зі сховку, щоб розмістити його на шарі",
+  "toast.eventPersistFailedDiskFull": "Не вдалося зберегти зміни — на вашому пристрої немає вільного місця. Звільніть місце та перезавантажте.",
+  "toast.eventPersistFailed": "Не вдалося зберегти деякі останні зміни. Історія скасування може бути неповною.",
   "toast.fillComplete": "Додано {count} бінів для заповнення проміжків",
   "toast.fillWithSize": "Додано {count} бінів {width}×{depth}",
   "toast.galleryAddFailed": "Не вдалося додати розкладку",

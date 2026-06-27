@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count} uitsparing(en) gekopieerd",
   "toast.dismissNotification": "Melding sluiten",
   "toast.dragFromStash": "Sleep een bin vanuit de stash om het op een layer te plaatsen",
+  "toast.eventPersistFailedDiskFull": "Kan je wijzigingen niet opslaan — je apparaat heeft geen opslagruimte meer. Maak ruimte vrij en laad opnieuw.",
+  "toast.eventPersistFailed": "Kan sommige recente wijzigingen niet opslaan. Je ongedaan-maken-geschiedenis is mogelijk onvolledig.",
   "toast.fillComplete": "{count} bin(s) toegevoegd om gaten te vullen",
   "toast.fillWithSize": "{count} {width}×{depth} bins toegevoegd",
   "toast.galleryAddFailed": "Toevoegen van layout mislukt",

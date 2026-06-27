@@ -11,6 +11,9 @@
 
 import type { DomainEvent } from '../events';
 import { createLogger } from '@/core/logger';
+import { isStorageQuotaError } from '@/core/storage/errorUtils';
+import { useToastStore } from '@/core/store/toast';
+import { getStaticTranslation } from '@/i18n';
 import type { EventStore } from './eventStore';
 
 const log = createLogger('RetryQueue');
@@ -23,6 +26,37 @@ interface RetryEntry {
 
 const MAX_ATTEMPTS = 3;
 const BASE_DELAY_MS = 1000; // 1s, 2s, 4s exponential backoff
+
+/**
+ * Throttle window for the "couldn't save" toast. A burst of failing appends
+ * (e.g. every user action while the disk is full) must not stack toasts —
+ * one notification per window is enough to signal the condition.
+ */
+const PERSIST_TOAST_COOLDOWN_MS = 30_000;
+let lastPersistToastAt = 0;
+
+/**
+ * Surface a user-facing toast when CQRS events can't be persisted. Without
+ * this, a disk-full or otherwise permanent failure silently loses undo/history
+ * events with no signal to the user.
+ *
+ * @param permanent - true for a quota/disk-full condition (won't recover on its
+ *   own), false for a transient failure exhausted after the retry budget.
+ */
+function notifyPersistenceFailed(permanent: boolean): void {
+  const now = Date.now();
+  if (now - lastPersistToastAt < PERSIST_TOAST_COOLDOWN_MS) return;
+  lastPersistToastAt = now;
+
+  const key = permanent ? 'toast.eventPersistFailedDiskFull' : 'toast.eventPersistFailed';
+  useToastStore.getState().addToast({
+    message: getStaticTranslation(key),
+    type: 'error',
+    // Disk-full needs user action (free space), so it stays until dismissed;
+    // a transient drop is informational and auto-dismisses.
+    duration: permanent ? 0 : 6000,
+  });
+}
 
 const pendingRetries: RetryEntry[] = [];
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -40,8 +74,23 @@ export function setRetryEventStore(store: EventStore): void {
   retryTarget = store;
 }
 
-/** Add a failed event to the retry queue. */
-export function enqueueForRetry(event: DomainEvent): void {
+/**
+ * Add a failed event to the retry queue.
+ *
+ * Pass the originating error so a permanent failure (disk full / quota
+ * exhausted) is surfaced to the user and dropped immediately — retrying against
+ * a full disk just loses the event three times instead of once.
+ */
+export function enqueueForRetry(event: DomainEvent, error?: unknown): void {
+  if (error !== undefined && isStorageQuotaError(error)) {
+    notifyPersistenceFailed(true);
+    log.warn('Event persistence failed permanently (storage full), dropping', {
+      eventType: event.type,
+      eventId: event.meta.id,
+    });
+    return;
+  }
+
   const delay = BASE_DELAY_MS;
   pendingRetries.push({
     event,
@@ -133,9 +182,21 @@ async function processRetries(): Promise<void> {
         attempt: entry.attempts,
       });
     } catch (error: unknown) {
-      if (entry.attempts >= MAX_ATTEMPTS) {
-        // Max attempts reached — drop the event
+      if (isStorageQuotaError(error)) {
+        // Permanent failure surfaced mid-retry — stop retrying, tell the user,
+        // and drop. Hammering a full disk can't succeed.
         pendingRetries.splice(index, 1);
+        notifyPersistenceFailed(true);
+        log.warn('Event dropped — storage permanently full', {
+          eventType: entry.event.type,
+          eventId: entry.event.meta.id,
+          attempts: entry.attempts,
+        });
+      } else if (entry.attempts >= MAX_ATTEMPTS) {
+        // Max attempts reached — drop the event, but signal the loss instead of
+        // failing silently.
+        pendingRetries.splice(index, 1);
+        notifyPersistenceFailed(false);
         log.warn('Event dropped after max retry attempts', {
           eventType: entry.event.type,
           eventId: entry.event.meta.id,
@@ -173,6 +234,7 @@ export function clearRetryQueue(): void {
   }
   retryTimerTarget = null;
   retryTarget = null;
+  lastPersistToastAt = 0;
 }
 
 /** Exposed for testing — the internal entries array. */

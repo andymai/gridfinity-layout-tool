@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count} découpe(s) copiée(s)",
   "toast.dismissNotification": "Ignorer la notification",
   "toast.dragFromStash": "Glisser un bin du stash pour le placer sur un layer",
+  "toast.eventPersistFailedDiskFull": "Impossible d'enregistrer vos modifications — votre appareil n'a plus d'espace de stockage. Libérez de l'espace, puis rechargez.",
+  "toast.eventPersistFailed": "Impossible d'enregistrer certaines modifications récentes. Votre historique d'annulation peut être incomplet.",
   "toast.fillComplete": "{count} bin(s) ajouté(s) pour combler les trous",
   "toast.fillWithSize": "{count} bins {width}×{depth} ajoutés",
   "toast.galleryAddFailed": "Échec de l'ajout du layout",

@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count}個の切り欠きをコピーしました",
   "toast.dismissNotification": "通知を閉じる",
   "toast.dragFromStash": "ステージングからビンをドラッグしてレイヤーに配置",
+  "toast.eventPersistFailedDiskFull": "変更を保存できませんでした。デバイスのストレージの空き容量がありません。空き容量を確保してから再読み込みしてください。",
+  "toast.eventPersistFailed": "最近の一部の変更を保存できませんでした。元に戻す履歴が不完全な可能性があります。",
   "toast.fillComplete": "隙間を埋めるため{count}個のビンを追加しました",
   "toast.fillWithSize": "{count}個の{width}×{depth}ビンを追加しました",
   "toast.galleryAddFailed": "レイアウトの追加に失敗しました",

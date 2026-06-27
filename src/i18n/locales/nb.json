@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count} utskjæring(er) kopiert",
   "toast.dismissNotification": "Avvis varsel",
   "toast.dragFromStash": "Dra bin fra stash for å plassere den på et lag",
+  "toast.eventPersistFailedDiskFull": "Kunne ikke lagre endringene dine – enheten din er tom for lagringsplass. Frigjør plass, og last inn på nytt.",
+  "toast.eventPersistFailed": "Kunne ikke lagre noen nylige endringer. Angrehistorikken din kan være ufullstendig.",
   "toast.fillComplete": "Lagt til {count} bin(s) for å fylle hull",
   "toast.fillWithSize": "Lagt til {count} {width}×{depth} bins",
   "toast.galleryAddFailed": "Kunne ikke legge til layout",

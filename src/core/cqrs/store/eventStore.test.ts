@@ -46,6 +46,27 @@ describe('eventStore.append', () => {
     expect(await eventStore.count(event.meta.aggregateId)).toBe(1);
   });
 
+  it('persists every event in a multi-event batch without dropping any', async () => {
+    // Guards the transaction-lifetime fix: a batch must not interleave awaited
+    // get()/add() per event (which lets WebKit auto-commit the tx mid-loop and
+    // drop the rest). All three must land.
+    const events = [makeEvent('evt_batch_1'), makeEvent('evt_batch_2'), makeEvent('evt_batch_3')];
+
+    await eventStore.append(events);
+
+    expect(await eventStore.count(events[0].meta.aggregateId)).toBe(3);
+  });
+
+  it('dedupes duplicate ids within a single batch', async () => {
+    // The up-front reads all see the pre-batch state, so a naive second add()
+    // of the same id would throw a ConstraintError — the batch must dedupe.
+    const dup = makeEvent('evt_dup_batch');
+
+    await expect(eventStore.append([dup, dup])).resolves.toBeUndefined();
+
+    expect(await eventStore.count(dup.meta.aggregateId)).toBe(1);
+  });
+
   it('persists a new event and reads it back by aggregate', async () => {
     const event = makeEvent('evt_new');
     await eventStore.append([event]);

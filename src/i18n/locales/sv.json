@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "Kopierade {count} urtag",
   "toast.dismissNotification": "Avfärda meddelande",
   "toast.dragFromStash": "Dra fack från förråd för att placera det på ett lager",
+  "toast.eventPersistFailedDiskFull": "Det gick inte att spara dina ändringar – enheten har slut på lagringsutrymme. Frigör utrymme och ladda om.",
+  "toast.eventPersistFailed": "Det gick inte att spara några av de senaste ändringarna. Din ångra-historik kan vara ofullständig.",
   "toast.fillComplete": "Lade till {count} fack för att fylla luckor",
   "toast.fillWithSize": "Lade till {count} {width}×{depth}-fack",
   "toast.galleryAddFailed": "Det gick inte att lägga till layout",

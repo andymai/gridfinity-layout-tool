@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count} recorte(s) copiado(s)",
   "toast.dismissNotification": "Descartar notificación",
   "toast.dragFromStash": "Arrastra un bin del stash para colocarlo en un layer",
+  "toast.eventPersistFailedDiskFull": "No se pudieron guardar tus cambios: tu dispositivo se quedó sin espacio de almacenamiento. Libera espacio y vuelve a cargar.",
+  "toast.eventPersistFailed": "No se pudieron guardar algunos cambios recientes. Tu historial de deshacer puede estar incompleto.",
   "toast.fillComplete": "Se agregaron {count} bin(s) para llenar huecos",
   "toast.fillWithSize": "Se agregaron {count} bins {width}×{depth}",
   "toast.galleryAddFailed": "Error al agregar diseño",

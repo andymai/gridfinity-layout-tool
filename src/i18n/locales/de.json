@@ -2350,6 +2350,8 @@
   "toast.cutoutsCopied": "{count} Ausschnitt(e) kopiert",
   "toast.dismissNotification": "Benachrichtigung schließen",
   "toast.dragFromStash": "Bin vom Stash ziehen, um es auf einem Layer zu platzieren",
+  "toast.eventPersistFailedDiskFull": "Änderungen konnten nicht gespeichert werden – auf deinem Gerät ist kein Speicherplatz mehr frei. Schaffe Speicherplatz und lade dann neu.",
+  "toast.eventPersistFailed": "Einige aktuelle Änderungen konnten nicht gespeichert werden. Dein Rückgängig-Verlauf ist möglicherweise unvollständig.",
   "toast.fillComplete": "{count} Bin(s) zum Füllen von Lücken hinzugefügt",
   "toast.fillWithSize": "{count} {width}×{depth} Bins hinzugefügt",
   "toast.galleryAddFailed": "Layout konnte nicht hinzugefügt werden",

@@ -1210,6 +1210,10 @@ const en: Record<string, string> = {
   'toast.layoutImportFailed': 'Failed to import layout',
   'toast.layoutSaveFailed': 'Failed to save layout',
   'toast.layoutRenameFailed': 'Failed to rename layout',
+  'toast.eventPersistFailedDiskFull':
+    "Couldn't save your changes — your device is out of storage space. Free up space, then reload.",
+  'toast.eventPersistFailed':
+    "Couldn't save some recent changes. Your undo history may be incomplete.",
   'toast.binsDeleted': 'Deleted {count} bin(s)',
   'toast.binRotated': 'Bin rotated',
   'toast.clearComplete': 'Cleared {count} bin(s) from layer',

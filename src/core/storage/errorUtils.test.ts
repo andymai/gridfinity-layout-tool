@@ -3,6 +3,7 @@ import {
   classifyStorageError,
   createStorageErrorClassifier,
   extractErrorMessage,
+  isStorageQuotaError,
 } from './errorUtils';
 
 describe('errorUtils', () => {
@@ -43,6 +44,26 @@ describe('errorUtils', () => {
       expect(result.code).toBe('STORAGE_QUOTA_EXCEEDED');
     });
 
+    it("classifies Chrome's disk-full FILE_ERROR_NO_SPACE as quota exceeded", () => {
+      // Chrome's leveldb-backed disk-full error surfaces as an UnknownError, not
+      // a QuotaExceededError — it must still classify as a quota condition.
+      const diskFull = new Error(
+        'UnknownError: Internal error. (ChromeMethodBFE: 4#WritableFileAppend ::FILE_ERROR_NO_SPACE)'
+      );
+      const result = classifyStorageError(diskFull, 'indexedDB');
+
+      expect(result.code).toBe('STORAGE_QUOTA_EXCEEDED');
+    });
+
+    it("classifies leveldb 'IO error' as quota exceeded", () => {
+      const ioError = new Error(
+        'UnknownError: Internal error. ... IO error: No space left on device'
+      );
+      const result = classifyStorageError(ioError, 'indexedDB');
+
+      expect(result.code).toBe('STORAGE_QUOTA_EXCEEDED');
+    });
+
     it('classifies unavailable/security errors', () => {
       const securityError = new Error('SecurityError: Access denied');
       const result = classifyStorageError(securityError, 'indexedDB');
@@ -77,6 +98,25 @@ describe('errorUtils', () => {
       // Storage type is stored in backend property, not message
       expect(result.code).toBe('STORAGE_UNAVAILABLE');
       expect((result as { backend: string }).backend).toBe('localStorage');
+    });
+  });
+
+  describe('isStorageQuotaError', () => {
+    it('is true for quota / disk-full conditions', () => {
+      expect(isStorageQuotaError(new Error('QuotaExceededError'))).toBe(true);
+      expect(isStorageQuotaError(new Error('NS_ERROR_DOM_QUOTA_REACHED'))).toBe(true);
+      expect(isStorageQuotaError(new Error('...FILE_ERROR_NO_SPACE)'))).toBe(true);
+      expect(isStorageQuotaError(new Error('IO error: No space left on device'))).toBe(true);
+    });
+
+    it('is false for unrelated / transient errors', () => {
+      expect(isStorageQuotaError(new Error('Something unexpected happened'))).toBe(false);
+      expect(
+        isStorageQuotaError(
+          new Error('Attempt to get a record from database without an in-progress transaction')
+        )
+      ).toBe(false);
+      expect(isStorageQuotaError('not an error')).toBe(false);
     });
   });
 
