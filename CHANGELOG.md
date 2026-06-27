@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.4...gridfinity-layout-tool-v4.205.5) (2026-06-27)
+
+
+### Bug Fixes
+
+* **bin-export:** tune timeout budget for heavy exports ([#2372](https://github.com/andymai/gridfinity-layout-tool/issues/2372)) ([e06632e](https://github.com/andymai/gridfinity-layout-tool/commit/e06632ec23d395bc0c83e2806bc6c6c7216eed4f))
+
 ## [4.205.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.3...gridfinity-layout-tool-v4.205.4) (2026-06-27)
 
 
