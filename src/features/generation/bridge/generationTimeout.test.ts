@@ -308,6 +308,20 @@ describe('computeBaseplateTimeoutMs', () => {
   });
 });
 
+describe('export budget tuning', () => {
+  it('models the slowest user hardware with a 6× multiplier', () => {
+    // Tuned up from 4× after users still hit ExportTimeoutError on heavy designs:
+    // old phones / throttled mobile browsers run ~5–6× the reference machine.
+    expect(EXPORT_TIMEOUT_MULTIPLIER).toBe(6);
+  });
+
+  it('caps exports at 20 minutes', () => {
+    // High enough that the heaviest honeycomb pipeline receives the full 6×
+    // budget; still bounds a genuinely-wedged WASM heap.
+    expect(EXPORT_MAX_TIMEOUT_MS).toBe(20 * 60_000);
+  });
+});
+
 describe('computeExportTimeoutMs', () => {
   it('scales a trivial bin by the export multiplier', () => {
     // raw = BASE (30s); export = BASE × multiplier. Exports run on the user's
@@ -336,7 +350,7 @@ describe('computeExportTimeoutMs', () => {
   });
 
   it('caps at the export ceiling', () => {
-    // 20×20×20 hex raw ≈ 261s; ×4 ≈ 1044s, above the 900s export ceiling → clamp.
+    // 20×20×20 hex raw ≈ 261s; ×6 ≈ 1566s, above the 1200s export ceiling → clamp.
     const t = computeExportTimeoutMs(
       params({ width: 20, depth: 20, height: 20, wallPattern: HEX_ON })
     );

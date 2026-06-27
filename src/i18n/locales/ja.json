@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "ジオメトリエンジンがこのビンの処理に失敗しました。再試行するか、問題が続く場合は報告してください。",
   "binDesigner.export.error.report": "問題を報告",
   "binDesigner.export.error.retry": "再試行",
-  "binDesigner.export.error.timeout": "エクスポートがタイムアウトしました — エンジンが応答しなくなりました。",
+  "binDesigner.export.error.timeout": "エクスポートがタイムアウトしました — このデザインは複雑すぎる可能性があります。高さを下げるか壁パターンを無効にしてから、もう一度エクスポートしてください。",
   "binDesigner.export.multiColor.formatDisabled": "{format}は色データを保持できません。マルチカラーゾーンを保持するには3MFをご利用ください。",
   "binDesigner.exportBinAsStl": "ビンをSTLとしてエクスポート",
   "binDesigner.exportSTL": "ビンをSTLとしてエクスポート",

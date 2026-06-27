@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "Геометричний рушій мав проблеми з цим біном. Спробуйте ще раз або повідомте про проблему.",
   "binDesigner.export.error.report": "Повідомити про проблему",
   "binDesigner.export.error.retry": "Повторити",
-  "binDesigner.export.error.timeout": "Час експорту вичерпано — рушій перестав відповідати.",
+  "binDesigner.export.error.timeout": "Час експорту вичерпано — цей дизайн може бути надто складним. Спробуйте зменшити висоту або вимкнути візерунок стінки, а потім експортуйте знову.",
   "binDesigner.export.multiColor.formatDisabled": "{format} не зберігає дані кольору. Використовуйте 3MF для збереження багатоколірних зон.",
   "binDesigner.exportBinAsStl": "Експортувати бін як STL",
   "binDesigner.exportSTL": "Експортувати бін як STL",

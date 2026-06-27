@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "Geometrimotoren hadde problemer med denne bin-en. Prøv igjen, eller meld inn et problem hvis det vedvarer.",
   "binDesigner.export.error.report": "Meld inn problem",
   "binDesigner.export.error.retry": "Prøv igjen",
-  "binDesigner.export.error.timeout": "Eksport tidsavbrudd — motoren reagerer ikke.",
+  "binDesigner.export.error.timeout": "Eksport tidsavbrudd — denne utformingen kan være for kompleks. Prøv å redusere høyden eller slå av veggmønsteret, og eksporter på nytt.",
   "binDesigner.export.multiColor.formatDisabled": "{format} bevarer ikke fargedata. Bruk 3MF for å beholde de flerfargede sonene.",
   "binDesigner.exportBinAsStl": "Eksporter bin som STL",
   "binDesigner.exportSTL": "Eksporter bin som STL",

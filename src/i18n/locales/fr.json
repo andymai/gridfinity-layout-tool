@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "Le moteur de géométrie a rencontré un problème avec ce bin. Réessayez ou signalez le problème s'il persiste.",
   "binDesigner.export.error.report": "Signaler un problème",
   "binDesigner.export.error.retry": "Réessayer",
-  "binDesigner.export.error.timeout": "Délai d'exportation dépassé — le moteur ne répond plus.",
+  "binDesigner.export.error.timeout": "Délai d'exportation dépassé — ce modèle est peut-être trop complexe. Essayez de réduire la hauteur ou de désactiver le motif de paroi, puis exportez à nouveau.",
   "binDesigner.export.multiColor.formatDisabled": "{format} ne conserve pas les données de couleur. Utilisez 3MF pour préserver vos zones multicolores.",
   "binDesigner.exportBinAsStl": "Exporter le bin en STL",
   "binDesigner.exportSTL": "Exporter le bin en STL",

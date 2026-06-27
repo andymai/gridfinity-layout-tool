@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "Die Geometrie-Engine hatte Schwierigkeiten mit diesem Bin. Bitte erneut versuchen oder ein Problem melden, falls der Fehler bestehen bleibt.",
   "binDesigner.export.error.report": "Problem melden",
   "binDesigner.export.error.retry": "Erneut versuchen",
-  "binDesigner.export.error.timeout": "Export-Zeitüberschreitung — die Engine reagiert nicht mehr.",
+  "binDesigner.export.error.timeout": "Export-Zeitüberschreitung — dieses Design ist möglicherweise zu komplex. Verringere die Höhe oder deaktiviere das Wandmuster und exportiere dann erneut.",
   "binDesigner.export.multiColor.formatDisabled": "{format} bewahrt keine Farbdaten. Verwende 3MF, um deine mehrfarbigen Bereiche zu behalten.",
   "binDesigner.exportBinAsStl": "Bin als STL exportieren",
   "binDesigner.exportSTL": "Bin als STL exportieren",

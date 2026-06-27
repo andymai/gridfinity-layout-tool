@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "O motor de geometria teve dificuldade com este bin. Tente novamente ou relate um problema se persistir.",
   "binDesigner.export.error.report": "Relatar problema",
   "binDesigner.export.error.retry": "Tentar novamente",
-  "binDesigner.export.error.timeout": "Tempo de exportação esgotado — o motor parou de responder.",
+  "binDesigner.export.error.timeout": "Tempo de exportação esgotado — este design pode ser muito complexo. Tente reduzir a altura ou desativar o padrão de parede e exporte novamente.",
   "binDesigner.export.multiColor.formatDisabled": "{format} não preserva dados de cor. Use 3MF para manter suas zonas multicoloridas.",
   "binDesigner.exportBinAsStl": "Exportar bin como STL",
   "binDesigner.exportSTL": "Exportar bin como STL",

@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "De geometrie-engine had problemen met deze bin. Probeer het opnieuw of meld een probleem als dit blijft gebeuren.",
   "binDesigner.export.error.report": "Probleem melden",
   "binDesigner.export.error.retry": "Opnieuw proberen",
-  "binDesigner.export.error.timeout": "Export verlopen — de engine reageert niet meer.",
+  "binDesigner.export.error.timeout": "Export verlopen — dit ontwerp is mogelijk te complex. Probeer de hoogte te verlagen of het wandpatroon uit te schakelen en exporteer opnieuw.",
   "binDesigner.export.multiColor.formatDisabled": "{format} behoudt geen kleurgegevens. Gebruik 3MF om uw multi-kleurzones te behouden.",
   "binDesigner.exportBinAsStl": "Bin als STL exporteren",
   "binDesigner.exportSTL": "Bin als STL exporteren",

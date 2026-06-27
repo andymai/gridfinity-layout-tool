@@ -567,7 +567,7 @@
   "binDesigner.export.error.body": "Geometrimotorn hade problem med detta fack. Försök igen, eller rapportera ett problem om det kvarstår.",
   "binDesigner.export.error.report": "Rapportera problem",
   "binDesigner.export.error.retry": "Försök igen",
-  "binDesigner.export.error.timeout": "Export avbröts — motorn slutade svara.",
+  "binDesigner.export.error.timeout": "Exporten avbröts — den här designen kan vara för komplex. Försök att minska höjden eller stänga av väggmönstret och exportera igen.",
   "binDesigner.export.multiColor.formatDisabled": "{format} bevarar inte färgdata. Använd 3MF för att behålla dina flerfärgade zoner.",
   "binDesigner.exportBinAsStl": "Exportera fack som STL",
   "binDesigner.exportSTL": "Exportera fack som STL",

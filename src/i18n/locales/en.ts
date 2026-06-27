@@ -2039,7 +2039,8 @@ const en: Record<string, string> = {
     'The geometry engine had trouble with this bin. Try again, or report an issue if the problem persists.',
   'binDesigner.export.error.retry': 'Retry',
   'binDesigner.export.error.report': 'Report issue',
-  'binDesigner.export.error.timeout': 'Export timed out — the engine became unresponsive.',
+  'binDesigner.export.error.timeout':
+    'Export timed out — this design may be too complex. Try lowering the height or turning off the wall pattern, then export again.',
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',

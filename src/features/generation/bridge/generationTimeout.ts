@@ -82,21 +82,36 @@ export const MAX_TIMEOUT_MS = 180_000;
  * machine. An export is different on two axes: the user has explicitly committed
  * to it (clicked Export, will wait, can cancel) AND it runs on *their* hardware,
  * which can be several times slower than the machine these budgets were measured
- * on — a low-end laptop or a throttled mobile browser can easily take 3–4× as
+ * on — a low-end laptop or a throttled mobile browser can easily take 5–6× as
  * long on the single-threaded OCCT pipeline. A flat multiplier models exactly
  * that hardware gap while preserving the relative ordering the complexity budget
  * already encodes (a hex bin still gets proportionally more than a trivial one).
+ *
+ * Raised from 4× to 6× (#bin-export-timeout): a small cohort of users still hit
+ * `ExportTimeoutError` on heavy honeycomb / big-magnet-grid / scoop+tall designs.
+ * The export budget only began modelling the hardware gap at all in #2181 (after
+ * those reports), and 4× under-served the genuinely slowest devices — old phones
+ * and throttled mobile browsers routinely run 5–6× the reference machine. 6×
+ * lifts mid-weight designs that were clamping just short of finishing, and lets
+ * the heaviest honeycomb bins reach the raised ceiling below instead of being
+ * cut off well under it.
  */
-export const EXPORT_TIMEOUT_MULTIPLIER = 4;
+export const EXPORT_TIMEOUT_MULTIPLIER = 6;
 
 /**
  * Hard ceiling for exports — set far above the 3-minute preview cap because an
  * export is terminal and cancellable, so the only job of this clamp is to stop a
  * genuinely-wedged WASM heap from hanging forever, not to bound interactive
- * wait. 15 minutes comfortably covers the heaviest known pipeline (a 6×6×20
- * honeycomb's ~3-minute pattern cut, ×4 for slow hardware ≈ 12 min) with margin.
+ * wait.
+ *
+ * Raised from 15 to 20 minutes (#bin-export-timeout) so the heaviest known
+ * pipeline actually receives the 6× export multiplier instead of being clamped
+ * back: a 6×6×20 honeycomb's ~3-minute pattern cut runs ≈18 min at 6× on the
+ * slowest hardware, which the old 15-minute cap would have truncated. 20 minutes
+ * still bounds a wedged heap, and the progress bar + cancel button mean a user
+ * who no longer wants to wait is never stuck.
  */
-export const EXPORT_MAX_TIMEOUT_MS = 900_000;
+export const EXPORT_MAX_TIMEOUT_MS = 1_200_000;
 
 function hasAnyActiveCutoutSide(params: BinParams): boolean {
   const { walls } = params;
