@@ -8,6 +8,9 @@ import { Button, IconButton, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 
+const formatMm = (units: number, heightUnitMm: number): string =>
+  String(Number((units * heightUnitMm).toFixed(1)));
+
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
   /** Platform variant affects touch targets and sizing */
@@ -72,10 +75,10 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   const minHeight = Math.min(...heights);
   const maxHeight = Math.max(...heights);
   const sameHeight = minHeight === maxHeight;
-  const fmtMm = (units: number) => String(Number((units * layout.heightUnitMm).toFixed(1)));
+  const mmAt = (units: number) => formatMm(units, layout.heightUnitMm);
   const heightDisplay = sameHeight
-    ? `${formatHeightUnits(minHeight)}u (${fmtMm(minHeight)}mm)`
-    : `${formatHeightUnits(minHeight)}–${formatHeightUnits(maxHeight)}u (${fmtMm(minHeight)}–${fmtMm(maxHeight)}mm)`;
+    ? `${formatHeightUnits(minHeight)}u (${mmAt(minHeight)}mm)`
+    : `${formatHeightUnits(minHeight)}–${formatHeightUnits(maxHeight)}u (${mmAt(minHeight)}–${mmAt(maxHeight)}mm)`;
 
   // Check clearance values
   const clearances = selectedBins.map((b) => b.clearanceHeight || 0);

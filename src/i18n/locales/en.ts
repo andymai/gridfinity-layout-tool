@@ -225,7 +225,7 @@ const en: Record<string, string> = {
   'sidebar.expandPanel': 'Expand panel',
   'sidebar.collapsePanel': 'Collapse panel',
   'sidebar.settings': 'Settings',
-  'sidebar.maxHeight': 'Maximum height in units',
+  'sidebar.maxHeight': 'Maximum height in millimeters',
   'sidebar.halfBinTooltip': 'Enable 0.5 grid steps and half-pitch sockets on new bins (H)',
   'sidebar.halfBinLeft': 'Place half-unit column on the left',
   'sidebar.halfBinRight': 'Place half-unit column on the right',
@@ -2784,7 +2784,7 @@ const en: Record<string, string> = {
   // Sidebar / settings dimension aria-labels
   'sidebar.drawerWidthAria': 'Drawer width in grid units',
   'sidebar.drawerDepthAria': 'Drawer depth in grid units',
-  'sidebar.drawerHeightAria': 'Drawer height in units',
+  'sidebar.drawerHeightAria': 'Drawer height in millimeters',
   'settings.printBedSizeLabel': 'Print bed size',
 
   // Design JSON import validation

@@ -111,6 +111,11 @@ describe('Unit converters', () => {
       expect(roundHeightUnits(5)).toBe(5);
       expect(roundHeightUnits(2.5)).toBe(2.5);
     });
+
+    it('snaps an exact half-step up despite binary float error (1.005u -> 1.01u)', () => {
+      // 1.005 * 100 === 100.4999… in IEEE-754, which would otherwise floor to 1.00.
+      expect(roundHeightUnits(1.005)).toBeCloseTo(1.01, 5);
+    });
   });
 });
 

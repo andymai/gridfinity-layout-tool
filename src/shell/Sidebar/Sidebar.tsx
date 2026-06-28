@@ -373,7 +373,7 @@ export function Sidebar() {
                         min={heightUnitMm}
                         max={CONSTRAINTS.GRID_MAX * heightUnitMm}
                         step={heightUnitMm}
-                        inputDecimals={1}
+                        inputDecimals={2}
                         size="sm"
                         fullWidth
                         aria-label={t('sidebar.drawerHeightAria')}

@@ -43,11 +43,13 @@ export const HEIGHT_UNIT_STEP = 0.01;
 /**
  * Round a height-unit value to {@link HEIGHT_UNIT_STEP}. Divides/multiplies by
  * the integer inverse (100) rather than the 0.01 step so the result is a clean
- * decimal (4.37, not 4.3700000000000045).
+ * decimal (4.37, not 4.3700000000000045). The tiny pre-round bias nudges exact
+ * half-steps up despite binary error (1.005 * 100 = 100.4999… would else floor
+ * to 1.00 instead of snapping to 1.01).
  */
 const HEIGHT_UNIT_STEP_INVERSE = 1 / HEIGHT_UNIT_STEP;
 export const roundHeightUnits = (n: number): HeightUnits =>
-  (Math.round(n * HEIGHT_UNIT_STEP_INVERSE) / HEIGHT_UNIT_STEP_INVERSE) as HeightUnits;
+  (Math.round(n * HEIGHT_UNIT_STEP_INVERSE + 1e-6) / HEIGHT_UNIT_STEP_INVERSE) as HeightUnits;
 
 // === Converters ===
 // Type-safe unit transformations. Each conversion requires the appropriate scale factor.

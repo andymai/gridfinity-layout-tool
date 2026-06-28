@@ -77,6 +77,11 @@ describe('validateBinParams', () => {
       expect(error.field).toBe('height');
     });
 
+    it('should reject non-finite heights', () => {
+      expect(expectErr(validateBinParams(makeParams({ height: NaN }))).field).toBe('height');
+      expect(expectErr(validateBinParams(makeParams({ height: Infinity }))).field).toBe('height');
+    });
+
     it('should accept boundary values', () => {
       expectOk(validateBinParams(makeParams({ width: 0.5, depth: 2 })));
       expectOk(validateBinParams(makeParams({ width: 1, depth: 0.5 })));

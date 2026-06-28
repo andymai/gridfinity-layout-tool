@@ -199,8 +199,8 @@ describe('Sidebar', () => {
     it('renders height controls', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease Drawer height in units')).toBeInTheDocument();
-      expect(screen.getByLabelText('Increase Drawer height in units')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Drawer height in millimeters')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Drawer height in millimeters')).toBeInTheDocument();
     });
 
     it('increases width when plus clicked', () => {
@@ -243,7 +243,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialHeight = useLayoutStore.getState().layout.drawer.height;
-      fireEvent.click(screen.getByLabelText('Increase Drawer height in units'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer height in millimeters'));
 
       expect(useLayoutStore.getState().layout.drawer.height).toBe(initialHeight + 1);
     });
@@ -252,7 +252,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialHeight = useLayoutStore.getState().layout.drawer.height;
-      fireEvent.click(screen.getByLabelText('Decrease Drawer height in units'));
+      fireEvent.click(screen.getByLabelText('Decrease Drawer height in millimeters'));
 
       expect(useLayoutStore.getState().layout.drawer.height).toBe(initialHeight - 1);
     });

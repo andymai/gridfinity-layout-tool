@@ -176,7 +176,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={constraints.minHeight * layout.heightUnitMm}
               max={constraints.maxHeight * layout.heightUnitMm}
               step={layout.heightUnitMm}
-              inputDecimals={1}
+              inputDecimals={2}
               size={isMobile ? 'lg' : 'md'}
               aria-label={t('inspector.single.heightAria')}
             />

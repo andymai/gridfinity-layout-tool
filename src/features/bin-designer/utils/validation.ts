@@ -91,7 +91,10 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
   // must land on the 0.01u grid the layout snaps to. Divide-and-round instead
   // of float modulo, which is unreliable at a 0.01 step.
   const heightSteps = params.height / HEIGHT_UNIT_STEP;
-  if (Math.abs(heightSteps - Math.round(heightSteps)) > EPSILON) {
+  if (
+    !Number.isFinite(params.height) ||
+    Math.abs(heightSteps - Math.round(heightSteps)) > EPSILON
+  ) {
     return err({
       code: 'INVALID_STEP',
       message: `Height must be in ${HEIGHT_UNIT_STEP} unit increments`,

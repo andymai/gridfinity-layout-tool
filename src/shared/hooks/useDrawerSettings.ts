@@ -263,7 +263,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const handleDrawerHeightChange = useCallback(
     (delta: number) => {
-      const newHeight = Math.max(1, drawerHeight + delta) as HeightUnits;
+      const newHeight = Math.max(
+        1,
+        Math.min(CONSTRAINTS.GRID_MAX, drawerHeight + delta)
+      ) as HeightUnits;
       batch(() => updateDrawer({ height: newHeight }));
     },
     [drawerHeight, updateDrawer]
@@ -272,7 +275,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Direct input handlers (for number inputs)
   const handleDrawerHeightInput = useCallback(
     (heightMm: number) => {
-      const units = mmToHeightUnits(mm(heightMm), mm(heightUnitMm));
+      const units = mmToHeightUnits(mm(heightMm), heightUnitMm);
       const clamped = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, units)) as HeightUnits;
       batch(() => updateDrawer({ height: clamped }));
     },
