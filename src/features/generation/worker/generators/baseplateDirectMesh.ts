@@ -33,6 +33,7 @@ import {
   SOCKET_HEIGHT,
   forEachCell,
   frameCells,
+  marginPocketDepthMm,
   checkCancelled,
   MAGNET_FLOOR,
   MIN_PRINTABLE_TILE_MM,
@@ -116,13 +117,16 @@ export function generateBaseplateDirect(
   const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
 
   // Collect all cells. Over-tile adds clipped pockets in the padding margins
-  // (same frameCells layout as the BREP build). The solid padding ring is then
-  // suppressed so the margin reads as grid — but ONLY when every padded side is
-  // fully tiled (margin 0 or >= threshold). A sub-threshold margin keeps its
-  // solid padding, so the ring must stay (the BREP pass renders the exact mix).
+  // (same frameCells layout as the BREP build). The solid padding ring then
+  // fills only the band beyond each side's pockets, so tiled pockets — including
+  // 21mm half-grid cells — are never capped; a fully tiled side contributes no
+  // ring, while a sub-threshold sliver keeps its solid fill (#2380).
   const cells: CellInfo[] = [];
   forEachCell(width, depth, (cell) => cells.push(cell), cellOpts);
-  let tiledMargin = false;
+  // Plain solid padding fills the whole margin ring (no pockets); over-tile
+  // restricts the ring to the un-pocketed outer band via per-side pocket depths.
+  let drawRing = !overTile;
+  let pocketDepths: { left: number; right: number; front: number; back: number } | undefined;
   if (overTile) {
     const margins: SideMargins = {
       left: paddingLeft,
@@ -133,17 +137,20 @@ export function generateBaseplateDirect(
     cells.push(
       ...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid)
     );
-    // The solid padding ring can be dropped only when every padded side is
-    // fully covered by cells. Plain over-tile covers a side with one clip
-    // whenever it clears the threshold. Half-grid packs 21mm cells first, so a
-    // side can still leave a sub-threshold solid sliver at its outer edge — keep
-    // the ring unless that leftover is zero or itself printable.
-    tiledMargin = [paddingLeft, paddingRight, paddingFront, paddingBack].every((p) => {
-      if (p < 1e-6) return true;
-      if (!overTileHalfGrid) return p >= MIN_PRINTABLE_TILE_MM;
-      const leftover = p - Math.floor((p + 1e-9) / (gridUnitMm / 2)) * (gridUnitMm / 2);
-      return leftover < 1e-6 || leftover >= MIN_PRINTABLE_TILE_MM;
-    });
+    const depthOf = (p: number): number =>
+      marginPocketDepthMm(p, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid === true);
+    pocketDepths = {
+      left: depthOf(paddingLeft),
+      right: depthOf(paddingRight),
+      front: depthOf(paddingFront),
+      back: depthOf(paddingBack),
+    };
+    // Ring is needed only where a side leaves a solid (un-pocketed) band.
+    drawRing =
+      paddingLeft - pocketDepths.left > 1e-6 ||
+      paddingRight - pocketDepths.right > 1e-6 ||
+      paddingFront - pocketDepths.front > 1e-6 ||
+      paddingBack - pocketDepths.back > 1e-6;
   }
 
   onProgress('base', 0.1);
@@ -176,7 +183,8 @@ export function generateBaseplateDirect(
     cells,
     totalHeight,
     true,
-    !tiledMargin
+    drawRing,
+    pocketDepths
   );
 
   onProgress('base', 0.6);
@@ -201,7 +209,8 @@ export function generateBaseplateDirect(
       cells,
       0,
       false,
-      !tiledMargin
+      drawRing,
+      pocketDepths
     );
   }
 

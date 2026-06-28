@@ -59,7 +59,13 @@ export {
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
 } from './generatorConstants';
-export { decomposeCells, decomposeHalfCells, forEachCell, frameCells } from './cellDecomposition';
+export {
+  decomposeCells,
+  decomposeHalfCells,
+  forEachCell,
+  frameCells,
+  marginPocketDepthMm,
+} from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions, SideMargins } from './cellDecomposition';
 export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
 export type { ProgressFn, BooleanOpts } from './meshUtils';

@@ -5,6 +5,7 @@ import {
   forEachCell,
   frameCells,
   computeCellBoundariesMm,
+  marginPocketDepthMm,
 } from './cellDecomposition';
 import type { CellInfo } from './cellDecomposition';
 import { SIZE } from './generatorConstants';
@@ -309,5 +310,36 @@ describe('frameCells half-grid', () => {
     expect(corner).toHaveLength(1);
     expect(corner[0].centerX).toBeLessThan(-42);
     expect(corner[0].centerY).toBeLessThan(-42);
+  });
+});
+
+describe('marginPocketDepthMm', () => {
+  it('over-tile: whole margin is pocketed once it clears the threshold, else solid', () => {
+    expect(marginPocketDepthMm(12, 42, 8, false)).toBeCloseTo(12, 9);
+    expect(marginPocketDepthMm(5, 42, 8, false)).toBe(0);
+    expect(marginPocketDepthMm(0, 42, 8, false)).toBe(0);
+  });
+
+  it('half-grid: packs 21mm cells, drops a sub-threshold sliver', () => {
+    // 25mm -> one 21mm cell pocketed, 4mm sliver solid.
+    expect(marginPocketDepthMm(25, 42, 8, true)).toBeCloseTo(21, 9);
+    // 30mm -> 21mm cell + printable 9mm clip, fully pocketed.
+    expect(marginPocketDepthMm(30, 42, 8, true)).toBeCloseTo(30, 9);
+    // Exactly 21mm -> one clean half-cell, no sliver.
+    expect(marginPocketDepthMm(21, 42, 8, true)).toBeCloseTo(21, 9);
+    // 50mm -> two 21mm cells + 8mm clip, fully pocketed.
+    expect(marginPocketDepthMm(50, 42, 8, true)).toBeCloseTo(50, 9);
+    // 15mm (< 21) -> degrades to a single printable clip, fully pocketed.
+    expect(marginPocketDepthMm(15, 42, 8, true)).toBeCloseTo(15, 9);
+  });
+
+  it('agrees with frameCells on which margins leave a solid sliver', () => {
+    // Pocket depth < padding exactly when frameCells leaves a dropped sliver.
+    for (const p of [5, 12, 21, 25, 30, 46, 50]) {
+      const depth = marginPocketDepthMm(p, 42, 8, true);
+      const cells = frameCells(1, 1, { left: p, right: 0, front: 0, back: 0 }, 42, 8, true);
+      const pocketedMm = cells.reduce((sum, c) => sum + c.widthUnits * 42, 0);
+      expect(depth).toBeCloseTo(pocketedMm, 6);
+    }
   });
 });

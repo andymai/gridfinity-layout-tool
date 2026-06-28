@@ -40,11 +40,18 @@ export function addPlateFace(
   z: number,
   faceUp: boolean,
   /**
-   * Whether to fill the padding margin with a solid ring. False for over-tile,
-   * where the margin is tiled with frame pockets (passed in `cells`) instead —
-   * their openings + corner gussets cover the margin, so a ring would hide them.
+   * Whether to fill solid (un-pocketed) padding margin with a ring. False for a
+   * fully over-tiled margin, where frame pockets (passed in `cells`) plus their
+   * corner gussets cover the margin, so a ring would hide them.
    */
-  drawRing = true
+  drawRing = true,
+  /**
+   * How far frame pockets reach into each side's margin (mm). Expands the ring's
+   * inner edge per side so the ring fills only the outer solid band beyond the
+   * pockets — never capping a tiled (e.g. 21mm half-grid) pocket opening. Omit
+   * for plain solid padding, where the ring fills the whole margin to the grid.
+   */
+  pocketDepths?: { left: number; right: number; front: number; back: number }
 ): void {
   const nz = faceUp ? 1 : -1;
   const gridHalfW = (gridW * gridUnitMm) / 2;
@@ -61,7 +68,23 @@ export function addPlateFace(
   });
 
   if (drawRing && hasPadding) {
-    addRingFace(mb, outerPts, offsetX, offsetY, gridHalfW, gridHalfD, z, 0, 0, nz, faceUp);
+    const innerMinX = -(gridHalfW + (pocketDepths?.left ?? 0));
+    const innerMaxX = gridHalfW + (pocketDepths?.right ?? 0);
+    const innerMinY = -(gridHalfD + (pocketDepths?.front ?? 0));
+    const innerMaxY = gridHalfD + (pocketDepths?.back ?? 0);
+    addRingFace(
+      mb,
+      outerPts,
+      offsetX,
+      offsetY,
+      innerMinX,
+      innerMaxX,
+      innerMinY,
+      innerMaxY,
+      z,
+      nz,
+      faceUp
+    );
   }
 
   for (const cell of cells) {
@@ -162,11 +185,11 @@ function addRingFace(
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
   offsetY: number,
-  innerHalfW: number,
-  innerHalfD: number,
+  innerMinX: number,
+  innerMaxX: number,
+  innerMinY: number,
+  innerMaxY: number,
   z: number,
-  fnx: number,
-  fny: number,
   fnz: number,
   faceUp: boolean
 ): void {
@@ -178,10 +201,10 @@ function addRingFace(
   for (const pt of outerPts) {
     const ox = pt[0] + offsetX;
     const oy = pt[1] + offsetY;
-    const ix = Math.max(-innerHalfW, Math.min(innerHalfW, ox));
-    const iy = Math.max(-innerHalfD, Math.min(innerHalfD, oy));
-    outerVerts.push(mb.pushVertex(ox, oy, z, fnx, fny, fnz));
-    innerVerts.push(mb.pushVertex(ix, iy, z, fnx, fny, fnz));
+    const ix = Math.max(innerMinX, Math.min(innerMaxX, ox));
+    const iy = Math.max(innerMinY, Math.min(innerMaxY, oy));
+    outerVerts.push(mb.pushVertex(ox, oy, z, 0, 0, fnz));
+    innerVerts.push(mb.pushVertex(ix, iy, z, 0, 0, fnz));
   }
 
   for (let i = 0; i < n; i++) {

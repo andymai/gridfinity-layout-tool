@@ -331,3 +331,29 @@ export function frameCells(
   }
   return cells;
 }
+
+/**
+ * How far (mm) {@link frameCells} pockets reach into a margin of width
+ * `paddingMm` — the part filled with cells rather than left as a dropped
+ * sub-threshold sliver. The leftover (`paddingMm - result`) is solid plastic at
+ * the margin's outer edge.
+ *
+ * Mirrors the drop rule in {@link frameCells}: over-tile fills the whole margin
+ * with one clip once it clears `minStripMm` (otherwise nothing); half-grid packs
+ * 0.5-unit cells from the grid edge first and keeps only a printable remainder.
+ * Used by the direct-mesh draft to fill solid bands without capping pockets.
+ */
+export function marginPocketDepthMm(
+  paddingMm: number,
+  gridUnitMm: number,
+  minStripMm: number,
+  halfGrid: boolean
+): number {
+  if (paddingMm < FRACTION_EPS) return 0;
+  if (!halfGrid) return paddingMm >= minStripMm ? paddingMm : 0;
+  const halfMm = gridUnitMm / 2;
+  const halfCount = Math.floor((paddingMm + FRACTION_EPS) / halfMm);
+  const leftover = paddingMm - halfCount * halfMm;
+  const keptLeftover = leftover >= minStripMm - FRACTION_EPS ? leftover : 0;
+  return halfCount * halfMm + keptLeftover;
+}
