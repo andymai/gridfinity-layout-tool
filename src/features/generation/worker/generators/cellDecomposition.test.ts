@@ -262,3 +262,52 @@ describe('frameCells', () => {
     expect(cells.every((c) => c.centerY > 42)).toBe(true);
   });
 });
+
+describe('frameCells half-grid', () => {
+  const ONLY_LEFT = (mm: number) => ({ left: mm, right: 0, front: 0, back: 0 });
+
+  it('packs a true 0.5-unit half-cell then the sub-half remainder', () => {
+    // 30mm left margin on a 2×2 grid: 21mm half-cell + 9mm leftover, each
+    // subdivided per nominal row → 2 half-cells + 2 remainder strips.
+    const cells = frameCells(2, 2, ONLY_LEFT(30), 42, 8, true);
+    expect(cells).toHaveLength(4);
+    const halves = cells.filter((c) => Math.abs(c.widthUnits - 0.5) < 1e-9);
+    const remainders = cells.filter((c) => Math.abs(c.widthUnits - 9 / 42) < 1e-9);
+    expect(halves).toHaveLength(2);
+    expect(remainders).toHaveLength(2);
+    // Half-cells hug the grid edge (-42); the remainder sits further out.
+    expect(halves.every((h) => h.centerX > remainders[0].centerX)).toBe(true);
+    expect(halves.every((h) => h.centerX < -42)).toBe(true);
+  });
+
+  it('emits a clean half-cell with no remainder at exactly half a unit', () => {
+    const cells = frameCells(1, 1, ONLY_LEFT(21), 42, 8, true);
+    expect(cells).toHaveLength(1);
+    expect(cells[0].widthUnits).toBeCloseTo(0.5, 9);
+  });
+
+  it('stacks multiple half-cells across a wide margin', () => {
+    // 50mm: two 21mm half-cells + an 8mm remainder.
+    const cells = frameCells(1, 1, ONLY_LEFT(50), 42, 8, true);
+    expect(cells.filter((c) => Math.abs(c.widthUnits - 0.5) < 1e-9)).toHaveLength(2);
+    expect(cells.filter((c) => Math.abs(c.widthUnits - 8 / 42) < 1e-9)).toHaveLength(1);
+  });
+
+  it('falls back to a single clip when the margin is under half a unit', () => {
+    // 15mm < 21mm: no half-cell fits, so it degrades to the over-tile clip.
+    const half = frameCells(1, 1, ONLY_LEFT(15), 42, 8, true);
+    const over = frameCells(1, 1, ONLY_LEFT(15), 42, 8, false);
+    expect(half).toEqual(over);
+    expect(half[0].widthUnits).toBeCloseTo(15 / 42, 9);
+  });
+
+  it('places a 0.5×0.5 corner cell when both axes have a half-cell', () => {
+    const cells = frameCells(2, 2, { left: 21, right: 0, front: 21, back: 0 }, 42, 8, true);
+    const corner = cells.filter(
+      (c) => Math.abs(c.widthUnits - 0.5) < 1e-9 && Math.abs(c.depthUnits - 0.5) < 1e-9
+    );
+    expect(corner).toHaveLength(1);
+    expect(corner[0].centerX).toBeLessThan(-42);
+    expect(corner[0].centerY).toBeLessThan(-42);
+  });
+});

@@ -95,6 +95,7 @@ export function generateBaseplateDirect(
     edges,
     connectorNubs,
     overTile,
+    overTileHalfGrid,
   } = params;
 
   const mb = new MeshBuilder();
@@ -129,10 +130,20 @@ export function generateBaseplateDirect(
       front: paddingFront,
       back: paddingBack,
     };
-    cells.push(...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM));
-    tiledMargin = [paddingLeft, paddingRight, paddingFront, paddingBack].every(
-      (p) => p < 1e-6 || p >= MIN_PRINTABLE_TILE_MM
+    cells.push(
+      ...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid)
     );
+    // The solid padding ring can be dropped only when every padded side is
+    // fully covered by cells. Plain over-tile covers a side with one clip
+    // whenever it clears the threshold. Half-grid packs 21mm cells first, so a
+    // side can still leave a sub-threshold solid sliver at its outer edge — keep
+    // the ring unless that leftover is zero or itself printable.
+    tiledMargin = [paddingLeft, paddingRight, paddingFront, paddingBack].every((p) => {
+      if (p < 1e-6) return true;
+      if (!overTileHalfGrid) return p >= MIN_PRINTABLE_TILE_MM;
+      const leftover = p - Math.floor((p + 1e-9) / (gridUnitMm / 2)) * (gridUnitMm / 2);
+      return leftover < 1e-6 || leftover >= MIN_PRINTABLE_TILE_MM;
+    });
   }
 
   onProgress('base', 0.1);

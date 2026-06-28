@@ -794,4 +794,71 @@ describe('BaseplatePanel', () => {
       expect(mockSetBaseplateParams).not.toHaveBeenCalled();
     });
   });
+
+  describe('margin fill mode', () => {
+    // A tileable margin (>= 8mm) so the grid/half-grid segments are enabled.
+    const withPadding = (extra: Partial<typeof DEFAULT_BASEPLATE_PARAMS> = {}) => ({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: 21,
+      ...extra,
+    });
+
+    it('defaults to solid padding when over-tile is off', () => {
+      mockLayoutState.layout.baseplateParams = withPadding();
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('radio', { name: 'baseplate.marginFillSolid' })).toBeChecked();
+    });
+
+    it('reflects plain over-tile', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({ overTile: true });
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('radio', { name: 'baseplate.marginFillTile' })).toBeChecked();
+    });
+
+    it('reflects half-grid fill', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+      });
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' })).toBeChecked();
+    });
+
+    it('enables plain over-tile with no half-grid flag', () => {
+      mockLayoutState.layout.baseplateParams = withPadding();
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillTile' }));
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTile: true, overTileHalfGrid: undefined })
+      );
+    });
+
+    it('enables half-grid fill', () => {
+      mockLayoutState.layout.baseplateParams = withPadding();
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' }));
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTile: true, overTileHalfGrid: true })
+      );
+    });
+
+    it('returns to solid padding', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+      });
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillSolid' }));
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTile: false, overTileHalfGrid: undefined })
+      );
+    });
+
+    it('disables the grid modes when every margin is below the tile threshold', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3 });
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('radio', { name: 'baseplate.marginFillTile' })).toBeDisabled();
+      expect(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' })).toBeDisabled();
+    });
+  });
 });

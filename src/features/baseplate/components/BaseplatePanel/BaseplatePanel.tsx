@@ -27,7 +27,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput, Button, ConfirmDialog } from '@/design-system';
+import { SliderInput, Button, ConfirmDialog, SegmentedControl } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -54,6 +54,9 @@ import {
 } from '@/shared/constants/connectors';
 import type { BaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+
+/** How the drawer-fit padding margin is filled. */
+type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
 
 /** Snap a connector fit offset to its step and clamp to the allowed range,
  * absorbing IEEE-754 drift from repeated ±0.05 button clicks. */
@@ -210,7 +213,21 @@ export function BaseplatePanel() {
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
   const overTileStatus = resolveOverTileStatus(baseplateParams);
-  const overTileOn = baseplateParams.overTile === true && overTileStatus.canOverTile;
+  const marginFillMode: MarginFillMode =
+    baseplateParams.overTile === true && overTileStatus.canOverTile
+      ? baseplateParams.overTileHalfGrid === true
+        ? 'halfGrid'
+        : 'tile'
+      : 'solid';
+  const setMarginFillMode = useCallback(
+    (mode: MarginFillMode) => {
+      updateParams({
+        overTile: mode !== 'solid',
+        overTileHalfGrid: mode === 'halfGrid' ? true : undefined,
+      });
+    },
+    [updateParams]
+  );
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;
@@ -367,35 +384,62 @@ export function BaseplatePanel() {
                 updateParams={updateParams}
               />
               {hasPadding && (
-                <div className="border-t border-stroke-subtle pt-3">
-                  <FeatureToggle
-                    label={t('baseplate.overTile')}
-                    badge={<LayoutGridIcon size="xs" className="text-content-tertiary" />}
-                    checked={overTileOn}
-                    onChange={() => updateParam('overTile', baseplateParams.overTile !== true)}
-                    disabledReason={
-                      overTileStatus.canOverTile ? undefined : t('baseplate.overTileTooSmall')
-                    }
-                    primaryControls={
-                      <div className="space-y-1 text-[11px] leading-relaxed">
-                        <p className="text-content-tertiary">{t('baseplate.overTileHint')}</p>
-                        {overTileStatus.tiled.length > 0 && (
-                          <p className="text-content-secondary">
-                            {t('baseplate.overTileFills', {
-                              sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
-                            })}
-                          </p>
-                        )}
-                        {overTileStatus.tooSmall.length > 0 && (
-                          <p className="text-content-tertiary">
-                            {t('baseplate.overTileKeptSolid', {
-                              sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    }
+                <div className="space-y-2 border-t border-stroke-subtle pt-3">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+                    <LayoutGridIcon size="xs" />
+                    {t('baseplate.overTile')}
+                  </div>
+                  <SegmentedControl
+                    aria-label={t('baseplate.overTile')}
+                    size="sm"
+                    fullWidth
+                    value={marginFillMode}
+                    onChange={setMarginFillMode}
+                    options={[
+                      { value: 'solid', label: t('baseplate.marginFillSolid') },
+                      {
+                        value: 'tile',
+                        label: t('baseplate.marginFillTile'),
+                        disabled: !overTileStatus.canOverTile,
+                        title: overTileStatus.canOverTile
+                          ? undefined
+                          : t('baseplate.overTileTooSmall'),
+                      },
+                      {
+                        value: 'halfGrid',
+                        label: t('baseplate.marginFillHalfGrid'),
+                        disabled: !overTileStatus.canOverTile,
+                        title: overTileStatus.canOverTile
+                          ? undefined
+                          : t('baseplate.overTileTooSmall'),
+                      },
+                    ]}
                   />
+                  {marginFillMode !== 'solid' && (
+                    <div className="space-y-1 text-[11px] leading-relaxed">
+                      <p className="text-content-tertiary">
+                        {t(
+                          marginFillMode === 'halfGrid'
+                            ? 'baseplate.halfGridHint'
+                            : 'baseplate.overTileHint'
+                        )}
+                      </p>
+                      {overTileStatus.tiled.length > 0 && (
+                        <p className="text-content-secondary">
+                          {t('baseplate.overTileFills', {
+                            sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
+                          })}
+                        </p>
+                      )}
+                      {overTileStatus.tooSmall.length > 0 && (
+                        <p className="text-content-tertiary">
+                          {t('baseplate.overTileKeptSolid', {
+                            sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

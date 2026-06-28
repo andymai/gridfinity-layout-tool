@@ -225,6 +225,7 @@ export function buildBaseplateSolid(
     fractionalEdgeY,
     edges,
     overTile,
+    overTileHalfGrid,
   } = params;
 
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
@@ -285,7 +286,14 @@ export function buildBaseplateSolid(
         front: paddingFront,
         back: paddingBack,
       };
-      for (const cell of frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM)) {
+      for (const cell of frameCells(
+        width,
+        depth,
+        margins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid
+      )) {
         addPocket(cell);
       }
     }

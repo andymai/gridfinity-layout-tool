@@ -188,6 +188,7 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
         ? (state.layout.drawer.fractionalEdgeY ?? 'end')
         : (bp.fractionalEdgeY ?? 'end'),
     overTile: bp.overTile ?? false,
+    overTileHalfGrid: bp.overTileHalfGrid ?? false,
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,

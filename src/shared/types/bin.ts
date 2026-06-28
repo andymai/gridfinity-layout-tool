@@ -144,6 +144,12 @@ export interface BaseplateParams {
    * Default false (standard centered grid + padding).
    */
   readonly overTile?: boolean;
+  /**
+   * Half-grid variant of over-tile: pack true 21mm (0.5-unit) functional
+   * half-sockets into each margin before the sub-half-unit leftover falls back to
+   * the standard clipped tile. Only meaningful when {@link overTile} is true.
+   */
+  readonly overTileHalfGrid?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */

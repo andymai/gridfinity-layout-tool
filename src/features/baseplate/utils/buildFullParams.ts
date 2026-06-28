@@ -50,6 +50,7 @@ export function buildFullParams(
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
+    overTileHalfGrid: stored.overTileHalfGrid,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

@@ -69,3 +69,28 @@ describe('overhang feet ↔ over-tile pocket compatibility', () => {
     expect(footWidth).toBeLessThan(pocketWidth);
   });
 });
+
+describe('half-grid margin fill produces functional half-sockets', () => {
+  it('places a true 21mm (0.5u) cell at half-pitch beyond the grid edge', () => {
+    // 30mm left margin in half-grid mode → a 21mm half-cell hugging the grid
+    // edge plus a 9mm leftover further out (issue #2378 step 2 + 3).
+    const cells = frameCells(2, 2, { left: 30, right: 0, front: 0, back: 0 }, SIZE, 8, true);
+    const halves = cells.filter((c) => Math.abs(c.widthUnits - 0.5) < 1e-9);
+    expect(halves).toHaveLength(2); // one per nominal row
+    // The half-cell sits exactly half a unit (21mm) outboard of the grid edge.
+    expect(halves[0].centerX).toBeCloseTo(-SIZE - SIZE / 4, 6);
+  });
+
+  it('a standard half-gridfinity foot seats in the 21mm pocket with standard clearance', async () => {
+    const { buildSingleCellSocket } = await import('./socketBuilder');
+    const { getPocketTemplate } = await import('./baseplatePockets');
+    const H = SIZE / 2; // 21mm — a true half cell
+
+    const footWidth = widthOf(buildSingleCellSocket(H - CLEARANCE, H - CLEARANCE));
+    const pocketWidth = widthOf(getPocketTemplate(H, H, true, true));
+
+    expect(pocketWidth).toBeCloseTo(H, 1);
+    expect(pocketWidth - footWidth).toBeCloseTo(CLEARANCE, 1);
+    expect(footWidth).toBeLessThan(pocketWidth);
+  });
+});

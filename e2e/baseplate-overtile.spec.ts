@@ -41,15 +41,30 @@ test.describe('Baseplate over-tile — visual', () => {
 
     const before = await settledCanvas(page);
 
-    // The over-tile toggle (a switch) is gated on having padding to convert.
-    const overTile = page.getByRole('switch', { name: /Fill padding with grid/i });
-    await expect(overTile).toBeVisible({ timeout: 10_000 });
-    await overTile.click();
+    // The margin-fill control (a radiogroup) is gated on having padding to convert.
+    const fillGroup = page.getByRole('radiogroup', { name: /Fill padding with grid/i });
+    await expect(fillGroup).toBeVisible({ timeout: 10_000 });
+    await fillGroup.getByRole('radio', { name: 'Grid', exact: true }).click();
 
     const after = await settledCanvas(page);
     expect(before.equals(after)).toBe(false);
 
     await test.info().attach('padding.png', { body: before, contentType: 'image/png' });
     await test.info().attach('overtile.png', { body: after, contentType: 'image/png' });
+
+    // Half-grid only diverges from plain over-tile once a margin reaches 21mm:
+    // auto-fit padding is always < 21mm/side, so widen the left edge explicitly.
+    const leftPad = page.getByRole('spinbutton', { name: 'Left', exact: true });
+    await leftPad.fill('30');
+    await leftPad.blur();
+    const wideTile = await settledCanvas(page);
+    // Guard: the wider padding must have committed and re-rendered.
+    expect(wideTile.equals(after)).toBe(false);
+
+    // Now half-grid packs a true 21mm cell + a 9mm leftover, so it must differ.
+    await fillGroup.getByRole('radio', { name: 'Half-grid' }).click();
+    const halfGrid = await settledCanvas(page);
+    expect(halfGrid.equals(wideTile)).toBe(false);
+    await test.info().attach('halfgrid.png', { body: halfGrid, contentType: 'image/png' });
   });
 });

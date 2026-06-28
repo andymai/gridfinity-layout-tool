@@ -95,6 +95,13 @@ export interface BaseplateParams {
    * sliver falls back to solid padding. Default false.
    */
   readonly overTile?: boolean;
+  /**
+   * Half-grid variant of over-tile: when over-tile is on, fill each margin with
+   * true 21mm (0.5-unit) functional Gridfinity half-sockets first, then let the
+   * sub-half-unit leftover fall back to the standard clipped tile. Only
+   * meaningful when {@link overTile} is true. Default false (arbitrary clip).
+   */
+  readonly overTileHalfGrid?: boolean;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */

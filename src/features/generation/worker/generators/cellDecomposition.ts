@@ -222,26 +222,59 @@ interface MarginAxisEntry {
   readonly margin: boolean;
 }
 
+/**
+ * Decompose one margin strip into edge cells, packed from the grid-adjacent edge
+ * outward. `innerEdge` is the mm-position of the strip's grid-adjacent edge and
+ * `dir` is the outward direction (-1 toward negative coords, +1 toward positive).
+ *
+ * Default (over-tile): the whole strip is one clipped cell at its exact size.
+ * `halfGrid`: pack true 0.5-unit functional half-cells from the grid edge first,
+ * then a sub-half-unit remainder as a clipped cell at the outer edge (subject to
+ * `minMm`). A strip narrower than `minMm` is dropped entirely (stays solid).
+ */
+function marginStripEntries(
+  innerEdge: number,
+  sizeMm: number,
+  dir: -1 | 1,
+  unit: number,
+  minMm: number,
+  halfGrid: boolean
+): MarginAxisEntry[] {
+  if (sizeMm < minMm) return [];
+  if (!halfGrid) {
+    return [{ units: sizeMm / unit, center: innerEdge + (dir * sizeMm) / 2, margin: true }];
+  }
+  const halfMm = unit / 2;
+  const halfCount = Math.floor((sizeMm + FRACTION_EPS) / halfMm);
+  const entries: MarginAxisEntry[] = [];
+  for (let k = 0; k < halfCount; k++) {
+    entries.push({ units: 0.5, center: innerEdge + dir * (k + 0.5) * halfMm, margin: true });
+  }
+  const remainder = sizeMm - halfCount * halfMm;
+  if (remainder >= minMm - FRACTION_EPS) {
+    const center = innerEdge + dir * (halfCount * halfMm + remainder / 2);
+    entries.push({ units: remainder / unit, center, margin: true });
+  }
+  return entries;
+}
+
 function marginAxisEntries(
   grid: number,
   startMm: number,
   endMm: number,
   unit: number,
-  minMm: number
+  minMm: number,
+  halfGrid: boolean
 ): MarginAxisEntry[] {
   const totalNom = grid * unit;
   const entries: MarginAxisEntry[] = [];
-  if (startMm >= minMm) {
-    entries.push({ units: startMm / unit, center: -totalNom / 2 - startMm / 2, margin: true });
-  }
+  entries.push(...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid));
   let offset = 0;
   for (const s of decomposeCells(grid)) {
     entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
     offset += s * unit;
   }
-  if (endMm >= minMm) {
-    entries.push({ units: endMm / unit, center: totalNom / 2 + endMm / 2, margin: true });
-  }
+  entries.push(...marginStripEntries(totalNom / 2, endMm, 1, unit, minMm, halfGrid));
   return entries;
 }
 
@@ -255,16 +288,35 @@ function marginAxisEntries(
  *
  * Cell centers are origin-centered to match {@link forEachCell}, so frame cells
  * compose directly with the nominal grid.
+ *
+ * With `halfGrid`, each margin packs true 0.5-unit functional half-cells from the
+ * grid edge outward before the leftover (< half a unit) falls back to a clipped
+ * strip — so a wide margin reads as a half-grid border rather than one big clip.
  */
 export function frameCells(
   gridW: number,
   gridD: number,
   margins: SideMargins,
   gridUnitMm: number,
-  minStripMm: number
+  minStripMm: number,
+  halfGrid = false
 ): CellInfo[] {
-  const xs = marginAxisEntries(gridW, margins.left, margins.right, gridUnitMm, minStripMm);
-  const ys = marginAxisEntries(gridD, margins.front, margins.back, gridUnitMm, minStripMm);
+  const xs = marginAxisEntries(
+    gridW,
+    margins.left,
+    margins.right,
+    gridUnitMm,
+    minStripMm,
+    halfGrid
+  );
+  const ys = marginAxisEntries(
+    gridD,
+    margins.front,
+    margins.back,
+    gridUnitMm,
+    minStripMm,
+    halfGrid
+  );
   const cells: CellInfo[] = [];
   for (const x of xs) {
     for (const y of ys) {

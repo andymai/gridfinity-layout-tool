@@ -67,6 +67,22 @@ describe('selectGenerationTriggers', () => {
     const b = selectGenerationTriggers(makeState('dovetailKey'));
     expect(shallowEqual(a, b)).toBe(true);
   });
+
+  /**
+   * Regression (#2378): toggling half-grid margin fill changes only
+   * `overTileHalfGrid`. If that field is absent from the trigger set, the
+   * preview never regenerates and keeps the plain over-tile mesh.
+   */
+  it('produces a different trigger selection when overTileHalfGrid changes', () => {
+    const makeFillState = (overTileHalfGrid: boolean) => {
+      const state = makeState(undefined);
+      Object.assign(state.layout.baseplateParams, { overTile: true, overTileHalfGrid });
+      return state;
+    };
+    const plain = selectGenerationTriggers(makeFillState(false));
+    const halfGrid = selectGenerationTriggers(makeFillState(true));
+    expect(shallowEqual(plain, halfGrid)).toBe(false);
+  });
 });
 
 describe('hasMeshOnScreen', () => {
