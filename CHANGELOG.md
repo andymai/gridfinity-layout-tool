@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.205.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.5...gridfinity-layout-tool-v4.205.6) (2026-06-28)
+
+
+### Bug Fixes
+
+* **scoop:** cap auto scoop radius at MAX_SCOOP_RADIUS ([#2376](https://github.com/andymai/gridfinity-layout-tool/issues/2376)) ([20fc47c](https://github.com/andymai/gridfinity-layout-tool/commit/20fc47ced06684437b9aac8f79e49fccb8cb4841))
+
 ## [4.205.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.4...gridfinity-layout-tool-v4.205.5) (2026-06-27)
 
 
