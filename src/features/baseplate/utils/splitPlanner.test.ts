@@ -808,6 +808,25 @@ describe('pieceToBaseplateParams', () => {
     ).toBeFalsy();
   });
 
+  it('propagates overTileHalfGrid to pieces so a split plate keeps half-grid cells (#2384)', () => {
+    // Regression: pieceToBaseplateParams copied overTile but dropped
+    // overTileHalfGrid, so a split plate silently rendered plain over-tile —
+    // half-grid output was identical to grid output.
+    const half = makeParams({
+      width: 10,
+      depth: 8,
+      paddingLeft: 25,
+      paddingRight: 25,
+      overTile: true,
+      overTileHalfGrid: true,
+    });
+    const tiling = computeBaseplateTiling(half, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      expect(pieceToBaseplateParams(piece, half).overTileHalfGrid).toBe(true);
+    }
+  });
+
   it('swaps front/back padding for rotated pieces so the body centre negates (stack-print preview relies on this)', () => {
     // The stack-print preview derives a flipped plate's body centre from the
     // SAME params the mesh was generated with. For a preferIdenticalPieces 180°

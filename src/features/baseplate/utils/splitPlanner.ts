@@ -647,8 +647,10 @@ export function pieceToBaseplateParams(
     // Over-tile is additive (clipped pockets in each piece's exterior padding
     // margin) and leaves the slab/grid/offset unchanged, so it propagates to
     // pieces cleanly: interior join edges have zero padding → no pockets, and
-    // exterior padded edges get the gap-filling tiles.
+    // exterior padded edges get the gap-filling tiles. Half-grid must ride along
+    // too, or a split plate silently falls back to plain over-tile per piece.
     overTile: parentParams.overTile,
+    overTileHalfGrid: parentParams.overTileHalfGrid,
     connectorNubs: parentParams.connectorNubs,
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).
