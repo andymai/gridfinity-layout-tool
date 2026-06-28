@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.206.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.6...gridfinity-layout-tool-v4.206.0) (2026-06-28)
+
+
+### Features
+
+* **baseplate:** add half-grid margin fill mode ([#2378](https://github.com/andymai/gridfinity-layout-tool/issues/2378)) ([#2379](https://github.com/andymai/gridfinity-layout-tool/issues/2379)) ([c48a37f](https://github.com/andymai/gridfinity-layout-tool/commit/c48a37f42fccff2e621e15f60e3734cd88e8a19e))
+
 ## [4.205.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.5...gridfinity-layout-tool-v4.205.6) (2026-06-28)
 
 
