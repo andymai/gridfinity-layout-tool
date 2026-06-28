@@ -1,0 +1,77 @@
+src/i18n/locales/nb.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_127abc20953ab3::t_e67a0220148f9a 797-863
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_127abc20953ab3::t_bb688a96905ad0 133-134,136-146
+  s_127abc20953ab3::t_d36a2e569ba347 98
+src/i18n/locales/pt-BR.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/i18n/locales/nl.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/core/types.ts
+  s_127abc20953ab3::t_c0ff74f3630eaf 98-104
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_127abc20953ab3::t_3c49c78e8a9c98 228
+  s_127abc20953ab3::t_343a6422edb18c 289-296
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_127abc20953ab3::t_61e744730bba1f 70-85
+src/i18n/locales/de.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/i18n/locales/es.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_127abc20953ab3::t_2a001c9bf1b3f5 191
+src/i18n/locales/sv.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+e2e/baseplate-overtile.spec.ts
+  s_127abc20953ab3::t_5c484b75b45ca3 44-46,54,65-66,68
+  s_127abc20953ab3::t_63f0380ac95ec0 47
+  s_127abc20953ab3::t_9edc39e876f376 55-56,60,63-64,67
+  s_127abc20953ab3::t_bdb870c90bfb37 57-59,61-62
+src/features/generation/worker/generators/overtileFit.scenario.test.ts
+  s_127abc20953ab3::t_41582d33eec2b0 72-96
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_127abc20953ab3::t_28f6d441663b35 70,109
+src/features/baseplate/utils/buildFullParams.ts
+  s_127abc20953ab3::t_136b6e09134d7d 53
+src/i18n/locales/uk.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_127abc20953ab3::t_8c637d7eba34e1 225-260,266-267,271,277,317,319
+  s_127abc20953ab3::t_96c5a03ee028ba 291-294,301-302,304-305
+  s_127abc20953ab3::t_2ba559129bfa06 306-308,314-316
+  s_127abc20953ab3::t_03713a8989d3e0 309-313
+  s_127abc20953ab3::t_b4b5183a51f561 318
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_127abc20953ab3::t_665f33602f7f3e 30
+  s_127abc20953ab3::t_974691e337a71b 387-416,418-442
+  s_127abc20953ab3::t_3cdeb7001ab2a1 216-230
+  s_127abc20953ab3::t_af85bb8bf2f2ce 58-60
+src/features/generation/worker/generators/cellDecomposition.test.ts
+  s_127abc20953ab3::t_d373a6c4fd8b38 265-313
+src/i18n/locales/en.ts
+  s_127abc20953ab3::t_c4a7f71d40e9fc 2216-2220
+src/i18n/locales/ja.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/i18n/locales/fr.json
+  s_127abc20953ab3::t_18dbd416e59aa1 106-109
+src/shared/types/bin.ts
+  s_127abc20953ab3::t_bb687069a49daa 147-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "514821bca73de4a51f6242122a089a6493261754",
+  "prompts": {},
+  "sessions": {
+    "s_127abc20953ab3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3454761f-319d-4413-a82f-959035439f08",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
