@@ -20,7 +20,7 @@ import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category, GridUnits, HeightUnits } from '@/core/types';
-import { binId as toBinId, gridUnits } from '@/core/types';
+import { binId as toBinId, gridUnits, mm, mmToHeightUnits } from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
@@ -71,6 +71,7 @@ export interface UseDrawerSettingsReturn {
   handleDrawerHeightChange: (delta: number) => void;
 
   // Direct input handlers (for number inputs)
+  handleDrawerHeightInput: (heightMm: number) => void;
   handleDrawerWidthInput: (value: number) => void;
   handleDrawerDepthInput: (value: number) => void;
 
@@ -269,6 +270,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   );
 
   // Direct input handlers (for number inputs)
+  const handleDrawerHeightInput = useCallback(
+    (heightMm: number) => {
+      const units = mmToHeightUnits(mm(heightMm), mm(heightUnitMm));
+      const clamped = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, units)) as HeightUnits;
+      batch(() => updateDrawer({ height: clamped }));
+    },
+    [heightUnitMm, updateDrawer]
+  );
+
   const handleDrawerWidthInput = useCallback(
     (width: number) => {
       const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width))));
@@ -425,6 +435,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     handleDrawerWidthChange,
     handleDrawerDepthChange,
     handleDrawerHeightChange,
+    handleDrawerHeightInput,
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleFractionalEdgeChange,

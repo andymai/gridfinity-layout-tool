@@ -6,6 +6,7 @@ import type { Layer } from '@/core/types';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { Button, IconButton, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { formatHeightUnits } from '@/shared/utils/heightUnits';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -71,6 +72,10 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   const minHeight = Math.min(...heights);
   const maxHeight = Math.max(...heights);
   const sameHeight = minHeight === maxHeight;
+  const fmtMm = (units: number) => String(Number((units * layout.heightUnitMm).toFixed(1)));
+  const heightDisplay = sameHeight
+    ? `${formatHeightUnits(minHeight)}u (${fmtMm(minHeight)}mm)`
+    : `${formatHeightUnits(minHeight)}–${formatHeightUnits(maxHeight)}u (${fmtMm(minHeight)}–${fmtMm(maxHeight)}mm)`;
 
   // Check clearance values
   const clearances = selectedBins.map((b) => b.clearanceHeight || 0);
@@ -181,7 +186,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>{t('common.height')}</label>
           <BulkIncrementControl
-            displayValue={sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
+            displayValue={heightDisplay}
             onStep={updateMultiHeight}
             ariaLabelPrefix={t('inspector.multi.heightAriaPrefix')}
             variant={variant}

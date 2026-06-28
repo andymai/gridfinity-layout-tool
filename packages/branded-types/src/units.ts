@@ -33,6 +33,22 @@ export const gridUnits = (n: number): GridUnits => n as GridUnits;
 /** Brand a raw number as HeightUnits. */
 export const heightUnits = (n: number): HeightUnits => n as HeightUnits;
 
+/**
+ * Smallest height-unit increment. Heights are free fractional (e.g. a 30.6mm
+ * target at a 7mm unit is 4.37u), but values are snapped to this step so the
+ * stored number and its mm readout stay free of floating-point dust.
+ */
+export const HEIGHT_UNIT_STEP = 0.01;
+
+/**
+ * Round a height-unit value to {@link HEIGHT_UNIT_STEP}. Divides/multiplies by
+ * the integer inverse (100) rather than the 0.01 step so the result is a clean
+ * decimal (4.37, not 4.3700000000000045).
+ */
+const HEIGHT_UNIT_STEP_INVERSE = 1 / HEIGHT_UNIT_STEP;
+export const roundHeightUnits = (n: number): HeightUnits =>
+  (Math.round(n * HEIGHT_UNIT_STEP_INVERSE) / HEIGHT_UNIT_STEP_INVERSE) as HeightUnits;
+
 // === Converters ===
 // Type-safe unit transformations. Each conversion requires the appropriate scale factor.
 
@@ -51,7 +67,11 @@ export function mmToGridUnits(value: Mm, unitMm: Mm): GridUnits {
   return Math.floor(value / unitMm) as GridUnits;
 }
 
-/** Convert millimeters to height units (rounds down to nearest integer). */
+/**
+ * Convert millimeters to height units, snapped to {@link HEIGHT_UNIT_STEP}.
+ * Heights are free fractional, so this rounds to the nearest 0.01u rather than
+ * flooring — flooring would silently drop the sub-unit part of an mm target.
+ */
 export function mmToHeightUnits(value: Mm, unitMm: Mm): HeightUnits {
-  return Math.floor(value / unitMm) as HeightUnits;
+  return roundHeightUnits(value / unitMm);
 }

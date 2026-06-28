@@ -3,6 +3,7 @@ import {
   mm,
   gridUnits,
   heightUnits,
+  roundHeightUnits,
   gridUnitsToMm,
   heightUnitsToMm,
   mmToGridUnits,
@@ -77,17 +78,38 @@ describe('Unit converters', () => {
   });
 
   describe('mmToHeightUnits', () => {
-    it('converts millimeters to height units (floors)', () => {
+    it('converts whole millimeters to height units', () => {
       expect(mmToHeightUnits(mm(7), heightUnitMm)).toBe(1);
       expect(mmToHeightUnits(mm(21), heightUnitMm)).toBe(3);
     });
 
-    it('floors partial height units', () => {
-      expect(mmToHeightUnits(mm(10), heightUnitMm)).toBe(1);
+    it('keeps the fractional part, snapped to 0.01u', () => {
+      expect(mmToHeightUnits(mm(10), heightUnitMm)).toBeCloseTo(1.43, 5);
+      expect(mmToHeightUnits(mm(30.6), heightUnitMm)).toBeCloseTo(4.37, 5);
+    });
+
+    it('handles a custom unit so 2x a 5u target matches a 10u target', () => {
+      const customUnit: Mm = mm(3.8);
+      const fiveU = mmToHeightUnits(mm(5 * 3.8), customUnit);
+      const tenU = mmToHeightUnits(mm(10 * 3.8), customUnit);
+      expect(fiveU * 2).toBeCloseTo(tenU, 5);
     });
 
     it('handles zero', () => {
       expect(mmToHeightUnits(mm(0), heightUnitMm)).toBe(0);
+    });
+  });
+
+  describe('roundHeightUnits', () => {
+    it('snaps to the nearest 0.01u', () => {
+      expect(roundHeightUnits(4.3700001)).toBeCloseTo(4.37, 5);
+      expect(roundHeightUnits(4.371)).toBeCloseTo(4.37, 5);
+      expect(roundHeightUnits(4.375)).toBeCloseTo(4.38, 5);
+    });
+
+    it('leaves whole and half units untouched', () => {
+      expect(roundHeightUnits(5)).toBe(5);
+      expect(roundHeightUnits(2.5)).toBe(2.5);
     });
   });
 });

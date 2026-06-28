@@ -122,11 +122,13 @@ describe('SingleBinInspector', () => {
       expect(screen.getByText(/84 × 126 × 28 mm/)).toBeInTheDocument();
     });
 
-    it('renders height control with current value', () => {
+    it('renders height control in mm with the unit equivalent', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('4u')).toBeInTheDocument();
+      // 4u * 7mm = 28mm in the editable field, with "= 4u" shown below.
+      expect(screen.getByDisplayValue('28')).toBeInTheDocument();
+      expect(screen.getByText('= 4u')).toBeInTheDocument();
     });
 
     it('renders clearance control when maxClearance > 0', () => {
@@ -250,6 +252,33 @@ describe('SingleBinInspector', () => {
       fireEvent.click(screen.getByLabelText('Increase Bin height'));
 
       expect(inspector.updateField).toHaveBeenCalledWith('height', 5);
+    });
+
+    it('converts a typed mm height to fractional units', () => {
+      const inspector = createMockInspector();
+      render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      const heightInput = screen.getByLabelText('Bin height');
+      // 30.6mm at a 7mm unit -> 4.37u
+      fireEvent.change(heightInput, { target: { value: '30.6' } });
+      fireEvent.blur(heightInput);
+
+      expect(inspector.updateField).toHaveBeenCalledWith('height', 4.37);
+    });
+
+    it('warns when the height will not stack with standard bins', () => {
+      const inspector = createMockInspector({ bin: { ...mockBin, height: 4.5 } });
+      render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      // 4.5u * 7mm = 31.5mm, not a multiple of 7mm.
+      expect(screen.getByText("Won't stack with standard bins")).toBeInTheDocument();
+    });
+
+    it('does not warn for a standard whole-unit height', () => {
+      const inspector = createMockInspector();
+      render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      expect(screen.queryByText("Won't stack with standard bins")).not.toBeInTheDocument();
     });
 
     it('disables height decrease at min', () => {

@@ -54,8 +54,9 @@ export function BinDimensions({
   // Bin extents in mm (mesh is centered at origin)
   const outerW = width * gridUnitMm;
   const outerD = depth * gridUnitMm;
-  const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT : 0;
-  // Total height matches the generated mesh (heightUnitMm + lip)
+  // The lip nests LIP_OVERLAP into the wall, so its real contribution to total
+  // height is LIP_HEIGHT − LIP_OVERLAP — matching the generated mesh, not LIP_HEIGHT.
+  const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
   const totalH = height * heightUnitMm + lipHeight;
 
   // Display labels use the user's configured unit sizes

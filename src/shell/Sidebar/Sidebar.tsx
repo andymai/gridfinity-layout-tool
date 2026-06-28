@@ -87,6 +87,7 @@ export function Sidebar() {
     handleDrawerWidthChange,
     handleDrawerDepthChange,
     handleDrawerHeightChange,
+    handleDrawerHeightInput,
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleFractionalEdgeChange,
@@ -363,17 +364,19 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={t('sidebar.maxHeight')}
                       >
-                        {t('common.height')}
+                        {t('common.heightMm')}
                       </label>
                       <Stepper
-                        value={drawer.height}
+                        value={drawer.height * heightUnitMm}
+                        onChange={handleDrawerHeightInput}
                         onStep={handleDrawerHeightChange}
-                        min={1}
-                        max={CONSTRAINTS.GRID_MAX}
+                        min={heightUnitMm}
+                        max={CONSTRAINTS.GRID_MAX * heightUnitMm}
+                        step={heightUnitMm}
+                        inputDecimals={1}
                         size="sm"
                         fullWidth
                         aria-label={t('sidebar.drawerHeightAria')}
-                        displayValue={`${drawer.height}u`}
                       />
                     </div>
                   </div>
@@ -493,6 +496,8 @@ export function Sidebar() {
                         onChange={setHeightUnitMm}
                         min={CONSTRAINTS.HEIGHT_UNIT_MM_MIN}
                         max={CONSTRAINTS.HEIGHT_UNIT_MM_MAX}
+                        step={0.01}
+                        decimals={2}
                         className="input w-14 py-0.5 px-1 text-xs text-right"
                       />
                     </SettingsRow>

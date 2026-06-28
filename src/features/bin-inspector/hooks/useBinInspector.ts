@@ -22,7 +22,7 @@ import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/val
 import { validateBinRotation } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
-import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
+import { layerId as toLayerId, categoryId as toCategoryId, roundHeightUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import {
   emitLinkedBinResize,
@@ -166,11 +166,13 @@ export function useBinInspector(): UseBinInspectorReturn {
             height: bin.height,
           });
         } else if (field === 'height') {
-          const newHeight = clamp(
-            typeof value === 'number' ? value : parseInt(value, 10) || constraints.minHeight,
-            constraints.minHeight,
-            constraints.maxHeight
-          ) as HeightUnits;
+          const newHeight = roundHeightUnits(
+            clamp(
+              typeof value === 'number' ? value : parseFloat(value) || constraints.minHeight,
+              constraints.minHeight,
+              constraints.maxHeight
+            )
+          );
 
           // Preserve clearance total if bin has clearance
           let heightUpdateFailed = false;
@@ -192,7 +194,7 @@ export function useBinInspector(): UseBinInspectorReturn {
           }
         } else if (field === 'clearanceHeight') {
           const newClearance = clamp(
-            typeof value === 'number' ? value : parseInt(value, 10) || 0,
+            typeof value === 'number' ? value : parseFloat(value) || 0,
             0,
             constraints.maxClearance
           ) as HeightUnits;

@@ -3,6 +3,8 @@ export {
   mm,
   gridUnits,
   heightUnits,
+  HEIGHT_UNIT_STEP,
+  roundHeightUnits,
   gridUnitsToMm,
   heightUnitsToMm,
   mmToGridUnits,

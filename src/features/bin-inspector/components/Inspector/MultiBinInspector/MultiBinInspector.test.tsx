@@ -202,15 +202,16 @@ describe('MultiBinInspector', () => {
       const inspector = createMockInspector({ selectedBins: sameBins });
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('4u')).toBeInTheDocument();
+      // 4u * 7mm = 28mm
+      expect(screen.getByText('4u (28mm)')).toBeInTheDocument();
     });
 
     it('shows height range when heights differ', () => {
       const inspector = createMockInspector();
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      // Heights are 4 and 5
-      expect(screen.getByText('4–5u')).toBeInTheDocument();
+      // Heights are 4 and 5 → 28mm and 35mm
+      expect(screen.getByText('4–5u (28–35mm)')).toBeInTheDocument();
     });
 
     it('calls updateMultiHeight with +1 when increase clicked', () => {

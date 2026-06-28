@@ -50,6 +50,7 @@ export function MobileSettingsPanel() {
     handleDrawerWidthChange,
     handleDrawerDepthChange,
     handleDrawerHeightChange,
+    handleDrawerHeightInput,
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleHalfBinToggle,
@@ -117,16 +118,18 @@ export function MobileSettingsPanel() {
 
         {/* Height */}
         <div>
-          <label className="block text-sm mb-1 text-content-tertiary">{t('common.height')}</label>
+          <label className="block text-sm mb-1 text-content-tertiary">{t('common.heightMm')}</label>
           <Stepper
-            value={drawer.height}
+            value={drawer.height * heightUnitMm}
+            onChange={handleDrawerHeightInput}
             onStep={handleDrawerHeightChange}
-            min={1}
-            max={CONSTRAINTS.GRID_MAX}
+            min={heightUnitMm}
+            max={CONSTRAINTS.GRID_MAX * heightUnitMm}
+            step={heightUnitMm}
+            inputDecimals={1}
             size="lg"
             fullWidth
             aria-label={t('sidebar.drawerHeightAria')}
-            displayValue={`${drawer.height}u`}
           />
         </div>
 
@@ -198,6 +201,8 @@ export function MobileSettingsPanel() {
                 className="input w-20 h-10 text-center"
                 min={CONSTRAINTS.HEIGHT_UNIT_MM_MIN}
                 max={CONSTRAINTS.HEIGHT_UNIT_MM_MAX}
+                step={0.01}
+                decimals={2}
               />
             </SettingsRow>
             <p className="text-xs text-content-tertiary mt-1">

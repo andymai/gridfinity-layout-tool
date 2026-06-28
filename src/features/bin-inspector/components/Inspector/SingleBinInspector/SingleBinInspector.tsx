@@ -1,9 +1,11 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
+import { mm, mmToHeightUnits, roundHeightUnits } from '@/core/types';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
+import { formatHeightUnits, isStandardStackHeight } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
@@ -160,21 +162,29 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <div
           className={`grid gap-3 ${constraints.maxClearance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}
         >
-          {/* Height control */}
+          {/* Height control — entered in mm, stored as free fractional units */}
           <div>
             <label className={`block ${labelSize} text-content-tertiary`}>
-              {t('common.height')}
+              {t('common.heightMm')}
             </label>
             <Stepper
-              value={bin.height}
-              onStep={(delta) => updateField('height', bin.height + delta)}
-              min={constraints.minHeight}
-              max={constraints.maxHeight}
+              value={bin.height * layout.heightUnitMm}
+              onChange={(mmValue) =>
+                updateField('height', mmToHeightUnits(mm(mmValue), layout.heightUnitMm))
+              }
+              onStep={(delta) => updateField('height', roundHeightUnits(bin.height + delta))}
+              min={constraints.minHeight * layout.heightUnitMm}
+              max={constraints.maxHeight * layout.heightUnitMm}
+              step={layout.heightUnitMm}
+              inputDecimals={1}
               size={isMobile ? 'lg' : 'md'}
               aria-label={t('inspector.single.heightAria')}
-              displayValue={`${bin.height}u`}
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
+              <div>{t('inspector.heightUnitsEquiv', { units: formatHeightUnits(bin.height) })}</div>
+              {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
+                <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
+              )}
               <div>
                 {constraints.minHeightReason === 'layer_height'
                   ? t('inspector.minHeightHint', {

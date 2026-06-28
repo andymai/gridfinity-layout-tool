@@ -9,6 +9,7 @@ import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY, WALL_THICKNESS_OPTIONS } from '../constants';
 import { binDimensions } from './binDimensions';
+import { HEIGHT_UNIT_STEP } from '@/core/types';
 
 /** Tolerance for floating-point step comparisons */
 const EPSILON = 1e-10;
@@ -86,11 +87,14 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
-  // Height must be integer
-  if (!Number.isInteger(params.height)) {
+  // Height is a free fractional value (e.g. a linked layout bin at 4.37u), but
+  // must land on the 0.01u grid the layout snaps to. Divide-and-round instead
+  // of float modulo, which is unreliable at a 0.01 step.
+  const heightSteps = params.height / HEIGHT_UNIT_STEP;
+  if (Math.abs(heightSteps - Math.round(heightSteps)) > EPSILON) {
     return err({
       code: 'INVALID_STEP',
-      message: 'Height must be a whole number',
+      message: `Height must be in ${HEIGHT_UNIT_STEP} unit increments`,
       field: 'height',
     });
   }
