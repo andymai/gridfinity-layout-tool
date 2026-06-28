@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/directMeshFaces.ts
+  s_127abc20953ab3::t_fb8ae615d26a4b 75-87
+  s_127abc20953ab3::t_10b9810fecbee9 188-191,204-207
+  s_127abc20953ab3::t_a3dd6c722422dd 43-45,47-54,71-74
+src/features/generation/worker/generators/generatorTypes.ts
+  s_127abc20953ab3::t_c662f28e478b32 62-68
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_127abc20953ab3::t_e4fedd6b507c4e 622-626,628-637
+  s_127abc20953ab3::t_384c188a83eee7 627
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_127abc20953ab3::t_0ed7009089d3f8 334-359
+src/features/generation/worker/generators/cellDecomposition.test.ts
+  s_127abc20953ab3::t_41c43186202c2a 315-345
+  s_127abc20953ab3::t_72a4eafdc49eda 8
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_127abc20953ab3::t_8322e0d258fa31 186-187
+  s_127abc20953ab3::t_a2b3cc7947cb29 36
+  s_127abc20953ab3::t_01050bd682c588 120-123,126-129,140-153
+  s_127abc20953ab3::t_e4edaec031a083 212-213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "1f56433225ac8a4f4e6e4c7122942cce18d92b0b",
+  "prompts": {},
+  "sessions": {
+    "s_127abc20953ab3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3454761f-319d-4413-a82f-959035439f08",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
