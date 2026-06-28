@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.206.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.0...gridfinity-layout-tool-v4.206.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* **baseplate:** half-grid draft preview no longer caps half-sockets ([#2380](https://github.com/andymai/gridfinity-layout-tool/issues/2380)) ([#2382](https://github.com/andymai/gridfinity-layout-tool/issues/2382)) ([e45be1e](https://github.com/andymai/gridfinity-layout-tool/commit/e45be1e4b4ae6bd9becf49da48068ea556fa3d24))
+
 ## [4.206.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.205.6...gridfinity-layout-tool-v4.206.0) (2026-06-28)
 
 
