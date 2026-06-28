@@ -6,15 +6,18 @@
  * consistent scoop geometry across generation, preview, and estimates.
  */
 
+import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
+
 /**
  * Resolve scoop radius for a compartment.
  *
  * Auto mode: min(smallerDim/3, max(15, wallHeight*0.5), compD/3),
- * clamped to fit compartment depth and wall height.
+ * capped at MAX_SCOOP_RADIUS and clamped to fit compartment depth and wall height.
  * Manual mode: clamped to fit compartment and height.
  *
  * For front-row scoops with a stacking lip, auto radius is increased to reach
- * wallHeight so the scoop top meets the lip's inner face.
+ * wallHeight so the scoop top meets the lip's inner face — but never past
+ * MAX_SCOOP_RADIUS, the same ceiling the manual stepper enforces.
  *
  * @param scoopRadius - Scoop config radius ('auto' or manual mm)
  * @param compW - Compartment width in mm
@@ -44,14 +47,19 @@ export function resolveScoopRadius(
     //  - max(15, wallHeight*0.5): height-aware cap for tall bins (usability)
     //  - compD/3: preserve ≥2/3 of depth for storage (volume)
     radius = Math.min(minDim / 3, Math.max(15, wallHeight * 0.5), compD / 3);
+
+    // For front-row scoops with lip, auto radius must reach wallHeight
+    // so the scoop top meets the lip's inner face.
+    if (hasLip && isMinRow) {
+      radius = Math.max(radius, wallHeight);
+    }
+
+    // Auto radius must respect the same 25mm ceiling the manual stepper
+    // enforces. Without this, tall or front-row-lipped bins balloon the
+    // scoop up to the full wall height, far past what manual mode allows.
+    radius = Math.min(radius, DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS);
   } else {
     radius = scoopRadius;
-  }
-
-  // For front-row scoops with lip, auto radius must reach wallHeight
-  // so the scoop top meets the lip's inner face.
-  if (scoopRadius === 'auto' && hasLip && isMinRow) {
-    radius = Math.max(radius, wallHeight);
   }
 
   // Clamp: radius can't exceed compartment depth (minus offset) or wall height.

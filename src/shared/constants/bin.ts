@@ -10,4 +10,4 @@ export {
   DEFAULT_HANDLE_SIDE,
   DISABLED_WALL_CUTOUT,
 } from '@/features/bin-designer/constants/defaults';
-export { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+export { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';

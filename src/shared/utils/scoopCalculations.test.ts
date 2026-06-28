@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import { resolveScoopRadius, computeLipOffset, computeInteriorHeight } from './scoopCalculations';
 
 describe('resolveScoopRadius', () => {
@@ -30,9 +31,9 @@ describe('resolveScoopRadius', () => {
       expect(radius).toBe(15);
     });
 
-    it('allows larger radius for tall bins via height-aware cap', () => {
+    it('allows larger radius for tall bins via height-aware cap, capped at MAX_SCOOP_RADIUS', () => {
       // 4x4 single compartment, 10U bin (wallHeight ≈ 65mm)
-      // minDim/3 = 54.7, max(15, 65*0.5) = 32.5
+      // minDim/3 = 54.7, max(15, 65*0.5) = 32.5, but capped at 25mm
       const tallWallHeight = 65;
       const tallInteriorHeight = 64.3;
       const radius = resolveScoopRadius(
@@ -45,7 +46,26 @@ describe('resolveScoopRadius', () => {
         tallInteriorHeight,
         0
       );
-      expect(radius).toBeCloseTo(32.5, 0);
+      expect(radius).toBe(DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS);
+    });
+
+    it('caps auto radius at MAX_SCOOP_RADIUS for front-row lipped tall bins', () => {
+      // Tall lipped bin: the front-row lip override forces radius up to
+      // wallHeight, which would balloon past the 25mm manual ceiling.
+      // The cap must bound it the same as manual mode.
+      const tallWallHeight = 65;
+      const tallInteriorHeight = 64.3;
+      const radius = resolveScoopRadius(
+        'auto',
+        164,
+        164,
+        true,
+        true,
+        tallWallHeight,
+        tallInteriorHeight,
+        1.4
+      );
+      expect(radius).toBe(DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS);
     });
 
     it('preserves at least 2/3 of depth (compD/3 constraint)', () => {
