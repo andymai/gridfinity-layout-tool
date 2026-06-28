@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Preenchimento",
   "baseplate.marginFillTile": "Grade",
   "baseplate.marginFillHalfGrid": "Meia grade",
-  "baseplate.halfGridHint": "Preenche cada margem primeiro com células reais de meia grade de 21 mm e trata o restante abaixo de 21 mm como preenchimento.",
+  "baseplate.halfGridHint": "Preenche cada margem primeiro com células reais de meia grade de 21 mm e depois o restante abaixo de 21 mm igual ao modo Grade.",
   "baseplate.overTileTooSmall": "A margem é pequena demais em todas as bordas para um ladrilho de grade.",
   "baseplate.padding": "Preenchimento",
   "baseplate.paddingAnchor.bc": "Ancorar bins frente-centro",

@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Відступ",
   "baseplate.marginFillTile": "Сітка",
   "baseplate.marginFillHalfGrid": "Пів-сітка",
-  "baseplate.halfGridHint": "Спочатку заповнює кожен край справжніми клітинками пів-сітки 21 мм, а решту менше за 21 мм обробляє як відступ.",
+  "baseplate.halfGridHint": "Спочатку заповнює кожен край справжніми клітинками пів-сітки 21 мм, а решту менше за 21 мм заповнює так само, як у режимі «Сітка».",
   "baseplate.overTileTooSmall": "Відступ замалий на кожному краю для плитки сітки.",
   "baseplate.padding": "Відступи",
   "baseplate.paddingAnchor.bc": "Прив'язати бункери до передньої центральної",

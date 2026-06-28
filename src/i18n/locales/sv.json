@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Utfyllnad",
   "baseplate.marginFillTile": "Rutnät",
   "baseplate.marginFillHalfGrid": "Halvrutnät",
-  "baseplate.halfGridHint": "Fyller först varje kant med äkta 21 mm halvrutnätsceller och hanterar resten under 21 mm som utfyllnad.",
+  "baseplate.halfGridHint": "Fyller först varje kant med äkta 21 mm halvrutnätsceller och fyller resten under 21 mm som i Rutnät-läget.",
   "baseplate.overTileTooSmall": "Utfyllnaden är för liten på varje kant för en rutnätsplatta.",
   "baseplate.padding": "Utfyllnad",
   "baseplate.paddingAnchor.bc": "Förankra bins fram-mitten",

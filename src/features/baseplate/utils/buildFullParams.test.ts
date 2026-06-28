@@ -24,6 +24,30 @@ describe('buildFullParams', () => {
     expect(result.paddingBack).toBe(4.0);
   });
 
+  it('forwards overTileHalfGrid when over-tile is on', () => {
+    const result = buildFullParams(
+      { ...storedBase, overTile: true, overTileHalfGrid: true },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(result.overTileHalfGrid).toBe(true);
+  });
+
+  it('normalizes overTileHalfGrid to undefined when over-tile is off', () => {
+    const result = buildFullParams(
+      { ...storedBase, overTile: false, overTileHalfGrid: true },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(result.overTileHalfGrid).toBeUndefined();
+  });
+
   it('maps drawerWidth to width', () => {
     const result = buildFullParams(storedBase, 14, 8, 42, 'end', 'end');
     expect(result.width).toBe(14);

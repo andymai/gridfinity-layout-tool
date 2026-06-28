@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "余白",
   "baseplate.marginFillTile": "グリッド",
   "baseplate.marginFillHalfGrid": "ハーフグリッド",
-  "baseplate.halfGridHint": "各余白をまず本物の21mmハーフグリッドセルで埋め、21mm未満の残りは余白として処理します。",
+  "baseplate.halfGridHint": "各余白をまず本物の21mmハーフグリッドセルで埋め、21mm未満の残りはグリッドモードと同じように埋めます。",
   "baseplate.overTileTooSmall": "すべての辺で余白が小さすぎて、グリッドタイルが入りません。",
   "baseplate.padding": "余白",
   "baseplate.paddingAnchor.bc": "ビンを手前中央に配置",

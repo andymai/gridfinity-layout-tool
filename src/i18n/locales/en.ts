@@ -2217,7 +2217,7 @@ const en: Record<string, string> = {
   'baseplate.marginFillTile': 'Grid',
   'baseplate.marginFillHalfGrid': 'Half-grid',
   'baseplate.halfGridHint':
-    'Fill each margin with true 21mm half-grid cells first, then handle any leftover under 21mm as padding.',
+    'Pack each margin with true 21mm half-grid cells first, then fill any leftover under 21mm the same as Grid mode.',
   'baseplate.sectionBase': 'Base',
   'baseplate.sectionView': 'View',
   'baseplate.splitInfo': '{count} pieces',

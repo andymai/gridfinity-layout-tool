@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Vulling",
   "baseplate.marginFillTile": "Raster",
   "baseplate.marginFillHalfGrid": "Half raster",
-  "baseplate.halfGridHint": "Vult elke marge eerst met echte 21mm half-rastercellen en behandelt de rest onder 21mm als vulling.",
+  "baseplate.halfGridHint": "Vult elke marge eerst met echte 21mm half-rastercellen en vult de rest onder 21mm net als in de Raster-modus.",
   "baseplate.overTileTooSmall": "De marge is op elke rand te klein voor een rastertegel.",
   "baseplate.padding": "Vulling",
   "baseplate.paddingAnchor.bc": "Bins voor-midden verankeren",

@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Marge",
   "baseplate.marginFillTile": "Grille",
   "baseplate.marginFillHalfGrid": "Demi-grille",
-  "baseplate.halfGridHint": "Remplit d'abord chaque marge avec de vraies cellules de demi-grille de 21 mm, puis traite le reste inférieur à 21 mm comme marge.",
+  "baseplate.halfGridHint": "Remplit d'abord chaque marge avec de vraies cellules de demi-grille de 21 mm, puis le reste inférieur à 21 mm comme en mode Grille.",
   "baseplate.overTileTooSmall": "La marge est trop petite sur chaque bord pour une tuile de grille.",
   "baseplate.padding": "Marge",
   "baseplate.paddingAnchor.bc": "Ancrer les bacs avant-centre",

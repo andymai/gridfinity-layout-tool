@@ -287,6 +287,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
     ...(isPaddingAnchor(obj.paddingAnchor) ? { paddingAnchor: obj.paddingAnchor } : {}),
     ...(typeof obj.overTile === 'boolean' ? { overTile: obj.overTile } : {}),
+    ...(typeof obj.overTileHalfGrid === 'boolean'
+      ? { overTileHalfGrid: obj.overTileHalfGrid }
+      : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
     ...(typeof obj.preferIdenticalPieces === 'boolean'

@@ -50,7 +50,9 @@ export function buildFullParams(
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
-    overTileHalfGrid: stored.overTileHalfGrid,
+    // Half-grid is meaningless without over-tile; normalize so an orphaned flag
+    // can't fragment caches or trigger needless regeneration.
+    overTileHalfGrid: stored.overTile === true ? stored.overTileHalfGrid : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

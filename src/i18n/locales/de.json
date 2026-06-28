@@ -106,7 +106,7 @@
   "baseplate.marginFillSolid": "Polsterung",
   "baseplate.marginFillTile": "Raster",
   "baseplate.marginFillHalfGrid": "Halbraster",
-  "baseplate.halfGridHint": "Füllt jeden Rand zuerst mit echten 21-mm-Halbrasterzellen und behandelt den Rest unter 21 mm als Polsterung.",
+  "baseplate.halfGridHint": "Füllt jeden Rand zuerst mit echten 21-mm-Halbrasterzellen und füllt den Rest unter 21 mm wie im Raster-Modus.",
   "baseplate.overTileTooSmall": "Die Polsterung ist an jeder Kante zu klein für eine Rasterkachel.",
   "baseplate.padding": "Polsterung",
   "baseplate.paddingAnchor.bc": "Bins vorne mittig verankern",

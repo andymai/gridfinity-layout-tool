@@ -327,6 +327,24 @@ describe('migrateBaseplateParams', () => {
     expect(migrateBaseplateParams(base).overTile).toBeUndefined();
   });
 
+  it('preserves overTileHalfGrid across a save/load round-trip', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 6,
+      paddingRight: 6,
+      paddingFront: 0,
+      paddingBack: 0,
+      overTile: true,
+    };
+    expect(migrateBaseplateParams({ ...base, overTileHalfGrid: true }).overTileHalfGrid).toBe(true);
+    expect(migrateBaseplateParams({ ...base, overTileHalfGrid: false }).overTileHalfGrid).toBe(
+      false
+    );
+    expect(migrateBaseplateParams(base).overTileHalfGrid).toBeUndefined();
+  });
+
   it('returns defaults for null input', () => {
     const result = migrateBaseplateParams(null);
     expect(result.magnetHoles).toBe(false);
