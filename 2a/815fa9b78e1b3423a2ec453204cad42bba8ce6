@@ -1,0 +1,55 @@
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_ebd28d5aa8171c::t_463133971061fc 107-109
+  s_ebd28d5aa8171c::t_30a5048a61b099 90-92
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_ebd28d5aa8171c::t_ec7b47955d8702 129-130,132,135,139-141
+src/i18n/locales/nb.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/shell/Sidebar/Sidebar.test.tsx
+  s_ebd28d5aa8171c::t_cde389724df447 355-357
+  s_ebd28d5aa8171c::t_d4d235abab5c11 344-346
+src/i18n/locales/fr.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/uk.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/sv.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/de.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/ja.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_ebd28d5aa8171c::t_0ce3c38fecd3e9 62-64
+  s_ebd28d5aa8171c::t_9272e609a35eae 72-88
+  s_ebd28d5aa8171c::t_6857b68c023654 175-177
+  s_ebd28d5aa8171c::t_d384f866cc6f98 218,221-224,226-229,232-234,239-240
+  s_ebd28d5aa8171c::t_723f54d9a1523c 204
+src/i18n/locales/es.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/nl.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/i18n/locales/en.ts
+  s_ebd28d5aa8171c::t_398bffc4618ba4 73-74
+  s_ebd28d5aa8171c::t_51cda6b66d2de9 361,364-366
+src/i18n/locales/pt-BR.json
+  s_ebd28d5aa8171c::t_5677a084cc32a0 1137-1138,1565,1593,1595-1596
+src/shell/Sidebar/Sidebar.tsx
+  s_ebd28d5aa8171c::t_390014b4d6ad85 329
+  s_ebd28d5aa8171c::t_e090890dca4df7 348
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "2a815fa9b78e1b3423a2ec453204cad42bba8ce6",
+  "prompts": {},
+  "sessions": {
+    "s_ebd28d5aa8171c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9450ced-b3bd-4352-a52b-e16e42a44fd0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
