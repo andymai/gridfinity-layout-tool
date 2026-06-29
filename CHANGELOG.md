@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.207.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.2...gridfinity-layout-tool-v4.207.0) (2026-06-29)
+
+
+### Features
+
+* **height:** enter bin and drawer height directly in mm ([#2385](https://github.com/andymai/gridfinity-layout-tool/issues/2385)) ([68a7684](https://github.com/andymai/gridfinity-layout-tool/commit/68a76848876d58939fd54314aa3f57e52c0a4136))
+
 ## [4.206.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.1...gridfinity-layout-tool-v4.206.2) (2026-06-29)
 
 
