@@ -87,7 +87,9 @@ export function MobileSettingsPanel() {
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">{t('common.width')}</label>
+            <label className="block text-sm mb-1 text-content-tertiary">
+              {t('common.widthUnits')}
+            </label>
             <Stepper
               value={drawer.width}
               onChange={handleDrawerWidthInput}
@@ -102,7 +104,9 @@ export function MobileSettingsPanel() {
 
           {/* Depth */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">{t('common.depth')}</label>
+            <label className="block text-sm mb-1 text-content-tertiary">
+              {t('common.depthUnits')}
+            </label>
             <Stepper
               value={drawer.depth}
               onChange={handleDrawerDepthInput}

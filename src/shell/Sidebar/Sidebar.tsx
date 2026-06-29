@@ -326,7 +326,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Width in grid units (step: ${widthStep})`}
                       >
-                        {t('common.width')}
+                        {t('common.widthUnits')}
                       </label>
                       <Stepper
                         value={drawer.width}
@@ -345,7 +345,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Depth in grid units (step: ${depthStep})`}
                       >
-                        {t('common.depth')}
+                        {t('common.depthUnits')}
                       </label>
                       <Stepper
                         value={drawer.depth}

@@ -341,9 +341,9 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByText('Half-unit edge position')).toBeInTheDocument();
-      // Check for Width label in fractional edge controls (there are multiple "Width" texts)
-      const widthLabels = screen.getAllByText('Width');
-      expect(widthLabels.length).toBeGreaterThan(1);
+      // The drawer label is now "Width (u)", so a bare "Width" is the fractional
+      // edge control's label.
+      expect(screen.getByText('Width')).toBeInTheDocument();
     });
 
     it('shows edge controls when depth is fractional', () => {
@@ -352,9 +352,9 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByText('Half-unit edge position')).toBeInTheDocument();
-      // Check for Depth label in fractional edge controls (there are multiple "Depth" texts)
-      const depthLabels = screen.getAllByText('Depth');
-      expect(depthLabels.length).toBeGreaterThan(1);
+      // The drawer label is now "Depth (u)", so a bare "Depth" is the fractional
+      // edge control's label.
+      expect(screen.getByText('Depth')).toBeInTheDocument();
     });
 
     it('shows Left/Right buttons for fractional width', () => {

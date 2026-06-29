@@ -126,17 +126,19 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      // 4u * 7mm = 28mm in the editable field, with "= 4u" shown below.
+      // 4u * 7mm = 28mm in the editable field; the meta line shows the unit
+      // equivalent and mm limits (max 12u * 7mm = 84mm).
       expect(screen.getByDisplayValue('28')).toBeInTheDocument();
-      expect(screen.getByText('= 4u')).toBeInTheDocument();
+      expect(screen.getByText(/= 4u.*Max 84mm/)).toBeInTheDocument();
     });
 
-    it('renders clearance control when maxClearance > 0', () => {
+    it('renders clearance control in mm when maxClearance > 0', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('Clearance')).toBeInTheDocument();
-      expect(screen.getByText('1u')).toBeInTheDocument();
+      // 1u * 7mm = 7mm in the field, with "= 1u" shown below.
+      expect(screen.getByText('Clearance (mm)')).toBeInTheDocument();
+      expect(screen.getByText('= 1u')).toBeInTheDocument();
     });
 
     it('hides clearance control when maxClearance is 0', () => {

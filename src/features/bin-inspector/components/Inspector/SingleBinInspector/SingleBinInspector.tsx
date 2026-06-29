@@ -59,12 +59,32 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
   // Format dimensions - show decimal if fractional (half-bin mode)
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
+  // Format a raw mm value: up to 2 decimals, trailing zeros stripped (28, 30.59).
+  const formatMmValue = (val: number) => String(Number(val.toFixed(2)));
+  const heightMmAt = (units: number) => formatMmValue(units * layout.heightUnitMm);
   const minSize = halfGridMode ? 0.5 : 1;
   const stepSize = halfGridMode ? 0.5 : 1;
 
   // Sizing for mobile vs desktop
   const inputHeight = isMobile ? 'h-12' : '';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
+
+  // Height meta: unit equivalent + mm limits, shown as one consolidated line.
+  const heightEquiv = t('inspector.heightUnitsEquiv', { units: formatHeightUnits(bin.height) });
+  const minHeightHint =
+    constraints.minHeightReason === 'layer_height'
+      ? t('inspector.minHeightHint', {
+          min: heightMmAt(constraints.minHeight),
+          reason: t('inspector.heightReasonLayerHeight'),
+        })
+      : t('inspector.minHeightHintNoReason', { min: heightMmAt(constraints.minHeight) });
+  const maxHeightHint = t('inspector.maxHeightHint', {
+    max: heightMmAt(constraints.maxHeight),
+    reason:
+      constraints.maxHeightReason === 'remaining_space'
+        ? t('inspector.heightReasonRemainingSpace')
+        : t('inspector.heightReasonDrawerHeight'),
+  });
 
   return (
     <div className="animate-fade-in">
@@ -152,9 +172,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <div className="flex items-center gap-1.5 text-sm text-content-tertiary">
           <RulerIcon size="sm" />
           <span className="tabular-nums">
-            {(bin.width * layout.gridUnitMm).toFixed(0)} ×{' '}
-            {(bin.depth * layout.gridUnitMm).toFixed(0)} ×{' '}
-            {(bin.height * layout.heightUnitMm).toFixed(0)} mm
+            {formatMmValue(bin.width * layout.gridUnitMm)} ×{' '}
+            {formatMmValue(bin.depth * layout.gridUnitMm)} ×{' '}
+            {formatMmValue(bin.height * layout.heightUnitMm)} mm
           </span>
         </div>
 
@@ -181,27 +201,10 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               aria-label={t('inspector.single.heightAria')}
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
-              <div>{t('inspector.heightUnitsEquiv', { units: formatHeightUnits(bin.height) })}</div>
+              <div>{`${heightEquiv} · ${minHeightHint} · ${maxHeightHint}`}</div>
               {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
                 <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
               )}
-              <div>
-                {constraints.minHeightReason === 'layer_height'
-                  ? t('inspector.minHeightHint', {
-                      min: constraints.minHeight,
-                      reason: t('inspector.heightReasonLayerHeight'),
-                    })
-                  : t('inspector.minHeightHintNoReason', { min: constraints.minHeight })}
-              </div>
-              <div>
-                {t('inspector.maxHeightHint', {
-                  max: constraints.maxHeight,
-                  reason:
-                    constraints.maxHeightReason === 'remaining_space'
-                      ? t('inspector.heightReasonRemainingSpace')
-                      : t('inspector.heightReasonDrawerHeight'),
-                })}
-              </div>
             </div>
           </div>
 
@@ -212,22 +215,29 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 className={`block ${labelSize} text-content-tertiary`}
                 title={t('inspector.clearanceTooltip')}
               >
-                {t('inspector.clearance')}
+                {t('inspector.clearanceMmLabel')}
               </label>
               <Stepper
-                value={bin.clearanceHeight || 0}
+                value={(bin.clearanceHeight || 0) * layout.heightUnitMm}
+                onChange={(mmValue) =>
+                  updateField('clearanceHeight', mmToHeightUnits(mm(mmValue), layout.heightUnitMm))
+                }
                 onStep={(delta) =>
-                  updateField('clearanceHeight', (bin.clearanceHeight || 0) + delta)
+                  updateField(
+                    'clearanceHeight',
+                    roundHeightUnits((bin.clearanceHeight || 0) + delta)
+                  )
                 }
                 min={0}
-                max={constraints.maxClearance}
+                max={constraints.maxClearance * layout.heightUnitMm}
+                step={layout.heightUnitMm}
+                inputDecimals={2}
                 size={isMobile ? 'lg' : 'md'}
                 aria-label={t('inspector.single.clearanceAria')}
-                displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
-                {t('inspector.clearanceMm', {
-                  mm: ((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0),
+                {t('inspector.heightUnitsEquiv', {
+                  units: formatHeightUnits(bin.clearanceHeight || 0),
                 })}
               </div>
             </div>
