@@ -1,0 +1,56 @@
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_ebd28d5aa8171c::t_b8c3862a3446e9 806-808,812-816,822-823,832-833,839,846-847,849,861,867,870
+src/i18n/locales/nb.json
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+src/i18n/locales/nl.json
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+src/i18n/locales/en.ts
+  s_ebd28d5aa8171c::t_be08c3bf0590e0 2226
+  s_ebd28d5aa8171c::t_d9def0abe82c13 2218-2219
+src/i18n/locales/pt-BR.json
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+src/i18n/locales/de.json
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+src/i18n/locales/uk.json
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+src/i18n/locales/es.json
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+e2e/baseplate-overtile.spec.ts
+  s_ebd28d5aa8171c::t_39a160eac33290 44-47
+  s_ebd28d5aa8171c::t_8e1fa9b814f989 65
+src/i18n/locales/sv.json
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+src/i18n/locales/fr.json
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_ebd28d5aa8171c::t_2119c96b5d2904 23
+  s_ebd28d5aa8171c::t_4487edfa4c869c 30
+  s_ebd28d5aa8171c::t_e9844ce56ced2b 387-429
+src/i18n/locales/ja.json
+  s_ebd28d5aa8171c::t_1cea0c0aa10524 107
+  s_ebd28d5aa8171c::t_4ca24827c5efd8 102-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "981431e03eabc4463a96fece1c0af1516988c9a4",
+  "prompts": {},
+  "sessions": {
+    "s_ebd28d5aa8171c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e9450ced-b3bd-4352-a52b-e16e42a44fd0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
