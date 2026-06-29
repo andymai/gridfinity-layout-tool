@@ -41,10 +41,10 @@ test.describe('Baseplate over-tile — visual', () => {
 
     const before = await settledCanvas(page);
 
-    // The margin-fill control (a radiogroup) is gated on having padding to convert.
-    const fillGroup = page.getByRole('radiogroup', { name: /Fill padding with grid/i });
-    await expect(fillGroup).toBeVisible({ timeout: 10_000 });
-    await fillGroup.getByRole('radio', { name: 'Grid', exact: true }).click();
+    // The margin-fill toggle is gated on having padding to convert.
+    const fillSwitch = page.getByRole('switch', { name: /Fill padding with grid tiles/i });
+    await expect(fillSwitch).toBeVisible({ timeout: 10_000 });
+    await fillSwitch.click();
 
     const after = await settledCanvas(page);
     expect(before.equals(after)).toBe(false);
@@ -62,7 +62,7 @@ test.describe('Baseplate over-tile — visual', () => {
     expect(wideTile.equals(after)).toBe(false);
 
     // Now half-grid packs a true 21mm cell + a 9mm leftover, so it must differ.
-    await fillGroup.getByRole('radio', { name: 'Half-grid' }).click();
+    await page.getByRole('checkbox', { name: /Use half-grid cells/i }).click();
     const halfGrid = await settledCanvas(page);
     expect(halfGrid.equals(wideTile)).toBe(false);
     await test.info().attach('halfgrid.png', { body: halfGrid, contentType: 'image/png' });

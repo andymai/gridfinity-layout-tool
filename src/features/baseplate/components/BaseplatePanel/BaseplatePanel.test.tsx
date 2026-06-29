@@ -803,16 +803,24 @@ describe('BaseplatePanel', () => {
       ...extra,
     });
 
+    const fillToggle = () => screen.getByRole('switch', { name: 'baseplate.overTile' });
+    const halfGridBox = () => screen.getByRole('checkbox', { name: 'baseplate.useHalfGrid' });
+
     it('defaults to solid padding when over-tile is off', () => {
       mockLayoutState.layout.baseplateParams = withPadding();
       render(<BaseplatePanel />);
-      expect(screen.getByRole('radio', { name: 'baseplate.marginFillSolid' })).toBeChecked();
+      expect(fillToggle()).not.toBeChecked();
+      // The half-grid sub-option is hidden until the fill toggle is on.
+      expect(
+        screen.queryByRole('checkbox', { name: 'baseplate.useHalfGrid' })
+      ).not.toBeInTheDocument();
     });
 
     it('reflects plain over-tile', () => {
       mockLayoutState.layout.baseplateParams = withPadding({ overTile: true });
       render(<BaseplatePanel />);
-      expect(screen.getByRole('radio', { name: 'baseplate.marginFillTile' })).toBeChecked();
+      expect(fillToggle()).toBeChecked();
+      expect(halfGridBox()).not.toBeChecked();
     });
 
     it('reflects half-grid fill', () => {
@@ -821,22 +829,24 @@ describe('BaseplatePanel', () => {
         overTileHalfGrid: true,
       });
       render(<BaseplatePanel />);
-      expect(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' })).toBeChecked();
+      expect(fillToggle()).toBeChecked();
+      expect(halfGridBox()).toBeChecked();
     });
 
     it('enables plain over-tile with no half-grid flag', () => {
       mockLayoutState.layout.baseplateParams = withPadding();
       render(<BaseplatePanel />);
-      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillTile' }));
+      fireEvent.click(fillToggle());
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ overTile: true, overTileHalfGrid: undefined })
       );
     });
 
     it('enables half-grid fill', () => {
-      mockLayoutState.layout.baseplateParams = withPadding();
+      // Half-grid is a sub-option of the fill toggle, so start with fill on.
+      mockLayoutState.layout.baseplateParams = withPadding({ overTile: true });
       render(<BaseplatePanel />);
-      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' }));
+      fireEvent.click(halfGridBox());
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ overTile: true, overTileHalfGrid: true })
       );
@@ -848,17 +858,16 @@ describe('BaseplatePanel', () => {
         overTileHalfGrid: true,
       });
       render(<BaseplatePanel />);
-      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.marginFillSolid' }));
+      fireEvent.click(fillToggle());
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ overTile: false, overTileHalfGrid: undefined })
       );
     });
 
-    it('disables the grid modes when every margin is below the tile threshold', () => {
+    it('disables the fill toggle when every margin is below the tile threshold', () => {
       mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3 });
       render(<BaseplatePanel />);
-      expect(screen.getByRole('radio', { name: 'baseplate.marginFillTile' })).toBeDisabled();
-      expect(screen.getByRole('radio', { name: 'baseplate.marginFillHalfGrid' })).toBeDisabled();
+      expect(fillToggle()).toBeDisabled();
     });
   });
 });

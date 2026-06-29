@@ -20,14 +20,14 @@ import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { RulerIcon, LayoutGridIcon, RotateCcwIcon } from '@/design-system/Icon';
+import { RulerIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput, Button, ConfirmDialog, SegmentedControl } from '@/design-system';
+import { SliderInput, Button, ConfirmDialog, CheckboxRow } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -384,62 +384,50 @@ export function BaseplatePanel() {
                 updateParams={updateParams}
               />
               {hasPadding && (
-                <div className="space-y-2 border-t border-stroke-subtle pt-3">
-                  <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
-                    <LayoutGridIcon size="xs" />
-                    {t('baseplate.overTile')}
-                  </div>
-                  <SegmentedControl
-                    aria-label={t('baseplate.overTile')}
-                    size="sm"
-                    fullWidth
-                    value={marginFillMode}
-                    onChange={setMarginFillMode}
-                    options={[
-                      { value: 'solid', label: t('baseplate.marginFillSolid') },
-                      {
-                        value: 'tile',
-                        label: t('baseplate.marginFillTile'),
-                        disabled: !overTileStatus.canOverTile,
-                        title: overTileStatus.canOverTile
-                          ? undefined
-                          : t('baseplate.overTileTooSmall'),
-                      },
-                      {
-                        value: 'halfGrid',
-                        label: t('baseplate.marginFillHalfGrid'),
-                        disabled: !overTileStatus.canOverTile,
-                        title: overTileStatus.canOverTile
-                          ? undefined
-                          : t('baseplate.overTileTooSmall'),
-                      },
-                    ]}
+                <div className="border-t border-stroke-subtle pt-3">
+                  <FeatureToggle
+                    label={t('baseplate.overTile')}
+                    checked={marginFillMode !== 'solid'}
+                    onChange={() =>
+                      setMarginFillMode(marginFillMode === 'solid' ? 'tile' : 'solid')
+                    }
+                    disabledReason={
+                      overTileStatus.canOverTile ? undefined : t('baseplate.overTileTooSmall')
+                    }
+                    primaryControls={
+                      <div className="space-y-1.5">
+                        <CheckboxRow
+                          label={t('baseplate.useHalfGrid')}
+                          checked={marginFillMode === 'halfGrid'}
+                          onChange={(checked) => setMarginFillMode(checked ? 'halfGrid' : 'tile')}
+                          indent
+                        />
+                        <div className="space-y-1 text-[11px] leading-relaxed">
+                          <p className="text-content-tertiary">
+                            {t(
+                              marginFillMode === 'halfGrid'
+                                ? 'baseplate.halfGridHint'
+                                : 'baseplate.overTileHint'
+                            )}
+                          </p>
+                          {overTileStatus.tiled.length > 0 && (
+                            <p className="text-content-secondary">
+                              {t('baseplate.overTileFills', {
+                                sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
+                              })}
+                            </p>
+                          )}
+                          {overTileStatus.tooSmall.length > 0 && (
+                            <p className="text-content-tertiary">
+                              {t('baseplate.overTileKeptSolid', {
+                                sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    }
                   />
-                  {marginFillMode !== 'solid' && (
-                    <div className="space-y-1 text-[11px] leading-relaxed">
-                      <p className="text-content-tertiary">
-                        {t(
-                          marginFillMode === 'halfGrid'
-                            ? 'baseplate.halfGridHint'
-                            : 'baseplate.overTileHint'
-                        )}
-                      </p>
-                      {overTileStatus.tiled.length > 0 && (
-                        <p className="text-content-secondary">
-                          {t('baseplate.overTileFills', {
-                            sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
-                          })}
-                        </p>
-                      )}
-                      {overTileStatus.tooSmall.length > 0 && (
-                        <p className="text-content-tertiary">
-                          {t('baseplate.overTileKeptSolid', {
-                            sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
-                          })}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
