@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.206.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.1...gridfinity-layout-tool-v4.206.2) (2026-06-29)
+
+
+### Bug Fixes
+
+* **baseplate:** keep half-grid margin fill on split plates ([#2386](https://github.com/andymai/gridfinity-layout-tool/issues/2386)) ([4e48cfe](https://github.com/andymai/gridfinity-layout-tool/commit/4e48cfe19200bdc3559403d92eec9861573f70af))
+
 ## [4.206.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.0...gridfinity-layout-tool-v4.206.1) (2026-06-28)
 
 
