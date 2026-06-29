@@ -864,10 +864,23 @@ describe('BaseplatePanel', () => {
       );
     });
 
-    it('disables the fill toggle when every margin is below the tile threshold', () => {
+    it('disables turning on the fill toggle when every margin is below the tile threshold', () => {
       mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3 });
       render(<BaseplatePanel />);
       expect(fillToggle()).toBeDisabled();
+    });
+
+    it('keeps the fill toggle enabled (so it can be turned off) when fill is on but padding shrank', () => {
+      // overTile already enabled, but no edge can fit a tile anymore.
+      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3, overTile: true });
+      render(<BaseplatePanel />);
+      const toggle = fillToggle();
+      expect(toggle).toBeChecked();
+      expect(toggle).not.toBeDisabled();
+      fireEvent.click(toggle);
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTile: false, overTileHalfGrid: undefined })
+      );
     });
   });
 });

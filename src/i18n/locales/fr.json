@@ -104,7 +104,7 @@
   "baseplate.overTileFills": "Grille remplit : {sides}",
   "baseplate.overTileHint": "Remplace la marge pleine par des tuiles de grille rognées, bord par bord.",
   "baseplate.overTileKeptSolid": "Trop petit, reste plein : {sides}",
-  "baseplate.halfGridHint": "Remplit chaque marge avec des demi-cases de 21 mm là où elles tiennent ; les restes plus étroits sont remplis comme une tuile pleine.",
+  "baseplate.halfGridHint": "Remplit chaque marge avec des demi-cases de 21 mm là où elles tiennent ; les restes plus étroits sont remplis comme une tuile entière.",
   "baseplate.overTileTooSmall": "La marge est trop petite sur chaque bord pour une tuile de grille.",
   "baseplate.padding": "Marge",
   "baseplate.paddingAnchor.bc": "Ancrer les bacs avant-centre",
