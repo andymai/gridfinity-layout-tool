@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.207.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.207.0...gridfinity-layout-tool-v4.207.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **height:** clarify units and consolidate the mm height UI ([#2389](https://github.com/andymai/gridfinity-layout-tool/issues/2389)) ([069b819](https://github.com/andymai/gridfinity-layout-tool/commit/069b8195c6f6fd4aeada4cacacd79505fe5e5d01))
+
 ## [4.207.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.206.2...gridfinity-layout-tool-v4.207.0) (2026-06-29)
 
 
