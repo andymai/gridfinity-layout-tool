@@ -1,0 +1,26 @@
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_1a91b7e5519d3d::t_9983617904fdce 82,96,106
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_1a91b7e5519d3d::t_afb3d6acde93b1 416-418
+  s_1a91b7e5519d3d::t_05adf5d131b09e 28
+  s_1a91b7e5519d3d::t_7cc34ae25018bb 227-229
+  s_1a91b7e5519d3d::t_eed4ba832d3757 470-474
+src/features/baseplate/utils/splitPlanner.ts
+  s_1a91b7e5519d3d::t_a04c4189f7bf79 491-503
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "832960d6c1fc49c35d7429fb3d5713071f7811c8",
+  "prompts": {},
+  "sessions": {
+    "s_1a91b7e5519d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f85eac4-357a-4431-844b-378000f270fb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
