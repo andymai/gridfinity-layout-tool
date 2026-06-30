@@ -1,0 +1,34 @@
+src/shared/utils/validationProperties.test.ts
+  s_d0431bf9490853::t_c5b58893fbb7ca 1-130,134-186
+  s_d0431bf9490853::t_81f1188f4e946d 131-133
+api/lib/designerCompartmentValidation.test.ts
+  s_d0431bf9490853::t_96194540f7b83e 1-515
+  s_d0431bf9490853::t_d55bd5f9fa1ba3 516-518
+  s_8886d29359c42a::t_0a4345afd88ce5 519-521
+src/shared/utils/validationPlacement.test.ts
+  s_d0431bf9490853::t_fd003d7dbd5875 1-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "10084b66954a64297cb69d9d2d6ab248bb1e3a58",
+  "prompts": {},
+  "sessions": {
+    "s_8886d29359c42a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a117cd5dd1a4b2b37",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
