@@ -907,6 +907,21 @@ describe('BaseplatePanel', () => {
       );
     });
 
+    it('clears the leftover flag to undefined when switching back to grid', () => {
+      // Default Grid stores undefined (not false) so identical geometry keeps
+      // one serialized/cache identity.
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+        overTileHalfGridSolidLeftover: true,
+      });
+      render(<BaseplatePanel />);
+      fireEvent.click(leftoverGrid());
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTileHalfGridSolidLeftover: undefined })
+      );
+    });
+
     it('disables turning on the fill toggle when every margin is below the tile threshold', () => {
       mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3 });
       render(<BaseplatePanel />);

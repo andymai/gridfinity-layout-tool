@@ -235,7 +235,9 @@ export function BaseplatePanel() {
     halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
   const setLeftoverMode = useCallback(
     (mode: LeftoverMode) => {
-      updateParam('overTileHalfGridSolidLeftover', mode === 'solid');
+      // Store undefined (not false) for the default Grid so identical geometry
+      // keeps one serialized/cache identity — matches overTileHalfGrid above.
+      updateParam('overTileHalfGridSolidLeftover', mode === 'solid' ? true : undefined);
     },
     [updateParam]
   );
