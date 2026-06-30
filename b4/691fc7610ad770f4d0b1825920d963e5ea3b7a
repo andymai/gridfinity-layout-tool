@@ -1,0 +1,21 @@
+src/shared/types/bin.ts
+  s_d0431bf9490853::t_09cf92886c9efb 108-112
+src/features/baseplate/types/tiling.ts
+  s_d0431bf9490853::t_79aac510421845 12,16-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "b4691fc7610ad770f4d0b1825920d963e5ea3b7a",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
