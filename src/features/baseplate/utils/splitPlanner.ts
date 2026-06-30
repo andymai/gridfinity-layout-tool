@@ -510,7 +510,6 @@ function emitMargins(params: BaseplateParams): MarginPiece[] {
 
   const halfW = (params.width * params.gridUnitMm) / 2;
   const halfD = (params.depth * params.gridUnitMm) / 2;
-  const gridD = params.depth * params.gridUnitMm;
   const fill = { overTile: !!params.overTile, overTileHalfGrid: !!params.overTileHalfGrid };
   const rail = (
     id: string,
@@ -537,9 +536,12 @@ function emitMargins(params: BaseplateParams): MarginPiece[] {
   const longAxisX = det.front || det.back;
 
   if (longAxisX) {
-    // Front/back run long (over any detached perpendicular padding); left/right short.
-    const xMin = -halfW - (det.left ? pl : 0);
-    const xMax = halfW + (det.right ? pr : 0);
+    // Front/back run long, spanning the FULL outer width — over any perpendicular
+    // padding, detached or integral (sub-threshold), so they physically reach the
+    // true outer corners. The long rail sits outside the grid in Y, the body's
+    // integral left/right padding sits inside it, so they abut without overlap.
+    const xMin = -halfW - pl;
+    const xMax = halfW + pr;
     const longLen = xMax - xMin;
     const longCenterX = (xMin + xMax) / 2;
     if (det.front)
@@ -556,12 +558,22 @@ function emitMargins(params: BaseplateParams): MarginPiece[] {
           y: halfD + pb / 2,
         })
       );
+    // Short left/right rails fit between the long rails, but extend over a
+    // perpendicular side's padding when that side is NOT a long rail (integral or
+    // zero) so they cover the corner they own — again abutting, not overlapping.
+    const yMin = -halfD - (det.front ? 0 : pf);
+    const yMax = halfD + (det.back ? 0 : pb);
+    const shortLen = yMax - yMin;
+    const shortCenterY = (yMin + yMax) / 2;
     if (det.left) {
       const owned: MarginCorner[] = [];
       if (!det.front) owned.push('bl');
       if (!det.back) owned.push('tl');
       margins.push(
-        rail('margin-left', 'left', 'short', gridD, pl, owned, { x: -halfW - pl / 2, y: 0 })
+        rail('margin-left', 'left', 'short', shortLen, pl, owned, {
+          x: -halfW - pl / 2,
+          y: shortCenterY,
+        })
       );
     }
     if (det.right) {
@@ -569,18 +581,32 @@ function emitMargins(params: BaseplateParams): MarginPiece[] {
       if (!det.front) owned.push('br');
       if (!det.back) owned.push('tr');
       margins.push(
-        rail('margin-right', 'right', 'short', gridD, pr, owned, { x: halfW + pr / 2, y: 0 })
+        rail('margin-right', 'right', 'short', shortLen, pr, owned, {
+          x: halfW + pr / 2,
+          y: shortCenterY,
+        })
       );
     }
   } else {
-    // Only left/right detach: they run long and own all corners on their side.
+    // Only left/right detach: they run long over the full outer depth (front/back
+    // padding is integral or zero here) and own all corners on their side.
+    const yMin = -halfD - pf;
+    const yMax = halfD + pb;
+    const longLen = yMax - yMin;
+    const centerY = (yMin + yMax) / 2;
     if (det.left)
       margins.push(
-        rail('margin-left', 'left', 'long', gridD, pl, ['bl', 'tl'], { x: -halfW - pl / 2, y: 0 })
+        rail('margin-left', 'left', 'long', longLen, pl, ['bl', 'tl'], {
+          x: -halfW - pl / 2,
+          y: centerY,
+        })
       );
     if (det.right)
       margins.push(
-        rail('margin-right', 'right', 'long', gridD, pr, ['br', 'tr'], { x: halfW + pr / 2, y: 0 })
+        rail('margin-right', 'right', 'long', longLen, pr, ['br', 'tr'], {
+          x: halfW + pr / 2,
+          y: centerY,
+        })
       );
   }
 

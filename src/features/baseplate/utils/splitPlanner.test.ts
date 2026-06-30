@@ -1399,6 +1399,18 @@ describe('detachMargins emits margin rails', () => {
     const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: 5 });
     expect(ms.map((m) => m.side).sort()).toEqual(['left']);
   });
+
+  it('extends a rail over an integral (sub-threshold) perpendicular side to reach its corner', () => {
+    // left detaches; front padding (5mm) stays integral on the body. The left
+    // rail must extend over that 5mm so the front-left corner has no gap.
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: 5 });
+    const left = ms.find((m) => m.side === 'left')!;
+    expect(left.role).toBe('long');
+    expect(left.lengthMm).toBe(gridD + 5); // grid depth + the integral front band
+    expect([...left.ownedCorners].sort()).toEqual(['bl', 'tl']);
+    // Center shifts toward the extended (front) end by half the integral band.
+    expect(left.worldOffsetMm.y).toBe(-5 / 2);
+  });
 });
 
 describe('bodyParamsForDetach', () => {
