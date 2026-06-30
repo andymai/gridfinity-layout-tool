@@ -1,0 +1,175 @@
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_d0431bf9490853::t_a9cf669bd23695 44,99,181
+  s_d0431bf9490853::t_c268bbb2c1e5b7 182-183
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_d0431bf9490853::t_a9cf669bd23695 55,130,136
+src/features/generation/worker/generators/baseplateGenerator.scenario.snapClip.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 16,24,38
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_d0431bf9490853::t_55a859059d2390 50,325,414,469,649
+src/features/baseplate/utils/exportCache.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 11,13,47
+src/features/baseplate/utils/previewComplexity.ts
+  s_d0431bf9490853::t_a9cf669bd23695 21,65,87
+src/features/baseplate/utils/splitPlanner.ts
+  s_d0431bf9490853::t_a9cf669bd23695 19,458,482,503,542,697,854-855
+src/features/generation/worker/generators/__kernel-tests__/wasmInit.ts
+  s_d0431bf9490853::t_a9cf669bd23695 18,61
+src/features/generation/worker/generators/baseplateSlab.ts
+  s_d0431bf9490853::t_a9cf669bd23695 7,27,84
+src/core/cqrs/v2/domain/layout/setBaseplateParams.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 4,8,10-15,21,23,32,34,53
+src/core/cqrs/events/drawerEvents.ts
+  s_d0431bf9490853::t_a9cf669bd23695 6,49
+src/features/baseplate/utils/previewComplexity.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 10,12,30
+src/features/generation/worker/generators/baseplateGenerator.scenario.overtile.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 13,21
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_d0431bf9490853::t_a9cf669bd23695 37,165
+src/features/generation/worker/generators/dovetailSocketInterference.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 23,40,67
+  s_d0431bf9490853::t_3e6ea4fca58560 68-70
+src/features/baseplate/README.md
+  s_d0431bf9490853::t_c6aa65502de844 11
+src/core/cqrs/commands/drawerCommands.ts
+  s_d0431bf9490853::t_a9cf669bd23695 6,23
+src/features/baseplate/utils/connectorKeys.ts
+  s_d0431bf9490853::t_a9cf669bd23695 11,60,81,118
+  s_d0431bf9490853::t_39aef8b722e8db 119-121
+src/features/generation/worker/generators/baseplateGenerator.bench.ts
+  s_d0431bf9490853::t_a9cf669bd23695 16,27
+src/core/store/layout/types.ts
+  s_d0431bf9490853::t_d43d4a214790ed 3,72
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetail.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 21,28,40
+src/features/baseplate/utils/buildFullParams.ts
+  s_d0431bf9490853::t_e83476f8f42d83 7-8,14,21
+src/features/generation/worker/generators/connectorSample.ts
+  s_d0431bf9490853::t_a9cf669bd23695 41,228,237,314
+src/core/constants.ts
+  s_d0431bf9490853::t_d43d4a214790ed 4,256,272
+src/features/generation/worker/generators/baseplateGenerator.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 3,8,24
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_d0431bf9490853::t_a9cf669bd23695 5,9,20,28,106-107,124,132,140,145
+src/features/generation/bridge/generationTimeout.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 3,31
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 3,9,22,45
+src/features/generation/worker/generators/connectorSample.scenario.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 15,25
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_d0431bf9490853::t_d43d4a214790ed 20,170
+src/shared/contexts/MutationsContext.tsx
+  s_d0431bf9490853::t_d43d4a214790ed 33,86
+src/features/baseplate/utils/overTileStatus.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 5,7
+src/features/generation/worker/generators/baseplateGenerator.draft.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 12,18
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetailKey.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 14,21,35
+src/shared/generation/baseplateCorners.ts
+  s_d0431bf9490853::t_a9cf669bd23695 15,23
+  s_d0431bf9490853::t_d10b7223e11971 24-25
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_d0431bf9490853::t_a9cf669bd23695 22,47,59,91,149,172
+src/features/baseplate/utils/overTileStatus.ts
+  s_d0431bf9490853::t_a9cf669bd23695 8,29
+src/features/generation/worker/generators/baseplateGenerator.scenario.winding.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 25,31,43
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 11,15,34,43,1203,1303
+src/features/baseplate/utils/printGuide.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 7,9,28,30
+src/shared/types/bin.ts
+  s_d0431bf9490853::t_72cec65f344462 164,166-168,170
+src/features/baseplate/utils/stackGrouping.test.ts
+  s_d0431bf9490853::t_55a859059d2390 6,9,16,39
+src/features/generation/worker/generators/baseplateGenerator.scenario.split-stress.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 15,21,33
+src/features/baseplate/utils/stackPrint.ts
+  s_d0431bf9490853::t_a9cf669bd23695 8,135
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 10,16
+  s_d0431bf9490853::t_14b9ccf4c1539e 17-19
+src/features/generation/worker/generators/baseplateGenerator.scenario.overhangAudit.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 13,19,31,115
+src/features/generation/bridge/GenerationBridge.ts
+  s_d0431bf9490853::t_d43d4a214790ed 22,408,416,423,428,457,466,475
+src/core/types.ts
+  s_d0431bf9490853::t_867b8bf1c87d29 81-86
+  s_d0431bf9490853::t_d43d4a214790ed 30
+src/features/baseplate/utils/printGuide.ts
+  s_d0431bf9490853::t_a9cf669bd23695 10,33,205,258,316
+src/features/generation/worker/generators/__kernel-tests__/profileBin.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 15,54,216
+src/features/generation/bridge/types.ts
+  s_d0431bf9490853::t_d43d4a214790ed 10,114,126,166,192
+src/features/generation/worker/generators/baseplateGenerator.scenario.puzzle.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 13,20,34
+src/features/generation/worker/generators/__kernel-tests__/diagnoseBaseplateWinding.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 37,115,136
+src/features/generation/bridge/WorkerPool.ts
+  s_d0431bf9490853::t_a9cf669bd23695 21,221,257
+src/features/baseplate/utils/pieceNaming.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 5,7
+src/features/generation/worker/generators/baseplateGenerator.scenario.fit-offset.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 18,24,36
+src/features/generation/worker/generators/baseplateCacheKeys.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 2,5
+src/core/store/layout/coreActions.ts
+  s_d0431bf9490853::t_a9cf669bd23695 1,32
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_d0431bf9490853::t_a9cf669bd23695 11,14,65,79
+src/features/generation/bridge/generationTimeout.ts
+  s_d0431bf9490853::t_a9cf669bd23695 13,219,251,266
+src/features/baseplate/components/BaseplatePanel/PaddingSchematic.tsx
+  s_d0431bf9490853::t_a9cf669bd23695 5,12-13,15,17
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_d0431bf9490853::t_a9cf669bd23695 27,61
+src/features/baseplate/utils/fileNaming.ts
+  s_d0431bf9490853::t_a9cf669bd23695 8
+  s_d0431bf9490853::t_ddfc9b5a8bdbdc 9-11
+  s_a5d0f3880c38f5::t_fe5e40c7107bdd 12,94,97
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_d0431bf9490853::t_a9cf669bd23695 14,25,97
+src/features/generation/worker/generators/snapClipLedgeBacking.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 16,36
+src/features/baseplate/utils/pieceFingerprint.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 4,6,421
+src/features/baseplate/utils/exportCache.ts
+  s_d0431bf9490853::t_a9cf669bd23695 25,100
+src/features/generation/bridge/bridgeGeneration.ts
+  s_d0431bf9490853::t_a9cf669bd23695 16,134,188
+src/features/baseplate/utils/connectorKeys.test.ts
+  s_d0431bf9490853::t_a9cf669bd23695 4,6
+src/features/generation/worker/generators/directMeshShapes.ts
+  s_d0431bf9490853::t_a9cf669bd23695 9,71
+src/features/generation/bridge/bridgeExports.ts
+  s_d0431bf9490853::t_d43d4a214790ed 13,257,306,333,368
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "b84386012646648d58ad2c6e36a9574402287795",
+  "prompts": {},
+  "sessions": {
+    "s_a5d0f3880c38f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a26658ab41c2935ba",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
