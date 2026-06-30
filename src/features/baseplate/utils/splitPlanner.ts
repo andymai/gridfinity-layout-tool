@@ -453,19 +453,6 @@ function computePaddingReductionHint(
   return candidates[0];
 }
 
-/**
- * Decompose the drawer-fit padding into detached printable rails.
- *
- * Butt-joint frame: one axis pair is `long` (spans the full outer extent and
- * owns the plate corners), the other is `short` (fits between the long rails).
- * When the long rail on an end is absent, the adjacent short rail extends to
- * that corner and owns it — so every rounded outer corner of the integral plate
- * is carried by exactly one rail. A side detaches only when its padding ≥
- * {@link MARGIN_MIN_DETACH_MM}; thinner/zero sides stay integral on the body.
- *
- * Returns world positions in the plate-centered frame (mm), matching the body
- * slab's centered grid. Independent of split state — runs for unsplit plates too.
- */
 /** Which sides detach into rails: padding ≥ threshold and the flag is on. */
 function detachedSides(params: BaseplateParams): {
   left: boolean;
@@ -501,6 +488,19 @@ export function bodyParamsForDetach(params: BaseplateParams): BaseplateParams {
   };
 }
 
+/**
+ * Decompose the drawer-fit padding into detached printable rails.
+ *
+ * Butt-joint frame: one axis pair is `long` (spans the full outer extent and
+ * owns the plate corners), the other is `short` (fits between the long rails).
+ * When the long rail on an end is absent, the adjacent short rail extends to
+ * that corner and owns it — so every rounded outer corner of the integral plate
+ * is carried by exactly one rail. A side detaches only when its padding ≥
+ * {@link MARGIN_MIN_DETACH_MM}; thinner/zero sides stay integral on the body.
+ *
+ * Returns world positions in the plate-centered frame (mm), matching the body
+ * slab's centered grid. Independent of split state — runs for unsplit plates too.
+ */
 function emitMargins(params: BaseplateParams): MarginPiece[] {
   if (!params.detachMargins) return [];
 

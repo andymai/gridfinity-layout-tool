@@ -79,7 +79,7 @@ describe('margin rail geometry', () => {
   ] as const)('meshes a long front rail (%s)', (_label, fill) => {
     const params = base(fill);
     const front = railOf(params, 'front');
-    const md = generateMargin(params, front, true);
+    const md = generateMargin(params, front, false);
     expect(md.triangleCount).toBeGreaterThan(0);
     expect(md.vertices.length).toBeGreaterThan(0);
     const b = bbox(md.vertices);
@@ -93,7 +93,7 @@ describe('margin rail geometry', () => {
   it('meshes a short rail oriented along its long axis', () => {
     const params = base();
     const left = railOf(params, 'left');
-    const md = generateMargin(params, left, true);
+    const md = generateMargin(params, left, false);
     expect(md.triangleCount).toBeGreaterThan(0);
     const b = bbox(md.vertices);
     expect(b.dx).toBeCloseTo(left.bandThicknessMm, 0); // band runs across X
@@ -103,7 +103,7 @@ describe('margin rail geometry', () => {
   it('rail is taller when magnets add a floor', () => {
     const params = base({ magnetHoles: true });
     const front = railOf(params, 'front');
-    const md = generateMargin(params, front, true);
+    const md = generateMargin(params, front, false);
     const b = bbox(md.vertices);
     expect(b.maxZ).toBeCloseTo(SOCKET_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
   });

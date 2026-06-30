@@ -25,6 +25,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
+import { bodyParamsForDetach } from '../utils/splitPlanner';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import {
   buildExportCacheKey,
@@ -223,6 +224,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           }
           return out;
         };
+        // Body exports padding-free on detached sides (the rails carry that
+        // margin) — matching preview generation. Identity when not detaching.
+        const bodyExportParams = bodyParamsForDetach(fullParams);
         const marginGuideInfo = railMargins.map((m) => ({
           fileName: `${baseNameNoExt}_${m.id}${extension}`,
           side: m.side,
@@ -409,8 +413,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           }
         } else if (format === 'step') {
           // STEP: never stacked (CAD interchange, no slicer notion).
-          const data = await getOrExport(buildExportCacheKey(fullParams, 'step', nozzleMm), () =>
-            bridge.exportBaseplate(fullParams, 'step').then((r) => r.data)
+          const data = await getOrExport(
+            buildExportCacheKey(bodyExportParams, 'step', nozzleMm),
+            () => bridge.exportBaseplate(bodyExportParams, 'step').then((r) => r.data)
           );
           if (railMargins.length > 0) {
             const zip = packagePiecesAsZip(
@@ -462,9 +467,11 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             triggerDownload(zip, `${baseNameNoExt}.zip`);
           }
         } else if (railMargins.length > 0) {
-          // Single body + detached rails → ZIP (one file per piece).
-          const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>
-            bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
+          // Single body + detached rails → ZIP (one file per piece). Body prints
+          // padding-free; the rails carry the detached margin.
+          const stlData = await getOrExport(
+            buildExportCacheKey(bodyExportParams, 'stl', nozzleMm),
+            () => bridge.exportBaseplate(bodyExportParams, 'stl').then((r) => r.data)
           );
           const bodyData =
             format === '3mf'
