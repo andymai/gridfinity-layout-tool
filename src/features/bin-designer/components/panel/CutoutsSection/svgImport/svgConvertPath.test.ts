@@ -38,7 +38,12 @@ describe('convertPath', () => {
   it('all path point coordinates are Number.isFinite', () => {
     const result = convertPath(makePath('M 0 0 L 10 0 L 5 10 Z'), IDENTITY, VIEW_BOX);
     expect(result).not.toBeNull();
-    for (const pt of result![0].path ?? []) {
+    const path = result![0].path;
+    // Assert path exists/non-empty so the finite checks can't pass vacuously
+    // (a path spec without a `path` array would otherwise skip the loop).
+    expect(path).toBeDefined();
+    expect(path?.length).toBeGreaterThan(0);
+    for (const pt of path ?? []) {
       expect(Number.isFinite(pt.x)).toBe(true);
       expect(Number.isFinite(pt.y)).toBe(true);
     }

@@ -68,7 +68,8 @@ describe('findNearestSegment', () => {
 
   it('finds the nearest bezier segment', () => {
     const pts = [withHandles(0, 0, 0, 15, 0, -15), corner(30, 0)];
-    // Query very close to the curve's midpoint (approximately at 15, ~7)
+    // Query a point near the curve's interior (within the 5px threshold) — the
+    // exact bezier midpoint isn't what matters, only that segment 0 is nearest.
     const r = findNearestSegment(15, 7, pts, 5);
     expect(r).not.toBeNull();
     expect(r?.segmentIndex).toBe(0);
