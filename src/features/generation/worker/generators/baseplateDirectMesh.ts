@@ -48,7 +48,8 @@ import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
-import { addMagnetHoles } from './directMeshMagnets';
+import { addMagnetHoles, addMagnetHoleAt } from './directMeshMagnets';
+import { magnetPositionsForCell } from './baseplateMagnets';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
 /**
@@ -219,9 +220,36 @@ export function generateBaseplateDirect(
 
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
+    // Nominal grid: full cells get the standard 4 corners (fractional nominal
+    // cells are skipped, matching the BREP build). `cells` also holds the frame
+    // tiles, but they're <1u so the guard skips them here — they're magnetized
+    // by the over-tile pass below.
     for (const cell of cells) {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
       addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
+    }
+    // Over-tile margin tiles: the corner magnets that fit, else a single
+    // centered magnet — mirrors buildPartialCellMagnetHoles in the BREP build so
+    // the draft preview matches the exported plate.
+    if (overTile) {
+      const margins: SideMargins = {
+        left: paddingLeft,
+        right: paddingRight,
+        front: paddingFront,
+        back: paddingBack,
+      };
+      for (const cell of frameCells(
+        width,
+        depth,
+        margins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid
+      )) {
+        for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm)) {
+          addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth);
+        }
+      }
     }
   }
 

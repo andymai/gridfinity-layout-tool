@@ -60,7 +60,7 @@ import { meshCacheKey, slabPocketsCacheKey } from './baseplateCacheKeys';
 import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
-import { buildMagnetHoles } from './baseplateMagnets';
+import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
 import {
   buildConnectors,
   buildDovetailKey,
@@ -345,6 +345,28 @@ export function buildBaseplateSolid(
   // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
+    // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
+    // single centered magnet for tiles too small for any corner — so the clipped
+    // padding tiles aren't left as solid plastic. Mirrors the pocket frame above.
+    if (overTile) {
+      const margins: SideMargins = {
+        left: paddingLeft,
+        right: paddingRight,
+        front: paddingFront,
+        back: paddingBack,
+      };
+      const frame = frameCells(
+        width,
+        depth,
+        margins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid
+      );
+      holes.push(
+        ...buildPartialCellMagnetHoles(frame, magnetDiameter / 2, magnetDepth, gridUnitMm)
+      );
+    }
     baseplate = cutInBatches(baseplate, holes);
     probe?.('magnetHolesCut', baseplate);
   }

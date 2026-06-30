@@ -53,7 +53,8 @@ export function meshCacheKey(
     ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
     : 0;
   return buildCacheKey(
-    'v1',
+    // v2: over-tile margin tiles now receive magnet holes (was solid).
+    'v2',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),

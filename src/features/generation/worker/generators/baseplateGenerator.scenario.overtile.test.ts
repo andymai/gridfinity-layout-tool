@@ -99,11 +99,27 @@ describe('baseplate over-tile geometry', () => {
     expect(tiled.triangleCount).toBe(gen(off, NO_OP, true).triangleCount);
   });
 
-  it('over-tiles with magnets without putting magnet holes in the clipped tile', () => {
+  it('places magnets in the clipped over-tile margin tiles', () => {
     const gen = getGenerateBaseplate();
-    const result = gen(defaults({ overTile: true, magnetHoles: true }), NO_OP, true);
-    assertStructurallyValid(result, 'over-tile + magnets');
-    const bb = boundingBox(result.vertices);
-    expect(Number.isFinite(bb.maxX - bb.minX)).toBe(true);
+    // Lightweight off so the only magnet-diameter-dependent geometry is the
+    // magnet holes themselves. The 12mm margin tiles fit a centered 6.5mm magnet
+    // but not a 13mm one (reach 6.5/2 + clearance > the 6mm half-tile). A
+    // cylinder's triangle count is radius-independent, and nominal full-cell
+    // magnets are placed in BOTH cases, so the triangle delta is exactly the
+    // margin-tile magnets that fit only in the smaller-magnet build.
+    const base = {
+      overTile: true,
+      magnetHoles: true,
+      lightweight: false,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 12,
+      paddingBack: 12,
+    } as const;
+    const fits = gen(defaults({ ...base, magnetDiameter: 6.5 }), NO_OP, true);
+    const tooBig = gen(defaults({ ...base, magnetDiameter: 13 }), NO_OP, true);
+
+    assertStructurallyValid(fits, 'over-tile + margin magnets');
+    expect(fits.triangleCount).toBeGreaterThan(tooBig.triangleCount);
   });
 });
