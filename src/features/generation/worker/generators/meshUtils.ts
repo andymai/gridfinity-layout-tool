@@ -20,10 +20,9 @@ export type ProgressFn = (stage: string, progress: number) => void;
 export type BooleanOpts = BooleanOptions;
 
 /**
- * Sketch a drawing on a plane, narrowing to SketchInterface.
- * All our drawings are single closed wires, so SketchInterface is always the
- * correct runtime type. This eliminates repeated `as SketchInterface` casts.
+ * Sketch a drawing on a plane. Centralizes the `sketchOnPlane` call and its
+ * default plane/origin so callers share one typed entry point.
  */
 export function sketch(drawing: Drawing, plane?: PlaneName, origin?: number): SketchInterface {
-  return drawing.sketchOnPlane(plane, origin) as SketchInterface;
+  return drawing.sketchOnPlane(plane, origin);
 }

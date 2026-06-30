@@ -67,7 +67,7 @@ export function CameraController({
   const fov = 45;
   const aspect = size.width > 0 && size.height > 0 ? size.width / size.height : 1;
 
-  const stackActive = stackEnabled && stackBounds !== null && (stackBounds?.heightMm ?? 0) > 0;
+  const stackActive = stackEnabled && stackBounds !== null && stackBounds.heightMm > 0;
   const totalH = stackActive && stackBounds ? stackBounds.heightMm : GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const binCenter = useMemo(() => new THREE.Vector3(0, 0, totalH / 2), [totalH]);
   const idealDistance = useMemo(() => {
