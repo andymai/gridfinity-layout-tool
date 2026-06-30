@@ -1,0 +1,20 @@
+api/lib/mlTelemetry/validators.test.ts
+  s_d0431bf9490853::t_fd54cea1c3a38d 252-271
+  s_d0431bf9490853::t_439a3b896ce933 178-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "1b8d2f269e2167950885df8f9c65c9f36690b427",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
