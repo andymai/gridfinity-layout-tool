@@ -174,10 +174,14 @@ describe('validateEvent — bin_placed', () => {
 // and routing fields. Numeric/positional fields that don't reach Redis keys
 // are left unchecked. These tests document the CURRENT leniency so that any
 // future tightening is a conscious, explicitly-reviewed change.
+//
+// Each per-field test starts from `completeValid` — a complete bin_placed
+// object including all five unvalidated fields — and omits ONLY the field
+// under test, so the test genuinely isolates that specific field.
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_placed (documented validator leniency)', () => {
-  // Minimal object that satisfies all CHECKED fields; unchecked fields are omitted.
-  const minimalValid = {
+  // All checked fields present, PLUS all five currently-unvalidated fields.
+  const completeValid = {
     type: 'bin_placed',
     bin_size: BIN_SIZE,
     prev_bin_size: null,
@@ -196,47 +200,51 @@ describe('validateEvent — bin_placed (documented validator leniency)', () => {
     recent_sizes: [],
     time_since_last_ms: null,
     is_first_of_label: false,
+    // The five currently-unvalidated fields:
+    position: POSITION,
+    layer_index: 0,
+    largest_gap: FILL_SIZE,
+    fill_pct: 50,
+    vocab_version: 'v1',
   };
 
-  it('passes when position is absent (field not validated)', () => {
-    // position is used by the aggregator but not checked by the validator
-    expect(validateEvent(minimalValid)).toBe(true);
+  it('passes when all five unvalidated fields are absent at once', () => {
+    // Baseline: confirm that leaving out ALL five still satisfies the validator.
+    const {
+      position: _pos,
+      layer_index: _li,
+      largest_gap: _lg,
+      fill_pct: _fp,
+      vocab_version: _vv,
+      ...withoutAll
+    } = completeValid;
+    expect(validateEvent(withoutAll)).toBe(true);
   });
 
-  it('passes when position has an arbitrary value (field not validated)', () => {
-    expect(validateEvent({ ...minimalValid, position: 'not-a-position' })).toBe(true);
+  it('passes when only position is absent (field not validated)', () => {
+    // position is stored on the event but never interpolated into a Redis key.
+    const { position: _pos, ...rest } = completeValid;
+    expect(validateEvent(rest)).toBe(true);
   });
 
-  it('passes when layer_index is absent (field not validated)', () => {
-    expect(validateEvent(minimalValid)).toBe(true);
+  it('passes when only layer_index is absent (field not validated)', () => {
+    const { layer_index: _li, ...rest } = completeValid;
+    expect(validateEvent(rest)).toBe(true);
   });
 
-  it('passes when layer_index is out of range (field not validated)', () => {
-    expect(validateEvent({ ...minimalValid, layer_index: 9999 })).toBe(true);
+  it('passes when only largest_gap is absent (field not validated)', () => {
+    const { largest_gap: _lg, ...rest } = completeValid;
+    expect(validateEvent(rest)).toBe(true);
   });
 
-  it('passes when largest_gap is absent (field not validated)', () => {
-    expect(validateEvent(minimalValid)).toBe(true);
+  it('passes when only fill_pct is absent (field not validated)', () => {
+    const { fill_pct: _fp, ...rest } = completeValid;
+    expect(validateEvent(rest)).toBe(true);
   });
 
-  it('passes when largest_gap has an arbitrary value (field not validated)', () => {
-    expect(validateEvent({ ...minimalValid, largest_gap: 'anything' })).toBe(true);
-  });
-
-  it('passes when fill_pct is absent (field not validated)', () => {
-    expect(validateEvent(minimalValid)).toBe(true);
-  });
-
-  it('passes when fill_pct is out of range (field not validated)', () => {
-    expect(validateEvent({ ...minimalValid, fill_pct: 9999 })).toBe(true);
-  });
-
-  it('passes when vocab_version is absent (field not validated)', () => {
-    expect(validateEvent(minimalValid)).toBe(true);
-  });
-
-  it('passes when vocab_version has an arbitrary value (field not validated)', () => {
-    expect(validateEvent({ ...minimalValid, vocab_version: 12345 })).toBe(true);
+  it('passes when only vocab_version is absent (field not validated)', () => {
+    const { vocab_version: _vv, ...rest } = completeValid;
+    expect(validateEvent(rest)).toBe(true);
   });
 });
 
