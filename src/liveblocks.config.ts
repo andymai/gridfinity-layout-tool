@@ -69,8 +69,8 @@ export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
  * Liveblocks client configuration.
  *
  * Uses server-side auth endpoint for permission enforcement:
- * - 'edit' shares grant FULL_ACCESS to all collaborators
- * - 'view' shares grant READ_ACCESS to non-owners
+ * - 'edit' shares grant write access to all collaborators
+ * - 'view' shares grant read-only access to non-owners
  *
  * Requires LIVEBLOCKS_SECRET_KEY on the server side.
  * Client is only created when the public key is available.
