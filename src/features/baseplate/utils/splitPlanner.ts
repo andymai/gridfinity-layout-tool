@@ -16,7 +16,7 @@
  * fit, otherwise become a separate piece.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
@@ -455,7 +455,7 @@ function computePaddingReductionHint(
 }
 
 /** Which sides detach into rails: padding ≥ threshold and the flag is on. */
-function detachedSides(params: BaseplateParams): {
+function detachedSides(params: ResolvedBaseplateParams): {
   left: boolean;
   right: boolean;
   front: boolean;
@@ -479,7 +479,7 @@ type CornerRadii = { tl: number; tr: number; bl: number; br: number };
  * curving away from the rail). A corner squares when either adjacent side detaches.
  */
 function squaredBodyCornerRadii(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   det: { left: boolean; right: boolean; front: boolean; back: boolean }
 ): CornerRadii {
   const base = (corner: keyof CornerRadii): number =>
@@ -500,7 +500,7 @@ function squaredBodyCornerRadii(
  * mesh only, AFTER `computeBaseplateTiling`/`emitMargins` (which need the true
  * padding).
  */
-export function bodyParamsForDetach(params: BaseplateParams): BaseplateParams {
+export function bodyParamsForDetach(params: ResolvedBaseplateParams): ResolvedBaseplateParams {
   if (!params.detachMargins) return params;
   const det = detachedSides(params);
   if (!det.left && !det.right && !det.front && !det.back) return params;
@@ -539,7 +539,7 @@ interface MarginLayout {
  * World positions are in the plate-centered, padding-free body frame (mm) so they
  * line up with how the preview/export place the body pieces.
  */
-function emitMargins(params: BaseplateParams, layout: MarginLayout): MarginPiece[] {
+function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): MarginPiece[] {
   if (!params.detachMargins) return [];
   const det = detachedSides(params);
   if (!det.left && !det.right && !det.front && !det.back) return [];
@@ -694,7 +694,7 @@ function emitMargins(params: BaseplateParams, layout: MarginLayout): MarginPiece
  * `isSplit: false`.
  */
 export function computeBaseplateTiling(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   printBedWidthMm: number,
   printBedDepthMm: number = printBedWidthMm
 ): BaseplateTiling {
@@ -851,8 +851,8 @@ export function computeBaseplateTiling(
  */
 export function pieceToBaseplateParams(
   piece: BaseplatePiece,
-  parentParams: BaseplateParams
-): BaseplateParams {
+  parentParams: ResolvedBaseplateParams
+): ResolvedBaseplateParams {
   // Default fractionalEdge to 'end' when this piece has no fraction.
   const fracX: 'start' | 'end' = piece.fractionalEdgeX === 'none' ? 'end' : piece.fractionalEdgeX;
   const fracY: 'start' | 'end' = piece.fractionalEdgeY === 'none' ? 'end' : piece.fractionalEdgeY;

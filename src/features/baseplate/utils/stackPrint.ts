@@ -5,7 +5,7 @@
 
 import type { StackPrintParams } from '@/core/types';
 import { STACK_PRINT_MAX_STACK_HEIGHT } from '@/core/types';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplateTiling } from '../types/tiling';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 
@@ -132,7 +132,7 @@ export function evaluateStackPrint(
  */
 export function stackGroupsFromTiling(
   tiling: BaseplateTiling | null,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   copies = 1
 ): StackGroup[] {
   const n = Math.max(1, Math.floor(copies));

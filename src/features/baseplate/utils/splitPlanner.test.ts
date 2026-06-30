@@ -8,11 +8,11 @@ import {
 import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 6,
     depth: 4,
@@ -31,7 +31,7 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
 }
 
 /** Helper to get piece widths in column order for a single row. */
-function colWidths(params: BaseplateParams, printBed = 256): number[] {
+function colWidths(params: ResolvedBaseplateParams, printBed = 256): number[] {
   const tiling = computeBaseplateTiling(params, printBed);
   return tiling.pieces
     .filter((p) => p.row === 0)
@@ -40,7 +40,7 @@ function colWidths(params: BaseplateParams, printBed = 256): number[] {
 }
 
 /** Helper to get piece depths in row order for a single column. */
-function rowDepths(params: BaseplateParams, printBed = 256): number[] {
+function rowDepths(params: ResolvedBaseplateParams, printBed = 256): number[] {
   const tiling = computeBaseplateTiling(params, printBed);
   return tiling.pieces
     .filter((p) => p.col === 0)
@@ -1200,7 +1200,7 @@ describe('preferIdenticalPieces × fractional dimensions — dovetail alignment 
    */
   it('aligns connectors across every shared join edge for 9.5×9.5', () => {
     const G = 42;
-    const parent: BaseplateParams = {
+    const parent: ResolvedBaseplateParams = {
       width: 9.5,
       depth: 9.5,
       gridUnitMm: G,
@@ -1300,7 +1300,7 @@ describe('detachMargins emits margin rails', () => {
   const gridD = D * U; // 126
   const P = 10; // ≥ MARGIN_MIN_DETACH_MM (8)
 
-  function margins(overrides: Partial<BaseplateParams>) {
+  function margins(overrides: Partial<ResolvedBaseplateParams>) {
     return computeBaseplateTiling(makeParams({ width: W, depth: D, ...overrides }), 256).margins;
   }
   function bySide(ms: ReturnType<typeof margins>, side: string) {

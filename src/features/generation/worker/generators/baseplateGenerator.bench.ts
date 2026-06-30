@@ -13,7 +13,7 @@
  * real BREP + tessellation work on every iteration.
  */
 import { bench, describe, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
 import { clearBaseplateCaches } from './baseplateCaches';
 
@@ -24,7 +24,7 @@ const noop = (): void => {};
 // which changes the cache key but has negligible effect on geometry.
 let callCounter = 0;
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
   depth: 2,
   gridUnitMm: 42,

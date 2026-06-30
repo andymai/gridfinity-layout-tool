@@ -3,17 +3,17 @@ import { computeBaseplateTiling } from './splitPlanner';
 import { buildFullParams } from './buildFullParams';
 import { stackGroupsFromTiling, planPhysicalStacks } from './stackPrint';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import type { BaseplateParams as CoreBaseplateParams } from '@/core/types';
+import type { StoredBaseplateParams } from '@/core/types';
 
 /** Resolve groups + physical stacks for a drawer split on a given bed. */
-function plan(stored: CoreBaseplateParams, units: number, bedMm: number) {
+function plan(stored: StoredBaseplateParams, units: number, bedMm: number) {
   const full = buildFullParams(stored, units, units, 42, 'end', 'end');
   const tiling = computeBaseplateTiling(full, bedMm);
   const groups = stackGroupsFromTiling(tiling, full);
   return { tiling, groups, towers: planPhysicalStacks(groups) };
 }
 
-const stacking: CoreBaseplateParams = {
+const stacking: StoredBaseplateParams = {
   ...DEFAULT_BASEPLATE_PARAMS,
   stackPrint: { enabled: true, gapMm: 0.2 as never },
 };
@@ -36,7 +36,7 @@ describe('stack-print grouping', () => {
   });
 
   it('retains dovetail connectors while stacking; preferIdenticalPieces shrinks the group count', () => {
-    const connectored: CoreBaseplateParams = {
+    const connectored: StoredBaseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       connectorNubs: true, // dovetail (default style) — kept while stacking now
       stackPrint: { enabled: true, gapMm: 0.2 as never },

@@ -27,7 +27,7 @@ export interface Layout {
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];
   purpose?: string; // Optional drawer purpose (e.g., "workshop", "electronics")
-  baseplateParams?: BaseplateParams; // Per-layout baseplate configuration
+  baseplateParams?: StoredBaseplateParams; // Per-layout baseplate configuration
 }
 
 /** Nine-point padding distribution anchor. First letter = vertical (t/m/b),
@@ -78,11 +78,12 @@ export const STACK_PRINT_MAX_STACK_HEIGHT = 8;
 export const STACK_PRINT_MIN_GAP_MM = 0.1;
 export const STACK_PRINT_MAX_GAP_MM = 1.0;
 
-/** Baseplate generation parameters stored per-layout.
- * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
- * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
- * Per-side padding in mm — user enters directly, total drawer = grid + padding. */
-export interface BaseplateParams {
+/** Stored (persisted) baseplate config saved per-layout.
+ * Padding is in mm; width/depth/gridUnitMm are NOT stored — they are derived from the
+ * layout's drawer at generation time unless syncWithLayout is false, in which case
+ * baseplateWidth/baseplateDepth override drawer dims. Bridged to the generation-time
+ * {@link ResolvedBaseplateParams} via buildFullParams. */
+export interface StoredBaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: Mm;
   readonly magnetDepth: Mm;

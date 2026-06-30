@@ -161,12 +161,13 @@ export interface MarginPiece {
 }
 
 /**
- * Full baseplate parameter set for generation bridge.
+ * Resolved (generation-time) full baseplate parameter set for the generation bridge.
  *
- * Extends core BaseplateParams with drawer dimensions (width, depth, gridUnitMm)
- * and resolved per-side padding values computed from ratio at generation time.
+ * Extends the persisted {@link StoredBaseplateParams} with drawer dimensions
+ * (width, depth, gridUnitMm) and resolved per-side padding values computed at
+ * generation time. Produced from the stored config via buildFullParams.
  */
-export interface BaseplateParams {
+export interface ResolvedBaseplateParams {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;

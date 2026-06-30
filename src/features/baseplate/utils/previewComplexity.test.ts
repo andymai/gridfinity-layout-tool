@@ -7,9 +7,9 @@ import {
   DEFER_LAST_BREP_MS,
 } from './previewComplexity';
 import { computeBaseplateTiling } from './splitPlanner';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
-function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 6,
     depth: 6,
@@ -27,7 +27,7 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
   };
 }
 
-const defer = (p: BaseplateParams, bed = 256, lastMs: number | null = null): boolean =>
+const defer = (p: ResolvedBaseplateParams, bed = 256, lastMs: number | null = null): boolean =>
   shouldDeferBrepPreview(computeBaseplateTiling(p, bed), p, lastMs);
 
 describe('estimatePreviewComplexity', () => {

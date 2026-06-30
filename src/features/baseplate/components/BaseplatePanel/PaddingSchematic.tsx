@@ -2,19 +2,19 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { PaddingStepper } from '../PaddingStepper';
 import { PaddingAnchor } from '../PaddingAnchor';
-import type { BaseplateParams, PaddingAnchor as PaddingAnchorValue } from '@/core/types';
+import type { StoredBaseplateParams, PaddingAnchor as PaddingAnchorValue } from '@/core/types';
 import { mm } from '@/core/types';
 import { computeAnchoredPaddings } from '@/features/baseplate/utils/computeAnchoredPaddings';
 
 type PaddingKey = 'paddingLeft' | 'paddingRight' | 'paddingFront' | 'paddingBack';
 
 interface PaddingSchematicProps {
-  readonly baseplateParams: BaseplateParams;
-  readonly updateParam: <K extends keyof BaseplateParams>(
+  readonly baseplateParams: StoredBaseplateParams;
+  readonly updateParam: <K extends keyof StoredBaseplateParams>(
     key: K,
-    value: BaseplateParams[K]
+    value: StoredBaseplateParams[K]
   ) => void;
-  readonly updateParams: (patch: Partial<BaseplateParams>) => void;
+  readonly updateParams: (patch: Partial<StoredBaseplateParams>) => void;
 }
 
 export function PaddingSchematic({

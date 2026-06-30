@@ -18,7 +18,7 @@
  * tilings whose total work is large — both captured below.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import type { BaseplateTiling } from '../types/tiling';
 
@@ -62,7 +62,7 @@ function pieceCells(widthUnits: number, depthUnits: number): number {
  */
 export function estimatePreviewComplexity(
   tiling: BaseplateTiling,
-  parentParams: BaseplateParams
+  parentParams: ResolvedBaseplateParams
 ): { maxPieceCells: number; totalCells: number } {
   const groups = groupPiecesByFingerprint(tiling.pieces, parentParams);
   let maxPieceCells = 0;
@@ -84,7 +84,7 @@ export function estimatePreviewComplexity(
  */
 export function shouldDeferBrepPreview(
   tiling: BaseplateTiling,
-  parentParams: BaseplateParams,
+  parentParams: ResolvedBaseplateParams,
   lastBrepMs: number | null
 ): boolean {
   if (!parentParams.magnetHoles) return false;

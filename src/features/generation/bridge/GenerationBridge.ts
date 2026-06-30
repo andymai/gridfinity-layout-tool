@@ -19,7 +19,7 @@
 
 import type {
   BinParams,
-  BaseplateParams,
+  ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
 } from '@/shared/types/bin';
@@ -405,7 +405,7 @@ export class GenerationBridge {
   }
 
   generateBaseplate(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     onProgress?: ProgressCallback
   ): Promise<GenerationResult> {
     return generateBaseplateImpl(this, params, onProgress, true);
@@ -413,19 +413,19 @@ export class GenerationBridge {
 
   /** Used by the worker pool for parallel split piece generation. */
   generateBaseplateImmediate(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     onProgress?: ProgressCallback
   ): Promise<GenerationResult> {
     return generateBaseplateImpl(this, params, onProgress, false);
   }
 
   /** Generate one detached margin rail (issue #2392). */
-  generateMargin(params: BaseplateParams, margin: MarginPiece): Promise<GenerationResult> {
+  generateMargin(params: ResolvedBaseplateParams, margin: MarginPiece): Promise<GenerationResult> {
     return generateMarginImpl(this, params, margin);
   }
 
   exportBaseplate(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
@@ -454,7 +454,7 @@ export class GenerationBridge {
   }
 
   exportConnectorKey(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
@@ -463,7 +463,7 @@ export class GenerationBridge {
 
   /** Export one detached margin rail (issue #2392). */
   exportMargin(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     margin: MarginPiece,
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
@@ -472,7 +472,7 @@ export class GenerationBridge {
   }
 
   exportConnectorSample(
-    params: BaseplateParams,
+    params: ResolvedBaseplateParams,
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {

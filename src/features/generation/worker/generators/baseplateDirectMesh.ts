@@ -24,7 +24,7 @@
  * shapes, builder, walls, faces, magnets, connectors.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import { creaseEdges } from './utils';
@@ -58,7 +58,7 @@ import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
  * solid floor, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
 export function generateBaseplateDirect(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: ProgressFn,
   signal?: AbortSignal
 ): MeshData {

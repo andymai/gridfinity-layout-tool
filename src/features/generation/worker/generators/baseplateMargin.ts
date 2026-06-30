@@ -19,7 +19,7 @@
 
 import { mesh, meshEdges, translate, getKernelCapabilities, exportSTEP, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import type { BaseplateParams, MarginPiece } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
@@ -44,7 +44,7 @@ interface RailDims {
 }
 
 /** Rail footprint in its own (origin-centered) frame and slab height. */
-function railDims(params: BaseplateParams, margin: MarginPiece): RailDims {
+function railDims(params: ResolvedBaseplateParams, margin: MarginPiece): RailDims {
   const horizontal = margin.side === 'front' || margin.side === 'back';
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
   return {
@@ -56,7 +56,7 @@ function railDims(params: BaseplateParams, margin: MarginPiece): RailDims {
 
 /** Owned-corner radii, capped so the rail corner matches the integral plate. */
 function railCornerRadii(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece,
   railW: number,
   railD: number
@@ -88,7 +88,7 @@ function railCornerRadii(
 
 /** Build a detached margin rail BREP solid, centered at the origin. */
 function buildMarginSolid(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece,
   forExport: boolean = true
 ): Shape3D {
@@ -146,7 +146,7 @@ function buildMarginSolid(
 
 /** Mesh a margin rail for the live preview / split export. */
 export function generateMargin(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece,
   forExport: boolean
 ): MeshData {
@@ -169,7 +169,7 @@ export function generateMargin(
 
 /** Export a margin rail as STL or STEP. */
 export async function exportMargin(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece,
   format: ExportFormat,
   tolerance?: number,

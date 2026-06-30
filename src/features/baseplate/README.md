@@ -8,7 +8,7 @@ graph TB
         Sync[Layout drawer dims]
         Custom[Custom grid size]
     end
-    Input --> Params[BaseplateParams]
+    Input --> Params[ResolvedBaseplateParams]
     Params --> Tiling[splitPlanner]
     Tiling --> Direct[Direct mesh ~50ms]
     Direct --> Preview[3D Preview]

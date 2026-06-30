@@ -15,7 +15,7 @@
  * and gets imported by app-config-included scenario files. Without it, tsc
  * fails the app build because tsconfig.app.json doesn't include node types.
  */
-import type { BaseplateParams, BinParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ export type GenerateBinFn = (
 // ─── Baseplate generation ────────────────────────────────────────────────────
 
 export type GenerateBaseplateFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   forExport: boolean,
   signal?: AbortSignal,

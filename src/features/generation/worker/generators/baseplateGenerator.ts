@@ -41,7 +41,7 @@ import {
   drawRectangle,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, ConnectorKeyMeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
@@ -96,7 +96,7 @@ export type BaseplateProbe = (label: string, shape: Shape3D) => void;
  * goes through `exportBaseplate`, which always builds full geometry.
  */
 export function generateBaseplate(
-  rawParams: BaseplateParams,
+  rawParams: ResolvedBaseplateParams,
   onProgress: ProgressFn,
   forExport: boolean,
   signal?: AbortSignal,
@@ -178,7 +178,9 @@ export function generateBaseplate(
  * The clip is the same regardless of which piece carries it; the main thread
  * keeps one copy and seats it at each junction.
  */
-function buildConnectorKeyMeshIfNeeded(params: BaseplateParams): ConnectorKeyMeshData | undefined {
+function buildConnectorKeyMeshIfNeeded(
+  params: ResolvedBaseplateParams
+): ConnectorKeyMeshData | undefined {
   if (!params.connectorNubs || params.connectorStyle !== 'snapClip') return undefined;
   const hasJoinEdge = params.edges ? Object.values(params.edges).some((e) => e === 'join') : false;
   if (!hasJoinEdge) return undefined;
@@ -204,7 +206,7 @@ function buildConnectorKeyMeshIfNeeded(params: BaseplateParams): ConnectorKeyMes
 
 /** Build the complete baseplate BREP solid. */
 export function buildBaseplateSolid(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   forExport: boolean = true,
   onProgress?: (progress: number) => void,
   probe?: BaseplateProbe,
@@ -431,7 +433,7 @@ export function buildBaseplateSolid(
 
 /** Export baseplate as STL or STEP file. */
 export async function exportBaseplate(
-  rawParams: BaseplateParams,
+  rawParams: ResolvedBaseplateParams,
   format: ExportFormat,
   tolerance?: number,
   angularTolerance?: number
@@ -476,7 +478,7 @@ export async function exportBaseplate(
  * every seam junction). Height matches the plate so the seated key is flush.
  */
 export async function exportConnectorKey(
-  rawParams: BaseplateParams,
+  rawParams: ResolvedBaseplateParams,
   format: ExportFormat,
   tolerance?: number,
   angularTolerance?: number

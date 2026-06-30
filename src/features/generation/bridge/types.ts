@@ -7,7 +7,7 @@
 
 import type {
   BinParams,
-  BaseplateParams,
+  ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
 } from '@/shared/types/bin';
@@ -111,7 +111,7 @@ export interface GenerateBaseplateMessage {
 }
 
 export interface GenerateBaseplatePayload {
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   readonly requestId: string;
 }
 
@@ -123,7 +123,7 @@ export interface GenerateBaseplateMarginMessage {
 }
 
 export interface GenerateBaseplateMarginPayload {
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   readonly margin: MarginPiece;
   readonly requestId: string;
 }
@@ -163,7 +163,7 @@ export interface ExportBaseplateMessage {
 }
 
 export interface ExportBaseplatePayload {
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   readonly requestId: string;
   readonly format: ExportFormat;
   readonly tolerance?: number;
@@ -189,7 +189,7 @@ export interface ExportBaseplateMarginMessage {
 }
 
 export interface ExportBaseplateMarginPayload {
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   readonly margin: MarginPiece;
   readonly requestId: string;
   readonly format: ExportFormat;

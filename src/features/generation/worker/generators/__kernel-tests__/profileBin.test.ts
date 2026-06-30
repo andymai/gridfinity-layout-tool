@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getGenerateBaseplate, getKernelName } from './wasmInit';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 
 interface ProfileEntry {
   readonly name: string;
@@ -51,7 +51,7 @@ function runBin(name: string, overrides: Partial<BinParams>, forExport = false):
   expect(result.triangleCount).toBeGreaterThan(0);
 }
 
-function runBaseplate(name: string, params: BaseplateParams, forExport = false): void {
+function runBaseplate(name: string, params: ResolvedBaseplateParams, forExport = false): void {
   const gen = getGenerateBaseplate();
   const start = performance.now();
   const result = gen(params, () => {}, forExport);
@@ -213,7 +213,7 @@ describe(`profile bins (${getKernelName()})`, () => {
 });
 
 describe(`profile baseplates (${getKernelName()})`, () => {
-  const BASE_PLATE: BaseplateParams = {
+  const BASE_PLATE: ResolvedBaseplateParams = {
     width: 2,
     depth: 2,
     gridUnitMm: 42,

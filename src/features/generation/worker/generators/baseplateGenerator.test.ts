@@ -1,11 +1,11 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
 
 type GenerateFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   forExport: boolean,
   signal?: AbortSignal
@@ -21,7 +21,7 @@ beforeAll(async () => {
 }, 30000);
 
 /** Default params matching the actual UI defaults from src/core/constants.ts */
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
   depth: 2,
   gridUnitMm: 42,

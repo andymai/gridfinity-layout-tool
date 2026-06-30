@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { countConnectorKeys, computeSeamJunctions } from './connectorKeys';
 import { computeBaseplateTiling } from './splitPlanner';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
-function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 6,
     depth: 4,

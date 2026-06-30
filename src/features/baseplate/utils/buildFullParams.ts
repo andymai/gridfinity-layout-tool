@@ -4,21 +4,21 @@
  * With direct per-side padding, the conversion is a straightforward pass-through.
  */
 
-import type { BaseplateParams as CoreBaseplateParams } from '@/core/types';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
+import type { StoredBaseplateParams } from '@/core/types';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 /**
  * Build full generation params from the stored per-layout config.
  */
 export function buildFullParams(
-  stored: CoreBaseplateParams,
+  stored: StoredBaseplateParams,
   drawerWidth: number,
   drawerDepth: number,
   gridUnitMm: number,
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end',
   nozzleSizeMm?: number
-): FullBaseplateParams {
+): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);

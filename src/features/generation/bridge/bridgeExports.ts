@@ -10,7 +10,7 @@
 
 import type {
   BinParams,
-  BaseplateParams,
+  ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
 } from '@/shared/types/bin';
@@ -254,7 +254,7 @@ export function exportSplitBinRange(
 
 export function exportBaseplate(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {
@@ -303,7 +303,7 @@ export function exportItem(
  */
 export function exportConnectorKey(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {
@@ -330,7 +330,7 @@ export function exportConnectorKey(
  */
 export function exportMargin(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
@@ -365,7 +365,7 @@ const CONNECTOR_SAMPLE_TIMEOUT_MS = EXPORT_MAX_TIMEOUT_MS;
 
 export function exportConnectorSample(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {

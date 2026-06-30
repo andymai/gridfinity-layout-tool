@@ -11,7 +11,7 @@
  * after the cached intermediate, so toggling them reuses this cache.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
@@ -22,7 +22,7 @@ import {
 } from './generatorConstants';
 
 export function meshCacheKey(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   forExport: boolean,
   draft: boolean = false
 ): string {
@@ -94,7 +94,7 @@ export function meshCacheKey(
   );
 }
 
-export function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean): string {
+export function slabPocketsCacheKey(params: ResolvedBaseplateParams, forExport: boolean): string {
   return buildCacheKey(
     'v1',
     quantize(params.width),

@@ -47,7 +47,7 @@ import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlanner';
 import { shouldDeferBrepPreview } from '../utils/previewComplexity';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MarginMeshEntry, PieceMeshEntry } from '../store/baseplatePageStore';
 import type { GenerationResult } from '@/shared/generation/bridge';
 import type { BaseplateTiling } from '../types/tiling';
@@ -322,7 +322,7 @@ export function useBaseplateGeneration(): void {
    */
   const runDirectMeshPreview = useCallback(
     (
-      fullParams: FullBaseplateParams,
+      fullParams: ResolvedBaseplateParams,
       bedWidthMm: number,
       bedDepthMm: number,
       epoch: number,
@@ -411,7 +411,7 @@ export function useBaseplateGeneration(): void {
    */
   const runManifoldDraftPreview = useCallback(
     async (
-      fullParams: FullBaseplateParams,
+      fullParams: ResolvedBaseplateParams,
       tiling: BaseplateTiling,
       epoch: number
     ): Promise<boolean> => {
@@ -466,7 +466,7 @@ export function useBaseplateGeneration(): void {
    * a non-blocking retry message instead of replacing the preview.
    */
   const runBrepGeneration = useCallback(
-    async (fullParams: FullBaseplateParams, tiling: BaseplateTiling, epoch: number) => {
+    async (fullParams: ResolvedBaseplateParams, tiling: BaseplateTiling, epoch: number) => {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
 
@@ -646,7 +646,7 @@ export function useBaseplateGeneration(): void {
    * and BREP kicks in once `bridgeManager.acquire()` resolves (mount effect).
    */
   const runGeneration = useCallback(
-    (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
+    (fullParams: ResolvedBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const epoch = ++generationEpochRef.current;
       // Track edit cadence on every regen, preview bridge or not, so a scrub
       // is recognized from its first rapid edit (see draftPolicy).

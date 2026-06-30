@@ -4,9 +4,9 @@ import { computeBaseplateTiling } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { assignGroupNames } from './pieceNaming';
 import { countConnectorKeys } from './connectorKeys';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
-function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 6,
     depth: 4,
@@ -25,9 +25,9 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
 }
 
 function buildGuide(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   printBed = 256,
-  stackPrint?: BaseplateParams['stackPrint']
+  stackPrint?: ResolvedBaseplateParams['stackPrint']
 ) {
   const tiling = computeBaseplateTiling(params, printBed);
   const groups = groupPiecesByFingerprint(tiling.pieces, params);

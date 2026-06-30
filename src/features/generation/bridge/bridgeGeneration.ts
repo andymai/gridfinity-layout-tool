@@ -13,7 +13,7 @@
  * of the private fields it needs to mutate.
  */
 
-import type { BinParams, BaseplateParams, MarginPiece } from '@/shared/types/bin';
+import type { BinParams, ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
@@ -131,7 +131,7 @@ export function generateBin(
 
 export function generateBaseplate(
   ctx: BridgeGenerationContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: ProgressCallback | undefined,
   debounce: boolean
 ): Promise<GenerationResult> {
@@ -185,7 +185,7 @@ export function generateBaseplate(
  */
 export function generateMargin(
   ctx: BridgeGenerationContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   margin: MarginPiece
 ): Promise<GenerationResult> {
   if (ctx.isDestroyed) {

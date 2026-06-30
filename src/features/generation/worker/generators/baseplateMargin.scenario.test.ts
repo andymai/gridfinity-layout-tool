@@ -7,13 +7,17 @@
  * a bounding box matching the planned rail footprint (length × band × height).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { computeBaseplateTiling } from '@/features/baseplate/utils/splitPlanner';
 import type { MarginPiece } from '@/features/baseplate/types/tiling';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorTypes';
 
-let generateMargin: (p: BaseplateParams, m: MarginPiece, forExport: boolean) => MeshDataLike;
+let generateMargin: (
+  p: ResolvedBaseplateParams,
+  m: MarginPiece,
+  forExport: boolean
+) => MeshDataLike;
 
 interface MeshDataLike {
   vertices: ArrayLike<number>;
@@ -26,7 +30,7 @@ beforeAll(async () => {
   generateMargin = mod.generateMargin;
 }, 30000);
 
-const base = (o: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const base = (o: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 4,
   depth: 3,
   gridUnitMm: 42,
@@ -65,7 +69,7 @@ function bbox(verts: ArrayLike<number>) {
   return { dx: maxX - minX, dy: maxY - minY, minZ, maxZ };
 }
 
-function railOf(params: BaseplateParams, side: MarginPiece['side']): MarginPiece {
+function railOf(params: ResolvedBaseplateParams, side: MarginPiece['side']): MarginPiece {
   const m = computeBaseplateTiling(params, 256).margins.find((r) => r.side === side);
   if (!m) throw new Error(`no ${side} rail`);
   return m;

@@ -7,7 +7,7 @@
  * - ASCII grid map: visual assembly layout, front at bottom
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { StackPrintParams } from '@/core/types';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
@@ -30,7 +30,7 @@ export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
   readonly groups: Map<string, PieceGroup>;
   readonly groupNames: Map<string, string>;
-  readonly parentParams: BaseplateParams;
+  readonly parentParams: ResolvedBaseplateParams;
   readonly fileExtension: string;
   readonly baseFileName: string;
   /** Dovetail key part, when present — printed `count` times. */
@@ -202,7 +202,7 @@ function buildEasierSeparation(gap: number): string[] {
 
 function generateConnectorKeySection(
   key: { fileName: string; count: number },
-  params: BaseplateParams
+  params: ResolvedBaseplateParams
 ): string {
   const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
   const offset = params.connectorFitOffset ?? 0;
@@ -255,7 +255,7 @@ function formatSignedMm(value: number): string {
 
 function generateHeader(
   tiling: BaseplateTiling,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   uniqueCount: number
 ): string {
   const features: string[] = [];
@@ -313,7 +313,7 @@ function generateHeader(
 function generatePieceTable(
   groups: Map<string, PieceGroup>,
   names: Map<string, string>,
-  parentParams: BaseplateParams,
+  parentParams: ResolvedBaseplateParams,
   pieces: readonly BaseplatePiece[],
   ext: string,
   baseName: string,

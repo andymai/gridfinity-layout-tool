@@ -8,9 +8,9 @@ import {
   clearExportCache,
   setExportCacheMaxBytesForTests,
 } from './exportCache';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
-const params = (over: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const params = (over: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 6,
   depth: 6,
   gridUnitMm: 42,
@@ -44,7 +44,7 @@ describe('buildExportCacheKey', () => {
   it('is stable for equal params regardless of key order', () => {
     const p = params({ width: 6, depth: 4 });
     // Same values, reversed property insertion order — stableStringify sorts keys.
-    const reordered = Object.fromEntries(Object.entries(p).reverse()) as BaseplateParams;
+    const reordered = Object.fromEntries(Object.entries(p).reverse()) as ResolvedBaseplateParams;
     expect(buildExportCacheKey(p, 'stl', 0.4)).toBe(buildExportCacheKey(reordered, 'stl', 0.4));
   });
 

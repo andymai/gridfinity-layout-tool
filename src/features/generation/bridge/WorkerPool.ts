@@ -18,7 +18,7 @@
 
 import { GenerationBridge } from './GenerationBridge';
 import type { GenerationResult, SplitPreviewResult, SplitExportResult } from './GenerationBridge';
-import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { BinParams, ResolvedBaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { ExportFormat, KernelName } from './types';
 
 /** Maximum number of pool workers (caps memory usage from parallel WASM instances) */
@@ -218,7 +218,7 @@ export class WorkerPool {
    * Distributes pieces round-robin and returns results in original order.
    */
   async generateBaseplates(
-    pieces: readonly BaseplateParams[],
+    pieces: readonly ResolvedBaseplateParams[],
     onProgress?: (completed: number, total: number) => void,
     signal?: AbortSignal
   ): Promise<GenerationResult[]> {
@@ -254,7 +254,7 @@ export class WorkerPool {
    * Same round-robin dispatch as generateBaseplates.
    */
   async exportBaseplates(
-    pieces: readonly BaseplateParams[],
+    pieces: readonly ResolvedBaseplateParams[],
     format: ExportFormat,
     onProgress?: (completed: number, total: number) => void,
     signal?: AbortSignal

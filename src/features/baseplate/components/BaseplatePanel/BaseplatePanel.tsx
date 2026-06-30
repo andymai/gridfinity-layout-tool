@@ -52,7 +52,7 @@ import {
   CONNECTOR_FIT_OFFSET_MAX,
   CONNECTOR_FIT_OFFSET_STEP,
 } from '@/shared/constants/connectors';
-import type { BaseplateParams } from '@/core/types';
+import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
 
 /** How the drawer-fit padding margin is filled. */
@@ -127,13 +127,13 @@ export function BaseplatePanel() {
       .updateSetting('printSettings', { ...current, maxPrintHeightMm: value });
   }, []);
 
-  const updateParams = useCallback((patch: Partial<BaseplateParams>) => {
+  const updateParams = useCallback((patch: Partial<StoredBaseplateParams>) => {
     const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
     useLayoutStore.getState().setBaseplateParams({ ...current, ...patch });
   }, []);
 
   const updateParam = useCallback(
-    <K extends keyof BaseplateParams>(key: K, value: BaseplateParams[K]) => {
+    <K extends keyof StoredBaseplateParams>(key: K, value: StoredBaseplateParams[K]) => {
       updateParams({ [key]: value });
     },
     [updateParams]

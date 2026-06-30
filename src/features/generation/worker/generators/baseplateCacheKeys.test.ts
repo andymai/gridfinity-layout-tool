@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { meshCacheKey } from './baseplateCacheKeys';
 
-const base = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const base = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 4,
   depth: 4,
   gridUnitMm: 42,

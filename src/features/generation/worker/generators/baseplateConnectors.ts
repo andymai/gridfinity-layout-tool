@@ -34,7 +34,7 @@
 
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -162,7 +162,7 @@ function relieveTongueForSockets(
 }
 
 export function buildConnectors(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   totalHeight: number,
   totalW: number,
   totalD: number,

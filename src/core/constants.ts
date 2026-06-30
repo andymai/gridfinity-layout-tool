@@ -1,7 +1,7 @@
 import type {
   Layout,
   Category,
-  BaseplateParams,
+  StoredBaseplateParams,
   PaddingAnchor,
   StackPrintParams,
   BinId,
@@ -253,7 +253,7 @@ export const OVER_TILE_MIN_MARGIN_MM = 8;
 export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
 
 /** Default baseplate parameters: no magnets, no padding */
-export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
+export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   magnetHoles: false,
   magnetDiameter: mm(6.5),
   magnetDepth: mm(2),
@@ -269,7 +269,7 @@ export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
  * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks paddingLeft,
  * preserving magnet settings when possible.
  */
-export function migrateBaseplateParams(stored: unknown): BaseplateParams {
+export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
   if (!stored || typeof stored !== 'object') return DEFAULT_BASEPLATE_PARAMS;
   const obj = stored as Record<string, unknown>;
   // Current shape has paddingLeft — if missing, it's an old format

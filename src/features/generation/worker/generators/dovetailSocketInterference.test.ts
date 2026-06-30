@@ -20,7 +20,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, intersect } from 'brepjs';
 import { isOk } from '@/core/result';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors } from './baseplateConnectors';
 import { buildSingleCellSocket } from './socketBuilder';
@@ -37,7 +37,7 @@ beforeAll(async () => {
   await initBrepjs();
 }, 30000);
 
-const defaults = (o: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (o: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 1,
   depth: 3,
   gridUnitMm: 42,
@@ -64,7 +64,10 @@ const defaults = (o: Partial<BaseplateParams> = {}): BaseplateParams => ({
  * cell-decomposition centres (so this holds for fractional depths too) and each
  * foot is sized to its cell (cell − CLEARANCE).
  */
-function tongueFootOverlap(params: BaseplateParams): { overlap: number; tongueVol: number } {
+function tongueFootOverlap(params: ResolvedBaseplateParams): {
+  overlap: number;
+  tongueVol: number;
+} {
   const GU = params.gridUnitMm;
   const totalHeight = SOCKET_HEIGHT + (params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0);
   const totalW = params.width * GU;
