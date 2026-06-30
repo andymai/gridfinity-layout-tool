@@ -1,0 +1,74 @@
+src/features/baseplate/components/PaddingAnchor/PaddingAnchor.tsx
+  s_d0431bf9490853::t_f57796f7778159 7
+  s_d0431bf9490853::t_38d891af427d63 46
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+  s_d0431bf9490853::t_35b9b15de72070 13
+  s_d0431bf9490853::t_ceb1acada4b581 65
+src/features/generation/worker/generators/generatorConstants.ts
+  s_d0431bf9490853::t_71bd6e437e072d 89-92
+  s_d0431bf9490853::t_ab814afd0a0a16 10
+src/shared/utils/math.ts
+  s_d0431bf9490853::t_64e9b7375d783a 1-10
+src/features/bin-designer/components/panel/CutoutsSection/CutoutFitControls.tsx
+  s_d0431bf9490853::t_ade3961b44f8a7 113,123-124
+  s_d0431bf9490853::t_88ab87bf840a71 14
+src/shared/utils/cutoutArray.ts
+  s_d0431bf9490853::t_2b13a67e102252 177,182,191,196,211
+  s_d0431bf9490853::t_5858a87244b641 15
+src/features/bin-designer/utils/dividerAngle.ts
+  s_d0431bf9490853::t_b88cb6461cc668 18
+  s_d0431bf9490853::t_604b958c994cd1 147-150
+src/shell/Modals/SettingsModal/tabs/PrintTab/PrintTab.tsx
+  s_d0431bf9490853::t_2eb58d3f01aef3 66
+  s_d0431bf9490853::t_c48941799de729 7
+src/shared/utils/index.ts
+  s_d0431bf9490853::t_33d62293580ddd 35-36
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.tsx
+  s_d0431bf9490853::t_e22b0183de2f54 5
+src/features/generation/worker/generators/baseplateSlab.ts
+  s_d0431bf9490853::t_c64b3232d20de6 100-101,105-111
+  s_d0431bf9490853::t_f82ce15d357ada 9
+src/shared/utils/validation.ts
+  s_d0431bf9490853::t_e48a31e3367d74 22
+  s_d0431bf9490853::t_c7c94afb8dff70 6,8
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+  s_d0431bf9490853::t_28f42e2d450a8b 276,286-287
+  s_d0431bf9490853::t_167405c6044ad6 18
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_d0431bf9490853::t_4fd3ddd0f2d470 35-36
+  s_d0431bf9490853::t_e0b081bca80ab6 8
+src/features/baseplate/utils/computeAnchoredPaddings.ts
+  s_d0431bf9490853::t_563ff4971041df 2
+  s_d0431bf9490853::t_a0f96abef3346f 44
+src/shared/utils/math.test.ts
+  s_d0431bf9490853::t_80b726118a2c27 1-30
+src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
+  s_d0431bf9490853::t_87da0953c65db0 4
+  s_d0431bf9490853::t_936620a4b662ee 88
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_d0431bf9490853::t_0ce5fde729a0b2 22
+src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
+  s_d0431bf9490853::t_15d13bb05df540 10
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_d0431bf9490853::t_41eb0daaa15329 23
+  s_d0431bf9490853::t_bab06129b99656 85-89
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathDrawingHandler.ts
+  s_d0431bf9490853::t_f74f297ec151fb 82-83,100-101,158-159,168-169
+  s_d0431bf9490853::t_a7b1c8d9cf0b88 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "f22e852bd7f5d916d7bf3fa3e18f9cbb49d6c2ae",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
