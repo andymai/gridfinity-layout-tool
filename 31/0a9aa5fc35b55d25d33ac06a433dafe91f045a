@@ -1,0 +1,21 @@
+src/features/baseplate/utils/splitPlanner.ts
+  s_1a91b7e5519d3d::t_cc705af12f5179 539-544,561-567,573-576,584-587,591-596,599-602,606-609
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_1a91b7e5519d3d::t_1c78f650ccab16 1402-1413
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "310a9aa5fc35b55d25d33ac06a433dafe91f045a",
+  "prompts": {},
+  "sessions": {
+    "s_1a91b7e5519d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f85eac4-357a-4431-844b-378000f270fb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
