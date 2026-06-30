@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Gere uma malha primeiro para habilitar a exportação",
   "binDesigner.gridSize": "Tamanho da grade",
   "binDesigner.gridUnit": "Unidade de grade",
+  "binDesigner.gridUnitY": "Unidade de grade Y",
+  "binDesigner.nonSquareGrid": "Grade não quadrada",
   "binDesigner.gridView": "Visualização em grade",
   "binDesigner.group.base": "Base",
   "binDesigner.group.colors": "Multicolorido",

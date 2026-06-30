@@ -21,8 +21,10 @@ interface BinDimensionsProps {
   depth: number;
   /** Bin height in height units */
   height: number;
-  /** Grid unit size in mm (for label text) */
+  /** Grid unit size in mm along X / width (for label text) */
   gridUnitMm: number;
+  /** Optional grid unit size in mm along Y / depth (non-square grid); defaults to gridUnitMm */
+  gridUnitMmY?: number;
   /** Height unit size in mm (for label text) */
   heightUnitMm: number;
   /** Whether stacking lip is enabled (adds LIP_HEIGHT to total height) */
@@ -47,13 +49,16 @@ export function BinDimensions({
   depth,
   height,
   gridUnitMm,
+  gridUnitMmY,
   heightUnitMm,
   stackingLip,
 }: BinDimensionsProps) {
   const colors = useThreeColors();
+  // Y axis uses gridUnitMmY when set (non-square grid); otherwise equals X.
+  const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
   // Bin extents in mm (mesh is centered at origin)
   const outerW = width * gridUnitMm;
-  const outerD = depth * gridUnitMm;
+  const outerD = depth * gridUnitMmYEff;
   // The lip nests LIP_OVERLAP into the wall, so its real contribution to total
   // height is LIP_HEIGHT − LIP_OVERLAP — matching the generated mesh, not LIP_HEIGHT.
   const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
@@ -61,7 +66,7 @@ export function BinDimensions({
 
   // Display labels use the user's configured unit sizes
   const widthMm = Math.round(width * gridUnitMm);
-  const depthMm = Math.round(depth * gridUnitMm);
+  const depthMm = Math.round(depth * gridUnitMmYEff);
   const heightMmRaw = height * heightUnitMm + lipHeight;
   const heightMm = Number.isInteger(heightMmRaw) ? heightMmRaw : heightMmRaw.toFixed(1);
 

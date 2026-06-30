@@ -159,7 +159,7 @@ export function GhostCutouts() {
     width,
     depth,
     height,
-    gridUnitMm,
+    gridUnitMm, gridUnitMmY,
     heightUnitMm,
     wallThickness,
     cutouts,
@@ -171,6 +171,7 @@ export function GhostCutouts() {
       depth: s.params.depth,
       height: s.params.height,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       cutouts: s.params.cutouts,
@@ -189,7 +190,7 @@ export function GhostCutouts() {
   const floorZ = isFlat ? 0 : GRIDFINITY.BASE_HEIGHT;
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const originX = -innerW / 2;

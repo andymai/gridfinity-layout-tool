@@ -34,7 +34,7 @@ export function GhostCompartmentPreview() {
     width,
     depth,
     height,
-    gridUnitMm,
+    gridUnitMm, gridUnitMmY,
     heightUnitMm,
     wallThickness,
     cols,
@@ -47,6 +47,7 @@ export function GhostCompartmentPreview() {
       depth: s.params.depth,
       height: s.params.height,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       cols: s.params.compartments.cols,
@@ -58,7 +59,7 @@ export function GhostCompartmentPreview() {
 
   // Calculate bin dimensions
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;

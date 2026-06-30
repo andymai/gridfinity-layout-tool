@@ -45,6 +45,7 @@ import {
   setCellSocketTemplateCache,
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 import {
   hasHalfBinDetail,
   hashMask,
@@ -86,11 +87,13 @@ export function forEachSocketCell(
   gridW: number,
   gridD: number,
   mask: CellMask | undefined,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   globalHalfSockets: boolean,
   callback: (cell: CellInfo) => void,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): void {
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+
   if (globalHalfSockets) {
     // Half-sockets decomposes every cell into uniform 0.5u feet, so the grid is
     // symmetric and `fractionalEdge` has no foot to reposition — intentionally
@@ -105,19 +108,22 @@ export function forEachSocketCell(
     // Fractional feet: a non-0.5 trailing dimension (e.g. 1.7u) gets a clipped
     // edge foot matching the true footprint instead of snapping to a half cell.
     // Backward-safe — multiples of 0.5 decompose identically. Sub-threshold
-    // slivers are dropped (flat bottom), mirroring the over-tile baseplate.
+    // slivers are dropped (flat bottom), mirroring the over-tile baseplate. The
+    // physical drop threshold (MIN_FOOT_TILE_MM) maps to a different grid-unit
+    // count per axis under a non-square pitch.
     forEachCell(gridW, gridD, callback, {
       gridUnitMm,
       fractional: true,
-      minFractionUnits: MIN_FOOT_TILE_MM / gridUnitMm,
+      minFractionUnitsX: MIN_FOOT_TILE_MM / unitX,
+      minFractionUnitsY: MIN_FOOT_TILE_MM / unitY,
       fractionalEdgeX: fractionalEdge.x,
       fractionalEdgeY: fractionalEdge.y,
     });
     return;
   }
 
-  const totalW_mm = gridW * gridUnitMm;
-  const totalD_mm = gridD * gridUnitMm;
+  const totalW_mm = gridW * unitX;
+  const totalD_mm = gridD * unitY;
 
   forEachCell(
     gridW,
@@ -130,8 +136,8 @@ export function forEachSocketCell(
       }
 
       // Map cell center back to bottom-left of the mask region (in grid units).
-      const leftUnit = (cell.centerX + totalW_mm / 2 - gridUnitMm / 2) / gridUnitMm;
-      const bottomUnit = (cell.centerY + totalD_mm / 2 - gridUnitMm / 2) / gridUnitMm;
+      const leftUnit = (cell.centerX + totalW_mm / 2 - unitX / 2) / unitX;
+      const bottomUnit = (cell.centerY + totalD_mm / 2 - unitY / 2) / unitY;
 
       // A 1u cell is "mixed" when its 1u mask region is neither fully
       // filled nor fully empty. Uniform-filled emits one full socket;
@@ -143,12 +149,13 @@ export function forEachSocketCell(
 
       // Split into four 0.5u quarter-sub-cells. The outer cellInMask check
       // filters empty quarters so only filled half-cells produce sockets.
-      const q = gridUnitMm / 4;
+      const qx = unitX / 4;
+      const qy = unitY / 4;
       for (const [dx, dy] of [
-        [-q, -q],
-        [q, -q],
-        [-q, q],
-        [q, q],
+        [-qx, -qy],
+        [qx, -qy],
+        [-qx, qy],
+        [qx, qy],
       ] as const) {
         callback({
           widthUnits: 0.5,
@@ -308,7 +315,7 @@ export function baseSocketShapeKey(
   screwRadius: number,
   forExport: boolean,
   halfSockets: boolean,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): string {
@@ -340,13 +347,15 @@ export function buildBaseSocket(
   screwRadius: number,
   forExport = false,
   halfSockets = false,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
   const usingMask = isPartialMask(cellMask);
+  // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
 
   // Check socket cache -- skip entire build if params haven't changed
   const key = baseSocketShapeKey(
@@ -380,10 +389,10 @@ export function buildBaseSocket(
     dUnits: number
   ): boolean => {
     if (!usingMask) return true;
-    const totalW_mm = gridW * gridUnitMm;
-    const totalD_mm = gridD * gridUnitMm;
-    const leftUnit = (centerX + totalW_mm / 2 - (wUnits * gridUnitMm) / 2) / gridUnitMm;
-    const bottomUnit = (centerY + totalD_mm / 2 - (dUnits * gridUnitMm) / 2) / gridUnitMm;
+    const totalW_mm = gridW * unitX;
+    const totalD_mm = gridD * unitY;
+    const leftUnit = (centerX + totalW_mm / 2 - (wUnits * unitX) / 2) / unitX;
+    const bottomUnit = (centerY + totalD_mm / 2 - (dUnits * unitY) / 2) / unitY;
     return isRegionFilled(cellMask, leftUnit, bottomUnit, wUnits, dUnits);
   };
 
@@ -399,8 +408,8 @@ export function buildBaseSocket(
       halfSockets,
       (cell) => {
         if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+        const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
+        const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
         // Clone a cached cell-socket template (simplified for preview, full for
         // export) instead of re-lofting every cell. The clone is registered so
         // scope disposes it; `translate` returns the positioned socket.
@@ -512,10 +521,11 @@ export function buildOverhangFeet(
   gridW: number,
   gridD: number,
   overhang: ResolvedOverhang,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   forExport: boolean
 ): Shape3D | null {
   if (!hasOverhang(overhang)) return null;
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const frame = frameCells(
     gridW,
     gridD,
@@ -527,8 +537,8 @@ export function buildOverhangFeet(
 
   return withScope((scope: DisposalScope) => {
     const sockets: Shape3D[] = frame.map((cell) => {
-      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+      const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
+      const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
       return translate(scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)), [
         cell.centerX,
         cell.centerY,

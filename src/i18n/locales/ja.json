@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "エクスポートを有効にするにはまずメッシュを生成してください",
   "binDesigner.gridSize": "グリッドサイズ",
   "binDesigner.gridUnit": "グリッドユニット",
+  "binDesigner.gridUnitY": "グリッドユニット Y",
+  "binDesigner.nonSquareGrid": "非正方形グリッド",
   "binDesigner.gridView": "グリッド表示",
   "binDesigner.group.base": "ベース",
   "binDesigner.group.colors": "マルチカラー",

@@ -38,6 +38,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR, MAGNET_OFFSETS } from './generatorConstants';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { sketch } from './meshUtils';
 import {
   buildSingleCellSocket,
@@ -124,12 +125,14 @@ export function buildLightweightBase(
   openDir: LightweightOpenDirection,
   forExport = false,
   halfSockets = false,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   openFloorDrawings?: readonly Drawing[],
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
+  // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const cellInMask = (
     centerX: number,
     centerY: number,
@@ -137,10 +140,10 @@ export function buildLightweightBase(
     dUnits: number
   ): boolean => {
     if (!usingMask) return true;
-    const totalW_mm = gridW * gridUnitMm;
-    const totalD_mm = gridD * gridUnitMm;
-    const leftUnit = (centerX + totalW_mm / 2 - (wUnits * gridUnitMm) / 2) / gridUnitMm;
-    const bottomUnit = (centerY + totalD_mm / 2 - (dUnits * gridUnitMm) / 2) / gridUnitMm;
+    const totalW_mm = gridW * unitX;
+    const totalD_mm = gridD * unitY;
+    const leftUnit = (centerX + totalW_mm / 2 - (wUnits * unitX) / 2) / unitX;
+    const bottomUnit = (centerY + totalD_mm / 2 - (dUnits * unitY) / 2) / unitY;
     return isRegionFilled(cellMask, leftUnit, bottomUnit, wUnits, dUnits);
   };
 
@@ -197,8 +200,8 @@ export function buildLightweightBase(
       halfSockets,
       (cell) => {
         if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+        const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
+        const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
         feet.push(
           translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [cell.centerX, cell.centerY, 0])
         );

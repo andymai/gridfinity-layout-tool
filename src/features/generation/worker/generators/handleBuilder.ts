@@ -25,6 +25,7 @@ import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { buildHandleProfile } from './handleProfiles';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
+import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';
 
 /**
@@ -158,7 +159,12 @@ function buildHandleHolesInScope(
   const walls: readonly HandleWallDef[] = isPolygon
     ? (['front', 'back', 'left', 'right'] as const)
         .map((side) => {
-          const geom = resolvePolygonSideGeometry(cellMask, params.gridUnitMm, wallThickness, side);
+          const geom = resolvePolygonSideGeometry(
+            cellMask,
+            pitchFromParams(params),
+            wallThickness,
+            side
+          );
           return geom
             ? ({
                 side,

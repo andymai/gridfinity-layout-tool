@@ -50,7 +50,11 @@ function computeSplitInputs(
   const baseConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
-    cutPlanesY: getSplitPlanePositionsMm(params.depth, maxGrid.depth, params.gridUnitMm),
+    cutPlanesY: getSplitPlanePositionsMm(
+      params.depth,
+      maxGrid.depth,
+      params.gridUnitMmY ?? params.gridUnitMm
+    ),
     totalPieceCount: getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth),
     // Stamp the shared print-setting nozzle onto the connector config so the
     // worker scales features/clearances to it — without persisting it per-design.
@@ -87,8 +91,14 @@ export function useSplitPreview(): void {
   // primitive inputs so it's stable across renders — otherwise a fresh object
   // each render would re-run the effects (and re-dispatch split work) below.
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth]
+    () =>
+      calcMaxGridUnits(
+        defaultPrintBedSize,
+        params.gridUnitMm,
+        defaultPrintBedDepth,
+        params.gridUnitMmY ?? params.gridUnitMm
+      ),
+    [defaultPrintBedSize, params.gridUnitMm, params.gridUnitMmY, defaultPrintBedDepth]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 

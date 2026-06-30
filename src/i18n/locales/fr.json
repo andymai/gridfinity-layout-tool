@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Générer un maillage d'abord pour activer l'export",
   "binDesigner.gridSize": "Taille de grille",
   "binDesigner.gridUnit": "Unité de grille",
+  "binDesigner.gridUnitY": "Unité de grille Y",
+  "binDesigner.nonSquareGrid": "Grille non carrée",
   "binDesigner.gridView": "Vue en grille",
   "binDesigner.group.base": "Base",
   "binDesigner.group.colors": "Multicolore",

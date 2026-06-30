@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Спершу згенеруйте мешу, щоб увімкнути експорт",
   "binDesigner.gridSize": "Розмір сітки",
   "binDesigner.gridUnit": "Одиниця сітки",
+  "binDesigner.gridUnitY": "Одиниця сітки Y",
+  "binDesigner.nonSquareGrid": "Неквадратна сітка",
   "binDesigner.gridView": "Сітка",
   "binDesigner.group.base": "Основа",
   "binDesigner.group.colors": "Багатоколірний",

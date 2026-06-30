@@ -51,8 +51,11 @@ export interface BinDimensions {
  * still call this rather than recomputing, so the math stays canonical.
  */
 export function binDimensions(params: BinParams): BinDimensions {
+  // Y axis uses gridUnitMmY when set (non-square grid); otherwise it equals the
+  // X pitch, so square bins are unchanged.
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * params.gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * params.wallThickness;
   const innerD = outerD - 2 * params.wallThickness;
   const totalH = params.height * params.heightUnitMm;

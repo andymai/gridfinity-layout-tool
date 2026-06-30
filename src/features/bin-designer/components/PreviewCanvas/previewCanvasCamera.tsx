@@ -51,10 +51,12 @@ export function calculateIdealDistance(
   height: number,
   fov: number,
   gridUnitMm: number,
-  heightUnitMm: number
+  heightUnitMm: number,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): number {
   const outerW = width * gridUnitMm;
-  const outerD = depth * gridUnitMm;
+  const outerD = depth * gridUnitMmY;
   const totalH = height * heightUnitMm;
 
   // Bounding sphere radius (from center of bin)
@@ -94,6 +96,7 @@ export function CameraController({
   depth,
   height,
   gridUnitMm,
+  gridUnitMmY,
   heightUnitMm,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
@@ -103,6 +106,7 @@ export function CameraController({
   depth: number;
   height: number;
   gridUnitMm: number;
+  gridUnitMmY?: number;
   heightUnitMm: number;
 }) {
   const { camera, invalidate, size } = useThree();
@@ -139,8 +143,8 @@ export function CameraController({
     [width, depth, height, heightUnitMm]
   );
   const idealDistance = useMemo(
-    () => calculateIdealDistance(width, depth, height, fov, gridUnitMm, heightUnitMm),
-    [width, depth, height, fov, gridUnitMm, heightUnitMm]
+    () => calculateIdealDistance(width, depth, height, fov, gridUnitMm, heightUnitMm, gridUnitMmY),
+    [width, depth, height, fov, gridUnitMm, gridUnitMmY, heightUnitMm]
   );
 
   // Auto-frame: when bin dimensions change, smoothly adjust framing.

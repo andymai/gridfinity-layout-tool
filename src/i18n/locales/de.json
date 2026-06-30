@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Erzeuge zuerst ein Mesh, um Export zu aktivieren",
   "binDesigner.gridSize": "Rastergröße",
   "binDesigner.gridUnit": "Rastereinheit",
+  "binDesigner.gridUnitY": "Rastereinheit Y",
+  "binDesigner.nonSquareGrid": "Nicht-quadratisches Raster",
   "binDesigner.gridView": "Rasteransicht",
   "binDesigner.group.base": "Sockel",
   "binDesigner.group.colors": "Mehrfarbig",

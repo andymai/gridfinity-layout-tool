@@ -2053,6 +2053,8 @@ const en: Record<string, string> = {
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
+  'binDesigner.gridUnitY': 'Grid unit Y',
+  'binDesigner.nonSquareGrid': 'Non-square grid',
   'binDesigner.halfBinMode': 'Half-grid mode',
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',

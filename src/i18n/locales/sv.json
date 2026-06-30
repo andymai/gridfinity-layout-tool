@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Generera ett mesh först för att aktivera export",
   "binDesigner.gridSize": "Rutnätsstorlek",
   "binDesigner.gridUnit": "Rutnätsenhet",
+  "binDesigner.gridUnitY": "Rutnätsenhet Y",
+  "binDesigner.nonSquareGrid": "Icke-kvadratiskt rutnät",
   "binDesigner.gridView": "Rutnätsvy",
   "binDesigner.group.base": "Bas",
   "binDesigner.group.colors": "Flerfärgad",

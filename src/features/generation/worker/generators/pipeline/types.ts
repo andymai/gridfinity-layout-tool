@@ -22,6 +22,15 @@ export interface BinDimensions {
   readonly outerD: number;
   readonly innerW: number;
   readonly innerD: number;
+  /**
+   * Resolved grid cell pitch in mm per axis. `gridUnitMmX` scales width/columns,
+   * `gridUnitMmY` scales depth/rows. Equal for a standard square grid; they
+   * differ only for a non-square (anisotropic) bin. Builders that iterate grid
+   * cells (sockets, feet, magnet holes) read these so feet/positions stretch
+   * with the pitch while round features stay isotropic.
+   */
+  readonly gridUnitMmX: number;
+  readonly gridUnitMmY: number;
   readonly wallHeight: number;
   readonly totalHeight: number;
   readonly isFlat: boolean;

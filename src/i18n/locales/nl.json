@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Genereer eerst een mesh om export mogelijk te maken",
   "binDesigner.gridSize": "Grid grootte",
   "binDesigner.gridUnit": "Rastereenheid",
+  "binDesigner.gridUnitY": "Rastereenheid Y",
+  "binDesigner.nonSquareGrid": "Niet-vierkant raster",
   "binDesigner.gridView": "Rasterweergave",
   "binDesigner.group.base": "Basis",
   "binDesigner.group.colors": "Meerkleurig",

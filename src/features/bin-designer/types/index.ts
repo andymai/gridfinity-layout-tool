@@ -510,8 +510,10 @@ export interface BinParams {
   readonly fractionalEdgeX: 'start' | 'end';
   /** Side the half-unit foot row sits on for fractional `depth`: `'end'` (default) = back, `'start'` = front. */
   readonly fractionalEdgeY: 'start' | 'end';
-  /** Grid unit size in mm (default 42mm per Gridfinity spec) */
+  /** Grid unit (mm) along X / `width` (default 42); also the square grid unit when {@link gridUnitMmY} is omitted. */
   readonly gridUnitMm: number;
+  /** Optional grid unit (mm) along Y / `depth` for a non-square grid (e.g. 42×22). Omitted/equal to {@link gridUnitMm} ⇒ square; only the cell pitch stretches, round features stay isotropic. */
+  readonly gridUnitMmY?: number;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */
   readonly heightUnitMm: number;
   /** Wall thickness in mm (default 1.2) */

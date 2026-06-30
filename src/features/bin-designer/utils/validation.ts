@@ -323,10 +323,12 @@ export function computeMinCellSize(
   cols: number,
   rows: number,
   dividerThickness: number,
-  gridUnitMm: number = GRIDFINITY.GRID_SIZE
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): MinCellSize {
   const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * gridUnitMmY - GRIDFINITY.TOLERANCE - 2 * wallThickness;
 
   const dividersW = cols > 1 ? (cols - 1) * dividerThickness : 0;
   const dividersD = rows > 1 ? (rows - 1) * dividerThickness : 0;
@@ -350,7 +352,9 @@ export function validateCompartmentSizes(
   cols: number,
   rows: number,
   dividerThickness: number,
-  gridUnitMm: number = GRIDFINITY.GRID_SIZE
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): Result<undefined, DesignerValidationError> {
   if (cols < 1 || rows < 1) {
     return err({
@@ -368,7 +372,8 @@ export function validateCompartmentSizes(
     cols,
     rows,
     dividerThickness,
-    gridUnitMm
+    gridUnitMm,
+    gridUnitMmY
   );
 
   if (cols > 1 && minCellW < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {

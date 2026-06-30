@@ -272,6 +272,8 @@ export function generateBinDirect(
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy designs may lack gridUnitMm/heightUnitMm
   const gridUnit = params.gridUnitMm ?? SIZE;
+  // Y pitch for non-square grids; equals X for a standard square grid.
+  const gridUnitY = params.gridUnitMmY ?? gridUnit;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy designs may lack heightUnitMm
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = height * heightUnit;
@@ -280,7 +282,7 @@ export function generateBinDirect(
 
   addBinBody(mb, {
     outerW: width * gridUnit - CLEARANCE,
-    outerD: depth * gridUnit - CLEARANCE,
+    outerD: depth * gridUnitY - CLEARANCE,
     wallThickness: params.wallThickness,
     totalHeight,
     hasLip: params.base.stackingLip,
@@ -292,12 +294,14 @@ export function generateBinDirect(
   // Per-cell feet — replicates `socketBuilder`'s non-mask cell walk (half
   // sockets, or fractional feet dropping sub-printable slivers) so foot count
   // and placement match the exact path bit-for-bit. Masked bins fall back.
+  const pitch = { x: gridUnit, y: gridUnitY };
   const footOpts = params.base.halfSockets
-    ? ({ halfSockets: true, gridUnitMm: gridUnit } as const)
+    ? ({ halfSockets: true, gridUnitMm: pitch } as const)
     : ({
-        gridUnitMm: gridUnit,
+        gridUnitMm: pitch,
         fractional: true,
-        minFractionUnits: MIN_PRINTABLE_TILE_MM / gridUnit,
+        minFractionUnitsX: MIN_PRINTABLE_TILE_MM / gridUnit,
+        minFractionUnitsY: MIN_PRINTABLE_TILE_MM / gridUnitY,
         fractionalEdgeX: params.fractionalEdgeX,
         fractionalEdgeY: params.fractionalEdgeY,
       } as const);
@@ -311,7 +315,7 @@ export function generateBinDirect(
         cell.centerX,
         cell.centerY,
         cell.widthUnits * gridUnit - CLEARANCE,
-        cell.depthUnits * gridUnit - CLEARANCE
+        cell.depthUnits * gridUnitY - CLEARANCE
       );
     },
     footOpts

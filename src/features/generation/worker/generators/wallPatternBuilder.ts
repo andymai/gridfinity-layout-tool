@@ -48,6 +48,7 @@ import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutCl
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
+import { pitchFromParams } from './gridPitch';
 import {
   WALL_PATTERN_CLIPPED_CACHE,
   type CutoutClipParams,
@@ -120,7 +121,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
           .map((side) => {
             const geom = resolvePolygonSideGeometry(
               cellMask,
-              params.gridUnitMm,
+              pitchFromParams(params),
               params.wallThickness,
               side
             );

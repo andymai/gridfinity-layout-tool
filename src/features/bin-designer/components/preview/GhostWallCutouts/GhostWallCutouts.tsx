@@ -31,7 +31,7 @@ export function GhostWallCutouts() {
     width,
     depth,
     height,
-    gridUnitMm,
+    gridUnitMm, gridUnitMmY,
     heightUnitMm,
     wallThickness,
     walls,
@@ -43,6 +43,7 @@ export function GhostWallCutouts() {
       depth: s.params.depth,
       height: s.params.height,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       walls: s.params.walls,
@@ -52,7 +53,7 @@ export function GhostWallCutouts() {
   );
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;

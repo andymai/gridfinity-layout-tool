@@ -399,6 +399,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 depth={depth}
                 height={height}
                 gridUnitMm={params.gridUnitMm}
+                gridUnitMmY={params.gridUnitMmY}
                 heightUnitMm={params.heightUnitMm}
               />
 
@@ -452,7 +453,12 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
               {/* Footprint grid */}
               {!hideChrome && (
-                <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+                <FootprintGrid
+                  width={width}
+                  depth={depth}
+                  gridUnitMm={params.gridUnitMm}
+                  gridUnitMmY={params.gridUnitMmY}
+                />
               )}
 
               {/* Dimension markers and labels — hidden for split pieces */}
@@ -466,6 +472,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                         depth={depth}
                         height={height}
                         gridUnitMm={params.gridUnitMm}
+                        gridUnitMmY={params.gridUnitMmY}
                         heightUnitMm={params.heightUnitMm}
                         stackingLip={params.base.stackingLip}
                       />
@@ -477,6 +484,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                     width={width}
                     depth={depth}
                     gridUnitMm={params.gridUnitMm}
+                    gridUnitMmY={params.gridUnitMmY}
                     name={designName}
                   />
                 </>

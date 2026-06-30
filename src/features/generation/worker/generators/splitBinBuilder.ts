@@ -21,9 +21,10 @@ import {
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
-import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
+import { CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { pitchFromParams, type GridPitch } from './gridPitch';
 import { toIndexedMeshData } from './utils/mesh';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
@@ -188,10 +189,11 @@ function splitSolidIntoPieces(
     throw new Error('Failed to generate solid for splitting');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnitMm = params.gridUnitMm ?? SIZE;
-  const outerW = params.width * gridUnitMm - CLEARANCE;
-  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  // Per-axis pitch: X scales width / vertical cut planes, Y scales depth /
+  // horizontal cut planes. Equal for a square grid.
+  const { x: gridUnitMmX, y: gridUnitMmY } = pitchFromParams(params);
+  const outerW = params.width * gridUnitMmX - CLEARANCE;
+  const outerD = params.depth * gridUnitMmY - CLEARANCE;
 
   // Lightweight bins have no solid floor for the 45° floor scarf to bite into —
   // cut planes are shifted mid-cell, landing over the hollow cup recesses, so the
@@ -230,7 +232,7 @@ function splitSolidIntoPieces(
       params.width,
       params.depth,
       true,
-      params.gridUnitMm,
+      { x: gridUnitMmX, y: gridUnitMmY },
       params.cellMask,
       overhang
     );
@@ -301,8 +303,8 @@ function splitSolidIntoPieces(
   // plane itself by 0.1mm fully resolves the coplanarity at both faces and
   // keeps the pieces flush (no overlap region, just a 0.1mm offset that's
   // invisible to FDM print and barely felt at the join).
-  const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMm);
-  const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMm);
+  const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMmX);
+  const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMmY);
 
   // The outermost cutting boxes must reach the overhung body edges (resolved
   // above) or the boolean intersect clips the overhang off (#1949). The body
@@ -527,7 +529,7 @@ function tessellatePiece(
   piece: SplitPieceInfo,
   outerW: number,
   outerD: number,
-  gridUnitMm: number
+  pitch: GridPitch
 ): SplitPreviewResult['pieces'][number] {
   const {
     solid: pieceSolid,
@@ -584,10 +586,10 @@ function tessellatePiece(
     label,
     col,
     row,
-    widthUnits: widthMm / gridUnitMm,
-    depthUnits: depthMm / gridUnitMm,
-    offsetX: xMinFromOrigin / gridUnitMm,
-    offsetY: yMinFromOrigin / gridUnitMm,
+    widthUnits: widthMm / pitch.x,
+    depthUnits: depthMm / pitch.y,
+    offsetX: xMinFromOrigin / pitch.x,
+    offsetY: yMinFromOrigin / pitch.y,
   };
 }
 
@@ -647,12 +649,11 @@ export function generateSplitPreview(
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnitMm = params.gridUnitMm ?? SIZE;
-  const outerW = params.width * gridUnitMm - CLEARANCE;
-  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  const pitch = pitchFromParams(params);
+  const outerW = params.width * pitch.x - CLEARANCE;
+  const outerD = params.depth * pitch.y - CLEARANCE;
 
-  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
+  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, pitch)) };
 }
 
 /**
@@ -677,14 +678,13 @@ export function generateSplitPreviewRange(
     splitConnectorConfig,
     new Set(pieceIndices)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnitMm = params.gridUnitMm ?? SIZE;
-  const outerW = params.width * gridUnitMm - CLEARANCE;
-  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  const pitch = pitchFromParams(params);
+  const outerW = params.width * pitch.x - CLEARANCE;
+  const outerD = params.depth * pitch.y - CLEARANCE;
 
   // splitPieces are exactly the requested pieces (cut-skipped otherwise);
   // tessellate them all. The pool re-sorts by col/row, so order is irrelevant.
-  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
+  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, pitch)) };
 }
 
 /**

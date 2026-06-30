@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Generer et mesh først for å aktivere eksport",
   "binDesigner.gridSize": "Rutenettstørrelse",
   "binDesigner.gridUnit": "Rutenettenhet",
+  "binDesigner.gridUnitY": "Rutenettenhet Y",
+  "binDesigner.nonSquareGrid": "Ikke-kvadratisk rutenett",
   "binDesigner.gridView": "Rutenettvisning",
   "binDesigner.group.base": "Base",
   "binDesigner.group.colors": "Flerfarget",

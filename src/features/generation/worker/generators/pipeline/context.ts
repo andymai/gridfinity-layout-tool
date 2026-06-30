@@ -7,13 +7,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
-import {
-  SIZE,
-  HEIGHT_UNIT,
-  CLEARANCE,
-  SOCKET_HEIGHT,
-  LIP_SMALL_TAPER,
-} from '../generatorConstants';
+import { HEIGHT_UNIT, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 import {
   buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
@@ -24,13 +18,15 @@ import {
   hasDividerOverrides,
   hasMultipleCompartments,
 } from '../compartmentBuilder';
-// SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
-// with callers (or serialized designs) that predate gridUnitMm/heightUnitMm.
+// HEIGHT_UNIT is kept as a fallback default for backwards compatibility with
+// callers (or serialized designs) that predate heightUnitMm. The grid-unit
+// fallback now lives in `pitchFromParams` (gridPitch.ts).
 import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
 import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '../overhang';
+import { pitchFromParams, pitchKeySegments } from '../gridPitch';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
@@ -50,10 +46,13 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   const lightweight = params.base.lightweight && !isFlat;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnit = params.gridUnitMm ?? SIZE;
-  const outerW = params.width * gridUnit - CLEARANCE;
-  const outerD = params.depth * gridUnit - CLEARANCE;
+  // Per-axis grid pitch. gridUnitMmX scales width/columns, gridUnitMmY scales
+  // depth/rows. They're equal for a standard square grid (gridUnitMmY omitted),
+  // so the multiplications below reduce to the original `* gridUnit` form.
+  // `pitchFromParams` applies the same `?? SIZE` legacy fallback as before.
+  const { x: gridUnitX, y: gridUnitY } = pitchFromParams(params);
+  const outerW = params.width * gridUnitX - CLEARANCE;
+  const outerD = params.depth * gridUnitY - CLEARANCE;
 
   // Resolve overhang before innerW/innerD so interior features (compartments,
   // scoops, label tabs, etc.) see the actual available space. The box shell
@@ -75,7 +74,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   const withScrew =
     !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
-  const maxDimension = Math.max(params.width, params.depth) * gridUnit;
+  const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
   const hasLip = params.base.stackingLip;
   // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
@@ -137,7 +136,12 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       'v7',
       quantize(params.width),
       quantize(params.depth),
-      quantize(gridUnit),
+      quantize(gridUnitX),
+      // Y pitch — appended only for a non-square grid (distinguishes a 2×2 @
+      // 42×22 shell from a 2×2 @ 42×42 shell, which share width/depth/gridUnitX
+      // but have different outerD). Omitted when square so existing v7 keys stay
+      // byte-identical.
+      ...pitchKeySegments({ x: gridUnitX, y: gridUnitY }, quantize),
       isFlat,
       halfSockets,
       withMagnet,
@@ -161,6 +165,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     outerD,
     innerW,
     innerD,
+    gridUnitMmX: gridUnitX,
+    gridUnitMmY: gridUnitY,
     wallHeight,
     totalHeight,
     isFlat,

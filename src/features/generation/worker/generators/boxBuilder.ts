@@ -39,6 +39,7 @@ import {
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
 import { createLogger } from '@/core/logger';
@@ -142,7 +143,7 @@ export function buildBinBox(
   wallThickness: number,
   solid: boolean,
   cutoutTopOffset: number = 0,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   /**
    * Per-compartment cavity drawings used by the multi-cavity cut path.
@@ -169,11 +170,13 @@ export function buildBinBox(
     !polygon &&
     compartmentCavityDrawings !== undefined &&
     compartmentCavityDrawings.length > 1;
+  const pitch = resolvePitch(gridUnitMm);
   const boxKey = buildCacheKey(
     'v3',
     quantize(gridW),
     quantize(gridD),
-    quantize(gridUnitMm),
+    quantize(pitch.x),
+    ...pitchKeySegments(pitch, quantize),
     quantize(wallHeight),
     quantize(wallThickness),
     solid,
@@ -191,8 +194,8 @@ export function buildBinBox(
   // sides shifts the footprint center so each wall lands at the right place.
   // The interior expands in lockstep (shell/inner offset use the same dims),
   // keeping wall thickness uniform — the extra material fills the drawer gap.
-  const outerW = gridW * gridUnitMm - CLEARANCE + (exp?.addW ?? 0);
-  const outerD = gridD * gridUnitMm - CLEARANCE + (exp?.addD ?? 0);
+  const outerW = gridW * pitch.x - CLEARANCE + (exp?.addW ?? 0);
+  const outerD = gridD * pitch.y - CLEARANCE + (exp?.addD ?? 0);
   const offX = exp?.offsetX ?? 0;
   const offY = exp?.offsetY ?? 0;
 
@@ -412,7 +415,7 @@ function buildTopShapeLoft(
   outerD: number,
   includeLip: boolean,
   cellMask?: CellMask,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
   offY: number = 0
 ): Shape3D {
@@ -565,7 +568,7 @@ function buildTopShapeSweep(
   outerD: number,
   includeLip: boolean,
   cellMask?: CellMask,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
   offY: number = 0
 ): Shape3D {
@@ -654,7 +657,7 @@ export function buildTopShape(
   gridW: number,
   gridD: number,
   includeLip: boolean,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   overhang?: ResolvedOverhang
 ): Shape3D {
@@ -662,11 +665,13 @@ export function buildTopShape(
   // Overhang is suppressed for polygon masks (the mask defines the footprint).
   const ov = polygon ? undefined : overhang;
   const exp = ov && hasOverhang(ov) ? overhangExpansion(ov) : null;
+  const pitch = resolvePitch(gridUnitMm);
   const lipKey = buildCacheKey(
     'v4',
     quantize(gridW),
     quantize(gridD),
-    quantize(gridUnitMm),
+    quantize(pitch.x),
+    ...pitchKeySegments(pitch, quantize),
     includeLip,
     polygon ? hashMask(cellMask) : 'rect',
     ov ? overhangKey(ov) : '0'
@@ -678,8 +683,8 @@ export function buildTopShape(
 
   // Lip grows with the body so a bin stacked on top still mates flush across
   // the full (overhung) perimeter.
-  const outerW = gridW * gridUnitMm - CLEARANCE + (exp?.addW ?? 0);
-  const outerD = gridD * gridUnitMm - CLEARANCE + (exp?.addD ?? 0);
+  const outerW = gridW * pitch.x - CLEARANCE + (exp?.addW ?? 0);
+  const outerD = gridD * pitch.y - CLEARANCE + (exp?.addD ?? 0);
   const offX = exp?.offsetX ?? 0;
   const offY = exp?.offsetY ?? 0;
 

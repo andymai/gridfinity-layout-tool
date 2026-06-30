@@ -148,7 +148,8 @@ export function useGeneration(): void {
         currentParams.compartments.cols,
         currentParams.compartments.rows,
         currentParams.compartments.thickness,
-        currentParams.gridUnitMm
+        currentParams.gridUnitMm,
+        currentParams.gridUnitMmY
       );
       if (isErr(compartmentCheck)) {
         setGenerationResult({

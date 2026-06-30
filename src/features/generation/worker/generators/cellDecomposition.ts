@@ -6,7 +6,7 @@
  * Used by socket builders, feature builders, and baseplate generators.
  */
 
-import { SIZE } from './generatorConstants';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 /** Cell position info for iteration */
 export interface CellInfo {
   /** Cell size in grid units (1 or 0.5) */
@@ -130,8 +130,12 @@ export interface ForEachCellOptions {
    * `'end'` (default) = back/positive-Y. `'start'` = front/negative-Y.
    */
   readonly fractionalEdgeY?: 'start' | 'end';
-  /** Grid unit size in mm. Defaults to standard Gridfinity 42mm. */
-  readonly gridUnitMm?: number;
+  /**
+   * Grid unit size in mm. Either a square scalar (default standard Gridfinity
+   * 42mm) or an explicit per-axis pitch `{ x, y }` for a non-square grid. `x`
+   * scales the width axis, `y` the depth axis.
+   */
+  readonly gridUnitMm?: GridUnitInput;
   /**
    * Emit exact fractional trailing cells instead of snapping to 0.5
    * (over-tile baseplates, fractional-foot bins). Ignored when
@@ -144,6 +148,14 @@ export interface ForEachCellOptions {
    * {@link DecomposeOptions.minFractionUnits}.
    */
   readonly minFractionUnits?: number;
+  /**
+   * Per-axis overrides for {@link minFractionUnits}. With a non-square pitch the
+   * same physical drop threshold (mm) maps to a different grid-unit count on
+   * each axis (`mm / pitchX` vs `mm / pitchY`), so callers pass both. Falls back
+   * to {@link minFractionUnits} when omitted.
+   */
+  readonly minFractionUnitsX?: number;
+  readonly minFractionUnitsY?: number;
 }
 
 /**
@@ -168,31 +180,30 @@ export function forEachCell(
       ? { halfSockets: optionsOrHalfSockets }
       : optionsOrHalfSockets;
 
-  const decompose = opts.halfSockets
-    ? decomposeHalfCells
-    : (units: number): number[] =>
-        decomposeCells(units, {
-          fractional: opts.fractional,
-          minFractionUnits: opts.minFractionUnits,
-        });
-  const cellsW = decompose(gridW);
-  const cellsD = decompose(gridD);
+  const decompose = (units: number, minFractionUnits: number | undefined): number[] =>
+    opts.halfSockets
+      ? decomposeHalfCells(units)
+      : decomposeCells(units, { fractional: opts.fractional, minFractionUnits });
+  const cellsW = decompose(gridW, opts.minFractionUnitsX ?? opts.minFractionUnits);
+  const cellsD = decompose(gridD, opts.minFractionUnitsY ?? opts.minFractionUnits);
 
   // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
   if (opts.fractionalEdgeX === 'start') cellsW.reverse();
   if (opts.fractionalEdgeY === 'start') cellsD.reverse();
 
-  const unit = opts.gridUnitMm ?? SIZE;
-  const totalW_mm = gridW * unit;
-  const totalD_mm = gridD * unit;
+  // Width/columns scale by unitX, depth/rows by unitY. A scalar pitch makes
+  // unitX === unitY, reproducing the original square iteration exactly.
+  const { x: unitX, y: unitY } = resolvePitch(opts.gridUnitMm);
+  const totalW_mm = gridW * unitX;
+  const totalD_mm = gridD * unitY;
 
   let xOffset = 0;
   for (const cellW_units of cellsW) {
-    const centerX = xOffset + (cellW_units * unit) / 2 - totalW_mm / 2;
+    const centerX = xOffset + (cellW_units * unitX) / 2 - totalW_mm / 2;
     let yOffset = 0;
 
     for (const cellD_units of cellsD) {
-      const centerY = yOffset + (cellD_units * unit) / 2 - totalD_mm / 2;
+      const centerY = yOffset + (cellD_units * unitY) / 2 - totalD_mm / 2;
 
       callback({
         widthUnits: cellW_units,
@@ -201,9 +212,9 @@ export function forEachCell(
         centerY,
       });
 
-      yOffset += cellD_units * unit;
+      yOffset += cellD_units * unitY;
     }
-    xOffset += cellW_units * unit;
+    xOffset += cellW_units * unitX;
   }
 }
 
@@ -297,26 +308,14 @@ export function frameCells(
   gridW: number,
   gridD: number,
   margins: SideMargins,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   minStripMm: number,
   halfGrid = false
 ): CellInfo[] {
-  const xs = marginAxisEntries(
-    gridW,
-    margins.left,
-    margins.right,
-    gridUnitMm,
-    minStripMm,
-    halfGrid
-  );
-  const ys = marginAxisEntries(
-    gridD,
-    margins.front,
-    margins.back,
-    gridUnitMm,
-    minStripMm,
-    halfGrid
-  );
+  // Left/right margins live on the X axis (unitX), front/back on Y (unitY).
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const xs = marginAxisEntries(gridW, margins.left, margins.right, unitX, minStripMm, halfGrid);
+  const ys = marginAxisEntries(gridD, margins.front, margins.back, unitY, minStripMm, halfGrid);
   const cells: CellInfo[] = [];
   for (const x of xs) {
     for (const y of ys) {

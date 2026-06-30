@@ -584,6 +584,8 @@
   "binDesigner.generateAMeshFirstToEnableExport": "Genera una malla primero para habilitar la exportación",
   "binDesigner.gridSize": "Tamaño de cuadrícula",
   "binDesigner.gridUnit": "Unidad de rejilla",
+  "binDesigner.gridUnitY": "Unidad de rejilla Y",
+  "binDesigner.nonSquareGrid": "Cuadrícula no cuadrada",
   "binDesigner.gridView": "Vista de cuadrícula",
   "binDesigner.group.base": "Base",
   "binDesigner.group.colors": "Multicolor",

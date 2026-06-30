@@ -45,6 +45,9 @@ export const shellStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, onProgress, originToTag } = ctx;
+    // Per-axis grid pitch (equal for a square grid). Threaded into every cell-
+    // iterating builder so feet/sockets/lip stretch with a non-square grid.
+    const pitch = { x: dim.gridUnitMmX, y: dim.gridUnitMmY };
 
     // ── LIGHTWEIGHT BASE — shelled cups replace the solid socket. ────────────
     // Built up-front because its `floorOpenings` must be cut into the body
@@ -82,7 +85,7 @@ export const shellStage: PipelineStage = {
         dim.solid ? 'down' : 'up',
         true, // full 5-section foot profile, matching buildBaseSocket here
         dim.halfSockets,
-        params.gridUnitMm,
+        pitch,
         params.cellMask,
         openFloorDrawings,
         { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
@@ -135,7 +138,7 @@ export const shellStage: PipelineStage = {
               params.depth,
               dim.wallHeight,
               params.wallThickness,
-              params.gridUnitMm,
+              pitch,
               params.cellMask,
               dim.overhang
             );
@@ -156,7 +159,7 @@ export const shellStage: PipelineStage = {
           params.wallThickness,
           dim.solid,
           cutoutTopOffset,
-          params.gridUnitMm,
+          pitch,
           params.cellMask,
           compartmentCavityDrawings,
           compartmentCavityKey,
@@ -171,7 +174,7 @@ export const shellStage: PipelineStage = {
                 params.width,
                 params.depth,
                 true,
-                params.gridUnitMm,
+                pitch,
                 params.cellMask,
                 dim.overhang
               )
@@ -235,7 +238,7 @@ export const shellStage: PipelineStage = {
           params.base.screwDiameter / 2,
           true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
           dim.halfSockets,
-          params.gridUnitMm,
+          pitch,
           params.cellMask,
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
         );
@@ -251,7 +254,7 @@ export const shellStage: PipelineStage = {
         // mate with baseplate sockets), so they keep the default 'end'
         // decomposition regardless of fractionalEdge — only the seam tiling at a
         // fractional edge differs cosmetically, never the socket mating.
-        feet = buildOverhangFeet(params.width, params.depth, dim.overhang, params.gridUnitMm, true);
+        feet = buildOverhangFeet(params.width, params.depth, dim.overhang, pitch, true);
         if (feet) {
           const withFeet = unwrap(fuse(socket, feet));
           socket.delete();
@@ -289,7 +292,7 @@ export const shellStage: PipelineStage = {
             params.base.screwDiameter / 2,
             true,
             dim.halfSockets,
-            params.gridUnitMm,
+            pitch,
             params.cellMask,
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;

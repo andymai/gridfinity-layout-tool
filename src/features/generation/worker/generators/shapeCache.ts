@@ -21,6 +21,7 @@ import type { Shape3D } from 'brepjs';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
+import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { clearSocketMeshCache } from './socketMeshCache';
 import { clearTextMetricsMemo } from './textBuilder';
@@ -130,7 +131,7 @@ export function socketCacheKey(
   screwRadius: number,
   forExport: boolean,
   halfSockets: boolean,
-  gridUnitMm: number = GRIDFINITY.GRID_SIZE,
+  gridUnitMm: GridUnitInput = GRIDFINITY.GRID_SIZE,
   maskHash?: string,
   fractionalEdgeX: 'start' | 'end' = 'end',
   fractionalEdgeY: 'start' | 'end' = 'end'
@@ -141,12 +142,17 @@ export function socketCacheKey(
     fractionalEdgeX === 'end' && fractionalEdgeY === 'end'
       ? []
       : [`frac:${fractionalEdgeX}:${fractionalEdgeY}`];
+  // X pitch occupies the legacy gridUnitMm slot; the Y pitch is appended only
+  // for a non-square grid so square keys stay byte-identical.
+  const pitch = resolvePitch(gridUnitMm);
+  const pitchSegments = pitchKeySegments(pitch, quantize);
   return compactKey(
     buildCacheKey(
       'v2',
       quantize(gridW),
       quantize(gridD),
-      quantize(gridUnitMm),
+      quantize(pitch.x),
+      ...pitchSegments,
       withMagnet,
       withScrew,
       quantize(magnetRadius),

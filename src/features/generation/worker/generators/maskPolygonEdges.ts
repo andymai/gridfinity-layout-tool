@@ -15,6 +15,7 @@
 
 import { MASK_CELL_SIZE, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
 import { CLEARANCE } from './generatorConstants';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 
 export type WallSideKey = 'front' | 'back' | 'left' | 'right';
 
@@ -157,21 +158,26 @@ export function findPolygonEdgeForSide(mask: CellMask, side: WallSideKey): Polyg
  */
 export function resolvePolygonSideGeometry(
   mask: CellMask,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   wallThickness: number,
   side: WallSideKey
 ): PolygonSideGeometry | null {
   const edge = findPolygonEdgeForSide(mask, side);
   if (!edge) return null;
 
+  // Per-axis pitch — X scales width/columns, Y scales depth/rows (equal for a
+  // square grid). Front/back walls run along X, left/right walls along Y.
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const spanUnit = side === 'front' || side === 'back' ? unitX : unitY;
+
   // halfWidthMm / halfDepthMm match maskPolygon.ts loopToMm — the mask spans
   // the FULL grid-unit extent (outer body plus CLEARANCE/2 on each side).
-  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * unitX) / 2;
+  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * unitY) / 2;
 
   // Edge midpoint in centered mm space.
-  const outerX = edge.midU.x * gridUnitMm - halfWidthMm;
-  const outerY = edge.midU.y * gridUnitMm - halfDepthMm;
+  const outerX = edge.midU.x * unitX - halfWidthMm;
+  const outerY = edge.midU.y * unitY - halfDepthMm;
 
   // Inset inward by (wallThickness + CLEARANCE/2) so cutout lands at the
   // inner wall face — same as rect-bin case where y = -innerD/2.
@@ -200,7 +206,7 @@ export function resolvePolygonSideGeometry(
   // full rectangle. For non-convex neighbors the inner face is technically
   // longer; we approximate uniformly here (error bounded by wallThickness,
   // generator clips against the real bin body at the 3D stage).
-  const wallSpan = edge.spanU * gridUnitMm - CLEARANCE - 2 * wallThickness;
+  const wallSpan = edge.spanU * spanUnit - CLEARANCE - 2 * wallThickness;
 
   return {
     key: side,

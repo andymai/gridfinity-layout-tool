@@ -32,7 +32,7 @@ export function GhostScoops() {
     width,
     depth,
     height,
-    gridUnitMm,
+    gridUnitMm, gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -46,6 +46,7 @@ export function GhostScoops() {
       depth: s.params.depth,
       height: s.params.height,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
@@ -58,7 +59,7 @@ export function GhostScoops() {
   const { cols, rows, cells } = compartments;
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
 

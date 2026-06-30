@@ -155,8 +155,14 @@ export function useExport(): UseExportReturn {
   // Split detection — use params.gridUnitMm (the bin's actual grid unit)
   // rather than defaultGridUnitMm from settings, which may be stale
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, params.gridUnitMm]
+    () =>
+      calcMaxGridUnits(
+        defaultPrintBedSize,
+        params.gridUnitMm,
+        defaultPrintBedDepth,
+        params.gridUnitMmY ?? params.gridUnitMm
+      ),
+    [defaultPrintBedSize, defaultPrintBedDepth, params.gridUnitMm, params.gridUnitMmY]
   );
 
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
@@ -429,8 +435,9 @@ export function useExport(): UseExportReturn {
 
       try {
         const gridSizeMm = params.gridUnitMm;
+        const gridSizeMmY = params.gridUnitMmY ?? params.gridUnitMm;
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGrid.width, gridSizeMm);
-        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridSizeMm);
+        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridSizeMmY);
         const connectorConfig = {
           ...(params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
           nozzleSizeMm: useSettingsStore.getState().settings.printSettings.nozzleSizeMm,

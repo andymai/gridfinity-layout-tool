@@ -91,15 +91,18 @@ function calcMaxGridUnitsForAxis(bedMm: number, gridUnitMm: number): number {
 /**
  * Calculate max grid units that fit on a print bed for each axis.
  * When printBedDepthMm is omitted, depth uses the same value as width (square bed).
+ * `gridUnitMmY` lets the depth axis use a different cell pitch (non-square grid);
+ * it defaults to `gridUnitMm`, so square grids are unaffected.
  */
 export function calcMaxGridUnits(
   printBedWidthMm: number,
   gridUnitMm: number,
-  printBedDepthMm?: number
+  printBedDepthMm?: number,
+  gridUnitMmY: number = gridUnitMm
 ): { width: number; depth: number } {
   return {
     width: calcMaxGridUnitsForAxis(printBedWidthMm, gridUnitMm),
-    depth: calcMaxGridUnitsForAxis(printBedDepthMm ?? printBedWidthMm, gridUnitMm),
+    depth: calcMaxGridUnitsForAxis(printBedDepthMm ?? printBedWidthMm, gridUnitMmY),
   };
 }
 

@@ -15,6 +15,7 @@ export function useDimensionsSection() {
     fractionalEdgeY,
     baseHalfSockets,
     gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     halfGridMode,
     setParam,
@@ -29,6 +30,7 @@ export function useDimensionsSection() {
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       halfGridMode: s.ui.halfGridMode,
       setParam: s.setParam,
@@ -44,7 +46,7 @@ export function useDimensionsSection() {
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
 
   const widthMm = width * gridUnitMm;
-  const depthMm = depth * gridUnitMm;
+  const depthMm = depth * (gridUnitMmY ?? gridUnitMm);
   const heightMm = height * heightUnitMm;
 
   const handleWidthStep = useCallback(

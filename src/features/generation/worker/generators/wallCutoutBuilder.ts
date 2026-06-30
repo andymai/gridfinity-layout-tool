@@ -22,6 +22,7 @@ import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
+import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
@@ -293,7 +294,7 @@ function buildWallCutoutCutsInScope(
   const cellMask = params.cellMask;
   const sides: PolygonSideGeometry[] = isPartialMask(cellMask)
     ? (['front', 'back', 'left', 'right'] as const)
-        .map((key) => resolvePolygonSideGeometry(cellMask, params.gridUnitMm, wallThickness, key))
+        .map((key) => resolvePolygonSideGeometry(cellMask, pitchFromParams(params), wallThickness, key))
         .filter((g): g is PolygonSideGeometry => g !== null)
     : [
         { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },

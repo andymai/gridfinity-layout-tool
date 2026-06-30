@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Collapsible } from '@/design-system';
+import { Collapsible, Switch } from '@/design-system';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
@@ -33,20 +33,58 @@ export function PhysicalUnitsSection() {
       summary={meta.summary}
     >
       <div className="space-y-2">
-        <SettingsRow
-          label="Grid unit"
-          tooltip="Size of one grid unit in mm (standard Gridfinity = 42mm)"
-          unit="mm"
-        >
-          <DeferredNumberInput
-            value={state.gridUnitMm}
-            onChange={handlers.handleGridUnitChange}
-            min={1}
-            max={200}
-            className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label={t('binDesigner.gridUnit')}
-          />
-        </SettingsRow>
+        {state.nonSquare ? (
+          <>
+            <SettingsRow
+              label="Grid unit X"
+              tooltip="Width of one grid cell in mm along X (standard Gridfinity = 42mm)"
+              unit="mm"
+            >
+              <DeferredNumberInput
+                value={state.gridUnitMm}
+                onChange={handlers.handleGridUnitChange}
+                min={1}
+                max={200}
+                className="input w-14 py-0.5 px-1 text-xs text-right"
+                aria-label={t('binDesigner.gridUnit')}
+              />
+            </SettingsRow>
+            <SettingsRow
+              label="Grid unit Y"
+              tooltip="Depth of one grid cell in mm along Y. Set different from X to fill a drawer that isn't an exact multiple of 42mm (e.g. 42×22)."
+              unit="mm"
+            >
+              <DeferredNumberInput
+                value={state.gridUnitMmY}
+                onChange={handlers.handleGridUnitYChange}
+                min={1}
+                max={200}
+                className="input w-14 py-0.5 px-1 text-xs text-right"
+                aria-label={t('binDesigner.gridUnitY')}
+              />
+            </SettingsRow>
+          </>
+        ) : (
+          <SettingsRow
+            label="Grid unit"
+            tooltip="Size of one grid cell in mm (standard Gridfinity = 42mm)"
+            unit="mm"
+          >
+            <DeferredNumberInput
+              value={state.gridUnitMm}
+              onChange={handlers.handleGridUnitChange}
+              min={1}
+              max={200}
+              className="input w-14 py-0.5 px-1 text-xs text-right"
+              aria-label={t('binDesigner.gridUnit')}
+            />
+          </SettingsRow>
+        )}
+        <Switch
+          label={t('binDesigner.nonSquareGrid')}
+          checked={state.nonSquare}
+          onChange={handlers.handleToggleNonSquare}
+        />
         <SettingsRow
           label="Height unit"
           tooltip="Size of one height unit in mm (standard Gridfinity = 7mm)"

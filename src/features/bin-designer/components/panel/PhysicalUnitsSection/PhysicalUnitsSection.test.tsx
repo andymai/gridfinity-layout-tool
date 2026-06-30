@@ -13,10 +13,25 @@ describe('PhysicalUnitsSection', () => {
     });
   });
 
-  it('renders unit inputs', () => {
+  it('renders a single grid unit field by default (square grid)', () => {
+    // DEFAULT_BIN_PARAMS has gridUnitMmY undefined (square): one shared field,
+    // no separate Y input until non-square mode is enabled.
+    expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('Grid unit')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Grid unit Y')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Height unit')).toBeInTheDocument();
+  });
+
+  it('reveals independent X and Y fields in non-square mode, Y seeded from X', () => {
+    // Non-square mode is marked by a concrete gridUnitMmY (here equal to X, 42mm).
+    act(() => {
+      useDesignerStore.setState((s) => ({ params: { ...s.params, gridUnitMmY: 42 } }));
+    });
+    render(<PhysicalUnitsSection />);
+    // X input keeps the 'Grid unit' accessible name; Y is its own field.
+    expect(screen.getByLabelText('Grid unit')).toHaveValue(42);
+    expect(screen.getByLabelText('Grid unit Y')).toHaveValue(42);
   });
 
   it('renders print bed width input (linked by default)', () => {

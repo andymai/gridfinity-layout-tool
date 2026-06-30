@@ -28,6 +28,7 @@ import {
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, type ResolvedOverhang } from './overhang';
 import { buildMaskDrawing, buildMaskDrawingInset } from './maskPolygon';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 
 function translateDrawing(d: Drawing, offX: number, offY: number): Drawing {
   return offX !== 0 || offY !== 0 ? d.translate(offX, offY) : d;
@@ -56,16 +57,17 @@ export function buildBinBoxWithLip(
   gridD: number,
   wallHeight: number,
   wallThickness: number,
-  gridUnitMm: number = SIZE,
+  gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   overhang?: ResolvedOverhang
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
   const exp = ov && hasOverhang(ov) ? overhangExpansion(ov) : null;
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
 
-  const outerW = gridW * gridUnitMm - CLEARANCE + (exp?.addW ?? 0);
-  const outerD = gridD * gridUnitMm - CLEARANCE + (exp?.addD ?? 0);
+  const outerW = gridW * unitX - CLEARANCE + (exp?.addW ?? 0);
+  const outerD = gridD * unitY - CLEARANCE + (exp?.addD ?? 0);
   const offX = exp?.offsetX ?? 0;
   const offY = exp?.offsetY ?? 0;
   const wt = wallThickness;

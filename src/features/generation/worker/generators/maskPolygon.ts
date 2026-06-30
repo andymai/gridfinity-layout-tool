@@ -24,6 +24,7 @@
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
 import { CLEARANCE, BOX_CORNER_RADIUS } from './generatorConstants';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { MASK_CELL_SIZE, maskToPolygon, type CellMask, type Point2 } from '@/shared/utils/cellMask';
 
 interface Point2Mm {
@@ -148,16 +149,18 @@ function buildRoundedDrawing(vertices: readonly Point2Mm[], radius: number): Dra
   return pen.close();
 }
 
-/** Convert a grid-unit loop to mm, centred on the bin origin. */
+/** Convert a grid-unit loop to mm, centred on the bin origin. Width scales by
+ * `unitX`, depth by `unitY` (equal for a square grid). */
 function loopToMm(
   loop: readonly Point2[],
   halfWidthMm: number,
   halfDepthMm: number,
-  gridUnitMm: number
+  unitX: number,
+  unitY: number
 ): Point2Mm[] {
   return loop.map((p) => ({
-    x: p.x * gridUnitMm - halfWidthMm,
-    y: p.y * gridUnitMm - halfDepthMm,
+    x: p.x * unitX - halfWidthMm,
+    y: p.y * unitY - halfDepthMm,
   }));
 }
 
@@ -202,7 +205,7 @@ function buildLoopDrawing(
  */
 export function buildMaskDrawingAtInset(
   mask: CellMask,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   insetMm: number,
   cornerRadiusMm: number
 ): Drawing {
@@ -212,10 +215,11 @@ export function buildMaskDrawingAtInset(
     throw new Error(`mask polygon has only ${outer.length} vertices (need 3+)`);
   }
 
-  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * unitX) / 2;
+  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * unitY) / 2;
 
-  const outerMm = loopToMm(outer, halfWidthMm, halfDepthMm, gridUnitMm);
+  const outerMm = loopToMm(outer, halfWidthMm, halfDepthMm, unitX, unitY);
   return buildLoopDrawing(outerMm, insetMm, cornerRadiusMm);
 }
 
@@ -236,14 +240,15 @@ export function maskHasHoles(mask: CellMask): boolean {
  */
 export function buildMaskHoleDrawings(
   mask: CellMask,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   insetMm: number = CLEARANCE / 2
 ): Drawing[] {
   const loops = maskToPolygon(mask);
   if (loops.length <= 1) return [];
 
-  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * unitX) / 2;
+  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * unitY) / 2;
 
   const holes: Drawing[] = [];
   for (let i = 1; i < loops.length; i++) {
@@ -251,7 +256,7 @@ export function buildMaskHoleDrawings(
     // so the drawing represents the cavity region; then pass `-insetMm`
     // to grow the cavity outward into the filled material.
     const holeReversed = [...loops[i]].reverse();
-    const holeMm = loopToMm(holeReversed, halfWidthMm, halfDepthMm, gridUnitMm);
+    const holeMm = loopToMm(holeReversed, halfWidthMm, halfDepthMm, unitX, unitY);
     // Rounded corners inside a hole point toward the material-facing
     // edge, so use the standard BOX_CORNER_RADIUS here too.
     holes.push(buildLoopDrawing(holeMm, -insetMm, BOX_CORNER_RADIUS));
@@ -265,7 +270,7 @@ export function buildMaskHoleDrawings(
  *
  * @throws if the mask polygon has fewer than 3 vertices.
  */
-export function buildMaskDrawing(mask: CellMask, gridUnitMm: number): Drawing {
+export function buildMaskDrawing(mask: CellMask, gridUnitMm: GridUnitInput): Drawing {
   return buildMaskDrawingAtInset(mask, gridUnitMm, CLEARANCE / 2, BOX_CORNER_RADIUS);
 }
 
@@ -275,7 +280,11 @@ export function buildMaskDrawing(mask: CellMask, gridUnitMm: number): Drawing {
  * `Math.max(BOX_CORNER_RADIUS - inset, …)`), so every section in a ruled
  * loft stays topologically consistent — same arc count at every Z level.
  */
-export function buildMaskDrawingInset(mask: CellMask, gridUnitMm: number, inset: number): Drawing {
+export function buildMaskDrawingInset(
+  mask: CellMask,
+  gridUnitMm: GridUnitInput,
+  inset: number
+): Drawing {
   const radius = Math.max(BOX_CORNER_RADIUS - inset, MIN_ARC_RADIUS);
   return buildMaskDrawingAtInset(mask, gridUnitMm, CLEARANCE / 2 + inset, radius);
 }
