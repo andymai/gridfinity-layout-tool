@@ -1,0 +1,162 @@
+src/i18n/locales/fr.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/features/baseplate/utils/splitPlanner.ts
+  s_1a91b7e5519d3d::t_9461ab867bb9ea 710-713
+  s_1a91b7e5519d3d::t_cfa63e2a545a7f 677-680
+  s_1a91b7e5519d3d::t_05996561c45cd2 735
+  s_1a91b7e5519d3d::t_27f0c38d1b7652 470
+  s_1a91b7e5519d3d::t_8a68e217826f35 457-468,505-507,509-530,532-589
+  s_1a91b7e5519d3d::t_88b9223cef4725 504
+  s_1a91b7e5519d3d::t_9e67e7b15c2c07 24,28-29
+  s_1a91b7e5519d3d::t_33a7ddd8f52c07 456,469,471-503,508
+  s_1a91b7e5519d3d::t_f2f97eaa76c17b 531
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_1a91b7e5519d3d::t_030d42c7e411fe 335
+  s_1a91b7e5519d3d::t_22c62982499c80 33
+  s_1a91b7e5519d3d::t_7654429fd534fe 334,336
+src/i18n/locales/de.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/features/generation/bridge/bridgeExports.ts
+  s_1a91b7e5519d3d::t_30e262a26e266f 11-16
+  s_1a91b7e5519d3d::t_82f30736ad4f21 328-355
+  s_1a91b7e5519d3d::t_c7af9aeb527914 327
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_1a91b7e5519d3d::t_e8246702855812 108
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_1a91b7e5519d3d::t_a6ef1f1a7c8868 1292-1397
+  s_1a91b7e5519d3d::t_9122eedde1a9b1 2
+  s_1a91b7e5519d3d::t_7b4374e255679a 1398-1426
+  s_1a91b7e5519d3d::t_a2d5927292b2d8 3-7,1427-1431
+src/features/baseplate/types/tiling.ts
+  s_1a91b7e5519d3d::t_71240fe68280b5 9-15
+  s_1a91b7e5519d3d::t_2cf7847a6bc7d8 68-72
+src/core/constants.ts
+  s_1a91b7e5519d3d::t_87f562e475b810 241-247
+  s_1a91b7e5519d3d::t_446791a493fed4 350-352
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_1a91b7e5519d3d::t_72de91c8a0fef6 465
+  s_1a91b7e5519d3d::t_58eb17a94cb73d 18
+  s_1a91b7e5519d3d::t_b96540ff4833f5 232,236-240,242
+  s_1a91b7e5519d3d::t_2190e4cd35e21e 233-235,241
+  s_1a91b7e5519d3d::t_78277e96d4f507 458-464,466-478
+src/i18n/locales/en.ts
+  s_1a91b7e5519d3d::t_d3725df3ef84c4 2229-2233
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_1a91b7e5519d3d::t_0acb8bcc5abb44 1-21,23-68,70-89,91-98,101-194
+  s_1a91b7e5519d3d::t_9cfdaa9da5fec7 90
+  s_1a91b7e5519d3d::t_01e2ac23fb90a6 99-100
+  s_1a91b7e5519d3d::t_9282d241a53c59 22
+  s_1a91b7e5519d3d::t_bd8d36e1821953 69
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_1a91b7e5519d3d::t_c89f634c86c33f 1-110
+src/features/baseplate/utils/buildFullParams.ts
+  s_1a91b7e5519d3d::t_7f3015b10a1389 71
+  s_1a91b7e5519d3d::t_5f695dd699e3c6 37-40
+src/features/generation/worker/handlers/generateHandler.ts
+  s_1a91b7e5519d3d::t_bf5500e1a19bb0 87-93
+  s_1a91b7e5519d3d::t_65baf004c5ab75 8,15
+src/features/generation/bridge/bridgeGeneration.ts
+  s_1a91b7e5519d3d::t_78f4b811a4771a 180-214
+  s_1a91b7e5519d3d::t_1a10801e00a925 16
+src/features/generation/bridge/GenerationBridge.ts
+  s_1a91b7e5519d3d::t_14465938cfd0de 422-426
+  s_1a91b7e5519d3d::t_59187cce1361ed 20-25
+  s_1a91b7e5519d3d::t_3c80afd2c1e02c 32
+  s_1a91b7e5519d3d::t_cd9f3c54d63c79 464-473
+  s_1a91b7e5519d3d::t_982338f5852ac5 67
+src/features/baseplate/components/BaseplatePreview/MarginMeshes.tsx
+  s_1a91b7e5519d3d::t_09f1ed183bd959 82
+  s_1a91b7e5519d3d::t_e5e7dcd4bee880 1-5,7-81,83-86
+  s_1a91b7e5519d3d::t_b8a299a0a4aecb 6
+src/i18n/locales/es.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/i18n/locales/nb.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/i18n/locales/nl.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/i18n/locales/pt-BR.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/i18n/locales/uk.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_1a91b7e5519d3d::t_f13ff22d1c400a 226-231
+  s_1a91b7e5519d3d::t_883e009ab27d9d 419-420
+  s_1a91b7e5519d3d::t_50c91266cc5c67 464-475,478-479
+  s_1a91b7e5519d3d::t_ecce29d6d23681 370-372
+  s_1a91b7e5519d3d::t_205bc30cda9248 476-477
+  s_1a91b7e5519d3d::t_9d37b44d2824cb 384
+  s_1a91b7e5519d3d::t_c7c83f34da4dd8 204-225,232
+  s_1a91b7e5519d3d::t_767a74e9b9d513 415-418,421-425
+  s_1a91b7e5519d3d::t_96da6c48f6df98 37-41
+src/i18n/locales/sv.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/features/baseplate/utils/printGuide.ts
+  s_1a91b7e5519d3d::t_3c0683b783f9c6 114-128
+  s_1a91b7e5519d3d::t_57d9cf494f749c 38-44
+  s_1a91b7e5519d3d::t_3a494d6fbd30bd 73
+  s_1a91b7e5519d3d::t_6584ee2c3537ee 106-113
+src/features/baseplate/store/baseplatePageStore.ts
+  s_1a91b7e5519d3d::t_2dbc05db4aeef0 88-89
+  s_1a91b7e5519d3d::t_0642f0796f390f 62-75
+  s_1a91b7e5519d3d::t_1beb1703bd03f2 116
+  s_1a91b7e5519d3d::t_fecfb122842c0d 138
+  s_1a91b7e5519d3d::t_1337faaf2c5780 191-197
+src/features/generation/worker/handlers/exportHandler.ts
+  s_1a91b7e5519d3d::t_d7c7200f11095a 73-95
+  s_1a91b7e5519d3d::t_4020ae62b0b00b 9,19
+src/features/baseplate/utils/printGuide.test.ts
+  s_1a91b7e5519d3d::t_0d158c14b8cd0f 2
+  s_1a91b7e5519d3d::t_0f54a6fb091519 351-362
+src/core/constants.test.ts
+  s_1a91b7e5519d3d::t_6a3b6aab6c9895 380-401
+src/features/baseplate/components/BaseplatePreview/MarginMeshes.test.tsx
+  s_1a91b7e5519d3d::t_4e4327ef13b0a9 1-63
+src/features/generation/bridge/types.ts
+  s_1a91b7e5519d3d::t_99c085cf4ce0b7 8-13
+  s_1a91b7e5519d3d::t_572462d57c81c5 183-199
+  s_1a91b7e5519d3d::t_7eaaea32b70772 48
+  s_1a91b7e5519d3d::t_0a019309b979af 118-130
+  s_1a91b7e5519d3d::t_1be08f190c134b 57
+  s_1a91b7e5519d3d::t_03ac72eedffc1b 182
+src/features/generation/worker/generation.worker.ts
+  s_1a91b7e5519d3d::t_5297a8fa42db78 32-37
+  s_1a91b7e5519d3d::t_44f6e7eff1b0d3 117-120
+  s_1a91b7e5519d3d::t_6267a88f5920c8 43
+  s_1a91b7e5519d3d::t_93db6ccac91e47 145-148
+src/shared/types/bin.ts
+  s_1a91b7e5519d3d::t_27b99357fc4842 119-150
+  s_1a91b7e5519d3d::t_d6aed8cf172e2e 235-240
+  s_1a91b7e5519d3d::t_cc09d9c5d5de9f 234
+src/i18n/locales/ja.json
+  s_1a91b7e5519d3d::t_b21df1a45d183b 108-111
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_1a91b7e5519d3d::t_0ea23a58c87ad6 51
+  s_1a91b7e5519d3d::t_f09eefb0f115cc 629
+  s_1a91b7e5519d3d::t_0da295c745f67c 390
+  s_1a91b7e5519d3d::t_1536c6f0ff27da 47
+  s_1a91b7e5519d3d::t_20baa00c7d723d 482-486
+  s_1a91b7e5519d3d::t_5b36dbd90682a8 540-563
+  s_1a91b7e5519d3d::t_7f2e7bd53a61ee 281
+  s_1a91b7e5519d3d::t_57fa7303375353 212-214
+  s_1a91b7e5519d3d::t_76212bb134298d 340-342
+  s_1a91b7e5519d3d::t_6d1c4c54513c21 603
+src/core/types.ts
+  s_1a91b7e5519d3d::t_02df9073d0bf42 163-169
+  s_1a91b7e5519d3d::t_ddfe445db49973 162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "ecd0b7f900b6c958470f97d0e9bfbe5dbc554ccc",
+  "prompts": {},
+  "sessions": {
+    "s_1a91b7e5519d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f85eac4-357a-4431-844b-378000f270fb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
