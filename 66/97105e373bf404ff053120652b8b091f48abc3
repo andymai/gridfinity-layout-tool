@@ -1,0 +1,27 @@
+api/liveblocks-auth.ts
+  s_d0431bf9490853::t_854636b1d41c46 14-15
+  s_d0431bf9490853::t_665b2da7407e40 169-172
+src/liveblocks.config.ts
+  s_d0431bf9490853::t_20173a61a1e3d7 72-73
+api/liveblocks-auth.test.ts
+  s_d0431bf9490853::t_8717bff2342cf5 193
+  s_d0431bf9490853::t_f430e56b3a63c3 206
+  s_d0431bf9490853::t_abc5a6244a31a4 222
+  s_d0431bf9490853::t_a55400f5d5e2d0 209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "6697105e373bf404ff053120652b8b091f48abc3",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
