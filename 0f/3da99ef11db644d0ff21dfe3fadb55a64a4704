@@ -1,0 +1,39 @@
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_64412c3ff0553a::t_c15b9a72248aab 85-87
+  s_64412c3ff0553a::t_7af4008b3311f3 21-22
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_64412c3ff0553a::t_54268cb9931090 49-57
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_64412c3ff0553a::t_1e9eb3a62e44bc 80-96
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_64412c3ff0553a::t_9ee8e09a3c5cda 94-99,123
+  s_64412c3ff0553a::t_0e4b4a80f147bd 29-39,41,47-55
+  s_64412c3ff0553a::t_9fca9a73d27894 13-15
+  s_64412c3ff0553a::t_1802a5d9803565 56
+src/shell/layoutExport/useLayoutExport.ts
+  s_64412c3ff0553a::t_e07c9dc0c430f3 175-179,184-193,195,198,200-201,203,206-214,217-222
+  s_64412c3ff0553a::t_fcbd0d62ef6f75 82-117
+  s_64412c3ff0553a::t_c1a86eed6cdf95 22,31-37
+  s_64412c3ff0553a::t_34522a17a81897 267
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_64412c3ff0553a::t_c95a05eebc48e3 11
+  s_64412c3ff0553a::t_93e0af0a73e4ae 70-73
+  s_64412c3ff0553a::t_89d97dc39059a9 45,49
+  s_64412c3ff0553a::t_282127a0700c04 106-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "0f3da99ef11db644d0ff21dfe3fadb55a64a4704",
+  "prompts": {},
+  "sessions": {
+    "s_64412c3ff0553a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f9f4441-eabe-4996-a758-47b44cc2f8a5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
