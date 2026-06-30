@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.210.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.209.1...gridfinity-layout-tool-v4.210.0) (2026-06-30)
+
+
+### Features
+
+* batch-export whole layout (linked bins + baseplate) to a ZIP ([#2413](https://github.com/andymai/gridfinity-layout-tool/issues/2413)) ([937f08d](https://github.com/andymai/gridfinity-layout-tool/commit/937f08d75dd376b96e703fb597adc0e4b0050e7f))
+
 ## [4.209.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.209.0...gridfinity-layout-tool-v4.209.1) (2026-06-30)
 
 
