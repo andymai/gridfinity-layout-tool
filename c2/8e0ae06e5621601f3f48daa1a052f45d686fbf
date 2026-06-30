@@ -1,0 +1,49 @@
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_64412c3ff0553a::t_79dfa3e86b7c0d 61-63
+src/i18n/locales/pt-BR.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/shell/layoutExport/useLayoutExport.ts
+  s_64412c3ff0553a::t_1f1e3d68201c02 248
+src/i18n/locales/fr.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/i18n/locales/nb.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/i18n/locales/uk.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1980,1982-1983,1986-1989
+src/i18n/locales/ja.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/i18n/locales/nl.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1978-1980,1982-1983,1986-1989
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_64412c3ff0553a::t_bff240097eb4a4 7
+  s_64412c3ff0553a::t_347cc28c76ba1e 58
+src/i18n/locales/de.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/i18n/locales/es.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/i18n/locales/en.ts
+  s_64412c3ff0553a::t_7924c2954c060b 290
+  s_64412c3ff0553a::t_0659388cfac909 296
+src/i18n/locales/sv.json
+  s_64412c3ff0553a::t_bc1b9f3d6266cb 1982,1988
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_64412c3ff0553a::t_5fbc74e5985e90 92,94
+  s_64412c3ff0553a::t_0d66c1c6589dc7 113,118,123
+  s_64412c3ff0553a::t_4441faa86fa2c1 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "c28e0ae06e5621601f3f48daa1a052f45d686fbf",
+  "prompts": {},
+  "sessions": {
+    "s_64412c3ff0553a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f9f4441-eabe-4996-a758-47b44cc2f8a5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
