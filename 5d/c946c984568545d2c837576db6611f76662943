@@ -1,0 +1,37 @@
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_1a91b7e5519d3d::t_aee3284052f40d 215
+src/features/baseplate/utils/buildFullParams.ts
+  s_1a91b7e5519d3d::t_c25636a3f27e53 74
+  s_1a91b7e5519d3d::t_f93e528915f5f2 41-42
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_1a91b7e5519d3d::t_dae6a56f4d02d9 109
+src/core/constants.test.ts
+  s_1a91b7e5519d3d::t_23dd0ca33a8406 403-419
+src/core/types.ts
+  s_1a91b7e5519d3d::t_154e6beebf6eee 171-176
+  s_1a91b7e5519d3d::t_0fe7a4abfc0ac6 170
+src/shared/types/bin.ts
+  s_1a91b7e5519d3d::t_34a8bb5bc8d1aa 108-116
+  s_1a91b7e5519d3d::t_3e2d9d86aafb4b 256-260
+  s_1a91b7e5519d3d::t_48b77aaf05ca22 255
+src/features/baseplate/types/tiling.ts
+  s_1a91b7e5519d3d::t_3c8e4d436a9842 16-21
+src/core/constants.ts
+  s_1a91b7e5519d3d::t_90369bf3eb8ca4 355
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "5dc946c984568545d2c837576db6611f76662943",
+  "prompts": {},
+  "sessions": {
+    "s_1a91b7e5519d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f85eac4-357a-4431-844b-378000f270fb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
