@@ -1,0 +1,23 @@
+api/lib/mlTelemetry/aggregators.test.ts
+  s_d0431bf9490853::t_02590a43f61edb 8
+  s_d0431bf9490853::t_9220aafa78d86d 1-7,9-1552
+api/lib/mlTelemetry/validators.test.ts
+  s_d0431bf9490853::t_2f9c115944c6f6 1-1030,1032-1070
+  s_d0431bf9490853::t_82c61592c1c640 1031
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "0d11c3ff370ebcc72572322ea1c8c7d5812524b5",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
