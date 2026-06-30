@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { getErrorCode, getErrorMessage, reportExportFailure } from './errors';
-import { useToastStore } from '@/core/store/toast';
+import { describe, expect, it } from 'vitest';
+import { getErrorCode, getErrorMessage } from './errors';
 
 describe('getErrorCode', () => {
   it('returns the code from an object with a string code', () => {
@@ -40,31 +39,5 @@ describe('getErrorMessage', () => {
   it('returns the fallback for a non-Error', () => {
     expect(getErrorMessage('nope', 'fallback')).toBe('fallback');
     expect(getErrorMessage(null, 'fallback')).toBe('fallback');
-  });
-});
-
-describe('reportExportFailure', () => {
-  beforeEach(() => {
-    useToastStore.setState({ toasts: [] });
-  });
-
-  it('returns false', () => {
-    expect(reportExportFailure(new Error('boom'))).toBe(false);
-  });
-
-  it('adds an error toast with the Error message', () => {
-    reportExportFailure(new Error('boom'));
-    const { toasts } = useToastStore.getState();
-    expect(toasts).toHaveLength(1);
-    expect(toasts[0].message).toBe('boom');
-    expect(toasts[0].type).toBe('error');
-  });
-
-  it("adds an error toast with the 'Export failed' fallback for a non-Error", () => {
-    reportExportFailure('nope');
-    const { toasts } = useToastStore.getState();
-    expect(toasts).toHaveLength(1);
-    expect(toasts[0].message).toBe('Export failed');
-    expect(toasts[0].type).toBe('error');
   });
 });

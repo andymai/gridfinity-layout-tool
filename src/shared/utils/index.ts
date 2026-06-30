@@ -66,4 +66,4 @@ export type { SnapResult } from './snap';
 
 export { calculateResizeRect } from './resize';
 
-export { getErrorCode, getErrorMessage, reportExportFailure } from './errors';
+export { getErrorCode, getErrorMessage } from './errors';
