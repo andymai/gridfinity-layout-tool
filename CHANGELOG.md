@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.209.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.208.0...gridfinity-layout-tool-v4.209.0) (2026-06-30)
+
+
+### Features
+
+* **baseplate:** solid-fill option for half-grid leftover margin ([#2397](https://github.com/andymai/gridfinity-layout-tool/issues/2397)) ([#2400](https://github.com/andymai/gridfinity-layout-tool/issues/2400)) ([ebf6200](https://github.com/andymai/gridfinity-layout-tool/commit/ebf62005d41add775bac8ee5eecfc5da6579aabb))
+
 ## [4.208.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.207.1...gridfinity-layout-tool-v4.208.0) (2026-06-30)
 
 
