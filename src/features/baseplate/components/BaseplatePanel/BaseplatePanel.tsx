@@ -238,7 +238,10 @@ export function BaseplatePanel() {
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingFront >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingBack >= MARGIN_MIN_DETACH_MM;
-  const detachOn = baseplateParams.detachMargins === true && !stackPrintOn;
+  // Reflect the STORED opt-in in the toggle (it's preserved across stack-print),
+  // so when stack-print suppresses detach the switch reads as on-but-disabled
+  // rather than silently off.
+  const detachStored = baseplateParams.detachMargins === true;
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;
@@ -459,12 +462,12 @@ export function BaseplatePanel() {
                 <div className="border-t border-stroke-subtle pt-3">
                   <FeatureToggle
                     label={t('baseplate.detachMargins')}
-                    checked={detachOn}
-                    onChange={() => updateParam('detachMargins', !detachOn)}
+                    checked={detachStored}
+                    onChange={() => updateParam('detachMargins', !detachStored)}
                     disabledReason={
                       stackPrintOn
                         ? t('baseplate.detachMarginsStackConflict')
-                        : !detachOn && !canDetach
+                        : !detachStored && !canDetach
                           ? t('baseplate.detachMarginsTooSmall')
                           : undefined
                     }
