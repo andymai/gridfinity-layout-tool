@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/validation';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 
@@ -35,14 +36,11 @@ export function usePhysicalUnitsSection() {
 
   const handlePrintBedChange = useCallback(
     (width: number, depth?: number) => {
-      const clampedWidth = Math.max(
-        CONSTRAINTS.PRINT_BED_MM_MIN,
-        Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, width)
-      );
+      const clampedWidth = clamp(width, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX);
       const clampedDepth =
         depth === undefined
           ? undefined
-          : Math.max(CONSTRAINTS.PRINT_BED_MM_MIN, Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, depth));
+          : clamp(depth, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX);
       updateSettings({
         defaultPrintBedSize: clampedWidth,
         defaultPrintBedDepth: clampedDepth,
