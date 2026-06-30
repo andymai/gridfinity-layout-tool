@@ -175,9 +175,12 @@ describe('validateEvent — bin_placed', () => {
 // are left unchecked. These tests document the CURRENT leniency so that any
 // future tightening is a conscious, explicitly-reviewed change.
 //
-// Each per-field test starts from `completeValid` — a complete bin_placed
-// object including all five unvalidated fields — and omits ONLY the field
-// under test, so the test genuinely isolates that specific field.
+// Absence tests: each starts from `completeValid` and omits ONLY the field
+// under test — genuinely isolating that specific field's absence.
+//
+// Content tests: each starts from `completeValid` and sets the field to a
+// bogus value of the wrong type — documenting that the validator ignores
+// the field's content entirely, not just its presence.
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_placed (documented validator leniency)', () => {
   // All checked fields present, PLUS all five currently-unvalidated fields.
@@ -245,6 +248,26 @@ describe('validateEvent — bin_placed (documented validator leniency)', () => {
   it('passes when only vocab_version is absent (field not validated)', () => {
     const { vocab_version: _vv, ...rest } = completeValid;
     expect(validateEvent(rest)).toBe(true);
+  });
+
+  it('ignores a bogus position value (field content not validated)', () => {
+    expect(validateEvent({ ...completeValid, position: 'not-a-position' })).toBe(true);
+  });
+
+  it('ignores a bogus layer_index value (field content not validated)', () => {
+    expect(validateEvent({ ...completeValid, layer_index: 'x' })).toBe(true);
+  });
+
+  it('ignores a bogus largest_gap value (field content not validated)', () => {
+    expect(validateEvent({ ...completeValid, largest_gap: {} })).toBe(true);
+  });
+
+  it('ignores a bogus fill_pct value (field content not validated)', () => {
+    expect(validateEvent({ ...completeValid, fill_pct: 'high' })).toBe(true);
+  });
+
+  it('ignores a bogus vocab_version value (field content not validated)', () => {
+    expect(validateEvent({ ...completeValid, vocab_version: [] })).toBe(true);
   });
 });
 
