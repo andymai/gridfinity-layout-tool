@@ -40,6 +40,10 @@ export interface LayoutManifestInput {
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
 }
 
+function plural(count: number, word: string): string {
+  return count === 1 ? word : `${word}s`;
+}
+
 function formatTime(minutes: number): string {
   const rounded = Math.round(minutes);
   if (rounded < 60) return `${rounded}m`;
@@ -60,10 +64,10 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     '',
     `  Layout:   ${layoutName}`,
     `  Format:   ${format.toUpperCase()}`,
-    `  Bins:     ${totalBinUnits} (${totalBinFiles} unique design${totalBinFiles === 1 ? '' : 's'})`,
+    `  Bins:     ${totalBinUnits} (${totalBinFiles} unique ${plural(totalBinFiles, 'design')})`,
   ];
   if (baseplate) {
-    lines.push(`  Baseplate: ${baseplate.pieceCount} file${baseplate.pieceCount === 1 ? '' : 's'}`);
+    lines.push(`  Baseplate: ${baseplate.pieceCount} ${plural(baseplate.pieceCount, 'file')}`);
   }
   lines.push('');
 
@@ -92,7 +96,7 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   if (baseplate) {
     lines.push('─── Baseplate ───────────────────────────────────', '');
     lines.push(
-      `  ${baseplate.pieceCount} file${baseplate.pieceCount === 1 ? '' : 's'} in the baseplate/ folder.`
+      `  ${baseplate.pieceCount} ${plural(baseplate.pieceCount, 'file')} in the baseplate/ folder.`
     );
     if (baseplate.guidePath) {
       lines.push(`  See ${baseplate.guidePath} for the assembly map and per-piece details.`);
@@ -103,17 +107,17 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   const skippedLines: string[] = [];
   if (skipped.unlinkedBins > 0) {
     skippedLines.push(
-      `  ${skipped.unlinkedBins} grid bin${skipped.unlinkedBins === 1 ? '' : 's'} not linked to a saved design (drawn directly on the grid).`
+      `  ${skipped.unlinkedBins} grid ${plural(skipped.unlinkedBins, 'bin')} not linked to a saved design (drawn directly on the grid).`
     );
   }
   if (skipped.nonBinDesigns > 0) {
     skippedLines.push(
-      `  ${skipped.nonBinDesigns} linked design${skipped.nonBinDesigns === 1 ? '' : 's'} that are not bins (no printable geometry).`
+      `  ${skipped.nonBinDesigns} linked ${plural(skipped.nonBinDesigns, 'design')} that are not bins (no printable geometry).`
     );
   }
   if (skipped.missingDesigns > 0) {
     skippedLines.push(
-      `  ${skipped.missingDesigns} linked design${skipped.missingDesigns === 1 ? '' : 's'} that could not be loaded (deleted or unavailable).`
+      `  ${skipped.missingDesigns} linked ${plural(skipped.missingDesigns, 'design')} that could not be loaded (deleted or unavailable).`
     );
   }
   if (skippedLines.length > 0) {

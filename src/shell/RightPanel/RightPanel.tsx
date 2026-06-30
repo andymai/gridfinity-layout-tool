@@ -31,7 +31,6 @@ const SnapshotHistory = lazyWithRetry(() =>
   import('@/features/snapshots').then(namedExport('SnapshotHistory'))
 );
 
-// Lazy load the layout export dialog — only loaded when the user opens it.
 const LayoutExportDialog = lazyWithRetry(() =>
   import('../layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
 );

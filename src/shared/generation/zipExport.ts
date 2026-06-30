@@ -19,6 +19,23 @@ export interface ZipTextFile {
   readonly content: string;
 }
 
+function appendTextFiles(
+  files: Record<string, Uint8Array>,
+  textFiles?: readonly ZipTextFile[]
+): void {
+  if (!textFiles) return;
+  for (const file of textFiles) {
+    files[file.name] = strToU8(file.content);
+  }
+}
+
+function buildZipBlob(files: Record<string, Uint8Array>): Blob {
+  // `level: 6` matches JSZip's default DEFLATE level, keeping archive sizes
+  // and compatibility identical across the migration.
+  const compressed = zipSync(files, { level: 6 });
+  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+}
+
 /**
  * Package pieces into a ZIP archive with per-piece files.
  *
@@ -41,16 +58,8 @@ export function packagePiecesAsZip(
     files[fileName] = new Uint8Array(piece.data);
   }
 
-  if (extraFiles) {
-    for (const file of extraFiles) {
-      files[file.name] = strToU8(file.content);
-    }
-  }
-
-  // `level: 6` matches JSZip's default DEFLATE level, keeping archive sizes
-  // and compatibility identical across the migration.
-  const compressed = zipSync(files, { level: 6 });
-  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+  appendTextFiles(files, extraFiles);
+  return buildZipBlob(files);
 }
 
 /** A binary file placed at an explicit path inside the ZIP (e.g. `bins/foo.stl`). */
@@ -77,12 +86,6 @@ export function packageFilesAsZip(
     files[file.path] = new Uint8Array(file.data);
   }
 
-  if (textFiles) {
-    for (const file of textFiles) {
-      files[file.name] = strToU8(file.content);
-    }
-  }
-
-  const compressed = zipSync(files, { level: 6 });
-  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+  appendTextFiles(files, textFiles);
+  return buildZipBlob(files);
 }

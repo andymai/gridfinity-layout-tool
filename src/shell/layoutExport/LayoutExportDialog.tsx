@@ -51,14 +51,20 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
       : sanitizeName(layoutName);
 
   const handleDownload = useCallback(async () => {
-    const ok = await exportLayout(format, zipBaseName);
+    const ok = await exportLayout(format, zipBaseName, config);
     if (ok) onClose();
-  }, [exportLayout, format, zipBaseName, onClose]);
+  }, [exportLayout, format, zipBaseName, config, onClose]);
+
+  // Don't let the dialog close mid-export — the work would finish and download
+  // a file the user appeared to cancel.
+  const handleClose = useCallback(() => {
+    if (!isExporting) onClose();
+  }, [isExporting, onClose]);
 
   return (
     <ExportDialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       activeFormat={format}
       fileNameConfig={config}
       onFileNameConfigChange={setConfig}
@@ -73,13 +79,7 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
       sectionDescription={t('layoutExport.description')}
       warningBanner={
         skipped > 0
-          ? {
-              message: t('layoutExport.skippedNotice', {
-                exported: linkedCount,
-                total: totalCount,
-                skipped,
-              }),
-            }
+          ? { message: t('layoutExport.skippedNotice', { total: totalCount, skipped }) }
           : null
       }
       noMeshWarning={linkedCount === 0 ? t('layoutExport.noLinkedBins') : null}

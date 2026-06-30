@@ -67,7 +67,8 @@ export function planLayoutBinExport(
     )
   );
 
-  const exportable = usable.map((u, i) => ({ params: u.params, path: `bins/${fileNames[i]}` }));
+  const paths = fileNames.map((name) => `bins/${name}`);
+  const exportable = usable.map((u, i) => ({ params: u.params, path: paths[i] }));
 
   let totalGrams = 0;
   let totalMinutes = 0;
@@ -83,7 +84,7 @@ export function planLayoutBinExport(
     totalGrams += est.gramsFilament * u.quantity;
     totalMinutes += est.printTimeMinutes * u.quantity;
     return {
-      path: `bins/${fileNames[i]}`,
+      path: paths[i],
       designName: u.design.name,
       widthUnits: u.params.width,
       depthUnits: u.params.depth,

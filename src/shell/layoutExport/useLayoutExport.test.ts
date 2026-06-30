@@ -13,15 +13,16 @@ const h = vi.hoisted(() => ({
   trackEvent: vi.fn(),
   buildBaseplateExportPieces: vi.fn(),
   loadDesign: vi.fn(),
+  bridgeAcquire: vi.fn(),
+  bridgeRelease: vi.fn(),
+  poolAcquire: vi.fn(),
+  poolRelease: vi.fn(),
 }));
 
 vi.mock('@/shared/generation/bridge', async (orig) => ({
   ...(await orig<Record<string, unknown>>()),
-  bridgeManager: { acquire: () => Promise.resolve(h.bridge), release: vi.fn() },
-  workerPoolManager: {
-    acquire: () => Promise.resolve({ isDestroyed: false, size: 1 }),
-    release: vi.fn(),
-  },
+  bridgeManager: { acquire: h.bridgeAcquire, release: h.bridgeRelease },
+  workerPoolManager: { acquire: h.poolAcquire, release: h.poolRelease },
 }));
 vi.mock('@/shared/generation/exportUtils', async (orig) => ({
   ...(await orig<Record<string, unknown>>()),
@@ -65,6 +66,8 @@ beforeEach(() => {
   h.loadDesign.mockImplementation((id: string) =>
     Promise.resolve(design(id, id === 'd2' ? 'Tray' : 'Box'))
   );
+  h.bridgeAcquire.mockResolvedValue(h.bridge);
+  h.poolAcquire.mockResolvedValue({ isDestroyed: false, size: 1 });
 
   const bins: Bin[] = [
     createTestBin({ linkedDesignId: designId('d1') }),
@@ -74,11 +77,13 @@ beforeEach(() => {
   useLayoutStore.setState({ layout: createTestLayout({ name: 'My Drawer', bins }) });
 });
 
+const CONFIG = { style: 'descriptive', customName: '', format: 'stl' } as const;
+
 describe('useLayoutExport', () => {
   it('exports unique linked designs + baseplate as one ZIP and tracks it', async () => {
     const { result } = renderHook(() => useLayoutExport());
 
-    const success = await result.current.exportLayout('stl', 'my-zip');
+    const success = await result.current.exportLayout('stl', 'my-zip', CONFIG);
 
     expect(success).toBe(true);
     // Two unique designs (d1 deduped, d2) → two bin exports.
@@ -89,16 +94,56 @@ describe('useLayoutExport', () => {
       format: 'zip',
       fileFormat: 'stl',
     });
+    expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
+    expect(h.poolRelease).toHaveBeenCalledTimes(1);
   });
 
   it('returns false without exporting when there are no linked bins', async () => {
     useLayoutStore.setState({ layout: createTestLayout({ name: 'Empty', bins: [] }) });
     const { result } = renderHook(() => useLayoutExport());
 
-    const success = await result.current.exportLayout('stl', 'empty');
+    const success = await result.current.exportLayout('stl', 'empty', CONFIG);
 
     expect(success).toBe(false);
     expect(h.triggerDownload).not.toHaveBeenCalled();
     expect(h.buildBaseplateExportPieces).not.toHaveBeenCalled();
+    // Bridge was never acquired, so it must not be released.
+    expect(h.bridgeRelease).not.toHaveBeenCalled();
+  });
+
+  it('still ships a baseplate-only ZIP when every linked design fails to load', async () => {
+    h.loadDesign.mockResolvedValue({ ok: false, error: { kind: 'storage' } });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(true);
+    expect(h.bridge.exportBin).not.toHaveBeenCalled();
+    expect(h.triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'z.zip');
+  });
+
+  it('still ships bins when the baseplate phase fails, and releases resources', async () => {
+    h.buildBaseplateExportPieces.mockRejectedValue(new Error('degenerate drawer'));
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(true);
+    expect(h.bridge.exportBin).toHaveBeenCalledTimes(2);
+    expect(h.triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'z.zip');
+    expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
+    expect(h.poolRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {
+    h.bridgeAcquire.mockRejectedValue(new Error('wasm load failed'));
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(false);
+    expect(h.bridgeRelease).not.toHaveBeenCalled();
+    expect(h.poolRelease).not.toHaveBeenCalled();
+    expect(h.triggerDownload).not.toHaveBeenCalled();
   });
 });

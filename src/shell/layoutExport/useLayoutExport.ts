@@ -39,7 +39,11 @@ interface UseLayoutExportReturn {
   readonly isExporting: boolean;
   readonly exportProgress: Progress;
   /** Export the active layout's linked bins + baseplate as a ZIP named `${zipBaseName}.zip`. */
-  readonly exportLayout: (format: ExportFileFormat, zipBaseName: string) => Promise<boolean>;
+  readonly exportLayout: (
+    format: ExportFileFormat,
+    zipBaseName: string,
+    fileNameConfig: ExportFileNameConfig
+  ) => Promise<boolean>;
 }
 
 /** Convert STL bytes to 3MF bytes (the bridge emits STL only). */
@@ -74,7 +78,11 @@ export function useLayoutExport(): UseLayoutExportReturn {
   const [exportProgress, setExportProgress] = useState<Progress>(null);
 
   const exportLayout = useCallback(
-    async (format: ExportFileFormat, zipBaseName: string): Promise<boolean> => {
+    async (
+      format: ExportFileFormat,
+      zipBaseName: string,
+      fileNameConfig: ExportFileNameConfig
+    ): Promise<boolean> => {
       const layout = useLayoutStore.getState().layout;
       const printSettings = useSettingsStore.getState().settings.printSettings;
       const bins = layout.bins;
@@ -112,12 +120,14 @@ export function useLayoutExport(): UseLayoutExportReturn {
           loaded.push({ id, design: isOk(res) ? res.value : null });
         }
 
-        const fileNameConfig: ExportFileNameConfig = {
-          style: 'descriptive',
-          customName: '',
-          format,
-        };
-        const plan = planLayoutBinExport(bins, loaded, format, fileNameConfig, printSettings);
+        // The dialog's custom name applies to the ZIP archive only; inner files
+        // fall back to a descriptive style (a single custom name across many
+        // files would just collide). Descriptive/compact pass straight through.
+        const innerConfig: ExportFileNameConfig =
+          fileNameConfig.style === 'custom'
+            ? { style: 'descriptive', customName: '', format }
+            : fileNameConfig;
+        const plan = planLayoutBinExport(bins, loaded, format, innerConfig, printSettings);
 
         // Phase 1 — bins. The bridge emits STL/STEP; 3MF converts client-side.
         const binBridgeFormat: ExportFormat = format === '3mf' ? 'stl' : format;
@@ -153,7 +163,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
               )
             : binBytes;
 
-        // Phase 2 — baseplate.
+        // Phase 2 — baseplate. A baseplate failure (e.g. a degenerate drawer)
+        // must not lose a good bin export, so it degrades to a bins-only archive.
         const bp = await buildBaseplateExportPieces(bridge, pool, {
           baseplateParams: layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
           drawerWidth: layout.drawer.width,
@@ -165,7 +176,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           printBedDepthMm: layout.printBedDepth ?? layout.printBedSize,
           format,
           splitEnabled: true,
-          fileNameConfig,
+          fileNameConfig: innerConfig,
           printSettings: {
             nozzleSizeMm: printSettings.nozzleSizeMm,
             layerHeightMm: printSettings.layerHeightMm,
@@ -185,40 +196,57 @@ export function useLayoutExport(): UseLayoutExportReturn {
                   }
                 : null
             ),
-        });
+        }).catch(() => null);
+
+        // Nothing usable — don't ship an empty archive.
+        if (plan.exportable.length === 0 && !bp) {
+          useToastStore.getState().addToast(t('layoutExport.nothingToExport'), 'error');
+          return false;
+        }
 
         // Assemble the archive.
         const binaryFiles: ZipBinaryFile[] = [
           ...plan.exportable.map((e, i) => ({ path: e.path, data: binFinal[i] })),
-          ...bp.pieces.map((p) => ({
-            path: `baseplate/${p.label ? `${bp.baseNameNoExt}_${p.label}` : bp.baseNameNoExt}${bp.extension}`,
-            data: p.data,
-          })),
+          ...(bp
+            ? bp.pieces.map((p) => ({
+                path: `baseplate/${p.label ? `${bp.baseNameNoExt}_${p.label}` : bp.baseNameNoExt}${bp.extension}`,
+                data: p.data,
+              }))
+            : []),
         ];
 
         const manifest = buildLayoutManifest({
           layoutName: layout.name,
           format,
           bins: plan.manifestBins,
-          baseplate: {
-            pieceCount: bp.pieces.length,
-            guidePath: bp.guideText ? 'baseplate/print-guide.txt' : undefined,
-          },
+          baseplate: bp
+            ? {
+                pieceCount: bp.pieces.length,
+                guidePath: bp.guideText ? 'baseplate/print-guide.txt' : undefined,
+              }
+            : null,
           skipped: plan.skipped,
           totals: plan.totals,
         });
 
         const textFiles: ZipTextFile[] = [{ name: 'manifest.txt', content: manifest }];
-        if (bp.guideText) {
+        if (bp?.guideText) {
           textFiles.push({ name: 'baseplate/print-guide.txt', content: bp.guideText });
         }
 
         const zip = packageFilesAsZip(binaryFiles, textFiles);
         triggerDownload(zip, `${zipBaseName}.zip`);
         trackEvent('ui.layoutExported', { format: 'zip', fileFormat: format });
-        useToastStore
-          .getState()
-          .addToast(t('layoutExport.success', { count: plan.exportable.length }), 'success');
+
+        // Report what actually made it into the archive.
+        const addToast = useToastStore.getState().addToast;
+        if (plan.exportable.length === 0) {
+          addToast(t('layoutExport.baseplateOnly'), 'info');
+        } else if (!bp) {
+          addToast(t('layoutExport.binsOnly'), 'info');
+        } else {
+          addToast(t('layoutExport.success', { count: plan.exportable.length }), 'success');
+        }
         return true;
       } catch (error: unknown) {
         useToastStore.getState().addToast(getErrorMessage(error, 'Export failed'), 'error');
