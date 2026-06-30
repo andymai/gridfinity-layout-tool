@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.209.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.209.0...gridfinity-layout-tool-v4.209.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* **api:** replace deprecated Liveblocks FULL_ACCESS/READ_ACCESS scopes ([#2403](https://github.com/andymai/gridfinity-layout-tool/issues/2403)) ([6cfb216](https://github.com/andymai/gridfinity-layout-tool/commit/6cfb2160d481feabbd4cc1548d5d7ab1b8ec0557))
+
 ## [4.209.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.208.0...gridfinity-layout-tool-v4.209.0) (2026-06-30)
 
 
