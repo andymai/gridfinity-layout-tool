@@ -1,0 +1,20 @@
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_d0431bf9490853::t_3fb8d87b8f6f29 6
+  s_d0431bf9490853::t_06271fe5ad54e1 39,43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "26992bb3dae6b8fd1f399e2d4df9ccd7795e102f",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
