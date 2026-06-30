@@ -27,4 +27,11 @@ describe('clamp', () => {
     expect(clamp(-15, -10, -2)).toBe(-10);
     expect(clamp(0, -10, -2)).toBe(-2);
   });
+
+  it('propagates NaN — clamp has no finite guard', () => {
+    // Documented contract: clamp does NOT sanitize non-finite input. Callers
+    // that need NaN/Infinity coerced (e.g. baseplateSlab's clampFinite) must
+    // guard before/around the clamp call.
+    expect(clamp(NaN, 0, 10)).toBeNaN();
+  });
 });
