@@ -466,7 +466,7 @@ export const createDefaultLayout = (): Layout => {
       depth: gridUnits(size.depth),
       height: heightUnits(size.height),
     },
-    printBedSize: mm(256), // mm - typical print bed size
+    printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
     gridUnitMm: mm(42),
     heightUnitMm: mm(7),
     categories: [...DEFAULT_CATEGORIES],

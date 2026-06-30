@@ -2,6 +2,7 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import { CONSTRAINTS } from '@/core/constants';
 
 // STL Search Sites Configuration
 
@@ -317,7 +318,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   defaultDrawerDepth: 8,
   defaultDrawerHeight: 12,
   defaultLayerHeight: 3, // Default to 3 (current hardcoded behavior)
-  defaultPrintBedSize: 256,
+  defaultPrintBedSize: CONSTRAINTS.PRINT_BED_MM_DEFAULT,
   defaultGridUnitMm: 42,
   defaultHeightUnitMm: 7,
 

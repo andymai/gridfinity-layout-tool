@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { Layout, Mm, GridUnits, HeightUnits } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { createBinActions } from './binActions';
 import { createLayerActions } from './layerActions';
 import { createCategoryActions } from './categoryActions';
@@ -28,7 +29,7 @@ const PLACEHOLDER_LAYOUT: Layout = {
   version: '1.0',
   name: '',
   drawer: { width: 0 as GridUnits, depth: 0 as GridUnits, height: 0 as HeightUnits },
-  printBedSize: 256 as Mm,
+  printBedSize: CONSTRAINTS.PRINT_BED_MM_DEFAULT as Mm,
   gridUnitMm: 42 as Mm,
   heightUnitMm: 7 as Mm,
   categories: [],

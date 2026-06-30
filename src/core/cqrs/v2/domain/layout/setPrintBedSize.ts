@@ -1,6 +1,7 @@
 /**
- * Set print-bed dimensions. Clamps both `size` and optional `depth` to
- * [42, 500] mm; captures `previousSize` and `previousDepth` for undo.
+ * Set print-bed dimensions. Clamps both `size` and optional `depth` to the
+ * configured print-bed bounds (CONSTRAINTS.PRINT_BED_MM_MIN/MAX); captures
+ * `previousSize` and `previousDepth` for undo.
  */
 
 import { z } from 'zod';

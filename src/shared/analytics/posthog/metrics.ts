@@ -4,7 +4,12 @@
  */
 
 import type { Layout, CategoryId } from '@/core/types';
-import { DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions } from '@/core/constants';
+import {
+  CONSTRAINTS,
+  DEFAULT_CATEGORIES,
+  calcMaxGridUnits,
+  hasFractionalDimensions,
+} from '@/core/constants';
 import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
 import { splitBinsByLocation } from '@/shared/utils';
@@ -95,7 +100,7 @@ export interface LayoutMetrics {
 // METRICS COMPUTATION
 
 export const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
-export const DEFAULT_PRINT_BED = 256;
+export const DEFAULT_PRINT_BED = CONSTRAINTS.PRINT_BED_MM_DEFAULT;
 
 // Lazily computed to avoid a top-level read of the imported DEFAULT_CATEGORIES
 // binding. In production, this module and src/core/constants land in chunks

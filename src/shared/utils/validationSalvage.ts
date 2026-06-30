@@ -144,7 +144,7 @@ export function salvageImport(data: unknown): SalvageResult {
       })) as Layout['layers'],
       bins: validatedGridBins,
       categories: [] as Layout['categories'],
-      printBedSize: mm(256),
+      printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
       gridUnitMm: mm(42),
       heightUnitMm: mm(7),
     };

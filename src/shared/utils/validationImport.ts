@@ -142,7 +142,7 @@ export function validateImport(data: unknown): ImportValidationResult {
         })) as Layout['layers'],
         bins: validatedBins,
         categories: [] as Layout['categories'],
-        printBedSize: mm(256),
+        printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
         gridUnitMm: mm(42),
         heightUnitMm: mm(7),
       };

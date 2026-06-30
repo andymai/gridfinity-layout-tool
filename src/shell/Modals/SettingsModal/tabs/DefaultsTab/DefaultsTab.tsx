@@ -179,15 +179,12 @@ export function DefaultsTab() {
               onChange={(w, d) => {
                 updateSetting(
                   'defaultPrintBedSize',
-                  Math.max(CONSTRAINTS.PRINT_BED_MM_MIN, Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, w))
+                  clamp(w, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
                 );
                 updateSetting(
                   'defaultPrintBedDepth',
                   d !== undefined
-                    ? Math.max(
-                        CONSTRAINTS.PRINT_BED_MM_MIN,
-                        Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, d)
-                      )
+                    ? clamp(d, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
                     : undefined
                 );
               }}
