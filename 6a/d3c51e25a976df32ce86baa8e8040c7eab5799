@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometryBezier.test.ts
+  s_d0431bf9490853::t_953681e7e816cb 1-153
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.test.ts
+  s_d0431bf9490853::t_9135d6e5bb4505 1-109
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometryTriangulation.test.ts
+  s_d0431bf9490853::t_4c47ba6adeb612 1-33,36-84
+  s_d0431bf9490853::t_bbff956e378840 34-35
+src/features/bin-designer/components/panel/CutoutsSection/pathGeometrySegments.test.ts
+  s_d0431bf9490853::t_511a10e8eef6ab 1-259
+  s_d0431bf9490853::t_5e58697f8ccfe6 260-262
+  s_da443d24c074c3::t_27f78d2500d967 263-265
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "6ad3c51e25a976df32ce86baa8e8040c7eab5799",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_da443d24c074c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-afca9790f1bd6ff6d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
