@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.208.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.207.1...gridfinity-layout-tool-v4.208.0) (2026-06-30)
+
+
+### Features
+
+* **baseplate:** detach margins into separate printable pieces ([#2392](https://github.com/andymai/gridfinity-layout-tool/issues/2392)) ([#2398](https://github.com/andymai/gridfinity-layout-tool/issues/2398)) ([97d339c](https://github.com/andymai/gridfinity-layout-tool/commit/97d339c2d3f97464135a82adcc124162d2c1acef))
+
 ## [4.207.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.207.0...gridfinity-layout-tool-v4.207.1) (2026-06-29)
 
 
