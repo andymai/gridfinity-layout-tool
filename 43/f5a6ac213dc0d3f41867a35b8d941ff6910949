@@ -1,0 +1,39 @@
+src/features/bin-designer/utils/exportWithResilience.ts
+  s_d0431bf9490853::t_a1ae5b46e7992c 25
+  s_d0431bf9490853::t_0c07fc5747104a 56-57
+src/shared/utils/errors.ts
+  s_d0431bf9490853::t_65a556d9a20773 1-5,7-20
+  s_d0431bf9490853::t_2c19711af6f499 6
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_d0431bf9490853::t_58077c94e5131e 25
+  s_d0431bf9490853::t_508b009dcda97d 503
+src/features/bin-designer/hooks/useExport.ts
+  s_d0431bf9490853::t_2a2d4cf664f1df 35
+  s_d0431bf9490853::t_d6249f9ebe0911 234
+src/features/baseplate/hooks/useStackSampleExport.ts
+  s_d0431bf9490853::t_da798ef9369887 22
+  s_d0431bf9490853::t_d9a863ec7ff1cf 118
+src/features/baseplate/hooks/useConnectorSampleExport.ts
+  s_d0431bf9490853::t_625d62022fd0d1 115
+  s_d0431bf9490853::t_2fc804ae669588 21
+src/shared/utils/errors.test.ts
+  s_d0431bf9490853::t_1e8a2235dfe62e 1-70
+src/shared/utils/index.ts
+  s_d0431bf9490853::t_16246c308b9dd4 68-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "43f5a6ac213dc0d3f41867a35b8d941ff6910949",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
