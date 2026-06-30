@@ -32,6 +32,7 @@ import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
+import { getErrorCode } from '@/shared/utils/errors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
@@ -230,8 +231,7 @@ export function useExport(): UseExportReturn {
       isSplit: boolean
     ) => {
       const error = err instanceof Error ? err : new Error(String(err));
-      const maybeCode = (error as unknown as { code?: unknown }).code;
-      const errorCode = typeof maybeCode === 'string' ? maybeCode : 'UNKNOWN';
+      const errorCode = getErrorCode(error) ?? 'UNKNOWN';
 
       trackBinExportFailure({
         ...buildExportTelemetry(format, durationMs, retryCount, restartCount, isSplit),

@@ -65,3 +65,5 @@ export { snapPosition, snapGroupDelta, snapResizeRect, snapDrawRect, SNAP_RADIUS
 export type { SnapResult } from './snap';
 
 export { calculateResizeRect } from './resize';
+
+export { getErrorCode, getErrorMessage, reportExportFailure } from './errors';
