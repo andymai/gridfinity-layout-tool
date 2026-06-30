@@ -1,0 +1,65 @@
+src/i18n/locales/sv.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_64412c3ff0553a::t_d3d7d721cde7f0 16-19,24-25
+  s_64412c3ff0553a::t_9235a06cd34f0c 69-70
+  s_64412c3ff0553a::t_8d547791903d4a 80-81,86,97-98,105,110-147
+src/i18n/locales/nb.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/nl.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/pt-BR.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/shell/layoutExport/useLayoutExport.ts
+  s_64412c3ff0553a::t_ea46e93389e85a 123-130
+  s_64412c3ff0553a::t_cc6088cddf6152 81-85
+  s_64412c3ff0553a::t_8dfc3e3442f809 42-46
+  s_64412c3ff0553a::t_244d58a3a14972 166-167,201-205,210-215,222-227,233,240-249
+  s_64412c3ff0553a::t_f4633bca638bcd 179,199
+  s_64412c3ff0553a::t_773981637ea166 200
+src/shared/generation/zipExport.ts
+  s_64412c3ff0553a::t_f3203ec5319fd7 89-90
+  s_64412c3ff0553a::t_c018a90f63c284 22-38
+  s_64412c3ff0553a::t_5ba3c2d57e6cea 61-62
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_64412c3ff0553a::t_919f69d685d28e 87
+  s_64412c3ff0553a::t_5ccfe9c521d33c 70-71
+src/i18n/locales/fr.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/uk.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_64412c3ff0553a::t_e54a256c9d2d3b 115
+  s_64412c3ff0553a::t_77f0855c596041 110
+  s_64412c3ff0553a::t_cf0a074801dbce 120
+  s_64412c3ff0553a::t_bbad98902596af 43-46
+  s_64412c3ff0553a::t_3089a87843bc1a 67,70
+  s_64412c3ff0553a::t_6f7604863b5be0 99
+src/shell/layoutExport/LayoutExportDialog.tsx
+  s_64412c3ff0553a::t_7ff03e5c711bf5 54,56-62,67
+  s_64412c3ff0553a::t_a7e9447ee17a44 82
+src/i18n/locales/es.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/ja.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/de.json
+  s_64412c3ff0553a::t_d980f8f1127189 1982,1985-1987
+src/i18n/locales/en.ts
+  s_64412c3ff0553a::t_10d50490529e69 290,293-295
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "f42c8716509c2b5d197f5002f7be662149d9fcbc",
+  "prompts": {},
+  "sessions": {
+    "s_64412c3ff0553a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f9f4441-eabe-4996-a758-47b44cc2f8a5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
