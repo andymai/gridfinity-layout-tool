@@ -106,7 +106,6 @@
   "baseplate.overTileKeptSolid": "För liten, förblir massiv: {sides}",
   "baseplate.halfGridHint": "Fyller varje marginal med 21 mm halvrutnätsceller där de får plats; smalare rester fylls som en hel platta.",
   "baseplate.detachMargins": "Lossa marginaler som separata delar",
-  "baseplate.detachMarginsHint": "Skriv ut varje utfyllnadsmarginal som en egen list i stället för som del av plattan, så att en misslyckad marginal skrivs ut på nytt för sig.",
   "baseplate.detachMarginsTooSmall": "Marginalen är för liten på varje kant för att lossas.",
   "baseplate.detachMarginsStackConflict": "Inte tillgängligt när stapelutskrift är på.",
   "baseplate.overTileTooSmall": "Utfyllnaden är för liten på varje kant för en rutnätsplatta.",

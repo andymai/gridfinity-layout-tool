@@ -106,7 +106,6 @@
   "baseplate.overTileKeptSolid": "Pequeno demais, fica sólido: {sides}",
   "baseplate.halfGridHint": "Preenche cada margem com células de meia-grade de 21 mm onde couberem; sobras mais estreitas são preenchidas como um bloco inteiro.",
   "baseplate.detachMargins": "Separar margens como peças independentes",
-  "baseplate.detachMarginsHint": "Imprime cada margem de preenchimento como um trilho próprio em vez de parte da placa, para que uma margem com defeito seja reimpressa sozinha.",
   "baseplate.detachMarginsTooSmall": "O preenchimento é pequeno demais em todas as bordas para separar.",
   "baseplate.detachMarginsStackConflict": "Indisponível enquanto a impressão empilhada está ativada.",
   "baseplate.overTileTooSmall": "A margem é pequena demais em todas as bordas para um ladrilho de grade.",

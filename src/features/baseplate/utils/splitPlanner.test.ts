@@ -1400,6 +1400,31 @@ describe('detachMargins emits margin rails', () => {
     expect(ms.map((m) => m.side).sort()).toEqual(['left']);
   });
 
+  it('segments a long rail per body column on a split plate, with corners on the end columns', () => {
+    // 10u wide splits across the bed; the front rail emits one segment per column.
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 10,
+        depth: 3,
+        detachMargins: true,
+        paddingLeft: P,
+        paddingRight: P,
+        paddingFront: P,
+        paddingBack: P,
+      }),
+      256
+    );
+    expect(tiling.isSplit).toBe(true);
+    const front = tiling.margins.filter((m) => m.side === 'front').sort((a, b) => a.col - b.col);
+    expect(front.length).toBe(tiling.cols);
+    // Each segment fits the bed.
+    for (const seg of front) expect(seg.lengthMm).toBeLessThanOrEqual(256);
+    // Corners live on the end columns only.
+    expect(front[0].ownedCorners).toEqual(['bl']);
+    expect(front[front.length - 1].ownedCorners).toEqual(['br']);
+    for (const seg of front.slice(1, -1)) expect(seg.ownedCorners).toEqual([]);
+  });
+
   it('extends a rail over an integral (sub-threshold) perpendicular side to reach its corner', () => {
     // left detaches; front padding (5mm) stays integral on the body. The left
     // rail must extend over that 5mm so the front-left corner has no gap.
@@ -1438,6 +1463,8 @@ describe('bodyParamsForDetach', () => {
   it('does not affect the margins computed from the original params', () => {
     // Zeroing is for the body mesh only — emitMargins still sees true padding.
     const p = makeParams({ detachMargins: true, paddingLeft: P, paddingFront: P });
-    expect(computeBaseplateTiling(p, 256).margins.length).toBe(2);
+    const sides = new Set(computeBaseplateTiling(p, 256).margins.map((m) => m.side));
+    expect(sides.has('front')).toBe(true);
+    expect(sides.has('left')).toBe(true);
   });
 });

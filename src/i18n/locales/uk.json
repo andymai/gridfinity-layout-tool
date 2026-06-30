@@ -106,7 +106,6 @@
   "baseplate.overTileKeptSolid": "Замала, лишається суцільною: {sides}",
   "baseplate.halfGridHint": "Заповнює кожен відступ комірками півсітки 21 мм, де вони вміщуються; вужчі залишки заповнюються як ціла плитка.",
   "baseplate.detachMargins": "Відокремити поля як окремі деталі",
-  "baseplate.detachMarginsHint": "Друкує кожне поле заповнення окремою рейкою, а не частиною плити, щоб невдале поле можна було передрукувати окремо.",
   "baseplate.detachMarginsTooSmall": "Поле занадто мале на кожному краю, щоб відокремити.",
   "baseplate.detachMarginsStackConflict": "Недоступно, коли увімкнено друк стосами.",
   "baseplate.overTileTooSmall": "Відступ замалий на кожному краю для плитки сітки.",

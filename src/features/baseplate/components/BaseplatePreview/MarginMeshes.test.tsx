@@ -43,6 +43,8 @@ const rail = (over: Partial<MarginMeshEntry> = {}): MarginMeshEntry => ({
   worldOffsetMm: { x: 0, y: -10 },
   lengthMm: 100,
   bandThicknessMm: 10,
+  col: 0,
+  row: 0,
   ...over,
 });
 

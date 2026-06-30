@@ -5,9 +5,10 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { MarginMeshEntry } from '../../store/baseplatePageStore';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
+import { EXPLODE_GAP_MM } from '../../constants';
 
-/** Outward gap (mm) applied to each rail in exploded view so it reads as detached. */
-const MARGIN_EXPLODE_GAP_MM = 8;
+/** Extra outward gap (mm) so a rail reads as detached from its body piece. */
+const MARGIN_OUTWARD_GAP_MM = 8;
 
 /** Face opacity in xray mode (matches the body/split meshes). */
 const XRAY_OPACITY = 0.3;
@@ -44,10 +45,14 @@ function MarginRailMesh({
 
   if (!geometry) return null;
 
+  // In exploded view, track the adjacent body piece (col/row * gap, matching
+  // SplitBaseplateMeshes) so segments move with their piece, then step outward
+  // along the side normal so the rail visibly separates instead of overlapping.
   const [nx, ny] = SIDE_NORMAL[entry.side];
-  const gap = exploded ? MARGIN_EXPLODE_GAP_MM : 0;
-  const x = entry.worldOffsetMm.x + nx * gap;
-  const y = entry.worldOffsetMm.y + ny * gap;
+  const explodeX = exploded ? entry.col * EXPLODE_GAP_MM + nx * MARGIN_OUTWARD_GAP_MM : 0;
+  const explodeY = exploded ? entry.row * EXPLODE_GAP_MM + ny * MARGIN_OUTWARD_GAP_MM : 0;
+  const x = entry.worldOffsetMm.x + explodeX;
+  const y = entry.worldOffsetMm.y + explodeY;
 
   return (
     <group position={[x, y, 0.1]}>

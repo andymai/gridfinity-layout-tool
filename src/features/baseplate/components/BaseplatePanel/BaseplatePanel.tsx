@@ -469,13 +469,14 @@ export function BaseplatePanel() {
                           : undefined
                     }
                     primaryControls={
-                      <p className="text-[11px] leading-relaxed text-content-tertiary">
-                        {/* On but nothing meets the threshold → no rails are
-                            emitted, so explain rather than imply they will. */}
-                        {canDetach
-                          ? t('baseplate.detachMarginsHint')
-                          : t('baseplate.detachMarginsTooSmall')}
-                      </p>
+                      // On but nothing meets the threshold → no rails are emitted,
+                      // so say so rather than imply they will. Otherwise no help
+                      // text — the label is self-explanatory.
+                      canDetach ? undefined : (
+                        <p className="text-[11px] leading-relaxed text-content-tertiary">
+                          {t('baseplate.detachMarginsTooSmall')}
+                        </p>
+                      )
                     }
                   />
                 </div>

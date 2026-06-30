@@ -132,10 +132,17 @@ export type MarginCorner = 'tl' | 'tr' | 'bl' | 'br';
  * a rail without a cross-feature import.
  */
 export interface MarginPiece {
-  /** Stable id/label, e.g. "margin-front". */
+  /** Stable id/label, e.g. "margin-front-A". */
   readonly id: string;
   readonly side: 'left' | 'right' | 'front' | 'back';
   readonly role: 'long' | 'short';
+  /**
+   * Column/row of the body piece this segment runs alongside. A split plate
+   * emits one segment per outer body piece (so segments fit the bed and explode
+   * in lockstep with their piece); an unsplit plate is a single 0,0 piece.
+   */
+  readonly col: number;
+  readonly row: number;
   /** Extent along the rail's running axis (mm). */
   readonly lengthMm: number;
   /** Padding-band depth perpendicular to the running axis (mm). */

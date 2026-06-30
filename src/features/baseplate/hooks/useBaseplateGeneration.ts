@@ -555,6 +555,8 @@ export function useBaseplateGeneration(): void {
               worldOffsetMm: margin.worldOffsetMm,
               lengthMm: margin.lengthMm,
               bandThicknessMm: margin.bandThicknessMm,
+              col: margin.col,
+              row: margin.row,
             });
           }
           setMarginMeshes(railEntries);

@@ -71,6 +71,9 @@ export interface MarginMeshEntry {
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
   readonly lengthMm: number;
   readonly bandThicknessMm: number;
+  /** Adjacent body piece col/row — drives exploded-view offset (matches pieces). */
+  readonly col: number;
+  readonly row: number;
 }
 
 interface BaseplatePageState {
