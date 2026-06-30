@@ -1,0 +1,45 @@
+src/features/baseplate/utils/printGuide.test.ts
+  s_1a91b7e5519d3d::t_e12e67e4ac4ef5 358
+src/features/baseplate/utils/printGuide.ts
+  s_1a91b7e5519d3d::t_79b56dbc1ea494 117
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_1a91b7e5519d3d::t_e8b69fec9fccbb 473-477
+src/features/baseplate/components/BaseplatePreview/MarginMeshes.tsx
+  s_1a91b7e5519d3d::t_3624f0948e02a9 26,31
+  s_1a91b7e5519d3d::t_8bede95f15c253 79,90
+  s_1a91b7e5519d3d::t_620b6eb6ceed55 12-14
+  s_1a91b7e5519d3d::t_cb5cbde6c8bb06 60-62
+  s_1a91b7e5519d3d::t_76302a18e76537 91-93
+  s_1a91b7e5519d3d::t_9cf72375f9204a 94-96
+src/i18n/locales/nl.json
+  s_1a91b7e5519d3d::t_931363e4216f2b 111
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_1a91b7e5519d3d::t_73f94986cc7a54 108-110
+src/core/constants.test.ts
+  s_1a91b7e5519d3d::t_ede4462b3774e5 380,392-393,400
+src/core/constants.ts
+  s_1a91b7e5519d3d::t_54ed4e85202e0e 350-354
+src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  s_1a91b7e5519d3d::t_b30ee14c9f9836 334-338
+src/features/baseplate/store/baseplatePageStore.ts
+  s_1a91b7e5519d3d::t_a07aad65f31922 12
+  s_1a91b7e5519d3d::t_1809068ffa3748 69
+src/i18n/locales/uk.json
+  s_1a91b7e5519d3d::t_931363e4216f2b 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "7f0bf6173f0958dfec1bbdaf087c93a3c83c7832",
+  "prompts": {},
+  "sessions": {
+    "s_1a91b7e5519d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f85eac4-357a-4431-844b-378000f270fb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
