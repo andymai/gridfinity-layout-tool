@@ -347,9 +347,11 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
           },
         }
       : {}),
-    // Detach is mutually exclusive with stack-print; stack-print wins, so drop a
-    // persisted detach flag whenever stacking is enabled.
-    ...(obj.detachMargins === true && !stackPrint?.enabled ? { detachMargins: true } : {}),
+    // Preserve the stored opt-in. Detach is mutually exclusive with stack-print,
+    // but that's resolved at generation/UI time (buildFullParams + the panel
+    // suppress detach while stacking is on) — erasing the flag on load would lose
+    // the user's intent if they later turn stacking off.
+    ...(obj.detachMargins === true ? { detachMargins: true } : {}),
     ...(stackPrint ? { stackPrint } : {}),
   };
 }

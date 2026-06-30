@@ -114,7 +114,7 @@ export function generateMarginGuide(margins: NonNullable<PrintGuideInput['margin
 function generateMarginSection(margins: NonNullable<PrintGuideInput['margins']>): string {
   const rows = margins.map(
     (m) =>
-      `  ${m.fileName}  —  ${m.side}, ${Math.round(m.lengthMm)} × ${Math.round(m.bandThicknessMm)} mm`
+      `  ${m.fileName}  —  ${m.side}, ${m.lengthMm.toFixed(1)} × ${m.bandThicknessMm.toFixed(1)} mm`
   );
   return [
     '─── Detached margins ────────────────────────────',

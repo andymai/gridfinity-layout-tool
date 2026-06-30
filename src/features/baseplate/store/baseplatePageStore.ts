@@ -9,7 +9,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { BaseplateTiling, DedupStats } from '../types/tiling';
-import type { ExportFileNameConfig } from '@/shared/types/bin';
+import type { ExportFileNameConfig, MarginPiece } from '@/shared/types/bin';
 
 type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
@@ -66,7 +66,7 @@ export interface PieceMeshEntry {
  */
 export interface MarginMeshEntry {
   readonly id: string;
-  readonly side: 'left' | 'right' | 'front' | 'back';
+  readonly side: MarginPiece['side'];
   readonly mesh: MeshResult;
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
   readonly lengthMm: number;

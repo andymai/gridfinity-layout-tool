@@ -105,6 +105,8 @@ describe('margin rail geometry', () => {
     const front = railOf(params, 'front');
     const md = generateMargin(params, front, false);
     const b = bbox(md.vertices);
-    expect(b.maxZ).toBeCloseTo(SOCKET_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
+    // Assert the full height span (bottom at 0), not just the top.
+    expect(b.minZ).toBeCloseTo(0, 1);
+    expect(b.maxZ - b.minZ).toBeCloseTo(SOCKET_HEIGHT + MAGNET_FLOOR + params.magnetDepth, 1);
   });
 });

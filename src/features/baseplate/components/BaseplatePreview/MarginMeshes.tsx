@@ -9,6 +9,9 @@ import { useMeshGeometry } from './useMeshGeometry';
 /** Outward gap (mm) applied to each rail in exploded view so it reads as detached. */
 const MARGIN_EXPLODE_GAP_MM = 8;
 
+/** Face opacity in xray mode (matches the body/split meshes). */
+const XRAY_OPACITY = 0.3;
+
 const SIDE_NORMAL: Record<MarginMeshEntry['side'], readonly [number, number]> = {
   left: [-1, 0],
   right: [1, 0],
@@ -20,10 +23,12 @@ function MarginRailMesh({
   entry,
   color,
   exploded,
+  xray,
 }: {
   entry: MarginMeshEntry;
   color: string;
   exploded: boolean;
+  xray: boolean;
 }) {
   const { invalidate } = useThree();
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
@@ -52,6 +57,9 @@ function MarginRailMesh({
           color={color}
           emissive={color}
           flatShading={!hasPrecomputedNormals}
+          transparent={xray}
+          opacity={xray ? XRAY_OPACITY : 1}
+          depthWrite={!xray}
         />
       </mesh>
       {edgesGeometry && (
@@ -68,7 +76,7 @@ function MarginRailMesh({
  * origin and placed by its `worldOffsetMm`; rails render in every mode (split or
  * not) whenever `detachMargins` produced them.
  */
-export function MarginMeshes({ color }: { color: string }) {
+export function MarginMeshes({ color, xray = false }: { color: string; xray?: boolean }) {
   const { marginMeshes, splitViewMode } = useBaseplatePageStore(
     useShallow((s) => ({ marginMeshes: s.marginMeshes, splitViewMode: s.splitViewMode }))
   );
@@ -79,7 +87,13 @@ export function MarginMeshes({ color }: { color: string }) {
   return (
     <>
       {marginMeshes.map((entry) => (
-        <MarginRailMesh key={entry.id} entry={entry} color={color} exploded={exploded} />
+        <MarginRailMesh
+          key={entry.id}
+          entry={entry}
+          color={color}
+          exploded={exploded}
+          xray={xray}
+        />
       ))}
     </>
   );

@@ -108,7 +108,7 @@
   "baseplate.detachMargins": "Відокремити поля як окремі деталі",
   "baseplate.detachMarginsHint": "Друкує кожне поле заповнення окремою рейкою, а не частиною плити, щоб невдале поле можна було передрукувати окремо.",
   "baseplate.detachMarginsTooSmall": "Поле занадто мале на кожному краю, щоб відокремити.",
-  "baseplate.detachMarginsStackConflict": "Недоступно, поки увімкнено пошаровий друк.",
+  "baseplate.detachMarginsStackConflict": "Недоступно, коли увімкнено друк стосами.",
   "baseplate.overTileTooSmall": "Відступ замалий на кожному краю для плитки сітки.",
   "baseplate.padding": "Відступи",
   "baseplate.paddingAnchor.bc": "Прив'язати бункери до передньої центральної",
