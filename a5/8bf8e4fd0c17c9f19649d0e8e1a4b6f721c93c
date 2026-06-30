@@ -1,0 +1,19 @@
+src/shared/utils/math.test.ts
+  s_d0431bf9490853::t_6b2e0bb2a66ee5 30-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "a58bf8e4fd0c17c9f19649d0e8e1a4b6f721c93c",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
