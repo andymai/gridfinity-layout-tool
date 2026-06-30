@@ -19,7 +19,7 @@ import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
-import type { ExportFormat } from '@/shared/generation/bridge';
+import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { triggerDownload } from '@/shared/generation/exportUtils';
@@ -28,6 +28,13 @@ import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import { buildBaseplateExportPieces } from '@/features/baseplate';
 import { loadDesign } from '@/features/bin-designer';
+import type { BinParams } from '@/features/bin-designer';
+// Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App;
+// this packaging only runs inside the lazy layout-export chunk.
+import {
+  buildBinDownloadPayload,
+  buildThreeMFPrintSettings,
+} from '@/features/bin-designer/utils/binDownloadHelpers';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
 import type { LoadedDesign } from './planLayoutBinExport';
@@ -70,6 +77,42 @@ async function stlTo3mf(
 
 function baseNameOf(path: string): string {
   return (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '');
+}
+
+/**
+ * Flatten a combined export (body + lid + dividers) into ZIP files. STL emits a
+ * file per piece (`<base>.stl` for the body, `<base>_<part>.stl` for the rest);
+ * 3MF packs everything into one multi-object file and STEP into one compound —
+ * reusing the bin designer's packaging so colours/orientation match.
+ */
+async function combinedFiles(
+  result: CombinedExportResult,
+  format: ExportFileFormat,
+  basePath: string,
+  params: BinParams,
+  printSettings: { layerHeightMm: number; infillPercent: number }
+): Promise<ZipBinaryFile[]> {
+  if (format === 'stl') {
+    const baseNoExt = basePath.replace(/\.[^.]+$/, '');
+    return result.pieces.map((p) => ({
+      path: p.label === 'bin' ? `${baseNoExt}.stl` : `${baseNoExt}_${p.label}.stl`,
+      data: p.data,
+    }));
+  }
+
+  const name = baseNameOf(basePath);
+  const threeMFContext =
+    format === '3mf'
+      ? {
+          modelName: name,
+          threeMFPrintSettings: buildThreeMFPrintSettings(printSettings, {
+            printTimeMinutes: 0,
+            gramsFilament: 0,
+          }),
+        }
+      : null;
+  const { blob } = buildBinDownloadPayload(format, result, params, name, threeMFContext);
+  return [{ path: basePath, data: await blob.arrayBuffer() }];
 }
 
 export function useLayoutExport(): UseLayoutExportReturn {
@@ -129,39 +172,54 @@ export function useLayoutExport(): UseLayoutExportReturn {
             : fileNameConfig;
         const plan = planLayoutBinExport(bins, loaded, format, innerConfig, printSettings);
 
-        // Phase 1 — bins. The bridge emits STL/STEP; 3MF converts client-side.
-        const binBridgeFormat: ExportFormat = format === '3mf' ? 'stl' : format;
-        const binParams = plan.exportable.map((e) => e.params);
-        const binTotal = binParams.length;
+        // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
+        // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
+        // export STL geometry.
+        const workerFormat: ExportFormat = format === 'step' ? 'step' : 'stl';
+        const binTotal = plan.exportable.length;
         const binLabel = (current: number): string =>
           t('layoutExport.progress.bins', { current, total: binTotal });
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
 
-        let binBytes: ArrayBuffer[] = [];
-        if (binTotal > 0) {
+        const binFiles: ZipBinaryFile[] = [];
+        // Body-only designs export in parallel via the pool; designs with a lid
+        // or removable dividers go through the (non-poolable) combined flow.
+        const simple = plan.exportable.filter((e) => e.companions.length === 0);
+        const companions = plan.exportable.filter((e) => e.companions.length > 0);
+        let done = 0;
+
+        if (simple.length > 0) {
+          const params = simple.map((e) => e.params);
+          let bytes: ArrayBuffer[];
           if (pool && !pool.isDestroyed && pool.size > 1) {
-            const results = await pool.exportBins(binParams, binBridgeFormat, (c) =>
+            const results = await pool.exportBins(params, workerFormat, (c) =>
               setExportProgress({ current: c, total: binTotal, label: binLabel(c) })
             );
-            binBytes = results.map((r) => r.data);
+            bytes = results.map((r) => r.data);
           } else {
-            for (let i = 0; i < binParams.length; i++) {
+            bytes = [];
+            for (let i = 0; i < params.length; i++) {
               setExportProgress({ current: i, total: binTotal, label: binLabel(i) });
-              const res = await bridge.exportBin(binParams[i], binBridgeFormat);
-              binBytes.push(res.data);
+              bytes.push((await bridge.exportBin(params[i], workerFormat)).data);
             }
-            setExportProgress({ current: binTotal, total: binTotal, label: binLabel(binTotal) });
           }
+          for (let i = 0; i < simple.length; i++) {
+            const data =
+              format === '3mf'
+                ? await stlTo3mf(bytes[i], baseNameOf(simple[i].path), printSettings)
+                : bytes[i];
+            binFiles.push({ path: simple[i].path, data });
+          }
+          done = simple.length;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
-        const binFinal =
-          format === '3mf'
-            ? await Promise.all(
-                binBytes.map((d, i) =>
-                  stlTo3mf(d, baseNameOf(plan.exportable[i].path), printSettings)
-                )
-              )
-            : binBytes;
+        for (const e of companions) {
+          const result = await bridge.exportCombined(e.params, workerFormat);
+          binFiles.push(...(await combinedFiles(result, format, e.path, e.params, printSettings)));
+          done++;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
+        }
 
         // Phase 2 — baseplate. A baseplate failure (e.g. a degenerate drawer)
         // must not lose a good bin export, so it degrades to a bins-only archive.
@@ -206,7 +264,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Assemble the archive.
         const binaryFiles: ZipBinaryFile[] = [
-          ...plan.exportable.map((e, i) => ({ path: e.path, data: binFinal[i] })),
+          ...binFiles,
           ...(bp
             ? bp.pieces.map((p) => ({
                 path: `baseplate/${p.label ? `${bp.baseNameNoExt}_${p.label}` : bp.baseNameNoExt}${bp.extension}`,

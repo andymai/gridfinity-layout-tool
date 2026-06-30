@@ -77,6 +77,23 @@ describe('planLayoutBinExport', () => {
     expect(new Set(paths).size).toBe(2);
   });
 
+  it('flags designs with removable dividers as companions', () => {
+    const bins = [linkedBin('d1')] as Bin[];
+    const loaded: LoadedDesign[] = [
+      { id: designId('d1'), design: design('d1', 'Slotted', { style: 'slotted' }) },
+    ];
+    const plan = planLayoutBinExport(bins, loaded, 'stl', CONFIG, DEFAULT_PRINT_SETTINGS);
+    expect(plan.exportable[0].companions).toContain('dividers');
+    expect(plan.manifestBins[0].companions).toContain('dividers');
+  });
+
+  it('marks plain designs as having no companions', () => {
+    const bins = [linkedBin('d1')] as Bin[];
+    const loaded: LoadedDesign[] = [{ id: designId('d1'), design: design('d1', 'Box') }];
+    const plan = planLayoutBinExport(bins, loaded, 'stl', CONFIG, DEFAULT_PRINT_SETTINGS);
+    expect(plan.exportable[0].companions).toEqual([]);
+  });
+
   it('sums totals as per-bin estimate × quantity', () => {
     const bins = [linkedBin('d1'), { ...linkedBin('d1'), x: 1 }] as Bin[];
     const loaded: LoadedDesign[] = [

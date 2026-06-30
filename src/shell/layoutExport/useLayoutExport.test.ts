@@ -8,7 +8,7 @@ import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtil
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 
 const h = vi.hoisted(() => ({
-  bridge: { exportBin: vi.fn() },
+  bridge: { exportBin: vi.fn(), exportCombined: vi.fn() },
   triggerDownload: vi.fn(),
   trackEvent: vi.fn(),
   buildBaseplateExportPieces: vi.fn(),
@@ -42,11 +42,11 @@ vi.mock('@/features/bin-designer', async (orig) => ({
 
 import { useLayoutExport } from './useLayoutExport';
 
-function design(id: string, name: string) {
+function design(id: string, name: string, params: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   return ok({
     id: designId(id),
     name,
-    params: { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 6 },
+    params: { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 6, ...params },
     thumbnail: null,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
@@ -67,6 +67,10 @@ beforeEach(() => {
   h.loadDesign.mockImplementation((id: string) =>
     Promise.resolve(design(id, id === 'd2' ? 'Tray' : 'Box'))
   );
+  h.bridge.exportCombined.mockResolvedValue({
+    pieces: [{ data: new ArrayBuffer(8), label: 'bin' }],
+    format: 'stl',
+  });
   h.bridgeAcquire.mockResolvedValue(h.bridge);
   h.poolAcquire.mockResolvedValue({ isDestroyed: false, size: 1 });
 
@@ -97,6 +101,35 @@ describe('useLayoutExport', () => {
     });
     expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
     expect(h.poolRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('exports lid/divider companion parts via the combined flow', async () => {
+    // Single slotted design → removable dividers → combined export path.
+    h.loadDesign.mockImplementation((id: string) =>
+      Promise.resolve(design(id, 'Slotted', { style: 'slotted' }))
+    );
+    h.bridge.exportCombined.mockResolvedValue({
+      pieces: [
+        { data: new ArrayBuffer(8), label: 'bin' },
+        { data: new ArrayBuffer(8), label: 'divider-horizontal' },
+      ],
+      format: 'stl',
+    });
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        name: 'L',
+        bins: [createTestBin({ linkedDesignId: designId('d1') })],
+      }),
+    });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(true);
+    // Companion designs go through exportCombined, not the single-bin path.
+    expect(h.bridge.exportCombined).toHaveBeenCalledTimes(1);
+    expect(h.bridge.exportBin).not.toHaveBeenCalled();
+    expect(h.triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'z.zip');
   });
 
   it('returns false without exporting when there are no linked bins', async () => {

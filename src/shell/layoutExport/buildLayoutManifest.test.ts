@@ -46,6 +46,15 @@ describe('buildLayoutManifest', () => {
     expect(buildLayoutManifest(base())).toContain('Estimates assume a standard bin');
   });
 
+  it('lists companion parts when a design has them', () => {
+    const text = buildLayoutManifest(
+      base({
+        bins: [{ ...base().bins[0], companions: ['lid', 'dividers'] }],
+      })
+    );
+    expect(text).toContain('Includes:  lid, dividers');
+  });
+
   it('references the baseplate guide and piece count', () => {
     const text = buildLayoutManifest(base());
     expect(text).toContain('4 files in the baseplate/ folder');

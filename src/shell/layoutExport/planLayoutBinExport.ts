@@ -10,6 +10,9 @@
 import type { Bin, DesignId } from '@/core/types';
 import type { SavedDesign, BinParams } from '@/features/bin-designer';
 import { generateFileName } from '@/features/bin-designer';
+// Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
+// and this code only runs inside the lazy layout-export chunk.
+import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { countLinkedBins } from '@/features/design-linking';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { PrintSettings } from '@/shared/printSettings';
@@ -23,12 +26,32 @@ export interface LoadedDesign {
   readonly design: SavedDesign | null;
 }
 
+export interface LayoutExportable {
+  readonly params: BinParams;
+  /** ZIP path for the design's main body, e.g. `bins/box_1x1x6.stl`. */
+  readonly path: string;
+  /**
+   * Companion parts the design ships (`lid`, `dividers`). When non-empty the
+   * design is exported via the combined flow so those parts are included.
+   */
+  readonly companions: readonly string[];
+}
+
 export interface LayoutBinExportPlan {
-  /** Exportable bins, in order, with their unique ZIP paths (`bins/<name>`). */
-  readonly exportable: readonly { readonly params: BinParams; readonly path: string }[];
+  readonly exportable: readonly LayoutExportable[];
   readonly manifestBins: ManifestBinEntry[];
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
+}
+
+/** Printable companion parts (lid, removable dividers) a bin design ships beyond its body. */
+function binCompanions(params: BinParams): string[] {
+  const companions: string[] = [];
+  if (shouldGenerateLid(params)) companions.push('lid');
+  if (params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled)) {
+    companions.push('dividers');
+  }
+  return companions;
 }
 
 export function planLayoutBinExport(
@@ -68,7 +91,12 @@ export function planLayoutBinExport(
   );
 
   const paths = fileNames.map((name) => `bins/${name}`);
-  const exportable = usable.map((u, i) => ({ params: u.params, path: paths[i] }));
+  const companions = usable.map((u) => binCompanions(u.params));
+  const exportable = usable.map((u, i) => ({
+    params: u.params,
+    path: paths[i],
+    companions: companions[i],
+  }));
 
   let totalGrams = 0;
   let totalMinutes = 0;
@@ -92,6 +120,7 @@ export function planLayoutBinExport(
       quantity: u.quantity,
       filamentGrams: est.gramsFilament,
       printTimeMinutes: est.printTimeMinutes,
+      companions: companions[i],
     };
   });
 

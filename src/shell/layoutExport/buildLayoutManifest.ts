@@ -18,6 +18,8 @@ export interface ManifestBinEntry {
   readonly quantity: number;
   readonly filamentGrams: number;
   readonly printTimeMinutes: number;
+  /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
+  readonly companions?: readonly string[];
 }
 
 export interface ManifestSkipped {
@@ -80,6 +82,9 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       lines.push(`    Design:    ${b.designName}`);
       lines.push(`    Size:      ${b.widthUnits} × ${b.depthUnits} × ${b.heightUnits} units`);
       lines.push(`    Quantity:  ${b.quantity}`);
+      if (b.companions && b.companions.length > 0) {
+        lines.push(`    Includes:  ${b.companions.join(', ')}`);
+      }
       lines.push(
         `    Estimate:  ~${b.filamentGrams.toFixed(1)} g, ~${formatTime(b.printTimeMinutes)} each`
       );
@@ -89,9 +94,6 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       `  Estimated total: ~${totals.filamentGrams.toFixed(0)} g, ~${formatTime(totals.printTimeMinutes)}`,
       '  Estimates assume a standard bin (walls + floor + lip); custom features such',
       '  as cutouts, dividers and compartments are not accounted for.',
-      '',
-      '  Each bin is exported as its main body. If a design has a separate lid or',
-      '  removable dividers, export those from the bin designer.',
       ''
     );
   }
