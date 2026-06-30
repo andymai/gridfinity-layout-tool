@@ -47,6 +47,20 @@ function freshInc(): Increments {
   return {};
 }
 
+/**
+ * Assert that running `call` twice on the same Increments object doubles the
+ * value at inc[key][field]. Requires the counter to be > 0 after the first
+ * call, so callers must pass an event that actually writes to that counter.
+ */
+function assertAdditive(call: (inc: Increments) => void, key: string, field: string): void {
+  const inc = freshInc();
+  call(inc);
+  const once = inc[key]?.[field] ?? 0;
+  expect(once).toBeGreaterThan(0);
+  call(inc);
+  expect(inc[key]?.[field]).toBe(once * 2);
+}
+
 // ─────────────────────────────────────────────
 // aggregateBinPlacement
 // ─────────────────────────────────────────────
@@ -268,6 +282,15 @@ describe('aggregateLabelUpdate', () => {
     aggregateLabelUpdate({ ...baseEvent, new_label_embedding_bucket: 'ff00' }, inc);
     expect(inc['ml:embed:ff00']?.['1x2x3']).toBe(1);
   });
+
+  it('is additive — label_hash counter doubles on second call', () => {
+    // Use a non-null field so the aggregator actually writes something
+    assertAdditive(
+      (inc) => aggregateLabelUpdate({ ...baseEvent, new_label_hash: 'deadbeef' }, inc),
+      'ml:label_hash:deadbeef',
+      '1x2x3'
+    );
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -465,6 +488,10 @@ describe('aggregateLayoutSnapshot', () => {
     expect(inc['ml:cluster_archetypes:12345678']?.['mixed']).toBe(1);
     expect(inc['ml:clusters:12345678']?.['2x2x3']).toBe(3);
   });
+
+  it('is additive — trigger counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateLayoutSnapshot(baseEvent, inc), 'ml:triggers', 'save');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -560,6 +587,10 @@ describe('aggregateQualitySignal', () => {
     aggregateQualitySignal({ ...baseEvent, time_since_last_edit_ms: 1_800_000 }, inc);
     expect(inc['ml:quality_dormancy']?.['dormant']).toBe(1);
   });
+
+  it('is additive — quality signal counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateQualitySignal(baseEvent, inc), 'ml:quality', 'shared');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -642,6 +673,10 @@ describe('aggregateCategoryChange', () => {
     aggregateCategoryChange({ ...baseEvent, label_domain: 'tools' }, inc);
     expect(inc['ml:domain_cat:tools']?.['abcd1234']).toBe(1);
   });
+
+  it('is additive — total category change counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateCategoryChange(baseEvent, inc), 'ml:cat_changes', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -716,6 +751,10 @@ describe('aggregateBinResize', () => {
     aggregateBinResize({ ...baseEvent, area_delta: 20 }, inc);
     expect(inc['ml:resize_delta']?.['+9+']).toBe(1);
   });
+
+  it('is additive — total resize counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateBinResize(baseEvent, inc), 'ml:resizes', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -777,6 +816,10 @@ describe('aggregateBinDeletion', () => {
     aggregateBinDeletion(baseEvent, inc);
     expect(inc['ml:neg:deletions']?.['total']).toBe(1);
   });
+
+  it('is additive — total deletion counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateBinDeletion(baseEvent, inc), 'ml:neg:deletions', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -835,6 +878,10 @@ describe('aggregateBinMove', () => {
     aggregateBinMove(baseEvent, inc);
     expect(inc['ml:moves']?.['total']).toBe(1);
   });
+
+  it('is additive — total move counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateBinMove(baseEvent, inc), 'ml:moves', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -885,6 +932,10 @@ describe('aggregateDrawerResize', () => {
     const inc = freshInc();
     aggregateDrawerResize(baseEvent, inc);
     expect(inc['ml:drawer_resize_results']?.['6x6x6']).toBe(1);
+  });
+
+  it('is additive — total drawer resize counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateDrawerResize(baseEvent, inc), 'ml:drawer_resizes', 'total');
   });
 });
 
@@ -950,6 +1001,10 @@ describe('aggregateFillOperation', () => {
     aggregateFillOperation(baseEvent, inc);
     expect(inc['ml:fills']?.['total']).toBe(1);
   });
+
+  it('is additive — total fill counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateFillOperation(baseEvent, inc), 'ml:fills', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -1007,6 +1062,10 @@ describe('aggregateLayerMove', () => {
     const inc = freshInc();
     aggregateLayerMove(baseEvent, inc);
     expect(inc['ml:layer_moves']?.['total']).toBe(1);
+  });
+
+  it('is additive — total layer move counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateLayerMove(baseEvent, inc), 'ml:layer_moves', 'total');
   });
 });
 
@@ -1092,6 +1151,10 @@ describe('aggregatePlacementRejection', () => {
     expect(inc['ml:reject_sizes']?.['2x3']).toBe(1);
     expect(inc['ml:neg:reject_by_drawer:6x8x6']?.['2x3']).toBe(1);
   });
+
+  it('is additive — total rejection counter doubles on second call', () => {
+    assertAdditive((inc) => aggregatePlacementRejection(baseEvent, inc), 'ml:rejections', 'total');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -1153,6 +1216,10 @@ describe('aggregateUndo', () => {
     const inc = freshInc();
     aggregateUndo({ ...baseEvent, bins_affected: 21 }, inc);
     expect(inc['ml:neg:undo_scale']?.['bulk']).toBe(1);
+  });
+
+  it('is additive — total undo counter doubles on second call', () => {
+    assertAdditive((inc) => aggregateUndo(baseEvent, inc), 'ml:neg:undos', 'total');
   });
 });
 
@@ -1223,6 +1290,14 @@ describe('aggregateQuickCorrection', () => {
     aggregateQuickCorrection(baseEvent, inc);
     expect(inc['ml:neg:quick_corrections']?.['total']).toBe(1);
   });
+
+  it('is additive — total quick correction counter doubles on second call', () => {
+    assertAdditive(
+      (inc) => aggregateQuickCorrection(baseEvent, inc),
+      'ml:neg:quick_corrections',
+      'total'
+    );
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -1286,6 +1361,14 @@ describe('aggregateBinAbandonment', () => {
     const inc = freshInc();
     aggregateBinAbandonment(baseEvent, inc);
     expect(inc['ml:neg:abandonment_total']?.['total']).toBe(1);
+  });
+
+  it('is additive — total abandonment counter doubles on second call', () => {
+    assertAdditive(
+      (inc) => aggregateBinAbandonment(baseEvent, inc),
+      'ml:neg:abandonment_total',
+      'total'
+    );
   });
 });
 

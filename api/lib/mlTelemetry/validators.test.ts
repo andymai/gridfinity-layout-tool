@@ -167,6 +167,80 @@ describe('validateEvent — bin_placed', () => {
 });
 
 // ─────────────────────────────────────────────
+// bin_placed — documented validator leniency
+//
+// validateEvent() deliberately skips several BinPlacementEvent fields.
+// The validator focuses on fields used as Redis keys (injection-sensitive)
+// and routing fields. Numeric/positional fields that don't reach Redis keys
+// are left unchecked. These tests document the CURRENT leniency so that any
+// future tightening is a conscious, explicitly-reviewed change.
+// ─────────────────────────────────────────────
+describe('validateEvent — bin_placed (documented validator leniency)', () => {
+  // Minimal object that satisfies all CHECKED fields; unchecked fields are omitted.
+  const minimalValid = {
+    type: 'bin_placed',
+    bin_size: BIN_SIZE,
+    prev_bin_size: null,
+    drawer_size: DRAWER_SIZE,
+    gap_fit: 'exact',
+    method: 'draw',
+    session_index: 0,
+    label_hash: null,
+    label_normalized: null,
+    label_domain: null,
+    label_embedding_bucket: null,
+    category_id: CATEGORY_ID,
+    adjacent_label_hashes: [],
+    adjacent_sizes: [],
+    adjacent_count: 0,
+    recent_sizes: [],
+    time_since_last_ms: null,
+    is_first_of_label: false,
+  };
+
+  it('passes when position is absent (field not validated)', () => {
+    // position is used by the aggregator but not checked by the validator
+    expect(validateEvent(minimalValid)).toBe(true);
+  });
+
+  it('passes when position has an arbitrary value (field not validated)', () => {
+    expect(validateEvent({ ...minimalValid, position: 'not-a-position' })).toBe(true);
+  });
+
+  it('passes when layer_index is absent (field not validated)', () => {
+    expect(validateEvent(minimalValid)).toBe(true);
+  });
+
+  it('passes when layer_index is out of range (field not validated)', () => {
+    expect(validateEvent({ ...minimalValid, layer_index: 9999 })).toBe(true);
+  });
+
+  it('passes when largest_gap is absent (field not validated)', () => {
+    expect(validateEvent(minimalValid)).toBe(true);
+  });
+
+  it('passes when largest_gap has an arbitrary value (field not validated)', () => {
+    expect(validateEvent({ ...minimalValid, largest_gap: 'anything' })).toBe(true);
+  });
+
+  it('passes when fill_pct is absent (field not validated)', () => {
+    expect(validateEvent(minimalValid)).toBe(true);
+  });
+
+  it('passes when fill_pct is out of range (field not validated)', () => {
+    expect(validateEvent({ ...minimalValid, fill_pct: 9999 })).toBe(true);
+  });
+
+  it('passes when vocab_version is absent (field not validated)', () => {
+    expect(validateEvent(minimalValid)).toBe(true);
+  });
+
+  it('passes when vocab_version has an arbitrary value (field not validated)', () => {
+    expect(validateEvent({ ...minimalValid, vocab_version: 12345 })).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────
 // label_updated
 // ─────────────────────────────────────────────
 describe('validateEvent — label_updated', () => {
