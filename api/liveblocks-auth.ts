@@ -169,7 +169,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Grant access based on share permission level. `['*:write']` / `['*:read']`
     // are the non-deprecated form of the old session.FULL_ACCESS / READ_ACCESS
     // constants (which were exactly these scope arrays).
-    session.allow(room, permission === 'edit' ? ['*:write'] : ['*:read']);
+    session.allow(room, permission === 'edit' ? (['*:write'] as const) : (['*:read'] as const));
 
     // Authorize and return session token
     const { body, status } = await session.authorize();
