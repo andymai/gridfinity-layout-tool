@@ -238,6 +238,13 @@ export const FILAMENT_PRESET_COLORS = [
  */
 export const OVER_TILE_MIN_MARGIN_MM = 8;
 
+/**
+ * Smallest padding band (mm) that can detach into its own printable rail. Below
+ * this the rail is too thin to print usefully, so that side stays integral.
+ * Reuses the over-tile threshold so the two "too small" cutoffs stay consistent.
+ */
+export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
@@ -340,6 +347,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
           },
         }
       : {}),
+    // Detach is mutually exclusive with stack-print; stack-print wins, so drop a
+    // persisted detach flag whenever stacking is enabled.
+    ...(obj.detachMargins === true && !stackPrint?.enabled ? { detachMargins: true } : {}),
     ...(stackPrint ? { stackPrint } : {}),
   };
 }

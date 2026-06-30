@@ -8,7 +8,12 @@
  * focused on the worker lifecycle + state machine.
  */
 
-import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type {
+  BinParams,
+  BaseplateParams,
+  SplitConnectorConfig,
+  MarginPiece,
+} from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage, ExportFormat } from './types';
 import {
@@ -310,6 +315,35 @@ export function exportConnectorKey(
       type: 'EXPORT_CONNECTOR_KEY',
       payload: {
         params,
+        requestId,
+        format,
+        tolerance: options?.tolerance,
+        angularTolerance: options?.angularTolerance,
+      },
+    })
+  );
+}
+
+/**
+ * Export one detached margin rail (issue #2392). Reuses the `'export'` slot and
+ * the BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
+ */
+export function exportMargin(
+  ctx: BridgeExportContext,
+  params: BaseplateParams,
+  margin: MarginPiece,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    computeBaseplateExportTimeoutMs(params),
+    (requestId) => ({
+      type: 'EXPORT_BASEPLATE_MARGIN',
+      payload: {
+        params,
+        margin,
         requestId,
         format,
         tolerance: options?.tolerance,

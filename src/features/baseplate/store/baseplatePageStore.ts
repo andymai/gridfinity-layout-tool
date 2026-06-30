@@ -59,6 +59,20 @@ export interface PieceMeshEntry {
   readonly placementRotationDeg: 0 | 180;
 }
 
+/**
+ * A generated detached margin rail (issue #2392). The mesh is centered at the
+ * origin; the preview positions it by `worldOffsetMm` (mm, plate-centered frame)
+ * — unlike `PieceMeshEntry`, which positions by grid-unit offsets.
+ */
+export interface MarginMeshEntry {
+  readonly id: string;
+  readonly side: 'left' | 'right' | 'front' | 'back';
+  readonly mesh: MeshResult;
+  readonly worldOffsetMm: { readonly x: number; readonly y: number };
+  readonly lengthMm: number;
+  readonly bandThicknessMm: number;
+}
+
 interface BaseplatePageState {
   generation: {
     status: GenerationStatus;
@@ -71,6 +85,8 @@ interface BaseplatePageState {
   tiling: BaseplateTiling | null;
   /** Generated meshes for each piece when split */
   pieceMeshes: readonly PieceMeshEntry[];
+  /** Generated meshes for detached margin rails (empty unless detachMargins) */
+  marginMeshes: readonly MarginMeshEntry[];
   connectorKeyMesh: ConnectorKeyMesh | null;
   /** View mode for split preview */
   splitViewMode: SplitViewMode;
@@ -97,6 +113,7 @@ interface BaseplatePageState {
   bumpEpoch: () => void;
   setTiling: (tiling: BaseplateTiling | null) => void;
   setPieceMeshes: (meshes: readonly PieceMeshEntry[]) => void;
+  setMarginMeshes: (meshes: readonly MarginMeshEntry[]) => void;
   setConnectorKeyMesh: (mesh: ConnectorKeyMesh | null) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitProgress: (progress: { current: number; total: number } | null) => void;
@@ -118,6 +135,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     wasmStatus: 'unloaded',
     tiling: null,
     pieceMeshes: [],
+    marginMeshes: [],
     connectorKeyMesh: null,
     splitViewMode: 'exploded',
     splitProgress: null,
@@ -167,6 +185,13 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
         state.pieceMeshes = meshes as PieceMeshEntry[];
         state.hoveredPieceLabel = null;
         state.selectedPieceLabel = null;
+      });
+    },
+
+    setMarginMeshes: (meshes) => {
+      set((state) => {
+        // Cast needed: immer wraps readonly arrays
+        state.marginMeshes = meshes as MarginMeshEntry[];
       });
     },
 

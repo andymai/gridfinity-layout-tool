@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import {
+  computeBaseplateTiling,
+  pieceToBaseplateParams,
+  colToLetter,
+  bodyParamsForDetach,
+} from './splitPlanner';
 import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
@@ -1284,3 +1289,143 @@ function flip(side: 'start' | 'end' | 'none'): 'start' | 'end' | 'none' {
   if (side === 'end') return 'start';
   return 'none';
 }
+
+// ─── detachMargins → tiling.margins ──────────────────────────────────────────
+
+describe('detachMargins emits margin rails', () => {
+  const W = 4;
+  const D = 3;
+  const U = 42;
+  const gridW = W * U; // 168
+  const gridD = D * U; // 126
+  const P = 10; // ≥ MARGIN_MIN_DETACH_MM (8)
+
+  function margins(overrides: Partial<BaseplateParams>) {
+    return computeBaseplateTiling(makeParams({ width: W, depth: D, ...overrides }), 256).margins;
+  }
+  function bySide(ms: ReturnType<typeof margins>, side: string) {
+    return ms.find((m) => m.side === side);
+  }
+
+  it('emits nothing without the flag', () => {
+    expect(margins({ paddingLeft: P, paddingRight: P, paddingFront: P, paddingBack: P })).toEqual(
+      []
+    );
+  });
+
+  it('emits nothing when all bands are sub-threshold', () => {
+    expect(
+      margins({ detachMargins: true, paddingLeft: 5, paddingRight: 5, paddingFront: 5 })
+    ).toEqual([]);
+  });
+
+  it('all-four padding: long front/back own corners, short left/right own none', () => {
+    const ms = margins({
+      detachMargins: true,
+      paddingLeft: P,
+      paddingRight: P,
+      paddingFront: P,
+      paddingBack: P,
+    });
+    expect(ms).toHaveLength(4);
+
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW + 2 * P); // spans over left+right padding
+    expect(front.bandThicknessMm).toBe(P);
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+    expect(front.worldOffsetMm).toEqual({ x: 0, y: -gridD / 2 - P / 2 });
+
+    const back = bySide(ms, 'back')!;
+    expect(back.role).toBe('long');
+    expect([...back.ownedCorners].sort()).toEqual(['tl', 'tr']);
+    expect(back.worldOffsetMm).toEqual({ x: 0, y: gridD / 2 + P / 2 });
+
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('short');
+    expect(left.lengthMm).toBe(gridD); // fits between the long rails
+    expect(left.ownedCorners).toEqual([]);
+    expect(left.worldOffsetMm).toEqual({ x: -gridW / 2 - P / 2, y: 0 });
+
+    const right = bySide(ms, 'right')!;
+    expect(right.role).toBe('short');
+    expect(right.ownedCorners).toEqual([]);
+  });
+
+  it('opposite pair (left+right): rails go long and own all four corners', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingRight: P });
+    expect(ms).toHaveLength(2);
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('long');
+    expect(left.lengthMm).toBe(gridD);
+    expect([...left.ownedCorners].sort()).toEqual(['bl', 'tl']);
+    const right = bySide(ms, 'right')!;
+    expect([...right.ownedCorners].sort()).toEqual(['br', 'tr']);
+  });
+
+  it('adjacent pair (left+front): front owns its corners, left short owns the bare-back corner', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: P });
+    expect(ms).toHaveLength(2);
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW + P); // extends over the detached left only
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+    expect(front.worldOffsetMm).toEqual({ x: -P / 2, y: -gridD / 2 - P / 2 });
+
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('short');
+    expect(left.ownedCorners).toEqual(['tl']); // back is bare → left owns top corner; front owns bl
+  });
+
+  it('single bare-neighbor side: one rail, perpendicular corners stay on the body', () => {
+    const ms = margins({ detachMargins: true, paddingFront: P });
+    expect(ms).toHaveLength(1);
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW);
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+  });
+
+  it('emits margins for a bed-fitting (unsplit) plate', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: W, depth: D, detachMargins: true, paddingFront: P }),
+      256
+    );
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.margins).toHaveLength(1);
+  });
+
+  it('skips a sub-threshold side but still detaches the rest', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: 5 });
+    expect(ms.map((m) => m.side).sort()).toEqual(['left']);
+  });
+});
+
+describe('bodyParamsForDetach', () => {
+  const P = 10;
+  it('passes params through unchanged without the flag', () => {
+    const p = makeParams({ paddingLeft: P, paddingRight: P });
+    expect(bodyParamsForDetach(p)).toBe(p);
+  });
+
+  it('zeroes only the detached sides, keeping sub-threshold padding integral', () => {
+    const p = makeParams({
+      detachMargins: true,
+      paddingLeft: P,
+      paddingRight: 5, // sub-threshold → stays
+      paddingFront: P,
+      paddingBack: 0,
+    });
+    const body = bodyParamsForDetach(p);
+    expect(body.paddingLeft).toBe(0);
+    expect(body.paddingRight).toBe(5);
+    expect(body.paddingFront).toBe(0);
+    expect(body.paddingBack).toBe(0);
+  });
+
+  it('does not affect the margins computed from the original params', () => {
+    // Zeroing is for the body mesh only — emitMargins still sees true padding.
+    const p = makeParams({ detachMargins: true, paddingLeft: P, paddingFront: P });
+    expect(computeBaseplateTiling(p, 256).margins.length).toBe(2);
+  });
+});

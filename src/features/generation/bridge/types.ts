@@ -5,7 +5,12 @@
  * (GenerationBridge) and the Web Worker (generation.worker.ts).
  */
 
-import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type {
+  BinParams,
+  BaseplateParams,
+  SplitConnectorConfig,
+  MarginPiece,
+} from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 
 /** Geometry kernel backend for BREP operations */
@@ -40,6 +45,7 @@ export type WorkerMessage =
   | EstimateMessage
   | WarmMessage
   | GenerateBaseplateMessage
+  | GenerateBaseplateMarginMessage
   | GenerateItemMessage
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
@@ -48,6 +54,7 @@ export type WorkerMessage =
   | ExportMessage
   | ExportItemMessage
   | ExportBaseplateMessage
+  | ExportBaseplateMarginMessage
   | ExportConnectorKeyMessage
   | ExportConnectorSampleMessage
   | ExportDividersMessage
@@ -108,6 +115,19 @@ export interface GenerateBaseplatePayload {
   readonly requestId: string;
 }
 
+/** Generate one detached margin rail (issue #2392). Params carry the full
+ * plate context so the rail's over-tile pockets align with the body grid. */
+export interface GenerateBaseplateMarginMessage {
+  readonly type: 'GENERATE_BASEPLATE_MARGIN';
+  readonly payload: GenerateBaseplateMarginPayload;
+}
+
+export interface GenerateBaseplateMarginPayload {
+  readonly params: BaseplateParams;
+  readonly margin: MarginPiece;
+  readonly requestId: string;
+}
+
 /**
  * Generic item generation. Carries a `GridfinityItem` (envelope + discriminated
  * structure); the worker resolves the generator by `structure.kind`. Adding a
@@ -157,6 +177,24 @@ export interface ExportBaseplatePayload {
 export interface ExportConnectorKeyMessage {
   readonly type: 'EXPORT_CONNECTOR_KEY';
   readonly payload: ExportBaseplatePayload;
+}
+
+/**
+ * Export one detached margin rail (issue #2392). Reuses the
+ * BASEPLATE_EXPORT_RESULT response shape; the payload adds the rail to build.
+ */
+export interface ExportBaseplateMarginMessage {
+  readonly type: 'EXPORT_BASEPLATE_MARGIN';
+  readonly payload: ExportBaseplateMarginPayload;
+}
+
+export interface ExportBaseplateMarginPayload {
+  readonly params: BaseplateParams;
+  readonly margin: MarginPiece;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  readonly tolerance?: number;
+  readonly angularTolerance?: number;
 }
 
 /**

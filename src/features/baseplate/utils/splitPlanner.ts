@@ -21,9 +21,12 @@ import type { BaseplateParams } from '@/shared/types/bin';
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
 import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
+import { MARGIN_MIN_DETACH_MM } from '@/core/constants';
 import type {
   BaseplatePiece,
   BaseplateTiling,
+  MarginCorner,
+  MarginPiece,
   PaddingReductionHint,
   PieceEdges,
 } from '../types/tiling';
@@ -451,6 +454,140 @@ function computePaddingReductionHint(
 }
 
 /**
+ * Decompose the drawer-fit padding into detached printable rails.
+ *
+ * Butt-joint frame: one axis pair is `long` (spans the full outer extent and
+ * owns the plate corners), the other is `short` (fits between the long rails).
+ * When the long rail on an end is absent, the adjacent short rail extends to
+ * that corner and owns it — so every rounded outer corner of the integral plate
+ * is carried by exactly one rail. A side detaches only when its padding ≥
+ * {@link MARGIN_MIN_DETACH_MM}; thinner/zero sides stay integral on the body.
+ *
+ * Returns world positions in the plate-centered frame (mm), matching the body
+ * slab's centered grid. Independent of split state — runs for unsplit plates too.
+ */
+/** Which sides detach into rails: padding ≥ threshold and the flag is on. */
+function detachedSides(params: BaseplateParams): {
+  left: boolean;
+  right: boolean;
+  front: boolean;
+  back: boolean;
+} {
+  const on = !!params.detachMargins;
+  return {
+    left: on && params.paddingLeft >= MARGIN_MIN_DETACH_MM,
+    right: on && params.paddingRight >= MARGIN_MIN_DETACH_MM,
+    front: on && params.paddingFront >= MARGIN_MIN_DETACH_MM,
+    back: on && params.paddingBack >= MARGIN_MIN_DETACH_MM,
+  };
+}
+
+/**
+ * Body generation params with detached sides' padding zeroed — the body prints
+ * padding-free wherever a rail carries that margin. Sub-threshold sides keep
+ * their padding (they stay integral). Must be applied to the BODY mesh only,
+ * AFTER `computeBaseplateTiling`/`emitMargins` (which need the true padding).
+ */
+export function bodyParamsForDetach(params: BaseplateParams): BaseplateParams {
+  if (!params.detachMargins) return params;
+  const det = detachedSides(params);
+  if (!det.left && !det.right && !det.front && !det.back) return params;
+  return {
+    ...params,
+    paddingLeft: det.left ? 0 : params.paddingLeft,
+    paddingRight: det.right ? 0 : params.paddingRight,
+    paddingFront: det.front ? 0 : params.paddingFront,
+    paddingBack: det.back ? 0 : params.paddingBack,
+  };
+}
+
+function emitMargins(params: BaseplateParams): MarginPiece[] {
+  if (!params.detachMargins) return [];
+
+  const { paddingLeft: pl, paddingRight: pr, paddingFront: pf, paddingBack: pb } = params;
+  const det = detachedSides(params);
+  if (!det.left && !det.right && !det.front && !det.back) return [];
+
+  const halfW = (params.width * params.gridUnitMm) / 2;
+  const halfD = (params.depth * params.gridUnitMm) / 2;
+  const gridD = params.depth * params.gridUnitMm;
+  const fill = { overTile: !!params.overTile, overTileHalfGrid: !!params.overTileHalfGrid };
+  const rail = (
+    id: string,
+    side: MarginPiece['side'],
+    role: MarginPiece['role'],
+    lengthMm: number,
+    bandThicknessMm: number,
+    ownedCorners: MarginCorner[],
+    worldOffsetMm: { x: number; y: number }
+  ): MarginPiece => ({
+    id,
+    side,
+    role,
+    lengthMm,
+    bandThicknessMm,
+    ownedCorners,
+    worldOffsetMm,
+    ...fill,
+  });
+
+  const margins: MarginPiece[] = [];
+  // Long axis must be a padded axis so the long rails reach the corners. Prefer
+  // front/back; fall back to left/right when neither front nor back detaches.
+  const longAxisX = det.front || det.back;
+
+  if (longAxisX) {
+    // Front/back run long (over any detached perpendicular padding); left/right short.
+    const xMin = -halfW - (det.left ? pl : 0);
+    const xMax = halfW + (det.right ? pr : 0);
+    const longLen = xMax - xMin;
+    const longCenterX = (xMin + xMax) / 2;
+    if (det.front)
+      margins.push(
+        rail('margin-front', 'front', 'long', longLen, pf, ['bl', 'br'], {
+          x: longCenterX,
+          y: -halfD - pf / 2,
+        })
+      );
+    if (det.back)
+      margins.push(
+        rail('margin-back', 'back', 'long', longLen, pb, ['tl', 'tr'], {
+          x: longCenterX,
+          y: halfD + pb / 2,
+        })
+      );
+    if (det.left) {
+      const owned: MarginCorner[] = [];
+      if (!det.front) owned.push('bl');
+      if (!det.back) owned.push('tl');
+      margins.push(
+        rail('margin-left', 'left', 'short', gridD, pl, owned, { x: -halfW - pl / 2, y: 0 })
+      );
+    }
+    if (det.right) {
+      const owned: MarginCorner[] = [];
+      if (!det.front) owned.push('br');
+      if (!det.back) owned.push('tr');
+      margins.push(
+        rail('margin-right', 'right', 'short', gridD, pr, owned, { x: halfW + pr / 2, y: 0 })
+      );
+    }
+  } else {
+    // Only left/right detach: they run long and own all corners on their side.
+    if (det.left)
+      margins.push(
+        rail('margin-left', 'left', 'long', gridD, pl, ['bl', 'tl'], { x: -halfW - pl / 2, y: 0 })
+      );
+    if (det.right)
+      margins.push(
+        rail('margin-right', 'right', 'long', gridD, pr, ['br', 'tr'], { x: halfW + pr / 2, y: 0 })
+      );
+  }
+
+  return margins;
+}
+
+/**
  * Compute the full 2D tiling for a baseplate.
  *
  * Takes the full generation params + print bed size and returns a tiling plan.
@@ -537,6 +674,10 @@ export function computeBaseplateTiling(
   const lastCol = colSizes.length - 1;
   const lastRow = rowSizes.length - 1;
 
+  // Detached sides print padding-free on the body pieces too — the rail carries
+  // that margin. Sub-threshold sides stay integral.
+  const det = detachedSides(params);
+
   const pieces: BaseplatePiece[] = [];
 
   for (let r = 0; r < rowSizes.length; r++) {
@@ -566,10 +707,10 @@ export function computeBaseplateTiling(
         depthUnits: rowSizes[r],
         gridOffsetX: colOffsets[c],
         gridOffsetY: rowOffsets[r],
-        paddingLeft: isLeftEdge ? paddingLeft : 0,
-        paddingRight: isRightEdge ? paddingRight : 0,
-        paddingFront: isFrontEdge ? paddingFront : 0,
-        paddingBack: isBackEdge ? paddingBack : 0,
+        paddingLeft: isLeftEdge && !det.left ? paddingLeft : 0,
+        paddingRight: isRightEdge && !det.right ? paddingRight : 0,
+        paddingFront: isFrontEdge && !det.front ? paddingFront : 0,
+        paddingBack: isBackEdge && !det.back ? paddingBack : 0,
         fractionalEdgeX: isFractional(colSizes[c]) ? fractionalEdgeX : 'none',
         fractionalEdgeY: isFractional(rowSizes[r]) ? fractionalEdgeY : 'none',
         edges: actualEdges,
@@ -591,6 +732,7 @@ export function computeBaseplateTiling(
   return {
     isSplit,
     pieces,
+    margins: emitMargins(params),
     cols: colSizes.length,
     rows: rowSizes.length,
     totalWidthUnits: width,

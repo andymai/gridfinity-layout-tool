@@ -29,12 +29,18 @@ import {
   getKernelInfo,
   cancelRequest,
 } from './handlers/workerContext';
-import { handleGenerate, handleWarm, handleGenerateBaseplate } from './handlers/generateHandler';
+import {
+  handleGenerate,
+  handleWarm,
+  handleGenerateBaseplate,
+  handleGenerateBaseplateMargin,
+} from './handlers/generateHandler';
 import { handleGenerateItem, handleExportItem } from './handlers/generateItemHandler';
 import './items/registerGenerators';
 import {
   handleExport,
   handleExportBaseplate,
+  handleExportBaseplateMargin,
   handleExportConnectorKey,
   handleExportConnectorSample,
   handleExportDividers,
@@ -108,6 +114,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         handleGenerateBaseplate(message);
         break;
 
+      case 'GENERATE_BASEPLATE_MARGIN':
+        handleGenerateBaseplateMargin(message);
+        break;
+
       case 'GENERATE_ITEM':
         handleGenerateItem(message);
         break;
@@ -130,6 +140,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_BASEPLATE':
         await handleExportBaseplate(message);
+        break;
+
+      case 'EXPORT_BASEPLATE_MARGIN':
+        await handleExportBaseplateMargin(message);
         break;
 
       case 'EXPORT_CONNECTOR_KEY':

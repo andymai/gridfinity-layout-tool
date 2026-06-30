@@ -17,13 +17,19 @@
  *   - `bridgeExports.ts`: the 8 export methods (delegated 1:1 from this class)
  */
 
-import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type {
+  BinParams,
+  BaseplateParams,
+  SplitConnectorConfig,
+  MarginPiece,
+} from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage, WorkerResponse, WorkerCacheStats, ExportFormat } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 import {
   generateBin as generateBinImpl,
   generateBaseplate as generateBaseplateImpl,
+  generateMargin as generateMarginImpl,
   generateItem as generateItemImpl,
 } from './bridgeGeneration';
 import {
@@ -58,6 +64,7 @@ import {
   exportBaseplate as exportBaseplateImpl,
   exportItem as exportItemImpl,
   exportConnectorKey as exportConnectorKeyImpl,
+  exportMargin as exportMarginImpl,
   exportConnectorSample as exportConnectorSampleImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
@@ -412,6 +419,11 @@ export class GenerationBridge {
     return generateBaseplateImpl(this, params, onProgress, false);
   }
 
+  /** Generate one detached margin rail (issue #2392). */
+  generateMargin(params: BaseplateParams, margin: MarginPiece): Promise<GenerationResult> {
+    return generateMarginImpl(this, params, margin);
+  }
+
   exportBaseplate(
     params: BaseplateParams,
     format: ExportFormat,
@@ -447,6 +459,16 @@ export class GenerationBridge {
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
     return exportConnectorKeyImpl(this, params, format, options);
+  }
+
+  /** Export one detached margin rail (issue #2392). */
+  exportMargin(
+    params: BaseplateParams,
+    margin: MarginPiece,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<BaseplateExportResult> {
+    return exportMarginImpl(this, params, margin, format, options);
   }
 
   exportConnectorSample(

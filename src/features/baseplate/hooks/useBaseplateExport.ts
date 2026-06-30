@@ -34,7 +34,11 @@ import {
 } from '../utils/exportCache';
 import { assignGroupNames } from '../utils/pieceNaming';
 import { countConnectorKeys } from '../utils/connectorKeys';
-import { generatePrintGuide, generateStackPrintNote } from '../utils/printGuide';
+import {
+  generatePrintGuide,
+  generateStackPrintNote,
+  generateMarginGuide,
+} from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -197,6 +201,35 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
         const baseNameNoExt = baseName.replace(/\.[^.]+$/, '');
         const extension = FORMAT_EXTENSIONS[format];
 
+        // Detached margin rails (issue #2392). Mutually exclusive with stacking,
+        // so they only appear on the non-stacked branches. Each rail exports as
+        // its own file; a detached plate therefore always downloads as a ZIP.
+        const railMargins = fullParams.detachMargins ? (tiling?.margins ?? []) : [];
+        const exportRailPieces = async (): Promise<{ data: ArrayBuffer; label: string }[]> => {
+          const out: { data: ArrayBuffer; label: string }[] = [];
+          for (const m of railMargins) {
+            if (format === 'step') {
+              const r = await bridge.exportMargin(fullParams, m, 'step');
+              out.push({ data: r.data, label: m.id });
+            } else {
+              const r = await bridge.exportMargin(fullParams, m, 'stl');
+              if (format === '3mf') {
+                const blob = convertStlTo3mf(r.data, `${baseNameNoExt}_${m.id}`);
+                out.push({ data: await blob.arrayBuffer(), label: m.id });
+              } else {
+                out.push({ data: r.data, label: m.id });
+              }
+            }
+          }
+          return out;
+        };
+        const marginGuideInfo = railMargins.map((m) => ({
+          fileName: `${baseNameNoExt}_${m.id}${extension}`,
+          side: m.side,
+          lengthMm: m.lengthMm,
+          bandThicknessMm: m.bandThicknessMm,
+        }));
+
         if (tiling?.isSplit && splitEnabled) {
           // Multi-piece ZIP export: dedupe pieces by geometry fingerprint, then
           // generate + export only the unique shapes.
@@ -334,6 +367,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces.push({ data: keyData, label: 'key' });
           }
 
+          // Detached margin rails ride along as their own files in the ZIP.
+          pieces.push(...(await exportRailPieces()));
+
           const guideText = generatePrintGuide({
             tiling,
             groups,
@@ -345,6 +381,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               keyCount > 0
                 ? { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount }
                 : undefined,
+            margins: marginGuideInfo.length > 0 ? marginGuideInfo : undefined,
             stackPrint: stackEnabled ? stack : undefined,
             stackCap,
             copies: stackEnabled ? copies : 1,
@@ -375,7 +412,17 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           const data = await getOrExport(buildExportCacheKey(fullParams, 'step', nozzleMm), () =>
             bridge.exportBaseplate(fullParams, 'step').then((r) => r.data)
           );
-          triggerDownload(new Blob([data], { type: FORMAT_MIME_TYPES.step }), baseName);
+          if (railMargins.length > 0) {
+            const zip = packagePiecesAsZip(
+              [{ data, label: 'body' }, ...(await exportRailPieces())],
+              baseNameNoExt,
+              extension,
+              [{ name: 'print-guide.txt', content: generateMarginGuide(marginGuideInfo) }]
+            );
+            triggerDownload(zip, `${baseNameNoExt}.zip`);
+          } else {
+            triggerDownload(new Blob([data], { type: FORMAT_MIME_TYPES.step }), baseName);
+          }
         } else if (stack && stackEnabled) {
           // Single piece, stacked into one tower (split under the height cap) —
           // a single tower downloads directly, several go in a ZIP.
@@ -414,6 +461,22 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             ]);
             triggerDownload(zip, `${baseNameNoExt}.zip`);
           }
+        } else if (railMargins.length > 0) {
+          // Single body + detached rails → ZIP (one file per piece).
+          const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>
+            bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
+          );
+          const bodyData =
+            format === '3mf'
+              ? await convertStlTo3mf(stlData, `${baseNameNoExt}_body`).arrayBuffer()
+              : stlData;
+          const zip = packagePiecesAsZip(
+            [{ data: bodyData, label: 'body' }, ...(await exportRailPieces())],
+            baseNameNoExt,
+            extension,
+            [{ name: 'print-guide.txt', content: generateMarginGuide(marginGuideInfo) }]
+          );
+          triggerDownload(zip, `${baseNameNoExt}.zip`);
         } else {
           // Single piece, unstacked, STL or 3MF.
           const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>

@@ -34,6 +34,10 @@ export function buildFullParams(
   // user's settings return intact when stacking is turned off.
   const stackingOn = stored.stackPrint?.enabled === true;
   const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
+  // Detach is mutually exclusive with stacking (stacking wins). Padding stays at
+  // its stored values here — `emitMargins` and the camera/dimension overlay need
+  // the true outer extent; the body mesh zeroes detached sides downstream.
+  const detachMargins = stored.detachMargins === true && !stackingOn;
 
   return {
     width,
@@ -64,5 +68,6 @@ export function buildFullParams(
     // interchangeable tiles, so square them off (also restored when off).
     cornerRadius: stackingOn ? 0 : stored.cornerRadius,
     cornerRadii: stackingOn ? undefined : stored.cornerRadii,
+    detachMargins,
   };
 }

@@ -377,6 +377,28 @@ describe('migrateBaseplateParams', () => {
     ).toBeUndefined();
   });
 
+  it('persists detachMargins, but drops it when stack-print wins', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+    };
+    expect(migrateBaseplateParams({ ...base, detachMargins: true }).detachMargins).toBe(true);
+    expect(migrateBaseplateParams({ ...base }).detachMargins).toBeUndefined();
+    // Mutually exclusive: stack-print enabled forces detach off on load.
+    expect(
+      migrateBaseplateParams({
+        ...base,
+        detachMargins: true,
+        stackPrint: { enabled: true, gapMm: 1 },
+      }).detachMargins
+    ).toBeUndefined();
+  });
+
   it('preserves connectorStyle when dovetail key', () => {
     const stored = {
       magnetHoles: false,

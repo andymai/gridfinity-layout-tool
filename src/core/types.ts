@@ -160,6 +160,14 @@ export interface BaseplateParams {
   /** Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false. Defaults to 'end' (top). */
   readonly fractionalEdgeY?: FractionalEdge;
   /**
+   * Detach the drawer-fit padding into separate printable rail pieces so a bad
+   * margin doesn't scrap the whole plate (issue #2392). Each side with padding ≥
+   * {@link MARGIN_MIN_DETACH_MM} becomes its own rail; the body prints
+   * padding-free on detached sides. Mutually exclusive with {@link stackPrint}
+   * (stackPrint wins). Default false.
+   */
+  readonly detachMargins?: boolean;
+  /**
    * Vertical stack-print configuration (experimental). When enabled, each
    * identical-piece group exports as flipped, separated vertical stacks sized
    * to the quantity the drawer needs (× `sets`). Auto-disables connectors.

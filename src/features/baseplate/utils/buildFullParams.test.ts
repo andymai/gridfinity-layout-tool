@@ -105,6 +105,7 @@ describe('buildFullParams', () => {
       paddingBack: 3.5,
       fractionalEdgeX: 'start',
       fractionalEdgeY: 'start',
+      detachMargins: false,
     });
   });
 

@@ -116,6 +116,38 @@ export interface BaseplateEdges {
   readonly back: BaseplateEdgeKind;
 }
 
+/** A plate corner, named by the integral plate's exterior face pair. */
+export type MarginCorner = 'tl' | 'tr' | 'bl' | 'br';
+
+/**
+ * A detached drawer-fit padding "rail" — its own printable piece (issue #2392).
+ *
+ * Rails butt-join: one axis pair is `long` (spans the full outer extent and owns
+ * the plate corners), the perpendicular pair is `short` (fits between the long
+ * rails). When a long rail is absent on an end, the adjacent short rail extends
+ * to that corner and owns it instead — so every rounded outer corner of the
+ * integral plate is carried by exactly one rail (see `ownedCorners`).
+ *
+ * Lives in shared (not the baseplate feature) so the generation worker can build
+ * a rail without a cross-feature import.
+ */
+export interface MarginPiece {
+  /** Stable id/label, e.g. "margin-front". */
+  readonly id: string;
+  readonly side: 'left' | 'right' | 'front' | 'back';
+  readonly role: 'long' | 'short';
+  /** Extent along the rail's running axis (mm). */
+  readonly lengthMm: number;
+  /** Padding-band depth perpendicular to the running axis (mm). */
+  readonly bandThicknessMm: number;
+  /** Outer corners this rail rounds; the rest of its corners are square (seams). */
+  readonly ownedCorners: readonly MarginCorner[];
+  /** Rail-center position in the plate-centered world frame (mm). */
+  readonly worldOffsetMm: { readonly x: number; readonly y: number };
+  readonly overTile: boolean;
+  readonly overTileHalfGrid: boolean;
+}
+
 /**
  * Full baseplate parameter set for generation bridge.
  *
@@ -199,6 +231,13 @@ export interface BaseplateParams {
     readonly bl: number;
     readonly br: number;
   };
+  /**
+   * Detach the drawer-fit padding into separate printable rail pieces. When set,
+   * the body slab is generated padding-free on detached sides and the margin
+   * rails are emitted as `BaseplateTiling.margins`. Mutually exclusive with
+   * `stackPrint` (stackPrint wins). Omit/false = padding stays integral.
+   */
+  readonly detachMargins?: boolean;
   /**
    * Vertical stack-print configuration (experimental). Replication is applied at
    * the mesh/export level (not in the BREP solid), so the generator builds one

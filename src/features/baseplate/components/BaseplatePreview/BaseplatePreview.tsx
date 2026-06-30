@@ -30,6 +30,7 @@ import { useTranslation } from '@/i18n';
 import type { CameraPreset } from './cameraUtils';
 import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils';
 import { BaseplateMesh } from './BaseplateMesh';
+import { MarginMeshes } from './MarginMeshes';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
 import { CameraRig, type Projection } from '@/shared/components/preview/CameraRig';
@@ -329,6 +330,9 @@ export function BaseplatePreview({
                 ) : (
                   <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
                 )}
+
+                {/* Detached margin rails render in every mode (split or not). */}
+                <MarginMeshes color={filamentColor} />
 
                 {/* Footprint grid renders in every mode so the scene always reads
                     as parts on a build plate (in stack mode it spans the towers). */}

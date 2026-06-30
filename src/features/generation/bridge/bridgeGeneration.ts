@@ -13,7 +13,7 @@
  * of the private fields it needs to mutate.
  */
 
-import type { BinParams, BaseplateParams } from '@/shared/types/bin';
+import type { BinParams, BaseplateParams, MarginPiece } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
@@ -174,6 +174,41 @@ export function generateBaseplate(
     } else {
       send();
     }
+  });
+}
+
+/**
+ * Generate one detached margin rail. Shares the single-pending-request channel
+ * with `generateBaseplate`, so callers await each rail in turn (as the
+ * sequential split path already does). No dedup cache — rails are cheap and the
+ * orchestrating hook drives them per tiling.
+ */
+export function generateMargin(
+  ctx: BridgeGenerationContext,
+  params: BaseplateParams,
+  margin: MarginPiece
+): Promise<GenerationResult> {
+  if (ctx.isDestroyed) {
+    return Promise.reject(new Error('Bridge has been destroyed'));
+  }
+
+  if (ctx.debounceTimer !== null) {
+    clearTimeout(ctx.debounceTimer);
+    ctx.debounceTimer = null;
+  }
+
+  ctx.cancelCurrentRequest();
+  ctx.onProgress = null;
+
+  return new Promise<GenerationResult>((resolve, reject) => {
+    ctx.pendingResolve = resolve;
+    ctx.pendingReject = reject;
+    const requestId = ctx.nextRequestId();
+    ctx.currentRequestId = requestId;
+    sendWhenReady(ctx, requestId, computeBaseplateTimeoutMs(params), {
+      type: 'GENERATE_BASEPLATE_MARGIN',
+      payload: { params, margin, requestId },
+    });
   });
 }
 

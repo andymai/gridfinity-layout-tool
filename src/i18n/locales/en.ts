@@ -2226,6 +2226,11 @@ const en: Record<string, string> = {
   'baseplate.overTileKeptSolid': 'Too small, kept solid: {sides}',
   'baseplate.halfGridHint':
     'Packs each margin with 21mm half-grid cells where they fit; narrower leftovers fill the same as a full tile.',
+  'baseplate.detachMargins': 'Detach margins as separate pieces',
+  'baseplate.detachMarginsHint':
+    'Print each padding margin as its own rail instead of part of the plate, so a bad margin reprints on its own.',
+  'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
+  'baseplate.detachMarginsStackConflict': 'Not available while stack printing is on.',
   'baseplate.sectionBase': 'Base',
   'baseplate.sectionView': 'View',
   'baseplate.splitInfo': '{count} pieces',

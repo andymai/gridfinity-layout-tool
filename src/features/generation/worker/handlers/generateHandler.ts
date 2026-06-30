@@ -5,12 +5,14 @@
 import type {
   GenerateMessage,
   GenerateBaseplateMessage,
+  GenerateBaseplateMarginMessage,
   WarmMessage,
   LidMeshData,
   MeshData,
 } from '../../bridge/types';
 import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
+import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid } from '../generators/lidOrchestrator';
 import { isAbortError } from '../generators/utils/abort';
 import { runGeneration, runWarm, reportProgress, getActiveRequestId } from './workerContext';
@@ -81,4 +83,11 @@ export function handleGenerateBaseplate(message: GenerateBaseplateMessage): void
     'BaseplateGen',
     true
   );
+}
+
+export function handleGenerateBaseplateMargin(message: GenerateBaseplateMarginMessage): void {
+  const { params, margin, requestId } = message.payload;
+  // Rails are small and synchronous; `params` carries the full plate context so
+  // the rail's over-tile pockets align with the body grid.
+  runGeneration(() => generateMargin(params, margin, false), requestId, 'BaseplateMarginGen', true);
 }
