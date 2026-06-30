@@ -10,6 +10,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
+import { clamp as clampRange } from '@/shared/utils/math';
 
 interface CompactNumberInputProps {
   readonly label: string;
@@ -61,7 +62,7 @@ export function CompactNumberInput({
   const [scrubbing, setScrubbing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const clamp = useCallback((v: number) => Math.max(min, Math.min(max, v)), [min, max]);
+  const clamp = useCallback((v: number) => clampRange(v, min, max), [min, max]);
 
   const formatValue = useCallback((v: number) => {
     const rounded = Math.round(v * 100) / 100;

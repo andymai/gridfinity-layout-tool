@@ -12,6 +12,7 @@
 
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { MAX_ARRAY_INSTANCES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
+import { clamp } from './math';
 
 /** Absolute editor caps for array spacing (mm), independent of bin size. */
 export const ARRAY_MIN_PITCH = 1;
@@ -144,7 +145,6 @@ export interface ArrayFieldBounds {
   readonly maxRadius: number;
 }
 
-const clampNum = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const floorToHalf = (v: number): number => Math.floor(v * 2) / 2;
 
 /**
@@ -174,12 +174,12 @@ export function arrayFieldBounds(
   // How many extra steps fit at the current pitch, plus the master itself.
   const stepsX = config.pitchX > 0 ? Math.floor((availX - stagger) / config.pitchX) : 0;
   const stepsY = config.pitchY > 0 ? Math.floor(availY / config.pitchY) : 0;
-  const maxCols = clampNum(
+  const maxCols = clamp(
     Math.min(1 + Math.max(0, stepsX), Math.floor(MAX_ARRAY_INSTANCES / rows)),
     1,
     MAX_ARRAY_COUNT
   );
-  const maxRows = clampNum(
+  const maxRows = clamp(
     Math.min(1 + Math.max(0, stepsY), Math.floor(MAX_ARRAY_INSTANCES / cols)),
     1,
     MAX_ARRAY_COUNT
@@ -188,12 +188,12 @@ export function arrayFieldBounds(
   // Largest pitch that keeps the current counts inside the bin.
   const colSpan = cols - 1 + colExtraSpan;
   const rowSpan = rows - 1;
-  const maxPitchX = clampNum(
+  const maxPitchX = clamp(
     floorToHalf(colSpan > 0 ? availX / colSpan : ARRAY_MAX_PITCH),
     ARRAY_MIN_PITCH,
     ARRAY_MAX_PITCH
   );
-  const maxPitchY = clampNum(
+  const maxPitchY = clamp(
     floorToHalf(rowSpan > 0 ? availY / rowSpan : ARRAY_MAX_PITCH),
     ARRAY_MIN_PITCH,
     ARRAY_MAX_PITCH
@@ -208,7 +208,7 @@ export function arrayFieldBounds(
     binWidth - (cutout.x + w),
     binDepth - (cutout.y + d)
   );
-  const maxRadius = clampNum(floorToHalf(edgeClearance), ARRAY_MIN_RADIUS, ARRAY_MAX_RADIUS);
+  const maxRadius = clamp(floorToHalf(edgeClearance), ARRAY_MIN_RADIUS, ARRAY_MAX_RADIUS);
 
   // Minimum pitch that preserves at least ARRAY_MIN_WALL_GAP of material between instances.
   const minPitchX = Math.max(ARRAY_MIN_PITCH, floorToHalf(w) + ARRAY_MIN_WALL_GAP);

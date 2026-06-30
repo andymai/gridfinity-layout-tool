@@ -7,12 +7,11 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
+import { clamp } from '@/shared/utils/math';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import type { UserSettings } from '@/core/store/settings';
-
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 const LAYOUT_DEFAULT_KEYS: (keyof UserSettings)[] = [
   'defaultDrawerWidth',

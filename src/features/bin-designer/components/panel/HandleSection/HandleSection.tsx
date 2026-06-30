@@ -19,6 +19,7 @@ import {
 } from '../shared';
 import { RulerIcon } from '@/design-system/Icon';
 import { Button } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
 import type { HandleCutoutShape, HandleWallSide } from '@/features/bin-designer/types';
@@ -30,8 +31,6 @@ const SHAPE_OPTIONS: readonly { value: HandleCutoutShape; labelKey: string }[] =
   { value: 'oval', labelKey: 'binDesigner.handles.shape.oval' },
   { value: 'scoop', labelKey: 'binDesigner.handles.shape.scoop' },
 ];
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export function HandleSection() {
   const { state, handlers, meta, t } = useHandleSection();

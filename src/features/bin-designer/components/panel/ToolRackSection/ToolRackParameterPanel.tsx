@@ -5,6 +5,7 @@
  */
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Stepper, Switch } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { StickyGroupHeader } from '../StickyGroupHeader';
@@ -26,14 +27,13 @@ interface FieldProps {
 }
 
 function NumberField({ label, value, min, max, step, onChange }: FieldProps) {
-  const clamp = (v: number): number => Math.min(max, Math.max(min, v));
   return (
     <div>
       <span className="mb-1 block text-xs text-content-tertiary">{label}</span>
       <Stepper
         value={value}
-        onChange={(v) => onChange(clamp(v))}
-        onStep={(delta) => onChange(clamp(value + delta * step))}
+        onChange={(v) => onChange(clamp(v, min, max))}
+        onStep={(delta) => onChange(clamp(value + delta * step, min, max))}
         min={min}
         max={max}
         step={step}

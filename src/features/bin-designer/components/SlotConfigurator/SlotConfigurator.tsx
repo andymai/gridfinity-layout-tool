@@ -20,6 +20,7 @@ import {
   getEffectiveSlotDimensions,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
+import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import type { DividerPieceConfig } from '../../types';
 
@@ -81,12 +82,11 @@ export function SlotConfigurator() {
     [slotConfig, setParam, activeAxis]
   );
 
-  const clampPitch = useCallback((value: number) => {
-    return Math.min(
-      DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH,
-      Math.max(DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH, value)
-    );
-  }, []);
+  const clampPitch = useCallback(
+    (value: number) =>
+      clamp(value, DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH, DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH),
+    []
+  );
 
   // ── Divider piece calculations ──────────────────────────────────────
   const updateDividerPieces = useCallback(

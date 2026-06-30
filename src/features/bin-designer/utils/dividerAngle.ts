@@ -15,6 +15,7 @@
 
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
+import { clamp } from '@/shared/utils/math';
 import { getCompartmentBounds, type EligibleDivider } from './compartments';
 
 /** The subset of bin parameters needed to derive interior dimensions in mm. */
@@ -143,8 +144,10 @@ export function angleShiftToOffsets(value: AngleShift, segmentLengthMm: number):
 }
 
 function clampOffsets(offsets: DividerOffsets, geom: DividerGeometry): DividerOffsets {
-  const clamp = (v: number): number => Math.max(geom.offsetMin, Math.min(geom.offsetMax, v));
-  return { offsetStart: clamp(offsets.offsetStart), offsetEnd: clamp(offsets.offsetEnd) };
+  return {
+    offsetStart: clamp(offsets.offsetStart, geom.offsetMin, geom.offsetMax),
+    offsetEnd: clamp(offsets.offsetEnd, geom.offsetMin, geom.offsetMax),
+  };
 }
 
 /**

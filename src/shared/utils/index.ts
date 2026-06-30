@@ -32,6 +32,8 @@ export {
 } from './bins';
 export type { VisibleBinsOptions } from './bins';
 
+export { clamp } from './math';
+
 export {
   isValidDrawer,
   isValidLayer,
@@ -42,7 +44,6 @@ export {
   validateImport,
   validateLayoutIntegrity,
   validateCustomProperties,
-  clamp,
   truncate,
   formatDimension,
 } from './validation';
