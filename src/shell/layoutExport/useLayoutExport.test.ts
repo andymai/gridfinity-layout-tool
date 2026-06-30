@@ -4,7 +4,7 @@ import { ok } from '@/core/result';
 import { designId } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { useLayoutStore } from '@/core/store/layout';
-import { createTestLayout, createTestBin } from '@/test/testUtils';
+import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 
 const h = vi.hoisted(() => ({
@@ -55,6 +55,7 @@ function design(id: string, name: string) {
 }
 
 beforeEach(() => {
+  resetAllStores();
   vi.clearAllMocks();
   h.bridge.exportBin.mockResolvedValue({ data: new ArrayBuffer(8), fileName: 'x', format: 'stl' });
   h.buildBaseplateExportPieces.mockResolvedValue({

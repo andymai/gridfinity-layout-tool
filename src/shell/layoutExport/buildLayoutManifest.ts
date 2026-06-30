@@ -89,6 +89,9 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       `  Estimated total: ~${totals.filamentGrams.toFixed(0)} g, ~${formatTime(totals.printTimeMinutes)}`,
       '  Estimates assume a standard bin (walls + floor + lip); custom features such',
       '  as cutouts, dividers and compartments are not accounted for.',
+      '',
+      '  Each bin is exported as its main body. If a design has a separate lid or',
+      '  removable dividers, export those from the bin designer.',
       ''
     );
   }
@@ -107,17 +110,17 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   const skippedLines: string[] = [];
   if (skipped.unlinkedBins > 0) {
     skippedLines.push(
-      `  ${skipped.unlinkedBins} grid ${plural(skipped.unlinkedBins, 'bin')} not linked to a saved design (drawn directly on the grid).`
+      `  ${skipped.unlinkedBins} grid ${plural(skipped.unlinkedBins, 'bin')} skipped (not linked to a saved design).`
     );
   }
   if (skipped.nonBinDesigns > 0) {
     skippedLines.push(
-      `  ${skipped.nonBinDesigns} linked ${plural(skipped.nonBinDesigns, 'design')} that are not bins (no printable geometry).`
+      `  ${skipped.nonBinDesigns} linked ${plural(skipped.nonBinDesigns, 'design')} skipped (not a bin — no printable geometry).`
     );
   }
   if (skipped.missingDesigns > 0) {
     skippedLines.push(
-      `  ${skipped.missingDesigns} linked ${plural(skipped.missingDesigns, 'design')} that could not be loaded (deleted or unavailable).`
+      `  ${skipped.missingDesigns} linked ${plural(skipped.missingDesigns, 'design')} skipped (could not be loaded).`
     );
   }
   if (skippedLines.length > 0) {

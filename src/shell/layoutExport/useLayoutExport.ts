@@ -245,7 +245,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         } else if (!bp) {
           addToast(t('layoutExport.binsOnly'), 'info');
         } else {
-          addToast(t('layoutExport.success', { count: plan.exportable.length }), 'success');
+          addToast(t('layoutExport.success'), 'success');
         }
         return true;
       } catch (error: unknown) {

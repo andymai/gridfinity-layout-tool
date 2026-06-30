@@ -58,9 +58,9 @@ describe('buildLayoutManifest', () => {
       base({ skipped: { unlinkedBins: 28, nonBinDesigns: 1, missingDesigns: 2 } })
     );
     expect(withSkips).toContain('─── Skipped ───');
-    expect(withSkips).toContain('28 grid bins not linked');
-    expect(withSkips).toContain('1 linked design that are not bins');
-    expect(withSkips).toContain('2 linked designs that could not be loaded');
+    expect(withSkips).toContain('28 grid bins skipped (not linked to a saved design)');
+    expect(withSkips).toContain('1 linked design skipped (not a bin');
+    expect(withSkips).toContain('2 linked designs skipped (could not be loaded)');
   });
 
   it('handles a bins-only or baseplate-absent export', () => {
