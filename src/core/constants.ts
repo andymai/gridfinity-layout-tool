@@ -45,6 +45,13 @@ export const CONSTRAINTS = {
   HEIGHT_UNIT_MM_MIN: 3,
   HEIGHT_UNIT_MM_MAX: 20,
   HEIGHT_UNIT_MM_DEFAULT: 7,
+  // Print-bed dimension bounds (mm). The min doubles as the legacy grid-unit
+  // detector in storage migration: a stored printBedSize below it is grid
+  // units, not mm. Kept distinct from GRID_UNIT_MM_DEFAULT even though both
+  // are 42 — they're unrelated concepts that happen to share a value.
+  PRINT_BED_MM_MIN: 42,
+  PRINT_BED_MM_MAX: 500,
+  PRINT_BED_MM_DEFAULT: 256,
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
   LAYOUTS_WARNING_THRESHOLD: 450, // Show warning at this count

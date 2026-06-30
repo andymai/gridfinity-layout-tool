@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
+import { CONSTRAINTS } from '@/core/constants';
 import { mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
@@ -13,9 +14,6 @@ const payloadSchema = z.object({
   size: z.number(),
   depth: z.number().optional(),
 });
-
-const MIN_PRINT_BED_MM = 42;
-const MAX_PRINT_BED_MM = 500;
 
 export const setPrintBedSize = defineCommand({
   type: 'layout.setPrintBedSize',
@@ -29,10 +27,10 @@ export const setPrintBedSize = defineCommand({
   handle: (payload, ctx) => {
     const previousSize = ctx.aggregate.printBedSize as number;
     const previousDepth = ctx.aggregate.printBedDepth as number | undefined;
-    const size = clamp(payload.size, MIN_PRINT_BED_MM, MAX_PRINT_BED_MM);
+    const size = clamp(payload.size, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX);
     const depth =
       payload.depth !== undefined
-        ? clamp(payload.depth, MIN_PRINT_BED_MM, MAX_PRINT_BED_MM)
+        ? clamp(payload.depth, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
         : undefined;
 
     return ok({

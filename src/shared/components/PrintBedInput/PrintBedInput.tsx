@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Button } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { CONSTRAINTS } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
 export interface PrintBedInputProps {
@@ -33,8 +34,8 @@ export function PrintBedInput({
   onChange,
   id,
   variant = 'compact',
-  min = 42,
-  max = 500,
+  min = CONSTRAINTS.PRINT_BED_MM_MIN,
+  max = CONSTRAINTS.PRINT_BED_MM_MAX,
   step = 10,
 }: PrintBedInputProps) {
   const t = useTranslation();

@@ -177,10 +177,18 @@ export function DefaultsTab() {
               width={settings.defaultPrintBedSize}
               depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
               onChange={(w, d) => {
-                updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, w)));
+                updateSetting(
+                  'defaultPrintBedSize',
+                  Math.max(CONSTRAINTS.PRINT_BED_MM_MIN, Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, w))
+                );
                 updateSetting(
                   'defaultPrintBedDepth',
-                  d !== undefined ? Math.max(42, Math.min(500, d)) : undefined
+                  d !== undefined
+                    ? Math.max(
+                        CONSTRAINTS.PRINT_BED_MM_MIN,
+                        Math.min(CONSTRAINTS.PRINT_BED_MM_MAX, d)
+                      )
+                    : undefined
                 );
               }}
               variant="compact"
