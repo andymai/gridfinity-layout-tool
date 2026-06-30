@@ -1,0 +1,38 @@
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_d0431bf9490853::t_af12f966c905c8 38-45
+  s_d0431bf9490853::t_18b3e914e3ef6b 5
+src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
+  s_d0431bf9490853::t_e91a168a01af88 181-183,186-191
+  s_d0431bf9490853::t_4e66195dbfbbc4 180
+src/core/constants.ts
+  s_d0431bf9490853::t_ea74575fd69d43 48-54
+src/core/store/layout/coreActions.ts
+  s_d0431bf9490853::t_35ebb4063d2716 54-58,60-62
+src/shared/components/PrintBedInput/PrintBedInput.tsx
+  s_d0431bf9490853::t_e243de1363ecb1 37-38
+  s_d0431bf9490853::t_8cf8793100057f 4
+src/core/cqrs/v2/domain/layout/setPrintBedSize.ts
+  s_d0431bf9490853::t_fb9d219214c9ba 30,33
+  s_d0431bf9490853::t_3e52986a69b643 9
+src/core/storage/LayoutService.ts
+  s_d0431bf9490853::t_d54fc1f7b22340 572
+  s_d0431bf9490853::t_c0dbdcc12b5b89 78-83,87
+  s_d0431bf9490853::t_ba30af3a0e7f46 612
+  s_d0431bf9490853::t_49adecaef283e2 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "5e69cb55250cc422ba30dda79da4747df003ed94",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
