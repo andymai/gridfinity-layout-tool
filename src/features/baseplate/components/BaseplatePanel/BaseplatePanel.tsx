@@ -27,7 +27,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput, Button, ConfirmDialog, CheckboxRow } from '@/design-system';
+import { SliderInput, Button, ConfirmDialog, CheckboxRow, SegmentedControl } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -57,6 +57,9 @@ import { gridUnits, mm } from '@/core/types';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
+
+/** How the sub-21mm leftover after half-grid packing is rendered. */
+type LeftoverMode = 'grid' | 'solid';
 
 /** Snap a connector fit offset to its step and clamp to the allowed range,
  * absorbing IEEE-754 drift from repeated ±0.05 button clicks. */
@@ -227,6 +230,14 @@ export function BaseplatePanel() {
       });
     },
     [updateParams]
+  );
+  const leftoverMode: LeftoverMode =
+    halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
+  const setLeftoverMode = useCallback(
+    (mode: LeftoverMode) => {
+      updateParam('overTileHalfGridSolidLeftover', mode === 'solid');
+    },
+    [updateParam]
   );
 
   // Detach margins: each side with padding ≥ threshold prints as its own rail.
@@ -413,17 +424,38 @@ export function BaseplatePanel() {
                         {overTileStatus.canOverTile ? (
                           <>
                             <CheckboxRow
-                              label={t('baseplate.useHalfGrid')}
+                              label={t('baseplate.preferHalfGrid')}
                               checked={halfGridOn}
                               onChange={(checked) =>
                                 setMarginFillMode(checked ? 'halfGrid' : 'tile')
                               }
                               indent
                             />
+                            {halfGridOn && (
+                              <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
+                                <span className="text-xs text-content-secondary">
+                                  {t('baseplate.leftoverLabel')}
+                                </span>
+                                <SegmentedControl
+                                  aria-label={t('baseplate.leftoverLabel')}
+                                  size="sm"
+                                  options={[
+                                    { value: 'grid', label: t('baseplate.leftoverGrid') },
+                                    { value: 'solid', label: t('baseplate.leftoverSolid') },
+                                  ]}
+                                  value={leftoverMode}
+                                  onChange={setLeftoverMode}
+                                />
+                              </div>
+                            )}
                             <div className="space-y-1 text-[11px] leading-relaxed">
                               <p className="text-content-tertiary">
                                 {t(
-                                  halfGridOn ? 'baseplate.halfGridHint' : 'baseplate.overTileHint'
+                                  halfGridOn
+                                    ? leftoverMode === 'solid'
+                                      ? 'baseplate.halfGridHintSolid'
+                                      : 'baseplate.halfGridHint'
+                                    : 'baseplate.overTileHint'
                                 )}
                               </p>
                               {overTileStatus.tiled.length > 0 && (

@@ -556,7 +556,11 @@ function emitMargins(params: BaseplateParams, layout: MarginLayout): MarginPiece
   const halfD = (params.depth * gridUnitMm) / 2;
   const colLast = colSizes.length - 1;
   const rowLast = rowSizes.length - 1;
-  const fill = { overTile: !!params.overTile, overTileHalfGrid: !!params.overTileHalfGrid };
+  const fill = {
+    overTile: !!params.overTile,
+    overTileHalfGrid: !!params.overTileHalfGrid,
+    overTileHalfGridSolidLeftover: !!params.overTileHalfGridSolidLeftover,
+  };
   // Piece-center in the padding-free body frame (matches SplitBaseplateMeshes).
   const colCenter = (c: number): number =>
     colOffsets[c] * gridUnitMm + (colSizes[c] * gridUnitMm) / 2 - halfW;
@@ -919,6 +923,7 @@ export function pieceToBaseplateParams(
     // too, or a split plate silently falls back to plain over-tile per piece.
     overTile: parentParams.overTile,
     overTileHalfGrid: parentParams.overTileHalfGrid,
+    overTileHalfGridSolidLeftover: parentParams.overTileHalfGridSolidLeftover,
     connectorNubs: parentParams.connectorNubs,
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).

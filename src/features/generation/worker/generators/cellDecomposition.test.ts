@@ -313,6 +313,36 @@ describe('frameCells half-grid', () => {
   });
 });
 
+describe('frameCells half-grid solid leftover (#2397)', () => {
+  const ONLY_LEFT = (mm: number) => ({ left: mm, right: 0, front: 0, back: 0 });
+
+  it('drops the sub-21mm leftover so only true half-cells remain', () => {
+    // 30mm = one 21mm half-cell + 9mm leftover; solid-leftover keeps only the cell.
+    const cells = frameCells(1, 1, ONLY_LEFT(30), 42, 8, true, true);
+    expect(cells).toHaveLength(1);
+    expect(cells[0].widthUnits).toBeCloseTo(0.5, 9);
+  });
+
+  it('keeps every packed half-cell, dropping only the remainder', () => {
+    // 50mm = two 21mm cells + 8mm leftover; the leftover clip is gone.
+    const cells = frameCells(1, 1, ONLY_LEFT(50), 42, 8, true, true);
+    expect(cells.filter((c) => Math.abs(c.widthUnits - 0.5) < 1e-9)).toHaveLength(2);
+    expect(cells.filter((c) => Math.abs(c.widthUnits - 8 / 42) < 1e-9)).toHaveLength(0);
+  });
+
+  it('is a no-op when the margin packs cleanly with no leftover', () => {
+    const grid = frameCells(1, 1, ONLY_LEFT(21), 42, 8, true, false);
+    const solid = frameCells(1, 1, ONLY_LEFT(21), 42, 8, true, true);
+    expect(solid).toEqual(grid);
+  });
+
+  it('leaves a fully sub-21mm margin solid instead of clipping it', () => {
+    // 15mm < 21mm: no true half-cell fits, so solid-leftover keeps it all solid.
+    const cells = frameCells(1, 1, ONLY_LEFT(15), 42, 8, true, true);
+    expect(cells).toHaveLength(0);
+  });
+});
+
 describe('marginPocketDepthMm', () => {
   it('over-tile: whole margin is pocketed once it clears the threshold, else solid', () => {
     expect(marginPocketDepthMm(12, 42, 8, false)).toBeCloseTo(12, 9);
@@ -338,6 +368,26 @@ describe('marginPocketDepthMm', () => {
     for (const p of [5, 12, 21, 25, 30, 46, 50]) {
       const depth = marginPocketDepthMm(p, 42, 8, true);
       const cells = frameCells(1, 1, { left: p, right: 0, front: 0, back: 0 }, 42, 8, true);
+      const pocketedMm = cells.reduce((sum, c) => sum + c.widthUnits * 42, 0);
+      expect(depth).toBeCloseTo(pocketedMm, 6);
+    }
+  });
+
+  it('half-grid solid-leftover: pocket reaches only the packed half-cells', () => {
+    // 30mm -> one 21mm cell pocketed, 9mm leftover solid.
+    expect(marginPocketDepthMm(30, 42, 8, true, true)).toBeCloseTo(21, 9);
+    // 50mm -> two 21mm cells, 8mm leftover solid.
+    expect(marginPocketDepthMm(50, 42, 8, true, true)).toBeCloseTo(42, 9);
+    // Exactly 21mm -> no leftover, unchanged.
+    expect(marginPocketDepthMm(21, 42, 8, true, true)).toBeCloseTo(21, 9);
+    // 15mm (< 21) -> no true cell fits, whole margin stays solid.
+    expect(marginPocketDepthMm(15, 42, 8, true, true)).toBe(0);
+  });
+
+  it('agrees with frameCells under solid-leftover too', () => {
+    for (const p of [5, 12, 21, 25, 30, 46, 50]) {
+      const depth = marginPocketDepthMm(p, 42, 8, true, true);
+      const cells = frameCells(1, 1, { left: p, right: 0, front: 0, back: 0 }, 42, 8, true, true);
       const pocketedMm = cells.reduce((sum, c) => sum + c.widthUnits * 42, 0);
       expect(depth).toBeCloseTo(pocketedMm, 6);
     }

@@ -57,6 +57,12 @@ export function buildFullParams(
     // Half-grid is meaningless without over-tile; normalize so an orphaned flag
     // can't fragment caches or trigger needless regeneration.
     overTileHalfGrid: stored.overTile === true ? stored.overTileHalfGrid : undefined,
+    // Solid-leftover only applies under half-grid; drop it otherwise for the
+    // same cache-stability reason.
+    overTileHalfGridSolidLeftover:
+      stored.overTile === true && stored.overTileHalfGrid === true
+        ? stored.overTileHalfGridSolidLeftover
+        : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

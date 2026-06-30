@@ -231,6 +231,9 @@ interface MarginAxisEntry {
  * `halfGrid`: pack true 0.5-unit functional half-cells from the grid edge first,
  * then a sub-half-unit remainder as a clipped cell at the outer edge (subject to
  * `minMm`). A strip narrower than `minMm` is dropped entirely (stays solid).
+ * `solidLeftover` (half-grid only) drops that remainder cell so the leftover
+ * stays solid plastic — keeping true 21mm cells visually distinct from the
+ * sub-cell margin (#2397).
  */
 function marginStripEntries(
   innerEdge: number,
@@ -238,7 +241,8 @@ function marginStripEntries(
   dir: -1 | 1,
   unit: number,
   minMm: number,
-  halfGrid: boolean
+  halfGrid: boolean,
+  solidLeftover: boolean
 ): MarginAxisEntry[] {
   if (sizeMm < minMm) return [];
   if (!halfGrid) {
@@ -251,7 +255,7 @@ function marginStripEntries(
     entries.push({ units: 0.5, center: innerEdge + dir * (k + 0.5) * halfMm, margin: true });
   }
   const remainder = sizeMm - halfCount * halfMm;
-  if (remainder >= minMm - FRACTION_EPS) {
+  if (!solidLeftover && remainder >= minMm - FRACTION_EPS) {
     const center = innerEdge + dir * (halfCount * halfMm + remainder / 2);
     entries.push({ units: remainder / unit, center, margin: true });
   }
@@ -264,17 +268,20 @@ function marginAxisEntries(
   endMm: number,
   unit: number,
   minMm: number,
-  halfGrid: boolean
+  halfGrid: boolean,
+  solidLeftover: boolean
 ): MarginAxisEntry[] {
   const totalNom = grid * unit;
   const entries: MarginAxisEntry[] = [];
-  entries.push(...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid));
+  entries.push(
+    ...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid, solidLeftover)
+  );
   let offset = 0;
   for (const s of decomposeCells(grid)) {
     entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
     offset += s * unit;
   }
-  entries.push(...marginStripEntries(totalNom / 2, endMm, 1, unit, minMm, halfGrid));
+  entries.push(...marginStripEntries(totalNom / 2, endMm, 1, unit, minMm, halfGrid, solidLeftover));
   return entries;
 }
 
@@ -292,6 +299,7 @@ function marginAxisEntries(
  * With `halfGrid`, each margin packs true 0.5-unit functional half-cells from the
  * grid edge outward before the leftover (< half a unit) falls back to a clipped
  * strip — so a wide margin reads as a half-grid border rather than one big clip.
+ * `solidLeftover` (half-grid only) drops that leftover strip so it stays solid.
  */
 export function frameCells(
   gridW: number,
@@ -299,7 +307,8 @@ export function frameCells(
   margins: SideMargins,
   gridUnitMm: number,
   minStripMm: number,
-  halfGrid = false
+  halfGrid = false,
+  solidLeftover = false
 ): CellInfo[] {
   const xs = marginAxisEntries(
     gridW,
@@ -307,7 +316,8 @@ export function frameCells(
     margins.right,
     gridUnitMm,
     minStripMm,
-    halfGrid
+    halfGrid,
+    solidLeftover
   );
   const ys = marginAxisEntries(
     gridD,
@@ -315,7 +325,8 @@ export function frameCells(
     margins.back,
     gridUnitMm,
     minStripMm,
-    halfGrid
+    halfGrid,
+    solidLeftover
   );
   const cells: CellInfo[] = [];
   for (const x of xs) {
@@ -340,20 +351,22 @@ export function frameCells(
  *
  * Mirrors the drop rule in {@link frameCells}: over-tile fills the whole margin
  * with one clip once it clears `minStripMm` (otherwise nothing); half-grid packs
- * 0.5-unit cells from the grid edge first and keeps only a printable remainder.
+ * 0.5-unit cells from the grid edge first and keeps only a printable remainder
+ * (dropped when `solidLeftover` so the leftover stays solid — #2397).
  * Used by the direct-mesh draft to fill solid bands without capping pockets.
  */
 export function marginPocketDepthMm(
   paddingMm: number,
   gridUnitMm: number,
   minStripMm: number,
-  halfGrid: boolean
+  halfGrid: boolean,
+  solidLeftover = false
 ): number {
   if (paddingMm < FRACTION_EPS) return 0;
   if (!halfGrid) return paddingMm >= minStripMm ? paddingMm : 0;
   const halfMm = gridUnitMm / 2;
   const halfCount = Math.floor((paddingMm + FRACTION_EPS) / halfMm);
   const leftover = paddingMm - halfCount * halfMm;
-  const keptLeftover = leftover >= minStripMm - FRACTION_EPS ? leftover : 0;
+  const keptLeftover = !solidLeftover && leftover >= minStripMm - FRACTION_EPS ? leftover : 0;
   return halfCount * halfMm + keptLeftover;
 }

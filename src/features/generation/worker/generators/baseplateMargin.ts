@@ -121,7 +121,8 @@ function buildMarginSolid(
       margins,
       params.gridUnitMm,
       MIN_PRINTABLE_TILE_MM,
-      params.overTileHalfGrid
+      params.overTileHalfGrid,
+      params.overTileHalfGridSolidLeftover
     )) {
       // Keep only the frame cells whose center lands inside this rail's
       // footprint. Corner cells fall inside the long rail that spans them.

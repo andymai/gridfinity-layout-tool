@@ -48,6 +48,39 @@ describe('buildFullParams', () => {
     expect(result.overTileHalfGrid).toBeUndefined();
   });
 
+  it('forwards overTileHalfGridSolidLeftover only under half-grid', () => {
+    const on = buildFullParams(
+      {
+        ...storedBase,
+        overTile: true,
+        overTileHalfGrid: true,
+        overTileHalfGridSolidLeftover: true,
+      },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(on.overTileHalfGridSolidLeftover).toBe(true);
+
+    // Solid-leftover is meaningless without half-grid → dropped.
+    const orphaned = buildFullParams(
+      {
+        ...storedBase,
+        overTile: true,
+        overTileHalfGrid: false,
+        overTileHalfGridSolidLeftover: true,
+      },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(orphaned.overTileHalfGridSolidLeftover).toBeUndefined();
+  });
+
   it('maps drawerWidth to width', () => {
     const result = buildFullParams(storedBase, 14, 8, 42, 'end', 'end');
     expect(result.width).toBe(14);

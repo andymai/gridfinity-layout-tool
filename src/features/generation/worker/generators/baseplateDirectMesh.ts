@@ -97,6 +97,7 @@ export function generateBaseplateDirect(
     connectorNubs,
     overTile,
     overTileHalfGrid,
+    overTileHalfGridSolidLeftover,
   } = params;
 
   const mb = new MeshBuilder();
@@ -135,10 +136,24 @@ export function generateBaseplateDirect(
       back: paddingBack,
     };
     cells.push(
-      ...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid)
+      ...frameCells(
+        width,
+        depth,
+        margins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid,
+        overTileHalfGridSolidLeftover
+      )
     );
     const depthOf = (p: number): number =>
-      marginPocketDepthMm(p, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid === true);
+      marginPocketDepthMm(
+        p,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid === true,
+        overTileHalfGridSolidLeftover === true
+      );
     pocketDepths = {
       left: depthOf(paddingLeft),
       right: depthOf(paddingRight),

@@ -153,6 +153,7 @@ export interface MarginPiece {
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
   readonly overTile: boolean;
   readonly overTileHalfGrid: boolean;
+  readonly overTileHalfGridSolidLeftover: boolean;
 }
 
 /**
@@ -189,6 +190,12 @@ export interface BaseplateParams {
    * the standard clipped tile. Only meaningful when {@link overTile} is true.
    */
   readonly overTileHalfGrid?: boolean;
+  /**
+   * When half-grid is on, leave the sub-21mm leftover after the packed
+   * half-sockets as solid plastic instead of a clipped grid pocket (#2397).
+   * Only meaningful when {@link overTileHalfGrid} is true. Default false.
+   */
+  readonly overTileHalfGridSolidLeftover?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */

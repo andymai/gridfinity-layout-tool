@@ -68,6 +68,9 @@ export function meshCacheKey(
     params.fractionalEdgeY,
     params.overTile ?? false,
     params.overTile === true ? (params.overTileHalfGrid ?? false) : false,
+    params.overTile === true && params.overTileHalfGrid === true
+      ? (params.overTileHalfGridSolidLeftover ?? false)
+      : false,
     params.edges?.left ?? '',
     params.edges?.right ?? '',
     params.edges?.front ?? '',
@@ -107,6 +110,9 @@ export function slabPocketsCacheKey(params: BaseplateParams, forExport: boolean)
     params.fractionalEdgeY,
     params.overTile ?? false,
     params.overTile === true ? (params.overTileHalfGrid ?? false) : false,
+    params.overTile === true && params.overTileHalfGrid === true
+      ? (params.overTileHalfGridSolidLeftover ?? false)
+      : false,
     params.edges?.left ?? '',
     params.edges?.right ?? '',
     params.edges?.front ?? '',

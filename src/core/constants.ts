@@ -297,6 +297,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     ...(typeof obj.overTileHalfGrid === 'boolean'
       ? { overTileHalfGrid: obj.overTileHalfGrid }
       : {}),
+    ...(typeof obj.overTileHalfGridSolidLeftover === 'boolean'
+      ? { overTileHalfGridSolidLeftover: obj.overTileHalfGridSolidLeftover }
+      : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
     ...(typeof obj.preferIdenticalPieces === 'boolean'

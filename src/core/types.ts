@@ -104,6 +104,14 @@ export interface BaseplateParams {
    * meaningful when {@link overTile} is true. Default false (arbitrary clip).
    */
   readonly overTileHalfGrid?: boolean;
+  /**
+   * Half-grid leftover handling: when set, the sub-21mm remainder left after
+   * packing 0.5-unit half-sockets stays solid plastic instead of becoming a
+   * clipped grid pocket — so true half-grid cells read as distinct from the
+   * unusable margin. Only meaningful when {@link overTileHalfGrid} is true.
+   * Default false (leftover rendered as a clipped tile).
+   */
+  readonly overTileHalfGridSolidLeftover?: boolean;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */

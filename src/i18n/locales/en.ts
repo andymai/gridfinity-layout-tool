@@ -2218,14 +2218,19 @@ const en: Record<string, string> = {
   'baseplate.syncWithLayout': 'Sync with layout',
   'baseplate.padding': 'Padding',
   'baseplate.overTile': 'Fill padding with grid tiles',
-  'baseplate.useHalfGrid': 'Use half-grid cells',
+  'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':
     'Replace the solid padding margin with clipped grid tiles, edge by edge.',
   'baseplate.overTileTooSmall': 'Padding is too small on every edge to fit a grid tile.',
   'baseplate.overTileFills': 'Grid fills: {sides}',
   'baseplate.overTileKeptSolid': 'Too small, kept solid: {sides}',
   'baseplate.halfGridHint':
-    'Packs each margin with 21mm half-grid cells where they fit; narrower leftovers fill the same as a full tile.',
+    'Packs each margin with 21mm half-grid cells; the sub-21mm leftover fills as a clipped grid tile.',
+  'baseplate.halfGridHintSolid':
+    'Packs each margin with 21mm half-grid cells; the sub-21mm leftover stays solid.',
+  'baseplate.leftoverLabel': 'Leftover margin',
+  'baseplate.leftoverGrid': 'Grid',
+  'baseplate.leftoverSolid': 'Solid',
   'baseplate.detachMargins': 'Detach margins as separate pieces',
   'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
   'baseplate.detachMarginsStackConflict': 'Not available while stack printing is on.',
