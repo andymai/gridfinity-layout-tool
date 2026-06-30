@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { Layout, Mm, GridUnits, HeightUnits } from '@/core/types';
-import { CONSTRAINTS } from '@/core/constants';
 import { createBinActions } from './binActions';
 import { createLayerActions } from './layerActions';
 import { createCategoryActions } from './categoryActions';
@@ -29,7 +28,10 @@ const PLACEHOLDER_LAYOUT: Layout = {
   version: '1.0',
   name: '',
   drawer: { width: 0 as GridUnits, depth: 0 as GridUnits, height: 0 as HeightUnits },
-  printBedSize: CONSTRAINTS.PRINT_BED_MM_DEFAULT as Mm,
+  // Literal, not CONSTRAINTS.PRINT_BED_MM_DEFAULT: PLACEHOLDER_LAYOUT is built at
+  // module-init, and reading an imported @/core/constants binding at init risks
+  // the #1466 chunk static-import-cycle undefined read.
+  printBedSize: 256 as Mm,
   gridUnitMm: 42 as Mm,
   heightUnitMm: 7 as Mm,
   categories: [],

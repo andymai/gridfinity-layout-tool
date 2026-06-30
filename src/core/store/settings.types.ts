@@ -2,7 +2,6 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
-import { CONSTRAINTS } from '@/core/constants';
 
 // STL Search Sites Configuration
 
@@ -318,7 +317,10 @@ export const DEFAULT_SETTINGS: UserSettings = {
   defaultDrawerDepth: 8,
   defaultDrawerHeight: 12,
   defaultLayerHeight: 3, // Default to 3 (current hardcoded behavior)
-  defaultPrintBedSize: CONSTRAINTS.PRINT_BED_MM_DEFAULT,
+  // Literal, not CONSTRAINTS.PRINT_BED_MM_DEFAULT: DEFAULT_SETTINGS is read at
+  // module-init, and reading an imported @/core/constants binding at init risks
+  // the #1466 chunk static-import-cycle undefined read.
+  defaultPrintBedSize: 256,
   defaultGridUnitMm: 42,
   defaultHeightUnitMm: 7,
 
