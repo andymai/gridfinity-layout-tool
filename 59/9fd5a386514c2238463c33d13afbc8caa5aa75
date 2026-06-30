@@ -1,0 +1,86 @@
+src/i18n/locales/sv.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/core/types.ts
+  s_d0431bf9490853::t_f955d237bc3bf1 107-114
+src/features/baseplate/utils/buildFullParams.ts
+  s_d0431bf9490853::t_dd27bed22cd20f 60-65
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_d0431bf9490853::t_7c930a75c9b6b4 139-147,150-156
+  s_d0431bf9490853::t_87cffb7938bdb0 100
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_d0431bf9490853::t_7eda30ef2f8127 61-63
+  s_d0431bf9490853::t_c18dcf62aa27a3 234-240
+  s_d0431bf9490853::t_09a4a7d26204de 427,434-450,454-458
+  s_d0431bf9490853::t_9acda77db3d533 30
+  s_d0431bf9490853::t_5edf177a5c6c85 241
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_d0431bf9490853::t_7919ec6a9b29f7 819
+  s_d0431bf9490853::t_479c9acd8e3aef 807-811
+  s_d0431bf9490853::t_66b29e67936458 871-909
+src/features/baseplate/utils/splitPlanner.ts
+  s_d0431bf9490853::t_bc93d24a429cff 926
+  s_d0431bf9490853::t_72f187f04fe87e 559-563
+src/i18n/locales/nb.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/i18n/locales/uk.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/i18n/locales/es.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_d0431bf9490853::t_40ca62b006f59f 124-125
+src/i18n/locales/en.ts
+  s_d0431bf9490853::t_fb793454cbd372 2221,2228-2233
+src/features/generation/worker/generators/cellDecomposition.test.ts
+  s_d0431bf9490853::t_84c92842c75d7b 316-345
+  s_d0431bf9490853::t_e4c8baf005da61 375-394
+e2e/baseplate-overtile.spec.ts
+  s_d0431bf9490853::t_da4112ccedee91 65
+  s_d0431bf9490853::t_9dc262438bd644 69-78
+src/i18n/locales/ja.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_d0431bf9490853::t_06f1219f5f2b83 296-297
+  s_d0431bf9490853::t_7d2b2330a8b507 229
+src/shared/types/bin.ts
+  s_d0431bf9490853::t_fe2670d2a5bedf 193-198
+  s_d0431bf9490853::t_1b9b57ab46b5be 156
+src/i18n/locales/fr.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_d0431bf9490853::t_0495c8f892d404 51-78,82
+  s_d0431bf9490853::t_2bb7a92ca63c48 79-81
+  s_d0431bf9490853::t_83ed7ed813e337 83
+src/i18n/locales/nl.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/i18n/locales/pt-BR.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_d0431bf9490853::t_78053d0568fadf 192-195
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_d0431bf9490853::t_6094c530a44269 71-73,113-115
+src/core/constants.ts
+  s_d0431bf9490853::t_3fead8d11c7a8f 300-302
+src/i18n/locales/de.json
+  s_d0431bf9490853::t_fb793454cbd372 103,107-111
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_d0431bf9490853::t_ad863e0a1f6394 354-355,362-363,370
+  s_d0431bf9490853::t_f46e9bbaa93f9e 302,310-311,319-320,328-329
+  s_d0431bf9490853::t_3c3833afee8e2a 234-236,244-245,258
+  s_d0431bf9490853::t_4e03f7c2f74bdb 271-272,276-278,284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.4",
+  "base_commit_sha": "599fd5a386514c2238463c33d13afbc8caa5aa75",
+  "prompts": {},
+  "sessions": {
+    "s_d0431bf9490853": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3b9e5e-c1b5-48ed-bbe2-0328ade12c74",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
