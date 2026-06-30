@@ -282,6 +282,42 @@ export class WorkerPool {
     allResults.sort((a, b) => a.index - b.index);
     return allResults;
   }
+
+  /**
+   * Export multiple distinct bins in parallel across pool workers.
+   * Same round-robin dispatch as exportBaseplates; each bridge regenerates and
+   * exports its assigned bins independently.
+   */
+  async exportBins(
+    bins: readonly BinParams[],
+    format: ExportFormat,
+    onProgress?: (completed: number, total: number) => void,
+    signal?: AbortSignal
+  ): Promise<Array<{ data: ArrayBuffer; index: number }>> {
+    await this.ensureWorkers();
+
+    const total = bins.length;
+    let completed = 0;
+
+    const indexGroups = distributeRoundRobin(total, this.bridges.length);
+
+    const taskGroups = indexGroups.map((indices, bridgeIdx) => {
+      const bridge = this.bridges[bridgeIdx];
+      return indices.map((binIdx) => async (): Promise<{ data: ArrayBuffer; index: number }> => {
+        if (signal?.aborted) throw new DOMException('Export cancelled', 'AbortError');
+        const result = await bridge.exportBin(bins[binIdx], format);
+        completed++;
+        onProgress?.(completed, total);
+        return { data: result.data, index: binIdx };
+      });
+    });
+
+    const allResults = await runGrouped(taskGroups, signal);
+
+    allResults.sort((a, b) => a.index - b.index);
+    return allResults;
+  }
+
   /** Number of active workers in the pool */
   get size(): number {
     return this.bridges.length;

@@ -52,3 +52,37 @@ export function packagePiecesAsZip(
   const compressed = zipSync(files, { level: 6 });
   return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
 }
+
+/** A binary file placed at an explicit path inside the ZIP (e.g. `bins/foo.stl`). */
+export interface ZipBinaryFile {
+  readonly path: string;
+  readonly data: ArrayBuffer;
+}
+
+/**
+ * Package files into a ZIP using explicit, caller-controlled paths — so callers
+ * can build a foldered archive (`bins/`, `baseplate/`, root `manifest.txt`).
+ *
+ * Unlike `packagePiecesAsZip`, this does NOT synthesize names; the caller owns
+ * uniqueness. Duplicate paths would silently overwrite (fflate keys a plain
+ * object), so callers must dedupe paths before calling.
+ */
+export function packageFilesAsZip(
+  binaryFiles: readonly ZipBinaryFile[],
+  textFiles?: readonly ZipTextFile[]
+): Blob {
+  const files: Record<string, Uint8Array> = {};
+
+  for (const file of binaryFiles) {
+    files[file.path] = new Uint8Array(file.data);
+  }
+
+  if (textFiles) {
+    for (const file of textFiles) {
+      files[file.name] = strToU8(file.content);
+    }
+  }
+
+  const compressed = zipSync(files, { level: 6 });
+  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+}

@@ -1,9 +1,9 @@
 /**
  * Hook for exporting the baseplate as STL, STEP, or 3MF.
  *
- * Uses the shared ExportDialog configuration for filenames. When the baseplate
- * is split into multiple pieces, exports in parallel via the worker pool with
- * progress tracking. Falls back to sequential export if the pool is unavailable.
+ * Thin wrapper over the pure `buildBaseplateExportPieces` builder: reads the
+ * layout/settings/page stores, builds the export pieces, then packages them as a
+ * single download (one un-split plate) or a ZIP with a print guide.
  */
 
 import { useCallback, useState } from 'react';
@@ -12,38 +12,14 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
-import { export3MF, buildSTLBuffer } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/shared/generation/stlParser';
-import { buildStackExportSoup } from '../utils/stackExport';
-import { planPhysicalStacks, stackHeightCap, bodyCenterYMm } from '../utils/stackPrint';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import type { StackPrintParams } from '@/core/types';
-import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { isErr, getUserMessage } from '@/core/result';
+import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import { useToastStore } from '@/core/store/toast';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { useTranslation } from '@/i18n';
-import { useBaseplatePageStore } from '../store/baseplatePageStore';
-import { buildFullParams } from '../utils/buildFullParams';
-import { bodyParamsForDetach } from '../utils/splitPlanner';
-import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
-import {
-  buildExportCacheKey,
-  getCachedExports,
-  putCachedExports,
-  getOrExport,
-} from '../utils/exportCache';
-import { assignGroupNames } from '../utils/pieceNaming';
-import { countConnectorKeys } from '../utils/connectorKeys';
-import {
-  generatePrintGuide,
-  generateStackPrintNote,
-  generateMarginGuide,
-} from '../utils/printGuide';
-import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
-import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
+import { useBaseplatePageStore } from '../store/baseplatePageStore';
+import { buildBaseplateExportPieces } from '../utils/buildBaseplateExportPieces';
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -53,72 +29,6 @@ interface UseBaseplateExportReturn {
     format: ExportFileFormat,
     splitEnabled?: boolean
   ) => Promise<boolean>;
-}
-
-const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
-  stl: '.stl',
-  step: '.step',
-  '3mf': '.3mf',
-};
-
-function printSettingsFor3MF() {
-  const printSettings = useSettingsStore.getState().settings.printSettings;
-  return {
-    layerHeight: printSettings.layerHeightMm,
-    infillPercent: printSettings.infillPercent,
-    material: 'PLA',
-    supportRequired: false,
-    estimatedMinutes: 0,
-    estimatedGrams: 0,
-  };
-}
-
-/** Convert a single-plate STL to a single-instance 3MF (no stacking). */
-function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
-  const parseResult = parseSTLBinary(stlData);
-  if (isErr(parseResult)) {
-    throw new Error(getUserMessage(parseResult.error));
-  }
-  const { vertices, normals } = parseResult.value;
-  return export3MF(vertices, normals, { name, printSettings: printSettingsFor3MF() });
-}
-
-/** Parse a binary STL into a triangle soup, or throw a user-facing error. */
-function parseStlSoup(stlData: ArrayBuffer): { vertices: Float32Array; normals: Float32Array } {
-  const parseResult = parseSTLBinary(stlData);
-  if (isErr(parseResult)) {
-    throw new Error(getUserMessage(parseResult.error));
-  }
-  return parseResult.value;
-}
-
-/**
- * Build a stacked file from an already-parsed single-plate soup: bakes `copies`
- * plates (bottom upright, the rest flipped, separated by an air gap) into real
- * geometry. Single-material in both STL and 3MF. The source is parsed once by
- * the caller so capped multi-tower exports don't re-parse the same mesh.
- */
-function buildStackedFileBlob(
-  source: { vertices: Float32Array; normals: Float32Array },
-  name: string,
-  copies: number,
-  format: 'stl' | '3mf',
-  stack: StackPrintParams,
-  bodyCenterY: number
-): Blob {
-  const { vertices, normals } = source;
-  const soup = buildStackExportSoup(vertices, normals, copies, stack, bodyCenterY);
-
-  if (format === 'stl') {
-    return new Blob([buildSTLBuffer(soup.vertices, soup.normals, name)], {
-      type: FORMAT_MIME_TYPES.stl,
-    });
-  }
-
-  return export3MF(soup.vertices, soup.normals, {
-    name,
-    printSettings: printSettingsFor3MF(),
-  });
 }
 
 export function useBaseplateExport(): UseBaseplateExportReturn {
@@ -131,6 +41,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
+    printBedSize,
+    printBedDepth,
   } = useLayoutStore(
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
@@ -139,10 +51,11 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      printBedSize: state.layout.printBedSize,
+      printBedDepth: state.layout.printBedDepth,
     }))
   );
 
-  const tiling = useBaseplatePageStore((s) => s.tiling);
   const mesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
@@ -164,338 +77,66 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
       setIsExporting(true);
 
-      // Stack-printing config (persisted in baseplateParams). STEP is a CAD
-      // interchange format with no slicer stacking notion, so it never stacks.
-      const stack = baseplateParams.stackPrint;
-      const stackEnabled = stack?.enabled === true && format !== 'step';
-      // Whole-layout multiplier: scales every unique piece's tower count.
-      const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
-      const stackCap = stackHeightCap(
-        useSettingsStore.getState().settings.printSettings.maxPrintHeightMm,
-        GRIDFINITY_SPEC.SOCKET_HEIGHT,
-        stack?.gapMm ?? 0.2
-      );
-
       try {
-        const nozzleMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
-        // STEP never stacks, so don't let buildFullParams strip the magnets,
-        // corner rounding, and connectors that stacking removes for tile
-        // uniformity — the exported solid keeps them. Clearing stackPrint (vs a
-        // separate flag) keeps the feature-stripping logic single-sourced in
-        // buildFullParams, and mirrors the panel/page's format-aware stackEnabled.
-        const exportParams =
-          format === 'step' ? { ...baseplateParams, stackPrint: undefined } : baseplateParams;
-        const fullParams = buildFullParams(
-          exportParams,
-          drawerWidth,
-          drawerDepth,
-          gridUnitMm,
-          fractionalEdgeX,
-          fractionalEdgeY,
-          nozzleMm
-        );
-
-        const baseName = generateBaseplateFileName(
-          toNamingParams(fullParams),
-          format,
-          exportFileNameConfig
-        );
-        const baseNameNoExt = baseName.replace(/\.[^.]+$/, '');
-        const extension = FORMAT_EXTENSIONS[format];
-
-        // Detached margin rails (issue #2392). Mutually exclusive with stacking,
-        // so they only appear on the non-stacked branches. Each rail exports as
-        // its own file; a detached plate therefore always downloads as a ZIP.
-        const railMargins = fullParams.detachMargins ? (tiling?.margins ?? []) : [];
-        const exportRailPieces = async (): Promise<{ data: ArrayBuffer; label: string }[]> => {
-          const out: { data: ArrayBuffer; label: string }[] = [];
-          for (const m of railMargins) {
-            if (format === 'step') {
-              const r = await bridge.exportMargin(fullParams, m, 'step');
-              out.push({ data: r.data, label: m.id });
-            } else {
-              const r = await bridge.exportMargin(fullParams, m, 'stl');
-              if (format === '3mf') {
-                const blob = convertStlTo3mf(r.data, `${baseNameNoExt}_${m.id}`);
-                out.push({ data: await blob.arrayBuffer(), label: m.id });
-              } else {
-                out.push({ data: r.data, label: m.id });
-              }
-            }
-          }
-          return out;
-        };
-        // Body exports padding-free on detached sides (the rails carry that
-        // margin) — matching preview generation. Identity when not detaching.
-        const bodyExportParams = bodyParamsForDetach(fullParams);
-        const marginGuideInfo = railMargins.map((m) => ({
-          fileName: `${baseNameNoExt}_${m.id}${extension}`,
-          side: m.side,
-          lengthMm: m.lengthMm,
-          bandThicknessMm: m.bandThicknessMm,
-        }));
-
-        if (tiling?.isSplit && splitEnabled) {
-          // Multi-piece ZIP export: dedupe pieces by geometry fingerprint, then
-          // generate + export only the unique shapes.
-          const bridgeFormat = format === '3mf' ? 'stl' : format;
-          const pool = workerPoolManager.get();
-
-          const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
-          const groupNames = assignGroupNames(groups, tiling.pieces);
-          const uniqueGroups = [...groups.entries()];
-          const uniqueCount = uniqueGroups.length;
-          const totalPieces = tiling.pieces.length;
-
-          setExportProgress({ current: 0, total: uniqueCount });
-
-          const uniqueParams = uniqueGroups.map(([, g]) => g.params);
-
-          // Cross-session cache: skip rebuilding pieces whose identical bytes are
-          // already persisted. Only the misses go to the worker pool.
-          const cacheKeys = uniqueParams.map((p) => buildExportCacheKey(p, bridgeFormat, nozzleMm));
-          const cached = await getCachedExports(cacheKeys);
-          const missIndices: number[] = [];
-          for (let i = 0; i < cached.length; i++) {
-            if (cached[i] === undefined) missIndices.push(i);
-          }
-          const cachedCount = uniqueCount - missIndices.length;
-          setExportProgress({ current: cachedCount, total: uniqueCount });
-
-          const freshByIndex = new Map<number, ArrayBuffer>();
-          const toPersist: { key: string; data: ArrayBuffer }[] = [];
-          if (missIndices.length > 0) {
-            const missParams = missIndices.map((i) => uniqueParams[i]);
-            if (pool && !pool.isDestroyed && pool.size > 1) {
-              const results = await pool.exportBaseplates(missParams, bridgeFormat, (completed) =>
-                setExportProgress({ current: cachedCount + completed, total: uniqueCount })
-              );
-              results.forEach((r, j) => {
-                const idx = missIndices[j];
-                freshByIndex.set(idx, r.data);
-                toPersist.push({ key: cacheKeys[idx], data: r.data });
-              });
-            } else {
-              for (let j = 0; j < missParams.length; j++) {
-                setExportProgress({ current: cachedCount + j + 1, total: uniqueCount });
-                const result = await bridge.exportBaseplate(missParams[j], bridgeFormat);
-                const idx = missIndices[j];
-                freshByIndex.set(idx, result.data);
-                toPersist.push({ key: cacheKeys[idx], data: result.data });
-              }
-            }
-            void putCachedExports(toPersist);
-          }
-
-          const uniqueExports: ArrayBuffer[] = cacheKeys.map((_, i) => {
-            const data = cached[i] ?? freshByIndex.get(i);
-            if (data === undefined)
-              throw new Error('Baseplate export piece missing after generation');
-            return data;
+        const printSettings = useSettingsStore.getState().settings.printSettings;
+        const { pieces, guideText, baseNameNoExt, extension, splitStats } =
+          await buildBaseplateExportPieces(bridge, workerPoolManager.get(), {
+            baseplateParams,
+            drawerWidth,
+            drawerDepth,
+            gridUnitMm,
+            fractionalEdgeX,
+            fractionalEdgeY,
+            printBedWidthMm: printBedSize,
+            printBedDepthMm: printBedDepth ?? printBedSize,
+            format,
+            splitEnabled,
+            fileNameConfig: exportFileNameConfig,
+            printSettings: {
+              nozzleSizeMm: printSettings.nozzleSizeMm,
+              layerHeightMm: printSettings.layerHeightMm,
+              infillPercent: printSettings.infillPercent,
+              maxPrintHeightMm: printSettings.maxPrintHeightMm,
+            },
+            onProgress: setExportProgress,
           });
 
-          // Unstacked: one file per physical drawer slot, named by its grid
-          // label (A1, B2, …), so importing the whole ZIP into a slicer drops in
-          // every piece with nothing to duplicate by hand. Identical shapes are
-          // generated once (above) and the single mesh is reused for each slot.
-          // When stacking, each unique piece is instead baked into towers of the
-          // quantity the drawer needs (group size), split into multiple files
-          // when a stack exceeds the printable height cap.
-          const pieces: { data: ArrayBuffer; label: string }[] = [];
-          for (let i = 0; i < uniqueGroups.length; i++) {
-            const [fp, group] = uniqueGroups[i];
-            const name = groupNames.get(fp) ?? 'unknown';
-            const stlData = uniqueExports[i];
-
-            if (stack && stackEnabled) {
-              const source = parseStlSoup(stlData);
-              const groupBodyY = bodyCenterYMm(group.params.paddingFront, group.params.paddingBack);
-              const towers = planPhysicalStacks(
-                [{ label: name, quantity: group.indices.length * copies }],
-                stackCap
-              );
-              for (let s = 0; s < towers.length; s++) {
-                const label = towers.length > 1 ? `${name}_${s + 1}` : name;
-                const blob = buildStackedFileBlob(
-                  source,
-                  `${baseNameNoExt}_${label}`,
-                  towers[s].copies,
-                  format,
-                  stack,
-                  groupBodyY
-                );
-                pieces.push({ data: await blob.arrayBuffer(), label });
-              }
-              continue;
-            }
-
-            // STL bytes are identical across slots, so reuse the single
-            // generated buffer. For 3MF, parse the shape once but emit a
-            // per-slot file so each imported object carries its own grid label —
-            // slicers surface the embedded name, so a shared one would defeat the
-            // per-piece identification the grid-labelled files exist for. Only
-            // the lightweight XML+zip step repeats; the STL parse is done once.
-            if (format === '3mf') {
-              const soup = parseStlSoup(stlData);
-              for (const idx of group.indices) {
-                const label = tiling.pieces[idx].label;
-                const blob = export3MF(soup.vertices, soup.normals, {
-                  name: `${baseNameNoExt}_${label}`,
-                  printSettings: printSettingsFor3MF(),
-                });
-                pieces.push({ data: await blob.arrayBuffer(), label });
-              }
-            } else {
-              for (const idx of group.indices) {
-                pieces.push({ data: stlData, label: tiling.pieces[idx].label });
-              }
-            }
-          }
-
-          // Dovetail key connectors ship a separate, identical key part hammered into
-          // every seam junction — one STL, printed N times.
-          const keyCount = countConnectorKeys(tiling, fullParams);
-          if (keyCount > 0) {
-            // Namespaced key: the connector key is different geometry from a
-            // plate built with the same params, so it must not share a cache slot.
-            let keyData = await getOrExport(
-              `connkey|${buildExportCacheKey(fullParams, bridgeFormat, nozzleMm)}`,
-              () => bridge.exportConnectorKey(fullParams, bridgeFormat).then((r) => r.data)
-            );
-            if (format === '3mf') {
-              // The key is a discrete part (one per seam junction, count in the
-              // guide), not a plate — stacking never applies to it. It prints
-              // flat on its own even when the plates are stacked into towers.
-              const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`);
-              keyData = await blob.arrayBuffer();
-            }
-            pieces.push({ data: keyData, label: 'key' });
-          }
-
-          // Detached margin rails ride along as their own files in the ZIP.
-          pieces.push(...(await exportRailPieces()));
-
-          const guideText = generatePrintGuide({
-            tiling,
-            groups,
-            groupNames,
-            parentParams: fullParams,
-            fileExtension: extension,
-            baseFileName: baseNameNoExt,
-            connectorKey:
-              keyCount > 0
-                ? { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount }
-                : undefined,
-            margins: marginGuideInfo.length > 0 ? marginGuideInfo : undefined,
-            stackPrint: stackEnabled ? stack : undefined,
-            stackCap,
-            copies: stackEnabled ? copies : 1,
-          });
-
-          const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
-            { name: 'print-guide.txt', content: guideText },
-          ]);
+        // One un-split plate downloads directly; everything else is a ZIP with a guide.
+        if (pieces.length === 1 && guideText === '') {
+          triggerDownload(
+            new Blob([pieces[0].data], { type: FORMAT_MIME_TYPES[format] }),
+            `${baseNameNoExt}${extension}`
+          );
+        } else {
+          const zip = packagePiecesAsZip(
+            pieces,
+            baseNameNoExt,
+            extension,
+            guideText ? [{ name: 'print-guide.txt', content: guideText }] : undefined
+          );
           triggerDownload(zip, `${baseNameNoExt}.zip`);
+        }
 
-          // The unstacked ZIP now holds one file per slot (full set), so report
-          // the piece count plainly. Stacking still collapses identical slots
-          // into shared towers, where the unique-vs-total split is informative.
-          if (stackEnabled && uniqueCount < totalPieces) {
+        if (splitStats) {
+          // The unstacked ZIP holds one file per slot (full set), so report the
+          // piece count plainly. Stacking collapses identical slots into shared
+          // towers, where the unique-vs-total split is the informative number.
+          if (splitStats.stackEnabled && splitStats.uniqueCount < splitStats.totalPieces) {
+            useToastStore.getState().addToast(
+              t('baseplate.export.dedupSuccess', {
+                unique: splitStats.uniqueCount,
+                total: splitStats.totalPieces,
+              }),
+              'success'
+            );
+          } else {
             useToastStore
               .getState()
               .addToast(
-                t('baseplate.export.dedupSuccess', { unique: uniqueCount, total: totalPieces }),
+                t('baseplate.export.splitSuccess', { count: splitStats.totalPieces }),
                 'success'
               );
-          } else {
-            useToastStore
-              .getState()
-              .addToast(t('baseplate.export.splitSuccess', { count: totalPieces }), 'success');
           }
-        } else if (format === 'step') {
-          // STEP: never stacked (CAD interchange, no slicer notion).
-          const data = await getOrExport(
-            buildExportCacheKey(bodyExportParams, 'step', nozzleMm),
-            () => bridge.exportBaseplate(bodyExportParams, 'step').then((r) => r.data)
-          );
-          if (railMargins.length > 0) {
-            const zip = packagePiecesAsZip(
-              [{ data, label: 'body' }, ...(await exportRailPieces())],
-              baseNameNoExt,
-              extension,
-              [{ name: 'print-guide.txt', content: generateMarginGuide(marginGuideInfo) }]
-            );
-            triggerDownload(zip, `${baseNameNoExt}.zip`);
-          } else {
-            triggerDownload(new Blob([data], { type: FORMAT_MIME_TYPES.step }), baseName);
-          }
-        } else if (stack && stackEnabled) {
-          // Single piece, stacked into one tower (split under the height cap) —
-          // a single tower downloads directly, several go in a ZIP.
-          const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>
-            bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
-          );
-          const source = parseStlSoup(stlData);
-          const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
-          const towers = planPhysicalStacks([{ label: 'plate', quantity: copies }], stackCap);
-          if (towers.length === 1) {
-            const blob = buildStackedFileBlob(
-              source,
-              baseNameNoExt,
-              towers[0].copies,
-              format,
-              stack,
-              singleBodyY
-            );
-            triggerDownload(blob, baseName);
-          } else {
-            const pieces: { data: ArrayBuffer; label: string }[] = [];
-            for (let s = 0; s < towers.length; s++) {
-              const label = `${s + 1}`;
-              const blob = buildStackedFileBlob(
-                source,
-                `${baseNameNoExt}_${label}`,
-                towers[s].copies,
-                format,
-                stack,
-                singleBodyY
-              );
-              pieces.push({ data: await blob.arrayBuffer(), label });
-            }
-            const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
-              { name: 'print-guide.txt', content: generateStackPrintNote(stack) },
-            ]);
-            triggerDownload(zip, `${baseNameNoExt}.zip`);
-          }
-        } else if (railMargins.length > 0) {
-          // Single body + detached rails → ZIP (one file per piece). Body prints
-          // padding-free; the rails carry the detached margin.
-          const stlData = await getOrExport(
-            buildExportCacheKey(bodyExportParams, 'stl', nozzleMm),
-            () => bridge.exportBaseplate(bodyExportParams, 'stl').then((r) => r.data)
-          );
-          const bodyData =
-            format === '3mf'
-              ? await convertStlTo3mf(stlData, `${baseNameNoExt}_body`).arrayBuffer()
-              : stlData;
-          const zip = packagePiecesAsZip(
-            [{ data: bodyData, label: 'body' }, ...(await exportRailPieces())],
-            baseNameNoExt,
-            extension,
-            [{ name: 'print-guide.txt', content: generateMarginGuide(marginGuideInfo) }]
-          );
-          triggerDownload(zip, `${baseNameNoExt}.zip`);
-        } else {
-          // Single piece, unstacked, STL or 3MF.
-          const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>
-            bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
-          );
-          const blob =
-            format === '3mf'
-              ? convertStlTo3mf(stlData, baseNameNoExt)
-              : new Blob([stlData], { type: FORMAT_MIME_TYPES.stl });
-          triggerDownload(blob, baseName);
-          // Single-file success is conveyed by the dialog's inline success view.
         }
 
         return true;
@@ -515,7 +156,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       fractionalEdgeX,
       fractionalEdgeY,
       baseplateParams,
-      tiling,
+      printBedSize,
+      printBedDepth,
       exportFileNameConfig,
       setExportProgress,
     ]

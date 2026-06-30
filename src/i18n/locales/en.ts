@@ -281,6 +281,18 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Drives the print-time estimate and scales split connectors, wall locks, and baseplate connectors so they stay printable on wider nozzles.',
   'rightPanel.collapseRightPanel': 'Collapse right panel',
   'rightPanel.copyBinListAsTsv': 'Copy bin list as TSV',
+  'layoutExport.button': 'Export layout (3D)',
+  'layoutExport.title': 'Export layout',
+  'layoutExport.description':
+    'Download every linked bin and the baseplate as a single ZIP, ready to slice.',
+  'layoutExport.download': 'Download ZIP',
+  'layoutExport.skippedNotice':
+    '{exported} of {total} bins will be exported. {skipped} not linked to a saved design will be skipped.',
+  'layoutExport.noLinkedBins': 'Link bins to saved designs to export them.',
+  'layoutExport.engineNotReady': 'The 3D engine is still loading. Try again in a moment.',
+  'layoutExport.success': 'Exported {count} bin designs',
+  'layoutExport.progress.bins': 'Exporting bins ({current}/{total})',
+  'layoutExport.progress.baseplate': 'Exporting baseplate ({current}/{total})',
   'rightPanel.customPropertiesCount': '{count} custom properties',
   'rightPanel.expandRightPanel': 'Expand right panel',
   'rightPanel.filamentAbbrev': 'Fil.',

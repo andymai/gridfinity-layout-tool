@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
-import { packagePiecesAsZip } from './zipExport';
+import { packagePiecesAsZip, packageFilesAsZip } from './zipExport';
 
 /**
  * Roundtrip through real fflate — the previous JSZip-mock-based suite proved
@@ -74,6 +74,43 @@ describe('packagePiecesAsZip', () => {
 
   it('returns an application/zip blob', async () => {
     const blob = packagePiecesAsZip([{ data: new ArrayBuffer(8), label: 'x' }], 'name', '.stl');
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/zip');
+  });
+});
+
+describe('packageFilesAsZip', () => {
+  it('places binary files at their explicit paths, including subfolders', async () => {
+    const entries = await unzip(
+      packageFilesAsZip([
+        { path: 'bins/box.stl', data: bufferOf(0xa1, 16) },
+        { path: 'baseplate/plate_corner.stl', data: bufferOf(0xb2, 32) },
+      ])
+    );
+    expect(Object.keys(entries).sort()).toEqual(['baseplate/plate_corner.stl', 'bins/box.stl']);
+    expect(entries['bins/box.stl'].length).toBe(16);
+    expect(entries['baseplate/plate_corner.stl'][0]).toBe(0xb2);
+  });
+
+  it('preserves bytes exactly through the roundtrip', async () => {
+    const original = new Uint8Array([0xde, 0xad, 0xbe, 0xef, 0x00, 0xff]);
+    const entries = await unzip(packageFilesAsZip([{ path: 'bins/x.bin', data: original.buffer }]));
+    expect(Array.from(entries['bins/x.bin'])).toEqual(Array.from(original));
+  });
+
+  it('includes text files at their given names', async () => {
+    const entries = await unzip(
+      packageFilesAsZip(
+        [{ path: 'bins/a.stl', data: new ArrayBuffer(8) }],
+        [{ name: 'manifest.txt', content: 'parts list' }]
+      )
+    );
+    expect(Object.keys(entries).sort()).toEqual(['bins/a.stl', 'manifest.txt']);
+    expect(strFromU8(entries['manifest.txt'])).toBe('parts list');
+  });
+
+  it('returns an application/zip blob', () => {
+    const blob = packageFilesAsZip([{ path: 'a', data: new ArrayBuffer(4) }]);
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe('application/zip');
   });
