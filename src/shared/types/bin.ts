@@ -105,7 +105,11 @@ export type {
   LidCompatibilitySide,
 } from '@/features/bin-designer/utils/lidCompatibility';
 
-/** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
+/**
+ * Whether an edge is exterior (outside baseplate) or a join between split pieces.
+ * Canonical edge-kind union; the baseplate feature's `EdgeKind` aliases this, so
+ * extend the union here and both stay in sync.
+ */
 export type BaseplateEdgeKind = 'join' | 'exterior';
 
 /** Per-side edge classification for split baseplate pieces. */
