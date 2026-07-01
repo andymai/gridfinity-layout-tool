@@ -188,8 +188,8 @@ export interface MarginPiece {
   /**
    * Layout of the opt-in tongue-and-groove seam connector for a `long` rail
    * (absent on short/friction-fit rails). The body grows one tongue per mating
-   * cell boundary and the rail carves matching grooves; both sides recompute the
-   * same boundary set from `cellUnits`/`fractionalEdge` so they can't drift, and
+   * grid cell and the rail carves matching grooves; both sides recompute the same
+   * cell-center set from `cellUnits`/`fractionalEdge` so they can't drift, and
    * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
    * segment (which extends over the perpendicular padding and so is no longer
    * centered on the wall it joins — #2427/#2428).

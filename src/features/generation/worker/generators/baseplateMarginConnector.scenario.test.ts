@@ -11,7 +11,7 @@ import { isOk } from '@/core/result';
 import type { ResolvedBaseplateParams, MarginPiece, BaseplateEdges } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors, buildMarginSeamGroove } from './baseplateConnectors';
-import { computeCellBoundariesMm } from './cellDecomposition';
+import { computeCellCentersMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
 import { SOCKET_HEIGHT } from './generatorTypes';
 
@@ -79,20 +79,20 @@ function frontRail(over: Partial<MarginPiece> = {}): MarginPiece {
   };
 }
 
-/** Interior cell-boundary positions along a `units`-wide front seam. */
-function frontBoundaries(units: number): number[] {
-  const b = computeCellBoundariesMm(units, GU, 'end');
-  return b.length > 0 ? b : [0];
+/** Cell-center positions along a `units`-wide front seam (one per cell). */
+function frontCenters(units: number): number[] {
+  const c = computeCellCentersMm(units, GU, 'end');
+  return c.length > 0 ? c : [0];
 }
 
 /**
- * Fuse all seam grooves for a front rail (one per boundary, shifted by
+ * Fuse all seam grooves for a front rail (one per cell, shifted by
  * `centerOffsetMm`) into the rail's world frame — the same set
  * `buildMarginSolid` carves.
  */
 function frontGrooveUnion(rail: MarginPiece): Shape3D {
   const seam = rail.seamConnector!;
-  const positions = frontBoundaries(seam.cellUnits).map((p) => p + seam.centerOffsetMm);
+  const positions = frontCenters(seam.cellUnits).map((p) => p + seam.centerOffsetMm);
   const railW =
     rail.side === 'front' || rail.side === 'back' ? rail.lengthMm : rail.bandThicknessMm;
   const railD =
@@ -124,7 +124,7 @@ function frontGrooveUnion(rail: MarginPiece): Shape3D {
 }
 
 describe('margin-seam connector geometry (#2414)', () => {
-  it('builds one body tongue per mating cell boundary, independent of connectorNubs', () => {
+  it('builds one body tongue per mating grid cell, independent of connectorNubs', () => {
     const { nubs, holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
       SOCKET_HEIGHT,
@@ -134,15 +134,14 @@ describe('margin-seam connector geometry (#2414)', () => {
       0,
       true
     );
-    // A WIDTH-wide seam has WIDTH-1 interior boundaries → that many tongues, the
-    // same cadence as split-piece dovetails (#2428).
-    expect(nubs.length, 'one tongue per cell boundary').toBe(frontBoundaries(WIDTH).length);
+    // A WIDTH-wide seam gets one tongue per cell (#2428).
+    expect(nubs.length, 'one tongue per cell').toBe(WIDTH);
     expect(holes.length, 'no grooves on the body').toBe(0);
     for (const n of nubs) expect(vol(n), 'tongue has volume').toBeGreaterThan(0);
     nubs.forEach((n) => n.delete());
   });
 
-  it('falls back to a single centered tongue on a single-cell wall', () => {
+  it('places a single tongue on a single-cell wall', () => {
     const { nubs } = buildConnectors(
       baseParams({ width: 1, edges: frontSeamEdges }),
       SOCKET_HEIGHT,

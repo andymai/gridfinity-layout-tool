@@ -100,6 +100,32 @@ export function computeCellBoundariesMm(
 }
 
 /**
+ * Compute the mm-positions of cell centers along an axis, relative to the piece
+ * center (axis spans `[-axisUnits*gridUnitMm/2, +axisUnits*gridUnitMm/2]`).
+ *
+ * Mirrors {@link computeCellBoundariesMm} but returns one position per cell (its
+ * midpoint), so it is never empty for a non-zero axis. `fractionalEdge` places
+ * the half-cell at the start or end, shifting the full cells accordingly.
+ */
+export function computeCellCentersMm(
+  axisUnits: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' = 'end'
+): number[] {
+  const cells = decomposeCells(axisUnits);
+  if (fractionalEdge === 'start') cells.reverse();
+  const totalMm = axisUnits * gridUnitMm;
+  const centers: number[] = [];
+  let pos = 0;
+  for (const cell of cells) {
+    const size = cell * gridUnitMm;
+    centers.push(pos + size / 2 - totalMm / 2);
+    pos += size;
+  }
+  return centers;
+}
+
+/**
  * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
  * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
  *

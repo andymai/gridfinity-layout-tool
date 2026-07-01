@@ -58,7 +58,7 @@ import {
   sketch,
 } from './generatorTypes';
 import type { SnapClipLevels } from '@/shared/constants/connectors';
-import { computeCellBoundariesMm, decomposeCells } from './cellDecomposition';
+import { computeCellBoundariesMm, computeCellCentersMm, decomposeCells } from './cellDecomposition';
 import { buildSingleCellSocket } from './socketBuilder';
 import { getPocketTemplate } from './baseplatePockets';
 
@@ -232,6 +232,11 @@ export function buildConnectors(
   const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
 
+  // Cell centers along each axis — where the margin-seam connector places one
+  // tongue per cell (unlike the split-piece dovetails, which sit on boundaries).
+  const yCenters = computeCellCentersMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const xCenters = computeCellCentersMm(params.width, gridUnit, params.fractionalEdgeX);
+
   // Cell layout along each edge's boundary axis — used to subtract the
   // neighbouring piece's sockets from each tongue (the grid is continuous across
   // the seam, so the neighbour column shares this piece's boundary-axis cells).
@@ -260,6 +265,7 @@ export function buildConnectors(
     maleOffsetSign: -1 | 1;
     wallPos: number;
     boundaries: readonly number[];
+    centers: readonly number[];
     boundaryCells: readonly CellSpan[];
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
@@ -270,6 +276,7 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
       boundaries: yBoundaries,
+      centers: yCenters,
       boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: -1,
@@ -280,6 +287,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
       boundaries: yBoundaries,
+      centers: yCenters,
       boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: 1,
@@ -290,6 +298,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
       boundaries: xBoundaries,
+      centers: xCenters,
       boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: -1,
@@ -300,6 +309,7 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
       boundaries: xBoundaries,
+      centers: xCenters,
       boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: 1,
@@ -385,19 +395,18 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector (#2414): one male tongue per mating cell
-  // boundary along the detached exterior wall, protruding into the rail — the
-  // same cadence as split-piece dovetails, so a long rail is anchored along its
-  // length rather than at a single point (#2428). The rail carries the matching
-  // grooves (`buildMarginSeamGroove` at the same boundaries). Rails are solid (no
-  // sockets), so no relief is needed. A single-cell wall has no interior boundary,
-  // so it falls back to one centered tongue. `hasMarginSeam` already requires a
+  // Opt-in body↔long-rail connector (#2414): one male tongue per mating grid
+  // cell along the detached exterior wall, protruding into the rail — so a long
+  // rail is anchored evenly along its length (one connector per cell) rather than
+  // at a single point (#2428). The rail carries the matching grooves
+  // (`buildMarginSeamGroove` at the same cell centers). Rails are solid (no
+  // sockets), so no relief is needed. `hasMarginSeam` already requires a
   // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
   if (hasMarginSeam) {
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;
       const pt = ptFor(def);
-      const positions = def.boundaries.length > 0 ? def.boundaries : [0];
+      const positions = def.centers.length > 0 ? def.centers : [0];
       for (const bp of positions) tongues.push(mkTongue(pt, def.wallPos, bp, def.protrudeDir));
     }
   }

@@ -5,6 +5,7 @@ import {
   forEachCell,
   frameCells,
   computeCellBoundariesMm,
+  computeCellCentersMm,
   marginPocketDepthMm,
 } from './cellDecomposition';
 import type { CellInfo } from './cellDecomposition';
@@ -227,6 +228,38 @@ describe('computeCellBoundariesMm', () => {
     // depth=2.5, grid=50 → cells [1,1,0.5] frac=end. Boundaries at 50, 100.
     // Centered at 62.5 → -12.5, 37.5.
     expect(computeCellBoundariesMm(2.5, 50, 'end')).toEqual([-12.5, 37.5]);
+  });
+});
+
+describe('computeCellCentersMm', () => {
+  it('returns one center per cell (never empty for a non-zero axis)', () => {
+    expect(computeCellCentersMm(1, 42)).toEqual([0]);
+    expect(computeCellCentersMm(0.5, 42)).toEqual([0]);
+  });
+
+  it('integer axis: centers are evenly spaced regardless of fractional edge', () => {
+    // width=4 → cells [1,1,1,1]. Centers at 21, 63, 105, 147 (mm from start).
+    // Centered at totalMm/2 = 84 → -63, -21, 21, 63.
+    expect(computeCellCentersMm(4, 42, 'end')).toEqual([-63, -21, 21, 63]);
+    expect(computeCellCentersMm(4, 42, 'start')).toEqual([-63, -21, 21, 63]);
+  });
+
+  it('fractional axis, end-side: half cell trails the full cells', () => {
+    // width=2.5 → cells [1,1,0.5]. Centers at 21, 63, 94.5 (mm from start).
+    // Centered at totalMm/2 = 52.5 → -31.5, 10.5, 42.
+    expect(computeCellCentersMm(2.5, 42, 'end')).toEqual([-31.5, 10.5, 42]);
+  });
+
+  it('fractional axis, start-side: half cell leads the full cells', () => {
+    // width=2.5 → cells reversed to [0.5,1,1]. Centers at 10.5, 52.5, 94.5.
+    // Centered at 52.5 → -42, -10.5, 31.5.
+    expect(computeCellCentersMm(2.5, 42, 'start')).toEqual([-42, -10.5, 31.5]);
+  });
+
+  it('centers sit halfway between consecutive boundaries (and the edges)', () => {
+    // depth=3 → boundaries [-21, 21]; centers [-42, 0, 42] (span half-cells at ±63).
+    expect(computeCellCentersMm(3, 42, 'end')).toEqual([-42, 0, 42]);
+    expect(computeCellBoundariesMm(3, 42, 'end')).toEqual([-21, 21]);
   });
 });
 

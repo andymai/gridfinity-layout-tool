@@ -33,7 +33,7 @@ import {
 import type { SideMargins } from './generatorTypes';
 import { buildSlabProfile } from './baseplateSlab';
 import { buildMarginSeamGroove } from './baseplateConnectors';
-import { computeCellBoundariesMm } from './cellDecomposition';
+import { computeCellCentersMm } from './cellDecomposition';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -145,19 +145,19 @@ function buildMarginSolid(
   // to receive the body's tongues. Long rails are exactly the seam sides
   // (splitPlanner marks the matching body edge `marginSeam`); short rails stay
   // friction-fit. Only dovetail/puzzle styles carry a seam. One groove per mating
-  // cell boundary (#2428) — recomputed from the same `cellUnits`/`fractionalEdge`
-  // the body used, then shifted by `centerOffsetMm` onto the corner-extended rail.
+  // grid cell (#2428) — recomputed from the same `cellUnits`/`fractionalEdge` the
+  // body used, then shifted by `centerOffsetMm` onto the corner-extended rail.
   if (
     params.detachMarginConnector === true &&
     isSeamConnectorStyle(params.connectorStyle) &&
     margin.role === 'long'
   ) {
     const seam = margin.seamConnector;
-    const boundaries = seam
-      ? computeCellBoundariesMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge)
+    const cellCenters = seam
+      ? computeCellCentersMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge)
       : [];
     const centerOffset = seam?.centerOffsetMm ?? 0;
-    const positions = (boundaries.length > 0 ? boundaries : [0]).map((b) => b + centerOffset);
+    const positions = (cellCenters.length > 0 ? cellCenters : [0]).map((b) => b + centerOffset);
     const grooves = positions.map((pos) =>
       buildMarginSeamGroove(
         margin.side,

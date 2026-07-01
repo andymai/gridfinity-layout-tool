@@ -1428,8 +1428,8 @@ describe('detachMargins emits margin rails', () => {
   it('anchors the seam connector on the body grid center, offsetting corner segments (#2427/#2428)', () => {
     // Corner-owning end segments extend over the detached left/right padding, so
     // their center no longer sits on the body wall they join. seamConnector
-    // records the mating wall's grid width and its center offset so the rail can
-    // recompute per-boundary groove positions that land on the body tongues.
+    // records the mating wall's grid width and center offset so the rail can
+    // recompute per-cell groove positions that land on the body tongues.
     const tiling = computeBaseplateTiling(
       makeParams({
         width: 10,
