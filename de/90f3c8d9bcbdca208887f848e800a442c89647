@@ -1,0 +1,40 @@
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_0882e0636efa4f::t_037b7deb1f8cbf 36
+  s_0882e0636efa4f::t_7101880f77d3a9 148-149,156-157,160
+src/features/generation/worker/generators/cellDecomposition.test.ts
+  s_0882e0636efa4f::t_0c24e6e2f8904d 8
+  s_0882e0636efa4f::t_a18a48c7e5bf8e 234-254,257-265
+  s_0882e0636efa4f::t_316f88ad9f5b4e 255-256
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_0882e0636efa4f::t_2f04857fd1f6a9 127,137-138,144
+  s_0882e0636efa4f::t_caaa8914a8e759 14
+  s_0882e0636efa4f::t_432108cd9d7fec 82-85,89,95
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_0882e0636efa4f::t_28cad1963da331 103-127
+  s_0882e0636efa4f::t_0c316fe739b371 102
+src/shared/types/bin.ts
+  s_0882e0636efa4f::t_530479d6d081ba 191-192
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_0882e0636efa4f::t_89fafa5269a25f 61
+  s_0882e0636efa4f::t_d93d31a2fcd588 398-403,409
+  s_0882e0636efa4f::t_b160c15dfe6142 235-239
+  s_0882e0636efa4f::t_2cf1d47f36f144 268,279,290,301,312
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_0882e0636efa4f::t_7f44d0913ee63a 1431-1432
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "de90f3c8d9bcbdca208887f848e800a442c89647",
+  "prompts": {},
+  "sessions": {
+    "s_0882e0636efa4f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38c6b68c-7cd4-4b60-bc46-c2d8d97e02ee",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
