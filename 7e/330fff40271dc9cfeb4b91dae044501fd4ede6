@@ -1,0 +1,73 @@
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_c54dabfaa98437::t_b45a5505c48aef 14
+  s_c54dabfaa98437::t_7f611e148a47c5 220-230
+src/shared/utils/heightUnits.ts
+  s_c54dabfaa98437::t_68f65cbf72ba6a 2-47
+src/shared/utils/heightUnits.test.ts
+  s_c54dabfaa98437::t_8dd13179413eae 42-86
+  s_c54dabfaa98437::t_b69593444c246f 2-9
+src/i18n/locales/ja.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/en.ts
+  s_c54dabfaa98437::t_f778fcee3bb6bc 379
+  s_c54dabfaa98437::t_a7a0052dfdd880 844
+  s_c54dabfaa98437::t_bea085da70a242 835-843
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_c54dabfaa98437::t_91d9845fc338b9 58
+  s_c54dabfaa98437::t_1ab0baa74478c2 30-35
+  s_c54dabfaa98437::t_e919851fcd1727 239-254
+src/i18n/locales/es.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_c54dabfaa98437::t_9154753915415f 17-19
+  s_c54dabfaa98437::t_0b24be74e96dbb 108-110
+  s_c54dabfaa98437::t_4d620dcd369661 1-16,20-45,48-69,71-107,111-134
+  s_c54dabfaa98437::t_23293b112dc379 46-47
+  s_c54dabfaa98437::t_e67d3654354864 70
+src/i18n/locales/nl.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/uk.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/pt-BR.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_c54dabfaa98437::t_e0f942a9e887eb 58
+  s_c54dabfaa98437::t_947a6df6238887 477-479,481-483
+  s_c54dabfaa98437::t_129514cfcf9238 107-111
+  s_c54dabfaa98437::t_ac12e2698c9140 480
+src/shared/components/HeightUnitSolver/HeightUnitSolver.test.tsx
+  s_c54dabfaa98437::t_28b22acc603280 1-48
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_c54dabfaa98437::t_be5944203ce964 64-65
+  s_c54dabfaa98437::t_5fa97dd2cf932f 206-211
+  s_c54dabfaa98437::t_8ddb7f06b4d7ee 8
+src/shell/Sidebar/Sidebar.tsx
+  s_c54dabfaa98437::t_1bb282db34f28c 19
+  s_c54dabfaa98437::t_c7426e3996d880 535-540
+src/i18n/locales/nb.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/fr.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/de.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/i18n/locales/sv.json
+  s_c54dabfaa98437::t_a3a2873f3659c1 1573,2123-2131
+src/shared/components/HeightUnitSolver/index.ts
+  s_c54dabfaa98437::t_05b0a6a1beb5ae 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "7e330fff40271dc9cfeb4b91dae044501fd4ede6",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
