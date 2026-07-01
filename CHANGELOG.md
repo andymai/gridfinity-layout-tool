@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.211.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.210.1...gridfinity-layout-tool-v4.211.0) (2026-07-01)
+
+
+### Features
+
+* **baseplate:** opt-in connectors for detachable margins ([#2414](https://github.com/andymai/gridfinity-layout-tool/issues/2414)) ([#2420](https://github.com/andymai/gridfinity-layout-tool/issues/2420)) ([c5f5836](https://github.com/andymai/gridfinity-layout-tool/commit/c5f58368585e38ab6d997232534a9fb74ea191ea))
+
 ## [4.210.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.210.0...gridfinity-layout-tool-v4.210.1) (2026-07-01)
 
 
