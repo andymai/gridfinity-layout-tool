@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.211.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.1...gridfinity-layout-tool-v4.211.2) (2026-07-01)
+
+
+### Bug Fixes
+
+* **bin-designer:** gate label tab on wall height, not unit count ([#2422](https://github.com/andymai/gridfinity-layout-tool/issues/2422)) ([#2425](https://github.com/andymai/gridfinity-layout-tool/issues/2425)) ([88f85b6](https://github.com/andymai/gridfinity-layout-tool/commit/88f85b6f617eaf296e6b623235fb1ddb24ee0ecb))
+
 ## [4.211.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.0...gridfinity-layout-tool-v4.211.1) (2026-07-01)
 
 
