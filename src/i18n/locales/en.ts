@@ -1496,7 +1496,7 @@ const en: Record<string, string> = {
   'binDesigner.labelTabs': 'Label tabs',
   'binDesigner.compartmentsUnavailableSlotted': 'Not available for slotted bins',
   'binDesigner.labelTabsUnavailableSlotted': 'Not available for slotted bins',
-  'binDesigner.labelTabsUnavailableMinHeight': 'Not enough room at 2u height',
+  'binDesigner.labelTabsUnavailableMinHeight': 'Bin is too shallow for a label tab',
   'binDesigner.tabSupport': 'Support',
   'binDesigner.tabSupport.bracket': 'Bracket',
   'binDesigner.tabSupport.solid': 'Solid',

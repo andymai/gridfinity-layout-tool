@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Altura de la pestaña",
   "binDesigner.labelTabs.insetAria": "Margen de la pestaña",
   "binDesigner.labelTabs.widthAria": "Ancho de la pestaña",
-  "binDesigner.labelTabsUnavailableMinHeight": "No hay suficiente espacio a 2u de altura",
+  "binDesigner.labelTabsUnavailableMinHeight": "El contenedor es demasiado bajo para una pestaña de etiqueta",
   "binDesigner.labelTabsUnavailableSlotted": "No disponible para contenedores ranurados",
   "binDesigner.lid": "Tapa",
   "binDesigner.lid.clickRailCoverage": "Cobertura de los rieles",

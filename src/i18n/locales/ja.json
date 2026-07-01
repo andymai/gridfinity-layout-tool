@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "タブの高さ",
   "binDesigner.labelTabs.insetAria": "タブのインセット",
   "binDesigner.labelTabs.widthAria": "タブの幅",
-  "binDesigner.labelTabsUnavailableMinHeight": "2u高では十分なスペースがありません",
+  "binDesigner.labelTabsUnavailableMinHeight": "ビンが浅すぎてラベルタブを配置できません",
   "binDesigner.labelTabsUnavailableSlotted": "スロット式ビンでは利用できません",
   "binDesigner.lid": "蓋",
   "binDesigner.lid.clickRailCoverage": "レール被覆率",

@@ -19,7 +19,6 @@ export function useLabelTabsSection() {
     compartments,
     label,
     textDefaults,
-    height,
     updateLabel,
     setCompartmentText,
     setTextDefaults,
@@ -29,7 +28,6 @@ export function useLabelTabsSection() {
       compartments: s.params.compartments,
       label: s.params.label,
       textDefaults: s.params.textDefaults,
-      height: s.params.height,
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
       setTextDefaults: s.setTextDefaults,
@@ -39,16 +37,19 @@ export function useLabelTabsSection() {
   const t = useTranslation();
 
   const labelStatus = getFeatureStatus(params, 'label');
-  // Dimensional constraint: cavity too shallow for label tab support at min height.
-  // Handled here (not in constraint engine) because ConstraintRule.source requires a
-  // FeatureKey, and "height" is a dimension, not a toggleable feature.
-  const tooShort = height <= DESIGNER_CONSTRAINTS.MIN_HEIGHT;
-  const isUnavailable = !labelStatus.available || tooShort;
 
   // Interior cavity height — dynamic max for the tab-height stepper and
   // the cap for the `setTabDepth` height-clamp. Matches `wallHeight`
   // passed to the geometry builder.
   const wallHeightMm = useMemo(() => binDimensions(params).wallHeight, [params]);
+
+  // Dimensional constraint: cavity too shallow for a label tab. Gated on the
+  // physical wall height (mm), not the height unit count, so tall bins with a
+  // custom heightUnitMm (or flat bins) aren't wrongly disabled. Handled here
+  // (not in the constraint engine) because ConstraintRule.source requires a
+  // FeatureKey, and height is a dimension, not a toggleable feature.
+  const tooShort = wallHeightMm <= DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_HEIGHT;
+  const isUnavailable = !labelStatus.available || tooShort;
 
   const toggleLabelTabs = useCallback(() => {
     updateLabel({ enabled: !label.enabled });

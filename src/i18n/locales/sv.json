@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Flikhöjd",
   "binDesigner.labelTabs.insetAria": "Flikinsättning",
   "binDesigner.labelTabs.widthAria": "Flikbredd",
-  "binDesigner.labelTabsUnavailableMinHeight": "Inte tillräckligt med plats vid 2u höjd",
+  "binDesigner.labelTabsUnavailableMinHeight": "Lådan är för grund för en etikettflik",
   "binDesigner.labelTabsUnavailableSlotted": "Inte tillgängligt för fack med slitsar",
   "binDesigner.lid": "Lock",
   "binDesigner.lid.clickRailCoverage": "Skenetäckning",

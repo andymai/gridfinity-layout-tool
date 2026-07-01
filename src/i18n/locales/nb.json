@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Tab-høyde",
   "binDesigner.labelTabs.insetAria": "Tab-innfelling",
   "binDesigner.labelTabs.widthAria": "Tab-bredde",
-  "binDesigner.labelTabsUnavailableMinHeight": "Ikke nok plass ved 2u høyde",
+  "binDesigner.labelTabsUnavailableMinHeight": "Boksen er for grunn for en etikettfane",
   "binDesigner.labelTabsUnavailableSlotted": "Ikke tilgjengelig for spor-bokser",
   "binDesigner.lid": "Lokk",
   "binDesigner.lid.clickRailCoverage": "Skinnedekning",

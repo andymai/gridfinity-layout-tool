@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Altura da aba",
   "binDesigner.labelTabs.insetAria": "Recuo da aba",
   "binDesigner.labelTabs.widthAria": "Largura da aba",
-  "binDesigner.labelTabsUnavailableMinHeight": "Espaço insuficiente a 2u de altura",
+  "binDesigner.labelTabsUnavailableMinHeight": "A caixa é rasa demais para uma aba de etiqueta",
   "binDesigner.labelTabsUnavailableSlotted": "Não disponível para caixas com ranhuras",
   "binDesigner.lid": "Tampa",
   "binDesigner.lid.clickRailCoverage": "Cobertura dos trilhos",

@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Висота вкладки",
   "binDesigner.labelTabs.insetAria": "Відступ вкладки",
   "binDesigner.labelTabs.widthAria": "Ширина вкладки",
-  "binDesigner.labelTabsUnavailableMinHeight": "Недостатньо місця при висоті 2u",
+  "binDesigner.labelTabsUnavailableMinHeight": "Контейнер занадто мілкий для виступу для мітки",
   "binDesigner.labelTabsUnavailableSlotted": "Недоступно для бінів зі слотами",
   "binDesigner.lid": "Кришка",
   "binDesigner.lid.clickRailCoverage": "Покриття рейок",

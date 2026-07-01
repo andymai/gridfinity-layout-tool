@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Tabhoogte",
   "binDesigner.labelTabs.insetAria": "Tabinzet",
   "binDesigner.labelTabs.widthAria": "Tabbreedte",
-  "binDesigner.labelTabsUnavailableMinHeight": "Niet genoeg ruimte bij 2u hoogte",
+  "binDesigner.labelTabsUnavailableMinHeight": "Bak is te ondiep voor een labeltab",
   "binDesigner.labelTabsUnavailableSlotted": "Niet beschikbaar voor bins met sleuven",
   "binDesigner.lid": "Deksel",
   "binDesigner.lid.clickRailCoverage": "Raildekking",

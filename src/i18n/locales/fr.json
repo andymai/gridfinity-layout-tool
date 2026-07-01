@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Hauteur de l'onglet",
   "binDesigner.labelTabs.insetAria": "Décalage de l'onglet",
   "binDesigner.labelTabs.widthAria": "Largeur de l'onglet",
-  "binDesigner.labelTabsUnavailableMinHeight": "Pas assez de place à 2u de hauteur",
+  "binDesigner.labelTabsUnavailableMinHeight": "Le bac est trop peu profond pour un onglet d'étiquette",
   "binDesigner.labelTabsUnavailableSlotted": "Non disponible pour les bacs à fentes",
   "binDesigner.lid": "Couvercle",
   "binDesigner.lid.clickRailCoverage": "Couverture des rails",

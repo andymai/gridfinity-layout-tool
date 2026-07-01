@@ -81,7 +81,9 @@ describe('useLabelTabsSection', () => {
     expect(useDesignerStore.getState().params.label.alignment).toBe('center');
   });
 
-  it('disabledReason set when height is at minimum (2u)', () => {
+  it('disabledReason set when wall height is at the label-tab minimum (default 2u = 9mm)', () => {
+    // Default 7mm height unit, socketed: 2u → wallHeight = 2×7 − 5 = 9mm,
+    // which equals MIN_LABEL_TAB_HEIGHT, so the tab still cannot fit.
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, height: 2 },
     });
@@ -92,9 +94,24 @@ describe('useLabelTabsSection', () => {
     expect(result.current.meta.disabledReason).toBeDefined();
   });
 
-  it('no disabledReason when height is above minimum', () => {
+  it('no disabledReason when wall height clears the minimum (default 3u = 16mm)', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, height: 3 },
+    });
+
+    const { result } = renderHook(() => useLabelTabsSection());
+
+    expect(result.current.state.isUnavailable).toBe(false);
+    expect(result.current.meta.disabledReason).toBeUndefined();
+  });
+
+  it('available at a low unit count when heightUnitMm makes the wall tall enough (#2422)', () => {
+    // Reporter's case: gating is on physical wall height (mm), not unit count.
+    // 2u × 20mm height unit, socketed → wallHeight = 2×20 − 5 = 35mm, well
+    // above MIN_LABEL_TAB_HEIGHT (9mm). The old `height <= 2u` gate wrongly
+    // disabled this tall-but-few-units bin.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, height: 2, heightUnitMm: 20 },
     });
 
     const { result } = renderHook(() => useLabelTabsSection());

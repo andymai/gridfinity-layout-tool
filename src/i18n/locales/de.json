@@ -653,7 +653,7 @@
   "binDesigner.labelTabs.heightAria": "Tab-Höhe",
   "binDesigner.labelTabs.insetAria": "Tab-Versatz",
   "binDesigner.labelTabs.widthAria": "Tab-Breite",
-  "binDesigner.labelTabsUnavailableMinHeight": "Nicht genug Platz bei 2u Höhe",
+  "binDesigner.labelTabsUnavailableMinHeight": "Der Behälter ist zu flach für einen Etikettenhalter",
   "binDesigner.labelTabsUnavailableSlotted": "Nicht verfügbar für Schlitz-Bins",
   "binDesigner.lid": "Deckel",
   "binDesigner.lid.clickRailCoverage": "Schienenabdeckung",
