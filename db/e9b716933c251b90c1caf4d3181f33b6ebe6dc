@@ -1,0 +1,26 @@
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_c54dabfaa98437::t_8ccde97eccd38b 64,68,71
+  s_c54dabfaa98437::t_6f6770ff1ac40a 1
+  s_c54dabfaa98437::t_1a7847ec4f55de 80,84
+  s_c54dabfaa98437::t_47c999347f6672 95,99
+  s_c54dabfaa98437::t_8077c1c54e1f4d 32,42-43,45-48
+  s_c54dabfaa98437::t_b5069ab68e16d9 121
+src/shared/components/HeightUnitSolver/HeightUnitSolver.test.tsx
+  s_c54dabfaa98437::t_eebfa5c52ed095 48-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "dbe9b716933c251b90c1caf4d3181f33b6ebe6dc",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
