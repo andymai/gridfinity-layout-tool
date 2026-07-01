@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_c54dabfaa98437::t_55d1447bb12cec 96-111
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_c54dabfaa98437::t_a9c0b815850045 219-221
+  s_c54dabfaa98437::t_d6b3a6aa42609a 222
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_c54dabfaa98437::t_0eff5387e6b81f 180-183,185-189
+  s_c54dabfaa98437::t_5d260743f7b080 392-400
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "fbcc656230b2c3201a2e41506b1e63df680de5fe",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
