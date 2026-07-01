@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/lipNesting.scenario.divisibility.test.ts
+  s_c54dabfaa98437::t_039ff0fc97a63b 1-115
+  s_c54dabfaa98437::t_acb5ca8cb197bc 116-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "a91bc3fe5cd29fe56bec505a5740b30e1ce09f9e",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
