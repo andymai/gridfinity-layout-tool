@@ -46,6 +46,7 @@ import {
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
+import { magnetPositionsForCell } from './baseplateMagnets';
 import {
   hasHalfBinDetail,
   hashMask,
@@ -432,7 +433,6 @@ export function buildBaseSocket(
     // Build hole tools upfront so they can be included in the pipeline
     const holeTools: Shape3D[] = [];
     if (withScrew || withMagnet) {
-      const HOLE_OFFSET = 13; // mm from cell center to hole center (Gridfinity spec)
       const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
       const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
 
@@ -443,13 +443,8 @@ export function buildBaseSocket(
           ? scope.register(unwrap(fuse(magnetCutout, screwCutout)))
           : ((magnetCutout || screwCutout) as Shape3D);
 
-      // 4 holes per full cell at ±HOLE_OFFSET from center
-      const holeOffsets: ReadonlyArray<readonly [number, number]> = [
-        [-HOLE_OFFSET, -HOLE_OFFSET],
-        [-HOLE_OFFSET, HOLE_OFFSET],
-        [HOLE_OFFSET, HOLE_OFFSET],
-        [HOLE_OFFSET, -HOLE_OFFSET],
-      ];
+      // Cutter bounding radius (magnet is wider than the screw; both concentric).
+      const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
 
       forEachCell(
         gridW,
@@ -457,13 +452,12 @@ export function buildBaseSocket(
         (cell) => {
           if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-          for (const [dx, dy] of holeOffsets) {
+          // Standard ±13mm 4-corner pattern on a normal foot; a non-square/small
+          // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single
+          // centered hole — so magnet/screw holes never breach the foot's side.
+          for (const [x, y] of magnetPositionsForCell(cell, holeRadius, unitX, unitY)) {
             holeTools.push(
-              translate(scope.register(unwrap(clone(cutout))), [
-                cell.centerX + dx,
-                cell.centerY + dy,
-                -SOCKET_HEIGHT,
-              ])
+              translate(scope.register(unwrap(clone(cutout))), [x, y, -SOCKET_HEIGHT])
             );
           }
         },

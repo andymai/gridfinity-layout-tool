@@ -84,6 +84,49 @@ describe('custom gridUnitMm', () => {
     expect(depth).toBeCloseTo(3 * 22 - CLEARANCE, 0); // 65.5mm
   }, 30_000);
 
+  it('places a magnet that fits a narrow non-square foot (no side breach)', () => {
+    const generateBin = getGenerateBin();
+    // 1×1 bin at 25×42 pitch. The 25mm-wide foot (half 12.5mm) can't hold the
+    // ±13mm corner magnets, so the fit-or-center rule drops in a centered magnet
+    // instead of magnets breaching the foot's side.
+    const common = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1,
+      depth: 1,
+      height: 3,
+      gridUnitMm: 25,
+      gridUnitMmY: 42,
+    } as const;
+    const withMag = generateBin({
+      ...common,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', stackingLip: false },
+    });
+    const noMag = generateBin({
+      ...common,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: false },
+    });
+
+    expect(withMag.vertices).not.toBeNull();
+    // A magnet hole was cut into the foot (more geometry than the plain socket).
+    expect(withMag.vertices.length).toBeGreaterThan(noMag.vertices.length);
+
+    // Footprint still matches the pitch — the magnet is an internal cut, not a
+    // spur poking out the 25mm side (which the old ±13mm placement produced).
+    const verts = withMag.vertices;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < verts.length; i += 3) {
+      minX = Math.min(minX, verts[i]);
+      maxX = Math.max(maxX, verts[i]);
+      minY = Math.min(minY, verts[i + 1]);
+      maxY = Math.max(maxY, verts[i + 1]);
+    }
+    expect(maxX - minX).toBeCloseTo(1 * 25 - CLEARANCE, 0); // 24.5mm
+    expect(maxY - minY).toBeCloseTo(1 * 42 - CLEARANCE, 0); // 41.5mm
+  }, 30_000);
+
   it('should place anisotropic feet at the correct per-axis pitch (socketed bin)', () => {
     const generateBin = getGenerateBin();
     // A socketed 2×2 bin: feet centers sit at ±gridUnit/2 per axis. With a

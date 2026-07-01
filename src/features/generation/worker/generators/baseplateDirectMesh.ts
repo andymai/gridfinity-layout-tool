@@ -246,7 +246,7 @@ export function generateBaseplateDirect(
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid
       )) {
-        for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm)) {
+        for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
           addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth);
         }
       }

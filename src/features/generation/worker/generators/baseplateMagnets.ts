@@ -18,14 +18,20 @@
 
 import { cylinder, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import { SOCKET_HEIGHT, COPLANAR_MARGIN, MAGNET_OFFSETS, forEachCell } from './generatorTypes';
+import {
+  SOCKET_HEIGHT,
+  COPLANAR_MARGIN,
+  MAGNET_OFFSETS,
+  HOLE_OFFSET,
+  forEachCell,
+} from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 
 /**
- * Minimum plastic wall (mm) kept between a magnet hole and a tile's outer edge
- * when fitting magnets into a partial over-tile tile. A standard full cell keeps
- * ~4.75mm; partial tiles use this floor so the hole stays printable and doesn't
- * breach the clipped edge.
+ * Minimum plastic wall (mm) kept between a magnet hole and a small cell's edge
+ * when the standard ±13mm 4-corner pattern won't fit (a non-square/small bin
+ * foot or a clipped over-tile margin tile). A standard 42mm cell keeps ~4.75mm;
+ * this is the printable floor used for the fit-or-center fallback.
  */
 export const MAGNET_EDGE_CLEARANCE = 1.5;
 
@@ -87,26 +93,38 @@ export function buildMagnetHoles(
 }
 
 /**
- * Magnet positions for a single (possibly partial) tile. Full-size tiles get the
- * standard 4-corner pattern unchanged. Partial tiles get the corner magnets that
- * fit within the tile footprint (magnet radius + {@link MAGNET_EDGE_CLEARANCE}
- * inside each edge); if no corner fits, a single centered magnet is used when it
- * fits. Returns `[]` for a tile too small for even a centered magnet.
+ * Magnet positions for a single cell/tile, per-axis pitch (`pitchX` scales
+ * width, `pitchY` scales depth — equal for a square grid). When the standard
+ * ±{@link HOLE_OFFSET}mm 4-corner pattern fits the cell geometrically, it's used
+ * unchanged (so standard 42mm cells — bin feet and baseplate cells alike — are
+ * byte-identical). When a cell is too small on some axis (a non-square/small bin
+ * foot, or a clipped over-tile margin tile), the corners that clear a printable
+ * wall ({@link MAGNET_EDGE_CLEARANCE}) are kept; if none fit, a single centered
+ * magnet is used; if even that won't fit, `[]`.
+ *
+ * `magnetRadius` should be the largest cutter radius at each position (max of the
+ * magnet and screw radii when a cell carries both).
  */
 export function magnetPositionsForCell(
   cell: CellInfo,
   magnetRadius: number,
-  gridUnitMm: number
+  pitchX: number,
+  pitchY: number
 ): Array<[number, number]> {
-  const isFull = cell.widthUnits >= 1 && cell.depthUnits >= 1;
-  if (isFull) {
+  const halfW = (cell.widthUnits * pitchX) / 2;
+  const halfD = (cell.depthUnits * pitchY) / 2;
+
+  // Standard 4-corner pattern where the ±HOLE_OFFSET corners fit the cell (no
+  // extra wall required — matches the long-standing unconditional placement for
+  // square cells with any magnet that doesn't overrun the edge).
+  const standardFits =
+    HOLE_OFFSET + magnetRadius <= halfW && HOLE_OFFSET + magnetRadius <= halfD;
+  if (standardFits) {
     return MAGNET_OFFSETS.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
   }
 
-  const halfW = (cell.widthUnits * gridUnitMm) / 2;
-  const halfD = (cell.depthUnits * gridUnitMm) / 2;
+  // Cell too small on some axis: keep the corners that clear a printable wall.
   const reach = magnetRadius + MAGNET_EDGE_CLEARANCE;
-
   const fitting = MAGNET_OFFSETS.filter(
     ([dx, dy]) => Math.abs(dx) + reach <= halfW && Math.abs(dy) + reach <= halfD
   );
@@ -114,7 +132,7 @@ export function magnetPositionsForCell(
     return fitting.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
   }
 
-  // Center-magnet fallback for tiles too narrow for any corner.
+  // Center-magnet fallback for cells too narrow for any corner.
   if (reach <= halfW && reach <= halfD) {
     return [[cell.centerX, cell.centerY]];
   }
@@ -135,7 +153,8 @@ export function buildPartialCellMagnetHoles(
 ): Shape3D[] {
   const positions: Array<[number, number]> = [];
   for (const cell of cells) {
-    positions.push(...magnetPositionsForCell(cell, magnetRadius, gridUnitMm));
+    // Baseplate grid is square, so both axes use the same pitch.
+    positions.push(...magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm));
   }
   return buildMagnetCutters(positions, magnetRadius, magnetDepth);
 }

@@ -37,8 +37,9 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
-import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR, MAGNET_OFFSETS } from './generatorConstants';
+import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
+import { magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
 import {
   buildSingleCellSocket,
@@ -87,17 +88,16 @@ export interface LightweightBase {
  */
 function buildCellPads(
   scope: DisposalScope,
+  positions: ReadonlyArray<readonly [number, number]>,
   holeRadius: number,
   holeFloorDepth: number,
   openDir: LightweightOpenDirection
 ): Shape3D[] {
   const padRadius = holeRadius + PAD_MARGIN;
   const padHeight = openDir === 'up' ? holeFloorDepth : SOCKET_HEIGHT;
-  const pads: Shape3D[] = [];
-  for (const [dx, dy] of MAGNET_OFFSETS) {
-    pads.push(translate(scope.register(cylinder(padRadius, padHeight)), [dx, dy, -SOCKET_HEIGHT]));
-  }
-  return pads;
+  return positions.map(([x, y]) =>
+    translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -SOCKET_HEIGHT])
+  );
 }
 
 /**
@@ -268,14 +268,18 @@ export function buildLightweightBase(
         (cell) => {
           if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-          const cellPads = buildCellPads(scope, holeRadius, floorDepth, openDir);
-          for (const p of cellPads) pads.push(translate(p, [cell.centerX, cell.centerY, 0]));
-          for (const [dx, dy] of MAGNET_OFFSETS) {
+          // Fit-or-center magnet positions so a non-square/small foot's pads and
+          // drills stay inside the foot instead of breaching its side.
+          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY);
+          for (const p of buildCellPads(scope, positions, holeRadius, floorDepth, openDir)) {
+            pads.push(p);
+          }
+          for (const [x, y] of positions) {
             if (withMagnet) {
               drills.push(
                 translate(scope.register(cylinder(magnetRadius, magnetDepth)), [
-                  cell.centerX + dx,
-                  cell.centerY + dy,
+                  x,
+                  y,
                   -SOCKET_HEIGHT,
                 ])
               );
@@ -283,8 +287,8 @@ export function buildLightweightBase(
             if (withScrew) {
               drills.push(
                 translate(scope.register(cylinder(screwRadius, SOCKET_HEIGHT + 0.01)), [
-                  cell.centerX + dx,
-                  cell.centerY + dy,
+                  x,
+                  y,
                   -SOCKET_HEIGHT,
                 ])
               );
