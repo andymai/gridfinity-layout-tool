@@ -127,8 +127,9 @@ export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
   return kind === 'exterior' || kind === 'marginSeam';
 }
 
-/** Baseplate split-connector styles. */
-export type BaseplateConnectorStyle = 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
+/** Baseplate split-connector styles — derived from the param definition below
+ *  so it can't drift when a style is added. */
+export type BaseplateConnectorStyle = NonNullable<ResolvedBaseplateParams['connectorStyle']>;
 
 /**
  * Whether the margin-seam connector (#2414) engages for a given connector
