@@ -16,6 +16,7 @@ import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
@@ -531,6 +532,12 @@ export function Sidebar() {
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
+                  <div className="pt-2 mt-1 border-t border-stroke-subtle">
+                    <div className="text-[11px] font-medium text-content-secondary mb-1.5">
+                      {t('stackSolver.title')}
+                    </div>
+                    <HeightUnitSolver heightUnitMm={heightUnitMm} onApply={setHeightUnitMm} />
+                  </div>
                 </div>
               </Collapsible>
             </div>

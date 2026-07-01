@@ -55,6 +55,7 @@ import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
@@ -101,6 +102,11 @@ interface PreviewCanvasProps {
    * dev-only thumbnail route; the normal designer leaves it false.
    */
   readonly hideChrome?: boolean;
+}
+
+/** Body height (stack pitch) rounded like the height dimension label. */
+function formatStackPitch(pitchMm: number): string {
+  return Number.isInteger(pitchMm) ? String(pitchMm) : pitchMm.toFixed(1);
 }
 
 export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
@@ -468,6 +474,13 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                         gridUnitMm={params.gridUnitMm}
                         heightUnitMm={params.heightUnitMm}
                         stackingLip={params.base.stackingLip}
+                        stackPitchLabel={
+                          params.base.stackingLip
+                            ? t('stackSolver.overlayPitch', {
+                                pitch: formatStackPitch(stackPitchMm(height, params.heightUnitMm)),
+                              })
+                            : undefined
+                        }
                       />
                       {/* Active-compartment cavity dimensions (hover/select driven) */}
                       <CompartmentDimensions />

@@ -5,7 +5,7 @@ import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
-import { formatHeightUnits, isStandardStackHeight } from '@/shared/utils/heightUnits';
+import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
@@ -61,7 +61,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
   // Format a raw mm value: up to 2 decimals, trailing zeros stripped (28, 30.59).
   const formatMmValue = (val: number) => String(Number(val.toFixed(2)));
-  const heightMmAt = (units: number) => formatMmValue(units * layout.heightUnitMm);
+  const heightMmAt = (units: number, offsetMm = 0) =>
+    formatMmValue(units * layout.heightUnitMm + offsetMm);
   const minSize = halfGridMode ? 0.5 : 1;
   const stepSize = halfGridMode ? 0.5 : 1;
 
@@ -202,6 +203,12 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
               <div>{`${heightEquiv} · ${minHeightHint} · ${maxHeightHint}`}</div>
+              <div>
+                {t('inspector.printedAndStackHint', {
+                  printed: heightMmAt(bin.height, STACK_LIP_MM),
+                  pitch: heightMmAt(bin.height),
+                })}
+              </div>
               {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
                 <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
               )}
