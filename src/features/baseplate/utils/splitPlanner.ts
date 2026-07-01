@@ -599,8 +599,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
   };
   // Seam-connector layout for a long rail: the mating body wall's grid width and
   // its center offset from the rail center (nonzero on corner-owning end segments
-  // that extend over the perpendicular padding). Both body and rail recompute the
-  // per-boundary connector positions from this, so they stay in lockstep.
+  // that extend over the perpendicular padding). See MarginPiece.seamConnector.
   const seamFor = (
     cellUnits: number,
     centerOffsetMm: number,

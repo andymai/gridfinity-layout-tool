@@ -115,9 +115,14 @@ function frontGrooveUnion(rail: MarginPiece): Shape3D {
       union = world;
     } else {
       const f = fuse(union, world);
-      union.delete();
-      world.delete();
-      union = isOk(f) ? (f.value as Shape3D) : union;
+      if (isOk(f)) {
+        union.delete();
+        world.delete();
+        union = f.value;
+      } else {
+        // Keep the running union; drop only the piece that failed to merge.
+        world.delete();
+      }
     }
   }
   return union!;
@@ -279,5 +284,36 @@ describe('margin-seam connector geometry (#2414)', () => {
     nubs.forEach((n) => n.delete());
     offsetGrooves.delete();
     misalignedGrooves.delete();
+  });
+
+  it('every tongue seats on a fractional-width wall', () => {
+    // A fractional column (e.g. 2.5u → cells [1,1,0.5]) is the one place the
+    // body and rail could disagree on cell centers if their fractionalEdge
+    // diverged. Both derive from the same 'end' anchor, so all tongues must seat.
+    const FW = 2.5;
+    const { nubs } = buildConnectors(
+      baseParams({ width: FW, fractionalEdgeX: 'end', edges: frontSeamEdges }),
+      SOCKET_HEIGHT,
+      FW * GU,
+      DEPTH * GU,
+      0,
+      0,
+      true
+    );
+    expect(nubs.length, 'one tongue per cell incl. the half-cell').toBe(frontCenters(FW).length);
+    const grooveWorld = frontGrooveUnion(
+      frontRail({
+        lengthMm: FW * GU,
+        seamConnector: { cellUnits: FW, centerOffsetMm: 0, fractionalEdge: 'end' },
+      })
+    );
+    for (const tongue of nubs) {
+      const inter = intersect(tongue, grooveWorld);
+      const overlap = isOk(inter) ? vol(inter.value) : 0;
+      if (isOk(inter)) inter.value.delete();
+      expect(overlap / vol(tongue), 'fractional-cell tongue seated').toBeGreaterThan(0.9);
+    }
+    nubs.forEach((n) => n.delete());
+    grooveWorld.delete();
   });
 });

@@ -197,13 +197,8 @@ export interface MarginPiece {
   readonly seamConnector?: {
     /** Grid units of the mating body wall along the rail's running axis. */
     readonly cellUnits: number;
-    /**
-     * Rail-local position (mm) of the body grid center along the running axis —
-     * i.e. how far the mating wall's center sits from the rail center. Nonzero
-     * only on corner-owning end segments.
-     */
+    /** Rail-local position (mm) of the body grid center along the running axis. */
     readonly centerOffsetMm: number;
-    /** Resolved fractional-edge anchor for the cell-boundary computation. */
     readonly fractionalEdge: 'start' | 'end';
   };
   readonly overTile: boolean;

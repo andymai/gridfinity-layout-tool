@@ -397,8 +397,8 @@ export function buildConnectors(
 
   // Opt-in body↔long-rail connector (#2414): one male tongue per mating grid
   // cell along the detached exterior wall, protruding into the rail — so a long
-  // rail is anchored evenly along its length (one connector per cell) rather than
-  // at a single point (#2428). The rail carries the matching grooves
+  // rail is anchored evenly along its length rather than at a single point
+  // (#2428). The rail carries the matching grooves
   // (`buildMarginSeamGroove` at the same cell centers). Rails are solid (no
   // sockets), so no relief is needed. `hasMarginSeam` already requires a
   // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
@@ -462,14 +462,14 @@ export function makeGroove(
 }
 
 /**
- * Groove carved into a detached long rail's seam face to receive the body's
- * margin-seam tongue (#2414). Mirrors the single centered tongue that
- * {@link buildConnectors} fuses onto the body's `marginSeam` wall, using the
- * same profile/clearance so they mate. Built in the rail's own origin-centered
- * frame (see `baseplateMargin.buildMarginSolid`): the seam face is the rail's
- * inner long edge (+railD/2 front, −railD/2 back, +railW/2 left, −railW/2
- * right), and the groove cuts inward from it — `d` equals that face's sign.
- * Only `dovetail`/`puzzle` styles reach here.
+ * Groove carved into a detached long rail's seam face to receive one of the
+ * body's margin-seam tongues (#2414). Uses the same profile/clearance the tongue
+ * does so they mate, positioned along the seam by `tongueOffsetMm` (the caller
+ * cuts one per cell). Built in the rail's own origin-centered frame (see
+ * `baseplateMargin.buildMarginSolid`): the seam face is the rail's inner long
+ * edge (+railD/2 front, −railD/2 back, +railW/2 left, −railW/2 right), and the
+ * groove cuts inward from it — `d` equals that face's sign. Only `dovetail`/
+ * `puzzle` styles reach here.
  */
 export function buildMarginSeamGroove(
   side: 'left' | 'right' | 'front' | 'back',
@@ -488,17 +488,16 @@ export function buildMarginSeamGroove(
   // for left/right rails (wall coord on X). `tongueOffsetMm` slides the groove
   // along that axis onto the mating body tongue — nonzero on a corner-owning end
   // segment whose rail center no longer sits on the body wall it joins (#2427).
-  const bp = tongueOffsetMm;
-  const pt: (wall: number, b: number) => [number, number] = horizontal
-    ? (wall, b) => [b, wall]
-    : (wall, b) => [wall, b];
+  const pt: (wall: number, bp: number) => [number, number] = horizontal
+    ? (wall, bp) => [bp, wall]
+    : (wall, bp) => [wall, bp];
   const cl = effectiveClearance(TONGUE_CLEARANCE, fitOffset, nozzleSizeMm);
   return connectorStyle === 'puzzle'
-    ? makePuzzleGroove(pt, seamPos, bp, seamSign, cl, COPLANAR_MARGIN, totalHeight)
+    ? makePuzzleGroove(pt, seamPos, tongueOffsetMm, seamSign, cl, COPLANAR_MARGIN, totalHeight)
     : makeGroove(
         pt,
         seamPos,
-        bp,
+        tongueOffsetMm,
         seamSign,
         TONGUE_PROTRUSION,
         TONGUE_BASE_HALF,
