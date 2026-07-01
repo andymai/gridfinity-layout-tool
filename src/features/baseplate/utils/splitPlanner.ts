@@ -551,6 +551,8 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     paddingFront: pf,
     paddingBack: pb,
     gridUnitMm,
+    fractionalEdgeX,
+    fractionalEdgeY,
   } = params;
   const { colSizes, rowSizes, colOffsets, rowOffsets } = layout;
   const halfW = (params.width * gridUnitMm) / 2;
@@ -579,7 +581,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     bandThicknessMm: number,
     ownedCorners: MarginCorner[],
     worldOffsetMm: { x: number; y: number },
-    seamTongueOffsetMm: number = 0
+    seamConnector?: MarginPiece['seamConnector']
   ): void => {
     margins.push({
       id,
@@ -591,10 +593,23 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       bandThicknessMm,
       ownedCorners,
       worldOffsetMm,
-      seamTongueOffsetMm,
+      seamConnector,
       ...fill,
     });
   };
+  // Seam-connector layout for a long rail: the mating body wall's grid width and
+  // its center offset from the rail center (nonzero on corner-owning end segments
+  // that extend over the perpendicular padding). Both body and rail recompute the
+  // per-boundary connector positions from this, so they stay in lockstep.
+  const seamFor = (
+    cellUnits: number,
+    centerOffsetMm: number,
+    frac: 'start' | 'end'
+  ): MarginPiece['seamConnector'] => ({
+    cellUnits,
+    centerOffsetMm,
+    fractionalEdge: isFractional(cellUnits) ? frac : 'end',
+  });
 
   // Prefer front/back as the long (corner-owning) axis; fall back to left/right
   // when neither front nor back detaches.
@@ -610,12 +625,10 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       const extR = c === colLast ? pr : 0;
       const len = colSizes[c] * gridUnitMm + extL + extR;
       const cx = colCenter(c) - extL / 2 + extR / 2;
-      // The connector groove must line up with the body's tongue, which sits at
-      // the body wall's center (the piece's grid center shifted by any integral
-      // left/right padding it still carries), not the corner-extended rail center.
-      const bodyPadL = c === 0 && !det.left ? pl : 0;
-      const bodyPadR = c === colLast && !det.right ? pr : 0;
-      const seamOffset = (bodyPadR - bodyPadL) / 2 + extL / 2 - extR / 2;
+      // The connectors track the body wall's grid cells, centered on the piece's
+      // grid center — which the corner-extended rail center no longer coincides
+      // with, so record that shift for the rail to re-anchor its grooves (#2427).
+      const seam = seamFor(colSizes[c], colCenter(c) - cx, fractionalEdgeX);
       if (det.front) {
         const owned: MarginCorner[] = [];
         if (c === 0) owned.push('bl');
@@ -630,7 +643,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
           pf,
           owned,
           { x: cx, y: -halfD - pf / 2 },
-          seamOffset
+          seam
         );
       }
       if (det.back) {
@@ -647,7 +660,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
           pb,
           owned,
           { x: cx, y: halfD + pb / 2 },
-          seamOffset
+          seam
         );
       }
     }
@@ -687,23 +700,40 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       const extB = r === rowLast ? pb : 0;
       const len = rowSizes[r] * gridUnitMm + extF + extB;
       const cy = rowCenter(r) - extF / 2 + extB / 2;
+      const seam = seamFor(rowSizes[r], rowCenter(r) - cy, fractionalEdgeY);
       if (det.left) {
         const owned: MarginCorner[] = [];
         if (r === 0) owned.push('bl');
         if (r === rowLast) owned.push('tl');
-        push(`margin-left-${r + 1}`, 'left', 'long', 0, r, len, pl, owned, {
-          x: -halfW - pl / 2,
-          y: cy,
-        });
+        push(
+          `margin-left-${r + 1}`,
+          'left',
+          'long',
+          0,
+          r,
+          len,
+          pl,
+          owned,
+          { x: -halfW - pl / 2, y: cy },
+          seam
+        );
       }
       if (det.right) {
         const owned: MarginCorner[] = [];
         if (r === 0) owned.push('br');
         if (r === rowLast) owned.push('tr');
-        push(`margin-right-${r + 1}`, 'right', 'long', colLast, r, len, pr, owned, {
-          x: halfW + pr / 2,
-          y: cy,
-        });
+        push(
+          `margin-right-${r + 1}`,
+          'right',
+          'long',
+          colLast,
+          r,
+          len,
+          pr,
+          owned,
+          { x: halfW + pr / 2, y: cy },
+          seam
+        );
       }
     }
   }

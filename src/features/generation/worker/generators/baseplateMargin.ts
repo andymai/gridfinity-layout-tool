@@ -33,6 +33,7 @@ import {
 import type { SideMargins } from './generatorTypes';
 import { buildSlabProfile } from './baseplateSlab';
 import { buildMarginSeamGroove } from './baseplateConnectors';
+import { computeCellBoundariesMm } from './cellDecomposition';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -140,26 +141,36 @@ function buildMarginSolid(
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
   }
 
-  // Opt-in connector (#2414): carve the seam groove into a LONG rail's inner
-  // face to receive the body's tongue. Long rails are exactly the seam sides
+  // Opt-in connector (#2414): carve seam grooves into a LONG rail's inner face
+  // to receive the body's tongues. Long rails are exactly the seam sides
   // (splitPlanner marks the matching body edge `marginSeam`); short rails stay
-  // friction-fit. Only dovetail/puzzle styles carry a seam.
+  // friction-fit. Only dovetail/puzzle styles carry a seam. One groove per mating
+  // cell boundary (#2428) — recomputed from the same `cellUnits`/`fractionalEdge`
+  // the body used, then shifted by `centerOffsetMm` onto the corner-extended rail.
   if (
     params.detachMarginConnector === true &&
     isSeamConnectorStyle(params.connectorStyle) &&
     margin.role === 'long'
   ) {
-    const groove = buildMarginSeamGroove(
-      margin.side,
-      railW,
-      railD,
-      totalHeight,
-      params.connectorStyle,
-      params.connectorFitOffset ?? 0,
-      params.nozzleSizeMm,
-      margin.seamTongueOffsetMm ?? 0
+    const seam = margin.seamConnector;
+    const boundaries = seam
+      ? computeCellBoundariesMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge)
+      : [];
+    const centerOffset = seam?.centerOffsetMm ?? 0;
+    const positions = (boundaries.length > 0 ? boundaries : [0]).map((b) => b + centerOffset);
+    const grooves = positions.map((pos) =>
+      buildMarginSeamGroove(
+        margin.side,
+        railW,
+        railD,
+        totalHeight,
+        params.connectorStyle,
+        params.connectorFitOffset ?? 0,
+        params.nozzleSizeMm,
+        pos
+      )
     );
-    rail = cutInBatches(rail, [groove]);
+    rail = cutInBatches(rail, grooves);
   }
 
   // Shift up so Z=0 is the bottom face, matching the body's final transform.

@@ -385,18 +385,20 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector (#2414): one male tongue centered on the
-  // detached exterior wall, protruding into the rail. The rail carries the
-  // matching groove (`buildMarginSeamGroove`). Rails are solid (no sockets), so
-  // no relief is needed; a centered tongue is 180°-rotation-safe under paired
-  // mode. `hasMarginSeam` already requires a dovetail/puzzle style, so a stray
-  // snapClip/dovetailKey `marginSeam` edge produces no mismatched tongue.
+  // Opt-in body↔long-rail connector (#2414): one male tongue per mating cell
+  // boundary along the detached exterior wall, protruding into the rail — the
+  // same cadence as split-piece dovetails, so a long rail is anchored along its
+  // length rather than at a single point (#2428). The rail carries the matching
+  // grooves (`buildMarginSeamGroove` at the same boundaries). Rails are solid (no
+  // sockets), so no relief is needed. A single-cell wall has no interior boundary,
+  // so it falls back to one centered tongue. `hasMarginSeam` already requires a
+  // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
   if (hasMarginSeam) {
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;
       const pt = ptFor(def);
-      const center = def.protrudeAxis === 'x' ? slabOffsetY : slabOffsetX;
-      tongues.push(mkTongue(pt, def.wallPos, center, def.protrudeDir));
+      const positions = def.boundaries.length > 0 ? def.boundaries : [0];
+      for (const bp of positions) tongues.push(mkTongue(pt, def.wallPos, bp, def.protrudeDir));
     }
   }
 

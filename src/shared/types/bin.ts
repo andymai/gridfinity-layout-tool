@@ -186,14 +186,26 @@ export interface MarginPiece {
   /** Rail-center position in the plate-centered world frame (mm). */
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
   /**
-   * Signed along-length offset (mm) from the rail center to the mating body
-   * wall's center — where the opt-in seam groove must be cut so it lines up with
-   * the body's tongue (#2427). Nonzero on a long rail's corner-owning end
-   * segment, which extends over the perpendicular padding to reach the outer
-   * corner and so is no longer centered on the body wall it joins. Only meaningful
-   * for `long` rails; absent (→ 0) on short/friction-fit rails.
+   * Layout of the opt-in tongue-and-groove seam connector for a `long` rail
+   * (absent on short/friction-fit rails). The body grows one tongue per mating
+   * cell boundary and the rail carves matching grooves; both sides recompute the
+   * same boundary set from `cellUnits`/`fractionalEdge` so they can't drift, and
+   * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
+   * segment (which extends over the perpendicular padding and so is no longer
+   * centered on the wall it joins — #2427/#2428).
    */
-  readonly seamTongueOffsetMm?: number;
+  readonly seamConnector?: {
+    /** Grid units of the mating body wall along the rail's running axis. */
+    readonly cellUnits: number;
+    /**
+     * Rail-local position (mm) of the body grid center along the running axis —
+     * i.e. how far the mating wall's center sits from the rail center. Nonzero
+     * only on corner-owning end segments.
+     */
+    readonly centerOffsetMm: number;
+    /** Resolved fractional-edge anchor for the cell-boundary computation. */
+    readonly fractionalEdge: 'start' | 'end';
+  };
   readonly overTile: boolean;
   readonly overTileHalfGrid: boolean;
   readonly overTileHalfGridSolidLeftover: boolean;

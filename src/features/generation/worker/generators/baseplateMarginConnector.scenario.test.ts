@@ -5,11 +5,13 @@
  * in world space. Verified on the real BREP solids.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { measureVolume, translate, intersect } from 'brepjs';
+import { measureVolume, translate, intersect, fuse } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { ResolvedBaseplateParams, MarginPiece, BaseplateEdges } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors, buildMarginSeamGroove } from './baseplateConnectors';
+import { computeCellBoundariesMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
 import { SOCKET_HEIGHT } from './generatorTypes';
 
@@ -69,6 +71,7 @@ function frontRail(over: Partial<MarginPiece> = {}): MarginPiece {
     bandThicknessMm: PF,
     ownedCorners: [],
     worldOffsetMm: { x: 0, y: -(DEPTH * GU) / 2 - PF / 2 },
+    seamConnector: { cellUnits: WIDTH, centerOffsetMm: 0, fractionalEdge: 'end' },
     overTile: false,
     overTileHalfGrid: false,
     overTileHalfGridSolidLeftover: false,
@@ -76,8 +79,52 @@ function frontRail(over: Partial<MarginPiece> = {}): MarginPiece {
   };
 }
 
+/** Interior cell-boundary positions along a `units`-wide front seam. */
+function frontBoundaries(units: number): number[] {
+  const b = computeCellBoundariesMm(units, GU, 'end');
+  return b.length > 0 ? b : [0];
+}
+
+/**
+ * Fuse all seam grooves for a front rail (one per boundary, shifted by
+ * `centerOffsetMm`) into the rail's world frame — the same set
+ * `buildMarginSolid` carves.
+ */
+function frontGrooveUnion(rail: MarginPiece): Shape3D {
+  const seam = rail.seamConnector!;
+  const positions = frontBoundaries(seam.cellUnits).map((p) => p + seam.centerOffsetMm);
+  const railW =
+    rail.side === 'front' || rail.side === 'back' ? rail.lengthMm : rail.bandThicknessMm;
+  const railD =
+    rail.side === 'front' || rail.side === 'back' ? rail.bandThicknessMm : rail.lengthMm;
+  let union: Shape3D | null = null;
+  for (const pos of positions) {
+    const g = buildMarginSeamGroove(
+      rail.side,
+      railW,
+      railD,
+      SOCKET_HEIGHT,
+      'dovetail',
+      0,
+      0.4,
+      pos
+    );
+    const world = translate(g, [rail.worldOffsetMm.x, rail.worldOffsetMm.y, 0]);
+    g.delete();
+    if (!union) {
+      union = world;
+    } else {
+      const f = fuse(union, world);
+      union.delete();
+      world.delete();
+      union = isOk(f) ? (f.value as Shape3D) : union;
+    }
+  }
+  return union!;
+}
+
 describe('margin-seam connector geometry (#2414)', () => {
-  it('builds exactly one body tongue on a marginSeam wall, independent of connectorNubs', () => {
+  it('builds one body tongue per mating cell boundary, independent of connectorNubs', () => {
     const { nubs, holes } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
       SOCKET_HEIGHT,
@@ -87,9 +134,25 @@ describe('margin-seam connector geometry (#2414)', () => {
       0,
       true
     );
-    expect(nubs.length, 'one seam tongue').toBe(1);
+    // A WIDTH-wide seam has WIDTH-1 interior boundaries → that many tongues, the
+    // same cadence as split-piece dovetails (#2428).
+    expect(nubs.length, 'one tongue per cell boundary').toBe(frontBoundaries(WIDTH).length);
     expect(holes.length, 'no grooves on the body').toBe(0);
-    expect(vol(nubs[0]), 'tongue has volume').toBeGreaterThan(0);
+    for (const n of nubs) expect(vol(n), 'tongue has volume').toBeGreaterThan(0);
+    nubs.forEach((n) => n.delete());
+  });
+
+  it('falls back to a single centered tongue on a single-cell wall', () => {
+    const { nubs } = buildConnectors(
+      baseParams({ width: 1, edges: frontSeamEdges }),
+      SOCKET_HEIGHT,
+      1 * GU,
+      DEPTH * GU,
+      0,
+      0,
+      true
+    );
+    expect(nubs.length).toBe(1);
     nubs.forEach((n) => n.delete());
   });
 
@@ -145,66 +208,8 @@ describe('margin-seam connector geometry (#2414)', () => {
     expect(conn.vertices.length).toBe(plain.vertices.length);
   });
 
-  it('a corner segment groove seats the body tongue via seamTongueOffsetMm (#2427)', () => {
-    // A long rail's corner-owning end segment extends over the perpendicular
-    // padding, so its center is shifted OFF the body wall it joins. Without the
-    // offset the groove misses the (grid-centered) tongue entirely; with it, the
-    // groove slides back onto the tongue. Model column 0 of a split: the front
-    // rail extends left over PL and its center sits −PL/2 from the body center.
-    const PL = 20;
-    const body = buildConnectors(
-      baseParams({ edges: frontSeamEdges }),
-      SOCKET_HEIGHT,
-      WIDTH * GU,
-      DEPTH * GU,
-      0,
-      0,
-      true
-    );
-    const tongue = body.nubs[0];
-    const tongueVol = vol(tongue);
-
-    const railW = WIDTH * GU + PL; // extended over the left padding
-    const grooveNoOffset = buildMarginSeamGroove(
-      'front',
-      railW,
-      PF,
-      SOCKET_HEIGHT,
-      'dovetail',
-      0,
-      0.4
-    );
-    const grooveWithOffset = buildMarginSeamGroove(
-      'front',
-      railW,
-      PF,
-      SOCKET_HEIGHT,
-      'dovetail',
-      0,
-      0.4,
-      PL / 2 // cancels the −PL/2 rail-center shift
-    );
-    // Rail center world-x = body-center − PL/2 (extended over the left corner).
-    const railWorldX = -PL / 2;
-    const seat = (groove: typeof grooveNoOffset): number => {
-      const world = translate(groove, [railWorldX, -(DEPTH * GU) / 2 - PF / 2, 0]);
-      const inter = intersect(tongue, world);
-      const overlap = isOk(inter) ? vol(inter.value) : 0;
-      if (isOk(inter)) inter.value.delete();
-      world.delete();
-      return overlap / tongueVol;
-    };
-
-    expect(seat(grooveNoOffset), 'un-offset groove misses the tongue').toBeLessThan(0.1);
-    expect(seat(grooveWithOffset), 'offset groove seats the tongue').toBeGreaterThan(0.9);
-
-    tongue.delete();
-    grooveNoOffset.delete();
-    grooveWithOffset.delete();
-  });
-
-  it('the body tongue seats inside the rail groove in world space', () => {
-    // Body tongue (body frame, centered): front wall at y = -DEPTH*GU/2.
+  it('every body tongue seats in the matching rail groove in world space', () => {
+    // Body tongues (body frame): front wall at y = -DEPTH*GU/2, one per boundary.
     const { nubs } = buildConnectors(
       baseParams({ edges: frontSeamEdges }),
       SOCKET_HEIGHT,
@@ -214,32 +219,66 @@ describe('margin-seam connector geometry (#2414)', () => {
       0,
       true
     );
-    const tongue = nubs[0];
-    const tongueVol = vol(tongue);
-
-    // Groove cutter in the rail's local frame, then placed at the rail's world
-    // offset — the same transform `buildMarginSolid` applies before lifting.
-    const groove = buildMarginSeamGroove(
-      'front',
-      WIDTH * GU,
-      PF,
-      SOCKET_HEIGHT,
-      'dovetail',
-      0,
-      0.4
-    );
-    const off = frontRail().worldOffsetMm;
-    const grooveWorld = translate(groove, [off.x, off.y, 0]);
-
-    const inter = intersect(tongue, grooveWorld);
-    const overlap = isOk(inter) ? vol(inter.value) : 0;
-    if (isOk(inter)) inter.value.delete();
-
-    // The tongue must sit almost entirely inside the (clearance-grown) groove.
-    expect(overlap / tongueVol, 'tongue seated in groove').toBeGreaterThan(0.9);
-
-    tongue.delete();
-    groove.delete();
+    // The rail carves the same boundary set; every tongue must seat in the union.
+    const grooveWorld = frontGrooveUnion(frontRail());
+    for (const tongue of nubs) {
+      const inter = intersect(tongue, grooveWorld);
+      const overlap = isOk(inter) ? vol(inter.value) : 0;
+      if (isOk(inter)) inter.value.delete();
+      expect(overlap / vol(tongue), 'tongue seated in groove').toBeGreaterThan(0.9);
+    }
+    nubs.forEach((n) => n.delete());
     grooveWorld.delete();
+  });
+
+  it('every tongue still seats on a corner-owning end segment (#2427)', () => {
+    // Model column 0 of a split: the front rail extends left over PL to own the
+    // corner, so its center sits −PL/2 from the body grid center. The rail's
+    // grooves recenter via centerOffsetMm = +PL/2; without it they'd all miss.
+    const PL = 20;
+    const { nubs } = buildConnectors(
+      baseParams({ edges: frontSeamEdges }),
+      SOCKET_HEIGHT,
+      WIDTH * GU,
+      DEPTH * GU,
+      0,
+      0,
+      true
+    );
+    const cornerRail = frontRail({
+      lengthMm: WIDTH * GU + PL, // extended over the left padding
+      worldOffsetMm: { x: -PL / 2, y: -(DEPTH * GU) / 2 - PF / 2 },
+      seamConnector: { cellUnits: WIDTH, centerOffsetMm: PL / 2, fractionalEdge: 'end' },
+    });
+    const offsetGrooves = frontGrooveUnion(cornerRail);
+    const misalignedGrooves = frontGrooveUnion(
+      frontRail({
+        lengthMm: WIDTH * GU + PL,
+        worldOffsetMm: { x: -PL / 2, y: -(DEPTH * GU) / 2 - PF / 2 },
+        seamConnector: { cellUnits: WIDTH, centerOffsetMm: 0, fractionalEdge: 'end' },
+      })
+    );
+
+    let seatedOffset = 0;
+    let seatedMisaligned = 0;
+    for (const tongue of nubs) {
+      const tv = vol(tongue);
+      const a = intersect(tongue, offsetGrooves);
+      if (isOk(a)) {
+        if (vol(a.value) / tv > 0.9) seatedOffset++;
+        a.value.delete();
+      }
+      const b = intersect(tongue, misalignedGrooves);
+      if (isOk(b)) {
+        if (vol(b.value) / tv > 0.9) seatedMisaligned++;
+        b.value.delete();
+      }
+    }
+    expect(seatedOffset, 'all tongues seat with the corner offset').toBe(nubs.length);
+    expect(seatedMisaligned, 'without the offset the grooves miss').toBe(0);
+
+    nubs.forEach((n) => n.delete());
+    offsetGrooves.delete();
+    misalignedGrooves.delete();
   });
 });

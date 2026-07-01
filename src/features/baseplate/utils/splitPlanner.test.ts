@@ -1425,10 +1425,11 @@ describe('detachMargins emits margin rails', () => {
     for (const seg of front.slice(1, -1)) expect(seg.ownedCorners).toEqual([]);
   });
 
-  it('offsets the seam connector on corner segments back onto the body tongue (#2427)', () => {
+  it('anchors the seam connector on the body grid center, offsetting corner segments (#2427/#2428)', () => {
     // Corner-owning end segments extend over the detached left/right padding, so
-    // their center no longer sits on the body wall they join. seamTongueOffsetMm
-    // must cancel that shift so the groove lands on the (grid-centered) tongue.
+    // their center no longer sits on the body wall they join. seamConnector
+    // records the mating wall's grid width and its center offset so the rail can
+    // recompute per-boundary groove positions that land on the body tongues.
     const tiling = computeBaseplateTiling(
       makeParams({
         width: 10,
@@ -1443,16 +1444,22 @@ describe('detachMargins emits margin rails', () => {
     );
     const front = tiling.margins.filter((m) => m.side === 'front').sort((a, b) => a.col - b.col);
     // First column extends over the left padding (center shifted −P/2), so the
-    // groove shifts +P/2 back; last column mirrors it; middle columns are centered.
-    expect(front[0].seamTongueOffsetMm).toBeCloseTo(P / 2, 6);
-    expect(front[front.length - 1].seamTongueOffsetMm).toBeCloseTo(-P / 2, 6);
-    for (const seg of front.slice(1, -1)) expect(seg.seamTongueOffsetMm).toBeCloseTo(0, 6);
-    // The offset places the groove exactly on the body piece's grid center.
+    // grooves shift +P/2 back; last column mirrors it; middle columns are centered.
+    expect(front[0].seamConnector?.centerOffsetMm).toBeCloseTo(P / 2, 6);
+    expect(front[front.length - 1].seamConnector?.centerOffsetMm).toBeCloseTo(-P / 2, 6);
+    for (const seg of front.slice(1, -1))
+      expect(seg.seamConnector?.centerOffsetMm).toBeCloseTo(0, 6);
+    // The offset places the body grid center exactly on the piece's grid center,
+    // and cellUnits mirrors the mating body piece's width.
     for (const seg of front) {
       const piece = tiling.pieces.find((p) => p.col === seg.col && p.row === seg.row)!;
       const pieceCenterX =
         piece.gridOffsetX * U + (piece.widthUnits * U) / 2 - tiling.totalWidthUnits * U * 0.5;
-      expect(seg.worldOffsetMm.x + (seg.seamTongueOffsetMm ?? 0)).toBeCloseTo(pieceCenterX, 6);
+      expect(seg.worldOffsetMm.x + (seg.seamConnector?.centerOffsetMm ?? 0)).toBeCloseTo(
+        pieceCenterX,
+        6
+      );
+      expect(seg.seamConnector?.cellUnits).toBe(piece.widthUnits);
     }
   });
 
