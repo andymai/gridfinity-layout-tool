@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.210.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.210.0...gridfinity-layout-tool-v4.210.1) (2026-07-01)
+
+
+### Bug Fixes
+
+* **bin-designer:** stack-pitch readout + target-height solver ([#2416](https://github.com/andymai/gridfinity-layout-tool/issues/2416)) ([#2417](https://github.com/andymai/gridfinity-layout-tool/issues/2417)) ([3bd9616](https://github.com/andymai/gridfinity-layout-tool/commit/3bd9616c0cf24d4eeed6a6355ca389c505257917))
+
 ## [4.210.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.209.1...gridfinity-layout-tool-v4.210.0) (2026-06-30)
 
 
