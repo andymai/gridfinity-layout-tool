@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.212.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.3...gridfinity-layout-tool-v4.212.0) (2026-07-01)
+
+
+### Features
+
+* **baseplate:** distribute margin seam connectors one per grid cell ([#2427](https://github.com/andymai/gridfinity-layout-tool/issues/2427)) ([#2429](https://github.com/andymai/gridfinity-layout-tool/issues/2429)) ([619aba6](https://github.com/andymai/gridfinity-layout-tool/commit/619aba65744dc186dd4ebeb6e436d5a0fd118d03))
+
 ## [4.211.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.2...gridfinity-layout-tool-v4.211.3) (2026-07-01)
 
 
