@@ -16,7 +16,8 @@
  * fit, otherwise become a separate piece.
  */
 
-import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { BaseplateEdgeKind, ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isExteriorEdge } from '@/shared/types/bin';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
@@ -777,6 +778,30 @@ export function computeBaseplateTiling(
   // that margin. Sub-threshold sides stay integral.
   const det = detachedSides(params);
 
+  // The opt-in connector (#2414) marks the body↔long-rail seam so the connector
+  // builder adds a tongue there. Scoped to the LONG rails only (short rails stay
+  // friction-fit) and to the tongue/groove styles — snapClip seams would need a
+  // separate clip part, which `marginSeam` must not emit. `longAxisX` mirrors
+  // `emitMargins`: front/back are the long rails, else left/right.
+  //
+  // NOTE: the seam tongue protrudes TONGUE_PROTRUSION (1.5mm) past the body's
+  // detached edge, which `axisChunkMm` doesn't yet budget against the bed. Only
+  // matters when a SPLIT body chunk sits within 1.5mm of the bed on a detached
+  // seam side — a rare compound case. Precise per-side seam budgeting is a
+  // follow-up; deferred to avoid destabilizing the split math for all plates.
+  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
+  const seamOn =
+    params.detachMargins === true && params.detachMarginConnector === true && seamStyleOk;
+  const longAxisX = det.front || det.back;
+  const seam = {
+    left: seamOn && det.left && !longAxisX,
+    right: seamOn && det.right && !longAxisX,
+    front: seamOn && det.front && longAxisX,
+    back: seamOn && det.back && longAxisX,
+  };
+  const edgeKind = (isEdge: boolean, isSeam: boolean): BaseplateEdgeKind =>
+    !isEdge ? 'join' : isSeam ? 'marginSeam' : 'exterior';
+
   const pieces: BaseplatePiece[] = [];
 
   for (let r = 0; r < rowSizes.length; r++) {
@@ -787,10 +812,10 @@ export function computeBaseplateTiling(
       const isBackEdge = r === lastRow;
 
       const actualEdges: PieceEdges = {
-        left: isLeftEdge ? 'exterior' : 'join',
-        right: isRightEdge ? 'exterior' : 'join',
-        front: isFrontEdge ? 'exterior' : 'join',
-        back: isBackEdge ? 'exterior' : 'join',
+        left: edgeKind(isLeftEdge, seam.left),
+        right: edgeKind(isRightEdge, seam.right),
+        front: edgeKind(isFrontEdge, seam.front),
+        back: edgeKind(isBackEdge, seam.back),
       };
       // Under preferIdenticalPieces, the piece's mesh is generated from a
       // canonical edge layout (lex-smaller of {edges, 180°-rotated edges}).
@@ -882,19 +907,19 @@ export function pieceToBaseplateParams(
       pr?.[corner] ?? parentParams.cornerRadius ?? GRIDFINITY.SOCKET_CORNER_RADIUS;
     const actual: CornerRadii = {
       tl:
-        (e.left === 'exterior' && det.left) || (e.back === 'exterior' && det.back)
+        (isExteriorEdge(e.left) && det.left) || (isExteriorEdge(e.back) && det.back)
           ? 0
           : baseR('tl'),
       tr:
-        (e.right === 'exterior' && det.right) || (e.back === 'exterior' && det.back)
+        (isExteriorEdge(e.right) && det.right) || (isExteriorEdge(e.back) && det.back)
           ? 0
           : baseR('tr'),
       bl:
-        (e.left === 'exterior' && det.left) || (e.front === 'exterior' && det.front)
+        (isExteriorEdge(e.left) && det.left) || (isExteriorEdge(e.front) && det.front)
           ? 0
           : baseR('bl'),
       br:
-        (e.right === 'exterior' && det.right) || (e.front === 'exterior' && det.front)
+        (isExteriorEdge(e.right) && det.right) || (isExteriorEdge(e.front) && det.front)
           ? 0
           : baseR('br'),
     };

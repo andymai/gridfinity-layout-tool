@@ -255,6 +255,11 @@ export function BaseplatePanel() {
   // so when stack-print suppresses detach the switch reads as on-but-disabled
   // rather than silently off.
   const detachStored = baseplateParams.detachMargins === true;
+  const marginConnectorStored = baseplateParams.detachMarginConnector === true;
+  // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
+  // seams would need a separate clip part, so they stay friction-fit (#2414).
+  const marginConnectorStyleOk =
+    baseplateParams.connectorStyle === 'dovetail' || baseplateParams.connectorStyle === 'puzzle';
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;
@@ -507,12 +512,26 @@ export function BaseplatePanel() {
                     }
                     primaryControls={
                       // On but nothing meets the threshold → no rails are emitted,
-                      // so say so rather than imply they will. Otherwise no help
-                      // text — the label is self-explanatory.
-                      canDetach ? undefined : (
+                      // so say so rather than imply they will.
+                      !canDetach ? (
                         <p className="text-[11px] leading-relaxed text-content-tertiary">
                           {t('baseplate.detachMarginsTooSmall')}
                         </p>
+                      ) : (
+                        <div className="space-y-1">
+                          <CheckboxRow
+                            label={t('baseplate.detachMarginConnector')}
+                            checked={marginConnectorStored && marginConnectorStyleOk}
+                            onChange={(checked) => updateParam('detachMarginConnector', checked)}
+                            disabled={!marginConnectorStyleOk}
+                            indent
+                          />
+                          <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                            {marginConnectorStyleOk
+                              ? t('baseplate.detachMarginConnectorHint')
+                              : t('baseplate.detachMarginConnectorStyle')}
+                          </p>
+                        </div>
                       )
                     }
                   />

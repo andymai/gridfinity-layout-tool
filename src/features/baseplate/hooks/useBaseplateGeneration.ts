@@ -216,6 +216,8 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // Detaching margins changes the body mesh (padding-free on detached sides)
     // and emits separate rails, so it must re-trigger generation.
     detachMargins: bp.detachMargins ?? false,
+    // The connector adds a seam tongue to the body and a groove to the rail.
+    detachMarginConnector: bp.detachMarginConnector ?? false,
   };
 }
 

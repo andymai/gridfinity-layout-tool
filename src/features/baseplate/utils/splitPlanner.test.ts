@@ -1468,3 +1468,56 @@ describe('bodyParamsForDetach', () => {
     expect(sides.has('left')).toBe(true);
   });
 });
+
+describe('margin-seam connector edge assignment (#2414)', () => {
+  const P = 12; // ≥ MARGIN_MIN_DETACH_MM
+  const frontEdges = (params: ResolvedBaseplateParams) =>
+    new Set(
+      computeBaseplateTiling(params, 256)
+        .pieces.filter((pc) => pc.row === 0)
+        .map((pc) => pc.edges.front)
+    );
+
+  it('marks the detached long-rail seam edge when the connector is on', () => {
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'dovetail',
+      paddingFront: P,
+    });
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+  });
+
+  it('leaves the seam a plain exterior edge when the connector is off', () => {
+    const p = makeParams({ detachMargins: true, paddingFront: P });
+    expect(frontEdges(p)).toEqual(new Set(['exterior']));
+  });
+
+  it('keeps snapClip seams friction-fit (plain exterior, no marginSeam)', () => {
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'snapClip',
+      paddingFront: P,
+    });
+    expect(frontEdges(p)).toEqual(new Set(['exterior']));
+  });
+
+  it('only seams long rails — a short side stays exterior', () => {
+    // front is the long axis; left detaches too but as a short rail → no seam.
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'puzzle',
+      paddingFront: P,
+      paddingLeft: P,
+    });
+    const leftEdges = new Set(
+      computeBaseplateTiling(p, 256)
+        .pieces.filter((pc) => pc.col === 0)
+        .map((pc) => pc.edges.left)
+    );
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+    expect(leftEdges).toEqual(new Set(['exterior']));
+  });
+});

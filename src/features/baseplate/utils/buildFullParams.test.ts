@@ -139,6 +139,7 @@ describe('buildFullParams', () => {
       fractionalEdgeX: 'start',
       fractionalEdgeY: 'start',
       detachMargins: false,
+      detachMarginConnector: false,
     });
   });
 

@@ -31,6 +31,7 @@ import {
 } from './generatorTypes';
 import type { SideMargins } from './generatorTypes';
 import { buildSlabProfile } from './baseplateSlab';
+import { buildMarginSeamGroove } from './baseplateConnectors';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -136,6 +137,24 @@ function buildMarginSolid(
       pocket.delete();
     }
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
+  }
+
+  // Opt-in connector (#2414): carve the seam groove into a LONG rail's inner
+  // face to receive the body's tongue. Long rails are exactly the seam sides
+  // (splitPlanner marks the matching body edge `marginSeam`); short rails stay
+  // friction-fit. Only dovetail/puzzle styles carry a seam.
+  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
+  if (params.detachMarginConnector === true && seamStyleOk && margin.role === 'long') {
+    const groove = buildMarginSeamGroove(
+      margin.side,
+      railW,
+      railD,
+      totalHeight,
+      params.connectorStyle,
+      params.connectorFitOffset ?? 0,
+      params.nozzleSizeMm
+    );
+    rail = cutInBatches(rail, [groove]);
   }
 
   // Shift up so Z=0 is the bottom face, matching the body's final transform.

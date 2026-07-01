@@ -106,11 +106,26 @@ export type {
 } from '@/features/bin-designer/utils/lidCompatibility';
 
 /**
- * Whether an edge is exterior (outside baseplate) or a join between split pieces.
+ * Whether an edge is exterior (outside baseplate), a join between split pieces,
+ * or a seam to a detached margin rail carrying an opt-in connector (#2414).
+ * `marginSeam` is exterior-like for corner/rounding purposes but carries a
+ * body↔rail tongue; it must NOT be treated as `join` (no split-piece keys).
  * Canonical edge-kind union; the baseplate feature's `EdgeKind` aliases this, so
  * extend the union here and both stay in sync.
  */
-export type BaseplateEdgeKind = 'join' | 'exterior';
+export type BaseplateEdgeKind = 'join' | 'exterior' | 'marginSeam';
+
+/**
+ * True for edges on the plate's outer boundary: a plain `exterior` edge or a
+ * `marginSeam` (which is exterior + a connector tongue). Corner rounding and
+ * squaring treat both identically — the body stays square there and the rail
+ * owns the rounded outer corner. Do NOT use this for fingerprinting: a
+ * `marginSeam` piece carries a tongue and must not dedupe with a plain
+ * exterior piece.
+ */
+export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
+  return kind === 'exterior' || kind === 'marginSeam';
+}
 
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
@@ -257,6 +272,14 @@ export interface ResolvedBaseplateParams {
    * `stackPrint` (stackPrint wins). Omit/false = padding stays integral.
    */
   readonly detachMargins?: boolean;
+  /**
+   * Opt-in body↔long-rail connector for detached margins (#2414). When true and
+   * `detachMargins` is set, the detached exterior seam becomes a `marginSeam`
+   * edge carrying a tongue (body side) that mates a groove in the rail, using
+   * the body's `connectorStyle`. Scoped to long rails; short rails/corners stay
+   * friction-fit. Omit/false = friction-fit only.
+   */
+  readonly detachMarginConnector?: boolean;
   /**
    * Vertical stack-print configuration (experimental). Replication is applied at
    * the mesh/export level (not in the BREP solid), so the generator builds one

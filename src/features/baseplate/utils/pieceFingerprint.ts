@@ -70,9 +70,15 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
   // edges don't affect geometry at all, so nothing is added (key for stack-print
   // tiles). Padding is captured separately, so padded edge pieces still differ.
   if (params.edges) {
+    const canon = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
+    // A margin-seam tongue (#2414) is body geometry the piece carries
+    // independently of split connectors (`connectorNubs`), so it must ALWAYS
+    // distinguish the fingerprint — otherwise a tongued piece dedupes with a
+    // plain exterior one and the export reuses a tongue-less mesh.
+    const ms = `${+(canon.left === 'marginSeam')}${+(canon.right === 'marginSeam')}${+(canon.front === 'marginSeam')}${+(canon.back === 'marginSeam')}`;
+    if (ms !== '0000') parts.push(`ms:${ms}`);
     if (params.connectorNubs === true) {
-      const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
-      parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
+      parts.push(`el:${canon.left}`, `er:${canon.right}`, `ef:${canon.front}`, `eb:${canon.back}`);
     } else {
       // Per-corner nominal radius (mirrors resolveCornerRadii precedence:
       // cornerRadii wins, else the uniform cornerRadius, whose absence defaults

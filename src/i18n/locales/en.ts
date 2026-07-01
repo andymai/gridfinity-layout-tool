@@ -2260,6 +2260,10 @@ const en: Record<string, string> = {
   'baseplate.detachMargins': 'Detach margins as separate pieces',
   'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
   'baseplate.detachMarginsStackConflict': 'Not available while stack printing is on.',
+  'baseplate.detachMarginConnector': 'Add connector',
+  'baseplate.detachMarginConnectorHint':
+    'Adds a tongue-and-groove joint so the long rails clip onto the plate. Short rails and corners stay friction-fit.',
+  'baseplate.detachMarginConnectorStyle': 'Connector needs the Dovetail or Puzzle seam style.',
   'baseplate.sectionBase': 'Base',
   'baseplate.sectionView': 'View',
   'baseplate.splitInfo': '{count} pieces',

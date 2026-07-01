@@ -38,6 +38,8 @@ export function buildFullParams(
   // its stored values here — `emitMargins` and the camera/dimension overlay need
   // the true outer extent; the body mesh zeroes detached sides downstream.
   const detachMargins = stored.detachMargins === true && !stackingOn;
+  // The connector is only meaningful when margins actually detach.
+  const detachMarginConnector = detachMargins && stored.detachMarginConnector === true;
 
   return {
     width,
@@ -75,5 +77,6 @@ export function buildFullParams(
     cornerRadius: stackingOn ? 0 : stored.cornerRadius,
     cornerRadii: stackingOn ? undefined : stored.cornerRadii,
     detachMargins,
+    detachMarginConnector,
   };
 }

@@ -177,6 +177,14 @@ export interface StoredBaseplateParams {
    */
   readonly detachMargins?: boolean;
   /**
+   * Opt-in connector between the body and each detached long-rail margin
+   * (issue #2414). Adds a tongue/groove at the body↔long-rail seam using the
+   * body's {@link connectorStyle} so the rail attaches securely instead of
+   * relying on friction. Short rails and corners stay friction-fit. Only
+   * meaningful when {@link detachMargins} is true. Default false.
+   */
+  readonly detachMarginConnector?: boolean;
+  /**
    * Vertical stack-print configuration (experimental). When enabled, each
    * identical-piece group exports as flipped, separated vertical stacks sized
    * to the quantity the drawer needs (× `sets`). Auto-disables connectors.
