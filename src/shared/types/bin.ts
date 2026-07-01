@@ -127,6 +127,20 @@ export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
   return kind === 'exterior' || kind === 'marginSeam';
 }
 
+/** Baseplate split-connector styles. */
+export type BaseplateConnectorStyle = 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
+
+/**
+ * Whether the margin-seam connector (#2414) engages for a given connector
+ * style. Scoped to the integral tongue/groove families — dovetail and puzzle —
+ * because snapClip/dovetailKey would need a separate printed part the seam must
+ * not emit. `undefined` is the stored default for dovetail (the ConnectorPicker
+ * persists dovetail as absent), so it counts as a tongue/groove style.
+ */
+export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return style === undefined || style === 'dovetail' || style === 'puzzle';
+}
+
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
   readonly left: BaseplateEdgeKind;

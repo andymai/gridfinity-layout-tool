@@ -17,7 +17,7 @@
  */
 
 import type { BaseplateEdgeKind, ResolvedBaseplateParams } from '@/shared/types/bin';
-import { isExteriorEdge } from '@/shared/types/bin';
+import { isExteriorEdge, isSeamConnectorStyle } from '@/shared/types/bin';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
@@ -789,9 +789,10 @@ export function computeBaseplateTiling(
   // matters when a SPLIT body chunk sits within 1.5mm of the bed on a detached
   // seam side — a rare compound case. Precise per-side seam budgeting is a
   // follow-up; deferred to avoid destabilizing the split math for all plates.
-  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
   const seamOn =
-    params.detachMargins === true && params.detachMarginConnector === true && seamStyleOk;
+    params.detachMargins === true &&
+    params.detachMarginConnector === true &&
+    isSeamConnectorStyle(params.connectorStyle);
   const longAxisX = det.front || det.back;
   const seam = {
     left: seamOn && det.left && !longAxisX,

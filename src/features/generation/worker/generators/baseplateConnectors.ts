@@ -35,6 +35,7 @@
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -180,9 +181,8 @@ export function buildConnectors(
   // without split-piece dovetails. Only the integral tongue/groove styles carry
   // a seam; snapClip/dovetailKey stay friction-fit (splitPlanner enforces this,
   // and this guard keeps the function self-consistent if called directly).
-  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
   const hasMarginSeam =
-    seamStyleOk &&
+    isSeamConnectorStyle(params.connectorStyle) &&
     (edges.left === 'marginSeam' ||
       edges.right === 'marginSeam' ||
       edges.front === 'marginSeam' ||

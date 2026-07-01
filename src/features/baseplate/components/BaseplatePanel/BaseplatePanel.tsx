@@ -54,6 +54,7 @@ import {
 } from '@/shared/constants/connectors';
 import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
@@ -258,8 +259,8 @@ export function BaseplatePanel() {
   const marginConnectorStored = baseplateParams.detachMarginConnector === true;
   // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
   // seams would need a separate clip part, so they stay friction-fit (#2414).
-  const marginConnectorStyleOk =
-    baseplateParams.connectorStyle === 'dovetail' || baseplateParams.connectorStyle === 'puzzle';
+  // `undefined` is the stored default for dovetail, so it counts.
+  const marginConnectorStyleOk = isSeamConnectorStyle(baseplateParams.connectorStyle);
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;

@@ -1488,6 +1488,14 @@ describe('margin-seam connector edge assignment (#2414)', () => {
     expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
   });
 
+  it('engages on the default (undefined) connector style, which is dovetail', () => {
+    // The ConnectorPicker persists dovetail as an absent connectorStyle, so the
+    // seam must engage when it's undefined (the common default case).
+    const p = makeParams({ detachMargins: true, detachMarginConnector: true, paddingFront: P });
+    expect(p.connectorStyle).toBeUndefined();
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+  });
+
   it('leaves the seam a plain exterior edge when the connector is off', () => {
     const p = makeParams({ detachMargins: true, paddingFront: P });
     expect(frontEdges(p)).toEqual(new Set(['exterior']));

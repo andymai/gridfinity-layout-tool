@@ -20,6 +20,7 @@
 import { mesh, meshEdges, translate, getKernelCapabilities, exportSTEP, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
@@ -143,8 +144,11 @@ function buildMarginSolid(
   // face to receive the body's tongue. Long rails are exactly the seam sides
   // (splitPlanner marks the matching body edge `marginSeam`); short rails stay
   // friction-fit. Only dovetail/puzzle styles carry a seam.
-  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
-  if (params.detachMarginConnector === true && seamStyleOk && margin.role === 'long') {
+  if (
+    params.detachMarginConnector === true &&
+    isSeamConnectorStyle(params.connectorStyle) &&
+    margin.role === 'long'
+  ) {
     const groove = buildMarginSeamGroove(
       margin.side,
       railW,
