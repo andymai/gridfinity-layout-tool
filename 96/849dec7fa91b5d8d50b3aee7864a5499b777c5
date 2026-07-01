@@ -1,0 +1,19 @@
+src/shared/types/bin.ts
+  s_c54dabfaa98437::t_bd25f306f04904 130-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "96849dec7fa91b5d8d50b3aee7864a5499b777c5",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
