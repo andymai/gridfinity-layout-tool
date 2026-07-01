@@ -185,6 +185,15 @@ export interface MarginPiece {
   readonly ownedCorners: readonly MarginCorner[];
   /** Rail-center position in the plate-centered world frame (mm). */
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
+  /**
+   * Signed along-length offset (mm) from the rail center to the mating body
+   * wall's center — where the opt-in seam groove must be cut so it lines up with
+   * the body's tongue (#2427). Nonzero on a long rail's corner-owning end
+   * segment, which extends over the perpendicular padding to reach the outer
+   * corner and so is no longer centered on the body wall it joins. Only meaningful
+   * for `long` rails; absent (→ 0) on short/friction-fit rails.
+   */
+  readonly seamTongueOffsetMm?: number;
   readonly overTile: boolean;
   readonly overTileHalfGrid: boolean;
   readonly overTileHalfGridSolidLeftover: boolean;

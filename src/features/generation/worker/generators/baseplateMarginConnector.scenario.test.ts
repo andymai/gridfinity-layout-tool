@@ -145,6 +145,64 @@ describe('margin-seam connector geometry (#2414)', () => {
     expect(conn.vertices.length).toBe(plain.vertices.length);
   });
 
+  it('a corner segment groove seats the body tongue via seamTongueOffsetMm (#2427)', () => {
+    // A long rail's corner-owning end segment extends over the perpendicular
+    // padding, so its center is shifted OFF the body wall it joins. Without the
+    // offset the groove misses the (grid-centered) tongue entirely; with it, the
+    // groove slides back onto the tongue. Model column 0 of a split: the front
+    // rail extends left over PL and its center sits −PL/2 from the body center.
+    const PL = 20;
+    const body = buildConnectors(
+      baseParams({ edges: frontSeamEdges }),
+      SOCKET_HEIGHT,
+      WIDTH * GU,
+      DEPTH * GU,
+      0,
+      0,
+      true
+    );
+    const tongue = body.nubs[0];
+    const tongueVol = vol(tongue);
+
+    const railW = WIDTH * GU + PL; // extended over the left padding
+    const grooveNoOffset = buildMarginSeamGroove(
+      'front',
+      railW,
+      PF,
+      SOCKET_HEIGHT,
+      'dovetail',
+      0,
+      0.4
+    );
+    const grooveWithOffset = buildMarginSeamGroove(
+      'front',
+      railW,
+      PF,
+      SOCKET_HEIGHT,
+      'dovetail',
+      0,
+      0.4,
+      PL / 2 // cancels the −PL/2 rail-center shift
+    );
+    // Rail center world-x = body-center − PL/2 (extended over the left corner).
+    const railWorldX = -PL / 2;
+    const seat = (groove: typeof grooveNoOffset): number => {
+      const world = translate(groove, [railWorldX, -(DEPTH * GU) / 2 - PF / 2, 0]);
+      const inter = intersect(tongue, world);
+      const overlap = isOk(inter) ? vol(inter.value) : 0;
+      if (isOk(inter)) inter.value.delete();
+      world.delete();
+      return overlap / tongueVol;
+    };
+
+    expect(seat(grooveNoOffset), 'un-offset groove misses the tongue').toBeLessThan(0.1);
+    expect(seat(grooveWithOffset), 'offset groove seats the tongue').toBeGreaterThan(0.9);
+
+    tongue.delete();
+    grooveNoOffset.delete();
+    grooveWithOffset.delete();
+  });
+
   it('the body tongue seats inside the rail groove in world space', () => {
     // Body tongue (body frame, centered): front wall at y = -DEPTH*GU/2.
     const { nubs } = buildConnectors(

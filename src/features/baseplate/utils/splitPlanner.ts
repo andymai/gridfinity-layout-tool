@@ -578,7 +578,8 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     lengthMm: number,
     bandThicknessMm: number,
     ownedCorners: MarginCorner[],
-    worldOffsetMm: { x: number; y: number }
+    worldOffsetMm: { x: number; y: number },
+    seamTongueOffsetMm: number = 0
   ): void => {
     margins.push({
       id,
@@ -590,6 +591,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       bandThicknessMm,
       ownedCorners,
       worldOffsetMm,
+      seamTongueOffsetMm,
       ...fill,
     });
   };
@@ -608,23 +610,45 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       const extR = c === colLast ? pr : 0;
       const len = colSizes[c] * gridUnitMm + extL + extR;
       const cx = colCenter(c) - extL / 2 + extR / 2;
+      // The connector groove must line up with the body's tongue, which sits at
+      // the body wall's center (the piece's grid center shifted by any integral
+      // left/right padding it still carries), not the corner-extended rail center.
+      const bodyPadL = c === 0 && !det.left ? pl : 0;
+      const bodyPadR = c === colLast && !det.right ? pr : 0;
+      const seamOffset = (bodyPadR - bodyPadL) / 2 + extL / 2 - extR / 2;
       if (det.front) {
         const owned: MarginCorner[] = [];
         if (c === 0) owned.push('bl');
         if (c === colLast) owned.push('br');
-        push(`margin-front-${colToLetter(c)}`, 'front', 'long', c, 0, len, pf, owned, {
-          x: cx,
-          y: -halfD - pf / 2,
-        });
+        push(
+          `margin-front-${colToLetter(c)}`,
+          'front',
+          'long',
+          c,
+          0,
+          len,
+          pf,
+          owned,
+          { x: cx, y: -halfD - pf / 2 },
+          seamOffset
+        );
       }
       if (det.back) {
         const owned: MarginCorner[] = [];
         if (c === 0) owned.push('tl');
         if (c === colLast) owned.push('tr');
-        push(`margin-back-${colToLetter(c)}`, 'back', 'long', c, rowLast, len, pb, owned, {
-          x: cx,
-          y: halfD + pb / 2,
-        });
+        push(
+          `margin-back-${colToLetter(c)}`,
+          'back',
+          'long',
+          c,
+          rowLast,
+          len,
+          pb,
+          owned,
+          { x: cx, y: halfD + pb / 2 },
+          seamOffset
+        );
       }
     }
     // Short left/right rails, segmented per row, fit between the long rails but

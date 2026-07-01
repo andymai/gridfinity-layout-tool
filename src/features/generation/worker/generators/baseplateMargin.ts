@@ -156,7 +156,8 @@ function buildMarginSolid(
       totalHeight,
       params.connectorStyle,
       params.connectorFitOffset ?? 0,
-      params.nozzleSizeMm
+      params.nozzleSizeMm,
+      margin.seamTongueOffsetMm ?? 0
     );
     rail = cutInBatches(rail, [groove]);
   }

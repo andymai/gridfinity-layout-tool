@@ -467,23 +467,27 @@ export function buildMarginSeamGroove(
   totalHeight: number,
   connectorStyle: ResolvedBaseplateParams['connectorStyle'],
   fitOffset: number,
-  nozzleSizeMm?: number
+  nozzleSizeMm?: number,
+  tongueOffsetMm: number = 0
 ): Shape3D {
   const horizontal = side === 'front' || side === 'back';
   const seamSign: -1 | 1 = side === 'front' || side === 'left' ? 1 : -1;
   const seamPos = seamSign * (horizontal ? railD / 2 : railW / 2);
   // Rail seam runs along X for front/back rails (wall coord on Y) and along Y
-  // for left/right rails (wall coord on X). Tongue is centered → bp = 0.
-  const pt: (wall: number, bp: number) => [number, number] = horizontal
-    ? (wall, bp) => [bp, wall]
-    : (wall, bp) => [wall, bp];
+  // for left/right rails (wall coord on X). `tongueOffsetMm` slides the groove
+  // along that axis onto the mating body tongue — nonzero on a corner-owning end
+  // segment whose rail center no longer sits on the body wall it joins (#2427).
+  const bp = tongueOffsetMm;
+  const pt: (wall: number, b: number) => [number, number] = horizontal
+    ? (wall, b) => [b, wall]
+    : (wall, b) => [wall, b];
   const cl = effectiveClearance(TONGUE_CLEARANCE, fitOffset, nozzleSizeMm);
   return connectorStyle === 'puzzle'
-    ? makePuzzleGroove(pt, seamPos, 0, seamSign, cl, COPLANAR_MARGIN, totalHeight)
+    ? makePuzzleGroove(pt, seamPos, bp, seamSign, cl, COPLANAR_MARGIN, totalHeight)
     : makeGroove(
         pt,
         seamPos,
-        0,
+        bp,
         seamSign,
         TONGUE_PROTRUSION,
         TONGUE_BASE_HALF,

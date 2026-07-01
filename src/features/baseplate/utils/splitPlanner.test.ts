@@ -1425,6 +1425,37 @@ describe('detachMargins emits margin rails', () => {
     for (const seg of front.slice(1, -1)) expect(seg.ownedCorners).toEqual([]);
   });
 
+  it('offsets the seam connector on corner segments back onto the body tongue (#2427)', () => {
+    // Corner-owning end segments extend over the detached left/right padding, so
+    // their center no longer sits on the body wall they join. seamTongueOffsetMm
+    // must cancel that shift so the groove lands on the (grid-centered) tongue.
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 10,
+        depth: 3,
+        detachMargins: true,
+        paddingLeft: P,
+        paddingRight: P,
+        paddingFront: P,
+        paddingBack: P,
+      }),
+      256
+    );
+    const front = tiling.margins.filter((m) => m.side === 'front').sort((a, b) => a.col - b.col);
+    // First column extends over the left padding (center shifted −P/2), so the
+    // groove shifts +P/2 back; last column mirrors it; middle columns are centered.
+    expect(front[0].seamTongueOffsetMm).toBeCloseTo(P / 2, 6);
+    expect(front[front.length - 1].seamTongueOffsetMm).toBeCloseTo(-P / 2, 6);
+    for (const seg of front.slice(1, -1)) expect(seg.seamTongueOffsetMm).toBeCloseTo(0, 6);
+    // The offset places the groove exactly on the body piece's grid center.
+    for (const seg of front) {
+      const piece = tiling.pieces.find((p) => p.col === seg.col && p.row === seg.row)!;
+      const pieceCenterX =
+        piece.gridOffsetX * U + (piece.widthUnits * U) / 2 - tiling.totalWidthUnits * U * 0.5;
+      expect(seg.worldOffsetMm.x + (seg.seamTongueOffsetMm ?? 0)).toBeCloseTo(pieceCenterX, 6);
+    }
+  });
+
   it('extends a rail over an integral (sub-threshold) perpendicular side to reach its corner', () => {
     // left detaches; front padding (5mm) stays integral on the body. The left
     // rail must extend over that 5mm so the front-left corner has no gap.
