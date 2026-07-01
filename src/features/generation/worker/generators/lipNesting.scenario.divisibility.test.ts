@@ -49,10 +49,14 @@ function overlapAtPitch(
   const upper = translate(solid, [0, 0, pitch]);
   try {
     const r = intersect(solid, upper);
-    if (!isOk(r)) return 0;
-    const v = vol(r.value);
-    r.value.delete();
-    return v;
+    // Fail loudly rather than reporting 0 overlap — a swallowed boolean error
+    // would let the "seats cleanly" assertion pass vacuously.
+    if (!isOk(r)) throw new Error(`intersect failed at pitch ${pitch}`);
+    try {
+      return vol(r.value);
+    } finally {
+      r.value.delete();
+    }
   } finally {
     upper.delete();
   }
@@ -106,7 +110,7 @@ describe('stacking divisibility — nested lip keeps 2×Hu == 1×2Hu (#2416)', (
   );
 
   it(
-    'holds at a custom sub-7mm unit',
+    'holds at a custom non-standard unit',
     () =>
       assertDivisibility(
         'custom 9.362mm 2u',
