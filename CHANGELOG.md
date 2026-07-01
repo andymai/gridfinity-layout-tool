@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.211.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.0...gridfinity-layout-tool-v4.211.1) (2026-07-01)
+
+
+### Bug Fixes
+
+* **baseplate:** margin connector must engage on the default dovetail style ([#2423](https://github.com/andymai/gridfinity-layout-tool/issues/2423)) ([557d7ff](https://github.com/andymai/gridfinity-layout-tool/commit/557d7ffd5f8d3adff40d0c59b57e9a49932b6057))
+
 ## [4.211.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.210.1...gridfinity-layout-tool-v4.211.0) (2026-07-01)
 
 
