@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.211.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.2...gridfinity-layout-tool-v4.211.3) (2026-07-01)
+
+
+### Bug Fixes
+
+* **baseplate:** align margin seam connector on corner rail segments ([#2427](https://github.com/andymai/gridfinity-layout-tool/issues/2427)) ([#2428](https://github.com/andymai/gridfinity-layout-tool/issues/2428)) ([506a278](https://github.com/andymai/gridfinity-layout-tool/commit/506a2788c7153ea3e9f603b96c3c6c259f557b06))
+
 ## [4.211.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.1...gridfinity-layout-tool-v4.211.2) (2026-07-01)
 
 
