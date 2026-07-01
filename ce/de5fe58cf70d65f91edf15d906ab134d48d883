@@ -1,0 +1,92 @@
+src/i18n/locales/pt-BR.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/shared/types/bin.ts
+  s_c54dabfaa98437::t_9d149ae9df5cfa 118-128
+  s_c54dabfaa98437::t_8bb468f95724ca 276-282
+  s_c54dabfaa98437::t_861b33c975ed98 109-112,116
+  s_244b1744f87f2a::t_5cb11e48b68da2 117,275
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_c54dabfaa98437::t_9c38839470ac95 73-79,81
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_c54dabfaa98437::t_93c9dcc6affc9d 1471-1523
+src/i18n/locales/sv.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_c54dabfaa98437::t_0ce0949b2ee8e4 347-352,354-358,360-362,364-380,385-394
+  s_c54dabfaa98437::t_9d8a1a47d551a8 177-187
+  s_c54dabfaa98437::t_93835cc9d4dfc3 448-463,465-490
+  s_c54dabfaa98437::t_7a5e4bd1c56b43 464
+  s_c54dabfaa98437::t_517a0ee3d3cd25 395-396
+  s_c54dabfaa98437::t_3bce8a2f14feca 447
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_c54dabfaa98437::t_12b29ffb78f421 258-262
+  s_c54dabfaa98437::t_aca0579bef381d 515-516,520-534
+src/i18n/locales/de.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/core/types.ts
+  s_c54dabfaa98437::t_10690b587c31e5 180-186
+  s_c54dabfaa98437::t_b9babd50164db2 179
+src/features/baseplate/utils/splitPlanner.ts
+  s_c54dabfaa98437::t_dcefe3f1bc0f6a 19-20
+  s_c54dabfaa98437::t_a211cc46516af3 910,914,918,922
+  s_c54dabfaa98437::t_c208731332a94c 786-791
+  s_c54dabfaa98437::t_70cf77a37eeac9 783-785
+  s_c54dabfaa98437::t_f027ba59b1a10a 792-794
+  s_c54dabfaa98437::t_8d2627afb5af4a 781-782,795-804,815-818
+src/features/baseplate/utils/buildFullParams.ts
+  s_c54dabfaa98437::t_912d856c7e2902 80
+  s_c54dabfaa98437::t_7876f1536c176e 41-42
+src/i18n/locales/es.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/core/constants.ts
+  s_c54dabfaa98437::t_78fa1c253e273b 365-367
+src/features/baseplate/utils/pieceNaming.ts
+  s_c54dabfaa98437::t_30bbe1f4d574a0 24-25,27,34
+  s_c54dabfaa98437::t_38b936daa91984 10
+src/i18n/locales/ja.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_c54dabfaa98437::t_34c265bbfcf671 111,119-129
+  s_c54dabfaa98437::t_4a43b0b76df232 1-110,112-118,130-171
+src/i18n/locales/fr.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/i18n/locales/nl.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/i18n/locales/uk.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_c54dabfaa98437::t_b08dc4bd5bd252 142
+src/i18n/locales/en.ts
+  s_c54dabfaa98437::t_916d9701120390 2263-2266
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_c54dabfaa98437::t_0b027fd79e9571 142-159
+  s_c54dabfaa98437::t_e6e2acb8ca1a58 34
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_c54dabfaa98437::t_26450d2900f351 219-220
+src/i18n/locales/nb.json
+  s_c54dabfaa98437::t_9f8e50d2b1393e 115-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "cede5fe58cf70d65f91edf15d906ab134d48d883",
+  "prompts": {},
+  "sessions": {
+    "s_244b1744f87f2a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "28d0ef79-1ff5-4df6-86c8-49ab8dc32b47",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
