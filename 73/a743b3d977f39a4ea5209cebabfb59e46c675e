@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_0882e0636efa4f::t_cde0aa34395715 118-120,122-125
+  s_0882e0636efa4f::t_cf16746b56f186 288-318
+  s_0882e0636efa4f::t_7b142f598315ae 121
+src/shared/types/bin.ts
+  s_0882e0636efa4f::t_e2865f7576f7b8 200
+src/features/baseplate/utils/splitPlanner.ts
+  s_0882e0636efa4f::t_cbf80436947e45 602
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_0882e0636efa4f::t_ad0191a21ac85e 400-401
+  s_0882e0636efa4f::t_a643815c92dcb2 465-472
+  s_0882e0636efa4f::t_2e5cf89ca34d96 491-493,496,500
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "73a743b3d977f39a4ea5209cebabfb59e46c675e",
+  "prompts": {},
+  "sessions": {
+    "s_0882e0636efa4f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38c6b68c-7cd4-4b60-bc46-c2d8d97e02ee",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
