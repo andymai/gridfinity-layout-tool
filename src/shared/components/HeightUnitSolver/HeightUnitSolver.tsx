@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -29,6 +29,7 @@ export function HeightUnitSolver({
   variant = 'desktop',
 }: HeightUnitSolverProps) {
   const t = useTranslation();
+  const uid = useId();
   const [target, setTarget] = useState('');
   const [bins, setBins] = useState(2);
   const [unitsPerBin, setUnitsPerBin] = useState(2);
@@ -38,11 +39,13 @@ export function HeightUnitSolver({
     Number.isFinite(targetMm) && targetMm > 0
       ? solveHeightUnitMm(targetMm, unitsPerBin, bins)
       : null;
-  const inRange =
-    solved !== null &&
-    solved >= CONSTRAINTS.HEIGHT_UNIT_MM_MIN &&
-    solved <= CONSTRAINTS.HEIGHT_UNIT_MM_MAX;
+  // Range-check the value we actually apply (`suggested`), not the unrounded
+  // solve — otherwise 20.004 hides Apply though it rounds to an in-range 20.00.
   const suggested = solved !== null ? round2(solved) : null;
+  const inRange =
+    suggested !== null &&
+    suggested >= CONSTRAINTS.HEIGHT_UNIT_MM_MIN &&
+    suggested <= CONSTRAINTS.HEIGHT_UNIT_MM_MAX;
   const stackTotalMm =
     suggested !== null ? round2(stackedTotalMm(unitsPerBin, suggested, bins)) : 0;
 
@@ -58,13 +61,14 @@ export function HeightUnitSolver({
         {t('stackSolver.description', { lip: round2(STACK_LIP_MM) })}
       </p>
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor="stackSolverTarget" className={labelClass}>
+        <label htmlFor={`${uid}-target`} className={labelClass}>
           {t('stackSolver.targetLabel')}
         </label>
         <input
-          id="stackSolverTarget"
+          id={`${uid}-target`}
           type="number"
           inputMode="decimal"
+          step="any"
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           placeholder={TARGET_PLACEHOLDER_MM}
@@ -73,11 +77,11 @@ export function HeightUnitSolver({
         />
       </div>
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor="stackSolverBins" className={labelClass}>
+        <label htmlFor={`${uid}-bins`} className={labelClass}>
           {t('stackSolver.binsLabel')}
         </label>
         <input
-          id="stackSolverBins"
+          id={`${uid}-bins`}
           type="number"
           min={1}
           step={1}
@@ -88,11 +92,11 @@ export function HeightUnitSolver({
         />
       </div>
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor="stackSolverUnits" className={labelClass}>
+        <label htmlFor={`${uid}-units`} className={labelClass}>
           {t('stackSolver.unitsPerBinLabel')}
         </label>
         <input
-          id="stackSolverUnits"
+          id={`${uid}-units`}
           type="number"
           min={1}
           step={1}
@@ -114,7 +118,7 @@ export function HeightUnitSolver({
               fullWidth
               type="button"
               onClick={() => onApply(suggested)}
-              disabled={suggested === round2(heightUnitMm)}
+              disabled={Math.abs(suggested - heightUnitMm) < 1e-9}
               className="text-[11px] py-1.5 px-2"
             >
               {t('stackSolver.apply', { unit: suggested })}
