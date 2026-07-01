@@ -1,0 +1,33 @@
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_c54dabfaa98437::t_3f0d5c58f0d09e 1491-1498
+src/features/baseplate/utils/splitPlanner.ts
+  s_c54dabfaa98437::t_d4f0fcc01af2cf 20
+  s_c54dabfaa98437::t_728f466dfe14a0 793-795
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_c54dabfaa98437::t_5fceb3a89eac17 185
+  s_c54dabfaa98437::t_20713aae97fc6a 38
+src/shared/types/bin.ts
+  s_c54dabfaa98437::t_ca855999fa11b5 130-143
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_c54dabfaa98437::t_2c1990f2b6143e 23
+  s_c54dabfaa98437::t_6cb7f0c57a3b19 147-151
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_c54dabfaa98437::t_c2ebb538e96cd2 57
+  s_c54dabfaa98437::t_ead3351cd6db27 262-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "312d65dbd6489e96434ca61e4017c8ab11635690",
+  "prompts": {},
+  "sessions": {
+    "s_c54dabfaa98437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "350a1958-81a6-4e0b-ac4d-a33d622ccc63",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
