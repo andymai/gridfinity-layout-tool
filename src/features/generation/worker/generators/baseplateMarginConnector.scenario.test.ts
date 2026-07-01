@@ -93,6 +93,22 @@ describe('margin-seam connector geometry (#2414)', () => {
     nubs.forEach((n) => n.delete());
   });
 
+  it('builds no seam tongue for a marginSeam edge under a non-tongue style', () => {
+    // Defensive: splitPlanner never assigns marginSeam for snapClip, but if it
+    // did, buildConnectors must not emit a mismatched dovetail tongue.
+    const { nubs } = buildConnectors(
+      baseParams({ edges: frontSeamEdges, connectorStyle: 'snapClip' }),
+      SOCKET_HEIGHT,
+      WIDTH * GU,
+      DEPTH * GU,
+      0,
+      0,
+      true
+    );
+    expect(nubs.length).toBe(0);
+    nubs.forEach((n) => n.delete());
+  });
+
   it('builds no seam tongue when the wall is a plain exterior edge', () => {
     const exterior: BaseplateEdges = { ...frontSeamEdges, front: 'exterior' };
     const { nubs } = buildConnectors(

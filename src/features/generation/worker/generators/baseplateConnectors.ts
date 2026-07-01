@@ -177,13 +177,16 @@ export function buildConnectors(
   if (!edges) return { nubs: tongues, holes: grooves };
   // The opt-in margin-seam connector (#2414) is gated independently of
   // `connectorNubs` (split-piece connectors) — a user can want a rail connector
-  // without split-piece dovetails. Only dovetail/puzzle styles reach here as a
-  // seam (splitPlanner keeps snapClip/dovetailKey friction-fit).
+  // without split-piece dovetails. Only the integral tongue/groove styles carry
+  // a seam; snapClip/dovetailKey stay friction-fit (splitPlanner enforces this,
+  // and this guard keeps the function self-consistent if called directly).
+  const seamStyleOk = params.connectorStyle === 'dovetail' || params.connectorStyle === 'puzzle';
   const hasMarginSeam =
-    edges.left === 'marginSeam' ||
-    edges.right === 'marginSeam' ||
-    edges.front === 'marginSeam' ||
-    edges.back === 'marginSeam';
+    seamStyleOk &&
+    (edges.left === 'marginSeam' ||
+      edges.right === 'marginSeam' ||
+      edges.front === 'marginSeam' ||
+      edges.back === 'marginSeam');
   if (!connectorNubs && !hasMarginSeam) return { nubs: tongues, holes: grooves };
 
   // Dovetail key & snap clip modes: every join edge is female (a groove / a
@@ -386,12 +389,15 @@ export function buildConnectors(
   // detached exterior wall, protruding into the rail. The rail carries the
   // matching groove (`buildMarginSeamGroove`). Rails are solid (no sockets), so
   // no relief is needed; a centered tongue is 180°-rotation-safe under paired
-  // mode. Only dovetail/puzzle reach here.
-  for (const def of edgeDefs) {
-    if (edges[def.side] !== 'marginSeam') continue;
-    const pt = ptFor(def);
-    const center = def.protrudeAxis === 'x' ? slabOffsetY : slabOffsetX;
-    tongues.push(mkTongue(pt, def.wallPos, center, def.protrudeDir));
+  // mode. `hasMarginSeam` already requires a dovetail/puzzle style, so a stray
+  // snapClip/dovetailKey `marginSeam` edge produces no mismatched tongue.
+  if (hasMarginSeam) {
+    for (const def of edgeDefs) {
+      if (edges[def.side] !== 'marginSeam') continue;
+      const pt = ptFor(def);
+      const center = def.protrudeAxis === 'x' ? slabOffsetY : slabOffsetX;
+      tongues.push(mkTongue(pt, def.wallPos, center, def.protrudeDir));
+    }
   }
 
   return { nubs: tongues, holes: grooves };
