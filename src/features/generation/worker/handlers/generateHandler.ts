@@ -72,10 +72,12 @@ export function handleGenerateBaseplate(message: GenerateBaseplateMessage): void
         },
         false,
         signal,
-        // Live preview is draft-quality: skip the underside lightweight floor
-        // cut (invisible from above, ~⅓ of build). The export path rebuilds at
-        // full quality via `exportBaseplate`.
-        true
+        // Full-quality preview (draft=false): run the underside lightweight floor
+        // cut so the preview matches the exported STL (the hollowed material
+        // "past the magnets" is visible when orbiting to the underside). Costs
+        // ~⅓ more on magnet grids, but the mesh LRU caches it after the first
+        // build. Baseplates have no separate procedural draft, so there's no pop.
+        false
       ),
     requestId,
     'BaseplateGen',

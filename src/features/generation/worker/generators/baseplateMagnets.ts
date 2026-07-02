@@ -19,12 +19,21 @@
 import { cylinder, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import {
+  SIZE,
   SOCKET_HEIGHT,
   COPLANAR_MARGIN,
   MAGNET_OFFSETS,
   HOLE_OFFSET,
   forEachCell,
 } from './generatorTypes';
+
+/**
+ * Center-to-wall inset (mm) of a standard magnet in a 42mm cell (`SIZE/2 −
+ * HOLE_OFFSET` = 8mm). Spread magnets on small/non-square cells use this same
+ * inset from the ends so their gap from the wall matches the regular sections
+ * (rather than being jammed against the edge).
+ */
+const STANDARD_WALL_INSET = SIZE / 2 - HOLE_OFFSET;
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 
 /**
@@ -124,8 +133,7 @@ export function magnetPositionsForCell(
   // Standard 4-corner pattern where the ±HOLE_OFFSET corners fit the cell (no
   // extra wall required — matches the long-standing unconditional placement for
   // square cells with any magnet that doesn't overrun the edge).
-  const standardFits =
-    HOLE_OFFSET + magnetRadius <= halfW && HOLE_OFFSET + magnetRadius <= halfD;
+  const standardFits = HOLE_OFFSET + magnetRadius <= halfW && HOLE_OFFSET + magnetRadius <= halfD;
   if (standardFits) {
     return MAGNET_OFFSETS.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
   }
@@ -134,14 +142,22 @@ export function magnetPositionsForCell(
   const reach = magnetRadius + MAGNET_EDGE_CLEARANCE;
   if (reach > halfW || reach > halfD) return [];
 
-  // Spread magnets along the longer axis, centered on the shorter one. Magnet
-  // centers stay within ±usableHalf (a printable wall from each end); count
-  // tracks the ±HOLE_OFFSET corner pitch (~26mm apart).
+  // Spread magnets along the longer axis, centered on the shorter one. The
+  // outermost magnets sit the SAME distance from the end wall as a standard
+  // magnet does in a full cell (STANDARD_WALL_INSET) — so they aren't jammed
+  // against the edge — but at least a printable wall for oversized magnets.
+  // Interior magnets track the ±HOLE_OFFSET corner pitch (~26mm apart).
   const alongX = halfW >= halfD;
   const halfLong = alongX ? halfW : halfD;
-  const usableHalf = halfLong - reach;
-  const count = Math.max(1, Math.floor(usableHalf / HOLE_OFFSET) + 1);
+  const outerInset = Math.max(STANDARD_WALL_INSET, reach);
+  const usableHalf = halfLong - outerInset;
 
+  // Long axis too short to seat a magnet at the standard inset → one centered.
+  if (usableHalf <= 1e-6) {
+    return [[cell.centerX, cell.centerY]];
+  }
+
+  const count = Math.floor(usableHalf / HOLE_OFFSET) + 1;
   if (count === 1) {
     return [[cell.centerX, cell.centerY]];
   }

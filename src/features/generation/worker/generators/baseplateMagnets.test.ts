@@ -26,25 +26,27 @@ describe('magnetPositionsForCell', () => {
     );
   });
 
-  it('spreads magnets top/bottom along Y for a narrow-tall foot (25×42)', () => {
+  it('spreads magnets top/bottom along Y at the standard wall gap (25×42)', () => {
     // 25mm-wide foot (half 12.5) can't hold the ±13 corners → two magnets spread
-    // along the long Y axis, centered in X (x=0), symmetric about center.
+    // along the long Y axis, centered in X. They sit the SAME 8mm from the end
+    // wall as a regular magnet (±13 from center), not jammed against the edge.
     const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 25, 42);
     expect(positions).toHaveLength(2);
     for (const [x] of positions) expect(x).toBeCloseTo(0, 6);
     const ys = positions.map((p) => p[1]).sort((a, b) => a - b);
-    expect(ys[0]).toBeCloseTo(-ys[1], 6); // symmetric top/bottom
-    expect(ys[1]).toBeGreaterThan(0);
-    // Each magnet stays a printable wall inside the 42mm foot end.
-    expect(ys[1] + MAGNET_R + MAGNET_EDGE_CLEARANCE).toBeLessThanOrEqual(42 / 2 + 1e-9);
+    expect(ys[0]).toBeCloseTo(-13, 6);
+    expect(ys[1]).toBeCloseTo(13, 6);
+    // 8mm center-to-wall, matching a standard magnet in a 42mm cell.
+    expect(42 / 2 - ys[1]).toBeCloseTo(8, 6);
   });
 
-  it('spreads magnets left/right along X for a wide-short foot (42×25)', () => {
+  it('spreads magnets left/right along X at the standard wall gap (42×25)', () => {
     const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 42, 25);
     expect(positions).toHaveLength(2);
     for (const [, y] of positions) expect(y).toBeCloseTo(0, 6);
     const xs = positions.map((p) => p[0]).sort((a, b) => a - b);
-    expect(xs[0]).toBeCloseTo(-xs[1], 6); // symmetric left/right
+    expect(xs[0]).toBeCloseTo(-13, 6);
+    expect(xs[1]).toBeCloseTo(13, 6);
   });
 
   it('places more magnets along a very long narrow foot (25×84)', () => {
