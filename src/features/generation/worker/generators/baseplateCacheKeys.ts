@@ -56,7 +56,8 @@ export function meshCacheKey(
     // v2: over-tile margin tiles now receive magnet holes (was solid).
     // v3: small/non-square tiles spread magnets along the long axis (was 1 center).
     // v4: spread magnets use the standard wall inset (were jammed against the end).
-    'v4',
+    // v5: over-tile margin tiles now get lightweight underside hollowing (was solid).
+    'v5',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),

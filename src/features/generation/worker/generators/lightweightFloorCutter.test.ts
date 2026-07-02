@@ -50,3 +50,139 @@ describe('buildLightweightFloorCutters', () => {
     expect(result).toEqual([]);
   });
 });
+
+const GRID = 42;
+const MAGNET_R = 6.5 / 2; // standard 6.5mm magnet
+
+type Cell = { widthUnits: number; depthUnits: number; centerX: number; centerY: number };
+function cell(widthUnits: number, depthUnits: number, centerX = 0, centerY = 0): Cell {
+  return { widthUnits, depthUnits, centerX, centerY };
+}
+
+describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
+  it('hollows a narrow-tall tile into two end pads (side strips + center gap) — 25×42', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // Short axis (X, 25mm) has room → remove the L/R strips; the two magnets
+    // straddle Y → also remove the center gap between their pads. Result: a pad
+    // around each magnet, everything else open (prints as sparse infill).
+    const cuts = planPartialCellFloorCuts(cell(25 / GRID, 1), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(3);
+    expect(cuts.every((c) => c.kind === 'rect')).toBe(true);
+    for (const c of cuts) if (c.kind === 'rect') expect(c.centerY).toBeCloseTo(0, 6);
+    const centered = cuts.filter((c) => Math.abs(c.centerX) < 1e-6);
+    const strips = cuts.filter((c) => Math.abs(c.centerX) > 1e-6);
+    expect(centered).toHaveLength(1); // center gap, on the tile axis
+    expect(strips).toHaveLength(2); // left + right side strips
+    expect(strips[0].centerX * strips[1].centerX).toBeLessThan(0); // opposite sides
+  });
+
+  it('hollows the center gap of a wide-short tile too thin to strip — 42×13', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // Short axis (Y, 13mm) can't be stripped, but two magnets straddle X → remove
+    // the single center gap between their pads.
+    const cuts = planPartialCellFloorCuts(cell(1, 13 / GRID), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(1);
+    const c = cuts[0];
+    expect(c.kind).toBe('rect');
+    if (c.kind === 'rect') {
+      expect(c.centerX).toBeCloseTo(0, 6);
+      expect(c.centerY).toBeCloseTo(0, 6);
+      expect(c.width).toBeGreaterThan(2); // meaningful hollow between the magnets
+    }
+  });
+
+  it('opens left/right of a lone-magnet square tile, padding the magnet — 25×25', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // One centered magnet with room on both axes → hollow left/right (tie → X),
+    // keeping a vertical pad through the magnet (strips offset in X, centered Y).
+    const cuts = planPartialCellFloorCuts(cell(25 / GRID, 25 / GRID), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(2);
+    for (const c of cuts) if (c.kind === 'rect') expect(c.centerY).toBeCloseTo(0, 6);
+    const xs = cuts.map((c) => c.centerX).sort((a, b) => a - b);
+    expect(xs[0]).toBeLessThan(0);
+    expect(xs[1]).toBeGreaterThan(0);
+  });
+
+  it('opens left/right of a lone-magnet corner tile too short to strip — 25×13', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // Short axis (Y, 13mm) can't be stripped, but the wide axis has room → open
+    // left/right, keeping a full-height pad around the centered magnet (rather
+    // than leaving the whole corner tile solid).
+    const cuts = planPartialCellFloorCuts(cell(25 / GRID, 13 / GRID), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(2);
+    for (const c of cuts) if (c.kind === 'rect') expect(c.centerY).toBeCloseTo(0, 6);
+    const xs = cuts.map((c) => c.centerX).sort((a, b) => a - b);
+    expect(xs[0]).toBeLessThan(0); // left open
+    expect(xs[1]).toBeGreaterThan(0); // right open
+  });
+
+  it('keeps a single spine for a very long narrow foot (all magnets ride it) — 25×84', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // Three magnets along Y, all on one spine → still just the two X-side strips.
+    const cuts = planPartialCellFloorCuts(cell(25 / GRID, 2), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(2);
+    for (const c of cuts) if (c.kind === 'rect') expect(c.centerY).toBeCloseTo(0, 6);
+    const xs = cuts.map((c) => c.centerX).sort((a, b) => a - b);
+    expect(xs[0]).toBeLessThan(0);
+    expect(xs[1]).toBeGreaterThan(0);
+  });
+
+  it('uses a cross cut for a standard-fits partial tile — 0.95×0.95', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    const cuts = planPartialCellFloorCuts(cell(0.95, 0.95), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(1);
+    expect(cuts[0].kind).toBe('cross');
+  });
+
+  it('leaves a too-tiny tile solid (no cuts)', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    expect(planPartialCellFloorCuts(cell(0.1, 0.1), MAGNET_R, GRID)).toEqual([]);
+  });
+
+  it('offsets cuts to a non-origin tile center', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    const cuts = planPartialCellFloorCuts(cell(25 / GRID, 1, 100, 40), MAGNET_R, GRID);
+    expect(cuts).toHaveLength(3);
+    for (const c of cuts) if (c.kind === 'rect') expect(c.centerY).toBeCloseTo(40, 6);
+    const xs = cuts.map((c) => c.centerX);
+    expect(Math.min(...xs)).toBeLessThan(100);
+    expect(Math.max(...xs)).toBeGreaterThan(100);
+    expect(xs.filter((x) => Math.abs(x - 100) < 1e-6)).toHaveLength(1); // gap on axis
+  });
+});
+
+describe('buildPartialCellFloorCutters (BREP solids)', () => {
+  it('returns [] when lightweight is false', async () => {
+    const { buildPartialCellFloorCutters } = await import('./lightweightFloorCutter');
+    const result = buildPartialCellFloorCutters([cell(25 / GRID, 1)], MAGNET_R, 2, GRID, false);
+    expect(result).toEqual([]);
+  });
+
+  it('builds side-strip + center-gap cutters for a 25×42 margin tile (pads only)', async () => {
+    const { buildPartialCellFloorCutters } = await import('./lightweightFloorCutter');
+    const result = buildPartialCellFloorCutters([cell(25 / GRID, 1)], MAGNET_R, 2, GRID);
+    expect(result).toHaveLength(3);
+  });
+
+  it('builds one center-gap cutter for a 42×13 margin tile', async () => {
+    const { buildPartialCellFloorCutters } = await import('./lightweightFloorCutter');
+    const result = buildPartialCellFloorCutters([cell(1, 13 / GRID)], MAGNET_R, 2, GRID);
+    expect(result).toHaveLength(1);
+  });
+
+  it('builds no cutter for a tile too small to hollow', async () => {
+    const { buildPartialCellFloorCutters } = await import('./lightweightFloorCutter');
+    const result = buildPartialCellFloorCutters([cell(0.1, 0.1)], MAGNET_R, 2, GRID);
+    expect(result).toEqual([]);
+  });
+
+  it('each cutter is a valid Shape3D with geometry', async () => {
+    const { buildPartialCellFloorCutters } = await import('./lightweightFloorCutter');
+    const { mesh } = await import('brepjs');
+    const result = buildPartialCellFloorCutters([cell(25 / GRID, 1)], MAGNET_R, 2, GRID);
+    for (const cutter of result) {
+      const tessellated = mesh(cutter, { tolerance: 0.5, angularTolerance: 15 });
+      expect(tessellated.vertices.length).toBeGreaterThan(0);
+    }
+  });
+});
