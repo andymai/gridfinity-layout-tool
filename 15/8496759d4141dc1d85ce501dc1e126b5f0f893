@@ -1,0 +1,29 @@
+CLAUDE.md
+  s_df85e2a1e217fd::t_844dd788ad30f5 180
+  s_df85e2a1e217fd::t_63d9d989f9c4f3 100
+  s_df85e2a1e217fd::t_54e7609c1153b1 91
+.claude/skills/state-and-cqrs/SKILL.md
+  s_df85e2a1e217fd::t_e1e4d10eb91850 23
+.claude/skills/testing/SKILL.md
+  s_df85e2a1e217fd::t_23107ca3af7b88 27
+.claude/skills/geometry-generation/SKILL.md
+  s_df85e2a1e217fd::t_a10cbe14734fd7 81
+.claude/hooks/geometry-sanity-check.sh
+  s_df85e2a1e217fd::t_d09e546c79b0cc 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "158496759d4141dc1d85ce501dc1e126b5f0f893",
+  "prompts": {},
+  "sessions": {
+    "s_df85e2a1e217fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4075462d-8fb0-4140-aaad-b691f5ed0cd6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
