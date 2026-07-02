@@ -94,13 +94,20 @@ export function buildMagnetHoles(
 
 /**
  * Magnet positions for a single cell/tile, per-axis pitch (`pitchX` scales
- * width, `pitchY` scales depth — equal for a square grid). When the standard
- * ±{@link HOLE_OFFSET}mm 4-corner pattern fits the cell geometrically, it's used
- * unchanged (so standard 42mm cells — bin feet and baseplate cells alike — are
- * byte-identical). When a cell is too small on some axis (a non-square/small bin
- * foot, or a clipped over-tile margin tile), the corners that clear a printable
- * wall ({@link MAGNET_EDGE_CLEARANCE}) are kept; if none fit, a single centered
- * magnet is used; if even that won't fit, `[]`.
+ * width, `pitchY` scales depth — equal for a square grid).
+ *
+ * - Standard cells: when the ±{@link HOLE_OFFSET}mm 4-corner pattern fits the
+ *   cell geometrically, it's used unchanged (so standard 42mm cells — bin feet
+ *   and baseplate cells alike — are byte-identical).
+ * - Narrow/non-square cells (a 25mm bin foot, a clipped over-tile margin tile):
+ *   the corner pattern can't fit, so magnets are SPREAD in a line along the
+ *   LONGER axis, centered on the shorter one — top/bottom for a narrow-tall foot,
+ *   left/right for a wide-short one. Spacing tracks the Gridfinity 2·HOLE_OFFSET
+ *   corner pitch, so the magnets sit near the ends and the middle stays open
+ *   (with a shelled/lightweight base, material lands only under the magnets
+ *   instead of filling the foot with one central blob).
+ * - Cells long enough for only one magnet: a single centered magnet.
+ * - Cells too small for even one: `[]`.
  *
  * `magnetRadius` should be the largest cutter radius at each position (max of the
  * magnet and screw radii when a cell carries both).
@@ -123,20 +130,31 @@ export function magnetPositionsForCell(
     return MAGNET_OFFSETS.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
   }
 
-  // Cell too small on some axis: keep the corners that clear a printable wall.
+  // A magnet must at least fit centered on both axes, else the cell is too small.
   const reach = magnetRadius + MAGNET_EDGE_CLEARANCE;
-  const fitting = MAGNET_OFFSETS.filter(
-    ([dx, dy]) => Math.abs(dx) + reach <= halfW && Math.abs(dy) + reach <= halfD
-  );
-  if (fitting.length > 0) {
-    return fitting.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
-  }
+  if (reach > halfW || reach > halfD) return [];
 
-  // Center-magnet fallback for cells too narrow for any corner.
-  if (reach <= halfW && reach <= halfD) {
+  // Spread magnets along the longer axis, centered on the shorter one. Magnet
+  // centers stay within ±usableHalf (a printable wall from each end); count
+  // tracks the ±HOLE_OFFSET corner pitch (~26mm apart).
+  const alongX = halfW >= halfD;
+  const halfLong = alongX ? halfW : halfD;
+  const usableHalf = halfLong - reach;
+  const count = Math.max(1, Math.floor(usableHalf / HOLE_OFFSET) + 1);
+
+  if (count === 1) {
     return [[cell.centerX, cell.centerY]];
   }
-  return [];
+
+  const positions: Array<[number, number]> = [];
+  const step = (2 * usableHalf) / (count - 1);
+  for (let i = 0; i < count; i++) {
+    const offset = -usableHalf + i * step;
+    positions.push(
+      alongX ? [cell.centerX + offset, cell.centerY] : [cell.centerX, cell.centerY + offset]
+    );
+  }
+  return positions;
 }
 
 /**

@@ -54,7 +54,8 @@ export function meshCacheKey(
     : 0;
   return buildCacheKey(
     // v2: over-tile margin tiles now receive magnet holes (was solid).
-    'v2',
+    // v3: small/non-square tiles spread magnets along the long axis (was 1 center).
+    'v3',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),

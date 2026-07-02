@@ -26,23 +26,42 @@ describe('magnetPositionsForCell', () => {
     );
   });
 
-  it('centers the magnet on a non-square full cell where ±13 overruns (bin foot)', () => {
-    // A 1×1 cell at 25×42 pitch: the 25mm-wide foot (half 12.5mm) can't hold the
-    // ±13mm corners, so a single centered magnet is used instead of magnets
-    // breaching the foot's side. Matches the baseplate small-tile behavior.
-    expect(magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 25, 42)).toEqual([[0, 0]]);
+  it('spreads magnets top/bottom along Y for a narrow-tall foot (25×42)', () => {
+    // 25mm-wide foot (half 12.5) can't hold the ±13 corners → two magnets spread
+    // along the long Y axis, centered in X (x=0), symmetric about center.
+    const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 25, 42);
+    expect(positions).toHaveLength(2);
+    for (const [x] of positions) expect(x).toBeCloseTo(0, 6);
+    const ys = positions.map((p) => p[1]).sort((a, b) => a - b);
+    expect(ys[0]).toBeCloseTo(-ys[1], 6); // symmetric top/bottom
+    expect(ys[1]).toBeGreaterThan(0);
+    // Each magnet stays a printable wall inside the 42mm foot end.
+    expect(ys[1] + MAGNET_R + MAGNET_EDGE_CLEARANCE).toBeLessThanOrEqual(42 / 2 + 1e-9);
+  });
+
+  it('spreads magnets left/right along X for a wide-short foot (42×25)', () => {
+    const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 42, 25);
+    expect(positions).toHaveLength(2);
+    for (const [, y] of positions) expect(y).toBeCloseTo(0, 6);
+    const xs = positions.map((p) => p[0]).sort((a, b) => a - b);
+    expect(xs[0]).toBeCloseTo(-xs[1], 6); // symmetric left/right
+  });
+
+  it('places more magnets along a very long narrow foot (25×84)', () => {
+    const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 25, 84);
+    expect(positions.length).toBeGreaterThanOrEqual(3); // top, middle(s), bottom
+    for (const [x] of positions) expect(x).toBeCloseTo(0, 6);
+  });
+
+  it('uses a single centered magnet when the foot is small on both axes (25×25)', () => {
+    // Too short to spread two along either axis → one centered magnet.
+    expect(magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 25, 25)).toEqual([[0, 0]]);
   });
 
   it('keeps all 4 corners on a large partial tile that fits them', () => {
-    // 0.9u wide: halfW = 18.9; corner reach = 13 + r + clearance ≈ 17.75 ≤ 18.9.
+    // 0.9u wide: halfW = 18.9; ±13 + r = 16.25 ≤ 18.9, so the standard pattern fits.
     const positions = magnetPositionsForCell(cell(0.9, 1, 0, 0), MAGNET_R, GRID, GRID);
     expect(positions).toHaveLength(4);
-  });
-
-  it('falls back to a single centered magnet on a narrow tile', () => {
-    // 0.5u wide (21mm): corners (±13) cannot fit, but a centered magnet does.
-    const positions = magnetPositionsForCell(cell(0.5, 1, 10, 4), MAGNET_R, GRID, GRID);
-    expect(positions).toEqual([[10, 4]]);
   });
 
   it('emits no magnet for a tile too small for even a centered magnet', () => {
