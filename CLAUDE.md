@@ -157,7 +157,7 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 - **Fix all layers** — bugs spanning UI → store → computation must be verified at each layer. Don't stop at the first fix that silences the visible symptom.
 - **Geometry/math validation** — after any generation change, verify: output > 0, no NaN/Infinity, correct coordinate system (grid origin bottom-left, Y-up). Run scenario tests:
   ```bash
-  pnpm run test:run -- src/features/generation/worker/generators/binGenerator.scenario
+  pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario
   ```
 - **Coordinate transforms** — grid units ↔ mm conversions use `gridUnitMm` (42mm). Height units use `heightUnitMm` (7mm). Never mix unit systems.
 - **Common traps**: stale closures in hooks (missing deps), `useShallow` omitted on multi-select, `layers[0]` = bottom (UI reverses display).
