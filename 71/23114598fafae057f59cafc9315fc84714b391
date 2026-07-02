@@ -1,0 +1,122 @@
+.claude/skills/content-and-seo/SKILL.md
+  s_36a00dc03f384c::t_9ee92b53ad1226 1-53,55-69,71-80
+  s_36a00dc03f384c::t_5a68547a710b52 54
+  s_36a00dc03f384c::t_036de9230c641c 70
+.claude/skills/testing/SKILL.md
+  s_36a00dc03f384c::t_30d78a94f23927 29
+  s_36a00dc03f384c::t_3767b595d848ae 72
+  s_36a00dc03f384c::t_de9ee13a51273e 17
+  s_36a00dc03f384c::t_e111269401acdf 1-16,18-28,30-49,51-58,60-71,73-77,79-85,87-101
+  s_36a00dc03f384c::t_ad56ae97293899 50,59,78,86
+  s_36a00dc03f384c::t_afb4fb614bf638 102-103
+.claude/skills/grid-editor/SKILL.md
+  s_36a00dc03f384c::t_0861ae76af5bf4 57-60
+  s_36a00dc03f384c::t_ebb649a5466cde 1-24,26-56,61-83
+  s_36a00dc03f384c::t_0ebd1833650552 25
+  s_36a00dc03f384c::t_3ccf426d82e4f4 84
+.claude/skills/geometry-generation/SKILL.md
+  s_36a00dc03f384c::t_e15e19b6ad1976 55
+  s_36a00dc03f384c::t_e311c7cbcf7f57 73-75,80-81
+  s_36a00dc03f384c::t_d0110616590fde 97
+  s_36a00dc03f384c::t_0300f55678e7d3 96
+  s_36a00dc03f384c::t_122940b1fafdb1 44
+  s_36a00dc03f384c::t_938e3580ddf459 1-35,37-43,45-54,56-72,76-79,82-95,98-100
+  s_36a00dc03f384c::t_f060459dd32d89 36
+.claude/skills/auth-and-sync/SKILL.md
+  s_36a00dc03f384c::t_c27ca36b648ed8 70
+  s_36a00dc03f384c::t_bdf13d2bf02642 24
+  s_36a00dc03f384c::t_915a353aa24c13 1-23,25-69,71-82
+  s_36a00dc03f384c::t_56c2a2681f517b 83
+.claude/skills/analytics-and-labs/SKILL.md
+  s_36a00dc03f384c::t_2c98a1cbfdcbbf 1-2,4-16,18-32,34-58,61-76,78-79
+  s_36a00dc03f384c::t_303dde730feef0 59-60
+  s_36a00dc03f384c::t_69ef97eb43e037 3
+  s_36a00dc03f384c::t_587390a929f688 17
+  s_36a00dc03f384c::t_9c7da86843a438 33
+  s_36a00dc03f384c::t_e264caa25294a8 77
+.claude/skills/three-preview/SKILL.md
+  s_36a00dc03f384c::t_5503ddad32c103 1-25,27-29,31-39,41-72,75-99
+  s_36a00dc03f384c::t_80b4e71205c7f0 30
+  s_36a00dc03f384c::t_2ababa00b8b908 73-74
+  s_36a00dc03f384c::t_e3b12e4351b9be 26
+  s_36a00dc03f384c::t_2f844c648687ef 40
+src/core/cqrs/README.md
+  s_36a00dc03f384c::t_c9e2468c5f3913 102-109,113-114,116-117,119-120,122,125,128,130-150,152-154,156-163,166,169,172-174,177-178,180-181
+  s_36a00dc03f384c::t_68715103fdbe50 295,298,301-302
+  s_36a00dc03f384c::t_08b287d6bf6c3a 53,57-67,69-70,72-73,75-76,79-83,86-88
+  s_36a00dc03f384c::t_be3a5a825d1075 303
+.claude/skills/state-and-cqrs/SKILL.md
+  s_36a00dc03f384c::t_7fb7c93badb6d3 71
+  s_36a00dc03f384c::t_1426f9a1938031 3
+  s_36a00dc03f384c::t_e021043eb84c82 37
+  s_36a00dc03f384c::t_82d4d64ba907fc 1-2,4-18,20-36,38-63,66-70,72-90
+  s_36a00dc03f384c::t_0b0b350838f39b 64-65
+  s_36a00dc03f384c::t_69ce0c393f0325 19
+.claude/skills/print-export/SKILL.md
+  s_36a00dc03f384c::t_6cdc948d40b7a7 52
+  s_36a00dc03f384c::t_71c9432915db88 45,53,60,72-74
+  s_36a00dc03f384c::t_9fbe05c719afd8 1-44,46-51,54-59,61-71,75-93
+.claude/skills/bin-designer/SKILL.md
+  s_36a00dc03f384c::t_99202f8ce6d982 20
+  s_36a00dc03f384c::t_4af7a470f4880e 1-19,21-29,31-51,53-57,61-83
+  s_36a00dc03f384c::t_77551cc73f66e9 52
+  s_36a00dc03f384c::t_ca7f4d12503d9b 58-60
+  s_36a00dc03f384c::t_936d3b2468cbd8 30
+.claude/skills/geometry-debugging/SKILL.md
+  s_36a00dc03f384c::t_9439ff69568621 36
+  s_36a00dc03f384c::t_96e60871baf681 31
+  s_36a00dc03f384c::t_0a2076f4b1df63 1-27,29-30,32-35,37-47,49-59,63-71,73-82
+  s_36a00dc03f384c::t_fd7cb766c1c6dc 28,48,60-62,72
+.claude/skills/release-and-ci/SKILL.md
+  s_36a00dc03f384c::t_b8df1b0a6bb2d6 1-2,4-17,19-61,63-78,80-97
+  s_36a00dc03f384c::t_aa690dc69b14d5 79
+  s_36a00dc03f384c::t_098552c06b2e61 62
+  s_36a00dc03f384c::t_5192da01f3bb1b 3
+  s_36a00dc03f384c::t_3957fcf311ab37 18
+.claude/skills/feature-slices/SKILL.md
+  s_36a00dc03f384c::t_8e3a669f3f7729 1-18,20,22-27,29-42,44-45,47-61,64-80
+  s_36a00dc03f384c::t_fe92599078f565 46
+  s_36a00dc03f384c::t_b51c7c5d10344e 19
+  s_36a00dc03f384c::t_abfd105a6404ca 21
+  s_36a00dc03f384c::t_fb4d3a786d9788 43
+  s_36a00dc03f384c::t_2e62811cfd59db 28
+  s_36a00dc03f384c::t_09141fb6a58370 62-63
+.claude/skills/quality-gates/SKILL.md
+  s_36a00dc03f384c::t_5ab1a94317ced7 1-28,30-52,54-65,67-80,82-95
+  s_36a00dc03f384c::t_bc68083be8e715 29
+  s_36a00dc03f384c::t_4ec15d9e6da4db 53
+  s_36a00dc03f384c::t_e1b3ad634bf5c0 66
+  s_36a00dc03f384c::t_15f3e692c14920 81
+.claude/skills/debugging-playbook/SKILL.md
+  s_36a00dc03f384c::t_a965a753c69f15 95
+  s_36a00dc03f384c::t_919ed44c7ebc01 91
+  s_36a00dc03f384c::t_f879fde7418d34 39-49
+  s_36a00dc03f384c::t_c1359b0ae8c883 1-38,50-90,92-94,96
+.claude/skills/i18n-changes/SKILL.md
+  s_36a00dc03f384c::t_00e98c21116966 1-16,18-54,56-72
+  s_36a00dc03f384c::t_a28cb687cb0066 17
+  s_36a00dc03f384c::t_4b76cf486aa11e 55
+CLAUDE.md
+  s_36a00dc03f384c::t_bce13057195658 160
+.claude/skills/share-api-collab/SKILL.md
+  s_36a00dc03f384c::t_5e6a45054a88fd 37
+  s_36a00dc03f384c::t_2323ca02cef033 89
+  s_36a00dc03f384c::t_a1e81ece708b8d 1-33,35-36,38-88,90-94
+  s_36a00dc03f384c::t_4c8eb91ce7e1f3 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "7123114598fafae057f59cafc9315fc84714b391",
+  "prompts": {},
+  "sessions": {
+    "s_36a00dc03f384c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dad0f8e-56ab-4c27-a29a-67da12aaac89",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
