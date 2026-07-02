@@ -88,7 +88,7 @@ Import from `@/core/storage` (public facade).
 
 `draw` | `drag` | `resize` | `stagingDrag` | `paint`
 
-**Layer view modes** (`interaction.ts`): `focus` | `stack` | `all`
+**Layer view modes** (`view.ts`): `focus` | `stack` | `all`
 
 ### CQRS (`src/core/cqrs/`)
 
@@ -97,7 +97,7 @@ Import from `@/core/storage` (public facade).
 | Commands    | Typed user intents via `createCommand()` factory          |
 | Events      | Past-tense domain facts, persisted to IndexedDB           |
 | Handlers    | Command -> store mutation + event emission                |
-| Middleware  | Validation (Zod), undo capture (Labs), analytics, logging |
+| Middleware  | Validation (Zod), undo capture, analytics, logging        |
 | Event Store | IndexedDB append-only with retry queue                    |
 | Versioning  | Schema versions + migration registry for persisted events |
 
@@ -177,6 +177,6 @@ pnpm run size          # Bundle size check
 
 ## Environment Variables
 
-**Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `TOKEN_SALT`
+**Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `REDIS_URL`, `TOKEN_SALT`
 
 **Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`

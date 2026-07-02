@@ -78,7 +78,7 @@ pnpm run check:boundaries
 pnpm run bench
 ```
 
-Argument order matters: `test:run -- <filter>` and `test:run -u <filter>` both silently run (and with `-u`, update) the ENTIRE suite — filter first, `-u` last, no `--` (CLAUDE.md's example still carries the broken `--` form; don't copy it).
+Argument order matters: `test:run -- <filter>` and `test:run -u <filter>` both silently run (and with `-u`, update) the ENTIRE suite — filter first, `-u` last, no `--`.
 
 Failure looks like: `toMatchSnapshot` triangleCount diffs (expected churn — verify intent before `-u`), `assertStructurallyValid` NaN/degenerate-triangle throws, or `Call initBrepjs() in beforeAll first`. Cross-feature imports of generation code must go through `src/shared/generation/*` facades (`bridge.ts`, `directMesh.ts`) or `check:boundaries` fails pre-commit.
 
