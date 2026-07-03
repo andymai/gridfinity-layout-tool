@@ -1,0 +1,70 @@
+src/core/types.ts
+  s_6b66cbf3ea7591::t_df541698e41ae2 483
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_6b66cbf3ea7591::t_ab31823b17412f 126
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_6b66cbf3ea7591::t_5422b79cdad8d9 8,12-13
+  s_6b66cbf3ea7591::t_1db15f3d2a7523 85-86,91-92,94-97,99-101,113
+  s_6b66cbf3ea7591::t_1208d6731a6a8c 325-424
+src/features/baseplate/utils/pieceNaming.test.ts
+  s_6b66cbf3ea7591::t_02ffbc39f763e9 95-114
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_6b66cbf3ea7591::t_34be2b3aa52e7a 188
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.test.ts
+  s_6b66cbf3ea7591::t_4158023358bdd5 404
+  s_6b66cbf3ea7591::t_485e7298600d28 283
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_6b66cbf3ea7591::t_f95cbb0a4b0af6 27
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_6b66cbf3ea7591::t_14999dec73bd3b 31-33
+  s_6b66cbf3ea7591::t_bb7ad9b34dd550 1
+src/core/cqrs/validation/schemas.ts
+  s_6b66cbf3ea7591::t_bebb77a40e2cd0 13-18
+  s_6b66cbf3ea7591::t_6c1e3a5e78d183 19
+  s_6b66cbf3ea7591::t_2c6985016ca3b0 230-232,235,237-241
+  s_df85e2a1e217fd::t_6f73c86c924d97 242-245,263
+src/shell/Sidebar/Sidebar.tsx
+  s_6b66cbf3ea7591::t_a0b88b0880a4cc 30
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_6b66cbf3ea7591::t_f00400bd1c23e8 929-930
+  s_6b66cbf3ea7591::t_0750ec7b6e1831 590-591
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_6b66cbf3ea7591::t_4734b1f8bc5455 538
+  s_6b66cbf3ea7591::t_c0ab3e4af12ced 697
+  s_6b66cbf3ea7591::t_b2c71b7d8b57f8 316
+  s_6b66cbf3ea7591::t_1870238cf692f0 534
+src/core/constants.ts
+  s_6b66cbf3ea7591::t_583ec5a5634073 38,55-60
+src/core/cqrs/validation/schemas.test.ts
+  s_6b66cbf3ea7591::t_83da64be2606b4 544-600
+src/features/baseplate/utils/pieceNaming.ts
+  s_6b66cbf3ea7591::t_4f225960947bfd 21
+src/shared/components/HeightUnitSolver/HeightUnitSolver.test.tsx
+  s_6b66cbf3ea7591::t_fa080da55d20b9 17
+src/features/baseplate/utils/pieceFingerprint.test.ts
+  s_6b66cbf3ea7591::t_a5e1b6109caac3 67-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "b7fb4fede0eda6b6ecc54b997e545dee7a6d0dd2",
+  "prompts": {},
+  "sessions": {
+    "s_6b66cbf3ea7591": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66405f86-c3cc-4c93-bc99-74214567f983",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_df85e2a1e217fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4075462d-8fb0-4140-aaad-b691f5ed0cd6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
