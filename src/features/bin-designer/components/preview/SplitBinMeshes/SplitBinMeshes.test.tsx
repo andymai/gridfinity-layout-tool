@@ -246,6 +246,26 @@ describe('SplitBinMeshes', () => {
     expect(() => render(<SplitBinMeshes color="#ff0000" wireframe={false} />)).not.toThrow();
   });
 
+  it('renders with a non-square grid (gridUnitMmY) without throwing', () => {
+    // Depth-axis positioning uses gridUnitMmY; a 42×22 grid must not crash and
+    // must place pieces using the Y pitch rather than the X pitch.
+    const pieces: SplitPieceMeshEntry[] = [
+      makePieceEntry({ label: 'p-0-0', col: 0, row: 0, offsetX: 0, offsetY: 0 }),
+      makePieceEntry({ label: 'p-0-1', col: 0, row: 1, offsetX: 0, offsetY: 3 }),
+    ];
+
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 4, depth: 6, gridUnitMm: 42, gridUnitMmY: 22 },
+      ui: {
+        ...DEFAULT_UI_STATE,
+        splitPieceMeshes: pieces,
+        splitViewMode: 'assembled',
+      },
+    });
+
+    expect(() => render(<SplitBinMeshes color="#00ff00" wireframe={false} />)).not.toThrow();
+  });
+
   it('renders without error when TOLERANCE is subtracted from total dimensions', () => {
     const pieces: SplitPieceMeshEntry[] = [
       makePieceEntry({

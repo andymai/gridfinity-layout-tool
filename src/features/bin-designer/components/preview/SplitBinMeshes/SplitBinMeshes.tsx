@@ -46,6 +46,7 @@ interface PieceMeshProps {
   readonly totalWidthMm: number;
   readonly totalDepthMm: number;
   readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
   readonly explodeX: number;
   readonly explodeY: number;
   readonly isExploded: boolean;
@@ -61,6 +62,7 @@ function PieceMesh({
   totalWidthMm,
   totalDepthMm,
   gridUnitMm,
+  gridUnitMmY,
   explodeX,
   explodeY,
   isExploded,
@@ -81,11 +83,12 @@ function PieceMesh({
 
   if (!geometry) return null;
 
-  // Position: piece's grid center relative to the total bin center
+  // Position: piece's grid center relative to the total bin center. The depth
+  // axis uses gridUnitMmY (non-square grid); it equals gridUnitMm for square.
   const pieceWidthMm = entry.widthUnits * gridUnitMm;
-  const pieceDepthMm = entry.depthUnits * gridUnitMm;
+  const pieceDepthMm = entry.depthUnits * gridUnitMmY;
   const pieceCenterX = entry.offsetX * gridUnitMm + pieceWidthMm / 2 - totalWidthMm / 2;
-  const pieceCenterY = entry.offsetY * gridUnitMm + pieceDepthMm / 2 - totalDepthMm / 2;
+  const pieceCenterY = entry.offsetY * gridUnitMmY + pieceDepthMm / 2 - totalDepthMm / 2;
 
   const x = pieceCenterX + explodeX;
   const y = pieceCenterY + explodeY;
@@ -152,8 +155,9 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
   );
 
   const gridUnitMm = params.gridUnitMm;
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   const totalWidthMm = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const totalDepthMm = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const totalDepthMm = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
   const totalH = params.height * params.heightUnitMm;
   const isExploded = splitViewMode === 'exploded';
 
@@ -183,6 +187,7 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
             totalWidthMm={totalWidthMm}
             totalDepthMm={totalDepthMm}
             gridUnitMm={gridUnitMm}
+            gridUnitMmY={gridUnitMmY}
             explodeX={explodeX}
             explodeY={explodeY}
             isExploded={isExploded}
