@@ -1,0 +1,27 @@
+src/shared/generation/meshPersistence.test.ts
+  s_399a6152c61477::t_fdf2af7972a5ac 124-129,134
+  s_399a6152c61477::t_51f873c7268b03 10
+  s_399a6152c61477::t_9d570291a4f4f3 44
+src/shared/generation/meshPersistence.ts
+  s_399a6152c61477::t_5852a0c8521114 44,55-56
+  s_399a6152c61477::t_567f2ec43528d6 189-192,201-207,212-231,234
+  s_399a6152c61477::t_7dbac845bff88a 85
+  s_399a6152c61477::t_735f0629259303 245-249
+  s_399a6152c61477::t_d8ee87f648a5cd 66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "dc25d636ed78273b6a7191c1d6879733db5f609a",
+  "prompts": {},
+  "sessions": {
+    "s_399a6152c61477": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5089c807-44ee-46e4-9d3a-57153af2b08d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
