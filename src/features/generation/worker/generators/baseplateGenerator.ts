@@ -242,6 +242,29 @@ export function buildBaseplateSolid(
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
 
+  // Over-tile margin tiles (clipped padding tiles) are decomposed ONCE here and
+  // reused everywhere they must agree: the pocket cuts (cache-miss branch below)
+  // and the magnet holes + lightweight floor cutters further down. A second
+  // frameCells() call risked silent drift — e.g. omitting overTileHalfGridSolidLeftover
+  // would place magnets/floor cutters on cells that were never pocketed.
+  const overTileMargins: SideMargins = {
+    left: paddingLeft,
+    right: paddingRight,
+    front: paddingFront,
+    back: paddingBack,
+  };
+  const overTileFrame: CellInfo[] = overTile
+    ? frameCells(
+        width,
+        depth,
+        overTileMargins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid,
+        overTileHalfGridSolidLeftover
+      )
+    : [];
+
   // Cached separately so that toggling magnets or connectors doesn't redo the
   // pocket boolean cuts.
   const spKey = slabPocketsCacheKey(params, forExport);
@@ -284,25 +307,10 @@ export function buildBaseplateSolid(
     // Over-tile: fill the drawer-fit padding margins with grid-aligned clipped
     // pockets (per-side; a margin below the printable threshold stays solid
     // padding). Additive — the slab, full pockets, magnets, and offset are
-    // unchanged, so this composes cleanly with split pieces.
-    if (overTile) {
-      const margins: SideMargins = {
-        left: paddingLeft,
-        right: paddingRight,
-        front: paddingFront,
-        back: paddingBack,
-      };
-      for (const cell of frameCells(
-        width,
-        depth,
-        margins,
-        gridUnitMm,
-        MIN_PRINTABLE_TILE_MM,
-        overTileHalfGrid,
-        overTileHalfGridSolidLeftover
-      )) {
-        addPocket(cell);
-      }
+    // unchanged, so this composes cleanly with split pieces. Uses the shared
+    // overTileFrame so the magnets/floor cutters below cut exactly these cells.
+    for (const cell of overTileFrame) {
+      addPocket(cell);
     }
 
     if (pockets.length > 0) {
@@ -347,19 +355,6 @@ export function buildBaseplateSolid(
     roundedTranslated.delete();
     probe?.('cornerIntersected', baseplate);
   }
-
-  // Over-tile margin tiles (clipped padding tiles) — decomposed once and reused
-  // for both their magnet holes and their lightweight underside hollowing below.
-  const overTileFrame: CellInfo[] = overTile
-    ? frameCells(
-        width,
-        depth,
-        { left: paddingLeft, right: paddingRight, front: paddingFront, back: paddingBack },
-        gridUnitMm,
-        MIN_PRINTABLE_TILE_MM,
-        overTileHalfGrid
-      )
-    : [];
 
   // Magnet hole cutters — built and cut in batches to limit WASM memory.
   // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.

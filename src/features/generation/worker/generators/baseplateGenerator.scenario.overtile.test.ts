@@ -119,7 +119,46 @@ describe('baseplate over-tile geometry', () => {
     const fits = gen(defaults({ ...base, magnetDiameter: 6.5 }), NO_OP, true);
     const tooBig = gen(defaults({ ...base, magnetDiameter: 13 }), NO_OP, true);
 
-    assertStructurallyValid(fits, 'over-tile + margin magnets');
+    // Both builds must be watertight/manifold — a raw triangleCount comparison
+    // would silently pass even if cutting the oversized magnet produced a torn
+    // mesh, so validate the tooBig result too (not just fits).
+    assertStructurallyValid(fits, 'over-tile + margin magnets (fit)');
+    assertStructurallyValid(tooBig, 'over-tile + margin magnets (too big)');
     expect(fits.triangleCount).toBeGreaterThan(tooBig.triangleCount);
+  });
+
+  it('over-tile half-grid keeps a solid leftover consistent across pockets and magnets', () => {
+    // Regression for the frameCells duplication: magnets/floor cutters must use
+    // the SAME over-tile decomposition as the pockets, including the
+    // overTileHalfGridSolidLeftover flag. Otherwise magnets get cut where no
+    // pocket exists, producing a torn mesh. Exercise the half-grid +
+    // solid-leftover + magnets path end-to-end and require a valid solid.
+    const gen = getGenerateBaseplate();
+    const base = {
+      overTile: true,
+      overTileHalfGrid: true,
+      magnetHoles: true,
+      paddingLeft: 30,
+      paddingRight: 30,
+      paddingFront: 30,
+      paddingBack: 30,
+    } as const;
+
+    const solidLeftover = gen(
+      defaults({ ...base, overTileHalfGridSolidLeftover: true }),
+      NO_OP,
+      true
+    );
+    const tiledLeftover = gen(
+      defaults({ ...base, overTileHalfGridSolidLeftover: false }),
+      NO_OP,
+      true
+    );
+
+    assertStructurallyValid(solidLeftover, 'over-tile half-grid solid leftover + magnets');
+    assertStructurallyValid(tiledLeftover, 'over-tile half-grid tiled leftover + magnets');
+    // Keeping the leftover solid removes its pocket + magnets, so it must not
+    // add geometry beyond the fully-tiled variant.
+    expect(solidLeftover.triangleCount).toBeLessThanOrEqual(tiledLeftover.triangleCount);
   });
 });
