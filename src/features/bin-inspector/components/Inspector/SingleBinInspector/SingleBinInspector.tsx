@@ -1,14 +1,27 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
-import { mm, mmToHeightUnits, roundHeightUnits } from '@/core/types';
+import {
+  mm,
+  mmToHeightUnits,
+  roundHeightUnits,
+  type GridUnits,
+  type HeightUnits,
+} from '@/core/types';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
+import { canPlaceBin } from '@/shared/utils/validation';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
+
+const BinSizeSuggestion = lazyWithRetry(() =>
+  import('@/features/bin-recommender/components/BinSizeSuggestion').then(
+    namedExport('BinSizeSuggestion')
+  )
+);
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -45,6 +58,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     requestDelete,
     moveToStaging,
     rotateBin,
+    applySuggestedSize,
     existingPropertyKeys,
   } = inspector;
 
@@ -312,6 +326,33 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             placeholder={t('inspector.labelPlaceholder')}
             aria-label={t('inspector.binLabel')}
           />
+          <Suspense fallback={null}>
+            <BinSizeSuggestion
+              label={bin.label}
+              drawer={{
+                width: layout.drawer.width,
+                depth: layout.drawer.depth,
+                height: layout.drawer.height,
+              }}
+              current={{ width: bin.width, depth: bin.depth, height: bin.height }}
+              onApply={applySuggestedSize}
+              canFit={(size: { width: GridUnits; depth: GridUnits; height: HeightUnits }) =>
+                canPlaceBin(
+                  {
+                    x: bin.x,
+                    y: bin.y,
+                    width: size.width,
+                    depth: size.depth,
+                    height: size.height,
+                    clearanceHeight: bin.clearanceHeight,
+                  },
+                  bin.layerId,
+                  layout,
+                  bin.id
+                ).valid
+              }
+            />
+          </Suspense>
         </div>
 
         {/* Find STL */}

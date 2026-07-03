@@ -383,6 +383,39 @@ export function useBinInspector(): UseBinInspectorReturn {
     return true;
   }, [bin, layout, updateBin, addToast, t]);
 
+  // Apply a recommended size (from the bin-size suggestion) as a single
+  // undoable action — one updateBin call, not three field edits.
+  const applySuggestedSize = useCallback(
+    (size: { width: number; depth: number; height: number }): boolean => {
+      if (!bin) return false;
+      const width = clamp(size.width, 0.5, layout.drawer.width) as GridUnits;
+      const depth = clamp(size.depth, 0.5, layout.drawer.depth) as GridUnits;
+      const height = roundHeightUnits(
+        clamp(size.height, constraints.minHeight, constraints.maxHeight)
+      );
+
+      const updates: Partial<Bin> = { width, depth, height };
+      if (bin.clearanceHeight && bin.clearanceHeight > 0) {
+        const currentTotal = bin.height + bin.clearanceHeight;
+        updates.clearanceHeight = Math.max(0, currentTotal - height) as HeightUnits;
+      }
+
+      const applied = !isErr(batch(() => updateBin(bin.id, updates)));
+      if (applied) {
+        emitLinkedBinResize(bin, { width, depth, height });
+      }
+      return applied;
+    },
+    [
+      bin,
+      layout.drawer.width,
+      layout.drawer.depth,
+      constraints.minHeight,
+      constraints.maxHeight,
+      updateBin,
+    ]
+  );
+
   return {
     selectedBins,
     isMultiSelect,
@@ -408,6 +441,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     moveToStaging,
     clearSelection,
     rotateBin,
+    applySuggestedSize,
 
     deleteConfirmState,
 

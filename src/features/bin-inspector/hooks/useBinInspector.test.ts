@@ -679,6 +679,48 @@ describe('useBinInspector', () => {
     });
   });
 
+  describe('applySuggestedSize', () => {
+    it('applies width, depth, and height in a single update', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [createBin('bin1', 'layer1', 0, 0, 1, 1)];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      let applied: boolean | undefined;
+      act(() => {
+        applied = result.current.applySuggestedSize({ width: 2, depth: 2, height: 3 });
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.depth).toBe(2);
+      expect(applied).toBe(true);
+    });
+
+    it('does not resize when the target size would collide with a neighbor', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        createBin('bin1', 'layer1', 0, 0, 2, 2),
+        createBin('bin2', 'layer1', 2, 0, 2, 2),
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      let applied: boolean | undefined;
+      act(() => {
+        applied = result.current.applySuggestedSize({ width: 4, depth: 2, height: 3 });
+      });
+
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === 'bin1');
+      expect(bin?.width).toBe(2); // unchanged — blocked by neighbor
+      expect(applied).toBeFalsy();
+    });
+  });
+
   describe('moveToLayer', () => {
     it('moves bin to another layer', () => {
       const layout = useLayoutStore.getState().layout;

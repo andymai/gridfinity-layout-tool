@@ -213,6 +213,11 @@ export default defineConfig([
             from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
             allow: [{ to: { type: 'feature', captured: { featureName: 'design-linking' } } }],
           },
+          // Exception: bin-inspector -> bin-recommender (lazy-loaded size suggestion)
+          {
+            from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
+            allow: [{ to: { type: 'feature', captured: { featureName: 'bin-recommender' } } }],
+          },
           // `core/` is infrastructure — it must not depend on features or the
           // app shell. (`core/` -> `shared/` is intentionally allowed; many
           // `core/storage/*` modules use shared utilities/analytics.)

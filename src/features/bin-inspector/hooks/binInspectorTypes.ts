@@ -65,6 +65,7 @@ export interface UseBinInspectorReturn {
   moveToStaging: () => void;
   clearSelection: () => void;
   rotateBin: () => boolean;
+  applySuggestedSize: (size: { width: number; depth: number; height: number }) => boolean;
 
   deleteConfirmState: ConfirmDeleteState | null;
 
