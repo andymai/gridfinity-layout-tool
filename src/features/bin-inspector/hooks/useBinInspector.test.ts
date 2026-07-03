@@ -682,6 +682,7 @@ describe('useBinInspector', () => {
   describe('applySuggestedSize', () => {
     it('applies width, depth, and height in a single update', () => {
       const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = 12;
       layout.bins = [createBin('bin1', 'layer1', 0, 0, 1, 1)];
       useLayoutStore.setState({ layout });
       useSelectionStore.setState({ selectedBinIds: ['bin1'] });
@@ -690,13 +691,41 @@ describe('useBinInspector', () => {
 
       let applied: boolean | undefined;
       act(() => {
-        applied = result.current.applySuggestedSize({ width: 2, depth: 2, height: 3 });
+        applied = result.current.applySuggestedSize({ width: 2, depth: 2, height: 6 });
       });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.width).toBe(2);
       expect(bin.depth).toBe(2);
+      expect(bin.height).toBe(6);
       expect(applied).toBe(true);
+    });
+
+    it('fit check and apply agree for a bin with clearance (adjusted clearanceHeight)', () => {
+      // Regression: canApplySuggestedSize must use the same adjusted clearance
+      // that applySuggestedSize writes — not the original — so a taller
+      // suggestion for a bin with clearance is not wrongly reported as unfittable.
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = 12;
+      layout.bins = [{ ...createBin('bin1', 'layer1', 0, 0, 1, 1), height: 3, clearanceHeight: 3 }];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: ['bin1'] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      const size = { width: 2, depth: 2, height: 5 };
+      expect(result.current.canApplySuggestedSize(size)).toBe(true);
+
+      let applied: boolean | undefined;
+      act(() => {
+        applied = result.current.applySuggestedSize(size);
+      });
+
+      expect(applied).toBe(true);
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.height).toBe(5);
+      // Clearance reduced so the total vertical footprint is preserved (3+3 = 5+1).
+      expect(bin.height + (bin.clearanceHeight ?? 0)).toBe(6);
     });
 
     it('does not resize when the target size would collide with a neighbor', () => {
