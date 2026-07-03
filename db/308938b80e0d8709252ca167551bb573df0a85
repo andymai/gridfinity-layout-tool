@@ -1,0 +1,30 @@
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_399a6152c61477::t_1205e282c96146 47-48
+  s_399a6152c61477::t_c2acad4e193190 508-551
+  s_399a6152c61477::t_17767af0117c54 460
+src/shared/generation/meshPersistence.test.ts
+  s_399a6152c61477::t_634a62f3ac1ede 108-109,111-112,115-116
+src/features/bin-designer/hooks/useGeneration.ts
+  s_399a6152c61477::t_2bdd27513f9936 336-337,340-344
+src/shared/generation/meshPersistence.ts
+  s_399a6152c61477::t_961c9c1d142c8f 49-53
+  s_399a6152c61477::t_b96b1687db3425 70-74
+  s_399a6152c61477::t_1a7d607252304c 30-32
+  s_399a6152c61477::t_22253c716bbd04 181-185,189-204,206-211,213-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "db308938b80e0d8709252ca167551bb573df0a85",
+  "prompts": {},
+  "sessions": {
+    "s_399a6152c61477": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5089c807-44ee-46e4-9d3a-57153af2b08d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
