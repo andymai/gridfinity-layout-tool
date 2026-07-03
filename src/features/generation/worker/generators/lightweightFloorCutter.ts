@@ -10,13 +10,7 @@
 
 import { draw, drawRectangle, clone, unwrap, translate } from 'brepjs';
 import type { Shape3D, Drawing } from 'brepjs';
-import {
-  SOCKET_HEIGHT,
-  MAGNET_FLOOR,
-  COPLANAR_MARGIN,
-  INSET_BOT,
-  HOLE_OFFSET,
-} from './generatorConstants';
+import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, INSET_BOT } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
 import { magnetPositionsForCell } from './baseplateMagnets';
@@ -30,24 +24,26 @@ const MIN_ARM_WIDTH = 2;
 
 /**
  * Cross ("plus") profile centered at origin (CCW, 12 straight segments): a
- * vertical arm of half-width `padHalf` spanning ±`hd` and a horizontal arm of
- * half-height `padHalf` spanning ±`hw`. Removing it leaves the 4 corner magnet
- * pads. Shared by the full-cell cutter and the standard-fits partial tile so
- * both cut identical geometry.
+ * vertical arm of half-width `padHalfX` spanning ±`hd` and a horizontal arm of
+ * half-height `padHalfY` spanning ±`hw`. Removing it leaves the 4 corner magnet
+ * pads. `padHalfX`/`padHalfY` are per-axis so the kept pads track the actual
+ * (possibly pulled-in / non-square) magnet offsets; a square cell passes equal
+ * values and the profile is identical to the symmetric case. Shared by the
+ * full-cell cutter and the standard-fits partial tile.
  */
-function crossProfile(hw: number, hd: number, padHalf: number) {
-  return draw([padHalf, hd])
-    .lineTo([-padHalf, hd])
-    .lineTo([-padHalf, padHalf])
-    .lineTo([-hw, padHalf])
-    .lineTo([-hw, -padHalf])
-    .lineTo([-padHalf, -padHalf])
-    .lineTo([-padHalf, -hd])
-    .lineTo([padHalf, -hd])
-    .lineTo([padHalf, -padHalf])
-    .lineTo([hw, -padHalf])
-    .lineTo([hw, padHalf])
-    .lineTo([padHalf, padHalf])
+function crossProfile(hw: number, hd: number, padHalfX: number, padHalfY: number) {
+  return draw([padHalfX, hd])
+    .lineTo([-padHalfX, hd])
+    .lineTo([-padHalfX, padHalfY])
+    .lineTo([-hw, padHalfY])
+    .lineTo([-hw, -padHalfY])
+    .lineTo([-padHalfX, -padHalfY])
+    .lineTo([-padHalfX, -hd])
+    .lineTo([padHalfX, -hd])
+    .lineTo([padHalfX, -padHalfY])
+    .lineTo([hw, -padHalfY])
+    .lineTo([hw, padHalfY])
+    .lineTo([padHalfX, padHalfY])
     .close();
 }
 
@@ -93,13 +89,6 @@ export function buildLightweightFloorCutters(
   if (lightweight === false) return [];
 
   const gridUnitMm = cellOpts.gridUnitMm;
-  // padHalf = distance from cell center to the inner edge of the magnet pad.
-  // Magnets sit at HOLE_OFFSET (13mm) from center. The pad extends
-  // magnetRadius + PAD_MARGIN around each hole, so the cross arm boundary
-  // starts at HOLE_OFFSET - magnetRadius - PAD_MARGIN from center.
-  const padHalf = HOLE_OFFSET - magnetRadius - PAD_MARGIN;
-  // If magnets are so large they overlap the cell center, skip lightweight
-  if (padHalf < MIN_ARM_WIDTH) return [];
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
 
@@ -142,21 +131,32 @@ export function buildLightweightFloorCutters(
         const hw = cellW_mm / 2 - INSET_BOT;
         const hd = cellD_mm / 2 - INSET_BOT;
 
-        // Guard: skip if cross arms would be too narrow
-        const armW = hw - padHalf;
-        const armD = hd - padHalf;
-        if (armW < MIN_ARM_WIDTH || armD < MIN_ARM_WIDTH) return;
+        // Keep pads around the ACTUAL magnet positions — on a smaller or
+        // non-square cell magnetPositionsForCell pulls the corners inward, so a
+        // fixed ±HOLE_OFFSET cross would carve straight through the magnets and
+        // leave the pads in empty plastic. Derive the per-axis pad half-width
+        // from the real offset. Only the symmetric 4-corner layout maps to a
+        // cross; 2-magnet / centered layouts (very short axes) are left solid —
+        // the tiny weight saving isn't worth a bespoke cut and it can't strand a
+        // magnet. A full 42mm cell yields offset 13 → the original cross exactly.
+        const positions = magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm);
+        if (positions.length !== 4) return;
+        const offX = Math.abs(positions[0][0] - cell.centerX);
+        const offY = Math.abs(positions[0][1] - cell.centerY);
+        const padHalfX = offX - magnetRadius - PAD_MARGIN;
+        const padHalfY = offY - magnetRadius - PAD_MARGIN;
+        if (padHalfX < MIN_ARM_WIDTH || padHalfY < MIN_ARM_WIDTH) return;
+        if (hw - padHalfX < MIN_ARM_WIDTH || hd - padHalfY < MIN_ARM_WIDTH) return;
 
+        // Cache key includes the offsets: same cell size ⇒ same pull-in ⇒ one
+        // template. Inner corners left sharp (vertical-wall underside relief).
         const cacheKey = `${cell.widthUnits}x${cell.depthUnits}`;
         let template = templates.get(cacheKey);
 
         if (!template) {
-          // Cross-shaped profile — inner corners left sharp: this is an underside
-          // material-relief pocket cut straight down (vertical walls regardless of
-          // in-plane corner shape), so sharp concave corners print fine, and the
-          // curved fillet faces they replace made the per-cell boolean
-          // disproportionately expensive. Cached per (widthUnits×depthUnits).
-          template = sketch(crossProfile(hw, hd, padHalf), 'XY', cutterZ).extrude(-cutterDepth);
+          template = sketch(crossProfile(hw, hd, padHalfX, padHalfY), 'XY', cutterZ).extrude(
+            -cutterDepth
+          );
           templates.set(cacheKey, template);
         }
 
@@ -189,7 +189,15 @@ export function buildLightweightFloorCutters(
  */
 export type PartialFloorCut =
   | { kind: 'rect'; centerX: number; centerY: number; width: number; depth: number }
-  | { kind: 'cross'; centerX: number; centerY: number; hw: number; hd: number; padHalf: number };
+  | {
+      kind: 'cross';
+      centerX: number;
+      centerY: number;
+      hw: number;
+      hd: number;
+      padHalfX: number;
+      padHalfY: number;
+    };
 
 /**
  * Decide how to hollow the underside of one PARTIAL over-tile margin tile,
@@ -224,14 +232,25 @@ export function planPartialCellFloorCuts(
   const hd = halfD - INSET_BOT;
   if (hw <= MIN_ARM_WIDTH || hd <= MIN_ARM_WIDTH) return []; // no floor worth hollowing
 
-  // Standard 4-corner tile → identical cross cut to a full cell.
-  const standardFits = HOLE_OFFSET + magnetRadius <= halfW && HOLE_OFFSET + magnetRadius <= halfD;
-  if (standardFits) {
-    const padHalf = HOLE_OFFSET - magnetRadius - PAD_MARGIN;
-    if (padHalf < MIN_ARM_WIDTH || hw - padHalf < MIN_ARM_WIDTH || hd - padHalf < MIN_ARM_WIDTH) {
+  // Symmetric 4-corner tile → cross cut, with per-axis pads around the ACTUAL
+  // (possibly pulled-in) magnet offsets. A full 42mm tile yields offset 13 → the
+  // original cross; a smaller/non-square tile pulls the pads in with the magnets.
+  if (positions.length === 4) {
+    const offX = Math.abs(positions[0][0] - cell.centerX);
+    const offY = Math.abs(positions[0][1] - cell.centerY);
+    const padHalfX = offX - magnetRadius - PAD_MARGIN;
+    const padHalfY = offY - magnetRadius - PAD_MARGIN;
+    if (
+      padHalfX < MIN_ARM_WIDTH ||
+      padHalfY < MIN_ARM_WIDTH ||
+      hw - padHalfX < MIN_ARM_WIDTH ||
+      hd - padHalfY < MIN_ARM_WIDTH
+    ) {
       return [];
     }
-    return [{ kind: 'cross', centerX: cell.centerX, centerY: cell.centerY, hw, hd, padHalf }];
+    return [
+      { kind: 'cross', centerX: cell.centerX, centerY: cell.centerY, hw, hd, padHalfX, padHalfY },
+    ];
   }
 
   const keepHalf = magnetRadius + PAD_MARGIN; // material kept around each magnet
@@ -379,7 +398,7 @@ export function buildPartialCellFloorCutters(
       for (const cut of planPartialCellFloorCuts(cell, magnetRadius, gridUnitMm)) {
         const profile =
           cut.kind === 'cross'
-            ? crossProfile(cut.hw, cut.hd, cut.padHalf)
+            ? crossProfile(cut.hw, cut.hd, cut.padHalfX, cut.padHalfY)
             : drawRectangle(cut.width, cut.depth);
         cutters.push(extrudeCutter(profile, cut.centerX, cut.centerY, cutterZ, cutterDepth));
       }

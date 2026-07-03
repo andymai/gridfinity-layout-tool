@@ -134,6 +134,32 @@ describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
     expect(cuts[0].kind).toBe('cross');
   });
 
+  it('cross pads follow the pulled-in magnet offset, not a fixed ±13', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    const { magnetPositionsForCell } = await import('./baseplateMagnets');
+    // A 0.95u (39.9mm) tile pulls magnets in to hold the 8mm wall inset, so the
+    // cross pad half-width must track that offset (else it carves the magnets).
+    const c = cell(0.95, 0.95);
+    const cuts = planPartialCellFloorCuts(c, MAGNET_R, GRID);
+    const cross = cuts[0];
+    expect(cross.kind).toBe('cross');
+    if (cross.kind !== 'cross') throw new Error('expected cross');
+    const off = Math.abs(magnetPositionsForCell(c, MAGNET_R, GRID, GRID)[0][0]);
+    // padHalf = offset − magnetRadius − PAD_MARGIN(1); pulled in below the ±13 value.
+    expect(cross.padHalfX).toBeCloseTo(off - MAGNET_R - 1, 6);
+    expect(cross.padHalfX).toBeLessThan(13 - MAGNET_R - 1);
+  });
+
+  it('a full 42mm tile keeps the standard cross pad (byte-identical)', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    const cuts = planPartialCellFloorCuts(cell(1, 1), MAGNET_R, GRID);
+    const cross = cuts[0];
+    if (cross.kind !== 'cross') throw new Error('expected cross');
+    // offset 13 → padHalf = 13 − 3.25 − 1 = 8.75, unchanged from the old constant.
+    expect(cross.padHalfX).toBeCloseTo(8.75, 6);
+    expect(cross.padHalfY).toBeCloseTo(8.75, 6);
+  });
+
   it('leaves a too-tiny tile solid (no cuts)', async () => {
     const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
     expect(planPartialCellFloorCuts(cell(0.1, 0.1), MAGNET_R, GRID)).toEqual([]);
