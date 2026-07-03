@@ -1,0 +1,23 @@
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_399a6152c61477::t_f158bc6acb5452 550-555
+src/shared/generation/meshPersistence.ts
+  s_399a6152c61477::t_2c3d5d70ea79f5 134
+  s_399a6152c61477::t_da1250d774d6a0 151-156
+  s_399a6152c61477::t_5fcb58942e98d1 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "ee08a78440066e9d5622276149865ec89ecf8587",
+  "prompts": {},
+  "sessions": {
+    "s_399a6152c61477": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5089c807-44ee-46e4-9d3a-57153af2b08d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
