@@ -11,6 +11,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
+import { pitchFromParams } from './gridPitch';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 
@@ -30,10 +31,10 @@ export async function exportDividers(
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
-  const outerW = params.width * gridUnitMm - CLEARANCE;
-  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  // Y axis uses gridUnitMmY when set (non-square grid); equal to X for square.
+  const { x: unitX, y: unitY } = pitchFromParams(params);
+  const outerW = params.width * unitX - CLEARANCE;
+  const outerD = params.depth * unitY - CLEARANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const hasLip = params.base.stackingLip;
@@ -91,10 +92,10 @@ export async function exportDividerPiecesSeparately(
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
-  const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
-  const outerW = params.width * gridUnitMm - CLEARANCE;
-  const outerD = params.depth * gridUnitMm - CLEARANCE;
+  // Y axis uses gridUnitMmY when set (non-square grid); equal to X for square.
+  const { x: unitX, y: unitY } = pitchFromParams(params);
+  const outerW = params.width * unitX - CLEARANCE;
+  const outerD = params.depth * unitY - CLEARANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const hasLip = params.base.stackingLip;
