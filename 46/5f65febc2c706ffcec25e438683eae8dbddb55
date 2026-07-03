@@ -1,0 +1,49 @@
+src/shared/generation/meshPersistence.ts
+  s_399a6152c61477::t_fbd072baff4897 96,98,100-101
+  s_399a6152c61477::t_ec51a12d6691b8 1-95,97,99,102-130,132-166,185-213,220,222-224
+  s_399a6152c61477::t_84f410c298d43d 131
+  s_399a6152c61477::t_9084261ace0227 167-184
+  s_399a6152c61477::t_c04bbba4a1f03d 219,221
+  s_399a6152c61477::t_9aabc1feafc830 214-218
+src/shared/generation/meshPersistence.test.ts
+  s_399a6152c61477::t_ac390074961900 123
+  s_399a6152c61477::t_75e25ed30658a8 85
+  s_399a6152c61477::t_48b0dfe3f6e99f 9
+  s_399a6152c61477::t_bd13419b31d41d 73,78
+  s_399a6152c61477::t_6f448011e63a79 88,99-100,104-114
+  s_399a6152c61477::t_95ba72c08a1283 1-8,10-72,74-77,79-84,86-87,89-98,101-103,115-122,124-130
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_399a6152c61477::t_a978aeb7cdea6b 447-506
+  s_399a6152c61477::t_888f6a3e76ff38 41-51
+  s_399a6152c61477::t_44f1ac3c2333a4 86-88
+  s_399a6152c61477::t_ca47d49e52d72f 6
+src/features/bin-designer/hooks/useGeneration.ts
+  s_399a6152c61477::t_cfe0a88748964c 329-342
+  s_399a6152c61477::t_d71c1268ba2635 429
+  s_399a6152c61477::t_57bc60ebd890a0 9-14
+  s_399a6152c61477::t_9e1dc921938127 55-77
+  s_399a6152c61477::t_eaf9f6ec798c86 252-256
+  s_399a6152c61477::t_e711e0d479061b 54
+src/features/generation/README.md
+  s_399a6152c61477::t_7cad60dfeb7d64 92-95
+src/shared/types/generation.ts
+  s_399a6152c61477::t_f2e97e0ff16022 9
+.claude/skills/geometry-generation/SKILL.md
+  s_399a6152c61477::t_b0438fb34720b7 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "465f65febc2c706ffcec25e438683eae8dbddb55",
+  "prompts": {},
+  "sessions": {
+    "s_399a6152c61477": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5089c807-44ee-46e4-9d3a-57153af2b08d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
