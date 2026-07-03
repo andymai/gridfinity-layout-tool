@@ -26,6 +26,16 @@ describe('resolveLidInputs', () => {
     expect(inputs.cellsY).toBe(2);
   });
 
+  it('derives lid depth from gridUnitMmY on a non-square grid', () => {
+    // Y pitch 22mm: lidOuterD = 2×22 − 0.5 = 43.5, while width stays on X (42).
+    const inputs = resolveLidInputs(
+      makeParams({}, { width: 3, depth: 2, gridUnitMm: 42, gridUnitMmY: 22 })
+    );
+    expect(inputs.lidOuterW).toBeCloseTo(125.5, 3);
+    expect(inputs.lidOuterD).toBeCloseTo(43.5, 3);
+    expect(inputs.gridUnitMmY).toBe(22);
+  });
+
   it('uses LID_FIT_CLEARANCE = 0.25mm (lid clearance, not bin TOLERANCE)', () => {
     const inputs = resolveLidInputs(makeParams({}));
     expect(inputs.fitClearance).toBeCloseTo(0.25, 4);

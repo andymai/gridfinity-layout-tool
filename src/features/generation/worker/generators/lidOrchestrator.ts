@@ -66,7 +66,12 @@ export function generateLid(
   // try/finally pattern mirrors `baseplateGenerator`'s lifecycle.
   try {
     checkCancelled(signal);
-    const maxDimension = Math.max(params.width, params.depth) * params.gridUnitMm;
+    // Per-axis extent (Y uses gridUnitMmY on non-square grids) so the
+    // tessellation tolerance scales to the true largest dimension.
+    const maxDimension = Math.max(
+      params.width * params.gridUnitMm,
+      params.depth * (params.gridUnitMmY ?? params.gridUnitMm)
+    );
     // Lid always has lip-mating geometry → use the "has lip" tolerance tier.
     const { tolerance, angularTolerance } = computeTessellationTolerances(
       forExport,

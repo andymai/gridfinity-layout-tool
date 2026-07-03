@@ -78,7 +78,10 @@ export function isCellFilled(mask: CellMask, cellX: number, cellY: number): bool
 }
 
 export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm } = inputs;
+  const { cellsX, cellsY, gridUnitMm, gridUnitMmY } = inputs;
+  // Non-square grids scale columns by X and rows by Y; the pocket cells must
+  // mate with the (equally non-square) sockets of a bin stacked on top.
+  const pitch = { x: gridUnitMm, y: gridUnitMmY };
 
   // 1. Slab — lid's outer footprint extruded UP by SOCKET_HEIGHT (5mm,
   //    matching the baseplate's slab depth). `buildOutlineDrawing(inputs, 0)`
@@ -93,17 +96,17 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   //    (cellMask) bins skip pockets in unfilled cells so the lip
   //    pattern only covers material that actually exists.
   const halfTotalW = (cellsX * gridUnitMm) / 2;
-  const halfTotalD = (cellsY * gridUnitMm) / 2;
+  const halfTotalD = (cellsY * gridUnitMmY) / 2;
   const pockets: Shape3D[] = [];
   forEachCell(
     cellsX,
     cellsY,
     (cell) => {
       const cellW = cell.widthUnits * gridUnitMm;
-      const cellD = cell.depthUnits * gridUnitMm;
+      const cellD = cell.depthUnits * gridUnitMmY;
       if (inputs.cellMask) {
         const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
-        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMm / 2) / gridUnitMm);
+        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
         if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
       }
       const pocket = buildLidStackPocketCutter(cellW, cellD);
@@ -111,7 +114,7 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
       pocket.delete();
       pockets.push(positioned);
     },
-    { gridUnitMm }
+    { gridUnitMm: pitch }
   );
 
   if (pockets.length > 0) {

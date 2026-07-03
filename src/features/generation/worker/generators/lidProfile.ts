@@ -22,15 +22,22 @@ import type { LidInputs } from './lidInputs';
  * loft sections in the same series remain topologically consistent.
  */
 export function buildOutlineDrawing(inputs: LidInputs, outerInset: number): Drawing {
-  const { lidOuterW, lidOuterD, lidCornerR, gridUnitMm, fitClearance, cellMask } = inputs;
+  const { lidOuterW, lidOuterD, lidCornerR, gridUnitMm, gridUnitMmY, fitClearance, cellMask } =
+    inputs;
   const { outerOffsetX, outerOffsetY } = inputs;
   const radius = Math.max(lidCornerR - outerInset, LID_MIN_CORNER_RADIUS);
 
   const outline = cellMask
     ? // Polygon path: total inset from the base (full grid) polygon =
       // fitClearance + outerInset. The polygon helper handles the inset and
-      // corner rounding in closed form for axis-aligned polygons.
-      buildMaskDrawingAtInset(cellMask, gridUnitMm, fitClearance + outerInset, radius)
+      // corner rounding in closed form for axis-aligned polygons. Pass the
+      // per-axis pitch so a non-square grid stretches rows independently.
+      buildMaskDrawingAtInset(
+        cellMask,
+        { x: gridUnitMm, y: gridUnitMmY },
+        fitClearance + outerInset,
+        radius
+      )
     : // Rectangular path
       drawRoundedRectangle(lidOuterW - 2 * outerInset, lidOuterD - 2 * outerInset, radius);
 

@@ -46,6 +46,8 @@ export interface LidInputs {
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
   readonly gridUnitMm: number;
+  /** Y-axis grid pitch (mm). Equals gridUnitMm for a square grid. */
+  readonly gridUnitMmY: number;
   readonly heightUnitMm: number;
   /**
    * Per-side rail engagement overrides driven by feature conflicts.
@@ -100,6 +102,8 @@ export interface LidInputs {
 
 export function resolveLidInputs(params: BinParams): LidInputs {
   const { gridUnitMm, heightUnitMm } = params;
+  // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   // Single locked-down clearance — see comment on LID_FIT_CLEARANCE.
   const fitClearance = LID_FIT_CLEARANCE;
   // Floor plate grows when magnets are enabled to fit the pocket plus
@@ -127,7 +131,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // NOT the bin's `BOX_CORNER_RADIUS` (3.75mm) — using the bin value shifts
   // rails, shrinks walls, and breaks lip fit.
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance + addW;
-  const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance + addD;
+  const lidOuterD = params.depth * gridUnitMmY - 2 * fitClearance + addD;
   // lidCornerR and cavityInset are the same expression: both are the lid's
   // effective corner radius after clearance. `cavityInset` names the semantic
   // role (inner-face distance from outer perimeter); `lidCornerR` is used by
@@ -155,6 +159,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     fractionalEdgeX: params.fractionalEdgeX,
     fractionalEdgeY: params.fractionalEdgeY,
     gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     // Per-side rail skips derived from feature conflicts (label tabs,
     // wall cutouts on specific sides, handles intruding into the lip

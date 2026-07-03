@@ -133,6 +133,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
   const {
     cellMask,
     gridUnitMm,
+    gridUnitMmY,
     lidCornerR,
     fitClearance,
     disabledRails,
@@ -143,12 +144,13 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 
   const loops = maskToPolygon(cellMask);
   const outer = loops[0];
+  // Non-square grids stretch mask columns by X and rows by Y independently.
   const halfWidthMm = (cellMask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-  const halfDepthMm = (cellMask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const halfDepthMm = (cellMask.rows * MASK_CELL_SIZE * gridUnitMmY) / 2;
 
   const verticesMm = outer.map((p) => ({
     x: p.x * gridUnitMm - halfWidthMm,
-    y: p.y * gridUnitMm - halfDepthMm,
+    y: p.y * gridUnitMmY - halfDepthMm,
   }));
 
   const railInset = fitClearance + lidCornerR;
