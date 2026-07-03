@@ -115,6 +115,17 @@ describe('Manifold draft — lipped bins are coincidence-free (no fuse z-fightin
   );
 
   it(
+    'a non-square bin with a small Y pitch stays watertight (corner radius capped)',
+    () => {
+      // gridUnitMmY = 7 makes outerD = 1·7 − 0.5 = 6.5mm, below 2·BOX_CORNER_RADIUS
+      // (7.5mm). Without capping the corner radius the rounded-rect sketch is
+      // degenerate and the kernel can emit a torn (non-watertight) shell.
+      expectLipAddsNoCoincidence({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 1, gridUnitMmY: 7 }, 2);
+    },
+    TIMEOUT
+  );
+
+  it(
     'an L-shaped (polygon) lipped bin has no non-manifold edges (was ~244)',
     () => {
       // 2×2 with the top-right quadrant cleared = an L footprint (no hole).

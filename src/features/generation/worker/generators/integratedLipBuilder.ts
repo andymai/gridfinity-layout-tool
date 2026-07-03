@@ -95,6 +95,14 @@ export function buildBinBoxWithLip(
   const clampedInset = (z: number, inset: number): number =>
     z <= wallHeight + 1e-6 ? Math.max(wt, inset) : inset;
 
+  // A rounded-rectangle radius that exceeds half of either side makes many
+  // geometry kernels reject the sketch or emit unstable geometry. Non-square
+  // pitches can shrink outerW/outerD below 2·BOX_CORNER_RADIUS, so cap the
+  // radius to half the smaller side (matching `pocketCornerRadius`) before it
+  // reaches `drawRoundedRectangle`.
+  const cappedRadius = (w: number, d: number, desired: number): number =>
+    Math.max(Math.min(desired, Math.min(w, d) / 2 - 0.1), 0.1);
+
   const insetDrawing = (inset: number): Drawing => {
     if (polygon) {
       return inset === 0
@@ -103,7 +111,7 @@ export function buildBinBoxWithLip(
     }
     const w = outerW - 2 * inset;
     const d = outerD - 2 * inset;
-    const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
+    const r = cappedRadius(w, d, BOX_CORNER_RADIUS - inset);
     return translateDrawing(drawRoundedRectangle(w, d, r), offX, offY);
   };
 
@@ -113,7 +121,11 @@ export function buildBinBoxWithLip(
   const makeOuterFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawing(cellMask, gridUnitMm)
-      : translateDrawing(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS), offX, offY);
+      : translateDrawing(
+          drawRoundedRectangle(outerW, outerD, cappedRadius(outerW, outerD, BOX_CORNER_RADIUS)),
+          offX,
+          offY
+        );
 
   // The lip taper overshoots the peak so the cut tool exits cleanly THROUGH the
   // prism top instead of capping flush with it (a flush cap would itself leave a
