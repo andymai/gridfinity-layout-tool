@@ -4,6 +4,8 @@ import { buildTriangleMaterialIndices } from './materialMapping';
 import { ZONE_ORDER, makeUniformLipCells } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig, LipColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
+import { cutoutColorTag } from '@/shared/generation/cutoutColorUnits';
+import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
 
 const SINGLE = '#d4d8dc';
 const allZones: ReadonlySet<ColorZone> = new Set(ZONE_ORDER);
@@ -31,9 +33,14 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
   };
 }
 
-/** Tiny (non-degenerate) triangle centered at (x, y, 0). */
+/** Tiny horizontal (floor-facing, nz≈1) triangle centered at (x, y, 0). */
 function tri(x: number, y: number): number[] {
   return [x - 0.1, y - 0.1, 0, x + 0.1, y - 0.1, 0, x, y + 0.1, 0];
+}
+
+/** Tiny vertical (wall-facing, nz≈0) triangle in the y-plane at (x, y). */
+function triWall(x: number, y: number): number[] {
+  return [x, y, 0, x, y, 1, x + 0.2, y, 0.5];
 }
 
 describe('buildTriangleMaterialIndices', () => {
@@ -117,5 +124,50 @@ describe('buildTriangleMaterialIndices', () => {
       idxFor('#00aa00'),
       idxFor('#0000aa'),
     ]);
+  });
+
+  describe('cutout colors', () => {
+    const CUT = '#ff0000';
+    const idxOf = (r: NonNullable<ReturnType<typeof buildTriangleMaterialIndices>>, hex: string) =>
+      r.config.materials.findIndex((m) => m.color === hex);
+
+    it('paints a colored cutout even when every zone matches the body', () => {
+      const units: CutoutColorUnit[] = [{ key: 'a', color: CUT, colorScope: 'floorAndWalls' }];
+      const faceGroups: FaceGroupData[] = [
+        { start: 0, count: 3, tag: cutoutColorTag(0) }, // floor
+        { start: 3, count: 3, tag: cutoutColorTag(0) }, // wall
+        { start: 6, count: 3, tag: FeatureTag.BASE }, // body
+      ];
+      const vertices = new Float32Array([...tri(0, 0), ...triWall(1, 1), ...tri(2, 2)]);
+
+      const r = buildTriangleMaterialIndices(faceGroups, colors(), 3, vertices, allZones, units);
+      expect(r).not.toBeNull();
+      const cut = idxOf(r!, CUT);
+      expect(cut).toBeGreaterThanOrEqual(0);
+      // floorAndWalls paints both the floor and the wall triangle; body stays body.
+      expect(r!.config.triangleMaterialIndices).toEqual([cut, cut, 0]);
+    });
+
+    it('floor scope paints only the floor, walls fall back to body', () => {
+      const units: CutoutColorUnit[] = [{ key: 'a', color: CUT, colorScope: 'floor' }];
+      const faceGroups: FaceGroupData[] = [
+        { start: 0, count: 3, tag: cutoutColorTag(0) }, // floor
+        { start: 3, count: 3, tag: cutoutColorTag(0) }, // wall
+      ];
+      const vertices = new Float32Array([...tri(0, 0), ...triWall(1, 1)]);
+
+      const r = buildTriangleMaterialIndices(faceGroups, colors(), 2, vertices, allZones, units);
+      expect(r).not.toBeNull();
+      expect(r!.config.triangleMaterialIndices).toEqual([idxOf(r!, CUT), 0]);
+    });
+
+    it('returns null when no cutout is colored and zones are single-color', () => {
+      const units: CutoutColorUnit[] = [{ key: 'a', colorScope: 'floorAndWalls' }];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: cutoutColorTag(0) }];
+      const vertices = new Float32Array([...tri(0, 0)]);
+      expect(
+        buildTriangleMaterialIndices(faceGroups, colors(), 1, vertices, allZones, units)
+      ).toBeNull();
+    });
   });
 });

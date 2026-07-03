@@ -30,6 +30,8 @@ import {
 import type { ColorZone, FeatureColorConfig, HoverableZone } from '../types/featureColors';
 import { computeLipGeom } from './lipCornerClassifier';
 import { computeLipColoredMesh } from './lipSeamSplitter';
+import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation/cutoutColorUnits';
+import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
 
 export interface MultiColorGroupsResult {
   readonly groups: MeshFaceGroup[];
@@ -48,14 +50,14 @@ export interface MultiColorGroupsResult {
   } | null;
 }
 
-/** Coalesce consecutive same-zone triangles into Three.js material groups. */
-function coalesceGroups(triZones: readonly ColorZone[]): MeshFaceGroup[] {
+/** Coalesce consecutive same-material triangles into Three.js material groups. */
+function coalesceGroups(triMaterial: readonly number[]): MeshFaceGroup[] {
   const groups: MeshFaceGroup[] = [];
-  if (triZones.length === 0) return groups;
+  if (triMaterial.length === 0) return groups;
   let runStart = 0;
-  let runIndex = zoneIndex(triZones[0]);
-  for (let i = 1; i < triZones.length; i++) {
-    const idx = zoneIndex(triZones[i]);
+  let runIndex = triMaterial[0];
+  for (let i = 1; i < triMaterial.length; i++) {
+    const idx = triMaterial[i];
     if (idx !== runIndex) {
       groups.push({ start: runStart * 3, count: (i - runStart) * 3, materialIndex: runIndex });
       runStart = i;
@@ -64,7 +66,7 @@ function coalesceGroups(triZones: readonly ColorZone[]): MeshFaceGroup[] {
   }
   groups.push({
     start: runStart * 3,
-    count: (triZones.length - runStart) * 3,
+    count: (triMaterial.length - runStart) * 3,
     materialIndex: runIndex,
   });
   return groups;
@@ -149,14 +151,18 @@ export function buildMultiColorGroups(
   vertices: Float32Array,
   indices: Uint32Array,
   featureColors: FeatureColorConfig,
-  activeZones: ReadonlySet<ColorZone>
+  activeZones: ReadonlySet<ColorZone>,
+  cutoutUnits: readonly CutoutColorUnit[] = []
 ): MultiColorGroupsResult | null {
-  if (isSingleColor(featureColors, activeZones)) return null;
+  const coloredOrdinals = cutoutUnits
+    .map((u, i) => (u.color !== undefined ? i : -1))
+    .filter((i) => i >= 0);
+  if (isSingleColor(featureColors, activeZones) && coloredOrdinals.length === 0) return null;
 
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
 
-  const { triZones, positions, normals } = computeLipColoredMesh({
+  const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
     faceGroups,
     getTriangle,
@@ -167,8 +173,39 @@ export function buildMultiColorGroups(
   const meshOverride: MultiColorGroupsResult['meshOverride'] =
     positions && normals ? { vertices: positions, normals, indices: null } : null;
 
-  const groups = coalesceGroups(triZones);
-  const zoneColors = ZONE_ORDER.map((z) => getZoneColor(featureColors, z));
+  // Cutout colors occupy material slots appended after the fixed ZONE_ORDER, so
+  // fixed-zone indices stay stable (no hover-glow churn). One slot per colored
+  // unit — no hex dedup, matching the zone slots.
+  const slotForOrdinal = new Map(coloredOrdinals.map((ord, s) => [ord, ZONE_ORDER.length + s]));
+  const zoneColors = [
+    ...ZONE_ORDER.map((z) => getZoneColor(featureColors, z)),
+    ...coloredOrdinals.map((ord) => cutoutUnits[ord].color as string),
+  ];
+  // Split path returns re-tessellated normals; else read from the source triangle.
+  const absNz = (i: number): number => {
+    if (normals) return Math.abs(normals[i * 9 + 2]);
+    const t = getTriangle(i);
+    const ux = t[3] - t[0],
+      uy = t[4] - t[1],
+      uz = t[5] - t[2];
+    const vx = t[6] - t[0],
+      vy = t[7] - t[1],
+      vz = t[8] - t[2];
+    const nz = ux * vy - uy * vx;
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    return Math.abs(nz) / (Math.hypot(nx, ny, nz) || 1);
+  };
+
+  const triMaterial = triZones.map((zone, i) => {
+    if (coloredOrdinals.length > 0 && resolveCutoutTriColor(triTags[i], absNz(i), cutoutUnits)) {
+      const ord = cutoutOrdinalFromTag(triTags[i]);
+      if (ord !== null) return slotForOrdinal.get(ord) ?? zoneIndex(zone);
+    }
+    return zoneIndex(zone);
+  });
+
+  const groups = coalesceGroups(triMaterial);
   return { groups, zoneColors, triZones, meshOverride };
 }
 

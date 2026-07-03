@@ -39,6 +39,9 @@ export interface LipSplitResult {
   readonly normals: Float32Array;
   /** Zone of each output triangle (lip cells + non-lip zones). */
   readonly triZones: ColorZone[];
+  /** Source FeatureTag of each output triangle (lip pieces report LIP). Lets
+   *  a later pass attribute cutout-tagged triangles to their color unit. */
+  readonly triTags: Int32Array;
 }
 
 const EPS = 1e-7;
@@ -182,12 +185,14 @@ export function splitLipMesh(input: LipSplitInput): LipSplitResult {
 
   const positions: number[] = [];
   const triZones: ColorZone[] = [];
+  const triTags: number[] = [];
 
   for (let i = 0; i < triangleCount; i++) {
     const tri = getTriangle(i);
     if (tags[i] !== FeatureTag.LIP) {
       positions.push(...tri);
       triZones.push(featureTagToColorZone(tags[i]) ?? 'body');
+      triTags.push(tags[i]);
       continue;
     }
     // Clip the lip triangle through every active plane, then classify each
@@ -200,11 +205,12 @@ export function splitLipMesh(input: LipSplitInput): LipSplitResult {
       const czp = (piece[2] + piece[5] + piece[8]) / 3;
       positions.push(...piece);
       triZones.push(classifyLipCell(cxp, cyp, czp, geom, counts));
+      triTags.push(FeatureTag.LIP);
     }
   }
 
   const pos = new Float32Array(positions);
-  return { positions: pos, normals: faceNormals(pos), triZones };
+  return { positions: pos, normals: faceNormals(pos), triZones, triTags: Int32Array.from(triTags) };
 }
 
 /** True when the grid actually partitions the lip (otherwise skip splitting). */
@@ -236,12 +242,17 @@ export function computeLipColoredMesh(input: {
   readonly geom: LipGeom | null;
   readonly counts: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
   readonly lipUniform?: boolean;
-}): { triZones: ColorZone[]; positions: Float32Array | null; normals: Float32Array | null } {
+}): {
+  triZones: ColorZone[];
+  positions: Float32Array | null;
+  normals: Float32Array | null;
+  triTags: Int32Array;
+} {
   const { triangleCount, faceGroups, getTriangle, geom, counts, lipUniform } = input;
 
   if (geom && lipGridIsNonTrivial(counts) && !lipUniform) {
     const r = splitLipMesh({ triangleCount, faceGroups, getTriangle, geom, counts });
-    return { triZones: r.triZones, positions: r.positions, normals: r.normals };
+    return { triZones: r.triZones, positions: r.positions, normals: r.normals, triTags: r.triTags };
   }
 
   const tags = buildTriTags(faceGroups, triangleCount);
@@ -257,5 +268,6 @@ export function computeLipColoredMesh(input: {
       triZones[i] = featureTagToColorZone(tags[i]) ?? 'body';
     }
   }
-  return { triZones, positions: null, normals: null };
+  // In-place path keeps the original mesh; tags align 1:1 with input triangles.
+  return { triZones, positions: null, normals: null, triTags: tags };
 }

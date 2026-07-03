@@ -71,3 +71,36 @@ export function cutoutColorTag(ordinal: number): number {
 export function cutoutOrdinalFromTag(tag: number): number | null {
   return tag >= CUTOUT_COLOR_TAG_BASE ? tag - CUTOUT_COLOR_TAG_BASE : null;
 }
+
+/**
+ * |normal.z| above which a cavity face counts as floor (facing up) rather than
+ * wall (facing sideways). A cavity floor is ~±1; walls ~0. Chamfer/scoop-fillet
+ * faces sit in between and read as wall — an accepted approximation.
+ */
+export const CUTOUT_FLOOR_NORMAL_THRESHOLD = 0.8;
+
+/**
+ * Color a cutout-tagged triangle should paint, or null to fall through to its
+ * normal zone (body). Null when the tag isn't a cutout tag, the unit is
+ * uncolored, or the surface is excluded by a floor-only scope.
+ *
+ * @param absNormalZ absolute z-component of the triangle's unit normal.
+ */
+export function resolveCutoutTriColor(
+  tag: number,
+  absNormalZ: number,
+  units: readonly CutoutColorUnit[]
+): string | null {
+  const ord = cutoutOrdinalFromTag(tag);
+  if (ord === null || ord >= units.length) return null;
+  const unit = units[ord];
+  if (unit.color === undefined) return null;
+  if (unit.colorScope === 'floorAndWalls') return unit.color;
+  return absNormalZ > CUTOUT_FLOOR_NORMAL_THRESHOLD ? unit.color : null;
+}
+
+/** True when any cutout carries a color — i.e. the design is multi-color even
+ *  if every `featureColors` zone still matches the body. */
+export function anyCutoutColored(cutouts: readonly Cutout[]): boolean {
+  return cutouts.some((c) => c.color !== undefined);
+}

@@ -22,6 +22,7 @@ import type {
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
+import { enumerateCutoutColorUnits, anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
 import {
   computeActiveZones,
   getZoneColor,
@@ -164,7 +165,11 @@ export function buildSinglePiece3MF(
 
   let colorConfig: ThreeMFColorConfig | undefined;
   /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
-  if (applyMultiColor && params.featureColors?.enabled && faceGroups) {
+  if (
+    applyMultiColor &&
+    (params.featureColors?.enabled || anyCutoutColored(params.cutouts)) &&
+    faceGroups
+  ) {
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
     const mapping = buildTriangleMaterialIndices(
@@ -172,7 +177,8 @@ export function buildSinglePiece3MF(
       params.featureColors,
       triangleCount,
       vertices,
-      computeActiveZones(params)
+      computeActiveZones(params),
+      enumerateCutoutColorUnits(params.cutouts)
     );
     if (mapping) {
       colorConfig = mapping.config;

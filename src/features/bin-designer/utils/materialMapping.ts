@@ -19,6 +19,23 @@ import {
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import { computeLipGeom } from './lipCornerClassifier';
 import { computeLipColoredMesh } from './lipSeamSplitter';
+import { resolveCutoutTriColor } from '@/shared/generation/cutoutColorUnits';
+import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
+
+/** |normal.z| of the first vertex of flat triangle `i` (9 floats/tri). */
+function absNormalZ(flat: Float32Array | ArrayLike<number>, i: number): number {
+  const b = i * 9;
+  const ux = flat[b + 3] - flat[b];
+  const uy = flat[b + 4] - flat[b + 1];
+  const uz = flat[b + 5] - flat[b + 2];
+  const vx = flat[b + 6] - flat[b];
+  const vy = flat[b + 7] - flat[b + 1];
+  const vz = flat[b + 8] - flat[b + 2];
+  const nz = ux * vy - uy * vx;
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  return Math.abs(nz) / (Math.hypot(nx, ny, nz) || 1);
+}
 
 export interface BinColorMapping {
   readonly config: ThreeMFColorConfig;
@@ -39,11 +56,25 @@ export function buildTriangleMaterialIndices(
   featureColors: FeatureColorConfig,
   triangleCount: number,
   vertices: Float32Array,
-  activeZones: ReadonlySet<ColorZone>
+  activeZones: ReadonlySet<ColorZone>,
+  cutoutUnits: readonly CutoutColorUnit[] = []
 ): BinColorMapping | null {
-  if (isSingleColor(featureColors, activeZones)) return null;
+  const coloredUnits = cutoutUnits.filter((u) => u.color !== undefined);
+  if (isSingleColor(featureColors, activeZones) && coloredUnits.length === 0) return null;
 
-  const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
+  const base = resolveColorMapping(featureColors);
+  const defaultIndex = base.defaultIndex;
+  // Extend the material palette with cutout colors, deduped by hex in lockstep
+  // with the zone colors so identical filaments collapse to one 3MF material.
+  const colors = [...base.colors];
+  const colorToIndex = new Map(base.colorToIndex);
+  for (const u of coloredUnits) {
+    const hex = normalizeHex(u.color as string);
+    if (!colorToIndex.has(hex)) {
+      colorToIndex.set(hex, colors.length);
+      colors.push(hex);
+    }
+  }
   const materials = colors.map((color) => ({ color }));
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
 
@@ -71,7 +102,7 @@ export function buildTriangleMaterialIndices(
   };
 
   const geom = computeLipGeom(faceGroups, triangleXYZ);
-  const { triZones, positions, normals } = computeLipColoredMesh({
+  const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
     faceGroups,
     getTriangle,
@@ -82,7 +113,15 @@ export function buildTriangleMaterialIndices(
 
   const materialIndexForZone = (zone: ColorZone): number =>
     colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? defaultIndex;
-  const triangleMaterialIndices = triZones.map(materialIndexForZone);
+  // Split path returns re-tessellated normals; the in-place path keeps the
+  // original triangles, so read the normal from `vertices`.
+  const nzAt = (i: number): number => absNormalZ(normals ?? vertices, i);
+  const triangleMaterialIndices = triZones.map((zone, i) => {
+    const cutoutHex =
+      coloredUnits.length > 0 ? resolveCutoutTriColor(triTags[i], nzAt(i), cutoutUnits) : null;
+    if (cutoutHex !== null) return colorToIndex.get(normalizeHex(cutoutHex)) ?? defaultIndex;
+    return materialIndexForZone(zone);
+  });
 
   const config: ThreeMFColorConfig = { materials, triangleMaterialIndices };
   if (positions && normals) {

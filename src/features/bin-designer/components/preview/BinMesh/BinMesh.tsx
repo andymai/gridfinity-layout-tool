@@ -27,6 +27,7 @@ import {
   hoveredMaterialIndices,
 } from '@/features/bin-designer/utils/multiColorGroups';
 import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
+import { enumerateCutoutColorUnits, anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
 import { nextEdgeFade } from './edgeFade';
 
 const EDGE_COLOR = '#000000';
@@ -76,6 +77,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     cells,
     lipCorners,
     lipBands,
+    cutouts,
     hoveredColorZone,
     colorTool,
   } = useDesignerStore(
@@ -99,6 +101,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       lipCorners: s.params.featureColors?.lip.corners ?? 1,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       lipBands: s.params.featureColors?.lip.bands ?? 1,
+      cutouts: s.params.cutouts,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
     }))
@@ -106,6 +109,10 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = featureColors?.enabled ?? false;
+  const cutoutUnits = useMemo(() => enumerateCutoutColorUnits(cutouts), [cutouts]);
+  // A colored cutout makes the design multi-color even if the user never opened
+  // the Multi-Color panel (setCutoutColor auto-enables, but stay robust).
+  const multiColorActive = multiColorEnabled || anyCutoutColored(cutouts);
 
   const activeZones = useMemo(
     () =>
@@ -123,11 +130,18 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
-    if (!multiColorEnabled || !faceGroups || !featureColors || !vertices || !indices) {
+    if (!multiColorActive || !faceGroups || !featureColors || !vertices || !indices) {
       return null;
     }
-    return buildMultiColorGroups(faceGroups, vertices, indices, featureColors, activeZones);
-  }, [multiColorEnabled, faceGroups, featureColors, vertices, indices, activeZones]);
+    return buildMultiColorGroups(
+      faceGroups,
+      vertices,
+      indices,
+      featureColors,
+      activeZones,
+      cutoutUnits
+    );
+  }, [multiColorActive, faceGroups, featureColors, vertices, indices, activeZones, cutoutUnits]);
 
   // A split lip grid re-tessellates the lip into a flat (non-indexed) buffer;
   // render that instead of the worker's indexed mesh so the seam-aligned color
