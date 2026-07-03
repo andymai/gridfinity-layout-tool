@@ -554,4 +554,57 @@ describe('useGeneration', () => {
       await vi.advanceTimersByTimeAsync(1);
     });
   });
+
+  it('the persisted pre-draft is not overwritten by the Manifold pre-draft', async () => {
+    const cachedVerts = new Float32Array([0, 0, 0, 3, 0, 0, 0, 3, 0]);
+    const manifoldVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    mockLoadPersisted.mockResolvedValue({
+      vertices: cachedVerts,
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      indices: new Uint32Array([0, 1, 2]),
+      edgeVertices: new Float32Array(0),
+      triangleCount: 1,
+    });
+
+    // Manifold preview bridge is available (flag on). Its pre-draft only fires
+    // while the token is 0, so the cached mesh claiming the token must block it.
+    const previewGenerate = vi.fn().mockResolvedValue({
+      mesh: {
+        vertices: manifoldVerts,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs: 1,
+    });
+    mockAcquirePreview.mockResolvedValue({
+      isDestroyed: false,
+      generateImmediate: previewGenerate,
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge);
+
+    // Hold the exact bridge open so only the pre-drafts can paint.
+    let resolveAcquire: (bridge: GenerationBridge) => void = () => {};
+    mockAcquire.mockReturnValue(
+      new Promise<GenerationBridge>((r) => {
+        resolveAcquire = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5);
+    });
+
+    // The cached (exact-quality) mesh is on screen; the Manifold pre-draft was
+    // suppressed because the cache already claimed the token.
+    expect(useDesignerStore.getState().generation.mesh?.vertices).toBe(cachedVerts);
+    expect(previewGenerate).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveAcquire(mockBridge);
+      await vi.advanceTimersByTimeAsync(1);
+    });
+  });
 });

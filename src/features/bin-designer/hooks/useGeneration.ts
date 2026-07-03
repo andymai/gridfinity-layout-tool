@@ -328,9 +328,9 @@ export function useGeneration(): void {
 
     // Instant pre-draft from last session (best-effort): a saved bin's exact
     // preview mesh persisted to IndexedDB paints in tens of ms while occt-wasm
-    // (~2-4s) loads. Only when nothing has painted yet — the first real
-    // generation (token 1) supersedes it through normal token arbitration, the
-    // same way the Manifold pre-draft does. Not run for generic items.
+    // (~2-4s) loads. Only when nothing has painted yet; it claims the token so
+    // the exact generation (and nothing else) supersedes it through normal
+    // arbitration, the same way the Manifold pre-draft does. Not for generic items.
     const initialState = useDesignerStore.getState();
     if (initialState.itemKind === 'bin') {
       const initialKey = binMeshCacheKey(initialState.params);
@@ -342,6 +342,12 @@ export function useGeneration(): void {
         // for params the user has already moved on from.
         const now = useDesignerStore.getState();
         if (now.itemKind !== 'bin' || binMeshCacheKey(now.params) !== initialKey) return;
+        // Claim the generation token before painting. The Manifold pre-draft
+        // fires only while the token is still 0, so without this a slower
+        // Manifold draft would overwrite this exact-quality cached mesh with a
+        // coarse approximation. The initial exact generation takes the next
+        // token and supersedes this through normal arbitration.
+        ++genTokenRef.current;
         setDraftResult(meshDataToPayload(cached));
       });
     }
