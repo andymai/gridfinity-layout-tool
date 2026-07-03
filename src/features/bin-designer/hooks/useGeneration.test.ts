@@ -547,6 +547,11 @@ describe('useGeneration', () => {
     // The cached mesh was for the pre-edit params — it must not paint.
     expect(useDesignerStore.getState().generation.mesh?.vertices).not.toBe(cachedVerts);
 
-    resolveAcquire(mockBridge);
+    // Resolve the held bridge inside act() so the mount effect's follow-on state
+    // updates don't emit spurious act() warnings.
+    await act(async () => {
+      resolveAcquire(mockBridge);
+      await vi.advanceTimersByTimeAsync(1);
+    });
   });
 });

@@ -18,7 +18,7 @@
 
 import { openDB } from 'idb';
 import type { IDBPDatabase } from 'idb';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/shared/types/generation';
 import { createLogger } from '@/core/logger';
 
@@ -131,7 +131,7 @@ export function binMeshCacheKey(params: BinParams): string {
   return `${MESH_CACHE_VERSION}:${djb2(stableStringify(params))}`;
 }
 
-/** Sum the byte length of every typed array reachable from a mesh (incl. lid). */
+/** Sum the byte length of every typed array reachable from a mesh (incl. lid + connector). */
 function meshByteSize(mesh: MeshData): number {
   let bytes =
     mesh.vertices.byteLength +
@@ -147,6 +147,12 @@ function meshByteSize(mesh: MeshData): number {
       mesh.lidMesh.normals.byteLength +
       mesh.lidMesh.indices.byteLength +
       mesh.lidMesh.edgeVertices.byteLength;
+  }
+  if (mesh.connectorKeyMesh) {
+    bytes +=
+      mesh.connectorKeyMesh.vertices.byteLength +
+      mesh.connectorKeyMesh.normals.byteLength +
+      mesh.connectorKeyMesh.indices.byteLength;
   }
   return bytes;
 }
