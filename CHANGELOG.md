@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.213.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.213.0...gridfinity-layout-tool-v4.213.1) (2026-07-03)
+
+
+### Performance
+
+* **bin-designer:** persist preview meshes across sessions ([#2436](https://github.com/andymai/gridfinity-layout-tool/issues/2436)) ([e2c63bb](https://github.com/andymai/gridfinity-layout-tool/commit/e2c63bb7a2d1f0014cd4293a4da6e7807e8be71a))
+
 ## [4.213.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.212.0...gridfinity-layout-tool-v4.213.0) (2026-07-03)
 
 
