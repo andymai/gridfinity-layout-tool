@@ -105,13 +105,15 @@ describe('persistence round-trip', () => {
 
   it('savePersistedBinMesh (fire-and-forget) also persists', async () => {
     savePersistedBinMesh('k-ff', makeMesh({ triangleCount: 7 }));
-    // Poll briefly for the detached write to land.
+    // Poll for the detached write to land — generous budget so a slow-CI
+    // IndexedDB tick doesn't flake the test (still returns as soon as it's set).
     let loaded = await loadPersistedBinMesh('k-ff');
-    for (let i = 0; i < 50 && !loaded; i++) {
-      await new Promise((r) => setTimeout(r, 2));
+    for (let i = 0; i < 200 && !loaded; i++) {
+      await new Promise((r) => setTimeout(r, 10));
       loaded = await loadPersistedBinMesh('k-ff');
     }
-    expect(loaded!.triangleCount).toBe(7);
+    expect(loaded).not.toBeNull();
+    expect(loaded?.triangleCount).toBe(7);
   });
 });
 

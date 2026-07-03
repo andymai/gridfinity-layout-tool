@@ -27,6 +27,9 @@ const logger = createLogger('MeshPersistence');
 const DB_NAME = 'gridfinity-mesh-cache';
 const DB_VERSION = 1;
 const BIN_MESHES_STORE = 'binMeshes';
+// Size/timestamp metadata lives in its own store so eviction can walk it
+// without deserializing the (large) mesh buffers from `binMeshes`.
+const META_STORE = 'binMeshMeta';
 
 /**
  * Bumped whenever the generated mesh bytes can change for the same params —
@@ -43,6 +46,11 @@ const MAX_CACHE_BYTES = 64 * 1024 * 1024;
 interface StoredMesh {
   readonly key: string;
   readonly mesh: MeshData;
+}
+
+/** Lightweight per-entry metadata (no mesh buffers) used to drive LRU eviction. */
+interface MeshMeta {
+  readonly key: string;
   readonly byteSize: number;
   readonly createdAt: number;
 }
@@ -59,8 +67,11 @@ async function openMeshDb(): Promise<IDBPDatabase> {
   const db = await openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(BIN_MESHES_STORE)) {
-        const store = db.createObjectStore(BIN_MESHES_STORE, { keyPath: 'key' });
-        store.createIndex('byCreatedAt', 'createdAt', { unique: false });
+        db.createObjectStore(BIN_MESHES_STORE, { keyPath: 'key' });
+      }
+      if (!db.objectStoreNames.contains(META_STORE)) {
+        const meta = db.createObjectStore(META_STORE, { keyPath: 'key' });
+        meta.createIndex('byCreatedAt', 'createdAt', { unique: false });
       }
     },
   });
@@ -167,48 +178,42 @@ export function savePersistedBinMesh(key: string, mesh: MeshData): void {
   void persistMesh(key, mesh);
 }
 
-/** Awaitable core of {@link savePersistedBinMesh}; resolves after eviction. */
+/**
+ * Awaitable core of {@link savePersistedBinMesh}; resolves after eviction.
+ * Writes the mesh and its metadata in one transaction and evicts within the
+ * same transaction so the store never exceeds the budget between calls.
+ */
 async function persistMesh(key: string, mesh: MeshData): Promise<void> {
   try {
     const db = await getDb();
-    const entry: StoredMesh = {
-      key,
-      mesh,
-      byteSize: meshByteSize(mesh),
-      createdAt: Date.now(),
-    };
-    await db.put(BIN_MESHES_STORE, entry);
-    await evictOverBudget(db);
+    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), createdAt: Date.now() };
+
+    const tx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
+    const meshes = tx.objectStore(BIN_MESHES_STORE);
+    const metas = tx.objectStore(META_STORE);
+    await Promise.all([meshes.put({ key, mesh } satisfies StoredMesh), metas.put(meta)]);
+
+    // Walk the metadata index only — its records carry no mesh buffers, so the
+    // cursor never materializes the large typed arrays in `binMeshes`.
+    let total = 0;
+    const ordered: MeshMeta[] = [];
+    for await (const cursor of metas.index('byCreatedAt').iterate()) {
+      const value = cursor.value as MeshMeta;
+      total += value.byteSize;
+      ordered.push(value);
+    }
+
+    // `ordered` is ascending by createdAt (oldest first).
+    for (const entry of ordered) {
+      if (total <= MAX_CACHE_BYTES) break;
+      await Promise.all([meshes.delete(entry.key), metas.delete(entry.key)]);
+      total -= entry.byteSize;
+    }
+
+    await tx.done;
   } catch (e) {
     logger.warn('Failed to persist mesh', { error: String(e) });
   }
-}
-
-/**
- * Evict oldest entries (by `createdAt`) until the total stored bytes fit the
- * budget. Runs after each write; the entry set is small (hundreds) and writes
- * are infrequent (once per settled edit), so the full cursor walk is cheap.
- */
-async function evictOverBudget(db: IDBPDatabase): Promise<void> {
-  const tx = db.transaction(BIN_MESHES_STORE, 'readwrite');
-  const index = tx.store.index('byCreatedAt');
-
-  let total = 0;
-  const entries: { key: string; byteSize: number }[] = [];
-  for await (const cursor of index.iterate()) {
-    const value = cursor.value as StoredMesh;
-    total += value.byteSize;
-    entries.push({ key: value.key, byteSize: value.byteSize });
-  }
-
-  // entries are in ascending createdAt order (oldest first)
-  for (const entry of entries) {
-    if (total <= MAX_CACHE_BYTES) break;
-    await tx.store.delete(entry.key);
-    total -= entry.byteSize;
-  }
-
-  await tx.done;
 }
 
 /** Test-only: awaitable save (resolves after the write + eviction settle). */

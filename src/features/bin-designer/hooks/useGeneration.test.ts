@@ -44,7 +44,8 @@ const mockLoadPersisted = vi.fn<() => Promise<MeshData | null>>();
 const mockSavePersisted = vi.fn<(key: string, mesh: MeshData) => void>();
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
-  binMeshCacheKey: () => 'test-key',
+  // Param-sensitive so the stale-params guard in the mount pre-draft is testable.
+  binMeshCacheKey: (p: { width: number }) => `test-key-${p.width}`,
   loadPersistedBinMesh: () => mockLoadPersisted(),
   savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
 }));
@@ -456,7 +457,7 @@ describe('useGeneration', () => {
     expect(useDesignerStore.getState().generation.status).toBe('complete');
     expect(mockSavePersisted).toHaveBeenCalledTimes(1);
     const [key, mesh] = mockSavePersisted.mock.calls[0];
-    expect(key).toBe('test-key');
+    expect(key).toMatch(/^test-key-/);
     // The raw bridge mesh (not the store payload) is what gets persisted.
     expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
   });
@@ -503,5 +504,49 @@ describe('useGeneration', () => {
     expect(state.generation.isDraft).toBe(false);
     expect(state.generation.status).toBe('complete');
     expect(state.generation.mesh?.vertices).not.toBe(cachedVerts);
+  });
+
+  it('does NOT paint a persisted pre-draft when params changed during WASM load', async () => {
+    const cachedVerts = new Float32Array([0, 0, 0, 3, 0, 0, 0, 3, 0]);
+    // Hold the persisted load open so we can change params before it resolves.
+    let resolveLoad: (mesh: MeshData) => void = () => {};
+    mockLoadPersisted.mockReturnValue(
+      new Promise<MeshData>((r) => {
+        resolveLoad = r;
+      })
+    );
+
+    // Hold the exact bridge open too — keeps the token at 0 (edits don't
+    // regenerate until the bridge is ready), which is exactly the window the
+    // guard protects.
+    let resolveAcquire: (bridge: GenerationBridge) => void = () => {};
+    mockAcquire.mockReturnValue(
+      new Promise<GenerationBridge>((r) => {
+        resolveAcquire = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // User edits width while WASM is still loading, then the stale cache resolves.
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ params: { ...s.params, width: s.params.width + 1 } }));
+      resolveLoad({
+        vertices: cachedVerts,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      });
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // The cached mesh was for the pre-edit params — it must not paint.
+    expect(useDesignerStore.getState().generation.mesh?.vertices).not.toBe(cachedVerts);
+
+    resolveAcquire(mockBridge);
   });
 });

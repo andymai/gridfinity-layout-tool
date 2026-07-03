@@ -333,9 +333,15 @@ export function useGeneration(): void {
     // same way the Manifold pre-draft does. Not run for generic items.
     const initialState = useDesignerStore.getState();
     if (initialState.itemKind === 'bin') {
-      void loadPersistedBinMesh(binMeshCacheKey(initialState.params)).then((cached) => {
+      const initialKey = binMeshCacheKey(initialState.params);
+      void loadPersistedBinMesh(initialKey).then((cached) => {
         if (cancelled || !cached) return;
         if (genTokenRef.current !== 0 || finalizedTokenRef.current > 0) return;
+        // Params can change while occt-wasm loads (edits don't regenerate until
+        // the bridge is ready, so the token stays 0). Don't paint a pre-draft
+        // for params the user has already moved on from.
+        const now = useDesignerStore.getState();
+        if (now.itemKind !== 'bin' || binMeshCacheKey(now.params) !== initialKey) return;
         setDraftResult(meshDataToPayload(cached));
       });
     }
