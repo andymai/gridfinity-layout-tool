@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_42ca9be8262433::t_2a025548b10516 33
+  s_42ca9be8262433::t_beeb97ff62c188 57-60
+src/features/generation/worker/generators/binGenerator.scenario.cutoutColorTag.test.ts
+  s_42ca9be8262433::t_a1b3ce1735e18e 1-153
+src/shared/generation/cutoutColorUnits.ts
+  s_42ca9be8262433::t_7f0724720b10ef 1-73
+src/shared/types/bin.ts
+  s_42ca9be8262433::t_7c48b80535842d 69
+  s_42ca9be8262433::t_eb03681e6ce945 34
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_42ca9be8262433::t_2422ef269a4b87 62-67
+  s_42ca9be8262433::t_a76a72eb594c98 32
+  s_42ca9be8262433::t_30905d5a1ca428 1064-1065,1067
+  s_42ca9be8262433::t_c2cd4d0b820f0f 999-1011,1019-1021,1024,1038-1039
+  s_42ca9be8262433::t_40ad48bd5c37a7 1080,1087-1088
+  s_42ca9be8262433::t_035b8ed14547fa 1098-1101,1107-1108,1121-1122,1124-1127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "34c40d6548e00fec00e455a25945b7466c4dce7d",
+  "prompts": {},
+  "sessions": {
+    "s_42ca9be8262433": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dcc309b-2db5-4570-9639-626456d37bec",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
