@@ -34,6 +34,15 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.getByLabelText('Grid unit Y')).toHaveValue(42);
   });
 
+  it('shows distinct X and Y values when grid is non-square (X=42mm, Y=40mm)', () => {
+    act(() => {
+      useDesignerStore.setState((s) => ({ params: { ...s.params, gridUnitMmY: 40 } }));
+    });
+    render(<PhysicalUnitsSection />);
+    expect(screen.getByLabelText('Grid unit')).toHaveValue(42);
+    expect(screen.getByLabelText('Grid unit Y')).toHaveValue(40);
+  });
+
   it('renders print bed width input (linked by default)', () => {
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('Print bed width')).toBeInTheDocument();
