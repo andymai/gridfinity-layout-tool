@@ -36,10 +36,12 @@ export function calculateIdealDistance(
   height: number,
   fov: number,
   gridUnitMm: number = GRIDFINITY.GRID_SIZE,
-  heightUnitMm: number = GRIDFINITY.HEIGHT_UNIT
+  heightUnitMm: number = GRIDFINITY.HEIGHT_UNIT,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): number {
   const outerW = width * gridUnitMm;
-  const outerD = depth * gridUnitMm;
+  const outerD = depth * gridUnitMmY;
   const totalH = height * heightUnitMm;
 
   const halfW = outerW / 2;

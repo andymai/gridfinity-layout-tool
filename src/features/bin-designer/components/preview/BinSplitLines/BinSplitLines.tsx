@@ -30,15 +30,18 @@ const DASHED_LINE_SHARED = {
 } as const;
 
 export const BinSplitLines = memo(function BinSplitLines() {
-  const { width, depth, height, heightUnitMm, gridUnitMm } = useDesignerStore(
+  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
       heightUnitMm: s.params.heightUnitMm,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
     }))
   );
+  // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
+  const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
 
   const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
     useShallow((s) => ({
@@ -48,8 +51,8 @@ export const BinSplitLines = memo(function BinSplitLines() {
   );
 
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm]
+    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth, gridUnitMmYEff),
+    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm, gridUnitMmYEff]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
@@ -60,15 +63,15 @@ export const BinSplitLines = memo(function BinSplitLines() {
   );
 
   const ySplits = useMemo(
-    () => (needsSplit ? getSplitPlanePositionsMm(depth, maxGrid.depth, gridUnitMm) : []),
-    [depth, maxGrid.depth, gridUnitMm, needsSplit]
+    () => (needsSplit ? getSplitPlanePositionsMm(depth, maxGrid.depth, gridUnitMmYEff) : []),
+    [depth, maxGrid.depth, gridUnitMmYEff, needsSplit]
   );
 
   if (!needsSplit) return null;
 
   const totalH = height * heightUnitMm;
   const halfW = (width * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
-  const halfD = (depth * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
+  const halfD = (depth * gridUnitMmYEff - GRIDFINITY.TOLERANCE) / 2;
 
   return (
     <group>

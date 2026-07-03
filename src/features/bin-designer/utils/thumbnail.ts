@@ -394,6 +394,8 @@ export function captureThumbnailAtPreset(
     depth: number;
     height: number;
     gridUnitMm: number;
+    /** Y-axis pitch for non-square grids; defaults to gridUnitMm. */
+    gridUnitMmY?: number;
     heightUnitMm: number;
   },
   options?: ThumbnailCaptureOptions
@@ -404,7 +406,7 @@ export function captureThumbnailAtPreset(
   }
 
   try {
-    const { width, depth, height, gridUnitMm, heightUnitMm } = binDimensions;
+    const { width, depth, height, gridUnitMm, gridUnitMmY, heightUnitMm } = binDimensions;
     const totalH = height * heightUnitMm;
     const binCenter = new Vector3(0, 0, totalH / 2);
     const fov = previewCamera.fov;
@@ -414,7 +416,8 @@ export function captureThumbnailAtPreset(
       height,
       fov,
       gridUnitMm,
-      heightUnitMm
+      heightUnitMm,
+      gridUnitMmY ?? gridUnitMm
     );
 
     // Save current camera state (position, up, and orientation quaternion)

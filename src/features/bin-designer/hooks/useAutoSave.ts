@@ -115,6 +115,7 @@ export function useAutoSave(): void {
         depth: paramsToSave.depth,
         height: paramsToSave.height,
         gridUnitMm: paramsToSave.gridUnitMm,
+        gridUnitMmY: paramsToSave.gridUnitMmY,
         heightUnitMm: paramsToSave.heightUnitMm,
       });
 

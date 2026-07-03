@@ -23,20 +23,33 @@ const ZERO_OVERHANG = { left: 0, right: 0, front: 0, back: 0 } as const;
 export function OverhangHighlight() {
   const { invalidate } = useThree();
 
-  const { side, width, depth, height, gridUnitMm, heightUnitMm, stackingLip, baseStyle, overhang } =
-    useDesignerStore(
-      useShallow((s) => ({
-        side: s.ui.hoveredOverhangSide,
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        gridUnitMm: s.params.gridUnitMm,
-        heightUnitMm: s.params.heightUnitMm,
-        stackingLip: s.params.base.stackingLip,
-        baseStyle: s.params.base.style,
-        overhang: s.params.overhang ?? ZERO_OVERHANG,
-      }))
-    );
+  const {
+    side,
+    width,
+    depth,
+    height,
+    gridUnitMm,
+    gridUnitMmY,
+    heightUnitMm,
+    stackingLip,
+    baseStyle,
+    overhang,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      side: s.ui.hoveredOverhangSide,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
+      heightUnitMm: s.params.heightUnitMm,
+      stackingLip: s.params.base.stackingLip,
+      baseStyle: s.params.base.style,
+      overhang: s.params.overhang ?? ZERO_OVERHANG,
+    }))
+  );
+  // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
+  const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
 
   const material = useMemo(
     () =>
@@ -55,7 +68,7 @@ export function OverhangHighlight() {
   const boxes = useMemo(() => {
     if (!side) return [];
     const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-    const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+    const outerD = depth * gridUnitMmYEff - GRIDFINITY.TOLERANCE;
     // The overhang's flat bottom sits at the socket top (feet stay put); a flat
     // base has no socket, so it starts at z=0. Top includes the stacking lip.
     const wallBottomZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
@@ -72,7 +85,18 @@ export function OverhangHighlight() {
         back: overhang.back,
       },
     });
-  }, [side, width, depth, height, gridUnitMm, heightUnitMm, stackingLip, baseStyle, overhang]);
+  }, [
+    side,
+    width,
+    depth,
+    height,
+    gridUnitMm,
+    gridUnitMmYEff,
+    heightUnitMm,
+    stackingLip,
+    baseStyle,
+    overhang,
+  ]);
 
   // frameloop is "demand" — nudge a render whenever the highlight changes or clears.
   useEffect(() => {

@@ -209,7 +209,7 @@ export async function regenerateThumbnail(
     const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 2000);
     camera.up.set(0, 0, 1);
 
-    const { width, depth, height, gridUnitMm, heightUnitMm } = params;
+    const { width, depth, height, gridUnitMm, gridUnitMmY, heightUnitMm } = params;
     const totalH = height * heightUnitMm;
     const binCenter = new THREE.Vector3(0, 0, totalH / 2);
     const idealDistance = calculateIdealDistance(
@@ -218,7 +218,8 @@ export async function regenerateThumbnail(
       height,
       fov,
       gridUnitMm,
-      heightUnitMm
+      heightUnitMm,
+      gridUnitMmY ?? gridUnitMm
     );
 
     const cameraPos = new THREE.Vector3(

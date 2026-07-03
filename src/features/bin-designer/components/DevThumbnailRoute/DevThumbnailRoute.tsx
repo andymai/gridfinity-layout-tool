@@ -104,6 +104,7 @@ export function DevThumbnailRoute() {
               depth: params.depth,
               height: params.height,
               gridUnitMm: params.gridUnitMm,
+              gridUnitMmY: params.gridUnitMmY,
               heightUnitMm: params.heightUnitMm,
             },
             { size: THUMBNAIL_SIZE, mimeType: 'image/png' }
@@ -133,6 +134,7 @@ export function DevThumbnailRoute() {
     params.depth,
     params.height,
     params.gridUnitMm,
+    params.gridUnitMmY,
     params.heightUnitMm,
   ]);
 
