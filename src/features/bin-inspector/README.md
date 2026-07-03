@@ -17,7 +17,11 @@ graph TB
 - `components/Inspector/CustomPropertiesEditor.tsx` — custom key-value property editor
 - `components/Inspector/SplitWarning.tsx` — print bed size warning indicator
 - `components/Inspector/EmptyState.tsx` — no selection state
-- `hooks/useBinInspector.ts` — selection resolution and bin data
+- `hooks/useBinInspector.ts` — selection resolution and bin data. Also exposes `applySuggestedSize` (single-`updateBin` resize for one-step undo) and `canApplySuggestedSize` (fit check), both built on a shared `resolveSuggestedRect` so the size-suggestion gate can't disagree with the actual mutation.
+
+## Size suggestion (Labs)
+
+`SingleBinInspector` renders the `bin-recommender` `BinSizeSuggestion` under the label field, gated on the `bin_recommender` Labs flag (the lazy chunk isn't fetched when off). It wires `onApply={applySuggestedSize}` and `canFit={canApplySuggestedSize}`.
 
 ## Constraints
 
