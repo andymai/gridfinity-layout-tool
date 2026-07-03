@@ -130,16 +130,31 @@ export function magnetPositionsForCell(
   const halfW = (cell.widthUnits * pitchX) / 2;
   const halfD = (cell.depthUnits * pitchY) / 2;
 
-  // Standard 4-corner pattern where the ±HOLE_OFFSET corners fit the cell (no
-  // extra wall required — matches the long-standing unconditional placement for
-  // square cells with any magnet that doesn't overrun the edge).
-  const standardFits = HOLE_OFFSET + magnetRadius <= halfW && HOLE_OFFSET + magnetRadius <= halfD;
-  if (standardFits) {
-    return MAGNET_OFFSETS.map(([dx, dy]) => [cell.centerX + dx, cell.centerY + dy]);
-  }
+  // Per-axis magnet offset: the Gridfinity ±HOLE_OFFSET, but never letting a
+  // magnet sit closer to the cell edge than it does in a standard 42mm cell
+  // (STANDARD_WALL_INSET = 8mm center-to-edge → ~4.75mm of plastic to the wall).
+  // On a smaller or non-square cell the offset is pulled inward per axis so that
+  // constant wall gap is preserved. A full 42mm cell is unchanged (offset ===
+  // HOLE_OFFSET). The offset depends only on cell size, not magnetRadius, so a
+  // bin base and the lid stacked on it derive identical positions and mate.
+  const offX = Math.min(HOLE_OFFSET, halfW - STANDARD_WALL_INSET);
+  const offY = Math.min(HOLE_OFFSET, halfD - STANDARD_WALL_INSET);
 
   // A magnet must at least fit centered on both axes, else the cell is too small.
   const reach = magnetRadius + MAGNET_EDGE_CLEARANCE;
+
+  // Standard 4-corner pattern when each axis can seat two magnets at its clamped
+  // offset with a printable gap between the pair and from the wall (offX/offY ≥
+  // reach). Preserves the standard wall distance on every cell that can hold it.
+  if (offX >= reach && offY >= reach) {
+    return [
+      [cell.centerX - offX, cell.centerY - offY],
+      [cell.centerX + offX, cell.centerY - offY],
+      [cell.centerX + offX, cell.centerY + offY],
+      [cell.centerX - offX, cell.centerY + offY],
+    ];
+  }
+
   if (reach > halfW || reach > halfD) return [];
 
   // Spread magnets along the longer axis, centered on the shorter one. The

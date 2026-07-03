@@ -61,9 +61,52 @@ describe('magnetPositionsForCell', () => {
   });
 
   it('keeps all 4 corners on a large partial tile that fits them', () => {
-    // 0.9u wide: halfW = 18.9; ±13 + r = 16.25 ≤ 18.9, so the standard pattern fits.
+    // 0.9u wide: halfW = 18.9. The 4-corner pattern fits, but the offset is
+    // pulled inward to hold the standard 8mm wall inset instead of ±13.
     const positions = magnetPositionsForCell(cell(0.9, 1, 0, 0), MAGNET_R, GRID, GRID);
     expect(positions).toHaveLength(4);
+  });
+
+  it('pulls near-standard cells inward to keep the standard wall distance (0.9u)', () => {
+    // Regression: a 0.9u (37.8mm) cell used to keep magnets at ±13, leaving only
+    // ~2.65mm to the edge. Now the offset is min(13, half − 8) so the magnet
+    // sits the SAME 8mm from center-to-edge as a full 42mm cell (4.75mm wall).
+    const positions = magnetPositionsForCell(cell(0.9, 0.9, 0, 0), MAGNET_R, GRID, GRID);
+    const half = (0.9 * GRID) / 2; // 18.9
+    const expectedOffset = Math.min(13, half - 8); // 10.9
+    expect(positions).toHaveLength(4);
+    for (const [x, y] of positions) {
+      expect(Math.abs(x)).toBeCloseTo(expectedOffset, 6);
+      expect(Math.abs(y)).toBeCloseTo(expectedOffset, 6);
+      // Wall gap (edge of magnet to cell edge) equals the standard 42mm gap.
+      expect(half - Math.abs(x) - MAGNET_R).toBeCloseTo(21 - 13 - MAGNET_R, 6);
+    }
+  });
+
+  it('pulls in only the compressed axis on a non-square cell (42×36)', () => {
+    // X keeps ±13 (full pitch), Y pulls in to hold the 8mm inset on the 36mm axis.
+    const positions = magnetPositionsForCell(cell(1, 1, 0, 0), MAGNET_R, 42, 36);
+    expect(positions).toHaveLength(4);
+    const halfD = 18; // 36/2
+    for (const [x, y] of positions) {
+      expect(Math.abs(x)).toBeCloseTo(13, 6);
+      expect(Math.abs(y)).toBeCloseTo(Math.min(13, halfD - 8), 6); // 10
+    }
+  });
+
+  it('never lets a 4-corner magnet sit closer to the edge than a standard cell', () => {
+    // The core guarantee across a sweep of square cell sizes that still hold the
+    // 4-corner pattern: center-to-edge >= STANDARD_WALL_INSET (8mm).
+    for (const mm of [42, 40, 38, 37, 36, 34, 30, 26]) {
+      const positions = magnetPositionsForCell(cell(mm / 42, mm / 42, 0, 0), MAGNET_R, GRID, GRID);
+      const half = mm / 2;
+      for (const [x, y] of positions) {
+        if (positions.length === 4) {
+          expect(half - Math.abs(x)).toBeGreaterThanOrEqual(8 - 1e-9);
+          expect(half - Math.abs(y)).toBeGreaterThanOrEqual(8 - 1e-9);
+        }
+      }
+    }
   });
 
   it('emits no magnet for a tile too small for even a centered magnet', () => {
