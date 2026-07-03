@@ -53,11 +53,8 @@ export function meshCacheKey(
     ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
     : 0;
   return buildCacheKey(
-    // v2: over-tile margin tiles now receive magnet holes (was solid).
-    // v3: small/non-square tiles spread magnets along the long axis (was 1 center).
-    // v4: spread magnets use the standard wall inset (were jammed against the end).
-    // v5: over-tile margin tiles now get lightweight underside hollowing (was solid).
-    'v5',
+    // v2: support for non-square grids
+    'v2',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),
