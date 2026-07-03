@@ -68,7 +68,9 @@ function computeRailSummary(
   coveragePercent: number,
   disabledRails: ReadonlySet<LidCompatibilitySide>,
   cellMask: CellMask | undefined,
-  clickRails: LidClickRails
+  clickRails: LidClickRails,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -78,15 +80,15 @@ function computeRailSummary(
   if (isPartialMask(cellMask)) {
     const outer = maskToPolygon(cellMask)[0] ?? [];
     const halfW = (cellMask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-    const halfD = (cellMask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+    const halfD = (cellMask.rows * MASK_CELL_SIZE * gridUnitMmY) / 2;
     const lengths: number[] = [];
     for (let i = 0; i < outer.length; i++) {
       const a = outer[i];
       const b = outer[(i + 1) % outer.length];
       const ax = a.x * gridUnitMm - halfW;
-      const ay = a.y * gridUnitMm - halfD;
+      const ay = a.y * gridUnitMmY - halfD;
       const bx = b.x * gridUnitMm - halfW;
-      const by = b.y * gridUnitMm - halfD;
+      const by = b.y * gridUnitMmY - halfD;
       const dx = bx - ax;
       const dy = by - ay;
       // Classify by outward direction to apply the per-side toggle and
@@ -117,7 +119,7 @@ function computeRailSummary(
 
   // Rectangular path: at most two distinct lengths (X-axis walls vs Y-axis walls).
   const lidOuterW = width * gridUnitMm - 2 * fitClearance;
-  const lidOuterD = depth * gridUnitMm - 2 * fitClearance;
+  const lidOuterD = depth * gridUnitMmY - 2 * fitClearance;
   const railLenX = (lidOuterW - 2 * lidCornerR) * coverage;
   const railLenY = (lidOuterD - 2 * lidCornerR) * coverage;
   // Per-side count: 1 if that wall has a rail enabled AND its side isn't
@@ -288,8 +290,10 @@ export function useLidSection() {
   // `lidTopThickness` here without importing the worker-side helper.
   const lidDimensions = useMemo(() => {
     const fitClearance = LID_FIT_CLEARANCE;
+    // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
+    const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
     const lidOuterW = params.width * params.gridUnitMm - 2 * fitClearance;
-    const lidOuterD = params.depth * params.gridUnitMm - 2 * fitClearance;
+    const lidOuterD = params.depth * gridUnitMmY - 2 * fitClearance;
     // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate.
     // Floor plate auto-grows for magnets — keep the readout in sync so
     // users see why the lid is taller when they enable magnets.
@@ -307,6 +311,7 @@ export function useLidSection() {
     params.width,
     params.depth,
     params.gridUnitMm,
+    params.gridUnitMmY,
     params.heightUnitMm,
   ]);
 
@@ -332,7 +337,8 @@ export function useLidSection() {
             lid.clickRailCoverage,
             disabledRails,
             params.cellMask,
-            lid.clickRails
+            lid.clickRails,
+            params.gridUnitMmY ?? params.gridUnitMm
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
@@ -340,6 +346,7 @@ export function useLidSection() {
       params.width,
       params.depth,
       params.gridUnitMm,
+      params.gridUnitMmY,
       params.cellMask,
       disabledRails,
       lid.clickRails,
