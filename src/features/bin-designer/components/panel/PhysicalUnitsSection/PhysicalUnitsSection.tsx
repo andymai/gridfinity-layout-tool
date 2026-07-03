@@ -36,8 +36,8 @@ export function PhysicalUnitsSection() {
         {state.nonSquare ? (
           <>
             <SettingsRow
-              label="Grid unit X"
-              tooltip="Width of one grid cell in mm along X (standard Gridfinity = 42mm)"
+              label={t('binDesigner.gridUnitX')}
+              tooltip={t('binDesigner.gridUnitXTooltip')}
               unit="mm"
             >
               <DeferredNumberInput
@@ -50,8 +50,8 @@ export function PhysicalUnitsSection() {
               />
             </SettingsRow>
             <SettingsRow
-              label="Grid unit Y"
-              tooltip="Depth of one grid cell in mm along Y. Set different from X to fill a drawer that isn't an exact multiple of 42mm (e.g. 42×22)."
+              label={t('binDesigner.gridUnitY')}
+              tooltip={t('binDesigner.gridUnitYTooltip')}
               unit="mm"
             >
               <DeferredNumberInput
@@ -66,8 +66,8 @@ export function PhysicalUnitsSection() {
           </>
         ) : (
           <SettingsRow
-            label="Grid unit"
-            tooltip="Size of one grid cell in mm (standard Gridfinity = 42mm)"
+            label={t('binDesigner.gridUnit')}
+            tooltip={t('binDesigner.gridUnitTooltip')}
             unit="mm"
           >
             <DeferredNumberInput
@@ -86,8 +86,8 @@ export function PhysicalUnitsSection() {
           onChange={handlers.handleToggleNonSquare}
         />
         <SettingsRow
-          label="Height unit"
-          tooltip="Size of one height unit in mm (standard Gridfinity = 7mm)"
+          label={t('binDesigner.heightUnit')}
+          tooltip={t('binDesigner.heightUnitTooltip')}
           unit="mm"
         >
           <DeferredNumberInput
