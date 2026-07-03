@@ -11,7 +11,8 @@ interface BinSizeSuggestionProps {
   label: string;
   drawer: DrawerDims;
   current: BinSize;
-  onApply: (size: BinSize) => void;
+  /** Apply the suggested size. Returns whether the resize actually succeeded. */
+  onApply: (size: BinSize) => boolean;
   /**
    * Whether the suggested size can actually be placed at the bin's current
    * position (no collision/overflow). When false, the hint is shown as plain
@@ -49,20 +50,23 @@ export function BinSizeSuggestion({
   // One impression per distinct (label, size, fits) triple surfaced.
   const shownRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!suggestion || !sizeKey) return;
+    if (!suggestion || !sizeKey || dismissedFor === labelKey) return;
     const impression = `${labelKey}:${sizeKey}:${fits}`;
     if (shownRef.current === impression) return;
     shownRef.current = impression;
     trackEvent('bin_suggestion_shown', { source: suggestion.source, size: sizeKey, fits });
-  }, [suggestion, sizeKey, labelKey, fits]);
+  }, [suggestion, sizeKey, labelKey, fits, dismissedFor]);
 
   if (!suggestion || !sizeKey || dismissedFor === labelKey) return null;
 
   const sizeText = `${fmt(suggestion.size.width)}×${fmt(suggestion.size.depth)}×${fmt(suggestion.size.height)}`;
 
   const handleApply = () => {
-    trackEvent('bin_suggestion_applied', { source: suggestion.source, size: sizeKey, fits });
-    onApply(suggestion.size);
+    // Only count an apply that actually landed — the resize can still fail if
+    // the layout changed between render and click.
+    if (onApply(suggestion.size)) {
+      trackEvent('bin_suggestion_applied', { source: suggestion.source, size: sizeKey, fits });
+    }
   };
 
   const handleDismiss = () => {
