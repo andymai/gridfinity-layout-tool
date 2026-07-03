@@ -178,6 +178,41 @@ describe('lid generation and export scenarios', () => {
     expect(withMagnets!.triangleCount).not.toBe(without!.triangleCount);
   });
 
+  it('cuts lid magnets on a non-square grid at the correct cell centers', async () => {
+    // Regression: lidMagnets positioned magnet cells with the X pitch on both
+    // axes, so on a non-square grid the holes landed at 42mm Y spacing on a
+    // shallower lid — off the cells entirely (few/no cuts). With the per-axis
+    // pitch, a realistic non-square grid (42x36) cuts the full magnet pattern.
+    const { generateLid } = await import('./lidOrchestrator');
+    const nsBase = { width: 2, depth: 2, height: 3, gridUnitMmY: 36 };
+    const without = generateLid(makeParams({ stackableTop: true, magnetHoles: false }, nsBase));
+    const withMagnets = generateLid(makeParams({ stackableTop: true, magnetHoles: true }, nsBase));
+    expect(without).not.toBeNull();
+    expect(withMagnets).not.toBeNull();
+    assertStructurallyValid(withMagnets!, 'non-square lid + magnets');
+    // The magnet pattern must add a meaningful number of triangles — a
+    // mis-positioned pattern (pre-fix) added far fewer or none.
+    expect(withMagnets!.triangleCount - without!.triangleCount).toBeGreaterThan(1500);
+  });
+
+  it('a square-Y non-square grid (gridUnitMmY === gridUnitMm) matches the square lid', async () => {
+    // Guards the pitch plumbing: setting gridUnitMmY equal to the X pitch must
+    // reproduce the square lid exactly (no drift from the anisotropic path).
+    const { generateLid } = await import('./lidOrchestrator');
+    const square = generateLid(
+      makeParams({ stackableTop: true, magnetHoles: true }, { width: 2, depth: 2, height: 3 })
+    );
+    const explicitY = generateLid(
+      makeParams(
+        { stackableTop: true, magnetHoles: true },
+        { width: 2, depth: 2, height: 3, gridUnitMmY: 42 }
+      )
+    );
+    expect(square).not.toBeNull();
+    expect(explicitY).not.toBeNull();
+    expect(explicitY!.triangleCount).toBe(square!.triangleCount);
+  });
+
   it('exports STL for stackable lid with magnet holes (regression #1655)', async () => {
     // Stackable top + magnet holes used to fuse the slab BEFORE cutting
     // magnet pockets, leaving each cylinder's coplanar-margin overshoot
