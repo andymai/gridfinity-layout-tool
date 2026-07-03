@@ -64,6 +64,7 @@ export function CompartmentEditor() {
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     wallThickness,
     style,
     labelEnabled,
@@ -86,6 +87,7 @@ export function CompartmentEditor() {
       width: s.params.width,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
       labelEnabled: s.params.label.enabled,
@@ -116,6 +118,7 @@ export function CompartmentEditor() {
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     wallThickness,
   });
 

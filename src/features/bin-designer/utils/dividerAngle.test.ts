@@ -73,6 +73,13 @@ describe('dividerAngle', () => {
     it('returns null when the bin interior is non-positive', () => {
       expect(getDividerGeometry({ ...params, width: 0.05 }, config, divider)).toBeNull();
     });
+
+    it('derives the depth-axis segment length from gridUnitMmY (non-square grid)', () => {
+      // Vertical divider spans the Y axis, so its length tracks the Y pitch.
+      // innerD = 1·22 − 0.5 − 2·1.2 = 19.1 (vs 39.1 for the default 42 pitch).
+      const geom = getDividerGeometry({ ...params, gridUnitMmY: 22 }, config, divider);
+      expect(geom?.segmentLengthMm).toBeCloseTo(19.1, 1);
+    });
   });
 
   describe('applyAngleShift', () => {

@@ -23,6 +23,8 @@ export interface BinInteriorParams {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;
+  /** Y-axis pitch for non-square grids; defaults to `gridUnitMm` (square). */
+  readonly gridUnitMmY?: number;
   readonly wallThickness: number;
 }
 
@@ -54,11 +56,14 @@ export interface DividerGeometry {
 
 /**
  * Interior cavity dimensions in mm. Mirrors boxBuilder: outer = units·gridUnitMm
- * − TOLERANCE, inner = outer − 2·wall.
+ * − TOLERANCE, inner = outer − 2·wall. The depth axis uses `gridUnitMmY` when
+ * set (non-square grid); otherwise it equals the X pitch, so square bins are
+ * unchanged.
  */
 export function getInteriorDims(params: BinInteriorParams): { innerW: number; innerD: number } {
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const innerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
-  const innerD = params.depth * params.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+  const innerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
   return { innerW, innerD };
 }
 

@@ -208,6 +208,12 @@ export function resolvePolygonSideGeometry(
   // generator clips against the real bin body at the 3D stage).
   const wallSpan = edge.spanU * spanUnit - CLEARANCE - 2 * wallThickness;
 
+  // A degenerate (non-positive) span violates the PolygonSideGeometry contract
+  // and would flow downstream as negative cutout/handle widths. This can happen
+  // with a small per-axis pitch (e.g. a 1mm Y grid unit for left/right walls) on
+  // a short edge. Return null so callers skip placement, matching the !edge case.
+  if (wallSpan <= 0) return null;
+
   return {
     key: side,
     wallSpan,

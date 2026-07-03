@@ -203,4 +203,19 @@ describe('resolvePolygonSideGeometry', () => {
     expect(findPolygonEdgeForSide(mask, 'left')).not.toBeNull();
     expect(findPolygonEdgeForSide(mask, 'right')).not.toBeNull();
   });
+
+  it('returns null when a small per-axis pitch collapses the wall span', () => {
+    // A tiny Y pitch (allowed down to 1mm) on a short edge drives the inner
+    // span non-positive; the contract requires a positive wallSpan, so the
+    // resolver must skip placement rather than emit negative-width geometry
+    // downstream (handles/cutouts). Left/right walls span the Y axis.
+    const mask = makeMask([[1]]);
+    const anisotropic = { x: GRID_UNIT, y: 1 };
+    expect(resolvePolygonSideGeometry(mask, anisotropic, WALL, 'left')).toBeNull();
+    expect(resolvePolygonSideGeometry(mask, anisotropic, WALL, 'right')).toBeNull();
+    // The X pitch is unaffected, so front/back stay valid with a positive span.
+    const front = resolvePolygonSideGeometry(mask, anisotropic, WALL, 'front');
+    expect(front).not.toBeNull();
+    expect(front!.wallSpan).toBeGreaterThan(0);
+  });
 });

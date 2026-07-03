@@ -38,6 +38,7 @@ export function useDividerTiltSubsection() {
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     wallThickness,
     compartments,
     scoopEnabled,
@@ -57,6 +58,7 @@ export function useDividerTiltSubsection() {
       width: s.params.width,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
       wallThickness: s.params.wallThickness,
       compartments: s.params.compartments,
       scoopEnabled: s.params.scoop.enabled,
@@ -76,8 +78,8 @@ export function useDividerTiltSubsection() {
   const t = useTranslation();
 
   const dims = useMemo<BinInteriorParams>(
-    () => ({ width, depth, gridUnitMm, wallThickness }),
-    [width, depth, gridUnitMm, wallThickness]
+    () => ({ width, depth, gridUnitMm, gridUnitMmY, wallThickness }),
+    [width, depth, gridUnitMm, gridUnitMmY, wallThickness]
   );
 
   const rows: readonly TiltRow[] = useMemo(() => {
