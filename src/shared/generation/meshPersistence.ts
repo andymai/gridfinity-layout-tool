@@ -41,7 +41,7 @@ const META_STORE = 'binMeshMeta';
 const MESH_CACHE_VERSION = 'v1-brepjs18.116.1';
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
-const MAX_CACHE_BYTES = 64 * 1024 * 1024;
+let maxCacheBytes = 64 * 1024 * 1024;
 
 interface StoredMesh {
   readonly key: string;
@@ -52,7 +52,8 @@ interface StoredMesh {
 interface MeshMeta {
   readonly key: string;
   readonly byteSize: number;
-  readonly createdAt: number;
+  /** Monotonic recency stamp (updated on every write/touch, not creation time). */
+  readonly ts: number;
 }
 
 /** Whether IndexedDB is usable in this environment (absent in SSR / some test runs). */
@@ -62,7 +63,7 @@ function hasIndexedDb(): boolean {
 
 // Strictly-monotonic recency stamp: wall-clock when it advances, else +1, so
 // entries written in the same millisecond still order deterministically in the
-// `byCreatedAt` index (keeps LRU eviction "oldest-first" under bursty writes).
+// `byTs` index (keeps LRU eviction "oldest-first" under bursty writes).
 let lastStamp = 0;
 function nextStamp(): number {
   const now = Date.now();
@@ -81,7 +82,7 @@ async function openMeshDb(): Promise<IDBPDatabase> {
       }
       if (!db.objectStoreNames.contains(META_STORE)) {
         const meta = db.createObjectStore(META_STORE, { keyPath: 'key' });
-        meta.createIndex('byCreatedAt', 'createdAt', { unique: false });
+        meta.createIndex('byTs', 'ts', { unique: false });
       }
     },
   });
@@ -185,9 +186,10 @@ export async function loadPersistedBinMesh(key: string): Promise<MeshData | null
 }
 
 /**
- * Persist a preview mesh (fire-and-forget). Refreshes `createdAt` on repeats so
- * the entry stays LRU-fresh, then evicts oldest entries over the byte budget.
- * All failures are swallowed — persistence must never block generation.
+ * Persist a preview mesh (fire-and-forget). Refreshes the recency stamp on
+ * repeats so the entry stays LRU-fresh, then evicts oldest entries over the
+ * byte budget. All failures are swallowed — persistence must never block
+ * generation.
  */
 export function savePersistedBinMesh(key: string, mesh: MeshData): void {
   if (!hasIndexedDb()) return;
@@ -196,37 +198,40 @@ export function savePersistedBinMesh(key: string, mesh: MeshData): void {
 
 /**
  * Awaitable core of {@link savePersistedBinMesh}; resolves after eviction.
- * Writes the mesh and its metadata in one transaction and evicts within the
- * same transaction so the store never exceeds the budget between calls.
+ *
+ * Each IndexedDB transaction issues all its ops synchronously and awaits only
+ * `tx.done` — never an `await` *between* ops inside a live transaction. WebKit
+ * auto-commits a transaction as soon as its microtask queue drains, so an
+ * `await` gap mid-transaction throws `TransactionInactiveError` on iOS/Safari
+ * (see `src/core/cqrs/store/eventStore.ts`). Reads used to plan eviction happen
+ * in their own single-request calls (`getAllFromIndex`), outside any open write.
  */
 async function persistMesh(key: string, mesh: MeshData): Promise<void> {
   try {
     const db = await getDb();
-    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), createdAt: nextStamp() };
+    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), ts: nextStamp() };
 
-    const tx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
-    const meshes = tx.objectStore(BIN_MESHES_STORE);
-    const metas = tx.objectStore(META_STORE);
-    await Promise.all([meshes.put({ key, mesh } satisfies StoredMesh), metas.put(meta)]);
+    const writeTx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
+    void writeTx.objectStore(BIN_MESHES_STORE).put({ key, mesh } satisfies StoredMesh);
+    void writeTx.objectStore(META_STORE).put(meta);
+    await writeTx.done;
 
-    // Walk the metadata index only — its records carry no mesh buffers, so the
-    // cursor never materializes the large typed arrays in `binMeshes`.
-    let total = 0;
-    const ordered: MeshMeta[] = [];
-    for await (const cursor of metas.index('byCreatedAt').iterate()) {
-      const value = cursor.value as MeshMeta;
-      total += value.byteSize;
-      ordered.push(value);
-    }
+    // Plan eviction from the metadata store only (no mesh buffers), ascending by
+    // recency stamp — a single indexed read, not a cursor walk over a live tx.
+    const metas = (await db.getAllFromIndex(META_STORE, 'byTs')) as MeshMeta[];
+    let total = metas.reduce((sum, m) => sum + m.byteSize, 0);
+    if (total <= maxCacheBytes) return;
 
-    // `ordered` is ascending by createdAt (oldest first).
-    for (const entry of ordered) {
-      if (total <= MAX_CACHE_BYTES) break;
-      await Promise.all([meshes.delete(entry.key), metas.delete(entry.key)]);
+    const evictTx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
+    const meshes = evictTx.objectStore(BIN_MESHES_STORE);
+    const metaStore = evictTx.objectStore(META_STORE);
+    for (const entry of metas) {
+      if (total <= maxCacheBytes) break;
+      void meshes.delete(entry.key);
+      void metaStore.delete(entry.key);
       total -= entry.byteSize;
     }
-
-    await tx.done;
+    await evictTx.done;
   } catch (e) {
     logger.warn('Failed to persist mesh', { error: String(e) });
   }
@@ -235,6 +240,11 @@ async function persistMesh(key: string, mesh: MeshData): Promise<void> {
 /** Test-only: awaitable save (resolves after the write + eviction settle). */
 export function __savePersistedBinMeshForTests(key: string, mesh: MeshData): Promise<void> {
   return persistMesh(key, mesh);
+}
+
+/** Test-only: override the eviction byte budget (defaults back to 64 MB). */
+export function __setMaxCacheBytesForTests(bytes = 64 * 1024 * 1024): void {
+  maxCacheBytes = bytes;
 }
 
 /** Test-only: close and drop the cached connection so the DB can be deleted. */

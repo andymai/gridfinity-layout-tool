@@ -7,6 +7,7 @@ import {
   loadPersistedBinMesh,
   savePersistedBinMesh,
   __savePersistedBinMeshForTests as saveMesh,
+  __setMaxCacheBytesForTests,
   __resetMeshDbForTests,
 } from './meshPersistence';
 
@@ -40,6 +41,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   __resetMeshDbForTests();
+  __setMaxCacheBytesForTests(); // restore the 64MB default
 });
 
 describe('binMeshCacheKey', () => {
@@ -119,14 +121,16 @@ describe('persistence round-trip', () => {
 
 describe('eviction', () => {
   it('drops the oldest entries once the byte budget is exceeded', async () => {
-    // ~1MB per mesh; write enough to blow past the 64MB budget.
-    const big = () => makeMesh({ vertices: new Float32Array(256 * 1024) }); // 1MB
-    for (let i = 0; i < 70; i++) {
-      await saveMesh(`k${i}`, big());
+    // Tiny budget so the eviction path is exercised without writing ~70MB.
+    // Each mesh is ~64 bytes of vertices; a 400-byte budget holds only a few.
+    __setMaxCacheBytesForTests(400);
+    const small = () => makeMesh({ vertices: new Float32Array(16) }); // 64 bytes
+    for (let i = 0; i < 20; i++) {
+      await saveMesh(`k${i}`, small());
     }
 
     // The very first entries should have been evicted; recent ones survive.
     expect(await loadPersistedBinMesh('k0')).toBeNull();
-    expect(await loadPersistedBinMesh('k69')).not.toBeNull();
+    expect(await loadPersistedBinMesh('k19')).not.toBeNull();
   });
 });
