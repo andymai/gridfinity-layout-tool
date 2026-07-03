@@ -8,7 +8,12 @@
  * focused on the worker lifecycle + state machine.
  */
 
-import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type {
+  BinParams,
+  ResolvedBaseplateParams,
+  SplitConnectorConfig,
+  MarginPiece,
+} from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { WorkerMessage, ExportFormat } from './types';
 import {
@@ -249,7 +254,7 @@ export function exportSplitBinRange(
 
 export function exportBaseplate(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {
@@ -298,7 +303,7 @@ export function exportItem(
  */
 export function exportConnectorKey(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {
@@ -320,6 +325,35 @@ export function exportConnectorKey(
 }
 
 /**
+ * Export one detached margin rail (issue #2392). Reuses the `'export'` slot and
+ * the BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
+ */
+export function exportMargin(
+  ctx: BridgeExportContext,
+  params: ResolvedBaseplateParams,
+  margin: MarginPiece,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    computeBaseplateExportTimeoutMs(params),
+    (requestId) => ({
+      type: 'EXPORT_BASEPLATE_MARGIN',
+      payload: {
+        params,
+        margin,
+        requestId,
+        format,
+        tolerance: options?.tolerance,
+        angularTolerance: options?.angularTolerance,
+      },
+    })
+  );
+}
+
+/**
  * Export the connector fit-sample tray. The tray's work (≈30 coupon booleans +
  * embossed labels) is fixed regardless of the user's baseplate footprint, so it
  * uses a fixed generous timeout rather than the footprint-derived budget. Like
@@ -331,7 +365,7 @@ const CONNECTOR_SAMPLE_TIMEOUT_MS = EXPORT_MAX_TIMEOUT_MS;
 
 export function exportConnectorSample(
   ctx: BridgeExportContext,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<BaseplateExportResult> {

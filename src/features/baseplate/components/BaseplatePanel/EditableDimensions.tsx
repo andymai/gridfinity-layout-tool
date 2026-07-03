@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/design-system';
 import { PencilIcon } from '@/design-system/Icon';
+import { clamp as clampRange } from '@/shared/utils/math';
 
 /** Format mm for display: minimum needed decimals, no trailing zeros. */
 function formatMm(v: number): string {
@@ -84,7 +85,7 @@ export function EditableDimensions({
     }
   }, [editing]);
 
-  const clamp = useCallback((v: number) => Math.max(minMm, Math.min(maxMm, v)), [minMm, maxMm]);
+  const clamp = useCallback((v: number) => clampRange(v, minMm, maxMm), [minMm, maxMm]);
 
   const commit = useCallback(() => {
     const w = parseFloat(localWidth);

@@ -1,7 +1,7 @@
 import type {
   Layout,
   Category,
-  BaseplateParams,
+  StoredBaseplateParams,
   PaddingAnchor,
   StackPrintParams,
   BinId,
@@ -45,6 +45,13 @@ export const CONSTRAINTS = {
   HEIGHT_UNIT_MM_MIN: 3,
   HEIGHT_UNIT_MM_MAX: 20,
   HEIGHT_UNIT_MM_DEFAULT: 7,
+  // Print-bed dimension bounds (mm). The min doubles as the legacy grid-unit
+  // detector in storage migration: a stored printBedSize below it is grid
+  // units, not mm. Kept distinct from GRID_UNIT_MM_DEFAULT even though both
+  // are 42 — they're unrelated concepts that happen to share a value.
+  PRINT_BED_MM_MIN: 42,
+  PRINT_BED_MM_MAX: 500,
+  PRINT_BED_MM_DEFAULT: 256,
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
   LAYOUTS_WARNING_THRESHOLD: 450, // Show warning at this count
@@ -241,8 +248,15 @@ export const FILAMENT_PRESET_COLORS = [
  */
 export const OVER_TILE_MIN_MARGIN_MM = 8;
 
+/**
+ * Smallest padding band (mm) that can detach into its own printable rail. Below
+ * this the rail is too thin to print usefully, so that side stays integral.
+ * Reuses the over-tile threshold so the two "too small" cutoffs stay consistent.
+ */
+export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
+
 /** Default baseplate parameters: no magnets, no padding */
-export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
+export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   magnetHoles: false,
   magnetDiameter: mm(6.5),
   magnetDepth: mm(2),
@@ -258,7 +272,7 @@ export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
  * Returns DEFAULT_BASEPLATE_PARAMS if the stored data lacks paddingLeft,
  * preserving magnet settings when possible.
  */
-export function migrateBaseplateParams(stored: unknown): BaseplateParams {
+export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
   if (!stored || typeof stored !== 'object') return DEFAULT_BASEPLATE_PARAMS;
   const obj = stored as Record<string, unknown>;
   // Current shape has paddingLeft — if missing, it's an old format
@@ -292,6 +306,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     ...(typeof obj.overTile === 'boolean' ? { overTile: obj.overTile } : {}),
     ...(typeof obj.overTileHalfGrid === 'boolean'
       ? { overTileHalfGrid: obj.overTileHalfGrid }
+      : {}),
+    ...(typeof obj.overTileHalfGridSolidLeftover === 'boolean'
+      ? { overTileHalfGridSolidLeftover: obj.overTileHalfGridSolidLeftover }
       : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
@@ -343,6 +360,14 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
           },
         }
       : {}),
+    // Preserve the stored opt-in. Detach is mutually exclusive with stack-print,
+    // but that's resolved at generation/UI time (buildFullParams + the panel
+    // suppress detach while stacking is on) — erasing the flag on load would lose
+    // the user's intent if they later turn stacking off.
+    ...(obj.detachMargins === true ? { detachMargins: true } : {}),
+    // Only meaningful alongside detachMargins, but preserve the opt-in
+    // independently so toggling detach off/on doesn't lose the connector intent.
+    ...(obj.detachMarginConnector === true ? { detachMarginConnector: true } : {}),
     ...(stackPrint ? { stackPrint } : {}),
   };
 }
@@ -447,7 +472,7 @@ export const createDefaultLayout = (): Layout => {
       depth: gridUnits(size.depth),
       height: heightUnits(size.height),
     },
-    printBedSize: mm(256), // mm - typical print bed size
+    printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
     gridUnitMm: mm(42),
     heightUnitMm: mm(7),
     categories: [...DEFAULT_CATEGORIES],

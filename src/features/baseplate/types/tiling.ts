@@ -6,8 +6,19 @@
  * for future connector support.
  */
 
-/** Whether an edge is exterior (outside of baseplate) or a join between pieces. */
-export type EdgeKind = 'join' | 'exterior';
+// MarginPiece lives in shared so the generation worker can build a rail without
+// a cross-feature import; imported here for `BaseplateTiling` and re-exported
+// for baseplate-local consumers.
+import type { BaseplateEdgeKind, MarginCorner, MarginPiece } from '@/shared/types/bin';
+
+export type { MarginCorner, MarginPiece };
+
+/**
+ * Whether an edge is exterior (outside of baseplate) or a join between pieces.
+ * Single-sourced from {@link BaseplateEdgeKind} so the union has one definition
+ * to extend — the two were maintained in lockstep and could silently diverge.
+ */
+export type EdgeKind = BaseplateEdgeKind;
 
 export interface PieceEdges {
   readonly left: EdgeKind;
@@ -58,6 +69,11 @@ export interface PaddingReductionHint {
 export interface BaseplateTiling {
   readonly isSplit: boolean;
   readonly pieces: readonly BaseplatePiece[];
+  /**
+   * Detached drawer-fit padding rails (empty unless `detachMargins`). Populated
+   * independently of `isSplit` — a bed-fitting plate still detaches its margins.
+   */
+  readonly margins: readonly MarginPiece[];
   readonly cols: number;
   readonly rows: number;
   readonly totalWidthUnits: number;

@@ -7,8 +7,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Shared mock session that tests can inspect
 const mockSession = {
-  FULL_ACCESS: 'room:write',
-  READ_ACCESS: 'room:read',
   allow: vi.fn(),
   authorize: vi.fn().mockResolvedValue({ body: '{"token":"test"}', status: 200 }),
 };
@@ -192,7 +190,7 @@ describe('liveblocks-auth handler', () => {
     expect(res._body).toEqual(expect.objectContaining({ error: 'Share not found' }));
   });
 
-  it('grants FULL_ACCESS for edit permission', async () => {
+  it('grants write access for edit permission', async () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
@@ -205,10 +203,10 @@ describe('liveblocks-auth handler', () => {
     await handler(req, res);
 
     expect(res._status).toBe(200);
-    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', 'room:write');
+    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', ['*:write']);
   });
 
-  it('grants READ_ACCESS for view permission', async () => {
+  it('grants read access for view permission', async () => {
     const req = createMockRequest();
     const res = createMockResponse();
 
@@ -221,7 +219,7 @@ describe('liveblocks-auth handler', () => {
     await handler(req, res);
 
     expect(res._status).toBe(200);
-    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', 'room:read');
+    expect(mockSession.allow).toHaveBeenCalledWith('gridfinity-abc123xyz789', ['*:read']);
   });
 
   it('uses userName when provided', async () => {

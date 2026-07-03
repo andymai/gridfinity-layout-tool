@@ -2,11 +2,11 @@
  * Fingerprinting for baseplate split pieces.
  *
  * Computes a stable, deterministic string key from all geometry-affecting
- * BaseplateParams fields. Pieces with identical fingerprints produce
+ * ResolvedBaseplateParams fields. Pieces with identical fingerprints produce
  * byte-identical BREP output and can be cloned instead of regenerated.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { exteriorCorners, type CornerKey } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
@@ -17,7 +17,7 @@ import { pieceToBaseplateParams } from './splitPlanner';
  *
  * Uses `|` as field delimiter and `:` as key-value separator.
  * Field values must not contain these characters (safe for current
- * numeric, boolean, and short enum values in BaseplateParams).
+ * numeric, boolean, and short enum values in ResolvedBaseplateParams).
  *
  * Under `preferIdenticalPieces`, the edge classification is canonicalized so
  * pieces whose join/exterior layout is a 180° rotation of each other share a
@@ -25,7 +25,7 @@ import { pieceToBaseplateParams } from './splitPlanner';
  * itself 180° rotation invariant), this means A1 and C2 — and more generally
  * any opposite-corner pair in the tiling — produce the same canonical mesh.
  */
-export function computePieceFingerprint(params: BaseplateParams): string {
+export function computePieceFingerprint(params: ResolvedBaseplateParams): string {
   const parts = [
     `w:${params.width}`,
     `d:${params.depth}`,
@@ -70,9 +70,15 @@ export function computePieceFingerprint(params: BaseplateParams): string {
   // edges don't affect geometry at all, so nothing is added (key for stack-print
   // tiles). Padding is captured separately, so padded edge pieces still differ.
   if (params.edges) {
+    const canon = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
+    // A margin-seam tongue (#2414) is body geometry the piece carries
+    // independently of split connectors (`connectorNubs`), so it must ALWAYS
+    // distinguish the fingerprint — otherwise a tongued piece dedupes with a
+    // plain exterior one and the export reuses a tongue-less mesh.
+    const ms = `${+(canon.left === 'marginSeam')}${+(canon.right === 'marginSeam')}${+(canon.front === 'marginSeam')}${+(canon.back === 'marginSeam')}`;
+    if (ms !== '0000') parts.push(`ms:${ms}`);
     if (params.connectorNubs === true) {
-      const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
-      parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
+      parts.push(`el:${canon.left}`, `er:${canon.right}`, `ef:${canon.front}`, `eb:${canon.back}`);
     } else {
       // Per-corner nominal radius (mirrors resolveCornerRadii precedence:
       // cornerRadii wins, else the uniform cornerRadius, whose absence defaults
@@ -103,8 +109,8 @@ export function computePieceFingerprint(params: BaseplateParams): string {
  * map to the same canonical string.
  */
 function canonicalizeEdges(
-  edges: NonNullable<BaseplateParams['edges']>
-): NonNullable<BaseplateParams['edges']> {
+  edges: NonNullable<ResolvedBaseplateParams['edges']>
+): NonNullable<ResolvedBaseplateParams['edges']> {
   const rotated = {
     left: edges.right,
     right: edges.left,
@@ -121,7 +127,7 @@ export interface PieceGroup {
   /** Indices into the original tiling.pieces array (mutable during grouping) */
   readonly indices: readonly number[];
   /** Generation params for this group (from first piece) */
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   /** The fingerprint key */
   readonly fingerprint: string;
 }
@@ -129,7 +135,7 @@ export interface PieceGroup {
 /** Mutable version used internally during grouping. */
 interface MutablePieceGroup {
   readonly indices: number[];
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
   readonly fingerprint: string;
 }
 
@@ -137,12 +143,12 @@ interface MutablePieceGroup {
  * Group tiling pieces by their generation fingerprint.
  *
  * Returns a Map keyed by fingerprint string. Each value contains the
- * original piece indices that share that geometry, plus the BaseplateParams
+ * original piece indices that share that geometry, plus the ResolvedBaseplateParams
  * to use for generation (from the first piece in the group).
  */
 export function groupPiecesByFingerprint(
   pieces: readonly BaseplatePiece[],
-  parentParams: BaseplateParams
+  parentParams: ResolvedBaseplateParams
 ): Map<string, PieceGroup> {
   const groups = new Map<string, MutablePieceGroup>();
 

@@ -7,12 +7,11 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
+import { clamp } from '@/shared/utils/math';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import type { UserSettings } from '@/core/store/settings';
-
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 const LAYOUT_DEFAULT_KEYS: (keyof UserSettings)[] = [
   'defaultDrawerWidth',
@@ -177,10 +176,15 @@ export function DefaultsTab() {
               width={settings.defaultPrintBedSize}
               depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
               onChange={(w, d) => {
-                updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, w)));
+                updateSetting(
+                  'defaultPrintBedSize',
+                  clamp(w, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
+                );
                 updateSetting(
                   'defaultPrintBedDepth',
-                  d !== undefined ? Math.max(42, Math.min(500, d)) : undefined
+                  d !== undefined
+                    ? clamp(d, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
+                    : undefined
                 );
               }}
               variant="compact"

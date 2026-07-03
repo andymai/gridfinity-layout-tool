@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -18,7 +18,7 @@ beforeAll(async () => {
 
 const NO_OP = (): void => {};
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 3,
   depth: 2,
   gridUnitMm: 42,

@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import {
+  computeBaseplateTiling,
+  pieceToBaseplateParams,
+  colToLetter,
+  bodyParamsForDetach,
+} from './splitPlanner';
 import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 6,
     depth: 4,
@@ -26,7 +31,7 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
 }
 
 /** Helper to get piece widths in column order for a single row. */
-function colWidths(params: BaseplateParams, printBed = 256): number[] {
+function colWidths(params: ResolvedBaseplateParams, printBed = 256): number[] {
   const tiling = computeBaseplateTiling(params, printBed);
   return tiling.pieces
     .filter((p) => p.row === 0)
@@ -35,7 +40,7 @@ function colWidths(params: BaseplateParams, printBed = 256): number[] {
 }
 
 /** Helper to get piece depths in row order for a single column. */
-function rowDepths(params: BaseplateParams, printBed = 256): number[] {
+function rowDepths(params: ResolvedBaseplateParams, printBed = 256): number[] {
   const tiling = computeBaseplateTiling(params, printBed);
   return tiling.pieces
     .filter((p) => p.col === 0)
@@ -1195,7 +1200,7 @@ describe('preferIdenticalPieces × fractional dimensions — dovetail alignment 
    */
   it('aligns connectors across every shared join edge for 9.5×9.5', () => {
     const G = 42;
-    const parent: BaseplateParams = {
+    const parent: ResolvedBaseplateParams = {
       width: 9.5,
       depth: 9.5,
       gridUnitMm: G,
@@ -1284,3 +1289,281 @@ function flip(side: 'start' | 'end' | 'none'): 'start' | 'end' | 'none' {
   if (side === 'end') return 'start';
   return 'none';
 }
+
+// ─── detachMargins → tiling.margins ──────────────────────────────────────────
+
+describe('detachMargins emits margin rails', () => {
+  const W = 4;
+  const D = 3;
+  const U = 42;
+  const gridW = W * U; // 168
+  const gridD = D * U; // 126
+  const P = 10; // ≥ MARGIN_MIN_DETACH_MM (8)
+
+  function margins(overrides: Partial<ResolvedBaseplateParams>) {
+    return computeBaseplateTiling(makeParams({ width: W, depth: D, ...overrides }), 256).margins;
+  }
+  function bySide(ms: ReturnType<typeof margins>, side: string) {
+    return ms.find((m) => m.side === side);
+  }
+
+  it('emits nothing without the flag', () => {
+    expect(margins({ paddingLeft: P, paddingRight: P, paddingFront: P, paddingBack: P })).toEqual(
+      []
+    );
+  });
+
+  it('emits nothing when all bands are sub-threshold', () => {
+    expect(
+      margins({ detachMargins: true, paddingLeft: 5, paddingRight: 5, paddingFront: 5 })
+    ).toEqual([]);
+  });
+
+  it('all-four padding: long front/back own corners, short left/right own none', () => {
+    const ms = margins({
+      detachMargins: true,
+      paddingLeft: P,
+      paddingRight: P,
+      paddingFront: P,
+      paddingBack: P,
+    });
+    expect(ms).toHaveLength(4);
+
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW + 2 * P); // spans over left+right padding
+    expect(front.bandThicknessMm).toBe(P);
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+    expect(front.worldOffsetMm).toEqual({ x: 0, y: -gridD / 2 - P / 2 });
+
+    const back = bySide(ms, 'back')!;
+    expect(back.role).toBe('long');
+    expect([...back.ownedCorners].sort()).toEqual(['tl', 'tr']);
+    expect(back.worldOffsetMm).toEqual({ x: 0, y: gridD / 2 + P / 2 });
+
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('short');
+    expect(left.lengthMm).toBe(gridD); // fits between the long rails
+    expect(left.ownedCorners).toEqual([]);
+    expect(left.worldOffsetMm).toEqual({ x: -gridW / 2 - P / 2, y: 0 });
+
+    const right = bySide(ms, 'right')!;
+    expect(right.role).toBe('short');
+    expect(right.ownedCorners).toEqual([]);
+  });
+
+  it('opposite pair (left+right): rails go long and own all four corners', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingRight: P });
+    expect(ms).toHaveLength(2);
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('long');
+    expect(left.lengthMm).toBe(gridD);
+    expect([...left.ownedCorners].sort()).toEqual(['bl', 'tl']);
+    const right = bySide(ms, 'right')!;
+    expect([...right.ownedCorners].sort()).toEqual(['br', 'tr']);
+  });
+
+  it('adjacent pair (left+front): front owns its corners, left short owns the bare-back corner', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: P });
+    expect(ms).toHaveLength(2);
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW + P); // extends over the detached left only
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+    expect(front.worldOffsetMm).toEqual({ x: -P / 2, y: -gridD / 2 - P / 2 });
+
+    const left = bySide(ms, 'left')!;
+    expect(left.role).toBe('short');
+    expect(left.ownedCorners).toEqual(['tl']); // back is bare → left owns top corner; front owns bl
+  });
+
+  it('single bare-neighbor side: one rail, perpendicular corners stay on the body', () => {
+    const ms = margins({ detachMargins: true, paddingFront: P });
+    expect(ms).toHaveLength(1);
+    const front = bySide(ms, 'front')!;
+    expect(front.role).toBe('long');
+    expect(front.lengthMm).toBe(gridW);
+    expect([...front.ownedCorners].sort()).toEqual(['bl', 'br']);
+  });
+
+  it('emits margins for a bed-fitting (unsplit) plate', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: W, depth: D, detachMargins: true, paddingFront: P }),
+      256
+    );
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.margins).toHaveLength(1);
+  });
+
+  it('skips a sub-threshold side but still detaches the rest', () => {
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: 5 });
+    expect(ms.map((m) => m.side).sort()).toEqual(['left']);
+  });
+
+  it('segments a long rail per body column on a split plate, with corners on the end columns', () => {
+    // 10u wide splits across the bed; the front rail emits one segment per column.
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 10,
+        depth: 3,
+        detachMargins: true,
+        paddingLeft: P,
+        paddingRight: P,
+        paddingFront: P,
+        paddingBack: P,
+      }),
+      256
+    );
+    expect(tiling.isSplit).toBe(true);
+    const front = tiling.margins.filter((m) => m.side === 'front').sort((a, b) => a.col - b.col);
+    expect(front.length).toBe(tiling.cols);
+    // Each segment fits the bed.
+    for (const seg of front) expect(seg.lengthMm).toBeLessThanOrEqual(256);
+    // Corners live on the end columns only.
+    expect(front[0].ownedCorners).toEqual(['bl']);
+    expect(front[front.length - 1].ownedCorners).toEqual(['br']);
+    for (const seg of front.slice(1, -1)) expect(seg.ownedCorners).toEqual([]);
+  });
+
+  it('anchors the seam connector on the body grid center, offsetting corner segments (#2427/#2428)', () => {
+    // Corner-owning end segments extend over the detached left/right padding, so
+    // their center no longer sits on the body wall they join. seamConnector
+    // records the mating wall's grid width and center offset so the rail can
+    // recompute per-cell groove positions that land on the body tongues.
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 10,
+        depth: 3,
+        detachMargins: true,
+        paddingLeft: P,
+        paddingRight: P,
+        paddingFront: P,
+        paddingBack: P,
+      }),
+      256
+    );
+    const front = tiling.margins.filter((m) => m.side === 'front').sort((a, b) => a.col - b.col);
+    // First column extends over the left padding (center shifted −P/2), so the
+    // grooves shift +P/2 back; last column mirrors it; middle columns are centered.
+    expect(front[0].seamConnector?.centerOffsetMm).toBeCloseTo(P / 2, 6);
+    expect(front[front.length - 1].seamConnector?.centerOffsetMm).toBeCloseTo(-P / 2, 6);
+    for (const seg of front.slice(1, -1))
+      expect(seg.seamConnector?.centerOffsetMm).toBeCloseTo(0, 6);
+    // The offset places the body grid center exactly on the piece's grid center,
+    // and cellUnits mirrors the mating body piece's width.
+    for (const seg of front) {
+      const piece = tiling.pieces.find((p) => p.col === seg.col && p.row === seg.row)!;
+      const pieceCenterX =
+        piece.gridOffsetX * U + (piece.widthUnits * U) / 2 - tiling.totalWidthUnits * U * 0.5;
+      expect(seg.worldOffsetMm.x + (seg.seamConnector?.centerOffsetMm ?? 0)).toBeCloseTo(
+        pieceCenterX,
+        6
+      );
+      expect(seg.seamConnector?.cellUnits).toBe(piece.widthUnits);
+    }
+  });
+
+  it('extends a rail over an integral (sub-threshold) perpendicular side to reach its corner', () => {
+    // left detaches; front padding (5mm) stays integral on the body. The left
+    // rail must extend over that 5mm so the front-left corner has no gap.
+    const ms = margins({ detachMargins: true, paddingLeft: P, paddingFront: 5 });
+    const left = ms.find((m) => m.side === 'left')!;
+    expect(left.role).toBe('long');
+    expect(left.lengthMm).toBe(gridD + 5); // grid depth + the integral front band
+    expect([...left.ownedCorners].sort()).toEqual(['bl', 'tl']);
+    // Center shifts toward the extended (front) end by half the integral band.
+    expect(left.worldOffsetMm.y).toBe(-5 / 2);
+  });
+});
+
+describe('bodyParamsForDetach', () => {
+  const P = 10;
+  it('passes params through unchanged without the flag', () => {
+    const p = makeParams({ paddingLeft: P, paddingRight: P });
+    expect(bodyParamsForDetach(p)).toBe(p);
+  });
+
+  it('zeroes only the detached sides, keeping sub-threshold padding integral', () => {
+    const p = makeParams({
+      detachMargins: true,
+      paddingLeft: P,
+      paddingRight: 5, // sub-threshold → stays
+      paddingFront: P,
+      paddingBack: 0,
+    });
+    const body = bodyParamsForDetach(p);
+    expect(body.paddingLeft).toBe(0);
+    expect(body.paddingRight).toBe(5);
+    expect(body.paddingFront).toBe(0);
+    expect(body.paddingBack).toBe(0);
+  });
+
+  it('does not affect the margins computed from the original params', () => {
+    // Zeroing is for the body mesh only — emitMargins still sees true padding.
+    const p = makeParams({ detachMargins: true, paddingLeft: P, paddingFront: P });
+    const sides = new Set(computeBaseplateTiling(p, 256).margins.map((m) => m.side));
+    expect(sides.has('front')).toBe(true);
+    expect(sides.has('left')).toBe(true);
+  });
+});
+
+describe('margin-seam connector edge assignment (#2414)', () => {
+  const P = 12; // ≥ MARGIN_MIN_DETACH_MM
+  const frontEdges = (params: ResolvedBaseplateParams) =>
+    new Set(
+      computeBaseplateTiling(params, 256)
+        .pieces.filter((pc) => pc.row === 0)
+        .map((pc) => pc.edges.front)
+    );
+
+  it('marks the detached long-rail seam edge when the connector is on', () => {
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'dovetail',
+      paddingFront: P,
+    });
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+  });
+
+  it('engages on the default (undefined) connector style, which is dovetail', () => {
+    // The ConnectorPicker persists dovetail as an absent connectorStyle, so the
+    // seam must engage when it's undefined (the common default case).
+    const p = makeParams({ detachMargins: true, detachMarginConnector: true, paddingFront: P });
+    expect(p.connectorStyle).toBeUndefined();
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+  });
+
+  it('leaves the seam a plain exterior edge when the connector is off', () => {
+    const p = makeParams({ detachMargins: true, paddingFront: P });
+    expect(frontEdges(p)).toEqual(new Set(['exterior']));
+  });
+
+  it('keeps snapClip seams friction-fit (plain exterior, no marginSeam)', () => {
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'snapClip',
+      paddingFront: P,
+    });
+    expect(frontEdges(p)).toEqual(new Set(['exterior']));
+  });
+
+  it('only seams long rails — a short side stays exterior', () => {
+    // front is the long axis; left detaches too but as a short rail → no seam.
+    const p = makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'puzzle',
+      paddingFront: P,
+      paddingLeft: P,
+    });
+    const leftEdges = new Set(
+      computeBaseplateTiling(p, 256)
+        .pieces.filter((pc) => pc.col === 0)
+        .map((pc) => pc.edges.left)
+    );
+    expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
+    expect(leftEdges).toEqual(new Set(['exterior']));
+  });
+});

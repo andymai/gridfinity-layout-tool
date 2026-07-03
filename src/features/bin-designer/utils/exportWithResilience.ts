@@ -22,6 +22,7 @@
 
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { ExportErrorCode } from '@/shared/generation/bridge';
+import { getErrorCode } from '@/shared/utils/errors';
 
 /** Result wrapper that surfaces how many recovery attempts were needed. */
 export interface ResilientExportResult<T> {
@@ -52,8 +53,8 @@ function defaultIsRetryable(err: Error): boolean {
  * inspection so this works regardless of how the code arrives.
  */
 function extractErrorCode(err: Error): ExportErrorCode | undefined {
-  const maybe = (err as unknown as { code?: unknown }).code;
-  if (typeof maybe === 'string') return maybe as ExportErrorCode;
+  const code = getErrorCode(err);
+  if (code !== undefined) return code as ExportErrorCode;
   // Fallback: parse from message — the worker prepends "<phase> failed: <msg>"
   // and our classifier tags would surface as part of the original message.
   if (/invalid (param|argument)/i.test(err.message)) return 'INVALID_PARAMS';

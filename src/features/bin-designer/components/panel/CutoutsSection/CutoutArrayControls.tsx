@@ -15,6 +15,7 @@ import {
 import { useTranslation } from '@/i18n';
 import { Button, Checkbox, Stepper } from '@/design-system';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { clamp } from '@/shared/utils/math';
 
 interface CutoutArrayControlsProps {
   readonly cutout: Cutout;
@@ -272,7 +273,7 @@ function ArrayStepRow({
   unit,
   disabled,
 }: ArrayStepRowProps) {
-  const clamp = (v: number): number => Math.min(max, Math.max(min, Number(v.toFixed(3))));
+  const clampArray = (v: number): number => clamp(Number(v.toFixed(3)), min, max);
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="text-xs text-content-secondary">
@@ -282,8 +283,8 @@ function ArrayStepRow({
       <Stepper
         size="sm"
         value={value}
-        onChange={(v) => onChange(clamp(v))}
-        onStep={(delta) => onChange(clamp(value + delta * step))}
+        onChange={(v) => onChange(clampArray(v))}
+        onStep={(delta) => onChange(clampArray(value + delta * step))}
         min={min}
         max={max}
         step={step}

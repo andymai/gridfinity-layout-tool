@@ -145,6 +145,16 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-06',
     requiresRefresh: false,
   },
+  {
+    id: 'bin_recommender',
+    name: 'Suggested Bin Sizes',
+    description:
+      'When you label a bin, suggest the size other people most often use for that label. One tap applies it — nothing changes unless you accept.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-07',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

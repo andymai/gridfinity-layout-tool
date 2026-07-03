@@ -5,7 +5,7 @@
  * truth about what over-tile will produce.
  */
 import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
-import type { BaseplateParams } from '@/core/types';
+import type { StoredBaseplateParams } from '@/core/types';
 
 /** One padded edge, with its i18n label key (reuses the padding side labels). */
 export interface OverTileEdge {
@@ -26,7 +26,7 @@ export interface OverTileStatus {
   readonly canOverTile: boolean;
 }
 
-export function resolveOverTileStatus(params: BaseplateParams): OverTileStatus {
+export function resolveOverTileStatus(params: StoredBaseplateParams): OverTileStatus {
   const edges: OverTileEdge[] = [
     { labelKey: 'baseplate.paddingLeft', mm: params.paddingLeft },
     { labelKey: 'baseplate.paddingRight', mm: params.paddingRight },

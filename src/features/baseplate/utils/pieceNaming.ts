@@ -7,6 +7,7 @@
  */
 
 import type { PieceEdges, BaseplatePiece } from '../types/tiling';
+import { isExteriorEdge } from '@/shared/types/bin';
 import type { PieceGroup } from './pieceFingerprint';
 
 type PieceRole = 'corner' | 'edge-x' | 'edge-y' | 'center';
@@ -20,15 +21,17 @@ type PieceRole = 'corner' | 'edge-x' | 'edge-y' | 'center';
  * - center: no exterior edges
  */
 export function classifyPieceRole(edges: PieceEdges): PieceRole {
+  // A marginSeam is a boundary edge (exterior + a tongue), so it counts toward
+  // the piece's edge/corner role just like a plain exterior edge.
   const exteriorCount = [edges.left, edges.right, edges.front, edges.back].filter(
-    (e) => e === 'exterior'
+    isExteriorEdge
   ).length;
 
   if (exteriorCount >= 2) return 'corner';
   if (exteriorCount === 0) return 'center';
 
   // Exactly 1 exterior edge
-  if (edges.left === 'exterior' || edges.right === 'exterior') return 'edge-x';
+  if (isExteriorEdge(edges.left) || isExteriorEdge(edges.right)) return 'edge-x';
   return 'edge-y';
 }
 

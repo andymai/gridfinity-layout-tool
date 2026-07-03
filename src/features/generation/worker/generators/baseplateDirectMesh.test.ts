@@ -1,12 +1,12 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { pocketCornerRadius } from './generatorConstants';
 import { initTestKernel } from '@/test/initTestKernel';
 
 // BREP generator requires OpenCascade WASM init
 type BrepGenerateFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   forExport: boolean,
   signal?: AbortSignal
@@ -19,7 +19,7 @@ type BrepGenerateFn = (
 
 // Direct mesh generator — pure TypeScript, no WASM
 type DirectGenerateFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: (stage: string, progress: number) => void,
   signal?: AbortSignal
 ) => {
@@ -42,7 +42,7 @@ beforeAll(async () => {
   generateDirect = direct.generateBaseplateDirect;
 }, 30000);
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
   depth: 2,
   gridUnitMm: 42,

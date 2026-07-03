@@ -3,7 +3,7 @@
  */
 
 import type { BaseDomainEvent } from '../types';
-import type { BinId, Drawer, BaseplateParams } from '@/core/types';
+import type { BinId, Drawer, StoredBaseplateParams } from '@/core/types';
 
 // `displacedBinIds` records the exact set of bins displaced by a
 // drawer-shrink cascade. Optional only for back-compat with persisted
@@ -46,7 +46,7 @@ export type HeightUnitMmSetEvent = BaseDomainEvent<
 
 export type BaseplateParamsSetEvent = BaseDomainEvent<
   'layout.baseplateParamsSet',
-  { readonly params: BaseplateParams; readonly previousParams?: BaseplateParams }
+  { readonly params: StoredBaseplateParams; readonly previousParams?: StoredBaseplateParams }
 >;
 
 export type DrawerEvent =

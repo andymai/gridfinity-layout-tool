@@ -10,7 +10,7 @@
  * capped so a runaway WASM loop can't hang the UI forever.
  */
 
-import type { BaseplateParams, BinParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -216,7 +216,7 @@ export const BASEPLATE_MAX_TIMEOUT_MS = 180_000;
  * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorNubs]
  * + BASEPLATE_LIGHTWEIGHT_BONUS_MS  [if lightweight]
  */
-function baseplateRawBudgetMs(params: BaseplateParams): number {
+function baseplateRawBudgetMs(params: ResolvedBaseplateParams): number {
   // Defensive against transient bad inputs — mid-edit UI state can briefly
   // present NaN/negative dimensions. The generator's sanitizeParams will
   // reject them, but the bridge computes this timeout first and setTimeout
@@ -248,7 +248,7 @@ function baseplateRawBudgetMs(params: BaseplateParams): number {
  * Compute the timeout budget for a live baseplate **preview** generation, in
  * milliseconds. Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
  */
-export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
+export function computeBaseplateTimeoutMs(params: ResolvedBaseplateParams): number {
   // The raw budget is finite by construction (guards in baseplateRawBudgetMs),
   // so this clamp also makes the documented contract self-enforcing.
   return Math.max(
@@ -263,7 +263,7 @@ export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
  * {@link EXPORT_TIMEOUT_MULTIPLIER} for slower user hardware and clamped to
  * `[BASE_TIMEOUT_MS, EXPORT_MAX_TIMEOUT_MS]`.
  */
-export function computeBaseplateExportTimeoutMs(params: BaseplateParams): number {
+export function computeBaseplateExportTimeoutMs(params: ResolvedBaseplateParams): number {
   const scaled = baseplateRawBudgetMs(params) * EXPORT_TIMEOUT_MULTIPLIER;
   return Math.max(BASE_TIMEOUT_MS, Math.min(EXPORT_MAX_TIMEOUT_MS, scaled));
 }

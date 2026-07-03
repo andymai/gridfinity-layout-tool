@@ -34,7 +34,7 @@
 import { test, beforeAll, beforeEach } from 'vitest';
 import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs } from './wasmInit';
 import {
   buildBaseplateSolid,
@@ -112,7 +112,7 @@ function measureStep(label: string, shape: Shape3D): StepMetrics {
   };
 }
 
-function defaults(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function defaults(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
     width: 4.5,
     depth: 4.5,
@@ -133,7 +133,7 @@ function defaults(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
 
 interface NamedConfig {
   readonly name: string;
-  readonly params: BaseplateParams;
+  readonly params: ResolvedBaseplateParams;
 }
 
 // Mirror the configs covered by the existing scenario winding test plus the

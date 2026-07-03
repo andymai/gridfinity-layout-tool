@@ -11,6 +11,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { CLEARANCE_SHAPES, CHAMFER_SHAPES, maxEntryChamfer } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { Stepper } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
 import type { FitCue } from './cutoutSectionVisibility';
 
 /** Stepper increment for fit fields — coarse enough to tune by clicking, while
@@ -109,7 +110,7 @@ function FitStepRow({
   disabled,
   ...cueHandlers
 }: FitStepRowProps) {
-  const clamp = (v: number): number => Math.min(max, Math.max(min, Number(v.toFixed(3))));
+  const clampFit = (v: number): number => clamp(Number(v.toFixed(3)), min, max);
   return (
     <div className="flex items-center justify-between gap-2" title={info} {...cueHandlers}>
       <span className="text-xs text-content-secondary">
@@ -119,8 +120,8 @@ function FitStepRow({
       <Stepper
         size="sm"
         value={value}
-        onChange={(v) => onChange(clamp(v))}
-        onStep={(delta) => onChange(clamp(value + delta * FIT_STEP))}
+        onChange={(v) => onChange(clampFit(v))}
+        onStep={(delta) => onChange(clampFit(value + delta * FIT_STEP))}
         min={min}
         max={max}
         step={FIT_STEP}

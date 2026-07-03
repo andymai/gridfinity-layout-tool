@@ -105,8 +105,42 @@ export type {
   LidCompatibilitySide,
 } from '@/features/bin-designer/utils/lidCompatibility';
 
-/** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
-export type BaseplateEdgeKind = 'join' | 'exterior';
+/**
+ * Whether an edge is exterior (outside baseplate), a join between split pieces,
+ * or a seam to a detached margin rail carrying an opt-in connector (#2414).
+ * `marginSeam` is exterior-like for corner/rounding purposes but carries a
+ * body↔rail tongue; it must NOT be treated as `join` (no split-piece keys).
+ * Canonical edge-kind union; the baseplate feature's `EdgeKind` aliases this, so
+ * extend the union here and both stay in sync.
+ */
+export type BaseplateEdgeKind = 'join' | 'exterior' | 'marginSeam';
+
+/**
+ * True for edges on the plate's outer boundary: a plain `exterior` edge or a
+ * `marginSeam` (which is exterior + a connector tongue). Corner rounding and
+ * squaring treat both identically — the body stays square there and the rail
+ * owns the rounded outer corner. Do NOT use this for fingerprinting: a
+ * `marginSeam` piece carries a tongue and must not dedupe with a plain
+ * exterior piece.
+ */
+export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
+  return kind === 'exterior' || kind === 'marginSeam';
+}
+
+/** Baseplate split-connector styles — derived from the param definition below
+ *  so it can't drift when a style is added. */
+export type BaseplateConnectorStyle = NonNullable<ResolvedBaseplateParams['connectorStyle']>;
+
+/**
+ * Whether the margin-seam connector (#2414) engages for a given connector
+ * style. Scoped to the integral tongue/groove families — dovetail and puzzle —
+ * because snapClip/dovetailKey would need a separate printed part the seam must
+ * not emit. `undefined` is the stored default for dovetail (the ConnectorPicker
+ * persists dovetail as absent), so it counts as a tongue/groove style.
+ */
+export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return style === undefined || style === 'dovetail' || style === 'puzzle';
+}
 
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
@@ -116,13 +150,70 @@ export interface BaseplateEdges {
   readonly back: BaseplateEdgeKind;
 }
 
+/** A plate corner, named by the integral plate's exterior face pair. */
+export type MarginCorner = 'tl' | 'tr' | 'bl' | 'br';
+
 /**
- * Full baseplate parameter set for generation bridge.
+ * A detached drawer-fit padding "rail" — its own printable piece (issue #2392).
  *
- * Extends core BaseplateParams with drawer dimensions (width, depth, gridUnitMm)
- * and resolved per-side padding values computed from ratio at generation time.
+ * Rails butt-join: one axis pair is `long` (spans the full outer extent and owns
+ * the plate corners), the perpendicular pair is `short` (fits between the long
+ * rails). When a long rail is absent on an end, the adjacent short rail extends
+ * to that corner and owns it instead — so every rounded outer corner of the
+ * integral plate is carried by exactly one rail (see `ownedCorners`).
+ *
+ * Lives in shared (not the baseplate feature) so the generation worker can build
+ * a rail without a cross-feature import.
  */
-export interface BaseplateParams {
+export interface MarginPiece {
+  /** Stable id/label, e.g. "margin-front-A". */
+  readonly id: string;
+  readonly side: 'left' | 'right' | 'front' | 'back';
+  readonly role: 'long' | 'short';
+  /**
+   * Column/row of the body piece this segment runs alongside. A split plate
+   * emits one segment per outer body piece (so segments fit the bed and explode
+   * in lockstep with their piece); an unsplit plate is a single 0,0 piece.
+   */
+  readonly col: number;
+  readonly row: number;
+  /** Extent along the rail's running axis (mm). */
+  readonly lengthMm: number;
+  /** Padding-band depth perpendicular to the running axis (mm). */
+  readonly bandThicknessMm: number;
+  /** Outer corners this rail rounds; the rest of its corners are square (seams). */
+  readonly ownedCorners: readonly MarginCorner[];
+  /** Rail-center position in the plate-centered world frame (mm). */
+  readonly worldOffsetMm: { readonly x: number; readonly y: number };
+  /**
+   * Layout of the opt-in tongue-and-groove seam connector for a `long` rail
+   * (absent on short/friction-fit rails). The body grows one tongue per mating
+   * grid cell and the rail carves matching grooves; both sides recompute the same
+   * cell-center set from `cellUnits`/`fractionalEdge` so they can't drift, and
+   * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
+   * segment (which extends over the perpendicular padding and so is no longer
+   * centered on the wall it joins — #2427/#2428).
+   */
+  readonly seamConnector?: {
+    /** Grid units of the mating body wall along the rail's running axis. */
+    readonly cellUnits: number;
+    /** Rail-local position (mm) of the body grid center along the running axis. */
+    readonly centerOffsetMm: number;
+    readonly fractionalEdge: 'start' | 'end';
+  };
+  readonly overTile: boolean;
+  readonly overTileHalfGrid: boolean;
+  readonly overTileHalfGridSolidLeftover: boolean;
+}
+
+/**
+ * Resolved (generation-time) full baseplate parameter set for the generation bridge.
+ *
+ * Extends the persisted {@link StoredBaseplateParams} with drawer dimensions
+ * (width, depth, gridUnitMm) and resolved per-side padding values computed at
+ * generation time. Produced from the stored config via buildFullParams.
+ */
+export interface ResolvedBaseplateParams {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;
@@ -150,6 +241,12 @@ export interface BaseplateParams {
    * the standard clipped tile. Only meaningful when {@link overTile} is true.
    */
   readonly overTileHalfGrid?: boolean;
+  /**
+   * When half-grid is on, leave the sub-21mm leftover after the packed
+   * half-sockets as solid plastic instead of a clipped grid pocket (#2397).
+   * Only meaningful when {@link overTileHalfGrid} is true. Default false.
+   */
+  readonly overTileHalfGridSolidLeftover?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
@@ -199,6 +296,21 @@ export interface BaseplateParams {
     readonly bl: number;
     readonly br: number;
   };
+  /**
+   * Detach the drawer-fit padding into separate printable rail pieces. When set,
+   * the body slab is generated padding-free on detached sides and the margin
+   * rails are emitted as `BaseplateTiling.margins`. Mutually exclusive with
+   * `stackPrint` (stackPrint wins). Omit/false = padding stays integral.
+   */
+  readonly detachMargins?: boolean;
+  /**
+   * Opt-in body↔long-rail connector for detached margins (#2414). When true and
+   * `detachMargins` is set, the detached exterior seam becomes a `marginSeam`
+   * edge carrying a tongue (body side) that mates a groove in the rail, using
+   * the body's `connectorStyle`. Scoped to long rails; short rails/corners stay
+   * friction-fit. Omit/false = friction-fit only.
+   */
+  readonly detachMarginConnector?: boolean;
   /**
    * Vertical stack-print configuration (experimental). Replication is applied at
    * the mesh/export level (not in the BREP solid), so the generator builds one

@@ -8,7 +8,7 @@
  * and the 3D preview never disagree.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplateTiling } from '../types/tiling';
 
 /**
@@ -57,7 +57,7 @@ function interiorBoundaryOffsetsMm(
 }
 
 /** Styles that ship a separate part seated at every seam junction. */
-function hasSeatedConnector(params: BaseplateParams): boolean {
+function hasSeatedConnector(params: ResolvedBaseplateParams): boolean {
   return (
     params.connectorNubs === true &&
     (params.connectorStyle === 'dovetailKey' || params.connectorStyle === 'snapClip')
@@ -78,7 +78,7 @@ function hasSeatedConnector(params: BaseplateParams): boolean {
  */
 export function computeSeamJunctions(
   tiling: BaseplateTiling,
-  params: BaseplateParams
+  params: ResolvedBaseplateParams
 ): SeamJunction[] {
   if (!hasSeatedConnector(params)) return [];
 
@@ -115,6 +115,9 @@ export function computeSeamJunctions(
  * placements can never diverge. Returns 0 unless a seated-connector style
  * (dovetail key or snap clip) is active.
  */
-export function countConnectorKeys(tiling: BaseplateTiling, params: BaseplateParams): number {
+export function countConnectorKeys(
+  tiling: BaseplateTiling,
+  params: ResolvedBaseplateParams
+): number {
   return computeSeamJunctions(tiling, params).length;
 }

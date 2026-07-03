@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import type { BaseplateParams, BinParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import {
   BASE_TIMEOUT_MS,
   BASEPLATE_CONNECTOR_BONUS_MS,
@@ -28,7 +28,7 @@ function params(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
 }
 
-function bpParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+function bpParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   // lightweight defaults to `false` here so base-case assertions aren't
   // polluted by the implicit "undefined = on" bonus. Tests that care about
   // the lightweight bonus opt in explicitly.

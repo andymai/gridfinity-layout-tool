@@ -17,7 +17,7 @@ import type {
   Drawer,
   LayoutId,
   CloudShareInfo,
-  BaseplateParams,
+  StoredBaseplateParams,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
@@ -167,7 +167,7 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       bus.dispatch(createCommand('layout.setHeightUnitMm', { mm }));
     },
 
-    setBaseplateParams(params: BaseplateParams): void {
+    setBaseplateParams(params: StoredBaseplateParams): void {
       bus.dispatch(createCommand('layout.setBaseplateParams', { params }));
     },
 

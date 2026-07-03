@@ -7,6 +7,7 @@
 
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
+import { clamp } from '@/shared/utils/math';
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
@@ -84,12 +85,11 @@ export function resolveCornerRadii(
 ): { tl: number; tr: number; bl: number; br: number } {
   const defaultR = params.cornerRadius ?? PLATE_CORNER_RADIUS;
   const radii = params.cornerRadii ?? { tl: defaultR, tr: defaultR, bl: defaultR, br: defaultR };
-  const clamp = (r: number): number => Math.max(0, Math.min(r, maxRadius));
   return {
-    tl: clamp(radii.tl),
-    tr: clamp(radii.tr),
-    bl: clamp(radii.bl),
-    br: clamp(radii.br),
+    tl: clamp(radii.tl, 0, maxRadius),
+    tr: clamp(radii.tr, 0, maxRadius),
+    bl: clamp(radii.bl, 0, maxRadius),
+    br: clamp(radii.br, 0, maxRadius),
   };
 }
 

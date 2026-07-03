@@ -8,6 +8,7 @@
  */
 
 import type { PathPoint } from '@/features/bin-designer/types';
+import { clamp } from '@/shared/utils/math';
 import type { PointerMoveEvent, BinBounds, SnapFn } from './types';
 import {
   cornerPoint,
@@ -78,9 +79,8 @@ export function handlePathDrawingPointerDown(
   snap: SnapFn,
   setters: PathDrawingSetters
 ): void {
-  const clamp = (v: number, max: number) => Math.max(0, Math.min(v, max));
-  let x = snap(clamp(mmX, bounds.binWidth));
-  let y = snap(clamp(mmY, bounds.binDepth));
+  let x = snap(clamp(mmX, 0, bounds.binWidth));
+  let y = snap(clamp(mmY, 0, bounds.binDepth));
 
   if (mode === null || mode.points.length === 0) {
     setters.setMode({
@@ -97,8 +97,8 @@ export function handlePathDrawingPointerDown(
 
   if (shiftKey) {
     const snapped = snapAngle45(lastPt.x, lastPt.y, x, y);
-    x = snap(clamp(snapped.x, bounds.binWidth));
-    y = snap(clamp(snapped.y, bounds.binDepth));
+    x = snap(clamp(snapped.x, 0, bounds.binWidth));
+    y = snap(clamp(snapped.y, 0, bounds.binDepth));
   }
 
   if (
@@ -155,9 +155,8 @@ export function handlePathDrawingPointerMove(
   const { points, activePointDrag, repositionIndex } = mode;
   if (points.length === 0) return;
 
-  const clamp = (v: number, max: number) => Math.max(0, Math.min(v, max));
-  const cursorX = clamp(event.mmX, bounds.binWidth);
-  const cursorY = clamp(event.mmY, bounds.binDepth);
+  const cursorX = clamp(event.mmX, 0, bounds.binWidth);
+  const cursorY = clamp(event.mmY, 0, bounds.binDepth);
 
   // Repositioning an existing vertex
   if (repositionIndex !== null) {
@@ -166,8 +165,8 @@ export function handlePathDrawingPointerMove(
     if (event.shiftKey && repositionIndex > 0) {
       const prev = points[repositionIndex - 1];
       const snapped = snapAngle45(prev.x, prev.y, x, y);
-      x = clamp(snapped.x, bounds.binWidth);
-      y = clamp(snapped.y, bounds.binDepth);
+      x = clamp(snapped.x, 0, bounds.binWidth);
+      y = clamp(snapped.y, 0, bounds.binDepth);
     }
 
     const nextPoints = points.map((pt, i) => (i === repositionIndex ? { ...pt, x, y } : pt));

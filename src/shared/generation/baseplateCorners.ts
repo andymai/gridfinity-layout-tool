@@ -12,7 +12,7 @@
  * fingerprint must change with it or pieces will be wrongly merged or split.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 export type CornerKey = 'tl' | 'tr' | 'bl' | 'br';
 
@@ -20,7 +20,9 @@ export type CornerKey = 'tl' | 'tr' | 'bl' | 'br';
  * Map each corner to whether both its adjacent edges are exterior. With no edge
  * classification (a standalone, unsplit plate) every corner is exterior.
  */
-export function exteriorCorners(edges: BaseplateParams['edges']): Record<CornerKey, boolean> {
+export function exteriorCorners(
+  edges: ResolvedBaseplateParams['edges']
+): Record<CornerKey, boolean> {
   if (!edges) return { tl: true, tr: true, bl: true, br: true };
   return {
     tl: edges.left === 'exterior' && edges.back === 'exterior',

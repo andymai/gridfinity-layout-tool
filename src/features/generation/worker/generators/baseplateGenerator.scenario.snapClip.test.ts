@@ -13,7 +13,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
@@ -21,7 +21,7 @@ import { SNAP_CLIP } from './generatorConstants';
 import { buildSnapClip, buildSnapClipForPrint } from './baseplateConnectors';
 
 type ExportFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: 'stl'
 ) => Promise<{ data: ArrayBuffer; fileName: string }>;
 
@@ -35,7 +35,7 @@ beforeAll(async () => {
   exportConnectorKey = mod.exportConnectorKey;
 }, 30000);
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 2,
   depth: 2,
   gridUnitMm: 42,

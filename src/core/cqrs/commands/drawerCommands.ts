@@ -3,7 +3,7 @@
  */
 
 import type { BaseCommand } from '../types';
-import type { Drawer, BaseplateParams } from '@/core/types';
+import type { Drawer, StoredBaseplateParams } from '@/core/types';
 
 export type UpdateDrawerCommand = BaseCommand<'drawer.update', Partial<Drawer>>;
 
@@ -20,7 +20,7 @@ export type SetHeightUnitMmCommand = BaseCommand<'layout.setHeightUnitMm', { rea
 
 export type SetBaseplateParamsCommand = BaseCommand<
   'layout.setBaseplateParams',
-  { readonly params: BaseplateParams }
+  { readonly params: StoredBaseplateParams }
 >;
 
 export type DrawerCommand =

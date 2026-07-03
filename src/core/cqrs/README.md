@@ -50,39 +50,44 @@ eventBus.publishAll(events)
 src/core/cqrs/
 ├── index.ts              # Public barrel — all exports
 ├── types.ts              # Core types: CommandId, EventId, Middleware, etc.
+├── commandDescriptions.ts # CommandType -> i18n key for undo/redo toasts
 ├── bus/
 │   ├── commandBus.ts     # Synchronous command dispatch with middleware
 │   └── eventBus.ts       # Pub/sub for domain events
-├── commands/
-│   ├── index.ts          # Command union, factory, re-exports
-│   ├── binCommands.ts    # Bin command types (9 commands)
-│   ├── layerCommands.ts  # Layer command types (4 commands)
-│   ├── categoryCommands.ts # Category command types (3 commands)
-│   └── drawerCommands.ts # Drawer/layout command types (6 commands)
-├── events/
-│   ├── index.ts          # DomainEvent union, re-exports
-│   ├── binEvents.ts      # Bin event types
-│   ├── layerEvents.ts    # Layer event types
-│   ├── categoryEvents.ts # Category event types
-│   └── drawerEvents.ts   # Drawer/layout event types
+├── commands/             # Command type unions per domain + factory
+│   #   bin, layer, category, drawer, designer, library, restore
+├── events/               # Past-tense event type unions per domain
+├── v2/
+│   ├── defineCommand.ts  # v2 command factory: one literal with handle() + apply()
+│   ├── registry.ts       # All migrated v2 commands -> v2HandlerOverrides
+│   ├── runtime.ts        # wrapV2Handler: snapshot handle() + Immer-draft apply()
+│   ├── createRegistry.ts # Typed registry builder
+│   ├── Mutations.ts      # Mutations<typeof registry> type derivation
+│   └── domain/           # One file per command: bin/, layer/, category/,
+│       #                   drawer/, layout/, library/ (addBin.ts is canonical)
 ├── handlers/
-│   ├── index.ts          # Handler registry (maps command type -> handler fn)
+│   ├── index.ts          # Registry: designerHandlers + restoreHandlers
+│   │                     #   + v2HandlerOverrides (spread last, wins)
 │   ├── shared.ts         # createEventMeta(), capturePrevious()
-│   ├── binHandlers.ts    # Bin command handlers
-│   ├── layerHandlers.ts  # Layer command handlers
-│   ├── categoryHandlers.ts # Category command handlers
-│   └── drawerHandlers.ts # Drawer command handlers
+│   ├── designerHandlers.ts # Designer commands (still v1 by design)
+│   └── restoreHandlers.ts  # layout.restore (undo/redo path)
 ├── middleware/
-│   ├── index.ts          # Pipeline construction (getDefaultPipeline)
+│   ├── index.ts          # Pipeline: validation -> undoCapture -> analytics -> logging
+│   ├── middlewareConfig.ts # COMMAND_PROFILES: which middleware runs per command
 │   ├── analytics.ts      # PostHog bridge
 │   ├── logging.ts        # Dev-only console.debug
-│   └── undoCapture.ts    # Snapshot-based undo (behind Labs flag)
+│   └── undoCapture.ts    # Snapshot-based undo + batch() transactions
+├── undo/
+│   └── historyStore.ts   # Undo/redo stacks (max 100) + selection snapshots
+├── subscribers/          # Event subscribers: selectionPruning,
+│   #                       libraryPersistence, fillAnalytics
 ├── validation/
 │   ├── index.ts          # Re-exports
-│   ├── schemas.ts        # Zod schemas for all 22 commands
+│   ├── schemas.ts        # COMMAND_SCHEMAS — the Zod schemas the validation
+│   │                     #   middleware uses at runtime (also for v2 commands)
+│   ├── designerSchemas.ts / librarySchemas.ts
 │   └── validationMiddleware.ts # Fail-fast payload validation
 ├── versioning/
-│   ├── index.ts          # Re-exports
 │   ├── eventVersions.ts  # Current schema version per event type
 │   └── migrations.ts     # Migration registry + chain walker
 ├── store/
@@ -94,65 +99,86 @@ src/core/cqrs/
     └── mutationsAdapter.ts # Strangler fig: Mutations interface -> CQRS
 ```
 
-## How to Add a New Command/Event Pair
+## How to Add a New Command/Event Pair (v2)
+
+New domain commands are v2 commands: a single `defineCommand()` literal whose
+`handle()` plans against a read-only aggregate snapshot and whose `apply()`
+deterministically mutates an Immer draft using only the event payload.
+`v2/domain/bin/addBin.ts` is the canonical example. Designer and restore
+commands intentionally remain v1 (`handlers/designerHandlers.ts`,
+`handlers/restoreHandlers.ts`).
 
 ### Checklist
 
-1. **Define the command type** in `commands/<domain>Commands.ts`:
+1. **Define the command type** in `commands/<domain>Commands.ts` and add it to
+   the domain command union.
 
-   ```typescript
-   export type MyNewCommand = BaseCommand<'domain.myAction', { readonly foo: string }>;
-   ```
+2. **Define the event type** in `events/<domain>Events.ts` and add it to the
+   domain event union.
 
-2. **Add to the domain command union** in the same file.
+3. **Re-export** both from `commands/index.ts`, `events/index.ts`, and the
+   CQRS barrel `index.ts`.
 
-3. **Define the event type** in `events/<domain>Events.ts`:
-
-   ```typescript
-   export type MyActionDoneEvent = BaseDomainEvent<'domain.myActionDone', { readonly foo: string }>;
-   ```
-
-4. **Add to the domain event union** in the same file.
-
-5. **Re-export** both types from `commands/index.ts` and `events/index.ts`.
-
-6. **Re-export** from the CQRS barrel `index.ts`.
-
-7. **Add current schema version** in `versioning/eventVersions.ts`:
+4. **Add current schema version** in `versioning/eventVersions.ts`:
 
    ```typescript
    'domain.myActionDone': 1,
    ```
 
-8. **Write the handler** in `handlers/<domain>Handlers.ts`:
+5. **Write the command def** in `v2/domain/<aggregate>/<name>.ts`:
 
    ```typescript
-   function handleMyAction(command: MyNewCommand): CommandResult<void, DomainEvent> {
-     // 1. Read current state from Zustand store
-     // 2. Validate business rules
-     // 3. Mutate store
-     // 4. Create event with createEventMeta()
-     // 5. Return ok({ value: undefined, events: [event] })
-   }
+   export const myAction = defineCommand({
+     type: 'domain.myAction',
+     aggregate: 'layout',
+     aggregateId: () => 'layout',
+     payload: payloadSchema,
+     emitted: 'domain.myActionDone',
+     schemaVersion: 1,
+     descriptionKey: 'undo.action.myAction',
+     middleware: { undoCapture: true, validate: true, analytics: true },
+     handle: (payload, ctx) => {
+       // read-only planning against ctx.aggregate; brand payload values at
+       // this boundary; generate ids AFTER validation; put everything
+       // apply() needs into the event payload
+       return ok({ value: undefined, event: { payload: { ... } } });
+     },
+     apply: (event, draft) => {
+       // deterministic mutation from event payload only
+     },
+   });
    ```
 
-9. **Register the handler** in `handlers/index.ts`.
+6. **Register it** in `v2/registry.ts` (import + add to the
+   `v2HandlerOverrides` literal). `handlers/index.ts` spreads that registry
+   automatically.
 
-10. **Add a Zod validation schema** in `validation/schemas.ts`:
+7. **Add the command's profile** to `COMMAND_PROFILES` in
+   `middleware/middlewareConfig.ts` (the record is exhaustive over
+   `CommandType`) and its toast key to `commandDescriptions.ts` — that map,
+   not the def's `descriptionKey`, drives the undo/redo toast.
 
-    ```typescript
-    'domain.myAction': z.object({ foo: z.string().min(1) }),
-    ```
+8. **Add a Zod validation schema** in `validation/schemas.ts` — the
+   validation middleware reads `COMMAND_SCHEMAS`, not the def's `payload`
+   schema:
 
-11. **Add a replay case** in `projection/replay.ts`:
+   ```typescript
+   'domain.myAction': z.object({ foo: z.string().min(1) }),
+   ```
 
-    ```typescript
-    case 'domain.myActionDone':
-      // Apply event to layout state
-      break;
-    ```
+9. **Add a replay case** in `projection/replay.ts`:
 
-12. **Write tests** for the handler and schema.
+   ```typescript
+   case 'domain.myActionDone':
+     // Apply event to layout state
+     break;
+   ```
+
+10. **Expose it** through the `Mutations` interface if the UI calls it
+    (`integration/mutationsAdapter.ts`, `src/shared/contexts/MutationsContext.tsx`).
+
+11. **Write tests** colocated with the def (`<name>.test.ts`; see
+    `_testHelpers.ts` in each domain directory) plus the schema.
 
 ## Schema Versioning and Migration
 
@@ -266,10 +292,13 @@ cqrsMutations.addBin({ layerId, x, y, width, depth, height, category, label, not
 
 ```bash
 # Run all CQRS tests
-npm run test:run -- src/core/cqrs/
+pnpm run test:run src/core/cqrs/
 
 # Run specific test file
-npm run test:run -- src/core/cqrs/store/retryQueue.test.ts
+pnpm run test:run src/core/cqrs/store/retryQueue.test.ts
 ```
+
+Do not write `pnpm run test:run -- <filter>` — pnpm forwards the literal `--`
+and vitest then ignores the filter, silently running the entire suite.
 
 Handler tests use `createTestLayout()` from `@/test/testUtils`. Test events can be constructed with the `makeEvent()` helper pattern used in `eventBus.test.ts`.

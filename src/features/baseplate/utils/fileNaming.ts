@@ -5,7 +5,11 @@
  * parameters and configuration.
  */
 
-import type { BaseplateParams, ExportFileNameConfig, ExportFileFormat } from '@/shared/types/bin';
+import type {
+  ResolvedBaseplateParams,
+  ExportFileNameConfig,
+  ExportFileFormat,
+} from '@/shared/types/bin';
 
 /** Characters not allowed in filenames (replaced with underscore) */
 // eslint-disable-next-line no-control-regex -- Intentionally matching control chars for filename sanitization
@@ -87,10 +91,10 @@ function collectFeatures(params: BaseplateNamingParams): string[] {
 }
 
 /**
- * Creates naming params from full BaseplateParams.
+ * Creates naming params from the resolved generation params.
  * Convenience adapter for the generation hook.
  */
-export function toNamingParams(params: BaseplateParams): BaseplateNamingParams {
+export function toNamingParams(params: ResolvedBaseplateParams): BaseplateNamingParams {
   return {
     width: params.width,
     depth: params.depth,

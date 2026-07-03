@@ -11,8 +11,8 @@ import type { ShareData } from './lib/shared.js';
  *
  * This endpoint authenticates users for Liveblocks room access.
  * Permission is enforced by fetching share metadata from Vercel Blob:
- * - 'edit' permission grants FULL_ACCESS (read + write)
- * - 'view' permission grants READ_ACCESS (read only)
+ * - 'edit' permission grants write access (`['*:write']`)
+ * - 'view' permission grants read-only access (`['*:read']`)
  *
  * SECURITY — userId trust model:
  * `userId` is supplied by the client and only checked for non-empty string.
@@ -166,9 +166,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    // Grant access based on share permission level
-    const accessLevel = permission === 'edit' ? session.FULL_ACCESS : session.READ_ACCESS;
-    session.allow(room, accessLevel);
+    // Grant access based on share permission level. `['*:write']` / `['*:read']`
+    // are the non-deprecated form of the old session.FULL_ACCESS / READ_ACCESS
+    // constants (which were exactly these scope arrays).
+    session.allow(room, permission === 'edit' ? (['*:write'] as const) : (['*:read'] as const));
 
     // Authorize and return session token
     const { body, status } = await session.authorize();

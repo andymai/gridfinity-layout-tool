@@ -38,7 +38,7 @@ import {
   clone,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
 import {
@@ -225,7 +225,7 @@ function buildCoupon(
   });
 }
 
-function couponHeight(params: BaseplateParams): number {
+function couponHeight(params: ResolvedBaseplateParams): number {
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
   return SOCKET_HEIGHT + floorDepth;
 }
@@ -234,7 +234,7 @@ function couponHeight(params: BaseplateParams): number {
  * Build all fit-sample pieces as separate, bed-resting solids. Caller owns the
  * returned shapes (frees them after compounding).
  */
-export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] {
+export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Shape3D[] {
   // Clamp grid unit / magnet depth (and reject non-finite values) the same way
   // every sibling exporter does — a bad magnetDepth would otherwise make
   // totalHeight NaN and corrupt every coupon, pocket, and clip.
@@ -311,7 +311,7 @@ export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] 
 
 /** Export the connector fit-sample tray as a single STL or STEP file. */
 export async function exportConnectorSample(
-  rawParams: BaseplateParams,
+  rawParams: ResolvedBaseplateParams,
   format: ExportFormat,
   tolerance?: number,
   angularTolerance?: number

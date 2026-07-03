@@ -4,6 +4,7 @@ import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import type { PrintSettings } from '@/shared/printSettings';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { Stepper } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 
@@ -62,7 +63,7 @@ const PRINT_FIELDS: PrintFieldConfig[] = [
 // (e.g. 0.08 + 0.04) doesn't accumulate floating-point drift.
 const clampRound = (value: number, min: number, max: number, decimals: number): number => {
   const rounded = Number(value.toFixed(decimals));
-  return Math.max(min, Math.min(max, rounded));
+  return clamp(rounded, min, max);
 };
 
 export function PrintTab() {

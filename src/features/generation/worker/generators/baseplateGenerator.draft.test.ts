@@ -9,13 +9,13 @@
  * draft removes geometry on magnet plates and is a no-op without magnets.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
 import { clearBaseplateCaches } from './baseplateCaches';
 
 const noop = (): void => {};
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 4,
   depth: 4,
   gridUnitMm: 42,

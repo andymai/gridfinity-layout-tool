@@ -95,6 +95,9 @@ export interface LayoutMetrics {
 // METRICS COMPUTATION
 
 export const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
+// Intentionally a literal, not CONSTRAINTS.PRINT_BED_MM_DEFAULT: this is read at
+// module-init, and (per the #1466 note above) reading an imported @/core/constants
+// binding at init time can resolve to undefined under the chunk static-import cycle.
 export const DEFAULT_PRINT_BED = 256;
 
 // Lazily computed to avoid a top-level read of the imported DEFAULT_CATEGORIES

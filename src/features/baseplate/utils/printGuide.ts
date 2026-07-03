@@ -7,7 +7,7 @@
  * - ASCII grid map: visual assembly layout, front at bottom
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { StackPrintParams } from '@/core/types';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
@@ -30,11 +30,18 @@ export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
   readonly groups: Map<string, PieceGroup>;
   readonly groupNames: Map<string, string>;
-  readonly parentParams: BaseplateParams;
+  readonly parentParams: ResolvedBaseplateParams;
   readonly fileExtension: string;
   readonly baseFileName: string;
   /** Dovetail key part, when present — printed `count` times. */
   readonly connectorKey?: { readonly fileName: string; readonly count: number };
+  /** Detached margin rails (issue #2392), when present — each is its own file. */
+  readonly margins?: readonly {
+    readonly fileName: string;
+    readonly side: string;
+    readonly lengthMm: number;
+    readonly bandThicknessMm: number;
+  }[];
   /** Stack-print config, when enabled — each file is a pre-stacked tower. */
   readonly stackPrint?: StackPrintParams;
   /** Max tiles per stack (from the printer's build height). */
@@ -63,6 +70,7 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       input.copies
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
+    ...(input.margins && input.margins.length > 0 ? [generateMarginSection(input.margins)] : []),
     generateGridMap(tiling),
     generateFooter(),
   ];
@@ -92,6 +100,29 @@ function generateAssemblyIntro(): string {
     '  Pieces that share an identical shape are grouped together below, so a',
     '  reprint can use any copy. Place each piece using the assembly map at the',
     '  bottom of this guide.',
+  ].join('\n');
+}
+
+/**
+ * Standalone margin guide for single-body detached exports that have no split
+ * piece table — the unsplit ZIP still ships a guide listing its rail files.
+ */
+export function generateMarginGuide(margins: NonNullable<PrintGuideInput['margins']>): string {
+  return `${generateMarginSection(margins)}\n\n${generateFooter()}`;
+}
+
+function generateMarginSection(margins: NonNullable<PrintGuideInput['margins']>): string {
+  const rows = margins.map(
+    (m) =>
+      `  ${m.fileName}  —  ${m.side}, ${m.lengthMm.toFixed(1)} × ${m.bandThicknessMm.toFixed(1)} mm`
+  );
+  return [
+    '─── Detached margins ────────────────────────────',
+    '',
+    '  These rails are the drawer-fit padding, printed separately. Fit them',
+    '  around the body after printing; a misprinted rail can be reprinted alone.',
+    '',
+    ...rows,
   ].join('\n');
 }
 
@@ -171,7 +202,7 @@ function buildEasierSeparation(gap: number): string[] {
 
 function generateConnectorKeySection(
   key: { fileName: string; count: number },
-  params: BaseplateParams
+  params: ResolvedBaseplateParams
 ): string {
   const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
   const offset = params.connectorFitOffset ?? 0;
@@ -224,7 +255,7 @@ function formatSignedMm(value: number): string {
 
 function generateHeader(
   tiling: BaseplateTiling,
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   uniqueCount: number
 ): string {
   const features: string[] = [];
@@ -282,7 +313,7 @@ function generateHeader(
 function generatePieceTable(
   groups: Map<string, PieceGroup>,
   names: Map<string, string>,
-  parentParams: BaseplateParams,
+  parentParams: ResolvedBaseplateParams,
   pieces: readonly BaseplatePiece[],
   ext: string,
   baseName: string,

@@ -19,6 +19,7 @@ import { export3MF, buildSTLBuffer } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
+import { getErrorMessage } from '@/shared/utils/errors';
 import { useTranslation } from '@/i18n';
 import { buildFullParams } from '../utils/buildFullParams';
 import { buildStackExportSoup } from '../utils/stackExport';
@@ -114,8 +115,7 @@ export function useStackSampleExport(): UseStackSampleExportReturn {
         }
         return true;
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Export failed';
-        useToastStore.getState().addToast(message, 'error');
+        useToastStore.getState().addToast(getErrorMessage(error, 'Export failed'), 'error');
         return false;
       } finally {
         setIsExporting(false);

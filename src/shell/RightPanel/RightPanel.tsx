@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useRef, useCallback } from 'react';
+import React, { Suspense, useState, useRef, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useSettingsStore } from '@/core/store/settings';
@@ -18,6 +18,7 @@ const LIST_SEPARATOR = ', ';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '../Print/SplitPreview';
+import { getLinkedBins } from '@/features/design-linking';
 import {
   useBinInspector,
   SingleBinInspector,
@@ -30,6 +31,10 @@ const SnapshotHistory = lazyWithRetry(() =>
   import('@/features/snapshots').then(namedExport('SnapshotHistory'))
 );
 
+const LayoutExportDialog = lazyWithRetry(() =>
+  import('../layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
+);
+
 type RightPanelTab = 'inspector' | 'history';
 
 export function RightPanel() {
@@ -37,6 +42,7 @@ export function RightPanel() {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('inspector');
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [layoutExportOpen, setLayoutExportOpen] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -68,6 +74,10 @@ export function RightPanel() {
 
   // Use the print list hook
   const printList = usePrintList();
+
+  // Only bins linked to a saved design have printable geometry, so the layout
+  // 3D export is offered only when at least one exists.
+  const linkedBinCount = useMemo(() => getLinkedBins(layout.bins).length, [layout.bins]);
 
   // Shared nozzle size — drives both the print-time estimate and connector scaling.
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
@@ -307,6 +317,36 @@ export function RightPanel() {
                         </svg>
                       )}
                     </IconButton>
+                    {/* Export entire layout (linked bins + baseplate) as a ZIP */}
+                    {linkedBinCount > 0 && (
+                      <IconButton
+                        size="sm"
+                        touchTarget={false}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLayoutExportOpen(true);
+                        }}
+                        title={t('layoutExport.button')}
+                        aria-label={t('layoutExport.button')}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          {ICON_PATHS.download.map((d) => (
+                            <path
+                              key={d}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d={d}
+                            />
+                          ))}
+                        </svg>
+                      </IconButton>
+                    )}
                   </div>
                 )}
               </div>
@@ -581,6 +621,12 @@ export function RightPanel() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
+
+      {layoutExportOpen && (
+        <Suspense fallback={null}>
+          <LayoutExportDialog open={layoutExportOpen} onClose={() => setLayoutExportOpen(false)} />
+        </Suspense>
+      )}
     </aside>
   );
 }

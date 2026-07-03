@@ -22,7 +22,7 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
-import type { BaseplateParams, ExportFileFormat } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, ExportFileFormat } from '@/shared/types/bin';
 import { BASEPLATE_EXPORT_DB_NAME } from '@/core/storage/storageKeys';
 
 const DB_NAME = BASEPLATE_EXPORT_DB_NAME;
@@ -97,7 +97,7 @@ function stableStringify(value: unknown): string {
  * + session nozzle + the full param object that drives the worker output.
  */
 export function buildExportCacheKey(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: ExportFileFormat,
   nozzleSizeMm: number
 ): string {

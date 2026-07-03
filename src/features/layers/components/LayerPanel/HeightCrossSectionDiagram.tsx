@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Layer, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/math';
 import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
@@ -32,10 +33,6 @@ interface HeightCrossSectionDiagramProps {
   onEditingStart: (layerId: LayerId) => void;
   onEditingEnd: () => void;
   layerStats: Partial<Record<string, LayerStat>>;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
 }
 
 function GripIcon({ className }: { className?: string }) {

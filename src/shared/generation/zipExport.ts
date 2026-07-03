@@ -19,6 +19,23 @@ export interface ZipTextFile {
   readonly content: string;
 }
 
+function appendTextFiles(
+  files: Record<string, Uint8Array>,
+  textFiles?: readonly ZipTextFile[]
+): void {
+  if (!textFiles) return;
+  for (const file of textFiles) {
+    files[file.name] = strToU8(file.content);
+  }
+}
+
+function buildZipBlob(files: Record<string, Uint8Array>): Blob {
+  // `level: 6` matches JSZip's default DEFLATE level, keeping archive sizes
+  // and compatibility identical across the migration.
+  const compressed = zipSync(files, { level: 6 });
+  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+}
+
 /**
  * Package pieces into a ZIP archive with per-piece files.
  *
@@ -41,14 +58,34 @@ export function packagePiecesAsZip(
     files[fileName] = new Uint8Array(piece.data);
   }
 
-  if (extraFiles) {
-    for (const file of extraFiles) {
-      files[file.name] = strToU8(file.content);
-    }
+  appendTextFiles(files, extraFiles);
+  return buildZipBlob(files);
+}
+
+/** A binary file placed at an explicit path inside the ZIP (e.g. `bins/foo.stl`). */
+export interface ZipBinaryFile {
+  readonly path: string;
+  readonly data: ArrayBuffer;
+}
+
+/**
+ * Package files into a ZIP using explicit, caller-controlled paths — so callers
+ * can build a foldered archive (`bins/`, `baseplate/`, root `manifest.txt`).
+ *
+ * Unlike `packagePiecesAsZip`, this does NOT synthesize names; the caller owns
+ * uniqueness. Duplicate paths would silently overwrite (fflate keys a plain
+ * object), so callers must dedupe paths before calling.
+ */
+export function packageFilesAsZip(
+  binaryFiles: readonly ZipBinaryFile[],
+  textFiles?: readonly ZipTextFile[]
+): Blob {
+  const files: Record<string, Uint8Array> = {};
+
+  for (const file of binaryFiles) {
+    files[file.path] = new Uint8Array(file.data);
   }
 
-  // `level: 6` matches JSZip's default DEFLATE level, keeping archive sizes
-  // and compatibility identical across the migration.
-  const compressed = zipSync(files, { level: 6 });
-  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
+  appendTextFiles(files, textFiles);
+  return buildZipBlob(files);
 }

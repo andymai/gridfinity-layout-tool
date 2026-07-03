@@ -383,6 +383,57 @@ export function useBinInspector(): UseBinInspectorReturn {
     return true;
   }, [bin, layout, updateBin, addToast, t]);
 
+  // Resolve the exact rect a suggested size would apply. Shared by the fit
+  // check and the apply so they can never disagree — clearance is reduced to
+  // preserve the bin's total vertical footprint, so the fit check must see the
+  // same adjusted clearance, not the original.
+  const resolveSuggestedRect = useCallback(
+    (size: { width: number; depth: number; height: number }) => {
+      const currentClearance = (bin?.clearanceHeight ?? 0) as HeightUnits;
+      const currentHeight = (bin?.height ?? 0) as HeightUnits;
+      const width = clamp(size.width, 0.5, layout.drawer.width) as GridUnits;
+      const depth = clamp(size.depth, 0.5, layout.drawer.depth) as GridUnits;
+      const height = roundHeightUnits(
+        clamp(size.height, constraints.minHeight, constraints.maxHeight)
+      );
+      const clearanceHeight =
+        currentClearance > 0
+          ? (Math.max(0, currentHeight + currentClearance - height) as HeightUnits)
+          : currentClearance;
+      return { width, depth, height, clearanceHeight };
+    },
+    [bin, layout.drawer.width, layout.drawer.depth, constraints.minHeight, constraints.maxHeight]
+  );
+
+  // Whether a suggested size can be placed at the bin's current position, using
+  // the exact rect `applySuggestedSize` would write (so the "Won't fit here"
+  // gate matches the actual mutation).
+  const canApplySuggestedSize = useCallback(
+    (size: { width: number; depth: number; height: number }): boolean => {
+      if (!bin) return false;
+      const rect = resolveSuggestedRect(size);
+      return canPlaceBin({ x: bin.x, y: bin.y, ...rect }, bin.layerId, layout, bin.id).valid;
+    },
+    [bin, layout, resolveSuggestedRect]
+  );
+
+  // Apply a recommended size (from the bin-size suggestion) as a single
+  // undoable action — one updateBin call, not three field edits.
+  const applySuggestedSize = useCallback(
+    (size: { width: number; depth: number; height: number }): boolean => {
+      if (!bin) return false;
+      const { width, depth, height, clearanceHeight } = resolveSuggestedRect(size);
+      const applied = !isErr(
+        batch(() => updateBin(bin.id, { width, depth, height, clearanceHeight }))
+      );
+      if (applied) {
+        emitLinkedBinResize(bin, { width, depth, height });
+      }
+      return applied;
+    },
+    [bin, resolveSuggestedRect, updateBin]
+  );
+
   return {
     selectedBins,
     isMultiSelect,
@@ -408,6 +459,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     moveToStaging,
     clearSelection,
     rotateBin,
+    applySuggestedSize,
+    canApplySuggestedSize,
 
     deleteConfirmState,
 

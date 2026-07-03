@@ -22,13 +22,13 @@
  * directed-edge uniqueness alone wouldn't see.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 
 type ExportFn = (
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   format: 'stl'
 ) => Promise<{ data: ArrayBuffer; fileName: string }>;
 
@@ -40,7 +40,7 @@ beforeAll(async () => {
   exportBaseplate = mod.exportBaseplate;
 }, 30000);
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 4.5,
   depth: 4.5,
   gridUnitMm: 42,

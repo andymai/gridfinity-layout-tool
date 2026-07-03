@@ -24,7 +24,7 @@
  * shapes, builder, walls, faces, magnets, connectors.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import { creaseEdges } from './utils';
@@ -59,7 +59,7 @@ import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
  * solid floor, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
 export function generateBaseplateDirect(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   onProgress: ProgressFn,
   signal?: AbortSignal
 ): MeshData {
@@ -98,6 +98,7 @@ export function generateBaseplateDirect(
     connectorNubs,
     overTile,
     overTileHalfGrid,
+    overTileHalfGridSolidLeftover,
   } = params;
 
   const mb = new MeshBuilder();
@@ -136,10 +137,24 @@ export function generateBaseplateDirect(
       back: paddingBack,
     };
     cells.push(
-      ...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid)
+      ...frameCells(
+        width,
+        depth,
+        margins,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid,
+        overTileHalfGridSolidLeftover
+      )
     );
     const depthOf = (p: number): number =>
-      marginPocketDepthMm(p, gridUnitMm, MIN_PRINTABLE_TILE_MM, overTileHalfGrid === true);
+      marginPocketDepthMm(
+        p,
+        gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        overTileHalfGrid === true,
+        overTileHalfGridSolidLeftover === true
+      );
     pocketDepths = {
       left: depthOf(paddingLeft),
       right: depthOf(paddingRight),

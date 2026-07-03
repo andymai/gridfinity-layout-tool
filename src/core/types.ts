@@ -27,7 +27,7 @@ export interface Layout {
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];
   purpose?: string; // Optional drawer purpose (e.g., "workshop", "electronics")
-  baseplateParams?: BaseplateParams; // Per-layout baseplate configuration
+  baseplateParams?: StoredBaseplateParams; // Per-layout baseplate configuration
 }
 
 /** Nine-point padding distribution anchor. First letter = vertical (t/m/b),
@@ -78,11 +78,12 @@ export const STACK_PRINT_MAX_STACK_HEIGHT = 8;
 export const STACK_PRINT_MIN_GAP_MM = 0.1;
 export const STACK_PRINT_MAX_GAP_MM = 1.0;
 
-/** Baseplate generation parameters stored per-layout.
- * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
- * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
- * Per-side padding in mm — user enters directly, total drawer = grid + padding. */
-export interface BaseplateParams {
+/** Stored (persisted) baseplate config saved per-layout.
+ * Padding is in mm; width/depth/gridUnitMm are NOT stored — they are derived from the
+ * layout's drawer at generation time unless syncWithLayout is false, in which case
+ * baseplateWidth/baseplateDepth override drawer dims. Bridged to the generation-time
+ * {@link ResolvedBaseplateParams} via buildFullParams. */
+export interface StoredBaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: Mm;
   readonly magnetDepth: Mm;
@@ -104,6 +105,14 @@ export interface BaseplateParams {
    * meaningful when {@link overTile} is true. Default false (arbitrary clip).
    */
   readonly overTileHalfGrid?: boolean;
+  /**
+   * Half-grid leftover handling: when set, the sub-21mm remainder left after
+   * packing 0.5-unit half-sockets stays solid plastic instead of becoming a
+   * clipped grid pocket — so true half-grid cells read as distinct from the
+   * unusable margin. Only meaningful when {@link overTileHalfGrid} is true.
+   * Default false (leftover rendered as a clipped tile).
+   */
+  readonly overTileHalfGridSolidLeftover?: boolean;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */
@@ -159,6 +168,22 @@ export interface BaseplateParams {
   readonly fractionalEdgeX?: FractionalEdge;
   /** Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false. Defaults to 'end' (top). */
   readonly fractionalEdgeY?: FractionalEdge;
+  /**
+   * Detach the drawer-fit padding into separate printable rail pieces so a bad
+   * margin doesn't scrap the whole plate (issue #2392). Each side with padding ≥
+   * {@link MARGIN_MIN_DETACH_MM} becomes its own rail; the body prints
+   * padding-free on detached sides. Mutually exclusive with {@link stackPrint}
+   * (stackPrint wins). Default false.
+   */
+  readonly detachMargins?: boolean;
+  /**
+   * Opt-in connector between the body and each detached long-rail margin
+   * (issue #2414). Adds a tongue/groove at the body↔long-rail seam using the
+   * body's {@link connectorStyle} so the rail attaches securely instead of
+   * relying on friction. Short rails and corners stay friction-fit. Only
+   * meaningful when {@link detachMargins} is true. Default false.
+   */
+  readonly detachMarginConnector?: boolean;
   /**
    * Vertical stack-print configuration (experimental). When enabled, each
    * identical-piece group exports as flipped, separated vertical stacks sized

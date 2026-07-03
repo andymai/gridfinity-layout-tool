@@ -3,7 +3,6 @@ import {
   canPlaceBin,
   validateImport,
   salvageImport,
-  clamp,
   truncate,
   validateLayoutIntegrity,
   validateCustomProperties,
@@ -421,14 +420,6 @@ describe('salvageImport', () => {
     const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
     expect(stagedBins).toHaveLength(1);
     expect(stagedBins[0].id).toBe('staged');
-  });
-});
-
-describe('clamp', () => {
-  it('clamps values to range', () => {
-    expect(clamp(5, 0, 10)).toBe(5);
-    expect(clamp(-5, 0, 10)).toBe(0);
-    expect(clamp(15, 0, 10)).toBe(10);
   });
 });
 

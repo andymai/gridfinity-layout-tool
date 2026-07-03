@@ -13,7 +13,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, intersect, cut, draw } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildBaseplateSolid } from './baseplateGenerator';
 import { buildConnectors } from './baseplateConnectors';
@@ -33,7 +33,7 @@ const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: num
     .sketchOnPlane('XY', z0)
     .extrude(z1 - z0);
 
-const params: BaseplateParams = {
+const params: ResolvedBaseplateParams = {
   width: 2,
   depth: 2,
   gridUnitMm: 42,

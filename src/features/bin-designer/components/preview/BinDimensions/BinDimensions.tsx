@@ -29,6 +29,12 @@ interface BinDimensionsProps {
   heightUnitMm: number;
   /** Whether stacking lip is enabled (adds LIP_HEIGHT to total height) */
   stackingLip: boolean;
+  /**
+   * Pre-translated secondary label shown under the height dimension, e.g.
+   * "stacks +21mm". Conveys that stacked bins advance by body height (the lip
+   * nests), so N bins ≠ N × printed height. Omitted when there's no lip.
+   */
+  stackPitchLabel?: string;
 }
 
 // Layout constants matched to planner's DrawerDimensions proportions
@@ -52,6 +58,7 @@ export function BinDimensions({
   gridUnitMmY,
   heightUnitMm,
   stackingLip,
+  stackPitchLabel,
 }: BinDimensionsProps) {
   const colors = useThreeColors();
   // Y axis uses gridUnitMmY when set (non-square grid); otherwise equals X.
@@ -234,6 +241,22 @@ export function BinDimensions({
       >
         {dimensions.height.label}
       </Text>
+      {stackPitchLabel && (
+        <Text
+          position={[
+            dimensions.height.labelPos[0],
+            dimensions.height.labelPos[1],
+            dimensions.height.labelPos[2] - FONT_SIZE * 1.4,
+          ]}
+          fontSize={FONT_SIZE * 0.72}
+          color={colors.lineColor}
+          fillOpacity={TEXT_OPACITY * 0.8}
+          anchorX="right"
+          anchorY="middle"
+        >
+          {stackPitchLabel}
+        </Text>
+      )}
     </group>
   );
 }

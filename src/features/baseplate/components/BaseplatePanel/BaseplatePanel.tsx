@@ -15,7 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
-import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS, MARGIN_MIN_DETACH_MM } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
@@ -27,7 +27,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput, Button, ConfirmDialog, CheckboxRow } from '@/design-system';
+import { SliderInput, Button, ConfirmDialog, CheckboxRow, SegmentedControl } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -52,11 +52,15 @@ import {
   CONNECTOR_FIT_OFFSET_MAX,
   CONNECTOR_FIT_OFFSET_STEP,
 } from '@/shared/constants/connectors';
-import type { BaseplateParams } from '@/core/types';
+import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
+
+/** How the sub-21mm leftover after half-grid packing is rendered. */
+type LeftoverMode = 'grid' | 'solid';
 
 /** Snap a connector fit offset to its step and clamp to the allowed range,
  * absorbing IEEE-754 drift from repeated ±0.05 button clicks. */
@@ -124,13 +128,13 @@ export function BaseplatePanel() {
       .updateSetting('printSettings', { ...current, maxPrintHeightMm: value });
   }, []);
 
-  const updateParams = useCallback((patch: Partial<BaseplateParams>) => {
+  const updateParams = useCallback((patch: Partial<StoredBaseplateParams>) => {
     const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
     useLayoutStore.getState().setBaseplateParams({ ...current, ...patch });
   }, []);
 
   const updateParam = useCallback(
-    <K extends keyof BaseplateParams>(key: K, value: BaseplateParams[K]) => {
+    <K extends keyof StoredBaseplateParams>(key: K, value: StoredBaseplateParams[K]) => {
       updateParams({ [key]: value });
     },
     [updateParams]
@@ -228,6 +232,35 @@ export function BaseplatePanel() {
     },
     [updateParams]
   );
+  const leftoverMode: LeftoverMode =
+    halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
+  const setLeftoverMode = useCallback(
+    (mode: LeftoverMode) => {
+      // Store undefined (not false) for the default Grid so identical geometry
+      // keeps one serialized/cache identity — matches overTileHalfGrid above.
+      updateParam('overTileHalfGridSolidLeftover', mode === 'solid' ? true : undefined);
+    },
+    [updateParam]
+  );
+
+  // Detach margins: each side with padding ≥ threshold prints as its own rail.
+  // Mutually exclusive with stack-print (stacking wins) — keyed on the stored
+  // flag, not the export-format-aware `stackEnabled` above.
+  const stackPrintOn = baseplateParams.stackPrint?.enabled === true;
+  const canDetach =
+    baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingFront >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingBack >= MARGIN_MIN_DETACH_MM;
+  // Reflect the STORED opt-in in the toggle (it's preserved across stack-print),
+  // so when stack-print suppresses detach the switch reads as on-but-disabled
+  // rather than silently off.
+  const detachStored = baseplateParams.detachMargins === true;
+  const marginConnectorStored = baseplateParams.detachMarginConnector === true;
+  // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
+  // seams would need a separate clip part, so they stay friction-fit (#2414).
+  // `undefined` is the stored default for dovetail, so it counts.
+  const marginConnectorStyleOk = isSeamConnectorStyle(baseplateParams.connectorStyle);
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;
@@ -399,17 +432,38 @@ export function BaseplatePanel() {
                         {overTileStatus.canOverTile ? (
                           <>
                             <CheckboxRow
-                              label={t('baseplate.useHalfGrid')}
+                              label={t('baseplate.preferHalfGrid')}
                               checked={halfGridOn}
                               onChange={(checked) =>
                                 setMarginFillMode(checked ? 'halfGrid' : 'tile')
                               }
                               indent
                             />
+                            {halfGridOn && (
+                              <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
+                                <span className="text-xs text-content-secondary">
+                                  {t('baseplate.leftoverLabel')}
+                                </span>
+                                <SegmentedControl
+                                  aria-label={t('baseplate.leftoverLabel')}
+                                  size="sm"
+                                  options={[
+                                    { value: 'grid', label: t('baseplate.leftoverGrid') },
+                                    { value: 'solid', label: t('baseplate.leftoverSolid') },
+                                  ]}
+                                  value={leftoverMode}
+                                  onChange={setLeftoverMode}
+                                />
+                              </div>
+                            )}
                             <div className="space-y-1 text-[11px] leading-relaxed">
                               <p className="text-content-tertiary">
                                 {t(
-                                  halfGridOn ? 'baseplate.halfGridHint' : 'baseplate.overTileHint'
+                                  halfGridOn
+                                    ? leftoverMode === 'solid'
+                                      ? 'baseplate.halfGridHintSolid'
+                                      : 'baseplate.halfGridHint'
+                                    : 'baseplate.overTileHint'
                                 )}
                               </p>
                               {overTileStatus.tiled.length > 0 && (
@@ -440,6 +494,46 @@ export function BaseplatePanel() {
                           </p>
                         )}
                       </div>
+                    }
+                  />
+                </div>
+              )}
+              {hasPadding && (
+                <div className="border-t border-stroke-subtle pt-3">
+                  <FeatureToggle
+                    label={t('baseplate.detachMargins')}
+                    checked={detachStored}
+                    onChange={() => updateParam('detachMargins', !detachStored)}
+                    disabledReason={
+                      stackPrintOn
+                        ? t('baseplate.detachMarginsStackConflict')
+                        : !detachStored && !canDetach
+                          ? t('baseplate.detachMarginsTooSmall')
+                          : undefined
+                    }
+                    primaryControls={
+                      // On but nothing meets the threshold → no rails are emitted,
+                      // so say so rather than imply they will.
+                      !canDetach ? (
+                        <p className="text-[11px] leading-relaxed text-content-tertiary">
+                          {t('baseplate.detachMarginsTooSmall')}
+                        </p>
+                      ) : (
+                        <div className="space-y-1">
+                          <CheckboxRow
+                            label={t('baseplate.detachMarginConnector')}
+                            checked={marginConnectorStored && marginConnectorStyleOk}
+                            onChange={(checked) => updateParam('detachMarginConnector', checked)}
+                            disabled={!marginConnectorStyleOk}
+                            indent
+                          />
+                          <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                            {marginConnectorStyleOk
+                              ? t('baseplate.detachMarginConnectorHint')
+                              : t('baseplate.detachMarginConnectorStyle')}
+                          </p>
+                        </div>
+                      )
                     }
                   />
                 </div>

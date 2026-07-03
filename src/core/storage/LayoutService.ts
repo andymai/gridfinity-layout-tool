@@ -17,6 +17,7 @@ import * as backend from './backend';
 import * as indexedDB from './backends/indexedDB';
 import { salvageImport } from '@/shared/utils/validation';
 import {
+  CONSTRAINTS,
   DEFAULT_LAYOUT_NAME,
   generateCategoryId,
   generateLayerId,
@@ -74,12 +75,16 @@ function migrateLayout(data: Record<string, unknown>): Record<string, unknown> {
     data.printBedSize = (data.maxPrintSize as number) * gridUnitMm;
     delete data.maxPrintSize;
   }
-  // Fix if printBedSize was saved in grid units (< 42 means it's probably not in mm)
-  if (data.printBedSize !== undefined && (data.printBedSize as number) < 42) {
+  // Fix if printBedSize was saved in grid units. A value below the minimum valid
+  // mm bed dimension can't be a real mm bed, so treat it as grid units.
+  if (
+    data.printBedSize !== undefined &&
+    (data.printBedSize as number) < CONSTRAINTS.PRINT_BED_MM_MIN
+  ) {
     data.printBedSize = (data.printBedSize as number) * gridUnitMm;
   }
   if (data.printBedSize === undefined) {
-    data.printBedSize = 256; // Default 256mm
+    data.printBedSize = CONSTRAINTS.PRINT_BED_MM_DEFAULT;
   }
   return data;
 }
@@ -564,7 +569,7 @@ export async function initializeLayoutLibrary(): Promise<{
       version: '1.0',
       name: DEFAULT_LAYOUT_NAME,
       drawer: { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(height) },
-      printBedSize: mm(256),
+      printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
       gridUnitMm: mm(42),
       heightUnitMm: mm(7),
       categories: [
@@ -604,7 +609,7 @@ export async function initializeLayoutLibrary(): Promise<{
         version: '1.0',
         name: 'Recovered layout',
         drawer: { width: gridUnits(rw), depth: gridUnits(rd), height: heightUnits(rh) },
-        printBedSize: mm(256),
+        printBedSize: mm(CONSTRAINTS.PRINT_BED_MM_DEFAULT),
         gridUnitMm: mm(42),
         heightUnitMm: mm(7),
         categories: [{ id: generateCategoryId(), name: 'Default', color: '#6b7280' }],

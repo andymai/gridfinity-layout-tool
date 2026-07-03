@@ -4,8 +4,9 @@
 
 import { drawRectangle, drawRoundedRectangle, draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/math';
 import { exteriorCorners } from '@/shared/generation/baseplateCorners';
 
 /**
@@ -24,7 +25,7 @@ export function buildSlabProfile(
   totalW: number,
   totalD: number,
   cornerRadii: { tl: number; tr: number; bl: number; br: number },
-  edges?: BaseplateParams['edges']
+  edges?: ResolvedBaseplateParams['edges']
 ): Drawing {
   const hw = totalW / 2;
   const hd = totalD / 2;
@@ -81,7 +82,7 @@ export function tagOp<T>(op: string, fn: () => T): T {
  * Throws on clearly invalid dimensions (NaN, zero, negative) to surface
  * upstream bugs. Clamps other fields to safe ranges to prevent OOM.
  */
-export function sanitizeParams(params: BaseplateParams): BaseplateParams {
+export function sanitizeParams(params: ResolvedBaseplateParams): ResolvedBaseplateParams {
   if (
     !Number.isFinite(params.width) ||
     params.width <= 0 ||
@@ -96,17 +97,17 @@ export function sanitizeParams(params: BaseplateParams): BaseplateParams {
     );
   }
 
-  const clamp = (v: number, min: number, max: number): number =>
-    Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : min;
+  const clampFinite = (v: number, min: number, max: number): number =>
+    Number.isFinite(v) ? clamp(v, min, max) : min;
 
   return {
     ...params,
-    gridUnitMm: clamp(params.gridUnitMm, 1, 200),
-    magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
-    magnetDepth: clamp(params.magnetDepth, 0.5, 10),
-    paddingLeft: clamp(params.paddingLeft, 0, 100),
-    paddingRight: clamp(params.paddingRight, 0, 100),
-    paddingFront: clamp(params.paddingFront, 0, 100),
-    paddingBack: clamp(params.paddingBack, 0, 100),
+    gridUnitMm: clampFinite(params.gridUnitMm, 1, 200),
+    magnetDiameter: clampFinite(params.magnetDiameter, 0.5, 20),
+    magnetDepth: clampFinite(params.magnetDepth, 0.5, 10),
+    paddingLeft: clampFinite(params.paddingLeft, 0, 100),
+    paddingRight: clampFinite(params.paddingRight, 0, 100),
+    paddingFront: clampFinite(params.paddingFront, 0, 100),
+    paddingBack: clampFinite(params.paddingBack, 0, 100),
   };
 }

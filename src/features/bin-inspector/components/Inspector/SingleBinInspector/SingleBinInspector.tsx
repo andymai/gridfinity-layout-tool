@@ -4,14 +4,21 @@ import { mm, mmToHeightUnits, roundHeightUnits } from '@/core/types';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
-import { formatHeightUnits, isStandardStackHeight } from '@/shared/utils/heightUnits';
+import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+
+const BinSizeSuggestion = lazyWithRetry(() =>
+  import('@/features/bin-recommender/components/BinSizeSuggestion').then(
+    namedExport('BinSizeSuggestion')
+  )
+);
 
 const LinkedDesignSection = lazyWithRetry(() =>
   import('@/features/design-linking/components/LinkedDesignSection').then(
@@ -45,10 +52,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     requestDelete,
     moveToStaging,
     rotateBin,
+    applySuggestedSize,
+    canApplySuggestedSize,
     existingPropertyKeys,
   } = inspector;
 
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
+  const binRecommenderEnabled = useFeatureFlag('bin_recommender');
   const t = useTranslation();
 
   if (!bin) return null;
@@ -61,7 +71,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
   // Format a raw mm value: up to 2 decimals, trailing zeros stripped (28, 30.59).
   const formatMmValue = (val: number) => String(Number(val.toFixed(2)));
-  const heightMmAt = (units: number) => formatMmValue(units * layout.heightUnitMm);
+  const heightMmAt = (units: number, offsetMm = 0) =>
+    formatMmValue(units * layout.heightUnitMm + offsetMm);
   const minSize = halfGridMode ? 0.5 : 1;
   const stepSize = halfGridMode ? 0.5 : 1;
 
@@ -202,6 +213,12 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
               <div>{`${heightEquiv} · ${minHeightHint} · ${maxHeightHint}`}</div>
+              <div>
+                {t('inspector.printedAndStackHint', {
+                  printed: heightMmAt(bin.height, STACK_LIP_MM),
+                  pitch: heightMmAt(bin.height),
+                })}
+              </div>
               {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
                 <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
               )}
@@ -305,6 +322,21 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             placeholder={t('inspector.labelPlaceholder')}
             aria-label={t('inspector.binLabel')}
           />
+          {binRecommenderEnabled && (
+            <Suspense fallback={null}>
+              <BinSizeSuggestion
+                label={bin.label}
+                drawer={{
+                  width: layout.drawer.width,
+                  depth: layout.drawer.depth,
+                  height: layout.drawer.height,
+                }}
+                current={{ width: bin.width, depth: bin.depth, height: bin.height }}
+                onApply={applySuggestedSize}
+                canFit={canApplySuggestedSize}
+              />
+            </Suspense>
+          )}
         </div>
 
         {/* Find STL */}

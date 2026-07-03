@@ -32,6 +32,8 @@ export {
 } from './bins';
 export type { VisibleBinsOptions } from './bins';
 
+export { clamp } from './math';
+
 export {
   isValidDrawer,
   isValidLayer,
@@ -42,7 +44,6 @@ export {
   validateImport,
   validateLayoutIntegrity,
   validateCustomProperties,
-  clamp,
   truncate,
   formatDimension,
 } from './validation';
@@ -65,3 +66,5 @@ export { snapPosition, snapGroupDelta, snapResizeRect, snapDrawRect, SNAP_RADIUS
 export type { SnapResult } from './snap';
 
 export { calculateResizeRect } from './resize';
+
+export { getErrorCode, getErrorMessage } from './errors';

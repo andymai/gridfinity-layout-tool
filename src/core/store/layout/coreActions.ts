@@ -1,4 +1,4 @@
-import type { Layout, BaseplateParams, LayoutId, GridUnits, Mm } from '@/core/types';
+import type { Layout, StoredBaseplateParams, LayoutId, GridUnits, Mm } from '@/core/types';
 import { CONSTRAINTS, migrateBaseplateParams } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import type { EditSource, SetLocal, ImmerSet, GetState } from './types';
@@ -29,7 +29,7 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
       });
     },
 
-    setBaseplateParams: (params: BaseplateParams): void => {
+    setBaseplateParams: (params: StoredBaseplateParams): void => {
       setLocal((state) => {
         state.layout.baseplateParams = {
           ...params,
@@ -51,9 +51,15 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
 
     setPrintBedSize: (size: number, depth?: number): void => {
       setLocal((state) => {
-        state.layout.printBedSize = clamp(size, 42, 500) as Mm;
+        state.layout.printBedSize = clamp(
+          size,
+          CONSTRAINTS.PRINT_BED_MM_MIN,
+          CONSTRAINTS.PRINT_BED_MM_MAX
+        ) as Mm;
         state.layout.printBedDepth =
-          depth !== undefined ? (clamp(depth, 42, 500) as Mm) : undefined;
+          depth !== undefined
+            ? (clamp(depth, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX) as Mm)
+            : undefined;
       });
     },
 

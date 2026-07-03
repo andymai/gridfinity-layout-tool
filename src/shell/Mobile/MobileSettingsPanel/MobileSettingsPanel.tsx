@@ -11,6 +11,7 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
@@ -214,6 +215,17 @@ export function MobileSettingsPanel() {
                 value: CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT,
               })}
             </p>
+          </div>
+
+          <div className="pt-1">
+            <div className="text-sm font-medium text-content-secondary mb-2">
+              {t('stackSolver.title')}
+            </div>
+            <HeightUnitSolver
+              heightUnitMm={heightUnitMm}
+              onApply={setHeightUnitMm}
+              variant="mobile"
+            />
           </div>
 
           <SettingsRow label={t('settings.printBedSizeLabel')} unit="mm" variant="mobile">

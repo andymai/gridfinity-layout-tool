@@ -1,4 +1,5 @@
 import { mm, type Mm, type PaddingAnchor } from '@/core/types';
+import { clamp } from '@/shared/utils/math';
 import {
   PADDING_MAX,
   PADDING_MIN,
@@ -40,7 +41,7 @@ function splitAxis(total: number, startWeight: number): { start: number; end: nu
 }
 
 function clampMm(v: number): number {
-  return Math.max(PADDING_MIN, Math.min(PADDING_MAX, v));
+  return clamp(v, PADDING_MIN, PADDING_MAX);
 }
 
 interface PaddingSums {

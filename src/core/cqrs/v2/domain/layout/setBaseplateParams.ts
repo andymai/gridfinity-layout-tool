@@ -8,10 +8,10 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
-import type { BaseplateParams, GridUnits, Mm } from '@/core/types';
+import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
-// BaseplateParams has many fields, most optional; the schema is permissive
+// StoredBaseplateParams has many fields, most optional; the schema is permissive
 // (passes shape through). Validation focuses on the required boolean +
 // numeric fields v1 always supplies.
 const payloadSchema = z.object({
@@ -62,7 +62,7 @@ export const setBaseplateParams = defineCommand({
       : undefined;
 
     const p = payload.params;
-    const params: BaseplateParams = {
+    const params: StoredBaseplateParams = {
       ...p,
       paddingLeft: Math.max(0, p.paddingLeft) as Mm,
       paddingRight: Math.max(0, p.paddingRight) as Mm,
@@ -76,7 +76,7 @@ export const setBaseplateParams = defineCommand({
       ...(p.baseplateDepth !== undefined
         ? { baseplateDepth: clamp(p.baseplateDepth, 0.5, 50) as GridUnits }
         : {}),
-    } as BaseplateParams;
+    } as StoredBaseplateParams;
 
     return ok({
       value: undefined,

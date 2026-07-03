@@ -11,7 +11,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
+  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -212,6 +212,11 @@ export default defineConfig([
           {
             from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
             allow: [{ to: { type: 'feature', captured: { featureName: 'design-linking' } } }],
+          },
+          // Exception: bin-inspector -> bin-recommender (lazy-loaded size suggestion)
+          {
+            from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
+            allow: [{ to: { type: 'feature', captured: { featureName: 'bin-recommender' } } }],
           },
           // `core/` is infrastructure — it must not depend on features or the
           // app shell. (`core/` -> `shared/` is intentionally allowed; many

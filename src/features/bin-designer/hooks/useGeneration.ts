@@ -6,6 +6,12 @@ import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import {
+  binMeshCacheKey,
+  loadPersistedBinMesh,
+  savePersistedBinMesh,
+} from '@/shared/generation/meshPersistence';
+import type { MeshData } from '@/shared/types/generation';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
   trackWasmThreadingStatus,
@@ -42,6 +48,30 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
       : undefined,
     error: null,
     timingMs: result.timingMs,
+  };
+}
+
+/**
+ * Map a raw persisted `MeshData` (loaded from IndexedDB) to the store's mesh
+ * payload. Mirrors `toMeshPayload` but sources a bare mesh rather than a bridge
+ * result; the readonly faceGroups are spread into a mutable copy for Immer.
+ */
+function meshDataToPayload(mesh: MeshData): GenerationResult {
+  return {
+    vertices: mesh.vertices,
+    normals: mesh.normals,
+    indices: mesh.indices,
+    edgeVertices: mesh.edgeVertices,
+    faceGroups: mesh.faceGroups ? [...mesh.faceGroups] : undefined,
+    coarseLOD: mesh.coarseLOD,
+    lidMesh: mesh.lidMesh
+      ? {
+          ...mesh.lidMesh,
+          faceGroups: mesh.lidMesh.faceGroups ? [...mesh.lidMesh.faceGroups] : undefined,
+        }
+      : undefined,
+    error: null,
+    timingMs: 0,
   };
 }
 
@@ -220,6 +250,11 @@ export function useGeneration(): void {
         setGenerationResult(toMeshPayload(result));
         setGenerationStatus('complete');
 
+        // Persist the exact preview mesh so reopening this design next session
+        // paints instantly (pre-draft) instead of re-paying the cold start.
+        // Fire-and-forget; refreshes LRU freshness even when the entry exists.
+        savePersistedBinMesh(binMeshCacheKey(currentParams), result.mesh);
+
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer
         // was already cleared at the start of this generation.)
@@ -291,6 +326,32 @@ export function useGeneration(): void {
     let cancelled = false;
     let acquiredPreview = false;
     setWasmStatus('loading');
+
+    // Instant pre-draft from last session (best-effort): a saved bin's exact
+    // preview mesh persisted to IndexedDB paints in tens of ms while occt-wasm
+    // (~2-4s) loads. Only when nothing has painted yet; it claims the token so
+    // the exact generation (and nothing else) supersedes it through normal
+    // arbitration, the same way the Manifold pre-draft does. Not for generic items.
+    const initialState = useDesignerStore.getState();
+    if (initialState.itemKind === 'bin') {
+      const initialKey = binMeshCacheKey(initialState.params);
+      void loadPersistedBinMesh(initialKey).then((cached) => {
+        if (cancelled || !cached) return;
+        if (genTokenRef.current !== 0 || finalizedTokenRef.current > 0) return;
+        // Params can change while occt-wasm loads (edits don't regenerate until
+        // the bridge is ready, so the token stays 0). Don't paint a pre-draft
+        // for params the user has already moved on from.
+        const now = useDesignerStore.getState();
+        if (now.itemKind !== 'bin' || binMeshCacheKey(now.params) !== initialKey) return;
+        // Claim the generation token before painting. The Manifold pre-draft
+        // fires only while the token is still 0, so without this a slower
+        // Manifold draft would overwrite this exact-quality cached mesh with a
+        // coarse approximation. The initial exact generation takes the next
+        // token and supersedes this through normal arbitration.
+        ++genTokenRef.current;
+        setDraftResult(meshDataToPayload(cached));
+      });
+    }
 
     bridgeManager
       .acquire()
@@ -378,7 +439,7 @@ export function useGeneration(): void {
       bridgeManager.release();
       if (acquiredPreview) bridgeManager.releasePreview();
     };
-  }, [setWasmStatus, runGeneration, runItemGeneration, dispatchDraft]);
+  }, [setWasmStatus, setDraftResult, runGeneration, runItemGeneration, dispatchDraft]);
 
   // Re-generate when epoch changes (after initialization)
   useEffect(() => {

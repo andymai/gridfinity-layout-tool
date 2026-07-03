@@ -804,7 +804,11 @@ describe('BaseplatePanel', () => {
     });
 
     const fillToggle = () => screen.getByRole('switch', { name: 'baseplate.overTile' });
-    const halfGridBox = () => screen.getByRole('checkbox', { name: 'baseplate.useHalfGrid' });
+    const halfGridBox = () => screen.getByRole('checkbox', { name: 'baseplate.preferHalfGrid' });
+    const leftoverGroup = () =>
+      screen.queryByRole('radiogroup', { name: 'baseplate.leftoverLabel' });
+    const leftoverSolid = () => screen.getByRole('radio', { name: 'baseplate.leftoverSolid' });
+    const leftoverGrid = () => screen.getByRole('radio', { name: 'baseplate.leftoverGrid' });
 
     it('defaults to solid padding when over-tile is off', () => {
       mockLayoutState.layout.baseplateParams = withPadding();
@@ -812,7 +816,7 @@ describe('BaseplatePanel', () => {
       expect(fillToggle()).not.toBeChecked();
       // The half-grid sub-option is hidden until the fill toggle is on.
       expect(
-        screen.queryByRole('checkbox', { name: 'baseplate.useHalfGrid' })
+        screen.queryByRole('checkbox', { name: 'baseplate.preferHalfGrid' })
       ).not.toBeInTheDocument();
     });
 
@@ -861,6 +865,60 @@ describe('BaseplatePanel', () => {
       fireEvent.click(fillToggle());
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ overTile: false, overTileHalfGrid: undefined })
+      );
+    });
+
+    it('hides the leftover Grid/Solid control until half-grid is on', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({ overTile: true });
+      render(<BaseplatePanel />);
+      expect(leftoverGroup()).not.toBeInTheDocument();
+    });
+
+    it('shows the leftover control on Grid by default when half-grid is on', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+      });
+      render(<BaseplatePanel />);
+      expect(leftoverGroup()).toBeInTheDocument();
+      expect(leftoverGrid()).toBeChecked();
+      expect(leftoverSolid()).not.toBeChecked();
+    });
+
+    it('reflects the stored solid-leftover choice', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+        overTileHalfGridSolidLeftover: true,
+      });
+      render(<BaseplatePanel />);
+      expect(leftoverSolid()).toBeChecked();
+    });
+
+    it('switches the leftover to solid', () => {
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+      });
+      render(<BaseplatePanel />);
+      fireEvent.click(leftoverSolid());
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTileHalfGridSolidLeftover: true })
+      );
+    });
+
+    it('clears the leftover flag to undefined when switching back to grid', () => {
+      // Default Grid stores undefined (not false) so identical geometry keeps
+      // one serialized/cache identity.
+      mockLayoutState.layout.baseplateParams = withPadding({
+        overTile: true,
+        overTileHalfGrid: true,
+        overTileHalfGridSolidLeftover: true,
+      });
+      render(<BaseplatePanel />);
+      fireEvent.click(leftoverGrid());
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ overTileHalfGridSolidLeftover: undefined })
       );
     });
 

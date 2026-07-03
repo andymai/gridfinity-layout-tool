@@ -1,6 +1,6 @@
 import type {
   Layout,
-  BaseplateParams,
+  StoredBaseplateParams,
   Bin,
   Layer,
   Category,
@@ -69,7 +69,7 @@ export interface LayoutState {
   setName: (name: string) => void;
 
   // Baseplate
-  setBaseplateParams: (params: BaseplateParams) => void;
+  setBaseplateParams: (params: StoredBaseplateParams) => void;
 
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;

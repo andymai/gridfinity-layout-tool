@@ -377,6 +377,29 @@ describe('migrateBaseplateParams', () => {
     ).toBeUndefined();
   });
 
+  it('persists the detachMargins opt-in even alongside stack-print', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+    };
+    expect(migrateBaseplateParams({ ...base, detachMargins: true }).detachMargins).toBe(true);
+    expect(migrateBaseplateParams({ ...base }).detachMargins).toBeUndefined();
+    // Mutual exclusivity is resolved at runtime (buildFullParams/UI), so the
+    // stored opt-in survives migration even when stacking is also enabled.
+    expect(
+      migrateBaseplateParams({
+        ...base,
+        detachMargins: true,
+        stackPrint: { enabled: true, gapMm: 1 },
+      }).detachMargins
+    ).toBe(true);
+  });
+
   it('preserves connectorStyle when dovetail key', () => {
     const stored = {
       magnetHoles: false,

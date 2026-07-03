@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { resolveOverTileStatus } from './overTileStatus';
 import { DEFAULT_BASEPLATE_PARAMS, OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
 import { mm } from '@/core/types';
-import type { BaseplateParams } from '@/core/types';
+import type { StoredBaseplateParams } from '@/core/types';
 
-const params = (o: Partial<BaseplateParams> = {}): BaseplateParams => ({
+const params = (o: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams => ({
   ...DEFAULT_BASEPLATE_PARAMS,
   ...o,
 });

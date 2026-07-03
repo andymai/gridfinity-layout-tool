@@ -6,7 +6,7 @@
  * direct-mesh and BREP variants render visually congruent.
  */
 
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 /**
  * Generate points for a rounded rectangle centered at origin.
@@ -68,7 +68,7 @@ export function roundedRectPointsSelective(
   d: number,
   r: number,
   segments: number,
-  edges?: BaseplateParams['edges']
+  edges?: ResolvedBaseplateParams['edges']
 ): ReadonlyArray<readonly [number, number]> {
   if (
     !edges ||

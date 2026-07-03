@@ -4,21 +4,21 @@
  * With direct per-side padding, the conversion is a straightforward pass-through.
  */
 
-import type { BaseplateParams as CoreBaseplateParams } from '@/core/types';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
+import type { StoredBaseplateParams } from '@/core/types';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 /**
  * Build full generation params from the stored per-layout config.
  */
 export function buildFullParams(
-  stored: CoreBaseplateParams,
+  stored: StoredBaseplateParams,
   drawerWidth: number,
   drawerDepth: number,
   gridUnitMm: number,
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end',
   nozzleSizeMm?: number
-): FullBaseplateParams {
+): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
@@ -34,6 +34,12 @@ export function buildFullParams(
   // user's settings return intact when stacking is turned off.
   const stackingOn = stored.stackPrint?.enabled === true;
   const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
+  // Detach is mutually exclusive with stacking (stacking wins). Padding stays at
+  // its stored values here — `emitMargins` and the camera/dimension overlay need
+  // the true outer extent; the body mesh zeroes detached sides downstream.
+  const detachMargins = stored.detachMargins === true && !stackingOn;
+  // The connector is only meaningful when margins actually detach.
+  const detachMarginConnector = detachMargins && stored.detachMarginConnector === true;
 
   return {
     width,
@@ -53,6 +59,12 @@ export function buildFullParams(
     // Half-grid is meaningless without over-tile; normalize so an orphaned flag
     // can't fragment caches or trigger needless regeneration.
     overTileHalfGrid: stored.overTile === true ? stored.overTileHalfGrid : undefined,
+    // Solid-leftover only applies under half-grid; drop it otherwise for the
+    // same cache-stability reason.
+    overTileHalfGridSolidLeftover:
+      stored.overTile === true && stored.overTileHalfGrid === true
+        ? stored.overTileHalfGridSolidLeftover
+        : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,
@@ -64,5 +76,7 @@ export function buildFullParams(
     // interchangeable tiles, so square them off (also restored when off).
     cornerRadius: stackingOn ? 0 : stored.cornerRadius,
     cornerRadii: stackingOn ? undefined : stored.cornerRadii,
+    detachMargins,
+    detachMarginConnector,
   };
 }

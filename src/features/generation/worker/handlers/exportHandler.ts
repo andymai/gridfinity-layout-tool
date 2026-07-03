@@ -6,6 +6,7 @@ import { unwrap, compound, exportSTEP, translate } from 'brepjs';
 import type {
   ExportMessage,
   ExportBaseplateMessage,
+  ExportBaseplateMarginMessage,
   ExportConnectorKeyMessage,
   ExportConnectorSampleMessage,
   ExportDividersMessage,
@@ -15,6 +16,7 @@ import type {
 import { exportBin } from '../generators/binGenerator';
 import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate, exportConnectorKey } from '../generators/baseplateGenerator';
+import { exportMargin } from '../generators/baseplateMargin';
 import { exportConnectorSample } from '../generators/connectorSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
@@ -63,6 +65,29 @@ export async function handleExportBaseplate(message: ExportBaseplateMessage): Pr
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Baseplate export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportBaseplateMargin(
+  message: ExportBaseplateMarginMessage
+): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'BASEPLATE_EXPORT_RESULT',
+    async () => {
+      const result = await exportMargin(
+        payload.params,
+        payload.margin,
+        payload.format,
+        payload.tolerance,
+        payload.angularTolerance
+      );
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Margin rail export failed',
     (p) => [p.data],
     classifyExportError
   );

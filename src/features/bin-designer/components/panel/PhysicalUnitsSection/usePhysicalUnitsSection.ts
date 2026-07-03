@@ -3,6 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/validation';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 
@@ -50,13 +52,10 @@ export function usePhysicalUnitsSection() {
   // Toggle non-square mode. Enabling seeds Y from the current X (so the bin
   // stays square until the user changes Y); disabling clears the override back
   // to a square grid (geometry byte-identical to before the feature).
-  const handleToggleNonSquare = useCallback(
-    (enabled: boolean) => {
-      const x = useLayoutStore.getState().layout.gridUnitMm;
-      useDesignerStore.getState().setParam('gridUnitMmY', enabled ? x : undefined);
-    },
-    []
-  );
+  const handleToggleNonSquare = useCallback((enabled: boolean) => {
+    const x = useLayoutStore.getState().layout.gridUnitMm;
+    useDesignerStore.getState().setParam('gridUnitMmY', enabled ? x : undefined);
+  }, []);
 
   const handleHeightUnitChange = useCallback((value: number) => {
     useLayoutStore.getState().setHeightUnitMm(value);
@@ -64,8 +63,11 @@ export function usePhysicalUnitsSection() {
 
   const handlePrintBedChange = useCallback(
     (width: number, depth?: number) => {
-      const clampedWidth = Math.max(42, Math.min(500, width));
-      const clampedDepth = depth === undefined ? undefined : Math.max(42, Math.min(500, depth));
+      const clampedWidth = clamp(width, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX);
+      const clampedDepth =
+        depth === undefined
+          ? undefined
+          : clamp(depth, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX);
       updateSettings({
         defaultPrintBedSize: clampedWidth,
         defaultPrintBedDepth: clampedDepth,

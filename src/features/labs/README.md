@@ -42,6 +42,7 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | `multi_color_export`    | `graduated`     | Multi-color 3MF export (now gated per-design via `featureColors.enabled`) |
 | `cloud_sync`            | `experimental`  | Sign-in sync of layouts/designs across devices                            |
 | `embedded_text`         | `graduated`     | Engraved text on label tabs and beside cutouts                            |
+| `bin_recommender`       | `experimental`  | Suggested bin size from the label, in the bin inspector                   |
 
 The two kernel flags are mutually exclusive: priority order in `BridgeManager`/`WorkerPoolManager` is `brepkit > occt-wasm > default`. `EngineSelector` enforces this in the UI; downstream consumers also assume it via the priority chain.
 

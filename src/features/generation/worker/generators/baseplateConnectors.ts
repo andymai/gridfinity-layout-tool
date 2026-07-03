@@ -34,7 +34,8 @@
 
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
-import type { BaseplateParams } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -57,7 +58,7 @@ import {
   sketch,
 } from './generatorTypes';
 import type { SnapClipLevels } from '@/shared/constants/connectors';
-import { computeCellBoundariesMm, decomposeCells } from './cellDecomposition';
+import { computeCellBoundariesMm, computeCellCentersMm, decomposeCells } from './cellDecomposition';
 import { buildSingleCellSocket } from './socketBuilder';
 import { getPocketTemplate } from './baseplatePockets';
 
@@ -162,7 +163,7 @@ function relieveTongueForSockets(
 }
 
 export function buildConnectors(
-  params: BaseplateParams,
+  params: ResolvedBaseplateParams,
   totalHeight: number,
   totalW: number,
   totalD: number,
@@ -174,7 +175,19 @@ export function buildConnectors(
   const tongues: Shape3D[] = [];
   const grooves: Shape3D[] = [];
 
-  if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
+  if (!edges) return { nubs: tongues, holes: grooves };
+  // The opt-in margin-seam connector (#2414) is gated independently of
+  // `connectorNubs` (split-piece connectors) — a user can want a rail connector
+  // without split-piece dovetails. Only the integral tongue/groove styles carry
+  // a seam; snapClip/dovetailKey stay friction-fit (splitPlanner enforces this,
+  // and this guard keeps the function self-consistent if called directly).
+  const hasMarginSeam =
+    isSeamConnectorStyle(params.connectorStyle) &&
+    (edges.left === 'marginSeam' ||
+      edges.right === 'marginSeam' ||
+      edges.front === 'marginSeam' ||
+      edges.back === 'marginSeam');
+  if (!connectorNubs && !hasMarginSeam) return { nubs: tongues, holes: grooves };
 
   // Dovetail key & snap clip modes: every join edge is female (a groove / a
   // blind ledged pocket, no tongues), and a separate part spans the seam.
@@ -219,6 +232,11 @@ export function buildConnectors(
   const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
 
+  // Cell centers along each axis — where the margin-seam connector places one
+  // tongue per cell (unlike the split-piece dovetails, which sit on boundaries).
+  const yCenters = computeCellCentersMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const xCenters = computeCellCentersMm(params.width, gridUnit, params.fractionalEdgeX);
+
   // Cell layout along each edge's boundary axis — used to subtract the
   // neighbouring piece's sockets from each tongue (the grid is continuous across
   // the seam, so the neighbour column shares this piece's boundary-axis cells).
@@ -247,6 +265,7 @@ export function buildConnectors(
     maleOffsetSign: -1 | 1;
     wallPos: number;
     boundaries: readonly number[];
+    centers: readonly number[];
     boundaryCells: readonly CellSpan[];
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
@@ -257,6 +276,7 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
       boundaries: yBoundaries,
+      centers: yCenters,
       boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: -1,
@@ -267,6 +287,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
       boundaries: yBoundaries,
+      centers: yCenters,
       boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: 1,
@@ -277,6 +298,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
       boundaries: xBoundaries,
+      centers: xCenters,
       boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: -1,
@@ -287,6 +309,7 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
       boundaries: xBoundaries,
+      centers: xCenters,
       boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: 1,
@@ -334,37 +357,57 @@ export function buildConnectors(
       forExport
     );
 
-  for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join' || def.boundaries.length === 0) continue;
+  // Build an XY point with wall/boundary coords assigned to the correct axis.
+  // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
+  const ptFor = (def: (typeof edgeDefs)[number]) =>
+    def.protrudeAxis === 'x'
+      ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
+      : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
-    // Build an XY point with wall/boundary coords assigned to the correct axis.
-    // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
-    const pt =
-      def.protrudeAxis === 'x'
-        ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
-        : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
+  // Split-piece connectors only when the user enabled them.
+  if (connectorNubs) {
+    for (const def of edgeDefs) {
+      if (edges[def.side] !== 'join' || def.boundaries.length === 0) continue;
+      const pt = ptFor(def);
 
-    for (const bp of def.boundaries) {
-      const w = def.wallPos;
-      const d = def.protrudeDir;
+      for (const bp of def.boundaries) {
+        const w = def.wallPos;
+        const d = def.protrudeDir;
 
-      if (isSnapClip && snapLevels) {
-        // Both sides of every seam are blind ledged pockets; the snap clip
-        // supplies the male half. Throat + chamber cut as two stacked cutters.
-        grooves.push(...makeSnapPocket(pt, w, bp, d, snapLevels));
-      } else if (isDovetailKey) {
-        // Both sides of every seam are female; the key supplies the male half.
-        grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
-      } else if (paired) {
-        const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
-        const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
-        tongues.push(relieveTongue(mkTongue(pt, w, mBp, d), mBp, def));
-        grooves.push(mkGroove(pt, w, fBp, d));
-      } else if (def.isMale) {
-        tongues.push(relieveTongue(mkTongue(pt, w, bp, d), bp, def));
-      } else {
-        grooves.push(mkGroove(pt, w, bp, d));
+        if (isSnapClip && snapLevels) {
+          // Both sides of every seam are blind ledged pockets; the snap clip
+          // supplies the male half. Throat + chamber cut as two stacked cutters.
+          grooves.push(...makeSnapPocket(pt, w, bp, d, snapLevels));
+        } else if (isDovetailKey) {
+          // Both sides of every seam are female; the key supplies the male half.
+          grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
+        } else if (paired) {
+          const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
+          const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
+          tongues.push(relieveTongue(mkTongue(pt, w, mBp, d), mBp, def));
+          grooves.push(mkGroove(pt, w, fBp, d));
+        } else if (def.isMale) {
+          tongues.push(relieveTongue(mkTongue(pt, w, bp, d), bp, def));
+        } else {
+          grooves.push(mkGroove(pt, w, bp, d));
+        }
       }
+    }
+  }
+
+  // Opt-in body↔long-rail connector (#2414): one male tongue per mating grid
+  // cell along the detached exterior wall, protruding into the rail — so a long
+  // rail is anchored evenly along its length rather than at a single point
+  // (#2428). The rail carries the matching grooves
+  // (`buildMarginSeamGroove` at the same cell centers). Rails are solid (no
+  // sockets), so no relief is needed. `hasMarginSeam` already requires a
+  // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
+  if (hasMarginSeam) {
+    for (const def of edgeDefs) {
+      if (edges[def.side] !== 'marginSeam') continue;
+      const pt = ptFor(def);
+      const positions = def.centers.length > 0 ? def.centers : [0];
+      for (const bp of positions) tongues.push(mkTongue(pt, def.wallPos, bp, def.protrudeDir));
     }
   }
 
@@ -416,6 +459,53 @@ export function makeGroove(
     .lineTo(pt(w + d * ext, bp - gB))
     .close();
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
+}
+
+/**
+ * Groove carved into a detached long rail's seam face to receive one of the
+ * body's margin-seam tongues (#2414). Uses the same profile/clearance the tongue
+ * does so they mate, positioned along the seam by `tongueOffsetMm` (the caller
+ * cuts one per cell). Built in the rail's own origin-centered frame (see
+ * `baseplateMargin.buildMarginSolid`): the seam face is the rail's inner long
+ * edge (+railD/2 front, −railD/2 back, +railW/2 left, −railW/2 right), and the
+ * groove cuts inward from it — `d` equals that face's sign. Only `dovetail`/
+ * `puzzle` styles reach here.
+ */
+export function buildMarginSeamGroove(
+  side: 'left' | 'right' | 'front' | 'back',
+  railW: number,
+  railD: number,
+  totalHeight: number,
+  connectorStyle: ResolvedBaseplateParams['connectorStyle'],
+  fitOffset: number,
+  nozzleSizeMm?: number,
+  tongueOffsetMm: number = 0
+): Shape3D {
+  const horizontal = side === 'front' || side === 'back';
+  const seamSign: -1 | 1 = side === 'front' || side === 'left' ? 1 : -1;
+  const seamPos = seamSign * (horizontal ? railD / 2 : railW / 2);
+  // Rail seam runs along X for front/back rails (wall coord on Y) and along Y
+  // for left/right rails (wall coord on X). `tongueOffsetMm` slides the groove
+  // along that axis onto the mating body tongue — nonzero on a corner-owning end
+  // segment whose rail center no longer sits on the body wall it joins (#2427).
+  const pt: (wall: number, bp: number) => [number, number] = horizontal
+    ? (wall, bp) => [bp, wall]
+    : (wall, bp) => [wall, bp];
+  const cl = effectiveClearance(TONGUE_CLEARANCE, fitOffset, nozzleSizeMm);
+  return connectorStyle === 'puzzle'
+    ? makePuzzleGroove(pt, seamPos, tongueOffsetMm, seamSign, cl, COPLANAR_MARGIN, totalHeight)
+    : makeGroove(
+        pt,
+        seamPos,
+        tongueOffsetMm,
+        seamSign,
+        TONGUE_PROTRUSION,
+        TONGUE_BASE_HALF,
+        TONGUE_TIP_HALF,
+        cl,
+        COPLANAR_MARGIN,
+        totalHeight
+      );
 }
 
 /**

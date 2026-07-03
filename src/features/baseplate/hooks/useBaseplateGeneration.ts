@@ -44,11 +44,11 @@ import { getStaticTranslation } from '@/i18n';
 import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
-import { computeBaseplateTiling } from '../utils/splitPlanner';
+import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlanner';
 import { shouldDeferBrepPreview } from '../utils/previewComplexity';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
-import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
-import type { PieceMeshEntry } from '../store/baseplatePageStore';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { MarginMeshEntry, PieceMeshEntry } from '../store/baseplatePageStore';
 import type { GenerationResult } from '@/shared/generation/bridge';
 import type { BaseplateTiling } from '../types/tiling';
 
@@ -189,6 +189,10 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
         : (bp.fractionalEdgeY ?? 'end'),
     overTile: bp.overTile ?? false,
     overTileHalfGrid: bp.overTile === true ? (bp.overTileHalfGrid ?? false) : false,
+    overTileHalfGridSolidLeftover:
+      bp.overTile === true && bp.overTileHalfGrid === true
+        ? (bp.overTileHalfGridSolidLeftover ?? false)
+        : false,
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
@@ -209,6 +213,13 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // so it must re-run generation — otherwise the preview keeps the pre-strip
     // mesh (rounded corners + magnet holes that the export no longer has).
     stackEnabled: bp.stackPrint?.enabled ?? false,
+    // Detaching margins changes the body mesh (padding-free on detached sides)
+    // and emits separate rails, so it must re-trigger generation.
+    detachMargins: bp.detachMargins ?? false,
+    // The connector adds a seam tongue to the body and a groove to the rail —
+    // but only when margins detach (buildFullParams gates it), so ignore the
+    // flag otherwise to avoid regenerating when it can't change the mesh.
+    detachMarginConnector: bp.detachMargins === true && bp.detachMarginConnector === true,
   };
 }
 
@@ -275,6 +286,7 @@ export function useBaseplateGeneration(): void {
   const setWasmStatus = useBaseplatePageStore((s) => s.setWasmStatus);
   const setTiling = useBaseplatePageStore((s) => s.setTiling);
   const setPieceMeshes = useBaseplatePageStore((s) => s.setPieceMeshes);
+  const setMarginMeshes = useBaseplatePageStore((s) => s.setMarginMeshes);
   const setConnectorKeyMesh = useBaseplatePageStore((s) => s.setConnectorKeyMesh);
   const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
   const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
@@ -314,7 +326,7 @@ export function useBaseplateGeneration(): void {
    */
   const runDirectMeshPreview = useCallback(
     (
-      fullParams: FullBaseplateParams,
+      fullParams: ResolvedBaseplateParams,
       bedWidthMm: number,
       bedDepthMm: number,
       epoch: number,
@@ -333,6 +345,9 @@ export function useBaseplateGeneration(): void {
       // one so the preview falls back to its draft clip until BREP supplies the
       // exact mesh.
       setConnectorKeyMesh(null);
+      // Margin rails are BREP-only; clear any stale rails so they don't linger on
+      // the draft until BREP regenerates (or, for a deferred plate, at all).
+      setMarginMeshes([]);
 
       try {
         if (!tiling.isSplit) {
@@ -380,6 +395,7 @@ export function useBaseplateGeneration(): void {
       setTiling,
       setGenerationResult,
       setPieceMeshes,
+      setMarginMeshes,
       setConnectorKeyMesh,
       setSplitProgress,
       setDedupStats,
@@ -399,7 +415,7 @@ export function useBaseplateGeneration(): void {
    */
   const runManifoldDraftPreview = useCallback(
     async (
-      fullParams: FullBaseplateParams,
+      fullParams: ResolvedBaseplateParams,
       tiling: BaseplateTiling,
       epoch: number
     ): Promise<boolean> => {
@@ -454,7 +470,7 @@ export function useBaseplateGeneration(): void {
    * a non-blocking retry message instead of replacing the preview.
    */
   const runBrepGeneration = useCallback(
-    async (fullParams: FullBaseplateParams, tiling: BaseplateTiling, epoch: number) => {
+    async (fullParams: ResolvedBaseplateParams, tiling: BaseplateTiling, epoch: number) => {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
 
@@ -471,7 +487,11 @@ export function useBaseplateGeneration(): void {
 
       try {
         if (!tiling.isSplit) {
-          const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
+          // Detached sides print padding-free on the body; the rails carry that
+          // margin. Computed AFTER the tiling above so `emitMargins` still saw
+          // the true padding.
+          const bodyParams = bodyParamsForDetach(fullParams);
+          const result = await bridge.generateBaseplate(bodyParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return;
 
           setGenerationResult(toSingleMesh(result));
@@ -525,6 +545,32 @@ export function useBaseplateGeneration(): void {
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
+
+        // Detached margin rails: generate each from the ORIGINAL params (so the
+        // rail's over-tile pockets align with the body grid) and place by mm
+        // offset. Sequential — they share the bridge's single-request channel.
+        if (tiling.margins.length > 0) {
+          const railEntries: MarginMeshEntry[] = [];
+          for (const margin of tiling.margins) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
+            if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
+            const railResult = await bridge.generateMargin(fullParams, margin);
+            if (generationEpochRef.current !== epoch) return;
+            railEntries.push({
+              id: margin.id,
+              side: margin.side,
+              mesh: toSingleMesh(railResult),
+              worldOffsetMm: margin.worldOffsetMm,
+              lengthMm: margin.lengthMm,
+              bandThicknessMm: margin.bandThicknessMm,
+              col: margin.col,
+              row: margin.row,
+            });
+          }
+          setMarginMeshes(railEntries);
+        } else {
+          setMarginMeshes([]);
+        }
         // Mark this epoch's exact result as authoritative before anything else
         // so a late Manifold draft (async) can't overwrite it — mirrors the
         // bin-designer hook's finalize-first ordering.
@@ -564,6 +610,7 @@ export function useBaseplateGeneration(): void {
             error: message,
           });
           setPieceMeshes([]);
+          setMarginMeshes([]);
           setGenerationStatus('error');
         }
         shouldTrack = true;
@@ -589,6 +636,7 @@ export function useBaseplateGeneration(): void {
       setGenerationStatus,
       setGenerationResult,
       setPieceMeshes,
+      setMarginMeshes,
       applyConnectorKeyMesh,
       setConnectorKeyMesh,
       setSplitProgress,
@@ -602,7 +650,7 @@ export function useBaseplateGeneration(): void {
    * and BREP kicks in once `bridgeManager.acquire()` resolves (mount effect).
    */
   const runGeneration = useCallback(
-    (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
+    (fullParams: ResolvedBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const epoch = ++generationEpochRef.current;
       // Track edit cadence on every regen, preview bridge or not, so a scrub
       // is recognized from its first rapid edit (see draftPolicy).

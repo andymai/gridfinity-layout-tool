@@ -4,6 +4,7 @@ import { cn } from '@/design-system/cn';
 import { AlertTriangleIcon, ArrowLeftIcon } from '@/design-system/Icon';
 import { focusRing, interactiveTransition } from '@/design-system/variants';
 import { useTranslation } from '@/i18n';
+import { clamp } from '@/shared/utils/math';
 import type { PaddingAnchor as PaddingAnchorValue } from '@/core/types';
 
 type ConcreteAnchor = Exclude<PaddingAnchorValue, 'custom'>;
@@ -42,7 +43,7 @@ const ARROW_ROTATION: Record<ConcreteAnchor, string | null> = {
 };
 
 function clampToGrid(v: number): number {
-  return Math.max(0, Math.min(2, v));
+  return clamp(v, 0, 2);
 }
 
 function neighbour(current: ConcreteAnchor, dx: number, dy: number): ConcreteAnchor {
