@@ -9,6 +9,7 @@ import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { positivePitch } from './footprintGridMath';
 
 interface FootprintGridProps {
   /** Bin width in grid units */
@@ -75,8 +76,8 @@ const gridFragmentShader = /* glsl */ `
  */
 export function FootprintGrid({ width, depth, gridUnitMm, gridUnitMmY }: FootprintGridProps) {
   const colors = useThreeColors();
-  const GSX = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
-  const GSY = gridUnitMmY ?? GSX;
+  const GSX = positivePitch(gridUnitMm, GRIDFINITY.GRID_SIZE);
+  const GSY = positivePitch(gridUnitMmY, GSX);
   // Floor extent uses the larger pitch so the "infinite" floor always covers the
   // bin on both axes.
   const GSmax = Math.max(GSX, GSY);

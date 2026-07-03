@@ -92,4 +92,12 @@ describe('FootprintGrid', () => {
     const { container } = render(<FootprintGrid width={1} depth={1} />);
     expect(container.firstChild).not.toBeNull();
   });
+
+  it('does not crash when given a non-positive grid pitch', () => {
+    // The pitch feeds a shader divisor; guard against divide-by-zero corruption.
+    const { container } = render(
+      <FootprintGrid width={2} depth={2} gridUnitMm={42} gridUnitMmY={0} />
+    );
+    expect(container.firstChild).not.toBeNull();
+  });
 });
