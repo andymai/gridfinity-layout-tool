@@ -177,6 +177,11 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   lid: '#d4d8dc',
 } as const;
 
+/** Starting color when a cutout is first colored: the shadow-board convention
+ *  is a high-contrast red backing that shows through the moment a tool is
+ *  lifted out. Reads strongly against the default light-grey body. */
+export const DEFAULT_CUTOUT_COLOR = '#ef4444';
+
 /** Old per-corner lip object (pre quadrant×band grid). */
 interface LegacyLipCorners {
   frontLeft?: string;

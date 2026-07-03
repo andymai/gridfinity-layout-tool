@@ -31,6 +31,7 @@ import type { TextStyleDefaults, TextStyleOverride } from './text';
 import type {
   Cutout,
   CutoutConfig,
+  CutoutColorScope,
   GroupOp,
   CutoutToggleProperties,
   ReorderDirection,
@@ -602,11 +603,13 @@ export type {
   CutoutToggleProperties,
   CutoutConfig,
   Cutout,
+  CutoutColorScope,
   CutoutArrayMode,
   CutoutArrayConfig,
 } from './cutout';
 export {
   DEFAULT_GROUP_OP,
+  DEFAULT_CUTOUT_COLOR_SCOPE,
   GROUP_OPS,
   DEFAULT_SCOOP_EDGES,
   MIN_PATH_POINTS,
@@ -991,6 +994,12 @@ export interface DesignerState {
 
   // Consolidated cutout property + z-order actions
   setCutoutProperty: (ids: readonly string[], partial: CutoutToggleProperties) => void;
+  /** Set/clear a cutout's shadow-board color. Writes to the whole group when any
+   *  id is grouped; `color: null` clears it. Auto-enables multi-color output. */
+  setCutoutColor: (
+    ids: readonly string[],
+    patch: { color?: string | null; colorScope?: CutoutColorScope }
+  ) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   showAllCutouts: () => void;
 

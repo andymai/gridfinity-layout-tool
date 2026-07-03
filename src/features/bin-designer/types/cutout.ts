@@ -17,6 +17,18 @@ import type { CutoutTextSide, CutoutTextAnchor, CutoutTextOffset, TextStyleOverr
  */
 export type CutoutShape = 'rectangle' | 'circle' | 'path' | 'polygon' | 'slot';
 
+/**
+ * Which surfaces of a colored cutout take its {@link Cutout.color}:
+ *  - `floor` — only the cavity bottom (the classic shadow-board backing).
+ *  - `floorAndWalls` — bottom plus the interior side walls.
+ * Resolved from face normals at paint time, not baked into geometry, so
+ * switching scope recolors without regenerating the mesh.
+ */
+export type CutoutColorScope = 'floor' | 'floorAndWalls';
+
+/** Scope applied when a cutout is colored but no scope was set. */
+export const DEFAULT_CUTOUT_COLOR_SCOPE: CutoutColorScope = 'floorAndWalls';
+
 /** Minimum side count for a polygon cutout (triangle). */
 export const MIN_POLYGON_SIDES = 3;
 /** Maximum side count for a polygon cutout. */
@@ -317,4 +329,18 @@ export interface Cutout {
    * `BinParams.textDefaults` apply. Ignored when `engraveLabel` is false.
    */
   readonly textStyle?: TextStyleOverride;
+  /**
+   * Multi-color: hex filament color for this cutout's cavity (shadow-board
+   * backing). Absent = inherits the body color (no material split). Grouped
+   * cutouts share one color across all members (like {@link groupOp}); array
+   * instances inherit the master's. Purely cosmetic — read at paint time from
+   * the baked face tags, so recoloring never regenerates geometry.
+   */
+  readonly color?: string;
+  /**
+   * Which cavity surfaces {@link color} paints. Defaults to
+   * {@link DEFAULT_CUTOUT_COLOR_SCOPE} when a color is set. Ignored when
+   * `color` is absent.
+   */
+  readonly colorScope?: CutoutColorScope;
 }

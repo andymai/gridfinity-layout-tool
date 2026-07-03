@@ -10,12 +10,13 @@ import type { Draft } from 'immer';
 import type {
   DesignerState,
   Cutout,
+  CutoutColorScope,
   CutoutToggleProperties,
   ReorderDirection,
   PathPoint,
   GroupOp,
 } from '../../types';
-import { DEFAULT_GROUP_OP } from '../../types';
+import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
@@ -37,6 +38,25 @@ function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | 
   if (!scaled && !translated) return undefined;
   const scaledPoints = scaled ? scalePathPoints(c.path, scaleX, scaleY, c.x, c.y) : c.path;
   return translated ? translatePathPoints(scaledPoints, dx, dy) : [...scaledPoints];
+}
+
+// Expand a target id set to include every member of any group those ids touch,
+// so a per-group property (color) is written to the whole group at once.
+function expandIdsToGroups(
+  cutouts: readonly Cutout[],
+  ids: readonly string[]
+): ReadonlySet<string> {
+  const idSet = new Set(ids);
+  const groupIds = new Set<string>();
+  for (const c of cutouts) {
+    if (idSet.has(c.id) && c.groupId !== null) groupIds.add(c.groupId);
+  }
+  if (groupIds.size > 0) {
+    for (const c of cutouts) {
+      if (c.groupId !== null && groupIds.has(c.groupId)) idSet.add(c.id);
+    }
+  }
+  return idSet;
 }
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -106,11 +126,56 @@ export function createCutoutSlice(set: Set) {
     });
   };
 
+  // Color is a per-group property — writing it to one member writes it to the
+  // whole group (like groupOp). Setting `color: null` clears it back to the body
+  // color. Purely cosmetic: the worker bakes per-cutout face tags regardless of
+  // color, so recoloring never regenerates geometry (`affectsGeometry: false`).
+  const setCutoutColor = (
+    ids: readonly string[],
+    patch: { color?: string | null; colorScope?: CutoutColorScope }
+  ): void => {
+    if (ids.length === 0) return;
+    set((state) => {
+      const affected = expandIdsToGroups(state.params.cutouts, ids);
+      const clearing = patch.color === null;
+
+      const applyColor = (c: Cutout): Cutout => {
+        if (clearing) {
+          if (c.color === undefined && c.colorScope === undefined) return c;
+          const { color: _color, colorScope: _scope, ...rest } = c;
+          return rest;
+        }
+        const nextColor = patch.color ?? c.color;
+        // Scope-only edit on an uncolored cutout paints nothing — ignore it.
+        if (nextColor === undefined) return c;
+        const nextScope = patch.colorScope ?? c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE;
+        if (c.color === nextColor && c.colorScope === nextScope) return c;
+        return { ...c, color: nextColor, colorScope: nextScope };
+      };
+
+      const nextCutouts = state.params.cutouts.map((c) => (affected.has(c.id) ? applyColor(c) : c));
+      const changed = nextCutouts.some((c, i) => c !== state.params.cutouts[i]);
+
+      // Applying a color implies the user wants multi-color output; auto-enable
+      // so the swatch shows instead of silently no-op'ing until they find the
+      // Multi-Color panel toggle. Worth committing even if values were unchanged.
+      const shouldEnable = typeof patch.color === 'string' && !state.params.featureColors.enabled;
+      if (!changed && !shouldEnable) return;
+
+      pushHistoryEntry(state, { affectsGeometry: false });
+      state.params.cutouts = nextCutouts;
+      if (shouldEnable) {
+        state.params.featureColors = { ...state.params.featureColors, enabled: true };
+      }
+    });
+  };
+
   // CRUD actions
 
   return {
     // Core consolidated actions
     setCutoutProperty,
+    setCutoutColor,
     reorderCutouts,
     showAllCutouts,
 
@@ -210,8 +275,23 @@ export function createCutoutSlice(set: Set) {
             if (c.groupId === existingGroupId) idsToGroup.add(c.id);
           }
         }
+        // One color per group: adopt the group's existing color, else the first
+        // colored member, so a freshly grouped set can't hold mixed backings.
+        const colorSource =
+          (existingGroupId
+            ? state.params.cutouts.find(
+                (c) => c.groupId === existingGroupId && c.color !== undefined
+              )
+            : undefined) ??
+          state.params.cutouts.find((c) => idsToGroup.has(c.id) && c.color !== undefined);
+        const colorPatch: Pick<Cutout, 'color' | 'colorScope'> | undefined = colorSource
+          ? {
+              color: colorSource.color,
+              colorScope: colorSource.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE,
+            }
+          : undefined;
         state.params.cutouts = state.params.cutouts.map((c) =>
-          idsToGroup.has(c.id) ? { ...c, groupId, groupOp } : c
+          idsToGroup.has(c.id) ? { ...c, groupId, groupOp, ...colorPatch } : c
         );
       });
     },

@@ -684,4 +684,104 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(c?.groupOp).toBeUndefined();
     });
   });
+
+  describe('setCutoutColor', () => {
+    it('applies color + default scope to the targeted cutout only', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      setCutoutColor(['a'], { color: '#ef4444' });
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0]).toMatchObject({ color: '#ef4444', colorScope: 'floorAndWalls' });
+      expect(cutouts[1].color).toBeUndefined();
+    });
+
+    it('honors an explicit scope', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+
+      setCutoutColor(['a'], { color: '#3b82f6', colorScope: 'floor' });
+
+      expect(useDesignerStore.getState().params.cutouts[0].colorScope).toBe('floor');
+    });
+
+    it('auto-enables multi-color when a color is set', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      expect(useDesignerStore.getState().params.featureColors.enabled).toBe(false);
+
+      setCutoutColor(['a'], { color: '#ef4444' });
+
+      expect(useDesignerStore.getState().params.featureColors.enabled).toBe(true);
+    });
+
+    it('writes the whole group when any grouped member is targeted', () => {
+      const { addCutout, groupCutouts, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      groupCutouts(['a', 'b'], 'union');
+
+      setCutoutColor(['a'], { color: '#22c55e', colorScope: 'floor' });
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0]).toMatchObject({ color: '#22c55e', colorScope: 'floor' });
+      expect(cutouts[1]).toMatchObject({ color: '#22c55e', colorScope: 'floor' });
+    });
+
+    it('clears color + scope on color: null', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', color: '#ef4444', colorScope: 'floor' }));
+
+      setCutoutColor(['a'], { color: null });
+
+      const c = useDesignerStore.getState().params.cutouts[0];
+      expect(c.color).toBeUndefined();
+      expect(c.colorScope).toBeUndefined();
+    });
+
+    it('does not regenerate geometry — recolor is cosmetic', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', color: '#ef4444' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      setCutoutColor(['a'], { color: '#3b82f6' });
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('captures history so undo restores the prior color', () => {
+      const { addCutout, setCutoutColor, undo } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+
+      setCutoutColor(['a'], { color: '#ef4444' });
+      expect(useDesignerStore.getState().params.cutouts[0].color).toBe('#ef4444');
+
+      undo();
+      expect(useDesignerStore.getState().params.cutouts[0].color).toBeUndefined();
+    });
+
+    it('no-op on empty ids (no history entry)', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      setCutoutColor([], { color: '#ef4444' });
+
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('grouping unifies mixed member colors to one backing', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', color: '#ef4444', colorScope: 'floor' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      groupCutouts(['a', 'b'], 'union');
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0]).toMatchObject({ color: '#ef4444', colorScope: 'floor' });
+      expect(cutouts[1]).toMatchObject({ color: '#ef4444', colorScope: 'floor' });
+    });
+  });
 });
