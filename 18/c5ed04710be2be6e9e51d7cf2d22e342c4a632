@@ -1,0 +1,37 @@
+src/features/bin-designer/types/cutout.ts
+  s_42ca9be8262433::t_1946e8ed4487d0 332-345
+  s_42ca9be8262433::t_52cdd399abbba8 20-31
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_42ca9be8262433::t_f14763fe36aaa6 13,19
+  s_42ca9be8262433::t_a79abf461ed349 129-155,160-163,166-172,280
+  s_42ca9be8262433::t_37bb846f68b3f3 156-159,164-165
+  s_42ca9be8262433::t_d0da6f3dc61fc2 281-292,294
+  s_42ca9be8262433::t_7d5f3b83b64579 43-44,49-61
+  s_42ca9be8262433::t_29424c5209628a 45-48
+  s_42ca9be8262433::t_ddc475d73f9c75 278-279
+  s_42ca9be8262433::t_26acee0a09dc52 178
+src/features/bin-designer/types/index.ts
+  s_42ca9be8262433::t_35be37d9ec0d44 997-1002
+  s_42ca9be8262433::t_5ab72dc24cb2a3 34
+  s_42ca9be8262433::t_916954a5da3cb9 606,612
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_42ca9be8262433::t_3a0fe090055843 687-786
+src/features/bin-designer/constants/defaults.ts
+  s_42ca9be8262433::t_46bda99ff442da 180-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "18c5ed04710be2be6e9e51d7cf2d22e342c4a632",
+  "prompts": {},
+  "sessions": {
+    "s_42ca9be8262433": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dcc309b-2db5-4570-9639-626456d37bec",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
