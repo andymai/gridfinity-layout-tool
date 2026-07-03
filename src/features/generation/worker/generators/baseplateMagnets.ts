@@ -18,14 +18,8 @@
 
 import { cylinder, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
-import {
-  SIZE,
-  SOCKET_HEIGHT,
-  COPLANAR_MARGIN,
-  MAGNET_OFFSETS,
-  HOLE_OFFSET,
-  forEachCell,
-} from './generatorTypes';
+import { SIZE, SOCKET_HEIGHT, COPLANAR_MARGIN, HOLE_OFFSET, forEachCell } from './generatorTypes';
+import { resolvePitch } from './gridPitch';
 
 /**
  * Center-to-wall inset (mm) of a standard magnet in a 42mm cell (`SIZE/2 −
@@ -86,15 +80,16 @@ export function buildMagnetHoles(
   magnetDepth: number,
   cellOpts?: ForEachCellOptions
 ): Shape3D[] {
+  const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
   const positions: Array<[number, number]> = [];
   forEachCell(
     gridW,
     gridD,
     (cell) => {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
-      for (const [dx, dy] of MAGNET_OFFSETS) {
-        positions.push([cell.centerX + dx, cell.centerY + dy]);
-      }
+      // Same shared placement (with the standard wall-distance clamp) as the bin
+      // base and lid, so every magnet-bearing surface agrees.
+      positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY));
     },
     cellOpts
   );

@@ -48,7 +48,7 @@ import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
-import { addMagnetHoles, addMagnetHoleAt } from './directMeshMagnets';
+import { addMagnetHoleAt } from './directMeshMagnets';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
@@ -241,7 +241,11 @@ export function generateBaseplateDirect(
     // by the over-tile pass below.
     for (const cell of cells) {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
-      addMagnetHoles(mb, cell.centerX, cell.centerY, magnetRadius, floorDepth);
+      // Shared placement (wall-distance clamp) — identical to the BREP plate,
+      // bin base, and lid so the draft preview and all mating surfaces agree.
+      for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
+        addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth);
+      }
     }
     // Over-tile margin tiles: the corner magnets that fit, else a single
     // centered magnet — mirrors buildPartialCellMagnetHoles in the BREP build so

@@ -35,7 +35,6 @@ export {
   COPLANAR_OVERLAP,
   HOLE_OFFSET,
   INSET_BOT,
-  MAGNET_OFFSETS,
   pocketCornerRadius,
   resolveCornerRadii,
   TONGUE_PROTRUSION,

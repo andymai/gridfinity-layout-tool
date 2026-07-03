@@ -12,7 +12,7 @@
  *   - Floor circle at Z=MAGNET_FLOOR facing +Z — magnet sits on this.
  */
 
-import { MAGNET_FLOOR, MAGNET_OFFSETS } from './generatorTypes';
+import { MAGNET_FLOOR } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
@@ -82,18 +82,5 @@ export function addMagnetHoleAt(
       const j = (i + 1) % nPts;
       mb.pushTriangle(center, verts[i], verts[j]);
     }
-  }
-}
-
-/** Emit the standard 4-corner magnet pattern centered on a full cell. */
-export function addMagnetHoles(
-  mb: MeshBuilder,
-  cx: number,
-  cy: number,
-  magnetRadius: number,
-  floorDepth: number
-): void {
-  for (const [dx, dy] of MAGNET_OFFSETS) {
-    addMagnetHoleAt(mb, cx + dx, cy + dy, magnetRadius, floorDepth);
   }
 }
