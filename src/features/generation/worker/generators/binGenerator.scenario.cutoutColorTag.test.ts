@@ -1,0 +1,153 @@
+// @vitest-environment node
+/**
+ * Per-cutout shadow-board color face tagging (#2439, stage 2).
+ *
+ * Verifies the tag contract the paint layer depends on: every cutout cavity is
+ * stamped `CUTOUT_COLOR_TAG_BASE + <unit ordinal>` (from the shared
+ * `enumerateCutoutColorUnits`) and that stamp survives the boolean cut into
+ * distinct face groups. Specifically:
+ *  - N ungrouped cutouts -> N distinct cutout tags matching the unit ordinals.
+ *  - Each cutout tag carries BOTH floor (|nz|~1) and wall (|nz|~0) faces, so the
+ *    floor-vs-wall classification stage 3 does is actually feasible.
+ *  - A boolean group collapses to ONE tag (one merged cavity, one color).
+ *  - Cutouts are tagged even when uncolored, so toggling a color never changes
+ *    geometry (the instant-recolor property).
+ *  - An engraved label keeps the TEXT tag rather than inheriting its cutout's.
+ *
+ * NB: a bin is solid (cutouts actually cut) iff `base.solid` is true — the
+ * top-level `style` field does not drive it.
+ */
+import { describe, it, beforeAll, expect } from 'vitest';
+import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { makeCutout } from './__kernel-tests__/scenarioTypes';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { FeatureTag } from './featureTags';
+import {
+  enumerateCutoutColorUnits,
+  cutoutColorTag,
+  cutoutOrdinalFromTag,
+} from '@/shared/generation/cutoutColorUnits';
+import type { BinParams, Cutout } from '@/shared/types/bin';
+
+beforeAll(async () => {
+  await initBrepjs();
+}, 30_000);
+
+/** Normalized z-component of a triangle's geometric normal (floor≈±1, wall≈0). */
+function triNz(verts: ArrayLike<number>, a: number, b: number, c: number): number {
+  const ux = verts[b * 3] - verts[a * 3];
+  const uy = verts[b * 3 + 1] - verts[a * 3 + 1];
+  const uz = verts[b * 3 + 2] - verts[a * 3 + 2];
+  const vx = verts[c * 3] - verts[a * 3];
+  const vy = verts[c * 3 + 1] - verts[a * 3 + 1];
+  const vz = verts[c * 3 + 2] - verts[a * 3 + 2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  const len = Math.hypot(nx, ny, nz) || 1;
+  return nz / len;
+}
+
+interface TagCensus {
+  readonly cutoutTags: Map<number, { floor: number; wall: number }>;
+  readonly textTriangles: number;
+}
+
+function census(params: BinParams): TagCensus {
+  const m = getGenerateBin()(params);
+  const verts = m.vertices;
+  const idx = m.indices;
+  const fgs = m.faceGroups ?? [];
+  expect(verts.length).toBeGreaterThan(0);
+
+  const cutoutTags = new Map<number, { floor: number; wall: number }>();
+  let textTriangles = 0;
+  for (const fg of fgs) {
+    const ordinal = cutoutOrdinalFromTag(fg.tag);
+    const isText = fg.tag === FeatureTag.TEXT;
+    for (let t = 0; t < fg.count / 3; t++) {
+      const a = idx[fg.start + t * 3];
+      const b = idx[fg.start + t * 3 + 1];
+      const c = idx[fg.start + t * 3 + 2];
+      if (isText) {
+        textTriangles++;
+        continue;
+      }
+      if (ordinal === null) continue;
+      const nz = Math.abs(triNz(verts, a, b, c));
+      const bucket = cutoutTags.get(ordinal) ?? { floor: 0, wall: 0 };
+      if (nz > 0.8) bucket.floor++;
+      else if (nz < 0.35) bucket.wall++;
+      cutoutTags.set(ordinal, bucket);
+    }
+  }
+  return { cutoutTags, textTriangles };
+}
+
+const solidBase: BinParams = {
+  ...DEFAULT_BIN_PARAMS,
+  width: 3,
+  depth: 3,
+  height: 5,
+  style: 'solid',
+  base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+  cutoutConfig: { topOffset: 0 },
+};
+
+describe('per-cutout color face tagging (#2439)', () => {
+  it('gives two ungrouped cutouts distinct tags, each with floor + wall faces', () => {
+    const cutouts: Cutout[] = [
+      makeCutout({ id: 'a', x: 8, y: 40, width: 24, depth: 24, cutDepth: 8, color: '#ef4444' }),
+      makeCutout({ id: 'b', x: 70, y: 40, width: 24, depth: 24, cutDepth: 8, color: '#3b82f6' }),
+    ];
+    const { cutoutTags } = census({ ...solidBase, cutouts });
+
+    expect(enumerateCutoutColorUnits(cutouts)).toHaveLength(2);
+    expect(new Set(cutoutTags.keys())).toEqual(new Set([0, 1]));
+    expect(cutoutColorTag(0)).toBeGreaterThanOrEqual(1000);
+    for (const [, faces] of cutoutTags) {
+      expect(faces.floor).toBeGreaterThan(0);
+      expect(faces.wall).toBeGreaterThan(0);
+    }
+  });
+
+  it('collapses a boolean group to a single tag (one merged cavity, one color)', () => {
+    const cutouts: Cutout[] = [
+      makeCutout({
+        id: 'a',
+        x: 20,
+        y: 40,
+        width: 24,
+        depth: 20,
+        cutDepth: 8,
+        groupId: 'g1',
+        groupOp: 'union',
+        color: '#22c55e',
+      }),
+      makeCutout({
+        id: 'b',
+        x: 40,
+        y: 40,
+        width: 24,
+        depth: 20,
+        cutDepth: 8,
+        groupId: 'g1',
+        groupOp: 'union',
+        color: '#22c55e',
+      }),
+    ];
+    const { cutoutTags } = census({ ...solidBase, cutouts });
+
+    expect(enumerateCutoutColorUnits(cutouts)).toHaveLength(1);
+    expect(new Set(cutoutTags.keys())).toEqual(new Set([0]));
+  });
+
+  it('tags cutouts even when uncolored (recolor never regenerates geometry)', () => {
+    const cutouts: Cutout[] = [
+      makeCutout({ id: 'a', x: 8, y: 40, width: 24, depth: 24, cutDepth: 8 }),
+      makeCutout({ id: 'b', x: 70, y: 40, width: 24, depth: 24, cutDepth: 8 }),
+    ];
+    const { cutoutTags } = census({ ...solidBase, cutouts });
+    expect(new Set(cutoutTags.keys())).toEqual(new Set([0, 1]));
+  });
+});

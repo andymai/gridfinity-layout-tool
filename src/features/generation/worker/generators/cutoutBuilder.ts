@@ -29,6 +29,7 @@ import {
   withScope,
   composeTransforms,
   transformCopy,
+  setShapeOrigin,
 } from 'brepjs';
 import type { TransformOp } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
@@ -58,6 +59,12 @@ import {
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
 import { offsetClosedPolygon } from './polygonOffset';
+import { FeatureTag } from './featureTags';
+import {
+  enumerateCutoutColorUnits,
+  cutoutUnitKey,
+  cutoutColorTag,
+} from '@/shared/generation/cutoutColorUnits';
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
   readonly minX: number;
@@ -989,6 +996,19 @@ export function buildCutoutCuts(
   if (solidSurfaceZ <= 0) return { cutTools: [], fuseTools: [] };
 
   const rawShapes: Shape3D[] = [];
+  // Per-cutout color face tag, aligned 1:1 with rawShapes. Applied AFTER the
+  // interior clip (its intersect boolean regenerates faces and drops any origin
+  // set beforehand), so it's carried alongside rather than stamped here. Every
+  // cutout is tagged (colored or not), so recoloring stays a pure read-side
+  // change that never regenerates geometry.
+  const rawTags: number[] = [];
+  const colorOrdinal = new Map(enumerateCutoutColorUnits(params.cutouts).map((u, i) => [u.key, i]));
+  const cavityTag = (cutout: Cutout): number =>
+    cutoutColorTag(colorOrdinal.get(cutoutUnitKey(cutout)) ?? 0);
+  const pushRaw = (shape: Shape3D, tag: number): void => {
+    rawShapes.push(shape);
+    rawTags.push(tag);
+  };
 
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected.
   // Array masters (always ungrouped) expand into one cut per instance first.
@@ -996,10 +1016,12 @@ export function buildCutoutCuts(
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
       if (cutout.array) {
-        rawShapes.push(...buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY));
+        for (const s of buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY)) {
+          pushRaw(s, cavityTag(cutout));
+        }
       } else {
         const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
-        if (shape) rawShapes.push(shape);
+        if (shape) pushRaw(shape, cavityTag(cutout));
       }
     } else {
       const list = groups.get(cutout.groupId);
@@ -1013,7 +1035,8 @@ export function buildCutoutCuts(
 
   for (const [, groupMembers] of groups) {
     const shape = buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY);
-    if (shape) rawShapes.push(shape);
+    // All members share a groupId -> one unit, one color for the merged cavity.
+    if (shape) pushRaw(shape, cavityTag(groupMembers[0]));
   }
 
   // Per-cutout label text on the bin top, adjacent to each cutout in the
@@ -1038,8 +1061,10 @@ export function buildCutoutCuts(
       innerD
     );
     if (!textShape) continue;
+    // Label text is its own color zone — tag it TEXT so an engraved label
+    // sharing the cut pile doesn't inherit its cutout's cavity color.
     if (textShape.op === 'fuse') rawFuseShapes.push(textShape.solid);
-    else rawShapes.push(textShape.solid);
+    else pushRaw(textShape.solid, FeatureTag.TEXT);
   }
 
   if (rawShapes.length === 0 && rawFuseShapes.length === 0) {
@@ -1052,14 +1077,15 @@ export function buildCutoutCuts(
   // so a box spanning the fill height contains them. Embossed text rises ABOVE
   // the top, so its clip box must be tall enough to keep the raised geometry —
   // an interior-height box would shear it off.
-  const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ);
+  const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ, rawTags);
   const fuseTools =
     rawFuseShapes.length > 0
       ? clipToInterior(
           rawFuseShapes,
           innerW,
           innerD,
-          solidSurfaceZ + params.textDefaults.depth + CUTOUT_BOOLEAN_EPSILON
+          solidSurfaceZ + params.textDefaults.depth + CUTOUT_BOOLEAN_EPSILON,
+          rawFuseShapes.map(() => FeatureTag.TEXT)
         )
       : [];
   return { cutTools, fuseTools };
@@ -1069,12 +1095,17 @@ export function buildCutoutCuts(
  * Intersect each shape with an interior box of the given height (bottom at
  * z=0), consuming the inputs. Tools that fail to clip are dropped rather than
  * poisoning the whole set.
+ *
+ * `tags` (aligned 1:1 with `shapes`) is stamped onto each clipped result via
+ * `setShapeOrigin`. It MUST be applied here, after the intersect — the boolean
+ * regenerates the tool's faces, so an origin set on the input shape is lost.
  */
 function clipToInterior(
   shapes: Shape3D[],
   innerW: number,
   innerD: number,
-  boxHeight: number
+  boxHeight: number,
+  tags?: readonly number[]
 ): Shape3D[] {
   if (shapes.length === 0) return [];
   let clipBoundary: Shape3D;
@@ -1087,9 +1118,13 @@ function clipToInterior(
 
   const clipped: Shape3D[] = [];
   try {
-    for (const shape of shapes) {
+    for (let i = 0; i < shapes.length; i++) {
+      const shape = shapes[i];
       try {
-        clipped.push(unwrap(intersect(shape, clipBoundary)));
+        const result = unwrap(intersect(shape, clipBoundary));
+        const tag = tags?.[i];
+        if (tag !== undefined) setShapeOrigin(result, tag);
+        clipped.push(result);
       } catch {
         // Individual clip failure: drop this tool but keep the rest.
       } finally {

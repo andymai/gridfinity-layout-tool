@@ -16,8 +16,6 @@ import { translate } from 'brepjs';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
-import { FeatureTag } from '../../featureTags';
-import { collectOrigins } from '../collectOrigins';
 import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
@@ -32,7 +30,7 @@ export const featuresStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { params, dimensions: dim, originToTag } = ctx;
+    const { params, dimensions: dim } = ctx;
 
     // Solid mode: cutouts are the only feature. Hand each cutout tool to
     // booleanStage as an independent cutTarget so cutAllBisect can recover
@@ -56,14 +54,12 @@ export const featuresStage: PipelineStage = {
         tool.delete();
         return shifted;
       };
+      // Tools arrive pre-tagged from buildCutoutCuts: each cavity carries its
+      // per-unit color tag (CUTOUT_COLOR_TAG_BASE + ordinal) and label text
+      // carries FeatureTag.TEXT. Tags survive this interior shift, so re-tagging
+      // here would clobber them — just translate.
       const cutoutTools = cutTools.map(shiftToInterior);
       const embossTools = fuseTools.map(shiftToInterior);
-      for (const tool of cutoutTools) {
-        collectOrigins(tool, FeatureTag.CUTOUT, originToTag);
-      }
-      for (const tool of embossTools) {
-        collectOrigins(tool, FeatureTag.TEXT, originToTag);
-      }
       // Solid-mode cutout tools aren't keyed through feature builders, so the
       // post-boolean resume cache can't safely identify them — disable it.
       return { ...ctx, cutTargets: cutoutTools, fuseTargets: embossTools, featuresKey: null };
