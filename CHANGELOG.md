@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.213.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.212.0...gridfinity-layout-tool-v4.213.0) (2026-07-03)
+
+
+### Features
+
+* **bin-inspector:** suggest a common bin size from its label ([#2434](https://github.com/andymai/gridfinity-layout-tool/issues/2434)) ([7f840eb](https://github.com/andymai/gridfinity-layout-tool/commit/7f840eb1960b365150da6c5b48950dd04ab52a9b))
+
 ## [4.212.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.211.3...gridfinity-layout-tool-v4.212.0) (2026-07-01)
 
 
