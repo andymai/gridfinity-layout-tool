@@ -80,10 +80,13 @@ export function standardBinSolidComponents(
   depthUnits: number,
   heightUnits: number,
   gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
-  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT,
+  // Y-axis pitch for non-square grids; defaults to the X pitch (square grid),
+  // so every existing square-grid caller is unaffected.
+  gridUnitMmY: number = gridUnitMm
 ): StandardBinComponents {
   const outerW = widthUnits * gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
-  const outerD = depthUnits * gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
+  const outerD = depthUnits * gridUnitMmY - GRIDFINITY_SPEC.TOLERANCE;
   const heightMm = heightUnits * heightUnitMm;
 
   if (outerW <= 0 || outerD <= 0 || heightMm <= 0) {
@@ -94,7 +97,7 @@ export function standardBinSolidComponents(
   const cells = widthUnits * depthUnits;
   // Floor + feet scale with cell footprint area, so a smaller grid pitch
   // holds proportionally less base material.
-  const cellArea = gridUnitMm * gridUnitMm;
+  const cellArea = gridUnitMm * gridUnitMmY;
 
   return {
     walls: perimeter * WALL_EFF * heightMm,

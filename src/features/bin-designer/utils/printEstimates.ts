@@ -110,9 +110,12 @@ export function formatFilament(meters: number): string {
  */
 function computeBinVolume(params: BinParams): number {
   const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
+  // Y axis uses gridUnitMmY when set (non-square grid); otherwise it equals the
+  // X pitch, so square bins are unchanged.
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   // Outer dimensions in mm
   const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * params.gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
   // Height units INCLUDE the base (first unit = base, no cavity)
   const totalH = params.height * params.heightUnitMm;
 
@@ -126,7 +129,8 @@ function computeBinVolume(params: BinParams): number {
     params.depth,
     params.height,
     params.gridUnitMm,
-    params.heightUnitMm
+    params.heightUnitMm,
+    gridUnitMmY
   );
   let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 

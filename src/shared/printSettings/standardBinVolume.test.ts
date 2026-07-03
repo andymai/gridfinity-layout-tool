@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   estimateStandardBinVolume,
   estimateStandardBinFilament,
+  standardBinSolidComponents,
 } from '@/shared/printSettings/standardBinVolume';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
@@ -68,6 +69,25 @@ describe('standardBinVolume', () => {
       expect(estimateStandardBinVolume(2, 2, 3, 30)).toBeLessThan(
         estimateStandardBinVolume(2, 2, 3, 42)
       );
+    });
+
+    it('standardBinSolidComponents: gridUnitMmY defaults to the X pitch (square)', () => {
+      const square = standardBinSolidComponents(2, 2, 3, 42, 7);
+      const explicit = standardBinSolidComponents(2, 2, 3, 42, 7, 42);
+      expect(explicit).toEqual(square);
+    });
+
+    it('standardBinSolidComponents: a shorter Y pitch reduces base + wall material', () => {
+      // A 42×22 non-square bin has less depth than a 42×42 one, so both the
+      // depth-scaled base (cell area) and perimeter walls shrink.
+      const square = standardBinSolidComponents(2, 2, 3, 42, 7);
+      const nonSquare = standardBinSolidComponents(2, 2, 3, 42, 7, 22);
+      expect(nonSquare.base).toBeLessThan(square.base);
+      expect(nonSquare.walls).toBeLessThan(square.walls);
+      // Non-square Y equals treating the whole bin as a smaller square only on
+      // the depth axis, so it must sit between a full 42 and a full 22 bin.
+      const smallSquare = standardBinSolidComponents(2, 2, 3, 22, 7);
+      expect(nonSquare.base).toBeGreaterThan(smallSquare.base);
     });
 
     it('is independent of nozzle size (bin CAD geometry is fixed)', () => {
