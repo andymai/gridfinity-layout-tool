@@ -66,6 +66,7 @@ Clip geometry lives in `wallPatternClips.ts`, wired in `wallPatternBuilder.ts`. 
 2. Confirm `vite.config.ts` still lists `occt-wasm` in `optimizeDeps.exclude` and the kernel-wrapper pin against GC use-after-free is intact (`git show 6b45ec83b`).
 3. Re-verify the textBuilder linear-metrics assumption (README gotcha 6) and that `meshEdges` call sites pass `EDGE_ANGULAR_TOLERANCE_RAD` from `src/shared/constants/tessellation.ts` — RADIANS; a degrees-magnitude value silently disables edge refinement.
 4. Run the full generators project, `__kernel-tests__` diagnostics (`diagnoseBaseplateWinding`, `occtWasmKernelLifecycle`), `pnpm run bench` vs `__bench__/baseline.json`, and smoke-test Safari/iOS (kernel loads broke there twice).
+5. Bump `MESH_CACHE_VERSION` in `src/shared/generation/meshPersistence.ts` — it keys the cross-session IndexedDB cache of preview meshes; a stale value would serve last-build meshes from a returning user's disk. Any tessellation-tolerance change needs the same bump.
 
 ## Verification
 

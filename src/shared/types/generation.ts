@@ -6,6 +6,7 @@
  * depend on these types without a cross-feature import violation.
  */
 export type {
+  MeshData,
   FaceGroupData,
   CoarseLODData,
   LidMeshData,

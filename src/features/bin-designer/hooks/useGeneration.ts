@@ -6,6 +6,12 @@ import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import {
+  binMeshCacheKey,
+  loadPersistedBinMesh,
+  savePersistedBinMesh,
+} from '@/shared/generation/meshPersistence';
+import type { MeshData } from '@/shared/types/generation';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
   trackWasmThreadingStatus,
@@ -42,6 +48,30 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
       : undefined,
     error: null,
     timingMs: result.timingMs,
+  };
+}
+
+/**
+ * Map a raw persisted `MeshData` (loaded from IndexedDB) to the store's mesh
+ * payload. Mirrors `toMeshPayload` but sources a bare mesh rather than a bridge
+ * result; the readonly faceGroups are spread into a mutable copy for Immer.
+ */
+function meshDataToPayload(mesh: MeshData): GenerationResult {
+  return {
+    vertices: mesh.vertices,
+    normals: mesh.normals,
+    indices: mesh.indices,
+    edgeVertices: mesh.edgeVertices,
+    faceGroups: mesh.faceGroups ? [...mesh.faceGroups] : undefined,
+    coarseLOD: mesh.coarseLOD,
+    lidMesh: mesh.lidMesh
+      ? {
+          ...mesh.lidMesh,
+          faceGroups: mesh.lidMesh.faceGroups ? [...mesh.lidMesh.faceGroups] : undefined,
+        }
+      : undefined,
+    error: null,
+    timingMs: 0,
   };
 }
 
@@ -219,6 +249,11 @@ export function useGeneration(): void {
         setGenerationResult(toMeshPayload(result));
         setGenerationStatus('complete');
 
+        // Persist the exact preview mesh so reopening this design next session
+        // paints instantly (pre-draft) instead of re-paying the cold start.
+        // Fire-and-forget; refreshes LRU freshness even when the entry exists.
+        savePersistedBinMesh(binMeshCacheKey(currentParams), result.mesh);
+
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer
         // was already cleared at the start of this generation.)
@@ -290,6 +325,20 @@ export function useGeneration(): void {
     let cancelled = false;
     let acquiredPreview = false;
     setWasmStatus('loading');
+
+    // Instant pre-draft from last session (best-effort): a saved bin's exact
+    // preview mesh persisted to IndexedDB paints in tens of ms while occt-wasm
+    // (~2-4s) loads. Only when nothing has painted yet — the first real
+    // generation (token 1) supersedes it through normal token arbitration, the
+    // same way the Manifold pre-draft does. Not run for generic items.
+    const initialState = useDesignerStore.getState();
+    if (initialState.itemKind === 'bin') {
+      void loadPersistedBinMesh(binMeshCacheKey(initialState.params)).then((cached) => {
+        if (cancelled || !cached) return;
+        if (genTokenRef.current !== 0 || finalizedTokenRef.current > 0) return;
+        setDraftResult(meshDataToPayload(cached));
+      });
+    }
 
     bridgeManager
       .acquire()
@@ -377,7 +426,7 @@ export function useGeneration(): void {
       bridgeManager.release();
       if (acquiredPreview) bridgeManager.releasePreview();
     };
-  }, [setWasmStatus, runGeneration, runItemGeneration, dispatchDraft]);
+  }, [setWasmStatus, setDraftResult, runGeneration, runItemGeneration, dispatchDraft]);
 
   // Re-generate when epoch changes (after initialization)
   useEffect(() => {

@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useGeneration } from './useGeneration';
 import { useDesignerStore } from '../store';
 import type { GenerationBridge } from '@/shared/generation/bridge';
+import type { MeshData } from '@/shared/types/generation';
 
 // Mock bridgeManager to isolate tests from the singleton
 const mockBridge = {
@@ -35,6 +36,17 @@ vi.mock('@/shared/generation/bridge', () => ({
   FAST_EXACT_SKIP_MS: 1000,
   // Stable threshold — burst behavior is covered by draftPolicy's own tests.
   createDraftSkipGate: () => () => 1000,
+}));
+
+// Mock the cross-session mesh cache so pre-draft/persist behavior is
+// deterministic (real IndexedDB round-trips are covered in meshPersistence.test).
+const mockLoadPersisted = vi.fn<() => Promise<MeshData | null>>();
+const mockSavePersisted = vi.fn<(key: string, mesh: MeshData) => void>();
+
+vi.mock('@/shared/generation/meshPersistence', () => ({
+  binMeshCacheKey: () => 'test-key',
+  loadPersistedBinMesh: () => mockLoadPersisted(),
+  savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
 }));
 
 // Pristine default params, captured before any test mutates the store singleton.
@@ -71,6 +83,9 @@ describe('useGeneration', () => {
     mockAcquirePreview.mockReset();
     mockAcquirePreview.mockResolvedValue(null); // preview off by default
     mockReleasePreview.mockReset();
+    mockLoadPersisted.mockReset();
+    mockLoadPersisted.mockResolvedValue(null); // no persisted mesh by default
+    mockSavePersisted.mockReset();
     // Unknown estimate = slow → the draft path stays active unless a test
     // explicitly predicts a fast exact.
     (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockReset();
@@ -428,5 +443,65 @@ describe('useGeneration', () => {
     const gen = useDesignerStore.getState().generation;
     expect(gen.isDraft).toBe(false);
     expect(gen.status).toBe('complete');
+  });
+
+  it('persists the exact preview mesh after generation completes', async () => {
+    renderHook(() => useGeneration());
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    expect(useDesignerStore.getState().generation.status).toBe('complete');
+    expect(mockSavePersisted).toHaveBeenCalledTimes(1);
+    const [key, mesh] = mockSavePersisted.mock.calls[0];
+    expect(key).toBe('test-key');
+    // The raw bridge mesh (not the store payload) is what gets persisted.
+    expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
+  });
+
+  it('paints a persisted mesh as a pre-draft while the exact worker loads', async () => {
+    const cachedVerts = new Float32Array([0, 0, 0, 3, 0, 0, 0, 3, 0]);
+    mockLoadPersisted.mockResolvedValue({
+      vertices: cachedVerts,
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      indices: new Uint32Array([0, 1, 2]),
+      edgeVertices: new Float32Array(0),
+      triangleCount: 1,
+    });
+
+    // Hold the exact bridge open so the persisted mesh is the only thing that
+    // can paint (preview bridge is off by default).
+    let resolveAcquire: (bridge: GenerationBridge) => void = () => {};
+    mockAcquire.mockReturnValue(
+      new Promise<GenerationBridge>((r) => {
+        resolveAcquire = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Persisted pre-draft on screen while the exact worker is still loading.
+    let state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('loading');
+    expect(state.generation.isDraft).toBe(true);
+    expect(state.generation.mesh?.vertices).toBe(cachedVerts);
+
+    // Exact bridge arrives → initial generation supersedes the pre-draft.
+    await act(async () => {
+      resolveAcquire(mockBridge);
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('ready');
+    expect(state.generation.isDraft).toBe(false);
+    expect(state.generation.status).toBe('complete');
+    expect(state.generation.mesh?.vertices).not.toBe(cachedVerts);
   });
 });
