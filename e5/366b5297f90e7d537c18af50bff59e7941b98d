@@ -1,0 +1,24 @@
+src/features/bin-recommender/components/BinSizeSuggestion/BinSizeSuggestion.tsx
+  s_00750f86a66248::t_30779528257f50 64
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_00750f86a66248::t_ce73832ebebc4d 19-21
+src/features/bin-recommender/useBinSizeSuggestion.ts
+  s_00750f86a66248::t_12f530c473a229 13
+  s_00750f86a66248::t_7dc85f9a647b61 11-12,14-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "e5366b5297f90e7d537c18af50bff59e7941b98d",
+  "prompts": {},
+  "sessions": {
+    "s_00750f86a66248": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "038e9e87-9456-4099-b958-d92f5e125132",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
