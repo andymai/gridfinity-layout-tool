@@ -8,7 +8,14 @@ import type { BinRecommenderModel, BinSize, BinSizePrediction } from './types';
 let modelPromise: Promise<BinRecommenderModel> | null = null;
 function loadModel(): Promise<BinRecommenderModel> {
   if (!modelPromise) {
-    modelPromise = import('./model.json').then((m) => m.default as unknown as BinRecommenderModel);
+    modelPromise = import('./model.json')
+      .then((m) => m.default as unknown as BinRecommenderModel)
+      .catch((err: unknown) => {
+        // Don't cache a rejected promise — a transient chunk-fetch failure
+        // would otherwise disable suggestions for the rest of the session.
+        modelPromise = null;
+        throw err;
+      });
   }
   return modelPromise;
 }

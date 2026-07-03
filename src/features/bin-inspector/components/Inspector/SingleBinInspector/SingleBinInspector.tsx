@@ -16,15 +16,15 @@ import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBi
 import { canPlaceBin } from '@/shared/utils/validation';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
+import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
+import { useTranslation } from '@/i18n';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 const BinSizeSuggestion = lazyWithRetry(() =>
   import('@/features/bin-recommender/components/BinSizeSuggestion').then(
     namedExport('BinSizeSuggestion')
   )
 );
-import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
-import { useTranslation } from '@/i18n';
-import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 const LinkedDesignSection = lazyWithRetry(() =>
   import('@/features/design-linking/components/LinkedDesignSection').then(

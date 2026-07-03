@@ -61,7 +61,7 @@ export function BinSizeSuggestion({
   const sizeText = `${fmt(suggestion.size.width)}×${fmt(suggestion.size.depth)}×${fmt(suggestion.size.height)}`;
 
   const handleApply = () => {
-    trackEvent('bin_suggestion_applied', { source: suggestion.source, size: sizeKey });
+    trackEvent('bin_suggestion_applied', { source: suggestion.source, size: sizeKey, fits });
     onApply(suggestion.size);
   };
 
