@@ -60,6 +60,16 @@ function hasIndexedDb(): boolean {
   return typeof indexedDB !== 'undefined';
 }
 
+// Strictly-monotonic recency stamp: wall-clock when it advances, else +1, so
+// entries written in the same millisecond still order deterministically in the
+// `byCreatedAt` index (keeps LRU eviction "oldest-first" under bursty writes).
+let lastStamp = 0;
+function nextStamp(): number {
+  const now = Date.now();
+  lastStamp = now > lastStamp ? now : lastStamp + 1;
+  return lastStamp;
+}
+
 let dbInstance: IDBPDatabase | null = null;
 let openPromise: Promise<IDBPDatabase> | null = null;
 
@@ -192,7 +202,7 @@ export function savePersistedBinMesh(key: string, mesh: MeshData): void {
 async function persistMesh(key: string, mesh: MeshData): Promise<void> {
   try {
     const db = await getDb();
-    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), createdAt: Date.now() };
+    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), createdAt: nextStamp() };
 
     const tx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
     const meshes = tx.objectStore(BIN_MESHES_STORE);
