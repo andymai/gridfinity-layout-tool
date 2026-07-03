@@ -12,8 +12,9 @@
 
 import { drawCircle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
-import { LID_MAGNET_OFFSETS, LID_COPLANAR_MARGIN, LID_MAGNET_CEILING } from './lidConstants';
+import { LID_COPLANAR_MARGIN, LID_MAGNET_CEILING } from './lidConstants';
 import { forEachCell } from './cellDecomposition';
+import { magnetPositionsForCell } from './baseplateMagnets';
 import { isCellFilled } from './lidStackGrid';
 import type { LidInputs } from './lidInputs';
 
@@ -66,11 +67,11 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
         const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
         if (!isCellFilled(cellMask, cellX, cellY)) return;
       }
-      for (const [ox, oy] of LID_MAGNET_OFFSETS) {
+      // Shared placement so the lid magnets land at exactly the positions the
+      // bin base sockets use (same wall-distance clamp), letting them mate.
+      for (const [px, py] of magnetPositionsForCell(cell, radius, gridUnitMm, gridUnitMmY)) {
         const cylinder = drawCircle(radius).sketchOnPlane('XY', holeZ).extrude(holeHeight);
-        cutters.push(
-          scope.register(translate(cylinder, [cell.centerX + ox, cell.centerY + oy, 0]))
-        );
+        cutters.push(scope.register(translate(cylinder, [px, py, 0])));
       }
     },
     { gridUnitMm: pitch, fractionalEdgeX, fractionalEdgeY }

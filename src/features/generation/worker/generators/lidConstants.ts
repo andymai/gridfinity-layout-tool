@@ -110,16 +110,11 @@ export const LID_CLICK_RAIL_INNER = -0.8;
 export const LID_CLICK_RAIL_TOP_CHAMFER = 0.8;
 
 /* ──────────────────────────────────────────────────────────────────────
- * Magnet positions — same Gridfinity offsets used by the bin's base sockets.
+ * Magnet positions are shared with the bin base via magnetPositionsForCell
+ * (see lidMagnets.ts), so the lid holes always line up with the sockets of a
+ * bin stacked on top — including the wall-distance clamp on small/non-square
+ * cells. No lid-local offset constant is kept, to avoid the two drifting.
  * ──────────────────────────────────────────────────────────────────────── */
-/** Distance from each cell center where the lid drills its 4 magnet holes. */
-export const LID_MAGNET_OFFSET = 13;
-export const LID_MAGNET_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-  [-LID_MAGNET_OFFSET, -LID_MAGNET_OFFSET],
-  [LID_MAGNET_OFFSET, -LID_MAGNET_OFFSET],
-  [LID_MAGNET_OFFSET, LID_MAGNET_OFFSET],
-  [-LID_MAGNET_OFFSET, LID_MAGNET_OFFSET],
-];
 
 /** Coplanar margin used at boolean cut/fuse interfaces. */
 export const LID_COPLANAR_MARGIN = 0.1;
