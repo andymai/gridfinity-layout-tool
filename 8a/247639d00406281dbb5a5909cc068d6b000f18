@@ -1,0 +1,30 @@
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_42ca9be8262433::t_80f321a5bae814 210
+api/lib/designerValidation.ts
+  s_42ca9be8262433::t_6085904a5b544c 484-486
+src/features/generation/worker/generators/binGenerator.scenario.cutoutColorTag.test.ts
+  s_42ca9be8262433::t_4b571248b3d34f 63,75
+src/features/bin-designer/utils/materialMapping.ts
+  s_42ca9be8262433::t_576d47a876e2ad 22
+  s_42ca9be8262433::t_030de8363966f9 116-120,122-126
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.tsx
+  s_42ca9be8262433::t_f8a54aee4bd568 56-70
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_42ca9be8262433::t_bf978ead9b8833 201-202,204-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8a247639d00406281dbb5a5909cc068d6b000f18",
+  "prompts": {},
+  "sessions": {
+    "s_42ca9be8262433": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dcc309b-2db5-4570-9639-626456d37bec",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
