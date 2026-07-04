@@ -13,6 +13,7 @@ import type { Shape3D, Drawing } from 'brepjs';
 import { SOCKET_HEIGHT, MAGNET_FLOOR, COPLANAR_MARGIN, INSET_BOT } from './generatorConstants';
 import { forEachCell } from './cellDecomposition';
 import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
 
@@ -83,12 +84,12 @@ export function buildLightweightFloorCutters(
   gridD: number,
   magnetRadius: number,
   magnetDepth: number,
-  cellOpts: ForEachCellOptions & { gridUnitMm: number },
+  cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   lightweight?: boolean
 ): Shape3D[] {
   if (lightweight === false) return [];
 
-  const gridUnitMm = cellOpts.gridUnitMm;
+  const { x: unitX, y: unitY } = resolvePitch(cellOpts.gridUnitMm);
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
 
@@ -100,8 +101,8 @@ export function buildLightweightFloorCutters(
       gridW,
       gridD,
       (cell) => {
-        const cellW_mm = cell.widthUnits * gridUnitMm;
-        const cellD_mm = cell.depthUnits * gridUnitMm;
+        const cellW_mm = cell.widthUnits * unitX;
+        const cellD_mm = cell.depthUnits * unitY;
 
         // Fractional cells (half-unit) have no magnets — cut through their
         // entire floor since the solid material serves no purpose.
@@ -139,7 +140,7 @@ export function buildLightweightFloorCutters(
         // cross; 2-magnet / centered layouts (very short axes) are left solid —
         // the tiny weight saving isn't worth a bespoke cut and it can't strand a
         // magnet. A full 42mm cell yields offset 13 → the original cross exactly.
-        const positions = magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm);
+        const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY);
         if (positions.length !== 4) return;
         const offX = Math.abs(positions[0][0] - cell.centerX);
         const offY = Math.abs(positions[0][1] - cell.centerY);
