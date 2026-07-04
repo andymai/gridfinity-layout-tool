@@ -255,7 +255,7 @@ export function validateImportedBinParams(params: unknown, t: TFunction): Valida
 
   // Validate style
   if (typeof p.style !== 'string' || !(BIN_STYLES as readonly string[]).includes(p.style)) {
-    errors.push(t('binDesigner.designJson.error.styleInvalid'));
+    errors.push(t('binDesigner.designJson.error.styleInvalid', { styles: BIN_STYLES.join(', ') }));
   }
 
   // Validate compartments config

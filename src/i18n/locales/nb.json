@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "Slipp en JSON-fil",
   "binDesigner.designJson.error.paramsNotObject": "params må være et objekt",
   "binDesigner.designJson.error.rootNotObject": "Ugyldig designfil: rot må være et objekt",
-  "binDesigner.designJson.error.styleInvalid": "style må være en av: standard, slotted",
+  "binDesigner.designJson.error.styleInvalid": "style må være en av: {styles}",
   "binDesigner.designJson.error.widthInvalid": "width må være et positivt endelig tall",
   "binDesigner.designName": "Designnavn",
   "binDesigner.designs": "Design",

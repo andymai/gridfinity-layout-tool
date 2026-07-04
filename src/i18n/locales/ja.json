@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "JSONファイルをドロップしてください",
   "binDesigner.designJson.error.paramsNotObject": "paramsはオブジェクトである必要があります",
   "binDesigner.designJson.error.rootNotObject": "無効なデザインファイル：ルートはオブジェクトである必要があります",
-  "binDesigner.designJson.error.styleInvalid": "styleはstandardまたはslottedのいずれかである必要があります",
+  "binDesigner.designJson.error.styleInvalid": "styleは次のいずれかである必要があります: {styles}",
   "binDesigner.designJson.error.widthInvalid": "widthは正の有限数である必要があります",
   "binDesigner.designName": "デザイン名",
   "binDesigner.designs": "デザイン",

@@ -300,7 +300,9 @@ describe('validateImportedBinParams', () => {
     const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'invalid' }, t);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('style'))).toBe(true);
+    // The error lists every valid style, including 'solid', so it can't drift
+    // from the accepted set (GH #2444).
+    expect(result.errors.some((e) => e.includes('style') && e.includes('solid'))).toBe(true);
   });
 
   it('should accept valid style values', () => {

@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "Перетягніть файл JSON",
   "binDesigner.designJson.error.paramsNotObject": "params має бути об’єктом",
   "binDesigner.designJson.error.rootNotObject": "Недійсний файл дизайну: корінь має бути об’єктом",
-  "binDesigner.designJson.error.styleInvalid": "style має бути одним з: standard, slotted",
+  "binDesigner.designJson.error.styleInvalid": "style має бути одним з: {styles}",
   "binDesigner.designJson.error.widthInvalid": "width має бути додатним скінченним числом",
   "binDesigner.designName": "Назва дизайну",
   "binDesigner.designs": "Дизайни",

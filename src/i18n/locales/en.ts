@@ -2861,7 +2861,7 @@ const en: Record<string, string> = {
     'heightUnitMm must be a positive finite number',
   'binDesigner.designJson.error.baseNotObject': 'base must be an object',
   'binDesigner.designJson.error.baseStyleNotString': 'base.style must be a string',
-  'binDesigner.designJson.error.styleInvalid': 'style must be one of: standard, slotted',
+  'binDesigner.designJson.error.styleInvalid': 'style must be one of: {styles}',
   'binDesigner.designJson.error.compartmentsNotObject': 'compartments must be an object',
   'binDesigner.designJson.error.compartmentsCellsNotArray': 'compartments.cells must be an array',
   'binDesigner.designJson.error.compartmentsColsRange':

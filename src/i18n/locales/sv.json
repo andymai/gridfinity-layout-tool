@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "Släpp en JSON-fil",
   "binDesigner.designJson.error.paramsNotObject": "params måste vara ett objekt",
   "binDesigner.designJson.error.rootNotObject": "Ogiltig designfil: rot måste vara ett objekt",
-  "binDesigner.designJson.error.styleInvalid": "style måste vara: standard eller slotted",
+  "binDesigner.designJson.error.styleInvalid": "style måste vara en av: {styles}",
   "binDesigner.designJson.error.widthInvalid": "width måste vara ett positivt ändligt tal",
   "binDesigner.designName": "Designnamn",
   "binDesigner.designs": "Designer",

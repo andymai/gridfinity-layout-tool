@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "Sleep een JSON-bestand",
   "binDesigner.designJson.error.paramsNotObject": "params moet een object zijn",
   "binDesigner.designJson.error.rootNotObject": "Ongeldig ontwerpbestand: root moet een object zijn",
-  "binDesigner.designJson.error.styleInvalid": "style moet een van zijn: standard, slotted",
+  "binDesigner.designJson.error.styleInvalid": "style moet een van zijn: {styles}",
   "binDesigner.designJson.error.widthInvalid": "width moet een positief eindig getal zijn",
   "binDesigner.designName": "Design naam",
   "binDesigner.designs": "Ontwerpen",

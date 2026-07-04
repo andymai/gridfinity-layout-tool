@@ -549,7 +549,7 @@
   "binDesigner.designJson.error.mustBeJsonFile": "Bitte eine JSON-Datei ablegen",
   "binDesigner.designJson.error.paramsNotObject": "params muss ein Objekt sein",
   "binDesigner.designJson.error.rootNotObject": "Ungültige Designdatei: Stamm muss ein Objekt sein",
-  "binDesigner.designJson.error.styleInvalid": "style muss einer von folgenden sein: standard, slotted",
+  "binDesigner.designJson.error.styleInvalid": "style muss einer von folgenden sein: {styles}",
   "binDesigner.designJson.error.widthInvalid": "width muss eine positive endliche Zahl sein",
   "binDesigner.designName": "Design-Name",
   "binDesigner.designs": "Designs",
