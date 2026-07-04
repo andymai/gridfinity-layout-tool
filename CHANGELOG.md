@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.215.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.214.0...gridfinity-layout-tool-v4.215.0) (2026-07-04)
+
+
+### Features
+
+* support non-square grid units for bins and baseplates ([#2438](https://github.com/andymai/gridfinity-layout-tool/issues/2438)) ([5f48ebf](https://github.com/andymai/gridfinity-layout-tool/commit/5f48ebf2f4a37033cd2fa2b3d92c32e71eed6c0d))
+
 ## [4.214.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.213.1...gridfinity-layout-tool-v4.214.0) (2026-07-04)
 
 
