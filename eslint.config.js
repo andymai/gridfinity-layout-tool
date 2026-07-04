@@ -11,7 +11,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
+  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx', 'src/test/setup.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
