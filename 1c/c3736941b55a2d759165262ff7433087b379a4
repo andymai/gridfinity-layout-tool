@@ -1,0 +1,41 @@
+src/i18n/locales/de.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/nb.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/pt-BR.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/fr.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/sv.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/features/bin-designer/utils/designJson.ts
+  s_6b26c9d8511f7e::t_819c41ccdeb173 258
+src/i18n/locales/ja.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/uk.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/es.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/i18n/locales/en.ts
+  s_6b26c9d8511f7e::t_bd933283328021 2864
+src/i18n/locales/nl.json
+  s_6b26c9d8511f7e::t_8a9f340c717cfa 552
+src/features/bin-designer/utils/designJson.test.ts
+  s_6b26c9d8511f7e::t_2cdc6bf1f3f72a 303-305
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1cc3736941b55a2d759165262ff7433087b379a4",
+  "prompts": {},
+  "sessions": {
+    "s_6b26c9d8511f7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e53c038e-9a30-4e32-ab5c-d99ff5174c02",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
