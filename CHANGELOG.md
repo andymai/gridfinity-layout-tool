@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.215.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.0...gridfinity-layout-tool-v4.215.1) (2026-07-04)
+
+
+### Bug Fixes
+
+* **bin-designer:** accept solid style on design import ([#2444](https://github.com/andymai/gridfinity-layout-tool/issues/2444)) ([#2446](https://github.com/andymai/gridfinity-layout-tool/issues/2446)) ([d0dede4](https://github.com/andymai/gridfinity-layout-tool/commit/d0dede4881ed1bc6f43eb389e4932b702443a21d))
+
 ## [4.215.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.214.0...gridfinity-layout-tool-v4.215.0) (2026-07-04)
 
 
