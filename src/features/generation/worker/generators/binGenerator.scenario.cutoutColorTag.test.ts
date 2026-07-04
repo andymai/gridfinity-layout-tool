@@ -12,7 +12,6 @@
  *  - A boolean group collapses to ONE tag (one merged cavity, one color).
  *  - Cutouts are tagged even when uncolored, so toggling a color never changes
  *    geometry (the instant-recolor property).
- *  - An engraved label keeps the TEXT tag rather than inheriting its cutout's.
  *
  * NB: a bin is solid (cutouts actually cut) iff `base.solid` is true — the
  * top-level `style` field does not drive it.
@@ -21,7 +20,6 @@ import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { makeCutout } from './__kernel-tests__/scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { FeatureTag } from './featureTags';
 import {
   enumerateCutoutColorUnits,
   cutoutColorTag,
@@ -50,7 +48,6 @@ function triNz(verts: ArrayLike<number>, a: number, b: number, c: number): numbe
 
 interface TagCensus {
   readonly cutoutTags: Map<number, { floor: number; wall: number }>;
-  readonly textTriangles: number;
 }
 
 function census(params: BinParams): TagCensus {
@@ -61,19 +58,13 @@ function census(params: BinParams): TagCensus {
   expect(verts.length).toBeGreaterThan(0);
 
   const cutoutTags = new Map<number, { floor: number; wall: number }>();
-  let textTriangles = 0;
   for (const fg of fgs) {
     const ordinal = cutoutOrdinalFromTag(fg.tag);
-    const isText = fg.tag === FeatureTag.TEXT;
+    if (ordinal === null) continue;
     for (let t = 0; t < fg.count / 3; t++) {
       const a = idx[fg.start + t * 3];
       const b = idx[fg.start + t * 3 + 1];
       const c = idx[fg.start + t * 3 + 2];
-      if (isText) {
-        textTriangles++;
-        continue;
-      }
-      if (ordinal === null) continue;
       const nz = Math.abs(triNz(verts, a, b, c));
       const bucket = cutoutTags.get(ordinal) ?? { floor: 0, wall: 0 };
       if (nz > 0.8) bucket.floor++;
@@ -81,7 +72,7 @@ function census(params: BinParams): TagCensus {
       cutoutTags.set(ordinal, bucket);
     }
   }
-  return { cutoutTags, textTriangles };
+  return { cutoutTags };
 }
 
 const solidBase: BinParams = {

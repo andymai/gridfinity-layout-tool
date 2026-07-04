@@ -207,6 +207,7 @@ export function SingleCutoutInspector({
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
         <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
           <CutoutColorControls
+            key={cutout.id}
             ids={[cutout.id]}
             color={cutout.color}
             colorScope={cutout.colorScope}

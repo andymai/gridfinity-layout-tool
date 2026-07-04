@@ -198,9 +198,12 @@ export function buildMultiColorGroups(
   };
 
   const triMaterial = triZones.map((zone, i) => {
-    if (coloredOrdinals.length > 0 && resolveCutoutTriColor(triTags[i], absNz(i), cutoutUnits)) {
+    // Only cutout-tagged triangles need floor/wall math — skip nz for the rest.
+    if (coloredOrdinals.length > 0) {
       const ord = cutoutOrdinalFromTag(triTags[i]);
-      if (ord !== null) return slotForOrdinal.get(ord) ?? zoneIndex(zone);
+      if (ord !== null && resolveCutoutTriColor(triTags[i], absNz(i), cutoutUnits) !== null) {
+        return slotForOrdinal.get(ord) ?? zoneIndex(zone);
+      }
     }
     return zoneIndex(zone);
   });

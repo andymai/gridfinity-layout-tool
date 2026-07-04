@@ -481,7 +481,9 @@ function validateCutouts(value: unknown): string | null {
   for (let i = 0; i < value.length; i++) {
     const c: unknown = value[i];
     if (!isObject(c)) return `cutouts[${i}] must be an object`;
-    if (c.color !== undefined && !isValidColor(c.color)) {
+    // Hex-only (no legacy slot IDs): this is a new field with no migration path,
+    // and the color flows straight into 3MF material colors.
+    if (c.color !== undefined && !(typeof c.color === 'string' && HEX_COLOR_REGEX.test(c.color))) {
       return `cutouts[${i}].color must be a hex color`;
     }
     if (

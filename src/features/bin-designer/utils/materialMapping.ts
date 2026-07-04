@@ -19,7 +19,7 @@ import {
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import { computeLipGeom } from './lipCornerClassifier';
 import { computeLipColoredMesh } from './lipSeamSplitter';
-import { resolveCutoutTriColor } from '@/shared/generation/cutoutColorUnits';
+import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation/cutoutColorUnits';
 import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
 
 /** |normal.z| of the first vertex of flat triangle `i` (9 floats/tri). */
@@ -113,13 +113,17 @@ export function buildTriangleMaterialIndices(
 
   const materialIndexForZone = (zone: ColorZone): number =>
     colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? defaultIndex;
-  // Split path returns re-tessellated normals; the in-place path keeps the
-  // original triangles, so read the normal from `vertices`.
-  const nzAt = (i: number): number => absNormalZ(normals ?? vertices, i);
+  // Split path returns per-triangle face normals directly (same normal on all 3
+  // verts, so compute nothing — read nz). In-place path keeps the original
+  // triangles, so derive the normal from `vertices`.
+  const nzAt = (i: number): number =>
+    normals ? Math.abs(normals[i * 9 + 2]) : absNormalZ(vertices, i);
   const triangleMaterialIndices = triZones.map((zone, i) => {
-    const cutoutHex =
-      coloredUnits.length > 0 ? resolveCutoutTriColor(triTags[i], nzAt(i), cutoutUnits) : null;
-    if (cutoutHex !== null) return colorToIndex.get(normalizeHex(cutoutHex)) ?? defaultIndex;
+    // Only cutout-tagged triangles need floor/wall math — skip nz for the rest.
+    if (coloredUnits.length > 0 && cutoutOrdinalFromTag(triTags[i]) !== null) {
+      const cutoutHex = resolveCutoutTriColor(triTags[i], nzAt(i), cutoutUnits);
+      if (cutoutHex !== null) return colorToIndex.get(normalizeHex(cutoutHex)) ?? defaultIndex;
+    }
     return materialIndexForZone(zone);
   });
 

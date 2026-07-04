@@ -53,17 +53,21 @@ export function CutoutColorControls({
 
       {isColored && (
         <>
-          <ColorZoneRow
-            zone="body"
-            label={color === null ? t('binDesigner.cutouts.color.mixed') : swatchColor}
-            color={swatchColor}
-            defaultColor={DEFAULT_CUTOUT_COLOR}
-            otherColors={[]}
-            bodyColor={bodyColor}
-            recentColors={[]}
-            onChange={(hex) => setCutoutColor(ids, { color: hex })}
-            onHover={() => undefined}
-          />
+          {/* ColorZoneRow has no `disabled` prop; neutralize interaction so a
+              locked cutout can't be recolored, matching the toggle/scope. */}
+          <div className={disabled ? 'pointer-events-none opacity-60' : undefined}>
+            <ColorZoneRow
+              zone="body"
+              label={color === null ? t('binDesigner.cutouts.color.mixed') : swatchColor}
+              color={swatchColor}
+              defaultColor={DEFAULT_CUTOUT_COLOR}
+              otherColors={[]}
+              bodyColor={bodyColor}
+              recentColors={[]}
+              onChange={(hex) => setCutoutColor(ids, { color: hex })}
+              onHover={() => undefined}
+            />
+          </div>
 
           <div
             role="group"
