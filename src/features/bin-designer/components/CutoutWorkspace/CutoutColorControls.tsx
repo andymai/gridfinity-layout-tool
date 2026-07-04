@@ -53,9 +53,10 @@ export function CutoutColorControls({
 
       {isColored && (
         <>
-          {/* ColorZoneRow has no `disabled` prop; neutralize interaction so a
+          {/* ColorZoneRow has no `disabled` prop; `inert` neutralizes pointer
+              AND keyboard interaction (and drops it from the a11y tree) so a
               locked cutout can't be recolored, matching the toggle/scope. */}
-          <div className={disabled ? 'pointer-events-none opacity-60' : undefined}>
+          <div inert={disabled || undefined} className={disabled ? 'opacity-60' : undefined}>
             <ColorZoneRow
               zone="body"
               label={color === null ? t('binDesigner.cutouts.color.mixed') : swatchColor}
