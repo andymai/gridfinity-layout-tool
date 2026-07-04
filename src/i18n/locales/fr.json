@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Réglages de la platine réinitialisés aux valeurs par défaut",
   "help.target.baseplate.reset.title": "Réinitialiser la platine aux valeurs par défaut",
   "help.target.baseplate.reset.description": "Rétablit tous les réglages de la platine — dimensions, marges, aimants, connecteurs, coins, impression empilée et réglages d’impression — à leurs valeurs par défaut. Votre disposition de bacs n’est pas affectée.",
-  "help.target.baseplate.reset.keywords": "réinitialiser|défaut|valeurs par défaut|restaurer|rétablir|recommencer|effacer les réglages|usine|platine"
+  "help.target.baseplate.reset.keywords": "réinitialiser|défaut|valeurs par défaut|restaurer|rétablir|recommencer|effacer les réglages|usine|platine",
+  "binDesigner.cutouts.section.color": "Couleur",
+  "binDesigner.cutouts.color.enable": "Colorer cette découpe",
+  "binDesigner.cutouts.color.surface": "Surface peinte",
+  "binDesigner.cutouts.color.floor": "Fond",
+  "binDesigner.cutouts.color.floorAndWalls": "Fond et parois",
+  "binDesigner.cutouts.color.mixed": "Mixte"
 }

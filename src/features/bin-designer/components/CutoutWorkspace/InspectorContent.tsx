@@ -11,6 +11,7 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
+import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
 
@@ -62,6 +63,24 @@ function getSharedValue(
   const first = getEffective(cutouts[0], preview, key) as number;
   for (let i = 1; i < cutouts.length; i++) {
     if ((getEffective(cutouts[i], preview, key) as number) !== first) return null;
+  }
+  return first;
+}
+
+/**
+ * Shared value of a non-numeric field. Returns the common value, or `null` when
+ * the selection is mixed. The field's own `undefined` (e.g. all uncolored) is a
+ * legitimate shared value and is distinct from mixed.
+ */
+function getSharedField<K extends keyof Cutout>(
+  cutouts: readonly Cutout[],
+  preview: ReadonlyMap<string, Partial<Cutout>>,
+  key: K
+): Cutout[K] | null {
+  if (cutouts.length === 0) return null;
+  const first = getEffective(cutouts[0], preview, key);
+  for (let i = 1; i < cutouts.length; i++) {
+    if (getEffective(cutouts[i], preview, key) !== first) return null;
   }
   return first;
 }
@@ -220,6 +239,14 @@ export function InspectorContent({
               max={sharedCutDepth ?? maxCutDepth}
               step={0.5}
               unit="mm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="pt-1">
+            <CutoutColorControls
+              ids={selectedCutouts.map((c) => c.id)}
+              color={getSharedField(selectedCutouts, preview, 'color')}
+              colorScope={getSharedField(selectedCutouts, preview, 'colorScope')}
               disabled={disabled}
             />
           </div>

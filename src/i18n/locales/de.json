@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Grundplatten-Einstellungen auf Standard zurückgesetzt",
   "help.target.baseplate.reset.title": "Grundplatte auf Standard zurücksetzen",
   "help.target.baseplate.reset.description": "Setze alle Grundplatten-Einstellungen — Maße, Ränder, Magnete, Verbinder, Ecken, Stapeldruck und Druckeinstellungen — auf ihre Standardwerte zurück. Dein Bin-Layout bleibt unverändert.",
-  "help.target.baseplate.reset.keywords": "zurücksetzen|standard|standardwerte|wiederherstellen|neu anfangen|einstellungen löschen|werkseinstellungen|grundplatte"
+  "help.target.baseplate.reset.keywords": "zurücksetzen|standard|standardwerte|wiederherstellen|neu anfangen|einstellungen löschen|werkseinstellungen|grundplatte",
+  "binDesigner.cutouts.section.color": "Farbe",
+  "binDesigner.cutouts.color.enable": "Aussparung einfärben",
+  "binDesigner.cutouts.color.surface": "Eingefärbte Fläche",
+  "binDesigner.cutouts.color.floor": "Boden",
+  "binDesigner.cutouts.color.floorAndWalls": "Boden + Wände",
+  "binDesigner.cutouts.color.mixed": "Gemischt"
 }

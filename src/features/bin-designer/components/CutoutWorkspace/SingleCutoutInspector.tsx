@@ -28,6 +28,7 @@ import {
 } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
+import { CutoutColorControls } from './CutoutColorControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Button, Collapsible, Input, SliderInput } from '@/design-system';
 
@@ -200,6 +201,17 @@ export function SingleCutoutInspector({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
             />
           </div>
+        </Collapsible>
+      </div>
+
+      <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+        <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
+          <CutoutColorControls
+            ids={[cutout.id]}
+            color={cutout.color}
+            colorScope={cutout.colorScope}
+            disabled={disabled}
+          />
         </Collapsible>
       </div>
 

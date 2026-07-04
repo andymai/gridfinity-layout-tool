@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "ベースプレートの設定をデフォルトに戻しました",
   "help.target.baseplate.reset.title": "ベースプレートをデフォルトに戻す",
   "help.target.baseplate.reset.description": "寸法、余白、マグネット、コネクタ、角、積み重ね印刷、印刷設定など、ベースプレートのすべての設定を初期値に戻します。ビンのレイアウトには影響しません。",
-  "help.target.baseplate.reset.keywords": "リセット|デフォルト|初期値|復元|やり直す|設定をクリア|工場出荷時|ベースプレート"
+  "help.target.baseplate.reset.keywords": "リセット|デフォルト|初期値|復元|やり直す|設定をクリア|工場出荷時|ベースプレート",
+  "binDesigner.cutouts.section.color": "色",
+  "binDesigner.cutouts.color.enable": "この切り欠きを着色",
+  "binDesigner.cutouts.color.surface": "着色する面",
+  "binDesigner.cutouts.color.floor": "床",
+  "binDesigner.cutouts.color.floorAndWalls": "床と壁",
+  "binDesigner.cutouts.color.mixed": "混在"
 }

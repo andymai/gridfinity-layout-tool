@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Bottenplattans inställningar återställda till standard",
   "help.target.baseplate.reset.title": "Återställ bottenplattan till standard",
   "help.target.baseplate.reset.description": "Återställ alla bottenplattans inställningar — mått, marginaler, magneter, kopplingar, hörn, staplad utskrift och utskriftsinställningar — till standardvärdena. Din bin-layout påverkas inte.",
-  "help.target.baseplate.reset.keywords": "återställ|standard|standardvärden|återskapa|börja om|rensa inställningar|fabrik|bottenplatta"
+  "help.target.baseplate.reset.keywords": "återställ|standard|standardvärden|återskapa|börja om|rensa inställningar|fabrik|bottenplatta",
+  "binDesigner.cutouts.section.color": "Färg",
+  "binDesigner.cutouts.color.enable": "Färglägg urtaget",
+  "binDesigner.cutouts.color.surface": "Färgad yta",
+  "binDesigner.cutouts.color.floor": "Botten",
+  "binDesigner.cutouts.color.floorAndWalls": "Botten + väggar",
+  "binDesigner.cutouts.color.mixed": "Blandat"
 }

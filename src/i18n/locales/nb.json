@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Bunnplate-innstillingene er tilbakestilt til standard",
   "help.target.baseplate.reset.title": "Tilbakestill bunnplaten til standard",
   "help.target.baseplate.reset.description": "Tilbakestill alle bunnplate-innstillingene — mål, marger, magneter, koblinger, hjørner, stabelutskrift og utskriftsinnstillinger — til standardverdiene. Bin-oppsettet ditt påvirkes ikke.",
-  "help.target.baseplate.reset.keywords": "tilbakestill|standard|standardverdier|gjenopprett|start på nytt|tøm innstillinger|fabrikk|bunnplate"
+  "help.target.baseplate.reset.keywords": "tilbakestill|standard|standardverdier|gjenopprett|start på nytt|tøm innstillinger|fabrikk|bunnplate",
+  "binDesigner.cutouts.section.color": "Farge",
+  "binDesigner.cutouts.color.enable": "Fargelegg utsparingen",
+  "binDesigner.cutouts.color.surface": "Farget flate",
+  "binDesigner.cutouts.color.floor": "Bunn",
+  "binDesigner.cutouts.color.floorAndWalls": "Bunn + vegger",
+  "binDesigner.cutouts.color.mixed": "Blandet"
 }

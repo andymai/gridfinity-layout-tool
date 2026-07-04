@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Налаштування базової плити скинуто до типових",
   "help.target.baseplate.reset.title": "Скинути базову плиту до типових",
   "help.target.baseplate.reset.description": "Відновлює всі налаштування базової плити — розміри, поля, магніти, з’єднувачі, кути, друк стосом і налаштування друку — до типових значень. Ваша розкладка контейнерів не зміниться.",
-  "help.target.baseplate.reset.keywords": "скинути|типові|за замовчуванням|відновити|почати спочатку|очистити налаштування|заводські|базова плита"
+  "help.target.baseplate.reset.keywords": "скинути|типові|за замовчуванням|відновити|почати спочатку|очистити налаштування|заводські|базова плита",
+  "binDesigner.cutouts.section.color": "Колір",
+  "binDesigner.cutouts.color.enable": "Розфарбувати виріз",
+  "binDesigner.cutouts.color.surface": "Пофарбована поверхня",
+  "binDesigner.cutouts.color.floor": "Дно",
+  "binDesigner.cutouts.color.floorAndWalls": "Дно та стінки",
+  "binDesigner.cutouts.color.mixed": "Змішано"
 }

@@ -227,7 +227,8 @@
     "layouts.announce.fallbackNameCapitalized",
     "binExamples.popular",
     "binExamples.description",
-    "binExamples.dimensions"
+    "binExamples.dimensions",
+    "binDesigner.cutouts.section.color"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

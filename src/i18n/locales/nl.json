@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Basisplaatinstellingen teruggezet naar standaardwaarden",
   "help.target.baseplate.reset.title": "Basisplaat terugzetten naar standaard",
   "help.target.baseplate.reset.description": "Zet alle basisplaatinstellingen — afmetingen, marges, magneten, verbinders, hoeken, gestapeld printen en printinstellingen — terug naar de standaardwaarden. Je bakkenindeling blijft ongewijzigd.",
-  "help.target.baseplate.reset.keywords": "reset|herstellen|standaard|standaardwaarden|terugzetten|opnieuw beginnen|instellingen wissen|fabrieksinstellingen|basisplaat"
+  "help.target.baseplate.reset.keywords": "reset|herstellen|standaard|standaardwaarden|terugzetten|opnieuw beginnen|instellingen wissen|fabrieksinstellingen|basisplaat",
+  "binDesigner.cutouts.section.color": "Kleur",
+  "binDesigner.cutouts.color.enable": "Uitsparing inkleuren",
+  "binDesigner.cutouts.color.surface": "Gekleurd oppervlak",
+  "binDesigner.cutouts.color.floor": "Bodem",
+  "binDesigner.cutouts.color.floorAndWalls": "Bodem + wanden",
+  "binDesigner.cutouts.color.mixed": "Gemengd"
 }

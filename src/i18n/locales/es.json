@@ -2526,5 +2526,11 @@
   "toast.baseplateReset": "Configuración de la base restablecida a los valores predeterminados",
   "help.target.baseplate.reset.title": "Restablecer la base a los valores predeterminados",
   "help.target.baseplate.reset.description": "Restaura todos los ajustes de la base —dimensiones, márgenes, imanes, conectores, esquinas, impresión apilada y ajustes de impresión— a sus valores predeterminados. Tu diseño de cajas no se ve afectado.",
-  "help.target.baseplate.reset.keywords": "restablecer|restaurar|predeterminado|valores predeterminados|revertir|empezar de nuevo|borrar ajustes|fábrica|base"
+  "help.target.baseplate.reset.keywords": "restablecer|restaurar|predeterminado|valores predeterminados|revertir|empezar de nuevo|borrar ajustes|fábrica|base",
+  "binDesigner.cutouts.section.color": "Color",
+  "binDesigner.cutouts.color.enable": "Colorear este recorte",
+  "binDesigner.cutouts.color.surface": "Superficie pintada",
+  "binDesigner.cutouts.color.floor": "Suelo",
+  "binDesigner.cutouts.color.floorAndWalls": "Suelo y paredes",
+  "binDesigner.cutouts.color.mixed": "Mixto"
 }
