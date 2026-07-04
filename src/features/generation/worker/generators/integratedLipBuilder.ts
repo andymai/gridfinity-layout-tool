@@ -99,9 +99,15 @@ export function buildBinBoxWithLip(
   // geometry kernels reject the sketch or emit unstable geometry. Non-square
   // pitches can shrink outerW/outerD below 2·BOX_CORNER_RADIUS, so cap the
   // radius to half the smaller side (matching `pocketCornerRadius`) before it
-  // reaches `drawRoundedRectangle`.
-  const cappedRadius = (w: number, d: number, desired: number): number =>
-    Math.max(Math.min(desired, Math.min(w, d) / 2 - 0.1), 0.1);
+  // reaches `drawRoundedRectangle`. The half-side cap is authoritative: for a
+  // degenerate (near-zero) side there is no valid positive radius, so the result
+  // collapses toward 0 (square corners) rather than a 0.1 floor that would
+  // exceed the side. Non-degenerate dims are unchanged (the 0.1 floor still
+  // applies, so a full 42mm bin keeps BOX_CORNER_RADIUS).
+  const cappedRadius = (w: number, d: number, desired: number): number => {
+    const maxRadius = Math.max(Math.min(w, d) / 2 - 0.1, 0);
+    return Math.min(Math.max(desired, Math.min(0.1, maxRadius)), maxRadius);
+  };
 
   const insetDrawing = (inset: number): Drawing => {
     if (polygon) {

@@ -247,8 +247,11 @@ describe('SplitBinMeshes', () => {
   });
 
   it('renders with a non-square grid (gridUnitMmY) without throwing', () => {
-    // Depth-axis positioning uses gridUnitMmY; a 42×22 grid must not crash and
-    // must place pieces using the Y pitch rather than the X pitch.
+    // Depth-axis positioning uses gridUnitMmY. Piece positions live on Three.js
+    // <group position> nodes, which the r3f mock doesn't expose as DOM, so this
+    // only guards that the 42×22 non-square path mounts without crashing. The
+    // Y-pitch positioning math itself is covered by SplitBinMeshes source review
+    // and the generator scenario tests, not asserted here.
     const pieces: SplitPieceMeshEntry[] = [
       makePieceEntry({ label: 'p-0-0', col: 0, row: 0, offsetX: 0, offsetY: 0 }),
       makePieceEntry({ label: 'p-0-1', col: 0, row: 1, offsetX: 0, offsetY: 3 }),

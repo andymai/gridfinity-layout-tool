@@ -210,6 +210,9 @@ describe('lid generation and export scenarios', () => {
     );
     expect(square).not.toBeNull();
     expect(explicitY).not.toBeNull();
+    // The anisotropic path runs different code; a matching triangle count alone
+    // wouldn't catch NaN vertices or mismatched normals, so validate structure too.
+    assertStructurallyValid(explicitY!, 'square-Y non-square lid');
     expect(explicitY!.triangleCount).toBe(square!.triangleCount);
   });
 
