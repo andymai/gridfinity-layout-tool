@@ -7,6 +7,7 @@
 
 import type { BinParams } from '../types';
 import type { TFunction } from '@/i18n';
+import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/defaults';
 import { sanitizeFileName } from './fileNaming';
@@ -253,7 +254,7 @@ export function validateImportedBinParams(params: unknown, t: TFunction): Valida
   }
 
   // Validate style
-  if (typeof p.style !== 'string' || !['standard', 'slotted'].includes(p.style)) {
+  if (typeof p.style !== 'string' || !(BIN_STYLES as readonly string[]).includes(p.style)) {
     errors.push(t('binDesigner.designJson.error.styleInvalid'));
   }
 

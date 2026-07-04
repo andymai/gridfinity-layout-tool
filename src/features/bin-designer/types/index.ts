@@ -99,8 +99,11 @@ export function isScrewStyle(style: BaseStyle): boolean {
   return style === 'screw' || style === 'magnet_and_screw';
 }
 
+/** Bin wall/style variants — single source of truth for the `BinStyle` union. */
+export const BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
+
 /** Bin wall/style variant */
-export type BinStyle = 'standard' | 'slotted' | 'solid';
+export type BinStyle = (typeof BIN_STYLES)[number];
 
 /** Slot configuration for one axis */
 export interface AxisSlotConfig {

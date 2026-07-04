@@ -310,6 +310,9 @@ describe('validateImportedBinParams', () => {
     expect(validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'slotted' }, t).valid).toBe(
       true
     );
+    expect(validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'solid' }, t).valid).toBe(
+      true
+    );
   });
 
   it('should validate compartments structure', () => {
