@@ -71,6 +71,7 @@ const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
+const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
 
 /**
  * Top-level keys allowed inside `params` after validation.
@@ -477,6 +478,31 @@ function validateInsert(insert: unknown, index: number): string | null {
  * @param sizeBytes - The size of the raw payload in bytes (used to enforce the maximum payload size).
  * @returns A result object: on success `{ valid: true, payload }` where `payload` contains the validated `type`, `version`, and `params`; on failure `{ valid: false, error }` where `error` includes a `code` and human-readable `message` describing the validation failure.
  */
+/**
+ * Cutouts are otherwise passed through untyped (their geometry is regenerated
+ * client-side), but the shadow-board color fields flow into exported 3MF
+ * material colors, so an untrusted `color` / `colorScope` must be rejected here.
+ */
+function validateCutouts(value: unknown): string | null {
+  if (!Array.isArray(value)) return 'cutouts must be an array';
+  for (let i = 0; i < value.length; i++) {
+    const c: unknown = value[i];
+    if (!isObject(c)) continue;
+    if (c.color !== undefined && !isValidColor(c.color)) {
+      return `cutouts[${i}].color must be a hex color`;
+    }
+    if (
+      c.colorScope !== undefined &&
+      !VALID_CUTOUT_COLOR_SCOPES.includes(
+        c.colorScope as (typeof VALID_CUTOUT_COLOR_SCOPES)[number]
+      )
+    ) {
+      return `cutouts[${i}].colorScope must be one of: ${VALID_CUTOUT_COLOR_SCOPES.join(', ')}`;
+    }
+  }
+  return null;
+}
+
 export function validateDesignerShare(body: unknown, sizeBytes: number): DesignerValidationResult {
   if (sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
     return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
@@ -569,6 +595,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.featureColors !== undefined) {
     const fcErr = validateFeatureColors(params.featureColors);
     if (fcErr) return validationError('INVALID_PARAMS', fcErr);
+  }
+
+  if (params.cutouts !== undefined) {
+    const cutoutsErr = validateCutouts(params.cutouts);
+    if (cutoutsErr) return validationError('INVALID_PARAMS', cutoutsErr);
   }
 
   if (params.textDefaults !== undefined) {
