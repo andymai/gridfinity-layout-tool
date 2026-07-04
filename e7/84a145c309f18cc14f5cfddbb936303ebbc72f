@@ -1,0 +1,25 @@
+src/features/bin-designer/utils/designJson.ts
+  s_6b26c9d8511f7e::t_95a1467c70014b 10
+  s_6b26c9d8511f7e::t_8358464263c705 257
+src/features/bin-designer/utils/designJson.test.ts
+  s_6b26c9d8511f7e::t_a225b5e33ec62b 313
+  s_6b26c9d8511f7e::t_f412cafa63e922 314-315
+src/features/bin-designer/types/index.ts
+  s_6b26c9d8511f7e::t_faa986f627cfa5 102-104,106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e784a145c309f18cc14f5cfddbb936303ebbc72f",
+  "prompts": {},
+  "sessions": {
+    "s_6b26c9d8511f7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e53c038e-9a30-4e32-ab5c-d99ff5174c02",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
