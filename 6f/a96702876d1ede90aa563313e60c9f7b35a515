@@ -1,0 +1,22 @@
+src/features/generation/worker/generators/lightweightFloorCutter.ts
+  s_ae400630c6ce2a::t_28ba060eab2a0a 389
+  s_ae400630c6ce2a::t_f4802a795082d4 223,225-226,229-230
+src/features/generation/worker/generators/lightweightFloorCutter.test.ts
+  s_ae400630c6ce2a::t_229f67a00b05fc 178-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6fa96702876d1ede90aa563313e60c9f7b35a515",
+  "prompts": {},
+  "sessions": {
+    "s_ae400630c6ce2a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16c31d39-883e-4b9e-babe-1e9b980a5002",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
