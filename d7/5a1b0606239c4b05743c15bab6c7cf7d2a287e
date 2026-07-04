@@ -1,0 +1,19 @@
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.tsx
+  s_42ca9be8262433::t_b782d7962e5531 56-57,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d75a1b0606239c4b05743c15bab6c7cf7d2a287e",
+  "prompts": {},
+  "sessions": {
+    "s_42ca9be8262433": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dcc309b-2db5-4570-9639-626456d37bec",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
