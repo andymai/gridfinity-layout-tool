@@ -301,7 +301,11 @@ export function buildMultiObject3MF(
 ): Blob {
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
-  const multiColorEnabled: boolean = params.featureColors?.enabled ?? false;
+  const featureColorsEnabled: boolean = params.featureColors?.enabled ?? false;
+  // A colored cutout makes the design multi-color even with every featureColors
+  // zone at body — mirror the single-piece path so bin+lid/divider exports paint
+  // cutouts too.
+  const multiColorEnabled: boolean = featureColorsEnabled || anyCutoutColored(params.cutouts);
   let binBBox: FlatBBox | null = null;
   // Bin short-circuits to single-color when every active zone matches body;
   // ancillary pieces must stay in lockstep or `anyHasColors` in
@@ -330,7 +334,8 @@ export function buildMultiObject3MF(
         params.featureColors,
         triangleCount,
         vertices,
-        computeActiveZones(params)
+        computeActiveZones(params),
+        enumerateCutoutColorUnits(params.cutouts)
       );
       if (mapping) {
         colorConfig = mapping.config;
