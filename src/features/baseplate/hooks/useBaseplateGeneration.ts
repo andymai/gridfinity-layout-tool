@@ -196,6 +196,12 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
+    // Solid floor changes slab height + through-cut, and its thickness sets how
+    // much taller the plate gets — both must re-trigger BREP. The thickness only
+    // bites when the floor is on, so fold it out otherwise to avoid needless
+    // regeneration while dragging the (hidden) slider.
+    solidFloor: bp.solidFloor ?? false,
+    solidFloorThickness: bp.solidFloor === true ? bp.solidFloorThickness : undefined,
     paddingLeft: bp.paddingLeft,
     paddingRight: bp.paddingRight,
     paddingFront: bp.paddingFront,

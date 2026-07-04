@@ -221,6 +221,20 @@ describe('baseplateDirectMesh', () => {
     expect(directBB.maxZ).toBeCloseTo(brepBB.maxZ, 0);
   });
 
+  it('2×2 with solid floor (no magnets): draft height matches BREP', () => {
+    const params = defaults({ solidFloor: true, solidFloorThickness: 0.8 });
+    const brep = generateBrep(params, noop, false);
+    const direct = generateDirect(params, noop);
+
+    const brepBB = computeBounds(brep.vertices);
+    const directBB = computeBounds(direct.vertices);
+
+    // Draft and export must agree on the taller, floored slab.
+    expect(directBB.minZ).toBeCloseTo(brepBB.minZ, 1);
+    expect(directBB.maxZ).toBeCloseTo(brepBB.maxZ, 1);
+    expect(directBB.maxZ).toBeCloseTo(5.8, 1);
+  });
+
   // ─── Comparison: triangle counts ─────────────────────────────────────────
   // Volume comparison is unreliable because the direct mesh uses cancellation
   // polygons (overlapping faces with opposite normals) rather than being a true

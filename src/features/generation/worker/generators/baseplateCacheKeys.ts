@@ -19,6 +19,7 @@ import {
   DOVETAIL_KEY_CLEARANCE,
   SNAP_CLIP_CLEARANCE,
   effectiveClearance,
+  baseplateFloorDepth,
 } from './generatorConstants';
 
 export function meshCacheKey(
@@ -44,7 +45,8 @@ export function meshCacheKey(
   // (magnets on AND lightweight not disabled). Otherwise the draft mesh is
   // byte-identical to the full build, so folding `draft` to false keeps both
   // sharing one LRU entry instead of fragmenting it.
-  const geometryAffectingDraft = draft && params.magnetHoles && params.lightweight !== false;
+  const geometryAffectingDraft =
+    draft && params.magnetHoles && params.lightweight !== false && !params.solidFloor;
   // Nozzle scales connector feature sizes (snap-clip barb/leg) independently of
   // the clearance term, so it must key the cache or wider-nozzle geometry would
   // alias onto the 0.4mm build. Only meaningful when connectors are on; folded to
@@ -61,6 +63,12 @@ export function meshCacheKey(
     params.magnetHoles,
     quantize(params.magnetDiameter),
     quantize(params.magnetDepth),
+    // Solid floor changes slab height (via the resolved floor depth) + through-cut
+    // vs. floored pockets, and — with magnets — keeps the underside continuous
+    // (suppresses the lightweight cut). Key on both the resolved depth and the
+    // flag so all three effects are captured.
+    params.solidFloor ?? false,
+    quantize(baseplateFloorDepth(params)),
     quantize(params.paddingLeft),
     quantize(params.paddingRight),
     quantize(params.paddingFront),
@@ -103,6 +111,9 @@ export function slabPocketsCacheKey(params: ResolvedBaseplateParams, forExport: 
     quantize(params.gridUnitMm),
     params.magnetHoles,
     quantize(params.magnetDepth),
+    // The resolved floor depth sets the slab height + whether pockets are
+    // through-cut (0 = through). Captures the solidFloor thickness too.
+    quantize(baseplateFloorDepth(params)),
     quantize(params.paddingLeft),
     quantize(params.paddingRight),
     quantize(params.paddingFront),

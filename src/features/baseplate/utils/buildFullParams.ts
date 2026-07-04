@@ -71,6 +71,11 @@ export function buildFullParams(
     connectorStyle: stripConnectors ? undefined : stored.connectorStyle,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
+    // Stack printing nests flipped plates into each other, which needs the
+    // pockets through-cut — a solid floor would block the nesting — so strip it
+    // while stacking (restored when stacking is off, like magnets above).
+    solidFloor: stackingOn ? false : stored.solidFloor,
+    solidFloorThickness: stored.solidFloorThickness,
     // Corner rounding only applies to the assembled drawer's outer corners, so
     // it makes the corner tiles differ from the rest. Stacking wants uniform,
     // interchangeable tiles, so square them off (also restored when off).

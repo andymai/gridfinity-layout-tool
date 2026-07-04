@@ -117,6 +117,20 @@ export interface StoredBaseplateParams {
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */
   readonly lightweight?: boolean;
+  /**
+   * Leave a solid floor under every socket instead of cutting the pockets
+   * through — a rigid/weighted plate (default false). The floor is added below
+   * the 5mm socket, so the plate gets taller by {@link solidFloorThickness}; the
+   * pocket depth (bin seating) is unchanged. With magnets it keeps the underside
+   * continuous and the magnet holes are cut into it.
+   */
+  readonly solidFloor?: boolean;
+  /**
+   * Thickness (mm) of the {@link solidFloor}. Defaults to
+   * `SOLID_FLOOR_DEFAULT_MM` (0.8mm) when omitted. Only meaningful when
+   * `solidFloor` is true.
+   */
+  readonly solidFloorThickness?: Mm;
   /** When true (or undefined), grid dims are derived from the drawer. */
   readonly syncWithLayout?: boolean;
   /** Custom grid width in units, only used when syncWithLayout is false. */

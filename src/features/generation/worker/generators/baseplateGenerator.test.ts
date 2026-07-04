@@ -195,6 +195,70 @@ describe('baseplateGenerator', () => {
     expect(bounds5.maxZ - bounds3.maxZ).toBeCloseTo(2, 0); // 5 - 3 = 2mm difference
   });
 
+  // ─── Solid floor (magnet-free) ────────────────────────────────────────────
+  it('solid floor adds its thickness below the socket (taller plate)', () => {
+    const thickness = 0.8;
+    const hollow = generateBaseplate(defaults(), noop, true);
+    const floored = generateBaseplate(
+      defaults({ solidFloor: true, solidFloorThickness: thickness }),
+      noop,
+      true
+    );
+    const hollowZ = zBounds(hollow.vertices);
+    const flooredZ = zBounds(floored.vertices);
+    // Through-cut plate is exactly the socket height; the floor grows it downward.
+    expect(hollowZ.maxZ).toBeCloseTo(SOCKET_HEIGHT, 0);
+    expect(flooredZ.maxZ).toBeCloseTo(SOCKET_HEIGHT + thickness, 1);
+  });
+
+  it('solid floor thickness is customizable', () => {
+    const thin = generateBaseplate(
+      defaults({ solidFloor: true, solidFloorThickness: 0.8 }),
+      noop,
+      true
+    );
+    const thick = generateBaseplate(
+      defaults({ solidFloor: true, solidFloorThickness: 3 }),
+      noop,
+      true
+    );
+    expect(zBounds(thick.vertices).maxZ - zBounds(thin.vertices).maxZ).toBeCloseTo(2.2, 1);
+  });
+
+  it('solid floor defaults to 0.8mm when thickness omitted', () => {
+    const mesh = generateBaseplate(defaults({ solidFloor: true }), noop, true);
+    expect(zBounds(mesh.vertices).maxZ).toBeCloseTo(SOCKET_HEIGHT + 0.8, 1);
+  });
+
+  it('solid floor stacks below the magnet layer, adding its thickness', () => {
+    const magnetDepth = 2;
+    const thickness = 0.8;
+    const magnetsOnly = generateBaseplate(
+      defaults({ width: 1, depth: 1, magnetHoles: true, magnetDepth }),
+      noop,
+      true
+    );
+    const magnetsSolid = generateBaseplate(
+      defaults({
+        width: 1,
+        depth: 1,
+        magnetHoles: true,
+        magnetDepth,
+        solidFloor: true,
+        solidFloorThickness: thickness,
+      }),
+      noop,
+      true
+    );
+    // The solid floor is added below the magnet retaining floor, so the plate
+    // grows by exactly the floor thickness. Magnet holes stay magnetDepth deep
+    // from the socket bottom — the extra floor is retaining material below them.
+    expect(zBounds(magnetsSolid.vertices).maxZ - zBounds(magnetsOnly.vertices).maxZ).toBeCloseTo(
+      thickness,
+      1
+    );
+  });
+
   // ─── Different magnet sizes ───────────────────────────────────────────────
   it('2×2 with 8mm magnets', () => {
     const mesh = generateBaseplate(

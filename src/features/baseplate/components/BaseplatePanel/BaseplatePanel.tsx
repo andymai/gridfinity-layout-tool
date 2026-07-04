@@ -15,7 +15,14 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
-import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS, MARGIN_MIN_DETACH_MM } from '@/core/constants';
+import {
+  DEFAULT_BASEPLATE_PARAMS,
+  CONSTRAINTS,
+  MARGIN_MIN_DETACH_MM,
+  SOLID_FLOOR_DEFAULT_MM,
+  SOLID_FLOOR_MIN_MM,
+  SOLID_FLOOR_MAX_MM,
+} from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
@@ -673,6 +680,28 @@ export function BaseplatePanel() {
                         info={t('baseplate.magnetDepthInfo')}
                       />
                     </FeatureToggle>
+                  </div>
+                  <div className="border-t border-stroke-subtle pt-3">
+                    <FeatureToggle
+                      label={t('baseplate.solidFloor')}
+                      // Independent of magnets — the floor is added below the grid
+                      // (and below the magnet layer when present), keeping the
+                      // underside continuous. Thickness is customizable either way.
+                      checked={baseplateParams.solidFloor === true}
+                      onChange={() => updateParam('solidFloor', !baseplateParams.solidFloor)}
+                      primaryControls={
+                        <SliderInput
+                          label={t('baseplate.solidFloorThickness')}
+                          value={baseplateParams.solidFloorThickness ?? SOLID_FLOOR_DEFAULT_MM}
+                          onChange={(v) => updateParam('solidFloorThickness', mm(v))}
+                          min={SOLID_FLOOR_MIN_MM}
+                          max={SOLID_FLOOR_MAX_MM}
+                          step={0.1}
+                          unit="mm"
+                          info={t('baseplate.solidFloorHeightNote')}
+                        />
+                      }
+                    />
                   </div>
                   <div className="border-t border-stroke-subtle pt-3">
                     <CornerRadiusControl

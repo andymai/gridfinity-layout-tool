@@ -2,17 +2,18 @@
  * Magnet hole emitter for direct baseplate mesh.
  *
  * Each magnet hole is a blind cylindrical pocket cut downward from the pocket
- * floor (Z=floorDepth) into the solid floor below. The hole extends down by
- * magnetDepth, leaving a thin retaining floor (MAGNET_FLOOR) at the bottom.
+ * floor (Z=floorDepth) by magnetDepth, leaving a retaining floor below it. The
+ * hole depth is anchored to magnetDepth (not the total floor) so it matches the
+ * BREP cutter exactly — a thicker solidFloor just leaves more material below the
+ * magnet, it never deepens the hole.
  *
  * Pattern (per magnet position):
  *   - Cancel circle at Z=floorDepth-CANCEL_EPSILON facing -Z — punches a hole
  *     in the existing pocket floor mesh (avoids z-fighting).
  *   - Cylinder wall ring shared across adjacent quads for smooth shading.
- *   - Floor circle at Z=MAGNET_FLOOR facing +Z — magnet sits on this.
+ *   - Floor circle at Z=floorDepth-magnetDepth facing +Z — magnet sits on this.
  */
 
-import { MAGNET_FLOOR } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
 import { circlePoints } from './directMeshShapes';
@@ -23,10 +24,11 @@ export function addMagnetHoleAt(
   mx: number,
   my: number,
   magnetRadius: number,
-  floorDepth: number
+  floorDepth: number,
+  magnetDepth: number
 ): void {
   const zTop = floorDepth; // pocket floor level (magnet hole opens here)
-  const zBot = MAGNET_FLOOR; // thin floor that retains the magnet
+  const zBot = floorDepth - magnetDepth; // retaining floor the magnet sits on
   const circlePts = circlePoints(magnetRadius, CIRCLE_SEGMENTS);
 
   // Cancel face slightly below the pocket floor to avoid z-fighting.

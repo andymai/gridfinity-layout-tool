@@ -12,7 +12,8 @@
  * Coordinate system (matches baseplateGenerator.ts):
  * - Z=0: bottom face of baseplate
  * - Z=totalHeight: top face / pocket opening
- * - Without magnets: pockets through-cut (no floor)
+ * - Without magnets: pockets through-cut (no floor), unless the solidFloor
+ *   option leaves a plain floor of its own thickness below the sockets
  * - With magnets: slab is taller by (MAGNET_FLOOR + magnetDepth); pockets
  *   stop at SOCKET_HEIGHT depth, leaving a solid continuous floor. Magnet
  *   holes are blind cylindrical pockets cut downward from the pocket floor
@@ -35,7 +36,7 @@ import {
   frameCells,
   marginPocketDepthMm,
   checkCancelled,
-  MAGNET_FLOOR,
+  baseplateFloorDepth,
   MIN_PRINTABLE_TILE_MM,
   NUB_DIAMETER,
   NUB_DEPTH,
@@ -103,8 +104,10 @@ export function generateBaseplateDirect(
 
   const mb = new MeshBuilder();
 
-  // Slab dimensions — taller when magnets require a solid floor
-  const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
+  // Slab dimensions — taller when a floor is left under the pockets. Magnets
+  // require one; the standalone solidFloor option adds one without magnet holes.
+  const floorDepth = baseplateFloorDepth(params);
+  const hasFloor = floorDepth > 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMm + paddingFront + paddingBack;
@@ -206,12 +209,12 @@ export function generateBaseplateDirect(
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // Bottom: magnet variants get a fully-closed slab bottom (the floor under the
-  // pockets is solid, so a single fan from the slab center is correct). Through-
-  // cut variants mirror the top lattice instead — the slab is solid only between
-  // pockets, and a flat bottom face there closes the slab band visible from
-  // below.
-  if (magnetHoles) {
+  // Bottom: floored variants (magnets OR the standalone solidFloor option) get a
+  // fully-closed slab bottom (the floor under the pockets is solid, so a single
+  // fan from the slab center is correct). Through-cut variants mirror the top
+  // lattice instead — the slab is solid only between pockets, and a flat bottom
+  // face there closes the slab band visible from below.
+  if (hasFloor) {
     addSolidBottomFace(mb, outerPts, slabOffsetX, slabOffsetY);
   } else {
     addPlateFace(
@@ -244,7 +247,7 @@ export function generateBaseplateDirect(
       // Shared placement (wall-distance clamp) — identical to the BREP plate,
       // bin base, and lid so the draft preview and all mating surfaces agree.
       for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
-        addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth);
+        addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
       }
     }
     // Over-tile margin tiles: the corner magnets that fit, else a single
@@ -267,7 +270,7 @@ export function generateBaseplateDirect(
         overTileHalfGridSolidLeftover
       )) {
         for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
-          addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth);
+          addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
         }
       }
     }

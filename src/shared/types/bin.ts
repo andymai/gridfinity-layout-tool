@@ -289,6 +289,15 @@ export interface ResolvedBaseplateParams {
   readonly nozzleSizeMm?: number;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
+  /**
+   * Leave a solid floor under every socket instead of through-cutting the
+   * pockets — a rigid/weighted plate. The floor is added below the 5mm socket
+   * (plate grows by {@link solidFloorThickness}; pocket depth unchanged). With
+   * magnets it keeps the underside continuous and the holes are cut into it.
+   */
+  readonly solidFloor?: boolean;
+  /** Thickness (mm) of the {@link solidFloor}; defaults to 0.8mm when omitted. */
+  readonly solidFloorThickness?: number;
   /** Uniform outer corner radius in mm. */
   readonly cornerRadius?: number;
   /** Per-corner radius overrides (tl/tr/bl/br in mm). */

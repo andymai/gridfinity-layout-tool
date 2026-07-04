@@ -9,7 +9,7 @@
  */
 
 import * as z from 'zod';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import type { CommandType } from '../commands';
 import {
@@ -225,6 +225,8 @@ const baseplateParamsSchema = z.object({
   invertDovetails: z.boolean().optional(),
   connectorStyle: z.enum(['dovetail', 'puzzle', 'dovetailKey', 'snapClip']).optional(),
   lightweight: z.boolean().optional(),
+  solidFloor: z.boolean().optional(),
+  solidFloorThickness: z.number().min(SOLID_FLOOR_MIN_MM).max(SOLID_FLOOR_MAX_MM).optional(),
   syncWithLayout: z.boolean().optional(),
   baseplateWidth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),
   baseplateDepth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),

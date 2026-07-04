@@ -47,6 +47,11 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `ip:${params.preferIdenticalPieces ? 1 : 0}`,
     `cs:${params.connectorStyle ?? 'dovetail'}`,
     `lw:${params.lightweight ? 1 : 0}`,
+    // Solid floor changes slab height + through-cut, and (with magnets) keeps the
+    // underside continuous — so floored and hollow pieces must never dedupe. The
+    // thickness only bites when solidFloor is on, so gate it to avoid false misses.
+    `sf:${params.solidFloor ? 1 : 0}`,
+    `sft:${params.solidFloor ? (params.solidFloorThickness ?? '') : ''}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];
 

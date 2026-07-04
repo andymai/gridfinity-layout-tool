@@ -255,6 +255,18 @@ export const OVER_TILE_MIN_MARGIN_MM = 8;
  */
 export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
 
+/**
+ * Solid-floor thickness bounds + default (mm) for the baseplate `solidFloor`
+ * option. The floor is added *below* the 5mm socket, so the plate grows by this
+ * much while the pocket depth (bin seating) is unchanged. 0.8mm is the common
+ * Gridfinity structural minimum for a sealed base; the range lets users trade
+ * material/weight up to a chunky weighted plate. Shared by the baseplate UI
+ * (slider bounds) and the worker geometry (`baseplateFloorDepth`).
+ */
+export const SOLID_FLOOR_DEFAULT_MM = 0.8;
+export const SOLID_FLOOR_MIN_MM = 0.4;
+export const SOLID_FLOOR_MAX_MM = 5;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   magnetHoles: false,
@@ -265,6 +277,8 @@ export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   paddingFront: mm(0),
   paddingBack: mm(0),
   lightweight: true,
+  solidFloor: false,
+  solidFloorThickness: mm(SOLID_FLOOR_DEFAULT_MM),
 } as const;
 
 /**
@@ -332,6 +346,19 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
         }
       : {}),
     ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
+    ...(typeof obj.solidFloor === 'boolean' ? { solidFloor: obj.solidFloor } : {}),
+    ...(typeof obj.solidFloorThickness === 'number'
+      ? {
+          solidFloorThickness: mm(
+            clampNumber(
+              obj.solidFloorThickness,
+              SOLID_FLOOR_MIN_MM,
+              SOLID_FLOOR_MAX_MM,
+              SOLID_FLOOR_DEFAULT_MM
+            )
+          ),
+        }
+      : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
     ...(typeof obj.baseplateWidth === 'number'
       ? {

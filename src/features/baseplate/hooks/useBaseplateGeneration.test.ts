@@ -83,6 +83,36 @@ describe('selectGenerationTriggers', () => {
     const halfGrid = selectGenerationTriggers(makeFillState(true));
     expect(shallowEqual(plain, halfGrid)).toBe(false);
   });
+
+  /**
+   * Regression: enabling the solid floor or dragging its thickness changes only
+   * `solidFloor`/`solidFloorThickness`. If those are absent from the trigger set,
+   * the preview never regenerates and the plate keeps its old height/underside.
+   */
+  it('produces a different trigger selection when solidFloor toggles', () => {
+    const off = makeState(undefined);
+    const on = makeState(undefined);
+    Object.assign(on.layout.baseplateParams, { solidFloor: true });
+    expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
+  });
+
+  it('produces a different trigger selection when solidFloorThickness changes (floor on)', () => {
+    const thin = makeState(undefined);
+    const thick = makeState(undefined);
+    Object.assign(thin.layout.baseplateParams, { solidFloor: true, solidFloorThickness: 0.8 });
+    Object.assign(thick.layout.baseplateParams, { solidFloor: true, solidFloorThickness: 2 });
+    expect(shallowEqual(selectGenerationTriggers(thin), selectGenerationTriggers(thick))).toBe(
+      false
+    );
+  });
+
+  it('ignores solidFloorThickness while the floor is off (no needless regen)', () => {
+    const a = makeState(undefined);
+    const b = makeState(undefined);
+    Object.assign(a.layout.baseplateParams, { solidFloor: false, solidFloorThickness: 0.8 });
+    Object.assign(b.layout.baseplateParams, { solidFloor: false, solidFloorThickness: 2 });
+    expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+  });
 });
 
 describe('hasMeshOnScreen', () => {

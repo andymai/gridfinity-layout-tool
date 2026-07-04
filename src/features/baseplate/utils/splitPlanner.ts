@@ -1010,6 +1010,8 @@ export function pieceToBaseplateParams(
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,
+    solidFloor: parentParams.solidFloor,
+    solidFloorThickness: parentParams.solidFloorThickness,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii,
   };

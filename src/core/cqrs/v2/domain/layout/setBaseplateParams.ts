@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
+import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
@@ -29,6 +30,8 @@ const payloadSchema = z.object({
     connectorNubs: z.boolean().optional(),
     connectorStyle: z.enum(['dovetail', 'dovetailKey']).optional(),
     lightweight: z.boolean().optional(),
+    solidFloor: z.boolean().optional(),
+    solidFloorThickness: z.number().optional(),
     syncWithLayout: z.boolean().optional(),
     baseplateWidth: z.number().optional(),
     baseplateDepth: z.number().optional(),
@@ -70,6 +73,15 @@ export const setBaseplateParams = defineCommand({
       paddingBack: Math.max(0, p.paddingBack) as Mm,
       magnetDiameter: clamp(p.magnetDiameter, 0.5, 20) as Mm,
       magnetDepth: clamp(p.magnetDepth, 0.5, 10) as Mm,
+      ...(p.solidFloorThickness !== undefined
+        ? {
+            solidFloorThickness: clamp(
+              p.solidFloorThickness,
+              SOLID_FLOOR_MIN_MM,
+              SOLID_FLOOR_MAX_MM
+            ) as Mm,
+          }
+        : {}),
       ...(p.baseplateWidth !== undefined
         ? { baseplateWidth: clamp(p.baseplateWidth, 0.5, 50) as GridUnits }
         : {}),

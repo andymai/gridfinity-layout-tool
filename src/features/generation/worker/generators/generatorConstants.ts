@@ -6,7 +6,7 @@
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
+import { OVER_TILE_MIN_MARGIN_MM, SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
@@ -31,6 +31,32 @@ export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 
 /** Thin floor under each magnet hole — retains the magnet (mm) */
 export const MAGNET_FLOOR = 0.5;
+
+/**
+ * Height of solid floor left under the baseplate sockets, in mm — the single
+ * source of truth for the pocket-depth-vs-slab-height relationship shared by the
+ * BREP build, the direct-mesh draft, and the split/connector heights.
+ *
+ * Two independent contributions, summed so the plate height is predictable:
+ *   - Magnets need a retaining floor (MAGNET_FLOOR + magnetDepth) to seat in.
+ *   - The `solidFloor` option adds its chosen thickness *below* that — the plate
+ *     grows by exactly the floor thickness, and it keeps the underside continuous
+ *     (see the lightweight suppression in the generator).
+ * The blind magnet holes are always cut magnetDepth deep from the socket bottom,
+ * so the extra solid floor just adds retaining material below them (both the BREP
+ * build and the direct-mesh draft anchor the hole the same way). Neither on =
+ * through-cut (0).
+ */
+export function baseplateFloorDepth(params: {
+  readonly magnetHoles: boolean;
+  readonly magnetDepth: number;
+  readonly solidFloor?: boolean;
+  readonly solidFloorThickness?: number;
+}): number {
+  const magnetFloor = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
+  const solidFloor = params.solidFloor ? (params.solidFloorThickness ?? SOLID_FLOOR_DEFAULT_MM) : 0;
+  return magnetFloor + solidFloor;
+}
 
 /**
  * Smallest printable clipped grid tile / edge foot (mm). Below this the tapered

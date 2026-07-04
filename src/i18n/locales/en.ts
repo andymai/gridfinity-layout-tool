@@ -2298,6 +2298,10 @@ const en: Record<string, string> = {
   'baseplate.pieceLabel': 'Piece {label}',
   'baseplate.magnetDiameterInfo': '6mm is standard for Gridfinity',
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
+  'baseplate.solidFloor': 'Solid floor',
+  'baseplate.solidFloorThickness': 'Floor thickness',
+  'baseplate.solidFloorHeightNote':
+    'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
   'baseplate.maxPrintHeight': 'Build height',

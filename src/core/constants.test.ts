@@ -11,6 +11,8 @@ import {
   BREAKPOINTS,
   getDefaultDrawerSize,
   migrateBaseplateParams,
+  SOLID_FLOOR_MIN_MM,
+  SOLID_FLOOR_MAX_MM,
 } from '@/core/constants';
 
 describe('calcMaxGridUnits', () => {
@@ -309,6 +311,32 @@ describe('migrateBaseplateParams', () => {
     };
     const result = migrateBaseplateParams(stored);
     expect(result.connectorNubs).toBeUndefined();
+  });
+
+  it('preserves solidFloor + clamped thickness across a save/load round-trip', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    expect(migrateBaseplateParams({ ...base, solidFloor: true }).solidFloor).toBe(true);
+    expect(migrateBaseplateParams({ ...base, solidFloor: false }).solidFloor).toBe(false);
+    // Absent → undefined (treated as off downstream)
+    expect(migrateBaseplateParams(base).solidFloor).toBeUndefined();
+    // Thickness preserved when valid, clamped when out of range.
+    expect(migrateBaseplateParams({ ...base, solidFloorThickness: 1.5 }).solidFloorThickness).toBe(
+      1.5
+    );
+    expect(migrateBaseplateParams({ ...base, solidFloorThickness: 999 }).solidFloorThickness).toBe(
+      SOLID_FLOOR_MAX_MM
+    );
+    expect(migrateBaseplateParams({ ...base, solidFloorThickness: 0 }).solidFloorThickness).toBe(
+      SOLID_FLOOR_MIN_MM
+    );
   });
 
   it('preserves overTile across a save/load round-trip', () => {
