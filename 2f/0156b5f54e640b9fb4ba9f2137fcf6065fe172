@@ -1,0 +1,53 @@
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_42ca9be8262433::t_e421b016e6beb9 14
+  s_42ca9be8262433::t_f7dadcb0d9097e 245-252
+  s_42ca9be8262433::t_a62012b86ed7e2 70-87
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.tsx
+  s_42ca9be8262433::t_0e51c7fdec5b79 13
+  s_42ca9be8262433::t_8e7f041339bc4e 1-12,14-93
+src/i18n/locales/en.ts
+  s_42ca9be8262433::t_fc667249597729 1836-1841
+src/i18n/locales/fr.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.test.tsx
+  s_42ca9be8262433::t_5d962a8aecaee4 2-3,8-49,53-82
+  s_42ca9be8262433::t_8c21c35242dc60 50-52
+  s_42ca9be8262433::t_918c07b98606b3 1,4-7
+src/i18n/locales/nl.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/i18n/locales/sv.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/i18n/locales/nb.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/i18n/locales/uk.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/i18n/locales/pt-BR.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/i18n/locales/ja.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+scripts/i18n-values-allowlist.json
+  s_42ca9be8262433::t_458f7088b30550 230-231
+src/i18n/locales/de.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_42ca9be8262433::t_85bea97f649e54 31
+  s_42ca9be8262433::t_a42629385c5780 207-217
+src/i18n/locales/es.json
+  s_42ca9be8262433::t_458f7088b30550 2529-2535
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2f0156b5f54e640b9fb4ba9f2137fcf6065fe172",
+  "prompts": {},
+  "sessions": {
+    "s_42ca9be8262433": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dcc309b-2db5-4570-9639-626456d37bec",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
