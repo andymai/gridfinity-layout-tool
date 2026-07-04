@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_ae400630c6ce2a::t_eddb1f64930209 266-267
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_ae400630c6ce2a::t_40238fdfa4aaf5 4
+  s_ae400630c6ce2a::t_583be77b1835c6 646-652,654-658,660-665,667-670
+  s_ae400630c6ce2a::t_79291ce6a50312 640-645,653,659,666,671
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "eee09f6714a982c53996e3a008c16e737a52b6b7",
+  "prompts": {},
+  "sessions": {
+    "s_ae400630c6ce2a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16c31d39-883e-4b9e-babe-1e9b980a5002",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
