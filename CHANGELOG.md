@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.214.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.213.1...gridfinity-layout-tool-v4.214.0) (2026-07-04)
+
+
+### Features
+
+* **bin-designer:** shadow-board colors for custom cutouts ([#2440](https://github.com/andymai/gridfinity-layout-tool/issues/2440)) ([4dd403e](https://github.com/andymai/gridfinity-layout-tool/commit/4dd403e505b8572c6ca1cd27a4135bc4dde34d2e))
+
 ## [4.213.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.213.0...gridfinity-layout-tool-v4.213.1) (2026-07-03)
 
 
