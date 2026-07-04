@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { pocketCornerRadius } from './generatorConstants';
+import { pocketCornerRadius, MAGNET_FLOOR } from './generatorConstants';
 import { initTestKernel } from '@/test/initTestKernel';
 
 // BREP generator requires OpenCascade WASM init
@@ -636,5 +636,37 @@ describe('direct mesh — over-tile margin pockets', () => {
     const halfGridTop = horizontalFaceArea(halfGrid, 1, topZ);
     // Two nominal rows each expose a ~21×42mm half-socket; well over 500mm² total.
     expect(halfGridTop).toBeLessThan(solidTop - 500);
+  });
+
+  it('half-grid solid-leftover drops the leftover tile magnets too (preview matches export)', () => {
+    // A 33mm left margin packs one 21mm half-socket + a 12mm leftover strip
+    // (>= MIN_PRINTABLE_TILE_MM, so it seats magnets). With
+    // `overTileHalfGridSolidLeftover` that strip stays solid (no pocket) — so it
+    // must not receive magnet holes either, matching the BREP export which drops
+    // the cell entirely.
+    //
+    // Every magnet hole leaves a +Z retaining-floor disc at exactly
+    // z = MAGNET_FLOOR (created only by addMagnetHoleAt), so filtering upward
+    // faces at that plane counts magnet holes with no pocket-geometry confound.
+    // Dropping the leftover tile must remove its magnets → strictly less
+    // magnet-floor area. Regression for the direct-mesh magnet pass omitting the
+    // solid-leftover flag, which drilled magnets the exported plate lacked.
+    const base = {
+      paddingLeft: 33,
+      overTile: true,
+      overTileHalfGrid: true,
+      magnetHoles: true,
+    };
+    const magnetFloorArea = (solidLeftover: boolean): number =>
+      horizontalFaceArea(
+        generateDirect(defaults({ ...base, overTileHalfGridSolidLeftover: solidLeftover }), noop),
+        1,
+        MAGNET_FLOOR
+      );
+
+    // Sanity: keeping the leftover tile does seat magnets on it.
+    expect(magnetFloorArea(false)).toBeGreaterThan(0);
+    // Dropping it as solid leftover removes those magnets from the preview too.
+    expect(magnetFloorArea(true)).toBeLessThan(magnetFloorArea(false));
   });
 });
