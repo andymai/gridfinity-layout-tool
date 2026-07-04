@@ -1,0 +1,23 @@
+package.json
+  s_6b26c9d8511f7e::t_39a358a6133c45 106
+src/features/generation/worker/generators/binGenerator.scenario.overlappingCutoutColor.test.ts
+  s_6b26c9d8511f7e::t_fd2057d688ca57 1-129
+pnpm-lock.yaml
+  s_6b26c9d8511f7e::t_924a10f603a987 71-72,3065-3066,8561
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "398a45fea2f70b9fa6bb0eefb7cbf502b8443389",
+  "prompts": {},
+  "sessions": {
+    "s_6b26c9d8511f7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e53c038e-9a30-4e32-ab5c-d99ff5174c02",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
