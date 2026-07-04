@@ -175,6 +175,19 @@ describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
     expect(Math.max(...xs)).toBeGreaterThan(100);
     expect(xs.filter((x) => Math.abs(x - 100) < 1e-6)).toHaveLength(1); // gap on axis
   });
+
+  it('applies per-axis pitch: a non-square {x,y} tile matches its square-equivalent', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    // A unit-square tile under a 42×21 anisotropic pitch is physically 42×21 —
+    // identical to a 1×0.5 tile under a square 42 pitch. The cuts must match; if
+    // the planner used the X pitch for both axes it would model a 42×42 tile and
+    // produce different geometry. Guards the per-axis resolvePitch wiring.
+    const nonSquare = planPartialCellFloorCuts(cell(1, 1), MAGNET_R, { x: GRID, y: GRID / 2 });
+    const squareEquivalent = planPartialCellFloorCuts(cell(1, 0.5), MAGNET_R, GRID);
+    expect(nonSquare).toEqual(squareEquivalent);
+    // Sanity: this tile is short enough on Y to actually get hollowed (non-empty).
+    expect(nonSquare.length).toBeGreaterThan(0);
+  });
 });
 
 describe('buildPartialCellFloorCutters (BREP solids)', () => {

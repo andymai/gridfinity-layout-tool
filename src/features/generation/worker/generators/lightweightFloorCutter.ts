@@ -220,13 +220,14 @@ export type PartialFloorCut =
 export function planPartialCellFloorCuts(
   cell: CellInfo,
   magnetRadius: number,
-  gridUnitMm: number
+  gridUnitMm: GridUnitInput
 ): PartialFloorCut[] {
-  const positions = magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm);
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY);
   if (positions.length === 0) return []; // too small for a magnet — leave solid
 
-  const halfW = (cell.widthUnits * gridUnitMm) / 2;
-  const halfD = (cell.depthUnits * gridUnitMm) / 2;
+  const halfW = (cell.widthUnits * unitX) / 2;
+  const halfD = (cell.depthUnits * unitY) / 2;
   // Inset by INSET_BOT so the cut stays within the flat pocket floor and doesn't
   // undercut the tapered pocket walls (matches the full-cell cutter).
   const hw = halfW - INSET_BOT;
@@ -385,7 +386,7 @@ export function buildPartialCellFloorCutters(
   cells: readonly CellInfo[],
   magnetRadius: number,
   magnetDepth: number,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   lightweight?: boolean
 ): Shape3D[] {
   if (lightweight === false) return [];
