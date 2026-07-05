@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.215.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.1...gridfinity-layout-tool-v4.215.2) (2026-07-05)
+
+
+### Bug Fixes
+
+* **generation:** bump brepjs to 18.118.3 for overlapping-cutout color ([#2443](https://github.com/andymai/gridfinity-layout-tool/issues/2443)) ([#2448](https://github.com/andymai/gridfinity-layout-tool/issues/2448)) ([724de22](https://github.com/andymai/gridfinity-layout-tool/commit/724de2219645dd9483bdd97ef104a8a22ed5a494))
+
 ## [4.215.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.0...gridfinity-layout-tool-v4.215.1) (2026-07-04)
 
 
