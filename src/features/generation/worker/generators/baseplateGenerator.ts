@@ -153,13 +153,23 @@ export function generateBaseplate(
 
   try {
     const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-    // Edge overlay via dihedral creases (not analytic meshEdges). A baseplate's
-    // solid floor is one large planar face pierced by every pocket + magnet hole;
-    // the analytic extractor returns that face's full internal triangulation,
-    // which renders as concentric "wireframe" rings around the holes. creaseEdges
-    // welds the mesh and keeps only sharp folds + naked boundaries, so the hole
-    // rims and pocket outlines stay crisp (at the mesh's own tolerance) while the
-    // coplanar floor triangulation is dropped. Matches the direct-mesh draft.
+    // Edge overlay via dihedral creases for ALL kernels — a deliberate exception
+    // to the "extract-time kernels use analytic meshEdges" pattern the other
+    // generators follow (tessellateStage, splitBinBuilder, lidOrchestrator, …).
+    //
+    // Why baseplate is special-cased: a plate is dominated by large planar faces
+    // pierced by many holes (the waffle top; the solid floor when present), and
+    // for those meshEdges returns the face's internal triangulation — measured
+    // ~3.5x more edge segments than the true feature set, and on the open solid
+    // floor it renders as concentric "wireframe" rings fanning out from every
+    // magnet hole (the reported artifact). creaseEdges welds the tessellation and
+    // keeps only sharp folds + naked boundaries, so hole rims and pocket outlines
+    // stay crisp while the coplanar triangulation (and analytic tangent seams) are
+    // dropped — verified to preserve every sharp feature on grid/corner/magnet/
+    // solid-floor plates. It also makes the refined preview match the instant
+    // direct-mesh draft, which already uses creaseEdges, so there's no edge-overlay
+    // pop on refine. Safe because this overlay is preview-only: STL/STEP export
+    // carries no edge lines, so exact analytic edges are never needed here.
     const edgeVerts: ArrayLike<number> = creaseEdges(meshResult);
 
     onProgress('base', 1);
