@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/binGenerator.scenario.overlappingCutoutColor.test.ts
+  s_6b26c9d8511f7e::t_78a5af7fb57b65 11-13,18,40,73-76,84-85,88,93,97-102,106-112
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_6b26c9d8511f7e::t_16fcda17ce5976 274-311
+src/features/generation/worker/generators/binGenerator.scenario.cutoutColorTag.test.ts
+  s_6b26c9d8511f7e::t_4d1fa8a3c7686b 22
+  s_6b26c9d8511f7e::t_eb2f6e41fa35fc 54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1a86009aeb7ffa1cd301fe0091068ce64cc8abf7",
+  "prompts": {},
+  "sessions": {
+    "s_6b26c9d8511f7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e53c038e-9a30-4e32-ab5c-d99ff5174c02",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
