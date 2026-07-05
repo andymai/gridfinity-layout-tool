@@ -19,6 +19,7 @@
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { makeCutout } from './__kernel-tests__/scenarioTypes';
+import { triangleNormalZ } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import {
   enumerateCutoutColorUnits,
@@ -30,21 +31,6 @@ import type { BinParams, Cutout } from '@/shared/types/bin';
 beforeAll(async () => {
   await initBrepjs();
 }, 30_000);
-
-/** Normalized z-component of a triangle's geometric normal (floor≈±1, wall≈0). */
-function triNz(verts: ArrayLike<number>, a: number, b: number, c: number): number {
-  const ux = verts[b * 3] - verts[a * 3];
-  const uy = verts[b * 3 + 1] - verts[a * 3 + 1];
-  const uz = verts[b * 3 + 2] - verts[a * 3 + 2];
-  const vx = verts[c * 3] - verts[a * 3];
-  const vy = verts[c * 3 + 1] - verts[a * 3 + 1];
-  const vz = verts[c * 3 + 2] - verts[a * 3 + 2];
-  const nx = uy * vz - uz * vy;
-  const ny = uz * vx - ux * vz;
-  const nz = ux * vy - uy * vx;
-  const len = Math.hypot(nx, ny, nz) || 1;
-  return nz / len;
-}
 
 interface TagCensus {
   readonly cutoutTags: Map<number, { floor: number; wall: number }>;
@@ -65,7 +51,7 @@ function census(params: BinParams): TagCensus {
       const a = idx[fg.start + t * 3];
       const b = idx[fg.start + t * 3 + 1];
       const c = idx[fg.start + t * 3 + 2];
-      const nz = Math.abs(triNz(verts, a, b, c));
+      const nz = Math.abs(triangleNormalZ(verts, a, b, c));
       const bucket = cutoutTags.get(ordinal) ?? { floor: 0, wall: 0 };
       if (nz > 0.8) bucket.floor++;
       else if (nz < 0.35) bucket.wall++;

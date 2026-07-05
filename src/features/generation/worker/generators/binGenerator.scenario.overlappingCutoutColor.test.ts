@@ -8,12 +8,14 @@
  * pieces the kernel's origin fallback couldn't match), so that floor rendered
  * in the body color. Fixed in brepjs 18.118.3's coplanar origin matching.
  *
- * Invariant: every up-facing face at a cutout's floor depth carries that
- * cutout's color tag — no untagged (body-colored) floor at those depths.
+ * Invariants at each cutout's floor depth: (1) no untagged (body-colored)
+ * up-facing floor remains, and (2) each cutout contributes floor area under its
+ * own color ordinal — so no cutout loses its floor tag.
  */
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { makeCutout } from './__kernel-tests__/scenarioTypes';
+import { triangleNormalZ, triangleArea } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { cutoutOrdinalFromTag } from '@/shared/generation/cutoutColorUnits';
 import type { BinParams, Cutout } from '@/shared/types/bin';
@@ -21,32 +23,6 @@ import type { BinParams, Cutout } from '@/shared/types/bin';
 beforeAll(async () => {
   await initBrepjs();
 }, 30_000);
-
-function triNz(v: ArrayLike<number>, a: number, b: number, c: number): number {
-  const ux = v[b * 3] - v[a * 3];
-  const uy = v[b * 3 + 1] - v[a * 3 + 1];
-  const uz = v[b * 3 + 2] - v[a * 3 + 2];
-  const vx = v[c * 3] - v[a * 3];
-  const vy = v[c * 3 + 1] - v[a * 3 + 1];
-  const vz = v[c * 3 + 2] - v[a * 3 + 2];
-  const nx = uy * vz - uz * vy;
-  const ny = uz * vx - ux * vz;
-  const nz = ux * vy - uy * vx;
-  return nz / (Math.hypot(nx, ny, nz) || 1);
-}
-
-function triArea(v: ArrayLike<number>, a: number, b: number, c: number): number {
-  const ux = v[b * 3] - v[a * 3];
-  const uy = v[b * 3 + 1] - v[a * 3 + 1];
-  const uz = v[b * 3 + 2] - v[a * 3 + 2];
-  const vx = v[c * 3] - v[a * 3];
-  const vy = v[c * 3 + 1] - v[a * 3 + 1];
-  const vz = v[c * 3 + 2] - v[a * 3 + 2];
-  const nx = uy * vz - uz * vy;
-  const ny = uz * vx - ux * vz;
-  const nz = ux * vy - uy * vx;
-  return Math.hypot(nx, ny, nz) / 2;
-}
 
 const base: BinParams = {
   ...DEFAULT_BIN_PARAMS,
@@ -61,7 +37,7 @@ const base: BinParams = {
 const RED = '#ef4444';
 
 describe('GH #2443 overlapping cutout floor color', () => {
-  it('leaves no untagged floor at any cutout depth', () => {
+  it('keeps every cutout floor tagged, with none reverting to body color', () => {
     const cutouts: Cutout[] = [
       makeCutout({
         id: '0a8fe52b-4737-492f-bf3c-207dd86255bc',
@@ -94,8 +70,10 @@ describe('GH #2443 overlapping cutout floor color', () => {
         colorScope: 'floorAndWalls',
       }),
     ];
-    // Floor plane z per cutout: solidSurfaceZ (28) − cutDepth.
-    const floorZs = cutouts.map((c) => 28 - c.cutDepth);
+    // The solid fill surface a cutout is sunk into (cutoutBuilder.ts): wall
+    // height minus the global top offset. Each cutout floor sits cutDepth below.
+    const solidSurfaceZ = base.height * base.heightUnitMm - base.cutoutConfig.topOffset;
+    const floorZs = cutouts.map((c) => solidSurfaceZ - c.cutDepth);
 
     const m = getGenerateBin()({ ...base, cutouts });
     const verts = m.vertices;
@@ -103,26 +81,35 @@ describe('GH #2443 overlapping cutout floor color', () => {
     const fgs = m.faceGroups ?? [];
     expect(verts.length).toBeGreaterThan(0);
 
-    let taggedFloorArea = 0;
+    // Floor area per cutout ordinal, plus any up-facing floor with no cutout tag.
+    const taggedFloorByOrdinal = new Map<number, number>();
     let untaggedFloorArea = 0;
     for (const fg of fgs) {
-      const tagged = cutoutOrdinalFromTag(fg.tag) !== null;
+      const ordinal = cutoutOrdinalFromTag(fg.tag);
       for (let t = 0; t < fg.count / 3; t++) {
         const a = idx[fg.start + t * 3];
         const b = idx[fg.start + t * 3 + 1];
         const c = idx[fg.start + t * 3 + 2];
-        if (triNz(verts, a, b, c) <= 0.8) continue; // up-facing only
+        if (triangleNormalZ(verts, a, b, c) <= 0.8) continue; // up-facing only
         const cz = (verts[a * 3 + 2] + verts[b * 3 + 2] + verts[c * 3 + 2]) / 3;
         // Restrict to the cutout floor planes (avoid the bin's own surfaces).
         if (!floorZs.some((z) => Math.abs(cz - z) < 0.3)) continue;
-        const area = triArea(verts, a, b, c);
-        if (tagged) taggedFloorArea += area;
-        else untaggedFloorArea += area;
+        const area = triangleArea(verts, a, b, c);
+        if (ordinal === null) {
+          untaggedFloorArea += area;
+        } else {
+          taggedFloorByOrdinal.set(ordinal, (taggedFloorByOrdinal.get(ordinal) ?? 0) + area);
+        }
       }
     }
 
-    expect(taggedFloorArea).toBeGreaterThan(0);
-    // Before the brepjs fix, cutout A's ~1500 mm² floor was untagged. Allow a
+    // Every cutout (ordinals 0..2) keeps a tagged floor.
+    for (let ord = 0; ord < cutouts.length; ord++) {
+      expect(taggedFloorByOrdinal.get(ord) ?? 0, `cutout ${ord} tagged floor area`).toBeGreaterThan(
+        0
+      );
+    }
+    // Before the brepjs fix, cutout 0's ~1500 mm² floor was untagged. Allow a
     // sliver for meshing noise; a real regression reintroduces hundreds of mm².
     expect(untaggedFloorArea).toBeLessThan(5);
   });

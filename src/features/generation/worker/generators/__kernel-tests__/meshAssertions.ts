@@ -271,3 +271,41 @@ export function assertValidSplit(
     expect(pieceD, `${label}: piece ${piece.label} zero depth`).toBeGreaterThan(1);
   }
 }
+
+// ─── Per-triangle geometry ───────────────────────────────────────────────────
+
+/**
+ * Normalized z-component of triangle (a, b, c)'s geometric normal, from a flat
+ * vertex buffer indexed by vertex number. Floor faces read ≈±1, walls ≈0.
+ */
+export function triangleNormalZ(
+  vertices: ArrayLike<number>,
+  a: number,
+  b: number,
+  c: number
+): number {
+  const ux = vertices[b * 3] - vertices[a * 3];
+  const uy = vertices[b * 3 + 1] - vertices[a * 3 + 1];
+  const uz = vertices[b * 3 + 2] - vertices[a * 3 + 2];
+  const vx = vertices[c * 3] - vertices[a * 3];
+  const vy = vertices[c * 3 + 1] - vertices[a * 3 + 1];
+  const vz = vertices[c * 3 + 2] - vertices[a * 3 + 2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  return nz / (Math.hypot(nx, ny, nz) || 1);
+}
+
+/** Area of triangle (a, b, c), from a flat vertex buffer indexed by vertex number. */
+export function triangleArea(vertices: ArrayLike<number>, a: number, b: number, c: number): number {
+  const ux = vertices[b * 3] - vertices[a * 3];
+  const uy = vertices[b * 3 + 1] - vertices[a * 3 + 1];
+  const uz = vertices[b * 3 + 2] - vertices[a * 3 + 2];
+  const vx = vertices[c * 3] - vertices[a * 3];
+  const vy = vertices[c * 3 + 1] - vertices[a * 3 + 1];
+  const vz = vertices[c * 3 + 2] - vertices[a * 3 + 2];
+  const nx = uy * vz - uz * vy;
+  const ny = uz * vx - ux * vz;
+  const nz = ux * vy - uy * vx;
+  return Math.hypot(nx, ny, nz) / 2;
+}
