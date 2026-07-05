@@ -36,8 +36,6 @@ import {
   fuseAll,
   cutAll,
   mesh,
-  meshEdges,
-  getKernelCapabilities,
   exportSTEP,
   booleanPipeline,
   isOk,
@@ -76,7 +74,6 @@ import {
 import { snapClipLevels } from '@/shared/constants/connectors';
 import { creaseEdges } from './utils';
 import { buildBaseplateSTL } from './baseplateSTL';
-import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 
 export {
   clearBaseplateCaches,
@@ -134,14 +131,9 @@ export function generateBaseplate(
   onProgress('base', 0.9);
   checkCancelled(signal);
 
-  // Tessellation tolerances. `forExport` stays fine for the STL; the preview
-  // (forExport=false) is deliberately coarser — it only needs to look right on
-  // screen, and a fine preview mesh is both slow to render and produces a busy
-  // moiré of edge lines. Magnet plates are the worst case: dozens of hole
-  // cylinders in a solid floor, so a tight preview tolerance triangulates the
-  // floor into concentric rings around every hole (the "weird" look) and balloons
-  // the triangle count. A coarser preview tolerance/angular halves the triangles
-  // and reads as clean flat plastic; the exported plate is unaffected.
+  // Tessellation tolerances: match the bin designer's tier strategy. Magnet
+  // hole cylinders need tight angular tolerance; flat surfaces tolerate
+  // coarser linear tolerance.
   const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
   const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
   const maxDimension = Math.max(totalW, totalD);
@@ -152,8 +144,8 @@ export function generateBaseplate(
     tolerance = 0.01;
     angularTolerance = 5;
   } else if (params.magnetHoles) {
-    tolerance = Math.min(0.3, Math.max(0.2, maxDimension / 1000));
-    angularTolerance = 20;
+    tolerance = Math.min(0.1, Math.max(0.05, maxDimension / 2500));
+    angularTolerance = 10;
   } else {
     tolerance = Math.min(0.4, Math.max(0.15, maxDimension / 600));
     angularTolerance = 12;
@@ -161,12 +153,14 @@ export function generateBaseplate(
 
   try {
     const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-    // Edge extraction mirrors tessellateStage.ts: analytic B-rep edges on
-    // extract-time kernels, dihedral creases on build-time (manifold) kernels.
-    const edgeVerts: ArrayLike<number> =
-      getKernelCapabilities().tessellationModel === 'build-time'
-        ? creaseEdges(meshResult)
-        : meshEdges(baseplate, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
+    // Edge overlay via dihedral creases (not analytic meshEdges). A baseplate's
+    // solid floor is one large planar face pierced by every pocket + magnet hole;
+    // the analytic extractor returns that face's full internal triangulation,
+    // which renders as concentric "wireframe" rings around the holes. creaseEdges
+    // welds the mesh and keeps only sharp folds + naked boundaries, so the hole
+    // rims and pocket outlines stay crisp (at the mesh's own tolerance) while the
+    // coplanar floor triangulation is dropped. Matches the direct-mesh draft.
+    const edgeVerts: ArrayLike<number> = creaseEdges(meshResult);
 
     onProgress('base', 1);
 
