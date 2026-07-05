@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.216.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.2...gridfinity-layout-tool-v4.216.0) (2026-07-05)
+
+
+### Features
+
+* **baseplate:** solid floor toggle for baseplates ([#2445](https://github.com/andymai/gridfinity-layout-tool/issues/2445)) ([abeb2e4](https://github.com/andymai/gridfinity-layout-tool/commit/abeb2e48df1d0f496879d01fb74379be04276a46))
+
 ## [4.215.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.1...gridfinity-layout-tool-v4.215.2) (2026-07-05)
 
 
