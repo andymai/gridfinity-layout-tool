@@ -250,6 +250,6 @@ describe('SharedWithMeList', () => {
     });
 
     render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);
-    expect(screen.getByText(/Failed to open layout/)).toBeInTheDocument();
+    expect(screen.getByText('layouts.openSharedFailed')).toBeInTheDocument();
   });
 });
