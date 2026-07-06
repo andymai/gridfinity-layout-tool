@@ -10,6 +10,11 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js'
 
+// i18next@6.1.5 anchors each words.exclude entry as a raw `^…$` regex source, so
+// literal metacharacters (+, ., $, ~) must be escaped to match the intended text
+// and to avoid crashing the linter on bare quantifiers like "+".
+const literal = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 export default defineConfig([
   globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx', 'src/test/setup.ts']),
   {
@@ -133,6 +138,8 @@ export default defineConfig([
             'Gridfinity', 'STL', '3MF', 'PLA', 'JSON', 'TSV', 'CSV', '3D',
             // Unit abbreviations and numeric fragments
             'mm', 'px', 'u', 'm', 'h', 'x', 'pcs', '.5', '+.5', 'g',
+            // Ordered-list markers and loading ellipsis (presentational, not translatable)
+            '1.', '2.', '3.', '...',
             // CSS/SVG values
             'normal', '0.02em', '100%',
             'xMidYMid meet', 'xMinYMin meet', 'xMinYMid meet', 'xMidYMax meet',
@@ -147,7 +154,7 @@ export default defineConfig([
             'WASD', 'H', 'R', 'V', 'L', 'M',
             // Arrow key display
             '↑↓←→',
-          ],
+          ].map(literal),
         },
         callees: {
           exclude: ['t', 'console.log', 'console.warn', 'console.error', 'Error', 'TypeError'],

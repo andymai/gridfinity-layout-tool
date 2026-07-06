@@ -114,8 +114,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </Button>
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
-          Note: Cloud shares are snapshots. Changes you make locally won't affect the shared
-          version.
+          {t('share.cloud.snapshotNote')}
         </div>
       </div>
     );
@@ -161,9 +160,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
 
         {showDeleteConfirm && (
           <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
-            <p className="text-sm text-content">
-              Are you sure you want to delete this share? The link will stop working.
-            </p>
+            <p className="text-sm text-content">{t('share.cloud.deleteConfirm')}</p>
             <div className="flex gap-2">
               <Button variant="danger" onClick={handleDelete}>
                 {t('common.delete')}
@@ -176,7 +173,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         )}
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
-          Changing permission will update who can access your shared layout.
+          {t('share.cloud.permissionNote')}
         </div>
       </div>
     );

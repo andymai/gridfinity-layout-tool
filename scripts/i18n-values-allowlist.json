@@ -228,7 +228,8 @@
     "binExamples.popular",
     "binExamples.description",
     "binExamples.dimensions",
-    "binDesigner.cutouts.section.color"
+    "binDesigner.cutouts.section.color",
+    "layouts.import.placeholder"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

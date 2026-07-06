@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "Gekleurd oppervlak",
   "binDesigner.cutouts.color.floor": "Bodem",
   "binDesigner.cutouts.color.floorAndWalls": "Bodem + wanden",
-  "binDesigner.cutouts.color.mixed": "Gemengd"
+  "binDesigner.cutouts.color.mixed": "Gemengd",
+  "binDesigner.shareDescription": "Genereer een link die iedereen kan gebruiken om deze bin-configuratie te laden.",
+  "binDesigner.shareCreating": "Link maken...",
+  "binDesigner.sharePermanentNote": "Deze link is permanent. Iedereen met de link kan dit ontwerp laden.",
+  "inspector.multiBin.dragHint": "Sleep om samen te verplaatsen, of gebruik de pijltoetsen om te verschuiven.",
+  "share.cloud.snapshotNote": "Let op: cloud-shares zijn momentopnames. Lokale wijzigingen hebben geen invloed op de gedeelde versie.",
+  "share.cloud.deleteConfirm": "Weet je zeker dat je deze share wilt verwijderen? De link werkt dan niet meer.",
+  "share.cloud.permissionNote": "Het wijzigen van de rechten werkt bij wie toegang heeft tot je gedeelde layout.",
+  "gallery.adding": "Toevoegen...",
+  "labs.noFeaturesAvailable": "Momenteel zijn er geen experimentele functies beschikbaar.",
+  "layouts.sharedEmptyHint": "Wanneer iemand een layout met je deelt, verschijnt het hier automatisch. Open een gedeelde link om te beginnen.",
+  "layouts.openSharedFailed": "Kan layout niet openen. Probeer het opnieuw.",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }

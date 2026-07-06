@@ -232,7 +232,7 @@ export function LayoutPreviewOverlay({
               onClick={onUseLayout}
               className="px-6 shrink-0"
             >
-              {isImporting ? 'Adding...' : t('gallery.useAsStartingPoint')}
+              {isImporting ? t('gallery.adding') : t('gallery.useAsStartingPoint')}
             </Button>
           </div>
         </div>

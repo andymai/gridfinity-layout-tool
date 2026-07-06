@@ -223,7 +223,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                     <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
                       {modifierKey}
                     </kbd>
-                    {/* eslint-disable-next-line i18next/no-literal-string -- universal symbol */}
                     <span className="text-content-tertiary text-xs">+</span>
                     <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
                       K

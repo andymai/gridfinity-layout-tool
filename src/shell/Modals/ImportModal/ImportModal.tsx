@@ -189,7 +189,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
                 ref={textareaRef}
                 value={jsonText}
                 onChange={handleTextChange}
-                placeholder='{"version": "1.0", "name": "My Layout", ...} or https://...#share=...'
+                placeholder={t('layouts.import.placeholder')}
                 className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm resize-none"
               />
             </div>

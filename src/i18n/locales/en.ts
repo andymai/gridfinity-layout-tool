@@ -367,6 +367,7 @@ const en: Record<string, string> = {
   'inspector.empty.mobileStep1': 'Go to Layers → Tools tab',
   'inspector.empty.mobileStep2': 'Select a bin size',
   'inspector.empty.mobileStep3': 'Tap on the grid to place',
+  'inspector.multiBin.dragHint': 'Drag to move together, or use arrow keys to nudge.',
   'inspector.empty.hintDraw': 'Draw to create a bin',
   'inspector.empty.hintDuplicate': 'Duplicate selected bin',
   'inspector.empty.hintLabel': 'Add/edit label',
@@ -584,6 +585,12 @@ const en: Record<string, string> = {
   'share.cloud.publishing': 'Publishing...',
   'share.cloud.updating': 'Updating...',
   'share.cloud.unpublish': 'Unpublish',
+  'share.cloud.snapshotNote':
+    "Note: Cloud shares are snapshots. Changes you make locally won't affect the shared version.",
+  'share.cloud.deleteConfirm':
+    'Are you sure you want to delete this share? The link will stop working.',
+  'share.cloud.permissionNote':
+    'Changing permission will update who can access your shared layout.',
   'share.cloud.published': 'Published!',
   'share.cloud.shareLink': 'Share link:',
   'share.cloud.copyLink': 'Copy link',
@@ -649,6 +656,8 @@ const en: Record<string, string> = {
   'layouts.import.title': 'Import Layout',
   'layouts.import.browseFiles': 'Browse files',
   'layouts.import.pasteLink': 'Or paste a share link:',
+  'layouts.import.placeholder':
+    '{"version": "1.0", "name": "My Layout", ...} or https://...#share=...',
   'layouts.import.bins': '{count} bins',
   'layouts.import.closeImportDialog': 'Close import dialog',
   'layouts.import.drawerSize': 'Drawer: {size}',
@@ -696,6 +705,9 @@ const en: Record<string, string> = {
   'layouts.noLayoutsMatch': 'No layouts match "{query}"',
   'layouts.noLayoutsYet': 'No layouts yet',
   'layouts.noSharedLayoutsYet': 'No shared layouts yet',
+  'layouts.sharedEmptyHint':
+    'When someone shares a layout with you, it will appear here automatically. Open a shared link to get started.',
+  'layouts.openSharedFailed': 'Failed to open layout. Please try again.',
   'layouts.openLayout': 'Open layout',
   'layouts.or': 'or',
   'layouts.orPasteJson': 'Or paste JSON',
@@ -1440,6 +1452,7 @@ const en: Record<string, string> = {
   'gallery.useAsAStartingPointCustomizeToFitYo':
     'Use as a starting point — customize to fit your items',
   'gallery.useAsStartingPoint': 'Use as Starting Point',
+  'gallery.adding': 'Adding...',
   'gallery.yourSize': '(yours: {size})',
 
   // Onboarding
@@ -2062,6 +2075,10 @@ const en: Record<string, string> = {
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.shareDesign': 'Share Design',
   'binDesigner.createShareLink': 'Create Share Link',
+  'binDesigner.shareDescription': 'Generate a link anyone can use to load this bin configuration.',
+  'binDesigner.shareCreating': 'Creating link...',
+  'binDesigner.sharePermanentNote':
+    'This link is permanent. Anyone with the link can load this design.',
   'binDesigner.loadSharedDesign': 'Load Shared Design',
   'binDesigner.pasteShareUrl': 'Paste share URL or ID',
 
@@ -2455,6 +2472,7 @@ const en: Record<string, string> = {
   // Labs
   'labs.alwaysOn': 'Always on',
   'labs.checkBackLater': 'Check back soon',
+  'labs.noFeaturesAvailable': 'No experimental features available right now.',
   'labs.closeLabs': 'Close labs',
   'labs.comingSoon': 'Coming soon',
   'labs.description': 'Preview features still in development. Some may change or be removed.',

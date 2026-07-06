@@ -131,10 +131,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
           </svg>
         </div>
         <h3 className="text-lg font-medium text-content mb-2">{t('layouts.noSharedLayoutsYet')}</h3>
-        <p className="text-sm text-content-secondary max-w-sm">
-          When someone shares a layout with you, it will appear here automatically. Open a shared
-          link to get started.
-        </p>
+        <p className="text-sm text-content-secondary max-w-sm">{t('layouts.sharedEmptyHint')}</p>
       </div>
     );
   }
@@ -146,7 +143,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
     <div className="flex flex-col gap-2">
       {showError && (
         <div className="mb-2 p-3 rounded-lg bg-error/10 text-error text-sm">
-          Failed to open layout. Please try again.
+          {t('layouts.openSharedFailed')}
         </div>
       )}
 

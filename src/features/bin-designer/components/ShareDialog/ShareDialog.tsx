@@ -144,9 +144,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
         <div className="space-y-3">
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-content">{t('binDesigner.createShareLink')}</h3>
-            <p className="text-xs text-content-secondary">
-              Generate a link anyone can use to load this bin configuration.
-            </p>
+            <p className="text-xs text-content-secondary">{t('binDesigner.shareDescription')}</p>
 
             {status === 'idle' && (
               <Button
@@ -197,7 +195,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Creating link...
+                {t('binDesigner.shareCreating')}
               </div>
             )}
 
@@ -245,7 +243,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                   </Button>
                 </div>
                 <p className="text-[10px] text-content-tertiary">
-                  This link is permanent. Anyone with the link can load this design.
+                  {t('binDesigner.sharePermanentNote')}
                 </p>
               </div>
             )}

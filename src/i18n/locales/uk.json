@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "Пофарбована поверхня",
   "binDesigner.cutouts.color.floor": "Дно",
   "binDesigner.cutouts.color.floorAndWalls": "Дно та стінки",
-  "binDesigner.cutouts.color.mixed": "Змішано"
+  "binDesigner.cutouts.color.mixed": "Змішано",
+  "binDesigner.shareDescription": "Створіть посилання, за яким будь-хто зможе завантажити цю конфігурацію bin.",
+  "binDesigner.shareCreating": "Створення посилання...",
+  "binDesigner.sharePermanentNote": "Це посилання постійне. Будь-хто з посиланням може завантажити цей дизайн.",
+  "inspector.multiBin.dragHint": "Перетягніть, щоб перемістити разом, або скористайтеся стрілками для точного зсуву.",
+  "share.cloud.snapshotNote": "Примітка: хмарні спільні доступи — це знімки. Локальні зміни не впливають на спільну версію.",
+  "share.cloud.deleteConfirm": "Ви впевнені, що хочете видалити цей спільний доступ? Посилання перестане працювати.",
+  "share.cloud.permissionNote": "Зміна дозволу оновить, хто може отримати доступ до вашої спільної розкладки.",
+  "gallery.adding": "Додавання...",
+  "labs.noFeaturesAvailable": "Наразі немає доступних експериментальних функцій.",
+  "layouts.sharedEmptyHint": "Коли хтось поділиться розкладкою з вами, вона автоматично з’явиться тут. Відкрийте спільне посилання, щоб почати.",
+  "layouts.openSharedFailed": "Не вдалося відкрити розкладку. Спробуйте ще раз.",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }

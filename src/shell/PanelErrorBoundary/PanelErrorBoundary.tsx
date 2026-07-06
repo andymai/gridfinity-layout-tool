@@ -6,6 +6,7 @@ import { captureException, track3DRenderError } from '@/shared/analytics/posthog
 // Error boundary strings as constants (class components cannot use hooks)
 const ERROR_SUFFIX = 'Error';
 const RETRY_LABEL = 'Retry';
+const PANEL_ERROR_MESSAGE = 'Something went wrong loading this panel.';
 
 interface Props {
   children: ReactNode;
@@ -77,9 +78,7 @@ export class PanelErrorBoundary extends Component<Props, State> {
           <h3 className="text-sm font-medium text-content mb-1">
             {this.props.panelName} {ERROR_SUFFIX}
           </h3>
-          <p className="text-xs text-content-secondary mb-3 max-w-[200px]">
-            Something went wrong loading this panel.
-          </p>
+          <p className="text-xs text-content-secondary mb-3 max-w-[200px]">{PANEL_ERROR_MESSAGE}</p>
           {this.state.error && (
             <p className="text-xs text-error mb-3 max-w-[200px] break-words">
               {this.state.error.message}

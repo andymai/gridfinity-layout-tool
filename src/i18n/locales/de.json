@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "Eingefärbte Fläche",
   "binDesigner.cutouts.color.floor": "Boden",
   "binDesigner.cutouts.color.floorAndWalls": "Boden + Wände",
-  "binDesigner.cutouts.color.mixed": "Gemischt"
+  "binDesigner.cutouts.color.mixed": "Gemischt",
+  "binDesigner.shareDescription": "Erstelle einen Link, mit dem jeder diese Bin-Konfiguration laden kann.",
+  "binDesigner.shareCreating": "Link wird erstellt...",
+  "binDesigner.sharePermanentNote": "Dieser Link ist dauerhaft. Jeder mit dem Link kann dieses Design laden.",
+  "inspector.multiBin.dragHint": "Zum gemeinsamen Verschieben ziehen oder mit den Pfeiltasten anstupsen.",
+  "share.cloud.snapshotNote": "Hinweis: Cloud-Freigaben sind Momentaufnahmen. Lokale Änderungen wirken sich nicht auf die geteilte Version aus.",
+  "share.cloud.deleteConfirm": "Möchtest du diese Freigabe wirklich löschen? Der Link funktioniert dann nicht mehr.",
+  "share.cloud.permissionNote": "Das Ändern der Berechtigung aktualisiert, wer auf dein geteiltes Layout zugreifen kann.",
+  "gallery.adding": "Wird hinzugefügt...",
+  "labs.noFeaturesAvailable": "Derzeit sind keine experimentellen Funktionen verfügbar.",
+  "layouts.sharedEmptyHint": "Wenn jemand ein Layout mit dir teilt, erscheint es hier automatisch. Öffne einen geteilten Link, um loszulegen.",
+  "layouts.openSharedFailed": "Layout konnte nicht geöffnet werden. Bitte versuche es erneut.",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }

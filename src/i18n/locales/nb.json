@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "Farget flate",
   "binDesigner.cutouts.color.floor": "Bunn",
   "binDesigner.cutouts.color.floorAndWalls": "Bunn + vegger",
-  "binDesigner.cutouts.color.mixed": "Blandet"
+  "binDesigner.cutouts.color.mixed": "Blandet",
+  "binDesigner.shareDescription": "Lag en lenke som hvem som helst kan bruke til å laste denne bin-konfigurasjonen.",
+  "binDesigner.shareCreating": "Oppretter lenke...",
+  "binDesigner.sharePermanentNote": "Denne lenken er permanent. Alle med lenken kan laste dette designet.",
+  "inspector.multiBin.dragHint": "Dra for å flytte sammen, eller bruk piltastene for å dytte.",
+  "share.cloud.snapshotNote": "Merk: Skydelinger er øyeblikksbilder. Endringer du gjør lokalt påvirker ikke den delte versjonen.",
+  "share.cloud.deleteConfirm": "Er du sikker på at du vil slette denne delingen? Lenken vil slutte å fungere.",
+  "share.cloud.permissionNote": "Å endre tillatelse oppdaterer hvem som har tilgang til det delte layoutet ditt.",
+  "gallery.adding": "Legger til...",
+  "labs.noFeaturesAvailable": "Ingen eksperimentelle funksjoner tilgjengelig akkurat nå.",
+  "layouts.sharedEmptyHint": "Når noen deler et layout med deg, vises det her automatisk. Åpne en delt lenke for å komme i gang.",
+  "layouts.openSharedFailed": "Kunne ikke åpne layout. Prøv igjen.",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }

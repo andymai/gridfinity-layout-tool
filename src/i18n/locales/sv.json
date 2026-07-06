@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "Färgad yta",
   "binDesigner.cutouts.color.floor": "Botten",
   "binDesigner.cutouts.color.floorAndWalls": "Botten + väggar",
-  "binDesigner.cutouts.color.mixed": "Blandat"
+  "binDesigner.cutouts.color.mixed": "Blandat",
+  "binDesigner.shareDescription": "Skapa en länk som vem som helst kan använda för att läsa in den här bin-konfigurationen.",
+  "binDesigner.shareCreating": "Skapar länk...",
+  "binDesigner.sharePermanentNote": "Den här länken är permanent. Alla med länken kan läsa in den här designen.",
+  "inspector.multiBin.dragHint": "Dra för att flytta tillsammans, eller använd piltangenterna för att putta.",
+  "share.cloud.snapshotNote": "Obs: Molndelningar är ögonblicksbilder. Ändringar du gör lokalt påverkar inte den delade versionen.",
+  "share.cloud.deleteConfirm": "Är du säker på att du vill ta bort den här delningen? Länken slutar fungera.",
+  "share.cloud.permissionNote": "Att ändra behörighet uppdaterar vem som kan komma åt din delade layout.",
+  "gallery.adding": "Lägger till...",
+  "labs.noFeaturesAvailable": "Inga experimentella funktioner tillgängliga just nu.",
+  "layouts.sharedEmptyHint": "När någon delar en layout med dig visas den här automatiskt. Öppna en delad länk för att komma igång.",
+  "layouts.openSharedFailed": "Det gick inte att öppna layouten. Försök igen.",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }

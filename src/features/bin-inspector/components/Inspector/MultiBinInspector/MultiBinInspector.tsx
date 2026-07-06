@@ -142,7 +142,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
       </div>
 
       <p className={`${isMobile ? 'text-base' : 'text-sm'} text-content-secondary mb-4`}>
-        Drag to move together, or use arrow keys to nudge.
+        {t('inspector.multiBin.dragHint')}
       </p>
 
       <div className="space-y-3">

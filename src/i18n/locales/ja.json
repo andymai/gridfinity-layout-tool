@@ -2542,5 +2542,17 @@
   "binDesigner.cutouts.color.surface": "着色する面",
   "binDesigner.cutouts.color.floor": "床",
   "binDesigner.cutouts.color.floorAndWalls": "床と壁",
-  "binDesigner.cutouts.color.mixed": "混在"
+  "binDesigner.cutouts.color.mixed": "混在",
+  "binDesigner.shareDescription": "誰でもこの bin 構成を読み込めるリンクを生成します。",
+  "binDesigner.shareCreating": "リンクを作成中...",
+  "binDesigner.sharePermanentNote": "このリンクは永続的です。リンクを知っている人は誰でもこのデザインを読み込めます。",
+  "inspector.multiBin.dragHint": "ドラッグして一緒に移動するか、矢印キーで微調整します。",
+  "share.cloud.snapshotNote": "注: クラウド共有はスナップショットです。ローカルでの変更は共有版には影響しません。",
+  "share.cloud.deleteConfirm": "この共有を削除してもよろしいですか？リンクは機能しなくなります。",
+  "share.cloud.permissionNote": "権限を変更すると、共有レイアウトにアクセスできるユーザーが更新されます。",
+  "gallery.adding": "追加中...",
+  "labs.noFeaturesAvailable": "現在、利用できる実験的機能はありません。",
+  "layouts.sharedEmptyHint": "誰かがレイアウトを共有すると、ここに自動的に表示されます。共有リンクを開いて始めましょう。",
+  "layouts.openSharedFailed": "レイアウトを開けませんでした。もう一度お試しください。",
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
 }
