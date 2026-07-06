@@ -1,0 +1,19 @@
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeList/SharedWithMeList.test.tsx
+  s_a6ec357a3f3114::t_cb67874b70faa9 253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "93a8a1bdc7d350272fab2a0a25d790b7a323f002",
+  "prompts": {},
+  "sessions": {
+    "s_a6ec357a3f3114": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f387f601-8447-4c3d-a749-8cff4baa7a52",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

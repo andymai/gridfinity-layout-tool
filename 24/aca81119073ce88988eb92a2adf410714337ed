@@ -1,0 +1,73 @@
+src/features/bin-designer/components/ShareDialog/ShareDialog.tsx
+  s_a6ec357a3f3114::t_308767f230b7ff 198
+  s_a6ec357a3f3114::t_f594042804ddfd 246
+  s_a6ec357a3f3114::t_8f9053c7605d44 147
+src/features/labs/components/LabsDrawer/LabsDrawer.tsx
+  s_a6ec357a3f3114::t_3c1fdb03be77f5 112
+src/shell/PanelErrorBoundary/PanelErrorBoundary.tsx
+  s_a6ec357a3f3114::t_49245de85c0a21 81
+  s_a6ec357a3f3114::t_a95ef322636ffa 9
+src/features/cloud-share/components/CloudShareTab/CloudShareTab.tsx
+  s_a6ec357a3f3114::t_e8c829afedd23a 176
+  s_a6ec357a3f3114::t_626bbb3f1b6aa0 117
+  s_a6ec357a3f3114::t_76a3439a9811b8 163
+src/i18n/locales/fr.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/i18n/locales/pt-BR.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+eslint.config.js
+  s_a6ec357a3f3114::t_d0a87a79484199 157
+  s_a6ec357a3f3114::t_955c09237660d8 13-17
+  s_a6ec357a3f3114::t_feff70bbffdaed 141-142
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.tsx
+  s_a6ec357a3f3114::t_a1a2e4f278c987 235
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeList/SharedWithMeList.tsx
+  s_a6ec357a3f3114::t_17147e9f5de49d 134
+  s_a6ec357a3f3114::t_0c4e0a1dfe5c34 146
+src/i18n/locales/nl.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/shell/Modals/ImportModal/ImportModal.tsx
+  s_a6ec357a3f3114::t_bab1f38116f09a 192
+src/i18n/locales/sv.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/i18n/locales/en.ts
+  s_a6ec357a3f3114::t_b09177ac92467c 588-593
+  s_a6ec357a3f3114::t_64a98a6651d9ec 708-709
+  s_a6ec357a3f3114::t_33de2f87b75a62 370
+  s_a6ec357a3f3114::t_ba1f53d30dea1e 659
+  s_a6ec357a3f3114::t_cae80d5f89fb72 2078-2080
+  s_a6ec357a3f3114::t_c518e90968dfa0 660
+  s_a6ec357a3f3114::t_4d6aed8a27f452 710
+  s_a6ec357a3f3114::t_f713b51313f9a0 2081
+  s_a6ec357a3f3114::t_434672df7e5cc3 1455,2475
+scripts/i18n-values-allowlist.json
+  s_a6ec357a3f3114::t_26dce683566b09 231-232
+src/i18n/locales/nb.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/i18n/locales/de.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/i18n/locales/ja.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_a6ec357a3f3114::t_0f75c4ada39bc6 145
+src/i18n/locales/uk.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+src/i18n/locales/es.json
+  s_a6ec357a3f3114::t_a933dda29e0933 2545-2557
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "24aca81119073ce88988eb92a2adf410714337ed",
+  "prompts": {},
+  "sessions": {
+    "s_a6ec357a3f3114": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f387f601-8447-4c3d-a749-8cff4baa7a52",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
