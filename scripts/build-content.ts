@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { marked } from 'marked';
-import yaml from 'js-yaml';
+import { load as loadYaml } from 'js-yaml';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
@@ -18,7 +18,7 @@ function parseFrontmatter(raw: string): { data: Record<string, unknown>; content
   const match = FRONTMATTER_RE.exec(raw);
   if (!match) return { data: {}, content: raw };
   const content = raw.slice(match[0].length);
-  const parsed = yaml.load(match[1]);
+  const parsed = loadYaml(match[1]);
   if (parsed == null) return { data: {}, content };
   if (typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new Error('frontmatter must be a YAML mapping');
