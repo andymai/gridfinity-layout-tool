@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.222.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.221.0...gridfinity-layout-tool-v4.222.0) (2026-07-07)
+
+
+### Features
+
+* **labs:** graduate 'Extend Bins into Drawer Margin' + full-flow e2e ([#2474](https://github.com/andymai/gridfinity-layout-tool/issues/2474)) ([1f19897](https://github.com/andymai/gridfinity-layout-tool/commit/1f19897651606ac7ca07885da74e7f34f249db20))
+
 ## [4.221.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.220.1...gridfinity-layout-tool-v4.221.0) (2026-07-07)
 
 
