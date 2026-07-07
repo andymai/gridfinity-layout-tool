@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.220.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.219.0...gridfinity-layout-tool-v4.220.0) (2026-07-07)
+
+
+### Features
+
+* **grid-editor:** show baseplate drawer-fit margin in the layout view ([#2468](https://github.com/andymai/gridfinity-layout-tool/issues/2468)) ([f214fae](https://github.com/andymai/gridfinity-layout-tool/commit/f214fae63f7298fc66c30aed6509aeb32e0eab70))
+
+
+### Bug Fixes
+
+* **bin-designer:** make the Custom Cutouts editor overhang-aware ([#2467](https://github.com/andymai/gridfinity-layout-tool/issues/2467)) ([78e3405](https://github.com/andymai/gridfinity-layout-tool/commit/78e340570aa5dfea4cce3550676d9090fdd34bab))
+
 ## [4.219.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.218.0...gridfinity-layout-tool-v4.219.0) (2026-07-07)
 
 
