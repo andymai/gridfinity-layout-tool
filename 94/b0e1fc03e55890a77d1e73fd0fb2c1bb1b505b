@@ -1,0 +1,19 @@
+e2e/bin-designer/extend-to-margin.spec.ts
+  s_37fb96164459db::t_9bd110df9a73ff 2-4,11,23,26,31,34,36-37,43,45,63,70,72-73,75,77-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "94b0e1fc03e55890a77d1e73fd0fb2c1bb1b505b",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
