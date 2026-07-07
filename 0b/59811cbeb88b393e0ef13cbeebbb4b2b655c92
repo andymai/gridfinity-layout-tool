@@ -1,0 +1,48 @@
+src/i18n/locales/uk.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/nb.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/pt-BR.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/es.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/sv.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/nl.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.tsx
+  s_37fb96164459db::t_c0c99871e54267 1-64
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_37fb96164459db::t_ff90817ba208da 23
+  s_37fb96164459db::t_7e1450a5a08c9f 376-378
+src/i18n/locales/de.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/features/grid-editor/components/Grid/DrawerMargin/index.ts
+  s_37fb96164459db::t_cce4cad41b709b 1
+src/i18n/locales/en.ts
+  s_37fb96164459db::t_ee25fd36c8dced 1343
+  s_37fb96164459db::t_acd7626ecdcbcf 1344
+src/i18n/locales/fr.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/i18n/locales/ja.json
+  s_37fb96164459db::t_6768eb0ee2dac5 1355
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.test.tsx
+  s_37fb96164459db::t_ddf8cc0afafc78 54,66,76
+  s_37fb96164459db::t_11ab5f3daef653 1-53,55-65,67-75,77-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0b59811cbeb88b393e0ef13cbeebbb4b2b655c92",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
