@@ -1,0 +1,44 @@
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/binMarginStrips.test.ts
+  s_37fb96164459db::t_b2214e61e088ad 1-94
+  s_f2ad30106907f6::t_2f90966d2228a9 95-96
+src/shared/utils/drawerMargin.ts
+  s_37fb96164459db::t_12a6b4cdebf475 13,29-40
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/BinMarginExtensions.tsx
+  s_37fb96164459db::t_2334c174334ca9 1-84
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/binMarginStrips.ts
+  s_37fb96164459db::t_be86ab4ba39842 1-85
+  s_f2ad30106907f6::t_0833630adc1ff0 86-97
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/index.ts
+  s_37fb96164459db::t_05c9c6cefe2290 1
+src/core/labs/features.ts
+  s_37fb96164459db::t_94466f89be1067 165-166
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/BinMarginExtensions.test.tsx
+  s_37fb96164459db::t_d802054f55372f 1-93
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_37fb96164459db::t_fac4446ce2c520 379-385
+  s_37fb96164459db::t_d1febe9ce89b71 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "44d9da7fac4b4200d92d2ced7a92fad40a83ce26",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f2ad30106907f6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9dccc79-bff7-4fc1-97a4-a35352f0c3dc",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
