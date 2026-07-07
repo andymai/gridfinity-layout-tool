@@ -10,7 +10,7 @@
  * feet match the baseplate's over-tile margin so the extension seats.
  */
 
-import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
+import type { Bin, StoredBaseplateParams } from '@/core/types';
 import type { OverhangConfig } from '@/shared/types/bin';
 
 /** Per-side padding (mm) a bin could claim on each drawer edge it abuts. */
@@ -26,8 +26,18 @@ const ZERO_SIDES: MarginSides = { left: 0, right: 0, front: 0, back: 0 };
 /** Grid-unit slack for edge-abutment comparisons (fractional drawers/bins). */
 const EPS = 1e-6;
 
-type BinRect = Pick<Bin, 'x' | 'y' | 'width' | 'depth'>;
-type DrawerSize = Pick<Drawer, 'width' | 'depth'>;
+// Plain-number shapes (branded GridUnits are assignable) so both the layout
+// planner and the 3D preview — which holds unbranded world coords — can call in.
+interface BinRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+}
+interface DrawerSize {
+  readonly width: number;
+  readonly depth: number;
+}
 
 /**
  * The baseplate padding (mm) available on each drawer edge the bin abuts; 0 on

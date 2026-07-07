@@ -162,6 +162,8 @@ export const FEATURE_FLAGS = [
       'When a baseplate adds padding to fit your drawer, let an edge bin extend its walls into that margin so no space is wasted. Toggle it per bin in the inspector; the extension is drawn in the layout and included on export.',
     status: 'experimental',
     risk: 'medium',
+    warning:
+      'Early feature. Extended bins export as their own parts, and the 3D preview shows the extension as a solid block.',
     addedAt: '2026-07',
     requiresRefresh: false,
   },
