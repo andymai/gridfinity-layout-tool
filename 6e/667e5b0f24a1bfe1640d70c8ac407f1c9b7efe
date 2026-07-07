@@ -1,0 +1,20 @@
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/binMarginStrips.ts
+  s_37fb96164459db::t_c1af620a189fc5 19,22,29,36
+  s_37fb96164459db::t_2c8c2298c5d0f5 11-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6e667e5b0f24a1bfe1640d70c8ac407f1c9b7efe",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
