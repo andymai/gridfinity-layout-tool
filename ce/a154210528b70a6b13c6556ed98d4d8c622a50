@@ -1,0 +1,102 @@
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_93d04bcbd007ad::t_5cf111fb8f6209 112,126-127,129,131,133,142-144,148,150-157,159-162
+  s_93d04bcbd007ad::t_ecfb5e4631aed1 22
+  s_93d04bcbd007ad::t_05d27d81e83187 172-175
+  s_93d04bcbd007ad::t_7d5c3f237fb0d3 111,121-122
+src/features/bin-designer/constants/gridfinity.ts
+  s_93d04bcbd007ad::t_7d2ea60d09a159 99-100,102-109
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.test.tsx
+  s_93d04bcbd007ad::t_61323052c2f351 34-71
+src/i18n/locales/uk.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/i18n/locales/sv.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/features/bin-designer/types/index.ts
+  s_93d04bcbd007ad::t_464a55f674537f 259-261,265-268,270-281
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.test.ts
+  s_93d04bcbd007ad::t_85d44f0b835e63 118,122-134,140-194
+  s_93d04bcbd007ad::t_41390556ee98b5 73,77,83
+  s_93d04bcbd007ad::t_0bb2af793e081b 195
+src/features/generation/worker/generators/binGenerator.scenario.scoops.test.ts
+  s_93d04bcbd007ad::t_c11b281d82d6cf 3,5
+src/i18n/locales/nl.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/i18n/locales/es.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/i18n/locales/pt-BR.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/i18n/locales/de.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/features/bin-designer/components/panel/ScoopSection/useScoopSection.ts
+  s_93d04bcbd007ad::t_9c838a4e70da8e 5,9,13,16-20,34-70,85,93-94,96,102-103,112,116,118,126,133-136,138,145-165,168-169,182-193,196
+  s_93d04bcbd007ad::t_adb326086c51f4 194-195
+  s_93d04bcbd007ad::t_054425f9b7a44b 197-199
+  s_93d04bcbd007ad::t_18424bb3c6c9e3 200
+src/i18n/locales/en.ts
+  s_93d04bcbd007ad::t_e7a6dca2d939ba 1689-1698
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.tsx
+  s_93d04bcbd007ad::t_a966725bdc950d 188
+  s_93d04bcbd007ad::t_a84e1d09c1e6e5 108-109,118-119,125-126,130-145,147,155,164
+  s_93d04bcbd007ad::t_01fd2d9af8f4af 19
+  s_93d04bcbd007ad::t_12846c7fe9c7c3 35-36
+src/shared/utils/scoopCalculations.test.ts
+  s_93d04bcbd007ad::t_305a820f2a3044 3-4,6-12,20-24,28-42,47-48,51-52,55-86,89-90,93-94,97-102,104-107,109-110,113-116,124,127-131,133,138,141-145,147,150,152,154,156-158,160-161,168,176,180,186,190
+  s_93d04bcbd007ad::t_6bc2a3bf4f2f0f 159
+  s_93d04bcbd007ad::t_68692b19818b4b 162-167
+  s_93d04bcbd007ad::t_021a95cff91742 169-170
+  s_93d04bcbd007ad::t_c9b9d5af7caff9 173-175
+  s_93d04bcbd007ad::t_eab3701b38fe67 177-179
+  s_93d04bcbd007ad::t_e9079a1093e66c 181-185
+  s_93d04bcbd007ad::t_9eef87e62d3777 189
+  s_93d04bcbd007ad::t_7b7547faee994d 191-192
+  s_93d04bcbd007ad::t_14bec8984b893e 198,200
+src/i18n/locales/ja.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_93d04bcbd007ad::t_2dcc991ae9ea29 119-126
+src/i18n/locales/nb.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/features/bin-designer/constants/defaults.test.ts
+  s_93d04bcbd007ad::t_433ca7d6e9ae44 132,137,140,144-147
+src/features/bin-designer/utils/printEstimates.ts
+  s_93d04bcbd007ad::t_12844ffec3026c 415-416
+  s_93d04bcbd007ad::t_4a6edbcdf670fa 441-442,451,455-461
+  s_93d04bcbd007ad::t_6f5134ea73a724 32
+src/i18n/locales/fr.json
+  s_93d04bcbd007ad::t_1b3649576f2624 806-815
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+  s_93d04bcbd007ad::t_a10aedcb895443 4-6,9-11,16-20,23-28,38-53,55,61,67-79,81-133,135
+  s_93d04bcbd007ad::t_128cef2a0cf981 134
+src/shared/types/bin.ts
+  s_93d04bcbd007ad::t_71b80b7b5d1532 20
+src/features/bin-designer/constants/defaults.ts
+  s_93d04bcbd007ad::t_527940e4cf0a91 30
+  s_93d04bcbd007ad::t_6011229bf901bf 339-340
+scripts/i18n-values-allowlist.json
+  s_93d04bcbd007ad::t_2dcb25e0f720a3 4
+e2e/bin-designer/scoop-two-variable-visual.spec.ts
+  s_93d04bcbd007ad::t_692cd93d33116f 1-52,54-56,59-89
+  s_93d04bcbd007ad::t_18dc10c357cbae 53,57-58
+src/shared/utils/scoopCalculations.ts
+  s_93d04bcbd007ad::t_ca1d59bb6231cb 4-7,11-21,24-31,33-35,37-39,41,49,51-52,60-73,78,80-82,84-94,96-98,101-102
+src/features/generation/worker/generators/scenarios/scoops.ts
+  s_93d04bcbd007ad::t_4ff33c0c9d0c67 17-31
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.scoops.test.ts.snap
+  s_93d04bcbd007ad::t_f0ee06060ee97e 12-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cea154210528b70a6b13c6556ed98d4d8c622a50",
+  "prompts": {},
+  "sessions": {
+    "s_93d04bcbd007ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef4378c6-dbdd-4a0d-bb42-61506ffc44ef",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
