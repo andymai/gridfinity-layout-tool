@@ -1,0 +1,57 @@
+src/i18n/locales/es.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/ja.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/pt-BR.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/nb.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_37fb96164459db::t_b9155da177dc3e 167-168
+  s_37fb96164459db::t_a1dd17e27f4137 32
+  s_f2ad30106907f6::t_31968a534971c7 399-402
+src/i18n/locales/de.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/fr.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/sv.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_37fb96164459db::t_4c8e36cf39809c 1-4,7-68
+  s_37fb96164459db::t_f5b92cc2126375 5-6
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_37fb96164459db::t_fb4170ace25b76 1-113
+src/i18n/locales/uk.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+src/i18n/locales/nl.json
+  s_37fb96164459db::t_7bbce42838c743 259,875
+scripts/i18n-values-allowlist.json
+  s_37fb96164459db::t_4ca9f00b4570ae 233-234
+src/i18n/locales/en.ts
+  s_37fb96164459db::t_359987503cc5a0 1527
+  s_37fb96164459db::t_001c179ab84847 1751
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5ddd95d31d6114aa43ae3aaa2239c5960b0f310f",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f2ad30106907f6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9dccc79-bff7-4fc1-97a4-a35352f0c3dc",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
