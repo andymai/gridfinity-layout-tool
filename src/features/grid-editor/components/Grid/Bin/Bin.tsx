@@ -9,6 +9,7 @@ import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
 import { calculateBinText } from './calculateBinText';
 import { BinBadge } from './BinBadge';
+import { BinMarginExtension } from './BinMarginExtension';
 import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
@@ -299,6 +300,18 @@ function BinComponent({
         isGhost ? undefined : bin.label !== '' ? `${dimensionsText} - ${bin.label}` : undefined
       }
     >
+      {/* Drawer-margin extension (Labs) — drawn behind the bin's own fill so
+          only the margin slice shows; never affects the interactive box. */}
+      {!isGhost && (
+        <BinMarginExtension
+          bin={bin}
+          drawer={drawer}
+          cellSize={cellSize}
+          gap={gap}
+          color={bgColor}
+        />
+      )}
+
       {/* Tall bin indicator badge */}
       {isTall && !isGhost && (
         <div

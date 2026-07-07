@@ -37,6 +37,7 @@ const updatesSchema = z
     notes: z.string().max(CONSTRAINTS.NOTES_MAX_LENGTH),
     customProperties: z.record(z.string(), z.string()),
     linkedDesignId: z.string(),
+    extendToMargin: z.boolean(),
   })
   .partial();
 
@@ -66,6 +67,7 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.customProperties !== undefined) result.customProperties = updates.customProperties;
   if (updates.linkedDesignId !== undefined)
     result.linkedDesignId = toDesignId(updates.linkedDesignId);
+  if (updates.extendToMargin !== undefined) result.extendToMargin = updates.extendToMargin;
   return result;
 }
 

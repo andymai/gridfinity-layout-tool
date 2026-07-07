@@ -155,6 +155,16 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-07',
     requiresRefresh: false,
   },
+  {
+    id: 'layout_overhang',
+    name: 'Extend Bins into Drawer Margin',
+    description:
+      'When a baseplate adds padding to fit your drawer, let an edge bin extend its walls into that margin so no space is wasted. Toggle it per bin in the inspector; the extension is drawn in the layout and included on export.',
+    status: 'experimental',
+    risk: 'medium',
+    addedAt: '2026-07',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

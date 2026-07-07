@@ -170,7 +170,15 @@ export function useLayoutExport(): UseLayoutExportReturn {
           fileNameConfig.style === 'custom'
             ? { style: 'descriptive', customName: '', format }
             : fileNameConfig;
-        const plan = planLayoutBinExport(bins, loaded, format, innerConfig, printSettings);
+        const plan = planLayoutBinExport(
+          bins,
+          loaded,
+          format,
+          innerConfig,
+          printSettings,
+          layout.drawer,
+          layout.baseplateParams
+        );
 
         // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both

@@ -7,13 +7,13 @@
  * (no bridge, no IndexedDB) so the orchestration hook stays a thin shell.
  */
 
-import type { Bin, DesignId } from '@/core/types';
+import type { Bin, DesignId, Drawer, StoredBaseplateParams } from '@/core/types';
 import type { SavedDesign, BinParams } from '@/features/bin-designer';
 import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
-import { countLinkedBins } from '@/features/design-linking';
+import { resolveBinMarginOverhang } from '@/shared/utils/drawerMargin';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { PrintSettings } from '@/shared/printSettings';
 import { estimateStandardBinFilament } from '@/shared/printSettings/standardBinVolume';
@@ -54,19 +54,44 @@ function binCompanions(params: BinParams): string[] {
   return companions;
 }
 
+/** Stable identity for a resolved overhang so bins with identical extension
+ *  dedupe together; empty for a non-extended bin. */
+function overhangKey(overhang: BinParams['overhang'] | null): string {
+  if (!overhang) return '';
+  return `${overhang.left},${overhang.right},${overhang.front},${overhang.back},${overhang.feet ?? false}`;
+}
+
+/** Insert an `_extended` marker before the extension so a drawer-margin variant
+ *  reads distinctly from the plain design in the ZIP. */
+function withExtendedSuffix(name: string): string {
+  const dot = name.lastIndexOf('.');
+  const base = dot === -1 ? name : name.slice(0, dot);
+  const ext = dot === -1 ? '' : name.slice(dot);
+  return `${base}_extended${ext}`;
+}
+
+interface BinExportGroup {
+  readonly design: SavedDesign;
+  readonly params: BinParams;
+  readonly extended: boolean;
+  quantity: number;
+}
+
 export function planLayoutBinExport(
   bins: Bin[],
   loaded: readonly LoadedDesign[],
   format: ExportFileFormat,
   fileNameConfig: ExportFileNameConfig,
-  printSettings: PrintSettings
+  printSettings: PrintSettings,
+  drawer: Pick<Drawer, 'width' | 'depth'>,
+  baseplate: StoredBaseplateParams | undefined
 ): LayoutBinExportPlan {
-  const linkedCount = bins.filter((b) => b.linkedDesignId !== undefined).length;
-  const unlinkedBins = bins.length - linkedCount;
+  const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
+
+  // Design-level skip tally + a lookup of usable (bin) designs.
   let nonBinDesigns = 0;
   let missingDesigns = 0;
-
-  const usable: { params: BinParams; design: SavedDesign; quantity: number }[] = [];
+  const designById = new Map<DesignId, SavedDesign>();
   for (const { id, design } of loaded) {
     if (!design) {
       missingDesigns++;
@@ -76,18 +101,42 @@ export function planLayoutBinExport(
       nonBinDesigns++;
       continue;
     }
-    usable.push({ params: design.params, design, quantity: countLinkedBins(bins, id) });
+    designById.set(id, design);
+  }
+
+  // Group linked bins by (design, resolved overhang). A bin that extends into
+  // the drawer margin resolves its overhang live and forms its own group;
+  // identical bins (extended or not) still share one mesh. The overhang
+  // REPLACES the design's own overhang for that instance.
+  const groups = new Map<string, BinExportGroup>();
+  const usable: BinExportGroup[] = [];
+  for (const b of bins) {
+    if (b.linkedDesignId === undefined) continue;
+    const design = designById.get(b.linkedDesignId);
+    if (!design?.params) continue; // missing/non-bin already tallied above
+    const overhang = resolveBinMarginOverhang(b, drawer, baseplate);
+    const params = overhang ? { ...design.params, overhang } : design.params;
+    const key = `${b.linkedDesignId}|${overhangKey(overhang)}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.quantity++;
+      continue;
+    }
+    const group: BinExportGroup = { design, params, extended: overhang !== null, quantity: 1 };
+    groups.set(key, group);
+    usable.push(group);
   }
 
   const fileNames = dedupeFileNames(
-    usable.map((u) =>
-      generateFileName(
+    usable.map((u) => {
+      const name = generateFileName(
         u.params,
         format,
         u.design.exportFileNameConfig ?? fileNameConfig,
         u.design.name
-      )
-    )
+      );
+      return u.extended ? withExtendedSuffix(name) : name;
+    })
   );
 
   const paths = fileNames.map((name) => `bins/${name}`);

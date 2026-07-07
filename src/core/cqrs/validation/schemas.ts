@@ -87,6 +87,7 @@ const binPartialSchema = z
     notes: notesStr,
     customProperties: z.record(z.string(), z.string()),
     linkedDesignId: z.string(),
+    extendToMargin: z.boolean(),
     id: binIdSchema,
   })
   .partial();

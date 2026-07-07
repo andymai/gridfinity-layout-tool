@@ -244,6 +244,12 @@ export interface Bin {
   notes: string; // max 256 chars
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
   linkedDesignId?: DesignId; // reference to saved design in bin-designer (for one-to-many linking)
+  // Opt-in for this instance to extend its walls into the baseplate's drawer-fit
+  // margin on every drawer edge it abuts (#2462). A flag, not mm: the actual
+  // per-side overhang is derived live from `baseplateParams.padding*` at
+  // render/export, so it tracks later padding changes. Applies only while the
+  // bin abuts a padded edge; dormant otherwise.
+  extendToMargin?: boolean;
 }
 /** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {
@@ -382,8 +388,7 @@ export interface BlockingInfo {
 }
 
 export type ValidationResult =
-  | { valid: true }
-  | { valid: false; reason: ValidationReason; blockingInfo?: BlockingInfo };
+  { valid: true } | { valid: false; reason: ValidationReason; blockingInfo?: BlockingInfo };
 export interface PrintPiece {
   width: GridUnits;
   depth: GridUnits;

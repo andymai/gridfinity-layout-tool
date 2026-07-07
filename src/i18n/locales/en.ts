@@ -394,6 +394,10 @@ const en: Record<string, string> = {
   'inspector.deselectBin': 'Deselect bin',
   'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
   'inspector.layer': 'Layer',
+  'inspector.extendToMargin': 'Extend into drawer margin',
+  'inspector.extendToMargin.hint':
+    "Fills the baseplate's drawer-fit margin on every drawer edge it touches.",
+  'inspector.extendToMargin.needsLink': 'Link a design to extend into the margin.',
   'inspector.maxPropertiesReached': 'Maximum {max} properties reached',
   'inspector.moreCount': '+{count} more',
   'inspector.newPropertyName': 'New property name',

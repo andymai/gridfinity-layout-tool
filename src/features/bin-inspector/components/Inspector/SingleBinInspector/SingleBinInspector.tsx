@@ -10,6 +10,7 @@ import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
+import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -354,6 +355,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <Suspense fallback={null}>
           <LinkedDesignSection bin={bin} variant={variant} />
         </Suspense>
+
+        {/* Extend into drawer margin (Labs) — only when the bin abuts a padded edge */}
+        <ExtendToMarginToggle bin={bin} drawer={layout.drawer} baseplate={layout.baseplateParams} />
 
         {/* Notes */}
         <div>
