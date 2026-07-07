@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.221.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.220.1...gridfinity-layout-tool-v4.221.0) (2026-07-07)
+
+
+### Features
+
+* **layout:** extend edge bins into the baseplate drawer margin (Labs) ([#2472](https://github.com/andymai/gridfinity-layout-tool/issues/2472)) ([35bf73a](https://github.com/andymai/gridfinity-layout-tool/commit/35bf73a1c62fced0ca6fcd44ab5041cd1ff01d55))
+
 ## [4.220.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.220.0...gridfinity-layout-tool-v4.220.1) (2026-07-07)
 
 
