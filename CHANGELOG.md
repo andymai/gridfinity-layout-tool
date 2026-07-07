@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.217.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.216.0...gridfinity-layout-tool-v4.217.0) (2026-07-07)
+
+
+### Features
+
+* **bin-designer:** two-variable finger scoop with curved/straight styles ([#2459](https://github.com/andymai/gridfinity-layout-tool/issues/2459)) ([7b4ac94](https://github.com/andymai/gridfinity-layout-tool/commit/7b4ac9488a731807e2d5317ff750c8b6f7530127))
+
 ## [4.216.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.215.2...gridfinity-layout-tool-v4.216.0) (2026-07-05)
 
 
