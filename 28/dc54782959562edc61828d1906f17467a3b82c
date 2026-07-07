@@ -1,0 +1,34 @@
+src/features/grid-editor/components/Grid/Bin/BinMarginExtension.test.tsx
+  s_37fb96164459db::t_1c5e0130215912 5
+  s_37fb96164459db::t_d396ac7e24811a 15
+src/features/grid-editor/components/Grid/Bin/BinMarginExtension.tsx
+  s_37fb96164459db::t_603753a47ad4cd 2
+  s_37fb96164459db::t_07b93926f8406d 36
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_37fb96164459db::t_fbba41355e6cee 2,7-9
+  s_37fb96164459db::t_a21dd531d61586 29
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/BinMarginExtensions.test.tsx
+  s_37fb96164459db::t_1439bc05a04444 5
+  s_37fb96164459db::t_d489ce2cd622e1 11
+src/features/grid-editor/components/Grid/IsometricPreview/BinMarginExtensions/BinMarginExtensions.tsx
+  s_37fb96164459db::t_88c553f26693c1 38
+  s_37fb96164459db::t_fc5d6cb1920878 7
+  s_37fb96164459db::t_3e8261ba3e218e 2
+  s_37fb96164459db::t_f2677b9021491c 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "28dc54782959562edc61828d1906f17467a3b82c",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
