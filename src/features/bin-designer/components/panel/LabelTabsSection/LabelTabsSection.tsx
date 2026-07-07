@@ -29,6 +29,7 @@ import type {
   TextMode,
 } from '../../../types';
 import { CompartmentTextInput } from './CompartmentTextInput';
+import { LabelColorControls } from './LabelColorControls';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
@@ -162,6 +163,8 @@ export function LabelTabsSection() {
               </div>
             )}
           </div>
+
+          <LabelColorControls />
 
           <Collapsible title={t('binDesigner.tabShapeGroup')} defaultExpanded={false} size="sm">
             <div className="space-y-3">
@@ -393,12 +396,10 @@ export function LabelTabsSection() {
                     onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
                     disabled={state.textDefaults.mode === 'through-cut'}
                     aria-label={t('binDesigner.textFont')}
-                    options={FONT_OPTIONS.map(
-                      (f): SelectOption => ({
-                        id: f,
-                        name: t(`binDesigner.textFont.${f}`),
-                      })
-                    )}
+                    options={FONT_OPTIONS.map((f): SelectOption => ({
+                      id: f,
+                      name: t(`binDesigner.textFont.${f}`),
+                    }))}
                   />
                 </div>
                 {state.textDefaults.mode !== 'through-cut' && (

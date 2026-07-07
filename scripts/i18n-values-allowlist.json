@@ -230,7 +230,8 @@
     "binExamples.description",
     "binExamples.dimensions",
     "binDesigner.cutouts.section.color",
-    "layouts.import.placeholder"
+    "layouts.import.placeholder",
+    "binDesigner.labelColor"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
