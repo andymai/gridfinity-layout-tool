@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.218.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.217.0...gridfinity-layout-tool-v4.218.0) (2026-07-07)
+
+
+### Features
+
+* **bin-designer:** optional separate glue-on baseplate for stackable lids ([#2463](https://github.com/andymai/gridfinity-layout-tool/issues/2463)) ([ed12b24](https://github.com/andymai/gridfinity-layout-tool/commit/ed12b242d0e61c5c318283c1d34905e7bfdfe635))
+
 ## [4.217.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.216.0...gridfinity-layout-tool-v4.217.0) (2026-07-07)
 
 
