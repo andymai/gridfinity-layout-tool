@@ -32,6 +32,19 @@ describe('LabelColorControls', () => {
     expect(screen.getByRole('button', { name: /Engraved Text:/ })).toBeDefined();
   });
 
+  it('picks the zone for the swap tool instead of opening the picker when swap is active', () => {
+    setColors({ enabled: true });
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, colorTool: 'swap-pick-first' } }));
+    render(<LabelColorControls />);
+    fireEvent.click(screen.getByRole('button', { name: /Label Tab:/ }));
+
+    // The picker stays closed; the click registered the tab as the first swap pick.
+    expect(screen.queryByText('Presets')).toBeNull();
+    const { ui } = useDesignerStore.getState();
+    expect(ui.swapFirstZone).toBe('labelTab');
+    expect(ui.colorTool).toBe('swap-pick-second');
+  });
+
   it('enables multi-color and sets the tab color when a non-body color is picked', () => {
     render(<LabelColorControls />);
     fireEvent.click(screen.getByRole('button', { name: /Label Tab:/ }));

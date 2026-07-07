@@ -16,6 +16,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { normalizeHex } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
+import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { ColorZoneRow } from '../ColorsSection/ColorZoneRow';
 
 const RECENT_COLORS_LIMIT = 8;
@@ -38,16 +39,23 @@ export function LabelColorControls() {
   const t = useTranslation();
   const [recentColors, setRecentColors] = useState<readonly string[]>([]);
 
-  const { featureColors } = useDesignerStore(
+  const { featureColors, colorTool } = useDesignerStore(
     useShallow((s) => ({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       featureColors: s.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG,
+      colorTool: s.ui.colorTool,
     }))
   );
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
   const startTransaction = useDesignerStore((s) => s.startTransaction);
   const commitTransaction = useDesignerStore((s) => s.commitTransaction);
+  const swapZoneWithToast = useSwapZoneWithToast();
+
+  // While the swap-colors tool is active (entered from the Colors section), a
+  // row click should pick the zone for the swap rather than open the picker —
+  // same contract as ColorsSection so the label swatches participate too.
+  const swapActive = colorTool === 'swap-pick-first' || colorTool === 'swap-pick-second';
 
   // Release the preview glow if this section unmounts while a row is hovered.
   useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
@@ -93,6 +101,7 @@ export function LabelColorControls() {
           onHover={setHoveredColorZone}
           onGestureStart={startTransaction}
           onGestureEnd={commitTransaction}
+          onClickOverride={swapActive ? () => swapZoneWithToast('labelTab') : undefined}
         />
         <ColorZoneRow
           zone="text"
@@ -106,6 +115,7 @@ export function LabelColorControls() {
           onHover={setHoveredColorZone}
           onGestureStart={startTransaction}
           onGestureEnd={commitTransaction}
+          onClickOverride={swapActive ? () => swapZoneWithToast('text') : undefined}
         />
       </div>
     </div>
