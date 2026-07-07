@@ -1,0 +1,22 @@
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.tsx
+  s_37fb96164459db::t_a7fd44d4b20f2c 53
+  s_37fb96164459db::t_7526f5c4f5e3a4 20-23
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.test.tsx
+  s_37fb96164459db::t_e5dec8c5b284de 61-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2b190c24ac0aeec05593bcbcc1ada40e290b34d6",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
