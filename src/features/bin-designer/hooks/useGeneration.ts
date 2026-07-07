@@ -46,6 +46,9 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
             : undefined,
         }
       : undefined,
+    // Stack plate has no face groups; the readonly typed arrays are ingested
+    // directly (Immer treats typed arrays as opaque leaves).
+    stackPlateMesh: result.mesh.stackPlateMesh,
     error: null,
     timingMs: result.timingMs,
   };
@@ -70,6 +73,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
           faceGroups: mesh.lidMesh.faceGroups ? [...mesh.lidMesh.faceGroups] : undefined,
         }
       : undefined,
+    stackPlateMesh: mesh.stackPlateMesh,
     error: null,
     timingMs: 0,
   };

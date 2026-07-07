@@ -69,6 +69,19 @@ export interface LidConfig {
    *  stack on the lid above them. */
   readonly magnetHoles: boolean;
   /**
+   * Print the stack-grid baseplate as a SEPARATE companion piece instead of
+   * fusing it onto the lid's top. Requires `stackableTop` — the baseplate IS
+   * the stack grid, so it only exists when a stackable top is enabled.
+   *
+   * Why split: on export the lid rotates 180° (floor down) so its mating
+   * cavity/rails print support-free — but that same rotation flips a fused
+   * stack grid pockets-down onto the bed, a mess of overhangs. Split, the
+   * baseplate prints flat (pockets up, glue-face down) and the user glues it
+   * onto the lid's flat top. The glue face is the slab's flat Z=0 bottom and
+   * its outline matches the lid footprint, so edges seat flush.
+   */
+  readonly separateStackPlate: boolean;
+  /**
    * Per-side click-rail engagement. Each wall is independent. When all
    * four are `false`, the lid is friction-fit only (mating cavity wraps
    * the lip, no positive snap). When some are `false` the lid clicks
@@ -103,6 +116,7 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   enabled: false,
   stackableTop: false,
   magnetHoles: false,
+  separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
 } as const;

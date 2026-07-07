@@ -3,6 +3,7 @@ import {
   buildSinglePiece3MF,
   buildMultiObject3MF,
   buildReportIssueUrl,
+  formatPieceDisplayName,
 } from './binDownloadHelpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -165,6 +166,44 @@ describe('binDownloadHelpers — multi-color export gate', () => {
       expect(lidSlots.length).toBeGreaterThan(0);
       expect(lidSlots.every((s) => s !== 0)).toBe(true);
     });
+
+    it('emits a named, lid-colored object for a separate lid-baseplate piece', () => {
+      const withPlate: CombinedExportResult['pieces'] = [
+        { label: 'bin', data: new ArrayBuffer(0) },
+        { label: 'lid', data: new ArrayBuffer(0) },
+        { label: 'lid-baseplate', data: new ArrayBuffer(0) },
+      ];
+      const params: BinParams = {
+        ...paramsWithMultiColor(true),
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, separateStackPlate: true },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+        featureColors: {
+          ...paramsWithMultiColor(true).featureColors,
+          lid: '#ff0000', // distinct from body so the slot check is meaningful
+        },
+      };
+      buildMultiObject3MF(withPlate, FAKE_FACE_GROUPS, params, 'assembly', PRINT_SETTINGS);
+      const objects = export3MFMultiObjectSpy.mock.calls[0][0] as Array<{
+        name: string;
+        colorConfig?: { triangleMaterialIndices: readonly number[] };
+      }>;
+      expect(objects).toHaveLength(3);
+      // Baseplate is the third object, named and painted the lid filament (non-body slot).
+      expect(objects[2].name).toMatch(/baseplate/i);
+      const plateSlots = objects[2].colorConfig?.triangleMaterialIndices ?? [];
+      expect(plateSlots.length).toBeGreaterThan(0);
+      expect(plateSlots.every((s) => s !== 0)).toBe(true);
+    });
+  });
+});
+
+describe('formatPieceDisplayName', () => {
+  const dims = { width: 2, depth: 3, height: 4 };
+  it('names the separate baseplate piece', () => {
+    expect(formatPieceDisplayName('lid-baseplate', dims)).toBe('Lid Baseplate 2x3x4');
+  });
+  it('falls back to the raw label for unknown pieces', () => {
+    expect(formatPieceDisplayName('mystery', dims)).toBe('mystery');
   });
 });
 

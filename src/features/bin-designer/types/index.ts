@@ -5,7 +5,12 @@
  * generation state, and designer UI state.
  */
 
-import type { FaceGroupData, CoarseLODData, PerfSnapshot } from '@/shared/types/generation';
+import type {
+  FaceGroupData,
+  CoarseLODData,
+  PerfSnapshot,
+  StackPlateMeshData,
+} from '@/shared/types/generation';
 
 /**
  * Lid mesh data as stored in the designer store. Mirrors the shared
@@ -672,6 +677,10 @@ export interface GenerationResult {
   readonly coarseLOD?: CoarseLODData;
   /** Optional companion lid mesh, present only when the bin has a lid enabled. */
   readonly lidMesh?: LidMeshDataState;
+  /** Optional separate stack-grid baseplate mesh (glue-on companion), present
+   *  only when the lid uses `separateStackPlate`. No face groups, so the shared
+   *  readonly shape is ingested directly. */
+  readonly stackPlateMesh?: StackPlateMeshData;
 }
 
 /** Generation state tracked in the store */

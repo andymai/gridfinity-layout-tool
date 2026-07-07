@@ -23,6 +23,7 @@ import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
   LidMesh,
+  StackPlateMesh,
   LidGuideLine,
   LidExplodeSlider,
   LID_OFFSET_DEFAULT,
@@ -424,6 +425,15 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               {/* Click-lock lid (renders only when params.lid.enabled produced
                 a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
               <LidMesh
+                color={previewColor}
+                lidOffsetMm={lidOffsetMm}
+                wireframe={wireframe}
+                xray={xray}
+              />
+              {/* Separate stack-grid baseplate (renders only when
+                params.lid.separateStackPlate produced a mesh) — floats above
+                the lid to show the glue-on split. */}
+              <StackPlateMesh
                 color={previewColor}
                 lidOffsetMm={lidOffsetMm}
                 wireframe={wireframe}

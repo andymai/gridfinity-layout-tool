@@ -20,8 +20,8 @@ import { exportMargin } from '../generators/baseplateMargin';
 import { exportConnectorSample } from '../generators/connectorSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
-import { exportLid } from '../generators/lidOrchestrator';
-import { buildLid } from '../generators/lidBuilder';
+import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
+import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
@@ -214,15 +214,29 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // (the bin's stacking lip top), matching the preview's lidGroupZ.
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
+        const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE);
         let lidSolid = hasLid ? buildLid(params) : null;
+        // Separate baseplate (glue-on) rides on top of the lid floor in the
+        // assembly, at the same lift as the lid. buildStackPlate returns null
+        // unless the lid opted into separateStackPlate.
+        let stackPlateSolid = hasLid ? buildStackPlate(params) : null;
         try {
           if (lidSolid) {
-            const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE);
             const positioned = translate(lidSolid, [0, 0, lidZ]);
             lidSolid.delete();
             lidSolid = positioned;
           }
-          const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
+          if (stackPlateSolid) {
+            const positioned = translate(stackPlateSolid, [0, 0, lidZ]);
+            stackPlateSolid.delete();
+            stackPlateSolid = positioned;
+          }
+          const assembly = compound([
+            binSolid,
+            ...dividerSolids,
+            ...(lidSolid ? [lidSolid] : []),
+            ...(stackPlateSolid ? [stackPlateSolid] : []),
+          ]);
           const blob = unwrap(exportSTEP(assembly));
 
           reportProgress(requestId, 'merge', 1);
@@ -235,6 +249,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         } finally {
           for (const d of dividerSolids) d.delete();
           lidSolid?.delete();
+          stackPlateSolid?.delete();
         }
       }
 
@@ -253,6 +268,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const lidExport = await exportLid(params, format, tolerance, angularTolerance);
         if (lidExport) {
           pieces.push({ data: lidExport.data, label: 'lid' });
+        }
+        // Separate stack-grid baseplate ships as its own piece; the lid piece
+        // above already comes out grid-less because buildLid skips the fuse
+        // when separateStackPlate is on. Returns null unless opted in.
+        const plateExport = await exportStackPlate(params, format, tolerance, angularTolerance);
+        if (plateExport) {
+          pieces.push({ data: plateExport.data, label: 'lid-baseplate' });
         }
       }
 

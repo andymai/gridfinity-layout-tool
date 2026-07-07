@@ -164,6 +164,80 @@ describe('lid generation and export scenarios', () => {
     expect(withBB.minY).toBeGreaterThanOrEqual(withoutBB.minY - tolerance);
   });
 
+  describe('separate stack-grid baseplate', () => {
+    it('generateStackPlate returns null unless the lid opts in', async () => {
+      const { generateStackPlate } = await import('./lidOrchestrator');
+      // Lid disabled entirely.
+      expect(generateStackPlate(DEFAULT_BIN_PARAMS)).toBeNull();
+      // Stackable top on but not split → grid stays fused, no standalone plate.
+      expect(
+        generateStackPlate(
+          makeParams({ stackableTop: true, separateStackPlate: false }, { width: 2, depth: 2 })
+        )
+      ).toBeNull();
+      // separateStackPlate on but no stackable top → nothing to split.
+      expect(
+        generateStackPlate(
+          makeParams({ stackableTop: false, separateStackPlate: true }, { width: 2, depth: 2 })
+        )
+      ).toBeNull();
+    });
+
+    it('produces a valid, print-ready slab when opted in', async () => {
+      const { generateStackPlate } = await import('./lidOrchestrator');
+      const plate = generateStackPlate(
+        makeParams(
+          { stackableTop: true, separateStackPlate: true },
+          { width: 2, depth: 2, height: 3 }
+        )
+      );
+      expect(plate).not.toBeNull();
+      assertStructurallyValid(plate!, '2x2 separate baseplate');
+      const bb = boundingBox(plate!.vertices);
+      // Built glue-face down: flat bottom at Z≈0, slab ~SOCKET_HEIGHT (5mm) tall,
+      // pockets opening upward — already its ideal print orientation.
+      expect(bb.minZ).toBeGreaterThan(-0.5);
+      expect(bb.minZ).toBeLessThan(0.5);
+      expect(bb.maxZ).toBeGreaterThan(4);
+      expect(bb.maxZ).toBeLessThan(6);
+    });
+
+    it('slab footprint matches the bin (flush glue edges)', async () => {
+      const { generateStackPlate } = await import('./lidOrchestrator');
+      const params = makeParams(
+        { stackableTop: true, separateStackPlate: true },
+        { width: 3, depth: 2, height: 3 }
+      );
+      const plate = generateStackPlate(params);
+      expect(plate).not.toBeNull();
+      const bb = boundingBox(plate!.vertices);
+      const expectedW = params.width * params.gridUnitMm;
+      const expectedD = params.depth * params.gridUnitMm;
+      expect(Math.abs(bb.maxX - bb.minX - expectedW)).toBeLessThan(2);
+      expect(Math.abs(bb.maxY - bb.minY - expectedD)).toBeLessThan(2);
+    });
+
+    it('removes the grid from the lid when the baseplate is split off', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = { width: 2, depth: 2, height: 3 };
+      const fused = generateLid(
+        makeParams({ stackableTop: true, separateStackPlate: false }, base)
+      );
+      const split = generateLid(makeParams({ stackableTop: true, separateStackPlate: true }, base));
+      const noGrid = generateLid(makeParams({ stackableTop: false }, base));
+      expect(fused).not.toBeNull();
+      expect(split).not.toBeNull();
+      expect(noGrid).not.toBeNull();
+      // Splitting the grid off leaves a flat-topped lid — its Z extent drops
+      // back to the grid-less lid, well below the fused (grid-on-top) lid.
+      const fusedBB = boundingBox(fused!.vertices);
+      const splitBB = boundingBox(split!.vertices);
+      const noGridBB = boundingBox(noGrid!.vertices);
+      expect(splitBB.maxZ).toBeLessThan(fusedBB.maxZ);
+      expect(splitBB.maxZ).toBeCloseTo(noGridBB.maxZ, 1);
+    });
+  });
+
   it('magnet holes add cuts (mesh changes meaningfully)', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const without = generateLid(

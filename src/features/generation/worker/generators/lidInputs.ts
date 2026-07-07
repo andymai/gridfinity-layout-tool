@@ -33,6 +33,13 @@ export interface LidInputs {
    */
   readonly cavityInset: number;
   readonly stackableTop: boolean;
+  /**
+   * When true, the stack grid is NOT fused into the lid — it's emitted as a
+   * standalone companion slab (glued on by the user). Already gated on
+   * `stackableTop` here, so consumers can check it directly. See
+   * {@link LidConfig.separateStackPlate}.
+   */
+  readonly separateStackPlate: boolean;
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
@@ -148,6 +155,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     topThickness,
     cavityInset,
     stackableTop: params.lid.stackableTop,
+    // Splitting the stack grid off only means anything when there IS a stack
+    // grid — gate on stackableTop so buildLid/buildStackPlate can trust the
+    // flag directly without re-checking stackableTop.
+    separateStackPlate: params.lid.separateStackPlate && params.lid.stackableTop,
     // Magnets only have a stack-grid neighbour to mate with when
     // `stackableTop` is on. Off ⇒ skip the pockets even if the user
     // last toggled magnets on.

@@ -145,6 +145,26 @@ export function LidSection() {
         </p>
       )}
 
+      {/* Print the stack grid as a separate glue-on baseplate. Gated on the
+          stackable top (the baseplate IS that grid). Lets the lid print
+          support-free while the baseplate prints flat in its own orientation. */}
+      <Switch
+        label={t('binDesigner.lid.separateStackPlate')}
+        checked={state.separateStackPlate}
+        onChange={handlers.toggleSeparateStackPlate}
+        disabled={!state.stackableTop}
+      />
+      {!state.stackableTop && (
+        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.lid.separateStackPlateRequiresStackable')}
+        </p>
+      )}
+      {state.separateStackPlate && state.stackableTop && (
+        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.lid.separateStackPlateHint')}
+        </p>
+      )}
+
       {/* Click rails — per-side. Each chip is an independent toggle: a
           user can ship a hinge-feel lid (one side only), a label-tab-
           friendly L+R pair, or all four for symmetric snap. All four off

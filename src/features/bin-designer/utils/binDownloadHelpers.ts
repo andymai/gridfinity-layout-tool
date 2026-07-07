@@ -65,6 +65,8 @@ export function formatPieceDisplayName(
       return `Bin ${dims}`;
     case 'lid':
       return `Lid ${dims}`;
+    case 'lid-baseplate':
+      return `Lid Baseplate ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':
@@ -208,9 +210,15 @@ export function buildSinglePiece3MF(
 
 /** Map ancillary piece label → the ColorZone whose color paints the piece. */
 function pieceZone(label: string): ColorZone | null {
-  if (label === 'lid') return 'lid';
+  // The glue-on baseplate is part of the lid assembly, so it takes the lid color.
+  if (label === 'lid' || label === 'lid-baseplate') return 'lid';
   if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
   return null;
+}
+
+/** Labels laid out in a row to the right of the bin in multi-object 3MF. */
+function isSideLaidOutPiece(label: string): boolean {
+  return label === 'lid' || label === 'lid-baseplate';
 }
 
 /** Bounding box of a flat [x,y,z,x,y,z,...] STL vertex array. */
@@ -246,33 +254,36 @@ function flatBBox(vertices: Float32Array): FlatBBox {
 const PRINT_LAYOUT_GAP_MM = 5;
 
 /**
- * Reposition the lid beside the bin. The lid arrives already in print
- * orientation — `exportLid` applies `orientForPrint` for every non-STEP
- * format — so this only does the layout: align floors, center the lid's
- * Y on the bin's, and slide it `PRINT_LAYOUT_GAP_MM` right of the bin so
- * the unified centering in `build3MFMultiObjectBuffer` doesn't land them
- * stacked at the same XY (discussion #1654 bug #4). Rotating again would
- * double-flip back into mating orientation.
+ * Lay out an ancillary piece (lid, glue-on baseplate) in a row to the right of
+ * the bin. Each piece arrives already in print orientation — `exportLid` /
+ * `exportStackPlate` orient (or leave) it print-ready — so this only does the
+ * layout: align floors, center the piece's Y on the bin's, and slide it
+ * `PRINT_LAYOUT_GAP_MM` right of `cursorX` so the unified centering in
+ * `build3MFMultiObjectBuffer` doesn't land pieces stacked at the same XY
+ * (discussion #1654 bug #4). Returns the piece's new right edge so the next
+ * ancillary piece slots beside it instead of overlapping.
  */
-function transformLidForPrint(
-  lidVertices: Float32Array,
-  lidNormals: Float32Array,
-  binBBox: FlatBBox
-): { vertices: Float32Array; normals: Float32Array } {
-  const lidBBox = flatBBox(lidVertices);
+function layoutPieceRightOf(
+  vertices: Float32Array,
+  normals: Float32Array,
+  binBBox: FlatBBox,
+  cursorX: number
+): { vertices: Float32Array; normals: Float32Array; nextCursorX: number } {
+  const bbox = flatBBox(vertices);
   const binCy = (binBBox.minY + binBBox.maxY) / 2;
-  const lidCy = (lidBBox.minY + lidBBox.maxY) / 2;
-  const tx = binBBox.maxX + PRINT_LAYOUT_GAP_MM - lidBBox.minX;
-  const ty = binCy - lidCy;
-  const tz = binBBox.minZ - lidBBox.minZ;
+  const cy = (bbox.minY + bbox.maxY) / 2;
+  const tx = cursorX + PRINT_LAYOUT_GAP_MM - bbox.minX;
+  const ty = binCy - cy;
+  const tz = binBBox.minZ - bbox.minZ;
 
-  const v = new Float32Array(lidVertices.length);
-  for (let i = 0; i < lidVertices.length; i += 3) {
-    v[i] = lidVertices[i] + tx;
-    v[i + 1] = lidVertices[i + 1] + ty;
-    v[i + 2] = lidVertices[i + 2] + tz;
+  const v = new Float32Array(vertices.length);
+  for (let i = 0; i < vertices.length; i += 3) {
+    v[i] = vertices[i] + tx;
+    v[i + 1] = vertices[i + 1] + ty;
+    v[i + 2] = vertices[i + 2] + tz;
   }
-  return { vertices: v, normals: lidNormals };
+  const width = bbox.maxX - bbox.minX;
+  return { vertices: v, normals, nextCursorX: cursorX + PRINT_LAYOUT_GAP_MM + width };
 }
 
 /**
@@ -315,6 +326,9 @@ export function buildMultiObject3MF(
   // cutouts too.
   const multiColorEnabled: boolean = featureColorsEnabled || anyCutoutColored(params.cutouts);
   let binBBox: FlatBBox | null = null;
+  // Running right edge for side-laid-out pieces (lid, baseplate), so multiple
+  // ancillary pieces form a row instead of stacking on the bin.
+  let layoutCursorX: number | null = null;
   // Bin short-circuits to single-color when every active zone matches body;
   // ancillary pieces must stay in lockstep or `anyHasColors` in
   // `build3MFMultiObjectBuffer` would emit Bambu metadata for a file that
@@ -330,8 +344,12 @@ export function buildMultiObject3MF(
     let { vertices, normals } = parseResult.value;
     if (i === 0) {
       binBBox = flatBBox(vertices);
-    } else if (piece.label === 'lid' && binBBox !== null) {
-      ({ vertices, normals } = transformLidForPrint(vertices, normals, binBBox));
+      layoutCursorX = binBBox.maxX;
+    } else if (isSideLaidOutPiece(piece.label) && binBBox !== null && layoutCursorX !== null) {
+      const laid = layoutPieceRightOf(vertices, normals, binBBox, layoutCursorX);
+      vertices = laid.vertices;
+      normals = laid.normals;
+      layoutCursorX = laid.nextCursorX;
     }
 
     let colorConfig: ThreeMFColorConfig | undefined;

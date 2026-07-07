@@ -651,11 +651,19 @@ describe('migrateParams', () => {
       enabled: true,
       stackableTop: true,
       magnetHoles: true,
+      separateStackPlate: true,
       clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
+  });
+
+  it('backfills separateStackPlate=false for legacy lid configs missing the field', () => {
+    const result = migrateParams({
+      lid: { enabled: true, stackableTop: true } as any,
+    });
+    expect(result.lid.separateStackPlate).toBe(false);
   });
 
   it('backfills clickRails (object) for legacy lid configs missing the field', () => {

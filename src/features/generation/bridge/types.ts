@@ -500,6 +500,13 @@ export interface MeshResultResponse {
   readonly lidEdgeVertices?: Float32Array;
   readonly lidTriangleCount?: number;
   readonly lidFaceGroups?: readonly FaceGroupData[];
+  /** Separate stack-grid baseplate mesh — present only when the lid opts into
+   *  `separateStackPlate`. All five fields land or are absent together. */
+  readonly stackPlateVertices?: Float32Array;
+  readonly stackPlateNormals?: Float32Array;
+  readonly stackPlateIndices?: Uint32Array;
+  readonly stackPlateEdgeVertices?: Float32Array;
+  readonly stackPlateTriangleCount?: number;
   /** Seated snap-clip connector mesh — present only for split snap-clip plates. */
   readonly connectorKeyVertices?: Float32Array;
   readonly connectorKeyNormals?: Float32Array;
@@ -631,6 +638,9 @@ export interface MeshData {
   readonly coarseLOD?: CoarseLODData;
   /** Optional click-lock lid mesh — separate solid that pairs with the bin. */
   readonly lidMesh?: LidMeshData;
+  /** Optional separate stack-grid baseplate mesh — the glue-on companion slab,
+   *  present only when the lid uses `separateStackPlate`. */
+  readonly stackPlateMesh?: StackPlateMeshData;
   /**
    * Optional seated snap-clip connector mesh — the exact relieved part the
    * baseplate ships, so the preview can render it instead of an approximation.
@@ -660,4 +670,17 @@ export interface LidMeshData {
   readonly triangleCount: number;
   /** Per-face provenance for rail vs body rendering. */
   readonly faceGroups?: readonly FaceGroupData[];
+}
+
+/**
+ * Mesh data for the separate stack-grid baseplate (glue-on companion slab).
+ * A single lid-colored zone — no face groups. Carries edge lines so the pocket
+ * ring reads crisply in the preview.
+ */
+export interface StackPlateMeshData {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
 }

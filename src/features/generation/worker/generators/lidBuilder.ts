@@ -89,8 +89,11 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = cutMagnetHoles(scope, body, inputs);
     }
 
-    // 4. Optional Gridfinity stack grid on top
-    if (inputs.stackableTop) {
+    // 4. Optional Gridfinity stack grid on top. Skipped when the user opted
+    //    to print the baseplate separately (`separateStackPlate`) — then the
+    //    grid ships as its own solid via `buildStackPlate` and the lid keeps a
+    //    flat, glueable top.
+    if (inputs.stackableTop && !inputs.separateStackPlate) {
       const stackGrid = scope.register(buildStackGrid(scope, inputs));
       if (originToTag) {
         collectOrigins(stackGrid, FeatureTag.LID_BODY, originToTag);
@@ -101,4 +104,23 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
 
     return body as ValidSolid;
   });
+}
+
+/**
+ * Build the standalone stack-grid baseplate as a single brepjs solid in
+ * lid-local coordinates (slab bottom at Z=0 = the glue face, pockets opening
+ * upward). Returns null unless the lid opts into a separate baseplate
+ * (`separateStackPlate`, already gated on `stackableTop`).
+ *
+ * The slab is the SAME geometry `buildLid` would otherwise fuse on top, so a
+ * glued assembly is dimensionally identical to a one-piece stackable lid. It's
+ * already print-ready (flat bottom on the bed), so — unlike the lid — the
+ * export path must NOT reorient it.
+ *
+ * Caller owns the returned solid's lifetime.
+ */
+export function buildStackPlate(params: BinParams): Shape3D | null {
+  const inputs = resolveLidInputs(params);
+  if (!inputs.separateStackPlate) return null;
+  return withScope((scope: DisposalScope) => buildStackGrid(scope, inputs) as ValidSolid);
 }

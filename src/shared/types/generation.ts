@@ -10,6 +10,7 @@ export type {
   FaceGroupData,
   CoarseLODData,
   LidMeshData,
+  StackPlateMeshData,
   WorkerCacheStats,
   PerfSnapshot,
   PerfStageEntry,

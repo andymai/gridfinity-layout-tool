@@ -27,6 +27,10 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.magnetHoles).toBe(false);
   });
 
+  it('keeps the stack grid fused by default (separate baseplate is opt-in)', () => {
+    expect(DEFAULT_LID_CONFIG.separateStackPlate).toBe(false);
+  });
+
   // wallThickness, topThickness, fit are intentionally NOT on LidConfig —
   // they're locked-down constants in `lidConstants.ts`. The type-level
   // test below ensures they aren't reintroduced silently.

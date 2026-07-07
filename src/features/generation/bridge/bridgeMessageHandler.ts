@@ -136,6 +136,22 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   faceGroups: response.lidFaceGroups,
                 }
               : undefined;
+          // Separate stack-grid baseplate mesh is optional; all five fields
+          // arrive together (or none).
+          const stackPlateMesh =
+            response.stackPlateVertices &&
+            response.stackPlateNormals &&
+            response.stackPlateIndices &&
+            response.stackPlateEdgeVertices &&
+            response.stackPlateTriangleCount !== undefined
+              ? {
+                  vertices: response.stackPlateVertices,
+                  normals: response.stackPlateNormals,
+                  indices: response.stackPlateIndices,
+                  edgeVertices: response.stackPlateEdgeVertices,
+                  triangleCount: response.stackPlateTriangleCount,
+                }
+              : undefined;
           // Seated snap-clip mesh is optional; all four fields arrive together.
           const connectorKeyMesh =
             response.connectorKeyVertices &&
@@ -159,6 +175,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               faceGroups: response.faceGroups,
               coarseLOD: response.coarseLOD,
               lidMesh,
+              stackPlateMesh,
               connectorKeyMesh,
             },
             timingMs: response.timingMs,

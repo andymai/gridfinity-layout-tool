@@ -1595,6 +1595,11 @@ const en: Record<string, string> = {
     'Magnet pockets need a stackable top — the upper bin meets them through the floor.',
   'binDesigner.lid.magnetSpec':
     'Pocket: ⌀{diameter}mm × {depth}mm deep (matches bin magnet specs).',
+  'binDesigner.lid.separateStackPlate': 'Separate baseplate (glue-on)',
+  'binDesigner.lid.separateStackPlateRequiresStackable':
+    'Turn on the stackable top first — the baseplate is that grid, printed as its own piece.',
+  'binDesigner.lid.separateStackPlateHint':
+    'Baseplate prints flat on its own (grid up, glue-face down) so the lid stays support-free. Glue it onto the lid’s top after printing.',
   'binDesigner.lid.clickRailCoverage': 'Rail coverage',
   'binDesigner.lid.clickRailCoverage.50': 'Compact rails — saves the most filament',
   'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails — balanced grip and savings',

@@ -77,6 +77,21 @@ describe('resolveLidInputs', () => {
     expect(inputs.magnetHoles).toBe(true);
   });
 
+  it('gates separateStackPlate on stackableTop (no grid to split without one)', () => {
+    // Persisted flag on, but no stackable top → nothing to separate.
+    const off = resolveLidInputs(makeParams({ stackableTop: false, separateStackPlate: true }));
+    expect(off.separateStackPlate).toBe(false);
+    // Both on → the stack grid ships as a standalone slab.
+    const on = resolveLidInputs(makeParams({ stackableTop: true, separateStackPlate: true }));
+    expect(on.separateStackPlate).toBe(true);
+  });
+
+  it('keeps the stack grid fused when separateStackPlate is off', () => {
+    const inputs = resolveLidInputs(makeParams({ stackableTop: true, separateStackPlate: false }));
+    expect(inputs.stackableTop).toBe(true);
+    expect(inputs.separateStackPlate).toBe(false);
+  });
+
   it('inherits magnet diameter and depth from bin BaseConfig', () => {
     const inputs = resolveLidInputs(
       makeParams(

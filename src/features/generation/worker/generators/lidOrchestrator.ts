@@ -9,9 +9,9 @@
 import { mesh, meshEdges, getKernelCapabilities, rotate, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { LidMeshData, ExportFormat } from '../../bridge/types';
+import type { LidMeshData, StackPlateMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
-import { buildLid } from './lidBuilder';
+import { buildLid, buildStackPlate } from './lidBuilder';
 import { toIndexedMeshData, creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import { computeTessellationTolerances } from './utils/tolerances';
@@ -92,6 +92,61 @@ export function generateLid(
   }
 }
 
+/**
+ * Tessellate the standalone stack-grid baseplate into mesh data for the
+ * preview. Returns null unless the lid opts into `separateStackPlate` (via
+ * `buildStackPlate`) and `shouldGenerateLid` passes.
+ *
+ * Built in lid-local coords (slab Z ∈ [0, SOCKET_HEIGHT], Z=0 = glue face) so
+ * the preview can float it above the lid at the same lid-local frame. No
+ * reorientation — that's an export-only concern for the lid, and the slab is
+ * already print-ready.
+ */
+export function generateStackPlate(
+  params: BinParams,
+  signal?: AbortSignal
+): StackPlateMeshData | null {
+  if (!shouldGenerateLid(params)) return null;
+
+  checkCancelled(signal);
+  const solid = buildStackPlate(params);
+  if (!solid) return null;
+
+  // Same WASM-heap discipline as `generateLid`: release the OCCT solid once
+  // tessellated, or it leaks on every param change.
+  try {
+    checkCancelled(signal);
+    const maxDimension = Math.max(
+      params.width * params.gridUnitMm,
+      params.depth * (params.gridUnitMmY ?? params.gridUnitMm)
+    );
+    // The slab's only curved detail is the pocket tapers; use the fine ("has
+    // lip") tier so they read smoothly — the mesh is small, so cost is trivial.
+    const { tolerance, angularTolerance } = computeTessellationTolerances(
+      false,
+      true,
+      maxDimension
+    );
+
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
+    const edgeLines = buildTime
+      ? creaseEdges(shapeMesh)
+      : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
+
+    const indexed = toIndexedMeshData(shapeMesh, edgeLines);
+    return {
+      vertices: indexed.vertices,
+      normals: indexed.normals,
+      indices: indexed.indices,
+      edgeVertices: indexed.edgeVertices,
+      triangleCount: indexed.triangleCount,
+    };
+  } finally {
+    solid.delete();
+  }
+}
+
 /** Export result for the lid (binary STL or STEP buffer). */
 export interface LidExportResult {
   readonly data: ArrayBuffer;
@@ -125,6 +180,41 @@ export async function exportLid(
 
   // Same WASM-heap discipline as `generateLid`: the oriented solid is
   // caller-owned and must be released once the export buffer is built.
+  try {
+    if (format === 'step') {
+      const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');
+      const data = await blob.arrayBuffer();
+      return { data, fileName: `${name}.step` };
+    }
+
+    const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
+    return { data, fileName: `${name}.stl` };
+  } finally {
+    solid.delete();
+  }
+}
+
+/**
+ * Export the standalone stack-grid baseplate. Returns null unless the lid opts
+ * into `separateStackPlate` (via `buildStackPlate`) and `shouldGenerateLid`
+ * passes.
+ *
+ * Unlike {@link exportLid}, the slab is NOT reoriented: it's built glue-face
+ * down (flat bottom at Z=0, pockets up), which is already its ideal print
+ * orientation. Same STL/STEP format convention as `exportLid`.
+ */
+export async function exportStackPlate(
+  params: BinParams,
+  format: ExportFormat,
+  tolerance = 0.01,
+  angularTolerance = 5
+): Promise<LidExportResult | null> {
+  if (!shouldGenerateLid(params)) return null;
+
+  const solid = buildStackPlate(params);
+  if (!solid) return null;
+  const name = `gridfinity-${params.width}x${params.depth}-lid-baseplate`;
+
   try {
     if (format === 'step') {
       const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');

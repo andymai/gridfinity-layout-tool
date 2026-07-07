@@ -251,16 +251,26 @@ export function useLidSection() {
 
   const toggleStackableTop = useCallback(() => {
     const next = !lid.stackableTop;
-    // Disabling the stack grid also clears magnets — they need the grid
-    // above them to do anything, so leaving them on would silently
-    // produce a lid whose floor pockets meet nothing.
-    updateLid({ stackableTop: next, magnetHoles: next ? lid.magnetHoles : false });
-  }, [lid.stackableTop, lid.magnetHoles, updateLid]);
+    // Disabling the stack grid also clears magnets AND the separate-baseplate
+    // option — both only mean something when there IS a grid. Leaving them on
+    // would silently produce a lid whose floor pockets meet nothing / a
+    // baseplate split of a grid that no longer exists.
+    updateLid({
+      stackableTop: next,
+      magnetHoles: next ? lid.magnetHoles : false,
+      separateStackPlate: next ? lid.separateStackPlate : false,
+    });
+  }, [lid.stackableTop, lid.magnetHoles, lid.separateStackPlate, updateLid]);
 
   const toggleMagnetHoles = useCallback(() => {
     if (!lid.stackableTop) return; // Gated; UI also disables the switch.
     updateLid({ magnetHoles: !lid.magnetHoles });
   }, [lid.stackableTop, lid.magnetHoles, updateLid]);
+
+  const toggleSeparateStackPlate = useCallback(() => {
+    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
+    updateLid({ separateStackPlate: !lid.separateStackPlate });
+  }, [lid.stackableTop, lid.separateStackPlate, updateLid]);
 
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {
@@ -460,6 +470,7 @@ export function useLidSection() {
       enabled: effectiveEnabled,
       stackableTop: lid.stackableTop,
       magnetHoles: lid.magnetHoles,
+      separateStackPlate: lid.separateStackPlate,
       magnetsRequireStackable,
       magnetsDisabledReason,
       magnetDiameter: base.magnetDiameter,
@@ -480,6 +491,7 @@ export function useLidSection() {
       toggleEnabled,
       toggleStackableTop,
       toggleMagnetHoles,
+      toggleSeparateStackPlate,
       toggleClickRailSide,
       setClickRailCoverage,
       fixIssue,

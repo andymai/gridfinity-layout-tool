@@ -159,6 +159,13 @@ function meshByteSize(mesh: MeshData): number {
       mesh.lidMesh.indices.byteLength +
       mesh.lidMesh.edgeVertices.byteLength;
   }
+  if (mesh.stackPlateMesh) {
+    bytes +=
+      mesh.stackPlateMesh.vertices.byteLength +
+      mesh.stackPlateMesh.normals.byteLength +
+      mesh.stackPlateMesh.indices.byteLength +
+      mesh.stackPlateMesh.edgeVertices.byteLength;
+  }
   if (mesh.connectorKeyMesh) {
     bytes +=
       mesh.connectorKeyMesh.vertices.byteLength +

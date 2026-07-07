@@ -83,6 +83,42 @@ describe('LidSection', () => {
     expect(lid.magnetHoles).toBe(false);
   });
 
+  it('disables the separate-baseplate switch when stackable top is off', () => {
+    // The baseplate IS the stack grid — no grid, nothing to split.
+    resetStore({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: false },
+    });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    expect(screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' })).toBeDisabled();
+  });
+
+  it('toggles separate baseplate via Switch and shows the print hint', () => {
+    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true } });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' }));
+    expect(useDesignerStore.getState().params.lid.separateStackPlate).toBe(true);
+    expect(screen.getByText(/Glue it onto the lid/i)).toBeInTheDocument();
+  });
+
+  it('clears separateStackPlate when stackableTop is turned off', () => {
+    resetStore({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        stackableTop: true,
+        separateStackPlate: true,
+      },
+    });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Stackable top grid' }));
+    const lid = useDesignerStore.getState().params.lid;
+    expect(lid.stackableTop).toBe(false);
+    expect(lid.separateStackPlate).toBe(false);
+  });
+
   describe('compatibility issues', () => {
     it('shows a Fix button on the label-tabs warning that disables the feature', () => {
       // Enable lid + label tabs → the `labelTabs` warning surfaces with

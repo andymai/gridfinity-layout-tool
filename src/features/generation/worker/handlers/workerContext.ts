@@ -141,6 +141,17 @@ export function runGeneration(
         }
       : undefined;
 
+    // Prepare separate stack-grid baseplate buffers when present (glue-on companion)
+    const stackPlate = meshData.stackPlateMesh
+      ? {
+          vertices: maybeCopy(meshData.stackPlateMesh.vertices),
+          normals: maybeCopy(meshData.stackPlateMesh.normals),
+          indices: maybeCopy(meshData.stackPlateMesh.indices),
+          edgeVertices: maybeCopy(meshData.stackPlateMesh.edgeVertices),
+          triangleCount: meshData.stackPlateMesh.triangleCount,
+        }
+      : undefined;
+
     // Prepare snap-clip connector buffers when present (split snap-clip plates)
     const connectorKey = meshData.connectorKeyMesh
       ? {
@@ -173,6 +184,15 @@ export function runGeneration(
             lidFaceGroups: lid.faceGroups,
           }
         : {}),
+      ...(stackPlate
+        ? {
+            stackPlateVertices: stackPlate.vertices,
+            stackPlateNormals: stackPlate.normals,
+            stackPlateIndices: stackPlate.indices,
+            stackPlateEdgeVertices: stackPlate.edgeVertices,
+            stackPlateTriangleCount: stackPlate.triangleCount,
+          }
+        : {}),
       ...(connectorKey
         ? {
             connectorKeyVertices: connectorKey.vertices,
@@ -193,6 +213,14 @@ export function runGeneration(
         lid.normals.buffer,
         lid.indices.buffer,
         lid.edgeVertices.buffer
+      );
+    }
+    if (stackPlate) {
+      transfer.push(
+        stackPlate.vertices.buffer,
+        stackPlate.normals.buffer,
+        stackPlate.indices.buffer,
+        stackPlate.edgeVertices.buffer
       );
     }
     if (connectorKey) {
