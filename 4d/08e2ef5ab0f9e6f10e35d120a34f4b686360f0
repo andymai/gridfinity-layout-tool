@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_37fb96164459db::t_9c133d90b31efb 35-47
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_37fb96164459db::t_e1a6c4f57aabd9 42,46,53-58
+  s_37fb96164459db::t_709276e14a6d76 118
+  s_37fb96164459db::t_bd94d08df132a7 104
+  s_37fb96164459db::t_e34287efce26e0 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4d08e2ef5ab0f9e6f10e35d120a34f4b686360f0",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
