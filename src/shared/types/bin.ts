@@ -17,6 +17,7 @@ export type {
   BinStyle,
   CompartmentConfig,
   ScoopConfig,
+  ScoopStyle,
   LabelTabConfig,
   LabelTabAlignment,
   LabelTabEdges,

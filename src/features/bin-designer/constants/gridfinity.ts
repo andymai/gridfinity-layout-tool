@@ -96,9 +96,17 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_DIVIDER_CLEARANCE: 0.3, // mm
   DIVIDER_CLEARANCE_STEP: 0.05, // mm
   // Finger scoop
-  MIN_SCOOP_RADIUS: 5, // mm
-  MAX_SCOOP_RADIUS: 25, // mm
+  MIN_SCOOP_RADIUS: 5, // mm — floor for both the height (rise) and run inputs
+  MAX_SCOOP_RADIUS: 25, // mm — default auto-height ceiling; also the legacy manual cap
   SCOOP_RADIUS_STEP: 1, // mm
+  // Two-variable custom scoop: height (rise) and run (length along the floor)
+  // are steppable up to these generous ceilings; the geometry then clamps each
+  // to the real interior height / compartment depth, so these only bound the UI.
+  MAX_SCOOP_HEIGHT: 140, // mm — MAX_HEIGHT (20) × heightUnitMm (7)
+  MAX_SCOOP_RUN: 140, // mm
+  // A scoop steeper than this height:run ratio prints with rough overhangs and
+  // is awkward to reach into — surface a non-blocking warning past it.
+  SCOOP_STEEP_WARN_RATIO: 2,
   // Per-side body overhang (fills the drawer-fit gap; outward-only)
   MIN_OVERHANG: 0, // mm
   MAX_OVERHANG: 21, // mm (half a 42mm grid unit — beyond this, add a grid cell)

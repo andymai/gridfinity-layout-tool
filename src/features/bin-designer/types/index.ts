@@ -256,11 +256,29 @@ export interface DividerOverride {
   readonly offsetEnd: number;
 }
 
+/** Profile shape of a finger-scoop ramp: concave fillet or flat chamfer. */
+export type ScoopStyle = 'curved' | 'straight';
+
 /** Scoop ramp configuration for compartment accessibility */
 export interface ScoopConfig {
   readonly enabled: boolean;
-  /** Scoop radius in mm. 'auto' = min(compartmentSize/3, 15mm) */
+  /**
+   * Scoop rise up the wall in mm, or 'auto'. In auto mode the ramp is
+   * proportional (run === height); 'auto' = min(compartmentSize/3, 15mm, …).
+   */
   readonly radius: number | 'auto';
+  /**
+   * Custom run along the floor in mm. When omitted the ramp is a symmetric
+   * quarter shape (run === radius) — the legacy single-value behavior.
+   */
+  readonly run?: number;
+  /** Profile shape. Defaults to 'curved' (the legacy concave quarter arc). */
+  readonly style?: ScoopStyle;
+  /**
+   * Ceiling (mm) the auto proportional height may reach. Defaults to
+   * MAX_SCOOP_RADIUS (25); raise up to the interior height for taller scoops.
+   */
+  readonly autoMaxHeight?: number;
 }
 
 /** Horizontal alignment of each label tab within its compartment column */

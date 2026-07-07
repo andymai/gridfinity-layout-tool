@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "binDesigner.scoopStyle",
     "inspector.heightUnitsEquiv",
     "binDesigner.cutoutTextAngle",
     "common.redditCommunity",

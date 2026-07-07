@@ -116,7 +116,14 @@ export function buildReportIssueUrl(
           // `id !== i` check would false-positive).
           merged: new Set(params.compartments.cells).size !== params.compartments.cells.length,
         },
-        scoop: params.scoop.enabled ? { enabled: true, radius: params.scoop.radius } : false,
+        scoop: params.scoop.enabled
+          ? {
+              enabled: true,
+              radius: params.scoop.radius,
+              run: params.scoop.run,
+              style: params.scoop.style,
+            }
+          : false,
         label: params.label.enabled
           ? { enabled: true, support: params.label.support, depth: params.label.depth }
           : false,

@@ -1,25 +1,44 @@
 /**
  * Shared scoop calculation utilities.
  *
- * Provides functions for resolving scoop radius and computing lip offset.
- * Used by binGenerator.ts, GhostScoops.tsx, and printEstimates.ts to ensure
- * consistent scoop geometry across generation, preview, and estimates.
+ * Provides functions for resolving a scoop's two-axis profile (run along the
+ * floor + rise up the wall) and computing lip offset. Used by
+ * scoopRampBuilder.ts, GhostScoops.tsx, and printEstimates.ts to keep scoop
+ * geometry consistent across generation, preview, and estimates.
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
+import type { ScoopConfig, ScoopStyle } from '@/shared/types/bin';
+
+/** A scoop resolved to concrete geometry: run (Y), rise (Z), and profile shape. */
+export interface ResolvedScoopProfile {
+  /** Length along the compartment floor in mm. */
+  readonly run: number;
+  /** Rise up the front wall in mm. */
+  readonly height: number;
+  /** Profile shape. */
+  readonly style: ScoopStyle;
+}
 
 /**
- * Resolve scoop radius for a compartment.
+ * Resolve a scoop config into a concrete run/height profile for a compartment.
  *
- * Auto mode: min(smallerDim/3, max(15, wallHeight*0.5), compD/3),
- * capped at MAX_SCOOP_RADIUS and clamped to fit compartment depth and wall height.
- * Manual mode: clamped to fit compartment and height.
+ * Auto mode: proportional (run === height), sized from
+ * min(smallerDim/3, max(15, wallHeight*0.5), compD/3) and capped at
+ * `scoop.autoMaxHeight` (default MAX_SCOOP_RADIUS). For front-row scoops with a
+ * stacking lip the height is raised toward wallHeight so the scoop top meets the
+ * lip's inner face. Both axes are then clamped symmetrically so the auto ramp
+ * stays a quarter shape.
  *
- * For front-row scoops with a stacking lip, auto radius is increased to reach
- * wallHeight so the scoop top meets the lip's inner face — but never past
- * MAX_SCOOP_RADIUS, the same ceiling the manual stepper enforces.
+ * Legacy custom (numeric `radius`, no `run`): symmetric quarter shape clamped to
+ * min(radius, maxHeight, maxRun) — preserves the pre-two-variable geometry byte
+ * for byte.
  *
- * @param scoopRadius - Scoop config radius ('auto' or manual mm)
+ * Two-variable custom (numeric `radius` + `run`): height and run clamp
+ * independently — height to the interior/wall height, run to the compartment
+ * depth — enabling steep or shallow profiles.
+ *
+ * @param scoop - Scoop config (radius/run/style/autoMaxHeight)
  * @param compW - Compartment width in mm
  * @param compD - Compartment depth in mm
  * @param isMinRow - Whether this compartment is in the front row (row 0)
@@ -27,10 +46,10 @@ import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
  * @param wallHeight - Full wall height in mm
  * @param interiorHeight - Interior height in mm (wallHeight - lip taper)
  * @param lipOffset - Lip offset in mm (for front-row scoops with lip)
- * @returns Resolved radius in mm, or 0 if radius < 1
+ * @returns Resolved profile, or null if the scoop is degenerate (< 1mm on either axis)
  */
-export function resolveScoopRadius(
-  scoopRadius: number | 'auto',
+export function resolveScoopProfile(
+  scoop: ScoopConfig,
   compW: number,
   compD: number,
   isMinRow: boolean,
@@ -38,36 +57,49 @@ export function resolveScoopRadius(
   wallHeight: number,
   interiorHeight: number,
   lipOffset: number
-): number {
-  const minDim = Math.min(compW, compD);
-  let radius: number;
-  if (scoopRadius === 'auto') {
+): ResolvedScoopProfile | null {
+  const style: ScoopStyle = scoop.style ?? 'curved';
+
+  // Front-row scoops extend to wallHeight (lip base); interior rows to
+  // interiorHeight. Run can't exceed the compartment depth (minus a hair and
+  // any lip offset).
+  const maxHeight = isMinRow ? wallHeight : interiorHeight;
+  const maxRun = compD - 0.5 - lipOffset;
+
+  let height: number;
+  let run: number;
+
+  if (scoop.radius === 'auto') {
+    const minDim = Math.min(compW, compD);
     // Three-factor balance: curvature, usability, volume
     //  - minDim/3: radius proportional to compartment size (curvature)
     //  - max(15, wallHeight*0.5): height-aware cap for tall bins (usability)
     //  - compD/3: preserve ≥2/3 of depth for storage (volume)
-    radius = Math.min(minDim / 3, Math.max(15, wallHeight * 0.5), compD / 3);
+    let r = Math.min(minDim / 3, Math.max(15, wallHeight * 0.5), compD / 3);
 
-    // For front-row scoops with lip, auto radius must reach wallHeight
-    // so the scoop top meets the lip's inner face.
-    if (hasLip && isMinRow) {
-      radius = Math.max(radius, wallHeight);
-    }
+    // For front-row scoops with lip, auto radius reaches wallHeight so the
+    // scoop top meets the lip's inner face.
+    if (hasLip && isMinRow) r = Math.max(r, wallHeight);
 
-    // Auto radius must respect the same 25mm ceiling the manual stepper
-    // enforces. Without this, tall or front-row-lipped bins balloon the
-    // scoop up to the full wall height, far past what manual mode allows.
-    radius = Math.min(radius, DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS);
+    // The auto height ceiling is user-tunable (default MAX_SCOOP_RADIUS). Then
+    // clamp both axes together so the auto ramp stays a symmetric quarter shape.
+    const autoCap = scoop.autoMaxHeight ?? DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS;
+    r = Math.min(r, autoCap, maxHeight, maxRun);
+    height = r;
+    run = r;
+  } else if (scoop.run === undefined) {
+    // Legacy single-value radius: symmetric quarter shape.
+    const r = Math.min(scoop.radius, maxHeight, maxRun);
+    height = r;
+    run = r;
   } else {
-    radius = scoopRadius;
+    // Two-variable custom: independent clamps enable steep/shallow profiles.
+    height = Math.min(scoop.radius, maxHeight);
+    run = Math.min(scoop.run, maxRun);
   }
 
-  // Clamp: radius can't exceed compartment depth (minus offset) or wall height.
-  // Front-row scoops extend to wallHeight (lip base); interior rows to interiorHeight.
-  const maxHeight = isMinRow ? wallHeight : interiorHeight;
-  radius = Math.min(radius, compD - 0.5 - lipOffset, maxHeight);
-
-  return radius < 1 ? 0 : radius;
+  if (height < 1 || run < 1) return null;
+  return { run, height, style };
 }
 
 /**

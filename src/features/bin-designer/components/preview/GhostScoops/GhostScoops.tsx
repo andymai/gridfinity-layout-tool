@@ -16,7 +16,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
-  resolveScoopRadius,
+  resolveScoopProfile,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -32,7 +32,8 @@ export function GhostScoops() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -104,8 +105,8 @@ export function GhostScoops() {
 
         const isMinRow = minRow === 0;
         const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, wallThickness);
-        const radius = resolveScoopRadius(
-          scoop.radius,
+        const profile = resolveScoopProfile(
+          scoop,
           compW,
           compD,
           isMinRow,
@@ -114,23 +115,36 @@ export function GhostScoops() {
           interiorHeight,
           lipOffset
         );
-        if (radius === 0) continue;
+        if (!profile) continue;
+        const { run, height, style } = profile;
 
         // Compartment position
         const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
         const frontEdgeY = -innerD / 2 + minRow * cellD;
 
-        // Build a quarter-cylinder surface as a triangle strip
-        // Two rows of vertices: left edge and right edge of the compartment
+        // Build the ramp surface as a triangle strip.
+        // Two rows of vertices: left edge and right edge of the compartment.
         const leftX = compCenterX - compW / 2;
         const rightX = compCenterX + compW / 2;
 
-        // Concave arc offset by lipOffset so scoop top meets the lip
-        for (let i = 0; i <= ARC_SEGMENTS; i++) {
-          const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
-          const dy = lipOffset + radius * (1 - Math.cos(angle));
-          const dz = radius * (1 - Math.sin(angle));
+        // Ramp profile points (offset by lipOffset so the scoop top meets the
+        // lip): a concave quarter-ellipse for 'curved', a single bevel edge for
+        // 'straight'. Runs from the wall top (dz = height) down to the floor.
+        const profilePoints: [number, number][] = [];
+        if (style === 'curved') {
+          for (let i = 0; i <= ARC_SEGMENTS; i++) {
+            const angle = (Math.PI / 2) * (i / ARC_SEGMENTS);
+            profilePoints.push([
+              lipOffset + run * (1 - Math.cos(angle)),
+              height * (1 - Math.sin(angle)),
+            ]);
+          }
+        } else {
+          profilePoints.push([lipOffset, height]);
+          profilePoints.push([lipOffset + run, 0]);
+        }
 
+        for (const [dy, dz] of profilePoints) {
           // Left vertex
           allPositions.push(leftX, frontEdgeY + dy, dz);
           // Right vertex
@@ -138,7 +152,7 @@ export function GhostScoops() {
         }
 
         // Build triangle indices for the strip
-        for (let i = 0; i < ARC_SEGMENTS; i++) {
+        for (let i = 0; i < profilePoints.length - 1; i++) {
           const bl = vertexOffset + i * 2;
           const br = bl + 1;
           const tl = bl + 2;
@@ -147,7 +161,7 @@ export function GhostScoops() {
           allIndices.push(br, tr, tl);
         }
 
-        vertexOffset += (ARC_SEGMENTS + 1) * 2;
+        vertexOffset += profilePoints.length * 2;
       }
     }
 
@@ -171,7 +185,7 @@ export function GhostScoops() {
     cols,
     rows,
     cells,
-    scoop.radius,
+    scoop,
   ]);
 
   const material = useMemo(() => {

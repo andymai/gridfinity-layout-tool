@@ -9,3 +9,11 @@ exports[`scoop > 2×2 scoop auto radius 1`] = `3924`;
 exports[`scoop > 2×2 scoop disabled 1`] = `2796`;
 
 exports[`scoop > 2×2 scoop radius 10mm 1`] = `3956`;
+
+exports[`scoop two-variable > 2×2 shallow curved scoop (run > height) 1`] = `3872`;
+
+exports[`scoop two-variable > 2×2 steep curved scoop (run < height) 1`] = `4060`;
+
+exports[`scoop two-variable > 2×2 steep straight scoop 1`] = `3436`;
+
+exports[`scoop two-variable > 2×2 straight scoop (chamfer) 1`] = `3348`;

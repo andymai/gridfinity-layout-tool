@@ -129,19 +129,22 @@ describe('DEFAULT_BIN_PARAMS', () => {
 describe('migrateParams', () => {
   it('should handle legacy boolean scoop: true', () => {
     const result = migrateParams({ scoop: true as any });
-    expect(result.scoop).toEqual({ enabled: true, radius: 'auto' });
+    expect(result.scoop).toEqual({ ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto' });
   });
 
   it('should handle legacy boolean scoop: false', () => {
     const result = migrateParams({ scoop: false as any });
-    expect(result.scoop).toEqual({ enabled: false, radius: 'auto' });
+    expect(result.scoop).toEqual({ ...DEFAULT_BIN_PARAMS.scoop, enabled: false, radius: 'auto' });
   });
 
-  it('should pass through valid ScoopConfig', () => {
+  it('should pass through valid ScoopConfig and backfill new defaults', () => {
     const config = { enabled: true, radius: 10 };
 
     const result = migrateParams({ scoop: config });
-    expect(result.scoop).toEqual({ enabled: true, radius: 10 });
+    // radius/run stay untouched; style + autoMaxHeight backfill from defaults so
+    // legacy single-value designs keep rendering as a symmetric quarter shape.
+    expect(result.scoop).toEqual({ ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 10 });
+    expect(result.scoop.run).toBeUndefined();
   });
 
   it('should fill missing ScoopConfig fields with defaults', () => {

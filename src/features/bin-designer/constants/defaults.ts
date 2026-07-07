@@ -27,6 +27,7 @@ import type { LidClickRails } from '../types/lid';
 import type { TextStyleDefaults } from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
+import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -335,6 +336,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   scoop: {
     enabled: false,
     radius: 'auto',
+    style: 'curved',
+    autoMaxHeight: DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS,
   },
   label: {
     enabled: false,

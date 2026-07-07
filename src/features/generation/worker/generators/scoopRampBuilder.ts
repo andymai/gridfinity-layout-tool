@@ -19,7 +19,7 @@ import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import {
-  resolveScoopRadius,
+  resolveScoopProfile,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -108,8 +108,8 @@ function buildScoopRampsInScope(
 
       const isMinRow = minRow === 0;
       const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
-      const radius = resolveScoopRadius(
-        params.scoop.radius,
+      const scoopProfile = resolveScoopProfile(
+        params.scoop,
         compW,
         compD,
         isMinRow,
@@ -118,16 +118,19 @@ function buildScoopRampsInScope(
         interiorHeight,
         lipOffset
       );
-      if (radius === 0) continue;
+      if (!scoopProfile) continue;
+      const { run, height, style } = scoopProfile;
 
       // Build scoop ramp solid.
       // Profile in YZ plane: draw([u, v]) where u->Y (depth), v->Z (height).
+      // The ramp descends from (lipOffset, height) to (lipOffset + run, 0):
+      // a concave quarter-ellipse ('curved') or a straight bevel ('straight').
       // Without lip offset (lipOffset = 0):
-      //   (0, 0) -> (0, R) -> arc -> (R, 0) -> close
+      //   (0, 0) -> (0, H) -> ramp -> (run, 0) -> close
       // With lip offset (lo), extends to wallHeight so scoop meets lip:
-      //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, R) -> arc -> (lo+R, 0) -> close
+      //   (0, 0) -> (0, wH) -> (lo, wH) -> (lo, H) -> ramp -> (lo+run, 0) -> close
       //   Goes up the wall to wallHeight, across to the lip's inner face,
-      //   down to arc start at R, then curves to floor. Fills solid.
+      //   down to ramp start at H, then descends to floor. Fills solid.
       const segments = 24;
       const points: [number, number][] = [];
       // Start at wall/floor corner
@@ -136,23 +139,27 @@ function buildScoopRampsInScope(
         // Up the wall to wallHeight (lip base), across to lip inner face
         points.push([0, wallHeight]);
         points.push([lipOffset, wallHeight]);
-        // Down to arc start (only needed when radius < wallHeight)
-        if (radius < wallHeight) {
-          points.push([lipOffset, radius]);
+        // Down to ramp start (only needed when height < wallHeight)
+        if (height < wallHeight) {
+          points.push([lipOffset, height]);
         }
       } else {
         // Standard: up the wall to scoop height
-        points.push([0, radius]);
+        points.push([0, height]);
       }
-      // Concave arc from (lipOffset, radius) to (lipOffset + radius, 0)
-      for (let i = 1; i < segments; i++) {
-        const angle = (Math.PI / 2) * (i / segments);
-        const arcY = lipOffset + radius * (1 - Math.cos(angle));
-        const arcZ = radius * (1 - Math.sin(angle));
-        points.push([arcY, arcZ]);
+      if (style === 'curved') {
+        // Concave quarter-ellipse from (lipOffset, height) to (lipOffset+run, 0)
+        for (let i = 1; i < segments; i++) {
+          const angle = (Math.PI / 2) * (i / segments);
+          const arcY = lipOffset + run * (1 - Math.cos(angle));
+          const arcZ = height * (1 - Math.sin(angle));
+          points.push([arcY, arcZ]);
+        }
       }
-      // Floor, lipOffset + radius away from wall
-      points.push([lipOffset + radius, 0]);
+      // 'straight' style relies on the closing edge from (lipOffset, height) to
+      // this floor point to form the bevel — no intermediate arc points.
+      // Floor, lipOffset + run away from wall
+      points.push([lipOffset + run, 0]);
 
       // Draw the profile (will be sketched on YZ and extruded along X)
       let pen = draw(points[0]);
@@ -162,10 +169,10 @@ function buildScoopRampsInScope(
       const profile = pen.close();
 
       // Do not fillet the longitudinal rim edges (top-of-ramp at Y=lipOffset,
-      // Z=radius; floor-of-ramp at Y=lipOffset+radius, Z=0). The arc is tangent
-      // to the wall and floor at those points, so the edges sit at polygon
-      // cusps — brepjs `fillet()` returns Ok but produces degenerate topology
-      // that fails STL export.
+      // Z=height; floor-of-ramp at Y=lipOffset+run, Z=0). The curved arc is
+      // tangent to the wall and floor at those points, so the edges sit at
+      // polygon cusps — brepjs `fillet()` returns Ok but produces degenerate
+      // topology that fails STL export.
       const scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
 
       // Position: center X at compartment center, Y at front edge of compartment

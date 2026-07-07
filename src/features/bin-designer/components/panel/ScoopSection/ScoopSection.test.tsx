@@ -31,6 +31,44 @@ describe('ScoopSection', () => {
     expect(radiusElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows the profile style control when enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      },
+    });
+
+    render(<ScoopSection />);
+    expect(screen.getByText('Curved')).toBeDefined();
+    expect(screen.getByText('Straight')).toBeDefined();
+  });
+
+  it('shows the auto max-height control in auto mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto' },
+      },
+    });
+
+    render(<ScoopSection />);
+    expect(screen.getByLabelText('Scoop maximum height')).toBeDefined();
+  });
+
+  it('shows independent height and run steppers in custom mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12, run: 12 },
+      },
+    });
+
+    render(<ScoopSection />);
+    expect(screen.getByLabelText('Scoop height')).toBeDefined();
+    expect(screen.getByLabelText('Scoop run')).toBeDefined();
+  });
+
   it('shows disabled reason for slotted bins', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, style: 'slotted' },

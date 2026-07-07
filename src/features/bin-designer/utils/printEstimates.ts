@@ -29,7 +29,7 @@ import {
   type PrintSettings,
 } from '@/shared/printSettings';
 import {
-  resolveScoopRadius,
+  resolveScoopProfile,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -412,8 +412,8 @@ function findCollidingFrontIds(
 /**
  * Volume removed by scoop ramp (negative contribution).
  *
- * Each scoop is approximated as a quarter-cylinder carved from
- * the front of a compartment.
+ * Each scoop's cross-section is a concave quarter-ellipse (curved) or a right
+ * triangle (straight), extruded across the compartment width.
  */
 function computeScoopVolume(
   params: BinParams,
@@ -438,8 +438,8 @@ function computeScoopVolume(
   // Use representative compartment (single-row bins are front row, multi-row are not)
   const isRepresentativeMinRow = rows === 1;
   const lipOffset = computeLipOffset(hasLip, isRepresentativeMinRow, lipTaperWidth, wallThickness);
-  const scoopRadius = resolveScoopRadius(
-    params.scoop.radius,
+  const profile = resolveScoopProfile(
+    params.scoop,
     colWidth,
     rowDepth,
     isRepresentativeMinRow,
@@ -448,11 +448,17 @@ function computeScoopVolume(
     interiorHeight,
     lipOffset
   );
+  if (!profile) return 0;
 
   const numScoops = cols * rows;
 
-  // Quarter-cylinder: π/4 × r² × width (across compartment)
-  const volumePerScoop = (Math.PI / 4) * scoopRadius * scoopRadius * colWidth;
+  // Cross-section area × width. Curved: quarter-ellipse (π/4 × run × height);
+  // straight: right triangle (½ × run × height).
+  const area =
+    profile.style === 'curved'
+      ? (Math.PI / 4) * profile.run * profile.height
+      : 0.5 * profile.run * profile.height;
+  const volumePerScoop = area * colWidth;
 
   return numScoops * volumePerScoop;
 }

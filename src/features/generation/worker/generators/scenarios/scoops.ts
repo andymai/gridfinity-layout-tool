@@ -14,6 +14,21 @@ export const scoop: ScenarioCase[] = [
   }),
 ];
 
+export const scoopTwoVariable: ScenarioCase[] = [
+  defineScenario('scoop two-variable', '2×2 steep curved scoop (run < height)', {
+    params: { scoop: { enabled: true, radius: 20, run: 8, style: 'curved' as const } },
+  }),
+  defineScenario('scoop two-variable', '2×2 shallow curved scoop (run > height)', {
+    params: { scoop: { enabled: true, radius: 8, run: 20, style: 'curved' as const } },
+  }),
+  defineScenario('scoop two-variable', '2×2 straight scoop (chamfer)', {
+    params: { scoop: { enabled: true, radius: 12, run: 12, style: 'straight' as const } },
+  }),
+  defineScenario('scoop two-variable', '2×2 steep straight scoop', {
+    params: { scoop: { enabled: true, radius: 20, run: 8, style: 'straight' as const } },
+  }),
+];
+
 export const scoopLipInteraction: ScenarioCase[] = [
   defineScenario(
     'scoop + lip interaction',

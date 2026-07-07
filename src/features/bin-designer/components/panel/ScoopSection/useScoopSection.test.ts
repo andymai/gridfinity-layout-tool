@@ -70,17 +70,17 @@ describe('useScoopSection', () => {
     expect(result.current.meta.summary).toMatch(/\d+mm/);
   });
 
-  it('summary shows radius in mm when manual', () => {
+  it('summary shows height × run in mm when manual', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
-        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12 },
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12, run: 8 },
       },
     });
 
     const { result } = renderHook(() => useScoopSection());
 
-    expect(result.current.meta.summary).toContain('12mm');
+    expect(result.current.meta.summary).toBe('12×8mm');
   });
 
   it('toggleAutoRadius switches from auto to manual', () => {
@@ -115,14 +115,82 @@ describe('useScoopSection', () => {
     expect(useDesignerStore.getState().params.scoop.radius).toBe('auto');
   });
 
-  it('setRadius updates radius', () => {
+  it('toggleAutoRadius pins both height and run when entering custom mode', () => {
     const { result } = renderHook(() => useScoopSection());
 
     act(() => {
-      result.current.handlers.setRadius(15);
+      result.current.handlers.toggleAutoRadius();
+    });
+
+    const { radius, run } = useDesignerStore.getState().params.scoop;
+    expect(typeof radius).toBe('number');
+    expect(run).toBe(radius);
+  });
+
+  it('setHeight updates the scoop rise', () => {
+    const { result } = renderHook(() => useScoopSection());
+
+    act(() => {
+      result.current.handlers.setHeight(15);
     });
 
     expect(useDesignerStore.getState().params.scoop.radius).toBe(15);
+  });
+
+  it('setRun updates the scoop run', () => {
+    const { result } = renderHook(() => useScoopSection());
+
+    act(() => {
+      result.current.handlers.setRun(9);
+    });
+
+    expect(useDesignerStore.getState().params.scoop.run).toBe(9);
+  });
+
+  it('setStyle switches the profile shape', () => {
+    const { result } = renderHook(() => useScoopSection());
+
+    act(() => {
+      result.current.handlers.setStyle('straight');
+    });
+
+    expect(useDesignerStore.getState().params.scoop.style).toBe('straight');
+  });
+
+  it('setAutoMaxHeight raises the auto ceiling', () => {
+    const { result } = renderHook(() => useScoopSection());
+
+    act(() => {
+      result.current.handlers.setAutoMaxHeight(40);
+    });
+
+    expect(useDesignerStore.getState().params.scoop.autoMaxHeight).toBe(40);
+  });
+
+  it('flags a steep custom scoop (tall rise, short run)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 24, run: 6 },
+      },
+    });
+
+    const { result } = renderHook(() => useScoopSection());
+
+    expect(result.current.state.isSteep).toBe(true);
+  });
+
+  it('does not flag a proportional custom scoop as steep', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12, run: 12 },
+      },
+    });
+
+    const { result } = renderHook(() => useScoopSection());
+
+    expect(result.current.state.isSteep).toBe(false);
   });
 
   it('autoDisplayText shows resolved value for single compartment', () => {
