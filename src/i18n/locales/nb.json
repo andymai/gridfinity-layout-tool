@@ -708,7 +708,7 @@
   "binDesigner.lid.side.right": "Høyre",
   "binDesigner.lid.stackableTop": "Stablebart rutenett på topp",
   "binDesigner.lid.separateStackPlate": "Separat bunnplate (limes på)",
-  "binDesigner.lid.separateStackPlateRequiresStackable": "Slå på stablbar topp først – bunnplaten er det rutenettet, skrevet ut som egen del.",
+  "binDesigner.lid.separateStackPlateRequiresStackable": "Slå på stablebart rutenett på topp først – bunnplaten er det rutenettet, skrevet ut som egen del.",
   "binDesigner.lid.separateStackPlateHint": "Bunnplaten skrives ut flatt for seg selv (rutenett opp, limflate ned) slik at lokket forblir støttefritt. Lim den på toppen av lokket etter utskrift.",
   "binDesigner.lid.summary": "{coverage}% skinner",
   "binDesigner.lid.summaryNoRails": "Friksjonssitt (ingen skinner)",

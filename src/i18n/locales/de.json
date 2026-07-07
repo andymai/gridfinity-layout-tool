@@ -708,7 +708,7 @@
   "binDesigner.lid.side.right": "Rechts",
   "binDesigner.lid.stackableTop": "Stapelbares Raster oben",
   "binDesigner.lid.separateStackPlate": "Separate Grundplatte (zum Aufkleben)",
-  "binDesigner.lid.separateStackPlateRequiresStackable": "Aktiviere zuerst den stapelbaren Deckel – die Grundplatte ist dieses Raster, als eigenes Teil gedruckt.",
+  "binDesigner.lid.separateStackPlateRequiresStackable": "Aktiviere zuerst das stapelbare Raster oben – die Grundplatte ist dieses Raster, als eigenes Teil gedruckt.",
   "binDesigner.lid.separateStackPlateHint": "Die Grundplatte wird separat flach gedruckt (Raster oben, Klebefläche unten), damit der Deckel stützfrei bleibt. Nach dem Druck auf die Deckeloberseite kleben.",
   "binDesigner.lid.summary": "{coverage}% Schienen",
   "binDesigner.lid.summaryNoRails": "Reibungssitz (keine Schienen)",
