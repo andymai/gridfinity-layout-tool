@@ -1,0 +1,23 @@
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.ts
+  s_37fb96164459db::t_6eac1a48679cb2 46-47
+src/i18n/locales/sv.json
+  s_37fb96164459db::t_29e69daf54eb31 1633
+src/shared/utils/drawerMargin.ts
+  s_37fb96164459db::t_f1d918558ae97d 30-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9e1815eb73202211ad93297e510d1cdc27332a7a",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
