@@ -8,7 +8,6 @@ import type {
   GenerateBaseplateMarginMessage,
   WarmMessage,
   LidMeshData,
-  StackPlateMeshData,
   MeshData,
 } from '../../bridge/types';
 import { generateBin } from '../generators/binGenerator';
@@ -51,19 +50,24 @@ export function handleGenerate(message: GenerateMessage): void {
 
         console.warn('[BinGen] Lid generation failed; falling back to bin-only:', e);
       }
+      if (!lidMesh) {
+        // Lid generation failed (or is disabled) → bin-only. The baseplate is a
+        // companion to the lid, so emitting it here would leave a lone
+        // baseplate with no lid; skip it and degrade cleanly to bin-only.
+        return binMesh;
+      }
+      let result: MeshData = { ...binMesh, lidMesh };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but
       // a cancellation still aborts the whole request.
-      let stackPlateMesh: StackPlateMeshData | null = null;
       try {
-        stackPlateMesh = generateStackPlate(params, signal);
+        const stackPlateMesh = generateStackPlate(params, signal);
+        if (stackPlateMesh) result = { ...result, stackPlateMesh };
       } catch (e) {
         if (isAbortError(e)) throw e;
 
         console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
       }
-      let result: MeshData = lidMesh ? { ...binMesh, lidMesh } : binMesh;
-      if (stackPlateMesh) result = { ...result, stackPlateMesh };
       return result;
     },
     requestId,

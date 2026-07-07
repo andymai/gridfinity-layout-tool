@@ -11,7 +11,6 @@
  */
 
 import type { Page } from '@playwright/test';
-import { writeFileSync } from 'node:fs';
 import { test, expect } from '../fixtures';
 
 test.use({
@@ -73,11 +72,7 @@ test.describe('Lid separate baseplate (visual)', () => {
     // Print-guidance hint surfaces.
     await expect(page.getByText(/Glue it onto the lid/i)).toBeVisible();
 
-    // Save for eyeballing the floating baseplate.
-    writeFileSync(
-      '/tmp/claude-1000/-home-andy-Git-gridfinity-layout-tool/878f7c03-ecf5-4299-833f-d90732bf7473/scratchpad/lid-separate-baseplate.png',
-      split
-    );
+    // Attach the exploded preview to the Playwright report for eyeballing.
     await test.info().attach('lid-separate-baseplate.png', {
       body: split,
       contentType: 'image/png',
