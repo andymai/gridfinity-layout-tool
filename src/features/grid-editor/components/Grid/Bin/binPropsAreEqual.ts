@@ -43,7 +43,8 @@ export function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): bool
     prevBin.label !== nextBin.label ||
     prevBin.category !== nextBin.category ||
     prevBin.notes !== nextBin.notes ||
-    prevBin.linkedDesignId !== nextBin.linkedDesignId
+    prevBin.linkedDesignId !== nextBin.linkedDesignId ||
+    prevBin.extendToMargin !== nextBin.extendToMargin
   ) {
     return false;
   }

@@ -27,7 +27,9 @@ const ZERO_SIDES: MarginSides = { left: 0, right: 0, front: 0, back: 0 };
 const EPS = 1e-6;
 
 // Plain-number shapes (branded GridUnits are assignable) so both the layout
-// planner and the 3D preview — which holds unbranded world coords — can call in.
+// planner and the 3D preview can call in with unbranded values. NOTE: x/y/width/
+// depth are always in drawer GRID UNITS (the preview keeps bin X/Y in grid units,
+// not world/mm) — the abutment math below compares them against the drawer size.
 interface BinRect {
   readonly x: number;
   readonly y: number;

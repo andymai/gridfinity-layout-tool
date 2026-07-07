@@ -1630,7 +1630,7 @@
   "inspector.layer": "Lager",
   "inspector.extendToMargin": "Utöka in i lådmarginalen",
   "inspector.extendToMargin.hint": "Fyller bottenplattans lådanpassningsmarginal på varje lådkant den rör vid.",
-  "inspector.extendToMargin.needsLink": "Länka ett design för att utöka in i marginalen.",
+  "inspector.extendToMargin.needsLink": "Länka en design för att utöka in i marginalen.",
   "inspector.maxHeightHint": "Max. {max}mm: {reason}",
   "inspector.maxPropertiesReached": "Maximalt {max} egenskaper nådda",
   "inspector.minHeightHint": "Min. {min}mm: {reason}",
