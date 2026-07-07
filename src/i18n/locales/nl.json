@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Geblokkeerd door bin op {layer}",
   "grid.blockedZone": "Geblokkeerd gebied",
   "grid.blockedZoneClick": "Klik om blokkerende bin te bekijken",
+  "grid.drawerMargin.tooltip": "Ladepassingsmarge op basis van de vulling van de basisplaat. Bewerk deze op het tabblad Basisplaat.",
   "grid.clickToSeeSplitPreview": "Klik om split-voorbeeld te zien",
   "grid.collapse": "Invouwen",
   "grid.collision": "Botst met bestaande bin",

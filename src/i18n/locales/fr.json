@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Bloqué par un bin sur {layer}",
   "grid.blockedZone": "Zone bloquée",
   "grid.blockedZoneClick": "Cliquez pour voir le bin bloquant",
+  "grid.drawerMargin.tooltip": "Marge d'ajustement au tiroir issue de la marge de la platine de base. Modifiez-la dans l'onglet Platine de base.",
   "grid.clickToSeeSplitPreview": "Cliquez pour voir l'aperçu de division",
   "grid.collapse": "Réduire",
   "grid.collision": "Collision avec un bin existant",

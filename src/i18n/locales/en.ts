@@ -1340,6 +1340,8 @@ const en: Record<string, string> = {
   'grid.blockedByBin': 'Blocked by bin on {layer}',
   'grid.blockedZone': 'Blocked zone',
   'grid.blockedZoneClick': 'Click to view blocking bin',
+  'grid.drawerMargin.tooltip':
+    'Drawer-fit margin from baseplate padding. Edit it in the Baseplate tab.',
   'grid.collision': 'Collides with existing bin',
   'grid.invalidLayer': 'Invalid layer',
   'grid.outOfBounds': 'Out of bounds',

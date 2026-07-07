@@ -20,6 +20,7 @@ import { getLayerBins } from '@/shared/utils';
 import type { GridUnits } from '@/core/types';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
+import { DrawerMargin } from './DrawerMargin';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { SelectionToolbar } from './SelectionToolbar';
@@ -372,6 +373,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                   onPointerMove={handlePointerMoveForCollab}
                   onPointerLeave={handlePointerLeaveForCollab}
                 >
+                  {/* Drawer-fit margin (baseplate padding), drawn behind the
+                      grid so only the surrounding ring shows (#2462). */}
+                  <DrawerMargin cellSize={cellSize} gap={gap} />
                   <GridCanvas
                     gridRef={gridRef}
                     cellSize={cellSize}

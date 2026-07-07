@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Blockerad av fack på {layer}",
   "grid.blockedZone": "Blockerad zon",
   "grid.blockedZoneClick": "Klicka för att se blockerande fack",
+  "grid.drawerMargin.tooltip": "Lådanpassningsmarginal från bottenplattans utfyllnad. Redigera den på fliken Bottenplatta.",
   "grid.clickToSeeSplitPreview": "Klicka för att se delad förhandsvisning",
   "grid.collapse": "Komprimera",
   "grid.collision": "Krockar med befintligt fack",

@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Bloqueado por bin em {layer}",
   "grid.blockedZone": "Zona bloqueada",
   "grid.blockedZoneClick": "Clique para ver o bin bloqueador",
+  "grid.drawerMargin.tooltip": "Margem de ajuste à gaveta a partir do preenchimento da placa base. Edite na aba Placa base.",
   "grid.clickToSeeSplitPreview": "Clique para ver prévia de divisão",
   "grid.collapse": "Recolher",
   "grid.collision": "Colide com bin existente",

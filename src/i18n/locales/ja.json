@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "{layer}のビンによりブロック",
   "grid.blockedZone": "ブロック領域",
   "grid.blockedZoneClick": "クリックでブロックしているビンを表示",
+  "grid.drawerMargin.tooltip": "ベースプレートの余白による引き出しフィット余白です。「ベースプレート」タブで編集できます。",
   "grid.clickToSeeSplitPreview": "クリックで分割プレビューを表示",
   "grid.collapse": "折りたたみ",
   "grid.collision": "既存のビンと衝突",

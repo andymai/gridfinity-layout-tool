@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Blokkert av bin på {layer}",
   "grid.blockedZone": "Blokkert sone",
   "grid.blockedZoneClick": "Klikk for å vise blokkerende bin",
+  "grid.drawerMargin.tooltip": "Skuffetilpasningsmarg fra bunnplatens polstring. Rediger den i Bunnplate-fanen.",
   "grid.clickToSeeSplitPreview": "Klikk for å se delingsforhåndsvisning",
   "grid.collapse": "Skjul",
   "grid.collision": "Kolliderer med eksisterende bin",

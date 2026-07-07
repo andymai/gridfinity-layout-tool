@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Blockiert von Bin auf {layer}",
   "grid.blockedZone": "Blockierte Zone",
   "grid.blockedZoneClick": "Klicken um blockierendes Bin anzuzeigen",
+  "grid.drawerMargin.tooltip": "Randbereich zur Schubladenanpassung aus der Grundplatten-Polsterung. Im Tab „Grundplatte“ bearbeiten.",
   "grid.clickToSeeSplitPreview": "Klicken für Split-Vorschau",
   "grid.collapse": "Einklappen",
   "grid.collision": "Kollidiert mit vorhandenem Bin",

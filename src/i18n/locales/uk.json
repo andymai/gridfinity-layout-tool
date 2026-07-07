@@ -1352,6 +1352,7 @@
   "grid.blockedByBin": "Заблоковано біном на {layer}",
   "grid.blockedZone": "Заблокована зона",
   "grid.blockedZoneClick": "Натисніть, щоб переглянути блокуючий бін",
+  "grid.drawerMargin.tooltip": "Поле підгонки до шухляди з відступів базової плити. Редагуйте його на вкладці «Базова плита».",
   "grid.clickToSeeSplitPreview": "Натисніть, щоб побачити попередній перегляд розділення",
   "grid.collapse": "Згорнути",
   "grid.collision": "Колізія з наявним біном",
