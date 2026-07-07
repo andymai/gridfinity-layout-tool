@@ -93,10 +93,10 @@ export interface CutoutInterior {
  * bottom-left corner, exactly as the generator places them).
  *
  * Mirrors the generator's derivation in
- * `generation/worker/generators/pipeline/context.ts`: overhang is suppressed
- * for polygon masks (the mask defines its own footprint), negative/omitted
- * sides clamp to zero, and the asymmetry offset is `(right − left) / 2` /
- * `(back − front) / 2`.
+ * `generation/worker/generators/pipeline/context.ts`: an absent or disabled
+ * overhang leaves the interior nominal, overhang is suppressed for polygon
+ * masks (the mask defines its own footprint), negative side values clamp to
+ * zero, and the asymmetry offset is `(right − left) / 2` / `(back − front) / 2`.
  */
 export function cutoutInterior(params: BinParams): CutoutInterior {
   const { innerW, innerD } = binDimensions(params);

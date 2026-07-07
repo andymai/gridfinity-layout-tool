@@ -25,15 +25,30 @@ describe('cutoutInterior matches the generator pipeline dimensions', () => {
     ['explicitly disabled', { enabled: false, left: 5, right: 5, front: 0, back: 0 }],
   ];
 
+  function expectMatchesGenerator(params: BinParams): void {
+    const dim = createInitialContext(params).dimensions;
+    const ci = cutoutInterior(params);
+    expect(ci.innerW).toBeCloseTo(dim.innerW, 6);
+    expect(ci.innerD).toBeCloseTo(dim.innerD, 6);
+    expect(ci.offsetX).toBeCloseTo(dim.innerOffsetX, 6);
+    expect(ci.offsetY).toBeCloseTo(dim.innerOffsetY, 6);
+  }
+
   for (const [name, overhang] of cases) {
     it(name, () => {
-      const params = withOverhang(overhang);
-      const dim = createInitialContext(params).dimensions;
-      const ci = cutoutInterior(params);
-      expect(ci.innerW).toBeCloseTo(dim.innerW, 6);
-      expect(ci.innerD).toBeCloseTo(dim.innerD, 6);
-      expect(ci.offsetX).toBeCloseTo(dim.innerOffsetX, 6);
-      expect(ci.offsetY).toBeCloseTo(dim.innerOffsetY, 6);
+      expectMatchesGenerator(withOverhang(overhang));
     });
   }
+
+  it('suppresses overhang for a partial cell mask (matches the generator)', () => {
+    // Default bin is 2×2 grid units → 4×4 half-bin mask; one empty cell makes
+    // it partial, so both the helper and the generator ignore the overhang.
+    const cells = new Array(16).fill(1) as (0 | 1)[];
+    cells[0] = 0;
+    expectMatchesGenerator({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { left: 5, right: 5, front: 3, back: 3 },
+      cellMask: { cols: 4, rows: 4, cells },
+    });
+  });
 });

@@ -99,8 +99,9 @@ describe('binDimensions', () => {
 });
 
 describe('cutoutInterior', () => {
-  // Default 2×2 bin: nominal innerW/innerD = 81.1.
-  const NOMINAL = 81.1;
+  // Nominal interior of the default bin, derived (not hard-coded) so the tests
+  // track any change to the default grid pitch / wall thickness / tolerance.
+  const NOMINAL = binDimensions(DEFAULT_BIN_PARAMS).innerW;
 
   it('returns the nominal interior when overhang is absent or all-zero', () => {
     const ci = cutoutInterior(DEFAULT_BIN_PARAMS);
