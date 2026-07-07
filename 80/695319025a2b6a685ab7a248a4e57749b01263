@@ -1,0 +1,132 @@
+src/i18n/locales/es.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.test.tsx
+  s_afb2cb2a363388::t_b3a1a4eabbfa3f 1-101
+src/features/generation/bridge/types.ts
+  s_afb2cb2a363388::t_7f8c244f6290a3 674-686
+  s_afb2cb2a363388::t_e95da97c6fcf39 641-643
+  s_afb2cb2a363388::t_21a6dc31d08981 503-509
+src/features/bin-designer/constants/defaults.test.ts
+  s_afb2cb2a363388::t_e6b7baadc5e7e4 654,662-666
+  s_afb2cb2a363388::t_c6c7f19d30bb8d 667-668
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_afb2cb2a363388::t_ff37b9efe260fa 473
+  s_afb2cb2a363388::t_636a23336e7526 494
+  s_afb2cb2a363388::t_1bdae9b0a3611a 254-263,270-273
+  s_afb2cb2a363388::t_506500b88e7b5a 274
+src/i18n/locales/ja.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_afb2cb2a363388::t_bc4fd1ec776cc6 167-235
+  s_afb2cb2a363388::t_ad4fadf7ca8c6b 236-238
+  s_afb2cb2a363388::t_3115419d06cf6d 239-240
+src/features/generation/worker/generators/lidInputs.ts
+  s_afb2cb2a363388::t_b9868bcff4aef1 158-161
+  s_afb2cb2a363388::t_f3591a7fc6246f 36-42
+src/shared/types/generation.ts
+  s_afb2cb2a363388::t_90f26c86bef0e9 13
+src/features/generation/worker/handlers/generateHandler.ts
+  s_afb2cb2a363388::t_2c51c7f424e413 54-67
+  s_afb2cb2a363388::t_06a4a515248dcc 11,17
+src/features/generation/worker/generators/lidBuilder.test.ts
+  s_afb2cb2a363388::t_fc9eb91db1b47e 80-94
+src/features/generation/worker/handlers/workerContext.ts
+  s_afb2cb2a363388::t_816fb4b7cf39bf 187-195
+  s_afb2cb2a363388::t_fc84b3864e4be0 144-154
+  s_afb2cb2a363388::t_b48ea9fdaf30f3 218-225
+src/i18n/locales/nb.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/bin-designer/components/preview/StackPlateMesh/index.ts
+  s_afb2cb2a363388::t_983bea3a072df6 1
+src/i18n/locales/fr.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/i18n/locales/pt-BR.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/bin-designer/utils/binDownloadHelpers.test.ts
+  s_afb2cb2a363388::t_ab559265ae68c6 169-206
+  s_afb2cb2a363388::t_86360115a10b18 6
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_afb2cb2a363388::t_fd86d2cab5cad8 139-154
+  s_afb2cb2a363388::t_c288fa8ceee68e 178
+src/features/bin-designer/types/lid.test.ts
+  s_afb2cb2a363388::t_44da8d18311df0 30-33
+src/features/bin-designer/hooks/useGeneration.ts
+  s_afb2cb2a363388::t_6b8d82ea5b7db6 49-51
+  s_afb2cb2a363388::t_a9be1ee39e521d 76
+src/features/generation/worker/generators/lidBuilder.ts
+  s_afb2cb2a363388::t_036defc35166b7 108-126
+  s_afb2cb2a363388::t_5bae420f14df64 92-96
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_afb2cb2a363388::t_e20560bb1a05fd 26
+  s_afb2cb2a363388::t_a1bfadc05a33ae 433-441
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_afb2cb2a363388::t_a7d238ee6d8817 12,14
+  s_afb2cb2a363388::t_d5f707b7661f57 196-230
+  s_afb2cb2a363388::t_f3e9b4bf601bfa 95-149
+src/shared/generation/meshPersistence.ts
+  s_afb2cb2a363388::t_cae132289ec408 162-168
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.tsx
+  s_afb2cb2a363388::t_ec3adff57a6b31 1-115
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_afb2cb2a363388::t_6de9acf9ddb1c5 257-264,266-272,274-277,279-283,285-286
+  s_afb2cb2a363388::t_2c2602207bd1be 68-69
+  s_afb2cb2a363388::t_13454b26da0526 329-331
+  s_afb2cb2a363388::t_16114a5e04a2ab 347-352
+  s_afb2cb2a363388::t_eef3dc60444967 213-214,219-223
+src/i18n/locales/en.ts
+  s_afb2cb2a363388::t_926afca6cfec81 1598-1602
+src/i18n/locales/sv.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+e2e/bin-designer/lid-separate-baseplate-visual.spec.ts
+  s_afb2cb2a363388::t_7a117d714e5a5f 1-30,32-51,55,58-60,62-63,66-86
+  s_afb2cb2a363388::t_a5259b47b688bd 52,57,61,65
+  s_afb2cb2a363388::t_44228d3a933b80 53-54,56,64
+  s_afb2cb2a363388::t_e98f957d3db68c 31
+src/features/bin-designer/types/index.ts
+  s_afb2cb2a363388::t_01edafe55878dc 680-683
+  s_afb2cb2a363388::t_b8d4a6514a4b87 8-13
+src/features/generation/worker/handlers/exportHandler.ts
+  s_afb2cb2a363388::t_6626ab3adb976f 23-24
+  s_afb2cb2a363388::t_d64677442a54fd 217,219-222,229-239,252
+  s_afb2cb2a363388::t_8a206354482d36 272-278
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_afb2cb2a363388::t_d212b237664505 148-167
+src/i18n/locales/uk.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/i18n/locales/de.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_afb2cb2a363388::t_028325ba890a83 86-121
+src/i18n/locales/nl.json
+  s_afb2cb2a363388::t_5ec1411235cbf0 710-712
+src/features/bin-designer/types/lid.ts
+  s_afb2cb2a363388::t_d51a05f64a4762 72-83
+  s_afb2cb2a363388::t_4baf3c9e2641af 119
+  s_571822668c8cb9::t_c899aa869ab35e 71
+src/features/bin-designer/components/preview/index.ts
+  s_afb2cb2a363388::t_ad14dee0e7cfea 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "80695319025a2b6a685ab7a248a4e57749b01263",
+  "prompts": {},
+  "sessions": {
+    "s_571822668c8cb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7bec0fa-0d68-4082-8679-8525c7fe0368",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_afb2cb2a363388": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "878f7c03-ecf5-4299-833f-d90732bf7473",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
