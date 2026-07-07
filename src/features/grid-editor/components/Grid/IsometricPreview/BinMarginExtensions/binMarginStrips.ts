@@ -8,30 +8,32 @@
  * front/back strips fill only the bin's width. Strips overlap the bin body by a
  * hair so their inner faces sit inside the solid (no coincident-face flicker).
  *
- * X/Y are in grid units (matching the preview's bin positions); Z is already in
- * world units. Padding is converted mm → grid units via `gridUnitMm`.
+ * All axes are in the preview's grid-unit scene space: X/Y match the bin
+ * positions, and Z/height are height-units already scaled into that space by
+ * `heightToGridScale`. Padding is converted mm → grid units via `gridUnitMm`.
  */
 
 import { binMarginSides } from '@/shared/utils/drawerMargin';
 import type { StoredBaseplateParams } from '@/core/types';
 
+// All coordinates below are in the preview's grid-unit scene space (Z included).
 export interface MarginStripBin {
   readonly id: string;
-  /** Grid-unit bottom-left corner + world-space layer base. */
+  /** Bottom-left corner (x, y) and layer base (z), grid-unit scene space. */
   readonly x: number;
   readonly y: number;
   readonly z: number;
   /** Grid-unit footprint. */
   readonly width: number;
   readonly depth: number;
-  /** World-space bin height. */
+  /** Bin height in grid-unit scene space (height-units × heightToGridScale). */
   readonly height: number;
   readonly extendToMargin?: boolean;
 }
 
 export interface MarginStrip {
   readonly key: string;
-  /** Box center (world/grid mixed: x,y grid units, z world). */
+  /** Box center in grid-unit scene space. */
   readonly position: readonly [number, number, number];
   /** Box size [width, depth, height]. */
   readonly size: readonly [number, number, number];
