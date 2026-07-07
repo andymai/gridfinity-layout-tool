@@ -1,0 +1,95 @@
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_37fb96164459db::t_93b22c752dcc8d 40
+  s_37fb96164459db::t_449df0194a2cf6 70
+src/shell/layoutExport/useLayoutExport.ts
+  s_37fb96164459db::t_1f359a3bbcdbf4 173-181
+src/core/cqrs/validation/schemas.ts
+  s_37fb96164459db::t_0da694a4bacdd7 90
+src/core/types.ts
+  s_37fb96164459db::t_4033834ecfc842 247-252
+  s_37fb96164459db::t_3477a6b374c52b 391
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_37fb96164459db::t_8b672a6396e594 2-3,11-24
+  s_37fb96164459db::t_5a30ed3b2032c9 56-64,82-90,106,108
+  s_37fb96164459db::t_55c7a9846fe989 124-132,140-148,157-165,169-205
+  s_f2ad30106907f6::t_a099535268470c 25,107,109-114,206-254
+src/i18n/locales/fr.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/nl.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/sv.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_37fb96164459db::t_43b4dfd0d1a8bc 1-49
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_37fb96164459db::t_70d045b467c530 359-361
+  s_37fb96164459db::t_92487f70ba5dc2 13
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_37fb96164459db::t_b6506a7d6ba6e9 12
+  s_37fb96164459db::t_06e4ca0421014c 303-308
+  s_37fb96164459db::t_03464a49e57459 309-311
+  s_37fb96164459db::t_321e0d9ae40355 312-314
+src/shared/utils/drawerMargin.test.ts
+  s_37fb96164459db::t_e19cd8b1d602d1 1-141
+  s_37fb96164459db::t_f5b904e756f701 142-144
+  s_37fb96164459db::t_594da1ec66829c 145
+src/i18n/locales/nb.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/de.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/ja.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/es.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/i18n/locales/pt-BR.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.test.tsx
+  s_37fb96164459db::t_5f3f395a9f5592 110-112
+  s_37fb96164459db::t_a9c7913c243d4c 94,96,99
+  s_37fb96164459db::t_0e45b82f3f4f7a 1-88,90-93,95,97-98,100-109,113-115
+  s_37fb96164459db::t_fba49c60e29365 89
+  s_37fb96164459db::t_6509e516ccc4f2 116
+src/shared/utils/drawerMargin.ts
+  s_37fb96164459db::t_41507e43b326cf 1-95
+src/core/labs/features.ts
+  s_37fb96164459db::t_a47005ce3913cf 158-167
+src/features/grid-editor/components/Grid/Bin/BinMarginExtension.tsx
+  s_37fb96164459db::t_88f352d849f965 1-62
+src/i18n/locales/en.ts
+  s_37fb96164459db::t_fe3cbe470b0fe9 399-400
+  s_37fb96164459db::t_94298c76b4971a 397-398
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_37fb96164459db::t_a3f82163b495d4 57-79,85-87,89-91,94,104-127,131-132,137-139
+  s_37fb96164459db::t_d0b2601c2d80ad 10,16
+src/i18n/locales/uk.json
+  s_37fb96164459db::t_e83ace2a336952 1631-1633
+src/features/grid-editor/components/Grid/Bin/BinMarginExtension.test.tsx
+  s_37fb96164459db::t_e2efee584112f2 1-80
+  s_37fb96164459db::t_1749a0c5182926 81-82
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/index.ts
+  s_37fb96164459db::t_d94891934b75cd 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "814ed9b6bb24785fc4ae1eada4394d21575366be",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f2ad30106907f6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9dccc79-bff7-4fc1-97a4-a35352f0c3dc",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
