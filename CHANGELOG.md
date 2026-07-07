@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.220.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.220.0...gridfinity-layout-tool-v4.220.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* **bin-designer:** wire label color swatches into the swap-colors tool ([#2469](https://github.com/andymai/gridfinity-layout-tool/issues/2469)) ([f24f57b](https://github.com/andymai/gridfinity-layout-tool/commit/f24f57ba84a63360f59cf5dbfca5c1bdae45af4e))
+
 ## [4.220.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.219.0...gridfinity-layout-tool-v4.220.0) (2026-07-07)
 
 
