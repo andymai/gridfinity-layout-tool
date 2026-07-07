@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { binDimensions } from './binDimensions';
+import { binDimensions, cutoutInterior } from './binDimensions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
@@ -95,5 +95,69 @@ describe('binDimensions', () => {
     expect(dims.totalH).toBeCloseTo(32, 5);
     // wallHeight = 32 − 5 = 27 (socketed)
     expect(dims.wallHeight).toBeCloseTo(27, 5);
+  });
+});
+
+describe('cutoutInterior', () => {
+  // Default 2×2 bin: nominal innerW/innerD = 81.1.
+  const NOMINAL = 81.1;
+
+  it('returns the nominal interior when overhang is absent or all-zero', () => {
+    const ci = cutoutInterior(DEFAULT_BIN_PARAMS);
+    expect(ci.innerW).toBeCloseTo(NOMINAL, 5);
+    expect(ci.innerD).toBeCloseTo(NOMINAL, 5);
+    expect(ci.offsetX).toBe(0);
+    expect(ci.offsetY).toBe(0);
+  });
+
+  it('expands the interior by the summed per-side overhang (symmetric → no offset)', () => {
+    const ci = cutoutInterior({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { left: 3, right: 3, front: 2, back: 2 },
+    });
+    expect(ci.innerW).toBeCloseTo(NOMINAL + 6, 5);
+    expect(ci.innerD).toBeCloseTo(NOMINAL + 4, 5);
+    expect(ci.offsetX).toBeCloseTo(0, 5);
+    expect(ci.offsetY).toBeCloseTo(0, 5);
+  });
+
+  it('shifts the cavity center for asymmetric overhang', () => {
+    const ci = cutoutInterior({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { left: 0, right: 8, front: 4, back: 0 },
+    });
+    expect(ci.innerW).toBeCloseTo(NOMINAL + 8, 5);
+    expect(ci.innerD).toBeCloseTo(NOMINAL + 4, 5);
+    // offsetX = (right − left) / 2, offsetY = (back − front) / 2
+    expect(ci.offsetX).toBeCloseTo(4, 5);
+    expect(ci.offsetY).toBeCloseTo(-2, 5);
+  });
+
+  it('ignores overhang when explicitly disabled', () => {
+    const ci = cutoutInterior({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { enabled: false, left: 5, right: 5, front: 0, back: 0 },
+    });
+    expect(ci.innerW).toBeCloseTo(NOMINAL, 5);
+    expect(ci.offsetX).toBe(0);
+  });
+
+  it('clamps negative sides to zero', () => {
+    const ci = cutoutInterior({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { left: -5, right: 4, front: 0, back: 0 },
+    });
+    expect(ci.innerW).toBeCloseTo(NOMINAL + 4, 5);
+    expect(ci.offsetX).toBeCloseTo(2, 5);
+  });
+
+  it('suppresses overhang for polygon masks (the mask defines the footprint)', () => {
+    const ci = cutoutInterior({
+      ...DEFAULT_BIN_PARAMS,
+      overhang: { left: 5, right: 5, front: 0, back: 0 },
+      cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+    });
+    expect(ci.innerW).toBeCloseTo(NOMINAL, 5);
+    expect(ci.innerD).toBeCloseTo(NOMINAL, 5);
   });
 });

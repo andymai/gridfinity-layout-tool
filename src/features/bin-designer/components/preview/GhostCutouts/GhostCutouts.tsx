@@ -20,6 +20,7 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
 import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { expandInteriorForOverhang } from '@/features/bin-designer/utils/binDimensions';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   flattenPath,
@@ -159,11 +160,14 @@ export function GhostCutouts() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     cutouts,
     base,
+    overhang,
+    cellMask,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -176,6 +180,8 @@ export function GhostCutouts() {
       wallThickness: s.params.wallThickness,
       cutouts: s.params.cutouts,
       base: s.params.base,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
       generationStatus: s.generation.status,
     }))
   );
@@ -191,10 +197,17 @@ export function GhostCutouts() {
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
-  const originX = -innerW / 2;
-  const originY = -innerD / 2;
+  // Overhang grows the interior floor outward and, when asymmetric, shifts it
+  // within the body — match the generator so the ghost sits where the final
+  // cut lands (#2462).
+  const { innerW, innerD, offsetX, offsetY } = expandInteriorForOverhang(
+    outerW - 2 * wallThickness,
+    outerD - 2 * wallThickness,
+    overhang,
+    cellMask
+  );
+  const originX = -innerW / 2 + offsetX;
+  const originY = -innerD / 2 + offsetY;
 
   const hasSelection = selectedIds.size > 0;
   const isGenerating = generationStatus === 'generating';

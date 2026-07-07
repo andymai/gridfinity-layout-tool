@@ -8,7 +8,7 @@
 import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { centerInBin, flipSelectionHorizontal, flipSelectionVertical } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
@@ -77,7 +77,9 @@ export function CutoutEditor() {
   );
 
   const { cutouts } = params;
-  const { innerW: binWidth, innerD: binDepth, wallHeight } = binDimensions(params);
+  // Overhang-expanded interior lets cutouts use the extra floor (#2462).
+  const { wallHeight } = binDimensions(params);
+  const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
   // Mm-per-mask-cell in the editor's interior coordinate system. X and Y differ
   // on non-square bins because the interior is shrunk by wall + tolerance (an
   // absolute mm amount) independently on each axis. Keeping validator and
