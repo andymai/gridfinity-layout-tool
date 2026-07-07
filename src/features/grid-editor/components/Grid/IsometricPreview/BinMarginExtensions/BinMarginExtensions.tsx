@@ -1,18 +1,16 @@
 /**
- * 3D drawer-margin extension for bins in the isometric preview (#2462, Labs
- * `layout_overhang`).
+ * 3D drawer-margin extension for bins in the isometric preview (#2462).
  *
  * Renders decorative solid strips filling the margin around each extended bin
  * (see `binMarginStrips`). Kept separate from the merged bin geometry / cache /
  * transition pipeline so it can't regress it; the strip count is tiny (only
- * extended edge bins). Self-gates on the flag and a configured baseplate.
+ * extended edge bins). Self-gates on a configured baseplate.
  */
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { buildBinMarginStrips } from './binMarginStrips';
 import type { MarginStrip } from './binMarginStrips';
@@ -29,7 +27,6 @@ interface ColoredStrip extends MarginStrip {
 }
 
 export function BinMarginExtensions({ bins, drawerWidth, drawerDepth }: BinMarginExtensionsProps) {
-  const flagOn = useFeatureFlag('layout_overhang');
   const { baseplate, gridUnitMm } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
@@ -38,7 +35,7 @@ export function BinMarginExtensions({ bins, drawerWidth, drawerDepth }: BinMargi
   );
 
   const strips = useMemo<ColoredStrip[]>(() => {
-    if (!flagOn || !baseplate) return [];
+    if (!baseplate) return [];
     return bins.flatMap((bd) =>
       buildBinMarginStrips(
         {
@@ -57,7 +54,7 @@ export function BinMarginExtensions({ bins, drawerWidth, drawerDepth }: BinMargi
         gridUnitMm
       ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }))
     );
-  }, [flagOn, baseplate, gridUnitMm, bins, drawerWidth, drawerDepth]);
+  }, [baseplate, gridUnitMm, bins, drawerWidth, drawerDepth]);
 
   if (strips.length === 0) return null;
 

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ExtendToMarginToggle } from './ExtendToMarginToggle';
-import { useLabsStore } from '@/core/store';
 import { createTestBin } from '@/test/testUtils';
 import { designId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
@@ -38,31 +37,9 @@ function edgeBin(overrides: Partial<Bin> = {}): Bin {
   });
 }
 
-function setFlag(on: boolean) {
-  useLabsStore.setState((prev) => ({
-    preferences: {
-      ...prev.preferences,
-      enabledFeatures: { ...prev.preferences.enabledFeatures, layout_overhang: on },
-    },
-  }));
-}
-
 describe('ExtendToMarginToggle', () => {
   beforeEach(() => {
     updateBin.mockClear();
-    setFlag(true);
-  });
-
-  it('renders nothing when the labs flag is off', () => {
-    setFlag(false);
-    const { container } = render(
-      <ExtendToMarginToggle
-        bin={edgeBin()}
-        drawer={DRAWER}
-        baseplate={baseplate({ paddingLeft: 3 })}
-      />
-    );
-    expect(container.firstChild).toBeNull();
   });
 
   it('renders nothing for an interior bin (no adjacent margin)', () => {

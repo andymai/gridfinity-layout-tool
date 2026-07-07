@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { BinMarginExtension } from './BinMarginExtension';
-import { useLayoutStore, useLabsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -12,7 +12,7 @@ vi.mock('@/i18n', () => ({ useTranslation: () => (key: string) => key }));
 
 const DRAWER: Drawer = { width: gridUnits(5), depth: gridUnits(4), height: heightUnits(6) };
 
-function setup(padding: Partial<StoredBaseplateParams> = {}, flag = true) {
+function setup(padding: Partial<StoredBaseplateParams> = {}) {
   const layout = createDefaultLayout();
   useLayoutStore.setState({
     layout: {
@@ -30,12 +30,6 @@ function setup(padding: Partial<StoredBaseplateParams> = {}, flag = true) {
       },
     },
   });
-  useLabsStore.setState((prev) => ({
-    preferences: {
-      ...prev.preferences,
-      enabledFeatures: { ...prev.preferences.enabledFeatures, layout_overhang: flag },
-    },
-  }));
 }
 
 function bin(overrides: Partial<Bin> = {}): Bin {
@@ -51,12 +45,6 @@ describe('BinMarginExtension', () => {
   beforeEach(() => {
     resetAllStores();
     setup({ paddingLeft: 21 });
-  });
-
-  it('renders nothing when the flag is off', () => {
-    setup({ paddingLeft: 21 }, false);
-    const { container } = renderExt(bin({ extendToMargin: true }));
-    expect(container.firstChild).toBeNull();
   });
 
   it('renders nothing when the bin has not opted in', () => {

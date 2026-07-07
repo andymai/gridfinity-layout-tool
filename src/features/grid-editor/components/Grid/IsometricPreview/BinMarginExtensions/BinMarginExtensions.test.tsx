@@ -2,13 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { BinMarginExtensions } from './BinMarginExtensions';
-import { useLayoutStore, useLabsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
 import type { Bin, StoredBaseplateParams } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 
-function setup(padding: Partial<StoredBaseplateParams> = {}, flag = true) {
+function setup(padding: Partial<StoredBaseplateParams> = {}) {
   useLayoutStore.setState({
     layout: {
       ...createDefaultLayout(),
@@ -25,12 +25,6 @@ function setup(padding: Partial<StoredBaseplateParams> = {}, flag = true) {
       },
     },
   });
-  useLabsStore.setState((prev) => ({
-    preferences: {
-      ...prev.preferences,
-      enabledFeatures: { ...prev.preferences.enabledFeatures, layout_overhang: flag },
-    },
-  }));
 }
 
 function renderData(bin: Bin): BinRenderData {
@@ -43,18 +37,6 @@ describe('BinMarginExtensions', () => {
   beforeEach(() => {
     resetAllStores();
     setup({ paddingLeft: 21 });
-  });
-
-  it('renders nothing when the flag is off', () => {
-    setup({ paddingLeft: 21 }, false);
-    const { container } = render(
-      <BinMarginExtensions
-        bins={[renderData(edgeBin({ extendToMargin: true }))]}
-        drawerWidth={5}
-        drawerDepth={4}
-      />
-    );
-    expect(container.querySelectorAll('mesh')).toHaveLength(0);
   });
 
   it('renders nothing when no bin extends', () => {

@@ -1,6 +1,5 @@
 /**
- * Decorative extension of a bin into the drawer-fit margin (#2462, Labs
- * `layout_overhang`).
+ * Decorative extension of a bin into the drawer-fit margin (#2462).
  *
  * When a bin opts into extending (`bin.extendToMargin`) and abuts a padded
  * drawer edge, it visually grows into the DrawerMargin ring on those sides so
@@ -14,7 +13,6 @@
 
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { binMarginSides } from '@/shared/utils/drawerMargin';
 import type { Bin, Drawer } from '@/core/types';
 
@@ -28,7 +26,6 @@ interface BinMarginExtensionProps {
 }
 
 export function BinMarginExtension({ bin, drawer, cellSize, gap, color }: BinMarginExtensionProps) {
-  const flagOn = useFeatureFlag('layout_overhang');
   const { baseplate, gridUnitMm } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
@@ -36,7 +33,7 @@ export function BinMarginExtension({ bin, drawer, cellSize, gap, color }: BinMar
     }))
   );
 
-  if (!flagOn || bin.extendToMargin !== true) return null;
+  if (bin.extendToMargin !== true) return null;
   const sides = binMarginSides(bin, drawer, baseplate);
   if (sides.left + sides.right + sides.front + sides.back <= 0) return null;
 
