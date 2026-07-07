@@ -58,6 +58,9 @@ describe('DrawerMargin', () => {
     // Unset sides stay flush with the grid box.
     expect(band.style.right).toBe('0px');
     expect(band.style.bottom).toBe('0px');
+    // Decorative only: it overhangs the axis labels on padded sides, so it must
+    // never capture their clicks.
+    expect(band.className).toContain('pointer-events-none');
   });
 
   it('maps front padding to the bottom edge and right padding to the right', () => {

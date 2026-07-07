@@ -17,8 +17,10 @@ interface DrawerMarginProps {
  *
  * Rendered behind `GridCanvas` inside the grid box: negative insets extend the
  * band outward per side by the padding, and the grid's own opaque background
- * covers the center, leaving only the margin ring visible. Purely visual —
- * padding is edited in the Baseplate tab.
+ * covers the center, leaving only the margin ring visible. Purely visual and
+ * `pointer-events: none` — the band overhangs the row/column axis labels on
+ * padded sides, so it must never intercept their clicks. Padding is edited in
+ * the Baseplate tab.
  */
 export function DrawerMargin({ cellSize, gap }: DrawerMarginProps) {
   const t = useTranslation();
@@ -48,7 +50,7 @@ export function DrawerMargin({ cellSize, gap }: DrawerMarginProps) {
   // Screen orientation: +Y (back) is up, -Y (front) is down; -X (left) / +X (right).
   return (
     <div
-      className="pointer-events-auto rounded-lg border border-dashed border-accent/50 bg-accent/5"
+      className="pointer-events-none rounded-lg border border-dashed border-accent/50 bg-accent/5"
       style={{
         position: 'absolute',
         left: -toPx(left),
@@ -57,7 +59,6 @@ export function DrawerMargin({ cellSize, gap }: DrawerMarginProps) {
         bottom: -toPx(front),
         zIndex: 0,
       }}
-      title={t('grid.drawerMargin.tooltip')}
       aria-label={t('grid.drawerMargin.tooltip')}
     />
   );
