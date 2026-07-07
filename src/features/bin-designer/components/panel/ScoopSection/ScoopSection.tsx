@@ -1,5 +1,5 @@
 /**
- * Finger scoop section: curved ramp from bin floor to front wall.
+ * Finger scoop section: ramp from bin floor to front wall.
  *
  * Controls: toggle on/off, profile style (curved/straight), and either an auto
  * height (with a raisable max) or independent height + run steppers for a

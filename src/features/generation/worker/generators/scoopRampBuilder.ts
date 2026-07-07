@@ -156,9 +156,9 @@ function buildScoopRampsInScope(
           points.push([arcY, arcZ]);
         }
       }
-      // 'straight' style relies on the closing edge from (lipOffset, height) to
-      // this floor point to form the bevel — no intermediate arc points.
-      // Floor, lipOffset + run away from wall
+      // Floor, lipOffset + run away from wall. For 'straight' style the segment
+      // from the last wall point (lipOffset, height) to here is the bevel face;
+      // no intermediate arc points are added.
       points.push([lipOffset + run, 0]);
 
       // Draw the profile (will be sketched on YZ and extruded along X)

@@ -175,6 +175,24 @@ describe('printEstimates', () => {
       expect(withScoop.volumeMm3).toBeLessThan(withoutScoop.volumeMm3);
     });
 
+    it('straight scoop removes less material than a curved scoop of the same size', () => {
+      // Curved void is π/4·run·height (≈0.785); straight void is ½·run·height.
+      // The curved scoop carves away more, so it leaves less printed material.
+      const base = {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 12, run: 12 },
+      } as const;
+      const curved = estimatePrint({
+        ...base,
+        scoop: { ...base.scoop, style: 'curved' as const },
+      });
+      const straight = estimatePrint({
+        ...base,
+        scoop: { ...base.scoop, style: 'straight' as const },
+      });
+      expect(straight.volumeMm3).toBeGreaterThan(curved.volumeMm3);
+    });
+
     // ─── New tests for parametric time scaling ───────────────────────────
 
     it('thinner layers increase print time', () => {

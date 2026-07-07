@@ -13,7 +13,7 @@ import { binStyles } from './binStyles';
 import { heightVariations } from './heights';
 import { wallThickness } from './wallThickness';
 import { compartments } from './compartments';
-import { scoop, scoopLipInteraction } from './scoops';
+import { scoop, scoopTwoVariable, scoopLipInteraction } from './scoops';
 import { labelTabs } from './labelTabs';
 import { inserts, multipleInserts } from './inserts';
 import { solidCutouts } from './solidCutouts';
@@ -47,6 +47,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...wallThickness,
   ...compartments,
   ...scoop,
+  ...scoopTwoVariable,
   ...scoopLipInteraction,
   ...labelTabs,
   ...inserts,

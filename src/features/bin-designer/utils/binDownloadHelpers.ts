@@ -122,6 +122,7 @@ export function buildReportIssueUrl(
               radius: params.scoop.radius,
               run: params.scoop.run,
               style: params.scoop.style,
+              autoMaxHeight: params.scoop.autoMaxHeight,
             }
           : false,
         label: params.label.enabled

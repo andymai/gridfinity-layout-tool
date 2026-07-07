@@ -197,6 +197,7 @@ describe('parseDesignJSON', () => {
 
     expect(result.design).not.toBeNull();
     expect(result.design?.params.scoop).toEqual({
+      ...DEFAULT_BIN_PARAMS.scoop,
       enabled: true,
       radius: 'auto',
     });
