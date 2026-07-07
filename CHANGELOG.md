@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.219.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.218.0...gridfinity-layout-tool-v4.219.0) (2026-07-07)
+
+
+### Features
+
+* **bin-designer:** color controls for labels in the Label section ([#2465](https://github.com/andymai/gridfinity-layout-tool/issues/2465)) ([8cd0bd5](https://github.com/andymai/gridfinity-layout-tool/commit/8cd0bd59c7c86976c00fe5c53190e0dbb355b080))
+
 ## [4.218.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.217.0...gridfinity-layout-tool-v4.218.0) (2026-07-07)
 
 
