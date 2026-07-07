@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/binDimensions.test.ts
+  s_37fb96164459db::t_776705246e5fd5 102-104
+src/features/bin-designer/utils/binDimensions.ts
+  s_37fb96164459db::t_5aba3c30e3f2c8 96-99
+src/features/bin-designer/utils/cutoutInterior.contract.test.ts
+  s_37fb96164459db::t_fbba5039b2b361 28-36,39,42-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cc18893dcf99166e51214e67f0c8db3185051676",
+  "prompts": {},
+  "sessions": {
+    "s_37fb96164459db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "191f132c-30e7-4519-8a5d-b868259bbe9e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
