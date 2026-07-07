@@ -1,0 +1,21 @@
+src/features/generation/worker/handlers/generateHandler.ts
+  s_afb2cb2a363388::t_db53270949c122 53-59,64-65
+e2e/bin-designer/lid-separate-baseplate-visual.spec.ts
+  s_afb2cb2a363388::t_58b6cac2a5832b 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "619eac4ba89a1bf9ae15a14e8def3483f2635d1f",
+  "prompts": {},
+  "sessions": {
+    "s_afb2cb2a363388": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "878f7c03-ecf5-4299-833f-d90732bf7473",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
