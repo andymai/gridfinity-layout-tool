@@ -146,6 +146,27 @@ describe('connectorSample — fit-sample tray', () => {
   );
 
   it(
+    'exports a watertight puzzle tray at max nozzle (near-collapsed neck)',
+    async () => {
+      // Worst case for the puzzle groove: the 1.0mm nozzle grows the base
+      // clearance and the +0.10 column of the offset ladder rides on top, driving
+      // the neck→head transition (PUZZLE_NECK_PROTRUSION) toward the wall plane
+      // while the armpit fillets stay applied. The clamp in `puzzleOutline` must
+      // keep the groove a valid, watertight solid rather than degenerate.
+      const { data } = await exportConnectorSample(
+        defaults({ connectorStyle: 'puzzle', nozzleSizeMm: 1.0 }),
+        'stl'
+      );
+      const stats = analyze(data);
+      expect(stats.hasNaN, 'no NaN vertices').toBe(false);
+      expect(stats.triangleCount, 'non-empty mesh').toBeGreaterThan(0);
+      expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
+      expect(stats.boundaryEdges, 'boundary edges').toBe(0);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
     'exports a non-empty STEP tray',
     async () => {
       const { data, fileName } = await exportConnectorSample(defaults(), 'step');
