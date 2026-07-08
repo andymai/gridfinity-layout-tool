@@ -69,5 +69,6 @@ describe('LID_EXTRA_HEIGHT bounds', () => {
 
   it('uses a whole-millimetre step', () => {
     expect(LID_EXTRA_HEIGHT_STEP_MM).toBeGreaterThan(0);
+    expect(Number.isInteger(LID_EXTRA_HEIGHT_STEP_MM)).toBe(true);
   });
 });

@@ -128,7 +128,9 @@ export function LidSection() {
           unit="mm"
           value={state.extraHeightMm}
           onChange={handlers.setExtraHeight}
-          onStep={(delta) => handlers.setExtraHeight(state.extraHeightMm + delta)}
+          onStep={(delta) =>
+            handlers.setExtraHeight(state.extraHeightMm + delta * state.extraHeightStep)
+          }
           min={state.extraHeightMin}
           max={state.extraHeightMax}
           step={state.extraHeightStep}

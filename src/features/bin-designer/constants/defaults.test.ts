@@ -654,6 +654,7 @@ describe('migrateParams', () => {
       separateStackPlate: true,
       clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
+      extraHeightMm: 25,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
@@ -664,6 +665,20 @@ describe('migrateParams', () => {
       lid: { enabled: true, stackableTop: true } as any,
     });
     expect(result.lid.separateStackPlate).toBe(false);
+  });
+
+  it('defaults extraHeightMm=0 for legacy lid configs missing the field', () => {
+    const result = migrateParams({
+      lid: { enabled: true, stackableTop: true } as any,
+    });
+    expect(result.lid.extraHeightMm).toBe(0);
+  });
+
+  it('clamps an out-of-range extraHeightMm into the valid range', () => {
+    expect(migrateParams({ lid: { extraHeightMm: 999 } as any }).lid.extraHeightMm).toBe(100);
+    expect(migrateParams({ lid: { extraHeightMm: -50 } as any }).lid.extraHeightMm).toBe(0);
+    // Non-numeric / corrupt values fall back to the default.
+    expect(migrateParams({ lid: { extraHeightMm: 'tall' } as any }).lid.extraHeightMm).toBe(0);
   });
 
   it('backfills clickRails (object) for legacy lid configs missing the field', () => {

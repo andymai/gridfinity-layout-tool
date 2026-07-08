@@ -99,7 +99,7 @@ export async function regenerateThumbnail(
     const lidGroupZ =
       lidMesh && params.lid.enabled && params.base.stackingLip
         ? binLipTopWorldZ(params.height, params.heightUnitMm, params.base.stackingLip) -
-          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE)
+          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, params.lid.extraHeightMm)
         : null;
     if (lidMesh && lidGroupZ !== null && lidMesh.vertices.length > 0) {
       lidGeometry = new THREE.BufferGeometry();

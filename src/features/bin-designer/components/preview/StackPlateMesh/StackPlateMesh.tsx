@@ -52,9 +52,12 @@ export function StackPlateMesh({
 
   const { stackPlateMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base } = s.params;
+      const { height, heightUnitMm, base, lid } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
-      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE);
+      // Match the lid's mated frame including the extra-height cavity (issue
+      // #2482) so the glue-on plate rides on the taller lid's floor, not the
+      // default-height one — mirrors LidMesh and the export lift.
+      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, lid.extraHeightMm);
       return {
         stackPlateMesh: s.generation.mesh?.stackPlateMesh ?? null,
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
