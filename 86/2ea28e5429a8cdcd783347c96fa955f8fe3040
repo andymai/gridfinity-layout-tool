@@ -1,0 +1,32 @@
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_3cf215a9a54ab3::t_cf60fefe0f44fe 581
+  s_3cf215a9a54ab3::t_568b536830d146 568
+src/features/baseplate/components/BaseplatePanel/ConnectorSampleButton.tsx
+  s_3cf215a9a54ab3::t_e5a16852f49c64 5
+src/features/generation/worker/generators/connectorSample.ts
+  s_3cf215a9a54ab3::t_2573f9b1918e8b 60-61
+  s_3cf215a9a54ab3::t_4a3b1cfb596d33 8
+  s_3cf215a9a54ab3::t_289c717d0485bd 162-173,180-193
+  s_3cf215a9a54ab3::t_21b0dda8ea203f 74,82-84
+  s_3cf215a9a54ab3::t_15cc249b685eb8 135-136
+  s_3cf215a9a54ab3::t_a54128aae78342 288-289,291-294,298
+src/features/generation/worker/generators/connectorSample.scenario.test.ts
+  s_3cf215a9a54ab3::t_454254f35136ba 129-135
+  s_3cf215a9a54ab3::t_88f7acc308218d 93-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "862ea28e5429a8cdcd783347c96fa955f8fe3040",
+  "prompts": {},
+  "sessions": {
+    "s_3cf215a9a54ab3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "97ca9952-e74c-4cb0-b587-2d61fa531c4f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
