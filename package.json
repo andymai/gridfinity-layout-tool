@@ -86,10 +86,21 @@
       "limit": "260 kB"
     },
     {
-      "name": "Total JS (gzip)",
-      "path": "dist/assets/*.js",
+      "name": "Total JS (gzip, one locale)",
+      "path": [
+        "dist/assets/*.js",
+        "!dist/assets/de-*.js",
+        "!dist/assets/es-*.js",
+        "!dist/assets/fr-*.js",
+        "!dist/assets/ja-*.js",
+        "!dist/assets/nb-*.js",
+        "!dist/assets/nl-*.js",
+        "!dist/assets/pt-BR-*.js",
+        "!dist/assets/sv-*.js",
+        "!dist/assets/uk-*.js"
+      ],
       "gzip": true,
-      "limit": "2150 kB"
+      "limit": "1900 kB"
     }
   ],
   "dependencies": {
