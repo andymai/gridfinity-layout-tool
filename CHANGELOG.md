@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.225.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.2...gridfinity-layout-tool-v4.225.0) (2026-07-08)
+
+
+### Features
+
+* **bin-designer:** add extra lid height for tall lids over short bins ([#2486](https://github.com/andymai/gridfinity-layout-tool/issues/2486)) ([bc0a38d](https://github.com/andymai/gridfinity-layout-tool/commit/bc0a38df200403cb9aa68bcb841883bdc499060f))
+
 ## [4.224.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.1...gridfinity-layout-tool-v4.224.2) (2026-07-08)
 
 
