@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Hör av dig.",
   "sidebar.supporters": "Supportrar",
   "loading.supporters": "Laddar supportrar",
-  "commandPalette.viewSupporters": "Visa supportrar"
+  "commandPalette.viewSupporters": "Visa supportrar",
+  "supporters.countLabel": "personer håller detta gratis",
+  "supporters.thanksNamed": "Tack, {name}",
+  "supporters.thanksAnon": "Tack, vän"
 }

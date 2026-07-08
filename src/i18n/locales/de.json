@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Sag mir Bescheid.",
   "sidebar.supporters": "Unterstützer",
   "loading.supporters": "Unterstützer werden geladen",
-  "commandPalette.viewSupporters": "Unterstützer anzeigen"
+  "commandPalette.viewSupporters": "Unterstützer anzeigen",
+  "supporters.countLabel": "Menschen halten dies kostenlos",
+  "supporters.thanksNamed": "Danke, {name}",
+  "supporters.thanksAnon": "Danke, Freund"
 }

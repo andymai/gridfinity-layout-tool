@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Dites-le-moi.",
   "sidebar.supporters": "Soutiens",
   "loading.supporters": "Chargement des soutiens",
-  "commandPalette.viewSupporters": "Voir les soutiens"
+  "commandPalette.viewSupporters": "Voir les soutiens",
+  "supporters.countLabel": "personnes gardent cet outil gratuit",
+  "supporters.thanksNamed": "Merci, {name}",
+  "supporters.thanksAnon": "Merci, ami"
 }

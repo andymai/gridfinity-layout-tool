@@ -1,154 +1,314 @@
-import { useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { KOFI_URL } from '@/shared/constants/links';
+import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { buildSupporterBins, getSupporterCount } from '../../utils/supportersData';
+import { getSupportersPalette } from '../../scene/palette';
+import { SupportersScene } from '../SupportersScene';
 
-function HeartIcon({ className }: { className?: string }) {
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () =>
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return reduced;
+}
+
+function useCountUp(target: number, animate: boolean): number {
+  const [animated, setAnimated] = useState(0);
+  useEffect(() => {
+    if (!animate) return;
+    let raf = 0;
+    let startTs = 0;
+    const step = (ts: number) => {
+      if (!startTs) startTs = ts;
+      const t = Math.min((ts - startTs) / 1600, 1);
+      setAnimated(Math.round(target * (1 - Math.pow(1 - t, 3))));
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, animate]);
+  return animate ? animated : target;
+}
+
+/** Self-contained particle burst on a full-screen canvas; no-ops without 2D canvas. */
+function CtaBurst({
+  origin,
+  accent,
+  seed,
+}: {
+  origin: { x: number; y: number };
+  accent: string;
+  seed: number;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = Array.from({ length: 18 }, (_, i) => {
+      const a = (i / 18) * Math.PI * 2 + seed;
+      const speed = 3 + (i % 5);
+      return {
+        x: origin.x,
+        y: origin.y,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed - 2,
+        life: 1,
+        rot: a,
+      };
+    });
+    let raf = 0;
+    const tick = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      for (const p of particles) {
+        p.vy += 0.12;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        p.rot += 0.1;
+        if (p.life > 0) {
+          alive = true;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = accent;
+          ctx.fillRect(-4, -4, 8, 8);
+          ctx.restore();
+        }
+      }
+      if (alive) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [origin, accent, seed]);
+
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      {ICON_PATHS.heart.map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
+    <canvas
+      ref={ref}
+      className="pointer-events-none fixed inset-0 z-30 h-full w-full"
+      aria-hidden="true"
+    />
   );
 }
 
 /**
- * Standalone /supporters page: a thank-you wall where each supporter is a
- * Gridfinity bin snapped into a baseplate. No amounts, no tiers, no counts —
- * every bin is equal. Names are shuffled so no one is first or last.
+ * Immersive standalone /supporters experience: an orbitable WebGL baseplate
+ * where each Ko-fi supporter is a bin. DOM overlays carry the copy, the
+ * animated count, the CTA, and an accessible name list (the canvas itself is
+ * inert to assistive tech). Falls back to a calm static render for
+ * prefers-reduced-motion and lightens on mobile.
  */
 export function SupportersPage() {
   const t = useTranslation();
+  const theme = useResolvedTheme();
+  const { isMobile } = useResponsive();
+  const reducedMotion = usePrefersReducedMotion();
   const { navigateHome } = useSupportersRouting();
+
   const bins = useMemo(() => buildSupporterBins(), []);
   const total = getSupporterCount();
+  const palette = useMemo(() => getSupportersPalette(theme), [theme]);
+  const count = useCountUp(total, !reducedMotion);
 
-  const handleKofiClick = () => {
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
+
+  const focused = focusedId ? bins.find((b) => b.id === focusedId) : null;
+
+  const handleKofiClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     trackEvent('kofi_clicked', { source: 'supporters_page' });
+    if (!reducedMotion) {
+      const r = e.currentTarget.getBoundingClientRect();
+      setBurst({ x: r.left + r.width / 2, y: r.top + r.height / 2, seed: Math.random() * 6.28 });
+    }
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <main className="min-h-screen overflow-y-auto bg-surface text-content">
-      <div className="mx-auto flex max-w-5xl flex-col px-5 py-6 sm:px-8 sm:py-10">
-        {/* Back to the app */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={navigateHome}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-content-secondary"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            {t('supporters.back')}
-          </Button>
-        </div>
+    <main
+      className="relative h-screen w-screen overflow-hidden"
+      style={{ background: palette.background, color: theme === 'dark' ? '#f4f1ea' : '#1b1b1b' }}
+    >
+      <Canvas
+        className="absolute inset-0"
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
+        frameloop={reducedMotion ? 'demand' : 'always'}
+        camera={{ fov: 38, near: 0.1, far: 60, position: [-3, 13.5, 16.5] }}
+        gl={{ antialias: true, alpha: false }}
+        onPointerMissed={() => setFocusedId(null)}
+      >
+        <Suspense fallback={null}>
+          <SupportersScene
+            bins={bins}
+            theme={theme}
+            reducedMotion={reducedMotion}
+            quality={isMobile ? 'low' : 'high'}
+            focusedId={focusedId}
+            onSelect={setFocusedId}
+          />
+        </Suspense>
+      </Canvas>
 
-        {/* Hero — warm, no count shown */}
-        <header className="mb-10 text-center motion-safe:animate-fade-in">
-          <div className="mb-4 flex justify-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-elevated text-accent">
-              <HeartIcon className="h-6 w-6" />
-            </span>
-          </div>
-          <h1 className="text-2xl font-semibold text-content sm:text-3xl">
-            {t('supporters.heading')}
-          </h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-content-secondary sm:text-base">
-            {t('supporters.subheading')}
-          </p>
-        </header>
+      {/* Top scrim — keeps hero copy legible over the bright baseplate */}
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 z-10 h-1/2"
+        aria-hidden="true"
+        style={{
+          background: `linear-gradient(to bottom, ${palette.background} 8%, transparent 100%)`,
+          opacity: theme === 'dark' ? 0.9 : 0.85,
+        }}
+      />
+      {/* Film grain */}
+      <svg
+        className="pointer-events-none fixed inset-0 z-10 h-full w-full opacity-[0.05] mix-blend-soft-light"
+        aria-hidden="true"
+      >
+        <filter id="supporters-grain">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="2"
+            stitchTiles="stitch"
+          />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#supporters-grain)" />
+      </svg>
+      {/* Vignette */}
+      <div
+        className="pointer-events-none fixed inset-0 z-10"
+        aria-hidden="true"
+        style={{
+          background:
+            theme === 'dark'
+              ? 'radial-gradient(125% 105% at 50% 38%, transparent 52%, rgba(0,0,0,0.62) 100%)'
+              : 'radial-gradient(125% 105% at 50% 38%, transparent 60%, rgba(60,50,30,0.18) 100%)',
+        }}
+      />
 
-        {/* The baseplate: a subtle socket grid holding a bin per supporter */}
-        <ul
-          aria-label={t('supporters.listAria', { count: total })}
-          className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-2.5 rounded-2xl border border-stroke-subtle p-3 sm:gap-3 sm:p-4"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(128,128,128,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(128,128,128,0.10) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
+      {/* Back control */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-5">
+        <Button
+          variant="ghost"
+          onClick={navigateHome}
+          className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1.5 text-sm"
+          style={{ color: 'inherit' }}
         >
-          {bins.map((bin, i) => {
-            const isAnonymous = bin.name === null;
-            return (
-              <li
-                key={bin.id}
-                title={isAnonymous ? t('supporters.anonymous') : (bin.name ?? undefined)}
-                className={[
-                  'group relative flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border p-2 text-center',
-                  'transition-transform duration-150 ease-out',
-                  'motion-safe:animate-fade-in motion-safe:hover:-translate-y-1',
-                  isAnonymous
-                    ? 'border-stroke-subtle bg-surface text-content-disabled'
-                    : 'border-stroke-subtle bg-surface-elevated text-content shadow-sm hover:shadow-md',
-                ].join(' ')}
-                style={{ animationDelay: `${Math.min(i * 18, 600)}ms` }}
-              >
-                {/* Gridfinity-style label tab */}
-                <span
-                  aria-hidden="true"
-                  className={[
-                    'absolute left-3 right-3 top-2 h-1 rounded-full bg-accent',
-                    isAnonymous ? 'opacity-20' : 'opacity-40',
-                  ].join(' ')}
-                />
-                {isAnonymous ? (
-                  <>
-                    <HeartIcon className="h-4 w-4 opacity-60" />
-                    <span className="text-[11px] font-medium">{t('supporters.anonymous')}</span>
-                  </>
-                ) : (
-                  <span className="line-clamp-3 break-words text-xs font-medium leading-tight sm:text-sm">
-                    {bin.name}
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-
-        {/* Gentle CTA */}
-        <section className="mt-10 flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-content-secondary">{t('supporters.cta.text')}</p>
-          <Button
-            variant="primary"
-            onClick={handleKofiClick}
-            className="flex items-center gap-2 px-4 py-2 text-sm"
-            style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
-          >
-            <img
-              src="/kofi-cup.png"
-              alt=""
-              aria-hidden="true"
-              className="kofi-cup-wiggle h-4 w-auto"
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
             />
-            {t('supporters.cta.button')}
-          </Button>
-          <p className="mt-2 max-w-md text-xs text-content-disabled">
-            {t('supporters.optOut')}{' '}
-            <a
-              href={KOFI_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-content-tertiary hover:underline"
-            >
-              {t('supporters.optOutLink')}
-            </a>
-          </p>
-        </section>
+          </svg>
+          {t('supporters.back')}
+        </Button>
       </div>
+
+      {/* Hero */}
+      <div className="pointer-events-none absolute inset-x-0 top-[8%] z-20 flex flex-col items-center px-6 text-center">
+        <h1 className="flex flex-col items-center">
+          <span
+            aria-hidden="true"
+            className="text-6xl font-bold tabular-nums leading-none tracking-tight sm:text-8xl"
+            style={{ color: palette.accent }}
+          >
+            {count}
+          </span>
+          <span className="mt-3 text-lg font-medium tracking-tight sm:text-2xl">
+            {t('supporters.countLabel')}
+          </span>
+        </h1>
+        <p
+          className="mt-4 max-w-md text-sm leading-relaxed opacity-70 sm:text-base"
+          style={{ textWrap: 'balance' }}
+        >
+          {t('supporters.subheading')}
+        </p>
+      </div>
+
+      {/* Focused thank-you card */}
+      {focused && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-[22%] z-20 flex justify-center px-6">
+          <div
+            className="rounded-full px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md motion-safe:animate-fade-in"
+            style={{
+              background: theme === 'dark' ? 'rgba(20,22,30,0.7)' : 'rgba(255,255,255,0.8)',
+              border: `1px solid ${palette.accent}55`,
+            }}
+          >
+            {focused.name
+              ? t('supporters.thanksNamed', { name: focused.name })
+              : t('supporters.thanksAnon')}
+          </div>
+        </div>
+      )}
+
+      {/* CTA + opt-out */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 px-6 pb-8 text-center">
+        <p className="text-sm opacity-70">{t('supporters.cta.text')}</p>
+        <Button
+          variant="primary"
+          onClick={handleKofiClick}
+          className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 text-sm"
+          style={{ color: '#fff', textShadow: '0 1px 1px rgba(34,34,34,0.15)' }}
+        >
+          <img
+            src="/kofi-cup.png"
+            alt=""
+            aria-hidden="true"
+            className="kofi-cup-wiggle h-4 w-auto"
+          />
+          {t('supporters.cta.button')}
+        </Button>
+        <p className="max-w-md text-xs opacity-50">
+          {t('supporters.optOut')}{' '}
+          <a
+            href={KOFI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto underline-offset-2 hover:underline"
+          >
+            {t('supporters.optOutLink')}
+          </a>
+        </p>
+      </div>
+
+      {/* Accessible, screen-reader-only supporter list (the canvas is inert to AT) */}
+      <div className="sr-only">
+        <h2>{t('supporters.heading')}</h2>
+        <ul aria-label={t('supporters.listAria', { count: total })}>
+          {bins.map((bin) => (
+            <li key={bin.id}>{bin.name ?? t('supporters.anonymous')}</li>
+          ))}
+        </ul>
+      </div>
+
+      {burst && (
+        <CtaBurst
+          key={burst.seed}
+          origin={{ x: burst.x, y: burst.y }}
+          accent={palette.accent}
+          seed={burst.seed}
+        />
+      )}
     </main>
   );
 }

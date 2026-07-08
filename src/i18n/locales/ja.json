@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "お知らせください。",
   "sidebar.supporters": "サポーター",
   "loading.supporters": "サポーターを読み込み中",
-  "commandPalette.viewSupporters": "サポーターを見る"
+  "commandPalette.viewSupporters": "サポーターを見る",
+  "supporters.countLabel": "人がこれを無料に保っています",
+  "supporters.thanksNamed": "{name} さん、ありがとう",
+  "supporters.thanksAnon": "ありがとう、友よ"
 }

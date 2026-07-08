@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Laat het me weten.",
   "sidebar.supporters": "Ondersteuners",
   "loading.supporters": "Ondersteuners laden",
-  "commandPalette.viewSupporters": "Ondersteuners bekijken"
+  "commandPalette.viewSupporters": "Ondersteuners bekijken",
+  "supporters.countLabel": "mensen houden dit gratis",
+  "supporters.thanksNamed": "Bedankt, {name}",
+  "supporters.thanksAnon": "Bedankt, vriend"
 }

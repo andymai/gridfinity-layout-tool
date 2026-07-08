@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Avísame.",
   "sidebar.supporters": "Colaboradores",
   "loading.supporters": "Cargando colaboradores",
-  "commandPalette.viewSupporters": "Ver colaboradores"
+  "commandPalette.viewSupporters": "Ver colaboradores",
+  "supporters.countLabel": "personas lo mantienen gratis",
+  "supporters.thanksNamed": "Gracias, {name}",
+  "supporters.thanksAnon": "Gracias, amigo"
 }

@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Me avise.",
   "sidebar.supporters": "Apoiadores",
   "loading.supporters": "Carregando apoiadores",
-  "commandPalette.viewSupporters": "Ver apoiadores"
+  "commandPalette.viewSupporters": "Ver apoiadores",
+  "supporters.countLabel": "pessoas mantêm isto gratuito",
+  "supporters.thanksNamed": "Obrigado, {name}",
+  "supporters.thanksAnon": "Obrigado, amigo"
 }

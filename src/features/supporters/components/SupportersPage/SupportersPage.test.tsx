@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { ReactNode } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SupportersPage } from './SupportersPage';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -13,6 +14,12 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
+// The WebGL layers can't render in jsdom; stub them so we can test the DOM overlays.
+vi.mock('@react-three/fiber', () => ({
+  Canvas: ({ children }: { children: ReactNode }) => <div data-testid="canvas">{children}</div>,
+}));
+vi.mock('../SupportersScene', () => ({ SupportersScene: () => null }));
+
 describe('SupportersPage', () => {
   let openSpy: ReturnType<typeof vi.spyOn>;
 
@@ -25,23 +32,16 @@ describe('SupportersPage', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders the warm heading', () => {
+  it('renders the accessible heading and count label', () => {
     render(<SupportersPage />);
     expect(screen.getByRole('heading', { name: 'supporters.heading' })).toBeInTheDocument();
+    expect(screen.getByText('supporters.countLabel')).toBeInTheDocument();
   });
 
-  it('renders a bin for a named supporter', () => {
+  it('lists every supporter for screen readers (named + anonymous)', () => {
     render(<SupportersPage />);
-    // Derive from the data so the test survives supporter-list edits.
     expect(screen.getByText(supportersData.named[0])).toBeInTheDocument();
-  });
-
-  it('renders one bin per anonymous supporter', () => {
-    render(<SupportersPage />);
-    // Assert against the data so the test stays correct if anonymousCount changes (incl. 0).
-    expect(screen.queryAllByText('supporters.anonymous')).toHaveLength(
-      supportersData.anonymousCount
-    );
+    expect(screen.getAllByText('supporters.anonymous')).toHaveLength(supportersData.anonymousCount);
   });
 
   it('never renders an email address', () => {

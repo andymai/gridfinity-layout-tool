@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Gi meg beskjed.",
   "sidebar.supporters": "Støttespillere",
   "loading.supporters": "Laster støttespillere",
-  "commandPalette.viewSupporters": "Vis støttespillere"
+  "commandPalette.viewSupporters": "Vis støttespillere",
+  "supporters.countLabel": "personer holder dette gratis",
+  "supporters.thanksNamed": "Takk, {name}",
+  "supporters.thanksAnon": "Takk, venn"
 }

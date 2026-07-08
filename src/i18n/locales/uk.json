@@ -2586,5 +2586,8 @@
   "supporters.optOutLink": "Дайте знати.",
   "sidebar.supporters": "Прихильники",
   "loading.supporters": "Завантаження прихильників",
-  "commandPalette.viewSupporters": "Переглянути прихильників"
+  "commandPalette.viewSupporters": "Переглянути прихильників",
+  "supporters.countLabel": "людей тримають це безкоштовним",
+  "supporters.thanksNamed": "Дякую, {name}",
+  "supporters.thanksAnon": "Дякую, друже"
 }
