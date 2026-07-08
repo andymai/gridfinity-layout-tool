@@ -1,0 +1,23 @@
+src/design-system/Checkbox/Checkbox.tsx
+  s_8d0cfff02cc0ba::t_af9e0b8390e7b4 244-247
+src/design-system/Switch/Switch.tsx
+  s_8d0cfff02cc0ba::t_20dfbf5b4ed4d5 156-159
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_8d0cfff02cc0ba::t_7015d9186349da 76-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5e712b56916f345ee29b5ec86ede0fcf58c90eb2",
+  "prompts": {},
+  "sessions": {
+    "s_8d0cfff02cc0ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc9ec029-00a4-4221-9200-72543a3f1499",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
