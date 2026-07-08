@@ -245,7 +245,7 @@ function buildGlb(
 ): Buffer {
   // Empty inputs would serialize Infinity accessor bounds — invalid glTF, and
   // a bake without geometry or edge lines is broken anyway. Fail loud.
-  if (positions.length === 0 || edgePositions.length === 0) {
+  if (positions.length === 0 || indices.length === 0 || edgePositions.length === 0) {
     throw new Error('buildGlb: mesh produced no triangles or no edge lines');
   }
   const posBuf = Buffer.from(positions.buffer, positions.byteOffset, positions.byteLength);
