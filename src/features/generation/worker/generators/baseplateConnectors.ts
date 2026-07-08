@@ -565,7 +565,7 @@ function puzzleOutline(
  * cross-section, so the protrusion prints as a self-supported prism with no
  * overhang — in either orientation, so it stack-prints cleanly too.
  */
-function makePuzzleTongue(
+export function makePuzzleTongue(
   pt: (wall: number, bp: number) => [number, number],
   w: number,
   bp: number,
@@ -578,7 +578,7 @@ function makePuzzleTongue(
 
 /** Puzzle groove (female): the tongue outline grown by `cl` on every face, carved
  *  in `−d` (into the piece) and extended beyond the wall and in Z. */
-function makePuzzleGroove(
+export function makePuzzleGroove(
   pt: (wall: number, bp: number) => [number, number],
   w: number,
   bp: number,

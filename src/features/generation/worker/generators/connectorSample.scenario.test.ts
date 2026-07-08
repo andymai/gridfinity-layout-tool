@@ -90,17 +90,20 @@ describe('connectorSample — fit-sample tray', () => {
   it(
     'builds only the selected style row of valid, positive-volume pieces',
     () => {
-      // Default integral dovetail: 5 offsets × 2 coupons, no loose part = 10.
-      const pieces = buildConnectorSampleTray(defaults());
-      try {
-        expect(pieces).toHaveLength(10);
-        for (const piece of pieces) {
-          const v = vol(piece);
-          expect(Number.isFinite(v)).toBe(true);
-          expect(v).toBeGreaterThan(0);
+      // Integral tongue/groove styles: 5 offsets × 2 coupons, no loose part = 10.
+      // `undefined` is the default integral dovetail.
+      for (const style of [undefined, 'dovetail', 'puzzle'] as const) {
+        const pieces = buildConnectorSampleTray(defaults({ connectorStyle: style }));
+        try {
+          expect(pieces, String(style)).toHaveLength(10);
+          for (const piece of pieces) {
+            const v = vol(piece);
+            expect(Number.isFinite(v)).toBe(true);
+            expect(v).toBeGreaterThan(0);
+          }
+        } finally {
+          for (const p of pieces) p.delete();
         }
-      } finally {
-        for (const p of pieces) p.delete();
       }
     },
     TEST_TIMEOUT_MS
@@ -123,10 +126,13 @@ describe('connectorSample — fit-sample tray', () => {
     TEST_TIMEOUT_MS
   );
 
-  it(
-    'exports a watertight, bed-resting STL tray',
-    async () => {
-      const { data, fileName } = await exportConnectorSample(defaults(), 'stl');
+  it.each([undefined, 'puzzle'] as const)(
+    'exports a watertight, bed-resting STL tray (%s)',
+    async (style) => {
+      const { data, fileName } = await exportConnectorSample(
+        defaults({ connectorStyle: style }),
+        'stl'
+      );
       const stats = analyze(data);
       expect(fileName).toBe('connector_fit_sample.stl');
       expect(stats.hasNaN, 'no NaN vertices').toBe(false);

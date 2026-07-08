@@ -2,7 +2,7 @@
  * "Print fit sample" control for the baseplate connector section.
  *
  * Opens the shared ExportDialog to download a one-file calibration tray that
- * sweeps all three connector styles across a fit-offset ladder, so makers can
+ * sweeps the selected connector style across a fit-offset ladder, so makers can
  * dial in the fit that clicks before committing to a full split baseplate.
  */
 

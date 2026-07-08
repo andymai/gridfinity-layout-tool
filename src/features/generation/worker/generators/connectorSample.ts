@@ -5,7 +5,7 @@
  * committing to a full split baseplate. It builds one row for the *selected*
  * connector style (the other styles would be wasted print):
  *
- *   row   = the selected connector style (dovetail / dovetailKey / snapClip)
+ *   row   = the selected connector style (dovetail / puzzle / dovetailKey / snapClip)
  *   cols  = a fit-offset ladder (-0.10 … +0.10 mm, centered on nominal)
  *
  * Each grid cell is a MATED PAIR of small abstract coupons carrying the real
@@ -57,6 +57,8 @@ import type { SnapClipLevels } from '@/shared/constants/connectors';
 import {
   makeTongue,
   makeGroove,
+  makePuzzleTongue,
+  makePuzzleGroove,
   makeSnapPocket,
   buildDovetailKey,
   buildSnapClipForPrint,
@@ -69,7 +71,7 @@ import { sanitizeParams } from './baseplateSlab';
 const SAMPLE_OFFSETS: readonly number[] = [-0.1, -0.05, 0, 0.05, 0.1];
 
 interface SampleStyle {
-  readonly key: 'dovetail' | 'dovetailKey' | 'snapClip';
+  readonly key: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
   readonly abbr: string;
   /** Shared loose part this row ships (inserted into each pair to feel the fit), if any. */
   readonly loose: 'key' | 'clip' | null;
@@ -77,6 +79,9 @@ interface SampleStyle {
 
 const SAMPLE_STYLES: readonly SampleStyle[] = [
   { key: 'dovetail', abbr: 'DT', loose: null },
+  // Puzzle is an integral tongue/groove like the dovetail (no loose part); it just
+  // carries the stronger jigsaw-lobe profile (issue #2241).
+  { key: 'puzzle', abbr: 'PZ', loose: null },
   { key: 'dovetailKey', abbr: 'DK', loose: 'key' },
   { key: 'snapClip', abbr: 'SC', loose: 'clip' },
 ];
@@ -127,8 +132,8 @@ function roundedRect(cx: number, cy: number, w: number, h: number, r: number): D
 }
 
 type CouponFeature =
-  | { readonly kind: 'tongue' }
-  | { readonly kind: 'groove'; readonly clearance: number }
+  | { readonly kind: 'tongue'; readonly puzzle: boolean }
+  | { readonly kind: 'groove'; readonly clearance: number; readonly puzzle: boolean }
   | { readonly kind: 'pocket'; readonly levels: SnapClipLevels };
 
 /**
@@ -154,34 +159,38 @@ function buildCoupon(
     switch (feature.kind) {
       case 'tongue': {
         const tongue = scope.register(
-          makeTongue(
-            ptY,
-            wallY,
-            cx,
-            d,
-            TONGUE_PROTRUSION,
-            TONGUE_BASE_HALF,
-            TONGUE_TIP_HALF,
-            totalHeight
-          )
+          feature.puzzle
+            ? makePuzzleTongue(ptY, wallY, cx, d, totalHeight)
+            : makeTongue(
+                ptY,
+                wallY,
+                cx,
+                d,
+                TONGUE_PROTRUSION,
+                TONGUE_BASE_HALF,
+                TONGUE_TIP_HALF,
+                totalHeight
+              )
         );
         solid = scope.register(unwrap(fuse(solid as ValidSolid, tongue as ValidSolid)));
         break;
       }
       case 'groove': {
         const groove = scope.register(
-          makeGroove(
-            ptY,
-            wallY,
-            cx,
-            d,
-            TONGUE_PROTRUSION,
-            TONGUE_BASE_HALF,
-            TONGUE_TIP_HALF,
-            feature.clearance,
-            COPLANAR_MARGIN,
-            totalHeight
-          )
+          feature.puzzle
+            ? makePuzzleGroove(ptY, wallY, cx, d, feature.clearance, COPLANAR_MARGIN, totalHeight)
+            : makeGroove(
+                ptY,
+                wallY,
+                cx,
+                d,
+                TONGUE_PROTRUSION,
+                TONGUE_BASE_HALF,
+                TONGUE_TIP_HALF,
+                feature.clearance,
+                COPLANAR_MARGIN,
+                totalHeight
+              )
         );
         solid = scope.register(unwrap(cut(solid as ValidSolid, groove as ValidSolid)));
         break;
@@ -276,14 +285,17 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
         backFeature = { kind: 'pocket', levels };
       } else if (style.key === 'dovetailKey') {
         const clearance = effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset, params.nozzleSizeMm);
-        frontFeature = { kind: 'groove', clearance };
-        backFeature = { kind: 'groove', clearance };
+        frontFeature = { kind: 'groove', clearance, puzzle: false };
+        backFeature = { kind: 'groove', clearance, puzzle: false };
       } else {
-        // Integral dovetail: nominal tongue, offset rides on the female groove.
-        frontFeature = { kind: 'tongue' };
+        // Integral tongue/groove (dovetail or puzzle): nominal tongue, offset rides
+        // on the female groove. Puzzle shares the dovetail's base groove clearance.
+        const puzzle = style.key === 'puzzle';
+        frontFeature = { kind: 'tongue', puzzle };
         backFeature = {
           kind: 'groove',
           clearance: effectiveClearance(TONGUE_CLEARANCE, offset, params.nozzleSizeMm),
+          puzzle,
         };
       }
 
