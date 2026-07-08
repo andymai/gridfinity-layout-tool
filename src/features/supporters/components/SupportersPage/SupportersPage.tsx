@@ -35,18 +35,26 @@ function CtaBurst({
   origin,
   accent,
   seed,
+  onDone,
 }: {
   origin: { x: number; y: number };
   accent: string;
   seed: number;
+  onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
     const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (!canvas || !ctx) {
+      onDone();
+      return;
+    }
+    // Scale the backing store for crisp particles on high-DPI displays.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
     const particles = Array.from({ length: 18 }, (_, i) => {
       const a = (i / 18) * Math.PI * 2 + seed;
       const speed = 3 + (i % 5);
@@ -61,7 +69,7 @@ function CtaBurst({
     });
     let raf = 0;
     const tick = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       let alive = false;
       for (const p of particles) {
         p.vy += 0.12;
@@ -80,11 +88,15 @@ function CtaBurst({
           ctx.restore();
         }
       }
-      if (alive) raf = requestAnimationFrame(tick);
+      if (alive) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        onDone();
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [origin, accent, seed]);
+  }, [origin, accent, seed, onDone]);
 
   return (
     <canvas
@@ -116,6 +128,9 @@ export function SupportersPage() {
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
+
+  // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
+  useEffect(() => () => void (document.body.style.cursor = ''), []);
 
   const focused = focusedId ? bins.find((b) => b.id === focusedId) : null;
 
@@ -296,6 +311,7 @@ export function SupportersPage() {
           origin={{ x: burst.x, y: burst.y }}
           accent={palette.accent}
           seed={burst.seed}
+          onDone={() => setBurst(null)}
         />
       )}
     </main>

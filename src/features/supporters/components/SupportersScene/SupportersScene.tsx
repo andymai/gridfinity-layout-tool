@@ -97,8 +97,12 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
       camera.lookAt(lookAt);
       done.current = true;
     } else {
+      // Replay the intro (and clear a prior reduced-motion "done") so toggling
+      // reduced-motion off doesn't leave the camera stuck at the start pose.
       camera.position.copy(start);
       camera.lookAt(lookAt);
+      elapsed.current = 0;
+      done.current = false;
     }
   }, [camera, reducedMotion, rest, start, lookAt]);
 
@@ -353,7 +357,6 @@ function Dust({ palette, count }: { palette: SupportersPalette; count: number })
         y: Math.abs(s.y) * 8,
         z: (Math.abs(s.z) - 0.5) * 16,
         scale: 0.01 + Math.abs(s.s) * 0.02,
-        phase: Math.abs(s.x) * Math.PI * 2,
       })),
     [seeds]
   );
