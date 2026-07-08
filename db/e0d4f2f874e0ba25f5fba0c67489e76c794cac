@@ -1,0 +1,29 @@
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_0dcedd9c6767ca::t_b093297b3e5c11 91-95,99
+  s_0dcedd9c6767ca::t_2d3bb2c78b5e4d 38,43,49-57
+  s_0dcedd9c6767ca::t_4330423dc425b3 314
+  s_0dcedd9c6767ca::t_4536f9765ac983 72
+  s_0dcedd9c6767ca::t_7a524e4633018a 132-134
+src/features/supporters/components/SupportersScene/SupportersScene.tsx
+  s_0dcedd9c6767ca::t_ff74e85a3a8bfd 100-101,104-105
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_0dcedd9c6767ca::t_41a8a9e98dcb47 44-47
+package.json
+  s_0dcedd9c6767ca::t_4f98d26a3dd1a3 92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "dbe0d4f2f874e0ba25f5fba0c67489e76c794cac",
+  "prompts": {},
+  "sessions": {
+    "s_0dcedd9c6767ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef0ec8fd-12cc-48e8-98b4-71a6a6b28310",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
