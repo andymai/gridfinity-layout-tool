@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.224.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.0...gridfinity-layout-tool-v4.224.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **size:** measure Total JS for one locale, not all ten ([#2480](https://github.com/andymai/gridfinity-layout-tool/issues/2480)) ([3022c8f](https://github.com/andymai/gridfinity-layout-tool/commit/3022c8fe88940ad2025bef56870c3cc758566466))
+
 ## [4.224.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.223.0...gridfinity-layout-tool-v4.224.0) (2026-07-08)
 
 
