@@ -1,0 +1,112 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_3cf215a9a54ab3::t_c1465f4f1ceb6e 15
+  s_3cf215a9a54ab3::t_6a76aef05d8995 120-143
+src/features/bin-designer/constants/defaults.ts
+  s_3cf215a9a54ab3::t_9dedeaed543e38 25-30
+  s_3cf215a9a54ab3::t_5394f6554b8954 159-171
+  s_3cf215a9a54ab3::t_e4775e6a7441ae 624,635-636
+src/i18n/locales/ja.json
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+src/features/generation/worker/generators/lidConstants.ts
+  s_3cf215a9a54ab3::t_8af2bbad2eff87 58-59,64-70,72,74-81,89-94
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_3cf215a9a54ab3::t_7fe6f4432b4857 69,71-73
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_3cf215a9a54ab3::t_6d15bf57ef90f3 479
+  s_3cf215a9a54ab3::t_bcf478180973bd 286-298
+  s_3cf215a9a54ab3::t_8e5ddbc502856b 502-505
+  s_3cf215a9a54ab3::t_9d1956961ed937 8-10
+  s_3cf215a9a54ab3::t_4d551c42110bb4 143,145-147
+  s_3cf215a9a54ab3::t_fae10554e64a23 522
+  s_3cf215a9a54ab3::t_76fe9466d88849 327-329,339
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_3cf215a9a54ab3::t_b28c6b8eedd34a 40
+  s_3cf215a9a54ab3::t_18ea5110a4196c 34-39,41,61
+  s_3cf215a9a54ab3::t_6b4c84e8d83d65 55-59
+  s_3cf215a9a54ab3::t_878fea0195add2 42-44
+  s_3cf215a9a54ab3::t_aabc081ea284cd 62-63
+src/i18n/locales/de.json
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_3cf215a9a54ab3::t_27b9c78eb18eb2 782-838
+  s_3cf215a9a54ab3::t_9bdd4f128c8249 839-841
+  s_3cf215a9a54ab3::t_02b25bdf4b92af 842
+src/features/bin-designer/types/lid.test.ts
+  s_3cf215a9a54ab3::t_39f1a36715e7a6 2-9
+  s_3cf215a9a54ab3::t_6fa82c0fe3e226 41-44
+  s_3cf215a9a54ab3::t_b3542817a083c4 62-73
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_3cf215a9a54ab3::t_6dc401e99ddb86 170-176
+  s_3cf215a9a54ab3::t_1ce7dac7e4a03e 43
+  s_3cf215a9a54ab3::t_814de1540c305b 62-68
+  s_3cf215a9a54ab3::t_f54f63a07835b3 61
+src/i18n/locales/uk.json
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+src/features/generation/worker/generators/lidInputs.ts
+  s_3cf215a9a54ab3::t_46a0525aac1d86 184-187
+src/features/bin-designer/data/examples/lids.ts
+  s_3cf215a9a54ab3::t_0058f9aa766c0b 26-47
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_3cf215a9a54ab3::t_afba1da408dfe2 134-155
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_3cf215a9a54ab3::t_a24760fc3a1588 122-154
+src/i18n/locales/sv.json
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+src/i18n/locales/es.json
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+src/i18n/locales/nl.json
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+src/features/generation/worker/handlers/exportHandler.ts
+  s_3cf215a9a54ab3::t_d381e2fb4cc949 217-218
+  s_3cf215a9a54ab3::t_54b11e118da9bf 219
+src/i18n/locales/en.ts
+  s_3cf215a9a54ab3::t_488c4252ae8440 1656-1657
+  s_3cf215a9a54ab3::t_32ac484f6e0d3f 2707-2709
+  s_3cf215a9a54ab3::t_f825183f1c6289 1629-1632
+src/i18n/locales/nb.json
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+src/i18n/locales/fr.json
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+src/features/bin-designer/types/lid.ts
+  s_3cf215a9a54ab3::t_1053a0e02506ca 146
+  s_3cf215a9a54ab3::t_2d6046432e21f4 38-50
+  s_3cf215a9a54ab3::t_0f9708cd6f6570 118-127
+  s_3876d5385f3eab::t_1068446dbe804f 37
+src/i18n/locales/pt-BR.json
+  s_3cf215a9a54ab3::t_92b040c72ed208 690,715-717
+  s_3cf215a9a54ab3::t_cf5b7347cbbe51 997-998
+src/features/bin-designer/types/index.ts
+  s_3cf215a9a54ab3::t_9b94f98d06a110 89-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ce95aa2a44f8540da0e0f4e644375358f00202fd",
+  "prompts": {},
+  "sessions": {
+    "s_3876d5385f3eab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ced9956-7c78-4ac7-9b10-e0436949c9cb",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_3cf215a9a54ab3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "97ca9952-e74c-4cb0-b587-2d61fa531c4f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
