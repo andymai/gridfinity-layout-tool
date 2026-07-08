@@ -22,7 +22,12 @@ import type {
 import type { FeatureColorConfig, LipAxisCount } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
-import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
+import {
+  DEFAULT_LID_CONFIG,
+  LID_CLICK_RAIL_COVERAGE_OPTIONS,
+  LID_EXTRA_HEIGHT_MIN_MM,
+  LID_EXTRA_HEIGHT_MAX_MM,
+} from '../types/lid';
 import type { LidClickRails } from '../types/lid';
 import type { TextStyleDefaults } from '../types/text';
 import { migrateWalls } from './paramMigration';
@@ -149,6 +154,19 @@ function migrateClickRailCoverage(raw: unknown): number {
     }
   }
   return nearest;
+}
+
+/**
+ * Clamp a persisted `extraHeightMm` into its valid range. Non-numeric or
+ * legacy-absent values default to 0 (the standard lid); out-of-range values
+ * are clamped so a corrupt/hand-edited design can't feed a runaway height
+ * into the lid cavity geometry.
+ */
+function migrateExtraHeightMm(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+    return DEFAULT_LID_CONFIG.extraHeightMm;
+  }
+  return Math.min(LID_EXTRA_HEIGHT_MAX_MM, Math.max(LID_EXTRA_HEIGHT_MIN_MM, raw));
 }
 
 /** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
@@ -603,6 +621,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         topThickness: _legacyTop,
         clickRails: rawClickRails,
         clickRailCoverage: rawCoverage,
+        extraHeightMm: rawExtraHeight,
         ...stored
       } = raw;
       return {
@@ -613,6 +632,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // regardless of how it was persisted.
         clickRails: migrateClickRails(rawClickRails),
         clickRailCoverage: migrateClickRailCoverage(rawCoverage),
+        // Clamp the mm cavity boost so a corrupt design can't blow up the lid.
+        extraHeightMm: migrateExtraHeightMm(rawExtraHeight),
       };
     })(),
     ...(params.splitConnectors !== undefined

@@ -55,16 +55,30 @@ export const LID_EXTRA_HEIGHT = 0.2;
  * Anchor Z position — where the lid's mating cavity starts opening up to
  * receive the bin's stacking lip when the lid is snapped on.
  *
- *   anchorZ = -heightUnitMm - extra + LIP_HEIGHT + sqrt(2)*fitClearance*2
+ *   anchorZ = -(heightUnitMm + extraHeightMm) - extra + LIP_HEIGHT
+ *             + sqrt(2)*fitClearance*2
  *
  * The sqrt(2)*2*fitClearance term applies clearance along the diagonal
  * direction at the corner (where two perpendicular shifts compose).
  *
- * @param heightUnitMm Gridfinity height unit (default 7mm — total lid height)
+ * `extraHeightMm` (issue #2482) pushes the anchor deeper, lengthening the plain
+ * wall above the lip so tall contents poking out of a short bin are enclosed.
+ * The lip-mating band and click rails stay pinned relative to the anchor, so
+ * the fit is unchanged; only the cavity above it grows. `0` reproduces the
+ * standard one-grid-unit lid exactly.
+ *
+ * @param heightUnitMm Gridfinity height unit (default 7mm — base lid height)
  * @param fitClearance Per-side clearance for the chosen fit
+ * @param extraHeightMm Added cavity depth above the default lid (default 0)
  */
-export function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
-  return -heightUnitMm - LID_EXTRA_HEIGHT + LIP_HEIGHT + Math.SQRT2 * fitClearance * 2;
+export function lidAnchorZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraHeightMm: number = 0
+): number {
+  return (
+    -(heightUnitMm + extraHeightMm) - LID_EXTRA_HEIGHT + LIP_HEIGHT + Math.SQRT2 * fitClearance * 2
+  );
 }
 
 /**
@@ -72,8 +86,12 @@ export function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
  *
  * Below this Z, the lid wall is finished — the click rails take over from here.
  */
-export function lidWallBottomZ(heightUnitMm: number, fitClearance: number): number {
-  return lidAnchorZ(heightUnitMm, fitClearance) - LIP_BIG_TAPER - LIP_VERTICAL_PART;
+export function lidWallBottomZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraHeightMm: number = 0
+): number {
+  return lidAnchorZ(heightUnitMm, fitClearance, extraHeightMm) - LIP_BIG_TAPER - LIP_VERTICAL_PART;
 }
 
 /* ──────────────────────────────────────────────────────────────────────

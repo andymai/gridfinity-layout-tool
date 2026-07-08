@@ -181,8 +181,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.
     clickRailCoverage: params.lid.clickRailCoverage / 100,
-    anchorZ: lidAnchorZ(heightUnitMm, fitClearance),
-    wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance),
+    // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall
+    // contents poking out of a short bin are enclosed; 0 = standard lid.
+    anchorZ: lidAnchorZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
+    wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
     cellMask,
     outerOffsetX,
     outerOffsetY,

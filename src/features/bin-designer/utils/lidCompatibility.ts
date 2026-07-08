@@ -40,6 +40,7 @@ export type LidCompatibilityId =
   | 'wallCutoutsAllSides'
   | 'wallPattern'
   | 'shortBin'
+  | 'tallLidShortBin'
   | 'tallDividerPieces'
   | 'cellMaskHoles'
   | 'compartmentDividers'
@@ -56,6 +57,14 @@ export interface LidCompatibilityIssue {
 }
 
 const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
+
+/**
+ * Extra lid height (mm) at or above which a tall lid on a 1U bin earns the
+ * `tallLidShortBin` leverage warning. ~10mm is roughly the standard lid's own
+ * height, so at this point the added cavity doubles the lever arm on an already
+ * marginal click grip. Below it, the extra height is negligible next to the grip.
+ */
+const TALL_LID_LEVERAGE_WARN_MM = 10;
 
 /**
  * Interior wall height available for handle holes (mm). Mirrors the
@@ -158,6 +167,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    bin (totalH=7mm). The lid still seats but the click is marginal.
   if (params.height <= 1) {
     issues.push({ id: 'shortBin', severity: 'warning' });
+    // A tall lid (issue #2482) on that already-marginal 1U grip adds a long
+    // lever arm — the taller the cavity, the more a knock can pop the lid off
+    // its shallow click. Flag once the added height is a meaningful multiple of
+    // the grip. Independent of the geometry, which stays valid either way.
+    if (params.lid.extraHeightMm >= TALL_LID_LEVERAGE_WARN_MM) {
+      issues.push({ id: 'tallLidShortBin', severity: 'warning' });
+    }
   }
 
   // 4. Tall divider pieces. Slotted bins use separately-printed dividers

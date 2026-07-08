@@ -23,4 +23,26 @@ export const LID_EXAMPLES: ExampleDesign[] = [
     },
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
+  {
+    id: 'toothpick-holder',
+    nameKey: 'binExamples.toothpickHolder.name',
+    descriptionKey: 'binExamples.toothpickHolder.description',
+    techniques: ['lid'],
+    tier: 'technique',
+    tags: ['lid', 'enclosed', 'tall-lid', '1x1'],
+    complexity: 1,
+    colored: true,
+    params: {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1,
+      depth: 1,
+      // Short bin: contents (e.g. toothpicks) stick up out of it…
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      // …and a tall lid (45mm above the standard cavity) encloses them.
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, extraHeightMm: 45 },
+      featureColors: coloredFeatures({ lid: PALETTE.amber }),
+    },
+    metrics: { width: 1, depth: 1, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
+  },
 ];

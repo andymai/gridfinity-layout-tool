@@ -106,8 +106,12 @@ graph TB
   preview with explode-aware Z and opacity (`LidMesh.tsx`); when exporting,
   STL/3MF emit it as a separate piece in the ZIP and STEP folds it into a
   compound assembly translated to its mated position. `LidSection` exposes
-  fit (`tight`/`standard`/`loose` → fit-clearance table in `types/lid.ts`),
-  toggles for stack grid + magnets, and floor/wall thickness.
+  the extra-height cavity boost (`extraHeightMm`, 0–100mm — a taller lid
+  encloses items that poke up out of a short bin, e.g. toothpicks; 0 = the
+  standard one-grid-unit lid), the stack-grid / magnet / separate-baseplate
+  toggles, and per-side click-rail snaps with a coverage slider. Wall/top
+  thickness and fit clearance are intentionally locked-down constants in
+  `lidConstants.ts` (a single validated set — exposing them invited mis-prints).
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's

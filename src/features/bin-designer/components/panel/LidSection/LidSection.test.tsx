@@ -119,6 +119,39 @@ describe('LidSection', () => {
     expect(lid.separateStackPlate).toBe(false);
   });
 
+  describe('extra lid height', () => {
+    it('renders the Extra lid height control when the lid is enabled', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+      expect(screen.getByText('Extra lid height')).toBeInTheDocument();
+      expect(
+        screen.getByRole('spinbutton', { name: 'Extra lid height in millimeters' })
+      ).toBeInTheDocument();
+    });
+
+    it('commits a typed value to lid.extraHeightMm', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+      const input = screen.getByRole('spinbutton', { name: 'Extra lid height in millimeters' });
+      fireEvent.change(input, { target: { value: '30' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.lid.extraHeightMm).toBe(30);
+    });
+
+    it('clamps an over-range value to the maximum', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+      const input = screen.getByRole('spinbutton', { name: 'Extra lid height in millimeters' });
+      fireEvent.change(input, { target: { value: '999' } });
+      fireEvent.blur(input);
+      // Stepper clamps to max=100 on commit; the handler re-clamps defensively.
+      expect(useDesignerStore.getState().params.lid.extraHeightMm).toBe(100);
+    });
+  });
+
   describe('compatibility issues', () => {
     it('shows a Fix button on the label-tabs warning that disables the feature', () => {
       // Enable lid + label tabs → the `labelTabs` warning surfaces with

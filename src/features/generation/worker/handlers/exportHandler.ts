@@ -214,7 +214,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // (the bin's stacking lip top), matching the preview's lidGroupZ.
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
-        const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE);
+        const lidZ =
+          totalHeight -
+          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, params.lid.extraHeightMm);
         let lidSolid = hasLid ? buildLid(params) : null;
         // Separate baseplate (glue-on) rides on top of the lid floor in the
         // assembly, at the same lift as the lid. buildStackPlate returns null

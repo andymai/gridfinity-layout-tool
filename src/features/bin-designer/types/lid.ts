@@ -35,6 +35,20 @@ export const LID_MAGNET_CEILING = 0.6;
 export const LID_MIN_RAIL_LENGTH = 4;
 
 /**
+ * Bounds for {@link LidConfig.extraHeightMm} — the user-set extra internal
+ * cavity depth added ABOVE the default one-grid-unit lid, so tall contents
+ * poking out of a short bin are enclosed when the lid is on (issue #2482).
+ * `0` = the standard lid (identical geometry to before this field existed).
+ * Capped so the separately-printed lid stays within a typical printer's Z.
+ *
+ * NB: unrelated to the worker-side `LID_EXTRA_HEIGHT` (0.2mm squish fudge in
+ * `lidConstants.ts`); this is a millimetre knob, hence the `_MM` suffix.
+ */
+export const LID_EXTRA_HEIGHT_MIN_MM = 0;
+export const LID_EXTRA_HEIGHT_MAX_MM = 100;
+export const LID_EXTRA_HEIGHT_STEP_MM = 1;
+
+/**
  * Available click-rail coverage options as a percentage of edge length.
  * Lower values save filament; higher values give more grip surface.
  * 100% = full edge-to-edge rails.
@@ -101,6 +115,16 @@ export interface LidConfig {
    * `clickRails[side]` is `true`.
    */
   readonly clickRailCoverage: number;
+  /**
+   * Extra internal cavity depth (mm) added ABOVE the default one-grid-unit
+   * lid, so contents that stick up out of a short bin are enclosed when the
+   * lid is on (issue #2482 — e.g. a toothpick holder). `0` reproduces the
+   * standard lid exactly. Clamped to
+   * [{@link LID_EXTRA_HEIGHT_MIN_MM}, {@link LID_EXTRA_HEIGHT_MAX_MM}].
+   * The lip-mating shell and click rails stay at the bottom of the cavity;
+   * this only lengthens the plain wall above the lip.
+   */
+  readonly extraHeightMm: number;
 }
 
 /**
@@ -119,4 +143,5 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
+  extraHeightMm: 0,
 } as const;

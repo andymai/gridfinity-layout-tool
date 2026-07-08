@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_LID_CONFIG, LID_FIT_CLEARANCE, type LidConfig } from './lid';
+import {
+  DEFAULT_LID_CONFIG,
+  LID_FIT_CLEARANCE,
+  LID_EXTRA_HEIGHT_MIN_MM,
+  LID_EXTRA_HEIGHT_MAX_MM,
+  LID_EXTRA_HEIGHT_STEP_MM,
+  type LidConfig,
+} from './lid';
 
 describe('DEFAULT_LID_CONFIG', () => {
   it('is disabled by default', () => {
@@ -31,6 +38,10 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.separateStackPlate).toBe(false);
   });
 
+  it('adds no extra lid height by default (0 = standard one-grid-unit lid)', () => {
+    expect(DEFAULT_LID_CONFIG.extraHeightMm).toBe(0);
+  });
+
   // wallThickness, topThickness, fit are intentionally NOT on LidConfig —
   // they're locked-down constants in `lidConstants.ts`. The type-level
   // test below ensures they aren't reintroduced silently.
@@ -46,5 +57,17 @@ describe('LID_FIT_CLEARANCE', () => {
   it('is a positive, sub-mm clearance', () => {
     expect(LID_FIT_CLEARANCE).toBeGreaterThan(0);
     expect(LID_FIT_CLEARANCE).toBeLessThanOrEqual(0.5);
+  });
+});
+
+describe('LID_EXTRA_HEIGHT bounds', () => {
+  it('defines a non-negative range with the default at the floor', () => {
+    expect(LID_EXTRA_HEIGHT_MIN_MM).toBe(0);
+    expect(LID_EXTRA_HEIGHT_MAX_MM).toBeGreaterThan(LID_EXTRA_HEIGHT_MIN_MM);
+    expect(DEFAULT_LID_CONFIG.extraHeightMm).toBe(LID_EXTRA_HEIGHT_MIN_MM);
+  });
+
+  it('uses a whole-millimetre step', () => {
+    expect(LID_EXTRA_HEIGHT_STEP_MM).toBeGreaterThan(0);
   });
 });

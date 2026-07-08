@@ -5,6 +5,9 @@ import { useTranslation } from '@/i18n';
 import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_CORNER_RADIUS,
+  LID_EXTRA_HEIGHT_MIN_MM,
+  LID_EXTRA_HEIGHT_MAX_MM,
+  LID_EXTRA_HEIGHT_STEP_MM,
   LID_FIT_CLEARANCE,
   LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
@@ -137,10 +140,11 @@ function computeRailSummary(
 
 /**
  * Compat IDs that have a clean, single-action fix. Issues NOT in this
- * set (`shortBin`, `cellMaskHoles`, `compartmentDividers`,
+ * set (`shortBin`, `tallLidShortBin`, `cellMaskHoles`, `compartmentDividers`,
  * `topDownCutoutsAtLip`) require user judgment to resolve — bumping bin
- * height, redrawing a shape, removing compartments, or editing a
- * specific cutout — so we don't surface a "Fix" button for them.
+ * height, lowering the extra lid height, redrawing a shape, removing
+ * compartments, or editing a specific cutout — so we don't surface a
+ * "Fix" button for them.
  */
 const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
   'wallCutouts',
@@ -279,6 +283,19 @@ export function useLidSection() {
     [updateLid]
   );
 
+  const setExtraHeight = useCallback(
+    (extraHeightMm: number) => {
+      // Clamp defensively; the stepper already bounds input but a keyboard
+      // entry could exceed the range.
+      const clamped = Math.min(
+        LID_EXTRA_HEIGHT_MAX_MM,
+        Math.max(LID_EXTRA_HEIGHT_MIN_MM, extraHeightMm)
+      );
+      updateLid({ extraHeightMm: clamped });
+    },
+    [updateLid]
+  );
+
   const toggleClickRailSide = useCallback(
     (side: LidRailSide) => {
       updateLid({
@@ -307,7 +324,9 @@ export function useLidSection() {
     // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate.
     // Floor plate auto-grows for magnets — keep the readout in sync so
     // users see why the lid is taller when they enable magnets.
-    const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance);
+    // extraHeightMm deepens the cavity (issue #2482), so the readout height
+    // grows with it — mirrors `resolveLidInputs`/`lidWallBottomZ`.
+    const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance, lid.extraHeightMm);
     const effectiveMagnets = lid.magnetHoles && lid.stackableTop;
     const topThickness = effectiveMagnets
       ? Math.max(LID_TOP_THICKNESS_BASE, base.magnetDepth + LID_MAGNET_CEILING)
@@ -317,6 +336,7 @@ export function useLidSection() {
   }, [
     lid.magnetHoles,
     lid.stackableTop,
+    lid.extraHeightMm,
     base.magnetDepth,
     params.width,
     params.depth,
@@ -456,6 +476,7 @@ export function useLidSection() {
           return;
         // Non-fixable issues fall through; LidSection hides the button.
         case 'shortBin':
+        case 'tallLidShortBin':
         case 'cellMaskHoles':
         case 'compartmentDividers':
         case 'topDownCutoutsAtLip':
@@ -478,6 +499,10 @@ export function useLidSection() {
       clickRails: lid.clickRails,
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
+      extraHeightMm: lid.extraHeightMm,
+      extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
+      extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
+      extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
       disabledReason,
       disabledRails,
       railCoverageOptions,
@@ -494,6 +519,7 @@ export function useLidSection() {
       toggleSeparateStackPlate,
       toggleClickRailSide,
       setClickRailCoverage,
+      setExtraHeight,
       fixIssue,
     },
     t,

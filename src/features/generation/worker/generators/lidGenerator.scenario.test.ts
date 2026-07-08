@@ -779,4 +779,65 @@ describe('lid generation and export scenarios', () => {
       expect(a!.triangleCount).toBe(b!.triangleCount);
     });
   });
+
+  describe('extra lid height (tall lid, issue #2482)', () => {
+    it('builds a valid mesh with a large extra height', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({ extraHeightMm: 45 }, { width: 1, depth: 1, height: 3 })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'tall lid (extra 45mm)');
+    });
+
+    it('deepens the lid Z extent by ~the added millimetres', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = generateLid(makeParams({ extraHeightMm: 0 }, { width: 2, depth: 2, height: 3 }));
+      const tall = generateLid(
+        makeParams({ extraHeightMm: 40 }, { width: 2, depth: 2, height: 3 })
+      );
+      expect(base).not.toBeNull();
+      expect(tall).not.toBeNull();
+      const baseBB = boundingBox(base!.vertices);
+      const tallBB = boundingBox(tall!.vertices);
+      // The extra height lengthens the wall downward (more negative minZ); the
+      // floor top (maxZ) is unchanged. Delta ≈ the requested 40mm.
+      const heightDelta = tallBB.maxZ - tallBB.minZ - (baseBB.maxZ - baseBB.minZ);
+      expect(heightDelta).toBeGreaterThan(39);
+      expect(heightDelta).toBeLessThan(41);
+      // Only the bottom grows — the floor top stays put.
+      expect(Math.abs(tallBB.maxZ - baseBB.maxZ)).toBeLessThan(0.01);
+      expect(baseBB.minZ - tallBB.minZ).toBeGreaterThan(39);
+    });
+
+    it('extra height leaves the XY footprint unchanged (only the cavity deepens)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = generateLid(makeParams({ extraHeightMm: 0 }, { width: 2, depth: 2, height: 3 }));
+      const tall = generateLid(
+        makeParams({ extraHeightMm: 40 }, { width: 2, depth: 2, height: 3 })
+      );
+      expect(base).not.toBeNull();
+      expect(tall).not.toBeNull();
+      const a = boundingBox(base!.vertices);
+      const b = boundingBox(tall!.vertices);
+      expect(Math.abs(b.maxX - b.minX - (a.maxX - a.minX))).toBeLessThan(0.01);
+      expect(Math.abs(b.maxY - b.minY - (a.maxY - a.minY))).toBeLessThan(0.01);
+    });
+
+    it('extraHeightMm: 0 reproduces the standard lid exactly', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const standard = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      const explicitZero = generateLid(
+        makeParams({ extraHeightMm: 0 }, { width: 2, depth: 2, height: 3 })
+      );
+      expect(standard).not.toBeNull();
+      expect(explicitZero).not.toBeNull();
+      // No behavioural change for existing designs: identical mesh.
+      expect(explicitZero!.triangleCount).toBe(standard!.triangleCount);
+      const a = boundingBox(standard!.vertices);
+      const b = boundingBox(explicitZero!.vertices);
+      expect(Math.abs(b.minZ - a.minZ)).toBeLessThan(1e-6);
+      expect(Math.abs(b.maxZ - a.maxZ)).toBeLessThan(1e-6);
+    });
+  });
 });

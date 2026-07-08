@@ -131,6 +131,28 @@ describe('checkLidCompatibility', () => {
     });
   });
 
+  describe('tall lid on a short bin (leverage)', () => {
+    const withLid = (height: number, extraHeightMm: number): BinParams =>
+      withOverrides({ height, lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm } });
+
+    it('warns when a tall lid sits on a 1U bin', () => {
+      const issue = checkLidCompatibility(withLid(1, 40)).find((i) => i.id === 'tallLidShortBin');
+      expect(issue?.severity).toBe('warning');
+    });
+
+    it('does not warn for a small extra height on a 1U bin', () => {
+      expect(
+        checkLidCompatibility(withLid(1, 5)).find((i) => i.id === 'tallLidShortBin')
+      ).toBeUndefined();
+    });
+
+    it('does not warn for a tall lid on a taller bin (grip is not marginal)', () => {
+      expect(
+        checkLidCompatibility(withLid(3, 40)).find((i) => i.id === 'tallLidShortBin')
+      ).toBeUndefined();
+    });
+  });
+
   describe('tall divider pieces', () => {
     it('flags slotted bin with manual height exceeding interior', () => {
       const interior = DEFAULT_BIN_PARAMS.height * DEFAULT_BIN_PARAMS.heightUnitMm - 5; // SOCKET_HEIGHT

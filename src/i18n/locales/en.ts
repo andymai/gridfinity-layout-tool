@@ -1626,6 +1626,10 @@ const en: Record<string, string> = {
     'Turn on the stackable top first — the baseplate is that grid, printed as its own piece.',
   'binDesigner.lid.separateStackPlateHint':
     'Baseplate prints flat on its own (grid up, glue-face down) so the lid stays support-free. Glue it onto the lid’s top after printing.',
+  'binDesigner.lid.extraHeight': 'Extra lid height',
+  'binDesigner.lid.extraHeightAria': 'Extra lid height in millimeters',
+  'binDesigner.lid.extraHeightHint':
+    'Raises the lid so contents that stick out of a short bin (e.g. toothpicks) are enclosed. 0 = standard lid.',
   'binDesigner.lid.clickRailCoverage': 'Rail coverage',
   'binDesigner.lid.clickRailCoverage.50': 'Compact rails — saves the most filament',
   'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails — balanced grip and savings',
@@ -1649,6 +1653,8 @@ const en: Record<string, string> = {
     'Wall pattern can perforate the lip — the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
     'Bin is 1U tall — the lid still seats but the grip is marginal.',
+  'binDesigner.lid.compat.tallLidShortBin':
+    'A tall lid on a 1U bin has a long lever arm on that marginal grip — a knock may pop it off. Consider a taller bin or more snap-fit sides.',
   'binDesigner.lid.compat.tallDividerPieces':
     'Divider pieces are taller than the bin interior — the lid will not seat with them inserted.',
   'binDesigner.lid.compat.cellMaskHoles':
@@ -2698,6 +2704,9 @@ const en: Record<string, string> = {
   'binExamples.lid2x2.name': '2×2 Lidded Bin',
   'binExamples.lid2x2.description':
     'A 2×2 bin with a click-lock lid that keeps small parts safely enclosed.',
+  'binExamples.toothpickHolder.name': 'Toothpick Holder',
+  'binExamples.toothpickHolder.description':
+    'A short bin with a tall click-lock lid — long items poke up out of the bin, and the extra-height lid encloses them when closed.',
 
   // Bin example presets — styles
   'binExamples.slotted2x2.name': '2×2 Slotted Bin',

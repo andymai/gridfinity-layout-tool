@@ -12,6 +12,7 @@ import { Button } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
+import { StepperField } from '../shared/StepperField';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -114,6 +115,30 @@ export function LidSection() {
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">{state.dimensionsReadout}</span>
+      </div>
+
+      {/* Extra lid height (issue #2482) — deepens the lid cavity above the
+          bin's lip so contents that stick up out of a short bin (toothpicks,
+          skewers) are enclosed when the lid is on. 0 = the standard lid. The
+          lip grip + click rails are unchanged; only the wall above the lip
+          grows. */}
+      <div className="space-y-1">
+        <StepperField
+          label={t('binDesigner.lid.extraHeight')}
+          unit="mm"
+          value={state.extraHeightMm}
+          onChange={handlers.setExtraHeight}
+          onStep={(delta) => handlers.setExtraHeight(state.extraHeightMm + delta)}
+          min={state.extraHeightMin}
+          max={state.extraHeightMax}
+          step={state.extraHeightStep}
+          size="md"
+          aria-label={t('binDesigner.lid.extraHeightAria')}
+          commitMode="deferred"
+        />
+        <p className="text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.lid.extraHeightHint')}
+        </p>
       </div>
 
       {/* Switches for the orthogonal toggles. Magnet pockets only do

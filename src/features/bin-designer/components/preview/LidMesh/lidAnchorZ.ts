@@ -31,8 +31,17 @@ export const LID_EXTRA_HEIGHT = 0.2;
  * lockstep — silent drift produces a misaligned preview vs. exported
  * geometry.
  */
-export function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
-  return -heightUnitMm - LID_EXTRA_HEIGHT + GRIDFINITY.LIP_HEIGHT + Math.SQRT2 * fitClearance * 2;
+export function lidAnchorZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraHeightMm: number = 0
+): number {
+  return (
+    -(heightUnitMm + extraHeightMm) -
+    LID_EXTRA_HEIGHT +
+    GRIDFINITY.LIP_HEIGHT +
+    Math.SQRT2 * fitClearance * 2
+  );
 }
 
 /**
@@ -43,9 +52,15 @@ export function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
  * `@/features/generation/worker/generators/lidConstants` EXACTLY (same
  * cross-thread agreement requirement as `lidAnchorZ`).
  */
-export function lidWallBottomZ(heightUnitMm: number, fitClearance: number): number {
+export function lidWallBottomZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraHeightMm: number = 0
+): number {
   return (
-    lidAnchorZ(heightUnitMm, fitClearance) - GRIDFINITY.LIP_BIG_TAPER - GRIDFINITY.LIP_VERTICAL_PART
+    lidAnchorZ(heightUnitMm, fitClearance, extraHeightMm) -
+    GRIDFINITY.LIP_BIG_TAPER -
+    GRIDFINITY.LIP_VERTICAL_PART
   );
 }
 

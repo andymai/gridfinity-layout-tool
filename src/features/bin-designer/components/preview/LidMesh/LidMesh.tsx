@@ -66,9 +66,11 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base } = s.params;
+      const { height, heightUnitMm, base, lid } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
-      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE);
+      // extraHeightMm deepens the cavity, raising the lid floor above the lip
+      // so tall contents are enclosed; 0 = standard lid (issue #2482).
+      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, lid.extraHeightMm);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
