@@ -1,0 +1,20 @@
+package.json
+  s_0dcedd9c6767ca::t_421a3b48ca9c32 89-101
+  s_0dcedd9c6767ca::t_9dbf4e635ce4ad 103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6c58f739869522144515d794cc665cd3718b78c7",
+  "prompts": {},
+  "sessions": {
+    "s_0dcedd9c6767ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef0ec8fd-12cc-48e8-98b4-71a6a6b28310",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
