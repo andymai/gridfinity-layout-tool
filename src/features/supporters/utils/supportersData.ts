@@ -25,7 +25,8 @@ export function buildSupporterBins(rng: () => number = Math.random): SupporterBi
   ];
 
   for (let i = bins.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
+    // Clamp so a stray RNG returning exactly 1 can't index out of bounds.
+    const j = Math.min(i, Math.floor(rng() * (i + 1)));
     [bins[i], bins[j]] = [bins[j], bins[i]];
   }
 

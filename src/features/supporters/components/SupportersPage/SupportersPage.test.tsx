@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SupportersPage } from './SupportersPage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
+import supportersData from '../../data/supporters.json';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
@@ -29,9 +30,10 @@ describe('SupportersPage', () => {
     expect(screen.getByRole('heading', { name: 'supporters.heading' })).toBeInTheDocument();
   });
 
-  it('renders a bin for a known named supporter', () => {
+  it('renders a bin for a named supporter', () => {
     render(<SupportersPage />);
-    expect(screen.getByText('Jürgen')).toBeInTheDocument();
+    // Derive from the data so the test survives supporter-list edits.
+    expect(screen.getByText(supportersData.named[0])).toBeInTheDocument();
   });
 
   it('renders anonymous supporters as equal bins', () => {

@@ -23,10 +23,20 @@ describe('AttributionFooter', () => {
 
   it('opens all external links in a new tab', () => {
     render(<AttributionFooter />);
-    const externalLinks = screen.getAllByRole('link');
+    // The Supporters link navigates within the SPA, so it is not an external new-tab link.
+    const externalLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') !== '/supporters');
     externalLinks.forEach((link) => {
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
+  });
+
+  it('navigates to the Supporters page in-app (no new tab)', () => {
+    render(<AttributionFooter />);
+    const supportersLink = screen.getByRole('link', { name: /Supporters/ });
+    expect(supportersLink).toHaveAttribute('href', '/supporters');
+    expect(supportersLink).not.toHaveAttribute('target');
   });
 });

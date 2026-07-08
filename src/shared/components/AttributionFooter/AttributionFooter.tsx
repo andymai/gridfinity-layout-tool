@@ -59,6 +59,9 @@ export function AttributionFooter() {
       <a
         href="/supporters"
         onClick={(e) => {
+          // Preserve Cmd/Ctrl/Shift-click (open in new tab/window); only
+          // intercept a plain left-click for in-app SPA navigation.
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
           e.preventDefault();
           navigateToSupporters();
         }}
