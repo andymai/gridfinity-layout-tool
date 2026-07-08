@@ -256,20 +256,22 @@ function SupporterBinMesh({
     }
     if (focused) lift += 0.6;
 
+    // Reduced motion only renders a single frame on demand, so snap to the
+    // target pose/glow instead of easing toward it over many frames.
     g.position.x = x;
     g.position.z = z;
-    g.position.y = MathUtils.lerp(g.position.y, baseY + appear * lift, 0.15);
-    g.rotation.x = MathUtils.lerp(g.rotation.x, tiltX, 0.12);
-    g.rotation.z = MathUtils.lerp(g.rotation.z, tiltZ, 0.12);
+    g.position.y = MathUtils.lerp(g.position.y, baseY + appear * lift, reducedMotion ? 1 : 0.15);
+    g.rotation.x = MathUtils.lerp(g.rotation.x, tiltX, reducedMotion ? 1 : 0.12);
+    g.rotation.z = MathUtils.lerp(g.rotation.z, tiltZ, reducedMotion ? 1 : 0.12);
     const targetScale = eased * (focused ? 1.12 : 1);
-    g.scale.setScalar(MathUtils.lerp(g.scale.x, targetScale, 0.18));
+    g.scale.setScalar(MathUtils.lerp(g.scale.x, targetScale, reducedMotion ? 1 : 0.18));
 
     if (labelMat.current) {
       const targetEmissive = focused ? 0.5 : 0;
       labelMat.current.emissiveIntensity = MathUtils.lerp(
         labelMat.current.emissiveIntensity,
         targetEmissive,
-        0.15
+        reducedMotion ? 1 : 0.15
       );
     }
   });

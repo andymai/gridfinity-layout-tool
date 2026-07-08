@@ -4,26 +4,13 @@ import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { buildSupporterBins, getSupporterCount } from '../../utils/supportersData';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene } from '../SupportersScene';
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(
-    () =>
-      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return reduced;
-}
 
 function useCountUp(target: number, animate: boolean): number {
   const [animated, setAnimated] = useState(0);
@@ -225,6 +212,8 @@ export function SupportersPage() {
       {/* Hero */}
       <div className="pointer-events-none absolute inset-x-0 top-[8%] z-20 flex flex-col items-center px-6 text-center">
         <h1 className="flex flex-col items-center">
+          {/* Static total for AT (avoids announcing the count-up animation). */}
+          <span className="sr-only">{total} </span>
           <span
             aria-hidden="true"
             className="text-6xl font-bold tabular-nums leading-none tracking-tight sm:text-8xl"
