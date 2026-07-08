@@ -1,5 +1,5 @@
 {
-  "_comment": "Backfilled from the Ko-fi supporter export on 2026-07-07; total aligned to the Ko-fi dashboard (42) on 2026-07-08 with the 10 newest counted as anonymous until their display names are backfilled. Display names only — NEVER store emails or amounts here. New supporters can be appended to `named`, or `anonymousCount` incremented for people who gave no name. Order is randomized at render, so append anywhere.",
+  "_comment": "Backfilled from the Ko-fi supporter export on 2026-07-08 (45 unique supporters: 27 named, 18 who gave no name). Display names only — NEVER store emails or amounts here. New supporters can be appended to `named`, or `anonymousCount` incremented for people who gave no name. Order is randomized at render, so append anywhere.",
   "named": [
     "unpossible",
     "Jürgen",
@@ -19,7 +19,15 @@
     "John",
     "Diego Silva",
     "Oxo",
-    "Martin"
+    "Martin",
+    "Rad",
+    "HK",
+    "JFM",
+    "Uncle Dave",
+    "Mawi",
+    "ChrisV",
+    "Bram",
+    "Allison Lee"
   ],
-  "anonymousCount": 23
+  "anonymousCount": 18
 }
