@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { RoundedBox } from '@react-three/drei';
 import {
   CanvasTexture,
-  Color,
   MathUtils,
   Plane,
   SRGBColorSpace,
@@ -312,7 +311,7 @@ function SupporterBinMesh({
         <boxGeometry args={[0.7, 0.045, 0.14]} />
         <meshStandardMaterial
           color={palette.accent}
-          emissive={new Color(palette.accent)}
+          emissive={palette.accent}
           emissiveIntensity={anonymous ? 0.15 : 0.35}
           roughness={0.4}
         />
@@ -327,7 +326,7 @@ function SupporterBinMesh({
             map={labelTexture}
             transparent
             roughness={0.6}
-            emissive={new Color(palette.accent)}
+            emissive={palette.accent}
             emissiveMap={labelTexture}
             emissiveIntensity={0}
           />

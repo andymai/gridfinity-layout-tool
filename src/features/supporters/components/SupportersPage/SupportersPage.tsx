@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -131,6 +131,9 @@ export function SupportersPage() {
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
+
+  // Stable so CtaBurst's effect doesn't restart the animation on unrelated re-renders.
+  const clearBurst = useCallback(() => setBurst(null), []);
 
   const focused = focusedId ? bins.find((b) => b.id === focusedId) : null;
 
@@ -311,7 +314,7 @@ export function SupportersPage() {
           origin={{ x: burst.x, y: burst.y }}
           accent={palette.accent}
           seed={burst.seed}
-          onDone={() => setBurst(null)}
+          onDone={clearBurst}
         />
       )}
     </main>
