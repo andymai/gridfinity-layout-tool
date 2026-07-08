@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { computeBaseplateLayout } from './supportersLayout';
+import { computeBaseplateLayout, computeCameraFrame } from './supportersLayout';
 import { fitLabelLines } from './labelText';
 
 describe('computeBaseplateLayout', () => {
-  it('places one socket per supporter', () => {
+  it('places one socket seat per supporter', () => {
     expect(computeBaseplateLayout(32).positions).toHaveLength(32);
   });
 
-  it('centers the grid on the origin', () => {
-    const { positions } = computeBaseplateLayout(32);
-    const meanX = positions.reduce((s, p) => s + p.x, 0) / positions.length;
-    const meanZ = positions.reduce((s, p) => s + p.z, 0) / positions.length;
+  it('centers the plate on the origin', () => {
+    const { sockets } = computeBaseplateLayout(32);
+    const meanX = sockets.reduce((s, p) => s + p.x, 0) / sockets.length;
+    const meanZ = sockets.reduce((s, p) => s + p.z, 0) / sockets.length;
     expect(Math.abs(meanX)).toBeLessThan(1e-9);
     expect(Math.abs(meanZ)).toBeLessThan(1e-9);
   });
@@ -20,16 +20,80 @@ describe('computeBaseplateLayout', () => {
     expect(columns).toBeGreaterThanOrEqual(rows);
   });
 
-  it('handles a single supporter centered', () => {
+  it('seats bins on exact 1-unit socket pitch', () => {
+    const { positions } = computeBaseplateLayout(9);
+    const xs = [...new Set(positions.map((p) => p.x))].sort((a, b) => a - b);
+    for (let i = 1; i < xs.length; i++) {
+      expect(xs[i] - xs[i - 1]).toBeCloseTo(1, 9);
+    }
+  });
+
+  it('adds a one-socket empty margin ring around the bin cluster', () => {
+    const layout = computeBaseplateLayout(12);
+    expect(layout.plateColumns).toBe(layout.columns + 2);
+    expect(layout.plateRows).toBe(layout.rows + 2);
+    expect(layout.sockets).toHaveLength(layout.plateColumns * layout.plateRows);
+  });
+
+  it('never seats a bin on the margin ring', () => {
+    const layout = computeBaseplateLayout(25);
+    for (const p of layout.positions) {
+      expect(p.col).toBeGreaterThanOrEqual(1);
+      expect(p.col).toBeLessThanOrEqual(layout.plateColumns - 2);
+      expect(p.row).toBeGreaterThanOrEqual(1);
+      expect(p.row).toBeLessThanOrEqual(layout.plateRows - 2);
+    }
+  });
+
+  it('reserves the ghost socket on the empty front margin row', () => {
+    const layout = computeBaseplateLayout(25);
+    const frontZ = (layout.plateRows - 1) / 2;
+    expect(layout.ghost.z).toBeCloseTo(frontZ, 9);
+    const clash = layout.positions.some(
+      (p) => Math.abs(p.x - layout.ghost.x) < 1e-9 && Math.abs(p.z - layout.ghost.z) < 1e-9
+    );
+    expect(clash).toBe(false);
+  });
+
+  it('handles a single supporter', () => {
     const layout = computeBaseplateLayout(1);
     expect(layout.columns).toBe(1);
     expect(layout.positions[0]).toMatchObject({ x: 0, z: 0 });
   });
 
-  it('handles zero supporters', () => {
+  it('handles zero supporters with a plate and a ghost socket', () => {
     const layout = computeBaseplateLayout(0);
     expect(layout.positions).toHaveLength(0);
-    expect(layout.rows).toBe(0);
+    expect(layout.sockets.length).toBeGreaterThan(0);
+    expect(Number.isFinite(layout.ghost.x)).toBe(true);
+  });
+
+  it('grows the plate as supporters grow', () => {
+    const small = computeBaseplateLayout(10);
+    const large = computeBaseplateLayout(400);
+    expect(large.width).toBeGreaterThan(small.width);
+    expect(large.positions).toHaveLength(400);
+  });
+});
+
+describe('computeCameraFrame', () => {
+  it('pulls back further for larger plates', () => {
+    const near = computeCameraFrame(computeBaseplateLayout(10), 16 / 9);
+    const far = computeCameraFrame(computeBaseplateLayout(400), 16 / 9);
+    expect(far.distance).toBeGreaterThan(near.distance);
+  });
+
+  it('pulls back further in portrait than landscape for the same plate', () => {
+    const layout = computeBaseplateLayout(40);
+    const landscape = computeCameraFrame(layout, 16 / 9);
+    const portrait = computeCameraFrame(layout, 9 / 16);
+    expect(portrait.distance).toBeGreaterThan(landscape.distance);
+  });
+
+  it('positions the camera above and in front of the target', () => {
+    const frame = computeCameraFrame(computeBaseplateLayout(42), 16 / 9);
+    expect(frame.position[1]).toBeGreaterThan(frame.target[1]);
+    expect(frame.position[2]).toBeGreaterThan(frame.target[2]);
   });
 });
 

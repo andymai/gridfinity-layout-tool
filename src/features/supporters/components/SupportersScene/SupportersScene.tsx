@@ -1,25 +1,39 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RoundedBox } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import {
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
+  Color,
+  Euler,
   MathUtils,
+  Matrix4,
+  Mesh,
   Plane,
+  Quaternion,
   SRGBColorSpace,
   Vector3,
   type Group,
+  type InstancedMesh,
   type MeshStandardMaterial,
 } from 'three';
 import type { SupporterBin } from '../../utils/supportersData';
-import { computeBaseplateLayout } from '../../utils/supportersLayout';
-import { getSupportersPalette, type SupportersPalette } from '../../scene/palette';
-import { createLabelTexture } from '../../scene/labelTexture';
+import { computeBaseplateLayout, computeCameraFrame } from '../../utils/supportersLayout';
+import type { BaseplateLayout, CameraFrame } from '../../utils/supportersLayout';
+import { getSupportersPalette, filamentColorFor } from '../../scene/palette';
+import type { SupportersPalette } from '../../scene/palette';
+import { createTabLabelTexture } from '../../scene/labelTexture';
+import { BIN_MESH_URL, PLATE_CELL_MESH_URL, MESH_META } from '../../data/meshes';
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeOutBack = (t: number) => {
   const c = 1.70158;
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
 };
+
+/** Depth a seated bin's foot sinks into the plate socket (scene units). */
+const SEAT_DEPTH = MESH_META.plateHeight * 0.82;
 
 interface SceneProps {
   bins: SupporterBin[];
@@ -28,6 +42,20 @@ interface SceneProps {
   quality: 'high' | 'low';
   focusedId: string | null;
   onSelect: (id: string) => void;
+  onGhostClick: () => void;
+  /** Localized text printed on anonymous supporters' label tabs. */
+  anonymousLabel: string;
+}
+
+/** First mesh geometry inside a loaded GLB scene (our baked assets hold one). */
+function extractGeometry(scene: Group): BufferGeometry {
+  const meshes: Mesh[] = [];
+  scene.traverse((obj) => {
+    if (obj instanceof Mesh) meshes.push(obj);
+  });
+  const geometry = meshes[0]?.geometry;
+  if (!geometry) throw new Error('Baked supporters GLB contains no mesh');
+  return geometry;
 }
 
 export function SupportersScene({
@@ -37,39 +65,73 @@ export function SupportersScene({
   quality,
   focusedId,
   onSelect,
+  onGhostClick,
+  anonymousLabel,
 }: SceneProps) {
+  // Self-hosted Draco decoder (public/draco/) — CSP forbids the default CDN.
+  useGLTF.setDecoderPath('/draco/');
+  const binGltf = useGLTF(BIN_MESH_URL, true);
+  const plateGltf = useGLTF(PLATE_CELL_MESH_URL, true);
+  const binGeometry = useMemo(() => extractGeometry(binGltf.scene), [binGltf]);
+  const plateGeometry = useMemo(() => extractGeometry(plateGltf.scene), [plateGltf]);
+
   const palette = useMemo(() => getSupportersPalette(theme), [theme]);
   const layout = useMemo(() => computeBaseplateLayout(bins.length), [bins.length]);
+
+  const { size } = useThree();
+  const frame = useMemo(
+    () => computeCameraFrame(layout, size.width / Math.max(1, size.height)),
+    [layout, size.width, size.height]
+  );
+
   const pointerTarget = useRef(new Vector3(0, 0, 0));
+  const [introDone, setIntroDone] = useState(reducedMotion);
 
   return (
-    <group>
+    <>
+      {/* Direct children of the scene so attach targets scene.background/fog
+          (inside a <group> they attach to the group and silently do nothing). */}
       <color attach="background" args={[palette.background]} />
-      <fog attach="fog" args={[palette.fog, 12, 30]} />
+      <fog attach="fog" args={[palette.fog, frame.distance * 1.05, frame.distance * 3.4]} />
 
-      <CameraRig reducedMotion={reducedMotion} />
+      <CameraRig frame={frame} reducedMotion={reducedMotion} onIntroDone={setIntroDone} />
+      <OrbitControls
+        makeDefault
+        enabled={introDone}
+        enablePan={false}
+        enableDamping={!reducedMotion}
+        dampingFactor={0.08}
+        autoRotate={introDone && !reducedMotion}
+        autoRotateSpeed={0.35}
+        minDistance={frame.distance * 0.45}
+        maxDistance={frame.distance * 2}
+        minPolarAngle={0.3}
+        maxPolarAngle={1.32}
+        target={frame.target}
+      />
       <Lighting palette={palette} />
       <PointerField target={pointerTarget} enabled={!reducedMotion} />
 
-      <Baseplate palette={palette} width={layout.width} depth={layout.depth} />
-
-      {bins.map((bin, i) => {
-        const socket = layout.positions[i];
-        return (
-          <SupporterBinMesh
-            key={bin.id}
-            bin={bin}
-            x={socket.x}
-            z={socket.z}
-            palette={palette}
-            reducedMotion={reducedMotion}
-            delay={reducedMotion ? 0 : 0.25 + i * 0.035}
-            pointerTarget={pointerTarget}
-            focused={focusedId === bin.id}
-            onSelect={onSelect}
-          />
-        );
-      })}
+      <PlateInstances geometry={plateGeometry} layout={layout} palette={palette} />
+      <BinInstances
+        geometry={binGeometry}
+        bins={bins}
+        layout={layout}
+        palette={palette}
+        reducedMotion={reducedMotion}
+        pointerTarget={pointerTarget}
+        focusedId={focusedId}
+        onSelect={onSelect}
+        anonymousLabel={anonymousLabel}
+      />
+      <GhostBin
+        geometry={binGeometry}
+        x={layout.ghost.x}
+        z={layout.ghost.z}
+        palette={palette}
+        reducedMotion={reducedMotion}
+        onClick={onGhostClick}
+      />
 
       <ShadowBlob
         width={layout.width}
@@ -77,41 +139,57 @@ export function SupportersScene({
         opacity={theme === 'dark' ? 0.55 : 0.32}
       />
 
-      {quality === 'high' && !reducedMotion && <Dust palette={palette} count={140} />}
-    </group>
+      {quality === 'high' && !reducedMotion && (
+        <DustPoints palette={palette} count={140} radius={frame.distance} />
+      )}
+    </>
   );
 }
 
-function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
+function CameraRig({
+  frame,
+  reducedMotion,
+  onIntroDone,
+}: {
+  frame: CameraFrame;
+  reducedMotion: boolean;
+  onIntroDone: (done: boolean) => void;
+}) {
   const { camera } = useThree();
-  const rest = useMemo(() => new Vector3(0, 8.2, 12.2), []);
-  const start = useMemo(() => new Vector3(-3, 13.5, 16.5), []);
-  const lookAt = useMemo(() => new Vector3(0, -0.3, -0.2), []);
   const elapsed = useRef(0);
   const done = useRef(false);
+  const rest = useMemo(() => new Vector3(...frame.position), [frame]);
+  const target = useMemo(() => new Vector3(...frame.target), [frame]);
+  // Intro starts higher and further out, drifting down onto the bench.
+  const start = useMemo(
+    () => new Vector3(frame.position[0] - 3, frame.position[1] * 1.5, frame.position[2] * 1.3),
+    [frame]
+  );
 
   useEffect(() => {
-    if (reducedMotion) {
+    if (reducedMotion || done.current) {
+      // Re-frame on resize/layout change without replaying the intro.
       camera.position.copy(rest);
-      camera.lookAt(lookAt);
+      camera.lookAt(target);
       done.current = true;
+      onIntroDone(true);
     } else {
-      // Replay the intro (and clear a prior reduced-motion "done") so toggling
-      // reduced-motion off doesn't leave the camera stuck at the start pose.
       camera.position.copy(start);
-      camera.lookAt(lookAt);
+      camera.lookAt(target);
       elapsed.current = 0;
-      done.current = false;
     }
-  }, [camera, reducedMotion, rest, start, lookAt]);
+  }, [camera, reducedMotion, rest, start, target, onIntroDone]);
 
   useFrame((_, delta) => {
     if (done.current) return;
     elapsed.current += delta;
-    const t = Math.min(elapsed.current / 2.0, 1);
+    const t = Math.min(elapsed.current / 2.2, 1);
     camera.position.lerpVectors(start, rest, easeOutCubic(t));
-    camera.lookAt(lookAt);
-    if (t >= 1) done.current = true;
+    camera.lookAt(target);
+    if (t >= 1) {
+      done.current = true;
+      onIntroDone(true);
+    }
   });
 
   return null;
@@ -120,10 +198,14 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
 function Lighting({ palette }: { palette: SupportersPalette }) {
   return (
     <>
-      <ambientLight color={palette.ambient} intensity={0.7} />
-      <hemisphereLight args={[palette.fillLight, palette.background, 0.5]} />
-      <directionalLight color={palette.keyLight} intensity={2.1} position={[5, 9, 6]} />
-      <directionalLight color={palette.rimLight} intensity={0.8} position={[-6, 4, -6]} />
+      <ambientLight color={palette.ambient} intensity={0.85} />
+      <hemisphereLight args={[palette.fillLight, palette.background, 0.45]} />
+      {/* Tungsten key over the bench */}
+      <directionalLight color={palette.keyLight} intensity={2.3} position={[4, 9, 5]} />
+      {/* Cool fill from the window side */}
+      <directionalLight color={palette.fillLight} intensity={0.55} position={[-7, 5, -2]} />
+      {/* Warm rim to catch stacking lips from behind */}
+      <directionalLight color={palette.rimLight} intensity={0.7} position={[-3, 4, -7]} />
     </>
   );
 }
@@ -143,30 +225,315 @@ function PointerField({ target, enabled }: { target: React.RefObject<Vector3>; e
   return null;
 }
 
-function Baseplate({
+const tmpMatrix = new Matrix4();
+const tmpPosition = new Vector3();
+const tmpQuaternion = new Quaternion();
+const tmpScale = new Vector3();
+const tmpEuler = new Euler();
+
+/** The real socketed baseplate: one baked 42mm tile instanced per socket. */
+function PlateInstances({
+  geometry,
+  layout,
   palette,
-  width,
-  depth,
 }: {
+  geometry: BufferGeometry;
+  layout: BaseplateLayout;
   palette: SupportersPalette;
-  width: number;
-  depth: number;
 }) {
+  const ref = useRef<InstancedMesh>(null);
+
+  useEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    layout.sockets.forEach((socket, i) => {
+      tmpMatrix.makeTranslation(socket.x, -MESH_META.plateHeight, socket.z);
+      mesh.setMatrixAt(i, tmpMatrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }, [layout]);
+
   return (
-    <group position={[0, -0.25, 0]}>
-      <RoundedBox
-        args={[width + 0.7, 0.5, depth + 0.7]}
-        radius={0.14}
-        smoothness={4}
-        position={[0, -0.25, 0]}
+    <instancedMesh
+      ref={ref}
+      args={[geometry, undefined, layout.sockets.length]}
+      key={layout.sockets.length}
+    >
+      <meshStandardMaterial color={palette.plate} roughness={0.78} metalness={0.05} />
+    </instancedMesh>
+  );
+}
+
+interface BinSeat {
+  bin: SupporterBin;
+  x: number;
+  z: number;
+  color: Color;
+  delay: number;
+  startY: number;
+}
+
+interface BinInstancesProps {
+  geometry: BufferGeometry;
+  bins: SupporterBin[];
+  layout: BaseplateLayout;
+  palette: SupportersPalette;
+  reducedMotion: boolean;
+  pointerTarget: React.RefObject<Vector3>;
+  focusedId: string | null;
+  onSelect: (id: string) => void;
+  anonymousLabel: string;
+}
+
+/**
+ * All supporter bins as ONE InstancedMesh (single draw call however large the
+ * plate grows), with per-instance filament colors. Label tapes are lightweight
+ * planes inside per-bin groups whose transforms mirror the instance matrices
+ * every frame, so tapes ride their bins through entrance/hover/focus motion.
+ */
+function BinInstances({
+  geometry,
+  bins,
+  layout,
+  palette,
+  reducedMotion,
+  pointerTarget,
+  focusedId,
+  onSelect,
+  anonymousLabel,
+}: BinInstancesProps) {
+  const meshRef = useRef<InstancedMesh>(null);
+  const labelGroups = useRef<(Group | null)[]>([]);
+  const labelMats = useRef<(MeshStandardMaterial | null)[]>([]);
+  const elapsed = useRef(0);
+
+  const seats: BinSeat[] = useMemo(() => {
+    const totalStagger = Math.min(2.2, bins.length * 0.05);
+    return bins.map((bin, i) => ({
+      bin,
+      x: layout.positions[i].x,
+      z: layout.positions[i].z,
+      color: new Color(filamentColorFor(palette, bin.id)),
+      delay: 0.25 + (bins.length <= 1 ? 0 : (i / (bins.length - 1)) * totalStagger),
+      startY: 4.5 + (bin.id.charCodeAt(bin.id.length - 1) % 5) * 0.35,
+    }));
+  }, [bins, layout, palette]);
+
+  // One shared texture for every anonymous tab; one per named supporter.
+  const anonTexture = useMemo(
+    () => createTabLabelTexture(anonymousLabel, palette.tape, palette.tapeInk),
+    [anonymousLabel, palette.tape, palette.tapeInk]
+  );
+  const namedTextures = useMemo(() => {
+    const map = new Map<string, CanvasTexture | null>();
+    for (const bin of bins) {
+      if (bin.name) map.set(bin.id, createTabLabelTexture(bin.name, palette.tape, palette.tapeInk));
+    }
+    return map;
+  }, [bins, palette.tape, palette.tapeInk]);
+  useEffect(
+    () => () => {
+      anonTexture?.dispose();
+      for (const texture of namedTextures.values()) texture?.dispose();
+    },
+    [anonTexture, namedTextures]
+  );
+
+  useEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    seats.forEach((seat, i) => mesh.setColorAt(i, seat.color));
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    elapsed.current = reducedMotion ? Number.POSITIVE_INFINITY : 0;
+  }, [seats, reducedMotion]);
+
+  useFrame((_, delta) => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    elapsed.current += delta;
+
+    for (let i = 0; i < seats.length; i++) {
+      const seat = seats[i];
+      const focused = focusedId === seat.bin.id;
+
+      let appear = 1;
+      if (!reducedMotion) {
+        appear = MathUtils.clamp((elapsed.current - seat.delay) / 0.85, 0, 1);
+      }
+      const eased = reducedMotion ? 1 : easeOutBack(appear);
+      const baseY = MathUtils.lerp(seat.startY, -SEAT_DEPTH, easeOutCubic(appear));
+
+      let lift = 0;
+      let tiltX = 0;
+      let tiltZ = 0;
+      if (!reducedMotion && appear >= 1) {
+        const dx = pointerTarget.current.x - seat.x;
+        const dz = pointerTarget.current.z - seat.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const influence = Math.max(0, 1 - dist / 2.1);
+        lift = influence * 0.32;
+        tiltX = MathUtils.clamp(dz * influence * 0.14, -0.18, 0.18);
+        tiltZ = MathUtils.clamp(-dx * influence * 0.14, -0.18, 0.18);
+      }
+      if (focused) lift += 0.5;
+
+      tmpPosition.set(seat.x, baseY + appear * lift, seat.z);
+      tmpEuler.set(tiltX, 0, tiltZ);
+      tmpQuaternion.setFromEuler(tmpEuler);
+      const s = Math.max(0.0001, eased * (focused ? 1.08 : 1));
+      tmpScale.setScalar(s);
+      tmpMatrix.compose(tmpPosition, tmpQuaternion, tmpScale);
+      mesh.setMatrixAt(i, tmpMatrix);
+
+      const label = labelGroups.current[i];
+      if (label) {
+        label.position.copy(tmpPosition);
+        label.quaternion.copy(tmpQuaternion);
+        label.scale.copy(tmpScale);
+      }
+      const mat = labelMats.current[i];
+      if (mat) {
+        mat.emissiveIntensity = MathUtils.lerp(
+          mat.emissiveIntensity,
+          focused ? 0.45 : 0,
+          reducedMotion ? 1 : 0.15
+        );
+      }
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  });
+
+  const tab = MESH_META.labelTab;
+  const tabCenter: [number, number, number] = [
+    (tab.x0 + tab.x1) / 2,
+    tab.y + 0.006,
+    (tab.z0 + tab.z1) / 2,
+  ];
+
+  return (
+    <group>
+      <instancedMesh
+        ref={meshRef}
+        args={[geometry, undefined, seats.length]}
+        key={seats.length}
+        frustumCulled={false}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          if (e.instanceId !== undefined && seats[e.instanceId]) {
+            onSelect(seats[e.instanceId].bin.id);
+          }
+        }}
+        onPointerOver={() => (document.body.style.cursor = 'pointer')}
+        onPointerOut={() => (document.body.style.cursor = '')}
       >
-        <meshStandardMaterial color={palette.baseplate} roughness={0.72} metalness={0.08} />
-      </RoundedBox>
+        <meshStandardMaterial roughness={0.55} metalness={0.04} />
+      </instancedMesh>
+
+      {seats.map((seat, i) => {
+        const texture = seat.bin.name ? namedTextures.get(seat.bin.id) : anonTexture;
+        if (!texture) return null;
+        return (
+          <group
+            key={seat.bin.id}
+            ref={(g) => {
+              labelGroups.current[i] = g;
+            }}
+            position={[seat.x, -SEAT_DEPTH, seat.z]}
+          >
+            <mesh position={tabCenter} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[tab.x1 - tab.x0, tab.z1 - tab.z0]} />
+              <meshStandardMaterial
+                ref={(m) => {
+                  labelMats.current[i] = m;
+                }}
+                map={texture}
+                transparent
+                roughness={0.6}
+                emissive={palette.accent}
+                emissiveMap={texture}
+                emissiveIntensity={0}
+                polygonOffset
+                polygonOffsetFactor={-1}
+              />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }
 
-/** Soft baked ground shadow under the baseplate (replaces drei ContactShadows to keep the bundle lean). */
+/**
+ * The empty-socket invitation: a translucent accent bin with a blank tab,
+ * softly pulsing. Clicking it is the same as the Ko-fi CTA.
+ */
+function GhostBin({
+  geometry,
+  x,
+  z,
+  palette,
+  reducedMotion,
+  onClick,
+}: {
+  geometry: BufferGeometry;
+  x: number;
+  z: number;
+  palette: SupportersPalette;
+  reducedMotion: boolean;
+  onClick: () => void;
+}) {
+  const matRef = useRef<MeshStandardMaterial>(null);
+  const hovered = useRef(false);
+  const meshRef = useRef<Mesh>(null);
+
+  useFrame((state) => {
+    const mat = matRef.current;
+    const mesh = meshRef.current;
+    if (!mat || !mesh) return;
+    const pulse = reducedMotion ? 0.2 : 0.2 + Math.sin(state.clock.elapsedTime * 1.6) * 0.08;
+    mat.emissiveIntensity = MathUtils.lerp(
+      mat.emissiveIntensity,
+      hovered.current ? 0.55 : pulse,
+      reducedMotion ? 1 : 0.12
+    );
+    const targetY = hovered.current && !reducedMotion ? -SEAT_DEPTH + 0.18 : -SEAT_DEPTH;
+    mesh.position.y = MathUtils.lerp(mesh.position.y, targetY, reducedMotion ? 1 : 0.14);
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      position={[x, -SEAT_DEPTH, z]}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onPointerOver={() => {
+        hovered.current = true;
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={() => {
+        hovered.current = false;
+        document.body.style.cursor = '';
+      }}
+    >
+      <meshStandardMaterial
+        ref={matRef}
+        color={palette.ghost}
+        emissive={palette.ghost}
+        emissiveIntensity={0.2}
+        transparent
+        opacity={0.32}
+        roughness={0.4}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+/** Soft baked ground shadow under the baseplate (no shadow maps — bundle). */
 function ShadowBlob({ width, depth, opacity }: { width: number; depth: number; opacity: number }) {
   const texture = useMemo(() => {
     if (typeof document === 'undefined') return null;
@@ -188,177 +555,39 @@ function ShadowBlob({ width, depth, opacity }: { width: number; depth: number; o
   useEffect(() => () => texture?.dispose(), [texture]);
   if (!texture) return null;
   return (
-    <mesh position={[0, -0.55, 0.25]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[width * 2, depth * 2.4]} />
+    <mesh position={[0, -MESH_META.plateHeight - 0.06, 0.25]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[width * 1.9, depth * 2.2]} />
       <meshBasicMaterial map={texture} transparent opacity={opacity} depthWrite={false} />
     </mesh>
   );
 }
 
-interface BinMeshProps {
-  bin: SupporterBin;
-  x: number;
-  z: number;
-  palette: SupportersPalette;
-  reducedMotion: boolean;
-  delay: number;
-  pointerTarget: React.RefObject<Vector3>;
-  focused: boolean;
-  onSelect: (id: string) => void;
-}
-
-function SupporterBinMesh({
-  bin,
-  x,
-  z,
+/** Slow-drifting workshop dust as a single Points draw call. */
+function DustPoints({
   palette,
-  reducedMotion,
-  delay,
-  pointerTarget,
-  focused,
-  onSelect,
-}: BinMeshProps) {
-  const group = useRef<Group>(null);
-  const labelMat = useRef<MeshStandardMaterial>(null);
-  const anonymous = bin.name === null;
-  const restY = 0;
-  const startY = 5.5 + (bin.id.charCodeAt(bin.id.length - 1) % 5) * 0.4;
-  const elapsed = useRef(reducedMotion ? 999 : -delay);
-
-  const labelTexture = useMemo(
-    () => (anonymous ? null : createLabelTexture(bin.name ?? '', palette.binInk)),
-    [anonymous, bin.name, palette.binInk]
-  );
-  useEffect(() => () => labelTexture?.dispose(), [labelTexture]);
-
-  useFrame((_, delta) => {
-    const g = group.current;
-    if (!g) return;
-
-    // Entrance: fall + settle with a slight overshoot.
-    let appear = 1;
-    if (!reducedMotion) {
-      elapsed.current += delta;
-      appear = MathUtils.clamp(elapsed.current / 0.85, 0, 1);
-    }
-    const eased = reducedMotion ? 1 : easeOutBack(appear);
-    const baseY = MathUtils.lerp(startY, restY, easeOutCubic(MathUtils.clamp(appear, 0, 1)));
-
-    // Magnetic cursor reactivity + focus lift.
-    let lift = 0;
-    let tiltX = 0;
-    let tiltZ = 0;
-    if (!reducedMotion) {
-      const dx = pointerTarget.current.x - x;
-      const dz = pointerTarget.current.z - z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      const influence = Math.max(0, 1 - dist / 2.2);
-      lift = influence * 0.42;
-      tiltX = MathUtils.clamp(dz * influence * 0.18, -0.22, 0.22);
-      tiltZ = MathUtils.clamp(-dx * influence * 0.18, -0.22, 0.22);
-    }
-    if (focused) lift += 0.6;
-
-    // Reduced motion only renders a single frame on demand, so snap to the
-    // target pose/glow instead of easing toward it over many frames.
-    g.position.x = x;
-    g.position.z = z;
-    g.position.y = MathUtils.lerp(g.position.y, baseY + appear * lift, reducedMotion ? 1 : 0.15);
-    g.rotation.x = MathUtils.lerp(g.rotation.x, tiltX, reducedMotion ? 1 : 0.12);
-    g.rotation.z = MathUtils.lerp(g.rotation.z, tiltZ, reducedMotion ? 1 : 0.12);
-    const targetScale = eased * (focused ? 1.12 : 1);
-    g.scale.setScalar(MathUtils.lerp(g.scale.x, targetScale, reducedMotion ? 1 : 0.18));
-
-    if (labelMat.current) {
-      const targetEmissive = focused ? 0.5 : 0;
-      labelMat.current.emissiveIntensity = MathUtils.lerp(
-        labelMat.current.emissiveIntensity,
-        targetEmissive,
-        reducedMotion ? 1 : 0.15
-      );
-    }
-  });
-
-  return (
-    <group
-      ref={group}
-      position={[x, reducedMotion ? restY : startY, z]}
-      scale={reducedMotion ? 1 : 0}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        onSelect(bin.id);
-      }}
-      onPointerOver={() => (document.body.style.cursor = 'pointer')}
-      onPointerOut={() => (document.body.style.cursor = '')}
-    >
-      {/* Bin body */}
-      <RoundedBox args={[0.92, 0.5, 0.92]} radius={0.09} smoothness={4}>
-        {anonymous ? (
-          <meshStandardMaterial
-            color={palette.binAnon}
-            transparent
-            opacity={0.42}
-            roughness={1}
-            metalness={0}
-          />
-        ) : (
-          <meshStandardMaterial color={palette.binNamed} roughness={0.5} metalness={0.05} />
-        )}
-      </RoundedBox>
-
-      {/* Amber label tab along the front-top edge */}
-      <mesh position={[0, 0.26, 0.34]}>
-        <boxGeometry args={[0.7, 0.045, 0.14]} />
-        <meshStandardMaterial
-          color={palette.accent}
-          emissive={palette.accent}
-          emissiveIntensity={anonymous ? 0.15 : 0.35}
-          roughness={0.4}
-        />
-      </mesh>
-
-      {/* Printed name on the top face */}
-      {labelTexture && (
-        <mesh position={[0, 0.251, -0.02]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.78, 0.78]} />
-          <meshStandardMaterial
-            ref={labelMat}
-            map={labelTexture}
-            transparent
-            roughness={0.6}
-            emissive={palette.accent}
-            emissiveMap={labelTexture}
-            emissiveIntensity={0}
-          />
-        </mesh>
-      )}
-    </group>
-  );
-}
-
-/** Slow-drifting ambient motes for depth. */
-function Dust({ palette, count }: { palette: SupportersPalette; count: number }) {
+  count,
+  radius,
+}: {
+  palette: SupportersPalette;
+  count: number;
+  radius: number;
+}) {
   const ref = useRef<Group>(null);
-  const seeds = useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => ({
-        x: (Math.sin(i * 12.9898) * 43758.5453) % 1,
-        y: (Math.sin(i * 78.233) * 43758.5453) % 1,
-        z: (Math.sin(i * 37.719) * 43758.5453) % 1,
-        s: (Math.sin(i * 4.129) * 43758.5453) % 1,
-      })),
-    [count]
-  );
-  const positions = useMemo(
-    () =>
-      seeds.map((s) => ({
-        x: (Math.abs(s.x) - 0.5) * 20,
-        y: Math.abs(s.y) * 8,
-        z: (Math.abs(s.z) - 0.5) * 16,
-        scale: 0.01 + Math.abs(s.s) * 0.02,
-      })),
-    [seeds]
-  );
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const a = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+      const b = Math.abs(Math.sin(i * 78.233) * 43758.5453) % 1;
+      const c = Math.abs(Math.sin(i * 37.719) * 43758.5453) % 1;
+      positions[i * 3] = (a - 0.5) * radius * 2.4;
+      positions[i * 3 + 1] = b * radius * 0.9;
+      positions[i * 3 + 2] = (c - 0.5) * radius * 2;
+    }
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    return geo;
+  }, [count, radius]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   useFrame((state) => {
     if (ref.current) ref.current.rotation.y = state.clock.elapsedTime * 0.012;
@@ -366,12 +595,16 @@ function Dust({ palette, count }: { palette: SupportersPalette; count: number })
 
   return (
     <group ref={ref}>
-      {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]} scale={p.scale}>
-          <sphereGeometry args={[1, 6, 6]} />
-          <meshBasicMaterial color={palette.dust} transparent opacity={0.5} />
-        </mesh>
-      ))}
+      <points geometry={geometry}>
+        <pointsMaterial
+          color={palette.dust}
+          size={0.05}
+          transparent
+          opacity={0.5}
+          sizeAttenuation
+          depthWrite={false}
+        />
+      </points>
     </group>
   );
 }

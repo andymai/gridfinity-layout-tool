@@ -146,6 +146,12 @@ export function SupportersPage() {
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
+  // The translucent "your spot" bin in the scene is a second door to Ko-fi.
+  const handleGhostClick = useCallback(() => {
+    trackEvent('kofi_clicked', { source: 'supporters_page_ghost_bin' });
+    window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
+  }, []);
+
   return (
     <main
       className="relative h-screen w-screen overflow-hidden"
@@ -155,7 +161,7 @@ export function SupportersPage() {
         className="absolute inset-0"
         dpr={isMobile ? [1, 1.5] : [1, 2]}
         frameloop={reducedMotion ? 'demand' : 'always'}
-        camera={{ fov: 38, near: 0.1, far: 60, position: [-3, 13.5, 16.5] }}
+        camera={{ fov: 38, near: 0.1, far: 160, position: [2, 10, 14] }}
         gl={{ antialias: true, alpha: false }}
         onPointerMissed={() => setFocusedId(null)}
       >
@@ -167,6 +173,8 @@ export function SupportersPage() {
             quality={isMobile ? 'low' : 'high'}
             focusedId={focusedId}
             onSelect={setFocusedId}
+            onGhostClick={handleGhostClick}
+            anonymousLabel={t('supporters.anonymous')}
           />
         </Suspense>
       </Canvas>
@@ -202,8 +210,8 @@ export function SupportersPage() {
         style={{
           background:
             theme === 'dark'
-              ? 'radial-gradient(125% 105% at 50% 38%, transparent 52%, rgba(0,0,0,0.62) 100%)'
-              : 'radial-gradient(125% 105% at 50% 38%, transparent 60%, rgba(60,50,30,0.18) 100%)',
+              ? 'radial-gradient(125% 105% at 50% 38%, transparent 50%, rgba(16,9,4,0.68) 100%)'
+              : 'radial-gradient(125% 105% at 50% 38%, transparent 58%, rgba(74,56,28,0.2) 100%)',
         }}
       />
 
@@ -228,23 +236,27 @@ export function SupportersPage() {
       </div>
 
       {/* Hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-[8%] z-20 flex flex-col items-center px-6 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-[7%] z-20 flex flex-col items-center px-6 text-center">
         <h1 className="flex flex-col items-center">
           {/* Static total for AT (avoids announcing the count-up animation). */}
           <span className="sr-only">{total} </span>
           <span
             aria-hidden="true"
-            className="text-6xl font-bold tabular-nums leading-none tracking-tight sm:text-8xl"
-            style={{ color: palette.accent }}
+            className="text-7xl font-bold tabular-nums leading-none tracking-tighter sm:text-9xl"
+            style={{
+              color: palette.accent,
+              textShadow:
+                theme === 'dark' ? `0 0 48px ${palette.accent}55` : `0 1px 0 rgba(255,255,255,0.6)`,
+            }}
           >
             {count}
           </span>
-          <span className="mt-3 text-lg font-medium tracking-tight sm:text-2xl">
+          <span className="mt-3 text-base font-semibold uppercase tracking-[0.28em] opacity-90 sm:text-lg">
             {t('supporters.countLabel')}
           </span>
         </h1>
         <p
-          className="mt-4 max-w-md text-sm leading-relaxed opacity-70 sm:text-base"
+          className="mt-4 max-w-md text-sm leading-relaxed opacity-65 sm:text-base"
           style={{ textWrap: 'balance' }}
         >
           {t('supporters.subheading')}
@@ -254,11 +266,14 @@ export function SupportersPage() {
       {/* Focused thank-you card */}
       {focused && (
         <div className="pointer-events-none absolute inset-x-0 bottom-[22%] z-20 flex justify-center px-6">
+          {/* Styled like the printed label tape on the bins */}
           <div
-            className="rounded-full px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md motion-safe:animate-fade-in"
+            className="rounded-md px-5 py-2 text-sm font-semibold shadow-lg motion-safe:animate-fade-in"
             style={{
-              background: theme === 'dark' ? 'rgba(20,22,30,0.7)' : 'rgba(255,255,255,0.8)',
-              border: `1px solid ${palette.accent}55`,
+              background: palette.tape,
+              color: palette.tapeInk,
+              border: `1px solid ${palette.accent}66`,
+              boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
             }}
           >
             {focused.name
