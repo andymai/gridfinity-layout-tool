@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.224.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.1...gridfinity-layout-tool-v4.224.2) (2026-07-08)
+
+
+### Bug Fixes
+
+* **baseplate:** export puzzle connector fit sample as puzzle, not dovetail ([#2484](https://github.com/andymai/gridfinity-layout-tool/issues/2484)) ([f36f26b](https://github.com/andymai/gridfinity-layout-tool/commit/f36f26b27445d70779507338456e0625c703d26e))
+
 ## [4.224.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.0...gridfinity-layout-tool-v4.224.1) (2026-07-08)
 
 
