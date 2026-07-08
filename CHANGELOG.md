@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.228.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.1...gridfinity-layout-tool-v4.228.2) (2026-07-08)
+
+
+### Bug Fixes
+
+* **supporters:** also guard against empty indices in bake ([#2498](https://github.com/andymai/gridfinity-layout-tool/issues/2498)) ([3d66879](https://github.com/andymai/gridfinity-layout-tool/commit/3d668799ae354152cad5b34f294e7ba851b64aca))
+
 ## [4.228.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.0...gridfinity-layout-tool-v4.228.1) (2026-07-08)
 
 
