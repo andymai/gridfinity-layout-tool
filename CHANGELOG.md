@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.224.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.223.0...gridfinity-layout-tool-v4.224.0) (2026-07-08)
+
+
+### Features
+
+* **supporters:** immersive WebGL redesign of the supporters page ([#2478](https://github.com/andymai/gridfinity-layout-tool/issues/2478)) ([5de39ef](https://github.com/andymai/gridfinity-layout-tool/commit/5de39ef36ba9b1dc1ed2466dd83e6edbf3bc4189))
+
 ## [4.223.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.222.0...gridfinity-layout-tool-v4.223.0) (2026-07-08)
 
 
