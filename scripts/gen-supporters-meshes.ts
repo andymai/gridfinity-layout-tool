@@ -38,7 +38,16 @@ const { processGlb } = gltfPipeline as unknown as GltfPipeline;
 const OUT = resolve(process.cwd(), 'src/features/supporters/data/meshes');
 const GRID_UNIT_MM = 42;
 
-/** mm Z-up (generator frame) → scene units Y-up: (x, y, z) → (x, z, -y) / 42. */
+/**
+ * mm Z-up (generator frame) → scene units Y-up, then a 180° spin about the
+ * vertical axis: (x, y, z) → (-x, z, y) / 42.
+ *
+ * The spin moves the (front-edge) label tab to the scene's back edge. We bake
+ * with `edges: 'front'` and rotate instead of using the generator's
+ * `edges: 'back'`, because the mirrored back-tab solid tessellates with
+ * inverted vertex normals on the shelf top (renders black on single-sided
+ * materials); the rigid rotation of the front-tab bin keeps normals valid.
+ */
 function toSceneSpace(mesh: MeshData): {
   positions: Float32Array;
   normals: Float32Array;
@@ -51,15 +60,15 @@ function toSceneSpace(mesh: MeshData): {
     const x = mesh.vertices[i * 3];
     const y = mesh.vertices[i * 3 + 1];
     const z = mesh.vertices[i * 3 + 2];
-    positions[i * 3] = x / GRID_UNIT_MM;
+    positions[i * 3] = -x / GRID_UNIT_MM;
     positions[i * 3 + 1] = z / GRID_UNIT_MM;
-    positions[i * 3 + 2] = -y / GRID_UNIT_MM;
+    positions[i * 3 + 2] = y / GRID_UNIT_MM;
     const nx = mesh.normals[i * 3];
     const ny = mesh.normals[i * 3 + 1];
     const nz = mesh.normals[i * 3 + 2];
-    normals[i * 3] = nx;
+    normals[i * 3] = -nx;
     normals[i * 3 + 1] = nz;
-    normals[i * 3 + 2] = -ny;
+    normals[i * 3 + 2] = ny;
   }
   return { positions, normals, indices: new Uint32Array(mesh.indices) };
 }
@@ -192,6 +201,8 @@ async function main() {
       width: 1,
       depth: 1,
       height: 3,
+      // Front edge here; toSceneSpace spins the bin 180° so the tab ends up on
+      // the scene's back edge (see that function for why not `edges: 'back'`).
       label: {
         ...DEFAULT_BIN_PARAMS.label,
         enabled: true,

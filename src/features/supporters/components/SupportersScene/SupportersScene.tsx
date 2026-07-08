@@ -2,10 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import {
-  BufferAttribute,
-  BufferGeometry,
   CanvasTexture,
-  Color,
   Euler,
   MathUtils,
   Matrix4,
@@ -14,6 +11,7 @@ import {
   Quaternion,
   SRGBColorSpace,
   Vector3,
+  type BufferGeometry,
   type Group,
   type InstancedMesh,
   type MeshStandardMaterial,
@@ -21,8 +19,8 @@ import {
 import type { SupporterBin } from '../../utils/supportersData';
 import { computeBaseplateLayout, computeCameraFrame } from '../../utils/supportersLayout';
 import type { BaseplateLayout, CameraFrame } from '../../utils/supportersLayout';
-import { getSupportersPalette, filamentColorFor } from '../../scene/palette';
-import type { SupportersPalette } from '../../scene/palette';
+import { getSupportersPalette } from '../../scene/palette';
+import type { SupportersAccent, SupportersPalette } from '../../scene/palette';
 import { createTabLabelTexture } from '../../scene/labelTexture';
 import { BIN_MESH_URL, PLATE_CELL_MESH_URL, MESH_META } from '../../data/meshes';
 
@@ -41,8 +39,9 @@ const SEAT_DEPTH = MESH_META.plateHeight * 0.82;
 interface SceneProps {
   bins: SupporterBin[];
   theme: 'light' | 'dark';
+  /** The user's app accent setting — drives hero glow, ghost bin, focus. */
+  accent: SupportersAccent;
   reducedMotion: boolean;
-  quality: 'high' | 'low';
   focusedId: string | null;
   onSelect: (id: string) => void;
   onGhostClick: () => void;
@@ -64,8 +63,8 @@ function extractGeometry(scene: Group): BufferGeometry {
 export function SupportersScene({
   bins,
   theme,
+  accent,
   reducedMotion,
-  quality,
   focusedId,
   onSelect,
   onGhostClick,
@@ -76,7 +75,7 @@ export function SupportersScene({
   const binGeometry = useMemo(() => extractGeometry(binGltf.scene), [binGltf]);
   const plateGeometry = useMemo(() => extractGeometry(plateGltf.scene), [plateGltf]);
 
-  const palette = useMemo(() => getSupportersPalette(theme), [theme]);
+  const palette = useMemo(() => getSupportersPalette(theme, accent), [theme, accent]);
   const layout = useMemo(() => computeBaseplateLayout(bins.length), [bins.length]);
 
   const { size } = useThree();
@@ -137,12 +136,8 @@ export function SupportersScene({
       <ShadowBlob
         width={layout.width}
         depth={layout.depth}
-        opacity={theme === 'dark' ? 0.55 : 0.32}
+        opacity={theme === 'dark' ? 0.5 : 0.3}
       />
-
-      {quality === 'high' && !reducedMotion && (
-        <DustPoints palette={palette} count={140} radius={frame.distance} />
-      )}
     </>
   );
 }
@@ -199,14 +194,14 @@ function CameraRig({
 function Lighting({ palette }: { palette: SupportersPalette }) {
   return (
     <>
-      <ambientLight color={palette.ambient} intensity={0.85} />
-      <hemisphereLight args={[palette.fillLight, palette.background, 0.45]} />
-      {/* Tungsten key over the bench */}
-      <directionalLight color={palette.keyLight} intensity={2.3} position={[4, 9, 5]} />
-      {/* Cool fill from the window side */}
-      <directionalLight color={palette.fillLight} intensity={0.55} position={[-7, 5, -2]} />
-      {/* Warm rim to catch stacking lips from behind */}
-      <directionalLight color={palette.rimLight} intensity={0.7} position={[-3, 4, -7]} />
+      <ambientLight color={palette.ambient} intensity={0.9} />
+      <hemisphereLight args={[palette.fillLight, palette.background, 0.5]} />
+      {/* Neutral key — clean product-shot illumination */}
+      <directionalLight color={palette.keyLight} intensity={1.9} position={[4, 9, 5]} />
+      {/* Cool fill so shadow sides don't go muddy */}
+      <directionalLight color={palette.fillLight} intensity={0.6} position={[-7, 5, -2]} />
+      {/* Soft rim to catch stacking lips from behind */}
+      <directionalLight color={palette.rimLight} intensity={0.45} position={[-3, 4, -7]} />
     </>
   );
 }
@@ -270,7 +265,6 @@ interface BinSeat {
   bin: SupporterBin;
   x: number;
   z: number;
-  color: Color;
   delay: number;
   startY: number;
 }
@@ -315,11 +309,10 @@ function BinInstances({
       bin,
       x: layout.positions[i].x,
       z: layout.positions[i].z,
-      color: new Color(filamentColorFor(palette, bin.id)),
       delay: 0.25 + (bins.length <= 1 ? 0 : (i / (bins.length - 1)) * totalStagger),
       startY: 4.5 + (bin.id.charCodeAt(bin.id.length - 1) % 5) * 0.35,
     }));
-  }, [bins, layout, palette]);
+  }, [bins, layout]);
 
   // One shared texture for every anonymous tab; one per named supporter.
   const anonTexture = useMemo(
@@ -344,10 +337,6 @@ function BinInstances({
   );
 
   useEffect(() => {
-    const mesh = meshRef.current;
-    if (!mesh) return;
-    seats.forEach((seat, i) => mesh.setColorAt(i, seat.color));
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     elapsed.current = reducedMotion ? Number.POSITIVE_INFINITY : 0;
   }, [seats, reducedMotion]);
 
@@ -430,7 +419,7 @@ function BinInstances({
         onPointerOver={() => (document.body.style.cursor = 'pointer')}
         onPointerOut={() => (document.body.style.cursor = '')}
       >
-        <meshStandardMaterial roughness={0.55} metalness={0.04} />
+        <meshStandardMaterial color={palette.bin} roughness={0.55} metalness={0.04} />
       </instancedMesh>
 
       {seats.map((seat, i) => {
@@ -562,52 +551,5 @@ function ShadowBlob({ width, depth, opacity }: { width: number; depth: number; o
       <planeGeometry args={[width * 1.9, depth * 2.2]} />
       <meshBasicMaterial map={texture} transparent opacity={opacity} depthWrite={false} />
     </mesh>
-  );
-}
-
-/** Slow-drifting workshop dust as a single Points draw call. */
-function DustPoints({
-  palette,
-  count,
-  radius,
-}: {
-  palette: SupportersPalette;
-  count: number;
-  radius: number;
-}) {
-  const ref = useRef<Group>(null);
-  const geometry = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const a = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
-      const b = Math.abs(Math.sin(i * 78.233) * 43758.5453) % 1;
-      const c = Math.abs(Math.sin(i * 37.719) * 43758.5453) % 1;
-      positions[i * 3] = (a - 0.5) * radius * 2.4;
-      positions[i * 3 + 1] = b * radius * 0.9;
-      positions[i * 3 + 2] = (c - 0.5) * radius * 2;
-    }
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new BufferAttribute(positions, 3));
-    return geo;
-  }, [count, radius]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-
-  useFrame((state) => {
-    if (ref.current) ref.current.rotation.y = state.clock.elapsedTime * 0.012;
-  });
-
-  return (
-    <group ref={ref}>
-      <points geometry={geometry}>
-        <pointsMaterial
-          color={palette.dust}
-          size={0.05}
-          transparent
-          opacity={0.5}
-          sizeAttenuation
-          depthWrite={false}
-        />
-      </points>
-    </group>
   );
 }

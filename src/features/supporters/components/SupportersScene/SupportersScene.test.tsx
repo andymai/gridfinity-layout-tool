@@ -15,7 +15,7 @@ vi.mock('../../data/meshes', () => ({
   PLATE_CELL_MESH_URL: 'plate-cell.glb',
   MESH_META: {
     binHeight: 0.6,
-    labelTab: { x0: -0.43, x1: 0.43, z0: 0.18, z1: 0.43, y: 0.48 },
+    labelTab: { x0: -0.43, x1: 0.43, z0: -0.43, z1: -0.18, y: 0.48 },
     plateHeight: 0.11,
   },
 }));

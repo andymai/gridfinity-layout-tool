@@ -1,97 +1,77 @@
+import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
+import type { UserSettings } from '@/core/store/settings.types';
+
 /**
- * Bespoke workshop palette for the standalone supporters experience.
- *
- * Deliberately independent of the shared preview `THREE_COLORS` — this is a
- * self-contained "experience" scene, not the product preview. Art direction:
- * dark = evening workshop (tungsten key light over a dim bench), light =
- * daylit workbench (warm paper neutrals, soft sun). Bins render in a curated
- * matte-PLA filament mix so the plate reads like a real enthusiast's drawer.
+ * App-matched palette for the standalone supporters experience: scene
+ * backgrounds come from the shared `THREE_COLORS` tokens, bins and plate use
+ * the app's default preview plastic (#d4d8dc, same as the designer previews),
+ * and the accent mirrors the user's chosen app accent (themes.css
+ * `--color-primary`, per theme). Keep the accent hexes in lockstep with
+ * `src/shell/styles/themes.css`.
  */
 
+export type SupportersAccent = UserSettings['accentColor'];
+
+/** App default preview plastic — bins, plate, and designer previews alike. */
+const PREVIEW_PLASTIC = '#d4d8dc';
+
+const ACCENT_HEX: Record<'dark' | 'light', Record<SupportersAccent, string>> = {
+  dark: {
+    amber: '#f59e0b',
+    rose: '#f43f5e',
+    fuchsia: '#d946ef',
+    emerald: '#10b981',
+    sky: '#0ea5e9',
+    violet: '#7c3aed',
+  },
+  light: {
+    amber: '#b45309',
+    rose: '#e11d48',
+    fuchsia: '#c026d3',
+    emerald: '#059669',
+    sky: '#0284c7',
+    violet: '#7c3aed',
+  },
+};
+
 export interface SupportersPalette {
-  /** Scene background + fog color. */
+  /** Scene background + fog color (THREE_COLORS canvasBg). */
   background: string;
   fog: string;
-  /** The baseplate tiles. */
+  /** Baseplate tiles + supporter bins — the app-default preview plastic. */
   plate: string;
-  /**
-   * Matte-PLA filament colors for supporter bins, assigned deterministically
-   * per bin. Tuned per theme so they hold up under the theme's lighting.
-   */
-  filament: string[];
-  /** Printed label tape on the tab + its ink (independent of filament). */
+  bin: string;
+  /** Printed label tape on the tab + its ink (physical, theme-invariant). */
   tape: string;
   tapeInk: string;
-  /** Amber Ko-fi accent (hero count, glow, ghost bin). */
+  /** The user's app accent (hero count, ghost bin, focus glow). */
   accent: string;
-  /** Ghost "your spot" bin tint. */
   ghost: string;
-  /** Lights. */
+  /** Lights — neutral key, cool fill, clean product-shot look. */
   keyLight: string;
   fillLight: string;
   rimLight: string;
   ambient: string;
-  /** Ambient dust motes. */
-  dust: string;
 }
 
-const DARK: SupportersPalette = {
-  background: '#0d0a08',
-  fog: '#0d0a08',
-  plate: '#242220',
-  filament: [
-    '#c96f42', // terracotta
-    '#4e8a7c', // teal
-    '#c9a13b', // mustard
-    '#7d8c5f', // sage
-    '#5d7ba1', // dusty blue
-    '#a35555', // brick
-    '#d8cfc0', // bone white
-    '#6d635c', // warm gray
-  ],
-  tape: '#efe8da',
-  tapeInk: '#292420',
-  accent: '#f6a93b',
-  ghost: '#f6a93b',
-  keyLight: '#ffd9a0',
-  fillLight: '#4a5a78',
-  rimLight: '#f6a93b',
-  ambient: '#3a3028',
-  dust: '#f6d9a8',
-};
-
-const LIGHT: SupportersPalette = {
-  background: '#f4efe6',
-  fog: '#f4efe6',
-  plate: '#b9b2a4',
-  filament: [
-    '#d97e4e', // terracotta
-    '#4f9687', // teal
-    '#d9ae3f', // mustard
-    '#8a9a68', // sage
-    '#6787b1', // dusty blue
-    '#b25f5f', // brick
-    '#fbf6ec', // bone white
-    '#7e746c', // warm gray
-  ],
-  tape: '#fffdf6',
-  tapeInk: '#3a342e',
-  accent: '#d97f14',
-  ghost: '#d97f14',
-  keyLight: '#fff6e6',
-  fillLight: '#cdd8ea',
-  rimLight: '#e08a1e',
-  ambient: '#ded7c8',
-  dust: '#c9a96b',
-};
-
-export function getSupportersPalette(theme: 'light' | 'dark'): SupportersPalette {
-  return theme === 'light' ? LIGHT : DARK;
-}
-
-/** Deterministic filament pick so a bin keeps its color across re-renders. */
-export function filamentColorFor(palette: SupportersPalette, id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  return palette.filament[Math.abs(hash) % palette.filament.length];
+export function getSupportersPalette(
+  theme: 'light' | 'dark',
+  accent: SupportersAccent
+): SupportersPalette {
+  const three = THREE_COLORS[theme];
+  const accentHex = ACCENT_HEX[theme][accent];
+  return {
+    background: three.canvasBg,
+    fog: three.canvasBg,
+    plate: PREVIEW_PLASTIC,
+    bin: PREVIEW_PLASTIC,
+    tape: '#f8f9fa',
+    tapeInk: '#2b2f33',
+    accent: accentHex,
+    ghost: accentHex,
+    keyLight: '#ffffff',
+    fillLight: theme === 'dark' ? '#b9c4d8' : '#dfe6f0',
+    rimLight: theme === 'dark' ? '#dfe6ee' : '#ffffff',
+    ambient: theme === 'dark' ? THREE_COLORS.dark.floorPlane : THREE_COLORS.light.floorPlane,
+  };
 }

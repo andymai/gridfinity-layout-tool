@@ -1,5 +1,6 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { useSettingsStore } from '@/core/store';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -121,9 +122,10 @@ export function SupportersPage() {
   const reducedMotion = usePrefersReducedMotion();
   const { navigateHome } = useSupportersRouting();
 
+  const accent = useSettingsStore((state) => state.settings.accentColor);
   const bins = useMemo(() => buildSupporterBins(), []);
   const total = getSupporterCount();
-  const palette = useMemo(() => getSupportersPalette(theme), [theme]);
+  const palette = useMemo(() => getSupportersPalette(theme, accent), [theme, accent]);
   const count = useCountUp(total, !reducedMotion);
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -155,7 +157,7 @@ export function SupportersPage() {
   return (
     <main
       className="relative h-screen w-screen overflow-hidden"
-      style={{ background: palette.background, color: theme === 'dark' ? '#f4f1ea' : '#1b1b1b' }}
+      style={{ background: palette.background, color: theme === 'dark' ? '#ffffff' : '#1c1b18' }}
     >
       <Canvas
         className="absolute inset-0"
@@ -169,8 +171,8 @@ export function SupportersPage() {
           <SupportersScene
             bins={bins}
             theme={theme}
+            accent={accent}
             reducedMotion={reducedMotion}
-            quality={isMobile ? 'low' : 'high'}
             focusedId={focusedId}
             onSelect={setFocusedId}
             onGhostClick={handleGhostClick}
@@ -188,33 +190,6 @@ export function SupportersPage() {
           opacity: theme === 'dark' ? 0.9 : 0.85,
         }}
       />
-      {/* Film grain */}
-      <svg
-        className="pointer-events-none fixed inset-0 z-10 h-full w-full opacity-[0.05] mix-blend-soft-light"
-        aria-hidden="true"
-      >
-        <filter id="supporters-grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves="2"
-            stitchTiles="stitch"
-          />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#supporters-grain)" />
-      </svg>
-      {/* Vignette */}
-      <div
-        className="pointer-events-none fixed inset-0 z-10"
-        aria-hidden="true"
-        style={{
-          background:
-            theme === 'dark'
-              ? 'radial-gradient(125% 105% at 50% 38%, transparent 50%, rgba(16,9,4,0.68) 100%)'
-              : 'radial-gradient(125% 105% at 50% 38%, transparent 58%, rgba(74,56,28,0.2) 100%)',
-        }}
-      />
-
       {/* Back control */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-5">
         <Button
