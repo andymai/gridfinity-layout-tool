@@ -91,7 +91,11 @@ function BinParameterPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-scroll scrollbar-thin">
+      {/* `relative` makes this the containing block for `sr-only` (position:absolute)
+          toggle inputs inside; without it their CB is the ICB, so their static
+          position deep in the scroll area extends the document and lets the whole
+          page scroll into blank space below the panel. */}
+      <div className="relative flex-1 overflow-y-scroll scrollbar-thin">
         {/* Shape group */}
         <StickyGroupHeader
           title={t('binDesigner.group.shape')}
