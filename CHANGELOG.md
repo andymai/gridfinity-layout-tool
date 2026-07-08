@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.228.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.0...gridfinity-layout-tool-v4.228.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **supporters:** fail bake loudly on empty mesh or edge data ([#2496](https://github.com/andymai/gridfinity-layout-tool/issues/2496)) ([48f42a5](https://github.com/andymai/gridfinity-layout-tool/commit/48f42a5fcbf00e18f25363b33eb4600b3c4887d9))
+
 ## [4.228.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.227.0...gridfinity-layout-tool-v4.228.0) (2026-07-08)
 
 
