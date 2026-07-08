@@ -1,0 +1,19 @@
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_8d0cfff02cc0ba::t_a483971ce9b356 94-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "96c360afd10daa2ce5c2757f4d360444b9904c25",
+  "prompts": {},
+  "sessions": {
+    "s_8d0cfff02cc0ba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc9ec029-00a4-4221-9200-72543a3f1499",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
