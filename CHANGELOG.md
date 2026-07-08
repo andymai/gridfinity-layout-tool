@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.228.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.227.0...gridfinity-layout-tool-v4.228.0) (2026-07-08)
+
+
+### Features
+
+* **supporters:** draw real BREP edge lines, drop auto-rotate and ghost bin ([#2494](https://github.com/andymai/gridfinity-layout-tool/issues/2494)) ([a2435a6](https://github.com/andymai/gridfinity-layout-tool/commit/a2435a674e1cb9474c98de6e2a70f8ade78033c7))
+
 ## [4.227.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.226.1...gridfinity-layout-tool-v4.227.0) (2026-07-08)
 
 
