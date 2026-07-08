@@ -21,8 +21,6 @@ export interface BaseplateLayout {
   positions: SocketPosition[];
   /** Every socket tile on the plate (occupied or not), for instancing. */
   sockets: { x: number; z: number }[];
-  /** The empty front-row socket reserved for the ghost "your spot" bin. */
-  ghost: { x: number; z: number };
 }
 
 /**
@@ -60,12 +58,6 @@ export function computeBaseplateLayout(count: number): BaseplateLayout {
     }
   }
 
-  // Front margin row (toward the camera), right of center — always empty.
-  const ghost = {
-    x: socketX(Math.max(0, plateColumns - 2)),
-    z: socketZ(plateRows - 1),
-  };
-
   return {
     columns,
     rows,
@@ -75,7 +67,6 @@ export function computeBaseplateLayout(count: number): BaseplateLayout {
     depth: plateRows,
     positions,
     sockets,
-    ghost,
   };
 }
 

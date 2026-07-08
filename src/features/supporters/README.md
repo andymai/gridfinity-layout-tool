@@ -12,17 +12,20 @@ every bin is equal, order shuffled per load.
 - `data/supporters.json` — backfilled display names + `anonymousCount`. **Names only; never store emails or amounts.**
 - `data/meshes/*.glb` + `data/meshMeta.json` — Draco GLBs of the real 1×1×3
   label-tab bin and 1×1 baseplate tile, baked by `scripts/gen-supporters-meshes.ts`
-  from the production OCCT generators (scene units: Y-up, 1 unit = 42mm, bottom
-  at Y=0; the bin is baked with a front tab and spun 180° because the
-  generator's mirrored back-tab tessellates with inverted shelf normals).
-  `meshMeta.json` records the label-tab rectangle measured from the
-  `LABEL_TAB` face group so name tapes land exactly on the shelf. **Re-run the
-  script instead of editing these by hand.**
+  from the production OCCT generators at preview tolerance (scene units: Y-up,
+  1 unit = 42mm, bottom at Y=0; the bin is baked with a front tab and spun 180°
+  because the generator's mirrored back-tab tessellates with inverted shelf
+  normals). Each GLB carries a second LINES primitive with the real BREP edge
+  overlay (Douglas-Peucker-simplified — Draco can't compress lines), so bins
+  get the same black edge lines as the in-app previews. `meshMeta.json` records
+  the label-tab rectangle measured from the `LABEL_TAB` face group so name
+  tapes land exactly on the shelf. **Re-run the script instead of editing these
+  by hand.**
 - `data/meshes.ts` — resolves the GLBs to bundled hashed URLs (`import.meta.glob` + `?url`).
 - `utils/supportersData.ts` — `buildSupporterBins(rng?)` (shuffled bins), `getSupporterCount()`.
 - `utils/supportersLayout.ts` — pure layout math: bin seats on exact 42mm pitch,
-  a one-socket empty margin ring, the reserved front ghost socket, and
-  `computeCameraFrame()` (aspect-aware auto-framing that scales with supporter count).
+  a one-socket empty margin ring, and `computeCameraFrame()` (aspect-aware
+  auto-framing that scales with supporter count).
 - `utils/labelText.ts` — pure name word-wrap/truncation (unit-tested; feeds the tab texture).
 - `scene/palette.ts` — app-matched palette: `THREE_COLORS` backgrounds, uniform
   #d4d8dc bins/plate, and per-theme accent hexes mirroring
@@ -31,12 +34,13 @@ every bin is equal, order shuffled per load.
 - `scene/labelTexture.ts` — renders a name as a printed label-tape strip
   (`CanvasTexture`, **system font**, no font file, CSP-safe) for the tab shelf.
 - `components/SupportersScene/` — the R3F scene: all bins as ONE `InstancedMesh`,
-  instanced socket tiles, per-bin label-tape planes that mirror instance
-  transforms each frame, constrained `OrbitControls` with idle auto-drift, intro
-  dolly, magnetic cursor bins, the clickable ghost bin, and baked shadow.
+  instanced socket tiles, per-bin label-tape planes and edge overlays that
+  mirror instance transforms each frame, one merged `LineSegments` for all
+  plate-tile edges, constrained `OrbitControls` (drag-orbit only, no idle
+  auto-rotate), intro dolly, magnetic cursor bins, and baked shadow.
 - `components/SupportersPage/` — DOM orchestrator: `<Canvas>`, hero count-up,
-  CTA + celebration burst, grain/vignette, reduced-motion + mobile gating, and
-  the accessible fallback list.
+  CTA + celebration burst, reduced-motion + mobile gating, and the accessible
+  fallback list.
 
 ## Gotchas
 
@@ -59,11 +63,10 @@ every bin is equal, order shuffled per load.
 - **Disposal:** imperatively-created textures (tab tapes, the shadow blob) are
   disposed on unmount — follow that pattern for any new
   texture/geometry. `useGLTF` geometries are cached by drei; do not dispose them.
-- Anonymous supporters get the same filament-mix bins with a localized
-  "Anonymous" tape — equal, not visually second-class.
-- The translucent ghost bin on the front margin row is a second Ko-fi door:
-  clicking it fires `kofi_clicked` with `source: 'supporters_page_ghost_bin'`;
-  the DOM CTA uses `source: 'supporters_page'`.
+- Anonymous supporters get the same bins with a localized "Anonymous" tape —
+  equal, not visually second-class.
+- The only Ko-fi door is the DOM CTA (`kofi_clicked`,
+  `source: 'supporters_page'`).
 - After any generator change that should be reflected here, re-bake:
   `pnpm run gen:supporters-meshes`.
 

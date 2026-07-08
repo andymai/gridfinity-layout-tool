@@ -2,18 +2,21 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import {
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
   Euler,
+  LineBasicMaterial,
   MathUtils,
   Matrix4,
-  Mesh,
   Plane,
   Quaternion,
   SRGBColorSpace,
   Vector3,
-  type BufferGeometry,
   type Group,
   type InstancedMesh,
+  type LineSegments,
+  type Mesh,
   type MeshStandardMaterial,
 } from 'three';
 import type { SupporterBin } from '../../utils/supportersData';
@@ -39,25 +42,36 @@ const SEAT_DEPTH = MESH_META.plateHeight * 0.82;
 interface SceneProps {
   bins: SupporterBin[];
   theme: 'light' | 'dark';
-  /** The user's app accent setting — drives hero glow, ghost bin, focus. */
+  /** The user's app accent setting — drives hero glow and focus highlight. */
   accent: SupportersAccent;
   reducedMotion: boolean;
   focusedId: string | null;
   onSelect: (id: string) => void;
-  onGhostClick: () => void;
   /** Localized text printed on anonymous supporters' label tabs. */
   anonymousLabel: string;
 }
 
-/** First mesh geometry inside a loaded GLB scene (our baked assets hold one). */
-function extractGeometry(scene: Group): BufferGeometry {
-  const meshes: Mesh[] = [];
+interface BakedGeometry {
+  solid: BufferGeometry;
+  /** BREP edge overlay (LINES primitive) — null on assets baked without one. */
+  edges: BufferGeometry | null;
+}
+
+/** Triangle mesh + optional edge-line geometry from a baked GLB scene. */
+function extractGeometry(scene: Group): BakedGeometry {
+  const solids: BufferGeometry[] = [];
+  const lines: BufferGeometry[] = [];
   scene.traverse((obj) => {
-    if (obj instanceof Mesh) meshes.push(obj);
+    // three's own type discriminators — instanceof narrows generics to `any`.
+    if ((obj as Partial<LineSegments>).isLineSegments) {
+      lines.push((obj as LineSegments).geometry);
+    } else if ((obj as Partial<Mesh>).isMesh) {
+      solids.push((obj as Mesh).geometry);
+    }
   });
-  const geometry = meshes[0]?.geometry;
-  if (!geometry) throw new Error('Baked supporters GLB contains no mesh');
-  return geometry;
+  const solid = solids.at(0);
+  if (!solid) throw new Error('Baked supporters GLB contains no mesh');
+  return { solid, edges: lines.at(0) ?? null };
 }
 
 export function SupportersScene({
@@ -67,7 +81,6 @@ export function SupportersScene({
   reducedMotion,
   focusedId,
   onSelect,
-  onGhostClick,
   anonymousLabel,
 }: SceneProps) {
   const binGltf = useGLTF(BIN_MESH_URL, true);
@@ -101,8 +114,6 @@ export function SupportersScene({
         enablePan={false}
         enableDamping={!reducedMotion}
         dampingFactor={0.08}
-        autoRotate={introDone && !reducedMotion}
-        autoRotateSpeed={0.35}
         minDistance={frame.distance * 0.45}
         maxDistance={frame.distance * 2}
         minPolarAngle={0.3}
@@ -123,14 +134,6 @@ export function SupportersScene({
         focusedId={focusedId}
         onSelect={onSelect}
         anonymousLabel={anonymousLabel}
-      />
-      <GhostBin
-        geometry={binGeometry}
-        x={layout.ghost.x}
-        z={layout.ghost.z}
-        palette={palette}
-        reducedMotion={reducedMotion}
-        onClick={onGhostClick}
       />
 
       <ShadowBlob
@@ -227,13 +230,17 @@ const tmpQuaternion = new Quaternion();
 const tmpScale = new Vector3();
 const tmpEuler = new Euler();
 
-/** The real socketed baseplate: one baked 42mm tile instanced per socket. */
+/**
+ * The real socketed baseplate: one baked 42mm tile instanced per socket, plus
+ * a single merged LineSegments carrying every tile's BREP edge overlay (the
+ * sockets never move, so pre-translating the lines beats per-tile draw calls).
+ */
 function PlateInstances({
   geometry,
   layout,
   palette,
 }: {
-  geometry: BufferGeometry;
+  geometry: BakedGeometry;
   layout: BaseplateLayout;
   palette: SupportersPalette;
 }) {
@@ -250,14 +257,46 @@ function PlateInstances({
     mesh.computeBoundingSphere();
   }, [layout]);
 
+  const edgesGeometry = useMemo(() => {
+    const cell = geometry.edges?.getAttribute('position');
+    if (!cell) return null;
+    const merged = new Float32Array(cell.count * 3 * layout.sockets.length);
+    layout.sockets.forEach((socket, i) => {
+      for (let v = 0; v < cell.count; v++) {
+        const o = (i * cell.count + v) * 3;
+        merged[o] = cell.getX(v) + socket.x;
+        merged[o + 1] = cell.getY(v) - MESH_META.plateHeight;
+        merged[o + 2] = cell.getZ(v) + socket.z;
+      }
+    });
+    const merged3 = new BufferGeometry();
+    merged3.setAttribute('position', new BufferAttribute(merged, 3));
+    return merged3;
+  }, [geometry.edges, layout]);
+  useEffect(() => () => edgesGeometry?.dispose(), [edgesGeometry]);
+
   return (
-    <instancedMesh
-      ref={ref}
-      args={[geometry, undefined, layout.sockets.length]}
-      key={layout.sockets.length}
-    >
-      <meshStandardMaterial color={palette.plate} roughness={0.78} metalness={0.05} />
-    </instancedMesh>
+    <>
+      <instancedMesh
+        ref={ref}
+        args={[geometry.solid, undefined, layout.sockets.length]}
+        key={layout.sockets.length}
+      >
+        <meshStandardMaterial
+          color={palette.plate}
+          roughness={0.78}
+          metalness={0.05}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
+      </instancedMesh>
+      {edgesGeometry && (
+        <lineSegments geometry={edgesGeometry} renderOrder={1}>
+          <lineBasicMaterial color={palette.edge} />
+        </lineSegments>
+      )}
+    </>
   );
 }
 
@@ -270,7 +309,7 @@ interface BinSeat {
 }
 
 interface BinInstancesProps {
-  geometry: BufferGeometry;
+  geometry: BakedGeometry;
   bins: SupporterBin[];
   layout: BaseplateLayout;
   palette: SupportersPalette;
@@ -283,9 +322,9 @@ interface BinInstancesProps {
 
 /**
  * All supporter bins as ONE InstancedMesh (single draw call however large the
- * plate grows), with per-instance filament colors. Label tapes are lightweight
- * planes inside per-bin groups whose transforms mirror the instance matrices
- * every frame, so tapes ride their bins through entrance/hover/focus motion.
+ * plate grows). Label tapes and the BREP edge overlay are lightweight children
+ * of per-bin groups whose transforms mirror the instance matrices every frame,
+ * so they ride their bins through entrance/hover/focus motion.
  */
 function BinInstances({
   geometry,
@@ -396,6 +435,13 @@ function BinInstances({
     mesh.instanceMatrix.needsUpdate = true;
   });
 
+  // One material shared by every bin's edge overlay (disposed on change).
+  const edgeMaterial = useMemo(
+    () => new LineBasicMaterial({ color: palette.edge }),
+    [palette.edge]
+  );
+  useEffect(() => () => edgeMaterial.dispose(), [edgeMaterial]);
+
   const tab = MESH_META.labelTab;
   const tabCenter: [number, number, number] = [
     (tab.x0 + tab.x1) / 2,
@@ -407,7 +453,7 @@ function BinInstances({
     <group>
       <instancedMesh
         ref={meshRef}
-        args={[geometry, undefined, seats.length]}
+        args={[geometry.solid, undefined, seats.length]}
         key={seats.length}
         frustumCulled={false}
         onPointerDown={(e) => {
@@ -419,12 +465,18 @@ function BinInstances({
         onPointerOver={() => (document.body.style.cursor = 'pointer')}
         onPointerOut={() => (document.body.style.cursor = '')}
       >
-        <meshStandardMaterial color={palette.bin} roughness={0.55} metalness={0.04} />
+        <meshStandardMaterial
+          color={palette.bin}
+          roughness={0.55}
+          metalness={0.04}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </instancedMesh>
 
       {seats.map((seat, i) => {
         const texture = seat.bin.name ? namedTextures.get(seat.bin.id) : anonTexture;
-        if (!texture) return null;
         return (
           <group
             key={seat.bin.id}
@@ -433,95 +485,31 @@ function BinInstances({
             }}
             position={[seat.x, -SEAT_DEPTH, seat.z]}
           >
-            <mesh position={tabCenter} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[tab.x1 - tab.x0, tab.z1 - tab.z0]} />
-              <meshStandardMaterial
-                ref={(m) => {
-                  labelMats.current[i] = m;
-                }}
-                map={texture}
-                transparent
-                roughness={0.6}
-                emissive={palette.accent}
-                emissiveMap={texture}
-                emissiveIntensity={0}
-                polygonOffset
-                polygonOffsetFactor={-1}
-              />
-            </mesh>
+            {geometry.edges && (
+              <lineSegments geometry={geometry.edges} material={edgeMaterial} renderOrder={1} />
+            )}
+            {texture && (
+              <mesh position={tabCenter} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[tab.x1 - tab.x0, tab.z1 - tab.z0]} />
+                <meshStandardMaterial
+                  ref={(m) => {
+                    labelMats.current[i] = m;
+                  }}
+                  map={texture}
+                  transparent
+                  roughness={0.6}
+                  emissive={palette.accent}
+                  emissiveMap={texture}
+                  emissiveIntensity={0}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                />
+              </mesh>
+            )}
           </group>
         );
       })}
     </group>
-  );
-}
-
-/**
- * The empty-socket invitation: a translucent accent bin with a blank tab,
- * softly pulsing. Clicking it is the same as the Ko-fi CTA.
- */
-function GhostBin({
-  geometry,
-  x,
-  z,
-  palette,
-  reducedMotion,
-  onClick,
-}: {
-  geometry: BufferGeometry;
-  x: number;
-  z: number;
-  palette: SupportersPalette;
-  reducedMotion: boolean;
-  onClick: () => void;
-}) {
-  const matRef = useRef<MeshStandardMaterial>(null);
-  const hovered = useRef(false);
-  const meshRef = useRef<Mesh>(null);
-
-  useFrame((state) => {
-    const mat = matRef.current;
-    const mesh = meshRef.current;
-    if (!mat || !mesh) return;
-    const pulse = reducedMotion ? 0.2 : 0.2 + Math.sin(state.clock.elapsedTime * 1.6) * 0.08;
-    mat.emissiveIntensity = MathUtils.lerp(
-      mat.emissiveIntensity,
-      hovered.current ? 0.55 : pulse,
-      reducedMotion ? 1 : 0.12
-    );
-    const targetY = hovered.current && !reducedMotion ? -SEAT_DEPTH + 0.18 : -SEAT_DEPTH;
-    mesh.position.y = MathUtils.lerp(mesh.position.y, targetY, reducedMotion ? 1 : 0.14);
-  });
-
-  return (
-    <mesh
-      ref={meshRef}
-      geometry={geometry}
-      position={[x, -SEAT_DEPTH, z]}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      onPointerOver={() => {
-        hovered.current = true;
-        document.body.style.cursor = 'pointer';
-      }}
-      onPointerOut={() => {
-        hovered.current = false;
-        document.body.style.cursor = '';
-      }}
-    >
-      <meshStandardMaterial
-        ref={matRef}
-        color={palette.ghost}
-        emissive={palette.ghost}
-        emissiveIntensity={0.2}
-        transparent
-        opacity={0.32}
-        roughness={0.4}
-        depthWrite={false}
-      />
-    </mesh>
   );
 }
 

@@ -45,27 +45,16 @@ describe('computeBaseplateLayout', () => {
     }
   });
 
-  it('reserves the ghost socket on the empty front margin row', () => {
-    const layout = computeBaseplateLayout(25);
-    const frontZ = (layout.plateRows - 1) / 2;
-    expect(layout.ghost.z).toBeCloseTo(frontZ, 9);
-    const clash = layout.positions.some(
-      (p) => Math.abs(p.x - layout.ghost.x) < 1e-9 && Math.abs(p.z - layout.ghost.z) < 1e-9
-    );
-    expect(clash).toBe(false);
-  });
-
   it('handles a single supporter', () => {
     const layout = computeBaseplateLayout(1);
     expect(layout.columns).toBe(1);
     expect(layout.positions[0]).toMatchObject({ x: 0, z: 0 });
   });
 
-  it('handles zero supporters with a plate and a ghost socket', () => {
+  it('handles zero supporters with a non-empty plate', () => {
     const layout = computeBaseplateLayout(0);
     expect(layout.positions).toHaveLength(0);
     expect(layout.sockets.length).toBeGreaterThan(0);
-    expect(Number.isFinite(layout.ghost.x)).toBe(true);
   });
 
   it('grows the plate as supporters grow', () => {

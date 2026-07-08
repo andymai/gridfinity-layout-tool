@@ -148,12 +148,6 @@ export function SupportersPage() {
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
-  // The translucent "your spot" bin in the scene is a second door to Ko-fi.
-  const handleGhostClick = useCallback(() => {
-    trackEvent('kofi_clicked', { source: 'supporters_page_ghost_bin' });
-    window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
-  }, []);
-
   return (
     <main
       className="relative h-screen w-screen overflow-hidden"
@@ -175,7 +169,6 @@ export function SupportersPage() {
             reducedMotion={reducedMotion}
             focusedId={focusedId}
             onSelect={setFocusedId}
-            onGhostClick={handleGhostClick}
             anonymousLabel={t('supporters.anonymous')}
           />
         </Suspense>

@@ -44,9 +44,10 @@ export interface SupportersPalette {
   /** Printed label tape on the tab + its ink (physical, theme-invariant). */
   tape: string;
   tapeInk: string;
-  /** The user's app accent (hero count, ghost bin, focus glow). */
+  /** The user's app accent (hero count, focus glow). */
   accent: string;
-  ghost: string;
+  /** BREP edge overlay — black in both themes, same as the app previews. */
+  edge: string;
   /** Lights — neutral key, cool fill, clean product-shot look. */
   keyLight: string;
   fillLight: string;
@@ -68,7 +69,7 @@ export function getSupportersPalette(
     tape: '#f8f9fa',
     tapeInk: '#2b2f33',
     accent: accentHex,
-    ghost: accentHex,
+    edge: '#000000',
     keyLight: '#ffffff',
     fillLight: theme === 'dark' ? '#b9c4d8' : '#dfe6f0',
     rimLight: theme === 'dark' ? '#dfe6ee' : '#ffffff',
