@@ -36,9 +36,12 @@ describe('SupportersPage', () => {
     expect(screen.getByText(supportersData.named[0])).toBeInTheDocument();
   });
 
-  it('renders anonymous supporters as equal bins', () => {
+  it('renders one bin per anonymous supporter', () => {
     render(<SupportersPage />);
-    expect(screen.getAllByText('supporters.anonymous').length).toBeGreaterThan(0);
+    // Assert against the data so the test stays correct if anonymousCount changes (incl. 0).
+    expect(screen.queryAllByText('supporters.anonymous')).toHaveLength(
+      supportersData.anonymousCount
+    );
   });
 
   it('never renders an email address', () => {

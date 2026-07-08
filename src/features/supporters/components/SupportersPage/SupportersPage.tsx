@@ -88,7 +88,7 @@ export function SupportersPage() {
                 title={isAnonymous ? t('supporters.anonymous') : (bin.name ?? undefined)}
                 className={[
                   'group relative flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border p-2 text-center',
-                  'transition-transform duration-150 ease-out will-change-transform',
+                  'transition-transform duration-150 ease-out',
                   'motion-safe:animate-fade-in motion-safe:hover:-translate-y-1',
                   isAnonymous
                     ? 'border-stroke-subtle bg-surface text-content-disabled'

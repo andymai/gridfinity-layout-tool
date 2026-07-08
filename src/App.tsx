@@ -539,7 +539,9 @@ export default function App() {
           ? t('seo.designer.title')
           : isBaseplateRoute
             ? t('seo.baseplate.title')
-            : t('seo.h1')}
+            : isSupportersRoute
+              ? t('seo.supporters.title')
+              : t('seo.h1')}
       </h1>
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
