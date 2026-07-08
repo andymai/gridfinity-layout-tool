@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.226.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.225.0...gridfinity-layout-tool-v4.226.0) (2026-07-08)
+
+
+### Features
+
+* **supporters:** redesign page with real generated Gridfinity bin renders ([#2488](https://github.com/andymai/gridfinity-layout-tool/issues/2488)) ([3c22911](https://github.com/andymai/gridfinity-layout-tool/commit/3c229116029b09946b9240e64edf5abdcf134848))
+
 ## [4.225.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.224.2...gridfinity-layout-tool-v4.225.0) (2026-07-08)
 
 
