@@ -241,7 +241,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       <label
         htmlFor={id}
         className={cn(
-          'inline-flex items-center gap-2',
+          // `relative` contains the sr-only (position:absolute) input below so it
+          // can't resolve its containing block to the ICB and leak its static
+          // position into the document scroll height inside static scroll containers.
+          'relative inline-flex items-center gap-2',
           disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
           className
         )}

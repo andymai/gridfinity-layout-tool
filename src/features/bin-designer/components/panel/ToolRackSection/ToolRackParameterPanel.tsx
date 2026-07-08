@@ -73,7 +73,11 @@ export function ToolRackParameterPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-scroll scrollbar-thin">
+      {/* `relative` keeps this scroll container a positioning context so `sr-only`
+          (position:absolute) descendants — e.g. Switch/Checkbox inputs — can't
+          leak their static position into the document scroll height. See the
+          matching note in ParameterPanel. */}
+      <div className="relative flex-1 overflow-y-scroll scrollbar-thin">
         <div className="flex items-center justify-between px-4 py-3 border-b border-stroke-subtle">
           <Button variant="ghost" onClick={() => newDesign('bin')} className="text-sm">
             {`← ${t('binDesigner.newBin')}`}
