@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.226.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.226.0...gridfinity-layout-tool-v4.226.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop parameter panel from scrolling the whole page ([#2490](https://github.com/andymai/gridfinity-layout-tool/issues/2490)) ([c4150a2](https://github.com/andymai/gridfinity-layout-tool/commit/c4150a2d82479a01bce9058daf7a40b06affbad0))
+
 ## [4.226.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.225.0...gridfinity-layout-tool-v4.226.0) (2026-07-08)
 
 
