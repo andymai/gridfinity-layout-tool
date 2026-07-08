@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.223.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.222.0...gridfinity-layout-tool-v4.223.0) (2026-07-08)
+
+
+### Features
+
+* **supporters:** add supporters thank-you page ([#2476](https://github.com/andymai/gridfinity-layout-tool/issues/2476)) ([0c940bf](https://github.com/andymai/gridfinity-layout-tool/commit/0c940bf4d4e832a6ee5ae5406f53fdb311ccb7a7))
+
 ## [4.222.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.221.0...gridfinity-layout-tool-v4.222.0) (2026-07-07)
 
 
