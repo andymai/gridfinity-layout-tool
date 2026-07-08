@@ -209,6 +209,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
           'noopener,noreferrer'
         ),
       'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
+      'view-supporters': () => dispatchWindowEvent('view-supporters'),
       'open-bin-examples': () => {
         useBinExampleGalleryStore.getState().open();
       },

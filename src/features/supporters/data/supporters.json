@@ -1,0 +1,25 @@
+{
+  "_comment": "Backfilled from the Ko-fi supporter export on 2026-07-07. Display names only — NEVER store emails or amounts here. New supporters can be appended to `named`, or `anonymousCount` incremented for people who gave no name. Order is randomized at render, so append anywhere.",
+  "named": [
+    "unpossible",
+    "Jürgen",
+    "PummeledLeftNut",
+    "Kalle",
+    "haliphax",
+    "DoogieWall",
+    "FilmCan",
+    "Spob",
+    "Gas Daddy",
+    "resch.cloud",
+    "TB",
+    "Beate Streif",
+    "MelvinMASV",
+    "Brad",
+    "Max",
+    "John",
+    "Diego Silva",
+    "Oxo",
+    "Martin"
+  ],
+  "anonymousCount": 13
+}

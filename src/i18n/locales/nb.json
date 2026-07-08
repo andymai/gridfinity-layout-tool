@@ -2572,5 +2572,19 @@
   "labs.noFeaturesAvailable": "Ingen eksperimentelle funksjoner tilgjengelig akkurat nå.",
   "layouts.sharedEmptyHint": "Når noen deler et layout med deg, vises det her automatisk. Åpne en delt lenke for å komme i gang.",
   "layouts.openSharedFailed": "Kunne ikke åpne layout. Prøv igjen.",
-  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=...",
+  "seo.supporters.title": "Støttespillere — Gridfinity Layout Tool",
+  "seo.supporters.description": "Menneskene hvis støtte holder Gridfinity Layout Tool gratis, reklamefritt og uavhengig.",
+  "supporters.back": "Tilbake til appen",
+  "supporters.heading": "Menneskene som holder dette gratis",
+  "supporters.subheading": "Dette verktøyet er gratis, reklamefritt og personvernvennlig — takket være menneskene under. Hver bin er noen som bidro for å holde det i gang.",
+  "supporters.anonymous": "Anonym",
+  "supporters.listAria": "{count} støttespillere",
+  "supporters.cta.text": "Vil du ha din bin på denne baseplaten?",
+  "supporters.cta.button": "Støtt på Ko-fi",
+  "supporters.optOut": "Vil du heller ikke stå oppført, eller endre navnet ditt?",
+  "supporters.optOutLink": "Gi meg beskjed.",
+  "sidebar.supporters": "Støttespillere",
+  "loading.supporters": "Laster støttespillere",
+  "commandPalette.viewSupporters": "Vis støttespillere"
 }

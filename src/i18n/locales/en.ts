@@ -30,6 +30,21 @@ const en: Record<string, string> = {
   'seo.baseplate.title': 'Gridfinity Baseplate Maker — Free Custom Baseplate Builder',
   'seo.baseplate.description':
     'Make custom Gridfinity baseplates in your browser: any grid size, magnet holes, edge padding, and automatic print-bed splitting. Export STL, STEP, or 3MF. Free, no account.',
+  'seo.supporters.title': 'Supporters — Gridfinity Layout Tool',
+  'seo.supporters.description':
+    'The people whose support keeps the Gridfinity Layout Tool free, ad-free, and independent.',
+
+  // Supporters page
+  'supporters.back': 'Back to the app',
+  'supporters.heading': 'The people who keep this free',
+  'supporters.subheading':
+    'This tool is free, ad-free, and privacy-focused — thanks to the people below. Every bin is someone who chipped in to keep it running.',
+  'supporters.anonymous': 'Anonymous',
+  'supporters.listAria': '{count} supporters',
+  'supporters.cta.text': 'Want your bin on this baseplate?',
+  'supporters.cta.button': 'Support on Ko-fi',
+  'supporters.optOut': 'Prefer not to be listed, or want your name changed?',
+  'supporters.optOutLink': 'Let me know.',
 
   // Common / Shared
   'common.save': 'Save',
@@ -251,6 +266,7 @@ const en: Record<string, string> = {
   'sidebar.appName': 'Gridfinity Layout Tool',
   'sidebar.version': 'v{version}',
   'sidebar.privacy': 'Privacy',
+  'sidebar.supporters': 'Supporters',
   'sidebar.terms': 'Terms',
   'sidebar.toggleHalfBinMode': 'Toggle half-grid mode',
   'sidebar.toolBy': 'Tool by',
@@ -2482,6 +2498,7 @@ const en: Record<string, string> = {
   'loading.collaboration': 'Loading collaboration',
   'loading.designer': 'Loading designer',
   'loading.baseplate': 'Loading baseplate generator',
+  'loading.supporters': 'Loading supporters',
   'loading.mobileLayout': 'Loading mobile layout',
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',
@@ -2610,6 +2627,7 @@ const en: Record<string, string> = {
   'commandPalette.newLayout': 'New Layout',
   'commandPalette.duplicateLayout': 'Duplicate Layout',
   'commandPalette.switchToDesigner': 'Switch to Bins',
+  'commandPalette.viewSupporters': 'View supporters',
   'commandPalette.openBinExamples': 'Browse Bin Examples',
 
   // Tools commands (extended)

@@ -2572,5 +2572,19 @@
   "labs.noFeaturesAvailable": "Momenteel zijn er geen experimentele functies beschikbaar.",
   "layouts.sharedEmptyHint": "Wanneer iemand een layout met je deelt, verschijnt het hier automatisch. Open een gedeelde link om te beginnen.",
   "layouts.openSharedFailed": "Kan layout niet openen. Probeer het opnieuw.",
-  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=...",
+  "seo.supporters.title": "Ondersteuners — Gridfinity Layout Tool",
+  "seo.supporters.description": "De mensen wiens steun de Gridfinity Layout Tool gratis, advertentievrij en onafhankelijk houdt.",
+  "supporters.back": "Terug naar de app",
+  "supporters.heading": "De mensen die dit gratis houden",
+  "supporters.subheading": "Deze tool is gratis, advertentievrij en privacyvriendelijk — dankzij de mensen hieronder. Elke bin is iemand die bijdroeg om het draaiende te houden.",
+  "supporters.anonymous": "Anoniem",
+  "supporters.listAria": "{count} ondersteuners",
+  "supporters.cta.text": "Wil jij je bin op deze baseplate?",
+  "supporters.cta.button": "Steun op Ko-fi",
+  "supporters.optOut": "Liever niet vermeld, of wil je je naam wijzigen?",
+  "supporters.optOutLink": "Laat het me weten.",
+  "sidebar.supporters": "Ondersteuners",
+  "loading.supporters": "Ondersteuners laden",
+  "commandPalette.viewSupporters": "Ondersteuners bekijken"
 }

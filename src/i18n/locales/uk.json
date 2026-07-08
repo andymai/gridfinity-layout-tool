@@ -2572,5 +2572,19 @@
   "labs.noFeaturesAvailable": "Наразі немає доступних експериментальних функцій.",
   "layouts.sharedEmptyHint": "Коли хтось поділиться розкладкою з вами, вона автоматично з’явиться тут. Відкрийте спільне посилання, щоб почати.",
   "layouts.openSharedFailed": "Не вдалося відкрити розкладку. Спробуйте ще раз.",
-  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=...",
+  "seo.supporters.title": "Прихильники — Gridfinity Layout Tool",
+  "seo.supporters.description": "Люди, чия підтримка тримає Gridfinity Layout Tool безкоштовним, без реклами та незалежним.",
+  "supporters.back": "Назад до застосунку",
+  "supporters.heading": "Люди, які тримають це безкоштовним",
+  "supporters.subheading": "Цей інструмент безкоштовний, без реклами й орієнтований на приватність — завдяки людям нижче. Кожен bin — це хтось, хто долучився, щоб він працював далі.",
+  "supporters.anonymous": "Анонім",
+  "supporters.listAria": "{count} прихильників",
+  "supporters.cta.text": "Хочете свій bin на цій baseplate?",
+  "supporters.cta.button": "Підтримати на Ko-fi",
+  "supporters.optOut": "Не хочете бути у списку або хочете змінити ім'я?",
+  "supporters.optOutLink": "Дайте знати.",
+  "sidebar.supporters": "Прихильники",
+  "loading.supporters": "Завантаження прихильників",
+  "commandPalette.viewSupporters": "Переглянути прихильників"
 }

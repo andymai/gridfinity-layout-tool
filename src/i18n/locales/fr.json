@@ -2572,5 +2572,19 @@
   "labs.noFeaturesAvailable": "Aucune fonctionnalité expérimentale disponible pour le moment.",
   "layouts.sharedEmptyHint": "Lorsque quelqu’un partage un layout avec vous, il apparaît ici automatiquement. Ouvrez un lien partagé pour commencer.",
   "layouts.openSharedFailed": "Impossible d'ouvrir le layout. Veuillez réessayer.",
-  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=..."
+  "layouts.import.placeholder": "{\"version\": \"1.0\", \"name\": \"My Layout\", ...} or https://...#share=...",
+  "seo.supporters.title": "Soutiens — Gridfinity Layout Tool",
+  "seo.supporters.description": "Les personnes dont le soutien garde le Gridfinity Layout Tool gratuit, sans publicité et indépendant.",
+  "supporters.back": "Retour à l'app",
+  "supporters.heading": "Les personnes qui gardent cet outil gratuit",
+  "supporters.subheading": "Cet outil est gratuit, sans publicité et respectueux de la vie privée — grâce aux personnes ci-dessous. Chaque bin représente quelqu'un qui a contribué pour le faire vivre.",
+  "supporters.anonymous": "Anonyme",
+  "supporters.listAria": "{count} soutiens",
+  "supporters.cta.text": "Vous voulez votre bin sur cette baseplate ?",
+  "supporters.cta.button": "Soutenir sur Ko-fi",
+  "supporters.optOut": "Vous préférez ne pas figurer ici, ou changer votre nom ?",
+  "supporters.optOutLink": "Dites-le-moi.",
+  "sidebar.supporters": "Soutiens",
+  "loading.supporters": "Chargement des soutiens",
+  "commandPalette.viewSupporters": "Voir les soutiens"
 }
