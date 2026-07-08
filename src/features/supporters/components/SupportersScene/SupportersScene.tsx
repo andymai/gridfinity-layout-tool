@@ -26,6 +26,9 @@ import type { SupportersPalette } from '../../scene/palette';
 import { createTabLabelTexture } from '../../scene/labelTexture';
 import { BIN_MESH_URL, PLATE_CELL_MESH_URL, MESH_META } from '../../data/meshes';
 
+// Self-hosted Draco decoder (public/draco/) — CSP forbids the default CDN.
+useGLTF.setDecoderPath('/draco/');
+
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeOutBack = (t: number) => {
   const c = 1.70158;
@@ -68,8 +71,6 @@ export function SupportersScene({
   onGhostClick,
   anonymousLabel,
 }: SceneProps) {
-  // Self-hosted Draco decoder (public/draco/) — CSP forbids the default CDN.
-  useGLTF.setDecoderPath('/draco/');
   const binGltf = useGLTF(BIN_MESH_URL, true);
   const plateGltf = useGLTF(PLATE_CELL_MESH_URL, true);
   const binGeometry = useMemo(() => extractGeometry(binGltf.scene), [binGltf]);
@@ -332,12 +333,14 @@ function BinInstances({
     }
     return map;
   }, [bins, palette.tape, palette.tapeInk]);
+  // Separate disposal effects: a locale change replaces only anonTexture, and
+  // a shared cleanup would also dispose the still-in-use named textures.
+  useEffect(() => () => anonTexture?.dispose(), [anonTexture]);
   useEffect(
     () => () => {
-      anonTexture?.dispose();
       for (const texture of namedTextures.values()) texture?.dispose();
     },
-    [anonTexture, namedTextures]
+    [namedTextures]
   );
 
   useEffect(() => {

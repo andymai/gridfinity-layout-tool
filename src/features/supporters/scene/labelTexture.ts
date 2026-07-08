@@ -4,9 +4,10 @@ import { fitLabelLines } from '../utils/labelText';
 const FONT_STACK =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-// Texture aspect matches the label-tab shelf rectangle (wide strip).
+// Texture aspect matches the label-tab shelf rectangle measured in
+// meshMeta.json (0.864 × 0.252 units ≈ 3.42:1) so the tape isn't stretched.
 const TAB_TEXTURE_WIDTH = 512;
-const TAB_TEXTURE_HEIGHT = 160;
+const TAB_TEXTURE_HEIGHT = 150;
 
 /**
  * Render a supporter name as a printed label-tape strip for the bin's label
@@ -33,13 +34,18 @@ export function createTabLabelTexture(
   const radius = 16;
   ctx.fillStyle = tape;
   ctx.beginPath();
-  ctx.roundRect(
-    inset,
-    inset,
-    TAB_TEXTURE_WIDTH - inset * 2,
-    TAB_TEXTURE_HEIGHT - inset * 2,
-    radius
-  );
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(
+      inset,
+      inset,
+      TAB_TEXTURE_WIDTH - inset * 2,
+      TAB_TEXTURE_HEIGHT - inset * 2,
+      radius
+    );
+  } else {
+    // Older Safari lacks roundRect; square corners beat a thrown label.
+    ctx.rect(inset, inset, TAB_TEXTURE_WIDTH - inset * 2, TAB_TEXTURE_HEIGHT - inset * 2);
+  }
   ctx.fill();
 
   const lines = fitLabelLines(name, 14, 2);
