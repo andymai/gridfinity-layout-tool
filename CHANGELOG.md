@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.227.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.226.1...gridfinity-layout-tool-v4.227.0) (2026-07-08)
+
+
+### Features
+
+* **supporters:** restyle scene to match the app and fix tab orientation ([#2492](https://github.com/andymai/gridfinity-layout-tool/issues/2492)) ([ed9ce9c](https://github.com/andymai/gridfinity-layout-tool/commit/ed9ce9c758383e5f6707d12ecde3eed0e8b6429b))
+
 ## [4.226.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.226.0...gridfinity-layout-tool-v4.226.1) (2026-07-08)
 
 
