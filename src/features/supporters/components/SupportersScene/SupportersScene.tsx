@@ -486,7 +486,15 @@ function BinInstances({
             position={[seat.x, -SEAT_DEPTH, seat.z]}
           >
             {geometry.edges && (
-              <lineSegments geometry={geometry.edges} material={edgeMaterial} renderOrder={1} />
+              // dispose={null}: geometry is drei-cached, material is shared
+              // across bins and disposed by the effect above — R3F must not
+              // auto-dispose either when a bin unmounts.
+              <lineSegments
+                geometry={geometry.edges}
+                material={edgeMaterial}
+                renderOrder={1}
+                dispose={null}
+              />
             )}
             {texture && (
               <mesh position={tabCenter} rotation={[-Math.PI / 2, 0, 0]}>
