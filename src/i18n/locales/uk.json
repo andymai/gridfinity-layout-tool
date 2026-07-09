@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Ширина ручки",
   "binDesigner.heightUnit": "Одиниця висоти",
   "binDesigner.heightUnitTooltip": "Розмір однієї одиниці висоти в мм (стандартний Gridfinity = 7mm)",
+  "binDesigner.extraWallHeight": "Додаткова висота стінки",
+  "binDesigner.extraWallHeightTooltip": "Піднімає зовнішні стінки та край для штабелювання вище за висоту контейнера, залишаючи внутрішню частину незмінною. Додає простір, щоб високий вміст був закритий, а контейнер, поставлений зверху, спирався на вищий край.",
   "binDesigner.importAndLoad": "Імпортувати та завантажити",
   "binDesigner.importDesignSuccess": "Імпортовано та завантажено «{name}»",
   "binDesigner.insertsDisableLightweight": "Не можна поєднати підлогові вставки з полегшеною підлогою",

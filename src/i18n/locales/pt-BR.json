@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Largura da alça",
   "binDesigner.heightUnit": "Unidade de altura",
   "binDesigner.heightUnitTooltip": "Tamanho de uma unidade de altura em mm (Gridfinity padrão = 7mm)",
+  "binDesigner.extraWallHeight": "Altura de parede extra",
+  "binDesigner.extraWallHeightTooltip": "Eleva as paredes externas e a borda de empilhamento acima da altura do compartimento, mantendo o interior como está. Adiciona espaço para que conteúdos altos fiquem contidos e um compartimento empilhado se apoie na borda mais alta.",
   "binDesigner.importAndLoad": "Importar e carregar",
   "binDesigner.importDesignSuccess": "Importado e carregado \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Não é possível combinar insertos de piso com um piso leve",

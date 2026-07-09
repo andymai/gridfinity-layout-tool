@@ -11,6 +11,7 @@ export function useDimensionsSection() {
     width,
     depth,
     height,
+    extraWallHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     baseHalfSockets,
@@ -26,6 +27,7 @@ export function useDimensionsSection() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      extraWallHeightMm: s.params.extraWallHeightMm ?? 0,
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
@@ -79,6 +81,18 @@ export function useDimensionsSection() {
     [height, setParam]
   );
 
+  const handleExtraWallHeightStep = useCallback(
+    (delta: number) => {
+      const next = extraWallHeightMm + delta * DESIGNER_CONSTRAINTS.EXTRA_WALL_HEIGHT_STEP;
+      const clamped = Math.min(
+        DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT,
+        Math.max(DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT, next)
+      );
+      setParam('extraWallHeightMm', clamped);
+    },
+    [extraWallHeightMm, setParam]
+  );
+
   const handleSwapDimensions = useCallback(() => {
     // Transpose the grid: the half-foot edge preference must travel with its
     // axis, else swapping a 2.5×1 'left' bin would silently move the half foot.
@@ -112,6 +126,7 @@ export function useDimensionsSection() {
       width,
       depth,
       height,
+      extraWallHeightMm,
       widthMm,
       depthMm,
       heightMm,
@@ -131,6 +146,7 @@ export function useDimensionsSection() {
       handleWidthStep,
       handleDepthStep,
       handleHeightStep,
+      handleExtraWallHeightStep,
       handleSwapDimensions,
       toggleHalfGridMode,
       handleFractionalEdgeChange,

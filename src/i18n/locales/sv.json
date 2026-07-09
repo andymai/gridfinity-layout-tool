@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Handtagsbredd",
   "binDesigner.heightUnit": "Höjdenhet",
   "binDesigner.heightUnitTooltip": "Storleken på en höjdenhet i mm (standard-Gridfinity = 7mm)",
+  "binDesigner.extraWallHeight": "Extra vägghöjd",
+  "binDesigner.extraWallHeightTooltip": "Höjer ytterväggarna och staplingskanten över lådhöjden, medan insidan lämnas som den är. Ger extra höjd så att högt innehåll innesluts och en staplad låda vilar på den högre kanten.",
   "binDesigner.importAndLoad": "Importera och ladda",
   "binDesigner.importDesignSuccess": "Importerade och laddade \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Kan inte kombinera golvinsatser med lätt golv",

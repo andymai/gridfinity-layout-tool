@@ -163,6 +163,24 @@ describe('migrateParams', () => {
     expect(result.fractionalEdgeY).toBe('end');
   });
 
+  it('defaults the exterior-wall collar to 0 for legacy designs', () => {
+    const result = migrateParams({ width: 2, depth: 2, height: 3 });
+    expect(result.extraWallHeightMm).toBe(0);
+  });
+
+  it('preserves a valid exterior-wall collar', () => {
+    const result = migrateParams({ extraWallHeightMm: 12 });
+    expect(result.extraWallHeightMm).toBe(12);
+  });
+
+  it('clamps an out-of-range or non-numeric collar', () => {
+    expect(migrateParams({ extraWallHeightMm: -5 } as any).extraWallHeightMm).toBe(0);
+    expect(migrateParams({ extraWallHeightMm: 9999 } as any).extraWallHeightMm).toBe(
+      DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT
+    );
+    expect(migrateParams({ extraWallHeightMm: 'tall' } as any).extraWallHeightMm).toBe(0);
+  });
+
   it('preserves an explicit fractional edge choice', () => {
     const result = migrateParams({ width: 2.5, fractionalEdgeX: 'start' } as any);
     expect(result.fractionalEdgeX).toBe('start');

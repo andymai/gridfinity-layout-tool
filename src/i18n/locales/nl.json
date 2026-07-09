@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Handvatbreedte",
   "binDesigner.heightUnit": "Hoogte-eenheid",
   "binDesigner.heightUnitTooltip": "Grootte van één hoogte-eenheid in mm (standaard Gridfinity = 7mm)",
+  "binDesigner.extraWallHeight": "Extra wandhoogte",
+  "binDesigner.extraWallHeightTooltip": "Verhoogt de buitenwanden en stapelrand boven de binhoogte, terwijl de binnenkant onveranderd blijft. Voegt ruimte toe zodat hoge inhoud wordt omsloten en een gestapelde bin op de hogere rand rust.",
   "binDesigner.importAndLoad": "Importeren en laden",
   "binDesigner.importDesignSuccess": "Geïmporteerd en geladen: \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Kan vloerinzetstukken niet combineren met een lichtgewicht bodem",

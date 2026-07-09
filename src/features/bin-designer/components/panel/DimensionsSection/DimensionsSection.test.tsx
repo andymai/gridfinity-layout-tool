@@ -19,6 +19,15 @@ describe('DimensionsSection', () => {
     expect(screen.getByLabelText('Height')).toBeInTheDocument();
   });
 
+  it('renders the exterior-wall collar control with its mm readout', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: 8 },
+    });
+    render(<DimensionsSection />);
+    expect(screen.getByLabelText('Extra wall height')).toBeInTheDocument();
+    expect(screen.getByText('8 mm')).toBeInTheDocument();
+  });
+
   it('hides the half-unit edge controls for whole-unit bins', () => {
     render(<DimensionsSection />);
     expect(screen.queryByText('Half-unit edge position')).not.toBeInTheDocument();

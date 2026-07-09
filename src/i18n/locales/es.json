@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Ancho del asa",
   "binDesigner.heightUnit": "Unidad de altura",
   "binDesigner.heightUnitTooltip": "Tamaño de una unidad de altura en mm (Gridfinity estándar = 7mm)",
+  "binDesigner.extraWallHeight": "Altura de pared adicional",
+  "binDesigner.extraWallHeightTooltip": "Eleva las paredes exteriores y el borde apilable por encima de la altura del contenedor, dejando el interior igual. Añade espacio para que el contenido alto quede encerrado y un contenedor apilado descanse sobre el borde más alto.",
   "binDesigner.importAndLoad": "Importar y cargar",
   "binDesigner.importDesignSuccess": "Importado y cargado \"{name}\"",
   "binDesigner.insertsDisableLightweight": "No se pueden combinar insertos de suelo con un suelo ligero",

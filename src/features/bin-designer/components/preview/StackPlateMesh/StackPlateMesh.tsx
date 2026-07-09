@@ -52,8 +52,8 @@ export function StackPlateMesh({
 
   const { stackPlateMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, lid } = s.params;
-      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
+      const { height, heightUnitMm, base, lid, extraWallHeightMm } = s.params;
+      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip, extraWallHeightMm);
       // Match the lid's mated frame including the extra-height cavity (issue
       // #2482) so the glue-on plate rides on the taller lid's floor, not the
       // default-height one — mirrors LidMesh and the export lift.

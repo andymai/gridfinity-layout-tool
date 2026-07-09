@@ -593,6 +593,23 @@ export interface BinParams {
    * Ignored for custom-shape (`cellMask`) bins in v1.
    */
   readonly overhang?: OverhangConfig;
+  /**
+   * Extra exterior wall height (mm) added ABOVE the nominal bin height. The
+   * outer perimeter walls and the stacking lip rise by this amount while the
+   * interior floor, cutouts, compartment dividers, scoops, and label tabs stay
+   * anchored at the original top plane — a "collar" of dead headroom that fully
+   * encloses a tall item (e.g. one half-sunk in a cutout) and lets a stacked
+   * bin rest on the raised rim without crushing the contents below (issue
+   * #2500). The bin-body mirror of {@link LidConfig.extraHeightMm}.
+   *
+   * Omitted or `0` reproduces the standard bin exactly (byte-identical
+   * geometry). Clamped to
+   * [{@link DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT},
+   * {@link DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}] at generation. Applies
+   * to rectangular and custom-shape (`cellMask`) bins alike, since the stacking
+   * lip already lofts from the footprint polygon.
+   */
+  readonly extraWallHeightMm?: number;
 }
 
 // Insert Types

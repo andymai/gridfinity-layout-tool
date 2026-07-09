@@ -2168,6 +2168,9 @@ const en: Record<string, string> = {
   'binDesigner.lightweight': 'Lightweight floor',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.heightUnitTooltip': 'Size of one height unit in mm (standard Gridfinity = 7mm)',
+  'binDesigner.extraWallHeight': 'Extra wall height',
+  'binDesigner.extraWallHeightTooltip':
+    'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim.',
   'binDesigner.load': 'Load',
   'binDesigner.loading': 'Loading',
   'binDesigner.loadingSharedDesign': 'Loading shared design',

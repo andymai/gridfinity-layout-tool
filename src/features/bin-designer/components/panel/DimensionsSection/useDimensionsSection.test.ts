@@ -192,6 +192,48 @@ describe('useDimensionsSection', () => {
     expect(params.fractionalEdgeY).toBe('start');
   });
 
+  it('exposes the exterior-wall collar, defaulting a legacy-absent value to 0', () => {
+    useDesignerStore.setState({
+      // Simulate a legacy design that predates the field.
+      params: { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: undefined },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+    expect(result.current.state.extraWallHeightMm).toBe(0);
+  });
+
+  it('handleExtraWallHeightStep increments the collar', () => {
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleExtraWallHeightStep(5);
+    });
+    expect(useDesignerStore.getState().params.extraWallHeightMm).toBe(5);
+  });
+
+  it('handleExtraWallHeightStep clamps the collar at the 100mm max', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: 100 },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleExtraWallHeightStep(1);
+    });
+    expect(useDesignerStore.getState().params.extraWallHeightMm).toBe(100);
+  });
+
+  it('handleExtraWallHeightStep clamps the collar at the 0mm min', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, extraWallHeightMm: 2 },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleExtraWallHeightStep(-999);
+    });
+    expect(useDesignerStore.getState().params.extraWallHeightMm).toBe(0);
+  });
+
   it('handleFractionalEdgeChange writes the chosen edge to the store', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 2.5 },

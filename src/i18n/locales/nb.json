@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Håndtaksbredde",
   "binDesigner.heightUnit": "Høydeenhet",
   "binDesigner.heightUnitTooltip": "Størrelsen på én høydeenhet i mm (standard Gridfinity = 7mm)",
+  "binDesigner.extraWallHeight": "Ekstra vegghøyde",
+  "binDesigner.extraWallHeightTooltip": "Hever ytterveggene og stableleppen over binhøyden, mens innsiden blir som den er. Gir ekstra klaring så høyt innhold lukkes inne og en stablet bin hviler på den høyere kanten.",
   "binDesigner.importAndLoad": "Importer og last",
   "binDesigner.importDesignSuccess": "Importert og lastet \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Kan ikke kombinere gulvinnsatser med lett gulv",

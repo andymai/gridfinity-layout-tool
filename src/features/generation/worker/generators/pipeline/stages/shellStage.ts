@@ -103,7 +103,15 @@ export const shellStage: PipelineStage = {
       checkCancelled(signal);
       onProgress?.('shell', 0.3);
 
-      const cutoutTopOffset = dim.solid ? params.cutoutConfig.topOffset : 0;
+      // Collar (issue #2500): the outer box + lip extrude to `boxWallHeight`
+      // (nominal wall height + collar) while every interior feature stays
+      // anchored to nominal `dim.wallHeight`. For solid/cutout bins the collar
+      // is folded into `cutoutTopOffset` too, so the solid fill (the plane
+      // cutouts carve from) tops out at the ORIGINAL plane and the collar is a
+      // pure walled recess above it. Non-solid bins keep offset 0, so their
+      // hollow cavity simply extends up into the collar as extra headroom.
+      const boxWallHeight = dim.wallHeight + dim.collarHeight;
+      const cutoutTopOffset = dim.solid ? params.cutoutConfig.topOffset + dim.collarHeight : 0;
       // Per-compartment cavity drawings only for the multi-cavity cut path
       // (rectangular bin + non-solid + rectangular comps). shellKey already
       // discriminates on the comp grid so `undefined` is safe otherwise.
@@ -136,7 +144,7 @@ export const shellStage: PipelineStage = {
             const integrated = buildBinBoxWithLip(
               params.width,
               params.depth,
-              dim.wallHeight,
+              boxWallHeight,
               params.wallThickness,
               pitch,
               params.cellMask,
@@ -155,7 +163,7 @@ export const shellStage: PipelineStage = {
         const binBody = buildBinBox(
           params.width,
           params.depth,
-          dim.wallHeight,
+          boxWallHeight,
           params.wallThickness,
           dim.solid,
           cutoutTopOffset,
@@ -170,16 +178,9 @@ export const shellStage: PipelineStage = {
         if (dim.hasLip) {
           try {
             const lipBase = scope.register(
-              buildTopShape(
-                params.width,
-                params.depth,
-                true,
-                pitch,
-                params.cellMask,
-                dim.overhang
-              )
+              buildTopShape(params.width, params.depth, true, pitch, params.cellMask, dim.overhang)
             );
-            const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
+            const top = scope.register(translate(lipBase, [0, 0, boxWallHeight - LIP_OVERLAP]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
             scope.register(binBody); // consumed by fuse
             return unwrap(

@@ -34,6 +34,11 @@ export const CONSTRAINTS = {
   MAX_LABEL_TAB_INSET: 100,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
+  // Exterior-wall collar (issue #2500) — mirrors client
+  // MIN/MAX_EXTRA_WALL_HEIGHT so a crafted share can't smuggle a runaway
+  // wall height into the BREP worker.
+  MIN_EXTRA_WALL_HEIGHT: 0,
+  MAX_EXTRA_WALL_HEIGHT: 100,
   MAX_INSERTS: 20,
   MAX_INSERT_DIMENSION: 200,
   MAX_INSERT_DEPTH: 50,

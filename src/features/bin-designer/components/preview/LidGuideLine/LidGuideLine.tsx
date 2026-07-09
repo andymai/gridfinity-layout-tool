@@ -31,7 +31,12 @@ export function LidGuideLine({ lidOffsetMm, color = '#9ca3af' }: LidGuideLinePro
   // Bin lip top in world Z. The lid's mating-cavity opening sits at
   // (lipTopZ + lidOffsetMm) when the lid is lifted by lidOffsetMm.
   const lipTopZ = useDesignerStore((s) =>
-    binLipTopWorldZ(s.params.height, s.params.heightUnitMm, s.params.base.stackingLip)
+    binLipTopWorldZ(
+      s.params.height,
+      s.params.heightUnitMm,
+      s.params.base.stackingLip,
+      s.params.extraWallHeightMm
+    )
   );
   const lidBottomWorldZ = lipTopZ + lidOffsetMm;
 

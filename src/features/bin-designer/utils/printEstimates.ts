@@ -155,6 +155,16 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 
+  // Exterior-wall collar (issue #2500): a walled ring raised above the nominal
+  // body — perimeter wall material only, no floor/interior. Ring cross-section
+  // (outer area − inner area) × collar height.
+  const collarMm = Math.max(0, params.extraWallHeightMm ?? 0);
+  if (collarMm > 0) {
+    const innerW = Math.max(0, outerW - 2 * wallThickness);
+    const innerD = Math.max(0, outerD - 2 * wallThickness);
+    volume += (outerW * outerD - innerW * innerD) * collarMm;
+  }
+
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }

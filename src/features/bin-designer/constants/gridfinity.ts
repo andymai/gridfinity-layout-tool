@@ -111,6 +111,12 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_OVERHANG: 0, // mm
   MAX_OVERHANG: 21, // mm (half a 42mm grid unit — beyond this, add a grid cell)
   OVERHANG_STEP: 0.5, // mm
+  // Extra exterior wall height — raises the perimeter walls + stacking lip
+  // above the nominal bin height (collar). Bounds mirror the lid's
+  // extraHeightMm so a bin-side collar and a taller lid stay symmetric.
+  MIN_EXTRA_WALL_HEIGHT: 0, // mm
+  MAX_EXTRA_WALL_HEIGHT: 100, // mm — capped so the upright print stays within a typical printer's Z
+  EXTRA_WALL_HEIGHT_STEP: 1, // mm
   // Handle holes
   MIN_HANDLE_WIDTH: 10, // % of wall span
   MAX_HANDLE_WIDTH: 100, // %

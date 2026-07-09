@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "ハンドルの幅",
   "binDesigner.heightUnit": "高さユニット",
   "binDesigner.heightUnitTooltip": "高さユニット1つのサイズ（mm）（標準Gridfinity = 7mm）",
+  "binDesigner.extraWallHeight": "追加の壁の高さ",
+  "binDesigner.extraWallHeightTooltip": "内部はそのままに、外壁とスタッキングリップを箱の高さより上に伸ばします。高さのある中身を囲い込み、積み重ねた箱が高くなった縁の上に載るようにします。",
   "binDesigner.importAndLoad": "インポート&読み込み",
   "binDesigner.importDesignSuccess": "「{name}」をインポートして読み込みました",
   "binDesigner.insertsDisableLightweight": "フロアインサートと軽量フロアは併用できません",

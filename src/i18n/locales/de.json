@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Griffbreite",
   "binDesigner.heightUnit": "Höheneinheit",
   "binDesigner.heightUnitTooltip": "Größe einer Höheneinheit in mm (Standard-Gridfinity = 7mm)",
+  "binDesigner.extraWallHeight": "Zusätzliche Wandhöhe",
+  "binDesigner.extraWallHeightTooltip": "Erhöht die Außenwände und den Stapelrand über die Behälterhöhe hinaus, während der Innenraum unverändert bleibt. Schafft Freiraum, sodass hoher Inhalt umschlossen wird und ein gestapelter Behälter auf dem höheren Rand aufliegt.",
   "binDesigner.importAndLoad": "Importieren und laden",
   "binDesigner.importDesignSuccess": "Importiert und geladen: \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Bodeneinsätze lassen sich nicht mit Leichtbau-Boden kombinieren",

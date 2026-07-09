@@ -385,6 +385,11 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.wallPattern.enabled) return false;
   if (params.lid.enabled) return false;
 
+  // Exterior-wall collar (issue #2500) raises the walls + lip above the
+  // nominal height; the direct-mesh builder models a fixed wall/lip Z, so a
+  // collared bin falls back to the exact BREP path that handles it.
+  if ((params.extraWallHeightMm ?? 0) > 0) return false;
+
   // Footprint / placement modifiers.
   if (isPartialMask(params.cellMask)) return false;
   if (params.splitConnectors?.enabled) return false;

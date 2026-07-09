@@ -283,5 +283,56 @@ describe('createInitialContext', () => {
       expect(ctx.dimensions.interiorHeight).toBe(16);
       expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
     });
+
+    it('routes compartments to the additive path when an exterior collar is present', () => {
+      // The collar builds the shell taller than the interior; the cut path would
+      // extend dividers to the raised rim, so a collar must force the additive
+      // (short divider) path so dividers stay at the nominal interior height.
+      const baked = createInitialContext(fourCompartments());
+      expect(baked.dimensions.compartmentsBakedIntoShell).toBe(true);
+
+      const withCollar = createInitialContext({
+        ...fourCompartments(),
+        extraWallHeightMm: 10,
+      });
+      expect(withCollar.dimensions.compartmentsBakedIntoShell).toBe(false);
+    });
+  });
+
+  describe('exterior-wall collar (extraWallHeightMm)', () => {
+    it('defaults to a zero collar and leaves wall/interior height nominal', () => {
+      const dim = createInitialContext(createTestParams()).dimensions;
+      expect(dim.collarHeight).toBe(0);
+      expect(dim.wallHeight).toBe(16); // 3u * 7 - 5 socket, unchanged
+    });
+
+    it('resolves collarHeight without inflating the nominal wall/interior height', () => {
+      // The whole point of the collar: features anchor to the ORIGINAL plane,
+      // so wallHeight / interiorHeight must NOT grow with the collar. Only
+      // shellStage adds it to the box + lip extrusion.
+      const baseline = createInitialContext(createTestParams()).dimensions;
+      const collared = createInitialContext(createTestParams({ extraWallHeightMm: 12 })).dimensions;
+      expect(collared.collarHeight).toBe(12);
+      expect(collared.wallHeight).toBe(baseline.wallHeight);
+      expect(collared.interiorHeight).toBe(baseline.interiorHeight);
+      expect(collared.totalHeight).toBe(baseline.totalHeight);
+    });
+
+    it('clamps a negative collar to zero', () => {
+      const dim = createInitialContext(createTestParams({ extraWallHeightMm: -5 })).dimensions;
+      expect(dim.collarHeight).toBe(0);
+    });
+
+    it('discriminates the shellKey by collar height, leaving collarless keys unchanged', () => {
+      const noCollar = createInitialContext(createTestParams()).dimensions;
+      const noCollarAgain = createInitialContext(createTestParams()).dimensions;
+      const collared = createInitialContext(createTestParams({ extraWallHeightMm: 8 })).dimensions;
+      // Collarless key is stable (no churn) and distinct from the collared key.
+      expect(noCollar.shellKey).toBe(noCollarAgain.shellKey);
+      expect(collared.shellKey).not.toBe(noCollar.shellKey);
+      // Appended segment only — collarless key carries no `collar` marker.
+      expect(noCollar.shellKey).not.toContain('collar');
+      expect(collared.shellKey).toContain('collar');
+    });
   });
 });

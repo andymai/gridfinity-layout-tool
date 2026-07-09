@@ -96,6 +96,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'gridUnitMm',
   'heightUnitMm',
   'wallThickness',
+  'extraWallHeightMm',
   // Style
   'style',
   // Sub-objects (deep-validated below)
@@ -553,6 +554,22 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     return validationError(
       'INVALID_PARAMS',
       `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`
+    );
+  }
+
+  // Exterior-wall collar (optional; absent = no collar).
+  if (
+    params.extraWallHeightMm !== undefined &&
+    (!isNumber(params.extraWallHeightMm) ||
+      !inRange(
+        params.extraWallHeightMm,
+        CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT,
+        CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT
+      ))
+  ) {
+    return validationError(
+      'INVALID_PARAMS',
+      `extraWallHeightMm must be ${CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT}-${CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}`
     );
   }
 

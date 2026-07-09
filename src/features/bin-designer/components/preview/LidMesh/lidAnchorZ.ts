@@ -72,16 +72,19 @@ export const PREVIEW_Z_OFFSET = 0.1;
  *
  * In the final mesh frame the wall top sits at `height * heightUnitMm`
  * (the pipeline's translate stage already shifted non-flat bins up by
- * SOCKET_HEIGHT). With the stacking lip the top face lands `LIP_HEIGHT
- * − LIP_OVERLAP` above; without it the lid mates with the bare wall.
- * `PREVIEW_Z_OFFSET` accounts for BinMesh's group offset.
+ * SOCKET_HEIGHT). An exterior-wall collar (`extraWallHeightMm`, issue #2500)
+ * raises the walls + lip by that amount, so it adds directly to the wall top.
+ * With the stacking lip the top face lands `LIP_HEIGHT − LIP_OVERLAP` above;
+ * without it the lid mates with the bare wall. `PREVIEW_Z_OFFSET` accounts for
+ * BinMesh's group offset.
  */
 export function binLipTopWorldZ(
   height: number,
   heightUnitMm: number,
-  hasStackingLip: boolean
+  hasStackingLip: boolean,
+  extraWallHeightMm: number = 0
 ): number {
-  const wallTop = height * heightUnitMm;
+  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm);
   const lipTopZ = hasStackingLip
     ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
     : wallTop;

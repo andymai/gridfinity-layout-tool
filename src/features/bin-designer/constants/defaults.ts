@@ -169,6 +169,22 @@ function migrateExtraHeightMm(raw: unknown): number {
   return Math.min(LID_EXTRA_HEIGHT_MAX_MM, Math.max(LID_EXTRA_HEIGHT_MIN_MM, raw));
 }
 
+/**
+ * Clamp a persisted top-level `extraWallHeightMm` (the exterior-wall collar)
+ * into its valid range. Non-numeric or legacy-absent values default to 0 (no
+ * collar); out-of-range values are clamped so a corrupt/hand-edited design
+ * can't feed a runaway wall height into the box + lip geometry.
+ */
+function migrateExtraWallHeightMm(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+    return 0;
+  }
+  return Math.min(
+    DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT,
+    Math.max(DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT, raw)
+  );
+}
+
 /** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
 const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot1: '#d4d8dc',
@@ -388,6 +404,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   lid: DEFAULT_LID_CONFIG,
   textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
   overhang: { left: 0, right: 0, front: 0, back: 0, feet: false },
+  extraWallHeightMm: 0,
 } as const;
 
 /** Default generation state */
@@ -643,6 +660,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       ...DEFAULT_TEXT_STYLE_DEFAULTS,
       ...((params as { textDefaults?: Partial<TextStyleDefaults> }).textDefaults ?? {}),
     },
+    // Clamp the exterior-wall collar so a corrupt design can't drive a runaway
+    // box/lip height. `...rest` carried the raw value through; this overrides it.
+    extraWallHeightMm: migrateExtraWallHeightMm(
+      (rest as Record<string, unknown>).extraWallHeightMm
+    ),
   };
 }
 

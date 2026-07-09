@@ -33,6 +33,15 @@ export interface BinDimensions {
   readonly gridUnitMmY: number;
   readonly wallHeight: number;
   readonly totalHeight: number;
+  /**
+   * Extra exterior wall height (mm) added ABOVE {@link wallHeight} — the
+   * "collar" from {@link BinParams.extraWallHeightMm}, clamped to >= 0. The
+   * outer box extrusion and stacking lip rise by this amount (`wallHeight +
+   * collarHeight`), while `wallHeight`/`interiorHeight` stay nominal so every
+   * interior feature (cutouts, dividers, scoops, label tabs) keeps its original
+   * plane. `0` when the bin has no collar. See `shellStage`.
+   */
+  readonly collarHeight: number;
   readonly isFlat: boolean;
   readonly halfSockets: boolean;
   /**

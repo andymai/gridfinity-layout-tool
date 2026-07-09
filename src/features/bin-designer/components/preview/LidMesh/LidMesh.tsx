@@ -66,8 +66,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, lid } = s.params;
-      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
+      const { height, heightUnitMm, base, lid, extraWallHeightMm } = s.params;
+      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip, extraWallHeightMm);
       // extraHeightMm deepens the cavity, raising the lid floor above the lip
       // so tall contents are enclosed; 0 = standard lid (issue #2482).
       const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, lid.extraHeightMm);

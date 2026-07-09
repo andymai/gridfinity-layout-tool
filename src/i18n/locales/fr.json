@@ -644,6 +644,8 @@
   "binDesigner.handles.widthAria": "Largeur de la poignée",
   "binDesigner.heightUnit": "Unité de hauteur",
   "binDesigner.heightUnitTooltip": "Taille d'une unité de hauteur en mm (Gridfinity standard = 7mm)",
+  "binDesigner.extraWallHeight": "Hauteur de paroi supplémentaire",
+  "binDesigner.extraWallHeightTooltip": "Surélève les parois extérieures et le rebord d'empilage au-dessus de la hauteur du bac, en laissant l'intérieur inchangé. Ajoute de la hauteur libre pour envelopper un contenu haut et faire reposer un bac empilé sur le rebord surélevé.",
   "binDesigner.importAndLoad": "Importer et charger",
   "binDesigner.importDesignSuccess": "Importé et chargé \"{name}\"",
   "binDesigner.insertsDisableLightweight": "Impossible de combiner des inserts de fond avec un fond allégé",

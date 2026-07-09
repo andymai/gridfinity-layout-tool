@@ -7,7 +7,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Checkbox, IconButton, Stepper } from '@/design-system';
+import { Checkbox, IconButton, Stepper, Tooltip } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -125,6 +125,33 @@ export function DimensionsSection() {
           size={stepperSize}
           fullWidth
           aria-label={t('common.height')}
+        />
+      </div>
+
+      {/* Extra wall height (collar): raises the exterior walls + stacking lip
+          above the nominal height while the interior stays put — extra headroom
+          that encloses tall contents and keeps a stacked bin off them (#2500). */}
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <Tooltip content={t('binDesigner.extraWallHeightTooltip')} placement="right">
+            <span className="text-xs text-content-tertiary">
+              {t('binDesigner.extraWallHeight')}
+            </span>
+          </Tooltip>
+          <span className="text-[11px] tabular-nums text-content-tertiary">
+            {state.extraWallHeightMm} mm
+          </span>
+        </div>
+        <Stepper
+          value={state.extraWallHeightMm}
+          onChange={(v) => handlers.setParam('extraWallHeightMm', v)}
+          onStep={handlers.handleExtraWallHeightStep}
+          min={DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT}
+          max={DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}
+          step={DESIGNER_CONSTRAINTS.EXTRA_WALL_HEIGHT_STEP}
+          size={stepperSize}
+          fullWidth
+          aria-label={t('binDesigner.extraWallHeight')}
         />
       </div>
 
