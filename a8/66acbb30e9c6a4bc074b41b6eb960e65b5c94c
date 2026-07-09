@@ -1,0 +1,19 @@
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.test.tsx
+  s_504cfd08bbb576::t_0e1b7cd2c2bf55 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a866acbb30e9c6a4bc074b41b6eb960e65b5c94c",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
