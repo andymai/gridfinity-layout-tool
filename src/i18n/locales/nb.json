@@ -1368,7 +1368,7 @@
   "grid.bin.ariaLabelLabeled": ", merket {label}",
   "grid.bin.ariaLabelCategory": ", kategori {category}",
   "grid.announce.movedTo": "Flyttet til {label} i kolonne {col}, rad {row}",
-  "grid.announce.binDimensions": "{width}×{depth} Bin",
+  "grid.announce.binDimensions": "{width} ganger {depth} Bin",
   "grid.collapse": "Skjul",
   "grid.collision": "Kolliderer med eksisterende bin",
   "grid.dragToAddRemoveColumns": "Dra for å legge til/fjerne kolonner",

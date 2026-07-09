@@ -1368,7 +1368,7 @@
   "grid.bin.ariaLabelLabeled": ", rotulado {label}",
   "grid.bin.ariaLabelCategory": ", categoria {category}",
   "grid.announce.movedTo": "Movido para {label} na coluna {col}, linha {row}",
-  "grid.announce.binDimensions": "Bin {width}×{depth}",
+  "grid.announce.binDimensions": "Bin {width} por {depth}",
   "grid.collapse": "Recolher",
   "grid.collision": "Colide com bin existente",
   "grid.dragToAddRemoveColumns": "Arraste para adicionar/remover colunas",

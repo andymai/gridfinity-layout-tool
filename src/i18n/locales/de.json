@@ -1368,7 +1368,7 @@
   "grid.bin.ariaLabelLabeled": ", beschriftet {label}",
   "grid.bin.ariaLabelCategory": ", Kategorie {category}",
   "grid.announce.movedTo": "Zu {label} in Spalte {col}, Zeile {row} bewegt",
-  "grid.announce.binDimensions": "{width}×{depth} Bin",
+  "grid.announce.binDimensions": "{width} mal {depth} Bin",
   "grid.collapse": "Einklappen",
   "grid.collision": "Kollidiert mit vorhandenem Bin",
   "grid.dragToAddRemoveColumns": "Ziehen zum Hinzufügen/Entfernen von Spalten",

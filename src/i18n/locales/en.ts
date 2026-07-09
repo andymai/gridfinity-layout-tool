@@ -1406,7 +1406,7 @@ const en: Record<string, string> = {
   'grid.bin.ariaLabelLabeled': ', labeled {label}',
   'grid.bin.ariaLabelCategory': ', category {category}',
   'grid.announce.movedTo': 'Moved to {label} at column {col}, row {row}',
-  'grid.announce.binDimensions': '{width}×{depth} bin',
+  'grid.announce.binDimensions': '{width} by {depth} bin',
 
   // 3D Preview
 

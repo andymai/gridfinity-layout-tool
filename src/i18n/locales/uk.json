@@ -1368,7 +1368,7 @@
   "grid.bin.ariaLabelLabeled": ", з міткою {label}",
   "grid.bin.ariaLabelCategory": ", категорія {category}",
   "grid.announce.movedTo": "Переміщено до {label}, стовпець {col}, рядок {row}",
-  "grid.announce.binDimensions": "Бін {width}×{depth}",
+  "grid.announce.binDimensions": "Бін {width} на {depth}",
   "grid.collapse": "Згорнути",
   "grid.collision": "Колізія з наявним біном",
   "grid.dragToAddRemoveColumns": "Перетягніть, щоб додати/видалити стовпці",

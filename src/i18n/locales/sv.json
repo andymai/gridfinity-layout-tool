@@ -1368,7 +1368,7 @@
   "grid.bin.ariaLabelLabeled": ", märkt {label}",
   "grid.bin.ariaLabelCategory": ", kategori {category}",
   "grid.announce.movedTo": "Flyttade till {label} vid kolumn {col}, rad {row}",
-  "grid.announce.binDimensions": "{width}×{depth} fack",
+  "grid.announce.binDimensions": "{width} gånger {depth} fack",
   "grid.collapse": "Komprimera",
   "grid.collision": "Krockar med befintligt fack",
   "grid.dragToAddRemoveColumns": "Dra för att lägga till/ta bort kolumner",
