@@ -44,10 +44,32 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // jsdom does not implement scrollIntoView, which cmdk (command palette) calls
-// on mount when a list item becomes active. Shim it so the open palette renders.
+// on mount when a list item becomes active. Shim it only when absent so a real
+// implementation (future jsdom, or another test) is never clobbered.
 beforeEach(() => {
-  HTMLElement.prototype.scrollIntoView = vi.fn();
+  if (typeof HTMLElement.prototype.scrollIntoView !== 'function') {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  }
 });
+
+// Critical axe rules — the single source of truth for every surface below.
+// Kept intentionally narrow so the gate doesn't retroactively fail on
+// pre-existing debt from rules we haven't remediated yet.
+const CRITICAL_RULES = {
+  'color-contrast': { enabled: true },
+  'button-name': { enabled: true },
+  'image-alt': { enabled: true },
+  label: { enabled: true },
+  'link-name': { enabled: true },
+} as const;
+
+async function expectNoCriticalViolations(container: HTMLElement, label: string) {
+  const results = await axe(container, { rules: CRITICAL_RULES });
+  if (results.violations.length > 0) {
+    console.warn(`${label} violations:`, JSON.stringify(results.violations, null, 2));
+  }
+  expect(results).toHaveNoViolations();
+}
 
 // Reset stores before each test
 beforeEach(() => {
@@ -82,36 +104,12 @@ beforeEach(() => {
 describe('Accessibility - Critical Issues', () => {
   it('Header has no critical accessibility violations', async () => {
     const { container } = render(<Header saveStatus="idle" />);
-    const results = await axe(container, {
-      rules: {
-        // Focus on critical issues
-        'color-contrast': { enabled: true },
-        'button-name': { enabled: true },
-        'image-alt': { enabled: true },
-        label: { enabled: true },
-        'link-name': { enabled: true },
-      },
-    });
-
-    // Log violations for debugging
-    if (results.violations.length > 0) {
-      console.warn('Header violations:', JSON.stringify(results.violations, null, 2));
-    }
-
-    expect(results).toHaveNoViolations();
+    await expectNoCriticalViolations(container, 'Header');
   }, 15_000);
 
   it('Sidebar has no critical accessibility violations', async () => {
     const { container } = render(<Sidebar />);
-    const results = await axe(container, {
-      rules: {
-        'color-contrast': { enabled: true },
-        'button-name': { enabled: true },
-        'image-alt': { enabled: true },
-        label: { enabled: true },
-        'link-name': { enabled: true },
-      },
-    });
+    const results = await axe(container, { rules: CRITICAL_RULES });
 
     // Layer rows intentionally nest interactive controls (rename span, height
     // steppers) inside a selectable container — accepted UX trade-off.
@@ -133,63 +131,18 @@ describe('Accessibility - Critical Issues', () => {
 
   it('RightPanel has no critical accessibility violations', async () => {
     const { container } = render(<RightPanel />);
-    const results = await axe(container, {
-      rules: {
-        'color-contrast': { enabled: true },
-        'button-name': { enabled: true },
-        'image-alt': { enabled: true },
-        label: { enabled: true },
-        'link-name': { enabled: true },
-      },
-    });
-
-    if (results.violations.length > 0) {
-      console.warn('RightPanel violations:', JSON.stringify(results.violations, null, 2));
-    }
-
-    expect(results).toHaveNoViolations();
+    await expectNoCriticalViolations(container, 'RightPanel');
   }, 15_000);
 
   it('Staging has no critical accessibility violations', async () => {
     const { container } = render(<Staging />);
-    const results = await axe(container, {
-      rules: {
-        'color-contrast': { enabled: true },
-        'button-name': { enabled: true },
-        'image-alt': { enabled: true },
-        label: { enabled: true },
-        'link-name': { enabled: true },
-      },
-    });
-
-    if (results.violations.length > 0) {
-      console.warn('Staging violations:', JSON.stringify(results.violations, null, 2));
-    }
-
-    expect(results).toHaveNoViolations();
+    await expectNoCriticalViolations(container, 'Staging');
   }, 15_000);
 });
 
 // Overlay surfaces (modals + command palette) trap focus and present dense
 // interactive content, so they are prime places for missing labels / unnamed
-// controls. Same critical rule set as the shell surfaces above so the gate
-// stays consistent and doesn't retroactively fail on pre-existing debt.
-const CRITICAL_RULES = {
-  'color-contrast': { enabled: true },
-  'button-name': { enabled: true },
-  'image-alt': { enabled: true },
-  label: { enabled: true },
-  'link-name': { enabled: true },
-} as const;
-
-async function expectNoCriticalViolations(container: HTMLElement, label: string) {
-  const results = await axe(container, { rules: CRITICAL_RULES });
-  if (results.violations.length > 0) {
-    console.warn(`${label} violations:`, JSON.stringify(results.violations, null, 2));
-  }
-  expect(results).toHaveNoViolations();
-}
-
+// controls. Same critical rule set as the shell surfaces above.
 describe('Accessibility - Overlays', () => {
   it('HelpModal (open) has no critical accessibility violations', async () => {
     const { container } = render(<HelpModal isOpen={true} onClose={vi.fn()} />);
