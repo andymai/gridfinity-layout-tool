@@ -1,0 +1,41 @@
+src/shared/hooks/keyboard/handlers.ts
+  s_504cfd08bbb576::t_969cb24b518105 35-51,58-60
+  s_504cfd08bbb576::t_9b01f2fa250981 20
+src/shared/hooks/keyboard/types.ts
+  s_504cfd08bbb576::t_25f6f2ee2346b4 32
+src/shared/hooks/useKeyboard.ts
+  s_504cfd08bbb576::t_c0c7753e40a762 213
+  s_504cfd08bbb576::t_9db61fdb7c7ad1 175
+  s_504cfd08bbb576::t_e79248ebec06eb 101,112
+src/features/grid-editor/utils/navigation.test.ts
+  s_504cfd08bbb576::t_42f7dbaf39c443 214-252
+  s_504cfd08bbb576::t_13a4341f1c623f 2-6
+src/shared/hooks/useKeyboard.test.ts
+  s_504cfd08bbb576::t_3c5474d60d90b9 154-223,225-227,239,241,243-245,248-249
+  s_504cfd08bbb576::t_920fc515adc89c 153
+  s_504cfd08bbb576::t_abe4b7c4208255 224
+  s_504cfd08bbb576::t_e609ccddc78f1e 228-230,236-238
+  s_504cfd08bbb576::t_23137c46531a57 240
+  s_504cfd08bbb576::t_b7ca772e60e569 242
+  s_504cfd08bbb576::t_618ab79f47dca8 246-247
+  s_504cfd08bbb576::t_f5e1421674fa07 250-252
+  s_504cfd08bbb576::t_ea75385f8a1929 231-235
+src/features/grid-editor/utils/navigation.ts
+  s_504cfd08bbb576::t_0d7a913a48e6a3 89-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "72b74f655e33fc475ec66e43d8ef8fd1f8f6d0bb",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
