@@ -1,6 +1,7 @@
 export type SettingsTabId =
   | 'general'
   | 'appearance'
+  | 'accessibility'
   | 'defaults'
   | 'print'
   | 'categories'

@@ -158,3 +158,18 @@ export function ShieldIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function AccessibilityIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <circle cx="12" cy="4.5" r="1.75" fill="currentColor" stroke="none" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5h15M9 8.5v4l-2 6m8-10v4l2 6" />
+    </svg>
+  );
+}

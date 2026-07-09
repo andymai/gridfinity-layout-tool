@@ -1,6 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { UserSettings } from '@/core/store/settings';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
@@ -89,12 +88,11 @@ function DensityPreview({ density }: { density: DensityOption }) {
 export function AppearanceTab() {
   const t = useTranslation();
 
-  const { theme, accentColor, uiDensity, reduceMotion, updateSetting } = useSettingsStore(
+  const { theme, accentColor, uiDensity, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       theme: state.settings.theme,
       accentColor: state.settings.accentColor,
       uiDensity: state.settings.uiDensity,
-      reduceMotion: state.settings.reduceMotion,
       updateSetting: state.updateSetting,
     }))
   );
@@ -148,17 +146,6 @@ export function AppearanceTab() {
               preview={<DensityPreview density={option} />}
             />
           ))}
-        </div>
-      </SettingSection>
-
-      <SettingSection id="motion" title={t('settings.reduceMotion')} resetKeys={['reduceMotion']}>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-sm text-content-secondary">{t('settings.reduceMotionHint')}</span>
-          <Switch
-            checked={reduceMotion}
-            onChange={(checked) => updateSetting('reduceMotion', checked)}
-            aria-label={t('settings.reduceMotion')}
-          />
         </div>
       </SettingSection>
     </div>

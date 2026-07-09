@@ -807,6 +807,7 @@ const en: Record<string, string> = {
   // Settings tabs
   'settings.tabs.general': 'General',
   'settings.tabs.appearance': 'Appearance',
+  'settings.tabs.accessibility': 'Accessibility',
   'settings.tabs.defaults': 'Layout Defaults',
   'settings.tabs.print': 'Print & Material',
   'settings.tabs.categories': 'Categories & Bins',
@@ -860,6 +861,14 @@ const en: Record<string, string> = {
   'settings.uiDensity.comfortable': 'Comfortable',
   'settings.reduceMotion': 'Reduce motion',
   'settings.reduceMotionHint': 'Minimize animations and transitions',
+  'settings.highContrast': 'High contrast',
+  'settings.highContrastHint': 'Strengthen borders, focus rings, and text contrast',
+  'settings.categoryPatterns': 'Distinguish categories by pattern',
+  'settings.categoryPatternsHint':
+    'Add a pattern to each category so bins are not told apart by color alone',
+  'settings.search.keywords.highContrast': 'contrast, low vision, legibility, borders',
+  'settings.search.keywords.categoryPatterns':
+    'pattern, colorblind, color blind, texture, hatch, accessibility',
   'settings.resetTabDefaults': 'Reset all settings',
   'settings.copyFromCurrentLayout': 'Copy from Current Layout',
   'settings.confirmCopyFromLayout.title': 'Copy from Current Layout',

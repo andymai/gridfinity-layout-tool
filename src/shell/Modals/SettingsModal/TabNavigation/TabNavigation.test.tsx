@@ -13,7 +13,7 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-const TAB_COUNT = 10;
+const TAB_COUNT = 11;
 
 describe('TabNavigation', () => {
   const onTabChange = vi.fn();
@@ -27,7 +27,7 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: false });
     });
 
-    it('renders all 10 tabs with vertical orientation', () => {
+    it('renders all 11 tabs with vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).toHaveAttribute('aria-orientation', 'vertical');

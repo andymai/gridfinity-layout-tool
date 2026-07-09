@@ -2,6 +2,7 @@ import { SparklesIcon } from '@/features/labs/components/icons';
 import {
   GlobeIcon,
   PaletteIcon,
+  AccessibilityIcon,
   BoxIcon,
   LayerStackIcon,
   TagIcon,
@@ -18,6 +19,7 @@ export const TAB_GROUPS: TabGroup[] = [
     tabs: [
       { id: 'general', labelKey: 'settings.tabs.general', icon: GlobeIcon },
       { id: 'appearance', labelKey: 'settings.tabs.appearance', icon: PaletteIcon },
+      { id: 'accessibility', labelKey: 'settings.tabs.accessibility', icon: AccessibilityIcon },
     ],
   },
   {

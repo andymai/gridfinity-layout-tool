@@ -10,6 +10,7 @@ import { SettingsNavProvider } from './SettingsModalContext';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
 import { AppearanceTab } from './tabs/AppearanceTab/AppearanceTab';
+import { AccessibilityTab } from './tabs/AccessibilityTab/AccessibilityTab';
 import { AccountTab } from './tabs/AccountTab/AccountTab';
 import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
 import { PrintTab } from './tabs/PrintTab/PrintTab';
@@ -28,6 +29,8 @@ function renderTab(tabId: SettingsTabId) {
       return <GeneralTab />;
     case 'appearance':
       return <AppearanceTab />;
+    case 'accessibility':
+      return <AccessibilityTab />;
     case 'account':
       return <AccountTab />;
     case 'defaults':

@@ -1196,6 +1196,37 @@ input[type='range']:hover::-moz-range-thumb {
 }
 
 /* ===========================================
+   HIGH CONTRAST (in-app setting)
+   An app-level override — independent of the OS forced-colors block above —
+   toggled by the Accessibility settings tab (html[data-high-contrast]). It
+   strengthens the semantic border/text tokens and the focus ring so the UI
+   stays legible for low-vision users. Theme-aware: "more contrast" means
+   brighter tokens on dark, darker on light.
+   =========================================== */
+html[data-high-contrast='true'] {
+  --border-subtle: #6a6a78;
+  --border-default: #8a8a98;
+  --border-strong: #b4b4c2;
+  --text-secondary: #e6e6ea;
+  --text-tertiary: #cccdd4;
+  --text-disabled: #9a9aa6;
+}
+
+html[data-theme='light'][data-high-contrast='true'] {
+  --border-subtle: #7a7872;
+  --border-default: #48463f;
+  --border-strong: #1c1a16;
+  --text-secondary: #26241f;
+  --text-tertiary: #3c3a34;
+  --text-disabled: #55534c;
+}
+
+/* Thicker keyboard focus ring so it reads at a glance in high-contrast mode. */
+html[data-high-contrast='true'] :focus-visible {
+  outline-width: 3px;
+}
+
+/* ===========================================
    COMPONENT STYLES
    =========================================== */
 

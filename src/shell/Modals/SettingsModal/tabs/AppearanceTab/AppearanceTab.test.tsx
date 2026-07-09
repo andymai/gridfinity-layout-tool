@@ -8,7 +8,6 @@ const mockState = vi.hoisted(() => ({
   theme: 'dark',
   accentColor: 'amber',
   uiDensity: 'default',
-  reduceMotion: false,
 }));
 
 vi.mock('@/i18n', () => ({
@@ -43,7 +42,6 @@ describe('AppearanceTab', () => {
     mockState.theme = 'dark';
     mockState.accentColor = 'amber';
     mockState.uiDensity = 'default';
-    mockState.reduceMotion = false;
   });
 
   it('renders all section headings', () => {
@@ -51,7 +49,6 @@ describe('AppearanceTab', () => {
     expect(screen.getByText('settings.theme')).toBeInTheDocument();
     expect(screen.getByText('settings.accentColor')).toBeInTheDocument();
     expect(screen.getByText('settings.uiDensity')).toBeInTheDocument();
-    expect(screen.getByText('settings.reduceMotion')).toBeInTheDocument();
   });
 
   it('renders theme radio options', () => {
@@ -77,12 +74,6 @@ describe('AppearanceTab', () => {
     render(<AppearanceTab />);
     fireEvent.click(screen.getByText('settings.uiDensity.compact'));
     expect(mockUpdateSetting).toHaveBeenCalledWith('uiDensity', 'compact');
-  });
-
-  it('toggling reduce motion calls updateSetting', () => {
-    render(<AppearanceTab />);
-    fireEvent.click(screen.getByRole('switch', { name: 'settings.reduceMotion' }));
-    expect(mockUpdateSetting).toHaveBeenCalledWith('reduceMotion', true);
   });
 
   it('marks the active theme card as checked', () => {

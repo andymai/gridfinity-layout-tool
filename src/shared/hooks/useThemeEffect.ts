@@ -81,11 +81,12 @@ export function useThreeColors(): ThreeColors {
  * data attributes on `<html>`. Mounted once at the app root.
  */
 export function useThemeEffect(): void {
-  const { accentColor, uiDensity, reduceMotion } = useSettingsStore(
+  const { accentColor, uiDensity, reduceMotion, highContrast } = useSettingsStore(
     useShallow((state) => ({
       accentColor: state.settings.accentColor,
       uiDensity: state.settings.uiDensity,
       reduceMotion: state.settings.reduceMotion,
+      highContrast: state.settings.highContrast,
     }))
   );
 
@@ -98,5 +99,6 @@ export function useThemeEffect(): void {
     html.dataset.accent = accentColor;
     html.dataset.density = uiDensity;
     html.dataset.reduceMotion = String(reduceMotion);
-  }, [resolved, accentColor, uiDensity, reduceMotion]);
+    html.dataset.highContrast = String(highContrast);
+  }, [resolved, accentColor, uiDensity, reduceMotion, highContrast]);
 }

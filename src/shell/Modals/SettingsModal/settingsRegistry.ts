@@ -39,11 +39,24 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
   },
   { id: 'accent', tabId: 'appearance', labelKey: 'settings.accentColor' },
   { id: 'density', tabId: 'appearance', labelKey: 'settings.uiDensity' },
+  // Accessibility
   {
     id: 'motion',
-    tabId: 'appearance',
+    tabId: 'accessibility',
     labelKey: 'settings.reduceMotion',
     keywordsKey: 'settings.search.keywords.motion',
+  },
+  {
+    id: 'high-contrast',
+    tabId: 'accessibility',
+    labelKey: 'settings.highContrast',
+    keywordsKey: 'settings.search.keywords.highContrast',
+  },
+  {
+    id: 'category-patterns',
+    tabId: 'accessibility',
+    labelKey: 'settings.categoryPatterns',
+    keywordsKey: 'settings.search.keywords.categoryPatterns',
   },
   // Layout Defaults
   {

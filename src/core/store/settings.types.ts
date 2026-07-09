@@ -257,6 +257,10 @@ export interface UserSettings {
   uiDensity: 'compact' | 'default' | 'comfortable';
   /** Override to reduce animations and transitions. */
   reduceMotion: boolean;
+  /** App-level high-contrast override — strengthens borders, focus, and text. */
+  highContrast: boolean;
+  /** Distinguish bin categories with per-category patterns, not color alone. */
+  distinguishCategoriesByPattern: boolean;
 
   /** Filament color for the baseplate 3D preview. */
   baseplateFilamentColor: string;
@@ -363,6 +367,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   accentColor: 'amber',
   uiDensity: 'default',
   reduceMotion: false,
+  highContrast: false,
+  distinguishCategoriesByPattern: false,
 
   // Baseplate 3D preview
   baseplateFilamentColor: '#d4d8dc',
