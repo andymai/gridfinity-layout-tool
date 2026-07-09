@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.231.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.230.0...gridfinity-layout-tool-v4.231.0) (2026-07-09)
+
+
+### Features
+
+* **a11y:** add screen-reader text alternative for the 3D preview ([#2509](https://github.com/andymai/gridfinity-layout-tool/issues/2509)) ([882b75b](https://github.com/andymai/gridfinity-layout-tool/commit/882b75bbcf382fb1b6235371be0a211cb547bd33))
+
 ## [4.230.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.229.1...gridfinity-layout-tool-v4.230.0) (2026-07-09)
 
 
