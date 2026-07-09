@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.229.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.2...gridfinity-layout-tool-v4.229.0) (2026-07-09)
+
+
+### Features
+
+* **bin-designer:** add extra exterior wall height (collar) ([#2501](https://github.com/andymai/gridfinity-layout-tool/issues/2501)) ([8c34c61](https://github.com/andymai/gridfinity-layout-tool/commit/8c34c61b5a0a048afbd3cf5ea3ba231f9eb5d912))
+
 ## [4.228.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.1...gridfinity-layout-tool-v4.228.2) (2026-07-08)
 
 
