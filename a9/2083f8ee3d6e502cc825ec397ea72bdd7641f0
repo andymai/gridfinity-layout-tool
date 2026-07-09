@@ -1,0 +1,99 @@
+src/i18n/locales/nb.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/generation/worker/generators/pipeline/context.ts
+  s_139476dbec9a91::t_7f5268c8776752 186
+  s_139476dbec9a91::t_2735e289f13885 48-52
+  s_139476dbec9a91::t_52cac7e918fc82 125-130
+  s_139476dbec9a91::t_4f81d3aecbe2b0 169-173
+src/i18n/locales/ja.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/bin-designer/utils/printEstimates.ts
+  s_139476dbec9a91::t_d317dbd62e89d6 158-167
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_139476dbec9a91::t_e09ae32959c5c4 129
+  s_139476dbec9a91::t_d7f6cbe46d0ea3 149
+  s_139476dbec9a91::t_4e48d6d1c97fc5 84-95
+  s_139476dbec9a91::t_568859211f3a70 14,30
+src/i18n/locales/en.ts
+  s_139476dbec9a91::t_7d77e8f1ca8ae5 2171-2173
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.test.tsx
+  s_139476dbec9a91::t_5134701925f219 22-30
+src/features/bin-designer/constants/defaults.ts
+  s_139476dbec9a91::t_59c675ebc622fd 407
+  s_139476dbec9a91::t_ee00fb46d3804c 665-667
+  s_139476dbec9a91::t_1b2551eb9fee4c 172-187
+  s_139476dbec9a91::t_5016b84b39d7d5 663-664
+src/features/bin-designer/components/preview/LidGuideLine/LidGuideLine.tsx
+  s_139476dbec9a91::t_c503e18fd3c7c4 34-39
+api/lib/designerValidation.ts
+  s_139476dbec9a91::t_eb993fc0433b7c 99
+  s_139476dbec9a91::t_00b3f752b79a71 560-575
+src/i18n/locales/fr.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/generation/worker/generators/pipeline/types.ts
+  s_139476dbec9a91::t_a5e3fad59e5c3d 36-44
+src/i18n/locales/uk.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_139476dbec9a91::t_570916d960fe68 75-79,84-85,87
+src/features/bin-designer/constants/gridfinity.ts
+  s_139476dbec9a91::t_ea2ad2f767da9f 114-119
+src/i18n/locales/sv.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_139476dbec9a91::t_64ac90425a6a68 69-70
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.test.ts
+  s_139476dbec9a91::t_ccd9b4eb0728c7 204,211,213,217-218,223-229
+  s_139476dbec9a91::t_fb6b2d4a9f4a81 195-203,205-210,212,214-216,219-222,230-236
+api/lib/designerValidationConstants.ts
+  s_139476dbec9a91::t_12b6b31ac76cfc 37-41
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_139476dbec9a91::t_99b1bc45245da3 10
+  s_139476dbec9a91::t_064806885ec7b3 131-135,141-157
+  s_139476dbec9a91::t_fb30fb45c754da 136-140
+src/features/bin-designer/types/index.ts
+  s_139476dbec9a91::t_c3d8e0082c8c28 596-612
+src/features/bin-designer/constants/defaults.test.ts
+  s_139476dbec9a91::t_ec6015603a8e22 166-183
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_139476dbec9a91::t_5941c2b2c6e1c1 291-293
+  s_139476dbec9a91::t_f42e9c1cfc75eb 286-290,294-336
+src/i18n/locales/de.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/i18n/locales/nl.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/i18n/locales/es.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_139476dbec9a91::t_79c20d52f74973 166
+  s_139476dbec9a91::t_8565e36efbfe02 183
+  s_139476dbec9a91::t_5acb0aa4160c95 106-114
+  s_139476dbec9a91::t_fdd4e1b4b713fb 147
+  s_139476dbec9a91::t_4871a04936b130 181
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_139476dbec9a91::t_f410a7684da1e7 388-392
+src/i18n/locales/pt-BR.json
+  s_139476dbec9a91::t_451638e5fa3e24 647-648
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.tsx
+  s_139476dbec9a91::t_9ecefcfb0483c4 55-56
+src/features/generation/worker/generators/binGenerator.scenario.collar.test.ts
+  s_139476dbec9a91::t_231fa6a5f2ccea 1-113
+src/features/bin-designer/utils/thumbnailRegenerator.ts
+  s_139476dbec9a91::t_a9316e6d6902c1 101-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a92083f8ee3d6e502cc825ec397ea72bdd7641f0",
+  "prompts": {},
+  "sessions": {
+    "s_139476dbec9a91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fff94b-735c-402d-a5b4-99a214b2346b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
