@@ -605,9 +605,11 @@ export interface BinParams {
    * Omitted or `0` reproduces the standard bin exactly (byte-identical
    * geometry). Clamped to
    * [{@link DESIGNER_CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT},
-   * {@link DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}] at generation. Applies
-   * to rectangular and custom-shape (`cellMask`) bins alike, since the stacking
-   * lip already lofts from the footprint polygon.
+   * {@link DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}] on load/persistence
+   * (`migrateParams`) and in server share validation; generation additionally
+   * floors it at 0 and ignores non-finite values. Applies to rectangular and
+   * custom-shape (`cellMask`) bins alike, since the stacking lip already lofts
+   * from the footprint polygon.
    */
   readonly extraWallHeightMm?: number;
 }

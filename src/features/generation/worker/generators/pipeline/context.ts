@@ -48,8 +48,11 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
-  // Clamped to >= 0 here; the full range clamp lives in `migrateParams`.
-  const collarHeight = Math.max(0, params.extraWallHeightMm ?? 0);
+  // Floored at >= 0 and guarded against non-finite values here so a stray NaN
+  // can't poison `boxWallHeight` into degenerate geometry; the full range clamp
+  // (<= MAX_EXTRA_WALL_HEIGHT) lives in `migrateParams`.
+  const rawCollar = params.extraWallHeightMm ?? 0;
+  const collarHeight = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
 
   // Per-axis grid pitch. gridUnitMmX scales width/columns, gridUnitMmY scales
   // depth/rows. They're equal for a standard square grid (gridUnitMmY omitted),

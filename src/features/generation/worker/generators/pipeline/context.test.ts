@@ -323,6 +323,11 @@ describe('createInitialContext', () => {
       expect(dim.collarHeight).toBe(0);
     });
 
+    it('collapses a non-finite collar to zero (no NaN into the shell)', () => {
+      const dim = createInitialContext(createTestParams({ extraWallHeightMm: NaN })).dimensions;
+      expect(dim.collarHeight).toBe(0);
+    });
+
     it('discriminates the shellKey by collar height, leaving collarless keys unchanged', () => {
       const noCollar = createInitialContext(createTestParams()).dimensions;
       const noCollarAgain = createInitialContext(createTestParams()).dimensions;
