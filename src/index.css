@@ -1197,7 +1197,7 @@ input[type='range']:hover::-moz-range-thumb {
 
 /* ===========================================
    HIGH CONTRAST (in-app setting)
-   An app-level override — independent of the OS forced-colors block above —
+   An app-level override — independent of the OS forced-colors block below —
    toggled by the Accessibility settings tab (html[data-high-contrast]). It
    strengthens the semantic border/text tokens and the focus ring so the UI
    stays legible for low-vision users. Theme-aware: "more contrast" means
@@ -1227,6 +1227,44 @@ html[data-theme='light'][data-high-contrast='true'] {
 /* Thicker keyboard focus ring so it reads at a glance in high-contrast mode. */
 html[data-high-contrast='true'] :focus-visible {
   outline-width: 3px;
+}
+
+/* ===========================================
+   FORCED COLORS (Windows High Contrast Mode)
+   In forced-colors mode the UA replaces author colors with the user's system
+   palette and drops box-shadow entirely. Several states here are conveyed only
+   via box-shadow (bin selection/focus rings, elevation), so they must be
+   re-expressed with borders/outlines that forced-colors preserves. System
+   color keywords (Highlight, CanvasText) resolve to the user's chosen scheme.
+   =========================================== */
+@media (forced-colors: active) {
+  /* Pin keyboard focus to the system highlight so it survives regardless of the
+     (now-overridden) --focus-ring custom property. */
+  :focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role='button']:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  /* Bins encode category (fill), selection and focus via background + box-shadow
+     — all flattened by forced-colors. Force a border on every bin so it stays a
+     distinguishable block (overrides the inline `border: none` on selected bins,
+     hence !important), and re-express selection/focus with a system outline.
+     Category differentiation in WHCM is handled separately by the pattern
+     overlay. */
+  [data-bin-id] {
+    border: 1px solid CanvasText !important;
+  }
+
+  [data-bin-id][aria-pressed='true'],
+  [data-bin-id]:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
 }
 
 /* ===========================================
