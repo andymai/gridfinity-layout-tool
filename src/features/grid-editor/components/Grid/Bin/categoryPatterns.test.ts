@@ -18,12 +18,13 @@ describe('getCategoryPatternIndex', () => {
     }
   });
 
-  it('does not depend on order (id-based, reorder-stable)', () => {
-    // The index is a pure function of the id, so it is unaffected by where the
-    // category sits in any list.
-    const before = getCategoryPatternIndex('hardware');
-    const after = getCategoryPatternIndex('hardware');
-    expect(before).toBe(after);
+  it('distributes distinct ids across multiple patterns', () => {
+    // A pure id→index mapping is what makes assignment reorder-stable; verify it
+    // actually differentiates rather than collapsing every category to one
+    // pattern (which would defeat the point).
+    const ids = ['coral', 'sky', 'green', 'cloud', 'charcoal', 'hardware', 'screws', 'bolts'];
+    const distinct = new Set(ids.map(getCategoryPatternIndex));
+    expect(distinct.size).toBeGreaterThan(1);
   });
 });
 

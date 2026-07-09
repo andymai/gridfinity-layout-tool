@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getContrastColor } from '@/shared/utils';
+import { getContrastColor, getBinPatternColor } from '@/shared/utils';
 
 describe('getContrastColor', () => {
   describe('light backgrounds should return dark text', () => {
@@ -69,5 +69,22 @@ describe('getContrastColor', () => {
       // #f00 should be treated as #ff0000 (red → light text)
       expect(getContrastColor('#f00')).toBe('var(--text-on-dark)');
     });
+  });
+});
+
+describe('getBinPatternColor', () => {
+  it('uses dark ink on light fills so the texture stays visible', () => {
+    expect(getBinPatternColor('#ffffff')).toBe('rgba(0, 0, 0, 0.42)');
+    expect(getBinPatternColor('#ffff00')).toBe('rgba(0, 0, 0, 0.42)'); // yellow reads as light
+  });
+
+  it('uses light ink on dark fills', () => {
+    expect(getBinPatternColor('#000000')).toBe('rgba(255, 255, 255, 0.48)');
+    expect(getBinPatternColor('#0000ff')).toBe('rgba(255, 255, 255, 0.48)'); // blue reads as dark
+  });
+
+  it('handles 3-char hex colors', () => {
+    expect(getBinPatternColor('#fff')).toBe('rgba(0, 0, 0, 0.42)');
+    expect(getBinPatternColor('#000')).toBe('rgba(255, 255, 255, 0.48)');
   });
 });
