@@ -1,0 +1,45 @@
+src/i18n/locales/de.json
+  s_504cfd08bbb576::t_ad3dbd70fc5584 1367-1371
+src/i18n/locales/pt-BR.json
+  s_504cfd08bbb576::t_385e36d6ed48ca 1367-1371
+src/i18n/locales/ja.json
+  s_504cfd08bbb576::t_a724d9ba93e377 1367-1371
+src/i18n/locales/sv.json
+  s_504cfd08bbb576::t_de5a393cd08237 1367-1371
+src/i18n/locales/uk.json
+  s_504cfd08bbb576::t_361de8140e732d 1367-1371
+src/i18n/locales/es.json
+  s_504cfd08bbb576::t_cf430ecc4fc1bc 1367-1371
+src/i18n/locales/nl.json
+  s_504cfd08bbb576::t_be92cd73eb7592 1367-1371
+src/i18n/locales/en.ts
+  s_504cfd08bbb576::t_36c689a06dacdd 1404-1410
+src/i18n/locales/nb.json
+  s_504cfd08bbb576::t_4f81c7fc6a3da6 1367-1371
+src/features/grid-editor/hooks/useGridNavigation.test.ts
+  s_504cfd08bbb576::t_2d08cf6fbf6a99 235-240
+src/i18n/locales/fr.json
+  s_504cfd08bbb576::t_232da911fa34d4 1367-1371
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_504cfd08bbb576::t_ea734fcd37d050 296-300
+src/features/grid-editor/hooks/useGridNavigation.ts
+  s_504cfd08bbb576::t_70596caf4519e4 5
+  s_504cfd08bbb576::t_a47840efe19b06 59-61,63,67
+  s_504cfd08bbb576::t_db676dd94c2912 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "270edf286c079c4dec07711776f9b998d6932438",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
