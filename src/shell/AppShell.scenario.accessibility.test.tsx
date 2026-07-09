@@ -15,6 +15,9 @@ import { Header } from '@/shell/Header';
 import { Sidebar } from '@/shell/Sidebar';
 import { RightPanel } from '@/shell/RightPanel';
 import { Staging } from '@/features/staging/components/Staging';
+import { HelpModal } from '@/shell/Modals/HelpModal';
+import { ImportModal } from '@/shell/Modals/ImportModal';
+import { CommandPalette } from '@/features/command-palette';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
@@ -38,6 +41,12 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
+});
+
+// jsdom does not implement scrollIntoView, which cmdk (command palette) calls
+// on mount when a list item becomes active. Shim it so the open palette renders.
+beforeEach(() => {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 // Reset stores before each test
@@ -158,5 +167,44 @@ describe('Accessibility - Critical Issues', () => {
     }
 
     expect(results).toHaveNoViolations();
+  }, 15_000);
+});
+
+// Overlay surfaces (modals + command palette) trap focus and present dense
+// interactive content, so they are prime places for missing labels / unnamed
+// controls. Same critical rule set as the shell surfaces above so the gate
+// stays consistent and doesn't retroactively fail on pre-existing debt.
+const CRITICAL_RULES = {
+  'color-contrast': { enabled: true },
+  'button-name': { enabled: true },
+  'image-alt': { enabled: true },
+  label: { enabled: true },
+  'link-name': { enabled: true },
+} as const;
+
+async function expectNoCriticalViolations(container: HTMLElement, label: string) {
+  const results = await axe(container, { rules: CRITICAL_RULES });
+  if (results.violations.length > 0) {
+    console.warn(`${label} violations:`, JSON.stringify(results.violations, null, 2));
+  }
+  expect(results).toHaveNoViolations();
+}
+
+describe('Accessibility - Overlays', () => {
+  it('HelpModal (open) has no critical accessibility violations', async () => {
+    const { container } = render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    await expectNoCriticalViolations(container, 'HelpModal');
+  }, 15_000);
+
+  it('ImportModal (open) has no critical accessibility violations', async () => {
+    const { container } = render(
+      <ImportModal isOpen={true} onClose={vi.fn()} onImport={vi.fn()} />
+    );
+    await expectNoCriticalViolations(container, 'ImportModal');
+  }, 15_000);
+
+  it('CommandPalette (open) has no critical accessibility violations', async () => {
+    const { container } = render(<CommandPalette open={true} onOpenChange={vi.fn()} />);
+    await expectNoCriticalViolations(container, 'CommandPalette');
   }, 15_000);
 });
