@@ -86,3 +86,38 @@ export function findNearestBinInDirection(
   scored.sort((a, b) => b.score - a.score);
   return scored[0].bin;
 }
+
+/**
+ * Find the surviving bin closest to a reference bin, regardless of direction.
+ * Used to relocate keyboard focus after the focused bin is deleted so screen-
+ * reader and keyboard users don't get dropped to the document body.
+ *
+ * @param fromBin - Reference bin (typically the one being deleted)
+ * @param allBins - Candidate bins (should exclude the deleted bins)
+ * @param activeLayerId - Only bins on this layer are considered
+ * @returns The nearest bin by center-to-center distance, or null if none remain
+ */
+export function findNearestBin(fromBin: Bin, allBins: Bin[], activeLayerId: string): Bin | null {
+  const fromCenter = {
+    x: fromBin.x + fromBin.width / 2,
+    y: fromBin.y + fromBin.depth / 2,
+  };
+
+  let nearest: Bin | null = null;
+  let nearestDistance = Infinity;
+
+  for (const candidate of allBins) {
+    if (candidate.layerId !== activeLayerId || candidate.id === fromBin.id) continue;
+
+    const dx = candidate.x + candidate.width / 2 - fromCenter.x;
+    const dy = candidate.y + candidate.depth / 2 - fromCenter.y;
+    const distance = dx * dx + dy * dy; // squared distance is sufficient for comparison
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = candidate;
+    }
+  }
+
+  return nearest;
+}

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
+import {
+  findNearestBinInDirection,
+  findNearestBin,
+  type Direction,
+} from '@/features/grid-editor/utils/navigation';
 import { createTestBin } from '@/test/testUtils';
 
 describe('findNearestBinInDirection', () => {
@@ -205,5 +209,44 @@ describe('findNearestBinInDirection', () => {
       const result = findNearestBinInDirection(current, direction, allBins, activeLayerId);
       expect(result?.id).toBe('target');
     });
+  });
+});
+
+describe('findNearestBin', () => {
+  const activeLayerId = 'layer1';
+
+  it('returns the closest surviving bin regardless of direction', () => {
+    const from = createTestBin({ id: 'from', x: 5, y: 5 });
+    const near = createTestBin({ id: 'near', x: 6, y: 5 });
+    const far = createTestBin({ id: 'far', x: 0, y: 0 });
+
+    const result = findNearestBin(from, [near, far], activeLayerId);
+    expect(result?.id).toBe('near');
+  });
+
+  it('excludes the reference bin itself', () => {
+    const from = createTestBin({ id: 'from', x: 5, y: 5 });
+    const other = createTestBin({ id: 'other', x: 8, y: 8 });
+
+    // `from` is passed among the candidates but must never be returned.
+    const result = findNearestBin(from, [from, other], activeLayerId);
+    expect(result?.id).toBe('other');
+  });
+
+  it('ignores bins on other layers', () => {
+    const from = createTestBin({ id: 'from', x: 5, y: 5 });
+    const sameLayer = createTestBin({ id: 'same', x: 9, y: 9 });
+    const otherLayer = createTestBin({ id: 'other', x: 6, y: 5, layerId: 'layer2' });
+
+    const result = findNearestBin(from, [sameLayer, otherLayer], activeLayerId);
+    expect(result?.id).toBe('same');
+  });
+
+  it('returns null when no bins remain on the active layer', () => {
+    const from = createTestBin({ id: 'from', x: 5, y: 5 });
+    const otherLayer = createTestBin({ id: 'other', x: 6, y: 5, layerId: 'layer2' });
+
+    expect(findNearestBin(from, [otherLayer], activeLayerId)).toBeNull();
+    expect(findNearestBin(from, [], activeLayerId)).toBeNull();
   });
 });

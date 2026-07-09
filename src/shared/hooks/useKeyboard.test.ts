@@ -151,6 +151,106 @@ describe('useKeyboard', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
+    it('moves focus to the nearest surviving bin after deleting the focused bin', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+      const makeBin = (x: number) =>
+        getBinId(
+          addBin({
+            layerId,
+            x,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: categoryId,
+            label: '',
+            notes: '',
+          })
+        );
+
+      const binId1 = makeBin(0);
+      const binId2 = makeBin(3);
+
+      useSelectionStore.getState().setActiveLayer(layerId);
+      useSelectionStore.getState().setSelectedBins([binId1]);
+      useSelectionStore.getState().setFocusedBin(binId1);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('Delete');
+      });
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+      expect(useSelectionStore.getState().focusedBinId).toBe(binId2);
+    });
+
+    it('clears focus when the focused bin is deleted and none remain', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
+
+      useSelectionStore.getState().setActiveLayer(layerId);
+      useSelectionStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setFocusedBin(binId);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('Delete');
+      });
+
+      expect(useSelectionStore.getState().focusedBinId).toBeNull();
+    });
+
+    it('leaves focus untouched when the deleted bin is not the focused one', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+      const makeBin = (x: number) =>
+        getBinId(
+          addBin({
+            layerId,
+            x,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: categoryId,
+            label: '',
+            notes: '',
+          })
+        );
+
+      const binId1 = makeBin(0);
+      const binId2 = makeBin(3);
+
+      useSelectionStore.getState().setActiveLayer(layerId);
+      useSelectionStore.getState().setSelectedBins([binId1]);
+      useSelectionStore.getState().setFocusedBin(binId2);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('Delete');
+      });
+
+      expect(useSelectionStore.getState().focusedBinId).toBe(binId2);
+    });
+
     it('does nothing when no bins selected', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;

@@ -17,6 +17,7 @@ import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
+import { findNearestBin } from '@/features/grid-editor/utils/navigation';
 import { isOk, isErr } from '@/core/result';
 import type { BinId, GridUnits } from '@/core/types';
 import type { KeyboardContext } from './types';
@@ -31,12 +32,32 @@ export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!isShortcut(e.key, SHORTCUTS.DELETE) || ctx.selectedBinIds.length === 0) return false;
   e.preventDefault();
   mlTracking.trackBinsDeletion(findBinsByIds(ctx.layout, ctx.selectedBinIds), 'key');
+
+  // If the keyboard-focused bin is among those being deleted, relocate focus to
+  // the nearest survivor so screen-reader/keyboard users aren't dropped to the
+  // document body. Computed before deletion while the focused bin still exists.
+  const deletedIds = new Set(ctx.selectedBinIds);
+  const focusedBin =
+    ctx.focusedBinId !== null && deletedIds.has(ctx.focusedBinId)
+      ? findBinById(ctx.layout, ctx.focusedBinId)
+      : null;
+  const nextFocusBin = focusedBin
+    ? findNearestBin(
+        focusedBin,
+        ctx.layout.bins.filter((b) => !deletedIds.has(b.id)),
+        ctx.activeLayerId
+      )
+    : null;
+
   ctx.batch(() => {
     for (const binId of ctx.selectedBinIds) {
       ctx.deleteBin(binId);
     }
   });
   ctx.setSelectedBins([]);
+  if (focusedBin) {
+    ctx.setFocusedBin(nextFocusBin ? nextFocusBin.id : null);
+  }
   return true;
 }
 

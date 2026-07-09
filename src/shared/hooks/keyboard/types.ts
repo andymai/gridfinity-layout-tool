@@ -29,6 +29,7 @@ export interface KeyboardContext {
 
   // Selection
   setSelectedBins: (ids: BinId[]) => void;
+  setFocusedBin: (id: BinId | null) => void;
   setActiveLayer: (id: LayerId) => void;
   setActiveCategory: (id: CategoryId) => void;
   showQuickLabel: (binId: BinId) => void;
