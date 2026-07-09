@@ -82,9 +82,9 @@ export function binLipTopWorldZ(
   height: number,
   heightUnitMm: number,
   hasStackingLip: boolean,
-  extraWallHeightMm: number = 0
+  extraWallHeightMm?: number
 ): number {
-  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm);
+  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0);
   const lipTopZ = hasStackingLip
     ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
     : wallTop;
