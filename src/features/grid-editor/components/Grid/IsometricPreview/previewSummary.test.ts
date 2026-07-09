@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getPreviewSummary } from './previewSummary';
+import { STAGING_ID } from '@/core/constants';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 
 describe('getPreviewSummary', () => {
@@ -28,5 +29,29 @@ describe('getPreviewSummary', () => {
     });
     expect(summary.drawerWidth).toBe(10);
     expect(summary.drawerDepth).toBe(8);
+  });
+
+  it('excludes staging (off-grid stash) bins, which the preview does not render', () => {
+    const layout = createTestLayout({
+      bins: [
+        createTestBin({ id: 'placed' }),
+        createTestBin({ id: 'stashed-1', layerId: STAGING_ID }),
+        createTestBin({ id: 'stashed-2', layerId: STAGING_ID }),
+      ],
+    });
+
+    const summary = getPreviewSummary(layout);
+    expect(summary.binCount).toBe(1);
+    expect(summary.isEmpty).toBe(false);
+  });
+
+  it('reports empty when only staging bins exist', () => {
+    const layout = createTestLayout({
+      bins: [createTestBin({ id: 'stashed', layerId: STAGING_ID })],
+    });
+
+    const summary = getPreviewSummary(layout);
+    expect(summary.binCount).toBe(0);
+    expect(summary.isEmpty).toBe(true);
   });
 });

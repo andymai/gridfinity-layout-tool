@@ -1,3 +1,4 @@
+import { STAGING_ID } from '@/core/constants';
 import type { Layout } from '@/core/types';
 
 /**
@@ -18,9 +19,16 @@ export interface PreviewSummary {
 export function getPreviewSummary(
   layout: Pick<Layout, 'bins' | 'layers' | 'drawer'>
 ): PreviewSummary {
+  // Staging bins live in the off-grid stash and are not rendered in the 3D
+  // preview, so they must not be counted in its description.
+  const placedBinCount = layout.bins.reduce(
+    (count, bin) => (bin.layerId === STAGING_ID ? count : count + 1),
+    0
+  );
+
   return {
-    isEmpty: layout.bins.length === 0,
-    binCount: layout.bins.length,
+    isEmpty: placedBinCount === 0,
+    binCount: placedBinCount,
     layerCount: layout.layers.length,
     drawerWidth: layout.drawer.width,
     drawerDepth: layout.drawer.depth,
