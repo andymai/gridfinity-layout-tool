@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { binMarginSides } from '@/shared/utils/drawerMargin';
 import type { Bin, Drawer } from '@/core/types';
+import type { CategoryPatternStyle } from './categoryPatterns';
 
 interface BinMarginExtensionProps {
   bin: Bin;
@@ -23,9 +24,20 @@ interface BinMarginExtensionProps {
   gap: number;
   /** The bin's category color — the extension paints the same so it reads as one bin. */
   color: string;
+  /** Category pattern overlay, when enabled — kept in sync with the bin's fill
+   * so the accessibility texture covers the whole visible footprint, not just
+   * the interactive box. */
+  patternStyle?: CategoryPatternStyle | null;
 }
 
-export function BinMarginExtension({ bin, drawer, cellSize, gap, color }: BinMarginExtensionProps) {
+export function BinMarginExtension({
+  bin,
+  drawer,
+  cellSize,
+  gap,
+  color,
+  patternStyle,
+}: BinMarginExtensionProps) {
   const { baseplate, gridUnitMm } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
@@ -52,6 +64,7 @@ export function BinMarginExtension({ bin, drawer, cellSize, gap, color }: BinMar
         top: -toPx(sides.back),
         bottom: -toPx(sides.front),
         backgroundColor: color,
+        ...(patternStyle ?? {}),
         zIndex: -1,
       }}
     />

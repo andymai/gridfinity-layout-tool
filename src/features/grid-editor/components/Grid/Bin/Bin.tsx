@@ -193,13 +193,14 @@ function BinComponent({
   const distinguishByPattern = useSettingsStore(
     (state) => state.settings.distinguishCategoriesByPattern
   );
+  const categoryId = category?.id;
   const categoryPattern = useMemo(() => {
-    if (!distinguishByPattern || isGhost || !category) return null;
+    if (!distinguishByPattern || isGhost || categoryId === undefined) return null;
     return getCategoryPatternStyle(
-      getCategoryPatternIndex(category.id),
+      getCategoryPatternIndex(categoryId),
       getBinPatternColor(bgColor)
     );
-  }, [distinguishByPattern, isGhost, category, bgColor]);
+  }, [distinguishByPattern, isGhost, categoryId, bgColor]);
 
   const visualStyles = useMemo(() => {
     let boxShadow = 'var(--shadow-sm)';
@@ -328,6 +329,7 @@ function BinComponent({
           cellSize={cellSize}
           gap={gap}
           color={bgColor}
+          patternStyle={categoryPattern}
         />
       )}
 
