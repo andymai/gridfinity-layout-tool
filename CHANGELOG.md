@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.229.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.229.0...gridfinity-layout-tool-v4.229.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **a11y:** move keyboard focus to nearest bin after deleting focused bin ([#2504](https://github.com/andymai/gridfinity-layout-tool/issues/2504)) ([0027a6d](https://github.com/andymai/gridfinity-layout-tool/commit/0027a6d331c5318e011fd16e4c35751720d107bc))
+
 ## [4.229.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.228.2...gridfinity-layout-tool-v4.229.0) (2026-07-09)
 
 
