@@ -1,0 +1,23 @@
+src/features/grid-editor/components/Grid/Bin/BinMarginExtension.tsx
+  s_504cfd08bbb576::t_23cffdac7b9829 18,27-30,33-40
+  s_504cfd08bbb576::t_5e604ae0565a64 67
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_504cfd08bbb576::t_969f626131d8da 196,198,200,203
+  s_504cfd08bbb576::t_a3bd917b9ba71b 332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "23342cfbc8e75b36c32e6314539361e2fff6f292",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
