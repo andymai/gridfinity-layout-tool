@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.232.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.231.0...gridfinity-layout-tool-v4.232.0) (2026-07-09)
+
+
+### Features
+
+* **a11y:** add Accessibility settings tab (high-contrast, category patterns) ([#2510](https://github.com/andymai/gridfinity-layout-tool/issues/2510)) ([6734dad](https://github.com/andymai/gridfinity-layout-tool/commit/6734dad6da4a149b249787c93eb84d67b043d7dd))
+
 ## [4.231.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.230.0...gridfinity-layout-tool-v4.231.0) (2026-07-09)
 
 
