@@ -1266,9 +1266,12 @@ html[data-high-contrast='true'] :focus-visible {
     border: 1px solid CanvasText !important;
   }
 
+  /* !important so the thicker bin ring wins over the generic focus rule above
+     (which is also !important); specificity then breaks the tie in favor of
+     these bin-specific selectors. */
   [data-bin-id][aria-pressed='true'],
   [data-bin-id]:focus-visible {
-    outline: 3px solid Highlight;
+    outline: 3px solid Highlight !important;
     outline-offset: -3px;
   }
 }
