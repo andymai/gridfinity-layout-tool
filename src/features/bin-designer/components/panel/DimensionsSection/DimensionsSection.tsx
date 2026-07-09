@@ -7,7 +7,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { Checkbox, IconButton, Stepper, Tooltip } from '@/design-system';
+import { Checkbox, IconButton, Stepper } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -133,11 +133,12 @@ export function DimensionsSection() {
           that encloses tall contents and keeps a stacked bin off them (#2500). */}
       <div>
         <div className="mb-1 flex items-center justify-between">
-          <Tooltip content={t('binDesigner.extraWallHeightTooltip')} placement="right">
-            <span className="text-xs text-content-tertiary">
-              {t('binDesigner.extraWallHeight')}
-            </span>
-          </Tooltip>
+          <span
+            className="text-xs text-content-tertiary"
+            title={t('binDesigner.extraWallHeightTooltip')}
+          >
+            {t('binDesigner.extraWallHeight')}
+          </span>
           <span className="text-[11px] tabular-nums text-content-tertiary">
             {state.extraWallHeightMm} mm
           </span>
