@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.233.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.232.0...gridfinity-layout-tool-v4.233.0) (2026-07-09)
+
+
+### Features
+
+* **a11y:** support Windows High Contrast Mode (forced-colors) ([#2505](https://github.com/andymai/gridfinity-layout-tool/issues/2505)) ([6c9724f](https://github.com/andymai/gridfinity-layout-tool/commit/6c9724fd2012c95d7d9e5a8fd5a4978865235f5d))
+
 ## [4.232.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.231.0...gridfinity-layout-tool-v4.232.0) (2026-07-09)
 
 
