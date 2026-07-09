@@ -1,0 +1,19 @@
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_139476dbec9a91::t_8e66013d38dc20 85,87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1e1ffb7a42d5c55efd5a34c930c6593ecc035a8b",
+  "prompts": {},
+  "sessions": {
+    "s_139476dbec9a91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fff94b-735c-402d-a5b4-99a214b2346b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
