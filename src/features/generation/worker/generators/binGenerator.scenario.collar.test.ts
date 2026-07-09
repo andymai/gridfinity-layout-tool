@@ -100,14 +100,16 @@ describe('exterior-wall collar through full pipeline', () => {
   it('leaves geometry byte-for-byte identical when the collar is zero', () => {
     const generateBin = getGenerateBin();
     const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 3 };
+    // An absent field and an explicit 0 must both resolve to no collar and reuse
+    // the same shellKey, so the full mesh — every vertex, normal, and index — is
+    // identical, not just its bounding box.
     const a = generateBin(base);
     const b = generateBin({ ...base, extraWallHeightMm: 0 });
     expect(a.vertices).not.toBeNull();
     expect(b.vertices).not.toBeNull();
     if (!a.vertices || !b.vertices) return;
-    const ba = boundingBox(a.vertices);
-    const bb = boundingBox(b.vertices);
-    expect(bb.maxZ).toBeCloseTo(ba.maxZ, 3);
-    expect(a.vertices.length).toBe(b.vertices.length);
+    expect(Array.from(b.vertices)).toEqual(Array.from(a.vertices));
+    expect(Array.from(b.indices ?? [])).toEqual(Array.from(a.indices ?? []));
+    expect(Array.from(b.normals ?? [])).toEqual(Array.from(a.normals ?? []));
   }, 60_000);
 });
