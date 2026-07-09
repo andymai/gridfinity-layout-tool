@@ -285,11 +285,14 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         zIndex: isPreviewExpanded ? undefined : inline ? undefined : 20,
       }}
     >
-      {/* Screen-reader description of the 3D scene; the canvas itself exposes no
-          accessible content. Not aria-live — read on demand, not announced on
-          every edit. */}
-      <p className="sr-only">{previewSummaryText}</p>
+      {/* Label the canvas region itself (react-three-fiber spreads these onto its
+          container element) so a screen reader that lands on the otherwise
+          content-less canvas hears the layout description. role="img" keeps it a
+          single labeled node rather than exposing an empty canvas. Not aria-live
+          — read on demand, not announced on every edit. */}
       <Canvas
+        role="img"
+        aria-label={previewSummaryText}
         orthographic
         camera={{
           position: [10, 10, 10],
