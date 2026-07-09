@@ -3,7 +3,7 @@
  * These utilities are pure functions that don't depend on specific business logic.
  */
 
-export { getContrastColor, getBinTextColors } from './color';
+export { getContrastColor, getBinTextColors, getBinPatternColor } from './color';
 export type { BinTextColors } from './color';
 
 export {

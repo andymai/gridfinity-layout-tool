@@ -31,6 +31,16 @@ export function getContrastColor(hexColor: string): string {
 }
 
 /**
+ * Pattern stroke color for the category-pattern overlay, chosen to stay visible
+ * on top of the bin fill: a translucent dark ink on light fills, light ink on
+ * dark fills. Alpha is kept moderate so the pattern reads as texture without
+ * obscuring labels.
+ */
+export function getBinPatternColor(hexColor: string): string {
+  return getLuminance(hexColor) > 0.5 ? 'rgba(0, 0, 0, 0.42)' : 'rgba(255, 255, 255, 0.48)';
+}
+
+/**
  * Get adaptive text colors for bin labels.
  * Returns softer colors with primary/secondary/shadow variants.
  */
