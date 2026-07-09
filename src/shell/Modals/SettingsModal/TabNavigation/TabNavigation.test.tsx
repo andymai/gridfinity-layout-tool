@@ -30,7 +30,7 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: false });
     });
 
-    it('renders all 11 tabs with vertical orientation', () => {
+    it('renders every tab with vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
