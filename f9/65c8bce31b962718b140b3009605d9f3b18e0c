@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/binGenerator.scenario.collar.test.ts
+  s_139476dbec9a91::t_de3e0333f32a53 103-105,111-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f965c8bce31b962718b140b3009605d9f3b18e0c",
+  "prompts": {},
+  "sessions": {
+    "s_139476dbec9a91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6fff94b-735c-402d-a5b4-99a214b2346b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
