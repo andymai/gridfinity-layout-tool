@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.230.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.229.1...gridfinity-layout-tool-v4.230.0) (2026-07-09)
+
+
+### Features
+
+* **a11y:** localize grid screen-reader announcements and bin labels ([#2503](https://github.com/andymai/gridfinity-layout-tool/issues/2503)) ([d278f71](https://github.com/andymai/gridfinity-layout-tool/commit/d278f71b353ae758f02689aa41c01e7a320d1d2c))
+
 ## [4.229.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.229.0...gridfinity-layout-tool-v4.229.1) (2026-07-09)
 
 
