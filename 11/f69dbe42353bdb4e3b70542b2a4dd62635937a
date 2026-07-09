@@ -1,0 +1,26 @@
+src/index.css
+  s_504cfd08bbb576::t_519a5657fd293e 1206-1209
+src/shared/hooks/useThemeEffect.ts
+  s_504cfd08bbb576::t_82ca5c7aec966c 80-81
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.test.tsx
+  s_504cfd08bbb576::t_59234745896c74 4
+  s_504cfd08bbb576::t_6c96ab67c08434 17-19
+src/i18n/locales/pt-BR.json
+  s_504cfd08bbb576::t_420068665e6a17 2171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "11f69dbe42353bdb4e3b70542b2a4dd62635937a",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
