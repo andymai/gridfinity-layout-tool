@@ -1,0 +1,72 @@
+src/shell/Modals/SettingsModal/types.ts
+  s_504cfd08bbb576::t_6a232450cb74b9 4
+src/i18n/locales/en.ts
+  s_504cfd08bbb576::t_4d3f5cf2450330 864-869
+  s_504cfd08bbb576::t_6950ecb31fe257 810
+  s_504cfd08bbb576::t_2a0b59dd1aa2bd 870-871
+src/i18n/locales/nl.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/i18n/locales/pt-BR.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/shared/hooks/useThemeEffect.ts
+  s_504cfd08bbb576::t_b6d5316e0934ca 84,89,102-103
+src/shell/Modals/SettingsModal/tabDefinitions.ts
+  s_504cfd08bbb576::t_85da8baad00747 5
+  s_504cfd08bbb576::t_f0098e9ca262bd 22
+src/shell/Modals/SettingsModal/settingsRegistry.ts
+  s_504cfd08bbb576::t_1a777f28c85334 42,45,49-60
+src/i18n/locales/es.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/i18n/locales/fr.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/i18n/locales/uk.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.test.tsx
+  s_504cfd08bbb576::t_e3aba37cd5394f 30
+  s_504cfd08bbb576::t_d3b9efeb7ab514 16
+src/shell/Modals/SettingsModal/tabDefinitions.test.ts
+  s_504cfd08bbb576::t_3a96c50bdb61b0 5-6
+  s_504cfd08bbb576::t_54f26a7ee94ea9 25
+src/shell/Modals/SettingsModal/tabs/AccessibilityTab/AccessibilityTab.tsx
+  s_504cfd08bbb576::t_de971cbc26e92a 1-66
+src/shell/Modals/SettingsModal/SettingsModal.tsx
+  s_504cfd08bbb576::t_9e030deed6b9cc 13
+  s_504cfd08bbb576::t_db5fd5aa39212b 32-33
+src/shell/Modals/SettingsModal/tabs/AccessibilityTab/AccessibilityTab.test.tsx
+  s_504cfd08bbb576::t_979e1dcef80980 1-60
+src/i18n/locales/nb.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/shell/Modals/SettingsModal/tabIcons.tsx
+  s_504cfd08bbb576::t_7c81d3fe3ce912 161-173
+  s_504cfd08bbb576::t_3aec4b791bafa2 174-175
+src/i18n/locales/sv.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/i18n/locales/de.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx
+  s_504cfd08bbb576::t_97e13a8065d1d9 91
+src/core/store/settings.types.ts
+  s_504cfd08bbb576::t_74dafe2b20d73b 370-371
+  s_504cfd08bbb576::t_16d6e7f611b5a5 260-263
+src/index.css
+  s_504cfd08bbb576::t_8c640d0a2554ce 1199-1228
+  s_504cfd08bbb576::t_c1f144ab1e1756 1198
+src/i18n/locales/ja.json
+  s_504cfd08bbb576::t_d74e73e9b05cae 2169-2174,2228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c460e03d92079cc5bb29b29119501a516db214a6",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
