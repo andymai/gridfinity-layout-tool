@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TabNavigation } from './TabNavigation';
+import { TAB_DEFINITIONS } from '../tabDefinitions';
 
 // Mock useResponsive to control mobile/desktop rendering
 const mockUseResponsive = vi.fn();
@@ -13,7 +14,9 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-const TAB_COUNT = 11;
+// Derive from the source of truth so adding/removing a tab doesn't require a
+// manual bump here (tabDefinitions.test.ts asserts the exact expected set).
+const TAB_COUNT = TAB_DEFINITIONS.length;
 
 describe('TabNavigation', () => {
   const onTabChange = vi.fn();

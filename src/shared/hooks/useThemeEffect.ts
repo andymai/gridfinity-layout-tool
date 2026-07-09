@@ -77,8 +77,8 @@ export function useThreeColors(): ThreeColors {
 }
 
 /**
- * Syncs appearance settings (theme, accent, density, reduce-motion) to
- * data attributes on `<html>`. Mounted once at the app root.
+ * Syncs appearance settings (theme, accent, density, reduce-motion,
+ * high-contrast) to data attributes on `<html>`. Mounted once at the app root.
  */
 export function useThemeEffect(): void {
   const { accentColor, uiDensity, reduceMotion, highContrast } = useSettingsStore(

@@ -2168,7 +2168,7 @@
   "settings.reduceMotionHint": "Minimizar animações e transições",
   "settings.highContrast": "Alto contraste",
   "settings.highContrastHint": "Reforçar bordas, anéis de foco e contraste do texto",
-  "settings.categoryPatterns": "Distinguir categorias por padrão",
+  "settings.categoryPatterns": "Distinguir categorias com padrões",
   "settings.categoryPatternsHint": "Adiciona um padrão a cada categoria para não distinguir os bins apenas pela cor",
   "settings.search.keywords.highContrast": "contraste, baixa visão, legibilidade, bordas",
   "settings.search.keywords.categoryPatterns": "padrão, daltônico, textura, hachura, acessibilidade",

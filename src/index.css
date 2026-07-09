@@ -1203,7 +1203,10 @@ input[type='range']:hover::-moz-range-thumb {
    stays legible for low-vision users. Theme-aware: "more contrast" means
    brighter tokens on dark, darker on light.
    =========================================== */
-html[data-high-contrast='true'] {
+/* Dark-theme high-contrast values. Scoped to [data-theme='dark'] (rather than
+   left as the bare default) so a future theme can't silently inherit dark-palette
+   tokens — it must declare its own high-contrast pairing. */
+html[data-theme='dark'][data-high-contrast='true'] {
   --border-subtle: #6a6a78;
   --border-default: #8a8a98;
   --border-strong: #b4b4c2;
