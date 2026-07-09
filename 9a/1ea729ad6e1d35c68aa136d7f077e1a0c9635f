@@ -1,0 +1,21 @@
+src/shell/AppShell.scenario.accessibility.test.tsx
+  s_504cfd08bbb576::t_b433c4490ed46d 18-20
+  s_504cfd08bbb576::t_acc1f576e8a49d 172-210
+  s_504cfd08bbb576::t_a9a0d8610e69cd 46-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9a1ea729ad6e1d35c68aa136d7f077e1a0c9635f",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
