@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Fermer l'aperçu",
   "grid.preview.collapse": "Réduire l'aperçu",
   "grid.preview.expand": "Développer l'aperçu",
+  "grid.preview.summary": "Aperçu 3D de la disposition : {binCount} bins sur {layerCount} couches, tiroir de {drawerWidth} par {drawerDepth} unités de grille",
+  "grid.preview.summaryEmpty": "Aperçu 3D de la disposition : vide, aucun bin placé pour le moment",
   "grid.resizeGrid": "Redimensionner la grille",
   "grid.resizeWillStashBins": "{count} bin(s) seront déplacés vers la réserve. Continuer ?",
   "grid.side": "Côté",

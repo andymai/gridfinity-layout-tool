@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Stäng förhandsvisning",
   "grid.preview.collapse": "Komprimera förhandsvisning",
   "grid.preview.expand": "Expandera förhandsvisning",
+  "grid.preview.summary": "3D-layoutförhandsvisning: {binCount} fack över {layerCount} lager, låda på {drawerWidth} gånger {drawerDepth} rutnätsenheter",
+  "grid.preview.summaryEmpty": "3D-layoutförhandsvisning: tom, inga fack placerade ännu",
   "grid.resizeGrid": "Ändra storlek på rutnät",
   "grid.resizeWillStashBins": "{count} bin(s) flyttas till stash. Fortsätt?",
   "grid.side": "Sida",

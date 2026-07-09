@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Vorschau schließen",
   "grid.preview.collapse": "Vorschau einklappen",
   "grid.preview.expand": "Vorschau ausklappen",
+  "grid.preview.summary": "3D-Layout-Vorschau: {binCount} Bins über {layerCount} Ebenen, Schublade {drawerWidth} mal {drawerDepth} Rastereinheiten",
+  "grid.preview.summaryEmpty": "3D-Layout-Vorschau: leer, noch keine Bins platziert",
   "grid.resizeGrid": "Raster anpassen",
   "grid.resizeWillStashBins": "{count} Bin(s) werden in den Stash verschoben. Fortfahren?",
   "grid.side": "Seite",

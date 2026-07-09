@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Preview sluiten",
   "grid.preview.collapse": "Preview invouwen",
   "grid.preview.expand": "Preview uitvouwen",
+  "grid.preview.summary": "3D-lay-outvoorbeeld: {binCount} bins over {layerCount} lagen, lade van {drawerWidth} bij {drawerDepth} rastereenheden",
+  "grid.preview.summaryEmpty": "3D-lay-outvoorbeeld: leeg, nog geen bins geplaatst",
   "grid.resizeGrid": "Grid formaat wijzigen",
   "grid.resizeWillStashBins": "{count} bin(s) worden naar stash verplaatst. Doorgaan?",
   "grid.side": "Zijkant",

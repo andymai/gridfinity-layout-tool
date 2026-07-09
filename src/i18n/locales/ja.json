@@ -1398,6 +1398,8 @@
   "grid.preview.close": "プレビューを閉じる",
   "grid.preview.collapse": "プレビューを折りたたむ",
   "grid.preview.expand": "プレビューを展開",
+  "grid.preview.summary": "3Dレイアウトプレビュー: {layerCount}レイヤーにわたる{binCount}個のビン、引き出し {drawerWidth}×{drawerDepth} グリッド単位",
+  "grid.preview.summaryEmpty": "3Dレイアウトプレビュー: 空、ビンはまだ配置されていません",
   "grid.resizeGrid": "グリッドをリサイズ",
   "grid.resizeWillStashBins": "{count}個のビンがステージングに移動されます。続行しますか?",
   "grid.side": "側面",

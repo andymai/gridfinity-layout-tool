@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Fechar pré-visualização",
   "grid.preview.collapse": "Recolher pré-visualização",
   "grid.preview.expand": "Expandir pré-visualização",
+  "grid.preview.summary": "Pré-visualização 3D do layout: {binCount} bins em {layerCount} camadas, gaveta de {drawerWidth} por {drawerDepth} unidades de grade",
+  "grid.preview.summaryEmpty": "Pré-visualização 3D do layout: vazia, nenhum bin colocado ainda",
   "grid.resizeGrid": "Redimensionar grade",
   "grid.resizeWillStashBins": "{count} bin(s) serão movidos para a área de espera. Continuar?",
   "grid.side": "Lateral",

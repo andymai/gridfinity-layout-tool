@@ -1389,6 +1389,9 @@ const en: Record<string, string> = {
   'grid.preview.close': 'Close preview',
   'grid.preview.collapse': 'Collapse preview',
   'grid.preview.expand': 'Expand preview',
+  'grid.preview.summary':
+    '3D layout preview: {binCount} bins across {layerCount} layers, drawer {drawerWidth} by {drawerDepth} grid units',
+  'grid.preview.summaryEmpty': '3D layout preview: empty, no bins placed yet',
   'grid.resizeGrid': 'Resize grid',
   'grid.side': 'Side',
   'grid.sideView': 'Side view',

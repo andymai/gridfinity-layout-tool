@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Lukk forhåndsvisning",
   "grid.preview.collapse": "Skjul forhåndsvisning",
   "grid.preview.expand": "Utvid forhåndsvisning",
+  "grid.preview.summary": "3D-layoutforhåndsvisning: {binCount} bins over {layerCount} lag, skuff på {drawerWidth} ganger {drawerDepth} rutenettenheter",
+  "grid.preview.summaryEmpty": "3D-layoutforhåndsvisning: tom, ingen bins plassert ennå",
   "grid.resizeGrid": "Endre størrelse på rutenett",
   "grid.resizeWillStashBins": "{count} bin(s) flyttes til stash. Fortsette?",
   "grid.side": "Side",

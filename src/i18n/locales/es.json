@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Cerrar vista previa",
   "grid.preview.collapse": "Contraer vista previa",
   "grid.preview.expand": "Expandir vista previa",
+  "grid.preview.summary": "Vista previa 3D del diseño: {binCount} bins en {layerCount} capas, cajón de {drawerWidth} por {drawerDepth} unidades de cuadrícula",
+  "grid.preview.summaryEmpty": "Vista previa 3D del diseño: vacía, aún no hay bins colocados",
   "grid.resizeGrid": "Redimensionar cuadrícula",
   "grid.resizeWillStashBins": "{count} bin(s) se moverán a la reserva. ¿Continuar?",
   "grid.side": "Lateral",

@@ -1398,6 +1398,8 @@
   "grid.preview.close": "Закрити перегляд",
   "grid.preview.collapse": "Згорнути перегляд",
   "grid.preview.expand": "Розгорнути перегляд",
+  "grid.preview.summary": "3D-перегляд розкладки: {binCount} бінів у {layerCount} шарах, шухляда {drawerWidth} на {drawerDepth} одиниць сітки",
+  "grid.preview.summaryEmpty": "3D-перегляд розкладки: порожньо, біни ще не розміщені",
   "grid.resizeGrid": "Змінити розмір сітки",
   "grid.resizeWillStashBins": "{count} бін(ів) буде переміщено в архів. Продовжити?",
   "grid.side": "Збоку",
