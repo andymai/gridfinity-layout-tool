@@ -232,8 +232,12 @@ describe('useGridNavigation', () => {
         result.current.handleNavigationKey('ArrowRight');
       });
 
-      // Check that announcement was made (liveMessage is set)
-      expect(useInteractionStore.getState().liveMessage).toContain('Screws');
+      // Check that the localized announcement was made with interpolated label and position.
+      // bin2 is at (x=2, y=0), so column 3, row 1.
+      const message = useInteractionStore.getState().liveMessage;
+      expect(message).toContain('Screws');
+      expect(message).toContain('column 3');
+      expect(message).toContain('row 1');
     });
 
     it('navigates only within active layer', () => {

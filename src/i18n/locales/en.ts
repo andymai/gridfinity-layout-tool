@@ -1401,6 +1401,13 @@ const en: Record<string, string> = {
   'grid.hasLinkedDesign': 'Has linked design',
   'grid.clickToSeeSplitPreview': 'Click to see split preview',
 
+  // Grid accessibility (screen reader)
+  'grid.bin.ariaLabel': 'Bin {width} by {depth}',
+  'grid.bin.ariaLabelLabeled': ', labeled {label}',
+  'grid.bin.ariaLabelCategory': ', category {category}',
+  'grid.announce.movedTo': 'Moved to {label} at column {col}, row {row}',
+  'grid.announce.binDimensions': '{width}×{depth} bin',
+
   // 3D Preview
 
   // STL Search

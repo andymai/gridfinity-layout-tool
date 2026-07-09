@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
+import { useTranslation } from '@/i18n';
 import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
 
 /**
@@ -19,6 +20,7 @@ export function useGridNavigation() {
   const focusedBinId = useSelectionStore((state) => state.focusedBinId);
   const setFocusedBin = useSelectionStore((state) => state.setFocusedBin);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+  const t = useTranslation();
 
   /**
    * Handle arrow key navigation.
@@ -54,13 +56,15 @@ export function useGridNavigation() {
       if (nextBin) {
         setFocusedBin(nextBin.id);
 
-        const label = nextBin.label || `${nextBin.width}×${nextBin.depth} bin`;
+        const label =
+          nextBin.label ||
+          t('grid.announce.binDimensions', { width: nextBin.width, depth: nextBin.depth });
         announceToScreenReader(
-          `Moved to ${label} at column ${nextBin.x + 1}, row ${nextBin.y + 1}`
+          t('grid.announce.movedTo', { label, col: nextBin.x + 1, row: nextBin.y + 1 })
         );
       }
     },
-    [focusedBinId, bins, activeLayerId, setFocusedBin, announceToScreenReader]
+    [focusedBinId, bins, activeLayerId, setFocusedBin, announceToScreenReader, t]
   );
 
   /**

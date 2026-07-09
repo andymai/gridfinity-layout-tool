@@ -293,7 +293,11 @@ function BinComponent({
       onFocus={() => !isGhost && setFocusedBin(bin.id)}
       onBlur={() => isFocused && setFocusedBin(null)}
       role="button"
-      aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label !== '' ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
+      aria-label={
+        t('grid.bin.ariaLabel', { width: bin.width, depth: bin.depth }) +
+        (bin.label !== '' ? t('grid.bin.ariaLabelLabeled', { label: bin.label }) : '') +
+        (category ? t('grid.bin.ariaLabelCategory', { category: category.name }) : '')
+      }
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
       title={
