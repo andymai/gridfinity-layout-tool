@@ -1239,14 +1239,20 @@ html[data-high-contrast='true'] :focus-visible {
    =========================================== */
 @media (forced-colors: active) {
   /* Pin keyboard focus to the system highlight so it survives regardless of the
-     (now-overridden) --focus-ring custom property. */
+     (now-overridden) --focus-ring custom property. `!important` is required
+     because some controls suppress the outline with `outline: none` /
+     Tailwind's `outline-none` utility and rely on a box-shadow ring — which
+     forced-colors drops — so without it those elements (notably the command
+     palette input, whose `[cmdk-input]:focus-visible` rule is more specific)
+     would have no visible focus indicator in WHCM. */
   :focus-visible,
   button:focus-visible,
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible,
-  [role='button']:focus-visible {
-    outline: 2px solid Highlight;
+  [role='button']:focus-visible,
+  [cmdk-input]:focus-visible {
+    outline: 2px solid Highlight !important;
     outline-offset: -2px;
   }
 
