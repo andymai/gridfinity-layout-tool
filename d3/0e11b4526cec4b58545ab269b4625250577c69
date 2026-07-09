@@ -1,0 +1,46 @@
+src/i18n/locales/ja.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/i18n/locales/es.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/i18n/locales/nl.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/features/grid-editor/components/Grid/IsometricPreview/previewSummary.test.ts
+  s_504cfd08bbb576::t_71abad7c25c18b 1-14,16-24,28,31-32
+  s_504cfd08bbb576::t_bc9c5802c37605 15,25-27,29-30
+src/i18n/locales/pt-BR.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/features/grid-editor/components/Grid/IsometricPreview/previewSummary.ts
+  s_504cfd08bbb576::t_1af88288516e6f 1-28
+src/i18n/locales/de.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/i18n/locales/en.ts
+  s_504cfd08bbb576::t_325846d0caa706 1392-1394
+src/i18n/locales/nb.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/i18n/locales/fr.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_504cfd08bbb576::t_f178220fc1e8cc 120-132
+  s_504cfd08bbb576::t_90975a3660606a 288-291
+  s_504cfd08bbb576::t_2c5e57f2873607 21
+src/i18n/locales/sv.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+src/i18n/locales/uk.json
+  s_504cfd08bbb576::t_ef7bc974678071 1401-1402
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d30e11b4526cec4b58545ab269b4625250577c69",
+  "prompts": {},
+  "sessions": {
+    "s_504cfd08bbb576": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "582bd732-bab1-49c9-9c65-07c429c5a523",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
