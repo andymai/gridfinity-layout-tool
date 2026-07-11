@@ -14,6 +14,10 @@ import {
   loadDesign,
   saveDesign,
 } from '@/features/baseplate/storage/BaseplateStorage';
+import {
+  upsertRegistryEntry,
+  removeRegistryEntry,
+} from '@/features/baseplate/store/baseplateRegistry';
 import { subscribe as subscribeBaseplateEvents } from './baseplateEvents';
 
 // Lives in features/ because StoredBaseplateParams is feature-adjacent and
@@ -104,6 +108,12 @@ export const baseplateAdapter: BaseplateAdapter = {
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);
       }
+      // Keep the selector's registry in step with the write we just made to
+      // IndexedDB. Done here (not in the shared sync-boot component) so the
+      // engine's per-id apply sequencing rules out a delete-after-put race.
+      // Registry writes don't emit baseplateEvents, so there's no sync loop.
+      const saved = result.value;
+      upsertRegistryEntry({ id: saved.id, name: saved.name, updatedAt: saved.updatedAt });
     } finally {
       suppressed.delete(item.id);
     }
@@ -116,6 +126,7 @@ export const baseplateAdapter: BaseplateAdapter = {
       if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
         throw new Error(`deleteDesign failed for ${id}`);
       }
+      removeRegistryEntry(baseplateDesignId(id));
     } finally {
       suppressed.delete(id);
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { DeleteBaseplateWarningDialog } from './DeleteBaseplateWarningDialog';
 
 describe('DeleteBaseplateWarningDialog', () => {
@@ -89,7 +89,16 @@ describe('DeleteBaseplateWarningDialog', () => {
         onCancel={onCancel}
       />
     );
-    fireEvent.keyDown(screen.getByText('Cancel'), { key: 'Escape' });
+    // Dispatch a native event on the focused child so it propagates through the
+    // container's stopPropagation. Only a capture-phase document listener fires
+    // before that stop; a bubble-phase one would be starved (see the container's
+    // onKeyDown). fireEvent.keyDown wouldn't exercise this — it invokes React
+    // handlers directly rather than dispatching through the DOM.
+    act(() => {
+      screen
+        .getByText('Cancel')
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });

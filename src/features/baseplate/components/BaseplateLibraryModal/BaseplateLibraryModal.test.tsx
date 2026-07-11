@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ok } from '@/core/result';
 import { baseplateDesignId } from '@/core/types';
 import { BaseplateLibraryModal } from './BaseplateLibraryModal';
@@ -97,7 +97,16 @@ describe('BaseplateLibraryModal', () => {
     const onClose = vi.fn();
     render(<BaseplateLibraryModal isOpen onClose={onClose} />);
     await screen.findByText('One');
-    fireEvent.keyDown(screen.getByText('One'), { key: 'Escape' });
+    // Dispatch a native event on the focused child so it propagates through the
+    // container's stopPropagation. Only a capture-phase document listener fires
+    // before that stop; a bubble-phase one would be starved (see the container's
+    // onKeyDown). fireEvent.keyDown wouldn't exercise this — it invokes React
+    // handlers directly rather than dispatching through the DOM.
+    act(() => {
+      screen
+        .getByText('One')
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 

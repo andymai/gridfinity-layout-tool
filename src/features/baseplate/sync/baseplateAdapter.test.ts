@@ -9,12 +9,19 @@ const listDesignsMock = vi.fn();
 const loadDesignMock = vi.fn();
 const saveDesignMock = vi.fn();
 const deleteDesignMock = vi.fn();
+const upsertRegistryEntryMock = vi.fn();
+const removeRegistryEntryMock = vi.fn();
 
 vi.mock('@/features/baseplate/storage/BaseplateStorage', () => ({
   listDesigns: () => listDesignsMock(),
   loadDesign: (id: string) => loadDesignMock(id),
   saveDesign: (input: unknown) => saveDesignMock(input),
   deleteDesign: (id: string) => deleteDesignMock(id),
+}));
+
+vi.mock('@/features/baseplate/store/baseplateRegistry', () => ({
+  upsertRegistryEntry: (ref: unknown) => upsertRegistryEntryMock(ref),
+  removeRegistryEntry: (id: string) => removeRegistryEntryMock(id),
 }));
 
 import { baseplateAdapter } from './baseplateAdapter';
@@ -194,6 +201,35 @@ describe('baseplateAdapter.applyRemote', () => {
       baseplateAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 })
     ).rejects.toThrow(/saveDesign failed/);
   });
+
+  it('upserts the selector registry from the saved design', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('bp1')));
+    saveDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('bp1', '2026-04-01T00:00:00.000Z', 'Saved Name'))
+    );
+
+    await baseplateAdapter.applyRemote({
+      id: 'bp1',
+      payload: samplePayload('Saved Name'),
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(upsertRegistryEntryMock).toHaveBeenCalledWith({
+      id: 'bp1',
+      name: 'Saved Name',
+      updatedAt: '2026-04-01T00:00:00.000Z',
+    });
+  });
+
+  it('does not touch the registry when saveDesign fails', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('x')));
+    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+
+    await expect(
+      baseplateAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 })
+    ).rejects.toThrow();
+    expect(upsertRegistryEntryMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('baseplateAdapter.applyRemoteDelete', () => {
@@ -210,6 +246,24 @@ describe('baseplateAdapter.applyRemoteDelete', () => {
   it('succeeds on normal delete', async () => {
     deleteDesignMock.mockResolvedValueOnce(ok(undefined));
     await expect(baseplateAdapter.applyRemoteDelete('bp1')).resolves.toBeUndefined();
+  });
+
+  it('removes the selector registry entry after a successful delete', async () => {
+    deleteDesignMock.mockResolvedValueOnce(ok(undefined));
+    await baseplateAdapter.applyRemoteDelete('bp1');
+    expect(removeRegistryEntryMock).toHaveBeenCalledWith('bp1');
+  });
+
+  it('removes the registry entry even when the design was already gone', async () => {
+    deleteDesignMock.mockResolvedValueOnce(err(storageNotFound('gone')));
+    await baseplateAdapter.applyRemoteDelete('gone');
+    expect(removeRegistryEntryMock).toHaveBeenCalledWith('gone');
+  });
+
+  it('does not touch the registry when the delete fails', async () => {
+    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    await expect(baseplateAdapter.applyRemoteDelete('x')).rejects.toThrow();
+    expect(removeRegistryEntryMock).not.toHaveBeenCalled();
   });
 });
 

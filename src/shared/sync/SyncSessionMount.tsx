@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer';
-import { baseplateAdapter, startBaseplateRegistryBridge } from '@/features/baseplate';
+import { baseplateAdapter } from '@/features/baseplate';
 import { runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
 import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
@@ -94,10 +94,6 @@ export function SyncSessionMount() {
       stop();
     };
   }, [status, adapters, promptAccountMismatch]);
-
-  // Keep the selector's registry in step with designs written straight to
-  // IndexedDB by remote sync (applyRemote/applyRemoteDelete bypass it).
-  useEffect(() => startBaseplateRegistryBridge(), []);
 
   useDebouncedPush();
   useVisibilityFlush();

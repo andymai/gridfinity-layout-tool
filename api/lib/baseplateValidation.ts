@@ -17,6 +17,9 @@ const MAX_PAYLOAD_BYTES = 100_000;
 /** Generous upper bound for drawer-fit padding (mm); the client clamps ≥ 0. */
 const MAX_PADDING_MM = 1000;
 
+/** Max corner radius (mm); matches the client clamp in `constants.ts` / `schemas.ts`. */
+const MAX_CORNER_RADIUS_MM = 200;
+
 /**
  * Top-level keys allowed inside `params` after validation. Mirrors
  * `StoredBaseplateParams` in `src/core/types.ts` — update both together when
@@ -146,9 +149,9 @@ export function validateBaseplateShare(
   }
   if (
     params.cornerRadius !== undefined &&
-    (!isNumber(params.cornerRadius) || !inRange(params.cornerRadius, 0, 100))
+    (!isNumber(params.cornerRadius) || !inRange(params.cornerRadius, 0, MAX_CORNER_RADIUS_MM))
   ) {
-    return validationError('INVALID_PARAMS', 'cornerRadius must be 0-100');
+    return validationError('INVALID_PARAMS', `cornerRadius must be 0-${MAX_CORNER_RADIUS_MM}`);
   }
   if (params.cornerRadii !== undefined) {
     if (!isObject(params.cornerRadii)) {
@@ -156,8 +159,11 @@ export function validateBaseplateShare(
     }
     for (const corner of ['tl', 'tr', 'bl', 'br'] as const) {
       const value = params.cornerRadii[corner];
-      if (!isNumber(value) || !inRange(value, 0, 100)) {
-        return validationError('INVALID_PARAMS', `cornerRadii.${corner} must be 0-100`);
+      if (!isNumber(value) || !inRange(value, 0, MAX_CORNER_RADIUS_MM)) {
+        return validationError(
+          'INVALID_PARAMS',
+          `cornerRadii.${corner} must be 0-${MAX_CORNER_RADIUS_MM}`
+        );
       }
     }
   }
