@@ -163,6 +163,14 @@ function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinPar
       dividers: overrides.dividers ?? body,
       text: overrides.text ?? body,
       lid: overrides.lid ?? body,
+      // Default the accent color to body (like the sibling zones above) so a
+      // disabled band doesn't inject a phantom material; heightMm mirrors the
+      // shipped default.
+      topAccent: overrides.topAccent ?? {
+        enabled: false,
+        heightMm: DEFAULT_BIN_PARAMS.featureColors.topAccent.heightMm,
+        color: body,
+      },
     },
   };
 }
