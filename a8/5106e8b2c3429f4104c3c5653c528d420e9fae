@@ -1,0 +1,322 @@
+api/lib/quota.ts
+  s_25989936a1c209::t_28c2126f9301f5 15
+src/core/cqrs/versioning/migrations.test.ts
+  s_25989936a1c209::t_c657b405e3a541 193
+scripts/sync-admin/commands/users.ts
+  s_25989936a1c209::t_3e049b3fd48f2d 74-75
+  s_25989936a1c209::t_e433a10cc921ac 96-98
+  s_25989936a1c209::t_ee4550043b220e 32-42,49-50
+  s_25989936a1c209::t_96144432c3bdda 13-14
+packages/branded-types/src/index.ts
+  s_25989936a1c209::t_cee8f41e3ad74c 14-15
+scripts/sync-admin/lib/findings.ts
+  s_25989936a1c209::t_0d49a5fa60b5ce 3,8
+  s_25989936a1c209::t_3e730ce246f933 330
+  s_25989936a1c209::t_afba2367a50f01 323-325
+  s_25989936a1c209::t_e7bde26a740424 153
+  s_25989936a1c209::t_305409c0a6f957 254-279,281
+src/i18n/locales/sv.json
+  s_25989936a1c209::t_1e4547f0580340 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/core/sync/signOut.test.ts
+  s_25989936a1c209::t_c368170587b92a 51,62-63
+src/features/baseplate/components/BaseplateLibraryInitMount/BaseplateLibraryInitMount.test.tsx
+  s_25989936a1c209::t_498798950b1dfd 1-17
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.test.tsx
+  s_25989936a1c209::t_f5ad5a671979be 1-84,86-90,92-99
+  s_25989936a1c209::t_25198ee7c75c25 85,91
+src/features/baseplate/index.ts
+  s_25989936a1c209::t_8a2a79720eeb09 5-8,10-19
+  s_25989936a1c209::t_0628c6b44ba3f8 2
+  s_25989936a1c209::t_52e35afe068cb8 9
+src/features/baseplate/storage/BaseplateStorage.test.ts
+  s_25989936a1c209::t_d9e96bbfef31d1 1-265
+src/core/sync/deleteAccount.test.ts
+  s_25989936a1c209::t_9d2bf929abbdb2 40,51-52
+src/App.tsx
+  s_25989936a1c209::t_801fe8312f9e42 94-98
+  s_25989936a1c209::t_1834e997d46717 323
+src/shared/sync/SyncSessionMount.tsx
+  s_25989936a1c209::t_57aecc098590f7 32
+  s_25989936a1c209::t_0e5d36442a89fd 4
+src/features/baseplate/hooks/useBaseplateLibrary.test.ts
+  s_25989936a1c209::t_3a8334d94a5ca7 1-66
+api/sync/export.ts
+  s_25989936a1c209::t_56b21f58cd72a1 80,93
+  s_25989936a1c209::t_b1e9759c3f5187 21,24
+  s_25989936a1c209::t_0a8b873a8e0f0f 54,57,63
+api/lib/redisKeys.ts
+  s_25989936a1c209::t_1d8c1a7e78a9ac 21
+src/i18n/locales/nb.json
+  s_25989936a1c209::t_2e78461a7d4980 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/i18n/locales/es.json
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+  s_25989936a1c209::t_91aa731ea69d91 2553
+src/i18n/locales/fr.json
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+  s_25989936a1c209::t_43914e0a4c1766 2553
+src/features/baseplate/sync/baseplateAdapter.ts
+  s_25989936a1c209::t_dab3093fcdc4e1 1-124
+src/core/sync/triggers/useBeaconFlush.test.ts
+  s_25989936a1c209::t_e34b849752482a 43-49
+src/core/cqrs/v2/domain/layout/setActiveBaseplate.ts
+  s_25989936a1c209::t_2682d8af1b4299 1-59
+src/core/cqrs/validation/schemas.ts
+  s_25989936a1c209::t_21d7bb6a9481b5 294
+  s_25989936a1c209::t_a42da38960fe7f 253-258
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_25989936a1c209::t_5784a99df7bce8 175-178
+  s_25989936a1c209::t_06a89e58b5662e 21
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_25989936a1c209::t_a271fcb71de7af 279-280
+  s_25989936a1c209::t_bbdcafe770a267 378-386
+  s_25989936a1c209::t_fb27e7ebda1680 92-97
+  s_25989936a1c209::t_f8c6b94bc55cb7 13,16,25-26,30,32
+  s_25989936a1c209::t_826649ca50656d 29
+  s_25989936a1c209::t_3d8ab9531c882d 89-91
+  s_25989936a1c209::t_d13ef2549f0e2d 51-54
+src/core/sync/signOut.ts
+  s_25989936a1c209::t_28e0a0ebb9dda9 86-91,95-99,102
+src/shared/sync/useSignOutFlow.tsx
+  s_25989936a1c209::t_4fda017748c9f7 4,9
+src/core/cqrs/projection/replay.ts
+  s_25989936a1c209::t_9285967fac4f6b 153-157
+src/features/baseplate/hooks/useBaseplateLibrary.ts
+  s_25989936a1c209::t_2385fed4600132 80
+  s_25989936a1c209::t_6590dc785b4e81 110-116
+  s_25989936a1c209::t_59df11dc85da32 92
+  s_25989936a1c209::t_324ee95a8b13ca 156-159,164,168
+  s_25989936a1c209::t_3ebf41dae45ed3 11
+  s_25989936a1c209::t_c41d165d2d9bdd 93
+  s_25989936a1c209::t_1e0ea9abdfd013 14
+  s_25989936a1c209::t_0d4d9c9600c312 1-10,12-13,15-79,81-91,94-109,117-155,160-163,165-167,169-181
+src/core/sync/claim.test.ts
+  s_25989936a1c209::t_0a731182780564 41,52-53,58-64
+src/core/cqrs/events/drawerEvents.ts
+  s_25989936a1c209::t_e2f587893e085a 6
+  s_25989936a1c209::t_f342739fbe8d4c 52-61,68-69
+src/core/cqrs/commands/index.ts
+  s_25989936a1c209::t_6c4c48e1851f1d 49
+src/shared/sync/useDeleteAccountFlow.tsx
+  s_25989936a1c209::t_c698bca39de3c5 4,13
+src/features/baseplate/sync/baseplateAdapter.test.ts
+  s_25989936a1c209::t_6b3d3981f3a7bf 1-297
+src/shell/Sidebar/Sidebar.tsx
+  s_25989936a1c209::t_0d607a0036e5a3 10
+  s_25989936a1c209::t_65bb48bc800abd 258-260
+src/features/baseplate/types/library.ts
+  s_25989936a1c209::t_a596be0ee9b642 1-13
+scripts/sync-admin/lib/delta.ts
+  s_25989936a1c209::t_9afcd054232630 15-17,21
+src/features/baseplate/store/baseplateRegistry.test.ts
+  s_25989936a1c209::t_2e9c58d0de86d7 1-95
+src/core/store/view.ts
+  s_25989936a1c209::t_e2c6b79dfc7c36 116
+  s_25989936a1c209::t_176880b6f68a69 51
+  s_25989936a1c209::t_d980144ab10848 182
+  s_25989936a1c209::t_d56c52c717eb0e 90
+src/shared/contexts/MutationsContext.tsx
+  s_25989936a1c209::t_edf0753674959c 88
+  s_25989936a1c209::t_d8300157dfa272 34
+scripts/sync-admin/commands/tombstones.ts
+  s_25989936a1c209::t_efbce22a488600 6,10
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_25989936a1c209::t_b8276b9c162215 1-54
+src/core/cqrs/v2/registry.ts
+  s_25989936a1c209::t_b95a1f7734c77a 89
+  s_25989936a1c209::t_7c8a85b4050f13 127
+  s_25989936a1c209::t_b06ca7213b7b1a 37
+api/sync/account.ts
+  s_25989936a1c209::t_cec1c6454b1b83 24,33-34
+  s_25989936a1c209::t_3a7f05fa7d4c95 74,79,86
+src/core/store/layout/types.ts
+  s_25989936a1c209::t_fdfc67ec12d5e0 74-83
+  s_25989936a1c209::t_30e38cb32406b9 12
+src/i18n/locales/ja.json
+  s_25989936a1c209::t_ce2342c50beef8 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/core/cqrs/commandDescriptions.ts
+  s_25989936a1c209::t_3f2a11b35e740f 33
+src/core/cqrs/validation/schemas.test.ts
+  s_25989936a1c209::t_647bad951794fb 46,48
+  s_25989936a1c209::t_65fec1a0ad68db 37
+src/features/command-palette/commands.ts
+  s_25989936a1c209::t_195c8cd287059c 75-79
+  s_25989936a1c209::t_ef7981391cfecf 74
+api/sync/baseplates/[id].ts
+  s_25989936a1c209::t_dfd9731901b6ed 1-296
+src/features/baseplate/components/BaseplateLibraryInitMount/BaseplateLibraryInitMount.tsx
+  s_25989936a1c209::t_e27e31c27b0639 1-13
+src/core/sync/poller.test.ts
+  s_25989936a1c209::t_e11dd32fec286f 37,50-51,55-61
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.tsx
+  s_25989936a1c209::t_7af7827ee6e049 115
+  s_25989936a1c209::t_1ba976453247ef 1-7,9-114,116-123
+  s_25989936a1c209::t_71823b0a4b18e5 8
+src/shell/Header/Header.tsx
+  s_25989936a1c209::t_ad1f3f3389c88d 308-316
+  s_25989936a1c209::t_9bdcfcb01a5258 29-33
+  s_25989936a1c209::t_0c97839e04e5f0 66-82
+src/features/baseplate/storage/BaseplateStorage.ts
+  s_25989936a1c209::t_3ab4ad217ab7a3 84-87
+  s_25989936a1c209::t_2c2de1be9277e6 133-135,142
+  s_25989936a1c209::t_860f0b23d94e2c 1-83,88-132,136-141,143-158,163-322
+  s_25989936a1c209::t_3cc37310d7448b 159-162
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.test.tsx
+  s_25989936a1c209::t_84df1b288ba9e4 1-53
+src/core/sync/adapters/types.ts
+  s_25989936a1c209::t_c9fd4ae7558979 104-114,117,120,124-127,132
+src/core/sync/deleteAccount.ts
+  s_25989936a1c209::t_d55354d0945b3b 59-64
+  s_a891d794d36252::t_3cd11ca35f944f 21
+scripts/sync-admin/lib/args.ts
+  s_25989936a1c209::t_bdf21699109394 16
+src/core/sync/triggers/usePeriodicPoll.test.ts
+  s_25989936a1c209::t_96910607ba070d 22-26
+src/core/cqrs/versioning/eventVersions.ts
+  s_25989936a1c209::t_0b10dc3397e9de 41
+src/features/baseplate/components/ActiveBaseplatePanel/index.ts
+  s_25989936a1c209::t_a543db6fb3b11c 1
+src/core/cqrs/commands/drawerCommands.ts
+  s_25989936a1c209::t_66839b84ccc1b2 26-30,37-38
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_25989936a1c209::t_ff66fe5876ac7b 53
+src/core/cqrs/v2/domain/layout/setActiveBaseplate.test.ts
+  s_25989936a1c209::t_a3429d2c5dc4e1 41,63
+  s_25989936a1c209::t_9d8dc1bc638abc 1-3,5-40,42-62,64-85
+  s_25989936a1c209::t_92534fbb33e18d 4
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_25989936a1c209::t_187d1c3674ec60 1-99
+src/i18n/locales/de.json
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+  s_25989936a1c209::t_78a8863366841f 2553
+src/core/store/layout/coreActions.ts
+  s_25989936a1c209::t_4ddf52ba0ff268 59-68
+  s_25989936a1c209::t_b2bc964e52de10 1-8
+src/features/baseplate/components/DeleteBaseplateWarningDialog/index.ts
+  s_25989936a1c209::t_fc50b55614c801 1
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_25989936a1c209::t_4d7e7f368690b4 1-60,71-231,233-339,341-415,418,420-426
+  s_25989936a1c209::t_97ffa81143fb08 61-70
+  s_25989936a1c209::t_e2d400a783dd9e 416-417,419
+  s_25989936a1c209::t_8706624cfc6542 340
+  s_25989936a1c209::t_eff36db2c1789c 232
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_25989936a1c209::t_cfe0842f127d77 202
+  s_25989936a1c209::t_a1fd3a2c786ef2 491
+  s_25989936a1c209::t_7b6aafcce80991 95,106
+src/core/sync/poller.ts
+  s_25989936a1c209::t_45561c04df6ea6 115-116
+  s_25989936a1c209::t_6d09c4407ab172 160-165
+  s_25989936a1c209::t_42f09a98b9944e 15,20-26
+src/core/sync/engine.ts
+  s_25989936a1c209::t_626fbc2c8f0ae4 187-189
+  s_25989936a1c209::t_f0c7f2c3fa61a7 241-246,249,256-257
+api/sync/manifest.ts
+  s_25989936a1c209::t_a747253586a268 57,60,63
+  s_25989936a1c209::t_0684e9dc005ac6 15
+src/features/baseplate/store/baseplateRegistry.ts
+  s_25989936a1c209::t_203b02d4e98d8b 1-115
+src/core/cqrs/index.ts
+  s_25989936a1c209::t_ca4ed727fe00fd 70
+  s_25989936a1c209::t_0c4ace03dfaeaf 119
+src/features/baseplate/sync/baseplateEvents.ts
+  s_25989936a1c209::t_79829eeadc5645 1-30
+src/i18n/locales/uk.json
+  s_25989936a1c209::t_3e014df5a48251 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_25989936a1c209::t_404d3d8a2a6615 7
+  s_25989936a1c209::t_3a1b42d4ebd977 57
+  s_25989936a1c209::t_61dcd7da9cd08b 84
+  s_25989936a1c209::t_0e10ad8671b9c9 1-6,8-56,58-83,85-99
+src/features/baseplate/components/BaseplateLibraryModal/index.tsx
+  s_25989936a1c209::t_b495b4c55b5cd6 1
+api/lib/baseplateValidation.ts
+  s_25989936a1c209::t_83f92f4fcd9f51 1-120,123-168
+  s_25989936a1c209::t_b95efee9c13d13 121-122
+api/sync/baseplates/[id].test.ts
+  s_25989936a1c209::t_f95f223bc85d79 1-341
+scripts/sync-admin/lib/inventory.ts
+  s_25989936a1c209::t_9502a1fa2aac16 67
+  s_25989936a1c209::t_f090297e73de25 48
+src/core/sync/claim.ts
+  s_25989936a1c209::t_65827de00753f1 283-284,288
+  s_25989936a1c209::t_b0944a5c5e65e1 40,45
+  s_25989936a1c209::t_e92f63b85a0a8d 89,91,93,96,107
+  s_25989936a1c209::t_27dce615436e08 140-145,152-153
+  s_25989936a1c209::t_52ee88313cd6a3 201-206,218-223
+packages/branded-types/src/ids.ts
+  s_25989936a1c209::t_8e43965f3453f1 10
+  s_25989936a1c209::t_2e11b6531d3bba 22-23
+src/i18n/locales/nl.json
+  s_25989936a1c209::t_0739c20521ece0 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.tsx
+  s_25989936a1c209::t_e8e0dc2f85f671 1-87,91-141,143-155
+  s_25989936a1c209::t_1dac8d775622e8 142
+  s_25989936a1c209::t_659dcbfecf1580 88-90
+src/core/sync/engine.test.ts
+  s_25989936a1c209::t_e32b53b3010a5e 60,74-75
+api/sync/manifest.test.ts
+  s_25989936a1c209::t_842d7aa711c151 128
+src/i18n/locales/en.ts
+  s_25989936a1c209::t_5dd56844405f51 2632
+  s_25989936a1c209::t_3aac699a4e9e69 2927
+  s_25989936a1c209::t_6c37fb6f5998d5 2511-2535
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_25989936a1c209::t_c94c8e09ec3ed9 73-75,94,101,104,114
+  s_25989936a1c209::t_a1df88916cc7d6 1-25,27-72,76-93,95-100,102-103,105-113,115
+  s_25989936a1c209::t_8a51986ff44b63 26
+src/i18n/locales/pt-BR.json
+  s_25989936a1c209::t_5ec3d59732f7ed 2553
+  s_25989936a1c209::t_746060655d9ce1 2624-2647
+src/core/cqrs/events/index.ts
+  s_25989936a1c209::t_57a84954dd13dd 41
+  s_d2f87cf187c82c::t_ef160b96a095b2 71
+src/core/types.ts
+  s_25989936a1c209::t_c0e2be18d8be47 52-54
+  s_25989936a1c209::t_3cd7f312028ed9 15-38
+src/features/baseplate/components/BaseplateSelector/index.ts
+  s_25989936a1c209::t_ac439aba39b1d3 1
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_25989936a1c209::t_237577c85f5c65 1-65,68-123
+  s_25989936a1c209::t_7ea1db9343509e 66-67
+src/features/baseplate/components/BaseplateLibraryInitMount/index.ts
+  s_25989936a1c209::t_cd068bd48c29b0 1
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.test.tsx
+  s_25989936a1c209::t_9c32ee0e5a499c 1-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "a85106e8b2c3429f4104c3c5653c528d420e9fae",
+  "prompts": {},
+  "sessions": {
+    "s_25989936a1c209": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa9573eb-b4fd-4ed1-b09d-791c1cdbffdc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a891d794d36252": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b338857e-f1fa-4eb5-9862-5dfffa68bce6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d2f87cf187c82c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a88fc6b04e7b74ae4",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
