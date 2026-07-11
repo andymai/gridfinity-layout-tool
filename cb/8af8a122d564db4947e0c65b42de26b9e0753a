@@ -1,0 +1,115 @@
+src/features/bin-designer/store/slices/paramSlice.ts
+  s_b7db0526c14c7e::t_b615b0a3528f77 261,266,270-272,277
+  s_b7db0526c14c7e::t_bb99aa9e94fd67 28-32
+src/features/bin-designer/types/featureColors.test.ts
+  s_b7db0526c14c7e::t_95d1d97c92f73c 45
+  s_b7db0526c14c7e::t_f36ccca00746b9 189
+  s_b7db0526c14c7e::t_7466987f0e27ef 277-322
+  s_b7db0526c14c7e::t_e58f4c2fe06ff1 15,19
+src/features/bin-designer/utils/zoneLabels.ts
+  s_b7db0526c14c7e::t_6d5bf6a0c2a7f7 39-40
+  s_b7db0526c14c7e::t_0fc12fbbdf5683 100-101
+  s_b7db0526c14c7e::t_9da63b6452c7f3 74
+src/features/bin-designer/utils/lipSeamSplitter.ts
+  s_b7db0526c14c7e::t_8f8dbf1bc3392b 31-33,35-40
+  s_b7db0526c14c7e::t_390e7948d0b793 220
+  s_b7db0526c14c7e::t_5df2f70e2595a3 262-270,278-280,282-293,300-309,315
+  s_b7db0526c14c7e::t_fe574caa9dc768 184-188,192-193,195,202-212,218-219,221-225
+  s_b7db0526c14c7e::t_b0914768d9aae1 310
+src/features/bin-designer/utils/materialMapping.ts
+  s_b7db0526c14c7e::t_b9612caea10ddc 16,19
+  s_b7db0526c14c7e::t_9933d8be610a1c 107-109,117
+src/features/bin-designer/utils/materialMapping.test.ts
+  s_b7db0526c14c7e::t_39c65a6dafcc5b 76-102
+  s_b7db0526c14c7e::t_76103e874c7c78 32
+src/features/bin-designer/types/index.ts
+  s_b7db0526c14c7e::t_f3d5204169e9eb 31-44
+  s_b7db0526c14c7e::t_6de53f3ab60518 982
+src/features/bin-designer/constants/defaults.test.ts
+  s_b7db0526c14c7e::t_7d2d4c43cbe771 477,481-505
+  s_b7db0526c14c7e::t_2f519d6b5a6d9f 506-508
+  s_b7db0526c14c7e::t_dd90672af2db19 509
+src/i18n/locales/ja.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/i18n/locales/de.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.test.tsx
+  s_b7db0526c14c7e::t_5ca295ad64c24f 27
+src/i18n/locales/pt-BR.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/utils/multiColorGroups.test.ts
+  s_b7db0526c14c7e::t_43569d077ff2df 33
+src/i18n/locales/uk.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/i18n/locales/es.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_b7db0526c14c7e::t_b540792e8c3c01 135-137,145-146
+  s_b7db0526c14c7e::t_e3bc4c874fcb56 171-173,182
+  s_b7db0526c14c7e::t_aba7244f573b76 28-29
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_b7db0526c14c7e::t_1c1d51b1cd53bc 33
+api/lib/designerValidation.ts
+  s_b7db0526c14c7e::t_c1623147a74c3e 392-414
+  s_b7db0526c14c7e::t_3a0691c736184c 356,358-361
+  s_b7db0526c14c7e::t_96a30cd02af8d5 467-471
+src/i18n/locales/fr.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
+  s_b7db0526c14c7e::t_602e6273d02a03 47-48
+src/features/bin-designer/utils/lipSeamSplitter.test.ts
+  s_b7db0526c14c7e::t_ab62267499d6b2 131-213
+src/i18n/locales/nb.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/i18n/locales/nl.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_b7db0526c14c7e::t_18b551936d6e51 96-100
+  s_b7db0526c14c7e::t_aa3fcebddcf91c 110-113,115-126
+  s_b7db0526c14c7e::t_23fd7e1290512b 134
+  s_b7db0526c14c7e::t_4e4107f0815741 168,178-179
+  s_b7db0526c14c7e::t_9b4db13fa0cf4c 276-279
+  s_b7db0526c14c7e::t_bd3a648eb5e251 21
+  s_b7db0526c14c7e::t_5b4f9f44ef95dd 377-379
+  s_b7db0526c14c7e::t_9959fc2b340b89 69-70,82-83
+  s_b7db0526c14c7e::t_ae1afaf7d002da 27
+  s_b7db0526c14c7e::t_3246641cbd8dc7 350-376,380-400
+src/i18n/locales/sv.json
+  s_b7db0526c14c7e::t_482714720edf13 261-263,306
+src/features/bin-designer/constants/defaults.ts
+  s_b7db0526c14c7e::t_08345b4d80c5bf 22-23
+  s_b7db0526c14c7e::t_11389458a52af6 341
+  s_b7db0526c14c7e::t_cbf0b13179b8c8 351-352,364
+  s_b7db0526c14c7e::t_9c9b2fcc2a5d02 213
+  s_b7db0526c14c7e::t_73f9d268401e3c 247-267
+src/features/bin-designer/types/featureColors.ts
+  s_b7db0526c14c7e::t_65ff06b5221983 35-51
+  s_b7db0526c14c7e::t_84da30d736e3cf 106
+  s_b7db0526c14c7e::t_e7d1edb1b685b1 424-427
+  s_b7db0526c14c7e::t_391c833baaf609 265-266
+  s_b7db0526c14c7e::t_5a3c81c5af6bff 219
+  s_b7db0526c14c7e::t_5e60f1f4748bcf 92
+  s_b7db0526c14c7e::t_4abf6ed4f5abfa 357-361
+  s_b7db0526c14c7e::t_e3205e5f7461b0 227-248
+src/features/bin-designer/components/ExportDialog/SlicerHandoffPreview.test.tsx
+  s_b7db0526c14c7e::t_639c7be9908129 39
+src/i18n/locales/en.ts
+  s_b7db0526c14c7e::t_d6092b28d7ac53 1806-1809
+  s_b7db0526c14c7e::t_9b2b65bad78917 1866
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "cb8af8a122d564db4947e0c65b42de26b9e0753a",
+  "prompts": {},
+  "sessions": {
+    "s_b7db0526c14c7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7c22628-31f5-4d27-8161-697cc3777f1f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
