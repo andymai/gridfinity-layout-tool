@@ -58,6 +58,25 @@ describe('buildMultiColorGroups', () => {
     expect(buildMultiColorGroups(faceGroups, vertices, indices, colors(), allZones)).toBeNull();
   });
 
+  it('applies the top accent even when activeZones omits it (preview robustness)', () => {
+    // Regression: the 3D preview builds activeZones without 'topAccent'. The
+    // accent must still render, derived from featureColors directly.
+    const low = [0, 0, 0, 0, 0, 1, 0.2, 0, 0.5];
+    const high = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5]; // mesh top = 6, band 2mm → cut at 4
+    const vertices = new Float32Array([...low, ...high]);
+    const indices = new Uint32Array([0, 1, 2, 3, 4, 5]);
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.BASE }];
+    const c = colors({
+      enabled: true,
+      topAccent: { enabled: true, heightMm: 2, color: '#123456' },
+    });
+    const bodyOnly: ReadonlySet<ColorZone> = new Set(['body']); // omits 'topAccent'
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, bodyOnly);
+    expect(result).not.toBeNull();
+    expect(result?.zoneColors[zoneIndex('topAccent')]).toBe('#123456');
+    expect(result?.triZones).toContain('topAccent');
+  });
+
   it('places body at material index 0 and one slot per ColorZone (no hex dedup)', () => {
     const { vertices, indices } = meshFromCentroids([
       { x: 0, y: 0 },

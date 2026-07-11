@@ -242,8 +242,19 @@ export function maxZOfVertices(vertices: ArrayLike<number>): number {
  * bin-body mesh top (the lid is a separate object and never contributes here).
  */
 export function topAccentCutZ(topAccent: TopAccentConfig, meshTopZ: number): number | null {
-  if (!topAccent.enabled || topAccent.heightMm <= 0 || !Number.isFinite(meshTopZ)) return null;
+  if (!topAccentActive(topAccent) || !Number.isFinite(meshTopZ)) return null;
   return meshTopZ - topAccent.heightMm;
+}
+
+/** True when the top-accent band paints anything (enabled with positive height).
+ *  Fully determined by the config — unlike scoop/dividers, it needs no external
+ *  feature flag — so preview/export can derive its activeness without relying on
+ *  a caller-supplied active-zone set. */
+export function topAccentActive(topAccent: {
+  readonly enabled: boolean;
+  readonly heightMm: number;
+}): boolean {
+  return topAccent.enabled && topAccent.heightMm > 0;
 }
 
 export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
@@ -424,7 +435,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Top accent is independent of every other feature — a positive-height band
   // recolors the top of the bin whether or not it has a lip.
   const topAccent = p.featureColors?.topAccent;
-  if (topAccent?.enabled && topAccent.heightMm > 0) zones.add('topAccent');
+  if (topAccent && topAccentActive(topAccent)) zones.add('topAccent');
   return zones;
 }
 

@@ -507,6 +507,16 @@ describe('migrateParams', () => {
     expect(migrateParams({ featureColors: badHeight }).featureColors.topAccent.heightMm).toBe(2);
   });
 
+  it('clamps a persisted band taller than the wall height to the bin bound', () => {
+    // 1 unit × 7mm/unit = 7mm wall; a stored 50mm band clamps to 7mm so it can't
+    // recolor the whole bin on load.
+    const tall = {
+      topAccent: { enabled: true, heightMm: 50, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const result = migrateParams({ height: 1, heightUnitMm: 7, featureColors: tall });
+    expect(result.featureColors.topAccent.heightMm).toBe(7);
+  });
+
   it('should migrate legacy slot IDs to hex colors', () => {
     const legacy = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
     const result = migrateParams({

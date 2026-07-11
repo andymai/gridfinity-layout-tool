@@ -164,13 +164,20 @@ export function buildMultiColorGroups(
   const coloredOrdinals = cutoutUnits
     .map((u, i) => (u.color !== undefined ? i : -1))
     .filter((i) => i >= 0);
-  if (isSingleColor(featureColors, activeZones) && coloredOrdinals.length === 0) return null;
+
+  // Derive the top-accent cut from featureColors directly rather than trusting
+  // the caller's activeZones — some callers (e.g. the 3D preview) build their
+  // zone set without it, which would otherwise make the accent silently vanish
+  // there. Union it in so isSingleColor sees the accent color too.
+  const cutZ = topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices));
+  const zones =
+    cutZ !== null && !activeZones.has('topAccent')
+      ? new Set(activeZones).add('topAccent')
+      : activeZones;
+  if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0) return null;
 
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
-  const cutZ = activeZones.has('topAccent')
-    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
-    : null;
 
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,

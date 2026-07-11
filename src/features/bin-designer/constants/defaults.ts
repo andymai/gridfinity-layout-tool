@@ -251,18 +251,23 @@ interface LegacyFeatureColorInput {
  *  from the default when a field is missing or the wrong type. */
 function migrateTopAccent(
   raw: LegacyFeatureColorInput['topAccent'],
-  body: string
+  body: string,
+  maxHeightMm: number
 ): TopAccentConfig {
   const fallback = DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
   if (!raw || typeof raw !== 'object') {
-    return { enabled: false, heightMm: fallback.heightMm, color: body };
+    return { enabled: false, heightMm: Math.min(fallback.heightMm, maxHeightMm), color: body };
   }
+  const rawHeight =
+    typeof raw.heightMm === 'number' && Number.isFinite(raw.heightMm) && raw.heightMm >= 0
+      ? raw.heightMm
+      : fallback.heightMm;
   return {
     enabled: typeof raw.enabled === 'boolean' ? raw.enabled : false,
-    heightMm:
-      typeof raw.heightMm === 'number' && Number.isFinite(raw.heightMm) && raw.heightMm >= 0
-        ? raw.heightMm
-        : fallback.heightMm,
+    // Clamp to this design's wall-height bound so a persisted band taller than
+    // the bin (saved tall, then shrunk) can't recolor the whole bin on load —
+    // mirrors the UI slider cap.
+    heightMm: Math.min(rawHeight, maxHeightMm),
     color: typeof raw.color === 'string' ? resolveColor(raw.color, body) : body,
   };
 }
@@ -323,7 +328,10 @@ function migrateLip(raw: LegacyFeatureColorInput['lip'], body: string): FeatureC
  * `enabled` is back-filled on first load — any pre-existing design with any color
  * customization is treated as opted-in so the user's colored designs keep their look.
  */
-function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): FeatureColorConfig {
+function migrateFeatureColors(
+  raw: LegacyFeatureColorInput | undefined,
+  maxTopAccentMm: number
+): FeatureColorConfig {
   if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
 
   const body = resolveColor(raw.body, DEFAULT_FEATURE_COLOR_CONFIG.body);
@@ -338,7 +346,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   // when this field is added by migration.
   const text = resolveColor(raw.text, labelTab);
   const lid = resolveColor(raw.lid, body);
-  const topAccent = migrateTopAccent(raw.topAccent, body);
+  const topAccent = migrateTopAccent(raw.topAccent, body, maxTopAccentMm);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -632,6 +640,13 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...rest
   } = params as Record<string, unknown>;
 
+  // Nominal wall height (height units × mm/unit), matching the top-accent slider
+  // cap in the Colors panel. Used to clamp a persisted band on load.
+  const heightUnits = typeof params.height === 'number' ? params.height : DEFAULT_BIN_PARAMS.height;
+  const heightUnitMm =
+    typeof params.heightUnitMm === 'number' ? params.heightUnitMm : DEFAULT_BIN_PARAMS.heightUnitMm;
+  const wallHeightMm = Math.max(1, heightUnits * heightUnitMm);
+
   return {
     ...DEFAULT_BIN_PARAMS,
     ...rest,
@@ -650,7 +665,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ),
     cutoutConfig,
     wallPattern: wallPatternConfig,
-    featureColors: migrateFeatureColors(params.featureColors),
+    featureColors: migrateFeatureColors(params.featureColors, wallHeightMm),
     lid: (() => {
       // Strip locked-down legacy fields (`fit`, `wallThickness`,
       // `topThickness`) from persisted designs — they're hardcoded in
