@@ -1,0 +1,140 @@
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_ac69cc04ee2b78::t_adeec155f8624b 78-80,88-89
+  s_ac69cc04ee2b78::t_a2eba0b50787fc 34-36
+  s_ac69cc04ee2b78::t_ff1feeaa1d3e42 21-22,24
+  s_ac69cc04ee2b78::t_68c219e40a9d42 207
+  s_a115a02941d430::t_345100fa0219e4 23,127-128,145-147,153-159
+src/features/bin-designer/hooks/useThumbnailCapture.ts
+  s_ac69cc04ee2b78::t_294bfeba1334e2 80-84
+  s_ac69cc04ee2b78::t_a33c6c7ae6656b 108-110
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_ac69cc04ee2b78::t_0a85c73e32577f 146
+  s_ac69cc04ee2b78::t_b3450481ecdf4c 25
+src/features/design-linking/hooks/useBinLinking.ts
+  s_ac69cc04ee2b78::t_724e8e4f768a87 69-71
+  s_ac69cc04ee2b78::t_31ef9d8eb5904f 315,318,326-368
+  s_ac69cc04ee2b78::t_d58da3f726f9a9 411
+  s_ac69cc04ee2b78::t_1b7080ddbeaee8 18-20,22
+  s_ac69cc04ee2b78::t_18f8f4d2193462 312-314
+  s_ac69cc04ee2b78::t_510dcdc2fc16f0 316-317
+  s_ac69cc04ee2b78::t_bca2b9670c7533 319
+  s_ac69cc04ee2b78::t_149a3b744c6b9e 323-325
+  s_ac69cc04ee2b78::t_1ac141b87b8a8a 310-311
+src/features/bin-designer/store/index.ts
+  s_ac69cc04ee2b78::t_22b3bf8411027e 7
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_ac69cc04ee2b78::t_89cf9441646a75 77
+  s_ac69cc04ee2b78::t_0f53fe8c66f086 90-94
+  s_ac69cc04ee2b78::t_c55be974f523df 29,32
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.test.ts
+  s_ac69cc04ee2b78::t_f1058f69c8c0d5 253-265
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_ac69cc04ee2b78::t_6eea158f1c5e19 8
+  s_ac69cc04ee2b78::t_cfd12e1aed2fbd 63-83
+  s_ac69cc04ee2b78::t_fe5e63aec2cc49 187-202
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_ac69cc04ee2b78::t_c21a75f606202f 119-120
+  s_ac69cc04ee2b78::t_cd80725316cc39 121-123
+  s_ac69cc04ee2b78::t_1e015bd40d0dff 124-125,127
+src/i18n/locales/nl.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/i18n/locales/en.ts
+  s_ac69cc04ee2b78::t_d671159c807d6f 2793-2795
+  s_ac69cc04ee2b78::t_80d3d758af55fe 2862
+  s_ac69cc04ee2b78::t_f837a488c32240 2201-2203
+src/i18n/locales/uk.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_ac69cc04ee2b78::t_e7d8c2c3580151 19
+  s_ac69cc04ee2b78::t_796316e781b55d 20-22
+  s_ac69cc04ee2b78::t_725655ea5ff714 90,113
+src/i18n/locales/sv.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_ac69cc04ee2b78::t_c5820481e0296f 130-137,146
+  s_ac69cc04ee2b78::t_2cf118e11a476d 30
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  s_ac69cc04ee2b78::t_9a7be70518726c 18
+  s_ac69cc04ee2b78::t_57078b7dc79836 1-17,19-25
+src/i18n/locales/pt-BR.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_ac69cc04ee2b78::t_c2e159b06b142b 1-54,56-64
+  s_ac69cc04ee2b78::t_ff6a6b3a8baf05 55
+src/features/bin-designer/hooks/useCreateFromBin.test.ts
+  s_ac69cc04ee2b78::t_2a8747fcea9cc0 159-198
+src/features/bin-designer/index.ts
+  s_ac69cc04ee2b78::t_b65a917a85c66b 17-22
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_ac69cc04ee2b78::t_6eaeb6a2921986 27-28
+  s_ac69cc04ee2b78::t_387c2c555dd692 606-637
+api/lib/designerValidation.ts
+  s_ac69cc04ee2b78::t_07d9b8fdeae93c 96
+src/features/bin-designer/store/customBinRegistry.ts
+  s_ac69cc04ee2b78::t_269cd43ffce60a 42-49
+  s_ac69cc04ee2b78::t_7e172d7d98359d 80-88,90,101-113
+  s_ac69cc04ee2b78::t_3bef0fee944206 55-70
+  s_ac69cc04ee2b78::t_700a6650109504 54
+  s_ac69cc04ee2b78::t_887a84b9faa462 89
+src/i18n/locales/de.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/i18n/locales/fr.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_ac69cc04ee2b78::t_3ebc5cce7411bc 33
+src/i18n/locales/nb.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.test.tsx
+  s_ac69cc04ee2b78::t_4c4e8ec35ce19a 1-30
+src/shared/utils/fractionalEdge.test.ts
+  s_ac69cc04ee2b78::t_8ee4cb1a6804e9 1-91
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.test.ts
+  s_ac69cc04ee2b78::t_34fd180f37110e 1-83
+src/features/bin-designer/types/index.ts
+  s_ac69cc04ee2b78::t_42eef872e539d6 555-562
+src/i18n/locales/ja.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_ac69cc04ee2b78::t_62af3c6d5f6811 30-36,39,44
+  s_ac69cc04ee2b78::t_d17889cf0e058b 15,17-18
+  s_ac69cc04ee2b78::t_544f955a7cd87c 272-293
+  s_ac69cc04ee2b78::t_c0391564fd8324 113-126
+  s_ac69cc04ee2b78::t_423a0232f50860 294-296
+  s_ac69cc04ee2b78::t_af4f2142b9da5b 297
+src/features/bin-designer/constants/defaults.ts
+  s_ac69cc04ee2b78::t_98c3fc72829827 383
+src/i18n/locales/es.json
+  s_ac69cc04ee2b78::t_47265c3bb6c7d2 749-750,1247-1248,1283
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_ac69cc04ee2b78::t_0737a800c43a0f 32,212
+src/features/bin-designer/hooks/useThumbnailRegeneration.ts
+  s_a115a02941d430::t_1ad95642565740 16,82
+src/shared/utils/fractionalEdge.ts
+  s_ac69cc04ee2b78::t_4f6f6897b4ae9c 1-72
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_ac69cc04ee2b78::t_4b0c8255d591be 18,142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "933d1cd114c63931690fadee38301cd0cc27954a",
+  "prompts": {},
+  "sessions": {
+    "s_a115a02941d430": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "69f75b08-690b-4c4a-85ea-12fbb174eee6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_ac69cc04ee2b78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "249abc01-e04b-4fb7-81f1-ddaeb433eec8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
