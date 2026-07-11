@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "dev": "pnpm run build:content && pnpm run build:en-locale && vite",
-    "build": "pnpm run build:content && pnpm run build:en-locale && tsc -b && vite build && tsx scripts/build-route-entries.ts",
+    "build": "pnpm run build:content && pnpm run build:en-locale && tsgo -b && vite build && tsx scripts/build-route-entries.ts",
     "build:content": "tsx scripts/build-content.ts",
     "gen:seo-images": "tsx scripts/gen-seo-images.ts",
     "gen:supporters-meshes": "tsx --tsconfig tsconfig.app.json scripts/gen-supporters-meshes.ts",
@@ -64,7 +64,7 @@
     "bench:json": "vitest bench --outputJson benchmarks/latest.json",
     "knip": "knip",
     "knip:fix": "knip --fix",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsgo -b --noEmit",
     "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
     "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts"
   },
@@ -166,6 +166,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.0",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vercel/node": "^5.8.22",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.9",
