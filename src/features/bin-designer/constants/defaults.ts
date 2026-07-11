@@ -648,8 +648,13 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     typeof v === 'number' && Number.isFinite(v) ? v : fallback;
   const heightUnits = finiteNum(params.height, DEFAULT_BIN_PARAMS.height);
   const heightUnitMm = finiteNum(params.heightUnitMm, DEFAULT_BIN_PARAMS.heightUnitMm);
-  const extraWallHeightMm = Math.max(0, finiteNum(params.extraWallHeightMm, 0));
-  const wallHeightMm = Math.max(1, heightUnits * heightUnitMm + extraWallHeightMm);
+  // Use the SAME normalized collar the returned params carry (clamped to
+  // [MIN, MAX]) so the accent cap can't exceed the bin's real post-migration
+  // wall top when a persisted collar is out of range.
+  const wallHeightMm = Math.max(
+    1,
+    heightUnits * heightUnitMm + migrateExtraWallHeightMm(params.extraWallHeightMm)
+  );
 
   return {
     ...DEFAULT_BIN_PARAMS,

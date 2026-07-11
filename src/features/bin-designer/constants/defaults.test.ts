@@ -531,6 +531,24 @@ describe('migrateParams', () => {
     expect(result.featureColors.topAccent.heightMm).toBe(15);
   });
 
+  it('uses the clamped (not raw) collar for the top-accent bound', () => {
+    // A persisted collar above MAX is normalized to MAX everywhere; the accent
+    // bound must use that clamped value so the band can't exceed the bin's real
+    // post-migration wall top.
+    const banded = {
+      topAccent: { enabled: true, heightMm: 5000, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const result = migrateParams({
+      height: 1,
+      heightUnitMm: 7,
+      extraWallHeightMm: 99999,
+      featureColors: banded,
+    });
+    expect(result.featureColors.topAccent.heightMm).toBe(
+      7 + DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT
+    );
+  });
+
   it('rejects NaN height/heightUnitMm when computing the clamp bound', () => {
     const banded = {
       topAccent: { enabled: true, heightMm: 3, color: '#ff0000' },

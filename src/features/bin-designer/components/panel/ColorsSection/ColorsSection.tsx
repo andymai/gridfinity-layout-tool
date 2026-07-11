@@ -147,6 +147,17 @@ export function ColorsSection() {
 
   useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
 
+  // Clamp the *stored* band height when the wall cap drops (e.g. the user shrinks
+  // the bin after setting a tall band). Preview/export read the stored heightMm
+  // directly, so without this a stale over-cap value would recolor the whole bin
+  // until the slider is touched. Guarded so it only fires when actually over-cap
+  // (post-clamp the condition is false → no loop).
+  useEffect(() => {
+    if (topAccent.enabled && topAccent.heightMm > topAccentMaxMm) {
+      updateFeatureColors({ topAccent: { heightMm: topAccentMaxMm } });
+    }
+  }, [topAccent.enabled, topAccent.heightMm, topAccentMaxMm, updateFeatureColors]);
+
   // Local LRU of recently-committed colors so the picker can offer them
   // as quick-pick swatches even on a fresh, all-body design.
   const remember = useCallback((hex: string) => {
