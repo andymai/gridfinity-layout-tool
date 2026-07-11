@@ -15,9 +15,10 @@ minimumReleaseAgeExclude:
   - '@types/*'
   - '@typescript-eslint/*'
   - typescript-eslint
-  # @typescript/native-preview (the tsgo native compiler) publishes dated dev
-  # builds daily, so a fixed cooldown would perpetually block the newest one.
-  - '@typescript/*'
+  # @typescript/native-preview (the tsgo native compiler, incl. its
+  # per-platform binary packages) publishes dated dev builds daily, so a fixed
+  # cooldown would perpetually block the newest one.
+  - '@typescript/native-preview*'
   - '@posthog/*'
   - posthog-js
   - '@vercel/*'
