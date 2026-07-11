@@ -338,4 +338,18 @@ describe('id validation', () => {
     );
     expect(res._status).toBe(404);
   });
+
+  it('accepts legacy share id shapes (aligned with designs/layouts)', async () => {
+    const { default: handler } = await import('./[id]');
+    const legacyIds = [
+      '3f2504e0-4f89-41d3-9a0c-0305e82c3301', // UUID
+      'lq4h9x2-abc1def', // base36 timestamp + 7-char suffix
+      'abc123XYZ789', // 12-char alphanumeric
+    ];
+    for (const id of legacyIds) {
+      const res = makeRes();
+      await handler(makeReq({ method: 'GET', id }), res as unknown as VercelResponse);
+      expect(res._status).not.toBe(400);
+    }
+  });
 });

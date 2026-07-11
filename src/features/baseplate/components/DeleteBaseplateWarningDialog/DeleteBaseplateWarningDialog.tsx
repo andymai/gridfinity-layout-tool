@@ -42,10 +42,12 @@ export function DeleteBaseplateWarningDialog({
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
+    // Capture phase: the dialog container calls stopPropagation on keydown,
+    // which would otherwise starve this bubble-phase listener.
+    document.addEventListener('keydown', handleEscape, true);
     return () => {
       document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleEscape, true);
       if (previousFocusRef.current?.isConnected) {
         previousFocusRef.current.focus();
       }

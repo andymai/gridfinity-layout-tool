@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
-import { baseplateDesignId } from '@/core/types';
+import { baseplateDesignId, layoutId } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
 import { isOk } from '@/core/result';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -95,5 +95,29 @@ describe('useBaseplateLibraryInit', () => {
       expect(useLayoutStore.getState().layout.baseplateParams?.magnetHoles).toBe(true);
     });
     expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
+  });
+
+  it('does not stamp the seed onto a layout switched to mid-resolve', async () => {
+    useLayoutStore
+      .getState()
+      .importLayout(createTestLayout({ baseplateParams: params }), layoutId('layout-a'));
+
+    renderHook(() => useBaseplateLibraryInit());
+
+    // Switch to a baseplate-free layout before the auto-seed's IndexedDB write
+    // resolves. The in-flight resolution must not write its pointer here.
+    act(() => {
+      useLayoutStore.getState().importLayout(createTestLayout(), layoutId('layout-b'));
+    });
+
+    await waitFor(async () => {
+      const designs = await listDesigns();
+      if (!isOk(designs)) throw new Error('listDesigns failed');
+      expect(designs.value).toHaveLength(1);
+    });
+
+    expect(useLayoutStore.getState().activeLayoutId).toBe(layoutId('layout-b'));
+    expect(useLayoutStore.getState().layout.activeBaseplateId).toBeUndefined();
+    expect(useLayoutStore.getState().layout.baseplateParams).toBeUndefined();
   });
 });

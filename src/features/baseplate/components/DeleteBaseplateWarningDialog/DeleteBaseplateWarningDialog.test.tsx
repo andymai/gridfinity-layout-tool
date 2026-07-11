@@ -71,4 +71,19 @@ describe('DeleteBaseplateWarningDialog', () => {
     fireEvent.click(screen.getByText('common.cancel'));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('closes on Escape from a focused child despite the container stopPropagation', () => {
+    const onCancel = vi.fn();
+    render(
+      <DeleteBaseplateWarningDialog
+        isOpen
+        designName="My Baseplate"
+        affectedCount={0}
+        onConfirm={vi.fn()}
+        onCancel={onCancel}
+      />
+    );
+    fireEvent.keyDown(screen.getByText('common.cancel'), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
 });

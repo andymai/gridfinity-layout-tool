@@ -65,17 +65,20 @@ export function useBaseplateLibraryInit(): void {
   const inProgress = useRef(false);
 
   useEffect(() => {
-    if (inProgress.current) return;
-    if (resolvedFor.current === activeLayoutId) return;
-    inProgress.current = true;
-
-    const resolve = async (): Promise<void> => {
+    // Returns true once the target layout is resolved (or has nothing to do);
+    // false if the active layout changed mid-await so the caller can retry the
+    // now-current layout instead.
+    const resolve = async (targetLayoutId: LayoutId | null): Promise<boolean> => {
       // Load-time resolution must not create undo entries, so it writes through
       // the non-undoable local store action rather than the CQRS command.
       const setActiveBaseplateLocal = useLayoutStore.getState().setActiveBaseplateLocal;
       const layout = useLayoutStore.getState().layout;
       const params: StoredBaseplateParams | undefined = layout.baseplateParams;
       const activeId = layout.activeBaseplateId ?? null;
+
+      // The active layout can switch while IndexedDB awaits below; bail before
+      // any write if it did, so this layout's baseplate never lands on another.
+      const isStale = (): boolean => useLayoutStore.getState().activeLayoutId !== targetLayoutId;
 
       if (params) {
         if (activeId === null) {
@@ -84,6 +87,7 @@ export function useBaseplateLibraryInit(): void {
             params,
             thumbnail: null,
           });
+          if (isStale()) return false;
           if (isOk(saved)) {
             upsertRegistryEntry({
               id: saved.value.id,
@@ -95,6 +99,7 @@ export function useBaseplateLibraryInit(): void {
           }
         } else {
           const loaded = await loadDesign(activeId);
+          if (isStale()) return false;
           if (isOk(loaded)) {
             setActiveDesignId(activeId);
             if (!deepEqual(loaded.value.params, params)) {
@@ -106,10 +111,31 @@ export function useBaseplateLibraryInit(): void {
         }
       }
 
-      resolvedFor.current = activeLayoutId;
-      inProgress.current = false;
+      return true;
     };
 
-    void resolve();
+    const run = (): void => {
+      if (inProgress.current) return;
+      const targetLayoutId = useLayoutStore.getState().activeLayoutId;
+      if (resolvedFor.current === targetLayoutId) return;
+      inProgress.current = true;
+      void resolve(targetLayoutId)
+        .then((resolved) => {
+          if (resolved) resolvedFor.current = targetLayoutId;
+        })
+        .catch(() => {
+          // Give up on this layout rather than hot-loop on a persistent IDB
+          // failure; a later layout switch re-triggers resolution.
+          resolvedFor.current = targetLayoutId;
+        })
+        .finally(() => {
+          inProgress.current = false;
+          // A layout switch mid-await skips its own effect run (inProgress was
+          // set), so re-run here to resolve whatever is active now.
+          run();
+        });
+    };
+
+    run();
   }, [activeLayoutId]);
 }

@@ -9,9 +9,11 @@ vi.mock('@/i18n', () => ({
 }));
 
 // Mock responsive hook
-let mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
+const mocks = vi.hoisted(() => ({
+  responsive: { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false },
+}));
 vi.mock('@/shared/hooks/useResponsive', () => ({
-  useResponsive: () => mockResponsive,
+  useResponsive: () => mocks.responsive,
 }));
 
 // Mock layout store
@@ -33,6 +35,16 @@ vi.mock('@/core/store/layout', () => ({
 // Mock generation and export hooks
 vi.mock('../../hooks/useBaseplateGeneration', () => ({
   useBaseplateGeneration: vi.fn(),
+}));
+
+// Library init/autosave have their own dedicated tests; stub them here so this
+// UI test doesn't drive IndexedDB or the layout store's getState.
+vi.mock('../../hooks/useBaseplateLibraryInit', () => ({
+  useBaseplateLibraryInit: vi.fn(),
+}));
+
+vi.mock('../../hooks/useBaseplateAutoSave', () => ({
+  useBaseplateAutoSave: vi.fn(),
 }));
 
 vi.mock('../../hooks/useBaseplateExport', () => ({
@@ -76,7 +88,7 @@ vi.mock('@/shared/components/HeaderSupportLinks', () => ({
 
 describe('BaseplatePage', () => {
   beforeEach(() => {
-    mockResponsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
+    mocks.responsive = { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false };
   });
 
   it('always renders ToolSwitcher in header', () => {
@@ -101,13 +113,13 @@ describe('BaseplatePage', () => {
   });
 
   it('does not render header support links on mobile', () => {
-    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+    mocks.responsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
     render(<BaseplatePage />);
     expect(screen.queryByTestId('header-support-links')).not.toBeInTheDocument();
   });
 
   it('passes responsive props to ToolSwitcher on mobile', () => {
-    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+    mocks.responsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
     render(<BaseplatePage />);
     const switcher = screen.getByTestId('tool-switcher');
     expect(switcher).toHaveAttribute('data-compact', 'true');
@@ -115,7 +127,7 @@ describe('BaseplatePage', () => {
   });
 
   it('passes responsive props to ToolSwitcher on tablet', () => {
-    mockResponsive = { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true };
+    mocks.responsive = { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true };
     render(<BaseplatePage />);
     const switcher = screen.getByTestId('tool-switcher');
     expect(switcher).toHaveAttribute('data-compact', 'false');

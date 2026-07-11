@@ -73,8 +73,10 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    // Capture phase: the dialog container calls stopPropagation on keydown,
+    // which would otherwise starve this bubble-phase listener.
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [onClose]);
 
   useEffect(() => {

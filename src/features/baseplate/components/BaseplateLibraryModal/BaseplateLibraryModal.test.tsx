@@ -4,12 +4,6 @@ import { ok } from '@/core/result';
 import { baseplateDesignId } from '@/core/types';
 import { BaseplateLibraryModal } from './BaseplateLibraryModal';
 
-const switchActive = vi.fn();
-const renameDesign = vi.fn(() => Promise.resolve(ok({})));
-const duplicateDesign = vi.fn(() => Promise.resolve(ok({})));
-const deleteDesign = vi.fn(() => Promise.resolve(ok(undefined)));
-const setActiveBaseplate = vi.fn();
-
 const designs = [
   {
     id: baseplateDesignId('bp-1'),
@@ -29,22 +23,29 @@ const designs = [
   },
 ];
 
-const listDesigns = vi.fn(() => Promise.resolve(ok(designs)));
+const mocks = vi.hoisted(() => ({
+  switchActive: vi.fn(),
+  renameDesign: vi.fn(() => Promise.resolve(ok({}))),
+  duplicateDesign: vi.fn(() => Promise.resolve(ok({}))),
+  deleteDesign: vi.fn(() => Promise.resolve(ok(undefined))),
+  setActiveBaseplate: vi.fn(),
+  listDesigns: vi.fn(() => Promise.resolve(ok(designs))),
+}));
 
 vi.mock('@/features/baseplate/storage/BaseplateStorage', () => ({
-  listDesigns: () => listDesigns(),
+  listDesigns: () => mocks.listDesigns(),
 }));
 
 vi.mock('@/features/baseplate/hooks/useBaseplateLibrary', () => ({
   useBaseplateLibrary: () => ({
     list: [],
     activeBaseplateId: baseplateDesignId('bp-1'),
-    switchActive,
+    switchActive: mocks.switchActive,
     saveCurrentAsNew: vi.fn(),
     forkActive: vi.fn(),
-    renameDesign,
-    duplicateDesign,
-    deleteDesign,
+    renameDesign: mocks.renameDesign,
+    duplicateDesign: mocks.duplicateDesign,
+    deleteDesign: mocks.deleteDesign,
   }),
 }));
 
@@ -59,7 +60,7 @@ vi.mock('@/core/store/layout', () => ({
 }));
 
 vi.mock('@/shared/contexts', () => ({
-  useMutations: () => ({ setActiveBaseplate }),
+  useMutations: () => ({ setActiveBaseplate: mocks.setActiveBaseplate }),
 }));
 
 vi.mock('@/i18n', () => ({
@@ -92,6 +93,14 @@ describe('BaseplateLibraryModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('closes on Escape from a focused child despite the container stopPropagation', async () => {
+    const onClose = vi.fn();
+    render(<BaseplateLibraryModal isOpen onClose={onClose} />);
+    await screen.findByText('One');
+    fireEvent.keyDown(screen.getByText('One'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('opens the rename input from the overflow menu', async () => {
     render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
     await screen.findByText('One');
@@ -115,9 +124,9 @@ describe('BaseplateLibraryModal', () => {
 
     fireEvent.click(screen.getByText('baseplate.library.deleteWarning.confirm'));
 
-    await waitFor(() => expect(deleteDesign).toHaveBeenCalledWith(baseplateDesignId('bp-1')));
+    await waitFor(() => expect(mocks.deleteDesign).toHaveBeenCalledWith(baseplateDesignId('bp-1')));
     await waitFor(() =>
-      expect(setActiveBaseplate).toHaveBeenCalledWith(null, { magnetHoles: false })
+      expect(mocks.setActiveBaseplate).toHaveBeenCalledWith(null, { magnetHoles: false })
     );
   });
 });

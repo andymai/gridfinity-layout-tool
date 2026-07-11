@@ -3,24 +3,37 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { baseplateDesignId } from '@/core/types';
 import { ActiveBaseplatePanel } from './ActiveBaseplatePanel';
 
-const switchActive = vi.fn();
-const setShowBaseplateLibrary = vi.fn();
-
-const libraryState = {
-  list: [
-    { id: baseplateDesignId('bp-1'), name: 'One', updatedAt: '2024-01-01' },
-    { id: baseplateDesignId('bp-2'), name: 'Two', updatedAt: '2024-01-02' },
-  ],
-  activeBaseplateId: baseplateDesignId('bp-1'),
-  switchActive,
-};
+const mocks = vi.hoisted(() => {
+  const switchActive = vi.fn();
+  return {
+    switchActive,
+    setShowBaseplateLibrary: vi.fn(),
+    libraryState: {
+      list: [
+        {
+          id: 'bp-1' as ReturnType<typeof baseplateDesignId>,
+          name: 'One',
+          updatedAt: '2024-01-01',
+        },
+        {
+          id: 'bp-2' as ReturnType<typeof baseplateDesignId>,
+          name: 'Two',
+          updatedAt: '2024-01-02',
+        },
+      ],
+      activeBaseplateId: 'bp-1' as ReturnType<typeof baseplateDesignId>,
+      switchActive,
+    },
+  };
+});
 
 vi.mock('@/features/baseplate/hooks/useBaseplateLibrary', () => ({
-  useBaseplateLibrary: () => libraryState,
+  useBaseplateLibrary: () => mocks.libraryState,
 }));
 
 vi.mock('@/core/store/view', () => ({
-  useViewStore: (selector: (s: unknown) => unknown) => selector({ setShowBaseplateLibrary }),
+  useViewStore: (selector: (s: unknown) => unknown) =>
+    selector({ setShowBaseplateLibrary: mocks.setShowBaseplateLibrary }),
 }));
 
 vi.mock('@/i18n', () => ({
@@ -42,12 +55,12 @@ describe('ActiveBaseplatePanel', () => {
     render(<ActiveBaseplatePanel />);
     const select = screen.getByLabelText('baseplate.library.selectLabel');
     fireEvent.change(select, { target: { value: 'bp-2' } });
-    expect(switchActive).toHaveBeenCalledWith(baseplateDesignId('bp-2'));
+    expect(mocks.switchActive).toHaveBeenCalledWith(baseplateDesignId('bp-2'));
   });
 
   it('opens the library modal from Manage', () => {
     render(<ActiveBaseplatePanel />);
     fireEvent.click(screen.getByText('baseplate.library.manage'));
-    expect(setShowBaseplateLibrary).toHaveBeenCalledWith(true);
+    expect(mocks.setShowBaseplateLibrary).toHaveBeenCalledWith(true);
   });
 });

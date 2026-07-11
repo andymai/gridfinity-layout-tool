@@ -289,8 +289,14 @@ function singleParam(value: string | string[] | undefined): string | undefined {
  * Baseplate library ids use the `baseplate_<ms-epoch>_<base36>` shape generated
  * by `generateBaseplateDesignId` in `BaseplateStorage.ts`
  * (`baseplate_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`). The
- * base36 suffix is up to 6 chars but can be shorter, so accept 1–8.
+ * base36 suffix is up to 6 chars but can be shorter, so accept 1–8. The three
+ * legacy share shapes (UUID, base36 timestamp, 12-char alphanumeric) are also
+ * accepted to match `designs`/`layouts`, so ids round-trip without renaming.
  */
 function isValidBaseplateId(id: string): boolean {
-  return /^baseplate_\d+_[a-z0-9]{1,8}$/.test(id);
+  if (/^baseplate_\d+_[a-z0-9]{1,8}$/.test(id)) return true;
+  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) return true;
+  if (/^[a-z0-9]+-[a-z0-9]{7}$/.test(id)) return true;
+  if (/^[a-zA-Z0-9]{12}$/.test(id)) return true;
+  return false;
 }
