@@ -1,0 +1,104 @@
+src/core/cqrs/commands/drawerCommands.ts
+  s_25989936a1c209::t_91fc8ea02d5961 28
+  s_25989936a1c209::t_4ecb5982ed4692 6
+src/features/baseplate/sync/baseplateAdapter.test.ts
+  s_25989936a1c209::t_ce700f562d062b 178-188
+src/features/baseplate/sync/baseplateRegistryBridge.test.ts
+  s_25989936a1c209::t_6aefee756164f1 1-121
+src/App.tsx
+  s_25989936a1c209::t_ca028411b8cdc8 321-330
+src/i18n/locales/pt-BR.json
+  s_25989936a1c209::t_888585ad2f90c4 2429
+  s_25989936a1c209::t_fc873361df66a4 2644-2645
+src/i18n/locales/de.json
+  s_25989936a1c209::t_d90735c50aafde 2644-2645
+  s_25989936a1c209::t_599a60b7b7a410 2429
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_25989936a1c209::t_69c875b55024c8 78-101
+src/core/sync/claim.ts
+  s_25989936a1c209::t_fe0797ce361166 145-146
+  s_25989936a1c209::t_a3ebe8f80f22f0 40-41
+src/i18n/locales/en.ts
+  s_25989936a1c209::t_f55445dc8f8c4c 203
+  s_25989936a1c209::t_e578ef17b85abe 2532-2533
+api/lib/baseplateValidation.ts
+  s_25989936a1c209::t_e2348fdce7abba 153-163
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.tsx
+  s_25989936a1c209::t_aeb3e5a91ae686 104,109-113
+  s_25989936a1c209::t_55912f59479582 4-6
+src/i18n/locales/nl.json
+  s_25989936a1c209::t_73dcdaf1cbadd7 2429
+  s_25989936a1c209::t_f352ed9ee3233a 2644-2645
+src/i18n/locales/ja.json
+  s_25989936a1c209::t_5f48a1687fbf5b 2429
+  s_25989936a1c209::t_a502e7ccccb038 2644-2645
+src/i18n/locales/es.json
+  s_25989936a1c209::t_f444d71a6c3143 2429
+  s_25989936a1c209::t_881046d04150cf 2644-2645
+src/core/sync/triggers/useBeaconFlush.test.ts
+  s_25989936a1c209::t_eadcc386c5bc81 83-98
+src/features/baseplate/index.ts
+  s_25989936a1c209::t_caa19865cf00e2 10
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_25989936a1c209::t_42d3b1f6e091dc 119
+  s_a891d794d36252::t_f13601b57e1a9c 121
+src/features/baseplate/sync/baseplateRegistryBridge.ts
+  s_25989936a1c209::t_bddd20f34245ee 1-43
+src/i18n/locales/sv.json
+  s_25989936a1c209::t_e16d8b2865e0da 2429
+  s_25989936a1c209::t_a21fffc1a49fa6 2644-2645
+src/i18n/locales/uk.json
+  s_25989936a1c209::t_cd8cf7ea972b9d 2644-2645
+  s_25989936a1c209::t_e901faec29a4c1 2429
+src/core/sync/triggers/useBeaconFlush.ts
+  s_25989936a1c209::t_8191ceb2c51adf 89
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.test.tsx
+  s_25989936a1c209::t_c1efc268826122 1,23,28,35-48,62,77,92
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_25989936a1c209::t_bf7a0654f8c22c 108-111
+src/core/sync/poller.ts
+  s_25989936a1c209::t_b1874aac89f541 114-121
+  s_25989936a1c209::t_69e6833090b9e0 15-16
+api/sync/baseplates/[id].test.ts
+  s_25989936a1c209::t_ca2926a833d2a9 214-251
+src/features/baseplate/hooks/useBaseplateLibrary.ts
+  s_25989936a1c209::t_6b3365dc575499 166,168-170
+  s_25989936a1c209::t_faba14fa7d97dc 72-77
+src/shared/sync/SyncSessionMount.tsx
+  s_25989936a1c209::t_b7a210fb1fc69d 4
+  s_25989936a1c209::t_df384fbd21a569 98-101
+src/i18n/locales/nb.json
+  s_25989936a1c209::t_ffb1cfc24e11c0 2429
+  s_25989936a1c209::t_a2768d8dd011e7 2644-2645
+src/i18n/locales/fr.json
+  s_25989936a1c209::t_f1861ad03504b5 2429
+  s_25989936a1c209::t_63bfc9de1081fc 2644-2645
+src/features/baseplate/sync/baseplateAdapter.ts
+  s_25989936a1c209::t_c4e44b25b69087 88-89,93
+  s_25989936a1c209::t_c26f8530ead5aa 55,60
+  s_25989936a1c209::t_a12c8a2add129f 35-39,42-44,46,49,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "0219d95f40915200171e85249a31dd7e5d2afc18",
+  "prompts": {},
+  "sessions": {
+    "s_25989936a1c209": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa9573eb-b4fd-4ed1-b09d-791c1cdbffdc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a891d794d36252": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b338857e-f1fa-4eb5-9862-5dfffa68bce6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
