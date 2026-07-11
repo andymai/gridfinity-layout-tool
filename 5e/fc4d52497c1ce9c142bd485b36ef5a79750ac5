@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_b7db0526c14c7e::t_21279da8fc07c7 150-160
+src/features/bin-designer/constants/defaults.test.ts
+  s_b7db0526c14c7e::t_782a0923a29b30 534-551
+src/features/bin-designer/constants/defaults.ts
+  s_b7db0526c14c7e::t_49a0061a985074 651-657
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "5efc4d52497c1ce9c142bd485b36ef5a79750ac5",
+  "prompts": {},
+  "sessions": {
+    "s_b7db0526c14c7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7c22628-31f5-4d27-8161-697cc3777f1f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
