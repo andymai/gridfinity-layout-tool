@@ -517,6 +517,34 @@ describe('migrateParams', () => {
     expect(result.featureColors.topAccent.heightMm).toBe(7);
   });
 
+  it('includes the exterior-wall collar in the top-accent clamp bound', () => {
+    // 1 unit × 7mm + 10mm collar = 17mm wall top; a 15mm band stays unclamped.
+    const banded = {
+      topAccent: { enabled: true, heightMm: 15, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const result = migrateParams({
+      height: 1,
+      heightUnitMm: 7,
+      extraWallHeightMm: 10,
+      featureColors: banded,
+    });
+    expect(result.featureColors.topAccent.heightMm).toBe(15);
+  });
+
+  it('rejects NaN height/heightUnitMm when computing the clamp bound', () => {
+    const banded = {
+      topAccent: { enabled: true, heightMm: 3, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    // NaN height would poison Math.max(1, NaN)=NaN and yield a NaN band; the
+    // finite guard falls back to the default height so the clamp stays valid.
+    const result = migrateParams({
+      height: NaN,
+      featureColors: banded,
+    });
+    expect(Number.isFinite(result.featureColors.topAccent.heightMm)).toBe(true);
+    expect(result.featureColors.topAccent.heightMm).toBe(3);
+  });
+
   it('should migrate legacy slot IDs to hex colors', () => {
     const legacy = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
     const result = migrateParams({

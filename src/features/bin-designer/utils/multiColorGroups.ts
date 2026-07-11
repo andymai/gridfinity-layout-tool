@@ -26,6 +26,7 @@ import {
   isSingleColor,
   lipCellsUniform,
   maxZOfVertices,
+  topAccentActive,
   topAccentCutZ,
   zoneIndex,
 } from '../types/featureColors';
@@ -143,7 +144,9 @@ export function buildHitTestZones(
     counts,
     lipUniform: true,
     allowSplit: false,
-    topAccentCutZ: topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices)),
+    topAccentCutZ: topAccentActive(featureColors.topAccent)
+      ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
+      : null,
   }).triZones;
 }
 
@@ -168,8 +171,12 @@ export function buildMultiColorGroups(
   // Derive the top-accent cut from featureColors directly rather than trusting
   // the caller's activeZones — some callers (e.g. the 3D preview) build their
   // zone set without it, which would otherwise make the accent silently vanish
-  // there. Union it in so isSingleColor sees the accent color too.
-  const cutZ = topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices));
+  // there. Union it in so isSingleColor sees the accent color too. Gate the
+  // maxZ scan on `topAccentActive` so a disabled band (the common case) doesn't
+  // pay an O(vertexCount) traversal on every preview update.
+  const cutZ = topAccentActive(featureColors.topAccent)
+    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
+    : null;
   const zones =
     cutZ !== null && !activeZones.has('topAccent')
       ? new Set(activeZones).add('topAccent')

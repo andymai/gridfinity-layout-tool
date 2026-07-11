@@ -68,6 +68,7 @@ export function ColorsSection() {
     lipBands,
     binHeight,
     heightUnitMm,
+    extraWallHeightMm,
     hoveredColorZone,
     colorTool,
   } = useDesignerStore(
@@ -81,6 +82,7 @@ export function ColorsSection() {
       cells: s.params.compartments.cells,
       binHeight: s.params.height,
       heightUnitMm: s.params.heightUnitMm,
+      extraWallHeightMm: s.params.extraWallHeightMm,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       lipCorners: s.params.featureColors?.lip.corners ?? 1,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
@@ -95,9 +97,12 @@ export function ColorsSection() {
   const multiColorEnabled = rawColors?.enabled ?? false;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit topAccent; migration backfills it but keep the runtime guard
   const topAccent = rawColors?.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
-  // Cap the band at the nominal wall height (units × mm/unit) so it can't exceed
-  // the bin. Floor of 1mm keeps the slider usable on a 0-height edge case.
-  const topAccentMaxMm = Math.max(1, binHeight * heightUnitMm);
+  // Cap the band at the wall top — nominal height (units × mm/unit) plus any
+  // exterior-wall collar — so it can't exceed the bin yet still reaches the top
+  // of a collared bin. Floor of 1mm keeps the slider usable; the finite guard
+  // keeps a corrupt NaN param from poisoning the slider's max/clamp.
+  const rawMaxMm = binHeight * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0);
+  const topAccentMaxMm = Number.isFinite(rawMaxMm) ? Math.max(1, rawMaxMm) : 1;
 
   const activeZones = useMemo(
     () =>

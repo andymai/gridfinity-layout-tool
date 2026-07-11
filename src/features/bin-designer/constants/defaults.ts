@@ -640,12 +640,16 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...rest
   } = params as Record<string, unknown>;
 
-  // Nominal wall height (height units × mm/unit), matching the top-accent slider
-  // cap in the Colors panel. Used to clamp a persisted band on load.
-  const heightUnits = typeof params.height === 'number' ? params.height : DEFAULT_BIN_PARAMS.height;
-  const heightUnitMm =
-    typeof params.heightUnitMm === 'number' ? params.heightUnitMm : DEFAULT_BIN_PARAMS.heightUnitMm;
-  const wallHeightMm = Math.max(1, heightUnits * heightUnitMm);
+  // Wall top (height units × mm/unit, plus any exterior-wall collar), matching
+  // the top-accent slider cap in the Colors panel. Used to clamp a persisted
+  // band on load. `Number.isFinite` guards reject NaN from crafted/corrupt data
+  // (a bare `typeof === 'number'` lets NaN through and would poison the clamp).
+  const finiteNum = (v: unknown, fallback: number): number =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  const heightUnits = finiteNum(params.height, DEFAULT_BIN_PARAMS.height);
+  const heightUnitMm = finiteNum(params.heightUnitMm, DEFAULT_BIN_PARAMS.heightUnitMm);
+  const extraWallHeightMm = Math.max(0, finiteNum(params.extraWallHeightMm, 0));
+  const wallHeightMm = Math.max(1, heightUnits * heightUnitMm + extraWallHeightMm);
 
   return {
     ...DEFAULT_BIN_PARAMS,

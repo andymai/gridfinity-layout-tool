@@ -16,6 +16,7 @@ import {
   maxZOfVertices,
   normalizeHex,
   resolveColorMapping,
+  topAccentActive,
   topAccentCutZ,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
@@ -64,8 +65,11 @@ export function buildTriangleMaterialIndices(
   const coloredUnits = cutoutUnits.filter((u) => u.color !== undefined);
   // Derive the top-accent cut from featureColors directly (see the matching note
   // in multiColorGroups.ts) so it's honored even if a caller's activeZones omits
-  // it; union it in so isSingleColor accounts for the accent color.
-  const cutZ = topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices));
+  // it; union it in so isSingleColor accounts for the accent color. Gate the maxZ
+  // scan on `topAccentActive` to skip the traversal when the band is off.
+  const cutZ = topAccentActive(featureColors.topAccent)
+    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
+    : null;
   const zones =
     cutZ !== null && !activeZones.has('topAccent')
       ? new Set(activeZones).add('topAccent')
