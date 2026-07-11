@@ -125,6 +125,12 @@ function segmentsTouch(
   return false;
 }
 
+/**
+ * Chord-approximate: runs on the flattened polyline, so an arc-arc crossing
+ * shallower than ~2× ARC_FLATTEN_TOLERANCE (≈0.1mm) can slip through. Such a
+ * graze is below print resolution and the BREP boolean handles it; exact
+ * arc-arc intersection isn't worth the complexity here.
+ */
 function isSelfIntersecting(pts: readonly OutlinePoint[]): boolean {
   const n = pts.length;
   for (let i = 0; i < n; i++) {
@@ -432,14 +438,28 @@ function growAxis(
   return [...rotated, ...detour];
 }
 
+/**
+ * Topology test, not an area tolerance: the loop traces the full rectangle
+ * exactly when every segment is straight and hugs one of the four boundary
+ * lines. A corner-cutting edge (e.g. a small chamfer) has its endpoints on
+ * two DIFFERENT lines, so even cuts far smaller than any area epsilon are
+ * preserved as intentional geometry.
+ */
 function isFullRectangle(outline: DrawerOutline, widthMm: number, depthMm: number): boolean {
-  for (const v of outline.vertices) {
-    const onX = Math.abs(v.x) <= OUTLINE_SNAP_EPS || Math.abs(v.x - widthMm) <= OUTLINE_SNAP_EPS;
-    const onY = Math.abs(v.y) <= OUTLINE_SNAP_EPS || Math.abs(v.y - depthMm) <= OUTLINE_SNAP_EPS;
-    if (!onX && !onY) return false;
+  const n = outline.vertices.length;
+  for (let i = 0; i < n; i++) {
+    const a = outline.vertices[i];
+    const b = outline.vertices[(i + 1) % n];
+    if (Math.abs(a.bulge ?? 0) >= BULGE_EPS) return false;
+    const onCommonLine =
+      (Math.abs(a.x) <= OUTLINE_SNAP_EPS && Math.abs(b.x) <= OUTLINE_SNAP_EPS) ||
+      (Math.abs(a.x - widthMm) <= OUTLINE_SNAP_EPS &&
+        Math.abs(b.x - widthMm) <= OUTLINE_SNAP_EPS) ||
+      (Math.abs(a.y) <= OUTLINE_SNAP_EPS && Math.abs(b.y) <= OUTLINE_SNAP_EPS) ||
+      (Math.abs(a.y - depthMm) <= OUTLINE_SNAP_EPS && Math.abs(b.y - depthMm) <= OUTLINE_SNAP_EPS);
+    if (!onCommonLine) return false;
   }
-  const area = polylineSignedArea(flattenOutline(outline));
-  return area >= widthMm * depthMm - OUTLINE_SNAP_EPS * 2 * (widthMm + depthMm);
+  return true;
 }
 
 function dropCoincident(verts: MutableVertex[]): MutableVertex[] {

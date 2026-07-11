@@ -26,7 +26,12 @@ export const ARC_FLATTEN_TOLERANCE = 0.05;
 /** Bulges smaller than this are treated as straight segments. */
 export const BULGE_EPS = 1e-9;
 
-const MAX_ARC_STEPS = 64;
+/**
+ * With |bulge| ≤ 1 (sweep ≤ 180°) inside a 50-unit drawer, the largest valid
+ * radius is ~half the bbox diagonal (~1485mm), which needs ~192 steps to hold
+ * ARC_FLATTEN_TOLERANCE — so 256 never truncates a valid outline's accuracy.
+ */
+const MAX_ARC_STEPS = 256;
 
 export interface ArcGeometry {
   readonly cx: number;
@@ -181,8 +186,10 @@ export type RegionClass = 'inside' | 'outside' | 'partial';
 /**
  * Classify an axis-aligned rect (drawer-local mm) against the outline.
  * The rect is inset by {@link BOUNDARY_EPS} first, so boundary-coincident
- * geometry counts as covered. 'partial' = the outline's boundary passes
- * through the (inset) rect; otherwise the center point decides in/out.
+ * geometry counts as covered. 'partial' = any part of the outline's boundary
+ * lies within the (inset) rect — whether passing through or fully contained
+ * (a rect enclosing the whole outline is 'partial'); otherwise the center
+ * point decides in/out.
  */
 export function classifyRect(
   outline: DrawerOutline,

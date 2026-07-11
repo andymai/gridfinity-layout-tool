@@ -426,6 +426,35 @@ describe('normalizeDrawerOutline', () => {
     expect(normalized.drawer.outline).toBeUndefined();
   });
 
+  it('drops rectangles with redundant collinear vertices', () => {
+    const rect: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 2 * U, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    expect(normalizeDrawerOutline(layoutWith(rect)).drawer.outline).toBeUndefined();
+  });
+
+  it('keeps a small corner chamfer in a large drawer', () => {
+    // A 5mm chamfer removes 12.5mm² — far below any perimeter-scaled area
+    // epsilon on a 10-unit drawer. Must survive as intentional geometry.
+    const chamfered: DrawerOutline = {
+      vertices: [
+        { x: 5, y: 0 },
+        { x: 10 * U, y: 0 },
+        { x: 10 * U, y: 10 * U },
+        { x: 0, y: 10 * U },
+        { x: 0, y: 5 },
+      ],
+    };
+    const layout = layoutWith(chamfered, 10, 10);
+    expect(normalizeDrawerOutline(layout)).toBe(layout);
+  });
+
   it('drops invalid outlines', () => {
     const bowtie: DrawerOutline = {
       vertices: [
