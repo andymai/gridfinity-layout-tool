@@ -1,0 +1,36 @@
+src/features/bin-designer/types/featureColors.ts
+  s_b7db0526c14c7e::t_e1ec557f1a49e7 438
+  s_b7db0526c14c7e::t_4edfb5b13f07d4 253-256
+  s_b7db0526c14c7e::t_06609507e78c9b 245,249-252,257
+  s_b7db0526c14c7e::t_3ca8ea6bc46c35 258-259
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_b7db0526c14c7e::t_658d7f7199311f 168-177
+  s_b7db0526c14c7e::t_feaba909301539 167
+src/features/bin-designer/constants/defaults.ts
+  s_b7db0526c14c7e::t_030ba19f4a4a90 668
+  s_b7db0526c14c7e::t_60b81cf0e03217 331-334,349
+  s_b7db0526c14c7e::t_2a84205ab2cee3 254-255,259,261-264,267-270
+  s_b7db0526c14c7e::t_56ecd9fe48561a 643-649
+src/features/bin-designer/constants/defaults.test.ts
+  s_b7db0526c14c7e::t_2eb55692e7792f 510-519
+src/features/bin-designer/utils/multiColorGroups.test.ts
+  s_b7db0526c14c7e::t_dea3d66e74c5cc 61-79
+src/features/bin-designer/utils/materialMapping.ts
+  s_b7db0526c14c7e::t_cc0f307dca7503 65-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "309c3b9d4eeda6f71e7072baac59c4c56038ce6d",
+  "prompts": {},
+  "sessions": {
+    "s_b7db0526c14c7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7c22628-31f5-4d27-8161-697cc3777f1f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
