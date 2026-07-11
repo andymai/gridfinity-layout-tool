@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.234.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.233.0...gridfinity-layout-tool-v4.234.0) (2026-07-11)
+
+
+### Features
+
+* **bin-designer:** add top accent color band ([#2516](https://github.com/andymai/gridfinity-layout-tool/issues/2516)) ([a622c2b](https://github.com/andymai/gridfinity-layout-tool/commit/a622c2bb7306e08a6d07ad467c5283251f100065))
+
 ## [4.233.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.232.0...gridfinity-layout-tool-v4.233.0) (2026-07-09)
 
 
