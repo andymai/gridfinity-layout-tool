@@ -1,0 +1,30 @@
+src/features/generation/worker/generators/baseplateOutline.ts
+  s_25758575a76743::t_1f45354f269215 73-76,78-94,103
+  s_25758575a76743::t_249b49e29ced26 17-22,26-33
+  s_25758575a76743::t_2358a2f475dd53 1-16,23-25,34-72,77,95-102,104-106
+src/features/generation/worker/generators/__kernel-tests__/sagittaArcConvention.test.ts
+  s_25758575a76743::t_442bebda47f466 56-58,60-77
+  s_25758575a76743::t_e06bf409e68be5 34
+  s_25758575a76743::t_6ee1f82593e51b 1-33,45,78-80,82-93,95-105
+  s_25758575a76743::t_928ff1116cb103 81
+  s_25758575a76743::t_8d9b4f1210812a 94
+  s_25758575a76743::t_8c73918e896094 46-49
+  s_25758575a76743::t_1eb5d5a1eda041 35-44,50-55
+  s_25758575a76743::t_dfa05f7417ef2d 59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "b4a588936aea335e126765e9563794493079e6cc",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
