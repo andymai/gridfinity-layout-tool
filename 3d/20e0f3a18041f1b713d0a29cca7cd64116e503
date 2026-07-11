@@ -1,0 +1,81 @@
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.test.ts
+  s_ac69cc04ee2b78::t_ac08610d558a9c 81
+  s_ac69cc04ee2b78::t_1db836d8bcdcc6 67
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.test.ts
+  s_ac69cc04ee2b78::t_174fbbd6899520 256,264
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_ac69cc04ee2b78::t_544c2cc38034a2 159-160
+src/i18n/locales/en.ts
+  s_ac69cc04ee2b78::t_68fa54baa136c1 2793
+src/shared/utils/fractionalEdge.ts
+  s_ac69cc04ee2b78::t_b948a9e87e6870 20-22
+  s_ac69cc04ee2b78::t_0cd32c59ffebb4 59-60,68-69,72-77
+  s_ac69cc04ee2b78::t_4a4b6e5d905981 36-38,45,50
+src/features/bin-designer/hooks/useThumbnailCapture.ts
+  s_ac69cc04ee2b78::t_1685d9fd04a787 83-84
+  s_ac69cc04ee2b78::t_68fd56b4b4aeb3 111-112
+src/features/bin-designer/hooks/useCreateFromBin.test.ts
+  s_ac69cc04ee2b78::t_9d98da05ce4605 175
+src/i18n/locales/pt-BR.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+api/lib/designerValidation.ts
+  s_ac69cc04ee2b78::t_c77e80b54f6f3e 96-97
+src/shared/utils/fractionalEdge.test.ts
+  s_ac69cc04ee2b78::t_b1041b0ecd316d 50,53,59-72
+  s_ac69cc04ee2b78::t_23b98c460f22bc 83,86,89,98-103,109
+  s_ac69cc04ee2b78::t_56541c44bed5f6 8
+  s_ac69cc04ee2b78::t_bdb3ac2edf535e 73-74
+src/i18n/locales/ja.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/i18n/locales/de.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/i18n/locales/fr.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/features/bin-designer/store/customBinRegistry.ts
+  s_ac69cc04ee2b78::t_631e01fcb5467f 49-50
+  s_ac69cc04ee2b78::t_c32a363b9ea49b 63-68,72-73
+  s_ac69cc04ee2b78::t_a05f1024693630 110-111,118-119
+  s_ac69cc04ee2b78::t_a76eed40270258 95-96
+  s_ac69cc04ee2b78::t_fa8fea8bf94fb4 120-121
+src/i18n/locales/uk.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_ac69cc04ee2b78::t_2c4e22fa304535 31-32,41-42,51-52
+  s_ac69cc04ee2b78::t_39302a6f486019 53-55
+  s_ac69cc04ee2b78::t_6a2318f6d55882 56-59
+src/features/bin-designer/types/index.ts
+  s_ac69cc04ee2b78::t_3227fcba7844a0 556-561,563-564
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_ac69cc04ee2b78::t_60f98b0422a977 123-124
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_ac69cc04ee2b78::t_eb77986db00f27 194-195,200-201
+  s_ac69cc04ee2b78::t_ad4a00c752120b 73,81
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_ac69cc04ee2b78::t_793d449ef734aa 136-137
+src/i18n/locales/nb.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/features/bin-designer/constants/defaults.ts
+  s_ac69cc04ee2b78::t_49f3c0b622cd4a 383-384
+src/i18n/locales/es.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/i18n/locales/nl.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+src/i18n/locales/sv.json
+  s_ac69cc04ee2b78::t_b8067f6d0de370 1247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "3d20e0f3a18041f1b713d0a29cca7cd64116e503",
+  "prompts": {},
+  "sessions": {
+    "s_ac69cc04ee2b78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "249abc01-e04b-4fb7-81f1-ddaeb433eec8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
