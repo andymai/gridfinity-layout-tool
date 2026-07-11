@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.235.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.234.1...gridfinity-layout-tool-v4.235.0) (2026-07-11)
+
+
+### Features
+
+* **baseplate:** multiple saved baseplate designs with per-layout active selection ([#2522](https://github.com/andymai/gridfinity-layout-tool/issues/2522)) ([9464ee7](https://github.com/andymai/gridfinity-layout-tool/commit/9464ee7c584938595d8a1f2ba1f6ddef440bbeb7))
+
 ## [4.234.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.234.0...gridfinity-layout-tool-v4.234.1) (2026-07-11)
 
 
