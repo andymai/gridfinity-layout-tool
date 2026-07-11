@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_b7db0526c14c7e::t_ed1967c2fa9a03 384-388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "72e428bb73153b3c82f19b7c6b611144ecd7224f",
+  "prompts": {},
+  "sessions": {
+    "s_b7db0526c14c7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7c22628-31f5-4d27-8161-697cc3777f1f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
