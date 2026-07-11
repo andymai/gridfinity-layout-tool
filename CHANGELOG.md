@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.234.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.234.0...gridfinity-layout-tool-v4.234.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **design-linking:** infer half-unit edge from drawer & warn on mismatch ([#2518](https://github.com/andymai/gridfinity-layout-tool/issues/2518)) ([#2520](https://github.com/andymai/gridfinity-layout-tool/issues/2520)) ([09bfa78](https://github.com/andymai/gridfinity-layout-tool/commit/09bfa7862a533f65abe9ba34f8b10843a54b4350))
+
 ## [4.234.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.233.0...gridfinity-layout-tool-v4.234.0) (2026-07-11)
 
 
