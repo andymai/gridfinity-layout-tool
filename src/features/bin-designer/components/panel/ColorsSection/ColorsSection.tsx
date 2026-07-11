@@ -136,7 +136,6 @@ export function ColorsSection() {
   const hasScoop = activeZones.has('scoop');
   const hasDividers = activeZones.has('dividers');
   const hasLid = activeZones.has('lid');
-  const hasTopAccent = activeZones.has('topAccent');
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
   const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
@@ -181,7 +180,10 @@ export function ColorsSection() {
     if (hasScoop) map.set('scoop', featureColors.scoop);
     if (hasDividers) map.set('dividers', featureColors.dividers);
     if (hasLid) map.set('lid', featureColors.lid);
-    if (hasTopAccent) map.set('topAccent', topAccent.color);
+    // Key off `enabled` (not hasTopAccent, which also requires heightMm > 0) so
+    // this matches when the color row actually renders — otherwise an enabled
+    // 0mm band shows a row whose otherColors filtering can't find its own color.
+    if (topAccent.enabled) map.set('topAccent', topAccent.color);
     return map;
   }, [
     featureColors,
@@ -191,7 +193,7 @@ export function ColorsSection() {
     hasScoop,
     hasDividers,
     hasLid,
-    hasTopAccent,
+    topAccent.enabled,
     topAccent.color,
     lipCorners,
     lipBands,
