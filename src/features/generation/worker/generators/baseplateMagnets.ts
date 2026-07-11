@@ -127,11 +127,12 @@ export function magnetPositionsForCell(
 
   // Anchor magnets a constant STANDARD_WALL_INSET (8mm) from the cell edge, so
   // they stay corner-aligned as gridUnitMm grows past 42mm instead of pinned at
-  // ±HOLE_OFFSET from center (which drifts them inward on a larger cell). The
-  // per-unit offset floors at HOLE_OFFSET to keep ≤42mm grids and wide over-tile
-  // margin tiles byte-identical; the trailing Math.min preserves the wall gap on
-  // short/non-square cells. Depends only on cell size + pitch (not magnetRadius),
-  // so a bin base and the lid stacked on it derive identical positions and mate.
+  // ±HOLE_OFFSET from center (which drifts them inward on a larger cell). At
+  // pitch ≤42mm the per-unit offset floors at HOLE_OFFSET, so every cell there —
+  // including wide over-tile margin tiles — is byte-identical to before; above
+  // 42mm the offset (and margin tiles with it) grows. The trailing Math.min
+  // preserves the wall gap on short/non-square cells. Depends only on cell size
+  // + pitch (not magnetRadius), so a bin base and the lid stacked on it mate.
   const unitOffX = Math.max(HOLE_OFFSET, pitchX / 2 - STANDARD_WALL_INSET);
   const unitOffY = Math.max(HOLE_OFFSET, pitchY / 2 - STANDARD_WALL_INSET);
   const offX = Math.min(unitOffX, halfW - STANDARD_WALL_INSET);

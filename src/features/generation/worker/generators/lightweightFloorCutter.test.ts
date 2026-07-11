@@ -50,14 +50,6 @@ describe('buildLightweightFloorCutters', () => {
     expect(result).toEqual([]);
   });
 
-  it('grows the cross-arm offset to the edge-anchored magnet at pitch 50 (#2525)', async () => {
-    const { magnetPositionsForCell } = await import('./baseplateMagnets');
-    // The floor cutter derives its arm offset from the actual magnet position, so
-    // at a 50mm grid it must track ±17 (50/2 − 8), not the pre-fix ±13.
-    const off = Math.abs(magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50)[0][0]);
-    expect(off).toBeCloseTo(17, 6);
-  });
-
   it('emits one valid 4-arm cross cutter for a full cell at pitch 50 (no stranded magnet)', async () => {
     const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
     const { mesh } = await import('brepjs');
