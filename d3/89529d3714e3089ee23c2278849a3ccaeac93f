@@ -1,0 +1,29 @@
+src/features/design-linking/hooks/useBinLinking.ts
+  s_ac69cc04ee2b78::t_397add94f5589e 23
+  s_ac69cc04ee2b78::t_1ce8f59cdfea91 314,317
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_ac69cc04ee2b78::t_e0b5a9a584c33c 23
+  s_ac69cc04ee2b78::t_5eff62692c4549 697-762
+src/features/bin-designer/constants/defaults.ts
+  s_ac69cc04ee2b78::t_d3bb0073f3ab52 742-745
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  s_ac69cc04ee2b78::t_8849a2e4b55b77 17-20
+src/shared/utils/fractionalEdge.ts
+  s_ac69cc04ee2b78::t_fb9f4e05fa93b0 31-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "d389529d3714e3089ee23c2278849a3ccaeac93f",
+  "prompts": {},
+  "sessions": {
+    "s_ac69cc04ee2b78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "249abc01-e04b-4fb7-81f1-ddaeb433eec8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
