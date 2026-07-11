@@ -31,6 +31,7 @@ import type {
   LayoutId,
   CloudShareInfo,
   StoredBaseplateParams,
+  BaseplateDesignId,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
@@ -84,6 +85,7 @@ export interface Mutations {
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;
   setBaseplateParams: (params: StoredBaseplateParams) => void;
+  setActiveBaseplate: (designId: BaseplateDesignId | null, params: StoredBaseplateParams) => void;
 
   // Library cloud-share operations
   setCloudShare: (layoutId: LayoutId, share: CloudShareInfo) => void;

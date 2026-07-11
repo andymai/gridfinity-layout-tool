@@ -12,11 +12,18 @@ interface IndexEntry {
 interface ManifestResponse {
   layouts: Record<string, IndexEntry>;
   designs: Record<string, IndexEntry>;
+  baseplates: Record<string, IndexEntry>;
   indexUpdatedAt: number;
 }
 
 interface ItemFetchResponse {
-  envelope: { layout?: unknown; design?: unknown; modifiedAt: number; schemaVersion: number };
+  envelope: {
+    layout?: unknown;
+    design?: unknown;
+    baseplate?: unknown;
+    modifiedAt: number;
+    schemaVersion: number;
+  };
   indexEntry: IndexEntry;
 }
 
@@ -105,7 +112,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
 
   const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts);
   const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs);
-  const applied = layoutChanges + designChanges;
+  const baseplateChanges = await diffKind(adapters.baseplates, 'baseplates', manifest.baseplates);
+  const applied = layoutChanges + designChanges + baseplateChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session
@@ -149,7 +157,12 @@ async function diffKind(
     if (localMtime === undefined || localMtime < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
       if (!fetched) continue;
-      const payload = kind === 'layouts' ? fetched.envelope.layout : fetched.envelope.design;
+      const payload =
+        kind === 'layouts'
+          ? fetched.envelope.layout
+          : kind === 'baseplates'
+            ? fetched.envelope.baseplate
+            : fetched.envelope.design;
       if (payload === undefined) continue;
       await adapter.applyRemote({
         id,

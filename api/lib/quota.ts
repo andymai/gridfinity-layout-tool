@@ -12,6 +12,7 @@ import { getIndex, type SyncItemKind } from './userIndex.js';
 const QUOTA: Record<SyncItemKind, { maxCount: number; maxBytes: number }> = {
   layouts: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
   designs: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
+  baseplates: { maxCount: 100, maxBytes: 10 * 1024 * 1024 },
 };
 
 export type QuotaErrorReason = 'count' | 'bytes';

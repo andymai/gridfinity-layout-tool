@@ -11,5 +11,5 @@ export {
   mmToHeightUnits,
 } from './units';
 
-export type { BinId, LayerId, CategoryId, LayoutId, DesignId } from './ids';
-export { binId, layerId, categoryId, layoutId, designId } from './ids';
+export type { BinId, LayerId, CategoryId, LayoutId, DesignId, BaseplateDesignId } from './ids';
+export { binId, layerId, categoryId, layoutId, designId, baseplateDesignId } from './ids';

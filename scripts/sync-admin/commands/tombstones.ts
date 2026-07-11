@@ -3,10 +3,11 @@ import { buildInventory } from '../lib/inventory.js';
 import { colors, formatTable } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
 import type { Args } from '../lib/args.js';
+import type { Kind } from '../lib/types.js';
 
 interface TombRow {
   uid: string;
-  kind: 'layouts' | 'designs';
+  kind: Kind;
   id: string;
   deletedAt: number;
   ageMs: number;

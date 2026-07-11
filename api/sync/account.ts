@@ -21,7 +21,7 @@ import {
  *
  *   1. Sessions   — DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
- *   2. Blobs      — del() each layouts/{id}.json and designs/{id}.json
+ *   2. Blobs      — del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json
  *   3. KV keys    — drop indexes, profile, sessions set, indexUpdatedAt
  *   4. Cookie     — clear the session cookie on the responding device
  *
@@ -30,8 +30,8 @@ import {
  * keys. The blob loop catches per-blob errors and continues — a stuck
  * blob won't block the rest of the cascade.
  *
- * Vercel function timeout is 60s. With max 100 layouts + 100 designs
- * × ~50ms per Blob delete = ~10s worst case, well within budget.
+ * Vercel function timeout is 60s. With max 100 layouts + 100 designs +
+ * 100 baseplates × ~50ms per Blob delete = ~15s worst case, within budget.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['DELETE'])) return;
@@ -71,16 +71,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     //    not a correctness issue, and re-issuing the request will retry.
     const layoutIds = await redis.hkeys(userIndexKey(userId, 'layouts'));
     const designIds = await redis.hkeys(userIndexKey(userId, 'designs'));
+    const baseplateIds = await redis.hkeys(userIndexKey(userId, 'baseplates'));
 
     await Promise.all([
       ...layoutIds.map((id) => deleteBlobSafe(`users/${userId}/layouts/${id}.json`, userId)),
       ...designIds.map((id) => deleteBlobSafe(`users/${userId}/designs/${id}.json`, userId)),
+      ...baseplateIds.map((id) => deleteBlobSafe(`users/${userId}/baseplates/${id}.json`, userId)),
     ]);
 
     // 3. Drop all per-user KV state in one DEL.
     await redis.del(
       userIndexKey(userId, 'layouts'),
       userIndexKey(userId, 'designs'),
+      userIndexKey(userId, 'baseplates'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId)

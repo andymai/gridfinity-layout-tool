@@ -190,6 +190,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'layout.gridUnitMmSet',
     'layout.heightUnitMmSet',
     'layout.baseplateParamsSet',
+    'layout.activeBaseplateSet',
     // Library events
     'library.entryCreated',
     'library.entryDeleted',

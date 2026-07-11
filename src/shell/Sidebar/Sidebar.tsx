@@ -7,6 +7,7 @@ import { Button, Checkbox, Collapsible, IconButton, Stepper } from '@/design-sys
 import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
+import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
@@ -253,6 +254,9 @@ export function Sidebar() {
               className="border-b border-stroke-subtle"
             >
               <CategoriesPanel />
+            </div>
+            <div data-active-baseplate-panel className="border-b border-stroke-subtle">
+              <ActiveBaseplatePanel />
             </div>
 
             {/* Inspiration Gallery - Prominent placement */}

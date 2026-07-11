@@ -83,14 +83,23 @@ async function flushOutboxBestEffort(): Promise<void> {
 }
 
 async function countLocalItems(adapters: SyncAdapters): Promise<number> {
-  const [layouts, designs] = await Promise.all([adapters.layouts.list(), adapters.designs.list()]);
-  return layouts.length + designs.length;
+  const [layouts, designs, baseplates] = await Promise.all([
+    adapters.layouts.list(),
+    adapters.designs.list(),
+    adapters.baseplates.list(),
+  ]);
+  return layouts.length + designs.length + baseplates.length;
 }
 
 async function wipeLocal(adapters: SyncAdapters): Promise<void> {
-  const [layouts, designs] = await Promise.all([adapters.layouts.list(), adapters.designs.list()]);
+  const [layouts, designs, baseplates] = await Promise.all([
+    adapters.layouts.list(),
+    adapters.designs.list(),
+    adapters.baseplates.list(),
+  ]);
   for (const item of layouts) await adapters.layouts.applyRemoteDelete(item.id);
   for (const item of designs) await adapters.designs.applyRemoteDelete(item.id);
+  for (const item of baseplates) await adapters.baseplates.applyRemoteDelete(item.id);
 }
 
 function isChoice(value: unknown): value is KeepLocalChoice {

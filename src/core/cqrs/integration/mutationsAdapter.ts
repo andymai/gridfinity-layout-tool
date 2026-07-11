@@ -18,6 +18,7 @@ import type {
   LayoutId,
   CloudShareInfo,
   StoredBaseplateParams,
+  BaseplateDesignId,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
@@ -169,6 +170,10 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
 
     setBaseplateParams(params: StoredBaseplateParams): void {
       bus.dispatch(createCommand('layout.setBaseplateParams', { params }));
+    },
+
+    setActiveBaseplate(designId: BaseplateDesignId | null, params: StoredBaseplateParams): void {
+      bus.dispatch(createCommand('layout.setActiveBaseplate', { designId, params }));
     },
 
     setCloudShare(layoutId: LayoutId, share: CloudShareInfo): void {

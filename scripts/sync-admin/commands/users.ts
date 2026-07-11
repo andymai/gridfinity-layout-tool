@@ -10,6 +10,8 @@ interface UserStats {
   layoutsBytes: number;
   designsCount: number;
   designsBytes: number;
+  baseplatesCount: number;
+  baseplatesBytes: number;
   tombstones: number;
   oldestItem: number;
   totalBytes: number;
@@ -27,13 +29,25 @@ export async function users(args: Args): Promise<number> {
       console.log(colors.bold(`=== users (${stats.length}) ===`));
       console.log(
         formatTable(
-          ['uid', 'layouts', 'layouts KB', 'designs', 'designs KB', 'tombs', 'oldest'],
+          [
+            'uid',
+            'layouts',
+            'layouts KB',
+            'designs',
+            'designs KB',
+            'baseplates',
+            'baseplates KB',
+            'tombs',
+            'oldest',
+          ],
           stats.map((s) => [
             s.uid.slice(0, 16) + '…',
             s.layoutsCount,
             (s.layoutsBytes / 1024).toFixed(1),
             s.designsCount,
             (s.designsBytes / 1024).toFixed(1),
+            s.baseplatesCount,
+            (s.baseplatesBytes / 1024).toFixed(1),
             s.tombstones,
             s.oldestItem ? new Date(s.oldestItem).toISOString().slice(0, 10) : '—',
           ])
@@ -57,6 +71,8 @@ function computeStats(inv: Inventory): UserStats[] {
         layoutsBytes: 0,
         designsCount: 0,
         designsBytes: 0,
+        baseplatesCount: 0,
+        baseplatesBytes: 0,
         tombstones: 0,
         oldestItem: 0,
         totalBytes: 0,
@@ -77,6 +93,9 @@ function computeStats(inv: Inventory): UserStats[] {
     if (b.kind === 'layouts') {
       s.layoutsCount++;
       s.layoutsBytes += b.size;
+    } else if (b.kind === 'baseplates') {
+      s.baseplatesCount++;
+      s.baseplatesBytes += b.size;
     } else {
       s.designsCount++;
       s.designsBytes += b.size;

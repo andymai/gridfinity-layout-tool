@@ -45,7 +45,7 @@ async function listBlobs(opts: BuildOpts): Promise<BlobRow[]> {
     for (const b of page.blobs) {
       const parts = b.pathname.split('/');
       if (parts[0] !== 'users' || !parts[1]) continue;
-      if (parts[2] !== 'layouts' && parts[2] !== 'designs') continue;
+      if (parts[2] !== 'layouts' && parts[2] !== 'designs' && parts[2] !== 'baseplates') continue;
       if (opts.kind && parts[2] !== opts.kind) continue;
       const file = parts[3] ?? '';
       if (!file.endsWith('.json')) continue;
@@ -64,7 +64,7 @@ async function listBlobs(opts: BuildOpts): Promise<BlobRow[]> {
 }
 
 async function readIndexes(redis: Redis, opts: BuildOpts): Promise<IndexRow[]> {
-  const kinds: Kind[] = opts.kind ? [opts.kind] : ['layouts', 'designs'];
+  const kinds: Kind[] = opts.kind ? [opts.kind] : ['layouts', 'designs', 'baseplates'];
   const out: IndexRow[] = [];
   for (const kind of kinds) {
     const keys = opts.user

@@ -30,6 +30,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'layout.setGridUnitMm': 'undo.gridUnitChanged',
   'layout.setHeightUnitMm': 'undo.heightUnitChanged',
   'layout.setBaseplateParams': 'undo.baseplateParamsChanged',
+  'layout.setActiveBaseplate': 'undo.activeBaseplateChanged',
 };
 
 export function getCommandDescriptionKey(commandType: CommandType | 'unknown'): string {

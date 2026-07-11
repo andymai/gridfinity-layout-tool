@@ -34,6 +34,7 @@ function makeMockAdapter(): MockAdapter {
 
 let layouts: MockAdapter;
 let designs: MockAdapter;
+let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 
 beforeEach(() => {
@@ -46,11 +47,18 @@ beforeEach(() => {
   });
   layouts = makeMockAdapter();
   designs = makeMockAdapter();
-  adapters = { layouts, designs };
+  baseplates = makeMockAdapter();
+  adapters = { layouts, designs, baseplates };
 });
 
 function manifestResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), {
+  // Default an empty `baseplates` index so fixtures written before the third
+  // sync kind still parse; explicit `baseplates` in `body` wins.
+  const withDefaults =
+    typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? { baseplates: {}, ...(body as Record<string, unknown>) }
+      : body;
+  return new Response(JSON.stringify(withDefaults), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

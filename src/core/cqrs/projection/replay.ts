@@ -150,6 +150,11 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layout.baseplateParamsSet':
       next.baseplateParams = event.payload.params;
       break;
+
+    case 'layout.activeBaseplateSet':
+      next.activeBaseplateId = event.payload.designId;
+      next.baseplateParams = event.payload.params;
+      break;
   }
 
   return next;

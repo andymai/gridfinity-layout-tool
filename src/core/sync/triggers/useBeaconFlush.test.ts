@@ -40,6 +40,13 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
       applyRemoteDelete: vi.fn(),
       subscribe: vi.fn(() => () => {}),
     },
+    baseplates: {
+      list: vi.fn(),
+      get: vi.fn(async (id: string) => ({ id, payload: { b: 1 }, modifiedAt: 3000 })),
+      applyRemote: vi.fn(),
+      applyRemoteDelete: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    },
   };
 }
 

@@ -13,7 +13,7 @@ export interface Args {
   help: boolean;
 }
 
-const KINDS: Kind[] = ['layouts', 'designs'];
+const KINDS: Kind[] = ['layouts', 'designs', 'baseplates'];
 
 function parseOlderThan(v: string): number {
   const m = v.match(/^(\d+)d$/);

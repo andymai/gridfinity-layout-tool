@@ -92,6 +92,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     toggleShowOtherLayers,
     setPrintModalOpen,
     setShowLayoutManager,
+    setShowBaseplateLibrary,
     showIsometricPreview,
     toggleIsometricPreview,
     togglePreviewExpanded,
@@ -102,6 +103,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       toggleShowOtherLayers: s.toggleShowOtherLayers,
       setPrintModalOpen: s.setPrintModalOpen,
       setShowLayoutManager: s.setShowLayoutManager,
+      setShowBaseplateLibrary: s.setShowBaseplateLibrary,
       showIsometricPreview: s.showIsometricPreview,
       toggleIsometricPreview: s.toggleIsometricPreview,
       togglePreviewExpanded: s.togglePreviewExpanded,
@@ -197,6 +199,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
 
     const navigation: Record<string, ActionHandler> = {
       'open-layout-manager': () => setShowLayoutManager(true),
+      'open-baseplate-library': () => setShowBaseplateLibrary(true),
       'open-settings': () => dispatchWindowEvent('open-settings-modal'),
       'open-help': () => dispatchWindowEvent('open-help-modal'),
       'open-print': () => setPrintModalOpen(true),
@@ -485,6 +488,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     setActiveCategory,
     setInteraction,
     setShowLayoutManager,
+    setShowBaseplateLibrary,
     setPrintModalOpen,
     toggleIsometricPreview,
     togglePreviewExpanded,

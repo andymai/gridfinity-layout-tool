@@ -12,9 +12,30 @@ export {
   mmToHeightUnits,
 } from '@gridfinity/branded-types';
 
-import type { BinId, LayerId, CategoryId, LayoutId, DesignId } from '@gridfinity/branded-types';
-export type { BinId, LayerId, CategoryId, LayoutId, DesignId } from '@gridfinity/branded-types';
-export { binId, layerId, categoryId, layoutId, designId } from '@gridfinity/branded-types';
+import type {
+  BinId,
+  LayerId,
+  CategoryId,
+  LayoutId,
+  DesignId,
+  BaseplateDesignId,
+} from '@gridfinity/branded-types';
+export type {
+  BinId,
+  LayerId,
+  CategoryId,
+  LayoutId,
+  DesignId,
+  BaseplateDesignId,
+} from '@gridfinity/branded-types';
+export {
+  binId,
+  layerId,
+  categoryId,
+  layoutId,
+  designId,
+  baseplateDesignId,
+} from '@gridfinity/branded-types';
 export interface Layout {
   version: string; // "1.0"
   name: string; // max 64 chars
@@ -28,6 +49,9 @@ export interface Layout {
   bins: Bin[];
   purpose?: string; // Optional drawer purpose (e.g., "workshop", "electronics")
   baseplateParams?: StoredBaseplateParams; // Per-layout baseplate configuration
+  // Pointer to the active baseplate library design. null = detached inline draft
+  // (unsaved New/Fork, or orphaned after the source design was deleted).
+  activeBaseplateId?: BaseplateDesignId | null;
 }
 
 /** Nine-point padding distribution anchor. First letter = vertical (t/m/b),

@@ -19,7 +19,11 @@ const noopAdapter = {
   subscribe: vi.fn(() => () => {}),
 };
 
-const adapters: SyncAdapters = { layouts: noopAdapter, designs: noopAdapter };
+const adapters: SyncAdapters = {
+  layouts: noopAdapter,
+  designs: noopAdapter,
+  baseplates: noopAdapter,
+};
 
 function setVisibility(state: 'hidden' | 'visible'): void {
   Object.defineProperty(document, 'visibilityState', {

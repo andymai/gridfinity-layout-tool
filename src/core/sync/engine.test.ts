@@ -57,6 +57,7 @@ function makeMockAdapter(): MockAdapter {
 
 let layoutsAdapter: MockAdapter;
 let designsAdapter: MockAdapter;
+let baseplatesAdapter: MockAdapter;
 let adapters: SyncAdapters;
 
 beforeEach(async () => {
@@ -70,7 +71,8 @@ beforeEach(async () => {
   useSyncStatusStore.getState().reset();
   layoutsAdapter = makeMockAdapter();
   designsAdapter = makeMockAdapter();
-  adapters = { layouts: layoutsAdapter, designs: designsAdapter };
+  baseplatesAdapter = makeMockAdapter();
+  adapters = { layouts: layoutsAdapter, designs: designsAdapter, baseplates: baseplatesAdapter };
   // Default: every fetch resolves with 200 + empty body.
   fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
 });

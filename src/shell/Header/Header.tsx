@@ -26,6 +26,11 @@ const LayoutManagerModal = lazyWithRetry(() =>
     namedExport('LayoutManagerModal')
   )
 );
+const BaseplateLibraryModal = lazyWithRetry(() =>
+  import('@/features/baseplate/components/BaseplateLibraryModal').then(
+    namedExport('BaseplateLibraryModal')
+  )
+);
 const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
 );
@@ -58,15 +63,23 @@ export function Header({ saveStatus }: HeaderProps) {
     }))
   );
 
-  const { printModalOpen, setPrintModalOpen, showLayoutManager, setShowLayoutManager } =
-    useViewStore(
-      useShallow((state) => ({
-        printModalOpen: state.printModalOpen,
-        setPrintModalOpen: state.setPrintModalOpen,
-        showLayoutManager: state.showLayoutManager,
-        setShowLayoutManager: state.setShowLayoutManager,
-      }))
-    );
+  const {
+    printModalOpen,
+    setPrintModalOpen,
+    showLayoutManager,
+    setShowLayoutManager,
+    showBaseplateLibrary,
+    setShowBaseplateLibrary,
+  } = useViewStore(
+    useShallow((state) => ({
+      printModalOpen: state.printModalOpen,
+      setPrintModalOpen: state.setPrintModalOpen,
+      showLayoutManager: state.showLayoutManager,
+      setShowLayoutManager: state.setShowLayoutManager,
+      showBaseplateLibrary: state.showBaseplateLibrary,
+      setShowBaseplateLibrary: state.setShowBaseplateLibrary,
+    }))
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
@@ -288,6 +301,15 @@ export function Header({ saveStatus }: HeaderProps) {
             renderShareModal={(props: ShareModalRenderProps) => (
               <ShareModal isOpen={props.isOpen} onClose={props.onClose} layoutId={props.layoutId} />
             )}
+          />
+        </Suspense>
+      )}
+
+      {showBaseplateLibrary && (
+        <Suspense fallback={<LoadingFallback variant="overlay" />}>
+          <BaseplateLibraryModal
+            isOpen={showBaseplateLibrary}
+            onClose={() => setShowBaseplateLibrary(false)}
           />
         </Suspense>
       )}

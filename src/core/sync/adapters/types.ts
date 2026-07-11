@@ -101,22 +101,35 @@ export interface DesignSyncPayload {
   tags?: readonly string[];
 }
 
+/**
+ * Baseplate designs sync as `{ name, params }`, mirroring `DesignSyncPayload`
+ * minus tags — baseplates carry no organization tags. `params` is `unknown`
+ * because `StoredBaseplateParams` narrowing happens in the concrete
+ * `BaseplateAdapter` impl (which lives in `features/baseplate/`).
+ */
+export interface BaseplatePayload {
+  name: string;
+  params: unknown;
+}
+
 export type LayoutAdapter = SyncAdapter<Layout>;
 export type DesignAdapter = SyncAdapter<DesignSyncPayload>;
+export type BaseplateAdapter = SyncAdapter<BaseplatePayload>;
 
 /**
- * Both adapters bundled together — what the engine takes at start time.
+ * All adapters bundled together — what the engine takes at start time.
  * The shape lets the engine treat them uniformly while keeping the
  * `kind` distinction visible in logs and the outbox.
  *
- * `SyncKind = 'layouts' | 'designs'` — plural to match server endpoints
- * (`/api/sync/{kind}/[id]`) and Redis index keys (`users:{uid}:index:{kind}`).
- * The outbox uses the same plural form so there's no kind-translation
- * shim anywhere in the stack.
+ * `SyncKind = 'layouts' | 'designs' | 'baseplates'` — plural to match
+ * server endpoints (`/api/sync/{kind}/[id]`) and Redis index keys
+ * (`users:{uid}:index:{kind}`). The outbox uses the same plural form so
+ * there's no kind-translation shim anywhere in the stack.
  */
 export interface SyncAdapters {
   layouts: LayoutAdapter;
   designs: DesignAdapter;
+  baseplates: BaseplateAdapter;
 }
 
 export type SyncKind = keyof SyncAdapters;

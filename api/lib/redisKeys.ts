@@ -18,7 +18,7 @@
  *   users:{uid}:indexUpdatedAt      → ms timestamp for If-Modified-Since on /api/sync/manifest
  */
 
-export type SyncItemKind = 'layouts' | 'designs';
+export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
 
 /** Delete-token hash for an anonymous share. */
 export function shareHashKey(shareId: string): string {

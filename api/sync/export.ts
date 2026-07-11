@@ -18,9 +18,10 @@ import {
  *
  * Stream a ZIP of the user's live data:
  *
- *   manifest.json        — { layouts: { [id]: IndexEntry }, designs: ..., indexUpdatedAt, exportedAt }
+ *   manifest.json        — { layouts, designs, baseplates: { [id]: IndexEntry }, indexUpdatedAt, exportedAt }
  *   layouts/{id}.json    — full envelope for each non-tombstoned layout
  *   designs/{id}.json    — full envelope for each non-tombstoned design
+ *   baseplates/{id}.json — full envelope for each non-tombstoned baseplate
  *
  * Tombstones are excluded — the user asked to export their data, not
  * the audit trail of deletions.
@@ -50,14 +51,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   try {
-    const [layoutsIndex, designsIndex, indexUpdatedAt] = await Promise.all([
+    const [layoutsIndex, designsIndex, baseplatesIndex, indexUpdatedAt] = await Promise.all([
       getIndex(redis, session.userId, 'layouts'),
       getIndex(redis, session.userId, 'designs'),
+      getIndex(redis, session.userId, 'baseplates'),
       getIndexUpdatedAt(redis, session.userId),
     ]);
 
     const liveLayouts = filterLive(layoutsIndex);
     const liveDesigns = filterLive(designsIndex);
+    const liveBaseplates = filterLive(baseplatesIndex);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
@@ -74,6 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             {
               layouts: liveLayouts,
               designs: liveDesigns,
+              baseplates: liveBaseplates,
               indexUpdatedAt,
               exportedAt: Date.now(),
               schemaVersion: 1,
@@ -86,6 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       await Promise.all([
         streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts)),
         streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
+        streamEnvelopes(addFile, session.userId, 'baseplates', Object.keys(liveBaseplates)),
       ]);
     });
   } catch (error) {

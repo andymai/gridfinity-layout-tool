@@ -10,9 +10,10 @@
  * Reads layoutId from the URL query param to load the correct layout.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useViewStore } from '@/core/store/view';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { gridUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -21,9 +22,14 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { Button } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
+import { useBaseplateLibraryInit } from '../../hooks/useBaseplateLibraryInit';
+import { useBaseplateAutoSave } from '../../hooks/useBaseplateAutoSave';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
+import { BaseplateSelector } from '../BaseplateSelector';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
@@ -41,6 +47,10 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
+
+const BaseplateLibraryModal = lazyWithRetry(() =>
+  import('../BaseplateLibraryModal').then(namedExport('BaseplateLibraryModal'))
+);
 
 /** File extension display for each format */
 const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
@@ -75,6 +85,15 @@ export function BaseplatePage() {
 
   // Initialize generation bridge
   useBaseplateGeneration();
+
+  // Backfill the library pointer / re-materialize the active design on load.
+  useBaseplateLibraryInit();
+
+  // Persist edits to the active library design (debounced).
+  useBaseplateAutoSave();
+
+  const showBaseplateLibrary = useViewStore((s) => s.showBaseplateLibrary);
+  const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
 
   const { isExporting, canExport, exportProgress, downloadBaseplate } = useBaseplateExport();
   const { isStandalone } = useBaseplateRouting();
@@ -257,6 +276,8 @@ export function BaseplatePage() {
             )}
             <span className="hidden lg:inline">{t('common.export')}</span>
           </Button>
+
+          {!isMobile && <BaseplateSelector />}
         </div>
 
         {isDesktop && (
@@ -354,6 +375,15 @@ export function BaseplatePage() {
           />
         }
       />
+
+      {showBaseplateLibrary && (
+        <Suspense fallback={<LoadingFallback variant="overlay" />}>
+          <BaseplateLibraryModal
+            isOpen={showBaseplateLibrary}
+            onClose={() => setShowBaseplateLibrary(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

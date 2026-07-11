@@ -48,6 +48,7 @@ function makeAdapter(): MockAdapter {
 
 let layouts: MockAdapter;
 let designs: MockAdapter;
+let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 const onAnonymous = vi.fn();
 const promptKeep: KeepLocalPrompt = vi.fn(async () => 'keep');
@@ -58,7 +59,8 @@ beforeEach(() => {
   localStorage.clear();
   layouts = makeAdapter();
   designs = makeAdapter();
-  adapters = { layouts, designs };
+  baseplates = makeAdapter();
+  adapters = { layouts, designs, baseplates };
   flushNowMock.mockResolvedValue(undefined);
   getPendingEntriesMock.mockResolvedValue([]);
   apiSignOutMock.mockResolvedValue(undefined);

@@ -18,9 +18,7 @@ interface DeleteAccountContext {
 }
 
 export type DeleteAccountResult =
-  | { status: 'deleted' }
-  | { status: 'cancelled' }
-  | { status: 'error'; message: string };
+  { status: 'deleted' } | { status: 'cancelled' } | { status: 'error'; message: string };
 
 /**
  * Permanently delete the signed-in account. Cloud data (sessions,
@@ -58,6 +56,10 @@ export async function runDeleteAccount(ctx: DeleteAccountContext): Promise<Delet
 }
 
 async function countLocalItems(adapters: SyncAdapters): Promise<number> {
-  const [layouts, designs] = await Promise.all([adapters.layouts.list(), adapters.designs.list()]);
-  return layouts.length + designs.length;
+  const [layouts, designs, baseplates] = await Promise.all([
+    adapters.layouts.list(),
+    adapters.designs.list(),
+    adapters.baseplates.list(),
+  ]);
+  return layouts.length + designs.length + baseplates.length;
 }

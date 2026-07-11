@@ -34,6 +34,7 @@ describe('COMMAND_SCHEMAS', () => {
     'layout.setGridUnitMm',
     'layout.setHeightUnitMm',
     'layout.setBaseplateParams',
+    'layout.setActiveBaseplate',
   ];
 
   it('has schemas for all original domain command types', () => {
@@ -42,9 +43,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 34 schemas', () => {
+  it('has exactly 35 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(34);
+    expect(registeredCount).toBe(35);
   });
 });
 

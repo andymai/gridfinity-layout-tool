@@ -67,6 +67,7 @@ export type {
   SetGridUnitMmCommand,
   SetHeightUnitMmCommand,
   SetBaseplateParamsCommand,
+  SetActiveBaseplateCommand,
   DrawerCommand,
   // Library commands
   LibraryCommand,
@@ -115,6 +116,7 @@ export type {
   GridUnitMmSetEvent,
   HeightUnitMmSetEvent,
   BaseplateParamsSetEvent,
+  ActiveBaseplateSetEvent,
   DrawerEvent,
   // Library events
   LibraryEvent,

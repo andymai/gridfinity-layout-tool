@@ -23,10 +23,16 @@ export type SetBaseplateParamsCommand = BaseCommand<
   { readonly params: StoredBaseplateParams }
 >;
 
+export type SetActiveBaseplateCommand = BaseCommand<
+  'layout.setActiveBaseplate',
+  { readonly designId: string | null; readonly params: StoredBaseplateParams }
+>;
+
 export type DrawerCommand =
   | UpdateDrawerCommand
   | SetNameCommand
   | SetPrintBedSizeCommand
   | SetGridUnitMmCommand
   | SetHeightUnitMmCommand
-  | SetBaseplateParamsCommand;
+  | SetBaseplateParamsCommand
+  | SetActiveBaseplateCommand;

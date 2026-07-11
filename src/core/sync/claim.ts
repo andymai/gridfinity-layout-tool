@@ -37,11 +37,12 @@ interface IndexEntry {
 interface ManifestResponse {
   layouts: Record<string, IndexEntry>;
   designs: Record<string, IndexEntry>;
+  baseplates: Record<string, IndexEntry>;
   indexUpdatedAt: number;
 }
 
 interface ItemFetchResponse {
-  envelope: { layout?: unknown; design?: unknown; modifiedAt: number };
+  envelope: { layout?: unknown; design?: unknown; baseplate?: unknown; modifiedAt: number };
 }
 
 const inFlightByUser = new Map<string, Promise<ClaimResult>>();
@@ -85,15 +86,14 @@ async function execute(ctx: ClaimContext): Promise<ClaimResult> {
 async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
   const localLayouts = await ctx.adapters.layouts.list();
   const localDesigns = await ctx.adapters.designs.list();
+  const localBaseplates = await ctx.adapters.baseplates.list();
 
+  const localCount = localLayouts.length + localDesigns.length + localBaseplates.length;
   const lastUserId = readLastSignedInUserId();
-  const accountMismatch =
-    lastUserId !== null &&
-    lastUserId !== ctx.userId &&
-    localLayouts.length + localDesigns.length > 0;
+  const accountMismatch = lastUserId !== null && lastUserId !== ctx.userId && localCount > 0;
   if (accountMismatch) {
     const choice = await ctx.promptAccountMismatch({
-      localCount: localLayouts.length + localDesigns.length,
+      localCount,
       newUserId: ctx.userId,
       newAccountLabel: ctx.newAccountLabel,
     });
@@ -104,7 +104,7 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
       // Reverse order makes the failure safe — clearing the outbox is
       // the only step that gates cross-account leakage.
       await outboxClearAll();
-      await wipeLocal(ctx.adapters, localLayouts, localDesigns);
+      await wipeLocal(ctx.adapters, localLayouts, localDesigns, localBaseplates);
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };
@@ -137,14 +137,20 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
     localDesigns,
     manifest.designs
   );
+  const baseplateCounts = await mergeKind(
+    ctx.adapters.baseplates,
+    'baseplates',
+    localBaseplates,
+    manifest.baseplates
+  );
 
   persistLastSignedInUserId(ctx.userId);
   useSyncStatusStore.getState().succeed();
 
   return {
     status: 'merged',
-    pulled: layoutCounts.pulled + designCounts.pulled,
-    pushed: layoutCounts.pushed + designCounts.pushed,
+    pulled: layoutCounts.pulled + designCounts.pulled + baseplateCounts.pulled,
+    pushed: layoutCounts.pushed + designCounts.pushed + baseplateCounts.pushed,
   };
 }
 
@@ -192,7 +198,12 @@ async function mergeKind(
     if (!localItem) {
       const fetched = await fetchEnvelope(kind, id);
       if (fetched) {
-        const payload = kind === 'layouts' ? fetched.envelope.layout : fetched.envelope.design;
+        const payload =
+          kind === 'layouts'
+            ? fetched.envelope.layout
+            : kind === 'baseplates'
+              ? fetched.envelope.baseplate
+              : fetched.envelope.design;
         if (payload !== undefined) {
           await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
           pulled++;
@@ -204,7 +215,12 @@ async function mergeKind(
     if (localItem.modifiedAt < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
       if (fetched) {
-        const payload = kind === 'layouts' ? fetched.envelope.layout : fetched.envelope.design;
+        const payload =
+          kind === 'layouts'
+            ? fetched.envelope.layout
+            : kind === 'baseplates'
+              ? fetched.envelope.baseplate
+              : fetched.envelope.design;
         if (payload !== undefined) {
           await adapter.applyRemote({ id, payload, modifiedAt: fetched.envelope.modifiedAt });
           pulled++;
@@ -264,10 +280,12 @@ async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchRespo
 async function wipeLocal(
   adapters: SyncAdapters,
   layouts: SyncableItem[],
-  designs: SyncableItem[]
+  designs: SyncableItem[],
+  baseplates: SyncableItem[]
 ): Promise<void> {
   for (const item of layouts) await adapters.layouts.applyRemoteDelete(item.id);
   for (const item of designs) await adapters.designs.applyRemoteDelete(item.id);
+  for (const item of baseplates) await adapters.baseplates.applyRemoteDelete(item.id);
 }
 
 function readLastSignedInUserId(): string | null {

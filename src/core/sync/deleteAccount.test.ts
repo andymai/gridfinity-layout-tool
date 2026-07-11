@@ -37,6 +37,7 @@ function makeAdapter(): MockAdapter {
 
 let layouts: MockAdapter;
 let designs: MockAdapter;
+let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 const onAnonymous = vi.fn();
 const promptConfirm: DeleteAccountConfirmPrompt = vi.fn(async () => 'confirm');
@@ -47,7 +48,8 @@ beforeEach(() => {
   localStorage.clear();
   layouts = makeAdapter();
   designs = makeAdapter();
-  adapters = { layouts, designs };
+  baseplates = makeAdapter();
+  adapters = { layouts, designs, baseplates };
   apiDeleteAccountMock.mockResolvedValue(undefined);
 });
 

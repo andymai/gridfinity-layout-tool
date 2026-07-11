@@ -48,6 +48,7 @@ interface ViewState {
   // Modals
   printModalOpen: boolean;
   showLayoutManager: boolean;
+  showBaseplateLibrary: boolean;
 
   // 3D Preview
   showIsometricPreview: boolean;
@@ -86,6 +87,7 @@ interface ViewActions {
   // Modals
   setPrintModalOpen: (open: boolean) => void;
   setShowLayoutManager: (show: boolean) => void;
+  setShowBaseplateLibrary: (show: boolean) => void;
 
   // 3D Preview
   toggleIsometricPreview: () => void;
@@ -111,6 +113,7 @@ export const INITIAL_VIEW_STATE = {
   highlightedColLabel: null as number | null,
   printModalOpen: false,
   showLayoutManager: false,
+  showBaseplateLibrary: false,
   showIsometricPreview: false,
   isometricRotation: 0,
   layerViewMode: 'stack' as LayerViewMode,
@@ -176,6 +179,7 @@ export const useViewStore = create<ViewStore>((set) => ({
   // Modal actions
   setPrintModalOpen: (open) => set({ printModalOpen: open }),
   setShowLayoutManager: (show) => set({ showLayoutManager: show }),
+  setShowBaseplateLibrary: (show) => set({ showBaseplateLibrary: show }),
 
   // 3D Preview actions
   toggleIsometricPreview: () =>

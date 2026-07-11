@@ -46,6 +46,7 @@ export type {
   SetGridUnitMmCommand,
   SetHeightUnitMmCommand,
   SetBaseplateParamsCommand,
+  SetActiveBaseplateCommand,
 } from './drawerCommands';
 
 export type {

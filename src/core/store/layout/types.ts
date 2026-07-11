@@ -9,6 +9,7 @@ import type {
   LayerId,
   CategoryId,
   LayoutId,
+  BaseplateDesignId,
 } from '@/core/types';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 
@@ -70,6 +71,16 @@ export interface LayoutState {
 
   // Baseplate
   setBaseplateParams: (params: StoredBaseplateParams) => void;
+  /**
+   * Non-undoable direct set of the active baseplate pointer + materialized
+   * params. Used by load-time auto-resolution (seed/re-materialize/orphan) so
+   * it never pollutes undo history; user-initiated switches go through the
+   * CQRS `layout.setActiveBaseplate` command instead.
+   */
+  setActiveBaseplateLocal: (
+    designId: BaseplateDesignId | null,
+    params: StoredBaseplateParams
+  ) => void;
 
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;

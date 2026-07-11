@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer';
+import { baseplateAdapter } from '@/features/baseplate';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
 import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
 
-const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter };
+const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter, baseplates: baseplateAdapter };
 
 interface SignOutFlow {
   signOut: () => Promise<void>;

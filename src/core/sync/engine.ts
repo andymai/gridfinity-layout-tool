@@ -184,7 +184,9 @@ async function sendOne(
   const body =
     kind === 'layouts'
       ? { layout: latest.payload, modifiedAt: latest.modifiedAt }
-      : { design: latest.payload, modifiedAt: latest.modifiedAt };
+      : kind === 'baseplates'
+        ? { baseplate: latest.payload, modifiedAt: latest.modifiedAt }
+        : { design: latest.payload, modifiedAt: latest.modifiedAt };
 
   const res = await apiFetch(url, {
     method: 'PUT',
@@ -236,17 +238,23 @@ async function handleConflict(
   res: Response,
   s: EngineState
 ): Promise<void> {
-  let stored: { layout?: unknown; design?: unknown; modifiedAt?: number } | null;
+  let stored: {
+    layout?: unknown;
+    design?: unknown;
+    baseplate?: unknown;
+    modifiedAt?: number;
+  } | null;
   try {
     const body = (await res.json()) as {
-      stored?: { layout?: unknown; design?: unknown; modifiedAt?: number };
+      stored?: { layout?: unknown; design?: unknown; baseplate?: unknown; modifiedAt?: number };
     };
     stored = body.stored ?? null;
   } catch {
     stored = null;
   }
   if (stored && typeof stored.modifiedAt === 'number') {
-    const payload = kind === 'layouts' ? stored.layout : stored.design;
+    const payload =
+      kind === 'layouts' ? stored.layout : kind === 'baseplates' ? stored.baseplate : stored.design;
     if (payload !== undefined) {
       await adapter.applyRemote({
         id: entry.id,

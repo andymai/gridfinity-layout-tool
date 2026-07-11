@@ -91,6 +91,11 @@ const DesignerPage = lazyWithRetry(() =>
 const BaseplatePage = lazyWithRetry(() =>
   import('@/features/baseplate').then(namedExport('BaseplatePage'))
 );
+const BaseplateLibraryInitMount = lazyWithRetry(() =>
+  import('@/features/baseplate/components/BaseplateLibraryInitMount').then(
+    namedExport('BaseplateLibraryInitMount')
+  )
+);
 const SupportersPage = lazyWithRetry(() =>
   import('@/features/supporters').then(namedExport('SupportersPage'))
 );
@@ -315,6 +320,7 @@ export default function App() {
     const dialogs = (
       <Suspense fallback={null}>
         <DesignLinkingDialogs />
+        <BaseplateLibraryInitMount />
       </Suspense>
     );
     if (isCollaborative && shareId) {

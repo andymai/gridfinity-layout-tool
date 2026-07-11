@@ -72,6 +72,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['layouts', 'switch', 'browse'],
   },
   {
+    id: 'open-baseplate-library',
+    labelKey: 'commandPalette.openBaseplateLibrary',
+    category: 'navigation',
+    keywords: ['baseplate', 'baseplates', 'library', 'grid', 'designs'],
+  },
+  {
     id: 'open-settings',
     labelKey: 'commandPalette.openSettings',
     category: 'navigation',

@@ -50,6 +50,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'layout.setGridUnitMm': 'domain',
   'layout.setHeightUnitMm': 'domain',
   'layout.setBaseplateParams': 'domain',
+  'layout.setActiveBaseplate': 'domain',
 
   // Library commands
   'library.createEntry': 'library',

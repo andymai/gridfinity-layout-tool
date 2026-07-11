@@ -38,6 +38,7 @@ export type {
   GridUnitMmSetEvent,
   HeightUnitMmSetEvent,
   BaseplateParamsSetEvent,
+  ActiveBaseplateSetEvent,
 } from './drawerEvents';
 
 export type {
@@ -67,13 +68,7 @@ import type { RestoreEvent } from './restoreEvents';
 
 /** Union of all domain events */
 export type DomainEvent =
-  | BinEvent
-  | LayerEvent
-  | CategoryEvent
-  | DrawerEvent
-  | LibraryEvent
-  | DesignerEvent
-  | RestoreEvent;
+  BinEvent | LayerEvent | CategoryEvent | DrawerEvent | LibraryEvent | DesignerEvent | RestoreEvent;
 
 /** All possible event type strings */
 export type DomainEventType = DomainEvent['type'];

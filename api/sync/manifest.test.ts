@@ -125,7 +125,7 @@ describe('GET /api/sync/manifest', () => {
     const res = makeRes();
     await handler(makeReq(), res as unknown as VercelResponse);
     expect(res._status).toBe(200);
-    expect(res._body).toEqual({ layouts: {}, designs: {}, indexUpdatedAt: 0 });
+    expect(res._body).toEqual({ layouts: {}, designs: {}, baseplates: {}, indexUpdatedAt: 0 });
   });
 
   it('returns the index hashes plus indexUpdatedAt', async () => {

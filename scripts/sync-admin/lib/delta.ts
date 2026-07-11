@@ -12,8 +12,11 @@ import type { Kind } from './types.js';
  *            index sizeBytes is `byteLen({"name":..,"tags":..,"type":"designer","version":1,"params":..})`.
  *            Net delta = 13 + digits(N). `name` and `tags` appear with the same
  *            key+value on both sides, so they cancel and don't affect the delta.
+ *   Baseplates: blob is `{"baseplate":{"name":..,"params":..},"modifiedAt":N,"schemaVersion":1}`,
+ *            index sizeBytes is `byteLen({"name":..,"type":"baseplate","version":1,"params":..})`.
+ *            Net delta = 15 + digits(N). `name` cancels on both sides.
  */
 export function expectedEnvelopeDelta(kind: Kind, modifiedAt: number): number {
   const digits = String(modifiedAt).length;
-  return (kind === 'layouts' ? 32 : 13) + digits;
+  return (kind === 'layouts' ? 32 : kind === 'baseplates' ? 15 : 13) + digits;
 }

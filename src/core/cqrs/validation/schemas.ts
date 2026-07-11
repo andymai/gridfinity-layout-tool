@@ -250,6 +250,12 @@ const baseplateParamsSchema = z.object({
 
 /** layout.setBaseplateParams */
 const layoutSetBaseplateParamsSchema = z.object({ params: baseplateParamsSchema });
+
+/** layout.setActiveBaseplate */
+const layoutSetActiveBaseplateSchema = z.object({
+  designId: z.string().min(1).nullable(),
+  params: baseplateParamsSchema,
+});
 /**
  * Maps command type strings to their payload Zod schemas.
  * UI and restore commands are excluded (validation=false in their middleware profiles).
@@ -285,6 +291,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
+  'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,
 
   // Library commands (10)
   'library.createEntry': libraryCreateEntrySchema,

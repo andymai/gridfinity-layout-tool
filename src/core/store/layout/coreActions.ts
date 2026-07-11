@@ -1,4 +1,11 @@
-import type { Layout, StoredBaseplateParams, LayoutId, GridUnits, Mm } from '@/core/types';
+import type {
+  Layout,
+  StoredBaseplateParams,
+  LayoutId,
+  GridUnits,
+  Mm,
+  BaseplateDesignId,
+} from '@/core/types';
 import { CONSTRAINTS, migrateBaseplateParams } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import type { EditSource, SetLocal, ImmerSet, GetState } from './types';
@@ -46,6 +53,16 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
             ? { baseplateDepth: clamp(params.baseplateDepth, 0.5, 50) as GridUnits }
             : {}),
         };
+      });
+    },
+
+    setActiveBaseplateLocal: (
+      designId: BaseplateDesignId | null,
+      params: StoredBaseplateParams
+    ): void => {
+      setLocal((state) => {
+        state.layout.activeBaseplateId = designId;
+        state.layout.baseplateParams = params;
       });
     },
 

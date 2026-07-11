@@ -1,10 +1,11 @@
 import { validateShareLayout, isValidationError } from '../../../api/lib/validation.js';
 import { validateDesignerShare } from '../../../api/lib/designerValidation.js';
+import { validateBaseplateShare } from '../../../api/lib/baseplateValidation.js';
 import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
 import { pMap } from './concurrency.js';
 import { expectedEnvelopeDelta } from './delta.js';
 import { isMalformedRow, itemKey } from './inventory.js';
-import type { Finding, Inventory } from './types.js';
+import type { Finding, Inventory, Kind } from './types.js';
 
 interface AnalyzeOpts {
   fetchPayloads: boolean;
@@ -149,7 +150,7 @@ export async function analyze(
 }
 
 async function validateBlob(
-  blob: { uid: string; kind: 'layouts' | 'designs'; id: string; url: string; size: number },
+  blob: { uid: string; kind: Kind; id: string; url: string; size: number },
   inv: Inventory,
   timeoutMs: number
 ): Promise<Finding[]> {
@@ -250,8 +251,34 @@ async function validateBlob(
         detail: `${v.error.code}: ${v.error.message}`,
       });
     }
+  } else if (blob.kind === 'baseplates') {
+    const u = unwrapWrapper(env.baseplate);
+    if (!u) {
+      out.push({
+        kind: 'payload_invalid',
+        uid: blob.uid,
+        itemKind: blob.kind,
+        id: blob.id,
+        severity: 'error',
+        detail: 'baseplate payload not unwrappable',
+      });
+    } else {
+      const wrapped = { type: 'baseplate' as const, version: 1 as const, params: u.params };
+      const inner = JSON.stringify(wrapped);
+      const v = validateBaseplateShare(wrapped, Buffer.byteLength(inner, 'utf8'));
+      if (!v.valid) {
+        out.push({
+          kind: 'payload_invalid',
+          uid: blob.uid,
+          itemKind: blob.kind,
+          id: blob.id,
+          severity: 'error',
+          detail: `${v.error.code}: ${v.error.message}`,
+        });
+      }
+    }
   } else {
-    const u = unwrapDesign(env.design);
+    const u = unwrapWrapper(env.design);
     if (!u) {
       out.push({
         kind: 'payload_invalid',
@@ -293,12 +320,12 @@ async function validateBlob(
   return out;
 }
 
-function unwrapDesign(design: unknown): { name: string | null; params: unknown } | null {
-  if (design === null || typeof design !== 'object') return null;
-  const { name, params } = design as { name?: unknown; params?: unknown };
+function unwrapWrapper(wrapper: unknown): { name: string | null; params: unknown } | null {
+  if (wrapper === null || typeof wrapper !== 'object') return null;
+  const { name, params } = wrapper as { name?: unknown; params?: unknown };
   if (typeof params === 'object' && params !== null) {
     if (name !== undefined && typeof name !== 'string') return null;
     return { name: (name as string) ?? null, params };
   }
-  return { name: null, params: design };
+  return { name: null, params: wrapper };
 }

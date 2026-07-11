@@ -38,6 +38,7 @@ function makeAdapter(): MockAdapter {
 
 let layouts: MockAdapter;
 let designs: MockAdapter;
+let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 const promptMergeMock: AccountMismatchPrompt = vi.fn(async () => 'merge');
 const promptDiscardMock: AccountMismatchPrompt = vi.fn(async () => 'discard');
@@ -48,12 +49,19 @@ beforeEach(() => {
   localStorage.clear();
   layouts = makeAdapter();
   designs = makeAdapter();
-  adapters = { layouts, designs };
+  baseplates = makeAdapter();
+  adapters = { layouts, designs, baseplates };
   fetchMock.mockReset();
 });
 
 function manifestResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), {
+  // Default an empty `baseplates` index so fixtures written before the third
+  // sync kind still parse; explicit `baseplates` in `body` wins.
+  const withDefaults =
+    typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? { baseplates: {}, ...(body as Record<string, unknown>) }
+      : body;
+  return new Response(JSON.stringify(withDefaults), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
