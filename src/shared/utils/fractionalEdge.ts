@@ -17,8 +17,9 @@ export interface FractionalEdgeDesign {
   readonly depth: number;
   readonly fractionalEdgeX?: FractionalEdge;
   readonly fractionalEdgeY?: FractionalEdge;
-  /** When true the user chose the edge on purpose — suppress the warning. */
-  readonly fractionalEdgeManual?: boolean;
+  /** When true the user chose that axis's edge on purpose — suppress its warning. */
+  readonly fractionalEdgeManualX?: boolean;
+  readonly fractionalEdgeManualY?: boolean;
 }
 
 /** The drawer-side edge orientation to compare against. */
@@ -32,19 +33,21 @@ const drawerEdge = (edge: FractionalEdge | undefined): FractionalEdge => edge ??
 
 /**
  * True when a fractional axis of the design points at a different edge than the
- * drawer. A manual override, an integer dimension, or an unknown (undefined)
- * design edge never counts as a mismatch — we only warn on a concrete conflict.
+ * drawer. A per-axis manual override, an integer dimension, or an unknown
+ * (undefined) design edge never counts as a mismatch — we only warn on a
+ * concrete conflict, and only for axes the user hasn't taken control of.
  */
 export function hasFractionalEdgeMismatch(
   design: FractionalEdgeDesign,
   drawer: FractionalEdgeDrawer
 ): boolean {
-  if (design.fractionalEdgeManual) return false;
   const xMismatch =
+    !design.fractionalEdgeManualX &&
     isFractional(design.width) &&
     design.fractionalEdgeX !== undefined &&
     design.fractionalEdgeX !== drawerEdge(drawer.fractionalEdgeX);
   const yMismatch =
+    !design.fractionalEdgeManualY &&
     isFractional(design.depth) &&
     design.fractionalEdgeY !== undefined &&
     design.fractionalEdgeY !== drawerEdge(drawer.fractionalEdgeY);
@@ -53,8 +56,8 @@ export function hasFractionalEdgeMismatch(
 
 /**
  * The patch that realigns a design's fractional edges to the drawer. Only the
- * fractional axes are touched; `fractionalEdgeManual` is reset to `false` so the
- * design tracks future drawer changes again.
+ * fractional axes are touched, and each realigned axis has its manual flag reset
+ * to `false` so the design tracks future drawer changes on that axis again.
  */
 export function computeMatchedEdges(
   design: FractionalEdgeDesign,
@@ -62,11 +65,15 @@ export function computeMatchedEdges(
 ): {
   fractionalEdgeX?: FractionalEdge;
   fractionalEdgeY?: FractionalEdge;
-  fractionalEdgeManual: boolean;
+  fractionalEdgeManualX?: boolean;
+  fractionalEdgeManualY?: boolean;
 } {
   return {
-    ...(isFractional(design.width) ? { fractionalEdgeX: drawerEdge(drawer.fractionalEdgeX) } : {}),
-    ...(isFractional(design.depth) ? { fractionalEdgeY: drawerEdge(drawer.fractionalEdgeY) } : {}),
-    fractionalEdgeManual: false,
+    ...(isFractional(design.width)
+      ? { fractionalEdgeX: drawerEdge(drawer.fractionalEdgeX), fractionalEdgeManualX: false }
+      : {}),
+    ...(isFractional(design.depth)
+      ? { fractionalEdgeY: drawerEdge(drawer.fractionalEdgeY), fractionalEdgeManualY: false }
+      : {}),
   };
 }

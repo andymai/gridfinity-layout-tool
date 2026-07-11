@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Klikk for å åpne i designeren",
   "designLinking.inspector.createDesign": "Opprett",
   "designLinking.inspector.deleteDesign": "Slett bin-design",
-  "designLinking.inspector.edgeMismatch": "Halvenhetsfoten er på en annen kant enn denne skuffen.",
+  "designLinking.inspector.edgeMismatch": "Halvenhetsfoten samsvarer ikke med kanten på denne skuffen.",
   "designLinking.inspector.matchDrawer": "Tilpass til skuff",
   "designLinking.inspector.designDeleted": "Design slettet",
   "designLinking.inspector.editDesign": "Rediger design",

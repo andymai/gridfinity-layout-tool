@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Cliquer pour ouvrir dans le designer",
   "designLinking.inspector.createDesign": "Créer",
   "designLinking.inspector.deleteDesign": "Supprimer le design du bin",
-  "designLinking.inspector.edgeMismatch": "Le pied demi-unité est sur un bord différent de celui de ce tiroir.",
+  "designLinking.inspector.edgeMismatch": "Le pied demi-unité ne correspond pas au bord de ce tiroir.",
   "designLinking.inspector.matchDrawer": "Aligner sur le tiroir",
   "designLinking.inspector.designDeleted": "Design supprimé",
   "designLinking.inspector.editDesign": "Modifier le design",

@@ -156,7 +156,8 @@ export function useCreateFromBin(): void {
       ...(isFractional(urlParams.depth) && urlParams.fractionalEdgeY
         ? { fractionalEdgeY: urlParams.fractionalEdgeY }
         : {}),
-      fractionalEdgeManual: false,
+      fractionalEdgeManualX: false,
+      fractionalEdgeManualY: false,
       gridUnitMm: layoutState.layout.gridUnitMm,
       heightUnitMm: layoutState.layout.heightUnitMm,
     };

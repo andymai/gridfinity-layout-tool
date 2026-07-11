@@ -46,7 +46,8 @@ export interface CustomBinRef {
    */
   readonly fractionalEdgeX?: 'start' | 'end';
   readonly fractionalEdgeY?: 'start' | 'end';
-  readonly fractionalEdgeManual?: boolean;
+  readonly fractionalEdgeManualX?: boolean;
+  readonly fractionalEdgeManualY?: boolean;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -59,12 +60,17 @@ export interface CustomBinRef {
 export function registryEdgeFields(params: {
   readonly fractionalEdgeX?: 'start' | 'end';
   readonly fractionalEdgeY?: 'start' | 'end';
-  readonly fractionalEdgeManual?: boolean;
-}): Pick<CustomBinRef, 'fractionalEdgeX' | 'fractionalEdgeY' | 'fractionalEdgeManual'> {
+  readonly fractionalEdgeManualX?: boolean;
+  readonly fractionalEdgeManualY?: boolean;
+}): Pick<
+  CustomBinRef,
+  'fractionalEdgeX' | 'fractionalEdgeY' | 'fractionalEdgeManualX' | 'fractionalEdgeManualY'
+> {
   return {
     fractionalEdgeX: params.fractionalEdgeX,
     fractionalEdgeY: params.fractionalEdgeY,
-    fractionalEdgeManual: params.fractionalEdgeManual,
+    fractionalEdgeManualX: params.fractionalEdgeManualX,
+    fractionalEdgeManualY: params.fractionalEdgeManualY,
   };
 }
 
@@ -86,7 +92,8 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     updatedAt,
     fractionalEdgeX,
     fractionalEdgeY,
-    fractionalEdgeManual,
+    fractionalEdgeManualX,
+    fractionalEdgeManualY,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -100,15 +107,18 @@ function parseEntry(raw: unknown): CustomBinRef | null {
   }
   const edge = (v: unknown): 'start' | 'end' | undefined =>
     v === 'start' || v === 'end' ? v : undefined;
+  const edgeX = edge(fractionalEdgeX);
+  const edgeY = edge(fractionalEdgeY);
   return {
     id: id as DesignId,
     name,
     width,
     depth,
     height,
-    ...(edge(fractionalEdgeX) ? { fractionalEdgeX: edge(fractionalEdgeX) } : {}),
-    ...(edge(fractionalEdgeY) ? { fractionalEdgeY: edge(fractionalEdgeY) } : {}),
-    ...(typeof fractionalEdgeManual === 'boolean' ? { fractionalEdgeManual } : {}),
+    ...(edgeX ? { fractionalEdgeX: edgeX } : {}),
+    ...(edgeY ? { fractionalEdgeY: edgeY } : {}),
+    ...(typeof fractionalEdgeManualX === 'boolean' ? { fractionalEdgeManualX } : {}),
+    ...(typeof fractionalEdgeManualY === 'boolean' ? { fractionalEdgeManualY } : {}),
     updatedAt,
   };
 }

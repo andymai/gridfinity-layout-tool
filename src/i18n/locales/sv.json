@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Klicka för att öppna i designern",
   "designLinking.inspector.createDesign": "Skapa",
   "designLinking.inspector.deleteDesign": "Radera fackdesign",
-  "designLinking.inspector.edgeMismatch": "Halvenhetsfoten sitter på en annan kant än den här lådan.",
+  "designLinking.inspector.edgeMismatch": "Halvenhetsfoten matchar inte kanten på den här lådan.",
   "designLinking.inspector.matchDrawer": "Anpassa till låda",
   "designLinking.inspector.designDeleted": "Design raderad",
   "designLinking.inspector.editDesign": "Redigera design",

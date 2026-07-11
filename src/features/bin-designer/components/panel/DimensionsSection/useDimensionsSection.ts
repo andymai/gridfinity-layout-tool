@@ -120,8 +120,8 @@ export function useDimensionsSection() {
       // warning stops nagging about an intentional override (issue #2518).
       const patch: Partial<BinParams> =
         axis === 'x'
-          ? { fractionalEdgeX: position, fractionalEdgeManual: true }
-          : { fractionalEdgeY: position, fractionalEdgeManual: true };
+          ? { fractionalEdgeX: position, fractionalEdgeManualX: true }
+          : { fractionalEdgeY: position, fractionalEdgeManualY: true };
       setParams(patch);
     },
     [setParams]

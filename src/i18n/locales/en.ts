@@ -2790,8 +2790,7 @@ const en: Record<string, string> = {
   'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
   'designLinking.inspector.clickToEdit': 'Click to open in designer',
   'designLinking.inspector.deleteDesign': 'Delete Bin Design',
-  'designLinking.inspector.edgeMismatch':
-    "Half-unit foot is on a different edge than this drawer's.",
+  'designLinking.inspector.edgeMismatch': "Half-unit foot doesn't match this drawer's edge.",
   'designLinking.inspector.matchDrawer': 'Match drawer',
 
   // Confirmation dialogs

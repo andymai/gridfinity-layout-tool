@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Clique para abrir no designer",
   "designLinking.inspector.createDesign": "Criar",
   "designLinking.inspector.deleteDesign": "Excluir design do bin",
-  "designLinking.inspector.edgeMismatch": "O pé de meia unidade está em uma borda diferente da desta gaveta.",
+  "designLinking.inspector.edgeMismatch": "O pé de meia unidade não corresponde à borda desta gaveta.",
   "designLinking.inspector.matchDrawer": "Ajustar à gaveta",
   "designLinking.inspector.designDeleted": "Design excluído",
   "designLinking.inspector.editDesign": "Editar design",

@@ -133,7 +133,8 @@ function syncToRegistry(design: {
     height: number;
     fractionalEdgeX?: 'start' | 'end';
     fractionalEdgeY?: 'start' | 'end';
-    fractionalEdgeManual?: boolean;
+    fractionalEdgeManualX?: boolean;
+    fractionalEdgeManualY?: boolean;
   };
   updatedAt: string;
 }): void {

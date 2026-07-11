@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Clic para abrir en diseñador",
   "designLinking.inspector.createDesign": "Crear",
   "designLinking.inspector.deleteDesign": "Eliminar modelo 3D",
-  "designLinking.inspector.edgeMismatch": "El pie de media unidad está en un borde distinto al de este cajón.",
+  "designLinking.inspector.edgeMismatch": "El pie de media unidad no coincide con el borde de este cajón.",
   "designLinking.inspector.matchDrawer": "Ajustar al cajón",
   "designLinking.inspector.designDeleted": "Diseño eliminado",
   "designLinking.inspector.editDesign": "Editar",

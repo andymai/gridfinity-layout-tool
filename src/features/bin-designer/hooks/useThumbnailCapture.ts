@@ -80,7 +80,8 @@ export function useThumbnailCapture(): void {
             ...registryEdgeFields({
               fractionalEdgeX: params.fractionalEdgeX,
               fractionalEdgeY: params.fractionalEdgeY,
-              fractionalEdgeManual: params.fractionalEdgeManual,
+              fractionalEdgeManualX: params.fractionalEdgeManualX,
+              fractionalEdgeManualY: params.fractionalEdgeManualY,
             }),
             updatedAt: result.value.updatedAt,
           });
@@ -107,7 +108,8 @@ export function useThumbnailCapture(): void {
     params.heightUnitMm,
     params.fractionalEdgeX,
     params.fractionalEdgeY,
-    params.fractionalEdgeManual,
+    params.fractionalEdgeManualX,
+    params.fractionalEdgeManualY,
     designName,
     setNeedsThumbnailUpdate,
   ]);

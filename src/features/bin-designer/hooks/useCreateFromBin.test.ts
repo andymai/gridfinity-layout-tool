@@ -172,7 +172,7 @@ describe('useCreateFromBin', () => {
     await waitFor(() => {
       const state = useDesignerStore.getState();
       expect(state.params.fractionalEdgeX).toBe('start');
-      expect(state.params.fractionalEdgeManual).toBe(false);
+      expect(state.params.fractionalEdgeManualX).toBe(false);
     });
   });
 

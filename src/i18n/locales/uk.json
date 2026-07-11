@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Натисніть, щоб відкрити в дизайнері",
   "designLinking.inspector.createDesign": "Створити",
   "designLinking.inspector.deleteDesign": "Видалити дизайн біна",
-  "designLinking.inspector.edgeMismatch": "Півсекційна ніжка на іншому краю, ніж ця шухляда.",
+  "designLinking.inspector.edgeMismatch": "Півсекційна ніжка не збігається з краєм цієї шухляди.",
   "designLinking.inspector.matchDrawer": "Підлаштувати під шухляду",
   "designLinking.inspector.designDeleted": "Дизайн видалено",
   "designLinking.inspector.editDesign": "Редагувати дизайн",

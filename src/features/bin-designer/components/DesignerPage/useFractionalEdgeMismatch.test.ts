@@ -64,7 +64,7 @@ describe('useFractionalEdgeMismatch', () => {
   });
 
   it('does not flag when the user chose the edge manually', () => {
-    setDesign({ fractionalEdgeManual: true });
+    setDesign({ fractionalEdgeManualX: true });
     const { result } = renderHook(() => useFractionalEdgeMismatch());
     expect(result.current.show).toBe(false);
   });
@@ -78,6 +78,6 @@ describe('useFractionalEdgeMismatch', () => {
 
     const params = useDesignerStore.getState().params;
     expect(params.fractionalEdgeX).toBe('start');
-    expect(params.fractionalEdgeManual).toBe(false);
+    expect(params.fractionalEdgeManualX).toBe(false);
   });
 });

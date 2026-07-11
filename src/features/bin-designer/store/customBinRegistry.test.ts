@@ -70,7 +70,7 @@ describe('customBinRegistry', () => {
           height: 3,
           fractionalEdgeX: 'start',
           fractionalEdgeY: 'nonsense',
-          fractionalEdgeManual: true,
+          fractionalEdgeManualX: true,
           updatedAt: '2026-01-22T00:00:00.000Z',
         },
       ];
@@ -78,7 +78,7 @@ describe('customBinRegistry', () => {
       const loaded = loadRegistry();
       expect(loaded[0].fractionalEdgeX).toBe('start');
       expect('fractionalEdgeY' in loaded[0]).toBe(false);
-      expect(loaded[0].fractionalEdgeManual).toBe(true);
+      expect(loaded[0].fractionalEdgeManualX).toBe(true);
     });
 
     it('strips legacy thumbnail field from stored entries', () => {
@@ -191,12 +191,14 @@ describe('customBinRegistry', () => {
         registryEdgeFields({
           fractionalEdgeX: 'start',
           fractionalEdgeY: 'end',
-          fractionalEdgeManual: true,
+          fractionalEdgeManualX: true,
+          fractionalEdgeManualY: false,
         })
       ).toEqual({
         fractionalEdgeX: 'start',
         fractionalEdgeY: 'end',
-        fractionalEdgeManual: true,
+        fractionalEdgeManualX: true,
+        fractionalEdgeManualY: false,
       });
     });
   });

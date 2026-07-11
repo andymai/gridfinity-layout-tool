@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "Klik om te openen in designer",
   "designLinking.inspector.createDesign": "Aanmaken",
   "designLinking.inspector.deleteDesign": "Bin-ontwerp verwijderen",
-  "designLinking.inspector.edgeMismatch": "Halve-eenheidvoet zit op een andere rand dan deze lade.",
+  "designLinking.inspector.edgeMismatch": "Halve-eenheidvoet komt niet overeen met de rand van deze lade.",
   "designLinking.inspector.matchDrawer": "Aanpassen aan lade",
   "designLinking.inspector.designDeleted": "Ontwerp verwijderd",
   "designLinking.inspector.editDesign": "Ontwerp bewerken",

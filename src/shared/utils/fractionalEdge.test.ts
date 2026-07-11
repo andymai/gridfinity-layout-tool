@@ -5,7 +5,7 @@ describe('hasFractionalEdgeMismatch', () => {
   it('flags a fractional-width design whose edge disagrees with the drawer', () => {
     expect(
       hasFractionalEdgeMismatch(
-        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManual: false },
+        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: false },
         { fractionalEdgeX: 'start' }
       )
     ).toBe(true);
@@ -47,13 +47,29 @@ describe('hasFractionalEdgeMismatch', () => {
     ).toBe(false);
   });
 
-  it('suppresses the warning once the edge is manual', () => {
+  it('suppresses the warning once that axis is manual', () => {
     expect(
       hasFractionalEdgeMismatch(
-        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManual: true },
+        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: true },
         { fractionalEdgeX: 'start' }
       )
     ).toBe(false);
+  });
+
+  it('a manual X override does not hide a real Y mismatch', () => {
+    expect(
+      hasFractionalEdgeMismatch(
+        {
+          width: 1.5,
+          depth: 1.5,
+          fractionalEdgeX: 'end',
+          fractionalEdgeManualX: true,
+          fractionalEdgeY: 'end',
+          fractionalEdgeManualY: false,
+        },
+        { fractionalEdgeX: 'start', fractionalEdgeY: 'start' }
+      )
+    ).toBe(true);
   });
 
   it('does not flag when the design edge is unknown (legacy registry entry)', () => {
@@ -64,13 +80,13 @@ describe('hasFractionalEdgeMismatch', () => {
 });
 
 describe('computeMatchedEdges', () => {
-  it('aligns only the fractional axes to the drawer and clears the manual flag', () => {
+  it('aligns only the fractional axes to the drawer and clears that axis manual flag', () => {
     expect(
       computeMatchedEdges(
-        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManual: true },
+        { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: true },
         { fractionalEdgeX: 'start', fractionalEdgeY: 'start' }
       )
-    ).toEqual({ fractionalEdgeX: 'start', fractionalEdgeManual: false });
+    ).toEqual({ fractionalEdgeX: 'start', fractionalEdgeManualX: false });
   });
 
   it('aligns both axes when both dimensions are fractional', () => {
@@ -79,13 +95,18 @@ describe('computeMatchedEdges', () => {
         { width: 1.5, depth: 2.5 },
         { fractionalEdgeX: 'start', fractionalEdgeY: 'end' }
       )
-    ).toEqual({ fractionalEdgeX: 'start', fractionalEdgeY: 'end', fractionalEdgeManual: false });
+    ).toEqual({
+      fractionalEdgeX: 'start',
+      fractionalEdgeManualX: false,
+      fractionalEdgeY: 'end',
+      fractionalEdgeManualY: false,
+    });
   });
 
   it('defaults an unset drawer edge to end', () => {
     expect(computeMatchedEdges({ width: 1.5, depth: 2 }, {})).toEqual({
       fractionalEdgeX: 'end',
-      fractionalEdgeManual: false,
+      fractionalEdgeManualX: false,
     });
   });
 });

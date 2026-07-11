@@ -28,7 +28,8 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     depth,
     fractionalEdgeX,
     fractionalEdgeY,
-    fractionalEdgeManual,
+    fractionalEdgeManualX,
+    fractionalEdgeManualY,
     setParams,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -37,7 +38,8 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       depth: s.params.depth,
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
-      fractionalEdgeManual: s.params.fractionalEdgeManual,
+      fractionalEdgeManualX: s.params.fractionalEdgeManualX,
+      fractionalEdgeManualY: s.params.fractionalEdgeManualY,
       setParams: s.setParams,
     }))
   );
@@ -46,8 +48,15 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
   const bins = useLayoutStore(useShallow((s) => s.layout.bins));
 
   const design = useMemo(
-    () => ({ width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManual }),
-    [width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManual]
+    () => ({
+      width,
+      depth,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      fractionalEdgeManualX,
+      fractionalEdgeManualY,
+    }),
+    [width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManualX, fractionalEdgeManualY]
   );
 
   const show = useMemo(() => {

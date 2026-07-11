@@ -1244,7 +1244,7 @@
   "designLinking.inspector.clickToEdit": "クリックでデザイナーを開く",
   "designLinking.inspector.createDesign": "作成",
   "designLinking.inspector.deleteDesign": "ビンデザインを削除",
-  "designLinking.inspector.edgeMismatch": "ハーフユニットの脚がこの引き出しとは異なる辺にあります。",
+  "designLinking.inspector.edgeMismatch": "ハーフユニットの脚がこの引き出しの辺と一致しません。",
   "designLinking.inspector.matchDrawer": "引き出しに合わせる",
   "designLinking.inspector.designDeleted": "デザインは削除されました",
   "designLinking.inspector.editDesign": "デザインを編集",
