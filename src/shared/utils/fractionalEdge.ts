@@ -28,8 +28,14 @@ export interface FractionalEdgeDrawer {
   readonly fractionalEdgeY?: FractionalEdge;
 }
 
-/** Drawer defaults to the 'end' edge on both axes when unset. */
-const drawerEdge = (edge: FractionalEdge | undefined): FractionalEdge => edge ?? 'end';
+/**
+ * Normalize a persisted drawer edge to the documented default. Anything that
+ * isn't exactly `'start'` (unset, or a legacy/corrupt value) resolves to
+ * `'end'`, so comparisons never spuriously mismatch and a "Match drawer" patch
+ * can't write an invalid edge back into a design.
+ */
+const drawerEdge = (edge: FractionalEdge | undefined): FractionalEdge =>
+  edge === 'start' ? 'start' : 'end';
 
 /**
  * True when a fractional axis of the design points at a different edge than the

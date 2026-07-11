@@ -20,6 +20,7 @@ import {
   registryEdgeFields,
 } from '@/features/bin-designer';
 import { computeMatchedEdges } from '@/shared/utils/fractionalEdge';
+import { isFractional } from '@/core/constants';
 import { useLinkingStore } from '../store';
 import {
   compareDimensions,
@@ -310,10 +311,10 @@ export function useBinLinking(): UseBinLinkingReturn {
       // Carry the drawer's half-unit edge so the new design infers the correct
       // orientation for a fractional bin instead of defaulting to 'end' (#2518).
       const { fractionalEdgeX, fractionalEdgeY } = layout.drawer;
-      if (!Number.isInteger(width) && fractionalEdgeX) {
+      if (isFractional(width) && fractionalEdgeX) {
         params.set('fractionalEdgeX', fractionalEdgeX);
       }
-      if (!Number.isInteger(depth) && fractionalEdgeY) {
+      if (isFractional(depth) && fractionalEdgeY) {
         params.set('fractionalEdgeY', fractionalEdgeY);
       }
 

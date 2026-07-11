@@ -14,7 +14,10 @@ interface FractionalEdgeMismatchBannerProps {
 export function FractionalEdgeMismatchBanner({ onMatchDrawer }: FractionalEdgeMismatchBannerProps) {
   const t = useTranslation();
   return (
-    <div className="flex items-center gap-2 border-b border-status-warning/20 bg-status-warning/10 px-4 py-2 text-xs text-status-warning">
+    <div
+      role="alert"
+      className="flex items-center gap-2 border-b border-status-warning/20 bg-status-warning/10 px-4 py-2 text-xs text-status-warning"
+    >
       <AlertTriangleIcon size="sm" className="flex-shrink-0" aria-hidden="true" />
       <span className="flex-1">{t('binDesigner.fractionalEdgeMismatch')}</span>
       <Button type="button" variant="secondary" size="sm" onClick={onMatchDrawer}>

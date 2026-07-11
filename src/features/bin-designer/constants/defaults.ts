@@ -739,6 +739,10 @@ export const STYLE_DEFAULT_OMIT_KEYS = [
   'handles',
   'walls',
   'overhang',
+  // Per-design UI bookkeeping, not a reusable style: a manual edge choice on
+  // one design must not carry into every new design and mute mismatch warnings.
+  'fractionalEdgeManualX',
+  'fractionalEdgeManualY',
 ] as const satisfies readonly (keyof BinParams)[];
 
 /**
