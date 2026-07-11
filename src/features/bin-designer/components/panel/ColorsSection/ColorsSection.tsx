@@ -381,7 +381,11 @@ export function ColorsSection() {
                 <div className="space-y-2 pt-1">
                   <SliderInput
                     label={t('binDesigner.colors.topAccent.height')}
-                    value={topAccent.heightMm}
+                    // Clamp the displayed value: a persisted/legacy band can
+                    // exceed the current bin's wall height (e.g. saved tall, then
+                    // shrunk), and SliderInput fills straight from value with no
+                    // clamp — an out-of-range value would render a >100% fill.
+                    value={Math.min(topAccent.heightMm, topAccentMaxMm)}
                     onChange={(v) => updateFeatureColors({ topAccent: { heightMm: v } })}
                     min={TOP_ACCENT_MIN_MM}
                     max={topAccentMaxMm}
