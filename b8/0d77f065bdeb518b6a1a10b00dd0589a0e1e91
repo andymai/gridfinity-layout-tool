@@ -1,0 +1,33 @@
+src/features/bin-designer/utils/materialMapping.ts
+  s_b7db0526c14c7e::t_36c4e760a8de2b 68-72
+  s_b7db0526c14c7e::t_f52d3d00d95de0 19
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_b7db0526c14c7e::t_56e9793dda76fa 29
+  s_b7db0526c14c7e::t_a8c26024f50f74 147-149
+  s_b7db0526c14c7e::t_95ab82a1ddb8b2 174-179
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_b7db0526c14c7e::t_fe349bddba24ef 104
+  s_b7db0526c14c7e::t_1c04c00a21e495 85
+  s_b7db0526c14c7e::t_51c589f4de8285 71
+  s_b7db0526c14c7e::t_76e707c6bb1ab5 100-103,105
+src/features/bin-designer/constants/defaults.test.ts
+  s_b7db0526c14c7e::t_c805172fa853a8 520-547
+src/features/bin-designer/constants/defaults.ts
+  s_b7db0526c14c7e::t_3103d5009329bd 643-652
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "b80d77f065bdeb518b6a1a10b00dd0589a0e1e91",
+  "prompts": {},
+  "sessions": {
+    "s_b7db0526c14c7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7c22628-31f5-4d27-8161-697cc3777f1f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
