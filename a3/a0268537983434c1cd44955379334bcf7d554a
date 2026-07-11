@@ -1,0 +1,66 @@
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.test.tsx
+  s_25989936a1c209::t_66a3bb30aa8dfe 7-41,44,48,52-53,58,68,74-75,82,86-88,97-101
+  s_25989936a1c209::t_0d68bfb58153c7 102-103
+  s_fbadb47542ac0e::t_0814dd6203080d 108,113,119
+api/sync/baseplates/[id].ts
+  s_25989936a1c209::t_715e6f4e97cff5 292-294,297-301
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_25989936a1c209::t_6267fe48d6e79d 68-71,79-82,90,102,114-136,139
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_25989936a1c209::t_772d679130395e 109-111
+  s_25989936a1c209::t_dfb1b6c584b066 5
+  s_25989936a1c209::t_efdc25c4400366 3
+  s_25989936a1c209::t_9450c0aeab65c5 99-108,112-122
+api/sync/baseplates/[id].test.ts
+  s_25989936a1c209::t_a2cce6637da637 341-354
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.test.tsx
+  s_25989936a1c209::t_bcb664dad7dd55 74-88
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_25989936a1c209::t_daf13f0d561cd3 130
+  s_25989936a1c209::t_d4701be762eef7 91
+  s_25989936a1c209::t_b142011ad50c5b 12-14,16
+  s_25989936a1c209::t_626b88e04284dc 40-49
+  s_25989936a1c209::t_64ccb01f6a3b75 116
+  s_25989936a1c209::t_15316c2d50aa6e 122
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.test.tsx
+  s_25989936a1c209::t_ea8cab9c6b97fe 64
+  s_25989936a1c209::t_80f8f69033f971 6-15,17-20,22-28,31,35-36
+  s_25989936a1c209::t_746c2b16614b63 58
+  s_25989936a1c209::t_e243f292104112 16
+  s_25989936a1c209::t_e35f69c0f6b019 21
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_25989936a1c209::t_bce2bd6532d2f2 76-79
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_25989936a1c209::t_b938952bc5074a 26-33,36,43,46-48
+  s_25989936a1c209::t_740c6c377b2bef 63
+  s_25989936a1c209::t_156966152d7995 127,129
+  s_25989936a1c209::t_0cd3efeeb60710 96-103
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.tsx
+  s_25989936a1c209::t_1ec3e9c636f68a 45-47,50
+src/features/baseplate/components/BaseplateLibraryInitMount/BaseplateLibraryInitMount.test.tsx
+  s_25989936a1c209::t_558624f3ab841c 5-7,10,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "a3a0268537983434c1cd44955379334bcf7d554a",
+  "prompts": {},
+  "sessions": {
+    "s_25989936a1c209": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa9573eb-b4fd-4ed1-b09d-791c1cdbffdc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_fbadb47542ac0e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a933d2505a47c39cd",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
