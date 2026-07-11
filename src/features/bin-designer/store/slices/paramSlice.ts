@@ -25,7 +25,11 @@ import type {
 } from '../../types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import { TEXT_MAX_LENGTH } from '../../types/text';
-import { mergeLipConfig, type LipColorConfig } from '../../types/featureColors';
+import {
+  mergeLipConfig,
+  type LipColorConfig,
+  type TopAccentConfig,
+} from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import {
@@ -254,18 +258,23 @@ export function createParamSlice(set: Set, get: Get) {
       dividers?: string;
       text?: string;
       lid?: string;
+      topAccent?: Partial<TopAccentConfig>;
     }) => {
       set((state) => {
         pushHistoryEntry(state);
         const current = state.params.featureColors;
-        const { lip: lipPatch, ...rest } = patch;
+        const { lip: lipPatch, topAccent: topAccentPatch, ...rest } = patch;
         const nextLip: LipColorConfig = lipPatch
           ? mergeLipConfig(current.lip, lipPatch)
           : current.lip;
+        const nextTopAccent: TopAccentConfig = topAccentPatch
+          ? { ...current.topAccent, ...topAccentPatch }
+          : current.topAccent;
         state.params.featureColors = {
           ...current,
           ...rest,
           lip: nextLip,
+          topAccent: nextTopAccent,
         };
         // Multi-color toggle drives the color-tool overlay's visibility; if the
         // user disables multi-color while a tool is active, the overlay unmounts

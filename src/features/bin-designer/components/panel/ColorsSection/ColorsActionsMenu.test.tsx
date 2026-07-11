@@ -24,6 +24,7 @@ const fc: FeatureColorConfig = {
   dividers: '#aaaaaa',
   text: '#aaaaaa',
   lid: '#aaaaaa',
+  topAccent: { enabled: false, heightMm: 2, color: '#aaaaaa' },
 };
 
 describe('ColorsActionsMenu', () => {

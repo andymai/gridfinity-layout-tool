@@ -28,8 +28,20 @@ export interface LidMeshDataState {
 }
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
-export type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
+import type {
+  ColorZone,
+  FeatureColorConfig,
+  HoverableZone,
+  LipColorConfig,
+  TopAccentConfig,
+} from './featureColors';
+export type {
+  ColorZone,
+  FeatureColorConfig,
+  HoverableZone,
+  LipColorConfig,
+  TopAccentConfig,
+} from './featureColors';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { LidConfig } from './lid';
 import type { TextStyleDefaults, TextStyleOverride } from './text';
@@ -967,6 +979,7 @@ export interface DesignerState {
     dividers?: string;
     text?: string;
     lid?: string;
+    topAccent?: Partial<TopAccentConfig>;
   }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;
 

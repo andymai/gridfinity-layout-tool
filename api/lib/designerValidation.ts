@@ -353,7 +353,12 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'dividers',
   'text',
   'lid',
+  'topAccent',
 ]);
+const ALLOWED_TOP_ACCENT_KEYS = new Set<string>(['enabled', 'heightMm', 'color']);
+/** Generous upper bound (mm) — the client clamps to wall height; this only
+ *  rejects absurd values a crafted share could smuggle past the size cap. */
+const MAX_TOP_ACCENT_HEIGHT_MM = 1000;
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
 const ALLOWED_LIP_GRID_KEYS = new Set<string>(['corners', 'bands', 'cells']);
 const VALID_LIP_AXIS_COUNTS = new Set<number>([1, 2, 4]);
@@ -380,6 +385,29 @@ function validateLipGrid(lip: Record<string, unknown>): string | null {
       if (!LIP_CELL_KEY_RE.test(id)) return `featureColors.lip.cells has unknown cell: ${id}`;
       if (!isValidColor(color)) return `featureColors.lip.cells.${id} must be a hex color`;
     }
+  }
+  return null;
+}
+
+/** Validate the top-accent band `{ enabled, heightMm, color }`. */
+function validateTopAccent(value: unknown): string | null {
+  if (!isObject(value)) return 'featureColors.topAccent must be an object';
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_TOP_ACCENT_KEYS.has(key)) {
+      return `featureColors.topAccent has unknown key: ${key}`;
+    }
+  }
+  if (value.enabled !== undefined && !isBoolean(value.enabled)) {
+    return 'featureColors.topAccent.enabled must be boolean';
+  }
+  if (
+    value.heightMm !== undefined &&
+    (!isNumber(value.heightMm) || !inRange(value.heightMm, 0, MAX_TOP_ACCENT_HEIGHT_MM))
+  ) {
+    return `featureColors.topAccent.heightMm must be 0-${MAX_TOP_ACCENT_HEIGHT_MM}`;
+  }
+  if (value.color !== undefined && !isValidColor(value.color)) {
+    return 'featureColors.topAccent.color must be a hex color';
   }
   return null;
 }
@@ -434,6 +462,11 @@ function validateFeatureColors(value: unknown): string | null {
     } else {
       return 'featureColors.lip must be a hex color, 4-corner object, or grid';
     }
+  }
+
+  if (value.topAccent !== undefined) {
+    const err = validateTopAccent(value.topAccent);
+    if (err) return err;
   }
 
   return null;

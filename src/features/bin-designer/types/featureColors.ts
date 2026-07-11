@@ -32,6 +32,23 @@ export const LIP_BANDS: readonly LipBand[] = [0, 1, 2, 3] as const;
 
 export const LIP_AXIS_COUNTS: readonly LipAxisCount[] = [1, 2, 4] as const;
 
+/** Default height (mm) of the top accent band when the user first enables it. */
+export const TOP_ACCENT_DEFAULT_MM = 2;
+/** Smallest band height the UI/slider allows (0 renders nothing). */
+export const TOP_ACCENT_MIN_MM = 0;
+/**
+ * Top accent band — recolors the top `heightMm` of the bin (measured down from
+ * the highest point of the body mesh) a single accent color, whether or not a
+ * stacking lip is present. Geometry above the cut plane wins over every other
+ * zone, including lip cells; the lid is a separate object and keeps its own
+ * color. Height is absolute mm (slicer/layer-height agnostic).
+ */
+export interface TopAccentConfig {
+  readonly enabled: boolean;
+  readonly heightMm: number;
+  readonly color: string;
+}
+
 /**
  * Lip color grid. `cells` always holds all 16 `lip:<corner>:<band>` entries
  * (uniform shape, no optional keys) so toggling `corners`/`bands` never drops
@@ -72,6 +89,7 @@ export interface FeatureColorConfig {
    * single-color users see no change.
    */
   readonly lid: string;
+  readonly topAccent: TopAccentConfig;
 }
 
 /** A lip cell zone id, `lip:${corner}:${band}`. */
@@ -85,14 +103,7 @@ export type LipCellZone = `lip:${LipCorner}:${LipBand}`;
  * group-header hover) and is not a settable color slot.
  */
 export type ColorZone =
-  | 'body'
-  | LipCellZone
-  | 'labelTab'
-  | 'base'
-  | 'scoop'
-  | 'dividers'
-  | 'text'
-  | 'lid';
+  'body' | LipCellZone | 'labelTab' | 'base' | 'scoop' | 'dividers' | 'text' | 'lid' | 'topAccent';
 
 /** Hover target — accepts every ColorZone plus the lip group header. */
 export type HoverableZone = ColorZone | 'lip';
@@ -205,11 +216,34 @@ export const ZONE_ORDER: readonly ColorZone[] = [
   'dividers',
   'text',
   'lid',
+  'topAccent',
 ] as const;
 
 /** Position of a zone in ZONE_ORDER. */
 export function zoneIndex(zone: ColorZone): number {
   return ZONE_ORDER.indexOf(zone);
+}
+
+/** Highest Z across a flat xyz vertex buffer (stride 3). Works for both the
+ *  preview's indexed vertices and the exporter's flat 9-floats/triangle array,
+ *  since both interleave x,y,z. Returns -Infinity for an empty buffer. */
+export function maxZOfVertices(vertices: ArrayLike<number>): number {
+  let max = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    if (vertices[i] > max) max = vertices[i];
+  }
+  return max;
+}
+
+/**
+ * The Z plane above which geometry becomes the top-accent color, or null when
+ * the accent is off (disabled, non-positive height, or an empty mesh). The
+ * band hangs `heightMm` down from the mesh's highest point. Callers pass the
+ * bin-body mesh top (the lid is a separate object and never contributes here).
+ */
+export function topAccentCutZ(topAccent: TopAccentConfig, meshTopZ: number): number | null {
+  if (!topAccent.enabled || topAccent.heightMm <= 0 || !Number.isFinite(meshTopZ)) return null;
+  return meshTopZ - topAccent.heightMm;
 }
 
 export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
@@ -228,6 +262,8 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
       return c.text;
     case 'lid':
       return c.lid;
+    case 'topAccent':
+      return c.topAccent.color;
     default:
       // lip cell — fall back to body for a missing/legacy cell.
       return c.lip.cells[z] ?? c.body;
@@ -318,6 +354,11 @@ export interface ActiveZonesParams {
    */
   readonly featureColors?: {
     readonly lip: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
+    /**
+     * Top accent band. Exposed as an active zone whenever it's enabled with a
+     * positive height — it's independent of the lip and every other feature.
+     */
+    readonly topAccent?: { readonly enabled: boolean; readonly heightMm: number };
   };
 }
 
@@ -380,6 +421,10 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   if (p.lid.enabled && p.base.stackingLip) zones.add('lid');
   if (hasDividers) zones.add('dividers');
   if (hasTabText || hasCutoutText) zones.add('text');
+  // Top accent is independent of every other feature — a positive-height band
+  // recolors the top of the bin whether or not it has a lip.
+  const topAccent = p.featureColors?.topAccent;
+  if (topAccent?.enabled && topAccent.heightMm > 0) zones.add('topAccent');
   return zones;
 }
 

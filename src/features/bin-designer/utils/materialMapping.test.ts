@@ -29,6 +29,7 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
     dividers: SINGLE,
     text: SINGLE,
     lid: SINGLE,
+    topAccent: { enabled: false, heightMm: 2, color: SINGLE },
     ...overrides,
   };
 }
@@ -70,6 +71,33 @@ describe('buildTriangleMaterialIndices', () => {
     expect(result?.vertices).toBeUndefined();
     expect(result?.config.materials.map((m) => m.color)).toEqual([SINGLE, '#00ff00']);
     expect(result?.config.triangleMaterialIndices).toEqual([0, 0, 0, 1, 1, 1]);
+  });
+
+  it('colors geometry above the top-accent cut plane with the accent material', () => {
+    const featureColors = colors({
+      enabled: true,
+      topAccent: { enabled: true, heightMm: 2, color: '#123456' },
+    });
+    // Two wall triangles: one low (z 0–1), one high (z 5–6). Mesh top = 6, so a
+    // 2mm band cuts at z=4 — the high triangle is accent, the low one is body.
+    const low = [0, 0, 0, 0, 0, 1, 0.2, 0, 0.5];
+    const high = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5];
+    const vertices = new Float32Array([...low, ...high]);
+    const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.UNKNOWN }];
+
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 2, vertices, allZones);
+    expect(result).not.toBeNull();
+    expect(result?.vertices).toBeDefined(); // the cut forces a geometry override
+    const mats = result?.config.materials.map((m) => m.color) ?? [];
+    expect(mats).toContain('#123456');
+    const accentIdx = mats.indexOf('#123456');
+    const bodyIdx = mats.indexOf(SINGLE);
+    const idxs = result?.config.triangleMaterialIndices ?? [];
+    const verts = result?.vertices;
+    for (let i = 0; i < idxs.length; i++) {
+      const cz = (verts![i * 9 + 2] + verts![i * 9 + 5] + verts![i * 9 + 8]) / 3;
+      expect(idxs[i]).toBe(cz > 4 ? accentIdx : bodyIdx);
+    }
   });
 
   it('splits a 4-corner lip and returns replacement geometry + normals', () => {

@@ -36,6 +36,7 @@ function buildColors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorC
     dividers: '#ffffff',
     text: '#ffffff',
     lid: '#ffffff',
+    topAccent: { enabled: false, heightMm: 2, color: '#ffffff' },
     ...overrides,
   };
 }

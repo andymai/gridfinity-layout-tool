@@ -13,8 +13,10 @@ import {
   getZoneColor,
   isSingleColor,
   lipCellsUniform,
+  maxZOfVertices,
   normalizeHex,
   resolveColorMapping,
+  topAccentCutZ,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import { computeLipGeom } from './lipCornerClassifier';
@@ -102,6 +104,9 @@ export function buildTriangleMaterialIndices(
   };
 
   const geom = computeLipGeom(faceGroups, triangleXYZ);
+  const cutZ = activeZones.has('topAccent')
+    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
+    : null;
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
     faceGroups,
@@ -109,6 +114,7 @@ export function buildTriangleMaterialIndices(
     geom,
     counts,
     lipUniform: lipCellsUniform(featureColors.lip),
+    topAccentCutZ: cutZ,
   });
 
   const materialIndexForZone = (zone: ColorZone): number =>

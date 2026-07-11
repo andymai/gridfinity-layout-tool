@@ -474,7 +474,37 @@ describe('migrateParams', () => {
       dividers: '#d4d8dc',
       text: '#d4d8dc',
       lid: '#d4d8dc',
+      topAccent: { enabled: false, heightMm: 2, color: '#d4d8dc' },
     });
+  });
+
+  it('backfills a disabled topAccent (body color) for designs predating it', () => {
+    const legacy = {
+      enabled: true,
+      body: '#112233',
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    const result = migrateParams({ featureColors: legacy });
+    expect(result.featureColors.topAccent).toEqual({
+      enabled: false,
+      heightMm: 2,
+      color: '#112233',
+    });
+  });
+
+  it('preserves a persisted topAccent and clamps a bad height to the default', () => {
+    const withAccent = {
+      enabled: true,
+      topAccent: { enabled: true, heightMm: 3.5, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    expect(migrateParams({ featureColors: withAccent }).featureColors.topAccent).toEqual({
+      enabled: true,
+      heightMm: 3.5,
+      color: '#ff0000',
+    });
+    const badHeight = {
+      topAccent: { enabled: true, heightMm: -4, color: '#ff0000' },
+    } as unknown as (typeof DEFAULT_BIN_PARAMS)['featureColors'];
+    expect(migrateParams({ featureColors: badHeight }).featureColors.topAccent.heightMm).toBe(2);
   });
 
   it('should migrate legacy slot IDs to hex colors', () => {

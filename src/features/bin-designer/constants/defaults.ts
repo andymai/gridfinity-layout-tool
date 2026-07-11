@@ -19,8 +19,8 @@ import type {
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
-import type { FeatureColorConfig, LipAxisCount } from '../types/featureColors';
-import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
+import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
+import { makeUniformLipCells, LIP_CELL_ZONES, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import {
   DEFAULT_LID_CONFIG,
@@ -210,6 +210,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   dividers: '#d4d8dc',
   text: '#d4d8dc',
   lid: '#d4d8dc',
+  topAccent: { enabled: false, heightMm: TOP_ACCENT_DEFAULT_MM, color: '#d4d8dc' },
 } as const;
 
 /** Starting color when a cutout is first colored: the shadow-board convention
@@ -243,6 +244,27 @@ interface LegacyFeatureColorInput {
   dividers?: string;
   text?: string;
   lid?: string;
+  topAccent?: { enabled?: unknown; heightMm?: unknown; color?: unknown };
+}
+
+/** Coerce a persisted top-accent value (any era) into a full config, backfilling
+ *  from the default when a field is missing or the wrong type. */
+function migrateTopAccent(
+  raw: LegacyFeatureColorInput['topAccent'],
+  body: string
+): TopAccentConfig {
+  const fallback = DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
+  if (!raw || typeof raw !== 'object') {
+    return { enabled: false, heightMm: fallback.heightMm, color: body };
+  }
+  return {
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : false,
+    heightMm:
+      typeof raw.heightMm === 'number' && Number.isFinite(raw.heightMm) && raw.heightMm >= 0
+        ? raw.heightMm
+        : fallback.heightMm,
+    color: typeof raw.color === 'string' ? resolveColor(raw.color, body) : body,
+  };
 }
 
 function resolveColor(raw: string | undefined, fallback: string): string {
@@ -316,6 +338,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   // when this field is added by migration.
   const text = resolveColor(raw.text, labelTab);
   const lid = resolveColor(raw.lid, body);
+  const topAccent = migrateTopAccent(raw.topAccent, body);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -325,7 +348,8 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const hasCustomColor =
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
     [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
-    LIP_CELL_ZONES.some((id) => isCustom(lip.cells[id] ?? body));
+    LIP_CELL_ZONES.some((id) => isCustom(lip.cells[id] ?? body)) ||
+    (topAccent.enabled && isCustom(topAccent.color));
 
   return {
     enabled: raw.enabled ?? hasCustomColor,
@@ -337,6 +361,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     dividers,
     text,
     lid,
+    topAccent,
   };
 }
 

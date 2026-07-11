@@ -18,12 +18,13 @@ import {
   lipCellZone,
   makeUniformLipCells,
   normalizePaletteLip,
+  TOP_ACCENT_MIN_MM,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { PipetteIcon } from '@/design-system/Icon';
-import { IconButton } from '@/design-system';
+import { Checkbox, IconButton, SliderInput } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { FeatureToggle } from '../FeatureToggle';
@@ -65,6 +66,8 @@ export function ColorsSection() {
     cells,
     lipCorners,
     lipBands,
+    binHeight,
+    heightUnitMm,
     hoveredColorZone,
     colorTool,
   } = useDesignerStore(
@@ -76,6 +79,8 @@ export function ColorsSection() {
       scoopEnabled: s.params.scoop.enabled,
       lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
+      binHeight: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       lipCorners: s.params.featureColors?.lip.corners ?? 1,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
@@ -88,6 +93,11 @@ export function ColorsSection() {
   const swapZoneWithToast = useSwapZoneWithToast();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = rawColors?.enabled ?? false;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit topAccent; migration backfills it but keep the runtime guard
+  const topAccent = rawColors?.topAccent ?? DEFAULT_FEATURE_COLOR_CONFIG.topAccent;
+  // Cap the band at the nominal wall height (units × mm/unit) so it can't exceed
+  // the bin. Floor of 1mm keeps the slider usable on a 0-height edge case.
+  const topAccentMaxMm = Math.max(1, binHeight * heightUnitMm);
 
   const activeZones = useMemo(
     () =>
@@ -97,9 +107,23 @@ export function ColorsSection() {
         scoop: { enabled: scoopEnabled },
         lid: { enabled: lidEnabled },
         compartments: { cells },
-        featureColors: { lip: { corners: lipCorners, bands: lipBands } },
+        featureColors: {
+          lip: { corners: lipCorners, bands: lipBands },
+          topAccent: { enabled: topAccent.enabled, heightMm: topAccent.heightMm },
+        },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells, lipCorners, lipBands]
+    [
+      baseStyle,
+      stackingLip,
+      labelEnabled,
+      scoopEnabled,
+      lidEnabled,
+      cells,
+      lipCorners,
+      lipBands,
+      topAccent.enabled,
+      topAccent.heightMm,
+    ]
   );
   const hasLip = activeZones.has(lipCellZone('frontLeft', 0));
   const hasLabelTabs = activeZones.has('labelTab');
@@ -107,6 +131,7 @@ export function ColorsSection() {
   const hasScoop = activeZones.has('scoop');
   const hasDividers = activeZones.has('dividers');
   const hasLid = activeZones.has('lid');
+  const hasTopAccent = activeZones.has('topAccent');
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
   const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
@@ -140,6 +165,7 @@ export function ColorsSection() {
     if (hasScoop) map.set('scoop', featureColors.scoop);
     if (hasDividers) map.set('dividers', featureColors.dividers);
     if (hasLid) map.set('lid', featureColors.lid);
+    if (hasTopAccent) map.set('topAccent', topAccent.color);
     return map;
   }, [
     featureColors,
@@ -149,6 +175,8 @@ export function ColorsSection() {
     hasScoop,
     hasDividers,
     hasLid,
+    hasTopAccent,
+    topAccent.color,
     lipCorners,
     lipBands,
   ]);
@@ -245,6 +273,10 @@ export function ColorsSection() {
     updateFeatureColors({ enabled: !multiColorEnabled });
   }, [multiColorEnabled, updateFeatureColors]);
 
+  const handleToggleTopAccent = useCallback(() => {
+    updateFeatureColors({ topAccent: { enabled: !topAccent.enabled } });
+  }, [topAccent.enabled, updateFeatureColors]);
+
   return (
     <div className="space-y-2">
       <FeatureToggle
@@ -315,6 +347,57 @@ export function ColorsSection() {
                   DEFAULT_FEATURE_COLOR_CONFIG.base,
                   (hex) => updateFeatureColors({ base: hex })
                 )}
+
+              {/* Top accent — recolors the top N mm of the bin, independent of
+                  the lip. Its own enable toggle + height field, always shown. */}
+              <div className="space-y-2">
+                <div
+                  className="group flex cursor-pointer items-center justify-between"
+                  role="checkbox"
+                  aria-checked={topAccent.enabled}
+                  aria-label={t('binDesigner.colors.topAccent')}
+                  tabIndex={0}
+                  onClick={handleToggleTopAccent}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleToggleTopAccent();
+                    }
+                  }}
+                  onMouseEnter={
+                    topAccent.enabled ? () => setHoveredColorZone('topAccent') : undefined
+                  }
+                  onMouseLeave={topAccent.enabled ? () => setHoveredColorZone(null) : undefined}
+                >
+                  <span className="text-xs leading-none text-content-secondary">
+                    {t('binDesigner.colors.topAccent')}
+                  </span>
+                  <Checkbox checked={topAccent.enabled} />
+                </div>
+                <p className="text-[11px] leading-snug text-content-tertiary">
+                  {t('binDesigner.colors.topAccent.hint')}
+                </p>
+                {topAccent.enabled && (
+                  <>
+                    <SliderInput
+                      label={t('binDesigner.colors.topAccent.height')}
+                      value={topAccent.heightMm}
+                      onChange={(v) => updateFeatureColors({ topAccent: { heightMm: v } })}
+                      min={TOP_ACCENT_MIN_MM}
+                      max={topAccentMaxMm}
+                      step={0.1}
+                      unit="mm"
+                    />
+                    {renderZone(
+                      'topAccent',
+                      t('binDesigner.colors.topAccent'),
+                      topAccent.color,
+                      DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color,
+                      (hex) => updateFeatureColors({ topAccent: { color: hex } })
+                    )}
+                  </>
+                )}
+              </div>
             </ColorGroup>
 
             <ColorGroup

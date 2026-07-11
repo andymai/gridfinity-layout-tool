@@ -28,8 +28,16 @@ export interface LipSplitInput {
   readonly faceGroups: readonly FaceGroupData[];
   /** Returns the 9 position floats of triangle `i` (in triangle order). */
   readonly getTriangle: (i: number) => Tri;
-  readonly geom: LipGeom;
+  /** Lip footprint geometry, or null when the bin has no stacking lip (a
+   *  top-accent-only cut still needs to run). */
+  readonly geom: LipGeom | null;
   readonly counts: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
+  /** Clip LIP triangles along the quadrant×band seam planes. Defaults to true
+   *  (the historic behavior); pass false when only the top-accent cut applies. */
+  readonly splitLipGrid?: boolean;
+  /** Horizontal cut plane: geometry with a centroid above this Z becomes the
+   *  top-accent zone, overriding every other zone. Null disables the cut. */
+  readonly topAccentCutZ?: number | null;
 }
 
 export interface LipSplitResult {
@@ -173,39 +181,48 @@ function seamPlanes(
 }
 
 /**
- * Build the split mesh. Lip triangles are clipped along the seam planes and
- * each sub-triangle is assigned its grid cell; all other triangles pass
- * through with their tag's zone. Returns a flat position buffer + per-output
- * triangle zones.
+ * Build the split mesh. Lip triangles are clipped along the seam planes; when a
+ * top-accent cut is active, every triangle is additionally clipped at that Z
+ * plane. Each sub-triangle is classified by its centroid: above the cut →
+ * top-accent (wins over all zones), otherwise its lip cell (lip triangles) or
+ * feature-tag zone. Returns a flat position buffer + per-output triangle zones.
  */
 export function splitLipMesh(input: LipSplitInput): LipSplitResult {
   const { triangleCount, faceGroups, getTriangle, geom, counts } = input;
+  const splitLipGrid = input.splitLipGrid ?? true;
+  const cutZ = input.topAccentCutZ ?? null;
   const tags = buildTriTags(faceGroups, triangleCount);
-  const planes = seamPlanes(geom, counts);
+  const lipPlanes = geom && splitLipGrid ? seamPlanes(geom, counts) : [];
 
   const positions: number[] = [];
   const triZones: ColorZone[] = [];
   const triTags: number[] = [];
 
   for (let i = 0; i < triangleCount; i++) {
-    const tri = getTriangle(i);
-    if (tags[i] !== FeatureTag.LIP) {
-      positions.push(...tri);
-      triZones.push(featureTagToColorZone(tags[i]) ?? 'body');
-      triTags.push(tags[i]);
-      continue;
-    }
-    // Clip the lip triangle through every active plane, then classify each
-    // resulting sub-triangle by its centroid (now unambiguously in one cell).
-    let pieces: number[][] = [Array.from(tri)];
-    for (const p of planes) pieces = splitByPlane(pieces, p.axis, p.c);
+    const tag = tags[i];
+    const isLip = tag === FeatureTag.LIP && geom !== null;
+
+    // Clip through the applicable planes: lip seams (lip triangles only) plus
+    // the top-accent Z plane (every triangle). A triangle wholly on one side of
+    // a plane passes through as a single piece, so non-straddling geometry is
+    // not fragmented.
+    let pieces: number[][] = [Array.from(getTriangle(i))];
+    if (isLip) for (const p of lipPlanes) pieces = splitByPlane(pieces, p.axis, p.c);
+    if (cutZ !== null) pieces = splitByPlane(pieces, 2, cutZ);
+
     for (const piece of pieces) {
       const cxp = (piece[0] + piece[3] + piece[6]) / 3;
       const cyp = (piece[1] + piece[4] + piece[7]) / 3;
       const czp = (piece[2] + piece[5] + piece[8]) / 3;
       positions.push(...piece);
-      triZones.push(classifyLipCell(cxp, cyp, czp, geom, counts));
-      triTags.push(FeatureTag.LIP);
+      if (cutZ !== null && czp > cutZ) {
+        triZones.push('topAccent');
+      } else if (isLip) {
+        triZones.push(classifyLipCell(cxp, cyp, czp, geom, counts));
+      } else {
+        triZones.push(featureTagToColorZone(tag) ?? 'body');
+      }
+      triTags.push(tag);
     }
   }
 
@@ -242,6 +259,15 @@ export function computeLipColoredMesh(input: {
   readonly geom: LipGeom | null;
   readonly counts: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
   readonly lipUniform?: boolean;
+  /** Top-accent cut plane (see {@link LipSplitInput}). Null = no top accent. */
+  readonly topAccentCutZ?: number | null;
+  /**
+   * Whether re-tessellation is permitted. The hit-test path passes false so the
+   * returned `triZones` stays 1:1 with the input triangles (it maps a clicked
+   * original-triangle index back to a zone); it accepts centroid-quantized
+   * boundaries in exchange. Defaults to true.
+   */
+  readonly allowSplit?: boolean;
 }): {
   triZones: ColorZone[];
   positions: Float32Array | null;
@@ -249,23 +275,44 @@ export function computeLipColoredMesh(input: {
   triTags: Int32Array;
 } {
   const { triangleCount, faceGroups, getTriangle, geom, counts, lipUniform } = input;
+  const cutZ = input.topAccentCutZ ?? null;
+  const allowSplit = input.allowSplit ?? true;
+  const splitLipGrid = !!geom && lipGridIsNonTrivial(counts) && !lipUniform;
 
-  if (geom && lipGridIsNonTrivial(counts) && !lipUniform) {
-    const r = splitLipMesh({ triangleCount, faceGroups, getTriangle, geom, counts });
+  // Re-tessellate when there are exact color boundaries to honor: a non-uniform
+  // lip grid, or a top-accent cut (which slices every triangle at its Z plane).
+  if (allowSplit && (splitLipGrid || cutZ !== null)) {
+    const r = splitLipMesh({
+      triangleCount,
+      faceGroups,
+      getTriangle,
+      geom,
+      counts,
+      splitLipGrid,
+      topAccentCutZ: cutZ,
+    });
     return { triZones: r.triZones, positions: r.positions, normals: r.normals, triTags: r.triTags };
   }
 
   const tags = buildTriTags(faceGroups, triangleCount);
   const triZones: ColorZone[] = new Array<ColorZone>(triangleCount);
   for (let i = 0; i < triangleCount; i++) {
-    if (tags[i] === FeatureTag.LIP && geom) {
-      const t = getTriangle(i);
+    const tag = tags[i];
+    const isLip = tag === FeatureTag.LIP && geom !== null;
+    if (cutZ === null && !isLip) {
+      triZones[i] = featureTagToColorZone(tag) ?? 'body';
+      continue;
+    }
+    const t = getTriangle(i);
+    const cz = (t[2] + t[5] + t[8]) / 3;
+    if (cutZ !== null && cz > cutZ) {
+      triZones[i] = 'topAccent';
+    } else if (isLip) {
       const cx = (t[0] + t[3] + t[6]) / 3;
       const cy = (t[1] + t[4] + t[7]) / 3;
-      const cz = (t[2] + t[5] + t[8]) / 3;
       triZones[i] = classifyLipCell(cx, cy, cz, geom, counts);
     } else {
-      triZones[i] = featureTagToColorZone(tags[i]) ?? 'body';
+      triZones[i] = featureTagToColorZone(tag) ?? 'body';
     }
   }
   // In-place path keeps the original mesh; tags align 1:1 with input triangles.

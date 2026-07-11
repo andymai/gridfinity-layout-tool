@@ -12,9 +12,11 @@ import {
   lipCellZone,
   lipCellsUniform,
   makeUniformLipCells,
+  maxZOfVertices,
   normalizePaletteLip,
   parseLipCell,
   resolveColorMapping,
+  topAccentCutZ,
   zoneIndex,
 } from './featureColors';
 import type { ActiveZonesParams, FeatureColorConfig, LipColorConfig } from './featureColors';
@@ -40,6 +42,7 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
     dividers: SINGLE,
     text: SINGLE,
     lid: SINGLE,
+    topAccent: { enabled: false, heightMm: 2, color: SINGLE },
     ...overrides,
   };
 }
@@ -183,6 +186,7 @@ describe('resolveColorMapping', () => {
       dividers: '#aaaaaa',
       text: '#aaaaaa',
       lid: '#aaaaaa',
+      topAccent: { enabled: false, heightMm: 2, color: '#aaaaaa' },
     };
     const { colors: palette, colorToIndex, defaultIndex } = resolveColorMapping(c);
     expect(defaultIndex).toBe(0);
@@ -269,5 +273,51 @@ describe('computeActiveZones', () => {
     });
     const lipCells = [...zones].filter((z) => z.startsWith('lip:'));
     expect(lipCells).toEqual(['lip:frontLeft:0']);
+  });
+
+  it('adds topAccent when enabled with positive height, independent of the lip', () => {
+    const zones = computeActiveZones({
+      ...baseParams,
+      base: { style: 'flat', stackingLip: false },
+      featureColors: { lip: { corners: 1, bands: 1 }, topAccent: { enabled: true, heightMm: 2 } },
+    });
+    expect(zones.has('topAccent')).toBe(true);
+  });
+
+  it('omits topAccent when disabled or zero height', () => {
+    const disabled = computeActiveZones({
+      ...baseParams,
+      featureColors: { lip: { corners: 1, bands: 1 }, topAccent: { enabled: false, heightMm: 2 } },
+    });
+    expect(disabled.has('topAccent')).toBe(false);
+    const zeroHeight = computeActiveZones({
+      ...baseParams,
+      featureColors: { lip: { corners: 1, bands: 1 }, topAccent: { enabled: true, heightMm: 0 } },
+    });
+    expect(zeroHeight.has('topAccent')).toBe(false);
+  });
+});
+
+describe('maxZOfVertices', () => {
+  it('returns the highest z across a flat xyz buffer', () => {
+    // x,y,z interleaved; z values 3, 9, 1.
+    const v = new Float32Array([0, 0, 3, 1, 1, 9, 2, 2, 1]);
+    expect(maxZOfVertices(v)).toBe(9);
+  });
+
+  it('returns -Infinity for an empty buffer', () => {
+    expect(maxZOfVertices(new Float32Array([]))).toBe(-Infinity);
+  });
+});
+
+describe('topAccentCutZ', () => {
+  it('hangs the band down from the mesh top', () => {
+    expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, 25)).toBe(23);
+  });
+
+  it('returns null when disabled, non-positive, or the mesh top is not finite', () => {
+    expect(topAccentCutZ({ enabled: false, heightMm: 2, color: '#000' }, 25)).toBeNull();
+    expect(topAccentCutZ({ enabled: true, heightMm: 0, color: '#000' }, 25)).toBeNull();
+    expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, -Infinity)).toBeNull();
   });
 });

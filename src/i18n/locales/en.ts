@@ -1803,6 +1803,10 @@ const en: Record<string, string> = {
   'binDesigner.colors.scoop': 'Scoop',
   'binDesigner.colors.dividers': 'Dividers',
   'binDesigner.colors.lid': 'Lid',
+  'binDesigner.colors.topAccent': 'Top accent',
+  'binDesigner.colors.topAccent.height': 'Band height',
+  'binDesigner.colors.topAccent.hint':
+    'Colors the top of the bin a different color — no stacking lip required.',
   'binDesigner.colors.group.exterior': 'Exterior',
   'binDesigner.colors.group.interior': 'Interior',
   'binDesigner.colors.group.addons': 'Add-ons',
@@ -1859,6 +1863,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.zone.dividers': 'Dividers',
   'binDesigner.colors.zone.text': 'Engraved text',
   'binDesigner.colors.zone.lid': 'Lid',
+  'binDesigner.colors.zone.topAccent': 'Top accent',
   'binDesigner.export.multiColor.formatDisabled':
     "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
 

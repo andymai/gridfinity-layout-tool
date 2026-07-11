@@ -44,6 +44,8 @@ function defaultForZone(zone: ColorZone): string {
       return DEFAULT_FEATURE_COLOR_CONFIG.text;
     case 'lid':
       return DEFAULT_FEATURE_COLOR_CONFIG.lid;
+    case 'topAccent':
+      return DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color;
     default:
       return DEFAULT_FEATURE_COLOR_CONFIG.body;
   }

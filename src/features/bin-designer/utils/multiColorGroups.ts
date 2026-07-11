@@ -25,6 +25,8 @@ import {
   getZoneColor,
   isSingleColor,
   lipCellsUniform,
+  maxZOfVertices,
+  topAccentCutZ,
   zoneIndex,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig, HoverableZone } from '../types/featureColors';
@@ -130,6 +132,9 @@ export function buildHitTestZones(
 ): ColorZone[] {
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
+  // allowSplit:false keeps triZones 1:1 with the input triangles so a clicked
+  // original-triangle index resolves to a zone. The top-accent cut is applied
+  // in place (centroid-quantized), which is precise enough for hit-testing.
   return computeLipColoredMesh({
     triangleCount,
     faceGroups,
@@ -137,6 +142,8 @@ export function buildHitTestZones(
     geom,
     counts,
     lipUniform: true,
+    allowSplit: false,
+    topAccentCutZ: topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices)),
   }).triZones;
 }
 
@@ -161,6 +168,9 @@ export function buildMultiColorGroups(
 
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
+  const cutZ = activeZones.has('topAccent')
+    ? topAccentCutZ(featureColors.topAccent, maxZOfVertices(vertices))
+    : null;
 
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
@@ -169,6 +179,7 @@ export function buildMultiColorGroups(
     geom,
     counts,
     lipUniform: lipCellsUniform(featureColors.lip),
+    topAccentCutZ: cutZ,
   });
   const meshOverride: MultiColorGroupsResult['meshOverride'] =
     positions && normals ? { vertices: positions, normals, indices: null } : null;

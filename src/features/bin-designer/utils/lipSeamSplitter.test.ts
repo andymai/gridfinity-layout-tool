@@ -128,3 +128,86 @@ describe('lipSeamSplitter', () => {
     expect(uniform.triZones).toHaveLength(QUAD.length);
   });
 });
+
+describe('top accent cut', () => {
+  // A back wall quad tagged as plain body (no lip), y=5, x∈[-10,10], z∈[0,10].
+  const BODY_QUAD: number[][] = [
+    [-10, 5, 0, 10, 5, 0, 10, 5, 10],
+    [-10, 5, 0, 10, 5, 10, -10, 5, 10],
+  ];
+  const BODY_FG: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.UNKNOWN }];
+
+  it('splits body geometry at the cut plane and colors above it top-accent (no lip)', () => {
+    const cutZ = 7;
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: cutZ,
+    });
+    expect(positions).not.toBeNull(); // the cut forces re-tessellation
+    // Every output triangle sits wholly on one side of the cut plane and is
+    // colored accordingly.
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions!.subarray(i * 9, i * 9 + 9);
+      const cz = (t[2] + t[5] + t[8]) / 3;
+      expect(triZones[i]).toBe(cz > cutZ ? 'topAccent' : 'body');
+    }
+    expect(triZones).toContain('topAccent');
+    expect(triZones).toContain('body');
+  });
+
+  it('conserves area across the cut', () => {
+    const inputArea = BODY_QUAD.reduce((s, t) => s + triArea(t), 0);
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 4.2,
+    });
+    let outArea = 0;
+    for (let i = 0; i < triZones.length; i++)
+      outArea += triArea(positions!.subarray(i * 9, i * 9 + 9));
+    expect(outArea).toBeCloseTo(inputArea, 4);
+  });
+
+  it('top accent wins over lip cells above the cut plane', () => {
+    // Lip skirt z∈[0,10]; cut at 7 → lip pieces above 7 become top-accent,
+    // below stay their lip cell.
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: QUAD.length,
+      faceGroups: FACE_GROUPS,
+      getTriangle: (i) => QUAD[i],
+      geom: GEOM,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 7,
+    });
+    for (let i = 0; i < triZones.length; i++) {
+      const t = positions!.subarray(i * 9, i * 9 + 9);
+      const cz = (t[2] + t[5] + t[8]) / 3;
+      expect(triZones[i]).toBe(cz > 7 ? 'topAccent' : 'lip:frontLeft:0');
+    }
+    expect(triZones).toContain('topAccent');
+    expect(triZones).toContain('lip:frontLeft:0');
+  });
+
+  it('classifies in place (no split) when allowSplit is false, using the centroid', () => {
+    // The hit-test path keeps triZones 1:1 with input triangles. tri0 centroid
+    // z≈3.3 (below), tri1 centroid z≈6.7 (above) for a cut at 5.
+    const { triZones, positions } = computeLipColoredMesh({
+      triangleCount: BODY_QUAD.length,
+      faceGroups: BODY_FG,
+      getTriangle: (i) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 5,
+      allowSplit: false,
+    });
+    expect(positions).toBeNull();
+    expect(triZones).toEqual(['body', 'topAccent']);
+  });
+});

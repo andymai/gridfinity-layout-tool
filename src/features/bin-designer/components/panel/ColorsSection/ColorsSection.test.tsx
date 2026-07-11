@@ -30,6 +30,7 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
     dividers: SINGLE,
     text: SINGLE,
     lid: SINGLE,
+    topAccent: { enabled: false, heightMm: 2, color: SINGLE },
     ...overrides,
   };
 }
