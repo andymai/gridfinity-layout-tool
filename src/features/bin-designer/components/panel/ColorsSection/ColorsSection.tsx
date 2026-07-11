@@ -347,58 +347,61 @@ export function ColorsSection() {
                   DEFAULT_FEATURE_COLOR_CONFIG.base,
                   (hex) => updateFeatureColors({ base: hex })
                 )}
+            </ColorGroup>
 
-              {/* Top accent — recolors the top N mm of the bin, independent of
-                  the lip. Its own enable toggle + height field, always shown. */}
-              <div className="space-y-2">
-                <div
-                  className="group flex cursor-pointer items-center justify-between"
-                  role="checkbox"
-                  aria-checked={topAccent.enabled}
-                  aria-label={t('binDesigner.colors.topAccent')}
-                  tabIndex={0}
-                  onClick={handleToggleTopAccent}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleToggleTopAccent();
-                    }
-                  }}
-                  onMouseEnter={
-                    topAccent.enabled ? () => setHoveredColorZone('topAccent') : undefined
+            {/* Top accent is a top-of-bin color band, independent of the lip.
+                It carries an enable toggle + a height (unlike the single-swatch
+                color zones), so it renders as its own delimited subsection right
+                after the exterior swatches rather than as another row. */}
+            <div className="border-t border-stroke-subtle pt-2">
+              <div
+                className="group flex cursor-pointer items-center justify-between py-1"
+                role="checkbox"
+                aria-checked={topAccent.enabled}
+                aria-label={t('binDesigner.colors.topAccent')}
+                tabIndex={0}
+                onClick={handleToggleTopAccent}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggleTopAccent();
                   }
-                  onMouseLeave={topAccent.enabled ? () => setHoveredColorZone(null) : undefined}
-                >
-                  <span className="text-xs leading-none text-content-secondary">
-                    {t('binDesigner.colors.topAccent')}
-                  </span>
-                  <Checkbox checked={topAccent.enabled} />
+                }}
+                onMouseEnter={
+                  topAccent.enabled ? () => setHoveredColorZone('topAccent') : undefined
+                }
+                onMouseLeave={topAccent.enabled ? () => setHoveredColorZone(null) : undefined}
+              >
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-content-secondary">
+                  {t('binDesigner.colors.topAccent')}
+                </span>
+                <Checkbox checked={topAccent.enabled} />
+              </div>
+              {topAccent.enabled ? (
+                <div className="space-y-2 pt-1">
+                  <SliderInput
+                    label={t('binDesigner.colors.topAccent.height')}
+                    value={topAccent.heightMm}
+                    onChange={(v) => updateFeatureColors({ topAccent: { heightMm: v } })}
+                    min={TOP_ACCENT_MIN_MM}
+                    max={topAccentMaxMm}
+                    step={0.1}
+                    unit="mm"
+                  />
+                  {renderZone(
+                    'topAccent',
+                    t('binDesigner.colors.topAccent'),
+                    topAccent.color,
+                    DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color,
+                    (hex) => updateFeatureColors({ topAccent: { color: hex } })
+                  )}
                 </div>
+              ) : (
                 <p className="text-[11px] leading-snug text-content-tertiary">
                   {t('binDesigner.colors.topAccent.hint')}
                 </p>
-                {topAccent.enabled && (
-                  <>
-                    <SliderInput
-                      label={t('binDesigner.colors.topAccent.height')}
-                      value={topAccent.heightMm}
-                      onChange={(v) => updateFeatureColors({ topAccent: { heightMm: v } })}
-                      min={TOP_ACCENT_MIN_MM}
-                      max={topAccentMaxMm}
-                      step={0.1}
-                      unit="mm"
-                    />
-                    {renderZone(
-                      'topAccent',
-                      t('binDesigner.colors.topAccent'),
-                      topAccent.color,
-                      DEFAULT_FEATURE_COLOR_CONFIG.topAccent.color,
-                      (hex) => updateFeatureColors({ topAccent: { color: hex } })
-                    )}
-                  </>
-                )}
-              </div>
-            </ColorGroup>
+              )}
+            </div>
 
             <ColorGroup
               title={t('binDesigner.colors.group.interior')}
