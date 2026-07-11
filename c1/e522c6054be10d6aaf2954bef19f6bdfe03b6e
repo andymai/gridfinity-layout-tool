@@ -1,0 +1,41 @@
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_25989936a1c209::t_ddefb0baac690e 105,109
+  s_25989936a1c209::t_0341ede020ce25 2
+  s_25989936a1c209::t_628dd00817a7cf 100-104,106-108
+src/shared/sync/SyncSessionMount.tsx
+  s_25989936a1c209::t_4419c85bca3b76 4
+src/features/baseplate/sync/baseplateAdapter.test.ts
+  s_25989936a1c209::t_309830621e1396 204-232
+  s_25989936a1c209::t_2b396bcbc2879f 12-13,22-24
+  s_25989936a1c209::t_013462ff364595 250-267
+  s_25989936a1c209::t_d446337d3405f4 25-26
+src/features/baseplate/sync/baseplateAdapter.ts
+  s_25989936a1c209::t_082e37d139048a 111-116,129
+  s_25989936a1c209::t_e3041aee42a388 17-20
+api/sync/baseplates/[id].test.ts
+  s_25989936a1c209::t_c06d3f8c7859b2 233,242
+  s_25989936a1c209::t_8f2dcd453450cc 390
+api/lib/baseplateValidation.ts
+  s_25989936a1c209::t_1b545f96c248a9 152,154,162-166
+  s_25989936a1c209::t_14e2a3dbb248f6 20-22
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.test.tsx
+  s_25989936a1c209::t_920088541fbfce 97,101
+  s_25989936a1c209::t_76545562aa8fba 92-96,98-100
+  s_25989936a1c209::t_e3d491357e8d97 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "c1e522c6054be10d6aaf2954bef19f6bdfe03b6e",
+  "prompts": {},
+  "sessions": {
+    "s_25989936a1c209": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa9573eb-b4fd-4ed1-b09d-791c1cdbffdc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
