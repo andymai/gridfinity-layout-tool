@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.235.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.235.0...gridfinity-layout-tool-v4.235.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **baseplate:** edge-anchor magnet holes on grid units larger than 42mm ([#2526](https://github.com/andymai/gridfinity-layout-tool/issues/2526)) ([11b6d5e](https://github.com/andymai/gridfinity-layout-tool/commit/11b6d5e8551aea599d565748166d587503bb62da))
+
 ## [4.235.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.234.1...gridfinity-layout-tool-v4.235.0) (2026-07-11)
 
 
