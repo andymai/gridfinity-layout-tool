@@ -1,0 +1,25 @@
+src/shared/utils/drawerOutline.ts
+  s_25758575a76743::t_d3835eb71b2ef8 441-447,449-460,462
+  s_25758575a76743::t_16e5d8fb9d5889 128-133
+src/shared/utils/drawerOutlineGeometry.ts
+  s_25758575a76743::t_e2d20e09748e83 29-34
+  s_25758575a76743::t_d595179c2e3595 189-192
+src/shared/utils/drawerOutline.test.ts
+  s_25758575a76743::t_20f471a45cfdef 429-457
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "fa0fb1086c76d267855afd07d1e7c1970f04266a",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
