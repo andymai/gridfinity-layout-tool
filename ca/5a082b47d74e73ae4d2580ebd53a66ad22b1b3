@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_f2380c1a1220a1::t_85d237d2f46b76 130-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "ca5a082b47d74e73ae4d2580ebd53a66ad22b1b3",
+  "prompts": {},
+  "sessions": {
+    "s_f2380c1a1220a1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0b378768-d4a3-405f-9865-010ebfd0bb32",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
