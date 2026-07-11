@@ -18,7 +18,10 @@ import { isFractional } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { binId } from '@/core/types';
 import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/DesignerStorage';
-import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import {
+  upsertRegistryEntry,
+  registryEdgeFields,
+} from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
 
 interface CreateFromBinParams {
@@ -28,6 +31,9 @@ interface CreateFromBinParams {
   width: number;
   depth: number;
   height: number;
+  /** Drawer half-unit edge orientation, inferred from the layout (issue #2518). */
+  fractionalEdgeX?: 'start' | 'end';
+  fractionalEdgeY?: 'start' | 'end';
 }
 
 /**
@@ -69,6 +75,9 @@ function parseCreateFromBinParams(): CreateFromBinParams | null {
     return null;
   }
 
+  const parseEdge = (value: string | null): 'start' | 'end' | undefined =>
+    value === 'start' || value === 'end' ? value : undefined;
+
   return {
     createFrom: 'bin',
     linkBin,
@@ -76,6 +85,8 @@ function parseCreateFromBinParams(): CreateFromBinParams | null {
     width,
     depth,
     height,
+    fractionalEdgeX: parseEdge(urlParams.get('fractionalEdgeX')),
+    fractionalEdgeY: parseEdge(urlParams.get('fractionalEdgeY')),
   };
 }
 
@@ -113,6 +124,8 @@ export function useCreateFromBin(): void {
     url.searchParams.delete('width');
     url.searchParams.delete('depth');
     url.searchParams.delete('height');
+    url.searchParams.delete('fractionalEdgeX');
+    url.searchParams.delete('fractionalEdgeY');
     window.history.replaceState({}, '', url.pathname + url.search);
 
     // Signal useDesignerInit to skip initialization
@@ -129,11 +142,21 @@ export function useCreateFromBin(): void {
     // Build the bin params for saving — inherit physical units from layout store
     const designerState = useDesignerStore.getState();
     const layoutState = useLayoutStore.getState();
+    // Infer the half-unit edge from the drawer so a fractional bin's foot lands
+    // on the same side as the drawer's fractional slot (issue #2518). Left as a
+    // non-manual choice so a later drawer change surfaces a mismatch warning.
     const binParams = {
       ...designerState.params,
       width: urlParams.width,
       depth: urlParams.depth,
       height: urlParams.height,
+      ...(isFractional(urlParams.width) && urlParams.fractionalEdgeX
+        ? { fractionalEdgeX: urlParams.fractionalEdgeX }
+        : {}),
+      ...(isFractional(urlParams.depth) && urlParams.fractionalEdgeY
+        ? { fractionalEdgeY: urlParams.fractionalEdgeY }
+        : {}),
+      fractionalEdgeManual: false,
       gridUnitMm: layoutState.layout.gridUnitMm,
       heightUnitMm: layoutState.layout.heightUnitMm,
     };
@@ -181,6 +204,7 @@ export function useCreateFromBin(): void {
           width: binParams.width,
           depth: binParams.depth,
           height: binParams.height,
+          ...registryEdgeFields(binParams),
           updatedAt: design.updatedAt,
         });
 

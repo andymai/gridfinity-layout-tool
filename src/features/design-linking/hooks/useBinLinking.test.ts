@@ -24,6 +24,8 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 
 vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   removeRegistryEntry: vi.fn(),
+  upsertRegistryEntry: vi.fn(),
+  registryEdgeFields: vi.fn(() => ({})),
 }));
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
@@ -600,6 +602,38 @@ describe('useBinLinking', () => {
       });
 
       expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
+    });
+
+    it('threads the drawer edge into the URL for a fractional dimension', () => {
+      setupStores([]);
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: { ...layout, drawer: { ...layout.drawer, fractionalEdgeX: 'start' } },
+      });
+
+      const { result } = renderHook(() => useBinLinking());
+
+      act(() => {
+        result.current.navigateToCreateDesign('bin-1', 'Half', 1.5, 3, 4);
+      });
+
+      expect(pushStateSpy.mock.calls[0][2]).toContain('fractionalEdgeX=start');
+    });
+
+    it('omits the drawer edge for an integer dimension', () => {
+      setupStores([]);
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: { ...layout, drawer: { ...layout.drawer, fractionalEdgeX: 'start' } },
+      });
+
+      const { result } = renderHook(() => useBinLinking());
+
+      act(() => {
+        result.current.navigateToCreateDesign('bin-1', 'Whole', 2, 3, 4);
+      });
+
+      expect(pushStateSpy.mock.calls[0][2]).not.toContain('fractionalEdgeX');
     });
   });
 

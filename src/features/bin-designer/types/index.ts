@@ -552,6 +552,14 @@ export interface BinParams {
   readonly fractionalEdgeX: 'start' | 'end';
   /** Side the half-unit foot row sits on for fractional `depth`: `'end'` (default) = back, `'start'` = front. */
   readonly fractionalEdgeY: 'start' | 'end';
+  /**
+   * True once the user has deliberately chosen the fractional edge in the
+   * designer. When a design is created from a layout bin the edge is inferred
+   * from the drawer with this left `false`, so a later drawer-edge change
+   * surfaces a mismatch warning; a manual toggle sets it `true` and silences
+   * that warning (issue #2518). Omitted/undefined is treated as `false`.
+   */
+  readonly fractionalEdgeManual?: boolean;
   /** Grid unit (mm) along X / `width` (default 42); also the square grid unit when {@link gridUnitMmY} is omitted. */
   readonly gridUnitMm: number;
   /** Optional grid unit (mm) along Y / `depth` for a non-square grid (e.g. 42×22). Omitted/equal to {@link gridUnitMm} ⇒ square; only the cell pitch stretches, round features stay isotropic. */

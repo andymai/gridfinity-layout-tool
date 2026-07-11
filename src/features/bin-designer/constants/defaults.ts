@@ -380,6 +380,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   height: 3,
   fractionalEdgeX: 'end',
   fractionalEdgeY: 'end',
+  fractionalEdgeManual: false,
   gridUnitMm: 42,
   heightUnitMm: 7,
   wallThickness: 1.2,

@@ -4,6 +4,7 @@ export {
   subscribeToRegistry,
   loadRegistry,
   upsertRegistryEntry,
+  registryEdgeFields,
   removeRegistryEntry,
   rebuildRegistry,
 } from './customBinRegistry';

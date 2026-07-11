@@ -27,7 +27,7 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
-import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
 import { isBinDesign } from '../utils/designKind';
 
 /**
@@ -127,7 +127,14 @@ export function useDesignerInit(): void {
 function syncToRegistry(design: {
   id: DesignId;
   name: string;
-  params: { width: number; depth: number; height: number };
+  params: {
+    width: number;
+    depth: number;
+    height: number;
+    fractionalEdgeX?: 'start' | 'end';
+    fractionalEdgeY?: 'start' | 'end';
+    fractionalEdgeManual?: boolean;
+  };
   updatedAt: string;
 }): void {
   upsertRegistryEntry({
@@ -136,6 +143,7 @@ function syncToRegistry(design: {
     width: design.params.width,
     depth: design.params.depth,
     height: design.params.height,
+    ...registryEdgeFields(design.params),
     updatedAt: design.updatedAt,
   });
 }

@@ -250,4 +250,17 @@ describe('useDimensionsSection', () => {
     });
     expect(useDesignerStore.getState().params.fractionalEdgeY).toBe('start');
   });
+
+  it('handleFractionalEdgeChange marks the edge as manually chosen', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 2.5, fractionalEdgeManual: false },
+    });
+    const { result } = renderHook(() => useDimensionsSection());
+
+    act(() => {
+      result.current.handlers.handleFractionalEdgeChange('x', 'start');
+    });
+
+    expect(useDesignerStore.getState().params.fractionalEdgeManual).toBe(true);
+  });
 });

@@ -15,7 +15,11 @@ import {
   loadDesign,
   deleteDesign,
   removeRegistryEntry,
+  updateDesignParams,
+  upsertRegistryEntry,
+  registryEdgeFields,
 } from '@/features/bin-designer';
+import { computeMatchedEdges } from '@/shared/utils/fractionalEdge';
 import { useLinkingStore } from '../store';
 import {
   compareDimensions,
@@ -62,6 +66,9 @@ interface UseBinLinkingReturn {
     depth: number,
     height: number
   ) => void;
+
+  /** Realign a linked design's fractional edge to the active layout's drawer (#2518). */
+  matchDesignEdgesToDrawer: (designId: DesignId) => Promise<void>;
 }
 
 /**
@@ -300,10 +307,65 @@ export function useBinLinking(): UseBinLinkingReturn {
         height: String(height),
       });
 
+      // Carry the drawer's half-unit edge so the new design infers the correct
+      // orientation for a fractional bin instead of defaulting to 'end' (#2518).
+      const { fractionalEdgeX, fractionalEdgeY } = layout.drawer;
+      if (!Number.isInteger(width) && fractionalEdgeX) {
+        params.set('fractionalEdgeX', fractionalEdgeX);
+      }
+      if (!Number.isInteger(depth) && fractionalEdgeY) {
+        params.set('fractionalEdgeY', fractionalEdgeY);
+      }
+
       window.history.pushState(null, '', `/designer?${params.toString()}`);
       window.dispatchEvent(new PopStateEvent('popstate'));
     },
-    [hideCreateDesignDialog]
+    [hideCreateDesignDialog, layout.drawer]
+  );
+
+  // Realign a linked design's fractional edge to the active layout's drawer
+  const matchDesignEdgesToDrawer = useCallback(
+    async (designId: DesignId): Promise<void> => {
+      const designResult = await loadDesign(designId);
+      if (isErr(designResult) || !designResult.value.params) {
+        addToast({
+          message: t('designLinking.toast.failedToLoad'),
+          type: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+
+      const params = designResult.value.params;
+      const newParams = { ...params, ...computeMatchedEdges(params, layout.drawer) };
+
+      const updateResult = await updateDesignParams(designId, newParams);
+      if (isErr(updateResult)) {
+        addToast({
+          message: t('designLinking.toast.designUpdateFailed'),
+          type: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+
+      upsertRegistryEntry({
+        id: updateResult.value.id,
+        name: updateResult.value.name,
+        width: newParams.width,
+        depth: newParams.depth,
+        height: newParams.height,
+        ...registryEdgeFields(newParams),
+        updatedAt: updateResult.value.updatedAt,
+      });
+
+      addToast({
+        message: t('designLinking.toast.edgeMatched'),
+        type: 'success',
+        duration: 2000,
+      });
+    },
+    [layout.drawer, addToast, t]
   );
 
   // Delete a design and unlink the bin
@@ -346,5 +408,6 @@ export function useBinLinking(): UseBinLinkingReturn {
     promptSyncIfNeeded,
     executeSyncFromDesign,
     navigateToCreateDesign,
+    matchDesignEdgesToDrawer,
   };
 }

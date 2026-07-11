@@ -29,7 +29,7 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { useSyncStatusStore } from '@/core/sync/status';
 import { useDesignerStore } from '../store';
 import { listDesigns, updateDesignThumbnail } from '../storage/DesignerStorage';
-import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
 import { updateThumbnailCache } from './useDesignThumbnail';
 import { THUMBNAIL_VERSION } from '../types';
@@ -209,6 +209,7 @@ async function runBatch(
         width: design.params.width,
         depth: design.params.depth,
         height: design.params.height,
+        ...registryEdgeFields(design.params),
         updatedAt: writeResult.value.updatedAt,
       });
       updateThumbnailCache(design.id, thumbnail);

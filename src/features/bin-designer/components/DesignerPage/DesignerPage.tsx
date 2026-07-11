@@ -26,8 +26,10 @@ import { DesignerHeader } from './DesignerHeader';
 import { DesignerMainContent } from './DesignerMainContent';
 import { MobileTitleBar } from './MobileTitleBar';
 import { ShareLoadingBanner } from './ShareLoadingBanner';
+import { FractionalEdgeMismatchBanner } from './FractionalEdgeMismatchBanner';
 import { useDesignNameEditor } from './useDesignNameEditor';
 import { useShareLoading } from './useShareLoading';
+import { useFractionalEdgeMismatch } from './useFractionalEdgeMismatch';
 
 /**
  * Designer page for creating, previewing, sharing, and exporting bin designs.
@@ -72,6 +74,7 @@ export function DesignerPage() {
 
   const nameEditor = useDesignNameEditor();
   const shareLoading = useShareLoading();
+  const fractionalEdge = useFractionalEdgeMismatch();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-surface">
@@ -83,6 +86,11 @@ export function DesignerPage() {
 
       {/* Share loading banner */}
       {shareLoading && <ShareLoadingBanner />}
+
+      {/* Drawer edge-orientation mismatch warning */}
+      {fractionalEdge.show && (
+        <FractionalEdgeMismatchBanner onMatchDrawer={fractionalEdge.matchDrawer} />
+      )}
 
       {/* Main content - responsive layout */}
       <DesignerMainContent

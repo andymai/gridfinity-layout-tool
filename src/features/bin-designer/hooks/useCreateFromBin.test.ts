@@ -156,6 +156,46 @@ describe('useCreateFromBin', () => {
     });
   });
 
+  it('should infer the fractional edge from the drawer for a fractional dimension', async () => {
+    setUrlParams({
+      createFrom: 'bin',
+      linkBin: 'bin-123',
+      name: 'Half Bin',
+      width: '1.5',
+      depth: '2',
+      height: '3',
+      fractionalEdgeX: 'start',
+    });
+
+    renderHook(() => useCreateFromBin());
+
+    await waitFor(() => {
+      const state = useDesignerStore.getState();
+      expect(state.params.fractionalEdgeX).toBe('start');
+      expect(state.params.fractionalEdgeManual).toBe(false);
+    });
+  });
+
+  it('should ignore the edge param for an integer dimension', async () => {
+    setUrlParams({
+      createFrom: 'bin',
+      linkBin: 'bin-123',
+      name: 'Regular Bin',
+      width: '2',
+      depth: '3',
+      height: '4',
+      fractionalEdgeX: 'start',
+    });
+
+    renderHook(() => useCreateFromBin());
+
+    await waitFor(() => {
+      const state = useDesignerStore.getState();
+      // width is integer, so the inferred edge must not override the default
+      expect(state.params.fractionalEdgeX).toBe(DEFAULT_BIN_PARAMS.fractionalEdgeX);
+    });
+  });
+
   it('should not enable half-bin mode for integer dimensions', async () => {
     setUrlParams({
       createFrom: 'bin',

@@ -12,8 +12,10 @@ import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
-import { Button, IconButton, PlusIcon } from '@/design-system';
+import { Button, IconButton, PlusIcon, AlertTriangleIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { useLayoutStore } from '@/core/store/layout';
+import { hasFractionalEdgeMismatch } from '@/shared/utils/fractionalEdge';
 import type { Bin } from '@/core/types';
 
 interface LinkedDesignSectionProps {
@@ -25,14 +27,21 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   const t = useTranslation();
   const { linkedDesign, isStale, hasLink } = useLinkedDesign(bin.linkedDesignId);
   const { thumbnail } = useDesignThumbnail(linkedDesign?.id);
-  const { editLinkedDesign, showCreateDesignDialog, unlinkBin, deleteLinkedDesign } =
-    useBinLinking();
+  const {
+    editLinkedDesign,
+    showCreateDesignDialog,
+    unlinkBin,
+    deleteLinkedDesign,
+    matchDesignEdgesToDrawer,
+  } = useBinLinking();
   const { isExporting, exportToSTL } = useQuickExport();
   const showLinkDesignDialog = useLinkingStore((s) => s.showLinkDesignDialog);
+  const drawer = useLayoutStore((s) => s.layout.drawer);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [matchingEdges, setMatchingEdges] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -100,6 +109,20 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
       void exportToSTL(linkedDesign.id, linkedDesign.name);
     }
   }, [linkedDesign, exportToSTL]);
+
+  const handleMatchDrawer = useCallback(async () => {
+    if (!linkedDesign) return;
+    setMatchingEdges(true);
+    try {
+      await matchDesignEdgesToDrawer(linkedDesign.id);
+    } finally {
+      setMatchingEdges(false);
+    }
+  }, [linkedDesign, matchDesignEdgesToDrawer]);
+
+  // A fractional bin whose design points at a different drawer edge is oriented
+  // wrong; the registry ref carries the design's edge so we can flag it here (#2518).
+  const edgeMismatch = linkedDesign !== null && hasFractionalEdgeMismatch(linkedDesign, drawer);
 
   // No link - show Create Design and Link Existing buttons
   if (!hasLink) {
@@ -245,6 +268,32 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           </div>
         </div>
       </div>
+
+      {/* Drawer edge-orientation mismatch warning */}
+      {edgeMismatch && (
+        <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30 space-y-2">
+          <div className="flex items-start gap-2">
+            <AlertTriangleIcon
+              size="sm"
+              className="text-status-warning flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <span className="text-xs text-status-warning">
+              {t('designLinking.inspector.edgeMismatch')}
+            </span>
+          </div>
+          <Button
+            variant="secondary"
+            fullWidth
+            disabled={matchingEdges}
+            loading={matchingEdges}
+            onClick={() => void handleMatchDrawer()}
+            className={buttonHeight}
+          >
+            {t('designLinking.inspector.matchDrawer')}
+          </Button>
+        </div>
+      )}
 
       {/* Action buttons - icon + label */}
       <div className="flex items-center gap-2">

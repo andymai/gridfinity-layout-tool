@@ -14,7 +14,12 @@ export type { BinParams, SavedDesign } from './types';
 export type { CustomBinRef } from './store';
 
 // --- Store ---
-export { useDesignerStore, removeRegistryEntry, upsertRegistryEntry } from './store';
+export {
+  useDesignerStore,
+  removeRegistryEntry,
+  upsertRegistryEntry,
+  registryEdgeFields,
+} from './store';
 
 // --- Storage ---
 export { loadDesign, deleteDesign, listDesigns, updateDesignParams } from './storage';

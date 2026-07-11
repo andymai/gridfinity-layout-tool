@@ -39,8 +39,33 @@ export interface CustomBinRef {
   readonly depth: number;
   /** Height units */
   readonly height: number;
+  /**
+   * Fractional-edge orientation carried so the layout planner / bin inspector
+   * can flag a drawer mismatch without loading the full design (issue #2518).
+   * Optional: pre-#2518 registry entries omit them until the design is re-saved.
+   */
+  readonly fractionalEdgeX?: 'start' | 'end';
+  readonly fractionalEdgeY?: 'start' | 'end';
+  readonly fractionalEdgeManual?: boolean;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
+}
+
+/**
+ * Project the fractional-edge fields a registry entry carries out of a full
+ * `BinParams`. Every `upsertRegistryEntry` call site spreads this so the
+ * lightweight ref never drifts from the design's real edge orientation.
+ */
+export function registryEdgeFields(params: {
+  readonly fractionalEdgeX?: 'start' | 'end';
+  readonly fractionalEdgeY?: 'start' | 'end';
+  readonly fractionalEdgeManual?: boolean;
+}): Pick<CustomBinRef, 'fractionalEdgeX' | 'fractionalEdgeY' | 'fractionalEdgeManual'> {
+  return {
+    fractionalEdgeX: params.fractionalEdgeX,
+    fractionalEdgeY: params.fractionalEdgeY,
+    fractionalEdgeManual: params.fractionalEdgeManual,
+  };
 }
 
 /**
@@ -52,7 +77,17 @@ export interface CustomBinRef {
  */
 function parseEntry(raw: unknown): CustomBinRef | null {
   if (typeof raw !== 'object' || raw === null) return null;
-  const { id, name, width, depth, height, updatedAt } = raw as Record<string, unknown>;
+  const {
+    id,
+    name,
+    width,
+    depth,
+    height,
+    updatedAt,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    fractionalEdgeManual,
+  } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
     typeof name !== 'string' ||
@@ -63,7 +98,19 @@ function parseEntry(raw: unknown): CustomBinRef | null {
   ) {
     return null;
   }
-  return { id: id as DesignId, name, width, depth, height, updatedAt };
+  const edge = (v: unknown): 'start' | 'end' | undefined =>
+    v === 'start' || v === 'end' ? v : undefined;
+  return {
+    id: id as DesignId,
+    name,
+    width,
+    depth,
+    height,
+    ...(edge(fractionalEdgeX) ? { fractionalEdgeX: edge(fractionalEdgeX) } : {}),
+    ...(edge(fractionalEdgeY) ? { fractionalEdgeY: edge(fractionalEdgeY) } : {}),
+    ...(typeof fractionalEdgeManual === 'boolean' ? { fractionalEdgeManual } : {}),
+    updatedAt,
+  };
 }
 
 /**

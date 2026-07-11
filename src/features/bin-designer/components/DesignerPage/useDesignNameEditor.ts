@@ -16,7 +16,10 @@ import {
   updateDesignName,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
-import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+import {
+  upsertRegistryEntry,
+  registryEdgeFields,
+} from '@/features/bin-designer/store/customBinRegistry';
 import { binId, designId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import type { RefObject } from 'react';
@@ -84,6 +87,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             width: params.width,
             depth: params.depth,
             height: params.height,
+            ...registryEdgeFields(params),
             updatedAt: result.value.updatedAt,
           });
         }
@@ -106,6 +110,7 @@ export function useDesignNameEditor(): DesignNameEditor {
             width: params.width,
             depth: params.depth,
             height: params.height,
+            ...registryEdgeFields(params),
             updatedAt: result.value.updatedAt,
           });
 

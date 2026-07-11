@@ -5,6 +5,7 @@ import {
   upsertRegistryEntry,
   removeRegistryEntry,
   rebuildRegistry,
+  registryEdgeFields,
   type CustomBinRef,
 } from './customBinRegistry';
 
@@ -57,6 +58,27 @@ describe('customBinRegistry', () => {
       localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify(mixed));
       const loaded = loadRegistry();
       expect(loaded.map((r) => r.id)).toEqual(['bin-1', 'bin-3']);
+    });
+
+    it('preserves valid fractional-edge fields and drops invalid ones', () => {
+      const refs = [
+        {
+          id: 'bin-1',
+          name: 'Edged',
+          width: 1.5,
+          depth: 2,
+          height: 3,
+          fractionalEdgeX: 'start',
+          fractionalEdgeY: 'nonsense',
+          fractionalEdgeManual: true,
+          updatedAt: '2026-01-22T00:00:00.000Z',
+        },
+      ];
+      localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify(refs));
+      const loaded = loadRegistry();
+      expect(loaded[0].fractionalEdgeX).toBe('start');
+      expect('fractionalEdgeY' in loaded[0]).toBe(false);
+      expect(loaded[0].fractionalEdgeManual).toBe(true);
     });
 
     it('strips legacy thumbnail field from stored entries', () => {
@@ -160,6 +182,22 @@ describe('customBinRegistry', () => {
       expect(raw).not.toBeNull();
       const parsed = JSON.parse(raw ?? '[]') as Array<{ id: string }>;
       expect(parsed[0].id).toBe('bin-1');
+    });
+  });
+
+  describe('registryEdgeFields', () => {
+    it('projects the fractional-edge fields out of full params', () => {
+      expect(
+        registryEdgeFields({
+          fractionalEdgeX: 'start',
+          fractionalEdgeY: 'end',
+          fractionalEdgeManual: true,
+        })
+      ).toEqual({
+        fractionalEdgeX: 'start',
+        fractionalEdgeY: 'end',
+        fractionalEdgeManual: true,
+      });
     });
   });
 });

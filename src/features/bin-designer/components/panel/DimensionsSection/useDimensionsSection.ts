@@ -116,9 +116,15 @@ export function useDimensionsSection() {
 
   const handleFractionalEdgeChange = useCallback(
     (axis: 'x' | 'y', position: 'start' | 'end') => {
-      setParam(axis === 'x' ? 'fractionalEdgeX' : 'fractionalEdgeY', position);
+      // Deliberately choosing the edge marks it manual, so the drawer-mismatch
+      // warning stops nagging about an intentional override (issue #2518).
+      const patch: Partial<BinParams> =
+        axis === 'x'
+          ? { fractionalEdgeX: position, fractionalEdgeManual: true }
+          : { fractionalEdgeY: position, fractionalEdgeManual: true };
+      setParams(patch);
     },
-    [setParam]
+    [setParams]
   );
 
   return {

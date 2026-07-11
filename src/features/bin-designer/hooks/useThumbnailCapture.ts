@@ -12,7 +12,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '../store';
 import { captureThumbnailAtPreset } from '../utils/thumbnail';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
-import { upsertRegistryEntry } from '../store/customBinRegistry';
+import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
 import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
 import { designId } from '@/core/types';
@@ -77,6 +77,11 @@ export function useThumbnailCapture(): void {
             width: params.width,
             depth: params.depth,
             height: params.height,
+            ...registryEdgeFields({
+              fractionalEdgeX: params.fractionalEdgeX,
+              fractionalEdgeY: params.fractionalEdgeY,
+              fractionalEdgeManual: params.fractionalEdgeManual,
+            }),
             updatedAt: result.value.updatedAt,
           });
 
@@ -100,6 +105,9 @@ export function useThumbnailCapture(): void {
     params.gridUnitMm,
     params.gridUnitMmY,
     params.heightUnitMm,
+    params.fractionalEdgeX,
+    params.fractionalEdgeY,
+    params.fractionalEdgeManual,
     designName,
     setNeedsThumbnailUpdate,
   ]);
