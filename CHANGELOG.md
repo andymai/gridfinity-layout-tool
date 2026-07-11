@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.236.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.235.1...gridfinity-layout-tool-v4.236.0) (2026-07-11)
+
+
+### Features
+
+* **drawer:** add drawer outline model for non-rectangular drawers ([#2530](https://github.com/andymai/gridfinity-layout-tool/issues/2530)) ([8cb37f9](https://github.com/andymai/gridfinity-layout-tool/commit/8cb37f9454cc1e9bbf579deea262d8e907ddacce))
+
 ## [4.235.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.235.0...gridfinity-layout-tool-v4.235.1) (2026-07-11)
 
 
