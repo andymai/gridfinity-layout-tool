@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`baseplate oversized-grid magnet geometry (#2525) > generates a valid 3×3 magnet baseplate at gridUnitMm=50 1`] = `16388`;

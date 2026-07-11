@@ -49,6 +49,31 @@ describe('buildLightweightFloorCutters', () => {
     const result = buildLightweightFloorCutters(1, 1, 19, 2, cellOpts());
     expect(result).toEqual([]);
   });
+
+  it('grows the cross-arm offset to the edge-anchored magnet at pitch 50 (#2525)', async () => {
+    const { magnetPositionsForCell } = await import('./baseplateMagnets');
+    // The floor cutter derives its arm offset from the actual magnet position, so
+    // at a 50mm grid it must track ±17 (50/2 − 8), not the pre-fix ±13.
+    const off = Math.abs(magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50)[0][0]);
+    expect(off).toBeCloseTo(17, 6);
+  });
+
+  it('emits one valid 4-arm cross cutter for a full cell at pitch 50 (no stranded magnet)', async () => {
+    const { buildLightweightFloorCutters } = await import('./lightweightFloorCutter');
+    const { mesh } = await import('brepjs');
+    // Outer-arm guard (hw − padHalf ≥ MIN_ARM_WIDTH) still passes on the larger
+    // cell, so the single full cell yields one cross cutter with real geometry —
+    // pads land on the ±17 magnets rather than carving through them.
+    const opts = {
+      gridUnitMm: 50,
+      fractionalEdgeX: 'end' as const,
+      fractionalEdgeY: 'end' as const,
+    };
+    const result = buildLightweightFloorCutters(1, 1, MAGNET_R, 2, opts);
+    expect(result).toHaveLength(1);
+    const tessellated = mesh(result[0], { tolerance: 0.5, angularTolerance: 15 });
+    expect(tessellated.vertices.length).toBeGreaterThan(0);
+  });
 });
 
 const GRID = 42;

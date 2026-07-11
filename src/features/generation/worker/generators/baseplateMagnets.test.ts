@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { magnetPositionsForCell, MAGNET_EDGE_CLEARANCE } from './baseplateMagnets';
 import { MAGNET_OFFSETS } from './generatorConstants';
+import { HOLE_OFFSET } from './generatorTypes';
 import type { CellInfo } from './cellDecomposition';
 
 const GRID = 42;
@@ -121,5 +122,54 @@ describe('magnetPositionsForCell', () => {
       expect(Math.abs(x) + MAGNET_R + MAGNET_EDGE_CLEARANCE).toBeLessThanOrEqual(halfExtent + 1e-9);
       expect(Math.abs(y) + MAGNET_R + MAGNET_EDGE_CLEARANCE).toBeLessThanOrEqual(halfExtent + 1e-9);
     }
+  });
+
+  describe('oversized grid (gridUnitMm > 42) edge-anchoring (#2525)', () => {
+    it('anchors a full 1×1 cell 8mm from the edge at pitch 50 (offset 17)', () => {
+      const positions = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50);
+      expect(positions).toHaveLength(4);
+      const half = 50 / 2;
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(17, 6);
+        expect(Math.abs(y)).toBeCloseTo(17, 6);
+        // Constant 8mm center-to-edge regardless of cell size (was ±13 pre-fix,
+        // which on a 50mm cell left the magnet 12mm from the edge and drifting in).
+        expect(half - Math.abs(x)).toBeCloseTo(8, 6);
+        expect(half - Math.abs(y)).toBeCloseTo(8, 6);
+      }
+    });
+
+    it('anchors a full 1×1 cell 8mm from the edge at pitch 60 (offset 22)', () => {
+      const positions = magnetPositionsForCell(cell(1, 1), MAGNET_R, 60, 60);
+      expect(positions).toHaveLength(4);
+      const half = 60 / 2;
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(22, 6);
+        expect(Math.abs(y)).toBeCloseTo(22, 6);
+        expect(half - Math.abs(x)).toBeCloseTo(8, 6);
+        expect(half - Math.abs(y)).toBeCloseTo(8, 6);
+      }
+    });
+
+    it('leaves a full 42mm cell at the standard ±HOLE_OFFSET (regression lock)', () => {
+      const positions = magnetPositionsForCell(cell(1, 1), MAGNET_R, GRID, GRID);
+      expect(positions).toHaveLength(4);
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(HOLE_OFFSET, 6);
+        expect(Math.abs(y)).toBeCloseTo(HOLE_OFFSET, 6);
+      }
+    });
+
+    it('keeps a wide over-tile margin tile byte-identical via the HOLE_OFFSET floor (1.5u @42mm)', () => {
+      // A 1.5-unit over-tile margin tile is wider than one unit, but the
+      // HOLE_OFFSET floor pins its corners at ±13 rather than pushing them out to
+      // the 1.5u edge — so pre-fix baseplates with over-tile margins are unchanged.
+      const positions = magnetPositionsForCell(cell(1.5, 1, 0, 0), MAGNET_R, GRID, GRID);
+      expect(positions).toHaveLength(4);
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(HOLE_OFFSET, 6);
+        expect(Math.abs(y)).toBeCloseTo(HOLE_OFFSET, 6);
+      }
+    });
   });
 });

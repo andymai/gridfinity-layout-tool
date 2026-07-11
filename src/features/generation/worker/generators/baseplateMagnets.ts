@@ -125,15 +125,17 @@ export function magnetPositionsForCell(
   const halfW = (cell.widthUnits * pitchX) / 2;
   const halfD = (cell.depthUnits * pitchY) / 2;
 
-  // Per-axis magnet offset: the Gridfinity ±HOLE_OFFSET, but never letting a
-  // magnet sit closer to the cell edge than it does in a standard 42mm cell
-  // (STANDARD_WALL_INSET = 8mm center-to-edge → ~4.75mm of plastic to the wall).
-  // On a smaller or non-square cell the offset is pulled inward per axis so that
-  // constant wall gap is preserved. A full 42mm cell is unchanged (offset ===
-  // HOLE_OFFSET). The offset depends only on cell size, not magnetRadius, so a
-  // bin base and the lid stacked on it derive identical positions and mate.
-  const offX = Math.min(HOLE_OFFSET, halfW - STANDARD_WALL_INSET);
-  const offY = Math.min(HOLE_OFFSET, halfD - STANDARD_WALL_INSET);
+  // Anchor magnets a constant STANDARD_WALL_INSET (8mm) from the cell edge, so
+  // they stay corner-aligned as gridUnitMm grows past 42mm instead of pinned at
+  // ±HOLE_OFFSET from center (which drifts them inward on a larger cell). The
+  // per-unit offset floors at HOLE_OFFSET to keep ≤42mm grids and wide over-tile
+  // margin tiles byte-identical; the trailing Math.min preserves the wall gap on
+  // short/non-square cells. Depends only on cell size + pitch (not magnetRadius),
+  // so a bin base and the lid stacked on it derive identical positions and mate.
+  const unitOffX = Math.max(HOLE_OFFSET, pitchX / 2 - STANDARD_WALL_INSET);
+  const unitOffY = Math.max(HOLE_OFFSET, pitchY / 2 - STANDARD_WALL_INSET);
+  const offX = Math.min(unitOffX, halfW - STANDARD_WALL_INSET);
+  const offY = Math.min(unitOffY, halfD - STANDARD_WALL_INSET);
 
   // A magnet must at least fit centered on both axes, else the cell is too small.
   const reach = magnetRadius + MAGNET_EDGE_CLEARANCE;
