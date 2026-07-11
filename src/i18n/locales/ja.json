@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "これはアカウント、同期されたすべてのレイアウト、同期されたすべてのビンデザインを当社サーバーから完全に削除します。この操作は元に戻せません。",
   "syncDialog.deleteAccount.title": "アカウントを削除しますか?",
   "syncDialog.signOut.keep": "保持してサインアウト",
-  "syncDialog.signOut.message": "このデバイスの{count}件のローカルレイアウトとデザインを保持しますか?消去することもできます。",
+  "syncDialog.signOut.message": "このデバイスの{count}件のローカルレイアウト、デザイン、ベースプレートを保持しますか?消去することもできます。",
   "syncDialog.signOut.title": "サインアウト",
   "syncDialog.signOut.wipe": "消去してサインアウト",
   "tablet.layersCategories": "レイヤー&カテゴリー",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "エディターからベースプレートを保存してライブラリを作成しましょう",
   "baseplate.library.count": "{count} 個のベースプレート",
   "baseplate.library.deleteWarning.title": "ベースプレートデザインを削除しますか？",
-  "baseplate.library.deleteWarning.description": "このベースプレートは {count} 個のレイアウトで使用されています。現在のベースプレートは保持されますが、リンクは解除されます。",
-  "baseplate.library.deleteWarning.affectedCount": "{count} 個のレイアウトで使用中",
+  "baseplate.library.deleteWarning.description": "削除すると、このベースプレートはライブラリから削除されます。リンクされているレイアウトは現在のベースプレートを保持しますが、リンクは解除されます。",
+  "baseplate.library.deleteWarning.usedByCurrent": "現在のレイアウトで使用中",
   "baseplate.library.deleteWarning.confirm": "削除する",
   "commandPalette.openBaseplateLibrary": "ベースプレートライブラリを開く"
 }

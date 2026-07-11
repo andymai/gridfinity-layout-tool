@@ -175,6 +175,17 @@ describe('baseplateAdapter.applyRemote', () => {
     expect(saveDesignMock.mock.calls[0][0].name).toBe('My Plate');
   });
 
+  it('drops a payload whose params is an array (would read back corrupt)', async () => {
+    await baseplateAdapter.applyRemote({
+      id: 'bp-arr',
+      payload: { name: 'Arr', params: [1, 2, 3] },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(loadDesignMock).not.toHaveBeenCalled();
+    expect(saveDesignMock).not.toHaveBeenCalled();
+  });
+
   it('throws when saveDesign fails', async () => {
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('x')));
     saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));

@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Detta raderar permanent ditt konto, alla synkroniserade layouter och alla synkroniserade designs från våra servrar. Detta kan inte ångras.",
   "syncDialog.deleteAccount.title": "Radera ditt konto?",
   "syncDialog.signOut.keep": "Behåll & logga ut",
-  "syncDialog.signOut.message": "Behåll dina {count} lokala layouter och designer på den här enheten? Du kan också radera dem.",
+  "syncDialog.signOut.message": "Behåll dina {count} lokala layouter, designer och bottenplattor på den här enheten? Du kan också radera dem.",
   "syncDialog.signOut.title": "Logga ut",
   "syncDialog.signOut.wipe": "Radera & logga ut",
   "tablet.layersCategories": "Lager och kategorier",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Spara en bottenplatta från redigeraren för att starta ditt bibliotek",
   "baseplate.library.count": "{count} bottenplatta/or",
   "baseplate.library.deleteWarning.title": "Radera bottenplattedesign?",
-  "baseplate.library.deleteWarning.description": "Denna bottenplatta används av {count} layout(er). De behåller sin nuvarande bottenplatta men förlorar länken.",
-  "baseplate.library.deleteWarning.affectedCount": "Används av {count} layout(er)",
+  "baseplate.library.deleteWarning.description": "Att radera tar bort denna bottenplatta från ditt bibliotek. Layouter som är länkade till den behåller sin nuvarande bottenplatta men förlorar länken.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Används av den aktuella layouten",
   "baseplate.library.deleteWarning.confirm": "Radera ändå",
   "commandPalette.openBaseplateLibrary": "Öppna bottenplattebibliotek"
 }

@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Isso exclui permanentemente sua conta, todos os layouts sincronizados e todos os designs sincronizados dos nossos servidores. Esta ação não pode ser desfeita.",
   "syncDialog.deleteAccount.title": "Excluir sua conta?",
   "syncDialog.signOut.keep": "Manter e sair",
-  "syncDialog.signOut.message": "Manter seus {count} layouts e designs locais neste dispositivo? Você também pode apagá-los.",
+  "syncDialog.signOut.message": "Manter seus {count} layouts, designs e placas base locais neste dispositivo? Você também pode apagá-los.",
   "syncDialog.signOut.title": "Sair",
   "syncDialog.signOut.wipe": "Apagar e sair",
   "tablet.layersCategories": "Layers e Categorias",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Salve uma placa base no editor para iniciar sua biblioteca",
   "baseplate.library.count": "{count} placa(s) base",
   "baseplate.library.deleteWarning.title": "Excluir design de placa base?",
-  "baseplate.library.deleteWarning.description": "Esta placa base é usada por {count} layout(s). Eles mantêm a placa base atual, mas perdem o vínculo.",
-  "baseplate.library.deleteWarning.affectedCount": "Usada por {count} layout(s)",
+  "baseplate.library.deleteWarning.description": "Excluir remove esta placa base da sua biblioteca. Layouts vinculados a ela mantêm a placa base atual, mas perdem o vínculo.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Usada pelo layout atual",
   "baseplate.library.deleteWarning.confirm": "Excluir mesmo assim",
   "commandPalette.openBaseplateLibrary": "Abrir biblioteca de placas base"
 }

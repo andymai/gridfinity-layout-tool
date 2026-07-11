@@ -318,10 +318,16 @@ export default function App() {
 
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
-      <Suspense fallback={null}>
-        <DesignLinkingDialogs />
-        <BaseplateLibraryInitMount />
-      </Suspense>
+      <>
+        <Suspense fallback={null}>
+          <DesignLinkingDialogs />
+        </Suspense>
+        {/* Own boundary so planner baseplate resolution isn't gated on the
+            unrelated design-linking chunk loading. */}
+        <Suspense fallback={null}>
+          <BaseplateLibraryInitMount />
+        </Suspense>
+      </>
     );
     if (isCollaborative && shareId) {
       return (

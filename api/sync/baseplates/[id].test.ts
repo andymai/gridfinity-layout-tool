@@ -211,6 +211,44 @@ describe('PUT', () => {
     expect(res._status).toBe(400);
   });
 
+  it('rejects an out-of-range per-corner radius', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          baseplate: {
+            name: 'x',
+            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 999 } },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(400);
+  });
+
+  it('accepts valid per-corner radii', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          baseplate: {
+            name: 'x',
+            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 2.5 } },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+  });
+
   it('rejects when modifiedAt is missing or non-numeric', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();

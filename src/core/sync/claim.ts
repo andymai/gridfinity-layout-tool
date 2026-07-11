@@ -37,7 +37,8 @@ interface IndexEntry {
 interface ManifestResponse {
   layouts: Record<string, IndexEntry>;
   designs: Record<string, IndexEntry>;
-  baseplates: Record<string, IndexEntry>;
+  // Optional: a manifest from a server predating this key omits it.
+  baseplates?: Record<string, IndexEntry>;
   indexUpdatedAt: number;
 }
 
@@ -141,7 +142,8 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
     ctx.adapters.baseplates,
     'baseplates',
     localBaseplates,
-    manifest.baseplates
+    // Fallback for a manifest predating the baseplates key (schema skew).
+    manifest.baseplates ?? {}
   );
 
   persistLastSignedInUserId(ctx.userId);

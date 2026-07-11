@@ -7,6 +7,7 @@ export type { SavedBaseplateDesign } from './types/library';
 export * as BaseplateStorage from './storage/BaseplateStorage';
 export type { BaseplateSyncEvent } from './sync/baseplateEvents';
 export { baseplateAdapter } from './sync/baseplateAdapter';
+export { startBaseplateRegistryBridge } from './sync/baseplateRegistryBridge';
 export {
   loadRegistry,
   upsertRegistryEntry,

@@ -116,11 +116,9 @@ describe('BaseplateLibraryModal', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /moreActions/ })[0]);
     fireEvent.click(screen.getByText('common.delete'));
 
-    // Warning dialog with the affected-layout count for the active design.
+    // Warning dialog notes the active layout uses the design being deleted.
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
-    expect(
-      screen.getByText(/baseplate\.library\.deleteWarning\.affectedCount:{"count":1}/)
-    ).toBeInTheDocument();
+    expect(screen.getByText('baseplate.library.deleteWarning.usedByCurrent')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('baseplate.library.deleteWarning.confirm'));
 

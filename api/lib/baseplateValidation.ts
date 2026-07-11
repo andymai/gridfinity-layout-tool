@@ -150,6 +150,17 @@ export function validateBaseplateShare(
   ) {
     return validationError('INVALID_PARAMS', 'cornerRadius must be 0-100');
   }
+  if (params.cornerRadii !== undefined) {
+    if (!isObject(params.cornerRadii)) {
+      return validationError('INVALID_PARAMS', 'cornerRadii must be an object');
+    }
+    for (const corner of ['tl', 'tr', 'bl', 'br'] as const) {
+      const value = params.cornerRadii[corner];
+      if (!isNumber(value) || !inRange(value, 0, 100)) {
+        return validationError('INVALID_PARAMS', `cornerRadii.${corner} must be 0-100`);
+      }
+    }
+  }
   if (
     params.connectorFitOffset !== undefined &&
     (!isNumber(params.connectorFitOffset) || !inRange(params.connectorFitOffset, -10, 10))

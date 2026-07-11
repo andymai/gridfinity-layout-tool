@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Ceci supprime définitivement votre compte, tous les plans synchronisés et toutes les créations synchronisées de nos serveurs. Cette action est irréversible.",
   "syncDialog.deleteAccount.title": "Supprimer votre compte ?",
   "syncDialog.signOut.keep": "Conserver et se déconnecter",
-  "syncDialog.signOut.message": "Conserver vos {count} plans et créations sur cet appareil ? Vous pouvez aussi les effacer.",
+  "syncDialog.signOut.message": "Conserver vos {count} plans, créations et platines sur cet appareil ? Vous pouvez aussi les effacer.",
   "syncDialog.signOut.title": "Se déconnecter",
   "syncDialog.signOut.wipe": "Effacer et se déconnecter",
   "tablet.layersCategories": "Layers et Catégories",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Enregistrez une platine depuis l'éditeur pour démarrer votre bibliothèque",
   "baseplate.library.count": "{count} platine(s)",
   "baseplate.library.deleteWarning.title": "Supprimer le modèle de platine ?",
-  "baseplate.library.deleteWarning.description": "Cette platine est utilisée par {count} layout(s). Ils conservent leur platine actuelle mais perdent le lien.",
-  "baseplate.library.deleteWarning.affectedCount": "Utilisée par {count} layout(s)",
+  "baseplate.library.deleteWarning.description": "La suppression retire cette platine de votre bibliothèque. Les layouts qui y sont liés conservent leur platine actuelle mais perdent le lien.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Utilisée par le layout actuel",
   "baseplate.library.deleteWarning.confirm": "Supprimer quand même",
   "commandPalette.openBaseplateLibrary": "Ouvrir la bibliothèque de platines"
 }

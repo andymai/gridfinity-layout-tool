@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Esto elimina permanentemente tu cuenta, todos los planos sincronizados y todos los diseños sincronizados de nuestros servidores. Esto no se puede deshacer.",
   "syncDialog.deleteAccount.title": "¿Eliminar tu cuenta?",
   "syncDialog.signOut.keep": "Mantener y cerrar sesión",
-  "syncDialog.signOut.message": "¿Mantener tus {count} diseños y planos locales en este dispositivo? También puedes borrarlos.",
+  "syncDialog.signOut.message": "¿Mantener tus {count} diseños, planos y bases locales en este dispositivo? También puedes borrarlos.",
   "syncDialog.signOut.title": "Cerrar sesión",
   "syncDialog.signOut.wipe": "Borrar y cerrar sesión",
   "tablet.layersCategories": "Layers y Categorías",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Guarda una base desde el editor para iniciar tu biblioteca",
   "baseplate.library.count": "{count} base(s)",
   "baseplate.library.deleteWarning.title": "¿Eliminar diseño de base?",
-  "baseplate.library.deleteWarning.description": "Esta base la usan {count} diseño(s). Conservarán su base actual pero perderán el vínculo.",
-  "baseplate.library.deleteWarning.affectedCount": "Usada por {count} diseño(s)",
+  "baseplate.library.deleteWarning.description": "Al eliminarla, esta base se quita de tu biblioteca. Los diseños vinculados conservan su base actual pero pierden el vínculo.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Usada por el diseño actual",
   "baseplate.library.deleteWarning.confirm": "Eliminar de Todos Modos",
   "commandPalette.openBaseplateLibrary": "Abrir biblioteca de bases"
 }

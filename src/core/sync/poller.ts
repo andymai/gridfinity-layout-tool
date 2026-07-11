@@ -12,7 +12,8 @@ interface IndexEntry {
 interface ManifestResponse {
   layouts: Record<string, IndexEntry>;
   designs: Record<string, IndexEntry>;
-  baseplates: Record<string, IndexEntry>;
+  // Optional: a manifest from a server predating this key omits it.
+  baseplates?: Record<string, IndexEntry>;
   indexUpdatedAt: number;
 }
 
@@ -110,9 +111,16 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
 
   const manifest = (await manifestRes.json()) as ManifestResponse;
 
+  // Baseplates first: a layout references a baseplate design by id, and the
+  // init hook orphans that pointer (NOT_FOUND) if the design isn't local yet.
+  // On a fresh device the referenced design must land before its layout.
+  const baseplateChanges = await diffKind(
+    adapters.baseplates,
+    'baseplates',
+    manifest.baseplates ?? {}
+  );
   const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts);
   const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs);
-  const baseplateChanges = await diffKind(adapters.baseplates, 'baseplates', manifest.baseplates);
   const applied = layoutChanges + designChanges + baseplateChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the

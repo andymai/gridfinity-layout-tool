@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Dit verwijdert je account, alle gesynchroniseerde lay-outs en alle gesynchroniseerde ontwerpen permanent van onze servers. Dit kan niet ongedaan worden gemaakt.",
   "syncDialog.deleteAccount.title": "Je account verwijderen?",
   "syncDialog.signOut.keep": "Behouden en afmelden",
-  "syncDialog.signOut.message": "Wil je je {count} lokale lay-outs en ontwerpen op dit apparaat behouden? Je kunt ze ook verwijderen.",
+  "syncDialog.signOut.message": "Wil je je {count} lokale lay-outs, ontwerpen en basisplaten op dit apparaat behouden? Je kunt ze ook verwijderen.",
   "syncDialog.signOut.title": "Afmelden",
   "syncDialog.signOut.wipe": "Verwijderen en afmelden",
   "tablet.layersCategories": "Layers & categorieën",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Sla een basisplaat op vanuit de editor om je bibliotheek te starten",
   "baseplate.library.count": "{count} basispla(a)t(en)",
   "baseplate.library.deleteWarning.title": "Basisplaatontwerp verwijderen?",
-  "baseplate.library.deleteWarning.description": "Deze basisplaat wordt gebruikt door {count} layout(s). Ze behouden hun huidige basisplaat maar verliezen de koppeling.",
-  "baseplate.library.deleteWarning.affectedCount": "Gebruikt door {count} layout(s)",
+  "baseplate.library.deleteWarning.description": "Verwijderen haalt deze basisplaat uit je bibliotheek. Gekoppelde layouts behouden hun huidige basisplaat maar verliezen de koppeling.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Gebruikt door de huidige layout",
   "baseplate.library.deleteWarning.confirm": "Toch verwijderen",
   "commandPalette.openBaseplateLibrary": "Basisplaatbibliotheek openen"
 }

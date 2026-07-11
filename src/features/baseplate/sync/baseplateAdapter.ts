@@ -32,24 +32,32 @@ function toMs(iso: string): number {
   return Number.isFinite(ms) ? ms : 0;
 }
 
+/** A params blob must be a plain object; arrays read back as corrupt. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /**
  * Accept either the `{ name, params }` wrapper or a bare params shape so a
- * malformed or legacy cloud blob still applies cleanly.
+ * legacy cloud blob still applies cleanly. Returns `null` for a malformed
+ * payload (non-object or array params) so the caller can drop it rather than
+ * persist a record that reads back corrupt and vanishes.
  */
-function unwrap(payload: unknown): { name?: string; params: StoredBaseplateParams } {
+function unwrap(payload: unknown): { name?: string; params: StoredBaseplateParams } | null {
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
     const { name, params } = payload as { name?: unknown; params: unknown };
-    if (typeof params === 'object' && params !== null) {
+    if (isPlainObject(params)) {
       // Empty/whitespace-only remote names become `undefined` so the
       // fallback chain kicks in.
       const trimmed = typeof name === 'string' ? name.trim() : '';
       return {
         name: trimmed === '' ? undefined : trimmed,
-        params: params as StoredBaseplateParams,
+        params: params as unknown as StoredBaseplateParams,
       };
     }
+    return null;
   }
-  return { params: payload as StoredBaseplateParams };
+  return isPlainObject(payload) ? { params: payload as unknown as StoredBaseplateParams } : null;
 }
 
 export const baseplateAdapter: BaseplateAdapter = {
@@ -77,10 +85,12 @@ export const baseplateAdapter: BaseplateAdapter = {
   async applyRemote(item: SyncableItem<BaseplatePayload>): Promise<void> {
     suppressed.add(item.id);
     try {
+      const unwrapped = unwrap(item.payload);
+      if (unwrapped === null) return;
       // Read existing first to preserve local-only fields (thumbnail) on update.
       const existing = await loadDesign(baseplateDesignId(item.id));
       const base = isOk(existing) ? existing.value : null;
-      const { name: remoteName, params } = unwrap(item.payload);
+      const { name: remoteName, params } = unwrapped;
       // LWW: engine only calls applyRemote when remote is newer, so a
       // remote rename must win. Local name is only a fallback for legacy
       // payloads with no name; the literal covers a legacy fresh-device pull.

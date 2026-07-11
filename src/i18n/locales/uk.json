@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Це назавжди видалить ваш обліковий запис, усі синхронізовані макети та всі синхронізовані дизайни з наших серверів. Цю дію неможливо скасувати.",
   "syncDialog.deleteAccount.title": "Видалити ваш обліковий запис?",
   "syncDialog.signOut.keep": "Залишити та вийти",
-  "syncDialog.signOut.message": "Залишити {count} локальних макетів і дизайнів на цьому пристрої? Ви також можете видалити їх.",
+  "syncDialog.signOut.message": "Залишити {count} локальних макетів, дизайнів і базових плит на цьому пристрої? Ви також можете видалити їх.",
   "syncDialog.signOut.title": "Вийти",
   "syncDialog.signOut.wipe": "Видалити та вийти",
   "tablet.layersCategories": "Шари та категорії",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Збережіть базову плиту з редактора, щоб почати бібліотеку",
   "baseplate.library.count": "{count} базових плит",
   "baseplate.library.deleteWarning.title": "Видалити дизайн базової плити?",
-  "baseplate.library.deleteWarning.description": "Ця базова плита використовується в {count} розкладках. Вони збережуть поточну базову плиту, але втратять зв'язок.",
-  "baseplate.library.deleteWarning.affectedCount": "Використовується в {count} розкладках",
+  "baseplate.library.deleteWarning.description": "Видалення прибирає цю базову плиту з вашої бібліотеки. Пов'язані розкладки збережуть поточну базову плиту, але втратять зв'язок.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Використовується поточною розкладкою",
   "baseplate.library.deleteWarning.confirm": "Все одно видалити",
   "commandPalette.openBaseplateLibrary": "Відкрити бібліотеку базових плит"
 }

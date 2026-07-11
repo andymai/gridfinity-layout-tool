@@ -105,7 +105,10 @@ export function useBaseplateLibraryInit(): void {
             if (!deepEqual(loaded.value.params, params)) {
               setActiveBaseplateLocal(activeId, loaded.value.params);
             }
-          } else {
+          } else if (loaded.error.code === 'STORAGE_NOT_FOUND') {
+            // Only orphan when the design is genuinely gone (deleted on another
+            // device). A transient read failure (IDB unavailable/corrupt) keeps
+            // the pointer so a later retry can still resolve it.
             setActiveBaseplateLocal(null, params);
           }
         }

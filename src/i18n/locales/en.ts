@@ -200,7 +200,7 @@ const en: Record<string, string> = {
   // Sign-out + account-mismatch dialogs
   'syncDialog.signOut.title': 'Sign out',
   'syncDialog.signOut.message':
-    'Keep your {count} local layouts and designs on this device? You can also wipe them.',
+    'Keep your {count} local layouts, designs, and baseplates on this device? You can also wipe them.',
   'syncDialog.signOut.keep': 'Keep & sign out',
   'syncDialog.signOut.wipe': 'Wipe & sign out',
   'syncDialog.deleteAccount.title': 'Delete your account?',
@@ -2529,8 +2529,8 @@ const en: Record<string, string> = {
   'baseplate.library.count': '{count} baseplate(s)',
   'baseplate.library.deleteWarning.title': 'Delete baseplate design?',
   'baseplate.library.deleteWarning.description':
-    'This baseplate is used by {count} layout(s). They keep their current baseplate but lose the link.',
-  'baseplate.library.deleteWarning.affectedCount': 'Used by {count} layout(s)',
+    'Deleting this baseplate removes it from your library. Layouts linked to it keep their current baseplate but lose the link.',
+  'baseplate.library.deleteWarning.usedByCurrent': 'Used by the current layout',
   'baseplate.library.deleteWarning.confirm': 'Delete Anyway',
 
   // Collaboration

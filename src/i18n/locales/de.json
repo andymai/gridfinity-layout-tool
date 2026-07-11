@@ -2426,7 +2426,7 @@
   "syncDialog.deleteAccount.message": "Dies löscht dauerhaft dein Konto, alle synchronisierten Layouts und alle synchronisierten Bin-Designs von unseren Servern. Dies kann nicht rückgängig gemacht werden.",
   "syncDialog.deleteAccount.title": "Konto löschen?",
   "syncDialog.signOut.keep": "Behalten & Abmelden",
-  "syncDialog.signOut.message": "Deine {count} lokalen Layouts und Designs auf diesem Gerät behalten? Du kannst sie auch löschen.",
+  "syncDialog.signOut.message": "Deine {count} lokalen Layouts, Designs und Grundplatten auf diesem Gerät behalten? Du kannst sie auch löschen.",
   "syncDialog.signOut.title": "Abmelden",
   "syncDialog.signOut.wipe": "Löschen & Abmelden",
   "tablet.layersCategories": "Layers & Kategorien",
@@ -2641,8 +2641,8 @@
   "baseplate.library.emptyHint": "Speichere eine Grundplatte im Editor, um deine Bibliothek zu starten",
   "baseplate.library.count": "{count} Grundplatte(n)",
   "baseplate.library.deleteWarning.title": "Grundplatten-Design löschen?",
-  "baseplate.library.deleteWarning.description": "Diese Grundplatte wird von {count} Layout(s) verwendet. Sie behalten ihre aktuelle Grundplatte, verlieren aber die Verknüpfung.",
-  "baseplate.library.deleteWarning.affectedCount": "Von {count} Layout(s) verwendet",
+  "baseplate.library.deleteWarning.description": "Beim Löschen wird diese Grundplatte aus deiner Bibliothek entfernt. Damit verknüpfte Layouts behalten ihre aktuelle Grundplatte, verlieren aber die Verknüpfung.",
+  "baseplate.library.deleteWarning.usedByCurrent": "Vom aktuellen Layout verwendet",
   "baseplate.library.deleteWarning.confirm": "Trotzdem löschen",
   "commandPalette.openBaseplateLibrary": "Grundplatten-Bibliothek öffnen"
 }

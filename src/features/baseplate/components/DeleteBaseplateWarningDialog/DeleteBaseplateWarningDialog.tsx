@@ -1,8 +1,9 @@
 /**
  * Warning dialog shown before deleting a baseplate library design.
  *
- * Reports how many layouts reference the design (they keep their inline copy
- * but lose the link) and confirms the destructive delete.
+ * Confirms the destructive delete and, when the current layout links the
+ * design (`affectedCount > 0`), notes that it will lose the link. Cross-layout
+ * usage isn't enumerated, so the copy avoids asserting a global count.
  */
 
 import { useEffect, useRef } from 'react';
@@ -100,14 +101,16 @@ export function DeleteBaseplateWarningDialog({
           id="baseplate-delete-warning-description"
           className="mb-3 text-sm text-content-secondary"
         >
-          {t('baseplate.library.deleteWarning.description', { count: affectedCount })}
+          {t('baseplate.library.deleteWarning.description')}
         </p>
 
         <div className="mb-4 p-2.5 bg-surface rounded-lg border border-stroke-subtle">
           <div className="text-sm font-medium text-content">{designName}</div>
-          <div className="text-xs text-content-disabled mt-0.5">
-            {t('baseplate.library.deleteWarning.affectedCount', { count: affectedCount })}
-          </div>
+          {affectedCount > 0 && (
+            <div className="text-xs text-content-disabled mt-0.5">
+              {t('baseplate.library.deleteWarning.usedByCurrent')}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 justify-end">

@@ -75,6 +75,30 @@ describe('useBaseplateLibraryInit', () => {
     expect(useLayoutStore.getState().layout.baseplateParams).toEqual(params);
   });
 
+  it('retains the pointer when the design read fails with a non-NOT_FOUND error', async () => {
+    // Persist a record with corrupt params so loadDesign returns
+    // STORAGE_CORRUPTED (not STORAGE_NOT_FOUND). The pointer must survive so a
+    // later retry can resolve it once storage recovers.
+    const saved = await saveDesign({
+      name: 'Corrupt',
+      params: [] as unknown as StoredBaseplateParams,
+      thumbnail: null,
+    });
+    if (!isOk(saved)) throw new Error('saveDesign failed');
+
+    useLayoutStore
+      .getState()
+      .importLayout(
+        createTestLayout({ baseplateParams: params, activeBaseplateId: saved.value.id })
+      );
+
+    renderHook(() => useBaseplateLibraryInit());
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
+    expect(useLayoutStore.getState().layout.baseplateParams).toEqual(params);
+  });
+
   it('re-materializes the active design params on load', async () => {
     const saved = await saveDesign({
       name: 'Baseplate 1',

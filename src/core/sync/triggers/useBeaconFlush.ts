@@ -86,5 +86,6 @@ async function collectBeacons(adapters: SyncAdapters): Promise<PreparedBeacon[]>
 
 function bodyForKind(kind: SyncKind, payload: unknown, modifiedAt: number): object {
   if (kind === 'layouts') return { layout: payload, modifiedAt };
+  if (kind === 'baseplates') return { baseplate: payload, modifiedAt };
   return { design: payload, modifiedAt };
 }
