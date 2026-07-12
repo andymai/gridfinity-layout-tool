@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.242.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.242.0...gridfinity-layout-tool-v4.242.1) (2026-07-12)
+
+
+### Bug Fixes
+
+* strengthen magnet hole pads for wide nozzles ([#2544](https://github.com/andymai/gridfinity-layout-tool/issues/2544)) ([dd720ca](https://github.com/andymai/gridfinity-layout-tool/commit/dd720ca93bf903b3dda7561e38f704f35cc0f9de))
+
 ## [4.242.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.241.0...gridfinity-layout-tool-v4.242.0) (2026-07-12)
 
 
