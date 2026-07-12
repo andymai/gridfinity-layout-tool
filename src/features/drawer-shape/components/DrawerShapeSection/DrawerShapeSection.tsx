@@ -8,6 +8,7 @@ import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
+import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 
 /**
  * Sidebar entry for non-rectangular drawers (issue #2528), behind the
@@ -23,6 +24,7 @@ export function DrawerShapeSection() {
     useShallow((s) => ({ hasOutline: s.layout.drawer.outline !== undefined }))
   );
   const [editorOpen, setEditorOpen] = useState(false);
+  const [cornersOpen, setCornersOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
   const handleToggle = useCallback(() => {
@@ -47,13 +49,36 @@ export function DrawerShapeSection() {
         onChange={handleToggle}
         primaryControls={
           hasOutline ? (
-            <Button variant="secondary" size="sm" type="button" onClick={() => setEditorOpen(true)}>
-              {t('drawerShape.edit')}
-            </Button>
+            <div className="flex gap-1.5">
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                onClick={() => setEditorOpen(true)}
+              >
+                {t('drawerShape.edit')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                onClick={() => setCornersOpen(true)}
+              >
+                {t('drawerShape.corners.open')}
+              </Button>
+            </div>
           ) : undefined
         }
       />
+      {!hasOutline && (
+        <div className="pl-6 pt-1">
+          <Button variant="ghost" size="sm" type="button" onClick={() => setCornersOpen(true)}>
+            {t('drawerShape.corners.open')}
+          </Button>
+        </div>
+      )}
       <ShapeEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
+      <CornerCutsDialog open={cornersOpen} onClose={() => setCornersOpen(false)} />
       <ConfirmDialog
         isOpen={confirmReset}
         title={t('drawerShape.resetConfirmTitle')}
