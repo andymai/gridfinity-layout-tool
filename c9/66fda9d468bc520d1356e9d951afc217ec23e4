@@ -1,0 +1,95 @@
+src/core/cqrs/events/drawerEvents.ts
+  s_25758575a76743::t_cafbbea63f56e8 6-12,28-38,81
+src/core/cqrs/projection/replay.ts
+  s_25758575a76743::t_de3752d9b4818e 133-147
+src/core/cqrs/validation/schemas.test.ts
+  s_25758575a76743::t_02f89352624791 46,48
+src/core/cqrs/versioning/migrations.test.ts
+  s_25758575a76743::t_02f89352624791 188
+src/core/store/layout/drawerActions.ts
+  s_25758575a76743::t_88db90cf3a557d 4-5,13-14,41-60,62-74
+src/shared/utils/validationSalvage.ts
+  s_25758575a76743::t_cab7d0bc5e5248 16,183
+src/i18n/locales/fr.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/i18n/locales/pt-BR.json
+  s_25758575a76743::t_687025f8e15972 2565
+api/lib/validation.ts
+  s_25758575a76743::t_cfba058b6bb2bf 54-64,69-71,121,330,355,368-462,464
+  s_25758575a76743::t_a6671b7377d3e9 463
+src/core/cqrs/v2/domain/drawer/setDrawerOutline.test.ts
+  s_25758575a76743::t_28197f535aafb0 1-123
+src/i18n/locales/es.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/i18n/locales/sv.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/i18n/locales/uk.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/core/cqrs/v2/domain/drawer/displacement.test.ts
+  s_25758575a76743::t_7ea9dc61b528a0 1-44
+src/core/cqrs/commands/drawerCommands.ts
+  s_25758575a76743::t_cafbbea63f56e8 6,10-15,39
+src/i18n/locales/en.ts
+  s_25758575a76743::t_687025f8e15972 2922
+src/core/cqrs/validation/schemas.ts
+  s_25758575a76743::t_2139e74335dc6d 28,290
+src/i18n/locales/ja.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/core/cqrs/v2/domain/drawer/setDrawerOutline.ts
+  s_25758575a76743::t_94f3e11cc8f8b4 13-14,32,89
+  s_25758575a76743::t_052e879c9cc587 1-12,15-31,33-88,90-121
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_25758575a76743::t_555d2e1d2e7b44 20,24,91-115,133-138
+src/shared/contexts/MutationsContext.tsx
+  s_25758575a76743::t_58e5f88ec79eb7 35
+  s_25758575a76743::t_290f0a8c027cb9 66
+src/core/sync/adapters/layoutAdapter.ts
+  s_25758575a76743::t_f3732ab3c85956 4,28-40
+src/core/cqrs/versioning/eventVersions.ts
+  s_25758575a76743::t_de3752d9b4818e 38
+  s_25758575a76743::t_2139e74335dc6d 35-36
+src/i18n/locales/nl.json
+  s_25758575a76743::t_687025f8e15972 2565
+api/lib/validation.test.ts
+  s_25758575a76743::t_412d23215bceeb 603-715
+  s_25758575a76743::t_19281eea592c4d 716-718
+src/core/cqrs/commandDescriptions.ts
+  s_25758575a76743::t_de3752d9b4818e 28
+src/i18n/locales/de.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/shared/utils/validationImport.ts
+  s_25758575a76743::t_cab7d0bc5e5248 14,223-226
+src/shared/utils/drawerOutline.ts
+  s_25758575a76743::t_7005bf7f6ef61d 542-543
+src/core/cqrs/validation/outlineSchema.ts
+  s_25758575a76743::t_8c4b0e9f013ed2 1-47
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_25758575a76743::t_58e5f88ec79eb7 22
+  s_25758575a76743::t_290f0a8c027cb9 113-117
+src/core/cqrs/v2/registry.ts
+  s_25758575a76743::t_2139e74335dc6d 32,85,124
+src/i18n/locales/nb.json
+  s_25758575a76743::t_687025f8e15972 2565
+src/core/cqrs/v2/domain/drawer/displacement.ts
+  s_25758575a76743::t_7e64ff180a3fe8 1-39
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_25758575a76743::t_e90d0c0b95fe73 70-130
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_25758575a76743::t_de3752d9b4818e 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "c966fda9d468bc520d1356e9d951afc217ec23e4",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
