@@ -1,0 +1,68 @@
+src/core/labs/features.ts
+  s_25758575a76743::t_fbb1aa3f08ad2f 12-22
+  s_25758575a76743::t_eef409b5e46f59 11
+src/i18n/locales/uk.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/features/drawer-shape/README.md
+  s_25758575a76743::t_103068c1ec453a 1-33
+src/i18n/locales/ja.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/i18n/locales/pt-BR.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/i18n/locales/sv.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/features/drawer-shape/utils/drawerMask.test.ts
+  s_25758575a76743::t_2988254032b1f3 1-101
+src/features/drawer-shape/index.ts
+  s_25758575a76743::t_103068c1ec453a 1
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_25758575a76743::t_5457322c61ae73 1-49,51-57,59-60,63-68
+  s_25758575a76743::t_103068c1ec453a 50,58,61-62
+src/i18n/locales/en.ts
+  s_25758575a76743::t_a65a2bfa63cc24 2925-2939
+src/i18n/locales/nb.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/features/drawer-shape/utils/traceBinFootprint.test.ts
+  s_25758575a76743::t_2988254032b1f3 1-41
+src/features/drawer-shape/utils/traceBinFootprint.ts
+  s_25758575a76743::t_2988254032b1f3 1-32
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.tsx
+  s_25758575a76743::t_eca02c58611972 1-201
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.test.tsx
+  s_25758575a76743::t_166b7e95e7d588 1-71
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.test.tsx
+  s_25758575a76743::t_220a9bc75426fe 1-26,31-49,51,56-69,74-92
+  s_25758575a76743::t_32f8b1d8eb0030 27-30,50,52-55,70-73
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_25758575a76743::t_6c5f7ba40db80d 13,178-180
+src/i18n/locales/fr.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/i18n/locales/es.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/features/drawer-shape/utils/drawerMask.ts
+  s_25758575a76743::t_3a8ed0ef7bb1d3 1-120,126-168
+  s_25758575a76743::t_f3fd71510f3268 122-123,125
+  s_25758575a76743::t_63593bcb5a289a 121,124
+src/i18n/locales/nl.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/i18n/locales/de.json
+  s_25758575a76743::t_a65a2bfa63cc24 2568-2580
+src/shell/Sidebar/Sidebar.tsx
+  s_25758575a76743::t_06edeec5c1426f 5,462-464
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "85f46558281861d449e8087ff20a97f273414a13",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
