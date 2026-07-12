@@ -6,19 +6,17 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle/FeatureToggle';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 
 /**
- * Sidebar entry for non-rectangular drawers (issue #2528), behind the
- * `drawer_shapes` labs flag. The toggle reflects whether an outline exists;
- * enabling opens the cell-paint editor, disabling clears the shape (with a
- * confirm — clearing displaces nothing but discards drawn geometry).
+ * Sidebar entry for non-rectangular drawers (issue #2528). The toggle reflects
+ * whether an outline exists; enabling opens the cell-paint editor, disabling
+ * clears the shape (with a confirm — clearing displaces nothing but discards
+ * drawn geometry).
  */
 export function DrawerShapeSection() {
   const t = useTranslation();
-  const enabled = useFeatureFlag('drawer_shapes');
   const mutations = useMutations();
   const { hasOutline } = useLayoutStore(
     useShallow((s) => ({ hasOutline: s.layout.drawer.outline !== undefined }))
@@ -38,8 +36,6 @@ export function DrawerShapeSection() {
   const handleReset = useCallback(() => {
     mutations.setDrawerOutline(null);
   }, [mutations]);
-
-  if (!enabled) return null;
 
   return (
     <div className="border-t border-stroke-subtle pt-2" data-help-target="drawer-shape">

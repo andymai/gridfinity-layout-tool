@@ -460,7 +460,7 @@ export function Sidebar() {
                     </div>
                   )}
 
-                  {/* Non-rectangular drawer shape (labs: drawer_shapes) */}
+                  {/* Non-rectangular drawer shape (issue #2528) */}
                   <DrawerShapeSection />
                 </div>
               </Collapsible>

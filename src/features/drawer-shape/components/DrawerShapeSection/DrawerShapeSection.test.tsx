@@ -10,11 +10,6 @@ vi.mock('@/i18n', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
-let mockFlagEnabled = true;
-vi.mock('@/shared/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => mockFlagEnabled,
-}));
-
 const mockSetDrawerOutline = vi.fn(() => ({ ok: true, value: undefined }));
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: () => ({ setDrawerOutline: mockSetDrawerOutline }),
@@ -36,13 +31,6 @@ describe('DrawerShapeSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetAllStores();
-    mockFlagEnabled = true;
-  });
-
-  it('renders nothing when the labs flag is off', () => {
-    mockFlagEnabled = false;
-    const { container } = render(<DrawerShapeSection />);
-    expect(container.firstChild).toBeNull();
   });
 
   it('shows the toggle unchecked for rectangular drawers', () => {

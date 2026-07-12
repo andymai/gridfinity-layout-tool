@@ -1,7 +1,7 @@
 # Drawer Shape
 
-Authoring surfaces for non-rectangular drawers (issue #2528), behind the
-`drawer_shapes` labs flag. All surfaces write ONE field — `Drawer.outline`
+Authoring surfaces for non-rectangular drawers (issue #2528). All surfaces
+write ONE field — `Drawer.outline`
 (closed CCW loop of line segments + arcs, drawer-local mm) — via the
 `drawer.setOutline` command; everything downstream (placement gating,
 hatching, baseplate generation/splitting) derives from it.
