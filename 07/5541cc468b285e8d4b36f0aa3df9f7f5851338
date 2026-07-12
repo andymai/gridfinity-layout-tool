@@ -1,0 +1,24 @@
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_25758575a76743::t_279568abc0ab4c 262-266
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_25758575a76743::t_97bd7cb4e9a070 959,1001-1012
+  s_25758575a76743::t_279568abc0ab4c 947-958,960-961,1013
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.test.tsx
+  s_25758575a76743::t_279568abc0ab4c 86-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "075541cc468b285e8d4b36f0aa3df9f7f5851338",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
