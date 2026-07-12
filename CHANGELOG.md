@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.243.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.242.1...gridfinity-layout-tool-v4.243.0) (2026-07-12)
+
+
+### Features
+
+* **drawer-shape:** per-corner cuts editor with chamfer, radius, and notch ([#2546](https://github.com/andymai/gridfinity-layout-tool/issues/2546)) ([31e762f](https://github.com/andymai/gridfinity-layout-tool/commit/31e762f83858a1fe535436461eddfe4ece019152))
+
 ## [4.242.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.242.0...gridfinity-layout-tool-v4.242.1) (2026-07-12)
 
 
