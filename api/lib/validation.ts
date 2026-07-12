@@ -396,27 +396,36 @@ function isValidDrawerOutline(value: unknown): value is DrawerOutlineShape {
     }
     if (v.bulge !== undefined && (!isNumber(v.bulge) || !inRange(v.bulge, -1, 1))) return false;
   }
+  // `authoring` is non-geometric editor metadata: reject only structural
+  // garbage. An unknown kind (a NEWER client's editor) must not invalidate
+  // the layout — sanitizeDrawer drops unrecognized kinds instead.
   if (value.authoring !== undefined) {
-    if (!isObject(value.authoring)) return false;
-    if (
-      typeof value.authoring.kind !== 'string' ||
-      !OUTLINE_AUTHORING_KINDS.includes(value.authoring.kind)
-    ) {
-      return false;
-    }
+    if (!isObject(value.authoring) || typeof value.authoring.kind !== 'string') return false;
   }
   const pts = vertices as OutlineVertexShape[];
   return !outlineChordsSelfIntersect(pts);
 }
 
 /** O(n²) chord test — arcs approximated by their chords; good enough to bound
- * pathological payloads (exact arc checks run client-side). */
+ * pathological payloads (exact arc checks run client-side). Detects proper
+ * crossings AND degenerate touches: collinear overlaps and endpoint-on-segment
+ * contacts between non-adjacent chords (mirrors segmentsTouch in
+ * src/shared/utils/drawerOutline.ts). */
 function outlineChordsSelfIntersect(pts: OutlineVertexShape[]): boolean {
   const n = pts.length;
   const orient = (a: OutlineVertexShape, b: OutlineVertexShape, c: OutlineVertexShape): number => {
     const v = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
     return Math.abs(v) < 1e-9 ? 0 : Math.sign(v);
   };
+  const onSegment = (
+    a: OutlineVertexShape,
+    b: OutlineVertexShape,
+    p: OutlineVertexShape
+  ): boolean =>
+    Math.min(a.x, b.x) - 1e-6 <= p.x &&
+    p.x <= Math.max(a.x, b.x) + 1e-6 &&
+    Math.min(a.y, b.y) - 1e-6 <= p.y &&
+    p.y <= Math.max(a.y, b.y) + 1e-6;
   for (let i = 0; i < n; i++) {
     const a = pts[i];
     const b = pts[(i + 1) % n];
@@ -424,7 +433,15 @@ function outlineChordsSelfIntersect(pts: OutlineVertexShape[]): boolean {
       if (j === i || (j + 1) % n === i || (i + 1) % n === j) continue;
       const c = pts[j];
       const d = pts[(j + 1) % n];
-      if (orient(a, b, c) !== orient(a, b, d) && orient(c, d, a) !== orient(c, d, b)) return true;
+      const o1 = orient(a, b, c);
+      const o2 = orient(a, b, d);
+      const o3 = orient(c, d, a);
+      const o4 = orient(c, d, b);
+      if (o1 !== o2 && o3 !== o4) return true;
+      if (o1 === 0 && onSegment(a, b, c)) return true;
+      if (o2 === 0 && onSegment(a, b, d)) return true;
+      if (o3 === 0 && onSegment(c, d, a)) return true;
+      if (o4 === 0 && onSegment(c, d, b)) return true;
     }
   }
   return false;
@@ -454,7 +471,8 @@ function sanitizeDrawer(drawer: DrawerShape): DrawerShape {
           ? { x: v.x, y: v.y }
           : { x: v.x, y: v.y, bulge: v.bulge }
       ),
-      ...(drawer.outline.authoring !== undefined
+      ...(drawer.outline.authoring !== undefined &&
+      OUTLINE_AUTHORING_KINDS.includes(drawer.outline.authoring.kind)
         ? { authoring: { kind: drawer.outline.authoring.kind } }
         : {}),
     };

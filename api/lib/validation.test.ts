@@ -727,9 +727,39 @@ describe('drawer outline validation (issue #2528)', () => {
     expect(outline.authoring).toEqual({ kind: 'cells' });
   });
 
-  it('rejects unknown authoring kinds', () => {
+  it('accepts unknown authoring kinds (newer client) but drops the annotation', () => {
+    const result = validateShareLayout(
+      layoutWithOutline({ ...validOutline, authoring: { kind: 'holo-editor-2030' } })
+    );
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    const outline = (result.layout.drawer as Record<string, unknown>).outline as Record<
+      string,
+      unknown
+    >;
+    expect(outline.authoring).toBeUndefined();
+  });
+
+  it('rejects non-string authoring kinds', () => {
     expect(
-      validateShareLayout(layoutWithOutline({ ...validOutline, authoring: { kind: 'evil' } })).valid
+      validateShareLayout(layoutWithOutline({ ...validOutline, authoring: { kind: 42 } })).valid
     ).toBe(false);
+  });
+
+  it('rejects collinear-overlap self-touching outlines', () => {
+    // Two horizontal non-adjacent edges overlapping on y = 0.
+    const overlapping = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 50 },
+        { x: 60, y: 50 },
+        { x: 60, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 80 },
+        { x: 0, y: 80 },
+      ],
+    };
+    expect(validateShareLayout(layoutWithOutline(overlapping)).valid).toBe(false);
   });
 });

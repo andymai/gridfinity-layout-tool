@@ -37,6 +37,11 @@ describe('computeDisplacedBins', () => {
     expect(computeDisplacedBins(bins, { ...drawer, outline: L_OUTLINE }, U)).toEqual([]);
   });
 
+  it('displaces bins with negative coordinates', () => {
+    const bins = [makeBin('bin_neg', -1, 0)];
+    expect(computeDisplacedBins(bins, drawer, U)).toEqual(['bin_neg']);
+  });
+
   it('never displaces staged bins', () => {
     const bins = [makeBin('bin_staged', 5, 3, STAGING_ID)];
     expect(computeDisplacedBins(bins, { ...drawer, outline: L_OUTLINE }, U)).toEqual([]);

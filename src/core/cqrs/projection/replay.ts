@@ -128,6 +128,12 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
 
     case 'drawer.updated':
       Object.assign(next.drawer, event.payload.changes);
+      // Mirror updateDrawer.apply(): a reset-to-rectangle rides as an
+      // explicitly-undefined outline; the key must end up absent, not
+      // present-undefined, or replayed state diverges from live state.
+      if ('outline' in event.payload.changes && event.payload.changes.outline === undefined) {
+        delete next.drawer.outline;
+      }
       break;
 
     case 'drawer.outlineSet': {

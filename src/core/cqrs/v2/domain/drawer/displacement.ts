@@ -21,6 +21,8 @@ export function computeDisplacedBins(
     .filter((bin) => {
       if (bin.layerId === STAGING_ID) return false;
       if (
+        (bin.x as number) < 0 ||
+        (bin.y as number) < 0 ||
         (bin.x as number) + (bin.width as number) > width ||
         (bin.y as number) + (bin.depth as number) > depth
       ) {

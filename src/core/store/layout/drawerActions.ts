@@ -61,7 +61,12 @@ export function createDrawerActions(setLocal: SetLocal) {
           }
         }
 
-        // Move bins that no longer fit (bounds or outline) to staging.
+        // Move bins that no longer fit (bounds or outline) to staging. Planar
+        // fit only depends on width/depth/outline — skip the geometry pass for
+        // height/fractional-edge updates (this action runs per pointermove).
+        const planarChanged =
+          (drawer.width as number) !== oldWidth || (drawer.depth as number) !== oldDepth;
+        if (!planarChanged) return;
         const displaced = new Set(
           computeDisplacedBins(state.layout.bins, drawer, state.layout.gridUnitMm)
         );

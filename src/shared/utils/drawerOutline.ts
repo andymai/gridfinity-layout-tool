@@ -538,9 +538,24 @@ export function resizeDrawerOutline(
  * touching the outline), quantizes/snaps, and drops it entirely when invalid
  * or rectangle-equivalent. Returns the input layout when nothing changes.
  */
+/** Structural check for untrusted outline data: an object with an array of
+ * ≥3 vertex objects carrying finite numeric coordinates. */
+function isStructurallyOutline(value: unknown): value is DrawerOutline {
+  if (typeof value !== 'object' || value === null) return false;
+  const vertices = (value as { vertices?: unknown }).vertices;
+  if (!Array.isArray(vertices) || vertices.length < 3) return false;
+  return vertices.every(
+    (v: unknown) =>
+      typeof v === 'object' &&
+      v !== null &&
+      Number.isFinite((v as { x?: unknown }).x) &&
+      Number.isFinite((v as { y?: unknown }).y)
+  );
+}
+
 export function normalizeDrawerOutline(layout: Layout): Layout {
   // Tolerate malformed payloads (ingress guard runs before full validation).
-  const outline = (layout.drawer as Layout['drawer'] | undefined)?.outline;
+  const outline = (layout.drawer as Layout['drawer'] | undefined)?.outline as unknown;
   if (outline === undefined) return layout;
 
   const widthMm = (layout.drawer.width as number) * (layout.gridUnitMm as number);
@@ -551,6 +566,10 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
     delete drawer.outline;
     return { ...layout, drawer };
   };
+
+  // null / non-object / vertex-less garbage from corrupted storage or
+  // hand-edited JSON: drop rather than crash ingestion.
+  if (!isStructurallyOutline(outline)) return drop();
 
   let verts: MutableVertex[] | null = toMutable(outline.vertices);
   verts = clipHalfPlane(verts, 'x', widthMm, 'min');

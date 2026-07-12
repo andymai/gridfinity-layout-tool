@@ -5,6 +5,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 import { updateDrawer } from './updateDrawer';
 import { makeLayout, makeBin } from './_testHelpers';
+import { applyEvent } from '../../../projection/replay';
 
 describe('v2 drawer.update', () => {
   it('clamps width to GRID_MAX', () => {
@@ -119,6 +120,17 @@ describe('v2 drawer.update with an outline', () => {
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     expect(result.value.event.payload.displacedBinIds).toEqual([binId('bin_notch')]);
+  });
+
+  it('replay deletes the outline key on reset, matching apply()', () => {
+    const result = updateDrawer.handle({ width: 4 }, { aggregate: withOutline() });
+    if (!isOk(result)) throw new Error('handle failed');
+    const event = {
+      type: 'drawer.updated',
+      payload: result.value.event.payload,
+    } as never;
+    const replayed = applyEvent(withOutline(), event);
+    expect('outline' in replayed.drawer).toBe(false);
   });
 
   it('leaves the outline untouched when only height changes', () => {

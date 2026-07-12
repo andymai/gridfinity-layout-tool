@@ -455,6 +455,14 @@ describe('normalizeDrawerOutline', () => {
     expect(normalizeDrawerOutline(layout)).toBe(layout);
   });
 
+  it('drops malformed outline values without crashing (untrusted ingress)', () => {
+    for (const garbage of [null, 42, 'shape', {}, { vertices: 'nope' }, { vertices: [{}] }]) {
+      const layout = layoutWith(undefined);
+      (layout.drawer as { outline?: unknown }).outline = garbage;
+      expect(normalizeDrawerOutline(layout).drawer.outline).toBeUndefined();
+    }
+  });
+
   it('drops invalid outlines', () => {
     const bowtie: DrawerOutline = {
       vertices: [
