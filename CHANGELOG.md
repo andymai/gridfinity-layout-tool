@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.244.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.1...gridfinity-layout-tool-v4.244.2) (2026-07-12)
+
+
+### Bug Fixes
+
+* **baseplate:** apply connector fit offset to split-piece geometry ([#2555](https://github.com/andymai/gridfinity-layout-tool/issues/2555)) ([5b79efd](https://github.com/andymai/gridfinity-layout-tool/commit/5b79efd9d6aae36f7714e80a1975a0a5eef87a51)), closes [#2554](https://github.com/andymai/gridfinity-layout-tool/issues/2554)
+
 ## [4.244.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.0...gridfinity-layout-tool-v4.244.1) (2026-07-12)
 
 
