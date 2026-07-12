@@ -71,7 +71,8 @@ export type ValidationFailureReason =
   | 'exceeds_height'
   | 'invalid_layer'
   | 'collision'
-  | 'blocked_zone';
+  | 'blocked_zone'
+  | 'outside_drawer';
 
 /**
  * Base interface for all application errors.

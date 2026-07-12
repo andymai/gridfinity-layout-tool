@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "ステージングへ移動",
   "grid.noBinsYet": "ビンはまだありません",
   "grid.outOfBounds": "範囲外",
+  "grid.outsideDrawerShape": "引き出しの形状の外側",
+  "grid.drawerOutlineAria": "引き出し形状の境界",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "グリッドにビンを配置すると3Dレイアウトが表示されます",
   "grid.preview.close": "プレビューを閉じる",
   "grid.preview.collapse": "プレビューを折りたたむ",

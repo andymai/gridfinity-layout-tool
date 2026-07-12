@@ -466,7 +466,8 @@ export type ValidationReason =
   | 'exceeds_height'
   | 'invalid_layer'
   | 'collision'
-  | 'blocked_zone';
+  | 'blocked_zone'
+  | 'outside_drawer';
 
 /** Info about what's blocking a placement (for user feedback) */
 export interface BlockingInfo {

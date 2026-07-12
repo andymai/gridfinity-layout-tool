@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Mover para a área de espera",
   "grid.noBinsYet": "Nenhum bin ainda",
   "grid.outOfBounds": "Fora dos limites",
+  "grid.outsideDrawerShape": "Fora do formato da gaveta",
+  "grid.drawerOutlineAria": "Limite do formato da gaveta",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Posicione bins na grade para ver seu layout 3D",
   "grid.preview.close": "Fechar pré-visualização",
   "grid.preview.collapse": "Recolher pré-visualização",

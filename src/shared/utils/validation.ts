@@ -99,5 +99,8 @@ export function getPlacementErrorMessage(
   if (reason === 'invalid_layer') {
     return t('grid.invalidLayer');
   }
+  if (reason === 'outside_drawer') {
+    return t('grid.outsideDrawerShape');
+  }
   return t('grid.outOfBounds');
 }

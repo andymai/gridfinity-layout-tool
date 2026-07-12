@@ -157,3 +157,59 @@ describe('canPlaceBin', () => {
     expect(result.blockingInfo?.layerName).toBe('Layer 1');
   });
 });
+
+describe('canPlaceBin with a drawer outline', () => {
+  const U = 42;
+  // 10×8 drawer with the right 4×4 corner (top) notched out.
+  const L_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 10 * U, y: 0 },
+      { x: 10 * U, y: 4 * U },
+      { x: 6 * U, y: 4 * U },
+      { x: 6 * U, y: 8 * U },
+      { x: 0, y: 8 * U },
+    ],
+  };
+  function makeShapedLayout(): Layout {
+    const layout = makeSingleLayerLayout();
+    layout.drawer.outline = L_OUTLINE;
+    return layout;
+  }
+
+  it('rejects placements in the notch with outside_drawer', () => {
+    const result = canPlaceBin(
+      { x: 7, y: 5, width: 1, depth: 1, height: 3 },
+      'layer1',
+      makeShapedLayout()
+    );
+    expect(result).toMatchObject({ valid: false, reason: 'outside_drawer' });
+  });
+
+  it('rejects footprints straddling the outline boundary', () => {
+    const result = canPlaceBin(
+      { x: 5, y: 5, width: 2, depth: 1, height: 3 },
+      'layer1',
+      makeShapedLayout()
+    );
+    expect(result).toMatchObject({ valid: false, reason: 'outside_drawer' });
+  });
+
+  it('accepts boundary-flush placements inside the shape', () => {
+    const result = canPlaceBin(
+      { x: 4, y: 4, width: 2, depth: 4, height: 3 },
+      'layer1',
+      makeShapedLayout()
+    );
+    expect(result).toMatchObject({ valid: true });
+  });
+
+  it('bounds checks still take precedence over the outline', () => {
+    const result = canPlaceBin(
+      { x: 9, y: 0, width: 3, depth: 1, height: 3 },
+      'layer1',
+      makeShapedLayout()
+    );
+    expect(result).toMatchObject({ valid: false, reason: 'exceeds_width' });
+  });
+});

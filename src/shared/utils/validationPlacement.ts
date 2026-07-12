@@ -20,6 +20,7 @@ import type {
   BinId,
   LayerId,
 } from '@/core/types';
+import { isFootprintInsideOutline } from './drawerOutlineGeometry';
 import { binId as toBinId, categoryId as toCategoryId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { isOk } from '@/core/result';
@@ -53,6 +54,16 @@ export function canPlaceBin(
   }
   if (rect.y + rect.depth > drawer.depth) {
     return { valid: false, reason: 'exceeds_depth' };
+  }
+
+  // Non-rectangular drawers: the footprint must sit fully inside the outline
+  // (boundary-flush placements count as inside). One check here covers every
+  // interaction — draw, drag, resize, staging drop, paint, fill, import.
+  if (
+    drawer.outline !== undefined &&
+    !isFootprintInsideOutline(rect, drawer.outline, layout.gridUnitMm)
+  ) {
+    return { valid: false, reason: 'outside_drawer' };
   }
 
   const layer = layers.find((l) => l.id === layerId);

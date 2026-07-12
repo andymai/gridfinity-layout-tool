@@ -1,19 +1,32 @@
 import type { Bin, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
 import { getBlockedZones } from './collision';
+import { getOutsideCellSet } from './drawerOutlineCells';
 
 /**
  * Create a Set of blocked cell keys for O(1) lookup.
  * Key format: "x,y"
  * @param step - Iteration step size (0.5 for half-bin mode, 1 for normal)
  */
-function createOccupiedCellSet(
+export function createOccupiedCellSet(
   bins: Bin[],
   layerId: LayerId,
   layout: Layout,
   step: number = 1
 ): Set<string> {
   const occupied = new Set<string>();
+
+  // Cells outside a non-rectangular drawer are unplaceable — mark them
+  // occupied so fill tools skip them (same predicate as canPlaceBin).
+  if (layout.drawer.outline !== undefined) {
+    const outside = getOutsideCellSet(
+      layout.drawer.outline,
+      layout.drawer,
+      layout.gridUnitMm,
+      step === 0.5 ? 0.5 : 1
+    );
+    for (const key of outside) occupied.add(key);
+  }
 
   // Add cells from existing bins on this layer
   for (const bin of bins) {

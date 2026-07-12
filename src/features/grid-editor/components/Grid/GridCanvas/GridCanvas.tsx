@@ -12,6 +12,7 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { Coord, ResizeHandle, BinId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { DrawerOutlineOverlay } from '../DrawerOutlineOverlay';
 
 // Amber paintbrush cursor shown while a brush size is loaded (falls back to the
 // cell cursor if the inline SVG can't be loaded). Built from the shared brush
@@ -408,6 +409,9 @@ export function GridCanvas({
         {/* Brush footprint preview that follows the cursor in paint mode */}
         <BrushHoverGhost gridRef={gridRef} cellSize={cellSize} gap={gap} />
       </div>
+
+      {/* Non-rectangular drawer: hatch outside the outline (issue #2528) */}
+      <DrawerOutlineOverlay cellSize={cellSize} gap={gap} />
     </div>
   );
 }

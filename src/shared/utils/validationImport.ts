@@ -40,6 +40,7 @@ export const PLACEMENT_REASON_MESSAGE: Record<ValidationReason, string> = {
   invalid_layer: 'references invalid layer',
   blocked_zone: 'overlaps with blocked zone from upper layer',
   collision: 'collides with another bin',
+  outside_drawer: 'is outside the drawer shape',
 };
 
 export type ValidationSuccess = { valid: true; errors: readonly []; layout: Layout };

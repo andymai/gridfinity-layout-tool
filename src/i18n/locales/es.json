@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Mover a la reserva",
   "grid.noBinsYet": "Aún no hay bins",
   "grid.outOfBounds": "Fuera de los límites",
+  "grid.outsideDrawerShape": "Fuera de la forma del cajón",
+  "grid.drawerOutlineAria": "Límite de la forma del cajón",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Coloca bins en la cuadrícula para ver tu diseño 3D",
   "grid.preview.close": "Cerrar vista previa",
   "grid.preview.collapse": "Contraer vista previa",

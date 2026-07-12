@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "In Stash verschieben",
   "grid.noBinsYet": "Noch keine Bins",
   "grid.outOfBounds": "Außerhalb der Grenzen",
+  "grid.outsideDrawerShape": "Außerhalb der Schubladenform",
+  "grid.drawerOutlineAria": "Begrenzung der Schubladenform",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Platzieren Sie Bins auf dem Raster, um Ihr 3D-Layout zu sehen",
   "grid.preview.close": "Vorschau schließen",
   "grid.preview.collapse": "Vorschau einklappen",

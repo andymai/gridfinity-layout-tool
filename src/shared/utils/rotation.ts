@@ -46,6 +46,9 @@ export function validateRotationInPlace(bin: Bin, layout: Layout): RotationResul
       case 'blocked_zone':
         message = 'Cannot rotate: space is blocked by a bin below';
         break;
+      case 'outside_drawer':
+        message = 'Cannot rotate: bin would leave the drawer shape';
+        break;
     }
     return { valid: false, message };
   }

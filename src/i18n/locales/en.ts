@@ -1377,6 +1377,8 @@ const en: Record<string, string> = {
   'grid.collision': 'Collides with existing bin',
   'grid.invalidLayer': 'Invalid layer',
   'grid.outOfBounds': 'Out of bounds',
+  'grid.outsideDrawerShape': 'Outside the drawer shape',
+  'grid.drawerOutlineAria': 'Drawer shape boundary',
   'grid.collapse': 'Collapse',
   'grid.dragToAddRemoveColumns': 'Drag to add/remove columns',
   'grid.dragToAddRemoveRows': 'Drag to add/remove rows',

@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Flytta till stash",
   "grid.noBinsYet": "Inga fack ännu",
   "grid.outOfBounds": "Utanför gränserna",
+  "grid.outsideDrawerShape": "Utanför lådans form",
+  "grid.drawerOutlineAria": "Gräns för lådans form",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Placera fack på rutnätet för att se din 3D-layout",
   "grid.preview.close": "Stäng förhandsvisning",
   "grid.preview.collapse": "Komprimera förhandsvisning",

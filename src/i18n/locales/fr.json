@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Déplacer vers la réserve",
   "grid.noBinsYet": "Aucun bin encore",
   "grid.outOfBounds": "Hors limites",
+  "grid.outsideDrawerShape": "En dehors de la forme du tiroir",
+  "grid.drawerOutlineAria": "Limite de la forme du tiroir",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Placer des bins sur la grille pour voir votre layout 3D",
   "grid.preview.close": "Fermer l'aperçu",
   "grid.preview.collapse": "Réduire l'aperçu",

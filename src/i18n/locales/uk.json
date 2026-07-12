@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Перемістити в архів",
   "grid.noBinsYet": "Бінів ще немає",
   "grid.outOfBounds": "Поза межами",
+  "grid.outsideDrawerShape": "Поза формою шухляди",
+  "grid.drawerOutlineAria": "Межа форми шухляди",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Розмістіть біни на сітці, щоб побачити 3D-розкладку",
   "grid.preview.close": "Закрити перегляд",
   "grid.preview.collapse": "Згорнути перегляд",

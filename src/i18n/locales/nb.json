@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Flytt til stash",
   "grid.noBinsYet": "Ingen bins ennå",
   "grid.outOfBounds": "Utenfor grenser",
+  "grid.outsideDrawerShape": "Utenfor skuffeformen",
+  "grid.drawerOutlineAria": "Skuffeformens grense",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Plasser bins på rutenettet for å se din 3D-layout",
   "grid.preview.close": "Lukk forhåndsvisning",
   "grid.preview.collapse": "Skjul forhåndsvisning",

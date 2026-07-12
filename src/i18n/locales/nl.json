@@ -1403,6 +1403,8 @@
   "grid.moveToStashConfirm": "Naar stash verplaatsen",
   "grid.noBinsYet": "Nog geen bins",
   "grid.outOfBounds": "Buiten bereik",
+  "grid.outsideDrawerShape": "Buiten de ladevorm",
+  "grid.drawerOutlineAria": "Grens van de ladevorm",
   "grid.placeBinsOnTheGridToSeeYour3dLayout": "Plaats bins op het grid om je 3D layout te zien",
   "grid.preview.close": "Preview sluiten",
   "grid.preview.collapse": "Preview invouwen",
