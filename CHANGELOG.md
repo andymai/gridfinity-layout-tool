@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.237.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.236.0...gridfinity-layout-tool-v4.237.0) (2026-07-12)
+
+
+### Features
+
+* **baseplate:** generate non-rectangular baseplates from drawer outlines ([#2532](https://github.com/andymai/gridfinity-layout-tool/issues/2532)) ([02ad023](https://github.com/andymai/gridfinity-layout-tool/commit/02ad023df6ac65eb10e5a3acfbe8acbf64fab9bc))
+
 ## [4.236.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.235.1...gridfinity-layout-tool-v4.236.0) (2026-07-11)
 
 
