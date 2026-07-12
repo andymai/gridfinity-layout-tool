@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.241.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.240.0...gridfinity-layout-tool-v4.241.0) (2026-07-12)
+
+
+### Features
+
+* **baseplate:** hide shape-subsumed controls and explain shaped drawers in the panel ([#2539](https://github.com/andymai/gridfinity-layout-tool/issues/2539)) ([68b1649](https://github.com/andymai/gridfinity-layout-tool/commit/68b1649b4c3112314b748adfb3c0bd70d9bb93ae))
+
 ## [4.240.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.239.0...gridfinity-layout-tool-v4.240.0) (2026-07-12)
 
 
