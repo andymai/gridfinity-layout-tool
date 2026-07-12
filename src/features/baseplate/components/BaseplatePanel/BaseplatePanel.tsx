@@ -259,8 +259,11 @@ export function BaseplatePanel() {
   // Mirrors buildFullParams's outline gate: the drawer shape subsumes padding,
   // corner rounding, and detached margins (margins are emergent from
   // outline ∩ grid), so those controls hide. Stacking wins over the shape
-  // (uniform rectangular tiles), so the stack section stays functional.
-  const shapedOn = drawerOutline !== undefined && synced && !stackPrintOn;
+  // (uniform rectangular tiles), so the stack section stays functional — but
+  // via the export-format-aware `stackEnabled`: STEP clears stackPrint before
+  // buildFullParams, so a STEP export of a stacked shaped drawer IS shaped and
+  // the panel must say so.
+  const shapedOn = drawerOutline !== undefined && synced && !stackEnabled;
   const canDetach =
     baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||

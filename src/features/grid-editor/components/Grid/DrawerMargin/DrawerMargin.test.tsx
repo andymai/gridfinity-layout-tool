@@ -83,6 +83,10 @@ describe('DrawerMargin', () => {
 });
 
 describe('shaped drawer', () => {
+  beforeEach(() => {
+    resetAllStores();
+  });
+
   it('renders nothing when the drawer has an outline (padding is stripped)', () => {
     const layout = createDefaultLayout();
     useLayoutStore.setState({

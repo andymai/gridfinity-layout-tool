@@ -944,6 +944,21 @@ describe('BaseplatePanel', () => {
 });
 
 describe('shaped drawer (outline present)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockLayoutState = {
+      layout: {
+        drawer: { width: 4, depth: 6 },
+        gridUnitMm: 42,
+        printBedSize: 256,
+        baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
+      },
+      setBaseplateParams: mockSetBaseplateParams,
+      setPrintBedSize: mockSetPrintBedSize,
+    };
+    mockExportFormat = 'stl';
+  });
+
   const U = 42;
   const L_OUTLINE = {
     vertices: [
@@ -982,5 +997,18 @@ describe('shaped drawer (outline present)', () => {
     } as never;
     render(<BaseplatePanel />);
     expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+  });
+
+  it('shows the shaped notice for STEP even with stacking stored on', () => {
+    // STEP clears stackPrint before buildFullParams, so the exported solid IS
+    // shaped — the panel must follow the format-aware stackEnabled signal.
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, gapMm: 0.2 },
+    } as never;
+    mockExportFormat = 'step';
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
   });
 });
