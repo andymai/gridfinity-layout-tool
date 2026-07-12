@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "Le connecteur nécessite le style de jointure Queue d'aronde ou Puzzle.",
   "baseplate.overTileTooSmall": "La marge est trop petite sur chaque bord pour une tuile de grille.",
   "baseplate.padding": "Marge",
+  "baseplate.shapedDrawerNotice": "Ce tiroir a une forme personnalisée. La marge, l’arrondi des coins et les marges détachables sont définis par la forme — modifiez-la dans l’onglet Disposition.",
   "baseplate.paddingAnchor.bc": "Ancrer les bacs avant-centre",
   "baseplate.paddingAnchor.bl": "Ancrer les bacs avant-gauche",
   "baseplate.paddingAnchor.br": "Ancrer les bacs avant-droite",

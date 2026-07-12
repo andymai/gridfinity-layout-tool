@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "Koblingen krever sømstilen Svalehale eller Puslespill.",
   "baseplate.overTileTooSmall": "Polstringen er for liten på hver kant for en ruteflis.",
   "baseplate.padding": "Polstring",
+  "baseplate.shapedDrawerNotice": "Denne skuffen har en tilpasset form. Polstring, hjørneavrunding og avtakbare kanter bestemmes av formen — rediger den i Oppsett-fanen.",
   "baseplate.paddingAnchor.bc": "Forankre bins foran-midten",
   "baseplate.paddingAnchor.bl": "Forankre bins foran-venstre",
   "baseplate.paddingAnchor.br": "Forankre bins foran-høyre",

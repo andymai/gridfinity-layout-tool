@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "De verbinding vereist de naadstijl Zwaluwstaart of Puzzel.",
   "baseplate.overTileTooSmall": "De marge is op elke rand te klein voor een rastertegel.",
   "baseplate.padding": "Vulling",
+  "baseplate.shapedDrawerNotice": "Deze lade heeft een aangepaste vorm. Opvulling, hoekafronding en losse randen worden door de vorm bepaald — bewerk deze in het tabblad Indeling.",
   "baseplate.paddingAnchor.bc": "Bins voor-midden verankeren",
   "baseplate.paddingAnchor.bl": "Bins voor-links verankeren",
   "baseplate.paddingAnchor.br": "Bins voor-rechts verankeren",

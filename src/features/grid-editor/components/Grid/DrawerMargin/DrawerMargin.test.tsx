@@ -81,3 +81,39 @@ describe('DrawerMargin', () => {
     expect(band.style.right).toBe('-17px');
   });
 });
+
+describe('shaped drawer', () => {
+  it('renders nothing when the drawer has an outline (padding is stripped)', () => {
+    const layout = createDefaultLayout();
+    useLayoutStore.setState({
+      layout: {
+        ...layout,
+        gridUnitMm: 42,
+        drawer: {
+          ...layout.drawer,
+          outline: {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: 168, y: 0 },
+              { x: 168, y: 84 },
+              { x: 84, y: 84 },
+              { x: 84, y: 168 },
+              { x: 0, y: 168 },
+            ],
+          },
+        },
+        baseplateParams: {
+          magnetHoles: false,
+          magnetDiameter: 6,
+          magnetDepth: 2,
+          paddingLeft: 10,
+          paddingRight: 10,
+          paddingFront: 10,
+          paddingBack: 10,
+        },
+      } as never,
+    });
+    const { container } = render(<DrawerMargin cellSize={40} gap={2} />);
+    expect(container.firstChild).toBeNull();
+  });
+});

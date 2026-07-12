@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "コネクタには継ぎ目スタイル「アリ継ぎ」または「パズル」が必要です。",
   "baseplate.overTileTooSmall": "すべての辺で余白が小さすぎて、グリッドタイルが入りません。",
   "baseplate.padding": "余白",
+  "baseplate.shapedDrawerNotice": "この引き出しはカスタム形状です。パディング、角の丸み、分離マージンは形状によって決まります。レイアウトタブで編集してください。",
   "baseplate.paddingAnchor.bc": "ビンを手前中央に配置",
   "baseplate.paddingAnchor.bl": "ビンを手前左に配置",
   "baseplate.paddingAnchor.br": "ビンを手前右に配置",

@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "З'єднувач потребує стилю шва «Ластівчин хвіст» або «Пазл».",
   "baseplate.overTileTooSmall": "Відступ замалий на кожному краю для плитки сітки.",
   "baseplate.padding": "Відступи",
+  "baseplate.shapedDrawerNotice": "Ця шухляда має власну форму. Відступи, заокруглення кутів і знімні краї визначаються формою — редагуйте її на вкладці «Макет».",
   "baseplate.paddingAnchor.bc": "Прив'язати бункери до передньої центральної",
   "baseplate.paddingAnchor.bl": "Прив'язати бункери до передньої лівої",
   "baseplate.paddingAnchor.br": "Прив'язати бункери до передньої правої",

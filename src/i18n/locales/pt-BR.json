@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "O conector requer o estilo de emenda Rabo de andorinha ou Quebra-cabeça.",
   "baseplate.overTileTooSmall": "A margem é pequena demais em todas as bordas para um ladrilho de grade.",
   "baseplate.padding": "Preenchimento",
+  "baseplate.shapedDrawerNotice": "Esta gaveta tem um formato personalizado. O preenchimento, o arredondamento de cantos e as margens destacáveis são definidos pelo formato — edite-o na aba Layout.",
   "baseplate.paddingAnchor.bc": "Ancorar bins frente-centro",
   "baseplate.paddingAnchor.bl": "Ancorar bins frente-esquerda",
   "baseplate.paddingAnchor.br": "Ancorar bins frente-direita",

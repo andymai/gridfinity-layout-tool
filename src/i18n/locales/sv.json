@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "Kopplingen kräver fogstilen Laxstjärt eller Pussel.",
   "baseplate.overTileTooSmall": "Utfyllnaden är för liten på varje kant för en rutnätsplatta.",
   "baseplate.padding": "Utfyllnad",
+  "baseplate.shapedDrawerNotice": "Den här lådan har en anpassad form. Utfyllnad, hörnavrundning och avtagbara kanter bestäms av formen — redigera den på fliken Layout.",
   "baseplate.paddingAnchor.bc": "Förankra bins fram-mitten",
   "baseplate.paddingAnchor.bl": "Förankra bins fram-vänster",
   "baseplate.paddingAnchor.br": "Förankra bins fram-höger",

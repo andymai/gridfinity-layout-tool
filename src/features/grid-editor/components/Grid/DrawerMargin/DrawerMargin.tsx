@@ -24,23 +24,31 @@ interface DrawerMarginProps {
  */
 export function DrawerMargin({ cellSize, gap }: DrawerMarginProps) {
   const t = useTranslation();
-  const { gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack } = useLayoutStore(
-    useShallow((s) => ({
-      gridUnitMm: s.layout.gridUnitMm,
-      paddingLeft: s.layout.baseplateParams?.paddingLeft ?? 0,
-      paddingRight: s.layout.baseplateParams?.paddingRight ?? 0,
-      paddingFront: s.layout.baseplateParams?.paddingFront ?? 0,
-      paddingBack: s.layout.baseplateParams?.paddingBack ?? 0,
-    }))
-  );
+  const { gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack, shaped } =
+    useLayoutStore(
+      useShallow((s) => ({
+        gridUnitMm: s.layout.gridUnitMm,
+        paddingLeft: s.layout.baseplateParams?.paddingLeft ?? 0,
+        paddingRight: s.layout.baseplateParams?.paddingRight ?? 0,
+        paddingFront: s.layout.baseplateParams?.paddingFront ?? 0,
+        paddingBack: s.layout.baseplateParams?.paddingBack ?? 0,
+        // Shaped drawers strip padding functionally (buildFullParams), so the
+        // margin band would show space the plate doesn't actually have.
+        shaped:
+          s.layout.drawer.outline !== undefined &&
+          s.layout.baseplateParams?.syncWithLayout !== false &&
+          s.layout.baseplateParams?.stackPrint?.enabled !== true,
+      }))
+    );
 
   const left = Math.max(0, paddingLeft);
   const right = Math.max(0, paddingRight);
   const front = Math.max(0, paddingFront);
   const back = Math.max(0, paddingBack);
 
-  // Nothing to show without a configured margin.
-  if (left + right + front + back <= 0) return null;
+  // Nothing to show without a configured margin — or when the drawer shape
+  // subsumes it (padding is functionally stripped for shaped plates).
+  if (shaped || left + right + front + back <= 0) return null;
 
   // One grid unit spans `cellSize + gap` px (holds in half-grid mode too — the
   // per-unit pitch is invariant). Padding is a fraction of a unit in mm.

@@ -2357,6 +2357,8 @@ const en: Record<string, string> = {
   'baseplate.sectionDimensions': 'Dimensions',
   'baseplate.syncWithLayout': 'Sync with layout',
   'baseplate.padding': 'Padding',
+  'baseplate.shapedDrawerNotice':
+    'This drawer has a custom shape. Padding, corner rounding, and detached margins are set by the shape — edit it in the Layout tab.',
   'baseplate.overTile': 'Fill padding with grid tiles',
   'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':

@@ -120,6 +120,7 @@
   "baseplate.detachMarginConnectorStyle": "Der Verbinder erfordert den Nahtstil Schwalbenschwanz oder Puzzle.",
   "baseplate.overTileTooSmall": "Die Polsterung ist an jeder Kante zu klein für eine Rasterkachel.",
   "baseplate.padding": "Polsterung",
+  "baseplate.shapedDrawerNotice": "Diese Schublade hat eine individuelle Form. Rand, Eckenrundung und abnehmbare Ränder ergeben sich aus der Form — bearbeite sie im Layout-Tab.",
   "baseplate.paddingAnchor.bc": "Bins vorne mittig verankern",
   "baseplate.paddingAnchor.bl": "Bins vorne-links verankern",
   "baseplate.paddingAnchor.br": "Bins vorne-rechts verankern",

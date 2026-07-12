@@ -942,3 +942,45 @@ describe('BaseplatePanel', () => {
     });
   });
 });
+
+describe('shaped drawer (outline present)', () => {
+  const U = 42;
+  const L_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 4 * U, y: 0 },
+      { x: 4 * U, y: 3 * U },
+      { x: 2 * U, y: 3 * U },
+      { x: 2 * U, y: 6 * U },
+      { x: 0, y: 6 * U },
+    ],
+  };
+
+  it('hides padding controls and shows the shaped notice', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.padding')).toBeNull();
+  });
+
+  it('keeps padding controls for unsynced (custom-size) plates', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      syncWithLayout: false,
+    };
+    render(<BaseplatePanel />);
+    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
+  });
+
+  it('keeps padding controls when stack printing wins over the shape', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, gapMm: 0.2 },
+    } as never;
+    render(<BaseplatePanel />);
+    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+  });
+});
