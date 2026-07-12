@@ -26,6 +26,10 @@ const CORNER_LAYOUT: ReadonlyArray<readonly [CornerKey, string]> = [
   ['br', 'drawerShape.corners.frontRight'],
 ];
 
+function clampMm(value: number, maxMm: number): number {
+  return Math.min(maxMm, Math.max(1, value));
+}
+
 function defaultCut(kind: CutKind, maxMm: number): CornerCut {
   const size = Math.min(21, maxMm);
   switch (kind) {
@@ -62,12 +66,19 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
   const active = cuts ?? seeded;
 
   const maxMm = maxCutExtentMm(layout.drawer, layout.gridUnitMm);
-  const replacesForeignShape = existing !== undefined && existing.authoring?.kind !== 'corners';
+  // A shape drawn with another editor — or a corners shape whose annotation
+  // was stripped by an older server (params lost) — must confirm before this
+  // dialog replaces it; the seeded pickers don't represent it.
+  const replacesForeignShape =
+    existing !== undefined &&
+    (existing.authoring?.kind !== 'corners' || existing.authoring.corners === undefined);
 
-  const setCorner = useCallback((key: CornerKey, cut: CornerCut) => {
-    setCuts((prev) => ({ ...(prev ?? seeded), [key]: cut }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seeded is stable per open
-  }, []);
+  const setCorner = useCallback(
+    (key: CornerKey, cut: CornerCut) => {
+      setCuts((prev) => ({ ...(prev ?? seeded), [key]: cut }));
+    },
+    [seeded]
+  );
 
   const outline = useMemo(
     () => cornersToOutline(layout.drawer, active, layout.gridUnitMm),
@@ -135,7 +146,9 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
                   <Stepper
                     value={cut.size}
                     onChange={(v) => setCorner(key, { kind: 'chamfer', size: v })}
-                    onStep={(v) => setCorner(key, { kind: 'chamfer', size: v })}
+                    onStep={(d) =>
+                      setCorner(key, { kind: 'chamfer', size: clampMm(cut.size + d, maxMm) })
+                    }
                     min={1}
                     max={maxMm}
                     step={1}
@@ -148,7 +161,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
                   <Stepper
                     value={cut.r}
                     onChange={(v) => setCorner(key, { kind: 'radius', r: v })}
-                    onStep={(v) => setCorner(key, { kind: 'radius', r: v })}
+                    onStep={(d) => setCorner(key, { kind: 'radius', r: clampMm(cut.r + d, maxMm) })}
                     min={1}
                     max={maxMm}
                     step={1}
@@ -162,7 +175,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
                     <Stepper
                       value={cut.w}
                       onChange={(v) => setCorner(key, { ...cut, w: v })}
-                      onStep={(v) => setCorner(key, { ...cut, w: v })}
+                      onStep={(d) => setCorner(key, { ...cut, w: clampMm(cut.w + d, maxMm) })}
                       min={1}
                       max={maxMm}
                       step={1}
@@ -173,7 +186,9 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
                     <Stepper
                       value={cut.d}
                       onChange={(v) => setCorner(key, { ...cut, d: v })}
-                      onStep={(v) => setCorner(key, { ...cut, d: v })}
+                      onStep={(delta) =>
+                        setCorner(key, { ...cut, d: clampMm(cut.d + delta, maxMm) })
+                      }
                       min={1}
                       max={maxMm}
                       step={1}

@@ -711,7 +711,7 @@ describe('drawer outline validation (issue #2528)', () => {
     expect(validateShareLayout(layoutWithOutline(bowtie)).valid).toBe(false);
   });
 
-  it('sanitizes the authoring annotation to the kind enum only', () => {
+  it('drops malformed corners but keeps the authoring kind', () => {
     const result = validateShareLayout(
       layoutWithOutline({
         ...validOutline,
@@ -725,6 +725,47 @@ describe('drawer outline validation (issue #2528)', () => {
       unknown
     >;
     expect(outline.authoring).toEqual({ kind: 'cells' });
+  });
+
+  it('preserves structurally valid corner cuts for editor round-trip', () => {
+    const corners = {
+      tl: { kind: 'none' },
+      tr: { kind: 'chamfer', size: 30 },
+      bl: { kind: 'radius', r: 21 },
+      br: { kind: 'notch', w: 42, d: 84 },
+    };
+    const result = validateShareLayout(
+      layoutWithOutline({ ...validOutline, authoring: { kind: 'corners', corners } })
+    );
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    const outline = (result.layout.drawer as Record<string, unknown>).outline as {
+      authoring?: { kind: string; corners?: unknown };
+    };
+    expect(outline.authoring).toEqual({ kind: 'corners', corners });
+  });
+
+  it('drops the whole corners map when any entry is malformed', () => {
+    const result = validateShareLayout(
+      layoutWithOutline({
+        ...validOutline,
+        authoring: {
+          kind: 'corners',
+          corners: {
+            tl: { kind: 'none' },
+            tr: { kind: 'chamfer', size: Infinity },
+            bl: { kind: 'none' },
+            br: { kind: 'none' },
+          },
+        },
+      })
+    );
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    const outline = (result.layout.drawer as Record<string, unknown>).outline as {
+      authoring?: { kind: string; corners?: unknown };
+    };
+    expect(outline.authoring).toEqual({ kind: 'corners' });
   });
 
   it('accepts unknown authoring kinds (newer client) but drops the annotation', () => {

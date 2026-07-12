@@ -106,3 +106,49 @@ describe('CornerCutsDialog', () => {
     expect(screen.getByText('drawerShape.corners.replaceTitle')).toBeInTheDocument();
   });
 });
+
+describe('review regressions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetAllStores();
+  });
+
+  it('stepper +/- steps from the current value (delta semantics)', () => {
+    render(<CornerCutsDialog open onClose={() => {}} />);
+    fireEvent.change(kindSelect('backRight'), { target: { value: 'chamfer' } });
+    // Default seed is 21mm; one + click must yield 22, not 1.
+    const plus = screen.getAllByRole('button', { name: /increase|increment|\+/i })[0];
+    fireEvent.click(plus);
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
+    const outline = mockSetDrawerOutline.mock.calls[0][0] as {
+      authoring?: { corners?: { tr: { kind: string; size?: number } } };
+    };
+    expect(outline.authoring?.corners?.tr).toEqual({ kind: 'chamfer', size: 22 });
+  });
+
+  it('treats a corners outline with a stripped annotation as foreign (confirms)', () => {
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: {
+          ...s.layout.drawer,
+          outline: {
+            vertices: [
+              { x: 30, y: 0 },
+              { x: 168, y: 0 },
+              { x: 168, y: 168 },
+              { x: 0, y: 168 },
+              { x: 0, y: 30 },
+            ],
+            // An older server stripped `corners` — only the kind survived.
+            authoring: { kind: 'corners' },
+          } as never,
+        },
+      },
+    }));
+    render(<CornerCutsDialog open onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
+    expect(mockSetDrawerOutline).not.toHaveBeenCalled();
+    expect(screen.getByText('drawerShape.corners.replaceTitle')).toBeInTheDocument();
+  });
+});

@@ -57,9 +57,17 @@ interface OutlineVertexShape {
   bulge?: number;
 }
 
+interface CornerCutShape {
+  kind: string;
+  size?: number;
+  r?: number;
+  w?: number;
+  d?: number;
+}
+
 interface DrawerOutlineShape {
   vertices: OutlineVertexShape[];
-  authoring?: { kind: string; corners?: unknown };
+  authoring?: { kind: string; corners?: Record<string, CornerCutShape> };
 }
 
 interface DrawerShape {
@@ -473,11 +481,66 @@ function sanitizeDrawer(drawer: DrawerShape): DrawerShape {
       ),
       ...(drawer.outline.authoring !== undefined &&
       OUTLINE_AUTHORING_KINDS.includes(drawer.outline.authoring.kind)
-        ? { authoring: { kind: drawer.outline.authoring.kind } }
+        ? {
+            authoring: {
+              kind: drawer.outline.authoring.kind,
+              // The corners editor round-trips its per-corner params through
+              // this annotation; keep them when every entry is structurally
+              // valid, drop the whole map otherwise.
+              ...(sanitizeCornerCuts(drawer.outline.authoring.corners) ?? {}),
+            },
+          }
         : {}),
     };
   }
   return out;
+}
+
+const CORNER_KEYS = ['tl', 'tr', 'bl', 'br'];
+const CUT_MAX_MM = 2600;
+
+function isValidCornerCut(value: unknown): value is CornerCutShape {
+  if (!isObject(value) || typeof value.kind !== 'string') return false;
+  switch (value.kind) {
+    case 'none':
+      return true;
+    case 'chamfer':
+      return isNumber(value.size) && inRange(value.size, 0, CUT_MAX_MM);
+    case 'radius':
+      return isNumber(value.r) && inRange(value.r, 0, CUT_MAX_MM);
+    case 'notch':
+      return (
+        isNumber(value.w) &&
+        inRange(value.w, 0, CUT_MAX_MM) &&
+        isNumber(value.d) &&
+        inRange(value.d, 0, CUT_MAX_MM)
+      );
+    default:
+      return false;
+  }
+}
+
+function sanitizeCornerCuts(corners: unknown): { corners: Record<string, CornerCutShape> } | null {
+  if (!isObject(corners)) return null;
+  const out: Record<string, CornerCutShape> = {};
+  for (const key of CORNER_KEYS) {
+    const cut = corners[key];
+    if (!isValidCornerCut(cut)) return null;
+    switch (cut.kind) {
+      case 'none':
+        out[key] = { kind: 'none' };
+        break;
+      case 'chamfer':
+        out[key] = { kind: 'chamfer', size: cut.size };
+        break;
+      case 'radius':
+        out[key] = { kind: 'radius', r: cut.r };
+        break;
+      default:
+        out[key] = { kind: 'notch', w: cut.w, d: cut.d };
+    }
+  }
+  return { corners: out };
 }
 
 function isValidLayer(value: unknown): value is LayerShape {
