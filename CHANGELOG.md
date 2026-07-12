@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.240.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.239.0...gridfinity-layout-tool-v4.240.0) (2026-07-12)
+
+
+### Features
+
+* **grid:** gate bin placement and render the drawer outline in the layout tab ([#2537](https://github.com/andymai/gridfinity-layout-tool/issues/2537)) ([eadba86](https://github.com/andymai/gridfinity-layout-tool/commit/eadba86c5a408df954f78f6bbd2ba61475c36303))
+
 ## [4.239.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.238.0...gridfinity-layout-tool-v4.239.0) (2026-07-12)
 
 
