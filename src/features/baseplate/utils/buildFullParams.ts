@@ -4,11 +4,19 @@
  * With direct per-side padding, the conversion is a straightforward pass-through.
  */
 
-import type { StoredBaseplateParams } from '@/core/types';
+import type { DrawerOutline, StoredBaseplateParams } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 /**
  * Build full generation params from the stored per-layout config.
+ *
+ * @param drawerOutline - The drawer's non-rectangular boundary, if any.
+ * Applied only when the baseplate syncs with the layout (a custom-size plate
+ * has no defined relationship to the drawer shape) and stack printing is off
+ * (stacking needs uniform rectangular tiles). While active it subsumes
+ * padding, corner rounding, and detached margins — margins are emergent from
+ * outline ∩ grid — so those params are functionally zeroed, stored values
+ * untouched (the stack-print stripping precedent).
  */
 export function buildFullParams(
   stored: StoredBaseplateParams,
@@ -17,7 +25,8 @@ export function buildFullParams(
   gridUnitMm: number,
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end',
-  nozzleSizeMm?: number
+  nozzleSizeMm?: number,
+  drawerOutline?: DrawerOutline
 ): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
@@ -37,7 +46,8 @@ export function buildFullParams(
   // Detach is mutually exclusive with stacking (stacking wins). Padding stays at
   // its stored values here — `emitMargins` and the camera/dimension overlay need
   // the true outer extent; the body mesh zeroes detached sides downstream.
-  const detachMargins = stored.detachMargins === true && !stackingOn;
+  const outlineOn = drawerOutline !== undefined && synced && !stackingOn;
+  const detachMargins = stored.detachMargins === true && !stackingOn && !outlineOn;
   // The connector is only meaningful when margins actually detach.
   const detachMarginConnector = detachMargins && stored.detachMarginConnector === true;
 
@@ -46,13 +56,14 @@ export function buildFullParams(
     depth,
     gridUnitMm,
     nozzleSizeMm,
+    outline: outlineOn ? drawerOutline : undefined,
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
-    paddingLeft: stored.paddingLeft,
-    paddingRight: stored.paddingRight,
-    paddingFront: stored.paddingFront,
-    paddingBack: stored.paddingBack,
+    paddingLeft: outlineOn ? 0 : stored.paddingLeft,
+    paddingRight: outlineOn ? 0 : stored.paddingRight,
+    paddingFront: outlineOn ? 0 : stored.paddingFront,
+    paddingBack: outlineOn ? 0 : stored.paddingBack,
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
@@ -79,8 +90,10 @@ export function buildFullParams(
     // Corner rounding only applies to the assembled drawer's outer corners, so
     // it makes the corner tiles differ from the rest. Stacking wants uniform,
     // interchangeable tiles, so square them off (also restored when off).
-    cornerRadius: stackingOn ? 0 : stored.cornerRadius,
-    cornerRadii: stackingOn ? undefined : stored.cornerRadii,
+    // An outline carries its own corner geometry as arcs and shares the same
+    // post-cache intersect slot, so rounding is zeroed for shaped plates too.
+    cornerRadius: stackingOn || outlineOn ? 0 : stored.cornerRadius,
+    cornerRadii: stackingOn || outlineOn ? undefined : stored.cornerRadii,
     detachMargins,
     detachMarginConnector,
   };

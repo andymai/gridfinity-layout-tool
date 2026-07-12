@@ -85,7 +85,8 @@ export function buildLightweightFloorCutters(
   magnetRadius: number,
   magnetDepth: number,
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
-  lightweight?: boolean
+  lightweight?: boolean,
+  cellFilter?: (cell: CellInfo) => boolean
 ): Shape3D[] {
   if (lightweight === false) return [];
 
@@ -101,6 +102,7 @@ export function buildLightweightFloorCutters(
       gridW,
       gridD,
       (cell) => {
+        if (cellFilter !== undefined && !cellFilter(cell)) return;
         const cellW_mm = cell.widthUnits * unitX;
         const cellD_mm = cell.depthUnits * unitY;
 

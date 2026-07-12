@@ -13,6 +13,7 @@
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
+import { hashOutline } from '@/shared/utils/drawerOutline';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
   TONGUE_CLEARANCE,
@@ -55,8 +56,10 @@ export function meshCacheKey(
     ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
     : 0;
   return buildCacheKey(
-    // v2: support for non-square grids
-    'v2',
+    // v3: outline term for non-rectangular plates (empty = rectangle, so
+    // existing rectangular plates keep their cache identity within v3)
+    'v3',
+    params.outline !== undefined ? `ol:${hashOutline(params.outline)}` : '',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),
@@ -103,9 +106,20 @@ export function meshCacheKey(
   );
 }
 
-export function slabPocketsCacheKey(params: ResolvedBaseplateParams, forExport: boolean): string {
+/**
+ * @param pocketMaskHash - For shaped plates: hash of which cells are pocketed
+ * (computed by the generator from the same classification the pocket loop
+ * uses). Deliberately NOT the outline curve — the outline intersect runs
+ * post-cache, so outlines that pocket the same cells share one slab entry.
+ */
+export function slabPocketsCacheKey(
+  params: ResolvedBaseplateParams,
+  forExport: boolean,
+  pocketMaskHash?: string
+): string {
   return buildCacheKey(
-    'v1',
+    'v2',
+    pocketMaskHash !== undefined ? `pm:${pocketMaskHash}` : '',
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),

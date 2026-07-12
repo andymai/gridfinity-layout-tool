@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { meshCacheKey } from './baseplateCacheKeys';
+import { meshCacheKey, slabPocketsCacheKey } from './baseplateCacheKeys';
 
 const base = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams => ({
   width: 4,
@@ -75,5 +75,39 @@ describe('meshCacheKey — draft preview', () => {
     const noLw = (draft: boolean) =>
       meshCacheKey(base({ magnetHoles: true, lightweight: false }), false, draft);
     expect(noLw(true)).toBe(noLw(false));
+  });
+});
+
+describe('cache keys with outlines (issue #2528)', () => {
+  const L_SHAPE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 168, y: 0 },
+      { x: 168, y: 84 },
+      { x: 84, y: 84 },
+      { x: 84, y: 168 },
+      { x: 0, y: 168 },
+    ],
+  };
+  const L_SHAPE_TWEAKED = {
+    vertices: L_SHAPE.vertices.map((v, i) => (i === 0 ? { x: 0.5, y: 0 } : v)),
+  };
+
+  it('meshCacheKey separates shaped plates from rectangles and from each other', () => {
+    const rect = meshCacheKey(base(), true);
+    const shaped = meshCacheKey(base({ outline: L_SHAPE }), true);
+    const tweaked = meshCacheKey(base({ outline: L_SHAPE_TWEAKED }), true);
+    expect(shaped).not.toBe(rect);
+    expect(tweaked).not.toBe(shaped);
+  });
+
+  it('slabPocketsCacheKey keys on the pocket mask, not the outline curve', () => {
+    const rect = slabPocketsCacheKey(base(), true);
+    const masked = slabPocketsCacheKey(base(), true, 'abc123');
+    expect(masked).not.toBe(rect);
+    // Outlines that pocket the same cells hash to the same mask and share the
+    // slab entry by design — the outline intersect runs post-cache.
+    expect(slabPocketsCacheKey(base(), true, 'abc123')).toBe(masked);
+    expect(slabPocketsCacheKey(base(), true, 'def456')).not.toBe(masked);
   });
 });

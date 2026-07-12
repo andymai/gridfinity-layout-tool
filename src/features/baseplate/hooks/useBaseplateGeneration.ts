@@ -176,6 +176,9 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
   return {
     drawerWidth: state.layout.drawer.width,
     drawerDepth: state.layout.drawer.depth,
+    // Immutability contract: outlines are replaced, never mutated, so the
+    // reference is a valid change signal under useShallow.
+    drawerOutline: state.layout.drawer.outline,
     gridUnitMm: state.layout.gridUnitMm,
     printBedSize: state.layout.printBedSize,
     printBedDepth: state.layout.printBedDepth,
@@ -275,6 +278,7 @@ export function useBaseplateGeneration(): void {
   const {
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     printBedSize,
     printBedDepth,
@@ -356,6 +360,15 @@ export function useBaseplateGeneration(): void {
       setMarginMeshes([]);
 
       try {
+        // The procedural direct mesh only builds rectangles — never show it
+        // for a shaped plate (a wrong-shape draft is worse than none; the
+        // Manifold draft path runs the real generator and shows the true
+        // outline, matching the canBinUseDirectMesh reject-in-the-gate rule).
+        if (fullParams.outline !== undefined) {
+          previewKindRef.current = 'direct';
+          directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
+          return tiling;
+        }
         if (!tiling.isSplit) {
           const mesh = generateBaseplateDirect(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return tiling;
@@ -803,7 +816,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.gridUnitMm,
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end',
-          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
+          layoutState.layout.drawer.outline
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -855,7 +869,8 @@ export function useBaseplateGeneration(): void {
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,
-      nozzleSizeMm
+      nozzleSizeMm,
+      drawerOutline
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -865,6 +880,7 @@ export function useBaseplateGeneration(): void {
     generationTriggers,
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     printBedSize,
     printBedDepth,

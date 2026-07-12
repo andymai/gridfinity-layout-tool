@@ -235,6 +235,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           baseplateParams: layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
           drawerWidth: layout.drawer.width,
           drawerDepth: layout.drawer.depth,
+          drawerOutline: layout.drawer.outline,
           gridUnitMm: layout.gridUnitMm,
           fractionalEdgeX: layout.drawer.fractionalEdgeX ?? 'end',
           fractionalEdgeY: layout.drawer.fractionalEdgeY ?? 'end',

@@ -74,6 +74,35 @@ import {
 import { snapClipLevels } from '@/shared/constants/connectors';
 import { creaseEdges } from './utils';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { buildOutlineDrawing } from './baseplateOutline';
+import type { DrawerOutline } from '@/core/types';
+import {
+  classifyRect,
+  insideAreaFraction,
+  type RegionClass,
+} from '@/shared/utils/drawerOutlineGeometry';
+
+/**
+ * Minimum surviving area for an outline-clipped over-tile pocket. Below this
+ * the cell stays solid — the clipped socket would be an unusable, hard-to-
+ * print wisp (area-fraction analog of MIN_PRINTABLE_TILE_MM).
+ */
+const MIN_CLIPPED_POCKET_AREA_FRACTION = 0.25;
+
+/**
+ * FNV-1a over per-cell pocket decisions — keys the slab+pockets cache on
+ * WHICH cells are pocketed, not on the outline curve itself (the intersect is
+ * post-cache). 'full' and 'clipped' cut the same pocket, so only pocketed
+ * vs. not enters the hash — outlines differing only in where they cross a
+ * pocketed cell share one slab entry.
+ */
+function hashPocketDecisions(decisions: ReadonlyArray<'full' | 'clipped' | 'none'>): string {
+  let h = 2166136261;
+  for (const d of decisions) {
+    h = Math.imul(h ^ (d === 'none' ? 0 : 1), 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
 
 export {
   clearBaseplateCaches,
@@ -277,9 +306,46 @@ export function buildBaseplateSolid(
       )
     : [];
 
+  // Shaped plates: classify each cell against the outline. Cell centers live
+  // in the final frame (grid centered on origin, slab offset by padding
+  // asymmetry); the outline is plate-local mm — invert the frame mapping.
+  const outline = params.outline;
+  const classifyCell = (cell: CellInfo): RegionClass => {
+    if (outline === undefined) return 'inside';
+    const w = cell.widthUnits * gridUnitMm;
+    const d = cell.depthUnits * gridUnitMm;
+    const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
+    const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
+    return classifyRect(outline, x0, y0, x0 + w, y0 + d);
+  };
+  // A partial cell only gets an (outline-clipped) pocket under overTile, and
+  // only when enough of it survives to be a usable socket — the same sliver
+  // philosophy as MIN_PRINTABLE_TILE_MM, expressed as an area fraction.
+  const pocketDecision = (cell: CellInfo): 'full' | 'clipped' | 'none' => {
+    const cls = classifyCell(cell);
+    if (cls === 'inside') return 'full';
+    if (cls === 'outside' || overTile !== true) return 'none';
+    const w = cell.widthUnits * gridUnitMm;
+    const d = cell.depthUnits * gridUnitMm;
+    const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
+    const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
+    const fraction = insideAreaFraction(outline as DrawerOutline, x0, y0, x0 + w, y0 + d);
+    return fraction >= MIN_CLIPPED_POCKET_AREA_FRACTION ? 'clipped' : 'none';
+  };
+
+  // Nominal + over-tile cells and their pocket decisions, computed once: the
+  // decisions feed BOTH the slab cache key (which cells are pocketed) and the
+  // pocket loop, so a key/geometry mismatch is structurally impossible.
+  const nominalCells: CellInfo[] = [];
+  forEachCell(width, depth, (cell) => nominalCells.push(cell), cellOpts);
+  const pocketDecisions = outline
+    ? [...nominalCells, ...overTileFrame].map(pocketDecision)
+    : undefined;
+  const pocketMaskHash = pocketDecisions ? hashPocketDecisions(pocketDecisions) : undefined;
+
   // Cached separately so that toggling magnets or connectors doesn't redo the
   // pocket boolean cuts.
-  const spKey = slabPocketsCacheKey(params, forExport);
+  const spKey = slabPocketsCacheKey(params, forExport, pocketMaskHash);
   const cachedSlab = slabWithPocketsCache.get(spKey);
   let baseplate: Shape3D;
 
@@ -315,15 +381,17 @@ export function buildBaseplateSolid(
       pocket.delete();
       pockets.push(positioned);
     };
-    forEachCell(width, depth, addPocket, cellOpts);
-
     // Over-tile: fill the drawer-fit padding margins with grid-aligned clipped
     // pockets (per-side; a margin below the printable threshold stays solid
     // padding). Additive — the slab, full pockets, magnets, and offset are
     // unchanged, so this composes cleanly with split pieces. Uses the shared
     // overTileFrame so the magnets/floor cutters below cut exactly these cells.
-    for (const cell of overTileFrame) {
-      addPocket(cell);
+    // Shaped plates skip cells the outline excludes; 'clipped' cells get a
+    // full pocket here that the outline intersect below trims to shape.
+    const allPocketCells = [...nominalCells, ...overTileFrame];
+    for (let i = 0; i < allPocketCells.length; i++) {
+      if (pocketDecisions !== undefined && pocketDecisions[i] === 'none') continue;
+      addPocket(allPocketCells[i]);
     }
 
     if (pockets.length > 0) {
@@ -353,7 +421,25 @@ export function buildBaseplateSolid(
   const cornerRadii = resolveCornerRadii(params, maxRadius);
   const hasRounding =
     cornerRadii.tl > 0 || cornerRadii.tr > 0 || cornerRadii.bl > 0 || cornerRadii.br > 0;
-  if (hasRounding) {
+  // Outline clip reuses the corner-rounding slot: one boolean against the
+  // cached rectangular slab-with-pockets. Mutually exclusive with rounding by
+  // construction (buildFullParams zeroes radii for shaped plates); the else-if
+  // keeps the generator self-consistent when called directly.
+  if (outline !== undefined) {
+    const outlineProfile = buildOutlineDrawing(outline, { totalW, totalD });
+    const outlineSlab = (
+      outlineProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
+    ).extrude(-totalHeight);
+    const outlineTranslated = translate(outlineSlab, [slabOffsetX, slabOffsetY, 0]);
+    outlineSlab.delete();
+    const oldBaseplate = baseplate;
+    baseplate = tagOp('outlineClipIntersect', () =>
+      unwrap(intersect(baseplate, outlineTranslated))
+    );
+    oldBaseplate.delete();
+    outlineTranslated.delete();
+    probe?.('outlineIntersected', baseplate);
+  } else if (hasRounding) {
     const roundedProfile = buildSlabProfile(totalW, totalD, cornerRadii, edges);
     const roundedSlab = (
       roundedProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
@@ -372,13 +458,29 @@ export function buildBaseplateSolid(
   // Magnet hole cutters — built and cut in batches to limit WASM memory.
   // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.
   if (magnetHoles) {
-    const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
+    // Shaped plates: magnets only in fully-inside cells — a magnet pocket in
+    // an outline-clipped cell could straddle the boundary and leave a floating
+    // half-hole in the wall the intersect produces.
+    const magnetCellFilter =
+      outline !== undefined
+        ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+        : undefined;
+    const holes = buildMagnetHoles(
+      width,
+      depth,
+      magnetDiameter / 2,
+      magnetDepth,
+      cellOpts,
+      magnetCellFilter
+    );
     // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
     // spread/centered magnet for tiles too small for any corner — so the clipped
     // padding tiles aren't left as solid plastic. Mirrors the pocket frame above.
-    if (overTileFrame.length > 0) {
+    const magnetFrame =
+      magnetCellFilter === undefined ? overTileFrame : overTileFrame.filter(magnetCellFilter);
+    if (magnetFrame.length > 0) {
       holes.push(
-        ...buildPartialCellMagnetHoles(overTileFrame, magnetDiameter / 2, magnetDepth, gridUnitMm)
+        ...buildPartialCellMagnetHoles(magnetFrame, magnetDiameter / 2, magnetDepth, gridUnitMm)
       );
     }
     baseplate = cutInBatches(baseplate, holes);
@@ -393,17 +495,25 @@ export function buildBaseplateSolid(
   // The solidFloor option explicitly wants a continuous floor, so it overrides
   // the hollowing here (magnet holes are still cut above).
   if (!draft && magnetHoles && params.lightweight !== false && !params.solidFloor) {
+    const floorCellFilter =
+      outline !== undefined
+        ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+        : undefined;
     const floorCutters = buildLightweightFloorCutters(
       width,
       depth,
       magnetDiameter / 2,
       magnetDepth,
-      cellOpts
+      cellOpts,
+      params.lightweight,
+      floorCellFilter
     );
-    if (overTileFrame.length > 0) {
+    const floorFrame =
+      floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
+    if (floorFrame.length > 0) {
       floorCutters.push(
         ...buildPartialCellFloorCutters(
-          overTileFrame,
+          floorFrame,
           magnetDiameter / 2,
           magnetDepth,
           gridUnitMm,

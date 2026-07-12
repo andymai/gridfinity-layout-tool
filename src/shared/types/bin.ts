@@ -5,7 +5,7 @@
  * This barrel export allows other features (e.g., generation) to
  * depend on these types without a cross-feature import violation.
  */
-import type { StackPrintParams } from '@/core/types';
+import type { DrawerOutline, StackPrintParams } from '@/core/types';
 
 export type {
   ExportFileFormat,
@@ -252,6 +252,15 @@ export interface ResolvedBaseplateParams {
   readonly overTileHalfGridSolidLeftover?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
+  /**
+   * Non-rectangular plate boundary in plate-local mm (origin bottom-left of
+   * the plate's outer extent). Cells fully inside get standard pockets; cells
+   * partially inside stay solid (or get outline-clipped pockets under
+   * `overTile`); the slab is intersected with the extruded outline. Absent =
+   * full rectangle (exact legacy behavior, cache-stable). For split plates
+   * this is piece-local (pre-translated by the planner).
+   */
+  readonly outline?: DrawerOutline;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
   /** Swap tongue/groove convention on all join edges (default false). */

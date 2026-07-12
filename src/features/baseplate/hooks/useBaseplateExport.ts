@@ -37,6 +37,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   const {
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     fractionalEdgeX,
     fractionalEdgeY,
@@ -47,6 +48,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
+      drawerOutline: state.layout.drawer.outline,
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
@@ -84,6 +86,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             baseplateParams,
             drawerWidth,
             drawerDepth,
+            drawerOutline,
             gridUnitMm,
             fractionalEdgeX,
             fractionalEdgeY,
@@ -152,6 +155,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       t,
       drawerWidth,
       drawerDepth,
+      drawerOutline,
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,

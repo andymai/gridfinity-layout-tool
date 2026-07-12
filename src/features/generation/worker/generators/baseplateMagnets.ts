@@ -78,7 +78,8 @@ export function buildMagnetHoles(
   gridD: number,
   magnetRadius: number,
   magnetDepth: number,
-  cellOpts?: ForEachCellOptions
+  cellOpts?: ForEachCellOptions,
+  cellFilter?: (cell: CellInfo) => boolean
 ): Shape3D[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
   const positions: Array<[number, number]> = [];
@@ -87,6 +88,7 @@ export function buildMagnetHoles(
     gridD,
     (cell) => {
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+      if (cellFilter !== undefined && !cellFilter(cell)) return;
       // Same shared placement (with the standard wall-distance clamp) as the bin
       // base and lid, so every magnet-bearing surface agrees.
       positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY));

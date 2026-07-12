@@ -276,3 +276,75 @@ describe('buildFullParams', () => {
     });
   });
 });
+
+describe('drawer outline handling', () => {
+  const storedBase = {
+    magnetHoles: true,
+    magnetDiameter: 6.5,
+    magnetDepth: 2.4,
+    paddingLeft: 1.0,
+    paddingRight: 2.0,
+    paddingFront: 3.0,
+    paddingBack: 4.0,
+  };
+  const outline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 420, y: 0 },
+      { x: 420, y: 168 },
+      { x: 168, y: 168 },
+      { x: 168, y: 336 },
+      { x: 0, y: 336 },
+    ],
+  };
+
+  it('applies the outline and zeroes the subsumed params', () => {
+    const stored = {
+      ...storedBase,
+      cornerRadius: 4,
+      cornerRadii: { tl: 4, tr: 4, bl: 4, br: 4 },
+      detachMargins: true,
+      detachMarginConnector: true,
+    };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+    expect(result.outline).toBe(outline);
+    expect(result.paddingLeft).toBe(0);
+    expect(result.paddingRight).toBe(0);
+    expect(result.paddingFront).toBe(0);
+    expect(result.paddingBack).toBe(0);
+    expect(result.cornerRadius).toBe(0);
+    expect(result.cornerRadii).toBeUndefined();
+    expect(result.detachMargins).toBe(false);
+    expect(result.detachMarginConnector).toBe(false);
+    // Stored params untouched — settings return when the shape is cleared.
+    expect(stored.paddingBack).toBe(4.0);
+    expect(stored.cornerRadius).toBe(4);
+    expect(stored.detachMargins).toBe(true);
+  });
+
+  it('keeps magnets and solid floor working on shaped plates', () => {
+    const stored = { ...storedBase, solidFloor: true, solidFloorThickness: 1.2 };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+    expect(result.magnetHoles).toBe(true);
+    expect(result.solidFloor).toBe(true);
+  });
+
+  it('ignores the outline for unsynced (custom-size) plates', () => {
+    const stored = { ...storedBase, syncWithLayout: false, paddingLeft: 5 };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+    expect(result.outline).toBeUndefined();
+    expect(result.paddingLeft).toBe(5);
+  });
+
+  it('strips the outline under stack printing (uniform rectangular tiles)', () => {
+    const stored = { ...storedBase, stackPrint: { enabled: true, gapMm: 0.2 as never } };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+    expect(result.outline).toBeUndefined();
+  });
+
+  it('emits no outline when the drawer has none', () => {
+    const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
+    expect(result.outline).toBeUndefined();
+    expect(result.paddingLeft).toBe(1.0);
+  });
+});

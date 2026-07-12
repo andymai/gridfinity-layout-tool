@@ -66,6 +66,7 @@ export function BaseplatePage() {
   const {
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     fractionalEdgeX,
     fractionalEdgeY,
@@ -75,6 +76,7 @@ export function BaseplatePage() {
     useShallow((state) => ({
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
+      drawerOutline: state.layout.drawer.outline,
       gridUnitMm: state.layout.gridUnitMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
@@ -137,12 +139,14 @@ export function BaseplatePage() {
         gridUnitMm,
         fractionalEdgeX,
         fractionalEdgeY,
-        nozzleSizeMm
+        nozzleSizeMm,
+        drawerOutline
       ),
     [
       baseplateParams,
       drawerWidth,
       drawerDepth,
+      drawerOutline,
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,
