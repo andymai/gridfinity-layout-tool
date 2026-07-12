@@ -1,0 +1,30 @@
+src/features/drawer-shape/README.md
+  s_f53abdc88bc489::t_5be8cfc19c3b9c 3-4
+e2e/drawer-shape.spec.ts
+  s_f53abdc88bc489::t_4c39b395e8708a 68-73
+  s_f53abdc88bc489::t_4cb350c20ab9ea 1-67,74-109
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_f53abdc88bc489::t_5ea83da0e27862 179
+src/shell/Sidebar/Sidebar.tsx
+  s_f53abdc88bc489::t_b136ac2480bb27 463
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_f53abdc88bc489::t_401fc06850506b 13-16
+src/core/labs/features.ts
+  s_f53abdc88bc489::t_1eee60f2f4f0d3 16,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "4efd065e22d9c07269549652fc3098fa6f9ee405",
+  "prompts": {},
+  "sessions": {
+    "s_f53abdc88bc489": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "33ddb672-155a-4c40-9bde-197e91799db1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
