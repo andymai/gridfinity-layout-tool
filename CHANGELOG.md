@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.239.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.238.0...gridfinity-layout-tool-v4.239.0) (2026-07-12)
+
+
+### Features
+
+* **drawer:** setOutline command, resize adaptation, and outline persistence guards ([#2535](https://github.com/andymai/gridfinity-layout-tool/issues/2535)) ([b0cb5d5](https://github.com/andymai/gridfinity-layout-tool/commit/b0cb5d58084c5092033b220065212e477ba1b21d))
+
 ## [4.238.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.237.0...gridfinity-layout-tool-v4.238.0) (2026-07-12)
 
 
