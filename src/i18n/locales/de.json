@@ -2678,8 +2678,10 @@
   "baseplate.library.deleteWarning.confirm": "Trotzdem löschen",
   "commandPalette.openBaseplateLibrary": "Grundplatten-Bibliothek öffnen",
   "baseplate.magnetAnchor": "Magnetposition",
-  "baseplate.magnetAnchorTooltip": "Wo Magnetlöcher in jeder Zelle bei Rastern größer als 42 mm sitzen. „Ecken“ hält sie in festem Abstand zum Zellenrand (empfohlen); „Klassisch“ fixiert sie 13 mm von der Zellenmitte – passend zu Teilen, die vor dieser Korrektur gedruckt wurden. Gilt für Grundplatte, Bins und Deckel gemeinsam.",
+  "baseplate.magnetAnchorTooltip": "Wo Magnetlöcher in jeder Zelle bei Rastern größer als 42 mm sitzen. Gilt für Grundplatte, Bins und Deckel gemeinsam, damit ihre Magnete ausgerichtet bleiben.",
   "baseplate.magnetAnchorEdge": "Ecken",
   "baseplate.magnetAnchorCenter": "Klassisch",
-  "undo.magnetAnchorChanged": "Magnetposition geändert"
+  "undo.magnetAnchorChanged": "Magnetposition geändert",
+  "baseplate.magnetAnchorHintCorners": "Magnete bleiben 8 mm vom Zellenrand entfernt – die Standard-Gridfinity-Eckposition.",
+  "baseplate.magnetAnchorHintLegacy": "Magnete 13 mm von der Zellenmitte fixiert – passt zu Teilen, die vor dieser Korrektur gedruckt wurden."
 }

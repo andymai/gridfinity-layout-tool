@@ -2678,8 +2678,10 @@
   "baseplate.library.deleteWarning.confirm": "Supprimer quand même",
   "commandPalette.openBaseplateLibrary": "Ouvrir la bibliothèque de platines",
   "baseplate.magnetAnchor": "Ancrage des aimants",
-  "baseplate.magnetAnchorTooltip": "Emplacement des trous d’aimant dans chaque cellule sur les grilles de plus de 42 mm. « Coins » les maintient à distance fixe du bord de la cellule (recommandé) ; « Ancien » les fixe à 13 mm du centre de la cellule, comme les pièces imprimées avant cette correction. S’applique à la plaque de base, aux bacs et aux couvercles.",
+  "baseplate.magnetAnchorTooltip": "Emplacement des trous d’aimant dans chaque cellule sur les grilles de plus de 42 mm. S’applique à la plaque de base, aux bacs et aux couvercles ensemble pour que leurs aimants restent alignés.",
   "baseplate.magnetAnchorEdge": "Coins",
   "baseplate.magnetAnchorCenter": "Ancien",
-  "undo.magnetAnchorChanged": "Ancrage des aimants modifié"
+  "undo.magnetAnchorChanged": "Ancrage des aimants modifié",
+  "baseplate.magnetAnchorHintCorners": "Les aimants restent à 8 mm du bord de chaque cellule — la position d’angle Gridfinity standard.",
+  "baseplate.magnetAnchorHintLegacy": "Aimants fixés à 13 mm du centre de chaque cellule — correspond aux pièces imprimées avant cette correction."
 }

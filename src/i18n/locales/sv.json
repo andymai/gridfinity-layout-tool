@@ -2678,8 +2678,10 @@
   "baseplate.library.deleteWarning.confirm": "Radera ändå",
   "commandPalette.openBaseplateLibrary": "Öppna bottenplattebibliotek",
   "baseplate.magnetAnchor": "Magnetförankring",
-  "baseplate.magnetAnchorTooltip": "Var magnethål sitter i varje cell på rutnät större än 42 mm. ”Hörn” håller dem på ett fast avstånd från cellkanten (rekommenderas); ”Klassisk” placerar dem 13 mm från cellens mitt, som delar utskrivna före den här korrigeringen. Gäller basplattan, lådorna och locken tillsammans.",
+  "baseplate.magnetAnchorTooltip": "Var magnethål sitter i varje cell på rutnät större än 42 mm. Gäller basplattan, lådorna och locken tillsammans så att deras magneter förblir inriktade.",
   "baseplate.magnetAnchorEdge": "Hörn",
   "baseplate.magnetAnchorCenter": "Klassisk",
-  "undo.magnetAnchorChanged": "Ändrade magnetförankring"
+  "undo.magnetAnchorChanged": "Ändrade magnetförankring",
+  "baseplate.magnetAnchorHintCorners": "Magneterna håller 8 mm från varje cellkant – standardpositionen för Gridfinity-hörn.",
+  "baseplate.magnetAnchorHintLegacy": "Magneter fästa 13 mm från varje cells mitt – matchar delar utskrivna före den här korrigeringen."
 }

@@ -2404,9 +2404,13 @@ const en: Record<string, string> = {
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.magnetAnchor': 'Magnet anchor',
   'baseplate.magnetAnchorTooltip':
-    'Where magnet holes sit in each cell on grids larger than 42mm. Corners keeps them a fixed distance from the cell edge (recommended); Legacy pins them 13mm from the cell center, matching parts printed before this was fixed. Applies to the baseplate, bins, and lids together.',
+    'Where magnet holes sit in each cell on grids larger than 42mm. Applies to the baseplate, bins, and lids together so their magnets stay aligned.',
   'baseplate.magnetAnchorEdge': 'Corners',
   'baseplate.magnetAnchorCenter': 'Legacy',
+  'baseplate.magnetAnchorHintCorners':
+    'Magnets stay 8mm from each cell edge — the standard Gridfinity corner position.',
+  'baseplate.magnetAnchorHintLegacy':
+    'Magnets pinned 13mm from each cell center — matches parts printed before this was fixed.',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
   'baseplate.maxPrintHeight': 'Build height',
   'baseplate.maxPrintHeightTooltip':

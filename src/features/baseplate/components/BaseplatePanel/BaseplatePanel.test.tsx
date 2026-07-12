@@ -214,6 +214,21 @@ describe('BaseplatePanel', () => {
       expect(screen.getByText('baseplate.magnetAnchorCenter')).toBeInTheDocument();
     });
 
+    it('shows the corners caption by default (progressive disclosure of the choice)', () => {
+      mockLayoutState.layout.gridUnitMm = 50;
+      render(<BaseplatePanel />);
+      expect(screen.getByText('baseplate.magnetAnchorHintCorners')).toBeInTheDocument();
+      expect(screen.queryByText('baseplate.magnetAnchorHintLegacy')).toBeNull();
+    });
+
+    it('swaps to the legacy caption when the legacy anchor is active', () => {
+      mockLayoutState.layout.gridUnitMm = 50;
+      mockLayoutState.layout.magnetAnchor = 'center';
+      render(<BaseplatePanel />);
+      expect(screen.getByText('baseplate.magnetAnchorHintLegacy')).toBeInTheDocument();
+      expect(screen.queryByText('baseplate.magnetAnchorHintCorners')).toBeNull();
+    });
+
     it('dispatches setMagnetAnchor when the legacy option is chosen', () => {
       mockLayoutState.layout.gridUnitMm = 50;
       render(<BaseplatePanel />);

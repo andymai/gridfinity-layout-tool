@@ -2678,8 +2678,10 @@
   "baseplate.library.deleteWarning.confirm": "Slett likevel",
   "commandPalette.openBaseplateLibrary": "Åpne bunnplate-bibliotek",
   "baseplate.magnetAnchor": "Magnetforankring",
-  "baseplate.magnetAnchorTooltip": "Hvor magnethull sitter i hver celle på rutenett større enn 42 mm. «Hjørner» holder dem i fast avstand fra cellekanten (anbefalt); «Klassisk» fester dem 13 mm fra cellesenteret, som deler skrevet ut før dette ble rettet. Gjelder grunnplate, binger og lokk sammen.",
+  "baseplate.magnetAnchorTooltip": "Hvor magnethull sitter i hver celle på rutenett større enn 42 mm. Gjelder grunnplate, binger og lokk sammen slik at magnetene forblir justert.",
   "baseplate.magnetAnchorEdge": "Hjørner",
   "baseplate.magnetAnchorCenter": "Klassisk",
-  "undo.magnetAnchorChanged": "Endret magnetforankring"
+  "undo.magnetAnchorChanged": "Endret magnetforankring",
+  "baseplate.magnetAnchorHintCorners": "Magneter holder 8 mm fra hver cellekant – standard Gridfinity-hjørneposisjon.",
+  "baseplate.magnetAnchorHintLegacy": "Magneter festet 13 mm fra hvert cellesenter – samsvarer med deler skrevet ut før dette ble rettet."
 }

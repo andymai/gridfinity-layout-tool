@@ -787,25 +787,36 @@ export function BaseplatePanel() {
                   className="input w-14 py-0.5 px-1 text-xs text-right"
                 />
               </SettingsRow>
-              {/* Magnet anchor only diverges above the standard 42mm grid; below
-                  that 'edge' and 'center' are identical, so hide the control to
-                  avoid presenting a no-op toggle. */}
+              {/* Progressive disclosure: the anchor only diverges above the
+                  standard 42mm grid (below that 'edge' and 'center' are identical),
+                  so the control stays hidden until then — and its caption reveals
+                  the consequence of the current choice, matching the half-grid
+                  leftover pattern above. */}
               {gridUnitMm > 42 && (
-                <SettingsRow
-                  label={t('baseplate.magnetAnchor')}
-                  tooltip={t('baseplate.magnetAnchorTooltip')}
-                >
-                  <SegmentedControl<'edge' | 'center'>
-                    aria-label={t('baseplate.magnetAnchor')}
-                    size="sm"
-                    options={[
-                      { value: 'edge', label: t('baseplate.magnetAnchorEdge') },
-                      { value: 'center', label: t('baseplate.magnetAnchorCenter') },
-                    ]}
-                    value={magnetAnchor}
-                    onChange={(value) => useLayoutStore.getState().setMagnetAnchor(value)}
-                  />
-                </SettingsRow>
+                <div className="space-y-1">
+                  <SettingsRow
+                    label={t('baseplate.magnetAnchor')}
+                    tooltip={t('baseplate.magnetAnchorTooltip')}
+                  >
+                    <SegmentedControl<'edge' | 'center'>
+                      aria-label={t('baseplate.magnetAnchor')}
+                      size="sm"
+                      options={[
+                        { value: 'edge', label: t('baseplate.magnetAnchorEdge') },
+                        { value: 'center', label: t('baseplate.magnetAnchorCenter') },
+                      ]}
+                      value={magnetAnchor}
+                      onChange={(value) => useLayoutStore.getState().setMagnetAnchor(value)}
+                    />
+                  </SettingsRow>
+                  <p className="text-[11px] leading-relaxed text-content-tertiary">
+                    {t(
+                      magnetAnchor === 'center'
+                        ? 'baseplate.magnetAnchorHintLegacy'
+                        : 'baseplate.magnetAnchorHintCorners'
+                    )}
+                  </p>
+                </div>
               )}
               <HelpTargetMarker id="bp-print-bed-size">
                 <SettingsRow
