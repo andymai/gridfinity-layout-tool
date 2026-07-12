@@ -517,7 +517,8 @@ export function buildBaseplateSolid(
       magnetDepth,
       cellOpts,
       params.lightweight,
-      floorCellFilter
+      floorCellFilter,
+      params.nozzleSizeMm
     );
     const floorFrame =
       floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
@@ -528,7 +529,8 @@ export function buildBaseplateSolid(
           magnetDiameter / 2,
           magnetDepth,
           gridUnitMm,
-          params.lightweight
+          params.lightweight,
+          params.nozzleSizeMm
         )
       );
     }

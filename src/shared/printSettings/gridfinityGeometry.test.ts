@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   GRIDFINITY_SPEC,
   NOZZLE_WALL_COUNTS,
+  magnetPadMarginForNozzle,
   wallThicknessForNozzle,
 } from '@/shared/printSettings/gridfinityGeometry';
 
@@ -75,6 +76,21 @@ describe('gridfinityGeometry', () => {
       expect(NOZZLE_WALL_COUNTS[0.6]).toBeDefined();
       expect(NOZZLE_WALL_COUNTS[0.8]).toBeDefined();
       expect(NOZZLE_WALL_COUNTS[1.0]).toBeDefined();
+    });
+  });
+
+  describe('magnetPadMarginForNozzle', () => {
+    it.each([
+      [0.4, 1],
+      [0.6, 1.8],
+      [0.8, 2.4],
+      [1.0, 2.0],
+    ])('for a %smm nozzle, returns %smm margin', (nozzle, margin) => {
+      expect(magnetPadMarginForNozzle(nozzle)).toBe(margin);
+    });
+
+    it('keeps omitted nozzle settings on the legacy margin', () => {
+      expect(magnetPadMarginForNozzle()).toBe(1);
     });
   });
 });

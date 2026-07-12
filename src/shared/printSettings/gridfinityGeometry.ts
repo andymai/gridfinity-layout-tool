@@ -85,6 +85,13 @@ export const NOZZLE_WALL_COUNTS: Partial<Record<number, number>> = {
   1.0: 1,
 };
 
+/** Minimum solid pad margin around a magnet hole, keyed by standard nozzle. */
+const MAGNET_PAD_MARGINS: Partial<Record<number, number>> = {
+  0.6: 1.8,
+  0.8: 2.4,
+  1.0: 2.0,
+};
+
 /**
  * Compute wall thickness for a given nozzle size.
  *
@@ -100,4 +107,19 @@ export function wallThicknessForNozzle(nozzleSizeMm: number): number {
     return nozzleSizeMm * count;
   }
   return GRIDFINITY_SPEC.WALL_THICKNESS;
+}
+
+/**
+ * Minimum solid pad margin around a magnet hole.
+ *
+ * Values are tuned to retain a printable bridge around the hole while keeping
+ * the legacy 0.4mm geometry unchanged. Unknown nozzle sizes use the resolved
+ * wall thickness plus one bead as a conservative fallback.
+ */
+export function magnetPadMarginForNozzle(nozzleSizeMm?: number): number {
+  if (nozzleSizeMm === undefined || nozzleSizeMm <= 0.4) return 1;
+  return (
+    MAGNET_PAD_MARGINS[nozzleSizeMm] ??
+    Math.max(1, wallThicknessForNozzle(nozzleSizeMm) + nozzleSizeMm)
+  );
 }

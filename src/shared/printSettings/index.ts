@@ -110,7 +110,11 @@ export function scalePrintTime(baseMinutes: number, settings: PrintSettings): nu
   const infillScale = 1 + 0.003 * (settings.infillPercent - BASELINE_INFILL);
   return baseMinutes * nozzleSpeedFactor * layerScale * infillScale;
 }
-export { GRIDFINITY_SPEC, wallThicknessForNozzle } from './gridfinityGeometry';
+export {
+  GRIDFINITY_SPEC,
+  magnetPadMarginForNozzle,
+  wallThicknessForNozzle,
+} from './gridfinityGeometry';
 export type { StandardBinEstimate, StandardBinComponents } from './standardBinVolume';
 export {
   estimateStandardBinVolume,

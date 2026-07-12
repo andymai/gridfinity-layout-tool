@@ -16,9 +16,7 @@ import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
-
-/** Margin around each magnet hole center that defines the pad extent (mm). */
-const PAD_MARGIN = 1;
+import { magnetPadMarginForNozzle } from '@/shared/printSettings';
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;
@@ -86,13 +84,15 @@ export function buildLightweightFloorCutters(
   magnetDepth: number,
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   lightweight?: boolean,
-  cellFilter?: (cell: CellInfo) => boolean
+  cellFilter?: (cell: CellInfo) => boolean,
+  nozzleSizeMm?: number
 ): Shape3D[] {
   if (lightweight === false) return [];
 
   const { x: unitX, y: unitY } = resolvePitch(cellOpts.gridUnitMm);
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
+  const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
 
   const cutters: Shape3D[] = [];
   const templates = new Map<string, Shape3D>();
@@ -146,8 +146,8 @@ export function buildLightweightFloorCutters(
         if (positions.length !== 4) return;
         const offX = Math.abs(positions[0][0] - cell.centerX);
         const offY = Math.abs(positions[0][1] - cell.centerY);
-        const padHalfX = offX - magnetRadius - PAD_MARGIN;
-        const padHalfY = offY - magnetRadius - PAD_MARGIN;
+        const padHalfX = offX - magnetRadius - padMargin;
+        const padHalfY = offY - magnetRadius - padMargin;
         if (padHalfX < MIN_ARM_WIDTH || padHalfY < MIN_ARM_WIDTH) return;
         if (hw - padHalfX < MIN_ARM_WIDTH || hd - padHalfY < MIN_ARM_WIDTH) return;
 
@@ -222,10 +222,12 @@ export type PartialFloorCut =
 export function planPartialCellFloorCuts(
   cell: CellInfo,
   magnetRadius: number,
-  gridUnitMm: GridUnitInput
+  gridUnitMm: GridUnitInput,
+  nozzleSizeMm?: number
 ): PartialFloorCut[] {
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY);
+  const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
   if (positions.length === 0) return []; // too small for a magnet — leave solid
 
   const halfW = (cell.widthUnits * unitX) / 2;
@@ -242,8 +244,8 @@ export function planPartialCellFloorCuts(
   if (positions.length === 4) {
     const offX = Math.abs(positions[0][0] - cell.centerX);
     const offY = Math.abs(positions[0][1] - cell.centerY);
-    const padHalfX = offX - magnetRadius - PAD_MARGIN;
-    const padHalfY = offY - magnetRadius - PAD_MARGIN;
+    const padHalfX = offX - magnetRadius - padMargin;
+    const padHalfY = offY - magnetRadius - padMargin;
     if (
       padHalfX < MIN_ARM_WIDTH ||
       padHalfY < MIN_ARM_WIDTH ||
@@ -257,7 +259,7 @@ export function planPartialCellFloorCuts(
     ];
   }
 
-  const keepHalf = magnetRadius + PAD_MARGIN; // material kept around each magnet
+  const keepHalf = magnetRadius + padMargin; // material kept around each magnet
 
   // Lone centered magnet (small corner tile, e.g. 25×13): no spread to bridge, so
   // hollow the roomier axis's two sides while keeping a pad that spans the tighter
@@ -389,7 +391,8 @@ export function buildPartialCellFloorCutters(
   magnetRadius: number,
   magnetDepth: number,
   gridUnitMm: GridUnitInput,
-  lightweight?: boolean
+  lightweight?: boolean,
+  nozzleSizeMm?: number
 ): Shape3D[] {
   if (lightweight === false) return [];
 
@@ -399,7 +402,7 @@ export function buildPartialCellFloorCutters(
   const cutters: Shape3D[] = [];
   try {
     for (const cell of cells) {
-      for (const cut of planPartialCellFloorCuts(cell, magnetRadius, gridUnitMm)) {
+      for (const cut of planPartialCellFloorCuts(cell, magnetRadius, gridUnitMm, nozzleSizeMm)) {
         const profile =
           cut.kind === 'cross'
             ? crossProfile(cut.hw, cut.hd, cut.padHalfX, cut.padHalfY)
