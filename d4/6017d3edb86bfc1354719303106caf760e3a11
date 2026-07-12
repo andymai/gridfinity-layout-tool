@@ -1,0 +1,23 @@
+src/features/drawer-shape/utils/drawerMask.test.ts
+  s_25758575a76743::t_b36b75e1d917bd 102-120
+src/shared/utils/cellMask.ts
+  s_25758575a76743::t_b36b75e1d917bd 282-287
+src/features/drawer-shape/utils/drawerMask.ts
+  s_25758575a76743::t_b36b75e1d917bd 92-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "d46017d3edb86bfc1354719303106caf760e3a11",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
