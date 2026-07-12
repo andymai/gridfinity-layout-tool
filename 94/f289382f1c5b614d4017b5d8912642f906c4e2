@@ -1,0 +1,32 @@
+src/features/grid-editor/components/Grid/DrawerMargin/useDrawerMarginInsets.ts
+  s_55cff33bbf967e::t_29ef13ac23da21 1-54
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.tsx
+  s_55cff33bbf967e::t_42bd6e7c7a54bb 2
+  s_55cff33bbf967e::t_c363413f3d24e0 26,29-31,39-42
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_55cff33bbf967e::t_25dc0872f7614f 349-351
+  s_55cff33bbf967e::t_23f4f38a2e4c17 214-218
+  s_55cff33bbf967e::t_281ea1c967300d 509-511
+  s_55cff33bbf967e::t_51c9897386b1b6 23
+src/features/grid-editor/components/Grid/DrawerMargin/index.ts
+  s_55cff33bbf967e::t_825f6cfd5b1913 2-3
+src/features/grid-editor/components/Grid/DrawerMargin/useDrawerMarginInsets.test.ts
+  s_55cff33bbf967e::t_b19256fa722213 1-58,60-81
+  s_55cff33bbf967e::t_daf097e3b5af7e 59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "94f289382f1c5b614d4017b5d8912642f906c4e2",
+  "prompts": {},
+  "sessions": {
+    "s_55cff33bbf967e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5220726-6835-4540-b703-51e6fae8d8b3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
