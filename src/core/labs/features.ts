@@ -9,6 +9,18 @@ import type { FeatureFlag } from './types';
 
 export const FEATURE_FLAGS = [
   {
+    id: 'drawer_shapes',
+    name: 'Custom Drawer Shapes',
+    description:
+      'Design non-rectangular drawers — L-shapes, notches, and cut corners. Paint the drawer shape cell by cell or trace it from your bin layout, and the baseplate follows it exactly.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Shaped baseplates disable padding, corner rounding, and detached margins (the shape defines the edge). Stack printing prints the rectangular plate.',
+    addedAt: '2026-07',
+    requiresRefresh: false,
+  },
+  {
     id: 'bin_designer',
     name: 'Bin Designer',
     description:

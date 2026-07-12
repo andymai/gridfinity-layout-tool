@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
+import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button, Checkbox, Collapsible, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
@@ -458,6 +459,9 @@ export function Sidebar() {
                       )}
                     </div>
                   )}
+
+                  {/* Non-rectangular drawer shape (labs: drawer_shapes) */}
+                  <DrawerShapeSection />
                 </div>
               </Collapsible>
             </div>

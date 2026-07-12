@@ -10,6 +10,7 @@ import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SectionHeader } from '@/shared/components/SectionHeader';
+import { DrawerShapeSection } from '@/features/drawer-shape';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -174,6 +175,9 @@ export function MobileSettingsPanel() {
           </div>
           <Checkbox checked={halfGridMode} size="lg" />
         </div>
+
+        {/* Non-rectangular drawer shape (labs: drawer_shapes) */}
+        <DrawerShapeSection />
       </section>
 
       {/* Grid Settings */}
