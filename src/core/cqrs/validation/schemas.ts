@@ -25,6 +25,7 @@ import {
   libraryImportLayoutSchema,
 } from './librarySchemas';
 import { designerSaveSchema } from './designerSchemas';
+import { drawerOutlineSchema } from './outlineSchema';
 /** Branded string IDs are strings at runtime */
 const binIdSchema = z.string().min(1);
 const layerIdSchema = z.string().min(1);
@@ -286,6 +287,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
 
   // Drawer/layout commands (6)
   'drawer.update': drawerUpdateSchema,
+  'drawer.setOutline': z.object({ outline: drawerOutlineSchema.nullable() }),
   'layout.setName': layoutSetNameSchema,
   'layout.setPrintBedSize': layoutSetPrintBedSizeSchema,
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,

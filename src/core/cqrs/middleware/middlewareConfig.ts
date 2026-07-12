@@ -45,6 +45,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'category.update': 'domain',
   'category.delete': 'domain',
   'drawer.update': 'domain',
+  'drawer.setOutline': 'domain',
   'layout.setName': 'domain',
   'layout.setPrintBedSize': 'domain',
   'layout.setGridUnitMm': 'domain',

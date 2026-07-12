@@ -185,6 +185,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'category.deleted',
     // Drawer / layout events
     'drawer.updated',
+    'drawer.outlineSet',
     'layout.nameSet',
     'layout.printBedSizeSet',
     'layout.gridUnitMmSet',

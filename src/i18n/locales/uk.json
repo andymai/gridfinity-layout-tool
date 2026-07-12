@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Видалено категорію",
   "undo.categoryUpdated": "Оновлено категорію",
   "undo.drawerUpdated": "Оновлено шухляду",
+  "undo.drawerOutlineSet": "Змінено форму шухляди",
   "undo.gapsFilled": "Заповнено проміжки",
   "undo.gridUnitChanged": "Змінено одиницю сітки",
   "undo.heightUnitChanged": "Змінено одиницю висоти",

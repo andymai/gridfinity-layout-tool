@@ -67,3 +67,64 @@ describe('v2 drawer.update', () => {
     expect(applied.bins.find((b) => b.id === binId('bin_b'))?.layerId).not.toBe(STAGING_ID);
   });
 });
+
+describe('v2 drawer.update with an outline', () => {
+  const U = 42;
+  const L_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 6 * U, y: 0 },
+      { x: 6 * U, y: 2 * U },
+      { x: 4 * U, y: 2 * U },
+      { x: 4 * U, y: 4 * U },
+      { x: 0, y: 4 * U },
+    ],
+  };
+  const withOutline = () => {
+    const base = makeLayout();
+    return { ...base, drawer: { ...base.drawer, outline: L_OUTLINE } };
+  };
+
+  it('crops the outline on shrink and records it in changes', () => {
+    const result = updateDrawer.handle({ width: 5 }, { aggregate: withOutline() });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const changes = result.value.event.payload.changes;
+    expect(changes.outline).toBeDefined();
+    expect(changes.outline?.vertices.every((v) => v.x <= 5 * U + 0.01)).toBe(true);
+    expect(result.value.event.payload.previous.outline).toBe(L_OUTLINE);
+  });
+
+  it('resets to a plain rectangle when the shrink consumes the notch', () => {
+    // Shrinking to width 4 removes everything right of the notch — the
+    // remaining region is the full 4×4 rectangle.
+    const result = updateDrawer.handle({ width: 4 }, { aggregate: withOutline() });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const payload = result.value.event.payload;
+    expect('outline' in payload.changes).toBe(true);
+    expect(payload.changes.outline).toBeUndefined();
+
+    const next = produce(withOutline(), (draft) => {
+      updateDrawer.apply({ payload } as never, draft);
+    });
+    expect('outline' in next.drawer).toBe(false);
+  });
+
+  it('displaces bins that fall outside the adapted outline', () => {
+    // Growing depth to 6 extends the shape upward except over the notch;
+    // a bin in the notch column stays displaced.
+    const layout = { ...withOutline(), bins: [makeBin('bin_notch', 5, 3)] };
+    const result = updateDrawer.handle({ depth: 6 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.displacedBinIds).toEqual([binId('bin_notch')]);
+  });
+
+  it('leaves the outline untouched when only height changes', () => {
+    const result = updateDrawer.handle({ height: 9 }, { aggregate: withOutline() });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect('outline' in result.value.event.payload.changes).toBe(false);
+  });
+});

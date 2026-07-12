@@ -19,6 +19,7 @@ import type {
   CloudShareInfo,
   StoredBaseplateParams,
   BaseplateDesignId,
+  DrawerOutline,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
@@ -107,6 +108,11 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
 
     updateDrawer(updates: Partial<Drawer>): void {
       bus.dispatch(createCommand('drawer.update', updates));
+    },
+
+    setDrawerOutline(outline: DrawerOutline | null): Result<void, LayoutError> {
+      const result = bus.dispatch(createCommand('drawer.setOutline', { outline }));
+      return extractResult(result);
     },
 
     addCategory(category: Omit<Category, 'id'>): Result<CategoryId, LayoutError> {

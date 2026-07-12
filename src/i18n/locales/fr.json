@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Catégorie supprimée",
   "undo.categoryUpdated": "Catégorie mise à jour",
   "undo.drawerUpdated": "Drawer mis à jour",
+  "undo.drawerOutlineSet": "Forme du tiroir modifiée",
   "undo.gapsFilled": "Espaces remplis",
   "undo.gridUnitChanged": "Grid unit modifiée",
   "undo.heightUnitChanged": "Height unit modifiée",

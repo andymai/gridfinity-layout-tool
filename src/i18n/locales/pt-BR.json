@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Categoria excluída",
   "undo.categoryUpdated": "Categoria atualizada",
   "undo.drawerUpdated": "Drawer atualizado",
+  "undo.drawerOutlineSet": "Formato da gaveta alterado",
   "undo.gapsFilled": "Lacunas preenchidas",
   "undo.gridUnitChanged": "Grid unit alterada",
   "undo.heightUnitChanged": "Height unit alterada",

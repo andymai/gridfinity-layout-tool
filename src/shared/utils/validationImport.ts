@@ -11,6 +11,7 @@
  */
 
 import type { Bin, Layout, ValidationReason } from '@/core/types';
+import { normalizeDrawerOutline } from './drawerOutline';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -219,5 +220,8 @@ export function validateImport(data: unknown): ImportValidationResult {
     return { valid: false, errors };
   }
 
-  return { valid: true, errors: [], layout: data as Layout };
+  // Never trust a stored outline: crop it to the current drawer extent (an
+  // old client may have resized the drawer without adapting the shape) and
+  // drop it when invalid or rectangle-equivalent.
+  return { valid: true, errors: [], layout: normalizeDrawerOutline(data as Layout) };
 }

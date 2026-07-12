@@ -32,7 +32,10 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'category.deleted': 1,
 
   // Drawer / layout metadata events
+  // Still v1: `changes`/`previous` may now carry the additive optional
+  // `outline` field, which old and new decoders both handle — no migration.
   'drawer.updated': 1,
+  'drawer.outlineSet': 1,
   'layout.nameSet': 1,
   'layout.printBedSizeSet': 1,
   'layout.gridUnitMmSet': 1,

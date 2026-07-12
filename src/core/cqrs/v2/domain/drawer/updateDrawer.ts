@@ -17,9 +17,11 @@ import type { Result, LayoutError } from '@/core/result';
 import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
+import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
+import { computeDisplacedBins } from './displacement';
 
 const payloadSchema = z
   .object({
@@ -84,18 +86,33 @@ export const updateDrawer = defineCommand({
     if (payload.fractionalEdgeX !== undefined) changes.fractionalEdgeX = payload.fractionalEdgeX;
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;
 
-    // Compute the displacement set against the post-update drawer dims.
     const newWidth: GridUnits = changes.width ?? drawer.width;
     const newDepth: GridUnits = changes.depth ?? drawer.depth;
-    const displacedBinIds = layout.bins
-      .filter((bin) => {
-        if (bin.layerId === STAGING_ID) return false;
-        return (
-          (bin.x as number) + (bin.width as number) > (newWidth as number) ||
-          (bin.y as number) + (bin.depth as number) > (newDepth as number)
-        );
-      })
-      .map((b) => b.id);
+
+    // A resize adapts the outline (cropped where the drawer shrank, extended
+    // where it grew); a degenerate result falls back to the full rectangle.
+    // The derived change rides in the event so replay stays deterministic.
+    const dimsChanged = newWidth !== drawer.width || newDepth !== drawer.depth;
+    let newOutline = drawer.outline;
+    if (drawer.outline !== undefined && dimsChanged) {
+      const u = layout.gridUnitMm as number;
+      newOutline = resizeDrawerOutline(
+        drawer.outline,
+        (drawer.width as number) * u,
+        (drawer.depth as number) * u,
+        (newWidth as number) * u,
+        (newDepth as number) * u,
+        u
+      );
+      changes.outline = newOutline;
+    }
+
+    // Displacement against the post-update drawer (dims AND adapted outline).
+    const displacedBinIds = computeDisplacedBins(
+      layout.bins,
+      { width: newWidth, depth: newDepth, outline: newOutline },
+      layout.gridUnitMm
+    );
 
     const previous = capturePrevious(drawer, changes);
 
@@ -113,6 +130,12 @@ export const updateDrawer = defineCommand({
   },
   apply: (event, draft) => {
     Object.assign(draft.drawer, event.payload.changes);
+    // Object.assign keeps an explicitly-undefined outline as a present key;
+    // reset-to-rectangle must delete it so downstream `!== undefined` guards
+    // and serialization see a truly absent field.
+    if ('outline' in event.payload.changes && event.payload.changes.outline === undefined) {
+      delete draft.drawer.outline;
+    }
     if (event.payload.displacedBinIds.length > 0) {
       const idSet = new Set(event.payload.displacedBinIds);
       for (const bin of draft.bins) {

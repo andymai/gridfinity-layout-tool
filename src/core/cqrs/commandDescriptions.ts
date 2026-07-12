@@ -25,6 +25,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'category.update': 'undo.categoryUpdated',
   'category.delete': 'undo.categoryDeleted',
   'drawer.update': 'undo.drawerUpdated',
+  'drawer.setOutline': 'undo.drawerOutlineSet',
   'layout.setName': 'undo.nameChanged',
   'layout.setPrintBedSize': 'undo.printBedSizeChanged',
   'layout.setGridUnitMm': 'undo.gridUnitChanged',

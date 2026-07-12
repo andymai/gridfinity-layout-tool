@@ -32,6 +32,7 @@ import type {
   CloudShareInfo,
   StoredBaseplateParams,
   BaseplateDesignId,
+  DrawerOutline,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
@@ -62,6 +63,7 @@ export interface Mutations {
 
   // Drawer operations
   updateDrawer: (updates: Partial<Drawer>) => void;
+  setDrawerOutline: (outline: DrawerOutline | null) => Result<void, LayoutError>;
 
   // Category operations
   addCategory: (category: Omit<Category, 'id'>) => Result<CategoryId, LayoutError>;

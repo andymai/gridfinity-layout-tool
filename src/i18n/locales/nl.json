@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Categorie verwijderd",
   "undo.categoryUpdated": "Categorie bijgewerkt",
   "undo.drawerUpdated": "Drawer bijgewerkt",
+  "undo.drawerOutlineSet": "Ladevorm gewijzigd",
   "undo.gapsFilled": "Gaten gevuld",
   "undo.gridUnitChanged": "Grid unit gewijzigd",
   "undo.heightUnitChanged": "Height unit gewijzigd",

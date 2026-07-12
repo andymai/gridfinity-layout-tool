@@ -13,6 +13,7 @@
  */
 
 import type { Bin, Layout } from '@/core/types';
+import { normalizeDrawerOutline } from './drawerOutline';
 import {
   binId as toBinId,
   layerId as toLayerId,
@@ -179,5 +180,5 @@ export function salvageImport(data: unknown): SalvageResult {
     bins: resultBins,
   };
 
-  return { valid: true, layout: salvageLayout, salvaged };
+  return { valid: true, layout: normalizeDrawerOutline(salvageLayout), salvaged };
 }

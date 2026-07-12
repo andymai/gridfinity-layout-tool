@@ -3,7 +3,13 @@
  */
 
 import type { BaseDomainEvent } from '../types';
-import type { BaseplateDesignId, BinId, Drawer, StoredBaseplateParams } from '@/core/types';
+import type {
+  BaseplateDesignId,
+  BinId,
+  Drawer,
+  DrawerOutline,
+  StoredBaseplateParams,
+} from '@/core/types';
 
 // `displacedBinIds` records the exact set of bins displaced by a
 // drawer-shrink cascade. Optional only for back-compat with persisted
@@ -16,6 +22,17 @@ export type DrawerUpdatedEvent = BaseDomainEvent<
     readonly previous: Partial<Drawer>;
     readonly binsDisplacedToStaging: number;
     readonly displacedBinIds?: ReadonlyArray<BinId>;
+  }
+>;
+
+export type DrawerOutlineSetEvent = BaseDomainEvent<
+  'drawer.outlineSet',
+  {
+    /** undefined = shape cleared back to the plain rectangle. */
+    readonly outline: DrawerOutline | undefined;
+    readonly previousOutline: DrawerOutline | undefined;
+    readonly binsDisplacedToStaging: number;
+    readonly displacedBinIds: ReadonlyArray<BinId>;
   }
 >;
 
@@ -61,6 +78,7 @@ export type ActiveBaseplateSetEvent = BaseDomainEvent<
 
 export type DrawerEvent =
   | DrawerUpdatedEvent
+  | DrawerOutlineSetEvent
   | LayoutNameSetEvent
   | PrintBedSizeSetEvent
   | GridUnitMmSetEvent

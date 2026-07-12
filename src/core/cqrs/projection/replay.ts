@@ -130,6 +130,21 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       Object.assign(next.drawer, event.payload.changes);
       break;
 
+    case 'drawer.outlineSet': {
+      if (event.payload.outline === undefined) {
+        delete next.drawer.outline;
+      } else {
+        next.drawer.outline = event.payload.outline;
+      }
+      const displaced = new Set(event.payload.displacedBinIds);
+      if (displaced.size > 0) {
+        next.bins = next.bins.map((bin) =>
+          displaced.has(bin.id) ? { ...bin, layerId: STAGING_ID } : bin
+        );
+      }
+      break;
+    }
+
     case 'layout.nameSet':
       next.name = event.payload.name;
       break;

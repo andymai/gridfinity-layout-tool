@@ -51,10 +51,24 @@ const RESERVED_PROPERTY_KEYS = [
 
 export type ValidExpiration = (typeof SHARE_CONSTRAINTS.VALID_EXPIRATIONS)[number];
 
+interface OutlineVertexShape {
+  x: number;
+  y: number;
+  bulge?: number;
+}
+
+interface DrawerOutlineShape {
+  vertices: OutlineVertexShape[];
+  authoring?: { kind: string; corners?: unknown };
+}
+
 interface DrawerShape {
   width: number;
   depth: number;
   height: number;
+  fractionalEdgeX?: 'start' | 'end';
+  fractionalEdgeY?: 'start' | 'end';
+  outline?: DrawerOutlineShape;
 }
 
 interface LayerShape {
@@ -104,8 +118,7 @@ export interface ValidationError {
 }
 
 export type ValidationResult =
-  | { valid: true; layout: LayoutShape }
-  | { valid: false; error: ValidationError };
+  { valid: true; layout: LayoutShape } | { valid: false; error: ValidationError };
 
 /**
  * Type guard for validation failure.
@@ -314,7 +327,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
     layout: {
       version: sanitizeString(String(layout.version), 10),
       name: sanitizeString(String(layout.name), SHARE_CONSTRAINTS.NAME_MAX_LENGTH),
-      drawer,
+      drawer: sanitizeDrawer(drawer),
       layers: validatedLayers,
       bins: validatedBins,
       categories: validatedCategories,
@@ -339,6 +352,7 @@ export function validateExpiration(days: unknown): days is ValidExpiration {
 // Type guards
 function isValidDrawer(value: unknown): value is DrawerShape {
   if (!isObject(value)) return false;
+  if (value.outline !== undefined && !isValidDrawerOutline(value.outline)) return false;
   return (
     isNumber(value.width) &&
     isNumber(value.depth) &&
@@ -349,6 +363,103 @@ function isValidDrawer(value: unknown): value is DrawerShape {
     // can't sync absurd values to other devices.
     inRange(value.height, SHARE_CONSTRAINTS.HEIGHT_MIN, SHARE_CONSTRAINTS.GRID_MAX)
   );
+}
+
+/** Mirrors OUTLINE_MAX_VERTICES in src/shared/utils/drawerOutline.ts. */
+const OUTLINE_MAX_VERTICES = 256;
+/** 50 units × up to 52mm grid, with slack — mirrors the client Zod schema. */
+const OUTLINE_COORD_MIN = -1;
+const OUTLINE_COORD_MAX = 2600;
+const OUTLINE_AUTHORING_KINDS = ['cells', 'corners', 'trace', 'pen'];
+
+/**
+ * Structural gate for a drawer outline (issue #2528): vertex/coordinate/bulge
+ * bounds and no self-intersection of the straight-chord approximation. The
+ * geometric invariants that need the drawer's mm extent (CCW, min area,
+ * in-bounds) are enforced client-side and re-checked at read time by
+ * normalizeDrawerOutline — the server's job is to bound the data so a
+ * hand-crafted payload can't sync junk or pathological geometry.
+ */
+function isValidDrawerOutline(value: unknown): value is DrawerOutlineShape {
+  if (!isObject(value) || !Array.isArray(value.vertices)) return false;
+  const vertices = value.vertices as unknown[];
+  if (vertices.length < 3 || vertices.length > OUTLINE_MAX_VERTICES) return false;
+  for (const v of vertices) {
+    if (!isObject(v)) return false;
+    if (
+      !isNumber(v.x) ||
+      !isNumber(v.y) ||
+      !inRange(v.x, OUTLINE_COORD_MIN, OUTLINE_COORD_MAX) ||
+      !inRange(v.y, OUTLINE_COORD_MIN, OUTLINE_COORD_MAX)
+    ) {
+      return false;
+    }
+    if (v.bulge !== undefined && (!isNumber(v.bulge) || !inRange(v.bulge, -1, 1))) return false;
+  }
+  if (value.authoring !== undefined) {
+    if (!isObject(value.authoring)) return false;
+    if (
+      typeof value.authoring.kind !== 'string' ||
+      !OUTLINE_AUTHORING_KINDS.includes(value.authoring.kind)
+    ) {
+      return false;
+    }
+  }
+  const pts = vertices as OutlineVertexShape[];
+  return !outlineChordsSelfIntersect(pts);
+}
+
+/** O(n²) chord test — arcs approximated by their chords; good enough to bound
+ * pathological payloads (exact arc checks run client-side). */
+function outlineChordsSelfIntersect(pts: OutlineVertexShape[]): boolean {
+  const n = pts.length;
+  const orient = (a: OutlineVertexShape, b: OutlineVertexShape, c: OutlineVertexShape): number => {
+    const v = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    return Math.abs(v) < 1e-9 ? 0 : Math.sign(v);
+  };
+  for (let i = 0; i < n; i++) {
+    const a = pts[i];
+    const b = pts[(i + 1) % n];
+    for (let j = i + 1; j < n; j++) {
+      if (j === i || (j + 1) % n === i || (i + 1) % n === j) continue;
+      const c = pts[j];
+      const d = pts[(j + 1) % n];
+      if (orient(a, b, c) !== orient(a, b, d) && orient(c, d, a) !== orient(c, d, b)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Rebuild the drawer field-by-field. The drawer previously passed through
+ * raw, which let arbitrary junk keys survive sanitization; an explicit
+ * rebuild keeps exactly the validated shape.
+ */
+function sanitizeDrawer(drawer: DrawerShape): DrawerShape {
+  const out: DrawerShape = {
+    width: drawer.width,
+    depth: drawer.depth,
+    height: drawer.height,
+  };
+  if (drawer.fractionalEdgeX === 'start' || drawer.fractionalEdgeX === 'end') {
+    out.fractionalEdgeX = drawer.fractionalEdgeX;
+  }
+  if (drawer.fractionalEdgeY === 'start' || drawer.fractionalEdgeY === 'end') {
+    out.fractionalEdgeY = drawer.fractionalEdgeY;
+  }
+  if (drawer.outline !== undefined) {
+    out.outline = {
+      vertices: drawer.outline.vertices.map((v) =>
+        v.bulge === undefined || v.bulge === 0
+          ? { x: v.x, y: v.y }
+          : { x: v.x, y: v.y, bulge: v.bulge }
+      ),
+      ...(drawer.outline.authoring !== undefined
+        ? { authoring: { kind: drawer.outline.authoring.kind } }
+        : {}),
+    };
+  }
+  return out;
 }
 
 function isValidLayer(value: unknown): value is LayerShape {

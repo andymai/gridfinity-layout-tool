@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Kategorie gelöscht",
   "undo.categoryUpdated": "Kategorie aktualisiert",
   "undo.drawerUpdated": "Drawer aktualisiert",
+  "undo.drawerOutlineSet": "Schubladenform geändert",
   "undo.gapsFilled": "Lücken gefüllt",
   "undo.gridUnitChanged": "Grid Unit geändert",
   "undo.heightUnitChanged": "Height Unit geändert",

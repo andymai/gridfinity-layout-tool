@@ -600,3 +600,136 @@ describe('custom properties validation', () => {
     expect(result).toBeDefined();
   });
 });
+
+describe('drawer outline validation (issue #2528)', () => {
+  const U = 42;
+  const validOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 10 * U, y: 0 },
+      { x: 10 * U, y: 4 * U },
+      { x: 4 * U, y: 4 * U },
+      { x: 4 * U, y: 8 * U },
+      { x: 0, y: 8 * U },
+    ],
+  };
+
+  function layoutWithOutline(outline: unknown) {
+    const layout = createValidLayout();
+    (layout.drawer as Record<string, unknown>).outline = outline;
+    return layout;
+  }
+
+  it('accepts and preserves a valid outline', () => {
+    const result = validateShareLayout(layoutWithOutline(validOutline));
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    const drawer = result.layout.drawer as Record<string, unknown>;
+    expect(drawer.outline).toEqual(validOutline);
+  });
+
+  it('rebuilds the drawer explicitly — junk keys do not survive', () => {
+    const layout = createValidLayout();
+    (layout.drawer as Record<string, unknown>).evil = '<script>';
+    const result = validateShareLayout(layout);
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect('evil' in (result.layout.drawer as Record<string, unknown>)).toBe(false);
+  });
+
+  it('preserves fractional edges through the rebuild', () => {
+    const layout = createValidLayout();
+    (layout.drawer as Record<string, unknown>).fractionalEdgeX = 'start';
+    const result = validateShareLayout(layout);
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect((result.layout.drawer as Record<string, unknown>).fractionalEdgeX).toBe('start');
+  });
+
+  it('rejects outlines with too few or too many vertices', () => {
+    expect(
+      validateShareLayout(
+        layoutWithOutline({
+          vertices: [
+            { x: 0, y: 0 },
+            { x: 42, y: 0 },
+          ],
+        })
+      ).valid
+    ).toBe(false);
+    const many = {
+      vertices: Array.from({ length: 257 }, (_, i) => ({ x: i, y: i % 2 })),
+    };
+    expect(validateShareLayout(layoutWithOutline(many)).valid).toBe(false);
+  });
+
+  it('rejects non-finite coordinates, out-of-bounds values, and bad bulges', () => {
+    expect(
+      validateShareLayout(
+        layoutWithOutline({
+          vertices: [
+            { x: NaN, y: 0 },
+            { x: 42, y: 0 },
+            { x: 0, y: 42 },
+          ],
+        })
+      ).valid
+    ).toBe(false);
+    expect(
+      validateShareLayout(
+        layoutWithOutline({
+          vertices: [
+            { x: 0, y: 0 },
+            { x: 99999, y: 0 },
+            { x: 0, y: 42 },
+          ],
+        })
+      ).valid
+    ).toBe(false);
+    expect(
+      validateShareLayout(
+        layoutWithOutline({
+          vertices: [
+            { x: 0, y: 0, bulge: 3 },
+            { x: 42, y: 0 },
+            { x: 0, y: 42 },
+          ],
+        })
+      ).valid
+    ).toBe(false);
+  });
+
+  it('rejects self-intersecting outlines', () => {
+    const bowtie = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 100, y: 100 },
+        { x: 100, y: 0 },
+        { x: 0, y: 100 },
+      ],
+    };
+    expect(validateShareLayout(layoutWithOutline(bowtie)).valid).toBe(false);
+  });
+
+  it('sanitizes the authoring annotation to the kind enum only', () => {
+    const result = validateShareLayout(
+      layoutWithOutline({
+        ...validOutline,
+        authoring: { kind: 'cells', corners: { evil: 'payload' }, junk: 1 },
+      })
+    );
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    const outline = (result.layout.drawer as Record<string, unknown>).outline as Record<
+      string,
+      unknown
+    >;
+    expect(outline.authoring).toEqual({ kind: 'cells' });
+  });
+
+  it('rejects unknown authoring kinds', () => {
+    expect(
+      validateShareLayout(layoutWithOutline({ ...validOutline, authoring: { kind: 'evil' } })).valid
+    ).toBe(false);
+  });
+});

@@ -29,6 +29,7 @@ import { addCategory } from './domain/category/addCategory';
 import { updateCategory } from './domain/category/updateCategory';
 import { deleteCategory } from './domain/category/deleteCategory';
 import { updateDrawer } from './domain/drawer/updateDrawer';
+import { setDrawerOutline } from './domain/drawer/setDrawerOutline';
 import { setName } from './domain/layout/setName';
 import { setPrintBedSize } from './domain/layout/setPrintBedSize';
 import { setGridUnitMm } from './domain/layout/setGridUnitMm';
@@ -81,6 +82,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [updateCategory.type]: wrapV2Handler(updateCategory) as V2HandlerFn,
   [deleteCategory.type]: wrapV2Handler(deleteCategory) as V2HandlerFn,
   [updateDrawer.type]: wrapV2Handler(updateDrawer) as V2HandlerFn,
+  [setDrawerOutline.type]: wrapV2Handler(setDrawerOutline) as V2HandlerFn,
   [setName.type]: wrapV2Handler(setName) as V2HandlerFn,
   [setPrintBedSize.type]: wrapV2Handler(setPrintBedSize) as V2HandlerFn,
   [setGridUnitMm.type]: wrapV2Handler(setGridUnitMm) as V2HandlerFn,
@@ -119,6 +121,7 @@ export const v2Commands = [
   updateCategory,
   deleteCategory,
   updateDrawer,
+  setDrawerOutline,
   setName,
   setPrintBedSize,
   setGridUnitMm,

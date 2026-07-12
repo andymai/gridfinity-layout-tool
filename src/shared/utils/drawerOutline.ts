@@ -539,7 +539,8 @@ export function resizeDrawerOutline(
  * or rectangle-equivalent. Returns the input layout when nothing changes.
  */
 export function normalizeDrawerOutline(layout: Layout): Layout {
-  const outline = layout.drawer.outline;
+  // Tolerate malformed payloads (ingress guard runs before full validation).
+  const outline = (layout.drawer as Layout['drawer'] | undefined)?.outline;
   if (outline === undefined) return layout;
 
   const widthMm = (layout.drawer.width as number) * (layout.gridUnitMm as number);

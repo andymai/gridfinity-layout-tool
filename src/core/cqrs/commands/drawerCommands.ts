@@ -3,9 +3,15 @@
  */
 
 import type { BaseCommand } from '../types';
-import type { BaseplateDesignId, Drawer, StoredBaseplateParams } from '@/core/types';
+import type { BaseplateDesignId, Drawer, DrawerOutline, StoredBaseplateParams } from '@/core/types';
 
 export type UpdateDrawerCommand = BaseCommand<'drawer.update', Partial<Drawer>>;
+
+/** Set or clear (null) the drawer's non-rectangular boundary. */
+export type SetDrawerOutlineCommand = BaseCommand<
+  'drawer.setOutline',
+  { readonly outline: DrawerOutline | null }
+>;
 
 export type SetNameCommand = BaseCommand<'layout.setName', { readonly name: string }>;
 
@@ -30,6 +36,7 @@ export type SetActiveBaseplateCommand = BaseCommand<
 
 export type DrawerCommand =
   | UpdateDrawerCommand
+  | SetDrawerOutlineCommand
   | SetNameCommand
   | SetPrintBedSizeCommand
   | SetGridUnitMmCommand

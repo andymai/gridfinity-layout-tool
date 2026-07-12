@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Raderade kategori",
   "undo.categoryUpdated": "Uppdaterade kategori",
   "undo.drawerUpdated": "Uppdaterade låda",
+  "undo.drawerOutlineSet": "Lådans form ändrad",
   "undo.gapsFilled": "Fyllde luckor",
   "undo.gridUnitChanged": "Ändrade rutnätsenhet",
   "undo.heightUnitChanged": "Ändrade höjdenhet",

@@ -1,6 +1,7 @@
 import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
 import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
+import { normalizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import {
   computePreview,
   loadLayoutAsync,
@@ -24,17 +25,19 @@ type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 export function normalizeIncomingLayout(layout: Layout): Layout {
   const bins = (layout as IncomingLayout).bins;
   const needsHealing = bins.some((b) => typeof b.notes !== 'string' || typeof b.label !== 'string');
-  if (!needsHealing) return layout;
-  return {
-    ...layout,
-    bins: bins.map(
-      (b): Bin => ({
-        ...b,
-        notes: typeof b.notes === 'string' ? b.notes : '',
-        label: typeof b.label === 'string' ? b.label : '',
-      })
-    ),
-  };
+  const healed = needsHealing
+    ? {
+        ...layout,
+        bins: bins.map((b): Bin => ({
+          ...b,
+          notes: typeof b.notes === 'string' ? b.notes : '',
+          label: typeof b.label === 'string' ? b.label : '',
+        })),
+      }
+    : layout;
+  // A remote device may have resized the drawer without adapting the outline
+  // (older client); crop/drop it before it reaches local storage.
+  return normalizeDrawerOutline(healed);
 }
 
 /**

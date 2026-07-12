@@ -2919,6 +2919,7 @@ const en: Record<string, string> = {
   'undo.categoryUpdated': 'Updated category',
   'undo.categoryDeleted': 'Deleted category',
   'undo.drawerUpdated': 'Updated drawer',
+  'undo.drawerOutlineSet': 'Changed drawer shape',
   'undo.nameChanged': 'Changed name',
   'undo.printBedSizeChanged': 'Changed print bed size',
   'undo.gridUnitChanged': 'Changed grid unit',

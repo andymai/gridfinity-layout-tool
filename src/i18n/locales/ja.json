@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "カテゴリーを削除",
   "undo.categoryUpdated": "カテゴリーを更新",
   "undo.drawerUpdated": "ドロワーを更新",
+  "undo.drawerOutlineSet": "引き出しの形状を変更しました",
   "undo.gapsFilled": "隙間を埋める",
   "undo.gridUnitChanged": "グリッドユニットを変更",
   "undo.heightUnitChanged": "高さユニットを変更",

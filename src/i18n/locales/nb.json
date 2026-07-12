@@ -2562,6 +2562,7 @@
   "undo.categoryDeleted": "Kategori slettet",
   "undo.categoryUpdated": "Kategori oppdatert",
   "undo.drawerUpdated": "Drawer oppdatert",
+  "undo.drawerOutlineSet": "Skuffeform endret",
   "undo.gapsFilled": "Hull fylt",
   "undo.gridUnitChanged": "Grid unit endret",
   "undo.heightUnitChanged": "Height unit endret",
