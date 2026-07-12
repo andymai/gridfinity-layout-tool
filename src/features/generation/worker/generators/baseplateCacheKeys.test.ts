@@ -102,12 +102,13 @@ describe('cache keys with outlines (issue #2528)', () => {
   });
 
   it('slabPocketsCacheKey keys on the pocket mask, not the outline curve', () => {
-    const rect = slabPocketsCacheKey(base(), true);
-    const masked = slabPocketsCacheKey(base(), true, 'abc123');
-    expect(masked).not.toBe(rect);
+    const rectKey = slabPocketsCacheKey(base(), true);
+    const maskAKey = slabPocketsCacheKey(base(), true, 'abc123');
+    const maskBKey = slabPocketsCacheKey(base(), true, 'def456');
+    expect(maskAKey).not.toBe(rectKey);
+    expect(maskBKey).not.toBe(maskAKey);
     // Outlines that pocket the same cells hash to the same mask and share the
     // slab entry by design — the outline intersect runs post-cache.
-    expect(slabPocketsCacheKey(base(), true, 'abc123')).toBe(masked);
-    expect(slabPocketsCacheKey(base(), true, 'def456')).not.toBe(masked);
+    expect(slabPocketsCacheKey(base(), true, 'abc123')).toBe(maskAKey);
   });
 });

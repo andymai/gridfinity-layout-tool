@@ -747,11 +747,58 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
  * If the baseplate fits on a single bed, returns a single-piece tiling with
  * `isSplit: false`.
  */
+/**
+ * Single whole-plate tiling for shapes the planner can't partition yet.
+ * Shaped plates carry zero padding (sanitized), no margins, and no split, so
+ * every derived field is the trivial one.
+ */
+function computeSinglePieceTiling(params: ResolvedBaseplateParams): BaseplateTiling {
+  const { width, depth, fractionalEdgeX, fractionalEdgeY } = params;
+  return {
+    isSplit: false,
+    pieces: [
+      {
+        label: 'A1',
+        col: 0,
+        row: 0,
+        widthUnits: width,
+        depthUnits: depth,
+        gridOffsetX: 0,
+        gridOffsetY: 0,
+        paddingLeft: params.paddingLeft,
+        paddingRight: params.paddingRight,
+        paddingFront: params.paddingFront,
+        paddingBack: params.paddingBack,
+        fractionalEdgeX: isFractional(width) ? fractionalEdgeX : 'none',
+        fractionalEdgeY: isFractional(depth) ? fractionalEdgeY : 'none',
+        edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+        placementRotationDeg: 0,
+      },
+    ],
+    margins: [],
+    cols: 1,
+    rows: 1,
+    totalWidthUnits: width,
+    totalDepthUnits: depth,
+    bedLoads: 1,
+    stackCount: 1,
+    stackSeparatorThickness: 0,
+    paddingReductionHint: null,
+  };
+}
+
 export function computeBaseplateTiling(
   params: ResolvedBaseplateParams,
   printBedWidthMm: number,
   printBedDepthMm: number = printBedWidthMm
 ): BaseplateTiling {
+  // Interim gate: the planner tiles rectangles only, so splitting a shaped
+  // plate would emit rectangular tiles that include material outside the
+  // drawer boundary. Shaped plates stay single-piece until the planner learns
+  // per-piece outline windows (PR3 of #2528).
+  if (params.outline !== undefined) {
+    return computeSinglePieceTiling(params);
+  }
   const {
     width,
     depth,

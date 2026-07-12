@@ -364,7 +364,12 @@ export function useBaseplateGeneration(): void {
         // for a shaped plate (a wrong-shape draft is worse than none; the
         // Manifold draft path runs the real generator and shows the true
         // outline, matching the canBinUseDirectMesh reject-in-the-gate rule).
+        // Clear any prior mesh so a stale rectangle can't linger while BREP
+        // runs (shouldDeferBrepPreview never defers shaped plates, so BREP
+        // always follows).
         if (fullParams.outline !== undefined) {
+          setGenerationResult(EMPTY_MESH);
+          setPieceMeshes([]);
           previewKindRef.current = 'direct';
           directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
           return tiling;

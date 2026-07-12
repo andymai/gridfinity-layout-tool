@@ -100,14 +100,21 @@ export function sanitizeParams(params: ResolvedBaseplateParams): ResolvedBasepla
   const clampFinite = (v: number, min: number, max: number): number =>
     Number.isFinite(v) ? clamp(v, min, max) : min;
 
+  // Outline coordinates are grid-local mm; nonzero padding would shift the
+  // plate frame relative to them, so zero it at the generator boundary
+  // (buildFullParams already does this upstream — enforce the contract here
+  // for direct callers).
+  const clampPadding = (v: number): number =>
+    params.outline !== undefined ? 0 : clampFinite(v, 0, 100);
+
   return {
     ...params,
     gridUnitMm: clampFinite(params.gridUnitMm, 1, 200),
     magnetDiameter: clampFinite(params.magnetDiameter, 0.5, 20),
     magnetDepth: clampFinite(params.magnetDepth, 0.5, 10),
-    paddingLeft: clampFinite(params.paddingLeft, 0, 100),
-    paddingRight: clampFinite(params.paddingRight, 0, 100),
-    paddingFront: clampFinite(params.paddingFront, 0, 100),
-    paddingBack: clampFinite(params.paddingBack, 0, 100),
+    paddingLeft: clampPadding(params.paddingLeft),
+    paddingRight: clampPadding(params.paddingRight),
+    paddingFront: clampPadding(params.paddingFront),
+    paddingBack: clampPadding(params.paddingBack),
   };
 }

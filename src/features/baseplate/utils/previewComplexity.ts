@@ -87,6 +87,10 @@ export function shouldDeferBrepPreview(
   parentParams: ResolvedBaseplateParams,
   lastBrepMs: number | null
 ): boolean {
+  // Deferral keeps the procedural direct-mesh on screen — but that mesh is
+  // rectangles-only, so a shaped plate would finalize with a wrong (or no)
+  // preview. Shaped plates always run BREP.
+  if (parentParams.outline !== undefined) return false;
   if (!parentParams.magnetHoles) return false;
 
   if (lastBrepMs !== null && lastBrepMs >= DEFER_LAST_BREP_MS) return true;

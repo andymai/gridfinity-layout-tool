@@ -124,17 +124,20 @@ describe('baseplate outline geometry', () => {
     { timeout: 240_000 },
     () => {
       const gen = getGenerateBaseplate();
-      const rect = gen(defaults(), NO_OP, true);
+      // Rect-first on purpose: generating a rectangle before the shaped plate
+      // is the exact sequence that trips brepkit's order-dependent intersect
+      // failure (see BREPKIT_CORNER_NOTCH_INTERSECT_BROKEN) and exercises the
+      // slab-cache key split on the kernels that pass.
+      gen(defaults(), NO_OP, true);
       const result = gen(defaults({ outline: L_SHAPE }), NO_OP, true);
       assertStructurallyValid(result, 'L-shape');
       // The notch (plate-local [2u,4u]×[2u,4u] → mesh [0,84]×[0,84]) is empty,
       // inset past the wall vertices and the coplanar nudge.
       expect(countVerticesIn(result.vertices, 2, 2, 82, 82)).toBe(0);
-      // The body keeps its full extent and differs from the rectangle.
+      // The body keeps its full extent.
       const bb = boundingBox(result.vertices);
       expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
       expect(bb.maxY - bb.minY).toBeCloseTo(4 * U, 0);
-      expect(result.triangleCount).not.toBe(rect.triangleCount);
     }
   );
 

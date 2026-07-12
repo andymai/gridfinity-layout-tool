@@ -1567,3 +1567,47 @@ describe('margin-seam connector edge assignment (#2414)', () => {
     expect(leftEdges).toEqual(new Set(['exterior']));
   });
 });
+
+describe('shaped plates (interim single-piece gate)', () => {
+  const L_SHAPE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 16 * 42, y: 0 },
+      { x: 16 * 42, y: 8 * 42 },
+      { x: 8 * 42, y: 8 * 42 },
+      { x: 8 * 42, y: 16 * 42 },
+      { x: 0, y: 16 * 42 },
+    ],
+  };
+
+  it('never splits a shaped plate, even when it exceeds the bed', () => {
+    // 16×16 would normally split on a 256mm bed.
+    const rectTiling = computeBaseplateTiling(makeParams({ width: 16, depth: 16 }), 256);
+    expect(rectTiling.isSplit).toBe(true);
+
+    const shaped = computeBaseplateTiling(
+      makeParams({
+        width: 16,
+        depth: 16,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        outline: L_SHAPE,
+      }),
+      256
+    );
+    expect(shaped.isSplit).toBe(false);
+    expect(shaped.pieces).toHaveLength(1);
+    expect(shaped.pieces[0].widthUnits).toBe(16);
+    expect(shaped.pieces[0].edges).toEqual({
+      left: 'exterior',
+      right: 'exterior',
+      front: 'exterior',
+      back: 'exterior',
+    });
+    expect(shaped.margins).toHaveLength(0);
+    expect(shaped.bedLoads).toBe(1);
+    expect(shaped.paddingReductionHint).toBeNull();
+  });
+});

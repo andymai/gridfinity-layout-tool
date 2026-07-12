@@ -333,14 +333,19 @@ export function buildBaseplateSolid(
     return fraction >= MIN_CLIPPED_POCKET_AREA_FRACTION ? 'clipped' : 'none';
   };
 
-  // Nominal + over-tile cells and their pocket decisions, computed once: the
-  // decisions feed BOTH the slab cache key (which cells are pocketed) and the
-  // pocket loop, so a key/geometry mismatch is structurally impossible.
-  const nominalCells: CellInfo[] = [];
-  forEachCell(width, depth, (cell) => nominalCells.push(cell), cellOpts);
-  const pocketDecisions = outline
-    ? [...nominalCells, ...overTileFrame].map(pocketDecision)
-    : undefined;
+  // Shaped plates only: nominal + over-tile cells and their pocket decisions,
+  // computed once — the decisions feed BOTH the slab cache key (which cells
+  // are pocketed) and the pocket loop, so a key/geometry mismatch is
+  // structurally impossible. Rectangular plates keep the allocation-free
+  // streaming path below.
+  let shapedPocketCells: CellInfo[] | undefined;
+  let pocketDecisions: ReadonlyArray<'full' | 'clipped' | 'none'> | undefined;
+  if (outline !== undefined) {
+    const nominalCells: CellInfo[] = [];
+    forEachCell(width, depth, (cell) => nominalCells.push(cell), cellOpts);
+    shapedPocketCells = [...nominalCells, ...overTileFrame];
+    pocketDecisions = shapedPocketCells.map(pocketDecision);
+  }
   const pocketMaskHash = pocketDecisions ? hashPocketDecisions(pocketDecisions) : undefined;
 
   // Cached separately so that toggling magnets or connectors doesn't redo the
@@ -388,10 +393,16 @@ export function buildBaseplateSolid(
     // overTileFrame so the magnets/floor cutters below cut exactly these cells.
     // Shaped plates skip cells the outline excludes; 'clipped' cells get a
     // full pocket here that the outline intersect below trims to shape.
-    const allPocketCells = [...nominalCells, ...overTileFrame];
-    for (let i = 0; i < allPocketCells.length; i++) {
-      if (pocketDecisions !== undefined && pocketDecisions[i] === 'none') continue;
-      addPocket(allPocketCells[i]);
+    if (shapedPocketCells !== undefined && pocketDecisions !== undefined) {
+      for (let i = 0; i < shapedPocketCells.length; i++) {
+        if (pocketDecisions[i] === 'none') continue;
+        addPocket(shapedPocketCells[i]);
+      }
+    } else {
+      forEachCell(width, depth, addPocket, cellOpts);
+      for (const cell of overTileFrame) {
+        addPocket(cell);
+      }
     }
 
     if (pockets.length > 0) {
