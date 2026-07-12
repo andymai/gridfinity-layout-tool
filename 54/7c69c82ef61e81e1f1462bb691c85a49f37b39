@@ -1,0 +1,27 @@
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.test.tsx
+  s_25758575a76743::t_3cadc5ef170f38 109-154
+api/lib/validation.test.ts
+  s_25758575a76743::t_3c3768ba61d04e 714,730-769
+  s_25758575a76743::t_19b188b490b3cb 770
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
+  s_25758575a76743::t_444994dc2dc8bc 29-32,69-74,76-81,149-151,164,178,189
+  s_25758575a76743::t_6ba8e0bf23f29c 190-191
+api/lib/validation.ts
+  s_25758575a76743::t_3c3768ba61d04e 60-67,70,484-492,499-545
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "547c69c82ef61e81e1f1462bb691c85a49f37b39",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
