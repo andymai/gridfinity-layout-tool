@@ -49,4 +49,17 @@ describe('baseplate oversized-grid magnet geometry (#2525)', () => {
 
     expect(result.triangleCount).toMatchSnapshot();
   });
+
+  it("generates a valid 3×3 magnet baseplate at gridUnitMm=50 with the legacy 'center' anchor", () => {
+    const gen = getGenerateBaseplate();
+    const result = gen(defaults({ magnetAnchor: 'center' }), NO_OP, true);
+
+    assertStructurallyValid(result, 'oversized legacy-anchor magnet baseplate');
+    expect(result.triangleCount).toBeGreaterThan(0);
+
+    const bb = boundingBox(result.vertices);
+    for (const value of Object.values(bb)) expect(Number.isFinite(value)).toBe(true);
+
+    expect(result.triangleCount).toMatchSnapshot();
+  });
 });

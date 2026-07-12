@@ -89,6 +89,7 @@ export function generateBaseplateDirect(
     magnetHoles,
     magnetDiameter,
     magnetDepth,
+    magnetAnchor,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -246,7 +247,13 @@ export function generateBaseplateDirect(
       if (cell.widthUnits < 1 || cell.depthUnits < 1) continue;
       // Shared placement (wall-distance clamp) — identical to the BREP plate,
       // bin base, and lid so the draft preview and all mating surfaces agree.
-      for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
+      for (const [x, y] of magnetPositionsForCell(
+        cell,
+        magnetRadius,
+        gridUnitMm,
+        gridUnitMm,
+        magnetAnchor
+      )) {
         addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
       }
     }
@@ -269,7 +276,13 @@ export function generateBaseplateDirect(
         overTileHalfGrid,
         overTileHalfGridSolidLeftover
       )) {
-        for (const [x, y] of magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm)) {
+        for (const [x, y] of magnetPositionsForCell(
+          cell,
+          magnetRadius,
+          gridUnitMm,
+          gridUnitMm,
+          magnetAnchor
+        )) {
           addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
         }
       }

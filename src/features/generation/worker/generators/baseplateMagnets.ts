@@ -18,6 +18,8 @@
 
 import { cylinder, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
+import type { MagnetAnchor } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { SIZE, SOCKET_HEIGHT, COPLANAR_MARGIN, HOLE_OFFSET, forEachCell } from './generatorTypes';
 import { resolvePitch } from './gridPitch';
 
@@ -79,7 +81,8 @@ export function buildMagnetHoles(
   magnetRadius: number,
   magnetDepth: number,
   cellOpts?: ForEachCellOptions,
-  cellFilter?: (cell: CellInfo) => boolean
+  cellFilter?: (cell: CellInfo) => boolean,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
   const positions: Array<[number, number]> = [];
@@ -91,7 +94,7 @@ export function buildMagnetHoles(
       if (cellFilter !== undefined && !cellFilter(cell)) return;
       // Same shared placement (with the standard wall-distance clamp) as the bin
       // base and lid, so every magnet-bearing surface agrees.
-      positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY));
+      positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor));
     },
     cellOpts
   );
@@ -122,21 +125,34 @@ export function magnetPositionsForCell(
   cell: CellInfo,
   magnetRadius: number,
   pitchX: number,
-  pitchY: number
+  pitchY: number,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Array<[number, number]> {
   const halfW = (cell.widthUnits * pitchX) / 2;
   const halfD = (cell.depthUnits * pitchY) / 2;
 
-  // Anchor magnets a constant STANDARD_WALL_INSET (8mm) from the cell edge, so
-  // they stay corner-aligned as gridUnitMm grows past 42mm instead of pinned at
-  // ±HOLE_OFFSET from center (which drifts them inward on a larger cell). At
-  // pitch ≤42mm the per-unit offset floors at HOLE_OFFSET, so every cell there —
-  // including wide over-tile margin tiles — is byte-identical to before; above
-  // 42mm the offset (and margin tiles with it) grows. The trailing Math.min
-  // preserves the wall gap on short/non-square cells. Depends only on cell size
-  // + pitch (not magnetRadius), so a bin base and the lid stacked on it mate.
-  const unitOffX = Math.max(HOLE_OFFSET, pitchX / 2 - STANDARD_WALL_INSET);
-  const unitOffY = Math.max(HOLE_OFFSET, pitchY / 2 - STANDARD_WALL_INSET);
+  // Per-unit offset from cell center to a corner magnet.
+  //
+  // 'edge' (default): a constant STANDARD_WALL_INSET (8mm) from the cell edge,
+  // so magnets stay corner-aligned as gridUnitMm grows past 42mm instead of
+  // pinned at ±HOLE_OFFSET from center (which drifts them inward on a larger
+  // cell). At pitch ≤42mm the offset floors at HOLE_OFFSET, so every cell there
+  // — including wide over-tile margin tiles — is byte-identical to before; above
+  // 42mm the offset (and margin tiles with it) grows.
+  //
+  // 'center' (legacy, #2525): the pre-fix behavior — a fixed ±HOLE_OFFSET (13mm)
+  // from cell center regardless of pitch. Identical to 'edge' at ≤42mm; on
+  // larger grids the magnets drift inward. Kept so parts printed against the old
+  // placement still mate. Layout-scoped, so a layout's bins/lids/baseplate all
+  // use the same anchor.
+  //
+  // The trailing Math.min preserves the wall gap on short/non-square cells.
+  // Depends only on cell size + pitch + anchor (not magnetRadius), so a bin base
+  // and the lid stacked on it mate.
+  const unitOffX =
+    anchor === 'center' ? HOLE_OFFSET : Math.max(HOLE_OFFSET, pitchX / 2 - STANDARD_WALL_INSET);
+  const unitOffY =
+    anchor === 'center' ? HOLE_OFFSET : Math.max(HOLE_OFFSET, pitchY / 2 - STANDARD_WALL_INSET);
   const offX = Math.min(unitOffX, halfW - STANDARD_WALL_INSET);
   const offY = Math.min(unitOffY, halfD - STANDARD_WALL_INSET);
 
@@ -198,12 +214,13 @@ export function buildPartialCellMagnetHoles(
   cells: readonly CellInfo[],
   magnetRadius: number,
   magnetDepth: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D[] {
   const positions: Array<[number, number]> = [];
   for (const cell of cells) {
     // Baseplate grid is square, so both axes use the same pitch.
-    positions.push(...magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm));
+    positions.push(...magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm, anchor));
   }
   return buildMagnetCutters(positions, magnetRadius, magnetDepth);
 }

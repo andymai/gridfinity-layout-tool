@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "Excluir remove esta placa base da sua biblioteca. Layouts vinculados a ela mantêm a placa base atual, mas perdem o vínculo.",
   "baseplate.library.deleteWarning.usedByCurrent": "Usada pelo layout atual",
   "baseplate.library.deleteWarning.confirm": "Excluir mesmo assim",
-  "commandPalette.openBaseplateLibrary": "Abrir biblioteca de placas base"
+  "commandPalette.openBaseplateLibrary": "Abrir biblioteca de placas base",
+  "baseplate.magnetAnchor": "Ancoragem dos ímãs",
+  "baseplate.magnetAnchorTooltip": "Onde os furos dos ímãs ficam em cada célula em grades maiores que 42 mm. «Cantos» os mantém a uma distância fixa da borda da célula (recomendado); «Clássico» os fixa a 13 mm do centro da célula, igual às peças impressas antes desta correção. Aplica-se à placa base, aos compartimentos e às tampas em conjunto.",
+  "baseplate.magnetAnchorEdge": "Cantos",
+  "baseplate.magnetAnchorCenter": "Clássico",
+  "undo.magnetAnchorChanged": "Ancoragem dos ímãs alterada"
 }

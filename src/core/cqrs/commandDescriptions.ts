@@ -29,6 +29,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'layout.setName': 'undo.nameChanged',
   'layout.setPrintBedSize': 'undo.printBedSizeChanged',
   'layout.setGridUnitMm': 'undo.gridUnitChanged',
+  'layout.setMagnetAnchor': 'undo.magnetAnchorChanged',
   'layout.setHeightUnitMm': 'undo.heightUnitChanged',
   'layout.setBaseplateParams': 'undo.baseplateParamsChanged',
   'layout.setActiveBaseplate': 'undo.activeBaseplateChanged',

@@ -199,6 +199,9 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
+    // Layout-scoped magnet anchor (edge vs legacy center). Changes hole XY on
+    // grids >42mm, so it must re-trigger BREP like the other magnet params.
+    magnetAnchor: state.layout.magnetAnchor,
     // Solid floor changes slab height + through-cut, and its thickness sets how
     // much taller the plate gets — both must re-trigger BREP. The thickness only
     // bites when the floor is on, so fold it out otherwise to avoid needless
@@ -280,6 +283,7 @@ export function useBaseplateGeneration(): void {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    magnetAnchor,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,
@@ -822,7 +826,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end',
           useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
-          layoutState.layout.drawer.outline
+          layoutState.layout.drawer.outline,
+          layoutState.layout.magnetAnchor
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -875,7 +880,8 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeX,
       fractionalEdgeY,
       nozzleSizeMm,
-      drawerOutline
+      drawerOutline,
+      magnetAnchor
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -887,6 +893,7 @@ export function useBaseplateGeneration(): void {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    magnetAnchor,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,

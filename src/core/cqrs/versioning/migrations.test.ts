@@ -189,6 +189,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'layout.nameSet',
     'layout.printBedSizeSet',
     'layout.gridUnitMmSet',
+    'layout.magnetAnchorSet',
     'layout.heightUnitMmSet',
     'layout.baseplateParamsSet',
     'layout.activeBaseplateSet',

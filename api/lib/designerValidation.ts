@@ -96,6 +96,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'fractionalEdgeManualX',
   'fractionalEdgeManualY',
   'gridUnitMm',
+  'magnetAnchor',
   'heightUnitMm',
   'wallThickness',
   'extraWallHeightMm',
@@ -606,6 +607,15 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
       'INVALID_PARAMS',
       `extraWallHeightMm must be ${CONSTRAINTS.MIN_EXTRA_WALL_HEIGHT}-${CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT}`
     );
+  }
+
+  // Magnet anchor (optional; absent = 'edge', the default corner-tracking anchor).
+  if (
+    params.magnetAnchor !== undefined &&
+    params.magnetAnchor !== 'edge' &&
+    params.magnetAnchor !== 'center'
+  ) {
+    return validationError('INVALID_PARAMS', "magnetAnchor must be 'edge' or 'center'");
   }
 
   // Style

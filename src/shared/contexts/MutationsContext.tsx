@@ -33,6 +33,7 @@ import type {
   StoredBaseplateParams,
   BaseplateDesignId,
   DrawerOutline,
+  MagnetAnchor,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 
@@ -85,6 +86,7 @@ export interface Mutations {
   setName: (name: string) => void;
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;
+  setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
   setBaseplateParams: (params: StoredBaseplateParams) => void;
   setActiveBaseplate: (designId: BaseplateDesignId | null, params: StoredBaseplateParams) => void;

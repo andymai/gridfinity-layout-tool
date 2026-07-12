@@ -118,6 +118,7 @@ interface LayoutShape {
   printBedDepth?: number;
   gridUnitMm?: number;
   heightUnitMm?: number;
+  magnetAnchor?: 'edge' | 'center';
 }
 
 export interface ValidationError {
@@ -343,6 +344,10 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       printBedDepth: isNumber(layout.printBedDepth) ? layout.printBedDepth : undefined,
       gridUnitMm: isNumber(layout.gridUnitMm) ? layout.gridUnitMm : undefined,
       heightUnitMm: isNumber(layout.heightUnitMm) ? layout.heightUnitMm : undefined,
+      magnetAnchor:
+        layout.magnetAnchor === 'edge' || layout.magnetAnchor === 'center'
+          ? layout.magnetAnchor
+          : undefined,
     },
   };
 }

@@ -3,6 +3,7 @@ import type {
   StoredBaseplateParams,
   LayoutId,
   GridUnits,
+  MagnetAnchor,
   Mm,
   BaseplateDesignId,
 } from '@/core/types';
@@ -83,6 +84,12 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
     setGridUnitMm: (mm: number): void => {
       setLocal((state) => {
         state.layout.gridUnitMm = clamp(mm, 1, 200) as Mm;
+      });
+    },
+
+    setMagnetAnchor: (anchor: MagnetAnchor): void => {
+      setLocal((state) => {
+        state.layout.magnetAnchor = anchor;
       });
     },
 

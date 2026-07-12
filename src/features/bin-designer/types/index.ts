@@ -26,7 +26,7 @@ export interface LidMeshDataState {
   readonly triangleCount: number;
   readonly faceGroups?: FaceGroupData[];
 }
-import type { DesignId } from '@/core/types';
+import type { DesignId, MagnetAnchor } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type {
   ColorZone,
@@ -566,6 +566,13 @@ export interface BinParams {
   readonly gridUnitMm: number;
   /** Optional grid unit (mm) along Y / `depth` for a non-square grid (e.g. 42×22). Omitted/equal to {@link gridUnitMm} ⇒ square; only the cell pitch stretches, round features stay isotropic. */
   readonly gridUnitMmY?: number;
+  /**
+   * Magnet hole placement anchor. Injected from the owning layout at generation
+   * time (the layout is the source of truth — see `MagnetAnchor` in
+   * `@/core/types`), so bin/lid magnets stay mated with the baseplate. Undefined
+   * ⇒ 'edge', the corner-tracking default; only observable at `gridUnitMm > 42`.
+   */
+  readonly magnetAnchor?: MagnetAnchor;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */
   readonly heightUnitMm: number;
   /** Wall thickness in mm (default 1.2) */

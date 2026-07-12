@@ -7,6 +7,7 @@
  */
 
 import type { BinParams, LidCompatibilitySide } from '@/shared/types/bin';
+import type { MagnetAnchor } from '@/core/types';
 import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import {
@@ -43,6 +44,9 @@ export interface LidInputs {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /** Magnet anchor (default 'edge'), injected from the layout so lid holes mate
+   * with the bin base. See `MagnetAnchor` in `@/core/types`. */
+  readonly magnetAnchor?: MagnetAnchor;
   readonly cellsX: number;
   readonly cellsY: number;
   /**
@@ -165,6 +169,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetHoles: params.lid.magnetHoles && params.lid.stackableTop,
     magnetDiameter: params.base.magnetDiameter,
     magnetDepth: params.base.magnetDepth,
+    magnetAnchor: params.magnetAnchor,
     cellsX: params.width,
     cellsY: params.depth,
     fractionalEdgeX: params.fractionalEdgeX,

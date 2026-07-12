@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "削除すると、このベースプレートはライブラリから削除されます。リンクされているレイアウトは現在のベースプレートを保持しますが、リンクは解除されます。",
   "baseplate.library.deleteWarning.usedByCurrent": "現在のレイアウトで使用中",
   "baseplate.library.deleteWarning.confirm": "削除する",
-  "commandPalette.openBaseplateLibrary": "ベースプレートライブラリを開く"
+  "commandPalette.openBaseplateLibrary": "ベースプレートライブラリを開く",
+  "baseplate.magnetAnchor": "磁石の基準位置",
+  "baseplate.magnetAnchorTooltip": "42mmより大きいグリッドで、各セル内の磁石穴の位置を決めます。「四隅」はセル端から一定の距離を保ちます（推奨）。「従来」はセル中心から13mmに固定し、この修正前に印刷した部品と一致します。ベースプレート、ビン、フタすべてに適用されます。",
+  "baseplate.magnetAnchorEdge": "四隅",
+  "baseplate.magnetAnchorCenter": "従来",
+  "undo.magnetAnchorChanged": "磁石の基準位置を変更"
 }

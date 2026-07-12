@@ -2402,6 +2402,11 @@ const en: Record<string, string> = {
   'baseplate.solidFloorHeightNote':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
+  'baseplate.magnetAnchor': 'Magnet anchor',
+  'baseplate.magnetAnchorTooltip':
+    'Where magnet holes sit in each cell on grids larger than 42mm. Corners keeps them a fixed distance from the cell edge (recommended); Legacy pins them 13mm from the cell center, matching parts printed before this was fixed. Applies to the baseplate, bins, and lids together.',
+  'baseplate.magnetAnchorEdge': 'Corners',
+  'baseplate.magnetAnchorCenter': 'Legacy',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
   'baseplate.maxPrintHeight': 'Build height',
   'baseplate.maxPrintHeightTooltip':
@@ -2959,6 +2964,7 @@ const en: Record<string, string> = {
   'undo.nameChanged': 'Changed name',
   'undo.printBedSizeChanged': 'Changed print bed size',
   'undo.gridUnitChanged': 'Changed grid unit',
+  'undo.magnetAnchorChanged': 'Changed magnet anchor',
   'undo.heightUnitChanged': 'Changed height unit',
   'undo.baseplateParamsChanged': 'Changed baseplate params',
   'undo.activeBaseplateChanged': 'Changed active baseplate',

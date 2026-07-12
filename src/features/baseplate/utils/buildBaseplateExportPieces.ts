@@ -15,7 +15,12 @@ import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import { isErr, getUserMessage } from '@/core/result';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
-import type { DrawerOutline, StackPrintParams, StoredBaseplateParams } from '@/core/types';
+import type {
+  DrawerOutline,
+  MagnetAnchor,
+  StackPrintParams,
+  StoredBaseplateParams,
+} from '@/core/types';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { GenerationBridge, WorkerPool, ExportFormat } from '@/shared/generation/bridge';
 import { buildStackExportSoup } from './stackExport';
@@ -50,6 +55,8 @@ export interface BuildBaseplateExportInput {
    * decides applicability (sync mode, stacking). */
   readonly drawerOutline?: DrawerOutline;
   readonly gridUnitMm: number;
+  /** Layout-scoped magnet anchor (default 'edge'). */
+  readonly magnetAnchor?: MagnetAnchor;
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
   readonly printBedWidthMm: number;
@@ -156,6 +163,7 @@ export async function buildBaseplateExportPieces(
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    magnetAnchor,
     fractionalEdgeX,
     fractionalEdgeY,
     printBedWidthMm,
@@ -179,7 +187,8 @@ export async function buildBaseplateExportPieces(
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleMm,
-    drawerOutline
+    drawerOutline,
+    magnetAnchor
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
 
@@ -204,7 +213,8 @@ export async function buildBaseplateExportPieces(
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleMm,
-    drawerOutline
+    drawerOutline,
+    magnetAnchor
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

@@ -208,6 +208,9 @@ const layoutSetPrintBedSizeSchema = z.object({ size: positiveMm, depth: positive
 /** layout.setGridUnitMm */
 const layoutSetGridUnitMmSchema = z.object({ mm: positiveMm });
 
+/** layout.setMagnetAnchor */
+const layoutSetMagnetAnchorSchema = z.object({ anchor: z.enum(['edge', 'center']) });
+
 /** layout.setHeightUnitMm */
 const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 
@@ -285,12 +288,13 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'category.update': categoryUpdateSchema,
   'category.delete': categoryDeleteSchema,
 
-  // Drawer/layout commands (6)
+  // Drawer/layout commands (7)
   'drawer.update': drawerUpdateSchema,
   'drawer.setOutline': z.object({ outline: drawerOutlineSchema.nullable() }),
   'layout.setName': layoutSetNameSchema,
   'layout.setPrintBedSize': layoutSetPrintBedSizeSchema,
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,
+  'layout.setMagnetAnchor': layoutSetMagnetAnchorSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,

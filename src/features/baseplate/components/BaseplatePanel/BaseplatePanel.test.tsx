@@ -17,15 +17,18 @@ vi.mock('@/i18n', () => ({
 // Mock layout store
 const mockSetBaseplateParams = vi.fn();
 const mockSetPrintBedSize = vi.fn();
+const mockSetMagnetAnchor = vi.fn();
 let mockLayoutState = {
   layout: {
     drawer: { width: 4, depth: 6 },
     gridUnitMm: 42,
+    magnetAnchor: undefined as 'edge' | 'center' | undefined,
     printBedSize: 256,
     baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
   },
   setBaseplateParams: mockSetBaseplateParams,
   setPrintBedSize: mockSetPrintBedSize,
+  setMagnetAnchor: mockSetMagnetAnchor,
 };
 
 vi.mock('@/core/store/layout', () => ({
@@ -132,11 +135,13 @@ describe('BaseplatePanel', () => {
       layout: {
         drawer: { width: 4, depth: 6 },
         gridUnitMm: 42,
+        magnetAnchor: undefined,
         printBedSize: 256,
         baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
       },
       setBaseplateParams: mockSetBaseplateParams,
       setPrintBedSize: mockSetPrintBedSize,
+      setMagnetAnchor: mockSetMagnetAnchor,
     };
     mockHalfGridMode = false;
     mockTiling = null;
@@ -193,6 +198,28 @@ describe('BaseplatePanel', () => {
   it('renders physical units section', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('common.physicalUnits')).toBeInTheDocument();
+  });
+
+  describe('magnet anchor toggle (#2525)', () => {
+    it('is hidden at the standard 42mm grid (edge and center are identical there)', () => {
+      render(<BaseplatePanel />);
+      expect(screen.queryByText('baseplate.magnetAnchor')).toBeNull();
+    });
+
+    it('appears once the grid unit exceeds 42mm', () => {
+      mockLayoutState.layout.gridUnitMm = 50;
+      render(<BaseplatePanel />);
+      expect(screen.getByText('baseplate.magnetAnchor')).toBeInTheDocument();
+      expect(screen.getByText('baseplate.magnetAnchorEdge')).toBeInTheDocument();
+      expect(screen.getByText('baseplate.magnetAnchorCenter')).toBeInTheDocument();
+    });
+
+    it('dispatches setMagnetAnchor when the legacy option is chosen', () => {
+      mockLayoutState.layout.gridUnitMm = 50;
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByText('baseplate.magnetAnchorCenter'));
+      expect(mockSetMagnetAnchor).toHaveBeenCalledWith('center');
+    });
   });
 
   it('renders unified dimensions section', () => {
@@ -950,11 +977,13 @@ describe('shaped drawer (outline present)', () => {
       layout: {
         drawer: { width: 4, depth: 6 },
         gridUnitMm: 42,
+        magnetAnchor: undefined,
         printBedSize: 256,
         baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
       },
       setBaseplateParams: mockSetBaseplateParams,
       setPrintBedSize: mockSetPrintBedSize,
+      setMagnetAnchor: mockSetMagnetAnchor,
     };
     mockExportFormat = 'stl';
   });

@@ -172,4 +172,43 @@ describe('magnetPositionsForCell', () => {
       }
     });
   });
+
+  describe("legacy 'center' anchor (#2525 compatibility escape hatch)", () => {
+    it('pins a full 1×1 cell at ±HOLE_OFFSET from center at pitch 50 (drifts inward)', () => {
+      const positions = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50, 'center');
+      expect(positions).toHaveLength(4);
+      const half = 50 / 2;
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(HOLE_OFFSET, 6);
+        expect(Math.abs(y)).toBeCloseTo(HOLE_OFFSET, 6);
+        // 13mm from center on a 50mm cell = 12mm from the edge (the pre-#2525
+        // inward drift the legacy mode deliberately reproduces).
+        expect(half - Math.abs(x)).toBeCloseTo(12, 6);
+      }
+    });
+
+    it('pins a full 1×1 cell at ±HOLE_OFFSET from center at pitch 60', () => {
+      const positions = magnetPositionsForCell(cell(1, 1), MAGNET_R, 60, 60, 'center');
+      expect(positions).toHaveLength(4);
+      for (const [x, y] of positions) {
+        expect(Math.abs(x)).toBeCloseTo(HOLE_OFFSET, 6);
+        expect(Math.abs(y)).toBeCloseTo(HOLE_OFFSET, 6);
+      }
+    });
+
+    it("is identical to 'edge' at the standard 42mm grid", () => {
+      const edge = magnetPositionsForCell(cell(1, 1), MAGNET_R, GRID, GRID, 'edge');
+      const center = magnetPositionsForCell(cell(1, 1), MAGNET_R, GRID, GRID, 'center');
+      expect(center).toEqual(edge);
+    });
+
+    it("defaults to 'edge' when the anchor argument is omitted", () => {
+      const explicit = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50, 'edge');
+      const defaulted = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50);
+      expect(defaulted).toEqual(explicit);
+      // And distinct from legacy on an oversized grid.
+      const legacy = magnetPositionsForCell(cell(1, 1), MAGNET_R, 50, 50, 'center');
+      expect(defaulted).not.toEqual(legacy);
+    });
+  });
 });

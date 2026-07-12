@@ -5,7 +5,7 @@
  * This barrel export allows other features (e.g., generation) to
  * depend on these types without a cross-feature import violation.
  */
-import type { DrawerOutline, StackPrintParams } from '@/core/types';
+import type { DrawerOutline, MagnetAnchor, StackPrintParams } from '@/core/types';
 
 export type {
   ExportFileFormat,
@@ -223,6 +223,11 @@ export interface ResolvedBaseplateParams {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /**
+   * Magnet hole placement anchor (default 'edge'). See `MagnetAnchor` in
+   * `@/core/types`. Layout-scoped so the plate matches its bins/lids.
+   */
+  readonly magnetAnchor?: MagnetAnchor;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;

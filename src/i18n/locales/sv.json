@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "Att radera tar bort denna bottenplatta från ditt bibliotek. Layouter som är länkade till den behåller sin nuvarande bottenplatta men förlorar länken.",
   "baseplate.library.deleteWarning.usedByCurrent": "Används av den aktuella layouten",
   "baseplate.library.deleteWarning.confirm": "Radera ändå",
-  "commandPalette.openBaseplateLibrary": "Öppna bottenplattebibliotek"
+  "commandPalette.openBaseplateLibrary": "Öppna bottenplattebibliotek",
+  "baseplate.magnetAnchor": "Magnetförankring",
+  "baseplate.magnetAnchorTooltip": "Var magnethål sitter i varje cell på rutnät större än 42 mm. ”Hörn” håller dem på ett fast avstånd från cellkanten (rekommenderas); ”Klassisk” placerar dem 13 mm från cellens mitt, som delar utskrivna före den här korrigeringen. Gäller basplattan, lådorna och locken tillsammans.",
+  "baseplate.magnetAnchorEdge": "Hörn",
+  "baseplate.magnetAnchorCenter": "Klassisk",
+  "undo.magnetAnchorChanged": "Ändrade magnetförankring"
 }

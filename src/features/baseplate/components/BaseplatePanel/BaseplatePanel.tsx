@@ -96,6 +96,7 @@ export function BaseplatePanel() {
     drawerFractionalEdgeX,
     drawerFractionalEdgeY,
     gridUnitMm,
+    magnetAnchor,
     printBedSize,
     printBedDepth,
     baseplateParams,
@@ -107,6 +108,7 @@ export function BaseplatePanel() {
       drawerFractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       drawerFractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       gridUnitMm: state.layout.gridUnitMm,
+      magnetAnchor: state.layout.magnetAnchor ?? 'edge',
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth,
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -785,6 +787,26 @@ export function BaseplatePanel() {
                   className="input w-14 py-0.5 px-1 text-xs text-right"
                 />
               </SettingsRow>
+              {/* Magnet anchor only diverges above the standard 42mm grid; below
+                  that 'edge' and 'center' are identical, so hide the control to
+                  avoid presenting a no-op toggle. */}
+              {gridUnitMm > 42 && (
+                <SettingsRow
+                  label={t('baseplate.magnetAnchor')}
+                  tooltip={t('baseplate.magnetAnchorTooltip')}
+                >
+                  <SegmentedControl<'edge' | 'center'>
+                    aria-label={t('baseplate.magnetAnchor')}
+                    size="sm"
+                    options={[
+                      { value: 'edge', label: t('baseplate.magnetAnchorEdge') },
+                      { value: 'center', label: t('baseplate.magnetAnchorCenter') },
+                    ]}
+                    value={magnetAnchor}
+                    onChange={(value) => useLayoutStore.getState().setMagnetAnchor(value)}
+                  />
+                </SettingsRow>
+              )}
               <HelpTargetMarker id="bp-print-bed-size">
                 <SettingsRow
                   label={t('baseplate.printBedSize')}

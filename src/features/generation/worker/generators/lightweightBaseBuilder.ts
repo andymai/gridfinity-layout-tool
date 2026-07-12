@@ -40,6 +40,8 @@ import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
+import type { MagnetAnchor } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { sketch } from './meshUtils';
 import {
   buildSingleCellSocket,
@@ -128,7 +130,8 @@ export function buildLightweightBase(
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   openFloorDrawings?: readonly Drawing[],
-  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -270,7 +273,7 @@ export function buildLightweightBase(
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
-          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY);
+          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
           for (const p of buildCellPads(scope, positions, holeRadius, floorDepth, openDir)) {
             pads.push(p);
           }

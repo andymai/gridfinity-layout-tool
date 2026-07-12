@@ -28,6 +28,7 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
     gridUnitMmY,
     magnetDiameter,
     magnetDepth,
+    magnetAnchor,
     topThickness,
     cellMask,
   } = inputs;
@@ -69,7 +70,13 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
       }
       // Shared placement so the lid magnets land at exactly the positions the
       // bin base sockets use (same wall-distance clamp), letting them mate.
-      for (const [px, py] of magnetPositionsForCell(cell, radius, gridUnitMm, gridUnitMmY)) {
+      for (const [px, py] of magnetPositionsForCell(
+        cell,
+        radius,
+        gridUnitMm,
+        gridUnitMmY,
+        magnetAnchor
+      )) {
         const cylinder = drawCircle(radius).sketchOnPlane('XY', holeZ).extrude(holeHeight);
         cutters.push(scope.register(translate(cylinder, [px, py, 0])));
       }

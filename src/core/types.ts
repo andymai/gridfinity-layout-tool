@@ -36,6 +36,22 @@ export {
   designId,
   baseplateDesignId,
 } from '@gridfinity/branded-types';
+/**
+ * Where magnet holes anchor within each grid cell.
+ * - `edge` (default): a constant 8mm from the cell edge, so holes track the
+ *   corners at any `gridUnitMm` — the true Gridfinity corner position.
+ * - `center`: the legacy fixed 13mm from the cell center. Identical to `edge`
+ *   at the standard 42mm grid; on larger grids the holes drift inward. Kept as
+ *   a compatibility escape hatch for parts already printed against it (#2525).
+ *
+ * Layout-scoped so a layout's bins, lids, and baseplate share one anchor and
+ * their magnets stay mutually mated. Only observable when `gridUnitMm > 42`.
+ */
+export type MagnetAnchor = 'edge' | 'center';
+
+/** Default magnet anchor — corner-tracking, the correct Gridfinity position. */
+export const DEFAULT_MAGNET_ANCHOR: MagnetAnchor = 'edge';
+
 export interface Layout {
   version: string; // "1.0"
   name: string; // max 64 chars
@@ -44,6 +60,8 @@ export interface Layout {
   printBedDepth?: Mm; // print bed depth in mm (undefined = same as printBedSize)
   gridUnitMm: Mm; // mm per grid unit (default 42)
   heightUnitMm: Mm; // mm per height unit (default 7)
+  /** Magnet hole placement anchor (default 'edge'). See {@link MagnetAnchor}. */
+  magnetAnchor?: MagnetAnchor;
   categories: Category[]; // 1-20 items
   layers: Layer[]; // 1-10 items, index 0 = bottom
   bins: Bin[];

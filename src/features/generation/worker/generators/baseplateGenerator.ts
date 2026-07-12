@@ -263,6 +263,7 @@ export function buildBaseplateSolid(
     magnetHoles,
     magnetDiameter,
     magnetDepth,
+    magnetAnchor,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -482,7 +483,8 @@ export function buildBaseplateSolid(
       magnetDiameter / 2,
       magnetDepth,
       cellOpts,
-      magnetCellFilter
+      magnetCellFilter,
+      magnetAnchor
     );
     // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
     // spread/centered magnet for tiles too small for any corner — so the clipped
@@ -491,7 +493,13 @@ export function buildBaseplateSolid(
       magnetCellFilter === undefined ? overTileFrame : overTileFrame.filter(magnetCellFilter);
     if (magnetFrame.length > 0) {
       holes.push(
-        ...buildPartialCellMagnetHoles(magnetFrame, magnetDiameter / 2, magnetDepth, gridUnitMm)
+        ...buildPartialCellMagnetHoles(
+          magnetFrame,
+          magnetDiameter / 2,
+          magnetDepth,
+          gridUnitMm,
+          magnetAnchor
+        )
       );
     }
     baseplate = cutInBatches(baseplate, holes);
@@ -518,7 +526,8 @@ export function buildBaseplateSolid(
       cellOpts,
       params.lightweight,
       floorCellFilter,
-      params.nozzleSizeMm
+      params.nozzleSizeMm,
+      magnetAnchor
     );
     const floorFrame =
       floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
@@ -530,7 +539,8 @@ export function buildBaseplateSolid(
           magnetDepth,
           gridUnitMm,
           params.lightweight,
-          params.nozzleSizeMm
+          params.nozzleSizeMm,
+          magnetAnchor
         )
       );
     }

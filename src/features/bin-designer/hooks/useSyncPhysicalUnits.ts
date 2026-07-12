@@ -1,7 +1,8 @@
 /**
- * Syncs gridUnitMm and heightUnitMm from the layout store into the designer
- * store's BinParams. This ensures the bin designer always uses the layout's
- * physical unit settings for generation and export.
+ * Syncs gridUnitMm, heightUnitMm, and the magnet anchor from the layout store
+ * into the designer store's BinParams. This ensures the bin designer always uses
+ * the layout's physical unit settings — and its layout-scoped magnet anchor — for
+ * generation and export, so a designed bin's magnets mate with the baseplate.
  *
  * Updates are applied WITHOUT pushing history (no undo entry) since the user
  * changed the value in the layout store, not via the designer panel.
@@ -14,16 +15,21 @@ import { useDesignerStore } from '../store';
 import { setPendingMeshCache } from '../store/helpers';
 
 export function useSyncPhysicalUnits(): void {
-  const { gridUnitMm, heightUnitMm } = useLayoutStore(
+  const { gridUnitMm, heightUnitMm, magnetAnchor } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
+      magnetAnchor: state.layout.magnetAnchor,
     }))
   );
 
   useEffect(() => {
     const { params } = useDesignerStore.getState();
-    if (params.gridUnitMm === gridUnitMm && params.heightUnitMm === heightUnitMm) {
+    if (
+      params.gridUnitMm === gridUnitMm &&
+      params.heightUnitMm === heightUnitMm &&
+      params.magnetAnchor === magnetAnchor
+    ) {
       return;
     }
 
@@ -37,11 +43,12 @@ export function useSyncPhysicalUnits(): void {
         ...state.params,
         gridUnitMm,
         heightUnitMm,
+        magnetAnchor,
       },
       generation: {
         ...state.generation,
         epoch: state.generation.epoch + 1,
       },
     }));
-  }, [gridUnitMm, heightUnitMm]);
+  }, [gridUnitMm, heightUnitMm, magnetAnchor]);
 }

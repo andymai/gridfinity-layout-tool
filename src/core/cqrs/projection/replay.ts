@@ -164,6 +164,10 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.gridUnitMm = mm(event.payload.mm);
       break;
 
+    case 'layout.magnetAnchorSet':
+      next.magnetAnchor = event.payload.anchor;
+      break;
+
     case 'layout.heightUnitMmSet':
       next.heightUnitMm = mm(event.payload.mm);
       break;

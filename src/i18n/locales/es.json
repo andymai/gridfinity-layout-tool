@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "Al eliminarla, esta base se quita de tu biblioteca. Los diseños vinculados conservan su base actual pero pierden el vínculo.",
   "baseplate.library.deleteWarning.usedByCurrent": "Usada por el diseño actual",
   "baseplate.library.deleteWarning.confirm": "Eliminar de Todos Modos",
-  "commandPalette.openBaseplateLibrary": "Abrir biblioteca de bases"
+  "commandPalette.openBaseplateLibrary": "Abrir biblioteca de bases",
+  "baseplate.magnetAnchor": "Anclaje de imanes",
+  "baseplate.magnetAnchorTooltip": "Dónde se ubican los orificios de los imanes en cada celda en rejillas mayores de 42 mm. «Esquinas» los mantiene a una distancia fija del borde de la celda (recomendado); «Clásico» los fija a 13 mm del centro de la celda, igual que las piezas impresas antes de esta corrección. Se aplica a la placa base, los contenedores y las tapas por igual.",
+  "baseplate.magnetAnchorEdge": "Esquinas",
+  "baseplate.magnetAnchorCenter": "Clásico",
+  "undo.magnetAnchorChanged": "Anclaje de imanes cambiado"
 }

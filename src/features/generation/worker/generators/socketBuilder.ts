@@ -47,6 +47,8 @@ import {
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
+import type { MagnetAnchor } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import {
   hasHalfBinDetail,
   hashMask,
@@ -318,7 +320,8 @@ export function baseSocketShapeKey(
   halfSockets: boolean,
   gridUnitMm: GridUnitInput,
   cellMask?: CellMask,
-  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): string {
   const usingMask = isPartialMask(cellMask);
   return socketCacheKey(
@@ -334,7 +337,8 @@ export function baseSocketShapeKey(
     gridUnitMm,
     usingMask ? hashMask(cellMask) : undefined,
     fractionalEdge.x,
-    fractionalEdge.y
+    fractionalEdge.y,
+    anchor
   );
 }
 
@@ -350,7 +354,8 @@ export function buildBaseSocket(
   halfSockets = false,
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
-  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
@@ -371,7 +376,8 @@ export function buildBaseSocket(
     halfSockets,
     gridUnitMm,
     cellMask,
-    fractionalEdge
+    fractionalEdge,
+    anchor
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -455,7 +461,7 @@ export function buildBaseSocket(
           // Standard ±13mm 4-corner pattern on a normal foot; a non-square/small
           // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single
           // centered hole — so magnet/screw holes never breach the foot's side.
-          for (const [x, y] of magnetPositionsForCell(cell, holeRadius, unitX, unitY)) {
+          for (const [x, y] of magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)) {
             holeTools.push(
               translate(scope.register(unwrap(clone(cutout))), [x, y, -SOCKET_HEIGHT])
             );

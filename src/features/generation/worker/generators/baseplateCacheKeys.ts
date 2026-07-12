@@ -16,6 +16,7 @@ import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { hashOutline } from '@/shared/utils/drawerOutline';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
+  SIZE,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
   SNAP_CLIP_CLEARANCE,
@@ -48,6 +49,15 @@ export function meshCacheKey(
   // sharing one LRU entry instead of fragmenting it.
   const geometryAffectingDraft =
     draft && params.magnetHoles && params.lightweight !== false && !params.solidFloor;
+  // Legacy 'center' magnet anchor only shifts holes on a grid larger than the
+  // standard 42mm; at ≤42mm (or with magnets off) it's byte-identical to the
+  // default 'edge'. Fold to 'edge' in those cases so every existing plate keeps
+  // its cache identity and only a genuinely different center-anchored oversized
+  // plate gets a distinct entry.
+  const magnetAnchorKey =
+    params.magnetHoles && params.magnetAnchor === 'center' && params.gridUnitMm > SIZE
+      ? 'center'
+      : 'edge';
   // Nozzle scales connector feature sizes (snap-clip barb/leg) independently of
   // the clearance term, so it must key the cache or wider-nozzle geometry would
   // alias onto the 0.4mm build. Only meaningful when connectors are on; folded to
@@ -66,6 +76,7 @@ export function meshCacheKey(
     params.magnetHoles,
     quantize(params.magnetDiameter),
     quantize(params.magnetDepth),
+    magnetAnchorKey,
     // Solid floor changes slab height (via the resolved floor depth) + through-cut
     // vs. floored pockets, and — with magnets — keeps the underside continuous
     // (suppresses the lightweight cut). Key on both the resolved depth and the

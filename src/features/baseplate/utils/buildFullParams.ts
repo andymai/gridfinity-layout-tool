@@ -4,7 +4,8 @@
  * With direct per-side padding, the conversion is a straightforward pass-through.
  */
 
-import type { DrawerOutline, StoredBaseplateParams } from '@/core/types';
+import type { DrawerOutline, MagnetAnchor, StoredBaseplateParams } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 
 /**
@@ -26,7 +27,8 @@ export function buildFullParams(
   fractionalEdgeX: 'start' | 'end',
   fractionalEdgeY: 'start' | 'end',
   nozzleSizeMm?: number,
-  drawerOutline?: DrawerOutline
+  drawerOutline?: DrawerOutline,
+  magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
@@ -60,6 +62,7 @@ export function buildFullParams(
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
+    magnetAnchor,
     paddingLeft: outlineOn ? 0 : stored.paddingLeft,
     paddingRight: outlineOn ? 0 : stored.paddingRight,
     paddingFront: outlineOn ? 0 : stored.paddingFront,

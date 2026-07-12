@@ -17,6 +17,8 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
 import { magnetPadMarginForNozzle } from '@/shared/printSettings';
+import type { MagnetAnchor } from '@/core/types';
+import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 
 /** Minimum arm width for the cross cutout (mm). Skip cell if arms too narrow. */
 const MIN_ARM_WIDTH = 2;
@@ -85,7 +87,8 @@ export function buildLightweightFloorCutters(
   cellOpts: ForEachCellOptions & { gridUnitMm: GridUnitInput },
   lightweight?: boolean,
   cellFilter?: (cell: CellInfo) => boolean,
-  nozzleSizeMm?: number
+  nozzleSizeMm?: number,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D[] {
   if (lightweight === false) return [];
 
@@ -142,7 +145,7 @@ export function buildLightweightFloorCutters(
         // cross; 2-magnet / centered layouts (very short axes) are left solid —
         // the tiny weight saving isn't worth a bespoke cut and it can't strand a
         // magnet. A full 42mm cell yields offset 13 → the original cross exactly.
-        const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY);
+        const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY, anchor);
         if (positions.length !== 4) return;
         const offX = Math.abs(positions[0][0] - cell.centerX);
         const offY = Math.abs(positions[0][1] - cell.centerY);
@@ -223,10 +226,11 @@ export function planPartialCellFloorCuts(
   cell: CellInfo,
   magnetRadius: number,
   gridUnitMm: GridUnitInput,
-  nozzleSizeMm?: number
+  nozzleSizeMm?: number,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): PartialFloorCut[] {
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
-  const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY);
+  const positions = magnetPositionsForCell(cell, magnetRadius, unitX, unitY, anchor);
   const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
   if (positions.length === 0) return []; // too small for a magnet — leave solid
 
@@ -392,7 +396,8 @@ export function buildPartialCellFloorCutters(
   magnetDepth: number,
   gridUnitMm: GridUnitInput,
   lightweight?: boolean,
-  nozzleSizeMm?: number
+  nozzleSizeMm?: number,
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D[] {
   if (lightweight === false) return [];
 
@@ -402,7 +407,13 @@ export function buildPartialCellFloorCutters(
   const cutters: Shape3D[] = [];
   try {
     for (const cell of cells) {
-      for (const cut of planPartialCellFloorCuts(cell, magnetRadius, gridUnitMm, nozzleSizeMm)) {
+      for (const cut of planPartialCellFloorCuts(
+        cell,
+        magnetRadius,
+        gridUnitMm,
+        nozzleSizeMm,
+        anchor
+      )) {
         const profile =
           cut.kind === 'cross'
             ? crossProfile(cut.hw, cut.hd, cut.padHalfX, cut.padHalfY)

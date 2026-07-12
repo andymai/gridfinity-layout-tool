@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "Verwijderen haalt deze basisplaat uit je bibliotheek. Gekoppelde layouts behouden hun huidige basisplaat maar verliezen de koppeling.",
   "baseplate.library.deleteWarning.usedByCurrent": "Gebruikt door de huidige layout",
   "baseplate.library.deleteWarning.confirm": "Toch verwijderen",
-  "commandPalette.openBaseplateLibrary": "Basisplaatbibliotheek openen"
+  "commandPalette.openBaseplateLibrary": "Basisplaatbibliotheek openen",
+  "baseplate.magnetAnchor": "Magneetankering",
+  "baseplate.magnetAnchorTooltip": "Waar magneetgaten in elke cel zitten bij rasters groter dan 42 mm. ‘Hoeken’ houdt ze op een vaste afstand van de celrand (aanbevolen); ‘Klassiek’ plaatst ze 13 mm vanaf het celmidden, passend bij onderdelen die vóór deze correctie zijn geprint. Geldt voor de basisplaat, bakjes en deksels samen.",
+  "baseplate.magnetAnchorEdge": "Hoeken",
+  "baseplate.magnetAnchorCenter": "Klassiek",
+  "undo.magnetAnchorChanged": "Magneetankering gewijzigd"
 }

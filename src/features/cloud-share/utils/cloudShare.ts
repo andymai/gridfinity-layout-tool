@@ -33,5 +33,6 @@ export function createLayoutFingerprint(layout: Layout): string {
     printBedDepth: layout.printBedDepth,
     gridUnitMm: layout.gridUnitMm,
     heightUnitMm: layout.heightUnitMm,
+    magnetAnchor: layout.magnetAnchor,
   });
 }

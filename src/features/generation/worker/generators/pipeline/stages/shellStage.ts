@@ -88,7 +88,8 @@ export const shellStage: PipelineStage = {
         pitch,
         params.cellMask,
         openFloorDrawings,
-        { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
+        { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
+        params.magnetAnchor
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -241,7 +242,8 @@ export const shellStage: PipelineStage = {
           dim.halfSockets,
           pitch,
           params.cellMask,
-          { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
+          { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
+          params.magnetAnchor
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -295,7 +297,8 @@ export const shellStage: PipelineStage = {
             dim.halfSockets,
             pitch,
             params.cellMask,
-            { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
+            { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
+            params.magnetAnchor
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };

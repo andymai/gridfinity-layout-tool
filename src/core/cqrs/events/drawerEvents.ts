@@ -56,6 +56,11 @@ export type GridUnitMmSetEvent = BaseDomainEvent<
   { readonly mm: number; readonly previousMm: number }
 >;
 
+export type MagnetAnchorSetEvent = BaseDomainEvent<
+  'layout.magnetAnchorSet',
+  { readonly anchor: 'edge' | 'center'; readonly previousAnchor: 'edge' | 'center' }
+>;
+
 export type HeightUnitMmSetEvent = BaseDomainEvent<
   'layout.heightUnitMmSet',
   { readonly mm: number; readonly previousMm: number }
@@ -82,6 +87,7 @@ export type DrawerEvent =
   | LayoutNameSetEvent
   | PrintBedSizeSetEvent
   | GridUnitMmSetEvent
+  | MagnetAnchorSetEvent
   | HeightUnitMmSetEvent
   | BaseplateParamsSetEvent
   | ActiveBaseplateSetEvent;

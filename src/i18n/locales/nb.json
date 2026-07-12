@@ -2676,5 +2676,10 @@
   "baseplate.library.deleteWarning.description": "Sletting fjerner denne bunnplaten fra biblioteket ditt. Layouter som er koblet til den, beholder gjeldende bunnplate, men mister koblingen.",
   "baseplate.library.deleteWarning.usedByCurrent": "Brukt av gjeldende layout",
   "baseplate.library.deleteWarning.confirm": "Slett likevel",
-  "commandPalette.openBaseplateLibrary": "Åpne bunnplate-bibliotek"
+  "commandPalette.openBaseplateLibrary": "Åpne bunnplate-bibliotek",
+  "baseplate.magnetAnchor": "Magnetforankring",
+  "baseplate.magnetAnchorTooltip": "Hvor magnethull sitter i hver celle på rutenett større enn 42 mm. «Hjørner» holder dem i fast avstand fra cellekanten (anbefalt); «Klassisk» fester dem 13 mm fra cellesenteret, som deler skrevet ut før dette ble rettet. Gjelder grunnplate, binger og lokk sammen.",
+  "baseplate.magnetAnchorEdge": "Hjørner",
+  "baseplate.magnetAnchorCenter": "Klassisk",
+  "undo.magnetAnchorChanged": "Endret magnetforankring"
 }

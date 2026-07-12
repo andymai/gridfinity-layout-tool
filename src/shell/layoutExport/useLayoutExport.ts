@@ -177,7 +177,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
           innerConfig,
           printSettings,
           layout.drawer,
-          layout.baseplateParams
+          layout.baseplateParams,
+          layout.magnetAnchor
         );
 
         // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
@@ -237,6 +238,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           drawerDepth: layout.drawer.depth,
           drawerOutline: layout.drawer.outline,
           gridUnitMm: layout.gridUnitMm,
+          magnetAnchor: layout.magnetAnchor,
           fractionalEdgeX: layout.drawer.fractionalEdgeX ?? 'end',
           fractionalEdgeY: layout.drawer.fractionalEdgeY ?? 'end',
           printBedWidthMm: layout.printBedSize,

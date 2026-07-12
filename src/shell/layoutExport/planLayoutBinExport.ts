@@ -7,7 +7,7 @@
  * (no bridge, no IndexedDB) so the orchestration hook stays a thin shell.
  */
 
-import type { Bin, DesignId, Drawer, StoredBaseplateParams } from '@/core/types';
+import type { Bin, DesignId, Drawer, MagnetAnchor, StoredBaseplateParams } from '@/core/types';
 import type { SavedDesign, BinParams } from '@/features/bin-designer';
 import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
@@ -84,7 +84,8 @@ export function planLayoutBinExport(
   fileNameConfig: ExportFileNameConfig,
   printSettings: PrintSettings,
   drawer: Pick<Drawer, 'width' | 'depth'>,
-  baseplate: StoredBaseplateParams | undefined
+  baseplate: StoredBaseplateParams | undefined,
+  magnetAnchor?: MagnetAnchor
 ): LayoutBinExportPlan {
   const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
 
@@ -115,7 +116,11 @@ export function planLayoutBinExport(
     const design = designById.get(b.linkedDesignId);
     if (!design?.params) continue; // missing/non-bin already tallied above
     const overhang = resolveBinMarginOverhang(b, drawer, baseplate);
-    const params = overhang ? { ...design.params, overhang } : design.params;
+    // Inject the layout's magnet anchor (source of truth), overriding any value
+    // saved on the design, so exported bins mate with the baseplate's magnets.
+    const params: BinParams = overhang
+      ? { ...design.params, overhang, magnetAnchor }
+      : { ...design.params, magnetAnchor };
     const key = `${b.linkedDesignId}|${overhangKey(overhang)}`;
     const existing = groups.get(key);
     if (existing) {

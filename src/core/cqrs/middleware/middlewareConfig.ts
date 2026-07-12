@@ -49,6 +49,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'layout.setName': 'domain',
   'layout.setPrintBedSize': 'domain',
   'layout.setGridUnitMm': 'domain',
+  'layout.setMagnetAnchor': 'domain',
   'layout.setHeightUnitMm': 'domain',
   'layout.setBaseplateParams': 'domain',
   'layout.setActiveBaseplate': 'domain',

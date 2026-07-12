@@ -22,6 +22,11 @@ export type SetPrintBedSizeCommand = BaseCommand<
 
 export type SetGridUnitMmCommand = BaseCommand<'layout.setGridUnitMm', { readonly mm: number }>;
 
+export type SetMagnetAnchorCommand = BaseCommand<
+  'layout.setMagnetAnchor',
+  { readonly anchor: 'edge' | 'center' }
+>;
+
 export type SetHeightUnitMmCommand = BaseCommand<'layout.setHeightUnitMm', { readonly mm: number }>;
 
 export type SetBaseplateParamsCommand = BaseCommand<
@@ -40,6 +45,7 @@ export type DrawerCommand =
   | SetNameCommand
   | SetPrintBedSizeCommand
   | SetGridUnitMmCommand
+  | SetMagnetAnchorCommand
   | SetHeightUnitMmCommand
   | SetBaseplateParamsCommand
   | SetActiveBaseplateCommand;

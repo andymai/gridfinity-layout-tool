@@ -10,6 +10,7 @@ import type {
   CategoryId,
   LayoutId,
   BaseplateDesignId,
+  MagnetAnchor,
 } from '@/core/types';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 
@@ -84,6 +85,7 @@ export interface LayoutState {
 
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;
+  setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
 
   // History restoration (used by history store for undo/redo)
