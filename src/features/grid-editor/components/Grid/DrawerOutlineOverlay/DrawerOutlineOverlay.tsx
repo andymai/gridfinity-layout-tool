@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -21,6 +21,7 @@ interface DrawerOutlineOverlayProps {
  */
 export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProps) {
   const t = useTranslation();
+  const patternId = useId();
   const { outline, width, depth, gridUnitMm } = useLayoutStore(
     useShallow((s) => ({
       outline: s.layout.drawer.outline,
@@ -65,7 +66,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
     >
       <defs>
         <pattern
-          id="drawer-outline-hatch"
+          id={patternId}
           width="8"
           height="8"
           patternUnits="userSpaceOnUse"
@@ -74,7 +75,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
           <line x1="0" y1="0" x2="0" y2="8" stroke="currentColor" strokeWidth="1.5" />
         </pattern>
       </defs>
-      <path d={path.outside} fill="url(#drawer-outline-hatch)" fillRule="evenodd" opacity={0.35} />
+      <path d={path.outside} fill={`url(#${patternId})`} fillRule="evenodd" opacity={0.35} />
       <path
         d={path.boundary}
         fill="none"

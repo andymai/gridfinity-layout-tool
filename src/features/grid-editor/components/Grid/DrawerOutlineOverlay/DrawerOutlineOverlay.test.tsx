@@ -49,7 +49,8 @@ describe('DrawerOutlineOverlay', () => {
     const paths = container.querySelectorAll('path');
     expect(paths).toHaveLength(2);
     // Even-odd outside fill references the hatch pattern.
-    expect(paths[0].getAttribute('fill')).toBe('url(#drawer-outline-hatch)');
+    const patternIdAttr = container.querySelector('pattern')?.getAttribute('id');
+    expect(paths[0].getAttribute('fill')).toBe(`url(#${patternIdAttr})`);
     expect(paths[0].getAttribute('fill-rule')).toBe('evenodd');
     // The boundary path is stroked, not filled.
     expect(paths[1].getAttribute('fill')).toBe('none');

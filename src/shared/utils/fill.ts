@@ -12,7 +12,7 @@ export function createOccupiedCellSet(
   bins: Bin[],
   layerId: LayerId,
   layout: Layout,
-  step: number = 1
+  step: 0.5 | 1 = 1
 ): Set<string> {
   const occupied = new Set<string>();
 
@@ -23,7 +23,7 @@ export function createOccupiedCellSet(
       layout.drawer.outline,
       layout.drawer,
       layout.gridUnitMm,
-      step === 0.5 ? 0.5 : 1
+      step
     );
     for (const key of outside) occupied.add(key);
   }
@@ -112,7 +112,7 @@ export function fillAllWithSize(
   }
 
   // Step size for collision detection (0.5 in half-bin mode, 1 in normal)
-  const step = halfGridMode ? 0.5 : 1;
+  const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
 
   // Pre-compute occupied cells (existing bins + blocked zones)
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
@@ -177,7 +177,7 @@ export function fillGaps(
   }
 
   // Step size for iteration and collision detection (0.5 in half-bin mode, 1 in normal)
-  const step = halfGridMode ? 0.5 : 1;
+  const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
   const minSize = halfGridMode ? 0.5 : 1;
 
   // Pre-compute occupied cells (existing bins + blocked zones)
