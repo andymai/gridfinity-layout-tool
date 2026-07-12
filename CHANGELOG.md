@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.242.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.241.0...gridfinity-layout-tool-v4.242.0) (2026-07-12)
+
+
+### Features
+
+* **drawer-shape:** cell-paint shape editor and bin-layout tracing behind labs flag ([#2542](https://github.com/andymai/gridfinity-layout-tool/issues/2542)) ([74bee99](https://github.com/andymai/gridfinity-layout-tool/commit/74bee99defce056aa4dc68b9596552305ad7853f))
+
 ## [4.241.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.240.0...gridfinity-layout-tool-v4.241.0) (2026-07-12)
 
 
