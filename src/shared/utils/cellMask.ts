@@ -43,11 +43,7 @@ export const MAX_MASK_DIMENSION = 10 * MASK_CELLS_PER_UNIT;
 
 /** Validation error kinds for mask checks. */
 export type MaskValidationErrorKind =
-  | 'dimension_mismatch'
-  | 'empty'
-  | 'disconnected'
-  | 'out_of_bounds'
-  | 'invalid_cell_value';
+  'dimension_mismatch' | 'empty' | 'disconnected' | 'out_of_bounds' | 'invalid_cell_value';
 
 export interface MaskValidationError {
   readonly kind: MaskValidationErrorKind;
@@ -283,8 +279,12 @@ const maskToPolygonCache = new WeakMap<CellMask, readonly MaskLoop[]>();
  * mutation throws in strict mode instead of silently returning a stale
  * polygon. Callers that need a modified mask must construct a new one.
  *
- * Preconditions: `validateMask(mask)` must return null. Passing an
- * invalid mask yields undefined results.
+ * Preconditions: cells hold only 0/1, at least one cell is filled, and the
+ * filled region is a single 4-connected component (so "the loop that
+ * encloses every other" is well-defined). `validateMask` guarantees these
+ * for bin-sized masks; drawer-scale callers (drawer-shape editor) enforce
+ * them directly — the algorithm itself has no dimension cap, that is a
+ * bin-designer authoring constraint.
  */
 export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
   const cached = maskToPolygonCache.get(mask);

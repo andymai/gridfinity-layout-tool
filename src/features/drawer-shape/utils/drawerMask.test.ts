@@ -99,3 +99,22 @@ describe('outlineToDrawerMask round-trip', () => {
     expect(Array.from(back.cells)).toEqual(Array.from(grid.cells));
   });
 });
+
+describe('drawer-scale masks (beyond the bin designer cap)', () => {
+  it('converts a 16×16 drawer (32×32 half-cells) correctly', () => {
+    const grid = buildFullDrawerMask(drawer(16, 16));
+    // Notch the top-right 8×8 quadrant.
+    for (let r = 8; r < 16; r++) {
+      for (let c = 8; c < 16; c++) {
+        setCell(grid, c, r, 0);
+      }
+    }
+    const result = drawerMaskToOutline(grid, U);
+    expect('outline' in result).toBe(true);
+    if (!('outline' in result)) return;
+    expect(result.outline.vertices).toHaveLength(6);
+    const maxX = Math.max(...result.outline.vertices.map((v) => v.x));
+    expect(maxX).toBe(16 * U);
+    expect(result.outline.vertices.map((v) => `${v.x},${v.y}`)).toContain(`${8 * U},${8 * U}`);
+  });
+});

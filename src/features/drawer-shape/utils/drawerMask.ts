@@ -89,6 +89,10 @@ export function drawerMaskToOutline(
   grid: DrawerMaskGrid,
   gridUnitMm: number
 ): { outline: DrawerOutline } | { error: DrawerMaskError } {
+  // maskToPolygon's real preconditions (0/1 values, non-empty, single
+  // 4-connected region) are enforced here; the bin designer's validateMask
+  // adds a 10-unit dimension cap that is an authoring constraint, not an
+  // algorithmic one — drawer masks legitimately reach 50 units.
   const filledCount = grid.cells.reduce<number>((sum, v) => sum + v, 0);
   if (filledCount === 0) return { error: 'empty' };
   if (!isFourConnected(grid)) return { error: 'disconnected' };
