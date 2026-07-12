@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__kernel-tests__/sagittaArcConvention.test.ts
+  s_25758575a76743::t_3430b7806875cf 58-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "6a2cf6751b3b9c39db7d0736e3d8d84c04663814",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
