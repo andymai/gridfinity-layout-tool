@@ -1,0 +1,19 @@
+e2e/drawer-shape.spec.ts
+  s_f53abdc88bc489::t_9343027cde59bd 68-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "8a08b523bbb6337d1442807dc436e8301f1569b1",
+  "prompts": {},
+  "sessions": {
+    "s_f53abdc88bc489": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "33ddb672-155a-4c40-9bde-197e91799db1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
