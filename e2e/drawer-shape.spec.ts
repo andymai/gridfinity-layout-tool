@@ -65,11 +65,14 @@ test.describe('Custom Drawer Shapes (#2528)', () => {
     await expect(page.getByRole('img', { name: /drawer shape boundary/i })).toHaveCount(1);
     await page.screenshot({ path: testInfo.outputPath('drawer-shape-notch-2d.png') });
 
-    // Switch to the Baseplate tool (client-side nav via the ToolSwitcher — keeps
-    // the in-memory outline; a full reload would drop it, since a never-saved
-    // default layout isn't persisted). The baseplate consumes the same outline:
-    // its padding controls give way to the shaped-drawer notice (plain React — a
-    // non-WebGL signal the baseplate is driven by the shape, not the bounding box).
+    // Switch to the Baseplate tool via the ToolSwitcher — client-side nav
+    // (history.pushState), so the in-memory outline survives. A full page reload
+    // would not: useAutoSave persists a layout only once it is registered in the
+    // library (has an activeLayoutId), which this test's pristine default layout
+    // never triggers, so a reload would start from a blank rectangular drawer.
+    // The baseplate consumes the same outline: its padding controls give way to
+    // the shaped-drawer notice (plain React — a non-WebGL signal the baseplate is
+    // driven by the shape, not the bounding box).
     await page.getByRole('tab', { name: 'Baseplate', exact: true }).click();
     await expect(page.getByText(/this drawer has a custom shape/i)).toBeVisible({
       timeout: 30_000,
