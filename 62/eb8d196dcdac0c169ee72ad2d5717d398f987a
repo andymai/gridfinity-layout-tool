@@ -1,0 +1,41 @@
+src/i18n/locales/ja.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/es.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_55cff33bbf967e::t_3f23b70aee66d3 217-231
+src/i18n/locales/fr.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/pt-BR.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/uk.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/nb.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/de.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/sv.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/i18n/locales/nl.json
+  s_55cff33bbf967e::t_1f8229e7ce8ab2 2681,2684-2686
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_55cff33bbf967e::t_2bb16005ed964c 790-794,796-819
+src/i18n/locales/en.ts
+  s_55cff33bbf967e::t_3d69c7832df357 2407,2410-2413
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "62eb8d196dcdac0c169ee72ad2d5717d398f987a",
+  "prompts": {},
+  "sessions": {
+    "s_55cff33bbf967e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5220726-6835-4540-b703-51e6fae8d8b3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
