@@ -1,0 +1,36 @@
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_25758575a76743::t_9202feaa6befc8 1573-1594,1597-1601,1605-1614,1616-1676,1678-1688
+  s_25758575a76743::t_04a15cac299d46 12-13
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_25758575a76743::t_dc9bde133a7000 10,57-61
+src/features/baseplate/utils/fileNaming.ts
+  s_25758575a76743::t_68775da0cfac53 112
+  s_25758575a76743::t_4fa602fc5f819b 31-32,88-90
+src/features/baseplate/utils/printGuide.ts
+  s_25758575a76743::t_68775da0cfac53 262,294-301
+  s_25758575a76743::t_f98fceebd33e48 302
+src/features/baseplate/utils/splitPlanner.ts
+  s_25758575a76743::t_c2fc85c3c8e48a 913,926-1039
+  s_25758575a76743::t_c887c3e3fcef55 36-38
+  s_25758575a76743::t_3972d430d48c49 1101-1111,1116
+src/features/baseplate/types/tiling.ts
+  s_25758575a76743::t_51a6f54b3300cc 57-67
+src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts
+  s_25758575a76743::t_5308e261f5334c 225-258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "09a5b0eb737d6d961419d7b8986149526174c331",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
