@@ -1,0 +1,70 @@
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_25758575a76743::t_e9ff004bef026e 81-82,91
+src/shell/layoutExport/useLayoutExport.ts
+  s_25758575a76743::t_dfa356d42b8f7d 238
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_25758575a76743::t_40d4de9ad09aee 40
+  s_25758575a76743::t_d16320cfd1d6b1 51
+  s_25758575a76743::t_dbec346d14501b 158
+  s_25758575a76743::t_c4138f33e6ca94 89
+src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts
+  s_25758575a76743::t_7b48159a68eb69 1-218
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_25758575a76743::t_8a62f6a0048b11 279-350
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_25758575a76743::t_137b0688cc9f8d 59-62
+  s_25758575a76743::t_fc9a9fb6a7c20d 109-119,121-122
+  s_25758575a76743::t_886d5632c82586 16
+src/features/generation/worker/generators/baseplateCacheKeys.test.ts
+  s_25758575a76743::t_e0a6782598f91a 3,80-112
+  s_25758575a76743::t_63ff2a263a00b5 113
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_25758575a76743::t_4e6f84959a3e33 69,79
+  s_25758575a76743::t_0752174c952a6e 142-143,149
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_25758575a76743::t_1ce6fec7147848 461-475,479-481,483
+  s_25758575a76743::t_f0c1aa9f121754 77-91,99-101,103-105
+  s_25758575a76743::t_0ca0581c764317 498-501,507-509,511-513,516
+  s_25758575a76743::t_22b0641b9adfdf 309-345,348
+  s_25758575a76743::t_26c10fec18f5eb 389-394
+  s_25758575a76743::t_ebdeb2ea3e0c6e 424-442
+  s_25758575a76743::t_12b9f4a0fe71c0 92-98,102
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_25758575a76743::t_29127cfade8534 181-182
+  s_25758575a76743::t_32b8cfe8c3a22c 49-51
+  s_25758575a76743::t_ad91a8628ddf0d 18
+  s_25758575a76743::t_207daa86dde991 157
+  s_25758575a76743::t_c5e23451b63b12 206-207
+src/features/generation/worker/generators/lightweightFloorCutter.ts
+  s_25758575a76743::t_59dba66dc9a7ff 88-89,105
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_25758575a76743::t_80612c6c1d8bb4 363-371
+  s_25758575a76743::t_1442dd86dd06c1 872-873
+  s_25758575a76743::t_a5a73e0673313d 281
+  s_25758575a76743::t_65410a0f602fd9 179-181
+  s_25758575a76743::t_ed478651e07759 819-820
+  s_25758575a76743::t_854a53b05a1471 883
+src/features/baseplate/utils/buildFullParams.ts
+  s_25758575a76743::t_9b5daf1143fc4c 7,12-19,28-29
+  s_25758575a76743::t_f0da45628a07ab 49-50,59,63-66
+  s_25758575a76743::t_850775e5498fbc 93-96
+src/shared/types/bin.ts
+  s_25758575a76743::t_6e2319ff384a94 8
+  s_25758575a76743::t_add15ee19653b6 255-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "64471e2bb21c80409a2d824c1fc0c77b48878c21",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
