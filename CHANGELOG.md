@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.244.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.243.0...gridfinity-layout-tool-v4.244.0) (2026-07-12)
+
+
+### Features
+
+* **baseplate:** configurable magnet anchor for grids larger than 42mm ([#2550](https://github.com/andymai/gridfinity-layout-tool/issues/2550)) ([cdcb338](https://github.com/andymai/gridfinity-layout-tool/commit/cdcb3384de19a56e7913901a87c86591e5af0158))
+
 ## [4.243.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.242.1...gridfinity-layout-tool-v4.243.0) (2026-07-12)
 
 
