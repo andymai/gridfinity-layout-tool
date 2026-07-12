@@ -1,0 +1,37 @@
+api/lib/validation.ts
+  s_25758575a76743::t_bad195e9c8c097 399-401,403,410-413,420-428,436-444,474-475
+api/lib/validation.test.ts
+  s_25758575a76743::t_26bb9f8aeae600 730-743,745,748-764
+src/shared/utils/drawerOutline.ts
+  s_25758575a76743::t_987bc983d7077b 541-555,558,570-572
+  s_25758575a76743::t_094eb9f5958918 573
+src/core/cqrs/projection/replay.ts
+  s_25758575a76743::t_b641364fc8e189 131-136
+src/core/store/layout/drawerActions.ts
+  s_25758575a76743::t_b641364fc8e189 64-69
+src/shared/utils/drawerOutline.test.ts
+  s_25758575a76743::t_50b03dc3651696 458-465
+src/core/cqrs/v2/domain/drawer/displacement.ts
+  s_25758575a76743::t_b641364fc8e189 24-25
+src/core/cqrs/v2/domain/drawer/displacement.test.ts
+  s_25758575a76743::t_50b03dc3651696 40-44
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_25758575a76743::t_50b03dc3651696 8,125-133
+  s_25758575a76743::t_a54b2bc8ccf418 134-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "dae1690efa582ecb9660eba8fafe605ad5c4e98d",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
