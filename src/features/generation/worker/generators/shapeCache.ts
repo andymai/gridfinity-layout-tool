@@ -152,10 +152,14 @@ export function socketCacheKey(
   // Legacy 'center' anchor only shifts magnet holes on a grid larger than the
   // standard 42mm and only when magnets are cut; otherwise it's byte-identical
   // to 'edge', so append the segment only then — existing 'edge'/≤42mm keys stay
-  // stable and no cache is needlessly invalidated.
+  // stable and no cache is needlessly invalidated. Check BOTH axes: an
+  // anisotropic bin grid (e.g. 42×50) shifts only the Y magnets under 'center',
+  // so keying on pitch.x alone would collide edge/center and reuse wrong geometry.
   const standardPitch = GRIDFINITY.GRID_SIZE;
   const anchorSegments =
-    anchor === 'center' && withMagnet && pitch.x > standardPitch ? ['anchor:center'] : [];
+    anchor === 'center' && withMagnet && (pitch.x > standardPitch || pitch.y > standardPitch)
+      ? ['anchor:center']
+      : [];
   return compactKey(
     buildCacheKey(
       'v2',

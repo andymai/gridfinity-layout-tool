@@ -127,6 +127,62 @@ describe('socketCacheKey', () => {
     expect(key).toContain('2.4');
     expect(key).toContain('1.75');
   });
+
+  describe('magnet anchor (#2525)', () => {
+    // Trailing arg: ..., gridUnitMm, maskHash, fracX, fracY, anchor
+    const key = (gridUnit: number | { x: number; y: number }, anchor: 'edge' | 'center') =>
+      socketCacheKey(
+        1,
+        1,
+        true,
+        false,
+        3.1,
+        2.0,
+        1.5,
+        false,
+        false,
+        gridUnit,
+        undefined,
+        'end',
+        'end',
+        anchor
+      );
+
+    it("is byte-identical between 'edge' and 'center' at the standard 42mm grid", () => {
+      expect(key(42, 'center')).toBe(key(42, 'edge'));
+    });
+
+    it("distinguishes 'center' from 'edge' on an oversized square grid", () => {
+      expect(key(50, 'center')).not.toBe(key(50, 'edge'));
+    });
+
+    it("distinguishes 'center' on an anisotropic grid whose Y pitch alone exceeds 42mm", () => {
+      // The bug: keying on pitch.x only would collide these, reusing edge geometry
+      // for a center-anchored bin whose Y magnets actually moved.
+      expect(key({ x: 42, y: 50 }, 'center')).not.toBe(key({ x: 42, y: 50 }, 'edge'));
+    });
+
+    it("leaves the key unchanged for 'center' when magnets are off", () => {
+      const off = (anchor: 'edge' | 'center') =>
+        socketCacheKey(
+          1,
+          1,
+          false,
+          false,
+          3.1,
+          2.0,
+          1.5,
+          false,
+          false,
+          50,
+          undefined,
+          'end',
+          'end',
+          anchor
+        );
+      expect(off('center')).toBe(off('edge'));
+    });
+  });
 });
 
 describe('shape disposal', () => {

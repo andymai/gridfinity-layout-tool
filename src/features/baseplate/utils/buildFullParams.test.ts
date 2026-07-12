@@ -132,6 +132,7 @@ describe('buildFullParams', () => {
       magnetHoles: false,
       magnetDiameter: 5.0,
       magnetDepth: 1.5,
+      magnetAnchor: 'edge',
       paddingLeft: 0.5,
       paddingRight: 1.5,
       paddingFront: 2.5,
@@ -140,6 +141,28 @@ describe('buildFullParams', () => {
       fractionalEdgeY: 'start',
       detachMargins: false,
       detachMarginConnector: false,
+    });
+  });
+
+  describe('magnetAnchor', () => {
+    it("defaults to 'edge' when the argument is omitted", () => {
+      const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
+      expect(result.magnetAnchor).toBe('edge');
+    });
+
+    it("passes through the legacy 'center' anchor", () => {
+      const result = buildFullParams(
+        storedBase,
+        10,
+        8,
+        50,
+        'end',
+        'end',
+        undefined,
+        undefined,
+        'center'
+      );
+      expect(result.magnetAnchor).toBe('center');
     });
   });
 
