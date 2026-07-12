@@ -55,6 +55,30 @@ describe(`sagittaArcTo convention on ${getKernelName()}`, () => {
     expect(volume).toBeLessThan(expected * 1.01);
   });
 
+  it('closes an outline whose closing segment is an arc', async () => {
+    // The pen returns to the start via sagittaArcTo before close(). All three
+    // kernels accept this (close() tolerates an already-closed pen) — pinned
+    // because a reviewer plausibly flagged it as a degenerate-edge risk.
+    const { measureVolume, unwrap } = await import('brepjs');
+    const outline: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100, bulge: -0.5 },
+      ],
+    };
+    const drawing = buildOutlineDrawing(outline, { totalW: 100, totalD: 100, gridUnitMm: 50 });
+    const solid = (drawing.sketchOnPlane('XY') as unknown as Extrudable).extrude(5);
+    const volume = unwrap(measureVolume(solid as never));
+    const sweep = 4 * Math.atan(0.5);
+    const r = (100 * 1.25) / 2;
+    const segmentArea = ((r * r) / 2) * (sweep - Math.sin(sweep));
+    const expected = (100 * 100 - segmentArea) * 5;
+    expect(volume).toBeGreaterThan(expected * 0.99);
+    expect(volume).toBeLessThan(expected * 1.01);
+  });
+
   it('handles semicircle bulges via the arc split', async () => {
     const { measureVolume, unwrap } = await import('brepjs');
     // Full semicircular bite out of the back edge: bulge -1 traveling −x
