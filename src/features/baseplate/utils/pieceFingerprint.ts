@@ -54,12 +54,18 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `sf:${params.solidFloor ? 1 : 0}`,
     `sft:${params.solidFloor ? (params.solidFloorThickness ?? '') : ''}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
-    // Piece-local outline hash: partial pieces are unique per boundary shape,
-    // but two windows with an identical local view of the boundary (already
-    // translated to piece frame) still dedupe. Fully-inside pieces carry no
-    // outline and keep sharing entries with plain rectangles.
-    params.outline === undefined ? '' : `ol:${hashOutline(params.outline)}`,
   ];
+
+  // Piece-local outline hash. Deliberately conservative: it hashes the WHOLE
+  // translated loop, so two windows only dedupe when their entire local view
+  // of the boundary matches — windows whose in-slab geometry is identical but
+  // whose far-away loop parts differ regenerate separately. Correctness is
+  // unaffected (only generation time); a window-clipped canonical form would
+  // need the 2D polygon clipping this design avoids. Fully-inside pieces
+  // carry no outline and keep sharing entries with plain rectangles.
+  if (params.outline !== undefined) {
+    parts.push(`ol:${hashOutline(params.outline)}`);
+  }
 
   // Edge classification (exterior vs join) affects geometry through two
   // independent channels — and keying on the raw labels over-distinguishes

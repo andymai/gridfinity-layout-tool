@@ -55,16 +55,14 @@ export interface BaseplatePiece {
    */
   readonly placementRotationDeg: 0 | 180;
   /**
-   * Set when the plate outline crosses this piece's window: the piece's
-   * generation params carry a piece-local outline and its mesh is not a plain
-   * rectangle. Fully-inside pieces omit this and stay pure rectangles —
-   * keeping their fingerprints, dedup, and connector behavior identical to an
-   * unshaped plate.
+   * Present exactly when the plate outline crosses this piece's window: the
+   * plate-local mm origin of the window (bottom-left), from which
+   * `pieceToBaseplateParams` derives the piece-local outline. Absent =
+   * fully-inside piece, a pure rectangle whose fingerprints, dedup, and
+   * connector behavior are identical to an unshaped plate. One field carries
+   * both the "partial" flag and its data so they can't drift apart.
    */
-  readonly outlineClass?: 'partial';
-  /** Plate-local mm origin of this piece's window (bottom-left), recorded so
-   * `pieceToBaseplateParams` can translate the outline without re-deriving. */
-  readonly windowOriginMm?: { readonly x: number; readonly y: number };
+  readonly outlineWindowOriginMm?: { readonly x: number; readonly y: number };
 }
 
 /** Hint suggesting a padding reduction that would eliminate a split. */

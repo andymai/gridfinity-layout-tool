@@ -1018,14 +1018,25 @@ function applyOutlineToTiling(
       ...piece,
       edges,
       placementRotationDeg: 0,
-      ...(cls === 'partial'
-        ? { outlineClass: 'partial' as const, windowOriginMm: { x: w.x0, y: w.y0 } }
-        : {}),
+      ...(cls === 'partial' ? { outlineWindowOriginMm: { x: w.x0, y: w.y0 } } : {}),
     });
   }
 
+  // Bed-load footprints budget the male tongue protrusion on surviving join
+  // edges, mirroring the axis search's own bed math — otherwise a piece whose
+  // tongues push it past the bed would undercount loads.
+  const tongue = params.connectorNubs === true ? TONGUE_PROTRUSION : 0;
   const bedLoads = estimateBedLoads(
-    survivors.map((piece) => ({ w: piece.widthUnits * u, d: piece.depthUnits * u })),
+    survivors.map((piece) => ({
+      w:
+        piece.widthUnits * u +
+        (piece.edges.left === 'join' ? tongue : 0) +
+        (piece.edges.right === 'join' ? tongue : 0),
+      d:
+        piece.depthUnits * u +
+        (piece.edges.front === 'join' ? tongue : 0) +
+        (piece.edges.back === 'join' ? tongue : 0),
+    })),
     printBedWidthMm,
     printBedDepthMm
   );
@@ -1103,10 +1114,12 @@ export function pieceToBaseplateParams(
   // the window), so no 2D clipping is needed here. Fully-inside pieces carry
   // no outline and stay byte-identical to unshaped rectangles.
   const pieceOutline =
-    parentParams.outline !== undefined &&
-    piece.outlineClass === 'partial' &&
-    piece.windowOriginMm !== undefined
-      ? translateOutline(parentParams.outline, -piece.windowOriginMm.x, -piece.windowOriginMm.y)
+    parentParams.outline !== undefined && piece.outlineWindowOriginMm !== undefined
+      ? translateOutline(
+          parentParams.outline,
+          -piece.outlineWindowOriginMm.x,
+          -piece.outlineWindowOriginMm.y
+        )
       : undefined;
 
   return {

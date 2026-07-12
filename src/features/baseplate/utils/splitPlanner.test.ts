@@ -1643,9 +1643,8 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(tiling.pieces).toHaveLength(4);
     const a1 = byLabel.get('A1');
     const b2 = byLabel.get('B2');
-    expect(a1?.outlineClass).toBeUndefined();
-    expect(b2?.outlineClass).toBe('partial');
-    expect(b2?.windowOriginMm).toEqual({ x: 4 * U, y: 4 * U });
+    expect(a1?.outlineWindowOriginMm).toBeUndefined();
+    expect(b2?.outlineWindowOriginMm).toEqual({ x: 4 * U, y: 4 * U });
 
     const parent = shapedParams(CHAMFER_OUTLINE);
     const a1Params = pieceToBaseplateParams(a1 as BaseplatePiece, parent);
@@ -1685,6 +1684,6 @@ describe('shaped plates (outline-aware splitting)', () => {
     const a1 = pieceToBaseplateParams(byLabel.get('A1') as BaseplatePiece, parent);
     const b2 = pieceToBaseplateParams(byLabel.get('B2') as BaseplatePiece, parent);
     expect(computePieceFingerprint(b2)).not.toBe(computePieceFingerprint(a1));
-    expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint({ ...b2 }));
+    expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint(b2));
   });
 });
