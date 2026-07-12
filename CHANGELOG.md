@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.244.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.0...gridfinity-layout-tool-v4.244.1) (2026-07-12)
+
+
+### Bug Fixes
+
+* **grid-editor:** keep axis labels clear of the overhang margin band ([#2549](https://github.com/andymai/gridfinity-layout-tool/issues/2549)) ([#2552](https://github.com/andymai/gridfinity-layout-tool/issues/2552)) ([a217b7c](https://github.com/andymai/gridfinity-layout-tool/commit/a217b7c7ee3bbe119316a84abbab09cd222ae4e1))
+
 ## [4.244.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.243.0...gridfinity-layout-tool-v4.244.0) (2026-07-12)
 
 
