@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.238.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.237.0...gridfinity-layout-tool-v4.238.0) (2026-07-12)
+
+
+### Features
+
+* **baseplate:** split shaped plates with outline-aware pieces ([#2534](https://github.com/andymai/gridfinity-layout-tool/issues/2534)) ([7ec7e6f](https://github.com/andymai/gridfinity-layout-tool/commit/7ec7e6f87b003802e6ababfe654eb603322ee636))
+
 ## [4.237.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.236.0...gridfinity-layout-tool-v4.237.0) (2026-07-12)
 
 
