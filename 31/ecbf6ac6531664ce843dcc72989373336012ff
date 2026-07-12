@@ -1,0 +1,50 @@
+src/i18n/locales/nl.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/pt-BR.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.test.tsx
+  s_25758575a76743::t_85ac3d91603b23 84-119
+src/i18n/locales/uk.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/sv.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/es.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/ja.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_25758575a76743::t_9e6412489c9a36 95,106,259-263,423-430,432-480,482,484-490,492-540,542,544-563,565
+  s_25758575a76743::t_bd2ee8ef770394 735
+  s_25758575a76743::t_56c7952246e339 564
+  s_25758575a76743::t_8bd54dac797013 732-734
+  s_25758575a76743::t_926f9e750179f0 736-738
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.tsx
+  s_25758575a76743::t_9c5430498ff094 27-42
+  s_25758575a76743::t_553ce9b2bb181c 49-51
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_25758575a76743::t_cbe5392b2d58be 945-986
+src/i18n/locales/nb.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/fr.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+src/i18n/locales/en.ts
+  s_25758575a76743::t_553ce9b2bb181c 2360-2361
+src/i18n/locales/de.json
+  s_25758575a76743::t_553ce9b2bb181c 123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "31ecbf6ac6531664ce843dcc72989373336012ff",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
