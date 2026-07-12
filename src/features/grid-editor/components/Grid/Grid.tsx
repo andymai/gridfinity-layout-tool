@@ -20,7 +20,7 @@ import { getLayerBins } from '@/shared/utils';
 import type { GridUnits } from '@/core/types';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
-import { DrawerMargin } from './DrawerMargin';
+import { DrawerMargin, useDrawerMarginInsets } from './DrawerMargin';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { SelectionToolbar } from './SelectionToolbar';
@@ -211,6 +211,11 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // Calculate cellSize using zoom from zoomState (may differ slightly due to fit-to-screen)
   const cellSize = Math.round(baseCellSize * zoomState.zoom);
 
+  // Per-side overhang band (baseplate padding) in px. The row/column labels are
+  // opaque and sit above the band, so on the padded left/front sides they'd hide
+  // the overhang — push them out by the band's extent so both stay visible (#2549).
+  const marginInsets = useDrawerMarginInsets(cellSize, gap);
+
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
   const visualCellSize = halfGridMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
@@ -341,7 +346,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
               style={{
                 gridTemplateColumns: labelsState.axisLabelsVisible ? `auto 1fr` : '1fr',
                 gridTemplateRows: '1fr',
-                columnGap: labelsState.axisLabelsVisible ? 4 : 0,
+                // Widen the row-label gutter by the left overhang so the band
+                // sits between the labels and the grid instead of under them.
+                columnGap: labelsState.axisLabelsVisible ? 4 + marginInsets.left : 0,
               }}
             >
               {/* Row labels column - sticky to left edge */}
@@ -499,7 +506,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                     fullColSize={fullColSize}
                     fractionalColSize={fractionalColSize}
                     gap={gap}
-                    gridTop={gridHeight}
+                    // Drop the column labels below the front overhang band so it
+                    // isn't hidden behind them (#2549).
+                    gridTop={gridHeight + marginInsets.front}
                     onColumnClick={handleColumnClick}
                   />
                 )}
