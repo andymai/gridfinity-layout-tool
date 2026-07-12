@@ -1,0 +1,26 @@
+src/features/baseplate/types/tiling.ts
+  s_25758575a76743::t_87b4eef820d69f 58-63,65
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_25758575a76743::t_e510ad99b79c7c 59-68
+  s_25758575a76743::t_1ae006c9bdd557 69
+src/features/baseplate/utils/splitPlanner.ts
+  s_25758575a76743::t_e510ad99b79c7c 1021,1025-1028,1030-1039,1117-1122
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_25758575a76743::t_e510ad99b79c7c 1646-1647,1687
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "099b15dd78c771b445313a05c81b89bc377ddbea",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
