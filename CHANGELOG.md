@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.245.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.2...gridfinity-layout-tool-v4.245.0) (2026-07-12)
+
+
+### Features
+
+* **labs:** graduate custom drawer shapes out of labs ([#2557](https://github.com/andymai/gridfinity-layout-tool/issues/2557)) ([03b7963](https://github.com/andymai/gridfinity-layout-tool/commit/03b79633b18c3eaaed3d967a162477447081add9))
+
 ## [4.244.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.1...gridfinity-layout-tool-v4.244.2) (2026-07-12)
 
 
