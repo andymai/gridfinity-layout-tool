@@ -1,0 +1,64 @@
+src/i18n/locales/nb.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/shared/utils/fill.ts
+  s_25758575a76743::t_7adaac8113aadd 4,11,19-29
+  s_25758575a76743::t_e28d0b682a8bfa 30
+src/i18n/locales/fr.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.tsx
+  s_25758575a76743::t_f8322c5c64c369 1-88
+src/i18n/locales/ja.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/shared/utils/validation.ts
+  s_25758575a76743::t_a3d3d0f778545b 102-104
+src/shared/utils/rotation.ts
+  s_25758575a76743::t_a3d3d0f778545b 49-51
+src/core/result/errors.ts
+  s_25758575a76743::t_6d4f7d733830d1 74-75
+src/shared/utils/validationPlacement.test.ts
+  s_25758575a76743::t_d8f6f9f70bddd6 160-215
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.test.tsx
+  s_25758575a76743::t_b8409c65868028 2-5,10-26,28-57
+  s_25758575a76743::t_77f4ec0a255ec0 1,6-9,27
+src/shared/utils/validationImport.ts
+  s_25758575a76743::t_6d4f7d733830d1 43
+src/i18n/locales/sv.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/core/types.ts
+  s_25758575a76743::t_7a914639da6307 469-470
+src/i18n/locales/uk.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/i18n/locales/es.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/index.ts
+  s_25758575a76743::t_f8322c5c64c369 1
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_25758575a76743::t_dd3577df97439c 15,412-414
+src/i18n/locales/en.ts
+  s_25758575a76743::t_d183ca2dd45d26 1380-1381
+src/i18n/locales/de.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/shared/utils/validationPlacement.ts
+  s_25758575a76743::t_6e43c7228890b9 23,59-66
+  s_25758575a76743::t_968544773bcfe5 67-68
+src/i18n/locales/pt-BR.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+src/i18n/locales/nl.json
+  s_25758575a76743::t_d183ca2dd45d26 1406-1407
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "8962932f58ae8bcceaab84e17a0b3a0215ee8880",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
