@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts
+  s_25758575a76743::t_6106aed5ab993c 15,27-29,37-38
+  s_25758575a76743::t_47fd98465e20b8 30-36,122-139,173-185,222-223
+  s_25758575a76743::t_7efd598d78cd2e 39
+  s_25758575a76743::t_b811f7e65f5ff8 224-226
+  s_25758575a76743::t_c27db0e7a574cf 227-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "730d0d5cfda0babdea7d5c5855d39abf4b01e6df",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
