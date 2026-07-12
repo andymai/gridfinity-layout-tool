@@ -1,0 +1,28 @@
+src/features/generation/worker/generators/baseplateOutline.ts
+  s_25758575a76743::t_3f76356cca2f3e 9-17
+  s_25758575a76743::t_b0e8860690fd28 44-45
+  s_25758575a76743::t_1e9e35b0381dda 61,63-64,68-99
+  s_25758575a76743::t_5d44a7e3536762 100
+src/features/generation/worker/generators/__kernel-tests__/sagittaArcConvention.test.ts
+  s_25758575a76743::t_3e73ac49bfc569 72,92
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_25758575a76743::t_db893b5f892751 429
+src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts
+  s_25758575a76743::t_73bbfc23030f2c 109,124,135,145,156,166,175,182,201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "6df6f032a3635c5dbc25cd57e81f11c6f7b237d0",
+  "prompts": {},
+  "sessions": {
+    "s_25758575a76743": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "218c7414-a368-4e6d-88f8-6999afc0e849",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
