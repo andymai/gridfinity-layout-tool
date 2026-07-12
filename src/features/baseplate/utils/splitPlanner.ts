@@ -1149,6 +1149,12 @@ export function pieceToBaseplateParams(
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).
     connectorStyle: parentParams.connectorStyle,
+    // The fit offset and nozzle both size the female groove clearance
+    // (effectiveClearance), so they must reach every split piece — otherwise the
+    // groove is cut at nominal regardless of the user's tolerance (issue #2554).
+    // Per-side clearance is symmetric, so both are rotation-invariant.
+    connectorFitOffset: parentParams.connectorFitOffset,
+    nozzleSizeMm: parentParams.nozzleSizeMm,
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,

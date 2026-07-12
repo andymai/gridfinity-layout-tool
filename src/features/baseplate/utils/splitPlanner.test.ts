@@ -834,6 +834,28 @@ describe('pieceToBaseplateParams', () => {
     }
   });
 
+  it('propagates connectorFitOffset and nozzleSizeMm to every piece so the groove clearance responds to tolerance (#2554)', () => {
+    // Regression: pieceToBaseplateParams dropped both fields, so split pieces cut
+    // their female groove at nominal clearance regardless of the user's tolerance
+    // — identical STL bytes for -0.3 vs +0.3, while the print guide (which reads
+    // the parent params) still changed. Both feed effectiveClearance.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      connectorStyle: 'puzzle',
+      connectorFitOffset: 0.3,
+      nozzleSizeMm: 0.6,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      const gen = pieceToBaseplateParams(piece, parent);
+      expect(gen.connectorFitOffset).toBe(0.3);
+      expect(gen.nozzleSizeMm).toBe(0.6);
+    }
+  });
+
   it('swaps front/back padding for rotated pieces so the body centre negates (stack-print preview relies on this)', () => {
     // The stack-print preview derives a flipped plate's body centre from the
     // SAME params the mesh was generated with. For a preferIdenticalPieces 180°
