@@ -1,0 +1,188 @@
+src/i18n/locales/es.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/i18n/locales/nl.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/core/cqrs/versioning/eventVersions.ts
+  s_55cff33bbf967e::t_bb02903fa2bfb1 42
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_55cff33bbf967e::t_8c3b4f5d47eae8 173-176
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_55cff33bbf967e::t_6f0684b1763e68 300-301
+  s_55cff33bbf967e::t_2e08661086d7fd 91-92
+  s_55cff33bbf967e::t_261831fe85be76 245-246
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_55cff33bbf967e::t_4c37c2ba37fa45 58-59
+  s_55cff33bbf967e::t_48bdb76289b5b4 166
+  s_55cff33bbf967e::t_15d53903cf302e 18-23
+  s_55cff33bbf967e::t_2a4690e1e14a61 190-191
+  s_55cff33bbf967e::t_db0d44c813b5a3 216-217
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_55cff33bbf967e::t_3d48ca67a7967c 52-60
+  s_55cff33bbf967e::t_6b951db9c2969b 79
+  s_55cff33bbf967e::t_086d7175e3297e 19
+src/shell/layoutExport/useLayoutExport.ts
+  s_55cff33bbf967e::t_901e4a0197b071 180-181
+  s_55cff33bbf967e::t_6391d01f76002b 241
+src/core/cqrs/projection/replay.ts
+  s_55cff33bbf967e::t_2536604b56c4a1 167-170
+src/i18n/locales/en.ts
+  s_55cff33bbf967e::t_edd9133560413d 2405-2409
+  s_55cff33bbf967e::t_2e057e2b25692f 2967
+src/features/cloud-share/utils/cloudShare.ts
+  s_55cff33bbf967e::t_f749da31ab9a7e 36
+src/core/cqrs/v2/domain/layout/setMagnetAnchor.ts
+  s_55cff33bbf967e::t_5feeadd9e7652e 1-18,20-28
+  s_55cff33bbf967e::t_c08134b66ac8bf 19
+src/i18n/locales/pt-BR.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_55cff33bbf967e::t_d8d7ebe3772203 203-224
+  s_55cff33bbf967e::t_159b5f5c84191a 20,25,31
+  s_55cff33bbf967e::t_13d83c7603ce25 138,144,980,986
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_55cff33bbf967e::t_95a0ba468654fe 266
+  s_55cff33bbf967e::t_efe4d95b249825 542-543
+  s_55cff33bbf967e::t_27576f7ea11981 496-502
+  s_55cff33bbf967e::t_80b9a919ae1ce1 529-530
+  s_55cff33bbf967e::t_cbcbb67f790d1a 486-487
+src/core/cqrs/commandDescriptions.ts
+  s_55cff33bbf967e::t_742b53f8aba501 32
+src/i18n/locales/nb.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  s_55cff33bbf967e::t_f088673f2988c5 2-5,18,22,28-32,46,53
+src/features/bin-designer/types/index.ts
+  s_55cff33bbf967e::t_816111dea5610e 569-575
+  s_55cff33bbf967e::t_71be3f3a932ee7 29
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_55cff33bbf967e::t_a9a6fbbf94af46 276
+  s_55cff33bbf967e::t_9d81b0cff39867 43-44
+  s_55cff33bbf967e::t_aa7d601799428c 133-134
+src/features/generation/worker/generators/lidInputs.ts
+  s_55cff33bbf967e::t_5a9a3f58ac14e4 172
+  s_55cff33bbf967e::t_2d368dc1662373 47-49
+  s_55cff33bbf967e::t_dff55da465865c 10
+src/features/generation/worker/generators/baseplateGenerator.scenario.magnetOversized.test.ts
+  s_55cff33bbf967e::t_b2c6b67ada9298 52-64
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_55cff33bbf967e::t_49160b9aea7d2d 52
+src/i18n/locales/fr.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/core/cqrs/v2/registry.ts
+  s_55cff33bbf967e::t_f1fc53d957e6a3 130
+  s_55cff33bbf967e::t_3357a658716ee7 36
+  s_55cff33bbf967e::t_826335874c5940 90
+src/i18n/locales/de.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/features/generation/worker/generators/lidMagnets.ts
+  s_55cff33bbf967e::t_9c156fe8832ab0 31
+  s_55cff33bbf967e::t_6fd05dad186c75 73-79
+src/core/cqrs/v2/domain/layout/setMagnetAnchor.test.ts
+  s_55cff33bbf967e::t_b498ba9e87b18d 1-38
+src/core/cqrs/validation/schemas.test.ts
+  s_55cff33bbf967e::t_50c88b9491b6c8 46,48
+src/core/cqrs/versioning/migrations.test.ts
+  s_55cff33bbf967e::t_dff052bb53df02 192
+src/shared/types/bin.ts
+  s_55cff33bbf967e::t_930fb2ecc4f0bd 8
+  s_55cff33bbf967e::t_895cca9b5e9aef 226-230
+src/features/baseplate/utils/buildFullParams.ts
+  s_55cff33bbf967e::t_672d2f37b2c2f7 30-31
+  s_55cff33bbf967e::t_7285a7ba8e72ed 7-8
+  s_55cff33bbf967e::t_31e13ea98016a5 65
+src/features/generation/worker/generators/lightweightFloorCutter.ts
+  s_55cff33bbf967e::t_3f7621b31f1c6b 399-400,410-416
+  s_55cff33bbf967e::t_ea5c603b32018f 90-91
+  s_55cff33bbf967e::t_81d90a9754ee75 148
+  s_55cff33bbf967e::t_81c8d0ef22fcc6 20-21
+  s_55cff33bbf967e::t_d9dca077f4d8e1 229-230,233
+src/core/store/layout/coreActions.ts
+  s_55cff33bbf967e::t_0dc7ee0486c5a2 6
+  s_55cff33bbf967e::t_4453585da32162 90-95
+src/features/generation/worker/generators/baseplateMagnets.test.ts
+  s_55cff33bbf967e::t_2995f4576b95dd 175-213
+src/core/cqrs/events/drawerEvents.ts
+  s_55cff33bbf967e::t_0fa2a41230047b 59-63
+  s_55cff33bbf967e::t_576e6bdc3fd496 90
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_55cff33bbf967e::t_086757bff6d9ef 896
+  s_55cff33bbf967e::t_7ef507c483c069 202-204
+  s_55cff33bbf967e::t_4631fcd4e0d1f2 286
+  s_55cff33bbf967e::t_1eb92f37044f44 829-830
+  s_55cff33bbf967e::t_bc5ea9d353e674 883-884
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_55cff33bbf967e::t_16b9852a5fe4ce 250-256
+  s_55cff33bbf967e::t_6c69cb2689eeb1 279-285
+  s_55cff33bbf967e::t_538dcbd7d46fc9 92
+src/shared/contexts/MutationsContext.tsx
+  s_55cff33bbf967e::t_4ee3613ca2c8ae 36
+  s_55cff33bbf967e::t_f22360ce8fc863 89
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_55cff33bbf967e::t_fbffd939da2a5a 99,111
+  s_55cff33bbf967e::t_986963f26d94f6 790-797,799-805,807-809
+  s_55cff33bbf967e::t_8e4bcd51972de3 798,806
+src/core/cqrs/validation/schemas.ts
+  s_55cff33bbf967e::t_115677057af859 211-213
+  s_55cff33bbf967e::t_b96dec19dd2c8e 291
+  s_55cff33bbf967e::t_6f19a7d7272e20 297
+src/i18n/locales/uk.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+api/lib/designerValidation.ts
+  s_55cff33bbf967e::t_318f29974d56f9 612-620
+  s_55cff33bbf967e::t_60ac9d0372607d 99
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_55cff33bbf967e::t_286ef2915fd1c0 84-85,97
+  s_55cff33bbf967e::t_300b3c9b8b4699 217-218,223
+  s_55cff33bbf967e::t_61ed14fb30e722 21-22
+  s_55cff33bbf967e::t_95e69c00d9cb7a 128-129,134-155
+src/i18n/locales/sv.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/core/store/layout/types.ts
+  s_55cff33bbf967e::t_d57bfc96869bc0 13
+  s_55cff33bbf967e::t_6c9ee5841e16dd 88
+src/core/types.ts
+  s_55cff33bbf967e::t_284227361f5cca 39-54,63-64
+src/core/cqrs/commands/drawerCommands.ts
+  s_55cff33bbf967e::t_cb2210bb87768b 25-29
+  s_55cff33bbf967e::t_7cbbf0dc470541 48
+api/lib/validation.ts
+  s_55cff33bbf967e::t_5ebd5bd0a6f0f0 121
+  s_55cff33bbf967e::t_747fe864113cde 347-350
+src/features/generation/worker/generators/shapeCache.ts
+  s_55cff33bbf967e::t_8a9745b79221b2 156,158
+  s_55cff33bbf967e::t_fe24edf066d548 139-140,152-155,157,174-175
+  s_55cff33bbf967e::t_dc0908abbf4ce3 26-27
+src/i18n/locales/ja.json
+  s_55cff33bbf967e::t_5bc2e7b47af43d 2679-2684
+src/features/generation/worker/generators/socketBuilder.ts
+  s_55cff33bbf967e::t_cd57213e698d0d 357-358,379-380
+  s_55cff33bbf967e::t_0176271bce1717 50-51
+  s_55cff33bbf967e::t_620012b063942c 464
+  s_55cff33bbf967e::t_16ec803fb65e31 323-324,340-341
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_55cff33bbf967e::t_613c4e7edff269 42,54
+  s_55cff33bbf967e::t_e99ebd91fdf9ec 93
+  s_55cff33bbf967e::t_e0f42a2012158b 163
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_55cff33bbf967e::t_facbf11f900ec8 10
+  s_55cff33bbf967e::t_acdcba50d7b8d4 87-88
+  s_55cff33bbf967e::t_bcd0ecac3cec88 119-123
+src/features/generation/worker/generators/__snapshots__/baseplateGenerator.scenario.magnetOversized.test.ts.snap
+  s_55cff33bbf967e::t_472c4dcf1b6104 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "b7587ec117aa28de543eb688f4ee7b10945f388c",
+  "prompts": {},
+  "sessions": {
+    "s_55cff33bbf967e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5220726-6835-4540-b703-51e6fae8d8b3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
