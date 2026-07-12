@@ -33,6 +33,9 @@ import type {
   PieceEdges,
 } from '../types/tiling';
 import { estimateBedLoads, type Footprint } from './bedPacking';
+import type { DrawerOutline } from '@/core/types';
+import { translateOutline } from '@/shared/utils/drawerOutline';
+import { classifyRect, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { FRACTIONAL_THRESHOLD, isFractional, reorderForDisplay } from './splitReorder';
 
 /**
@@ -747,58 +750,11 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
  * If the baseplate fits on a single bed, returns a single-piece tiling with
  * `isSplit: false`.
  */
-/**
- * Single whole-plate tiling for shapes the planner can't partition yet.
- * Shaped plates carry zero padding (sanitized), no margins, and no split, so
- * every derived field is the trivial one.
- */
-function computeSinglePieceTiling(params: ResolvedBaseplateParams): BaseplateTiling {
-  const { width, depth, fractionalEdgeX, fractionalEdgeY } = params;
-  return {
-    isSplit: false,
-    pieces: [
-      {
-        label: 'A1',
-        col: 0,
-        row: 0,
-        widthUnits: width,
-        depthUnits: depth,
-        gridOffsetX: 0,
-        gridOffsetY: 0,
-        paddingLeft: params.paddingLeft,
-        paddingRight: params.paddingRight,
-        paddingFront: params.paddingFront,
-        paddingBack: params.paddingBack,
-        fractionalEdgeX: isFractional(width) ? fractionalEdgeX : 'none',
-        fractionalEdgeY: isFractional(depth) ? fractionalEdgeY : 'none',
-        edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
-        placementRotationDeg: 0,
-      },
-    ],
-    margins: [],
-    cols: 1,
-    rows: 1,
-    totalWidthUnits: width,
-    totalDepthUnits: depth,
-    bedLoads: 1,
-    stackCount: 1,
-    stackSeparatorThickness: 0,
-    paddingReductionHint: null,
-  };
-}
-
 export function computeBaseplateTiling(
   params: ResolvedBaseplateParams,
   printBedWidthMm: number,
   printBedDepthMm: number = printBedWidthMm
 ): BaseplateTiling {
-  // Interim gate: the planner tiles rectangles only, so splitting a shaped
-  // plate would emit rectangular tiles that include material outside the
-  // drawer boundary. Shaped plates stay single-piece until the planner learns
-  // per-piece outline windows (PR3 of #2528).
-  if (params.outline !== undefined) {
-    return computeSinglePieceTiling(params);
-  }
   const {
     width,
     depth,
@@ -954,7 +910,7 @@ export function computeBaseplateTiling(
     pieceCount
   );
 
-  return {
+  const tiling: BaseplateTiling = {
     isSplit,
     pieces,
     margins: emitMargins(params, { colSizes, rowSizes, colOffsets, rowOffsets }),
@@ -966,6 +922,120 @@ export function computeBaseplateTiling(
     stackCount: 1,
     stackSeparatorThickness: 0,
     paddingReductionHint,
+  };
+  return params.outline !== undefined
+    ? applyOutlineToTiling(tiling, params, printBedWidthMm, printBedDepthMm)
+    : tiling;
+}
+
+/**
+ * Shape a rectangular tiling with the plate outline (issue #2528):
+ *
+ * - pieces whose window is fully OUTSIDE are dropped (their grid labels stay
+ *   positional, so gaps like "A1, A3" read as the shape in the print guide);
+ * - fully-INSIDE pieces stay pure rectangles — no outline on their params, so
+ *   fingerprints, dedup, and connectors behave exactly as on unshaped plates;
+ * - PARTIAL pieces are tagged with their window origin; their generation
+ *   params get a piece-local outline and the 3D intersect performs the window
+ *   clip (the piece slab IS the window).
+ *
+ * Seams keep connectors only when FULL: the one-grid-unit band on each side
+ * of the whole shared span must be fully inside. Partial seams (and seams to
+ * dropped neighbors) become plain butt joints — both facing edges 'exterior'.
+ *
+ * `placementRotationDeg` is forced to 0: the preferIdenticalPieces 180° mesh
+ * sharing pairs opposite corners of a SYMMETRIC tiling, which dropping and
+ * reclassification break. Congruent pieces still dedupe via identical
+ * fingerprints.
+ *
+ * Shaped plates carry zero padding (sanitized upstream), so windows are pure
+ * grid extents and margins are always empty.
+ */
+function applyOutlineToTiling(
+  tiling: BaseplateTiling,
+  params: ResolvedBaseplateParams,
+  printBedWidthMm: number,
+  printBedDepthMm: number
+): BaseplateTiling {
+  const outline = params.outline as DrawerOutline;
+  const u = params.gridUnitMm;
+
+  const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => ({
+    x0: piece.gridOffsetX * u,
+    y0: piece.gridOffsetY * u,
+    x1: (piece.gridOffsetX + piece.widthUnits) * u,
+    y1: (piece.gridOffsetY + piece.depthUnits) * u,
+  });
+
+  const classByKey = new Map<string, RegionClass>();
+  for (const piece of tiling.pieces) {
+    const w = windowOf(piece);
+    classByKey.set(`${piece.col},${piece.row}`, classifyRect(outline, w.x0, w.y0, w.x1, w.y1));
+  }
+  const classAt = (col: number, row: number): RegionClass =>
+    classByKey.get(`${col},${row}`) ?? 'outside';
+
+  // A seam keeps its connector only when the one-cell band on BOTH sides of
+  // the entire shared span is fully inside the outline.
+  const fullSeam = (piece: BaseplatePiece, side: 'left' | 'right' | 'front' | 'back'): boolean => {
+    const w = windowOf(piece);
+    if (side === 'left' || side === 'right') {
+      const xB = side === 'left' ? w.x0 : w.x1;
+      return (
+        classifyRect(outline, xB - u, w.y0, xB, w.y1) === 'inside' &&
+        classifyRect(outline, xB, w.y0, xB + u, w.y1) === 'inside'
+      );
+    }
+    const yB = side === 'front' ? w.y0 : w.y1;
+    return (
+      classifyRect(outline, w.x0, yB - u, w.x1, yB) === 'inside' &&
+      classifyRect(outline, w.x0, yB, w.x1, yB + u) === 'inside'
+    );
+  };
+
+  const NEIGHBOR: Record<'left' | 'right' | 'front' | 'back', readonly [number, number]> = {
+    left: [-1, 0],
+    right: [1, 0],
+    front: [0, -1],
+    back: [0, 1],
+  };
+
+  const survivors: BaseplatePiece[] = [];
+  for (const piece of tiling.pieces) {
+    const cls = classAt(piece.col, piece.row);
+    if (cls === 'outside') continue;
+
+    const edges = { ...piece.edges };
+    for (const side of ['left', 'right', 'front', 'back'] as const) {
+      if (edges[side] !== 'join') continue;
+      const [dc, dr] = NEIGHBOR[side];
+      const neighborDropped = classAt(piece.col + dc, piece.row + dr) === 'outside';
+      if (neighborDropped || !fullSeam(piece, side)) edges[side] = 'exterior';
+    }
+
+    const w = windowOf(piece);
+    survivors.push({
+      ...piece,
+      edges,
+      placementRotationDeg: 0,
+      ...(cls === 'partial'
+        ? { outlineClass: 'partial' as const, windowOriginMm: { x: w.x0, y: w.y0 } }
+        : {}),
+    });
+  }
+
+  const bedLoads = estimateBedLoads(
+    survivors.map((piece) => ({ w: piece.widthUnits * u, d: piece.depthUnits * u })),
+    printBedWidthMm,
+    printBedDepthMm
+  );
+
+  return {
+    ...tiling,
+    isSplit: survivors.length > 1,
+    pieces: survivors,
+    bedLoads: Math.max(1, bedLoads),
+    paddingReductionHint: null,
   };
 }
 
@@ -1028,10 +1098,22 @@ export function pieceToBaseplateParams(
   } else {
     cornerRadii = rot && pr ? { tl: pr.br, tr: pr.bl, bl: pr.tr, br: pr.tl } : pr;
   }
+  // Partial pieces get the plate outline translated into their local frame;
+  // the generator's 3D intersect performs the window clip (the piece slab IS
+  // the window), so no 2D clipping is needed here. Fully-inside pieces carry
+  // no outline and stay byte-identical to unshaped rectangles.
+  const pieceOutline =
+    parentParams.outline !== undefined &&
+    piece.outlineClass === 'partial' &&
+    piece.windowOriginMm !== undefined
+      ? translateOutline(parentParams.outline, -piece.windowOriginMm.x, -piece.windowOriginMm.y)
+      : undefined;
+
   return {
     width: piece.widthUnits,
     depth: piece.depthUnits,
     gridUnitMm: parentParams.gridUnitMm,
+    outline: pieceOutline,
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,

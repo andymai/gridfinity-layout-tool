@@ -28,6 +28,8 @@ interface BaseplateNamingParams {
   readonly paddingFront: number;
   readonly paddingBack: number;
   readonly connectorNubs?: boolean;
+  /** Non-rectangular plate (drawer outline applied). */
+  readonly shaped?: boolean;
 }
 
 /**
@@ -83,6 +85,9 @@ function collectFeatures(params: BaseplateNamingParams): string[] {
     features.push('padded');
   }
 
+  if (params.shaped === true) {
+    features.push('shaped');
+  }
   if (params.connectorNubs) {
     features.push('connectors');
   }
@@ -104,5 +109,6 @@ export function toNamingParams(params: ResolvedBaseplateParams): BaseplateNaming
     paddingFront: params.paddingFront,
     paddingBack: params.paddingBack,
     connectorNubs: params.connectorNubs,
+    shaped: params.outline !== undefined,
   };
 }

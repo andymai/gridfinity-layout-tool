@@ -222,6 +222,40 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, 12.5, 2, 71.5, 82)).toBe(0);
   });
 
+  it('generates a partial split piece with a connectored full seam', { timeout: 240_000 }, () => {
+    // What pieceToBaseplateParams emits for a shaped split piece whose
+    // boundary crossing is away from the seam: piece-local outline (1×1
+    // notch at the top-right) + a join edge with connectors on the left.
+    // Tongue fusion happens after the outline intersect, so both must
+    // coexist in one valid solid.
+    const gen = getGenerateBaseplate();
+    const outline: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 3 * U },
+        { x: 3 * U, y: 3 * U },
+        { x: 3 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const result = gen(
+      defaults({
+        outline,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+      }),
+      NO_OP,
+      true
+    );
+    assertStructurallyValid(result, 'partial piece + join seam');
+    // Notch empty: plate-local [3u,4u]² → mesh [42,84]².
+    expect(countVerticesIn(result.vertices, 44, 44, 82, 82)).toBe(0);
+    // The join-edge tongues protrude past the piece's left face.
+    const bb = boundingBox(result.vertices);
+    expect(bb.minX).toBeLessThan(-2 * U - 0.5);
+  });
+
   it.skipIf(BREPKIT_CORNER_NOTCH_INTERSECT_BROKEN)(
     'scales with a non-standard grid unit',
     { timeout: 240_000 },

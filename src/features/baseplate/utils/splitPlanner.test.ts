@@ -9,6 +9,8 @@ import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { BaseplatePiece } from '../types/tiling';
+import { computePieceFingerprint } from './pieceFingerprint';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -1568,46 +1570,121 @@ describe('margin-seam connector edge assignment (#2414)', () => {
   });
 });
 
-describe('shaped plates (interim single-piece gate)', () => {
-  const L_SHAPE = {
+describe('shaped plates (outline-aware splitting)', () => {
+  const U = 42;
+  // 189mm bed → 4-unit chunks: an 8×8 plate tiles deterministically 2×2.
+  const BED = 4.5 * U;
+  const shapedParams = (
+    outline: ResolvedBaseplateParams['outline'],
+    overrides: Partial<ResolvedBaseplateParams> = {}
+  ): ResolvedBaseplateParams =>
+    makeParams({
+      width: 8,
+      depth: 8,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      connectorNubs: true,
+      outline,
+      ...overrides,
+    });
+
+  /** L: the top-right 4×4 quadrant (exactly piece B2's window) is notched. */
+  const L_OUTLINE = {
     vertices: [
       { x: 0, y: 0 },
-      { x: 16 * 42, y: 0 },
-      { x: 16 * 42, y: 8 * 42 },
-      { x: 8 * 42, y: 8 * 42 },
-      { x: 8 * 42, y: 16 * 42 },
-      { x: 0, y: 16 * 42 },
+      { x: 8 * U, y: 0 },
+      { x: 8 * U, y: 4 * U },
+      { x: 4 * U, y: 4 * U },
+      { x: 4 * U, y: 8 * U },
+      { x: 0, y: 8 * U },
     ],
   };
 
-  it('never splits a shaped plate, even when it exceeds the bed', () => {
-    // 16×16 would normally split on a 256mm bed.
-    const rectTiling = computeBaseplateTiling(makeParams({ width: 16, depth: 16 }), 256);
-    expect(rectTiling.isSplit).toBe(true);
+  /** Diagonal chamfer across the top-right quadrant (x + y = 12u). */
+  const CHAMFER_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 8 * U, y: 0 },
+      { x: 8 * U, y: 4 * U },
+      { x: 4 * U, y: 8 * U },
+      { x: 0, y: 8 * U },
+    ],
+  };
 
-    const shaped = computeBaseplateTiling(
-      makeParams({
-        width: 16,
-        depth: 16,
-        paddingLeft: 0,
-        paddingRight: 0,
-        paddingFront: 0,
-        paddingBack: 0,
-        outline: L_SHAPE,
-      }),
-      256
+  it('drops fully-outside pieces, keeping positional labels', () => {
+    const tiling = computeBaseplateTiling(shapedParams(L_OUTLINE), BED);
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.pieces.map((p) => p.label).sort()).toEqual(['A1', 'A2', 'B1']);
+    expect(tiling.bedLoads).toBe(3);
+    expect(tiling.paddingReductionHint).toBeNull();
+  });
+
+  it('keeps connectors on full seams, butts seams facing dropped pieces', () => {
+    const tiling = computeBaseplateTiling(shapedParams(L_OUTLINE), BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const a1 = byLabel.get('A1');
+    const b1 = byLabel.get('B1');
+    const a2 = byLabel.get('A2');
+    // Both seams into the body are full → connectors survive.
+    expect(a1?.edges.right).toBe('join');
+    expect(a1?.edges.back).toBe('join');
+    expect(b1?.edges.left).toBe('join');
+    expect(a2?.edges.front).toBe('join');
+    // Seams facing the dropped B2 become plain exteriors.
+    expect(b1?.edges.back).toBe('exterior');
+    expect(a2?.edges.right).toBe('exterior');
+  });
+
+  it('inside pieces stay pure rectangles; partial pieces carry a local outline', () => {
+    const tiling = computeBaseplateTiling(shapedParams(CHAMFER_OUTLINE), BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    expect(tiling.pieces).toHaveLength(4);
+    const a1 = byLabel.get('A1');
+    const b2 = byLabel.get('B2');
+    expect(a1?.outlineClass).toBeUndefined();
+    expect(b2?.outlineClass).toBe('partial');
+    expect(b2?.windowOriginMm).toEqual({ x: 4 * U, y: 4 * U });
+
+    const parent = shapedParams(CHAMFER_OUTLINE);
+    const a1Params = pieceToBaseplateParams(a1 as BaseplatePiece, parent);
+    const b2Params = pieceToBaseplateParams(b2 as BaseplatePiece, parent);
+    // Pure rectangle: identical fingerprint inputs to an unshaped piece.
+    expect(a1Params.outline).toBeUndefined();
+    // Piece-local frame: the diagonal's endpoints translate by the window origin.
+    expect(b2Params.outline?.vertices).toContainEqual({ x: 4 * U, y: 0 });
+    expect(b2Params.outline?.vertices).toContainEqual({ x: 0, y: 4 * U });
+  });
+
+  it('butts a seam the outline crosses (partial seam)', () => {
+    const tiling = computeBaseplateTiling(shapedParams(CHAMFER_OUTLINE), BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    // The diagonal crosses both of B2's join seams → butt joints on both sides.
+    expect(byLabel.get('B2')?.edges.left).toBe('exterior');
+    expect(byLabel.get('B2')?.edges.front).toBe('exterior');
+    expect(byLabel.get('A2')?.edges.right).toBe('exterior');
+    expect(byLabel.get('B1')?.edges.back).toBe('exterior');
+    // The body seams away from the diagonal keep connectors.
+    expect(byLabel.get('A1')?.edges.right).toBe('join');
+    expect(byLabel.get('A1')?.edges.back).toBe('join');
+  });
+
+  it('forces placement rotation off for shaped tilings', () => {
+    const tiling = computeBaseplateTiling(
+      shapedParams(L_OUTLINE, { preferIdenticalPieces: true }),
+      BED
     );
-    expect(shaped.isSplit).toBe(false);
-    expect(shaped.pieces).toHaveLength(1);
-    expect(shaped.pieces[0].widthUnits).toBe(16);
-    expect(shaped.pieces[0].edges).toEqual({
-      left: 'exterior',
-      right: 'exterior',
-      front: 'exterior',
-      back: 'exterior',
-    });
-    expect(shaped.margins).toHaveLength(0);
-    expect(shaped.bedLoads).toBe(1);
-    expect(shaped.paddingReductionHint).toBeNull();
+    expect(tiling.pieces.every((p) => p.placementRotationDeg === 0)).toBe(true);
+  });
+
+  it('shaped partial pieces fingerprint apart from rectangles, congruent windows together', () => {
+    const parent = shapedParams(CHAMFER_OUTLINE);
+    const tiling = computeBaseplateTiling(parent, BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const a1 = pieceToBaseplateParams(byLabel.get('A1') as BaseplatePiece, parent);
+    const b2 = pieceToBaseplateParams(byLabel.get('B2') as BaseplatePiece, parent);
+    expect(computePieceFingerprint(b2)).not.toBe(computePieceFingerprint(a1));
+    expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint({ ...b2 }));
   });
 });

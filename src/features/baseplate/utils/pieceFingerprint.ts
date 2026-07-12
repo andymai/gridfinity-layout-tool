@@ -7,6 +7,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { hashOutline } from '@/shared/utils/drawerOutline';
 import { exteriorCorners, type CornerKey } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
@@ -53,6 +54,11 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `sf:${params.solidFloor ? 1 : 0}`,
     `sft:${params.solidFloor ? (params.solidFloorThickness ?? '') : ''}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
+    // Piece-local outline hash: partial pieces are unique per boundary shape,
+    // but two windows with an identical local view of the boundary (already
+    // translated to piece frame) still dedupe. Fully-inside pieces carry no
+    // outline and keep sharing entries with plain rectangles.
+    params.outline === undefined ? '' : `ol:${hashOutline(params.outline)}`,
   ];
 
   // Edge classification (exterior vs join) affects geometry through two

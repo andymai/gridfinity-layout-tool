@@ -259,6 +259,7 @@ function generateHeader(
   uniqueCount: number
 ): string {
   const features: string[] = [];
+  if (params.outline !== undefined) features.push('custom drawer shape');
   if (params.magnetHoles) features.push('magnets');
   const hasPadding =
     params.paddingLeft > 0 ||
@@ -289,6 +290,15 @@ function generateHeader(
     `  Total pieces: ${totalPieces}${totalPieces > 1 ? ` (${uniqueCount} unique)` : ''}`,
     `  Build-plate loads: ${tiling.bedLoads}`,
   ];
+
+  if (params.outline !== undefined && tiling.pieces.length > 1) {
+    lines.push(
+      '',
+      '  Shaped plate: grid positions outside the drawer shape are not',
+      '  printed (their labels are skipped below). Seams the shape crosses',
+      '  have no connectors — align those pieces by their outline instead.'
+    );
+  }
 
   // Surface the connector fit offset whenever connectors are on and the user
   // has dialed it off-nominal — applies to the integral dovetail (which has no

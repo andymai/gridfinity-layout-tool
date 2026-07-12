@@ -54,6 +54,17 @@ export interface BaseplatePiece {
    * its dovetails end up on the correct world-space sides.
    */
   readonly placementRotationDeg: 0 | 180;
+  /**
+   * Set when the plate outline crosses this piece's window: the piece's
+   * generation params carry a piece-local outline and its mesh is not a plain
+   * rectangle. Fully-inside pieces omit this and stay pure rectangles —
+   * keeping their fingerprints, dedup, and connector behavior identical to an
+   * unshaped plate.
+   */
+  readonly outlineClass?: 'partial';
+  /** Plate-local mm origin of this piece's window (bottom-left), recorded so
+   * `pieceToBaseplateParams` can translate the outline without re-deriving. */
+  readonly windowOriginMm?: { readonly x: number; readonly y: number };
 }
 
 /** Hint suggesting a padding reduction that would eliminate a split. */
