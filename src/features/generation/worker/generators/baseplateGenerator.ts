@@ -426,7 +426,7 @@ export function buildBaseplateSolid(
   // construction (buildFullParams zeroes radii for shaped plates); the else-if
   // keeps the generator self-consistent when called directly.
   if (outline !== undefined) {
-    const outlineProfile = buildOutlineDrawing(outline, { totalW, totalD });
+    const outlineProfile = buildOutlineDrawing(outline, { totalW, totalD, gridUnitMm });
     const outlineSlab = (
       outlineProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
     ).extrude(-totalHeight);

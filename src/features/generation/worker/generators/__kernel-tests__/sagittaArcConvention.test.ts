@@ -69,7 +69,7 @@ describe(`sagittaArcTo convention on ${getKernelName()}`, () => {
         { x: 0, y: 100 },
       ],
     };
-    const drawing = buildOutlineDrawing(outline, { totalW: 100, totalD: 100 });
+    const drawing = buildOutlineDrawing(outline, { totalW: 100, totalD: 100, gridUnitMm: 50 });
     const solid = (drawing.sketchOnPlane('XY') as unknown as Extrudable).extrude(5);
     const volume = unwrap(measureVolume(solid as never));
     const expected = (100 * 100 - (Math.PI * 25 * 25) / 2) * 5;
@@ -89,7 +89,7 @@ describe(`sagittaArcTo convention on ${getKernelName()}`, () => {
         { x: 0, y: 100 },
       ],
     };
-    const drawing = buildOutlineDrawing(outline, { totalW: 100, totalD: 100 });
+    const drawing = buildOutlineDrawing(outline, { totalW: 100, totalD: 100, gridUnitMm: 50 });
     const solid = (drawing.sketchOnPlane('XY') as unknown as Extrudable).extrude(5);
     const volume = unwrap(measureVolume(solid as never));
 

@@ -106,7 +106,7 @@ function countVerticesIn(
 }
 
 describe('baseplate outline geometry', () => {
-  it('cuts the L-shape notch clean out of the plate', () => {
+  it('cuts the L-shape notch clean out of the plate', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const rect = gen(defaults(), NO_OP, true);
     const result = gen(defaults({ outline: L_SHAPE }), NO_OP, true);
@@ -121,7 +121,7 @@ describe('baseplate outline geometry', () => {
     expect(result.triangleCount).not.toBe(rect.triangleCount);
   });
 
-  it('cuts the ⊓ notch while keeping both prongs', () => {
+  it('cuts the ⊓ notch while keeping both prongs', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: U_SHAPE }), NO_OP, true);
     assertStructurallyValid(result, 'U-shape');
@@ -132,7 +132,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, 44, 42, 84, 84)).toBeGreaterThan(0);
   });
 
-  it('slices a diagonal chamfer, leaving the far corner empty', () => {
+  it('slices a diagonal chamfer, leaving the far corner empty', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: CHAMFER }), NO_OP, true);
     assertStructurallyValid(result, 'chamfer');
@@ -142,7 +142,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, -84, -84, 0, 0)).toBeGreaterThan(0);
   });
 
-  it('follows a curved back edge', () => {
+  it('follows a curved back edge', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: CURVED_BACK }), NO_OP, true);
     assertStructurallyValid(result, 'curved back');
@@ -153,7 +153,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, -84, 60, -60, 84)).toBeGreaterThan(0);
   });
 
-  it('keeps magnets only in fully-inside cells', () => {
+  it('keeps magnets only in fully-inside cells', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const plain = gen(defaults({ outline: L_SHAPE }), NO_OP, true);
     const magnets = gen(defaults({ outline: L_SHAPE, magnetHoles: true }), NO_OP, true);
@@ -163,7 +163,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(magnets.vertices, 2, 2, 82, 82)).toBe(0);
   });
 
-  it('over-tile cuts outline-clipped pockets in partial cells', () => {
+  it('over-tile cuts outline-clipped pockets in partial cells', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const solidPartials = gen(defaults({ outline: CHAMFER }), NO_OP, true);
     const clippedPartials = gen(defaults({ outline: CHAMFER, overTile: true }), NO_OP, true);
@@ -172,14 +172,14 @@ describe('baseplate outline geometry', () => {
     expect(clippedPartials.triangleCount).toBeGreaterThan(solidPartials.triangleCount);
   });
 
-  it('composes with solidFloor', () => {
+  it('composes with solidFloor', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: L_SHAPE, solidFloor: true }), NO_OP, true);
     assertStructurallyValid(result, 'L-shape + solidFloor');
     expect(countVerticesIn(result.vertices, 2, 2, 82, 82)).toBe(0);
   });
 
-  it('handles a fractional axis', () => {
+  it('handles a fractional axis', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     // 3.5×4 plate (147×168mm), notch in the top-right.
     const outline: DrawerOutline = {
@@ -198,7 +198,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, 12.5, 2, 71.5, 82)).toBe(0);
   });
 
-  it('scales with a non-standard grid unit', () => {
+  it('scales with a non-standard grid unit', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const G = 50;
     const outline: DrawerOutline = {

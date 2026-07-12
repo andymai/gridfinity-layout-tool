@@ -6,10 +6,15 @@
  * `buildSlabProfile` — the caller extrudes it and translates by the slab
  * offset exactly like the corner-rounding profile.
  *
- * Vertices lying on the plate's bounding box are nudged outward by
- * COPLANAR_OVERLAP so the outline-clip intersect never runs face-on-face
- * against the cached slab (rectilinear cell-paint outlines put whole edges
- * exactly on the bbox).
+ * Straight axis-aligned segments lying on a half-grid line are nudged
+ * COPLANAR_OVERLAP toward the loop's OUTSIDE (right of CCW travel), so the
+ * outline-clip intersect never runs face-on-face against the slab's bbox or
+ * a pocket wall — pocket mouths open to the full cell at the slab top
+ * (INSET_TOP = 0), putting walls exactly on every cell boundary, and a
+ * coplanar boolean there is pathologically slow on brepkit (>30s vs <2s).
+ * The nudge cuts through solid material 0.01mm into the excluded region
+ * instead. Assumes plate-local origin == grid origin (shaped plates carry
+ * zero padding by construction).
  */
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
@@ -36,6 +41,8 @@ export interface OutlineFrame {
   /** Plate outer extent (mm) — the outline's coordinate space spans it. */
   readonly totalW: number;
   readonly totalD: number;
+  /** Grid pitch (mm); cell boundaries sit at multiples of half of it. */
+  readonly gridUnitMm: number;
 }
 
 /**
@@ -51,16 +58,45 @@ export function buildOutlineDrawing(outline: DrawerOutline, frame: OutlineFrame)
 
   const halfW = frame.totalW / 2;
   const halfD = frame.totalD / 2;
-  const nudge = (value: number, max: number): number => {
-    if (Math.abs(value) <= COPLANAR_OVERLAP) return -COPLANAR_OVERLAP;
-    if (Math.abs(value - max) <= COPLANAR_OVERLAP) return max + COPLANAR_OVERLAP;
-    return value;
-  };
+  const halfPitch = frame.gridUnitMm / 2;
   const points = verts.map((v) => ({
-    x: nudge(v.x, frame.totalW) - halfW,
-    y: nudge(v.y, frame.totalD) - halfD,
+    x: v.x,
+    y: v.y,
     bulge: v.bulge ?? 0,
   }));
+
+  const onHalfGridLine = (value: number): number | null => {
+    const snapped = Math.round(value / halfPitch) * halfPitch;
+    return Math.abs(value - snapped) <= COPLANAR_OVERLAP ? snapped : null;
+  };
+  const n = points.length;
+  for (let i = 0; i < n; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % n];
+    if (Math.abs(verts[i].bulge ?? 0) >= BULGE_EPS) continue;
+    if (Math.abs(a.x - b.x) <= COPLANAR_OVERLAP) {
+      const line = onHalfGridLine(a.x);
+      if (line !== null && Math.abs(b.y - a.y) > COPLANAR_OVERLAP) {
+        // Vertical segment on a cell boundary: right of travel is +x when
+        // heading up. Both endpoints move so the segment stays vertical.
+        const shifted = line + Math.sign(b.y - a.y) * COPLANAR_OVERLAP;
+        a.x = shifted;
+        b.x = shifted;
+      }
+    } else if (Math.abs(a.y - b.y) <= COPLANAR_OVERLAP) {
+      const line = onHalfGridLine(a.y);
+      if (line !== null) {
+        // Horizontal segment: right of travel is −y when heading +x.
+        const shifted = line - Math.sign(b.x - a.x) * COPLANAR_OVERLAP;
+        a.y = shifted;
+        b.y = shifted;
+      }
+    }
+  }
+  for (const p of points) {
+    p.x -= halfW;
+    p.y -= halfD;
+  }
 
   for (let i = 0; i < points.length; i++) {
     const a = points[i];
