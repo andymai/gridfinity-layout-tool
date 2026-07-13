@@ -16,6 +16,7 @@ describe('isLocale', () => {
     expect(isLocale('pt-BR')).toBe(true);
     expect(isLocale('nb')).toBe(true);
     expect(isLocale('uk')).toBe(true);
+    expect(isLocale('it')).toBe(true);
     expect(isLocale('sv')).toBe(true);
     expect(isLocale('ja')).toBe(true);
   });
@@ -31,7 +32,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(10);
+    expect(SUPPORTED_LOCALES).toHaveLength(11);
   });
 
   it('has required properties for each locale', () => {
@@ -104,6 +105,11 @@ describe('detectBrowserLocale', () => {
       expect(detectBrowserLocale()).toBe('uk');
     });
 
+    it('detects Italian', () => {
+      vi.stubGlobal('navigator', { languages: ['it'], language: 'it' });
+      expect(detectBrowserLocale()).toBe('it');
+    });
+
     it('detects Swedish', () => {
       vi.stubGlobal('navigator', { languages: ['sv'], language: 'sv' });
       expect(detectBrowserLocale()).toBe('sv');
@@ -159,6 +165,16 @@ describe('detectBrowserLocale', () => {
     it('maps fr-BE (Belgian French) to fr', () => {
       vi.stubGlobal('navigator', { languages: ['fr-BE'], language: 'fr-BE' });
       expect(detectBrowserLocale()).toBe('fr');
+    });
+
+    it('maps it-IT to it', () => {
+      vi.stubGlobal('navigator', { languages: ['it-IT'], language: 'it-IT' });
+      expect(detectBrowserLocale()).toBe('it');
+    });
+
+    it('maps it-CH (Swiss Italian) to it', () => {
+      vi.stubGlobal('navigator', { languages: ['it-CH'], language: 'it-CH' });
+      expect(detectBrowserLocale()).toBe('it');
     });
 
     it('maps pt-PT (European Portuguese) to pt-BR', () => {

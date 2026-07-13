@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Clássico",
   "undo.magnetAnchorChanged": "Ancoragem dos ímãs alterada",
   "baseplate.magnetAnchorHintCorners": "Os ímãs ficam a 8 mm da borda de cada célula — a posição de canto padrão do Gridfinity.",
-  "baseplate.magnetAnchorHintLegacy": "Ímãs fixados a 13 mm do centro de cada célula — corresponde a peças impressas antes desta correção."
+  "baseplate.magnetAnchorHintLegacy": "Ímãs fixados a 13 mm do centro de cada célula — corresponde a peças impressas antes desta correção.",
+  "sidebar.gridUnit": "Unidade de grade",
+  "sidebar.gridUnitTooltip": "Tamanho de uma célula de grade em mm (Gridfinity padrão = 42mm)",
+  "sidebar.heightUnit": "Unidade de altura",
+  "sidebar.heightUnitTooltip": "Tamanho de uma unidade de altura em mm (Gridfinity padrão = 7mm)",
+  "sidebar.printBed": "Mesa de impressão",
+  "sidebar.printBedTooltip": "Bins mais largos que {maxWidth} ou mais profundos que {maxDepth} serão divididos para impressão"
 }

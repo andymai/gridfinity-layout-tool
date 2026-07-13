@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Klassisch",
   "undo.magnetAnchorChanged": "Magnetposition geändert",
   "baseplate.magnetAnchorHintCorners": "Magnete bleiben 8 mm vom Zellenrand entfernt – die Standard-Gridfinity-Eckposition.",
-  "baseplate.magnetAnchorHintLegacy": "Magnete 13 mm von der Zellenmitte fixiert – passt zu Teilen, die vor dieser Korrektur gedruckt wurden."
+  "baseplate.magnetAnchorHintLegacy": "Magnete 13 mm von der Zellenmitte fixiert – passt zu Teilen, die vor dieser Korrektur gedruckt wurden.",
+  "sidebar.gridUnit": "Rastereinheit",
+  "sidebar.gridUnitTooltip": "Größe einer Rasterzelle in mm (Standard-Gridfinity = 42mm)",
+  "sidebar.heightUnit": "Höheneinheit",
+  "sidebar.heightUnitTooltip": "Größe einer Höheneinheit in mm (Standard-Gridfinity = 7mm)",
+  "sidebar.printBed": "Druckbett",
+  "sidebar.printBedTooltip": "Bins, die breiter als {maxWidth} oder tiefer als {maxDepth} sind, werden zum Drucken geteilt"
 }

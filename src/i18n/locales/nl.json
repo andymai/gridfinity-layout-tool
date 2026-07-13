@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Klassiek",
   "undo.magnetAnchorChanged": "Magneetankering gewijzigd",
   "baseplate.magnetAnchorHintCorners": "Magneten blijven 8 mm van elke celrand — de standaard Gridfinity-hoekpositie.",
-  "baseplate.magnetAnchorHintLegacy": "Magneten op 13 mm vanaf het celmidden — komt overeen met onderdelen die vóór deze correctie zijn geprint."
+  "baseplate.magnetAnchorHintLegacy": "Magneten op 13 mm vanaf het celmidden — komt overeen met onderdelen die vóór deze correctie zijn geprint.",
+  "sidebar.gridUnit": "Rastereenheid",
+  "sidebar.gridUnitTooltip": "Grootte van één rastercel in mm (standaard Gridfinity = 42mm)",
+  "sidebar.heightUnit": "Hoogte-eenheid",
+  "sidebar.heightUnitTooltip": "Grootte van één hoogte-eenheid in mm (standaard Gridfinity = 7mm)",
+  "sidebar.printBed": "Printbed",
+  "sidebar.printBedTooltip": "Bins die breder zijn dan {maxWidth} of dieper dan {maxDepth} worden gesplitst voor het printen"
 }

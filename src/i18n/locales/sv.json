@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Klassisk",
   "undo.magnetAnchorChanged": "Ändrade magnetförankring",
   "baseplate.magnetAnchorHintCorners": "Magneterna håller 8 mm från varje cellkant – standardpositionen för Gridfinity-hörn.",
-  "baseplate.magnetAnchorHintLegacy": "Magneter fästa 13 mm från varje cells mitt – matchar delar utskrivna före den här korrigeringen."
+  "baseplate.magnetAnchorHintLegacy": "Magneter fästa 13 mm från varje cells mitt – matchar delar utskrivna före den här korrigeringen.",
+  "sidebar.gridUnit": "Rutnätsenhet",
+  "sidebar.gridUnitTooltip": "Storleken på en rutnätscell i mm (standard-Gridfinity = 42mm)",
+  "sidebar.heightUnit": "Höjdenhet",
+  "sidebar.heightUnitTooltip": "Storleken på en höjdenhet i mm (standard-Gridfinity = 7mm)",
+  "sidebar.printBed": "Utskriftsbädd",
+  "sidebar.printBedTooltip": "Bins som är bredare än {maxWidth} eller djupare än {maxDepth} delas upp för utskrift"
 }

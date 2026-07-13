@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Clásico",
   "undo.magnetAnchorChanged": "Anclaje de imanes cambiado",
   "baseplate.magnetAnchorHintCorners": "Los imanes se mantienen a 8 mm del borde de cada celda: la posición estándar de esquina de Gridfinity.",
-  "baseplate.magnetAnchorHintLegacy": "Imanes fijados a 13 mm del centro de cada celda: coincide con piezas impresas antes de esta corrección."
+  "baseplate.magnetAnchorHintLegacy": "Imanes fijados a 13 mm del centro de cada celda: coincide con piezas impresas antes de esta corrección.",
+  "sidebar.gridUnit": "Unidad de rejilla",
+  "sidebar.gridUnitTooltip": "Tamaño de una celda de rejilla en mm (Gridfinity estándar = 42mm)",
+  "sidebar.heightUnit": "Unidad de altura",
+  "sidebar.heightUnitTooltip": "Tamaño de una unidad de altura en mm (Gridfinity estándar = 7mm)",
+  "sidebar.printBed": "Cama de impresión",
+  "sidebar.printBedTooltip": "Los bins más anchos de {maxWidth} o más profundos de {maxDepth} se dividirán para imprimir"
 }

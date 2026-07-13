@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Класична",
   "undo.magnetAnchorChanged": "Змінено прив’язку магнітів",
   "baseplate.magnetAnchorHintCorners": "Магніти тримаються за 8 мм від краю кожної комірки — стандартна кутова позиція Gridfinity.",
-  "baseplate.magnetAnchorHintLegacy": "Магніти зафіксовано за 13 мм від центру кожної комірки — відповідає деталям, надрукованим до цього виправлення."
+  "baseplate.magnetAnchorHintLegacy": "Магніти зафіксовано за 13 мм від центру кожної комірки — відповідає деталям, надрукованим до цього виправлення.",
+  "sidebar.gridUnit": "Одиниця сітки",
+  "sidebar.gridUnitTooltip": "Розмір однієї комірки сітки в мм (стандартний Gridfinity = 42mm)",
+  "sidebar.heightUnit": "Одиниця висоти",
+  "sidebar.heightUnitTooltip": "Розмір однієї одиниці висоти в мм (стандартний Gridfinity = 7mm)",
+  "sidebar.printBed": "Друкарський стіл",
+  "sidebar.printBedTooltip": "Bin, ширші за {maxWidth} або глибші за {maxDepth}, будуть розділені для друку"
 }

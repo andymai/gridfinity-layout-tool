@@ -255,6 +255,13 @@ const en: Record<string, string> = {
   'sidebar.inspirationGallery': 'Inspiration Gallery',
   'sidebar.inspirationHint': 'Get ideas for your drawer',
   'sidebar.gridSize': 'Grid Size',
+  'sidebar.gridUnit': 'Grid unit',
+  'sidebar.gridUnitTooltip': 'Size of one grid unit in mm (standard Gridfinity = 42mm)',
+  'sidebar.heightUnit': 'Height unit',
+  'sidebar.heightUnitTooltip': 'Height of one vertical unit in mm (standard = 7mm)',
+  'sidebar.printBed': 'Print bed',
+  'sidebar.printBedTooltip':
+    'Bins wider than {maxWidth} or deeper than {maxDepth} will be split for printing',
   'sidebar.halfBinMode': 'Half-grid mode',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',

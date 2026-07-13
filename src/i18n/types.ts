@@ -7,7 +7,7 @@
  */
 
 /** Supported locale codes */
-export type Locale = 'en' | 'de' | 'nl' | 'es' | 'pt-BR' | 'fr' | 'nb' | 'uk' | 'sv' | 'ja';
+export type Locale = 'en' | 'de' | 'nl' | 'es' | 'pt-BR' | 'fr' | 'it' | 'nb' | 'uk' | 'sv' | 'ja';
 
 /** Locale metadata for UI display */
 export interface LocaleInfo {
@@ -27,6 +27,7 @@ export const SUPPORTED_LOCALES: readonly LocaleInfo[] = [
   { code: 'es', nativeName: 'Español', englishName: 'Spanish' },
   { code: 'pt-BR', nativeName: 'Português (Brasil)', englishName: 'Portuguese (Brazil)' },
   { code: 'fr', nativeName: 'Français', englishName: 'French' },
+  { code: 'it', nativeName: 'Italiano', englishName: 'Italian' },
   { code: 'nb', nativeName: 'Norsk bokmål', englishName: 'Norwegian Bokmål' },
   { code: 'uk', nativeName: 'Українська', englishName: 'Ukrainian' },
   { code: 'sv', nativeName: 'Svenska', englishName: 'Swedish' },

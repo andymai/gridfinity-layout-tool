@@ -19,6 +19,7 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   nl: 'nl',
   es: 'es',
   fr: 'fr',
+  it: 'it',
 
   // Portuguese variants → Brazilian Portuguese
   pt: 'pt-BR',
@@ -41,6 +42,11 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   'fr-BE': 'fr',
   'fr-CH': 'fr',
   'fr-CA': 'fr',
+
+  // Italian regional variants
+  'it-IT': 'it',
+  'it-CH': 'it', // Swiss Italian
+  'it-SM': 'it', // San Marino
 
   // Norwegian variants → Bokmål
   nb: 'nb',

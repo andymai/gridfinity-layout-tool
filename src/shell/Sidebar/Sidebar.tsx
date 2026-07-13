@@ -477,9 +477,9 @@ export function Sidebar() {
                 <div className="text-xs text-content-secondary space-y-2">
                   <div data-help-target="grid-unit">
                     <SettingsRow
-                      label="Grid unit"
+                      label={t('sidebar.gridUnit')}
                       htmlFor="gridUnit"
-                      tooltip="Size of one grid unit in mm (standard Gridfinity = 42mm)"
+                      tooltip={t('sidebar.gridUnitTooltip')}
                       unit="mm"
                     >
                       <DeferredNumberInput
@@ -494,9 +494,9 @@ export function Sidebar() {
                   </div>
                   <div data-help-target="height-unit">
                     <SettingsRow
-                      label="Height unit"
+                      label={t('sidebar.heightUnit')}
                       htmlFor="heightUnit"
-                      tooltip="Height of one vertical unit in mm (standard = 7mm)"
+                      tooltip={t('sidebar.heightUnitTooltip')}
                       unit="mm"
                     >
                       <DeferredNumberInput
@@ -513,9 +513,12 @@ export function Sidebar() {
                   </div>
                   <div data-help-target="print-bed-size">
                     <SettingsRow
-                      label="Print bed"
+                      label={t('sidebar.printBed')}
                       htmlFor="printBedSize"
-                      tooltip={`Bins wider than ${maxGridUnits.width} or deeper than ${maxGridUnits.depth} will be split for printing`}
+                      tooltip={t('sidebar.printBedTooltip', {
+                        maxWidth: maxGridUnits.width,
+                        maxDepth: maxGridUnits.depth,
+                      })}
                       unit="mm"
                     >
                       <PrintBedInput

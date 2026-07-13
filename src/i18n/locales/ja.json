@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "従来",
   "undo.magnetAnchorChanged": "磁石の基準位置を変更",
   "baseplate.magnetAnchorHintCorners": "磁石は各セル端から8mmの位置を保ちます — 標準的なGridfinityの四隅位置です。",
-  "baseplate.magnetAnchorHintLegacy": "磁石を各セル中心から13mmに固定します — この修正前に印刷した部品と一致します。"
+  "baseplate.magnetAnchorHintLegacy": "磁石を各セル中心から13mmに固定します — この修正前に印刷した部品と一致します。",
+  "sidebar.gridUnit": "グリッドユニット",
+  "sidebar.gridUnitTooltip": "グリッドセル1つのサイズ（mm）（標準Gridfinity = 42mm）",
+  "sidebar.heightUnit": "高さユニット",
+  "sidebar.heightUnitTooltip": "高さユニット1つのサイズ（mm）（標準Gridfinity = 7mm）",
+  "sidebar.printBed": "プリントベッド",
+  "sidebar.printBedTooltip": "{maxWidth} より広い、または {maxDepth} より深い bin は印刷のために分割されます"
 }

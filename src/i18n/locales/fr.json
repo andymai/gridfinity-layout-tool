@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Ancien",
   "undo.magnetAnchorChanged": "Ancrage des aimants modifié",
   "baseplate.magnetAnchorHintCorners": "Les aimants restent à 8 mm du bord de chaque cellule — la position d’angle Gridfinity standard.",
-  "baseplate.magnetAnchorHintLegacy": "Aimants fixés à 13 mm du centre de chaque cellule — correspond aux pièces imprimées avant cette correction."
+  "baseplate.magnetAnchorHintLegacy": "Aimants fixés à 13 mm du centre de chaque cellule — correspond aux pièces imprimées avant cette correction.",
+  "sidebar.gridUnit": "Unité de grille",
+  "sidebar.gridUnitTooltip": "Taille d'une cellule de grille en mm (Gridfinity standard = 42mm)",
+  "sidebar.heightUnit": "Unité de hauteur",
+  "sidebar.heightUnitTooltip": "Taille d'une unité de hauteur en mm (Gridfinity standard = 7mm)",
+  "sidebar.printBed": "Plateau d'impression",
+  "sidebar.printBedTooltip": "Les bins plus larges que {maxWidth} ou plus profonds que {maxDepth} seront divisés pour l'impression"
 }

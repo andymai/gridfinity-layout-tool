@@ -231,7 +231,10 @@
     "binExamples.dimensions",
     "binDesigner.cutouts.section.color",
     "layouts.import.placeholder",
-    "binDesigner.labelColor"
+    "binDesigner.labelColor",
+    "baseplate.title",
+    "toolSwitcher.baseplateGenerator",
+    "share.tabs.file"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

@@ -2683,5 +2683,11 @@
   "baseplate.magnetAnchorCenter": "Klassisk",
   "undo.magnetAnchorChanged": "Endret magnetforankring",
   "baseplate.magnetAnchorHintCorners": "Magneter holder 8 mm fra hver cellekant – standard Gridfinity-hjørneposisjon.",
-  "baseplate.magnetAnchorHintLegacy": "Magneter festet 13 mm fra hvert cellesenter – samsvarer med deler skrevet ut før dette ble rettet."
+  "baseplate.magnetAnchorHintLegacy": "Magneter festet 13 mm fra hvert cellesenter – samsvarer med deler skrevet ut før dette ble rettet.",
+  "sidebar.gridUnit": "Rutenettenhet",
+  "sidebar.gridUnitTooltip": "Størrelsen på én rutenettcelle i mm (standard Gridfinity = 42mm)",
+  "sidebar.heightUnit": "Høydeenhet",
+  "sidebar.heightUnitTooltip": "Størrelsen på én høydeenhet i mm (standard Gridfinity = 7mm)",
+  "sidebar.printBed": "Printplate",
+  "sidebar.printBedTooltip": "Bins som er bredere enn {maxWidth} eller dypere enn {maxDepth}, deles opp for utskrift"
 }
