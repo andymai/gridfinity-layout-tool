@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.245.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.0...gridfinity-layout-tool-v4.245.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **baseplate:** key mesh cache on nozzle for lightweight magnet pads ([#2561](https://github.com/andymai/gridfinity-layout-tool/issues/2561)) ([706ef03](https://github.com/andymai/gridfinity-layout-tool/commit/706ef0358319a799c33c62819e2cd6399d25304f))
+
 ## [4.245.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.244.2...gridfinity-layout-tool-v4.245.0) (2026-07-12)
 
 
