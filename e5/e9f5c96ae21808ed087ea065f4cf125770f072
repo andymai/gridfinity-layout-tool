@@ -1,0 +1,60 @@
+src/i18n/locales/en.ts
+  s_4028604addb655::t_514acb4e29f47d 258-264
+src/i18n/locales/fr.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/locales/ja.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/locales/de.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/locales/sv.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/locales/es.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/locales/uk.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/types.ts
+  s_4028604addb655::t_e3662069b08c7f 10
+  s_4028604addb655::t_8f6c9a24c1c098 30
+src/i18n/locales/nl.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/detection.ts
+  s_4028604addb655::t_f29199762c7e73 22
+  s_4028604addb655::t_da91570529c1a5 46-50
+src/shell/Sidebar/Sidebar.tsx
+  s_4028604addb655::t_02b79f06323dfb 480,482
+  s_4028604addb655::t_c17981249eb76d 516,518-521
+  s_4028604addb655::t_372c3cf00c8b4e 497,499
+src/i18n/locales/it.json
+  s_4028604addb655::t_69620fd1d2297d 1-2685,2693
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+scripts/i18n-values-allowlist.json
+  s_4028604addb655::t_14fbcb02be9b40 234-237
+src/i18n/detection.test.ts
+  s_4028604addb655::t_9e11f08aff8dc6 170-179
+  s_4028604addb655::t_e8ad710937e230 108-112
+  s_4028604addb655::t_6e4e9d5144ffa7 19
+  s_4028604addb655::t_516541f0506891 35
+src/i18n/locales/pt-BR.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+src/i18n/context.tsx
+  s_4028604addb655::t_9c59a2495054f2 69
+  s_4028604addb655::t_b1dd2618cbcd70 158
+src/i18n/locales/nb.json
+  s_4028604addb655::t_a9bc742d2d3354 2686-2692
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "e5e9f5c96ae21808ed087ea065f4cf125770f072",
+  "prompts": {},
+  "sessions": {
+    "s_4028604addb655": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23635847-3726-4164-b054-b463b3786f6d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
