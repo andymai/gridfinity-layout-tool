@@ -129,7 +129,7 @@
     "manifold-3d": "3.5.1",
     "occt-wasm": "3.6.1",
     "polygon-clipping": "^0.15.7",
-    "posthog-js": "^1.396.8",
+    "posthog-js": "^1.396.9",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
