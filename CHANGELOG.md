@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.245.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.1...gridfinity-layout-tool-v4.245.2) (2026-07-13)
+
+
+### Bug Fixes
+
+* **baseplate:** widen 0.6mm magnet pad margin to a full 3 perimeters ([#2563](https://github.com/andymai/gridfinity-layout-tool/issues/2563)) ([26ac0c5](https://github.com/andymai/gridfinity-layout-tool/commit/26ac0c534774b545e5bf0aa33dd80c69ff7ccb7d))
+
 ## [4.245.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.0...gridfinity-layout-tool-v4.245.1) (2026-07-13)
 
 
