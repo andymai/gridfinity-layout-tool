@@ -16,7 +16,7 @@ import type { ForEachCellOptions, CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { sketch } from './meshUtils';
-import { magnetPadMarginForNozzle } from '@/shared/printSettings';
+import { magnetOuterWallMarginForNozzle, magnetPadMarginForNozzle } from '@/shared/printSettings';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 
@@ -96,6 +96,7 @@ export function buildLightweightFloorCutters(
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
   const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
+  const outerWallMargin = magnetOuterWallMarginForNozzle(nozzleSizeMm);
 
   const cutters: Shape3D[] = [];
   const templates = new Map<string, Shape3D>();
@@ -136,6 +137,11 @@ export function buildLightweightFloorCutters(
         // and doesn't undercut the tapered pocket walls (which would create overhangs).
         const hw = cellW_mm / 2 - INSET_BOT;
         const hd = cellD_mm / 2 - INSET_BOT;
+        // Keep the wider-nozzle outside pad attached to the pocket-bottom
+        // perimeter. The magnet cutters themselves remain at the exact
+        // Gridfinity positions; this only contracts the separate relief cut.
+        const reliefHw = hw - outerWallMargin;
+        const reliefHd = hd - outerWallMargin;
 
         // Keep pads around the ACTUAL magnet positions — on a smaller or
         // non-square cell magnetPositionsForCell pulls the corners inward, so a
@@ -152,7 +158,7 @@ export function buildLightweightFloorCutters(
         const padHalfX = offX - magnetRadius - padMargin;
         const padHalfY = offY - magnetRadius - padMargin;
         if (padHalfX < MIN_ARM_WIDTH || padHalfY < MIN_ARM_WIDTH) return;
-        if (hw - padHalfX < MIN_ARM_WIDTH || hd - padHalfY < MIN_ARM_WIDTH) return;
+        if (reliefHw - padHalfX < MIN_ARM_WIDTH || reliefHd - padHalfY < MIN_ARM_WIDTH) return;
 
         // Cache key includes the offsets: same cell size ⇒ same pull-in ⇒ one
         // template. Inner corners left sharp (vertical-wall underside relief).
@@ -160,9 +166,11 @@ export function buildLightweightFloorCutters(
         let template = templates.get(cacheKey);
 
         if (!template) {
-          template = sketch(crossProfile(hw, hd, padHalfX, padHalfY), 'XY', cutterZ).extrude(
-            -cutterDepth
-          );
+          template = sketch(
+            crossProfile(reliefHw, reliefHd, padHalfX, padHalfY),
+            'XY',
+            cutterZ
+          ).extrude(-cutterDepth);
           templates.set(cacheKey, template);
         }
 
@@ -240,7 +248,12 @@ export function planPartialCellFloorCuts(
   // undercut the tapered pocket walls (matches the full-cell cutter).
   const hw = halfW - INSET_BOT;
   const hd = halfD - INSET_BOT;
-  if (hw <= MIN_ARM_WIDTH || hd <= MIN_ARM_WIDTH) return []; // no floor worth hollowing
+  const outerWallMargin = magnetOuterWallMarginForNozzle(nozzleSizeMm);
+  const reliefHw = hw - outerWallMargin;
+  const reliefHd = hd - outerWallMargin;
+  if (hw <= MIN_ARM_WIDTH || hd <= MIN_ARM_WIDTH || reliefHw <= 0 || reliefHd <= 0) {
+    return []; // no floor worth hollowing
+  }
 
   // Symmetric 4-corner tile → cross cut, with per-axis pads around the ACTUAL
   // (possibly pulled-in) magnet offsets. A full 42mm tile yields offset 13 → the
@@ -253,13 +266,21 @@ export function planPartialCellFloorCuts(
     if (
       padHalfX < MIN_ARM_WIDTH ||
       padHalfY < MIN_ARM_WIDTH ||
-      hw - padHalfX < MIN_ARM_WIDTH ||
-      hd - padHalfY < MIN_ARM_WIDTH
+      reliefHw - padHalfX < MIN_ARM_WIDTH ||
+      reliefHd - padHalfY < MIN_ARM_WIDTH
     ) {
       return [];
     }
     return [
-      { kind: 'cross', centerX: cell.centerX, centerY: cell.centerY, hw, hd, padHalfX, padHalfY },
+      {
+        kind: 'cross',
+        centerX: cell.centerX,
+        centerY: cell.centerY,
+        hw: reliefHw,
+        hd: reliefHd,
+        padHalfX,
+        padHalfY,
+      },
     ];
   }
 
@@ -271,8 +292,8 @@ export function planPartialCellFloorCuts(
   // room beside it — a wide corner tile opens left/right. Prefer the wider axis;
   // on a tie open left/right.
   if (positions.length === 1) {
-    const roomX = hw - keepHalf; // hollow-able strip on each left/right side
-    const roomY = hd - keepHalf; // hollow-able strip on each top/bottom side
+    const roomX = reliefHw - keepHalf; // hollow-able strip on each left/right side
+    const roomY = reliefHd - keepHalf; // hollow-able strip on each top/bottom side
     if (roomX >= MIN_ARM_WIDTH && roomX >= roomY) {
       const c = keepHalf + roomX / 2;
       return [
@@ -281,14 +302,14 @@ export function planPartialCellFloorCuts(
           centerX: cell.centerX + c,
           centerY: cell.centerY,
           width: roomX,
-          depth: 2 * hd,
+          depth: 2 * reliefHd,
         },
         {
           kind: 'rect',
           centerX: cell.centerX - c,
           centerY: cell.centerY,
           width: roomX,
-          depth: 2 * hd,
+          depth: 2 * reliefHd,
         },
       ];
     }
@@ -299,14 +320,14 @@ export function planPartialCellFloorCuts(
           kind: 'rect',
           centerX: cell.centerX,
           centerY: cell.centerY + c,
-          width: 2 * hw,
+          width: 2 * reliefHw,
           depth: roomY,
         },
         {
           kind: 'rect',
           centerX: cell.centerX,
           centerY: cell.centerY - c,
-          width: 2 * hw,
+          width: 2 * reliefHw,
           depth: roomY,
         },
       ];
@@ -316,7 +337,7 @@ export function planPartialCellFloorCuts(
 
   // Two or more magnets are spread along the longer axis, centered on the shorter.
   const alongX = halfW >= halfD;
-  const shortHalf = alongX ? hd : hw; // inset half-extent on the SHORT axis
+  const shortHalf = alongX ? reliefHd : reliefHw; // inset half-extent on the SHORT axis
   const sideStrip = shortHalf - keepHalf; // hollow-able strip on each short side
 
   const cuts: PartialFloorCut[] = [];
@@ -331,14 +352,14 @@ export function planPartialCellFloorCuts(
           kind: 'rect',
           centerX: cell.centerX,
           centerY: cell.centerY + stripCenter,
-          width: 2 * hw,
+          width: 2 * reliefHw,
           depth: sideStrip,
         },
         {
           kind: 'rect',
           centerX: cell.centerX,
           centerY: cell.centerY - stripCenter,
-          width: 2 * hw,
+          width: 2 * reliefHw,
           depth: sideStrip,
         }
       );
@@ -349,14 +370,14 @@ export function planPartialCellFloorCuts(
           centerX: cell.centerX + stripCenter,
           centerY: cell.centerY,
           width: sideStrip,
-          depth: 2 * hd,
+          depth: 2 * reliefHd,
         },
         {
           kind: 'rect',
           centerX: cell.centerX - stripCenter,
           centerY: cell.centerY,
           width: sideStrip,
-          depth: 2 * hd,
+          depth: 2 * reliefHd,
         }
       );
     }
@@ -375,8 +396,20 @@ export function planPartialCellFloorCuts(
       const gapCenter = (gapLo + gapHi) / 2;
       cuts.push(
         alongX
-          ? { kind: 'rect', centerX: gapCenter, centerY: cell.centerY, width: gap, depth: 2 * hd }
-          : { kind: 'rect', centerX: cell.centerX, centerY: gapCenter, width: 2 * hw, depth: gap }
+          ? {
+              kind: 'rect',
+              centerX: gapCenter,
+              centerY: cell.centerY,
+              width: gap,
+              depth: 2 * reliefHd,
+            }
+          : {
+              kind: 'rect',
+              centerX: cell.centerX,
+              centerY: gapCenter,
+              width: 2 * reliefHw,
+              depth: gap,
+            }
       );
     }
   }

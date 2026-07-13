@@ -112,6 +112,20 @@ describe('meshCacheKey — nozzle-dependent floor pads (issue #2559)', () => {
       );
     expect(solid(0.4)).toBe(solid(0.8));
   });
+
+  it('does not key draft geometry on a nozzle used only by skipped relief', () => {
+    const a = meshCacheKey(
+      base({ connectorNubs: false, magnetHoles: true, nozzleSizeMm: 0.4 }),
+      false,
+      true
+    );
+    const b = meshCacheKey(
+      base({ connectorNubs: false, magnetHoles: true, nozzleSizeMm: 0.8 }),
+      false,
+      true
+    );
+    expect(a).toBe(b);
+  });
 });
 
 describe('cache keys with outlines (issue #2528)', () => {

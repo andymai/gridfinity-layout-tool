@@ -113,6 +113,7 @@ export function scalePrintTime(baseMinutes: number, settings: PrintSettings): nu
 export {
   GRIDFINITY_SPEC,
   magnetPadMarginForNozzle,
+  magnetOuterWallMarginForNozzle,
   wallThicknessForNozzle,
 } from './gridfinityGeometry';
 export type { StandardBinEstimate, StandardBinComponents } from './standardBinVolume';

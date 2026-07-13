@@ -178,6 +178,26 @@ describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
     });
   });
 
+  it('contracts the outer relief edge for a wide nozzle without moving magnet centers', async () => {
+    const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
+    const { magnetPositionsForCell } = await import('./baseplateMagnets');
+    const c = cell(1, 1);
+    const cuts = planPartialCellFloorCuts(c, MAGNET_R, GRID, 0.8);
+    const cross = cuts[0];
+    expect(cross.kind).toBe('cross');
+    if (cross.kind !== 'cross') throw new Error('expected cross');
+
+    // 42/2 - INSET_BOT(2.95) - outer margin(2.5) = 15.55mm.
+    expect(cross.hw).toBeCloseTo(15.55, 6);
+    expect(cross.hd).toBeCloseTo(15.55, 6);
+    expect(magnetPositionsForCell(c, MAGNET_R, GRID, GRID)).toEqual([
+      [-13, -13],
+      [13, -13],
+      [13, 13],
+      [-13, 13],
+    ]);
+  });
+
   it('a full 42mm tile keeps the standard cross pad (byte-identical)', async () => {
     const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
     const cuts = planPartialCellFloorCuts(cell(1, 1), MAGNET_R, GRID);

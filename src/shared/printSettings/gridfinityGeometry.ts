@@ -131,3 +131,15 @@ export function magnetPadMarginForNozzle(nozzleSizeMm?: number): number {
     Math.max(1, wallThicknessForNozzle(nozzleSizeMm) + nozzleSizeMm)
   );
 }
+
+/**
+ * Additional outside-edge margin for the optional lightweight floor relief.
+ *
+ * Keep the 0.4mm/omitted-nozzle relief byte-compatible; wider nozzles need the
+ * relief to stop short of the pocket-bottom edge so the magnet pad has material
+ * on both its inner and outer sides.
+ */
+export function magnetOuterWallMarginForNozzle(nozzleSizeMm?: number): number {
+  if (nozzleSizeMm === undefined || nozzleSizeMm <= 0.4) return 0;
+  return magnetPadMarginForNozzle(nozzleSizeMm);
+}
