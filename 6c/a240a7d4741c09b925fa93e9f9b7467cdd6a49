@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_08725f4dfa9df8::t_77b92ce24f9ed4 66-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "6ca240a7d4741c09b925fa93e9f9b7467cdd6a49",
+  "prompts": {},
+  "sessions": {
+    "s_08725f4dfa9df8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "178473be-174d-4d16-a5aa-db70e1ca75b1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
