@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.245.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.2...gridfinity-layout-tool-v4.245.3) (2026-07-13)
+
+
+### Bug Fixes
+
+* **baseplate:** thicken magnet pad walls ([#2560](https://github.com/andymai/gridfinity-layout-tool/issues/2560)) ([f08fe9b](https://github.com/andymai/gridfinity-layout-tool/commit/f08fe9baef73111e662911329af09752154fbb4e))
+
 ## [4.245.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.1...gridfinity-layout-tool-v4.245.2) (2026-07-13)
 
 
