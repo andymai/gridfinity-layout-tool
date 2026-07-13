@@ -135,7 +135,7 @@
     "react-dom": "^19.2.7",
     "svg-pathdata": "^9.0.0",
     "tailwind-merge": "^3.6.0",
-    "three": "^0.185.0",
+    "three": "^0.185.1",
     "three-stdlib": "^2.36.1",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
