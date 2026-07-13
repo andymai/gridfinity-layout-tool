@@ -78,6 +78,42 @@ describe('meshCacheKey — draft preview', () => {
   });
 });
 
+describe('meshCacheKey — nozzle-dependent floor pads (issue #2559)', () => {
+  // #2544 made the lightweight-floor magnet pad margin depend on nozzle size, so
+  // the key must track nozzle for magnet+lightweight plates even with connectors
+  // off — otherwise a wider nozzle serves the stale narrow-pad mesh.
+  const floor = (nozzleSizeMm: number) =>
+    meshCacheKey(base({ connectorNubs: false, magnetHoles: true, nozzleSizeMm }), false);
+
+  it('keys on nozzle when the lightweight floor cut runs, connectors off', () => {
+    expect(floor(0.4)).not.toBe(floor(0.8));
+  });
+
+  it('shares a key across nozzles when no floor cut consumes the pad margin', () => {
+    // No magnets ⇒ no lightweight floor ⇒ nozzle has no geometric effect (and
+    // connectors are off), so the plate keeps one entry across nozzle changes.
+    const noMag = (nozzleSizeMm: number) =>
+      meshCacheKey(base({ connectorNubs: false, magnetHoles: false, nozzleSizeMm }), false);
+    expect(noMag(0.4)).toBe(noMag(0.8));
+
+    // Lightweight explicitly off ⇒ the floor stays solid, so no nozzle-scaled pad.
+    const noLw = (nozzleSizeMm: number) =>
+      meshCacheKey(
+        base({ connectorNubs: false, magnetHoles: true, lightweight: false, nozzleSizeMm }),
+        false
+      );
+    expect(noLw(0.4)).toBe(noLw(0.8));
+
+    // A solid floor suppresses the lightweight cut too.
+    const solid = (nozzleSizeMm: number) =>
+      meshCacheKey(
+        base({ connectorNubs: false, magnetHoles: true, solidFloor: true, nozzleSizeMm }),
+        false
+      );
+    expect(solid(0.4)).toBe(solid(0.8));
+  });
+});
+
 describe('cache keys with outlines (issue #2528)', () => {
   const L_SHAPE = {
     vertices: [

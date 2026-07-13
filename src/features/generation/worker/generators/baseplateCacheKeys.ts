@@ -43,12 +43,14 @@ export function meshCacheKey(
   const connectorClearance = params.connectorNubs
     ? effectiveClearance(baseClearance, params.connectorFitOffset ?? 0, params.nozzleSizeMm)
     : 0;
-  // Draft only changes geometry when there's a lightweight floor cut to skip
-  // (magnets on AND lightweight not disabled). Otherwise the draft mesh is
-  // byte-identical to the full build, so folding `draft` to false keeps both
-  // sharing one LRU entry instead of fragmenting it.
-  const geometryAffectingDraft =
-    draft && params.magnetHoles && params.lightweight !== false && !params.solidFloor;
+  // The lightweight floor cut (cross-hollowed underside keeping only magnet
+  // pads) runs with magnets on, lightweight not disabled, and no solid floor.
+  const lightweightFloorActive =
+    params.magnetHoles && params.lightweight !== false && !(params.solidFloor ?? false);
+  // Draft only changes geometry when there's a lightweight floor cut to skip.
+  // Otherwise the draft mesh is byte-identical to the full build, so folding
+  // `draft` to false keeps both sharing one LRU entry instead of fragmenting it.
+  const geometryAffectingDraft = draft && lightweightFloorActive;
   // Legacy 'center' magnet anchor only shifts holes on a grid larger than the
   // standard 42mm; at ≤42mm (or with magnets off) it's byte-identical to the
   // default 'edge'. Fold to 'edge' in those cases so every existing plate keeps
@@ -58,13 +60,15 @@ export function meshCacheKey(
     params.magnetHoles && params.magnetAnchor === 'center' && params.gridUnitMm > SIZE
       ? 'center'
       : 'edge';
-  // Nozzle scales connector feature sizes (snap-clip barb/leg) independently of
-  // the clearance term, so it must key the cache or wider-nozzle geometry would
-  // alias onto the 0.4mm build. Only meaningful when connectors are on; folded to
-  // 0 otherwise so connector-off plates keep sharing one entry across nozzles.
-  const connectorNozzle = params.connectorNubs
-    ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
-    : 0;
+  // Nozzle scales two independent geometry features: connector feature sizes
+  // (snap-clip barb/leg) and the lightweight-floor magnet pad margin (#2544,
+  // #2559). It must key the cache whenever either is active, or wider-nozzle
+  // geometry would alias onto the 0.4mm build and serve a stale mesh. Folded to
+  // 0 when neither applies so those plates keep sharing one entry across nozzles.
+  const featureNozzle =
+    (params.connectorNubs ?? false) || lightweightFloorActive
+      ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
+      : 0;
   return buildCacheKey(
     // v3: outline term for non-rectangular plates (empty = rectangle, so
     // existing rectangular plates keep their cache identity within v3)
@@ -103,7 +107,7 @@ export function meshCacheKey(
     params.preferIdenticalPieces ?? false,
     params.connectorStyle ?? 'dovetail',
     quantize(connectorClearance),
-    connectorNozzle,
+    featureNozzle,
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),
     quantize(params.cornerRadii?.tl ?? -1),
