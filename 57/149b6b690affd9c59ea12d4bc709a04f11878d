@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_08725f4dfa9df8::t_6753350e24c7f7 46-48,50-53
+  s_08725f4dfa9df8::t_6e24d84cd93b4a 49
+  s_08725f4dfa9df8::t_faa3280dd1c456 63-71
+  s_08725f4dfa9df8::t_b289f8748bafbc 110
+src/features/generation/worker/generators/baseplateCacheKeys.test.ts
+  s_08725f4dfa9df8::t_87f56846ceefb9 81-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "57149b6b690affd9c59ea12d4bc709a04f11878d",
+  "prompts": {},
+  "sessions": {
+    "s_08725f4dfa9df8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "178473be-174d-4d16-a5aa-db70e1ca75b1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
