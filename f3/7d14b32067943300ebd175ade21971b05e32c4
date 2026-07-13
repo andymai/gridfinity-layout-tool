@@ -1,0 +1,21 @@
+src/shared/printSettings/gridfinityGeometry.test.ts
+  s_08725f4dfa9df8::t_ee0c17c1063937 85
+src/shared/printSettings/gridfinityGeometry.ts
+  s_08725f4dfa9df8::t_417e783f44c1d4 91-95,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "f37d14b32067943300ebd175ade21971b05e32c4",
+  "prompts": {},
+  "sessions": {
+    "s_08725f4dfa9df8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "178473be-174d-4d16-a5aa-db70e1ca75b1",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
