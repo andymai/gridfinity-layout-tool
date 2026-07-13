@@ -63,12 +63,15 @@ export function meshCacheKey(
   // Nozzle scales two independent geometry features: connector feature sizes
   // (snap-clip barb/leg) and the lightweight-floor magnet pad margin (#2544,
   // #2559). It must key the cache whenever either is active, or wider-nozzle
-  // geometry would alias onto the 0.4mm build and serve a stale mesh. Folded to
-  // 0 when neither applies so those plates keep sharing one entry across nozzles.
-  const featureNozzle =
-    (params.connectorNubs ?? false) || lightweightFloorActive
-      ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
-      : 0;
+  // geometry would alias onto the 0.4mm build and serve a stale mesh. The draft
+  // fast-path skips the floor cut, so the pad margin has no effect there —
+  // fold that contribution out under draft so drafts keep one entry across
+  // nozzles. Folded to 0 when neither applies for the same reason.
+  const nozzleAffectsGeometry =
+    (params.connectorNubs ?? false) || (lightweightFloorActive && !draft);
+  const featureNozzle = nozzleAffectsGeometry
+    ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
+    : 0;
   return buildCacheKey(
     // v3: outline term for non-rectangular plates (empty = rectangle, so
     // existing rectangular plates keep their cache identity within v3)
