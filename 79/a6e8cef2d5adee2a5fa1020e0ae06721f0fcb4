@@ -1,0 +1,19 @@
+.github/workflows/codeql.yml
+  s_382a5274fc095a::t_a143fab2487602 32,37,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "79a6e8cef2d5adee2a5fa1020e0ae06721f0fcb4",
+  "prompts": {},
+  "sessions": {
+    "s_382a5274fc095a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "917d8123-6110-4b28-a6cc-786c939965d7",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
