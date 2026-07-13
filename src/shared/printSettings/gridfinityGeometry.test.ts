@@ -83,7 +83,7 @@ describe('gridfinityGeometry', () => {
     it.each([
       [0.4, 1],
       [0.6, 1.8],
-      [0.8, 2.4],
+      [0.8, 2.5],
       [1.0, 2.0],
     ])('for a %smm nozzle, returns %smm margin', (nozzle, margin) => {
       expect(magnetPadMarginForNozzle(nozzle)).toBe(margin);

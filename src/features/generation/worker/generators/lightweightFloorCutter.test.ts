@@ -167,14 +167,14 @@ describe('planPartialCellFloorCuts (over-tile margin hollowing)', () => {
     expect(cross.padHalfX).toBeLessThan(13 - MAGNET_R - 1);
   });
 
-  it('keeps three nozzle-widths around magnet holes for a 0.8mm nozzle', async () => {
+  it('keeps a 3-perimeter pad margin around magnet holes for a 0.8mm nozzle', async () => {
     const { planPartialCellFloorCuts } = await import('./lightweightFloorCutter');
     const cuts = planPartialCellFloorCuts(cell(1, 1), MAGNET_R, GRID, 0.8);
     expect(cuts).toHaveLength(1);
     expect(cuts[0]).toMatchObject({
       kind: 'cross',
-      padHalfX: 13 - MAGNET_R - 2.4,
-      padHalfY: 13 - MAGNET_R - 2.4,
+      padHalfX: 13 - MAGNET_R - 2.5,
+      padHalfY: 13 - MAGNET_R - 2.5,
     });
   });
 
