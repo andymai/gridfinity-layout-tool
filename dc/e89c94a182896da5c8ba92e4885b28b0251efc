@@ -1,0 +1,23 @@
+src/shared/printSettings/gridfinityGeometry.ts
+  s_08725f4dfa9df8::t_37fd90e17da5e8 88-95,98
+src/features/generation/worker/generators/lightweightFloorCutter.test.ts
+  s_08725f4dfa9df8::t_c1b8a2b9608262 170,176-177
+src/shared/printSettings/gridfinityGeometry.test.ts
+  s_08725f4dfa9df8::t_bad73aa76c223c 86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "dce89c94a182896da5c8ba92e4885b28b0251efc",
+  "prompts": {},
+  "sessions": {
+    "s_08725f4dfa9df8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "178473be-174d-4d16-a5aa-db70e1ca75b1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
