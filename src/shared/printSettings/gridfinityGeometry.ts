@@ -88,13 +88,14 @@ export const NOZZLE_WALL_COUNTS: Partial<Record<number, number>> = {
 /**
  * Minimum solid pad margin around a magnet hole, keyed by standard nozzle.
  *
- * Sized to clear whole perimeters at the slicer's line width (≈ nozzle × 1.05),
- * not a bare multiple of nozzle diameter: at 0.8mm the line width is ~0.82mm, so
- * 3 perimeters need 2.46mm — 2.5mm clears them where 2.4mm left a partial-bead
- * gap (issue #2559).
+ * Sized to clear whole perimeters at the slicer's line width (≈ nozzle × 1.025,
+ * measured from a Bambu profile), not a bare multiple of nozzle diameter, so the
+ * wall around the hole prints as solid perimeters instead of a partial-bead gap
+ * (issue #2559). 3 perimeters at 0.8mm (line width ~0.82mm) need 2.46mm → 2.5mm;
+ * at 0.6mm (~0.615mm) need 1.85mm → 1.9mm.
  */
 const MAGNET_PAD_MARGINS: Partial<Record<number, number>> = {
-  0.6: 1.8,
+  0.6: 1.9,
   0.8: 2.5,
   1.0: 2.0,
 };
