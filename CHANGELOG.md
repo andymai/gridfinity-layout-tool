@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.246.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.3...gridfinity-layout-tool-v4.246.0) (2026-07-13)
+
+
+### Features
+
+* **i18n:** add Italian localization ([#2566](https://github.com/andymai/gridfinity-layout-tool/issues/2566)) ([c7c01b2](https://github.com/andymai/gridfinity-layout-tool/commit/c7c01b2f2173d6c434f0d5ee9d25b6d56850e706))
+
 ## [4.245.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.2...gridfinity-layout-tool-v4.245.3) (2026-07-13)
 
 
