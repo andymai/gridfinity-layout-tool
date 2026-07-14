@@ -62,6 +62,8 @@ describe('cutoutLabelPlacement', () => {
     const p = cutoutLabelPlacement({ ...base, textSide: 'bottom' }, W, D);
     expect(p?.centerX).toBeCloseTo(50);
     expect(p?.centerY).toBeCloseTo(20); // (0 + 40)/2
+    // Spanned axis grows symmetrically into the interior: 2·min(50, 100-50).
+    expect(p?.availW).toBeCloseTo(100);
     expect(p?.availD).toBeCloseTo(40);
   });
 
@@ -78,6 +80,8 @@ describe('cutoutLabelPlacement', () => {
     const p = cutoutLabelPlacement({ ...base, textSide: 'right' }, W, D);
     expect(p?.centerX).toBeCloseTo(80); // (60 + 100)/2
     expect(p?.availW).toBeCloseTo(40); // 100 - 60
+    // Spanned axis grows symmetrically into the interior: 2·min(45, 100-45).
+    expect(p?.availD).toBeCloseTo(90);
   });
 
   it('defaults to the top side when textSide is missing', () => {
