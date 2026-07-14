@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.246.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.246.0...gridfinity-layout-tool-v4.246.1) (2026-07-14)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep cutout labels visible on narrow cutouts ([#2584](https://github.com/andymai/gridfinity-layout-tool/issues/2584)) ([843a884](https://github.com/andymai/gridfinity-layout-tool/commit/843a8841c3f1ecf3ac78166d717042fac430e1f0))
+
 ## [4.246.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.245.3...gridfinity-layout-tool-v4.246.0) (2026-07-13)
 
 
