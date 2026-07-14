@@ -53,7 +53,8 @@ describe('cutoutLabelPlacement', () => {
     expect(p).not.toBeNull();
     expect(p?.centerX).toBeCloseTo(50); // (40+60)/2
     expect(p?.centerY).toBeCloseTo(75); // (50 + 100)/2
-    expect(p?.availW).toBeCloseTo(20); // cutout width
+    // Spanned axis grows symmetrically into the interior: 2·min(50, 100-50).
+    expect(p?.availW).toBeCloseTo(100);
     expect(p?.availD).toBeCloseTo(50); // 100 - 50
   });
 
@@ -69,7 +70,8 @@ describe('cutoutLabelPlacement', () => {
     expect(p?.centerX).toBeCloseTo(20); // (0 + 40)/2
     expect(p?.centerY).toBeCloseTo(45); // (40 + 50)/2
     expect(p?.availW).toBeCloseTo(40);
-    expect(p?.availD).toBeCloseTo(10); // cutout depth
+    // Spanned axis grows into the interior: 2·min(45, 100-45).
+    expect(p?.availD).toBeCloseTo(90);
   });
 
   it('places a right label in the gap to the right', () => {
@@ -110,8 +112,29 @@ describe('cutoutLabelPlacement', () => {
     const p = cutoutLabelPlacement({ ...base, textAnchor: 'center' }, W, D);
     expect(p?.centerX).toBeCloseTo(50);
     expect(p?.centerY).toBeCloseTo(45);
-    expect(p?.availW).toBeCloseTo(20); // cutout width
-    expect(p?.availD).toBeCloseTo(10); // cutout depth
+    // Both axes are spanned, so both grow symmetrically into the interior.
+    expect(p?.availW).toBeCloseTo(100); // 2·min(50, 100-50)
+    expect(p?.availD).toBeCloseTo(90); // 2·min(45, 100-45)
+  });
+
+  it('gives a narrow cutout a band far wider than its own width (#2583)', () => {
+    // A 7.5mm-wide cutout centered in the interior used to cap the label to
+    // 7.5mm, dropping it below the legibility floor. The band now spans the
+    // room around the center instead of the cutout footprint.
+    const narrow = { ...base, x: 50 - 3.75, width: 7.5, textSide: 'top' as const };
+    const p = cutoutLabelPlacement(narrow, W, D);
+    expect(p?.centerX).toBeCloseTo(50);
+    expect(p?.availW).toBeCloseTo(100); // 2·min(50, 100-50), not 7.5
+    expect(p?.availW ?? 0).toBeGreaterThan(7.5);
+  });
+
+  it('keeps the band symmetric when the cutout hugs an interior edge', () => {
+    // Cutout centered near the left wall: the band can only borrow the smaller
+    // side so it never crosses the interior edge.
+    const nearEdge = { ...base, x: 0, width: 8, textSide: 'top' as const };
+    const p = cutoutLabelPlacement(nearEdge, W, D);
+    expect(p?.centerX).toBeCloseTo(4); // (0 + 8)/2
+    expect(p?.availW).toBeCloseTo(8); // 2·min(4, 100-4)
   });
 
   it('on-face center always has room even flush against a wall', () => {

@@ -114,8 +114,16 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
       return { avail: lo - iLo, center: (iLo + lo) / 2 };
     case 'high':
       return { avail: iHi - hi, center: (hi + iHi) / 2 };
-    case 'center':
-      return { avail: hi - lo, center: (lo + hi) / 2 };
+    case 'center': {
+      // A label centered on the cutout may extend past the cutout's own span
+      // into the surrounding interior, kept symmetric about the center so it
+      // never crosses an interior edge. Capping to `hi - lo` starved narrow
+      // cutouts: the auto-fit font fell below the legibility floor and the
+      // label was silently dropped from both the editor and the engraving
+      // (#2583). The label overflowing a neighboring cutout is accepted.
+      const center = (lo + hi) / 2;
+      return { avail: 2 * Math.min(center - iLo, iHi - center), center };
+    }
   }
 }
 
@@ -123,9 +131,12 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
  * Where a cutout's engraved label sits, and how much room it has, for the
  * resolved 9-point anchor (see {@link resolveCutoutTextAnchor}). The eight
  * outer anchors land in the gap between the cutout's rotation-aware AABB and the
- * bin interior; `center` sits over the cutout footprint itself. A `textOffset`
- * then nudges the center freely (and may push it past the band — by design, for
- * fine-tuning and drag).
+ * bin interior; `center` sits over the cutout footprint itself. On the axis a
+ * label spans (X for top/bottom, Y for left/right, both for center) the band is
+ * not clamped to the cutout's own span — it grows symmetrically into the
+ * interior so a narrow cutout can't shrink the label below the legibility floor
+ * and drop it (#2583). A `textOffset` then nudges the center freely (and may
+ * push it past the band — by design, for fine-tuning and drag).
  *
  * The anchor is interpreted in WORLD coordinates (top = +Y, right = +X, …); the
  * label text reads left-to-right regardless of cutout rotation, so `availW` is
