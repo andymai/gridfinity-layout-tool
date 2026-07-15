@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.248.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.0...gridfinity-layout-tool-v4.248.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* serve /supporters instead of 404ing it ([#2596](https://github.com/andymai/gridfinity-layout-tool/issues/2596)) ([3791406](https://github.com/andymai/gridfinity-layout-tool/commit/3791406bb630673cb7c3580cc7d77520445d3a48))
+
 ## [4.248.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.247.1...gridfinity-layout-tool-v4.248.0) (2026-07-15)
 
 
