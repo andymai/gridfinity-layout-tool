@@ -27,12 +27,18 @@ const BLOCKLIST = new Set([
   'child porn',
 ]);
 
-// Patterns that suggest harmful content
+// Patterns that suggest harmful content.
+//
+// Quantifiers here are bounded on purpose. `/on\w+\s*=/` backtracks
+// quadratically on input like "ononon…" (each "on" is a candidate start, and
+// the greedy \w+ walks the rest before failing to find "="), which is a
+// polynomial ReDoS on any caller that passes unbounded user text. Real inline
+// handlers are `onclick`/`onmouseover`-shaped, so the caps cost no detection.
 const HARMFUL_PATTERNS = [
   // Potential XSS attempts (shouldn't execute but signals bad intent)
   /<script/i,
   /javascript:/i,
-  /on\w+\s*=/i,
+  /on\w{1,20}\s{0,10}=/i,
   // URLs (could be phishing/malicious)
   /https?:\/\/[^\s]+/i,
   // Repeated characters suggesting spam

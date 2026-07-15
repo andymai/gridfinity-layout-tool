@@ -76,10 +76,16 @@ export function normalizeDisplayName(
   isPublic: boolean | undefined
 ): string | null {
   if (isPublic === false) return null;
-  const trimmed = (rawName ?? '').trim();
+  // Cap BEFORE filtering, not after. Two reasons, one of them a bug:
+  //  - `from_name` is unbounded attacker input once a token leaks, and the
+  //    filter runs backtracking regexes over it. Capping first keeps that work
+  //    constant instead of quadratic in the payload size.
+  //  - It's also the more honest check: we render at most this many characters,
+  //    so this is exactly the text that needs to survive the filter.
+  const trimmed = (rawName ?? '').trim().slice(0, MAX_DISPLAY_NAME_LENGTH);
   if (!trimmed) return null;
   if (!filterDisplayName(trimmed).passed) return null;
-  return trimmed.slice(0, MAX_DISPLAY_NAME_LENGTH);
+  return trimmed;
 }
 
 /**

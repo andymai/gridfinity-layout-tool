@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { filterLayoutContent } from '../../api/lib/contentFilter.js';
+import { filterDisplayName, filterLayoutContent } from '../../api/lib/contentFilter.js';
 
 describe('filterLayoutContent', () => {
   describe('clean content', () => {
@@ -283,5 +283,34 @@ describe('filterLayoutContent', () => {
 
       expect(result.passed).toBe(false);
     });
+  });
+});
+
+describe('filterDisplayName', () => {
+  it('passes an ordinary name', () => {
+    expect(filterDisplayName('Jo Example').passed).toBe(true);
+  });
+
+  it('rejects a slur', () => {
+    expect(filterDisplayName('retard').passed).toBe(false);
+  });
+
+  it.each([
+    ['a script tag', '<script>x</script>'],
+    ['an inline handler', 'onclick=alert(1)'],
+    ['a spaced inline handler', 'onerror =x'],
+    ['an uppercase handler', 'ONMOUSEOVER=1'],
+    ['a url', 'visit https://spam.example'],
+  ])('rejects %s', (_label, text) => {
+    expect(filterDisplayName(text).passed).toBe(false);
+  });
+
+  // The inline-handler pattern used unbounded quantifiers and backtracked
+  // quadratically on 'ononon…'. Callers must be able to hand it hostile text
+  // without burning the request budget.
+  it('does not blow up on input crafted against the handler pattern', () => {
+    const started = performance.now();
+    filterDisplayName('on'.repeat(100_000));
+    expect(performance.now() - started).toBeLessThan(150);
   });
 });
