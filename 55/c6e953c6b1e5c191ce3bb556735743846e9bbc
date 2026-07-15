@@ -1,0 +1,98 @@
+src/features/baseplate/hooks/useBaseplateInit.ts
+  s_e81a9858244611::t_3291c6b73fa570 1-53
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_e81a9858244611::t_cc9ee0bfeacd3b 25,34,96-98,100,294
+  s_e81a9858244611::t_434d80830fa467 246-247
+src/i18n/locales/ja.json
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+src/i18n/locales/de.json
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+src/i18n/locales/en.ts
+  s_e81a9858244611::t_4c920415793d05 128
+  s_e81a9858244611::t_39b0420742220d 2536,2551
+  s_e81a9858244611::t_dccbb41748153f 2537-2539
+src/shared/types/saveStatus.ts
+  s_e81a9858244611::t_764d11f62f2fad 1-8
+src/i18n/locales/fr.json
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+src/features/baseplate/utils/baseplateName.ts
+  s_e81a9858244611::t_736e7e8e46e568 1-19
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_e81a9858244611::t_56847d9a1e5207 24-25,40-41,51,54-63,164-183
+src/features/bin-designer/types/index.ts
+  s_e81a9858244611::t_d5f7f78f6d6352 809
+  s_e81a9858244611::t_2ccc7cc273cf5f 8,810
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_e81a9858244611::t_c2bf26b6233f6c 14
+src/features/baseplate/hooks/useBaseplateInit.test.ts
+  s_e81a9858244611::t_0c87626aba1aed 1-9,25-101
+  s_e81a9858244611::t_f97f3e9854038c 10-24
+src/shared/components/SaveStatusIndicator/index.ts
+  s_e81a9858244611::t_c2bf26b6233f6c 1
+src/i18n/locales/es.json
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+src/i18n/locales/pt-BR.json
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_4c920415793d05 1452
+src/i18n/locales/uk.json
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_4c920415793d05 1452
+src/i18n/locales/nl.json
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_4c920415793d05 1452
+src/features/baseplate/README.md
+  s_e81a9858244611::t_4d6a4f43520ce9 30-32,61-82
+  s_e81a9858244611::t_e3b27bf16a977a 83
+src/i18n/locales/it.json
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.test.tsx
+  s_e81a9858244611::t_c2bf26b6233f6c 1-35
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.tsx
+  s_e81a9858244611::t_c2bf26b6233f6c 1-90
+src/i18n/locales/nb.json
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_4c920415793d05 1452
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_e81a9858244611::t_9cf8b206fa31de 4-12,15,18,29,40,60,62-66,68-75,97,123,128
+  s_e81a9858244611::t_de9ae855db0a58 37-39,41-49,124-127
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.tsx
+  s_e81a9858244611::t_dccbb41748153f 100-101,108
+  s_e81a9858244611::t_603b8b1b0ca541 2-3,5-7,9-15,18,23-24,31,35,38-39,41,43,45-47,49-52,54-55,57-61,65,67,69-82,87-94,99,103-107,110
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.test.tsx
+  s_e81a9858244611::t_1044f5b9e82dcf 7-8,10,12,28-32,56-58,62,65,67,70,72-73,76-78,80-82,85-86,89-91,93,96-97,100-102,104,107-108,111-113,115,118,120-122,124-125,128-131,133-135,137-138,141-142,145-147,149-151
+  s_e81a9858244611::t_30abc1bf3edff1 19,24
+src/i18n/locales/sv.json
+  s_e81a9858244611::t_dccbb41748153f 2662-2664
+  s_e81a9858244611::t_4c920415793d05 1452
+  s_e81a9858244611::t_39b0420742220d 2661,2676
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "55c6e953c6b1e5c191ce3bb556735743846e9bbc",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
