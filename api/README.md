@@ -85,9 +85,22 @@ an email.
 
 **Untrusted input.** `from_name` is arbitrary text typed by a stranger that
 renders on a public page. `normalizeDisplayName` honours Ko-fi's `is_public`,
-runs the name through `contentFilter`, and length-caps it. A rejected name makes
-the supporter _anonymous_ rather than dropping them — the name is untrusted, the
-person isn't.
+strips characters that must never render (C0/C1 controls, zero-width, and bidi
+overrides — U+202E can make a name display as something else; `contentFilter`
+folds these for _matching_ but returns the original string), then caps to
+`MAX_DISPLAY_NAME_LENGTH` and runs `contentFilter` on exactly the text that will
+be shown. A rejected name makes the supporter _anonymous_ rather than dropping
+them — the name is untrusted, the person isn't.
+
+**Order is load-bearing** in that function: bound → strip → cap → filter.
+Filtering last keeps the filter's backtracking regexes on a short string (they
+go quadratic on long input — see the ReDoS note below) and means we judge what
+actually renders rather than characters past the cut. Stripping before the cap
+stops invisible padding from pushing a real name off the end.
+
+**`contentFilter` quantifiers stay bounded.** `/on\w+\s*=/` backtracked
+quadratically on `"ononon…"` (120KB took 4.7s). Any new pattern there must not
+use an unbounded quantifier followed by a required literal.
 
 Seed the pre-webhook backfill once with `pnpm seed-supporters` (`--dry-run` to
 preview); see `src/features/supporters/README.md`.
