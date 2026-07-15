@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.248.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.2...gridfinity-layout-tool-v4.248.3) (2026-07-15)
+
+
+### Bug Fixes
+
+* **baseplate:** stop discarding a saved baseplate name silently ([#2599](https://github.com/andymai/gridfinity-layout-tool/issues/2599)) ([9ba3670](https://github.com/andymai/gridfinity-layout-tool/commit/9ba3670244f66f8c2d05bfb26da08afbafa07b00))
+
 ## [4.248.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.1...gridfinity-layout-tool-v4.248.2) (2026-07-15)
 
 
