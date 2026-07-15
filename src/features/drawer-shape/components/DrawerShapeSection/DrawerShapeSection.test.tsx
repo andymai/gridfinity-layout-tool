@@ -59,6 +59,16 @@ describe('DrawerShapeSection', () => {
     expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toBeInTheDocument();
   });
 
+  it('gives the mobile variant a 44px action touch target', () => {
+    render(<DrawerShapeSection variant="mobile" />);
+    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toHaveClass('h-11');
+  });
+
+  it('keeps the compact action height on desktop', () => {
+    render(<DrawerShapeSection />);
+    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toHaveClass('h-8');
+  });
+
   it('confirms before resetting an existing shape', () => {
     useLayoutStore.setState((s) => ({
       layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },

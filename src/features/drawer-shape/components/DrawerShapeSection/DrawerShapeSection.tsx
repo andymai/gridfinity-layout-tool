@@ -44,6 +44,9 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
     mutations.setDrawerOutline(null);
   }, [mutations]);
 
+  // 44px on mobile to match the touch target the rest of the settings sheet uses.
+  const actionClass = variant === 'mobile' ? 'text-sm h-11' : 'text-xs h-8';
+
   return (
     <>
       <ToggleRow
@@ -62,7 +65,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
           fullWidth
           type="button"
           onClick={() => setCornersOpen(true)}
-          className="text-xs h-8"
+          className={actionClass}
         >
           {t('drawerShape.corners.open')}
         </Button>
@@ -72,7 +75,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
             fullWidth
             type="button"
             onClick={() => setEditorOpen(true)}
-            className="text-xs h-8"
+            className={actionClass}
           >
             {t('drawerShape.edit')}
           </Button>
