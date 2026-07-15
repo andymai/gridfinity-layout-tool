@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.247.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.246.1...gridfinity-layout-tool-v4.247.0) (2026-07-15)
+
+
+### Features
+
+* **bin-designer:** add per-label size control ([#2586](https://github.com/andymai/gridfinity-layout-tool/issues/2586)) ([#2587](https://github.com/andymai/gridfinity-layout-tool/issues/2587)) ([a991d7c](https://github.com/andymai/gridfinity-layout-tool/commit/a991d7cc30e10e20bf066e7bbd03cdba4f7cb4ae))
+
 ## [4.246.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.246.0...gridfinity-layout-tool-v4.246.1) (2026-07-14)
 
 
