@@ -59,6 +59,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return methodNotAllowed(res, 'POST');
 
+  // Ko-fi posts form-encoded. Accept JSON too rather than pinning to the exact
+  // header they happen to send today: a wrong guess here 415s every delivery,
+  // and with no replay that loses the supporters outright. The body shape (and
+  // the token inside it) is the real check — this only turns away callers that
+  // were never going to parse.
+  const contentType = req.headers['content-type'] ?? '';
+  if (!/application\/(x-www-form-urlencoded|json)/i.test(contentType)) {
+    logger.warn('Ko-fi webhook rejected: unexpected content-type', { contentType });
+    return res.status(415).json({
+      error: 'Unsupported content type.',
+      code: ErrorCode.VALIDATION_ERROR,
+    });
+  }
+
   const expectedToken = process.env.KOFI_VERIFICATION_TOKEN;
   if (!expectedToken) {
     // Fail closed: without the token we cannot tell Ko-fi from anyone else, and

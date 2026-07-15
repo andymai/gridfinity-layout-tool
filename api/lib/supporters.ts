@@ -23,6 +23,45 @@ export interface KofiPayload {
 /** Ko-fi allows long names; the tape texture wraps but can't absorb an essay. */
 export const MAX_DISPLAY_NAME_LENGTH = 32;
 
+/**
+ * Characters that must never reach a rendered supporter name:
+ *   C0/C1 controls (incl. NUL)  - junk that can break the tape texture and the
+ *                                 sr-only list, and has no place in a name.
+ *   zero-width + BOM            - invisible padding used to smuggle text past
+ *                                 eyeballs.
+ *   bidi overrides/isolates     - U+202E and friends re-order rendered text, so
+ *                                 a name can display as something it isn't.
+ *
+ * `contentFilter` folds these for *matching* but hands back the original
+ * string, so stripping is on us.
+ *
+ * A code-point scan rather than a regex: a character class covering C0 trips
+ * `no-control-regex`, and the rule is right that control characters in a regex
+ * are usually a mistake. Same loop shape as `normalizeForBlocklist` in
+ * `contentFilter.ts`.
+ */
+function isUnsafeNameCodePoint(cp: number): boolean {
+  return (
+    cp <= 0x1f || // C0 controls, incl. NUL
+    (cp >= 0x7f && cp <= 0x9f) || // DEL + C1 controls
+    (cp >= 0x200b && cp <= 0x200d) || // zero-width space/non-joiner/joiner
+    cp === 0xfeff || // BOM / zero-width no-break space
+    (cp >= 0x202a && cp <= 0x202e) || // bidi embeddings + overrides
+    (cp >= 0x2066 && cp <= 0x2069) // bidi isolates
+  );
+}
+
+function stripUnsafeNameChars(text: string): string {
+  let out = '';
+  for (const ch of text) {
+    if (!isUnsafeNameCodePoint(ch.codePointAt(0) ?? 0)) out += ch;
+  }
+  return out;
+}
+
+/** Bound the sanitize pass so it stays linear in a small constant, not the payload. */
+const SANITIZE_INPUT_CAP = MAX_DISPLAY_NAME_LENGTH * 8;
+
 /** Webhook dedupe markers only need to outlive Ko-fi's retry window. */
 export const MESSAGE_DEDUPE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -76,16 +115,24 @@ export function normalizeDisplayName(
   isPublic: boolean | undefined
 ): string | null {
   if (isPublic === false) return null;
-  // Cap BEFORE filtering, not after. Two reasons, one of them a bug:
-  //  - `from_name` is unbounded attacker input once a token leaks, and the
-  //    filter runs backtracking regexes over it. Capping first keeps that work
-  //    constant instead of quadratic in the payload size.
-  //  - It's also the more honest check: we render at most this many characters,
-  //    so this is exactly the text that needs to survive the filter.
-  const trimmed = (rawName ?? '').trim().slice(0, MAX_DISPLAY_NAME_LENGTH);
-  if (!trimmed) return null;
-  if (!filterDisplayName(trimmed).passed) return null;
-  return trimmed;
+
+  // Bound the work first: `from_name` is unbounded attacker input once a token
+  // leaks, and everything below runs regexes over it. A generous cap keeps the
+  // sanitize pass cheap while still leaving room to recover a real name buried
+  // in padding.
+  const bounded = (rawName ?? '').trim().slice(0, SANITIZE_INPUT_CAP);
+
+  // Strip before capping to the display length, so invisible padding can't eat
+  // the budget and push the actual name off the end.
+  const cleaned = stripUnsafeNameChars(bounded).trim().slice(0, MAX_DISPLAY_NAME_LENGTH);
+  if (!cleaned) return null;
+
+  // Filter last, on exactly the text we will render. This ordering is
+  // load-bearing twice over: it keeps the filter's backtracking regexes on a
+  // short string (they go quadratic on long input), and it means we judge what
+  // is actually shown rather than characters past the cut.
+  if (!filterDisplayName(cleaned).passed) return null;
+  return cleaned;
 }
 
 /**

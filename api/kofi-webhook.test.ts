@@ -23,10 +23,13 @@ vi.mock('./lib/rateLimit.js', () => ({
   getClientIP: () => '203.0.113.1',
 }));
 
-function createRequest(data: Record<string, unknown>): VercelRequest {
+function createRequest(
+  data: Record<string, unknown>,
+  contentType = 'application/x-www-form-urlencoded'
+): VercelRequest {
   return {
     method: 'POST',
-    headers: { 'x-forwarded-for': '203.0.113.1' },
+    headers: { 'x-forwarded-for': '203.0.113.1', 'content-type': contentType },
     body: { data: JSON.stringify(data) },
   } as unknown as VercelRequest;
 }
@@ -111,7 +114,11 @@ describe('kofi-webhook', () => {
     const res = createResponse();
     const mod = await import('./kofi-webhook.js');
     await mod.default(
-      { method: 'POST', headers: {}, body: { data: 'not json' } } as unknown as VercelRequest,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: { data: 'not json' },
+      } as unknown as VercelRequest,
       res
     );
     expect(res._status).toBe(400);
@@ -178,6 +185,25 @@ describe('kofi-webhook', () => {
     expect(written).not.toContain('jo@example.com');
     expect(written).not.toContain('5.00');
     expect(written).not.toContain('thanks!');
+  });
+
+  it.each([
+    ['form-encoded, as Ko-fi sends', 'application/x-www-form-urlencoded'],
+    ['form-encoded with a charset', 'application/x-www-form-urlencoded; charset=utf-8'],
+    ['json, in case Ko-fi ever switches', 'application/json'],
+  ])('accepts %s', async (_label, contentType) => {
+    const res = createResponse();
+    const mod = await import('./kofi-webhook.js');
+    await mod.default(createRequest(payload(), contentType), res);
+    expect(res._status).toBe(200);
+  });
+
+  it('415s an unparseable content type', async () => {
+    const res = createResponse();
+    const mod = await import('./kofi-webhook.js');
+    await mod.default(createRequest(payload(), 'text/plain'), res);
+    expect(res._status).toBe(415);
+    expect(mocks.hset).not.toHaveBeenCalled();
   });
 
   it('rejects a non-POST method', async () => {
