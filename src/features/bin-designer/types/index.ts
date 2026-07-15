@@ -5,6 +5,7 @@
  * generation state, and designer UI state.
  */
 
+import type { SaveStatus } from '@/shared/types/saveStatus';
 import type {
   FaceGroupData,
   CoarseLODData,
@@ -805,8 +806,8 @@ export interface SplitPieceMeshEntry {
   };
 }
 
-/** Auto-save status indicator */
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+/** Auto-save status indicator. Defined in shared — the baseplate page uses it too. */
+export type { SaveStatus };
 
 /** UI state for the designer page */
 export interface DesignerUIState {

@@ -27,6 +27,9 @@ graph TB
 - `hooks/useBaseplateGeneration.ts` — two-phase lifecycle: synchronous direct-mesh preview (sub-100ms) + async BREP swap once WASM bridge ready, epoch-based stale detection
 - `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging. The unstacked split ZIP holds **one file per physical drawer slot**, named by grid label (`baseplate_A1.stl`, …), so importing the whole ZIP into a slicer drops in every piece with nothing to duplicate by hand. Identical shapes are still generated once (`groupPiecesByFingerprint`) and the single mesh buffer is reused for each slot — dedup is a generation optimization, not a user-visible artifact. When stack printing is on, bakes real stacked geometry per physical stack instead (see Stack printing)
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
+- `components/BaseplateSelector.tsx` — header identity: the active design's name (click to rename) + a button opening the library. **No Save / Save As / New** — see "Design management" below
+- `hooks/useBaseplateInit.ts` — guarantees an active design exists
+- `hooks/useBaseplateAutoSave.ts` — debounced write-back to the active library design; also the source of the header's save status
 - `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section
 - `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces, minimizing **build-plate loads** (see Key Concepts)
@@ -54,6 +57,29 @@ graph TB
 - **Stack tile dedup**: with connectors + rounding stripped, split pieces that differ only by edge classification (corner/edge/interior) are byte-identical, so `computePieceFingerprint` omits the `edges` key when neither connectors nor rounding are active. An evenly-tiled drawer (e.g. 16×16 on a 180mm bed → sixteen 4×4 tiles) then dedupes to **one group** and stacks into a couple of tall towers instead of printing 16 unique pieces. Padding is still keyed separately, so padded edge tiles stay distinct from interior ones.
 - **Padding anchor pad**: `PaddingSchematic` frames four mm steppers around a central `PaddingAnchor` 3×3 pad. Each outer cell is a directional arrow (a single `ArrowLeftIcon` rotated in 45° steps via `ARROW_ROTATION`) pointing at the drawer corner/edge it anchors to; the center cell is a target glyph. Picking a cell redistributes total padding through `computeAnchoredPaddings`; editing any stepper flips the anchor to `custom`, surfaced as a caption
 - **Over-tile padding fill (`overTile` / `overTileHalfGrid` / `overTileHalfGridSolidLeftover`)**: fill the drawer-fit padding margin with functional grid instead of solid plastic. `overTile` clips one grid tile per edge into the margin (a sub-threshold sliver stays solid). `overTileHalfGrid` instead packs true 21mm (0.5-unit) functional half-sockets from the grid edge outward, then a sub-21mm leftover. `overTileHalfGridSolidLeftover` (#2397) picks how that leftover renders: **Grid** (default) clips it as a partial tile; **Solid** leaves it flat so true half-grid cells read as distinct from unusable margin. Geometry is the `solidLeftover` flag on `frameCells`/`marginPocketDepthMm` (`cellDecomposition.ts`), which drops the remainder cell/depth; both the BREP body (`baseplateGenerator`) and the procedural draft (`baseplateDirectMesh`) pass it so preview and export agree, and `baseplateMargin` forwards it to detached rails. **Normalization contract**: a flag is meaningful only when its parent is on, so `buildFullParams`, `useBaseplateGeneration`, and `baseplateCacheKeys` drop `overTileHalfGrid` unless `overTile`, and `overTileHalfGridSolidLeftover` unless both `overTile` and `overTileHalfGrid` — an orphaned flag (stored but ignored when half-grid is off) can't fragment caches or trigger needless regeneration. The panel stores `undefined` (not `false`) for the default Grid so identical geometry keeps one stored/cache identity
+
+## Design management
+
+Mirrors the bin designer deliberately, so moving between the Bins and Baseplate
+tabs doesn't mean relearning how designs are named, saved, and switched:
+
+```
+/designer   Untitled Bin   [Designs]     [Export]  ✓ Saved
+/baseplate  Baseplate 1    [Baseplates]  [Export]  ✓ Saved
+```
+
+`useBaseplateInit` guarantees an active design and `useBaseplateAutoSave` keeps
+it current, so there is nothing for a Save button to do. New and duplicate live
+in `BaseplateLibraryModal`, matching where the designer keeps them
+(`DesignListDialog`). There is **no unsaved-draft state** — if you find yourself
+adding one back, you're re-introducing the Save / Save As / New cluster with it.
+
+**`useBaseplateInit` deliberately diverges from `useDesignerInit`**: it creates a
+design _from the layout's current params_ rather than adopting the most recently
+used one. A `SavedDesign` is standalone, but `baseplateParams` live on the
+`Layout` (`core/types.ts`) — adopting another design would silently overwrite
+baseplate settings the layout already has. It only runs on `/baseplate`, so a
+library entry appears when someone opens the tool, not for every layout they own.
 
 ## Gotchas
 

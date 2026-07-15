@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from '@/i18n';
-import type { SaveStatus } from '@/features/bin-designer/types';
+import type { SaveStatus } from '@/shared/types/saveStatus';
 
 /** CSS class for each save status */
 const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
@@ -26,7 +26,7 @@ export function SaveStatusIndicator({
   const statusTextKey = {
     saving: 'header.saving',
     saved: 'header.saved',
-    error: 'binDesigner.saveFailed',
+    error: 'header.saveFailed',
   } as const;
 
   return (

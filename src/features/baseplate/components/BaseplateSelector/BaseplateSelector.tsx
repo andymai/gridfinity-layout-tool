@@ -1,181 +1,112 @@
 /**
- * Active-design selector cluster for the /baseplate page header.
+ * Active-design identity for the /baseplate page header: the design's name
+ * (click to rename inline) plus a button opening the baseplate library.
  *
- * A dropdown of saved baseplate designs plus New / Save (or Save As) / Manage.
+ * Deliberately the same shape and vocabulary as `DesignerHeader`, so moving
+ * between the Bins and Baseplate tabs doesn't mean relearning how designs are
+ * named, saved, and switched:
  *
- * Header vocabulary: the Select is the only bordered control (it's an input);
- * every action beside it is a flat ghost button, matching Export and the
- * DesignerHeader cluster next door. The one filled button is the confirm inside
- * the naming form — a form submit, not a resting header action, and it can't
- * collide with the Ko-fi CTA because the cluster is replaced while naming.
- * - New starts a fresh unsaved draft (pointer null, default params).
- * - Save on a draft prompts a name, persists it to the library, and points the
- *   layout at the new design. When a design is already active, autosave keeps it
- *   in sync so the action switches to "Save As" (fork).
- * - Manage opens the baseplate library modal via the view store flag.
+ *   /designer   Untitled Bin   [Designs]     [Export]  ✓ Saved
+ *   /baseplate  Baseplate 1    [Baseplates]  [Export]  ✓ Saved
+ *
+ * There is no Save / Save As / New here because there is nothing to save:
+ * `useBaseplateInit` guarantees an active design and `useBaseplateAutoSave`
+ * keeps it current. New and duplicate live in the library modal, matching where
+ * the designer puts them (`DesignListDialog`).
  */
 
-import { useCallback, useRef, useState } from 'react';
-import { useLayoutStore } from '@/core/store/layout';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import { useViewStore } from '@/core/store/view';
-import { useMutations } from '@/shared/contexts';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { baseplateDesignId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { Button, Input, Select } from '@/design-system';
-import type { BaseplateRef } from '@/features/baseplate/store/baseplateRegistry';
+import { Button, Input } from '@/design-system';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
 
 /** Flat header action, shaped to sit beside Export rather than compete with it. */
 const HEADER_ACTION_CLASS =
   'h-8 px-2 text-sm font-normal text-content-secondary hover:text-content';
 
-/** Next free "Baseplate N" name given the current library entries. */
-function nextBaseplateName(list: readonly BaseplateRef[]): string {
-  const used = new Set(
-    list
-      .map((ref) => /^Baseplate (\d+)$/.exec(ref.name)?.[1])
-      .filter((match): match is string => match !== undefined)
-      .map((n) => Number.parseInt(n, 10))
-  );
-  let n = 1;
-  while (used.has(n)) n += 1;
-  return `Baseplate ${n}`;
-}
+const MAX_NAME_LENGTH = 64;
 
 export function BaseplateSelector() {
   const t = useTranslation();
-  const { list, activeBaseplateId, switchActive, saveCurrentAsNew, forkActive } =
-    useBaseplateLibrary();
-  // `layout.baseplateParams` is optional and stays undefined until something
-  // writes it, so a fresh layout has none. BaseplatePage renders from the same
-  // fallback — without it here, Save saw `undefined` on a page that looked
-  // fully configured and silently discarded the name (#2591).
-  const baseplateParams =
-    useLayoutStore((s) => s.layout.baseplateParams) ?? DEFAULT_BASEPLATE_PARAMS;
+  const { list, activeBaseplateId, renameDesign } = useBaseplateLibrary();
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
   const addToast = useToastStore((s) => s.addToast);
-  const mutations = useMutations();
+  // Read through the registry so a rename from the modal shows here immediately.
+  const activeName = list.find((ref) => ref.id === activeBaseplateId)?.name ?? '';
 
-  const [isNaming, setIsNaming] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState('');
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const isDraft = activeBaseplateId === null;
+  useEffect(() => {
+    if (isEditing) inputRef.current?.select();
+  }, [isEditing]);
 
-  const handleSwitch = useCallback(
-    (value: string) => {
-      if (value && value !== activeBaseplateId) {
-        void switchActive(baseplateDesignId(value));
-      }
-    },
-    [activeBaseplateId, switchActive]
-  );
+  const startEditing = useCallback(() => {
+    setDraftName(activeName);
+    setIsEditing(true);
+  }, [activeName]);
 
-  const handleNew = useCallback(() => {
-    mutations.setActiveBaseplate(null, { ...DEFAULT_BASEPLATE_PARAMS });
-  }, [mutations]);
-
-  const startNaming = useCallback(() => {
-    setDraftName(nextBaseplateName(list));
-    setIsNaming(true);
-    requestAnimationFrame(() => nameInputRef.current?.select());
-  }, [list]);
-
-  const cancelNaming = useCallback(() => {
-    setIsNaming(false);
-    setDraftName('');
-  }, []);
-
-  const confirmNaming = useCallback(async () => {
+  const submitName = useCallback(async () => {
+    setIsEditing(false);
     const name = draftName.trim();
-    // An empty name is the user declining to name it — that's a cancel, and
-    // silence is right. A save that *fails* is not; it used to take the same
-    // branch and look identical to cancelling.
-    if (!name) {
-      cancelNaming();
-      return;
-    }
-    const result = await saveCurrentAsNew(name, baseplateParams);
+    // Empty or unchanged is a no-op, not a rename — matches the designer, where
+    // clicking the name and clicking away shouldn't do anything.
+    if (!activeBaseplateId || !name || name === activeName) return;
+
+    const result = await renameDesign(activeBaseplateId, name);
     if (!isOk(result)) {
-      // Leave the form open with the name intact: a failed save is usually
-      // transient, and closing here would make the retry cost a re-type.
-      // Escape or Cancel still backs out.
       addToast(t('toast.baseplateSaveFailed'), 'error');
-      nameInputRef.current?.select();
-      return;
     }
-    mutations.setActiveBaseplate(result.value.id, result.value.params);
-    cancelNaming();
-  }, [draftName, baseplateParams, saveCurrentAsNew, mutations, cancelNaming, addToast, t]);
+  }, [draftName, activeName, activeBaseplateId, renameDesign, addToast, t]);
 
-  const handleFork = useCallback(() => {
-    forkActive();
-  }, [forkActive]);
-
-  if (isNaming) {
+  if (isEditing) {
     return (
-      <div className="flex items-center gap-1.5">
-        <Input
-          ref={nameInputRef}
-          type="text"
-          value={draftName}
-          onChange={(e) => setDraftName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') void confirmNaming();
-            else if (e.key === 'Escape') cancelNaming();
-          }}
-          placeholder={t('baseplate.library.namePlaceholder')}
-          aria-label={t('baseplate.library.namePrompt')}
-          maxLength={64}
-          className="h-8 text-sm"
-        />
-        <Button
-          variant="primary"
-          onClick={() => void confirmNaming()}
-          className="h-8 px-2.5 text-sm"
-        >
-          {t('common.save')}
-        </Button>
-        <Button variant="ghost" onClick={cancelNaming} className={HEADER_ACTION_CLASS}>
-          {t('common.cancel')}
-        </Button>
-      </div>
+      <Input
+        ref={inputRef}
+        type="text"
+        value={draftName}
+        onChange={(e) => setDraftName(e.target.value)}
+        onBlur={() => void submitName()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void submitName();
+          else if (e.key === 'Escape') setIsEditing(false);
+        }}
+        aria-label={t('baseplate.library.namePrompt')}
+        maxLength={MAX_NAME_LENGTH}
+        className="h-8 max-w-[200px] text-sm"
+      />
     );
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Select
-        value={activeBaseplateId ?? ''}
-        onValueChange={handleSwitch}
-        options={list.map((ref) => ({ id: ref.id, name: ref.name }))}
-        placeholder={t('baseplate.library.draftName')}
-        aria-label={t('baseplate.library.selectLabel')}
-        size="sm"
-        className="min-w-40 text-sm"
-      />
-      <Button variant="ghost" onClick={handleNew} className={HEADER_ACTION_CLASS}>
-        {t('baseplate.library.new')}
+    <>
+      <Button
+        variant="ghost"
+        onClick={startEditing}
+        className={`${HEADER_ACTION_CLASS} max-w-[200px] truncate`}
+        title={t('baseplate.library.clickToRename')}
+      >
+        {activeName}
       </Button>
-      {isDraft ? (
-        <Button variant="ghost" onClick={startNaming} className={HEADER_ACTION_CLASS}>
-          {t('common.save')}
-        </Button>
-      ) : (
-        <Button variant="ghost" onClick={handleFork} className={HEADER_ACTION_CLASS}>
-          {t('baseplate.library.saveAs')}
-        </Button>
-      )}
       <Button
         variant="ghost"
         onClick={() => setShowBaseplateLibrary(true)}
-        className={HEADER_ACTION_CLASS}
+        className={`${HEADER_ACTION_CLASS} flex items-center gap-1.5`}
+        title={t('baseplate.library.openList')}
+        aria-label={t('baseplate.library.openList')}
       >
-        {t('baseplate.library.manage')}
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {ICON_PATHS.dashboard.map((d) => (
+            <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+          ))}
+        </svg>
+        <span className="hidden lg:inline">{t('baseplate.library.baseplates')}</span>
       </Button>
-    </div>
+    </>
   );
 }

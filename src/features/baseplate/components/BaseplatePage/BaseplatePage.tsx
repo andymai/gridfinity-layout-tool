@@ -22,6 +22,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { Button } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
+import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
@@ -30,6 +31,7 @@ import { useBaseplateLibraryInit } from '../../hooks/useBaseplateLibraryInit';
 import { useBaseplateAutoSave } from '../../hooks/useBaseplateAutoSave';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { BaseplateSelector } from '../BaseplateSelector';
+import { useBaseplateInit } from '../../hooks/useBaseplateInit';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
@@ -91,8 +93,11 @@ export function BaseplatePage() {
   // Backfill the library pointer / re-materialize the active design on load.
   useBaseplateLibraryInit();
 
+  // Guarantee an active design, so the header needs no Save/New cluster.
+  useBaseplateInit();
+
   // Persist edits to the active library design (debounced).
-  useBaseplateAutoSave();
+  const saveStatus = useBaseplateAutoSave();
 
   const showBaseplateLibrary = useViewStore((s) => s.showBaseplateLibrary);
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
@@ -238,6 +243,8 @@ export function BaseplatePage() {
         <div className="flex items-center gap-3 min-w-0">
           <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
+          {!isMobile && <BaseplateSelector />}
+
           <Button
             type="button"
             variant="ghost"
@@ -280,12 +287,11 @@ export function BaseplatePage() {
             )}
             <span className="hidden lg:inline">{t('common.export')}</span>
           </Button>
-
-          {!isMobile && <BaseplateSelector />}
         </div>
 
         {isDesktop && (
           <div className="flex items-center gap-1 flex-shrink-0">
+            <SaveStatusIndicator status={saveStatus} />
             <HeaderSupportLinks />
           </div>
         )}

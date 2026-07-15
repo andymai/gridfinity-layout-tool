@@ -11,7 +11,7 @@ import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
-import { SaveStatusIndicator } from './SaveStatusIndicator';
+import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
 import type { DesignNameEditor } from './useDesignNameEditor';
 
 /** Platform modifier key for keyboard shortcut hints */
