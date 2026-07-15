@@ -1,4 +1,5 @@
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import type { Redis } from 'ioredis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
@@ -11,6 +12,16 @@ import {
   normalizeDisplayName,
   parseKofiPayload,
 } from './lib/supporters.js';
+
+/** Cheap liveness probe used to tell a rate-limit rejection from a Redis outage. */
+async function isRedisReachable(redis: Redis): Promise<boolean> {
+  try {
+    await redis.ping();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** Constant-time compare that can't leak length via an early return. */
 function tokensMatch(received: string, expected: string): boolean {
@@ -73,23 +84,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // `getRedis()` only returns null when REDIS_URL is *unset* — it constructs
+    // a client fine when the server is simply unreachable, so this guard alone
+    // does not cover an outage. See the rate-limit branch below.
+    const redis = getRedis();
+    if (!redis) {
+      logger.error('Ko-fi webhook failed: REDIS_URL not configured');
+      return res.status(503).json({
+        error: 'Supporter store unavailable.',
+        code: ErrorCode.SERVICE_UNAVAILABLE,
+      });
+    }
+
     const rateLimit = await checkRateLimit(getClientIP(req), 'kofi.webhook');
     if (!rateLimit.allowed) {
+      // `checkRateLimit` fails closed: it swallows Redis errors and returns
+      // `allowed: false`, which is indistinguishable from a genuine rejection.
+      // Those need different answers here — a real limit is 429, but an outage
+      // must be a 503 so Ko-fi's retry brings the supporter back. This feed has
+      // no replay, so guessing wrong loses them permanently. One ping, only on
+      // the rejection path, tells the two apart.
+      if (!(await isRedisReachable(redis))) {
+        logger.error('Ko-fi webhook failed: Redis unreachable');
+        return res.status(503).json({
+          error: 'Supporter store unavailable.',
+          code: ErrorCode.SERVICE_UNAVAILABLE,
+        });
+      }
       return res.status(429).json({
         error: 'Too many webhook deliveries.',
         code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
-      });
-    }
-
-    const redis = getRedis();
-    if (!redis) {
-      // 503 rather than 200: Ko-fi retries on failure, and this feed has no
-      // backfill, so a silent 200 here would lose the supporter for good.
-      logger.error('Ko-fi webhook failed: Redis unavailable');
-      return res.status(503).json({
-        error: 'Supporter store unavailable.',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
       });
     }
 
