@@ -10,7 +10,7 @@ import type {
   CutoutTextAnchor,
   TextMode,
 } from '@/features/bin-designer/types';
-import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
+import { TEXT_MAX_LENGTH, withFontSizeOverride } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { resolveCutoutTextAnchor } from '@/shared/utils/cutoutLabel';
 import { useTranslation } from '@/i18n';
@@ -301,7 +301,14 @@ function CutoutEngraveLabelControls({
   const anchor = resolveCutoutTextAnchor(cutout);
   const offset = cutout.textOffset ?? { x: 0, y: 0 };
   const textMode = useDesignerStore((s) => s.params.textDefaults.mode);
+  const minFontSize = useDesignerStore((s) => s.params.textDefaults.minFontSize);
+  const maxFontSize = useDesignerStore((s) => s.params.textDefaults.maxFontSize);
   const setTextDefaults = useDesignerStore((s) => s.setTextDefaults);
+
+  const fontSizeOverride = cutout.textStyle?.fontSizeOverride;
+  const setFontSizeOverride = (size: number | null) => {
+    onUpdate({ textStyle: withFontSizeOverride(cutout.textStyle, size) });
+  };
   // Through-cut isn't offered for cutouts; show it as engrave so the picker
   // reflects what the generator will actually produce.
   const effectiveMode: 'engrave' | 'emboss' = textMode === 'emboss' ? 'emboss' : 'engrave';
@@ -391,6 +398,33 @@ function CutoutEngraveLabelControls({
           unit="°"
           disabled={disabled}
         />
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-text-muted">{t('binDesigner.textSize')}</span>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={disabled}
+            onClick={() => setFontSizeOverride(fontSizeOverride === undefined ? maxFontSize : null)}
+            aria-pressed={fontSizeOverride === undefined}
+            className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(fontSizeOverride === undefined)}`}
+          >
+            {t('binDesigner.textSizeAuto')}
+          </Button>
+        </div>
+        {fontSizeOverride !== undefined && (
+          <SliderInput
+            label={t('binDesigner.textSize')}
+            value={fontSizeOverride}
+            onChange={setFontSizeOverride}
+            min={minFontSize}
+            max={maxFontSize}
+            step={0.5}
+            unit="mm"
+            disabled={disabled}
+          />
+        )}
       </div>
     </div>
   );

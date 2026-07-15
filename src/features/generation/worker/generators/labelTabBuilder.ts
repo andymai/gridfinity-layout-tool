@@ -579,6 +579,7 @@ function applyTabText(
     margin: style.margin,
     minFontSize: style.minFontSize,
     maxFontSize: style.maxFontSize,
+    fontSizeOverride: ctx.labelTextStyle?.fontSizeOverride,
   });
   if (!result) return tabSolid;
 

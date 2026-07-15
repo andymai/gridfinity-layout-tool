@@ -910,6 +910,8 @@
   "binDesigner.tags.remove": "Ta bort tagg {tag}",
   "binDesigner.tags.save": "Spara",
   "binDesigner.textDepth": "Textdjup",
+  "binDesigner.textSize": "Textstorlek",
+  "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textFont": "Teckensnitt",
   "binDesigner.textFont.allerta-stencil": "Allerta Stencil",
   "binDesigner.textFont.atkinson": "Atkinson Hyperlegible",

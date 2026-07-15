@@ -208,6 +208,7 @@
     "binDesigner.lid.outerDimensions",
     "binDesigner.lid.summary",
     "binDesigner.lid.railsTwoAxis",
+    "binDesigner.textSizeAuto",
     "binDesigner.textFont.atkinson",
     "binDesigner.textFont.jetbrains-mono",
     "binDesigner.textFont.allerta-stencil",

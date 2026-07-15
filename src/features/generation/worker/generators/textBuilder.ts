@@ -204,6 +204,13 @@ export interface BuildTextSolidOptions {
   /** Auto-fit ceiling in mm. */
   readonly maxFontSize: number;
   /**
+   * Explicit label size in mm that caps auto-fit: the rendered size is the
+   * smaller of this and the largest size that still fits the band, so it can
+   * only shrink the label below what auto-fit would pick, never grow it past
+   * the band (which would bleed over a neighbor). Absent = pure auto-fit.
+   */
+  readonly fontSizeOverride?: number;
+  /**
    * Optional rotation in degrees about the text's own center (the visual
    * centroid placed at `centerX`/`centerY`). Default 0 (upright). The sign
    * matches the cutout-rotation convention (negated about +Z) so a label tracks
@@ -257,8 +264,18 @@ export function buildTextSolid(
   );
   if (!fit.fits) return null;
 
-  // Reuses the memo entry from `fitFontSize`'s verify call at this exact size.
-  const metrics = measureText(trimmed, fit.fontSize, fontFamily);
+  // An explicit size caps (never grows) the auto-fit result: clamp it down to
+  // what fits the band so a locked label can't bleed past its neighbor. Both
+  // operands are ≥ minFontSize (auto-fit guarantees it; the UI floors the
+  // override), so the min stays above the legibility floor.
+  const fontSize =
+    options.fontSizeOverride !== undefined
+      ? Math.min(options.fontSizeOverride, fit.fontSize)
+      : fit.fontSize;
+
+  // Reuses the memo entry from `fitFontSize`'s verify call when no override
+  // narrowed the size; otherwise measures once at the clamped size.
+  const metrics = measureText(trimmed, fontSize, fontFamily);
   if (!isOk(metrics)) return null;
 
   // All three modes need the EPSILON lift to avoid coplanar boolean fragility:
@@ -287,7 +304,7 @@ export function buildTextSolid(
     trimmed,
     fontFamily,
     options.mode,
-    fit.fontSize,
+    fontSize,
     options.depth,
     options.hostThickness,
     extrusion

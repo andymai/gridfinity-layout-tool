@@ -910,6 +910,8 @@
   "binDesigner.tags.remove": "Label {tag} verwijderen",
   "binDesigner.tags.save": "Opslaan",
   "binDesigner.textDepth": "Tekstdiepte",
+  "binDesigner.textSize": "Tekstgrootte",
+  "binDesigner.textSizeAuto": "Auto",
   "binDesigner.textFont": "Lettertype",
   "binDesigner.textFont.allerta-stencil": "Allerta Stencil",
   "binDesigner.textFont.atkinson": "Atkinson Hyperlegible",

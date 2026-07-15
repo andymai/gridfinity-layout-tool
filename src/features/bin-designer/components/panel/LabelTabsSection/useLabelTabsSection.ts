@@ -13,6 +13,7 @@ import type {
   TextFontFamily,
   TextMode,
 } from '../../../types';
+import { withFontSizeOverride } from '../../../types';
 
 export function useLabelTabsSection() {
   const {
@@ -22,6 +23,7 @@ export function useLabelTabsSection() {
     updateLabel,
     setCompartmentText,
     setTextDefaults,
+    setLabelTabTextStyle,
     params,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -31,6 +33,7 @@ export function useLabelTabsSection() {
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
       setTextDefaults: s.setTextDefaults,
+      setLabelTabTextStyle: s.setLabelTabTextStyle,
       params: s.params,
     }))
   );
@@ -137,6 +140,13 @@ export function useLabelTabsSection() {
       setTextDefaults({ depth });
     },
     [setTextDefaults]
+  );
+
+  const setTextSize = useCallback(
+    (size: number | null) => {
+      setLabelTabTextStyle(withFontSizeOverride(label.textStyle, size) ?? null);
+    },
+    [setLabelTabTextStyle, label.textStyle]
   );
 
   const tabWidthMm = useMemo(() => {
@@ -413,6 +423,7 @@ export function useLabelTabsSection() {
       setTextFont,
       setTextMode,
       setTextDepth,
+      setTextSize,
     },
     meta,
     t,

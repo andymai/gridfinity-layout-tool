@@ -910,6 +910,8 @@
   "binDesigner.tags.remove": "Remover etiqueta {tag}",
   "binDesigner.tags.save": "Salvar",
   "binDesigner.textDepth": "Profundidade do texto",
+  "binDesigner.textSize": "Tamanho do texto",
+  "binDesigner.textSizeAuto": "Automático",
   "binDesigner.textFont": "Fonte",
   "binDesigner.textFont.allerta-stencil": "Allerta Stencil",
   "binDesigner.textFont.atkinson": "Atkinson Hyperlegible",

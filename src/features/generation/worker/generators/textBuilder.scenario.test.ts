@@ -97,6 +97,49 @@ describe('buildTextSolid (engrave)', () => {
   });
 });
 
+describe('buildTextSolid (fontSizeOverride)', () => {
+  /** XY footprint (width × height of the tessellated bbox) of a built solid. */
+  function footprint(opts: Parameters<typeof buildTextSolid>[1]): { w: number; h: number } {
+    const solid = withScope((scope): Shape3D | null => {
+      const r = buildTextSolid(scope, opts);
+      return r ? unwrap(clone(r.solid)) : null;
+    });
+    expect(solid).not.toBeNull();
+    const t = mesh(solid!, { tolerance: 0.5, angularTolerance: 15 });
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < t.vertices.length; i += 3) {
+      const x = t.vertices[i];
+      const y = t.vertices[i + 1];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    return { w: maxX - minX, h: maxY - minY };
+  }
+
+  it('caps the label below the auto-fit size when an override is set', () => {
+    const auto = footprint(BASE);
+    const capped = footprint({ ...BASE, fontSizeOverride: 4 });
+    // The band (availD 10 − 2·margin) lets auto-fit grow well past 4mm, so the
+    // override must shrink the footprint on both axes.
+    expect(capped.w).toBeLessThan(auto.w);
+    expect(capped.h).toBeLessThan(auto.h);
+  });
+
+  it('is clamped to the band, never grown past what fits', () => {
+    // A 999mm override can't fit the band, so the rendered size collapses to
+    // the auto-fit maximum rather than overflowing — footprint matches auto.
+    const auto = footprint(BASE);
+    const huge = footprint({ ...BASE, fontSizeOverride: 999 });
+    expect(huge.w).toBeCloseTo(auto.w, 1);
+    expect(huge.h).toBeCloseTo(auto.h, 1);
+  });
+});
+
 describe('buildTextSolid (emboss)', () => {
   it('reports op:fuse and starts BELOW topZ (negative EPSILON lift)', () => {
     const solid = withScope((scope): Shape3D | null => {

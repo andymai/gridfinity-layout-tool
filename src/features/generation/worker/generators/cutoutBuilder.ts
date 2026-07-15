@@ -1175,25 +1175,31 @@ function buildCutoutLabel(
   if (!placement) return null;
   const { centerX, centerY, availW, availD } = placement;
 
+  // Per-cutout style layers over the design-wide defaults (today the UI only
+  // writes `fontSizeOverride`, but merging the whole override keeps this in step
+  // with the label tab and future per-cutout fields).
+  const style = { ...textDefaults, ...cutout.textStyle };
+
   // Cutouts support engrave + emboss; through-cut would punch the floor, so it
   // degrades to engrave.
-  const mode = textDefaults.mode === 'emboss' ? 'emboss' : 'engrave';
+  const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
 
   return withScope((scope: DisposalScope): CutoutLabelShape | null => {
     const result = buildTextSolid(scope, {
       text: label,
-      fontFamily: textDefaults.font,
+      fontFamily: style.font,
       mode,
       availW,
       availD,
       centerX,
       centerY,
       topZ: solidSurfaceZ,
-      depth: textDefaults.depth,
+      depth: style.depth,
       hostThickness: solidSurfaceZ,
-      margin: textDefaults.margin,
-      minFontSize: textDefaults.minFontSize,
-      maxFontSize: textDefaults.maxFontSize,
+      margin: style.margin,
+      minFontSize: style.minFontSize,
+      maxFontSize: style.maxFontSize,
+      fontSizeOverride: cutout.textStyle?.fontSizeOverride,
       angleDeg: cutout.textAngle ?? 0,
     });
     if (!result) return null;

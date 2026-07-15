@@ -1626,6 +1626,8 @@ const en: Record<string, string> = {
   'binDesigner.textFont.jetbrains-mono': 'JetBrains Mono',
   'binDesigner.textFont.allerta-stencil': 'Allerta Stencil',
   'binDesigner.textDepth': 'Text depth',
+  'binDesigner.textSize': 'Label size',
+  'binDesigner.textSizeAuto': 'Auto',
   'binDesigner.cutoutEngraveLabel': 'Engrave label',
   'binDesigner.cutoutEngraveLabelPlaceholder': 'e.g. M4×20',
   'binDesigner.cutoutTextAnchor': 'Label position',

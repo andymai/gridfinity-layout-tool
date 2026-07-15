@@ -17,10 +17,10 @@ import { Text } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { cutoutLabelPlacement, type CutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
-import type { TextStyleDefaults } from '@/features/bin-designer/types';
+import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import type { PreviewMap } from '../useCutoutInteraction';
 import { cutoutLabelColors } from './cutoutLabelColor';
+import { fitLabelFontSize } from './cutoutLabelFit';
 
 interface CutoutLabel3DProps {
   readonly cutouts: readonly Cutout[];
@@ -40,27 +40,6 @@ const TEXT_OPACITY = 0.92;
 /** Glyph halo thickness as a fraction of font size (drei accepts a `%` string).
  *  Scales with the auto-fit size so small and large labels read the same. */
 const OUTLINE_WIDTH = '7%';
-/** Approximate width of a glyph relative to font size for drei's SDF font. */
-const CHAR_WIDTH_RATIO = 0.6;
-
-/**
- * Largest font size (mm) whose estimated bbox fits the band, clamped to the
- * design's min/max. Returns `null` when even the floor overflows — matching
- * the worker, which skips the engraving rather than shrink it illegibly.
- */
-function fitLabelFontSize(
-  label: string,
-  placement: CutoutLabelPlacement,
-  textDefaults: TextStyleDefaults
-): number | null {
-  const availW = placement.availW - 2 * textDefaults.margin;
-  const availD = placement.availD - 2 * textDefaults.margin;
-  if (availW <= 0 || availD <= 0) return null;
-  const widthLimited = availW / (label.length * CHAR_WIDTH_RATIO);
-  const fitted = Math.min(widthLimited, availD);
-  if (fitted < textDefaults.minFontSize) return null;
-  return Math.min(fitted, textDefaults.maxFontSize);
-}
 
 export function CutoutLabel3D({
   cutouts,
@@ -93,7 +72,12 @@ export function CutoutLabel3D({
         const placement = cutoutLabelPlacement(effective, binWidth, binDepth);
         if (!placement) return null;
 
-        const fontSize = fitLabelFontSize(label, placement, textDefaults);
+        const fontSize = fitLabelFontSize(
+          label,
+          placement,
+          textDefaults,
+          effective.textStyle?.fontSizeOverride
+        );
         if (fontSize === null) return null;
 
         // Label angle about the glyph center (anchored center/middle). Negated

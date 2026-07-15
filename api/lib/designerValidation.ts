@@ -265,6 +265,40 @@ function validateTextDefaults(value: unknown): string | null {
   return null;
 }
 
+const ALLOWED_TEXT_STYLE_OVERRIDE_KEYS = new Set([
+  ...ALLOWED_TEXT_DEFAULTS_KEYS,
+  'fontSizeOverride',
+]);
+
+/**
+ * Per-instance text style override (cutout labels, label tabs). Same field
+ * caps as `textDefaults` plus `fontSizeOverride`, which locks the label size —
+ * bounded so a crafted share can't smuggle a size that crashes the BREP worker.
+ * `label` prefixes the error so the caller can point at the offending path.
+ */
+function validateTextStyleOverride(value: unknown, label: string): string | null {
+  if (!isObject(value)) return `${label} must be an object`;
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_TEXT_STYLE_OVERRIDE_KEYS.has(key)) {
+      return `${label} has unknown key: ${key}`;
+    }
+  }
+
+  // Field ranges mirror validateTextDefaults; validate the shared subset there.
+  const { fontSizeOverride, ...shared } = value;
+  const sharedErr = validateTextDefaults(shared);
+  if (sharedErr) return sharedErr.replace('textDefaults', label);
+
+  if (
+    fontSizeOverride !== undefined &&
+    (!isNumber(fontSizeOverride) || !inRange(fontSizeOverride, 0.5, 200))
+  ) {
+    return `${label}.fontSizeOverride must be 0.5-200`;
+  }
+  return null;
+}
+
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -323,6 +357,10 @@ function validateLabel(label: unknown): string | null {
       ) {
         return `label.inset must be ${CONSTRAINTS.MIN_LABEL_TAB_INSET}-${CONSTRAINTS.MAX_LABEL_TAB_INSET}`;
       }
+    }
+    if (label.textStyle !== undefined) {
+      const styleErr = validateTextStyleOverride(label.textStyle, 'label.textStyle');
+      if (styleErr) return styleErr;
     }
   }
   return null;
@@ -530,6 +568,10 @@ function validateCutouts(value: unknown): string | null {
       )
     ) {
       return `cutouts[${i}].colorScope must be one of: ${VALID_CUTOUT_COLOR_SCOPES.join(', ')}`;
+    }
+    if (c.textStyle !== undefined) {
+      const styleErr = validateTextStyleOverride(c.textStyle, `cutouts[${i}].textStyle`);
+      if (styleErr) return styleErr;
     }
   }
   return null;

@@ -910,6 +910,8 @@
   "binDesigner.tags.remove": "Видалити тег {tag}",
   "binDesigner.tags.save": "Зберегти",
   "binDesigner.textDepth": "Глибина тексту",
+  "binDesigner.textSize": "Розмір тексту",
+  "binDesigner.textSizeAuto": "Авто",
   "binDesigner.textFont": "Шрифт",
   "binDesigner.textFont.allerta-stencil": "Allerta Stencil",
   "binDesigner.textFont.atkinson": "Atkinson Hyperlegible",

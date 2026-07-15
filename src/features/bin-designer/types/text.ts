@@ -78,10 +78,26 @@ export interface TextStyleDefaults {
   readonly maxFontSize: number;
 }
 
-/** `fontSizeOverride` bypasses auto-fit and locks the size to a mm value. */
+/** `fontSizeOverride` caps auto-fit at a fixed mm value (clamped to the band, so
+ *  it only ever shrinks the label below what auto-fit would pick). */
 export type TextStyleOverride = Partial<TextStyleDefaults> & {
   readonly fontSizeOverride?: number;
 };
+
+/**
+ * Set (`size` in mm) or clear (`null`) the label-size override on a text style,
+ * preserving any other override fields. Returns `undefined` when the result
+ * would be an empty object so the style key can be dropped rather than left as
+ * `{}`. Shared by the cutout inspector and the label-tab panel.
+ */
+export function withFontSizeOverride(
+  current: TextStyleOverride | undefined,
+  size: number | null
+): TextStyleOverride | undefined {
+  const { fontSizeOverride: _drop, ...rest } = current ?? {};
+  if (size === null) return Object.keys(rest).length > 0 ? rest : undefined;
+  return { ...rest, fontSizeOverride: size };
+}
 
 /** Hard cap on a single text string — input above this is rejected. */
 export const TEXT_MAX_LENGTH = 50;

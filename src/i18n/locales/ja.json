@@ -910,6 +910,8 @@
   "binDesigner.tags.remove": "タグ{tag}を削除",
   "binDesigner.tags.save": "保存",
   "binDesigner.textDepth": "文字の深さ",
+  "binDesigner.textSize": "文字サイズ",
+  "binDesigner.textSizeAuto": "自動",
   "binDesigner.textFont": "フォント",
   "binDesigner.textFont.allerta-stencil": "Allerta Stencil",
   "binDesigner.textFont.atkinson": "Atkinson Hyperlegible",

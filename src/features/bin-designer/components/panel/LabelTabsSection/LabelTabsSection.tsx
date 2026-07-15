@@ -14,6 +14,7 @@ import {
   Button,
   Select,
   Stepper,
+  SliderInput,
   InfoIcon,
   Badge,
   ChevronDownIcon,
@@ -428,6 +429,39 @@ export function LabelTabsSection() {
                       aria-label={t('binDesigner.textDepth')}
                     />
                   </div>
+                )}
+              </div>
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-content-tertiary">{t('binDesigner.textSize')}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() =>
+                      handlers.setTextSize(
+                        state.label.textStyle?.fontSizeOverride === undefined
+                          ? state.textDefaults.maxFontSize
+                          : null
+                      )
+                    }
+                    aria-pressed={state.label.textStyle?.fontSizeOverride === undefined}
+                    className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(
+                      state.label.textStyle?.fontSizeOverride === undefined
+                    )}`}
+                  >
+                    {t('binDesigner.textSizeAuto')}
+                  </Button>
+                </div>
+                {state.label.textStyle?.fontSizeOverride !== undefined && (
+                  <SliderInput
+                    label={t('binDesigner.textSize')}
+                    value={state.label.textStyle.fontSizeOverride}
+                    onChange={handlers.setTextSize}
+                    min={state.textDefaults.minFontSize}
+                    max={state.textDefaults.maxFontSize}
+                    step={0.5}
+                    unit="mm"
+                  />
                 )}
               </div>
             </div>
