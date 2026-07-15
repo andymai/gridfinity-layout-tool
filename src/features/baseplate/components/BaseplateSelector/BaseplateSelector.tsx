@@ -2,6 +2,11 @@
  * Active-design selector cluster for the /baseplate page header.
  *
  * A dropdown of saved baseplate designs plus New / Save (or Save As) / Manage.
+ *
+ * Header vocabulary: the Select is the only bordered control (it's an input);
+ * every action beside it is a flat ghost button, matching Export and the
+ * DesignerHeader cluster next door. Save on an unsaved draft is the one
+ * exception — it's the primary action, so it keeps its fill.
  * - New starts a fresh unsaved draft (pointer null, default params).
  * - Save on a draft prompts a name, persists it to the library, and points the
  *   layout at the new design. When a design is already active, autosave keeps it
@@ -20,6 +25,10 @@ import { useTranslation } from '@/i18n';
 import { Button, Input, Select } from '@/design-system';
 import type { BaseplateRef } from '@/features/baseplate/store/baseplateRegistry';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
+
+/** Flat header action, shaped to sit beside Export rather than compete with it. */
+const HEADER_ACTION_CLASS =
+  'h-8 px-2 text-sm font-normal text-content-secondary hover:text-content';
 
 /** Next free "Baseplate N" name given the current library entries. */
 function nextBaseplateName(list: readonly BaseplateRef[]): string {
@@ -109,11 +118,11 @@ export function BaseplateSelector() {
         <Button
           variant="primary"
           onClick={() => void confirmNaming()}
-          className="px-2.5 py-1.5 text-sm"
+          className="h-8 px-2.5 text-sm"
         >
           {t('common.save')}
         </Button>
-        <Button variant="ghost" onClick={cancelNaming} className="px-2.5 py-1.5 text-sm">
+        <Button variant="ghost" onClick={cancelNaming} className={HEADER_ACTION_CLASS}>
           {t('common.cancel')}
         </Button>
       </div>
@@ -131,22 +140,22 @@ export function BaseplateSelector() {
         size="sm"
         className="min-w-40 text-sm"
       />
-      <Button variant="secondary" onClick={handleNew} className="px-2.5 py-1.5 text-sm">
+      <Button variant="ghost" onClick={handleNew} className={HEADER_ACTION_CLASS}>
         {t('baseplate.library.new')}
       </Button>
       {isDraft ? (
-        <Button variant="primary" onClick={startNaming} className="px-2.5 py-1.5 text-sm">
+        <Button variant="primary" onClick={startNaming} className="h-8 px-2.5 text-sm">
           {t('common.save')}
         </Button>
       ) : (
-        <Button variant="secondary" onClick={handleFork} className="px-2.5 py-1.5 text-sm">
+        <Button variant="ghost" onClick={handleFork} className={HEADER_ACTION_CLASS}>
           {t('baseplate.library.saveAs')}
         </Button>
       )}
       <Button
         variant="ghost"
         onClick={() => setShowBaseplateLibrary(true)}
-        className="px-2.5 py-1.5 text-sm"
+        className={HEADER_ACTION_CLASS}
       >
         {t('baseplate.library.manage')}
       </Button>
