@@ -1234,6 +1234,7 @@ const en: Record<string, string> = {
 
   // Toast Messages
   'toast.baseplateReset': 'Baseplate settings reset to defaults',
+  'toast.baseplateSaveFailed': 'Failed to save baseplate',
   'toast.layoutCreated': 'New layout created',
   'toast.layoutDuplicated': 'Layout duplicated',
   'toast.layoutDeleted': 'Layout deleted',

@@ -17,6 +17,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
+import { useToastStore } from '@/core/store/toast';
 import { useViewStore } from '@/core/store/view';
 import { useMutations } from '@/shared/contexts';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
@@ -48,8 +49,14 @@ export function BaseplateSelector() {
   const t = useTranslation();
   const { list, activeBaseplateId, switchActive, saveCurrentAsNew, forkActive } =
     useBaseplateLibrary();
-  const baseplateParams = useLayoutStore((s) => s.layout.baseplateParams);
+  // `layout.baseplateParams` is optional and stays undefined until something
+  // writes it, so a fresh layout has none. BaseplatePage renders from the same
+  // fallback — without it here, Save saw `undefined` on a page that looked
+  // fully configured and silently discarded the name (#2591).
+  const baseplateParams =
+    useLayoutStore((s) => s.layout.baseplateParams) ?? DEFAULT_BASEPLATE_PARAMS;
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
+  const addToast = useToastStore((s) => s.addToast);
   const mutations = useMutations();
 
   const [isNaming, setIsNaming] = useState(false);
@@ -84,16 +91,21 @@ export function BaseplateSelector() {
 
   const confirmNaming = useCallback(async () => {
     const name = draftName.trim();
-    if (!name || !baseplateParams) {
+    // An empty name is the user declining to name it — that's a cancel, and
+    // silence is right. A save that *fails* is not; it used to take the same
+    // branch and look identical to cancelling.
+    if (!name) {
       cancelNaming();
       return;
     }
     const result = await saveCurrentAsNew(name, baseplateParams);
     if (isOk(result)) {
       mutations.setActiveBaseplate(result.value.id, result.value.params);
+    } else {
+      addToast(t('toast.baseplateSaveFailed'), 'error');
     }
     cancelNaming();
-  }, [draftName, baseplateParams, saveCurrentAsNew, mutations, cancelNaming]);
+  }, [draftName, baseplateParams, saveCurrentAsNew, mutations, cancelNaming, addToast, t]);
 
   const handleFork = useCallback(() => {
     forkActive();

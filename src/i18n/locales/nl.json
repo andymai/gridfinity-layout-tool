@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Hiermee worden alle basisplaatinstellingen teruggezet naar de standaardwaarden. Je bakkenindeling blijft ongewijzigd.",
   "baseplate.resetConfirmButton": "Herstellen",
   "toast.baseplateReset": "Basisplaatinstellingen teruggezet naar standaardwaarden",
+  "toast.baseplateSaveFailed": "Opslaan van basisplaat mislukt",
   "help.target.baseplate.reset.title": "Basisplaat terugzetten naar standaard",
   "help.target.baseplate.reset.description": "Zet alle basisplaatinstellingen — afmetingen, marges, magneten, verbinders, hoeken, gestapeld printen en printinstellingen — terug naar de standaardwaarden. Je bakkenindeling blijft ongewijzigd.",
   "help.target.baseplate.reset.keywords": "reset|herstellen|standaard|standaardwaarden|terugzetten|opnieuw beginnen|instellingen wissen|fabrieksinstellingen|basisplaat",
