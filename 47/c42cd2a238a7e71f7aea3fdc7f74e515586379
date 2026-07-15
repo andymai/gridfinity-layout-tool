@@ -1,0 +1,21 @@
+vercel.json
+  s_e81a9858244611::t_dc1e717de2c9be 322
+scripts/check-spa-routes.test.ts
+  s_e81a9858244611::t_81eba948e22272 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "47c42cd2a238a7e71f7aea3fdc7f74e515586379",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
