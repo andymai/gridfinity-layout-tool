@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.247.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.247.0...gridfinity-layout-tool-v4.247.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* **sidebar:** make baseplate, drawer shape, and stack solver match the sidebar ([#2589](https://github.com/andymai/gridfinity-layout-tool/issues/2589)) ([f5cbd59](https://github.com/andymai/gridfinity-layout-tool/commit/f5cbd59b42ccf63cbcec439a0ae5b5b76faac659))
+
 ## [4.247.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.246.1...gridfinity-layout-tool-v4.247.0) (2026-07-15)
 
 
