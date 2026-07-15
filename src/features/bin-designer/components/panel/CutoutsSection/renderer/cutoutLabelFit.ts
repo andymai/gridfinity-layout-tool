@@ -33,7 +33,9 @@ export function fitLabelFontSize(
   const fitted = Math.min(widthLimited, availD);
   if (fitted < textDefaults.minFontSize) return null;
   const autoFit = Math.min(fitted, textDefaults.maxFontSize);
-  // Mirror the worker: an explicit size caps auto-fit but never grows past the
-  // band, so the on-screen label matches the engraving.
-  return fontSizeOverride !== undefined ? Math.min(fontSizeOverride, autoFit) : autoFit;
+  // Cap at the override, floored at minFontSize (autoFit is already ≥ it) so a
+  // crafted sub-floor override still renders legibly — matches the worker.
+  return fontSizeOverride !== undefined
+    ? Math.min(autoFit, Math.max(textDefaults.minFontSize, fontSizeOverride))
+    : autoFit;
 }

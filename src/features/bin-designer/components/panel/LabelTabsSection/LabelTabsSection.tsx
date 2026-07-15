@@ -14,12 +14,12 @@ import {
   Button,
   Select,
   Stepper,
-  SliderInput,
   InfoIcon,
   Badge,
   ChevronDownIcon,
   Collapsible,
 } from '@/design-system';
+import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type {
@@ -431,39 +431,14 @@ export function LabelTabsSection() {
                   </div>
                 )}
               </div>
-              <div className="mt-3 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-content-tertiary">{t('binDesigner.textSize')}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() =>
-                      handlers.setTextSize(
-                        state.label.textStyle?.fontSizeOverride === undefined
-                          ? state.textDefaults.maxFontSize
-                          : null
-                      )
-                    }
-                    aria-pressed={state.label.textStyle?.fontSizeOverride === undefined}
-                    className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(
-                      state.label.textStyle?.fontSizeOverride === undefined
-                    )}`}
-                  >
-                    {t('binDesigner.textSizeAuto')}
-                  </Button>
-                </div>
-                {state.label.textStyle?.fontSizeOverride !== undefined && (
-                  <SliderInput
-                    label={t('binDesigner.textSize')}
-                    value={state.label.textStyle.fontSizeOverride}
-                    onChange={handlers.setTextSize}
-                    min={state.textDefaults.minFontSize}
-                    max={state.textDefaults.maxFontSize}
-                    step={0.5}
-                    unit="mm"
-                  />
-                )}
-              </div>
+              <LabelSizeControl
+                className="mt-3"
+                labelClassName="text-xs text-content-tertiary"
+                value={state.label.textStyle?.fontSizeOverride}
+                onChange={handlers.setTextSize}
+                min={state.textDefaults.minFontSize}
+                max={state.textDefaults.maxFontSize}
+              />
             </div>
           </Collapsible>
         </>

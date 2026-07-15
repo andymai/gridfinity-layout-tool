@@ -264,13 +264,14 @@ export function buildTextSolid(
   );
   if (!fit.fits) return null;
 
-  // An explicit size caps (never grows) the auto-fit result: clamp it down to
-  // what fits the band so a locked label can't bleed past its neighbor. Both
-  // operands are ≥ minFontSize (auto-fit guarantees it; the UI floors the
-  // override), so the min stays above the legibility floor.
+  // An explicit size caps (never grows) the auto-fit result, then is floored at
+  // minFontSize so it can't bleed past a neighbor yet never renders below the
+  // legibility floor. The UI slider already floors the override, but a crafted
+  // share or a future caller can pass a smaller value, so clamp here too.
+  // `fit.fontSize` is ≥ minFontSize, so flooring never exceeds the band.
   const fontSize =
     options.fontSizeOverride !== undefined
-      ? Math.min(options.fontSizeOverride, fit.fontSize)
+      ? Math.min(fit.fontSize, Math.max(options.minFontSize, options.fontSizeOverride))
       : fit.fontSize;
 
   // Reuses the memo entry from `fitFontSize`'s verify call when no override

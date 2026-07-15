@@ -33,6 +33,13 @@ describe('fitLabelFontSize', () => {
     expect(over).toBeCloseTo(auto!, 6);
   });
 
+  it('floors a sub-minFontSize override at the legibility floor', () => {
+    // The UI can't produce this (slider min = minFontSize), but a crafted share
+    // can. The band fits well above 3mm, so a 1mm override clamps up to 3mm
+    // rather than rendering illegibly small.
+    expect(fitLabelFontSize('A', roomy, defaults, 1)).toBe(3);
+  });
+
   it('returns null when even the floor overflows, override notwithstanding', () => {
     const tiny: CutoutLabelPlacement = { centerX: 0, centerY: 0, availW: 200, availD: 4 };
     // availD 4 − 3 = 1mm < 3mm floor → dropped, same as auto-fit.

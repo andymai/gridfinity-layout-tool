@@ -138,6 +138,15 @@ describe('buildTextSolid (fontSizeOverride)', () => {
     expect(huge.w).toBeCloseTo(auto.w, 1);
     expect(huge.h).toBeCloseTo(auto.h, 1);
   });
+
+  it('floors a sub-minFontSize override at the legibility floor', () => {
+    // A 1mm override is below the 3mm floor; it must render at minFontSize, not
+    // below it. Footprint matches an explicit 3mm build, not a 1mm one.
+    const atFloor = footprint({ ...BASE, fontSizeOverride: BASE.minFontSize });
+    const belowFloor = footprint({ ...BASE, fontSizeOverride: 1 });
+    expect(belowFloor.w).toBeCloseTo(atFloor.w, 1);
+    expect(belowFloor.h).toBeCloseTo(atFloor.h, 1);
+  });
 });
 
 describe('buildTextSolid (emboss)', () => {

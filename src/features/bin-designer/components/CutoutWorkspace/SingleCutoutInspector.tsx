@@ -29,6 +29,7 @@ import {
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { CutoutColorControls } from './CutoutColorControls';
+import { LabelSizeControl } from '../controls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Button, Collapsible, Input, SliderInput } from '@/design-system';
 
@@ -399,33 +400,13 @@ function CutoutEngraveLabelControls({
           disabled={disabled}
         />
       </div>
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] text-text-muted">{t('binDesigner.textSize')}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={disabled}
-            onClick={() => setFontSizeOverride(fontSizeOverride === undefined ? maxFontSize : null)}
-            aria-pressed={fontSizeOverride === undefined}
-            className={`px-1.5 py-0.5 text-[10px] leading-none ${getSegmentClass(fontSizeOverride === undefined)}`}
-          >
-            {t('binDesigner.textSizeAuto')}
-          </Button>
-        </div>
-        {fontSizeOverride !== undefined && (
-          <SliderInput
-            label={t('binDesigner.textSize')}
-            value={fontSizeOverride}
-            onChange={setFontSizeOverride}
-            min={minFontSize}
-            max={maxFontSize}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
-        )}
-      </div>
+      <LabelSizeControl
+        value={fontSizeOverride}
+        onChange={setFontSizeOverride}
+        min={minFontSize}
+        max={maxFontSize}
+        disabled={disabled}
+      />
     </div>
   );
 }
