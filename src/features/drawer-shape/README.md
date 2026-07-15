@@ -8,8 +8,12 @@ hatching, baseplate generation/splitting) derives from it.
 
 ## Key Files
 
-- `components/DrawerShapeSection` — Sidebar `FeatureToggle` entry: toggle
-  on opens the editor; toggle off resets to a rectangle after a confirm.
+- `components/DrawerShapeSection` — Sidebar entry: toggle on opens the editor;
+  toggle off resets to a rectangle after a confirm. Uses the shared
+  `ToggleRow` (a `Checkbox`), **not** `FeatureToggle` — the sidebar's boolean
+  rows are checkboxes, and this sits directly under Half-grid mode. Corner
+  cuts stay reachable with no outline: they build one from the plain
+  rectangle. Takes `variant` so the mobile settings sheet gets `lg` hit areas.
 - `components/ShapeEditorDialog` — cell-paint editor. Whole drawer cells
   (plus the fractional-edge cell of an x.5 drawer) toggle in/out; drag paints
   with the state of the first cell touched via ONE container pointer handler
