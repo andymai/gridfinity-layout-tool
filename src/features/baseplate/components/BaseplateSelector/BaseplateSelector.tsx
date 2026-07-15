@@ -99,11 +99,15 @@ export function BaseplateSelector() {
       return;
     }
     const result = await saveCurrentAsNew(name, baseplateParams);
-    if (isOk(result)) {
-      mutations.setActiveBaseplate(result.value.id, result.value.params);
-    } else {
+    if (!isOk(result)) {
+      // Leave the form open with the name intact: a failed save is usually
+      // transient, and closing here would make the retry cost a re-type.
+      // Escape or Cancel still backs out.
       addToast(t('toast.baseplateSaveFailed'), 'error');
+      nameInputRef.current?.select();
+      return;
     }
+    mutations.setActiveBaseplate(result.value.id, result.value.params);
     cancelNaming();
   }, [draftName, baseplateParams, saveCurrentAsNew, mutations, cancelNaming, addToast, t]);
 

@@ -166,6 +166,48 @@ describe('BaseplateSelector', () => {
     expect(mocks.setActiveBaseplate).not.toHaveBeenCalled();
   });
 
+  // A failed save is usually transient, so retrying shouldn't cost a re-type.
+  it('keeps the name form open after a failed save so it can be retried', async () => {
+    mocks.saveCurrentAsNew.mockResolvedValue(err({ type: 'STORAGE_ERROR' }));
+    render(<BaseplateSelector />);
+
+    fireEvent.click(screen.getByText('common.save'));
+    fireEvent.change(screen.getByLabelText('baseplate.library.namePrompt'), {
+      target: { value: 'Doomed' },
+    });
+    fireEvent.keyDown(screen.getByLabelText('baseplate.library.namePrompt'), { key: 'Enter' });
+
+    await waitFor(() => expect(mocks.addToast).toHaveBeenCalled());
+    const input = screen.getByLabelText('baseplate.library.namePrompt');
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveValue('Doomed');
+
+    // And a retry that succeeds closes the form and points the layout at it.
+    mocks.saveCurrentAsNew.mockResolvedValue(
+      ok({ id: baseplateDesignId('bp-9'), params: mocks.fakeParams })
+    );
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() =>
+      expect(mocks.setActiveBaseplate).toHaveBeenCalledWith(
+        baseplateDesignId('bp-9'),
+        mocks.fakeParams
+      )
+    );
+    expect(screen.queryByLabelText('baseplate.library.namePrompt')).toBeNull();
+  });
+
+  it('still closes the form when Escape backs out of a failed save', async () => {
+    mocks.saveCurrentAsNew.mockResolvedValue(err({ type: 'STORAGE_ERROR' }));
+    render(<BaseplateSelector />);
+
+    fireEvent.click(screen.getByText('common.save'));
+    fireEvent.keyDown(screen.getByLabelText('baseplate.library.namePrompt'), { key: 'Enter' });
+    await waitFor(() => expect(mocks.addToast).toHaveBeenCalled());
+
+    fireEvent.keyDown(screen.getByLabelText('baseplate.library.namePrompt'), { key: 'Escape' });
+    expect(screen.queryByLabelText('baseplate.library.namePrompt')).toBeNull();
+  });
+
   it('treats an empty name as a cancel, with no error toast', async () => {
     render(<BaseplateSelector />);
 
