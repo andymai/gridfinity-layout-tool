@@ -5,8 +5,9 @@
  *
  * Header vocabulary: the Select is the only bordered control (it's an input);
  * every action beside it is a flat ghost button, matching Export and the
- * DesignerHeader cluster next door. Save on an unsaved draft is the one
- * exception — it's the primary action, so it keeps its fill.
+ * DesignerHeader cluster next door. The one filled button is the confirm inside
+ * the naming form — a form submit, not a resting header action, and it can't
+ * collide with the Ko-fi CTA because the cluster is replaced while naming.
  * - New starts a fresh unsaved draft (pointer null, default params).
  * - Save on a draft prompts a name, persists it to the library, and points the
  *   layout at the new design. When a design is already active, autosave keeps it
@@ -144,7 +145,7 @@ export function BaseplateSelector() {
         {t('baseplate.library.new')}
       </Button>
       {isDraft ? (
-        <Button variant="primary" onClick={startNaming} className="h-8 px-2.5 text-sm">
+        <Button variant="ghost" onClick={startNaming} className={HEADER_ACTION_CLASS}>
           {t('common.save')}
         </Button>
       ) : (
