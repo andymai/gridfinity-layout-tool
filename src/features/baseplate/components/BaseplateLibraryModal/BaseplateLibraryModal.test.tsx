@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ok } from '@/core/result';
+import { err, ok } from '@/core/result';
 import { baseplateDesignId } from '@/core/types';
 import { BaseplateLibraryModal } from './BaseplateLibraryModal';
 
@@ -25,6 +25,8 @@ const designs = [
 
 const mocks = vi.hoisted(() => ({
   switchActive: vi.fn(),
+  saveCurrentAsNew: vi.fn(),
+  addToast: vi.fn(),
   renameDesign: vi.fn(() => Promise.resolve(ok({}))),
   duplicateDesign: vi.fn(() => Promise.resolve(ok({}))),
   deleteDesign: vi.fn(() => Promise.resolve(ok(undefined))),
@@ -41,7 +43,7 @@ vi.mock('@/features/baseplate/hooks/useBaseplateLibrary', () => ({
     list: [],
     activeBaseplateId: baseplateDesignId('bp-1'),
     switchActive: mocks.switchActive,
-    saveCurrentAsNew: vi.fn(),
+    saveCurrentAsNew: mocks.saveCurrentAsNew,
     forkActive: vi.fn(),
     renameDesign: mocks.renameDesign,
     duplicateDesign: mocks.duplicateDesign,
@@ -61,6 +63,10 @@ vi.mock('@/core/store/layout', () => ({
 
 vi.mock('@/shared/contexts', () => ({
   useMutations: () => ({ setActiveBaseplate: mocks.setActiveBaseplate }),
+}));
+
+vi.mock('@/core/store/toast', () => ({
+  useToastStore: (selector: (s: unknown) => unknown) => selector({ addToast: mocks.addToast }),
 }));
 
 vi.mock('@/i18n', () => ({
@@ -135,5 +141,41 @@ describe('BaseplateLibraryModal', () => {
     await waitFor(() =>
       expect(mocks.setActiveBaseplate).toHaveBeenCalledWith(null, { magnetHoles: false })
     );
+  });
+
+  describe('New Baseplate', () => {
+    it('creates a design, activates it, and closes', async () => {
+      mocks.saveCurrentAsNew.mockResolvedValue(
+        ok({ id: baseplateDesignId('bp-new'), params: { magnetHoles: false } })
+      );
+      const onClose = vi.fn();
+      render(<BaseplateLibraryModal isOpen onClose={onClose} />);
+
+      fireEvent.click(await screen.findByText('baseplate.library.newBaseplate'));
+
+      await waitFor(() =>
+        expect(mocks.setActiveBaseplate).toHaveBeenCalledWith(baseplateDesignId('bp-new'), {
+          magnetHoles: false,
+        })
+      );
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    // The failure used to be silent: the button re-enabled and the modal sat
+    // there with no explanation — the same class of bug as #2591.
+    it('reports a failed create instead of silently doing nothing', async () => {
+      mocks.saveCurrentAsNew.mockResolvedValue(err({ type: 'STORAGE_ERROR' }));
+      const onClose = vi.fn();
+      render(<BaseplateLibraryModal isOpen onClose={onClose} />);
+
+      fireEvent.click(await screen.findByText('baseplate.library.newBaseplate'));
+
+      await waitFor(() =>
+        expect(mocks.addToast).toHaveBeenCalledWith('toast.baseplateSaveFailed', 'error')
+      );
+      expect(mocks.setActiveBaseplate).not.toHaveBeenCalled();
+      // Stays open so the click can be retried.
+      expect(onClose).not.toHaveBeenCalled();
+    });
   });
 });

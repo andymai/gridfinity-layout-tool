@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -46,6 +47,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
     }))
   );
   const mutations = useMutations();
+  const addToast = useToastStore((s) => s.addToast);
 
   const [designs, setDesigns] = useState<SavedBaseplateDesign[]>([]);
   const [creating, setCreating] = useState(false);
@@ -55,11 +57,15 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
     setCreating(true);
     const result = await saveCurrentAsNew(nextBaseplateName(list), { ...DEFAULT_BASEPLATE_PARAMS });
     setCreating(false);
-    if (isOk(result)) {
-      mutations.setActiveBaseplate(result.value.id, result.value.params);
-      onClose();
+    if (!isOk(result)) {
+      // Say so rather than leaving the modal open with a re-enabled button and
+      // no explanation. Stays open on purpose so the click can be retried.
+      addToast(t('toast.baseplateSaveFailed'), 'error');
+      return;
     }
-  }, [list, saveCurrentAsNew, mutations, onClose]);
+    mutations.setActiveBaseplate(result.value.id, result.value.params);
+    onClose();
+  }, [list, saveCurrentAsNew, mutations, onClose, addToast, t]);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
