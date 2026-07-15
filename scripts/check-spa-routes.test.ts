@@ -45,9 +45,10 @@ function vercelRewrites(): VercelRewrite[] {
  * finds no file, and 404s — while in-app navigation keeps working, which is
  * exactly why `/supporters` shipped broken and stayed unnoticed.
  */
-describe('SPA routes are served by Vercel', () => {
-  const routes = spaRoutesFromHooks();
+const routes = spaRoutesFromHooks();
+const rewrites = vercelRewrites();
 
+describe('SPA routes are served by Vercel', () => {
   it('finds the routing hooks', () => {
     // Guards the derivation itself: if the hooks are renamed and this silently
     // returns nothing, the checks below would all vacuously pass.
@@ -55,8 +56,8 @@ describe('SPA routes are served by Vercel', () => {
     expect(routes).toContain('/supporters');
   });
 
-  it.each(spaRoutesFromHooks())('%s rewrites to the SPA', (route) => {
-    const rewrite = vercelRewrites().find((r) => r.source === route);
+  it.each(routes)('%s rewrites to the SPA', (route) => {
+    const rewrite = rewrites.find((r) => r.source === route);
     expect(rewrite, `vercel.json needs { "source": "${route}", "destination": "/" }`).toBeDefined();
     expect(rewrite?.destination).toBe('/');
   });
