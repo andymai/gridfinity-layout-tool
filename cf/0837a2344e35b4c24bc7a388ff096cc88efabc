@@ -1,0 +1,79 @@
+scripts/seed-supporters.ts
+  s_e81a9858244611::t_990f040d1d8d2d 59-64
+  s_e81a9858244611::t_b166359a23064a 1-58,65-79
+api/lib/contentFilter.ts
+  s_e81a9858244611::t_516919b2cd5246 169-179
+  s_e81a9858244611::t_5edf1159e88a38 168
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_e81a9858244611::t_8296a8cd5ddefa 146-154
+  s_e81a9858244611::t_e1e1f2dca5dacd 127-129
+  s_e81a9858244611::t_debab0e067bdec 13
+  s_e81a9858244611::t_4be1f8a1c07f98 131-133
+api/supporters.ts
+  s_e81a9858244611::t_61c9ffaab7bd4b 1-51
+api/lib/redisKeys.ts
+  s_e81a9858244611::t_ce4518e6d42bb6 19-20
+  s_e81a9858244611::t_6bb0da21d2a6fd 79-88
+src/features/supporters/utils/supportersData.test.ts
+  s_e81a9858244611::t_e286ea3fa1650e 2-8,11-12,19,24,30,37-38,43,46-88
+  s_e81a9858244611::t_a82ce02e2b8e23 89-91
+  s_e81a9858244611::t_a0bcf7ab24cff6 92
+src/features/supporters/README.md
+  s_e81a9858244611::t_d1d3559ce780c9 10-19,22-29
+  s_e81a9858244611::t_0a85aad3d24600 42-44
+src/features/supporters/hooks/useSupportersData.ts
+  s_e81a9858244611::t_e15eefd332adb5 29-31
+  s_e81a9858244611::t_a1a3c422953eae 14
+  s_e81a9858244611::t_180671d89a16f8 8-13
+  s_e81a9858244611::t_6e0b9c8d646f0a 33-35
+  s_e81a9858244611::t_c8a1ae9775ca76 47,50-51,54-58
+  s_e81a9858244611::t_1df2b3661cfb87 1-7,15-28,32,36-46,48-49,52-53,59-62
+api/lib/supporters.ts
+  s_e81a9858244611::t_d451e10b21f7ca 1-76,78-112
+  s_e81a9858244611::t_2ac83d0796abc5 77
+api/kofi-webhook.ts
+  s_e81a9858244611::t_3b9bf9db38a7b5 1-121
+api/lib/supporters.test.ts
+  s_e81a9858244611::t_11f8f8864b8adc 1-107,109,117-138
+  s_e81a9858244611::t_e85283a8700880 108,110-116
+src/features/supporters/utils/supportersData.ts
+  s_e81a9858244611::t_ed69e79a93dc28 9-26,28-29,36-39,41-42,56-68
+api/README.md
+  s_e81a9858244611::t_131c3633800e75 64-94
+  s_e81a9858244611::t_bd7e5a7f83e3d1 59-60
+api/lib/rateLimit.ts
+  s_e81a9858244611::t_84147315461b23 69-74
+  s_e81a9858244611::t_07b6a6eebf4f3f 21-23
+CLAUDE.md
+  s_e81a9858244611::t_e6b0dc345c00c2 184
+  s_e81a9858244611::t_5aa12c4457bb9b 138-139
+  s_e81a9858244611::t_c0d68ed353e5b5 135-137
+  s_e81a9858244611::t_6aecf10a3ab3bc 140-142
+  s_e81a9858244611::t_43ead2743ecbe3 132-134,143-144
+src/features/supporters/hooks/useSupportersData.test.ts
+  s_e81a9858244611::t_9b6a1520f20921 1,4-79,87-89
+  s_e81a9858244611::t_99014a1b6d8e16 80-86
+  s_e81a9858244611::t_25c5ec224a0237 2-3
+package.json
+  s_e81a9858244611::t_e329b6309d4f05 61
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_e81a9858244611::t_8d8879b3277411 8
+  s_e81a9858244611::t_789c0d430d2446 24-30,36
+  s_e81a9858244611::t_ad550a87d819f8 70-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cf0837a2344e35b4c24bc7a388ff096cc88efabc",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
