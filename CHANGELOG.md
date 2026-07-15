@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.248.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.1...gridfinity-layout-tool-v4.248.2) (2026-07-15)
+
+
+### Bug Fixes
+
+* **baseplate:** flatten the generator header to match the designer ([#2590](https://github.com/andymai/gridfinity-layout-tool/issues/2590)) ([f4313c3](https://github.com/andymai/gridfinity-layout-tool/commit/f4313c3b4e77b665b1cd0b3c5f5fe188a5dbb55b))
+
 ## [4.248.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.0...gridfinity-layout-tool-v4.248.1) (2026-07-15)
 
 
