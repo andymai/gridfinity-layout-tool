@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Questo ripristina tutte le impostazioni della baseplate ai valori predefiniti. Il layout dei bin non è influenzato.",
   "baseplate.resetConfirmButton": "Reimposta",
   "toast.baseplateReset": "Impostazioni della baseplate ripristinate ai valori predefiniti",
+  "toast.baseplateSaveFailed": "Salvataggio della piastra base non riuscito",
   "help.target.baseplate.reset.title": "Reimposta la baseplate ai valori predefiniti",
   "help.target.baseplate.reset.description": "Ripristina tutte le impostazioni della baseplate (dimensioni, margini, magneti, connettori, angoli, stampa a pila e impostazioni di stampa) ai valori predefiniti. Il layout dei bin non è influenzato.",
   "help.target.baseplate.reset.keywords": "reimposta|predefiniti|ripristina|annulla modifiche|azzera impostazioni|fabbrica|baseplate",

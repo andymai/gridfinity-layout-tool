@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Dadurch werden alle Grundplatten-Einstellungen auf ihre Standardwerte zurückgesetzt. Dein Bin-Layout bleibt unverändert.",
   "baseplate.resetConfirmButton": "Zurücksetzen",
   "toast.baseplateReset": "Grundplatten-Einstellungen auf Standard zurückgesetzt",
+  "toast.baseplateSaveFailed": "Grundplatte konnte nicht gespeichert werden",
   "help.target.baseplate.reset.title": "Grundplatte auf Standard zurücksetzen",
   "help.target.baseplate.reset.description": "Setze alle Grundplatten-Einstellungen — Maße, Ränder, Magnete, Verbinder, Ecken, Stapeldruck und Druckeinstellungen — auf ihre Standardwerte zurück. Dein Bin-Layout bleibt unverändert.",
   "help.target.baseplate.reset.keywords": "zurücksetzen|standard|standardwerte|wiederherstellen|neu anfangen|einstellungen löschen|werkseinstellungen|grundplatte",

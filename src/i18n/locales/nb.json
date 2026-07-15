@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Dette tilbakestiller alle bunnplate-innstillingene til standardverdiene. Bin-oppsettet ditt påvirkes ikke.",
   "baseplate.resetConfirmButton": "Tilbakestill",
   "toast.baseplateReset": "Bunnplate-innstillingene er tilbakestilt til standard",
+  "toast.baseplateSaveFailed": "Kunne ikke lagre bunnplate",
   "help.target.baseplate.reset.title": "Tilbakestill bunnplaten til standard",
   "help.target.baseplate.reset.description": "Tilbakestill alle bunnplate-innstillingene — mål, marger, magneter, koblinger, hjørner, stabelutskrift og utskriftsinnstillinger — til standardverdiene. Bin-oppsettet ditt påvirkes ikke.",
   "help.target.baseplate.reset.keywords": "tilbakestill|standard|standardverdier|gjenopprett|start på nytt|tøm innstillinger|fabrikk|bunnplate",

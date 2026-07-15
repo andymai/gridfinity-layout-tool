@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Isso restaura todas as configurações da placa base para os valores padrão. Seu layout de caixas não é afetado.",
   "baseplate.resetConfirmButton": "Restaurar",
   "toast.baseplateReset": "Configurações da placa base restauradas para os padrões",
+  "toast.baseplateSaveFailed": "Falha ao salvar a placa base",
   "help.target.baseplate.reset.title": "Restaurar a placa base para os padrões",
   "help.target.baseplate.reset.description": "Restaura todas as configurações da placa base — dimensões, margens, ímãs, conectores, cantos, impressão empilhada e configurações de impressão — para os valores padrão. Seu layout de caixas não é afetado.",
   "help.target.baseplate.reset.keywords": "redefinir|restaurar|padrão|padrões|reverter|recomeçar|limpar configurações|fábrica|placa base",

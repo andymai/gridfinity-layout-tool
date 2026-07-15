@@ -2618,6 +2618,7 @@
   "baseplate.resetConfirmMessage": "Cela rétablit tous les réglages de la platine à leurs valeurs par défaut. Votre disposition de bacs n’est pas affectée.",
   "baseplate.resetConfirmButton": "Réinitialiser",
   "toast.baseplateReset": "Réglages de la platine réinitialisés aux valeurs par défaut",
+  "toast.baseplateSaveFailed": "Échec de la sauvegarde de la plaque de base",
   "help.target.baseplate.reset.title": "Réinitialiser la platine aux valeurs par défaut",
   "help.target.baseplate.reset.description": "Rétablit tous les réglages de la platine — dimensions, marges, aimants, connecteurs, coins, impression empilée et réglages d’impression — à leurs valeurs par défaut. Votre disposition de bacs n’est pas affectée.",
   "help.target.baseplate.reset.keywords": "réinitialiser|défaut|valeurs par défaut|restaurer|rétablir|recommencer|effacer les réglages|usine|platine",
