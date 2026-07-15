@@ -1,0 +1,41 @@
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_ac05a5b2516b3d::t_40f4e1b94dc2ec 22
+  s_ac05a5b2516b3d::t_a963b932f2120a 434-441
+src/features/bin-designer/components/controls/LabelSizeControl/index.ts
+  s_ac05a5b2516b3d::t_4774ad2497600c 1
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutLabelFit.test.ts
+  s_ac05a5b2516b3d::t_2ada73951d66a7 36-42
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.test.tsx
+  s_ac05a5b2516b3d::t_fe6a440ba1a26a 1-47
+src/features/generation/worker/generators/textBuilder.ts
+  s_ac05a5b2516b3d::t_2b2693fa67be76 267-271,274
+src/features/generation/worker/generators/textBuilder.scenario.test.ts
+  s_ac05a5b2516b3d::t_c2a46dee50cd27 141-149
+src/features/bin-designer/components/controls/index.ts
+  s_ac05a5b2516b3d::t_a33ddee15bcbb6 4
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_ac05a5b2516b3d::t_760b063bab6b9d 32
+  s_ac05a5b2516b3d::t_c4a233b738aa68 403-409
+api/lib/designerValidation.ts
+  s_ac05a5b2516b3d::t_eca7003c5b18de 226-227,231,239,245,248,251,257,263,269-273,279-280
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.tsx
+  s_ac05a5b2516b3d::t_b450a86043cc25 1-69
+src/features/bin-designer/components/panel/CutoutsSection/renderer/cutoutLabelFit.ts
+  s_ac05a5b2516b3d::t_7f30a47bf85ec4 36-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "33ad78fa40884fa659fece0cdec2059ae37d0474",
+  "prompts": {},
+  "sessions": {
+    "s_ac05a5b2516b3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "56aa086e-e774-41d8-9e45-831a32d80ea0",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
