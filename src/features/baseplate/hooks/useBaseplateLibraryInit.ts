@@ -5,11 +5,21 @@
  * - **Auto-seed** (migration): the layout has `baseplateParams` but no
  *   `activeBaseplateId` — create a library design from those params and point
  *   the layout at it.
+ * - **Auto-create** (`{ autoCreate: true }`, /baseplate only): the layout has
+ *   neither — create a design from the defaults.
  * - **Re-materialize**: `activeBaseplateId` still resolves to a library design —
  *   copy the design's (possibly edited-elsewhere) params back into the layout so
  *   shared edits propagate on load.
  * - **Orphan**: `activeBaseplateId` is set but the design is gone (deleted on
  *   another device) — drop the pointer to null, keeping the inline copy.
+ *
+ * Auto-create is what guarantees an active design always exists, which is what
+ * lets the /baseplate header drop Save / Save As / New and match the bin
+ * designer (see the feature README). It is opt-in because this hook also mounts
+ * on the planner (`BaseplateLibraryInitMount`): creating there would mint a
+ * library entry for every layout on load, whether or not its owner ever opened
+ * the baseplate tool. Gating it on the route means an entry appears when
+ * someone actually uses the tool.
  *
  * The synchronous store `importLayout` can't touch IndexedDB, so this hook owns
  * the async backfill. Mirrors `bin-designer/hooks/useDesignerInit`. Idempotent:
@@ -26,6 +36,8 @@ import {
   setActiveDesignId,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import { loadRegistry, upsertRegistryEntry } from '@/features/baseplate/store/baseplateRegistry';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -43,20 +55,13 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return false;
 }
 
-/** Next free "Baseplate N" name given the current registry entries. */
-function nextBaseplateName(): string {
-  const used = new Set(
-    loadRegistry()
-      .map((ref) => /^Baseplate (\d+)$/.exec(ref.name)?.[1])
-      .filter((match): match is string => match !== undefined)
-      .map((n) => Number.parseInt(n, 10))
-  );
-  let n = 1;
-  while (used.has(n)) n += 1;
-  return `Baseplate ${n}`;
+export interface UseBaseplateLibraryInitOptions {
+  /** Create a default design when the layout has no baseplate at all. /baseplate only. */
+  readonly autoCreate?: boolean;
 }
 
-export function useBaseplateLibraryInit(): void {
+export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions): void {
+  const autoCreate = options?.autoCreate ?? false;
   const activeLayoutId = useLayoutStore((s) => s.activeLayoutId);
 
   // Resolve once per active layout. `undefined` = never resolved; `null` is a
@@ -80,37 +85,43 @@ export function useBaseplateLibraryInit(): void {
       // any write if it did, so this layout's baseplate never lands on another.
       const isStale = (): boolean => useLayoutStore.getState().activeLayoutId !== targetLayoutId;
 
-      if (params) {
-        if (activeId === null) {
-          const saved = await saveDesign({
-            name: nextBaseplateName(),
-            params,
-            thumbnail: null,
+      if (activeId === null) {
+        // Nothing to resolve: no design, no params, and not the route that
+        // wants one created.
+        if (!params && !autoCreate) return true;
+
+        // Auto-seed uses the layout's own params; auto-create falls back to the
+        // defaults. Never adopt another design here — baseplateParams live on
+        // the Layout, so adopting would overwrite settings this layout has.
+        const seedParams: StoredBaseplateParams = params ?? DEFAULT_BASEPLATE_PARAMS;
+        const saved = await saveDesign({
+          name: nextBaseplateName(loadRegistry()),
+          params: seedParams,
+          thumbnail: null,
+        });
+        if (isStale()) return false;
+        if (isOk(saved)) {
+          upsertRegistryEntry({
+            id: saved.value.id,
+            name: saved.value.name,
+            updatedAt: saved.value.updatedAt,
           });
-          if (isStale()) return false;
-          if (isOk(saved)) {
-            upsertRegistryEntry({
-              id: saved.value.id,
-              name: saved.value.name,
-              updatedAt: saved.value.updatedAt,
-            });
-            setActiveDesignId(saved.value.id);
-            setActiveBaseplateLocal(saved.value.id, saved.value.params);
+          setActiveDesignId(saved.value.id);
+          setActiveBaseplateLocal(saved.value.id, saved.value.params);
+        }
+      } else if (params) {
+        const loaded = await loadDesign(activeId);
+        if (isStale()) return false;
+        if (isOk(loaded)) {
+          setActiveDesignId(activeId);
+          if (!deepEqual(loaded.value.params, params)) {
+            setActiveBaseplateLocal(activeId, loaded.value.params);
           }
-        } else {
-          const loaded = await loadDesign(activeId);
-          if (isStale()) return false;
-          if (isOk(loaded)) {
-            setActiveDesignId(activeId);
-            if (!deepEqual(loaded.value.params, params)) {
-              setActiveBaseplateLocal(activeId, loaded.value.params);
-            }
-          } else if (loaded.error.code === 'STORAGE_NOT_FOUND') {
-            // Only orphan when the design is genuinely gone (deleted on another
-            // device). A transient read failure (IDB unavailable/corrupt) keeps
-            // the pointer so a later retry can still resolve it.
-            setActiveBaseplateLocal(null, params);
-          }
+        } else if (loaded.error.code === 'STORAGE_NOT_FOUND') {
+          // Only orphan when the design is genuinely gone (deleted on another
+          // device). A transient read failure (IDB unavailable/corrupt) keeps
+          // the pointer so a later retry can still resolve it.
+          setActiveBaseplateLocal(null, params);
         }
       }
 
@@ -140,5 +151,5 @@ export function useBaseplateLibraryInit(): void {
     };
 
     run();
-  }, [activeLayoutId]);
+  }, [activeLayoutId, autoCreate]);
 }

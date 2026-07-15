@@ -59,6 +59,9 @@ export function useBaseplateAutoSave(): SaveStatus {
       // then the thumbnail is left unchanged.
       setStatus('saving');
       const result = await updateDesignParams(designId, paramsToSave);
+      // The active design can switch while IndexedDB awaits. Reporting this
+      // save's outcome now would flash a status belonging to the old design.
+      if (useLayoutStore.getState().layout.activeBaseplateId !== designId) return;
       if (!isOk(result)) {
         // Surfaced in the header rather than swallowed — the edit is still in
         // the layout, but it is no longer in the library.

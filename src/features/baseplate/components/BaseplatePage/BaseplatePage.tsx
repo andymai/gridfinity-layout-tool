@@ -31,7 +31,6 @@ import { useBaseplateLibraryInit } from '../../hooks/useBaseplateLibraryInit';
 import { useBaseplateAutoSave } from '../../hooks/useBaseplateAutoSave';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { BaseplateSelector } from '../BaseplateSelector';
-import { useBaseplateInit } from '../../hooks/useBaseplateInit';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
@@ -90,11 +89,10 @@ export function BaseplatePage() {
   // Initialize generation bridge
   useBaseplateGeneration();
 
-  // Backfill the library pointer / re-materialize the active design on load.
-  useBaseplateLibraryInit();
-
-  // Guarantee an active design, so the header needs no Save/New cluster.
-  useBaseplateInit();
+  // Resolves the library pointer, and (autoCreate) guarantees an active design
+  // exists so the header needs no Save/New cluster. autoCreate is /baseplate
+  // only — the planner mount must not mint an entry per layout.
+  useBaseplateLibraryInit({ autoCreate: true });
 
   // Persist edits to the active library design (debounced).
   const saveStatus = useBaseplateAutoSave();
