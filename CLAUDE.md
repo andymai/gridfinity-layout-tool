@@ -129,17 +129,19 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 
 ## API (`api/`)
 
-| Endpoint                    | Purpose                        |
-| --------------------------- | ------------------------------ |
-| `share.ts`                  | POST: Create share             |
-| `share/[id].ts`             | GET/PUT/DELETE share           |
-| `liveblocks-auth.ts`        | Liveblocks auth token endpoint |
-| `ml-telemetry.ts`           | ML usage telemetry             |
-| `report/[id].ts`            | Report shared layout           |
-| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report) |
-| `lib/validation.ts`         | 500KB max, 2500 bins max       |
-| `lib/contentFilter.ts`      | Content moderation             |
-| `lib/designerValidation.ts` | Bin designer input validation  |
+| Endpoint                    | Purpose                         |
+| --------------------------- | ------------------------------- |
+| `share.ts`                  | POST: Create share              |
+| `share/[id].ts`             | GET/PUT/DELETE share            |
+| `liveblocks-auth.ts`        | Liveblocks auth token endpoint  |
+| `ml-telemetry.ts`           | ML usage telemetry              |
+| `kofi-webhook.ts`           | POST: Ko-fi payment → supporter |
+| `supporters.ts`             | GET: public supporter list      |
+| `report/[id].ts`            | Report shared layout            |
+| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report)  |
+| `lib/validation.ts`         | 500KB max, 2500 bins max        |
+| `lib/contentFilter.ts`      | Content moderation              |
+| `lib/designerValidation.ts` | Bin designer input validation   |
 
 ## Testing
 
@@ -179,4 +181,4 @@ pnpm run size          # Bundle size check
 
 **Vercel (required):** `BLOB_READ_WRITE_TOKEN`, `REDIS_URL`, `TOKEN_SALT`
 
-**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`
+**Optional:** `VITE_LIVEBLOCKS_PUBLIC_KEY`, `LIVEBLOCKS_SECRET_KEY`, `VITE_PUBLIC_POSTHOG_KEY`, `KOFI_VERIFICATION_TOKEN` (Ko-fi webhook; `/api/kofi-webhook` 503s without it)

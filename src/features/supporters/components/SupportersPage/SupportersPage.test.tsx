@@ -5,6 +5,7 @@ import { SupportersPage } from './SupportersPage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { KOFI_URL } from '@/shared/constants/links';
 import supportersData from '../../data/supporters.json';
+import { FALLBACK_SUPPORTERS } from '../../utils/supportersData';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
@@ -20,11 +21,19 @@ vi.mock('@react-three/fiber', () => ({
 }));
 vi.mock('../SupportersScene', () => ({ SupportersScene: () => null }));
 
+// Fetching is covered by useSupportersData's own tests; here we pin the data so
+// these assertions stay about the DOM overlays.
+const supportersState = { data: FALLBACK_SUPPORTERS, settled: true };
+vi.mock('../../hooks/useSupportersData', () => ({
+  useSupportersData: () => supportersState,
+}));
+
 describe('SupportersPage', () => {
   let openSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    supportersState.settled = true;
     openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
   });
 
@@ -57,5 +66,14 @@ describe('SupportersPage', () => {
     fireEvent.click(screen.getByText('supporters.cta.button'));
     expect(trackEvent).toHaveBeenCalledWith('kofi_clicked', { source: 'supporters_page' });
     expect(openSpy).toHaveBeenCalledWith(KOFI_URL, '_blank', 'noopener,noreferrer');
+  });
+
+  // Rendering the hero before the count is known would count up to the bundled
+  // total and then restart at the real one.
+  it('holds the hero until the supporter list settles', () => {
+    supportersState.settled = false;
+    render(<SupportersPage />);
+    expect(screen.queryByText('supporters.countLabel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('canvas')).not.toBeInTheDocument();
   });
 });

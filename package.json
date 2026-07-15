@@ -58,6 +58,7 @@
     "check:readme-reminders": "./scripts/check-readme-reminders.sh",
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
+    "seed-supporters": "tsx scripts/seed-supporters.ts",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
     "gen:example-thumbnails": "tsx --tsconfig tsconfig.app.json scripts/gen-example-thumbnails.ts",
     "bench": "vitest bench",

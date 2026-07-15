@@ -7,9 +7,26 @@ baseplate, styled to match the app: THREE_COLORS backgrounds, the app-default
 #d4d8dc preview plastic, and the user's chosen accent. No amounts, no tiers —
 every bin is equal, order shuffled per load.
 
+## Data flow
+
+Redis is the source of truth. `api/kofi-webhook.ts` receives each Ko-fi payment,
+verifies it, and writes the supporter to the `supporters:donors` hash;
+`api/supporters.ts` serves that list; `hooks/useSupportersData.ts` fetches it.
+Ko-fi has **no read API and no webhook replay**, so nothing here can be
+backfilled after the fact — see `api/README.md` for the ingest rules.
+
+`data/supporters.json` is now only the offline fallback (see below).
+
 ## Key files
 
-- `data/supporters.json` — backfilled display names + `anonymousCount`. **Names only; never store emails or amounts.**
+- `data/supporters.json` — the 45 supporters backfilled before the webhook
+  existed, seeded into Redis once via `pnpm seed-supporters`. Still bundled as
+  the **fallback** when `/api/supporters` is unreachable, so an outage shows a
+  stale baseplate instead of an empty one. **Names only; never emails or amounts.**
+- `hooks/useSupportersData.ts` — fetch + fallback + `settled`. The page holds
+  its render until `settled`, so a hanging request can't block it forever
+  (`FETCH_TIMEOUT_MS`). An empty API response is treated as "not seeded yet" and
+  keeps the fallback rather than wiping the scene.
 - `data/meshes/*.glb` + `data/meshMeta.json` — Draco GLBs of the real 1×1×3
   label-tab bin and 1×1 baseplate tile, baked by `scripts/gen-supporters-meshes.ts`
   from the production OCCT generators at preview tolerance (scene units: Y-up,
@@ -22,7 +39,9 @@ every bin is equal, order shuffled per load.
   tapes land exactly on the shelf. **Re-run the script instead of editing these
   by hand.**
 - `data/meshes.ts` — resolves the GLBs to bundled hashed URLs (`import.meta.glob` + `?url`).
-- `utils/supportersData.ts` — `buildSupporterBins(rng?)` (shuffled bins), `getSupporterCount()`.
+- `utils/supportersData.ts` — `buildSupporterBins(data?, rng?)` (shuffled bins),
+  `getSupporterCount(data?)`, `FALLBACK_SUPPORTERS`, `isSupportersData()` (the
+  API response is untrusted input — narrow it).
 - `utils/supportersLayout.ts` — pure layout math: bin seats on exact 42mm pitch,
   a one-socket empty margin ring, and `computeCameraFrame()` (aspect-aware
   auto-framing that scales with supporter count).

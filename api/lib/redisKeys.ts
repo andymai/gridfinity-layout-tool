@@ -16,6 +16,8 @@
  *   users:{uid}:profile             → user profile (email, provider, etc.)
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
  *   users:{uid}:indexUpdatedAt      → ms timestamp for If-Modified-Since on /api/sync/manifest
+ *   supporters:donors               → HASH of donorId → display name ('' = anonymous)
+ *   supporters:msg:{messageId}      → Ko-fi webhook dedupe marker
  */
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
@@ -73,4 +75,14 @@ export function userIndexUpdatedAtKey(userId: string): string {
 /** Ms timestamp of the last tombstone sweep — gates how often `upsertEntry` HGETALLs. */
 export function userTombstoneSweptAtKey(userId: string): string {
   return `users:${userId}:tombstoneSweptAt`;
+}
+
+/** HASH of Ko-fi supporters: donorId → display name (empty string = anonymous). */
+export function supportersDonorsKey(): string {
+  return 'supporters:donors';
+}
+
+/** Dedupe marker for a Ko-fi webhook delivery (their retries reuse `message_id`). */
+export function supportersMessageKey(messageId: string): string {
+  return `supporters:msg:${messageId}`;
 }

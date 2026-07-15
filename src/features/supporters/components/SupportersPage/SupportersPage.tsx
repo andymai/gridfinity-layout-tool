@@ -10,6 +10,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useResolvedTheme } from '@/shared/hooks/useThemeEffect';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { buildSupporterBins, getSupporterCount } from '../../utils/supportersData';
+import { useSupportersData } from '../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene } from '../SupportersScene';
 
@@ -123,10 +124,13 @@ export function SupportersPage() {
   const { navigateHome } = useSupportersRouting();
 
   const accent = useSettingsStore((state) => state.settings.accentColor);
-  const bins = useMemo(() => buildSupporterBins(), []);
-  const total = getSupporterCount();
+  const { data: supporters, settled } = useSupportersData();
+  const bins = useMemo(() => buildSupporterBins(supporters), [supporters]);
+  const total = getSupporterCount(supporters);
   const palette = useMemo(() => getSupportersPalette(theme, accent), [theme, accent]);
-  const count = useCountUp(total, !reducedMotion);
+  // Gated on `settled` so the count-up starts when the scene actually appears,
+  // rather than having already run to the bundled total behind the hold.
+  const count = useCountUp(total, !reducedMotion && settled);
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
@@ -138,6 +142,15 @@ export function SupportersPage() {
   const clearBurst = useCallback(() => setBurst(null), []);
 
   const focused = focusedId ? bins.find((b) => b.id === focusedId) : null;
+
+  // Hold the whole scene until the supporter list settles (a fetch, or the
+  // hook's timeout falling back to the bundled list). Rendering early would
+  // count up to the bundled total, then restart from zero at the real one, and
+  // re-frame the camera — which sizes itself on bin count. The wait is a fetch
+  // the page already covers with its lazy-chunk fallback.
+  if (!settled) {
+    return <main className="h-screen w-screen" style={{ background: palette.background }} />;
+  }
 
   const handleKofiClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     trackEvent('kofi_clicked', { source: 'supporters_page' });

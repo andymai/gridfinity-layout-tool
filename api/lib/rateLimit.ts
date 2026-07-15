@@ -18,7 +18,9 @@ export type RateLimitAction =
   | 'sync.read'
   | 'scan.create'
   | 'scan.upload'
-  | 'scan.poll';
+  | 'scan.poll'
+  | 'kofi.webhook'
+  | 'supporters.read';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -64,6 +66,12 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   'scan.create': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
   'scan.upload': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
   'scan.poll': { limit: 240, windowSeconds: 60 }, // 240/minute per IP
+  // Ko-fi webhook — keyed by client IP. Only ever hit after the verification
+  // token matches, so this is a backstop against a leaked token, not the front
+  // door. Generous enough that a burst of real donations can't be dropped.
+  'kofi.webhook': { limit: 60, windowSeconds: 60 }, // 60/minute per IP
+  // Public supporters read — cached at the edge, so this only sees cache misses.
+  'supporters.read': { limit: 120, windowSeconds: 60 }, // 120/minute per IP
 };
 
 interface RateLimitResult {

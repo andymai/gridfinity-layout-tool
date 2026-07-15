@@ -166,6 +166,18 @@ function normalizeForBlocklist(text: string): string {
 }
 
 /**
+ * Check a single user-supplied display name (e.g. a Ko-fi `from_name`) before
+ * it renders on a public page.
+ *
+ * Same gate as layout text. Callers should treat a failure as "show this
+ * person as anonymous", not "drop them" — the name is untrusted, the
+ * supporter isn't.
+ */
+export function filterDisplayName(name: string): ContentFilterResult {
+  return checkText(name);
+}
+
+/**
  * Check a single text string for offensive content.
  */
 function checkText(text: string): ContentFilterResult {

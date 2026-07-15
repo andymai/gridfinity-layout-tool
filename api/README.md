@@ -56,8 +56,41 @@ graph TB
 | `/api/sync/manifest`            | GET            | 240/min    | Per-user index + If-Modified-Since 304 |
 | `/api/sync/export`              | GET            | 240/min    | ZIP of all live items + manifest       |
 | `/api/sync/account`             | DELETE         | 60/min     | Cascade-delete account + KV + blobs    |
+| `/api/kofi-webhook`             | POST           | 60/min     | Ko-fi payment ingest → supporters      |
+| `/api/supporters`               | GET            | 120/min    | Public supporter list for /supporters  |
 
 See [`auth/README.md`](./auth/README.md) for the OAuth setup and [`sync/README.md`](./sync/README.md) for sync semantics, quotas, and the LWW + tombstone state machine.
+
+## Ko-fi supporter ingest
+
+`/api/kofi-webhook` is the **only** way a supporter reaches `/supporters`. Ko-fi
+has no read API and no webhook replay, so this is a one-shot feed: anything not
+recorded on delivery is gone. That drives three rules.
+
+- **Fail loudly, never silently 200.** Missing `KOFI_VERIFICATION_TOKEN` → 503;
+  Redis down → 503. Ko-fi retries on a failure response, so a 503 is
+  recoverable while a cheerful 200 loses the supporter permanently.
+- **Verify before touching Redis.** The token is compared (constant-time) before
+  any I/O, so forged requests cost nothing. Rate limiting sits _behind_ that as a
+  backstop for a leaked token — it is not the front door.
+- **Dedupe twice.** `message_id` guards Ko-fi's retries (`SET NX`), and the
+  donor id guards repeat donations from the same person — otherwise a monthly
+  subscriber earns a fresh bin every renewal.
+
+**Privacy.** Stored: a salted donor-id hash and a display name. Never stored:
+the email, the amount, or the supporter's message. `deriveDonorId` salts with
+`TOKEN_SALT` and refuses to derive an id without it — an _unsalted_ SHA-256 of
+an email is brute-forcible against a wordlist, so it would effectively still be
+an email.
+
+**Untrusted input.** `from_name` is arbitrary text typed by a stranger that
+renders on a public page. `normalizeDisplayName` honours Ko-fi's `is_public`,
+runs the name through `contentFilter`, and length-caps it. A rejected name makes
+the supporter _anonymous_ rather than dropping them — the name is untrusted, the
+person isn't.
+
+Seed the pre-webhook backfill once with `pnpm seed-supporters` (`--dry-run` to
+preview); see `src/features/supporters/README.md`.
 
 ## Validation Library (`lib/`)
 

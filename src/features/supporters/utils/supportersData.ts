@@ -6,19 +6,40 @@ export interface SupporterBin {
   name: string | null;
 }
 
+/** Named supporters + a count of those who gave no name. Served by `/api/supporters`. */
+export interface SupportersData {
+  named: string[];
+  anonymousCount: number;
+}
+
+/**
+ * The list baked into the bundle at build time.
+ *
+ * Only a fallback now that Redis is the source of truth — it keeps the page
+ * showing a plausible baseplate if `/api/supporters` is unreachable, rather
+ * than an empty one.
+ */
+export const FALLBACK_SUPPORTERS: SupportersData = {
+  named: supportersData.named,
+  anonymousCount: supportersData.anonymousCount,
+};
+
 /** Total number of supporters (named + anonymous). */
-export function getSupporterCount(): number {
-  return supportersData.named.length + supportersData.anonymousCount;
+export function getSupporterCount(data: SupportersData = FALLBACK_SUPPORTERS): number {
+  return data.named.length + data.anonymousCount;
 }
 
 /**
  * Build the full list of supporter bins, shuffled so no one is first or last.
  * Accepts an injectable RNG so tests can assert deterministically.
  */
-export function buildSupporterBins(rng: () => number = Math.random): SupporterBin[] {
+export function buildSupporterBins(
+  data: SupportersData = FALLBACK_SUPPORTERS,
+  rng: () => number = Math.random
+): SupporterBin[] {
   const bins: SupporterBin[] = [
-    ...supportersData.named.map((name, i) => ({ id: `named-${i}`, name })),
-    ...Array.from({ length: supportersData.anonymousCount }, (_, i) => ({
+    ...data.named.map((name, i) => ({ id: `named-${i}`, name })),
+    ...Array.from({ length: data.anonymousCount }, (_, i) => ({
       id: `anon-${i}`,
       name: null,
     })),
@@ -31,4 +52,17 @@ export function buildSupporterBins(rng: () => number = Math.random): SupporterBi
   }
 
   return bins;
+}
+
+/** Narrow an unknown API response to `SupportersData`. */
+export function isSupportersData(value: unknown): value is SupportersData {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Partial<SupportersData>;
+  return (
+    Array.isArray(candidate.named) &&
+    candidate.named.every((name) => typeof name === 'string') &&
+    typeof candidate.anonymousCount === 'number' &&
+    Number.isFinite(candidate.anonymousCount) &&
+    candidate.anonymousCount >= 0
+  );
 }
