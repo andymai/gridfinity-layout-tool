@@ -1,0 +1,54 @@
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_e81a9858244611::t_074139d2057abf 51-52
+  s_e81a9858244611::t_47584e9df8e9b9 2-4,6-7,13,31-41,43-50,53-54
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_e81a9858244611::t_5692606bcde960 59-61,67,79-80,91-96,107
+  s_e81a9858244611::t_b11e9c6c7c03c5 6-7
+src/shared/components/ToggleRow/ToggleRow.tsx
+  s_e81a9858244611::t_c5397eb458ec70 18-19
+  s_e81a9858244611::t_7ea46f36ad95ce 72
+  s_e81a9858244611::t_ec33d7ab88810b 1-17,20-38,40,43-45,47-71,73-75
+  s_e81a9858244611::t_c74d8d33481687 39,41-42,46
+src/shell/Sidebar/Sidebar.tsx
+  s_e81a9858244611::t_524e6f6df453c5 528-529,531-533
+  s_e81a9858244611::t_a2e137cd644de1 7
+  s_e81a9858244611::t_483331c75ab267 21
+  s_e81a9858244611::t_8c58f6925baeea 402-410
+src/shared/components/ToggleRow/index.ts
+  s_e81a9858244611::t_e4a34b8366d02e 1
+src/shared/components/ToggleRow/ToggleRow.test.tsx
+  s_e81a9858244611::t_75fee6be0ca54a 1-64
+  s_e81a9858244611::t_3d43410afa5ca5 65-67
+  s_e81a9858244611::t_ee81ed62077432 68-74
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_e81a9858244611::t_89d5a5503f3c7d 180
+src/shared/components/index.ts
+  s_e81a9858244611::t_22765c02db02cb 17
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_e81a9858244611::t_fba3fcbe47c0a6 92
+  s_e81a9858244611::t_f9d155aceddb7f 21-23
+  s_e81a9858244611::t_9d3e6395023d8e 4
+  s_e81a9858244611::t_0c09d19d575ee0 11-15,25
+  s_e81a9858244611::t_8d74c6203292a8 48-49,53,70-71,73,76,80
+  s_e81a9858244611::t_657d16f57ffc5b 54
+  s_e81a9858244611::t_9c49a52ff50105 56-69,72,74-75,77,79
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.test.tsx
+  s_e81a9858244611::t_505517d401fd17 38,43
+  s_e81a9858244611::t_6a67d4b9106113 47-61,67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "babda40835c600c7042157c030caf2dc33550e2c",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
