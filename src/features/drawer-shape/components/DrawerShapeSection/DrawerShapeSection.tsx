@@ -1,21 +1,28 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
-import { ConfirmDialog } from '@/shared/components';
-import { FeatureToggle } from '@/shared/components/FeatureToggle/FeatureToggle';
+import { ConfirmDialog, ToggleRow } from '@/shared/components';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 
+interface DrawerShapeSectionProps {
+  /** Platform variant, forwarded to the toggle row's sizing. */
+  variant?: 'desktop' | 'mobile';
+}
+
 /**
  * Sidebar entry for non-rectangular drawers (issue #2528). The toggle reflects
  * whether an outline exists; enabling opens the cell-paint editor, disabling
  * clears the shape (with a confirm — clearing displaces nothing but discards
  * drawn geometry).
+ *
+ * Corner cuts stay reachable whether or not a custom shape exists: they're a
+ * shortcut that *creates* an outline from the plain rectangle.
  */
-export function DrawerShapeSection() {
+export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionProps = {}) {
   const t = useTranslation();
   const mutations = useMutations();
   const { hasOutline } = useLayoutStore(
@@ -38,41 +45,39 @@ export function DrawerShapeSection() {
   }, [mutations]);
 
   return (
-    <div className="border-t border-stroke-subtle pt-2" data-help-target="drawer-shape">
-      <FeatureToggle
+    <>
+      <ToggleRow
         label={t('drawerShape.toggle')}
         checked={hasOutline}
         onChange={handleToggle}
-        primaryControls={
-          hasOutline ? (
-            <div className="flex gap-1.5">
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={() => setEditorOpen(true)}
-              >
-                {t('drawerShape.edit')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={() => setCornersOpen(true)}
-              >
-                {t('drawerShape.corners.open')}
-              </Button>
-            </div>
-          ) : undefined
-        }
+        helpTarget="drawer-shape"
+        variant={variant}
       />
-      {!hasOutline && (
-        <div className="pl-6 pt-1">
-          <Button variant="ghost" size="sm" type="button" onClick={() => setCornersOpen(true)}>
-            {t('drawerShape.corners.open')}
+      {/* Full-width action buttons, matching the ActiveLayerPanel toolbar rather
+          than floating a lone ghost link. Corner cuts stay available with no
+          outline — they build one from the plain rectangle. */}
+      <div className="flex gap-1.5 pt-2">
+        <Button
+          variant="secondary"
+          fullWidth
+          type="button"
+          onClick={() => setCornersOpen(true)}
+          className="text-xs h-8"
+        >
+          {t('drawerShape.corners.open')}
+        </Button>
+        {hasOutline && (
+          <Button
+            variant="secondary"
+            fullWidth
+            type="button"
+            onClick={() => setEditorOpen(true)}
+            className="text-xs h-8"
+          >
+            {t('drawerShape.edit')}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
       <ShapeEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
       <CornerCutsDialog open={cornersOpen} onClose={() => setCornersOpen(false)} />
       <ConfirmDialog
@@ -84,6 +89,6 @@ export function DrawerShapeSection() {
         onConfirm={handleReset}
         onCancel={() => setConfirmReset(false)}
       />
-    </div>
+    </>
   );
 }

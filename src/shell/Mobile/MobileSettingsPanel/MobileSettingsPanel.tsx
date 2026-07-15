@@ -177,7 +177,7 @@ export function MobileSettingsPanel() {
         </div>
 
         {/* Non-rectangular drawer shape (issue #2528) */}
-        <DrawerShapeSection />
+        <DrawerShapeSection variant="mobile" />
       </section>
 
       {/* Grid Settings */}

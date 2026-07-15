@@ -3,6 +3,8 @@ import { CONSTRAINTS } from '@/core/constants';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { solveHeightUnitMm, stackedTotalMm, STACK_LIP_MM } from '@/shared/utils/heightUnits';
+// Relative, not via the '@/shared/components' barrel — this file is inside it.
+import { SettingsRow } from '../SettingsRow';
 
 interface HeightUnitSolverProps {
   /** Current height unit in mm — the value Apply overwrites. */
@@ -53,17 +55,16 @@ export function HeightUnitSolver({
     variant === 'mobile'
       ? 'input w-20 h-10 text-center'
       : 'input w-14 py-0.5 px-1 text-xs text-right';
-  const labelClass = 'text-content-secondary';
 
+  // Raw inputs rather than DeferredNumberInput: the solve previews live as you
+  // type, and `target` starts empty (no suggestion until asked), neither of
+  // which a commit-on-blur numeric input can express.
   return (
     <div className="space-y-2 text-xs">
       <p className="text-content-tertiary">
         {t('stackSolver.description', { lip: round2(STACK_LIP_MM) })}
       </p>
-      <div className="flex items-center justify-between gap-2">
-        <label htmlFor={`${uid}-target`} className={labelClass}>
-          {t('stackSolver.targetLabel')}
-        </label>
+      <SettingsRow label={t('stackSolver.targetLabel')} htmlFor={`${uid}-target`} variant={variant}>
         <input
           id={`${uid}-target`}
           type="number"
@@ -75,11 +76,8 @@ export function HeightUnitSolver({
           className={inputClass}
           aria-label={t('stackSolver.targetLabel')}
         />
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <label htmlFor={`${uid}-bins`} className={labelClass}>
-          {t('stackSolver.binsLabel')}
-        </label>
+      </SettingsRow>
+      <SettingsRow label={t('stackSolver.binsLabel')} htmlFor={`${uid}-bins`} variant={variant}>
         <input
           id={`${uid}-bins`}
           type="number"
@@ -90,11 +88,12 @@ export function HeightUnitSolver({
           className={inputClass}
           aria-label={t('stackSolver.binsLabel')}
         />
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <label htmlFor={`${uid}-units`} className={labelClass}>
-          {t('stackSolver.unitsPerBinLabel')}
-        </label>
+      </SettingsRow>
+      <SettingsRow
+        label={t('stackSolver.unitsPerBinLabel')}
+        htmlFor={`${uid}-units`}
+        variant={variant}
+      >
         <input
           id={`${uid}-units`}
           type="number"
@@ -105,7 +104,7 @@ export function HeightUnitSolver({
           className={inputClass}
           aria-label={t('stackSolver.unitsPerBinLabel')}
         />
-      </div>
+      </SettingsRow>
 
       {suggested !== null && (
         <div className="space-y-1 pt-1">

@@ -4,7 +4,7 @@ import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Checkbox, Collapsible, IconButton, Stepper } from '@/design-system';
+import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -18,6 +18,7 @@ import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { ToggleRow } from '@/shared/components/ToggleRow';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -398,34 +399,15 @@ export function Sidebar() {
                   </div>
 
                   {/* Half-bin mode toggle */}
-                  <div
-                    data-help-target="half-bin-mode"
-                    className="flex items-center justify-between pt-2 cursor-pointer"
-                    onClick={handleHalfBinToggle}
-                    role="checkbox"
-                    aria-checked={halfGridMode}
-                    aria-label={t('sidebar.toggleHalfBinMode')}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        handleHalfBinToggle();
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`leading-none ${halfGridMode ? 'text-content' : 'text-content-tertiary'}`}
-                        title={t('sidebar.halfBinTooltip')}
-                      >
-                        {t('sidebar.halfBinMode')}
-                      </span>
-                      <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
-                        H
-                      </kbd>
-                    </div>
-                    <Checkbox checked={halfGridMode} size="md" />
-                  </div>
+                  <ToggleRow
+                    label={t('sidebar.halfBinMode')}
+                    checked={halfGridMode}
+                    onChange={handleHalfBinToggle}
+                    tooltip={t('sidebar.halfBinTooltip')}
+                    shortcut="H"
+                    ariaLabel={t('sidebar.toggleHalfBinMode')}
+                    helpTarget="half-bin-mode"
+                  />
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
@@ -543,11 +525,12 @@ export function Sidebar() {
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
+                  {/* Occasional-use calculator — nested `size="sm"` section,
+                      collapsed by default so it costs nothing until asked for. */}
                   <div className="pt-2 mt-1 border-t border-stroke-subtle">
-                    <div className="text-[11px] font-medium text-content-secondary mb-1.5">
-                      {t('stackSolver.title')}
-                    </div>
-                    <HeightUnitSolver heightUnitMm={heightUnitMm} onApply={setHeightUnitMm} />
+                    <Collapsible title={t('stackSolver.title')} size="sm" defaultExpanded={false}>
+                      <HeightUnitSolver heightUnitMm={heightUnitMm} onApply={setHeightUnitMm} />
+                    </Collapsible>
                   </div>
                 </div>
               </Collapsible>
