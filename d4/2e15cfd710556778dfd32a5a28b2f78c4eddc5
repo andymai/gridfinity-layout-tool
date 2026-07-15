@@ -1,0 +1,19 @@
+scripts/check-spa-routes.test.ts
+  s_e81a9858244611::t_51d790e377da4a 48-49,51,59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d42e15cfd710556778dfd32a5a28b2f78c4eddc5",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
