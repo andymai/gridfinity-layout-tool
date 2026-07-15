@@ -1,0 +1,24 @@
+api/kofi-webhook.ts
+  s_e81a9858244611::t_bbc5de5d18ef41 87-98,101-113
+  s_e81a9858244611::t_abd042737770ae 16-25
+  s_e81a9858244611::t_1a8a8a9708055f 2
+api/kofi-webhook.test.ts
+  s_e81a9858244611::t_82bda892efced7 1-186
+  s_e81a9858244611::t_eeb8ca0614bd1a 187-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "3944cb47f52e4df13c2097294486faca79341594",
+  "prompts": {},
+  "sessions": {
+    "s_e81a9858244611": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94841763-48d1-423d-8e07-bb68d51b038b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
