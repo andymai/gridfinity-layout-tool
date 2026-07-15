@@ -48,6 +48,22 @@ export function deriveDonorId(email: string): string | null {
 }
 
 /**
+ * Hash `message_id` into the fixed-length, charset-safe half of its Redis key.
+ *
+ * Once a token leaks, `message_id` is attacker-shaped: it could carry null
+ * bytes, newlines, or be arbitrarily long. Redis keys are binary-safe and have
+ * no path semantics, so there's no injection here — but hashing keeps the
+ * keyspace tidy and bounded regardless of input.
+ *
+ * Deliberately a hash rather than a validate-and-reject: this feed has no
+ * replay, so rejecting an unexpected id shape would lose that supporter for
+ * good. Hashing can't false-negative.
+ */
+export function messageDedupeId(messageId: string): string {
+  return createHash('sha256').update(messageId).digest('hex').slice(0, 32);
+}
+
+/**
  * Reduce a Ko-fi `from_name` to something safe to render, or null for "show as
  * anonymous".
  *

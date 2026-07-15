@@ -7,6 +7,7 @@ import { supportersDonorsKey, supportersMessageKey } from './lib/redisKeys.js';
 import {
   MESSAGE_DEDUPE_TTL_SECONDS,
   deriveDonorId,
+  messageDedupeId,
   normalizeDisplayName,
   parseKofiPayload,
 } from './lib/supporters.js';
@@ -26,9 +27,19 @@ function tokensMatch(received: string, expected: string): boolean {
  * There is no read API to poll and no replay endpoint, so this is a one-shot
  * feed: whatever we fail to record here is gone.
  *
- * Order matters. The verification token is checked before we touch Redis, so a
- * forged request costs no round trip. Rate limiting sits behind that as a
- * backstop for a leaked token.
+ * Order matters, and it is deliberately the reverse of every other endpoint
+ * here. Elsewhere `checkRateLimit` runs first because there is no cheaper gate
+ * available. This endpoint has one: comparing the verification token reads an
+ * env var and touches no I/O, whereas `checkRateLimit` costs a Redis round
+ * trip. Verifying first makes a flood of forged requests free to reject;
+ * rate-limiting first would charge us a Redis op for each one, making the
+ * cheapest attack more expensive to absorb, not less.
+ *
+ * Rate limiting therefore sits behind the token as a blast-radius cap on a
+ * *leaked* token, which is the only way past the first gate. Note the token
+ * lives inside the JSON body, so Ko-fi's format forces a parse before any
+ * verification — that parse is the one thing an unauthenticated caller can
+ * make us do, and Vercel's body cap bounds it.
  *
  * Stored: a pseudonymous donor id (see `deriveDonorId`) and a display name.
  * Never stored: the email, the amount, or the message the supporter left.
@@ -84,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Dedupe Ko-fi's retries. SET NX returns null when the key already exists.
     const firstDelivery = await redis.set(
-      supportersMessageKey(payload.message_id),
+      supportersMessageKey(messageDedupeId(payload.message_id)),
       '1',
       'EX',
       MESSAGE_DEDUPE_TTL_SECONDS,
