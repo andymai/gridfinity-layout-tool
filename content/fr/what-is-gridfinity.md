@@ -31,7 +31,7 @@ faqs:
 
 # Qu’est-ce que Gridfinity ?
 
-Gridfinity est un système de rangement modulaire gratuit et open source que vous imprimez vous-même en 3D : des bins aux tailles standard reposent sur une grille de plaques de 42mm, si bien que chaque design de chaque maker est compatible. Zack Freedman, un maker et YouTubeur, l’a créé en 2022, et on compte aujourd’hui plus de 10 000 designs gratuits rien que sur Printables.
+Gridfinity est un système de rangement modulaire gratuit et open source que vous imprimez vous-même en 3D : des bins aux tailles standard reposent sur une grille de plaques de 42 mm, si bien que chaque design de chaque maker est compatible. Zack Freedman, un maker et YouTubeur, l’a créé en 2022, et on compte aujourd’hui plus de 10 000 designs gratuits rien que sur Printables.
 
 L’idée est simple : tout repose sur une grille de 42 mm. Les bins se posent sur des plaques de base. Les plaques se carrelent pour couvrir n’importe quel tiroir. Quand vous voulez réorganiser, vous soulevez les bins et vous les déplacez.
 

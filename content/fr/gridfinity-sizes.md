@@ -21,7 +21,7 @@ faqs:
 
 # Tailles et dimensions Gridfinity
 
-**Tailles standard Gridfinity : une unité de grille mesure 42mm × 42mm (largeur et profondeur), et une unité de hauteur (1U) mesure 7mm.** Chaque bin et chaque plaque est un multiple de ces deux nombres — un bin 2×3 en 6U mesure 84mm × 126mm × 42mm. Le mode demi-bin ajoute des pas de 0,5 unité (21mm). Une fois ces deux nombres connus, vous savez ce qui rentre dans votre tiroir et quels bins imprimer.
+**Tailles standard Gridfinity : une unité de grille mesure 42 mm × 42 mm (largeur et profondeur), et une unité de hauteur (1U) mesure 7 mm.** Chaque bin et chaque plaque est un multiple de ces deux nombres — un bin 2×3 en 6U mesure 84 mm × 126 mm × 42 mm. Le mode demi-bin ajoute des pas de 0,5 unité (21 mm). Une fois ces deux nombres connus, vous savez ce qui rentre dans votre tiroir et quels bins imprimer.
 
 ## Unités de grille (largeur et profondeur)
 

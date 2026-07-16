@@ -21,7 +21,7 @@ faqs:
 
 # Gridfinity-maten en -afmetingen
 
-**Standaard Gridfinity-maten: één rastereenheid is 42mm × 42mm (breedte en diepte), en één hoogte-eenheid (1U) is 7mm.** Elke bin en elke bodemplaat is een veelvoud van deze twee getallen — een 2×3-bin van 6U meet 84mm × 126mm × 42mm. De halve-bin-modus voegt stappen van 0,5 eenheid (21mm) toe. Als je deze twee getallen kent, weet je wat in je lade past en welke bins je print.
+**Standaard Gridfinity-maten: één rastereenheid is 42 mm × 42 mm (breedte en diepte), en één hoogte-eenheid (1U) is 7 mm.** Elke bin en elke bodemplaat is een veelvoud van deze twee getallen — een 2×3-bin van 6U meet 84 mm × 126 mm × 42 mm. De halve-bin-modus voegt stappen van 0,5 eenheid (21 mm) toe. Als je deze twee getallen kent, weet je wat in je lade past en welke bins je print.
 
 ## Rastereenheden (breedte en diepte)
 

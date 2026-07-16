@@ -21,7 +21,7 @@ faqs:
 
 # Gridfinity-Größen und Maße
 
-**Die Standard-Gridfinity-Maße: eine Rastereinheit ist 42mm × 42mm (Breite und Tiefe), eine Höheneinheit (1U) ist 7mm.** Jeder Bin und jede Grundplatte ist ein Vielfaches dieser zwei Zahlen — ein 2×3-Bin mit 6U misst 84mm × 126mm × 42mm. Der Halb-Bin-Modus ergänzt 0,5er-Schritte (21mm). Sobald du diese zwei Zahlen kennst, weißt du, was in deine Schublade passt und welche Bins du drucken solltest.
+**Die Standard-Gridfinity-Maße: eine Rastereinheit ist 42 mm × 42 mm (Breite und Tiefe), eine Höheneinheit (1U) ist 7 mm.** Jeder Bin und jede Grundplatte ist ein Vielfaches dieser zwei Zahlen — ein 2×3-Bin mit 6U misst 84 mm × 126 mm × 42 mm. Der Halb-Bin-Modus ergänzt 0,5er-Schritte (21 mm). Sobald du diese zwei Zahlen kennst, weißt du, was in deine Schublade passt und welche Bins du drucken solltest.
 
 ## Rastereinheiten (Breite und Tiefe)
 
