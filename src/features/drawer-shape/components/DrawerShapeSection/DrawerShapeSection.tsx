@@ -5,6 +5,7 @@ import { ConfirmDialog, ToggleRow } from '@/shared/components';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
+import { trackDrawerShapeEditorOpened, trackDrawerShapeReset } from '@/shared/analytics/posthog';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 
@@ -36,11 +37,23 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
     if (hasOutline) {
       setConfirmReset(true);
     } else {
+      trackDrawerShapeEditorOpened('cells');
       setEditorOpen(true);
     }
   }, [hasOutline]);
 
+  const handleOpenCorners = useCallback(() => {
+    trackDrawerShapeEditorOpened('corners');
+    setCornersOpen(true);
+  }, []);
+
+  const handleOpenEditor = useCallback(() => {
+    trackDrawerShapeEditorOpened('cells');
+    setEditorOpen(true);
+  }, []);
+
   const handleReset = useCallback(() => {
+    trackDrawerShapeReset();
     mutations.setDrawerOutline(null);
   }, [mutations]);
 
@@ -64,7 +77,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
           variant="secondary"
           fullWidth
           type="button"
-          onClick={() => setCornersOpen(true)}
+          onClick={handleOpenCorners}
           className={actionClass}
         >
           {t('drawerShape.corners.open')}
@@ -74,7 +87,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
             variant="secondary"
             fullWidth
             type="button"
-            onClick={() => setEditorOpen(true)}
+            onClick={handleOpenEditor}
             className={actionClass}
           >
             {t('drawerShape.edit')}

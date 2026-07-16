@@ -27,6 +27,8 @@ export { computeLabsMetrics, computeLayoutMetrics } from './metrics';
 export type {
   AnalyticsTrigger,
   BinCreatedProperties,
+  DrawerShapeAppliedProperties,
+  DrawerShapeEditor,
   ActivityContext,
   HeartbeatPayload,
 } from './events';
@@ -41,6 +43,9 @@ export {
   trackFillOperation,
   trackPaintMode,
   trackBinCreated,
+  trackDrawerShapeEditorOpened,
+  trackDrawerShapeApplied,
+  trackDrawerShapeReset,
   getActivityContext,
   buildHeartbeatPayload,
   trackHeartbeat,

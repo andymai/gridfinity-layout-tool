@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { isOk } from '@/core/result';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
+import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import type { CornerCut, CornerCutParams } from '@/core/types';
 import { cornersToOutline, maxCutExtentMm, NO_CUTS } from '../../utils/cornersToOutline';
 
@@ -93,6 +94,12 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
             .length;
     const result = mutations.setDrawerOutline(outline);
     if (!isOk(result)) return;
+    trackDrawerShapeApplied({
+      editor: 'corners',
+      displaced_bins: displaced,
+      used_trace: false,
+      cleared: outline === null,
+    });
     if (displaced > 0) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
     }

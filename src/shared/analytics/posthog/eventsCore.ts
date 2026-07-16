@@ -133,6 +133,34 @@ export function trackBinCreated(props: BinCreatedProperties): void {
   }
 }
 
+/** Which drawer-shape authoring surface an event refers to. */
+export type DrawerShapeEditor = 'cells' | 'corners';
+
+/** Track a drawer-shape editor being opened. */
+export function trackDrawerShapeEditorOpened(editor: DrawerShapeEditor): void {
+  trackEvent('drawer_shape_editor_opened', { editor });
+}
+
+export interface DrawerShapeAppliedProperties {
+  editor: DrawerShapeEditor;
+  /** Bins pushed to staging by the new shape. */
+  displaced_bins: number;
+  /** Cells editor only: the user seeded the grid from the bin layout. */
+  used_trace: boolean;
+  /** The apply resolved to the plain rectangle (corner cuts all 'none'). */
+  cleared: boolean;
+}
+
+/** Track a drawer shape being applied from one of the editors. */
+export function trackDrawerShapeApplied(props: DrawerShapeAppliedProperties): void {
+  trackEvent('drawer_shape_applied', { ...props });
+}
+
+/** Track the sidebar toggle resetting the drawer back to a rectangle. */
+export function trackDrawerShapeReset(): void {
+  trackEvent('drawer_shape_reset', {});
+}
+
 export const MILESTONE_THRESHOLDS: Array<{
   key: 'first_bin' | 'engaged' | 'substantial' | 'power_user';
   min: number;

@@ -79,8 +79,12 @@ export interface LayoutMetrics {
   feature_labels: boolean;
   feature_notes: boolean;
   feature_custom_drawer: boolean;
+  feature_shaped_drawer: boolean;
   feature_custom_print_bed: boolean;
   feature_asymmetric_bed: boolean;
+
+  // Drawer shape
+  drawer_shape_kind: string;
 
   // Print readiness
   has_oversized_bins: boolean;
@@ -190,6 +194,12 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     layout.drawer.depth === DEFAULT_DRAWER.depth &&
     layout.drawer.height === DEFAULT_DRAWER.height;
 
+  // Non-rectangular drawer shape. An outline can survive with its authoring
+  // annotation stripped (server sanitization) — report those as 'custom'.
+  const outline = layout.drawer.outline;
+  const drawerShapeKind =
+    outline === undefined ? 'rectangle' : (outline.authoring?.kind ?? 'custom');
+
   return {
     // Drawer
     drawer_width: layout.drawer.width,
@@ -231,8 +241,12 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     feature_labels: withLabels > 0,
     feature_notes: withNotes > 0,
     feature_custom_drawer: !isDefaultDrawer,
+    feature_shaped_drawer: outline !== undefined,
     feature_custom_print_bed: layout.printBedSize !== DEFAULT_PRINT_BED,
     feature_asymmetric_bed: printBedDepth !== layout.printBedSize,
+
+    // Drawer shape
+    drawer_shape_kind: drawerShapeKind,
 
     // Print
     has_oversized_bins: hasOversizedBins,

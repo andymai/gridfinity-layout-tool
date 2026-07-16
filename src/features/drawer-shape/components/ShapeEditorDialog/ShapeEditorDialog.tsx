@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { isOk } from '@/core/result';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
+import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import {
   buildFullDrawerMask,
   drawerMaskToOutline,
@@ -35,6 +36,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
   const [grid, setGrid] = useState<DrawerMaskGrid | null>(null);
   const paintValueRef = useRef<0 | 1>(0);
   const paintingRef = useRef(false);
+  const usedTraceRef = useRef(false);
 
   // Seed lazily each time the dialog opens: existing outline (rasterized) or
   // the full rectangle.
@@ -101,6 +103,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
   );
 
   const handleTrace = useCallback(() => {
+    usedTraceRef.current = true;
     setGrid(traceBinFootprint(layout));
   }, [layout]);
 
@@ -113,15 +116,23 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     ).length;
     const result = mutations.setDrawerOutline(conversion.outline);
     if (!isOk(result)) return;
+    trackDrawerShapeApplied({
+      editor: 'cells',
+      displaced_bins: displaced,
+      used_trace: usedTraceRef.current,
+      cleared: false,
+    });
     if (displaced > 0) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
     }
     setGrid(null);
+    usedTraceRef.current = false;
     onClose();
   }, [conversion, layout, mutations, addToast, t, onClose]);
 
   const handleClose = useCallback(() => {
     setGrid(null);
+    usedTraceRef.current = false;
     onClose();
   }, [onClose]);
 
