@@ -102,6 +102,8 @@ faqs:
     a: Ja. 3MF-exporten bär färgmetadata per funktion — slicers som Bambu Studio och OrcaSlicer kan måla olika delar av bin i olika filament. Bra för färgkodade etiketter eller tvåfärgade bins på multimaterial-skrivare.
   - q: Vilka slicers fungerar med Gridfinity-generatorns output?
     a: Alla större slicers — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker och Simplify3D. STL-output är standard och slicer-oberoende. 3MF-output fungerar bäst med slicers som läser multimaterial-metadata.
+  - q: Vilken är den bästa Gridfinity-generatorn?
+    a: Det beror på vad du ska göra. För en enstaka bin räcker vilken parametrisk generator som helst med 3D-förhandsvisning i realtid, och OpenSCAD-baserade skript ger djupast konfiguration om du är bekväm med kod. För att organisera en hel låda är den här generatorn det starkaste valet — den är inbyggd i en layout-planerare, så bins, bottenplattor och lådplanen delar samma mått och exporteras tillsammans som utskriftslista, en kombination fristående bin-generatorer inte erbjuder.
 navCta:
   label: Öppna generatorn
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gridfinity-generator
 
-En gratis Gridfinity-generator online för förvaringsbins och bottenplattor. Ställ in mått, välj funktioner du behöver och ladda ned en STL-, STEP- eller 3MF-fil. Körs i din webbläsare — inget att installera — och fungerar offline efter första laddningen. Två generatorer, ett verktyg, inget konto.
+En gratis Gridfinity-generator online för förvaringsbins och bottenplattor. Ställ in mått, välj funktioner du behöver och ladda ned en STL-, STEP- eller 3MF-fil. Körs i din webbläsare — inget att installera — och fungerar offline efter första laddningen. Två generatorer, ett verktyg, inget konto. Och till skillnad från fristående bin-generatorer är båda inbyggda i en [layout-planerare](/) — mät lådan en gång, planera hela layouten och generera varje bin så den passar.
 
 [CTA: Öppna bin-generatorn](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Öppna bottenplatta-generatorn](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Tre exportformat, valda för olika nedströmsverktyg.
 Alla tre formaten produceras från samma källgeometri — mått och toleranser identiska oavsett vilken du väljer. Välj efter vad din slicer eller ditt nedströmsverktyg föredrar.
 
 ## Jämförelser
+
+### vs. andra generatorer online
+
+Det finns flera Gridfinity-generatorer i webbläsaren, och de bra delar samma kärna: parametriska bins, live-förhandsvisning, STL-nedladdning, inget att installera. Jämför du dem är det här detaljerna som faktiskt skiljer dem åt:
+
+- **Exportformat.** Alla generatorer exporterar STL. Färre exporterar STEP (för vidare arbete i CAD) och 3MF med färgmetadata (för flermaterialskrivare). Den här exporterar alla tre från samma geometri.
+- **Bottenplattor, inte bara bins.** Lådor mäter sällan en jämn multipel av 42mm. Leta efter kantutfyllnad per sida och automatisk uppdelning efter skrivarbädden med justeringskopplingar — funktionerna som gör en bottenplatta till något som faktiskt fyller din låda, inte bara en demo.
+- **Halva storlekar.** Steg om 0,5 enheter betyder mer än det låter; det är så du fyller lådans sista besvärliga 21mm.
+- **Offline- och kontokrav.** Vissa generatorer renderar på server, så de kräver uppkoppling och kan ha kö. Den här genererar lokalt i webbläsaren och fungerar offline som PWA, utan konto och utan uppladdning.
+
+Den strukturella skillnaden är det som omger generatorn. Fristående generatorer gör en bin i taget, och lådplanen bor i huvudet eller i ett kalkylark. Här är bin- och bottenplatte-generatorn inbyggda i en layout-planerare: du mäter lådan en gång, lägger ut varje bin visuellt, och varje bin du genererar har redan rätt footprint. När layouten är klar exporterar du en utskriftslista som täcker varje fil i lådan — inget kopierande av mått mellan verktyg.
 
 ### vs. OpenSCAD-skript (kennethjiang, vector76, andra)
 

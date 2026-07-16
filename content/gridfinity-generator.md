@@ -102,6 +102,8 @@ faqs:
     a: Yes. The 3MF export carries per-feature color metadata, so slicers like Bambu Studio and OrcaSlicer can paint different parts of the bin in different filaments. Useful for color-coded label tabs or two-tone bins on multi-material printers.
   - q: Which slicers work with the Gridfinity Generator output?
     a: All major slicers — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker, and Simplify3D. The STL output is standard and slicer-agnostic. The 3MF output is best with slicers that read multi-material metadata.
+  - q: What is the best Gridfinity generator?
+    a: It depends on what you're making. For a single one-off bin, any parametric generator with a real-time 3D preview does the job, and OpenSCAD-based scripts offer the deepest configurability if you're comfortable editing code. For organizing a whole drawer, this generator is the strongest choice — it's built into a drawer layout planner, so bins, baseplates, and the drawer plan share one set of measurements and export together as a print list, a combination standalone bin generators don't offer.
 navCta:
   label: Open Generator
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gridfinity Generator
 
-A free online Gridfinity generator for storage bins and baseplates. Set the dimensions, pick the features you need, and download an STL, STEP, or 3MF file. It runs in your browser — nothing to install — and works offline once loaded. Two generators, one tool, no account.
+A free online Gridfinity generator for storage bins and baseplates. Set the dimensions, pick the features you need, and download an STL, STEP, or 3MF file. It runs in your browser — nothing to install — and works offline once loaded. Two generators, one tool, no account. And unlike standalone bin makers, both are built into a [drawer layout planner](/) — measure the drawer once, plan the whole layout, and generate every bin to fit.
 
 [CTA: Open Bin Generator](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Open Baseplate Generator](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -213,7 +215,16 @@ All three formats are produced from the same source geometry, so dimensions and 
 
 ## How It Compares
 
-### vs. OpenSCAD scripts (kennethjiang, vector76, others)
+### vs. Other Online Generators
+
+Several browser-based Gridfinity generators exist, and the good ones share the same core: parametric bins, a live preview, an STL download, no install. If you're comparing them, the details that actually separate them are:
+
+- **Export formats.** Every generator exports STL. Fewer export STEP (for continuing in CAD) and 3MF with color metadata (for multi-material printers). This one exports all three from the same geometry.
+- **Baseplates, not just bins.** Drawers rarely measure a clean multiple of 42mm. Look for per-side edge padding and automatic print-bed splitting with alignment connectors — the features that turn a baseplate from a demo into something that actually fills your drawer.
+- **Half sizes.** 0.5-unit increments matter more than they sound; they're how you fill the awkward last 21mm of a drawer.
+- **Offline and account requirements.** Some generators are server-rendered, so they need a connection and can queue. This one generates locally in your browser and works offline as a PWA, with no account and no upload.
+
+The structural difference is what surrounds the generator. Standalone generators make one bin at a time, and the drawer plan lives in your head or a spreadsheet. Here the bin and baseplate generators are built into a drawer layout planner: you measure the drawer once, lay out every bin visually, and each bin you generate already has the right footprint. When the layout is done, you export a print list covering every file in the drawer — no copying dimensions between tools.
 
 OpenSCAD scripts have been the workhorse of the Gridfinity community since the project started. They are powerful and free. They are also code — to change a bin's height, you edit a parameter in a text file and re-run the renderer. The render takes seconds for simple bins, minutes for complex ones.
 

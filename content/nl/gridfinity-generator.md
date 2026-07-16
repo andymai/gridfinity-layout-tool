@@ -102,6 +102,8 @@ faqs:
     a: Ja. De 3MF-export bevat per-feature kleurmetadata — slicers als Bambu Studio en OrcaSlicer kunnen verschillende delen van de bin in verschillende filamenten printen. Handig voor kleurgecodeerde etiketten of tweekleurige bins op multi-materiaal printers.
   - q: Welke slicers werken met de Gridfinity-generator-output?
     a: Alle grote slicers — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker en Simplify3D. De STL-output is standaard en slicer-onafhankelijk. De 3MF-output is het beste met slicers die multi-materiaal-metadata lezen.
+  - q: Wat is de beste Gridfinity-generator?
+    a: Dat hangt af van wat je maakt. Voor één losse bin volstaat elke parametrische generator met realtime 3D-voorbeeld, en OpenSCAD-scripts bieden de diepste configuratie als je met code overweg kunt. Voor het organiseren van een hele lade is deze generator de sterkste keuze — hij is ingebouwd in een layout-planner, dus bins, bodemplaten en het ladeplan delen dezelfde maten en exporteren samen als printlijst, een combinatie die losstaande bin-generators niet bieden.
 navCta:
   label: Generator openen
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gridfinity-generator
 
-Een gratis online Gridfinity-generator voor opbergbins en bodemplaten. Stel afmetingen in, kies de functies die je nodig hebt en download een STL-, STEP- of 3MF-bestand. Draait in je browser — niets te installeren — en werkt offline na het eerste laden. Twee generators, één tool, geen account.
+Een gratis online Gridfinity-generator voor opbergbins en bodemplaten. Stel afmetingen in, kies de functies die je nodig hebt en download een STL-, STEP- of 3MF-bestand. Draait in je browser — niets te installeren — en werkt offline na het eerste laden. Twee generators, één tool, geen account. En anders dan losstaande bin-generators zijn beide ingebouwd in een [layout-planner](/) — meet de lade één keer, plan de hele layout en genereer elke bin passend.
 
 [CTA: Bin-generator openen](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Bodemplaat-generator openen](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Drie exportformaten, gekozen voor verschillende downstream-tools.
 Alle drie de formaten komen van dezelfde brongeometrie — afmetingen en toleranties zijn identiek welke je ook kiest. Kies wat je slicer of downstream-tool verkiest.
 
 ## Vergelijkingen
+
+### vs. andere online generators
+
+Er bestaan meerdere Gridfinity-generators in de browser, en de goede delen dezelfde kern: parametrische bins, live voorbeeld, STL-download, niets te installeren. Vergelijk je ze, dan zijn dit de details die echt het verschil maken:
+
+- **Exportformaten.** Elke generator exporteert STL. Minder exporteren STEP (om verder te werken in CAD) en 3MF met kleur-metadata (voor multi-materiaal-printers). Deze exporteert alle drie vanuit dezelfde geometrie.
+- **Bodemplaten, niet alleen bins.** Laden meten zelden een mooi veelvoud van 42mm. Let op randopvulling per zijde en automatisch splitsen op printbedmaat met uitlijnverbinders — de functies die van een bodemplaat iets maken dat je lade echt vult in plaats van een demo.
+- **Halve maten.** Stappen van 0,5 eenheid doen er meer toe dan het klinkt; zo vul je de lastige laatste 21mm van een lade.
+- **Offline- en accounteisen.** Sommige generators renderen op een server, dus die hebben verbinding nodig en kunnen een wachtrij hebben. Deze genereert lokaal in je browser en werkt offline als PWA, zonder account en zonder upload.
+
+Het structurele verschil is wat er om de generator heen zit. Losstaande generators maken één bin per keer, en het ladeplan leeft in je hoofd of in een spreadsheet. Hier zijn de bin- en bodemplaat-generator ingebouwd in een layout-planner: je meet de lade één keer, legt elke bin visueel neer, en elke bin die je genereert heeft al de juiste footprint. Is de layout klaar, dan exporteer je een printlijst met elk bestand in de lade — geen maten overtypen tussen tools.
 
 ### vs. OpenSCAD-scripts (kennethjiang, vector76, anderen)
 

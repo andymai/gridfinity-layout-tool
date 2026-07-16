@@ -32,6 +32,8 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   if git diff --quiet HEAD^ HEAD -- \
     src/ \
     public/ \
+    content/ \
+    scripts/build-content.ts \
     index.html \
     package.json \
     pnpm-lock.yaml \

@@ -102,6 +102,8 @@ faqs:
     a: Oui. L’export 3MF porte des métadonnées de couleur par fonctionnalité — des slicers comme Bambu Studio et OrcaSlicer peuvent peindre différentes parties du bin avec différents filaments. Pratique pour des étiquettes colorées ou des bins bicolores sur imprimantes multi-matière.
   - q: Quels slicers fonctionnent avec la sortie du générateur Gridfinity ?
     a: Tous les slicers majeurs — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker et Simplify3D. La sortie STL est standard et indépendante du slicer. La sortie 3MF donne le meilleur résultat avec les slicers qui lisent les métadonnées multi-matière.
+  - q: Quel est le meilleur générateur Gridfinity ?
+    a: Cela dépend de ce que vous fabriquez. Pour un bin ponctuel, n’importe quel générateur paramétrique avec aperçu 3D en temps réel fait l’affaire, et les scripts OpenSCAD offrent la configuration la plus poussée si le code ne vous fait pas peur. Pour organiser un tiroir entier, ce générateur est le choix le plus solide — il est intégré à un planificateur de layout, donc bins, plaques de base et plan du tiroir partagent les mêmes mesures et s’exportent ensemble en liste d’impression, une combinaison que les générateurs autonomes n’offrent pas.
 navCta:
   label: Ouvrir le générateur
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Générateur Gridfinity
 
-Un générateur Gridfinity gratuit en ligne pour bins de rangement et plaques de base. Réglez les dimensions, choisissez les fonctionnalités dont vous avez besoin et téléchargez un fichier STL, STEP ou 3MF. Tourne dans votre navigateur — rien à installer — et fonctionne hors ligne une fois chargé. Deux générateurs, un seul outil, sans compte.
+Un générateur Gridfinity gratuit en ligne pour bins de rangement et plaques de base. Réglez les dimensions, choisissez les fonctionnalités dont vous avez besoin et téléchargez un fichier STL, STEP ou 3MF. Tourne dans votre navigateur — rien à installer — et fonctionne hors ligne une fois chargé. Deux générateurs, un seul outil, sans compte. Et contrairement aux générateurs de bins autonomes, les deux sont intégrés à un [planificateur de layout](/) — mesurez le tiroir une fois, planifiez tout le layout et générez chaque bin à la bonne taille.
 
 [CTA: Ouvrir le générateur de bins](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Ouvrir le générateur de plaques](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Trois formats d’export, choisis selon l’outil aval.
 Les trois formats viennent de la même géométrie source — dimensions et tolérances identiques quel que soit votre choix. Choisissez selon ce que votre slicer ou outil aval préfère.
 
 ## Comparaisons
+
+### vs. les autres générateurs en ligne
+
+Plusieurs générateurs Gridfinity fonctionnent dans le navigateur, et les bons partagent le même socle : bins paramétriques, aperçu en direct, téléchargement STL, rien à installer. Si vous les comparez, voici les détails qui les séparent vraiment :
+
+- **Formats d’export.** Tous les générateurs exportent du STL. Moins nombreux sont ceux qui exportent du STEP (pour continuer en CAO) et du 3MF avec métadonnées de couleur (pour les imprimantes multi-matière). Celui-ci exporte les trois depuis la même géométrie.
+- **Des plaques de base, pas seulement des bins.** Les tiroirs mesurent rarement un multiple exact de 42mm. Cherchez le remplissage de bord par côté et la découpe automatique selon le plateau d’impression avec connecteurs d’alignement — les fonctions qui font d’une plaque autre chose qu’une démo, quelque chose qui remplit vraiment votre tiroir.
+- **Demi-tailles.** Les incréments de 0,5 unité comptent plus qu’il n’y paraît ; c’est ainsi qu’on remplit les derniers 21mm inconfortables d’un tiroir.
+- **Connexion et compte.** Certains générateurs font le rendu côté serveur, il leur faut donc une connexion et parfois une file d’attente. Celui-ci génère localement dans votre navigateur et fonctionne hors ligne en PWA, sans compte et sans envoi de données.
+
+La différence structurelle, c’est ce qui entoure le générateur. Les générateurs autonomes produisent un bin à la fois, et le plan du tiroir vit dans votre tête ou dans un tableur. Ici, les générateurs de bins et de plaques sont intégrés à un planificateur de layout : vous mesurez le tiroir une fois, disposez chaque bin visuellement, et chaque bin généré a déjà la bonne empreinte. Le layout terminé, vous exportez une liste d’impression couvrant chaque fichier du tiroir — sans recopier de dimensions entre outils.
 
 ### vs. les scripts OpenSCAD (kennethjiang, vector76 et d’autres)
 

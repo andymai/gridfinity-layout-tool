@@ -102,6 +102,8 @@ faqs:
     a: Ja. Der 3MF-Export enthält pro Feature Farbmetadaten — Slicer wie Bambu Studio und OrcaSlicer können verschiedene Bin-Teile in unterschiedlichen Filamenten drucken. Nützlich für farbcodierte Beschriftungslaschen oder zweifarbige Bins auf Multi-Material-Druckern.
   - q: Welche Slicer funktionieren mit den Gridfinity-Generator-Ausgaben?
     a: Alle gängigen Slicer — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker und Simplify3D. Die STL-Ausgabe ist standardisiert und slicerneutral. Die 3MF-Ausgabe ist am besten mit Slicern, die Multi-Material-Metadaten lesen.
+  - q: Was ist der beste Gridfinity-Generator?
+    a: Kommt darauf an, was du bauen willst. Für einen einzelnen Bin reicht jeder parametrische Generator mit Echtzeit-3D-Vorschau, und OpenSCAD-basierte Skripte bieten die tiefste Konfigurierbarkeit, wenn du dich mit Code wohlfühlst. Für die Organisation einer ganzen Schublade ist dieser Generator die stärkste Wahl — er ist in einen Layout-Planer eingebaut, sodass Bins, Grundplatten und der Schubladenplan dieselben Maße teilen und zusammen als Druckliste exportiert werden. Diese Kombination bieten eigenständige Bin-Generatoren nicht.
 navCta:
   label: Generator öffnen
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gridfinity-Generator
 
-Ein kostenloser Online-Gridfinity-Generator für Aufbewahrungsbins und Grundplatten. Lege Maße fest, wähle die nötigen Funktionen und lade eine STL-, STEP- oder 3MF-Datei herunter. Läuft im Browser — nichts zum Installieren — und funktioniert nach dem ersten Laden offline. Zwei Generatoren, ein Tool, kein Konto.
+Ein kostenloser Online-Gridfinity-Generator für Aufbewahrungsbins und Grundplatten. Lege Maße fest, wähle die nötigen Funktionen und lade eine STL-, STEP- oder 3MF-Datei herunter. Läuft im Browser — nichts zum Installieren — und funktioniert nach dem ersten Laden offline. Zwei Generatoren, ein Tool, kein Konto. Und anders als eigenständige Bin-Generatoren sind beide in einen [Layout-Planer](/) eingebaut — Schublade einmal messen, das ganze Layout planen und jeden Bin passend generieren.
 
 [CTA: Bin-Generator öffnen](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Grundplatten-Generator öffnen](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Drei Exportformate für unterschiedliche Downstream-Tools.
 Alle drei Formate stammen aus derselben Quellgeometrie — Maße und Toleranzen sind identisch, egal welches du wählst. Wähle nach dem, was dein Slicer oder Downstream-Tool bevorzugt.
 
 ## Vergleiche
+
+### vs. andere Online-Generatoren
+
+Es gibt mehrere browserbasierte Gridfinity-Generatoren, und die guten teilen denselben Kern: parametrische Bins, eine Live-Vorschau, ein STL-Download, nichts zu installieren. Beim Vergleichen machen diese Details den Unterschied:
+
+- **Exportformate.** Jeder Generator exportiert STL. Weniger exportieren STEP (zum Weiterbearbeiten in CAD) und 3MF mit Farb-Metadaten (für Multi-Material-Drucker). Dieser exportiert alle drei aus derselben Geometrie.
+- **Grundplatten, nicht nur Bins.** Schubladen messen selten ein glattes Vielfaches von 42mm. Achte auf Randausgleich pro Seite und automatische Aufteilung aufs Druckbett mit Ausrichtungsverbindern — die Funktionen, die aus einer Grundplatte mehr machen als eine Demo, nämlich etwas, das deine Schublade wirklich ausfüllt.
+- **Halbe Größen.** 0,5-Einheiten-Schritte sind wichtiger, als sie klingen; damit füllst du die sperrigen letzten 21mm einer Schublade.
+- **Offline- und Konto-Anforderungen.** Manche Generatoren rendern auf dem Server, brauchen also eine Verbindung und können Warteschlangen haben. Dieser generiert lokal im Browser und funktioniert offline als PWA, ohne Konto und ohne Upload.
+
+Der strukturelle Unterschied ist das, was den Generator umgibt. Eigenständige Generatoren machen einen Bin nach dem anderen, und der Schubladenplan lebt im Kopf oder in einer Tabelle. Hier sind Bin- und Grundplatten-Generator in einen Layout-Planer eingebaut: Du misst die Schublade einmal, legst jeden Bin visuell aus, und jeder generierte Bin hat schon den richtigen Footprint. Ist das Layout fertig, exportierst du eine Druckliste mit jeder Datei der Schublade — kein Übertragen von Maßen zwischen Tools.
 
 ### vs. OpenSCAD-Skripte (kennethjiang, vector76 und andere)
 

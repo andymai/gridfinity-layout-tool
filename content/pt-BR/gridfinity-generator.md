@@ -102,6 +102,8 @@ faqs:
     a: Sim. A exportação 3MF carrega metadados de cor por recurso — slicers como Bambu Studio e OrcaSlicer pintam diferentes partes do bin com diferentes filamentos. Útil para etiquetas com código de cor ou bins bicolores em impressoras multi-material.
   - q: Quais slicers funcionam com a saída do Gerador Gridfinity?
     a: Todos os principais — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker e Simplify3D. A saída STL é padrão e independente de slicer. A 3MF tem o melhor resultado com slicers que leem metadados multi-material.
+  - q: Qual é o melhor gerador Gridfinity?
+    a: Depende do que você vai fazer. Para um bin avulso, qualquer gerador paramétrico com prévia 3D em tempo real dá conta, e scripts baseados em OpenSCAD oferecem a configuração mais profunda se você se vira com código. Para organizar uma gaveta inteira, este gerador é a escolha mais forte — ele é integrado a um planejador de layout, então bins, placas-base e o plano da gaveta compartilham as mesmas medidas e exportam juntos como lista de impressão, uma combinação que geradores avulsos não oferecem.
 navCta:
   label: Abrir gerador
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gerador Gridfinity
 
-Um gerador Gridfinity online gratuito para bins de armazenamento e placas-base. Defina as dimensões, escolha os recursos que precisa e baixe um arquivo STL, STEP ou 3MF. Roda no navegador — nada para instalar — e funciona offline após o primeiro carregamento. Dois geradores, uma ferramenta, sem conta.
+Um gerador Gridfinity online gratuito para bins de armazenamento e placas-base. Defina as dimensões, escolha os recursos que precisa e baixe um arquivo STL, STEP ou 3MF. Roda no navegador — nada para instalar — e funciona offline após o primeiro carregamento. Dois geradores, uma ferramenta, sem conta. E diferente dos geradores de bins avulsos, os dois são integrados a um [planejador de layout](/) — meça a gaveta uma vez, planeje o layout inteiro e gere cada bin sob medida.
 
 [CTA: Abrir gerador de bins](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Abrir gerador de placas](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Três formatos de exportação, escolhidos para diferentes ferramentas a jusante
 Os três formatos vêm da mesma geometria de origem — dimensões e tolerâncias idênticas, independente da escolha. Escolha pelo que seu slicer ou ferramenta a jusante preferir.
 
 ## Como se compara
+
+### vs. outros geradores online
+
+Existem vários geradores Gridfinity no navegador, e os bons compartilham o mesmo núcleo: bins paramétricos, prévia ao vivo, download de STL, nada para instalar. Se você está comparando, os detalhes que realmente os separam são:
+
+- **Formatos de exportação.** Todo gerador exporta STL. Menos exportam STEP (para continuar no CAD) e 3MF com metadados de cor (para impressoras multi-material). Este exporta os três a partir da mesma geometria.
+- **Placas-base, não só bins.** Gavetas raramente medem um múltiplo exato de 42mm. Procure preenchimento de borda por lado e divisão automática conforme a mesa de impressão com conectores de alinhamento — os recursos que transformam uma placa-base de demo em algo que realmente preenche sua gaveta.
+- **Meios tamanhos.** Incrementos de 0,5 unidade importam mais do que parece; é assim que você preenche os últimos 21mm incômodos de uma gaveta.
+- **Exigências de conexão e conta.** Alguns geradores renderizam no servidor, então precisam de conexão e podem ter fila. Este gera localmente no navegador e funciona offline como PWA, sem conta e sem upload.
+
+A diferença estrutural é o que envolve o gerador. Geradores avulsos fazem um bin de cada vez, e o plano da gaveta vive na sua cabeça ou numa planilha. Aqui os geradores de bins e placas-base são integrados a um planejador de layout: você mede a gaveta uma vez, posiciona cada bin visualmente, e cada bin gerado já tem o footprint certo. Com o layout pronto, você exporta uma lista de impressão cobrindo cada arquivo da gaveta — sem copiar medidas entre ferramentas.
 
 ### vs. scripts OpenSCAD (kennethjiang, vector76, outros)
 

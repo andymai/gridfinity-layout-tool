@@ -102,6 +102,8 @@ faqs:
     a: Sí. La exportación 3MF lleva metadatos de color por función — slicers como Bambu Studio y OrcaSlicer pueden pintar distintas partes del bin con distintos filamentos. Útil para etiquetas con código de color o bins bicolor en impresoras multimaterial.
   - q: ¿Qué slicers funcionan con la salida del Generador Gridfinity?
     a: Todos los slicers principales — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker y Simplify3D. La salida STL es estándar e independiente del slicer. La salida 3MF rinde mejor con slicers que leen metadatos multimaterial.
+  - q: ¿Cuál es el mejor generador Gridfinity?
+    a: Depende de lo que vayas a hacer. Para un bin suelto, cualquier generador paramétrico con vista previa 3D en tiempo real cumple, y los scripts basados en OpenSCAD ofrecen la configuración más profunda si te manejas con código. Para organizar un cajón completo, este generador es la opción más fuerte — está integrado en un planificador de layout, así que bins, placas de base y el plan del cajón comparten las mismas medidas y se exportan juntos como lista de impresión, una combinación que los generadores independientes no ofrecen.
 navCta:
   label: Abrir generador
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Generador Gridfinity
 
-Un generador Gridfinity online gratis para bins de almacenamiento y placas de base. Define las dimensiones, elige las funciones que necesitas y descarga un archivo STL, STEP o 3MF. Funciona en tu navegador — nada que instalar — y opera sin conexión tras la primera carga. Dos generadores, una herramienta, sin cuenta.
+Un generador Gridfinity online gratis para bins de almacenamiento y placas de base. Define las dimensiones, elige las funciones que necesitas y descarga un archivo STL, STEP o 3MF. Funciona en tu navegador — nada que instalar — y opera sin conexión tras la primera carga. Dos generadores, una herramienta, sin cuenta. Y a diferencia de los generadores de bins independientes, ambos están integrados en un [planificador de layout](/) — mide el cajón una vez, planifica todo el layout y genera cada bin a medida.
 
 [CTA: Abrir generador de bins](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Abrir generador de placas](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Tres formatos de exportación según la herramienta aguas abajo.
 Los tres formatos parten de la misma geometría fuente — dimensiones y tolerancias idénticas elijas el que elijas. Escoge según lo que prefiera tu slicer o herramienta aguas abajo.
 
 ## Comparativas
+
+### vs. otros generadores online
+
+Existen varios generadores Gridfinity en el navegador, y los buenos comparten el mismo núcleo: bins paramétricos, vista previa en vivo, descarga STL, nada que instalar. Si los estás comparando, los detalles que de verdad los separan son:
+
+- **Formatos de exportación.** Todos exportan STL. Menos exportan STEP (para seguir en CAD) y 3MF con metadatos de color (para impresoras multimaterial). Este exporta los tres desde la misma geometría.
+- **Placas de base, no solo bins.** Los cajones rara vez miden un múltiplo exacto de 42mm. Busca relleno de borde por lado y división automática según la cama de impresión con conectores de alineación — las funciones que convierten una placa de una demo en algo que llena tu cajón de verdad.
+- **Medios tamaños.** Los incrementos de 0,5 unidades importan más de lo que parece; son la forma de llenar los incómodos últimos 21mm de un cajón.
+- **Requisitos de conexión y cuenta.** Algunos generadores renderizan en servidor, así que necesitan conexión y pueden tener cola. Este genera localmente en tu navegador y funciona offline como PWA, sin cuenta y sin subir nada.
+
+La diferencia estructural es lo que rodea al generador. Los generadores independientes hacen un bin cada vez, y el plan del cajón vive en tu cabeza o en una hoja de cálculo. Aquí los generadores de bins y placas están integrados en un planificador de layout: mides el cajón una vez, colocas cada bin visualmente y cada bin que generas ya tiene el footprint correcto. Cuando el layout está listo, exportas una lista de impresión con cada archivo del cajón — sin copiar medidas entre herramientas.
 
 ### vs. scripts OpenSCAD (kennethjiang, vector76, otros)
 

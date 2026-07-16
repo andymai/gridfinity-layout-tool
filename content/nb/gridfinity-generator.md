@@ -102,6 +102,8 @@ faqs:
     a: Ja. 3MF-eksporten bærer fargemetadata per funksjon — slicere som Bambu Studio og OrcaSlicer kan male ulike deler av bin i ulike filamenter. Nyttig for fargekodede etiketter eller tofargede bins på flermateriale-skrivere.
   - q: Hvilke slicere fungerer med Gridfinity-generatorens output?
     a: Alle de store — PrusaSlicer, OrcaSlicer, Bambu Studio, Cura, SuperSlicer, IdeaMaker og Simplify3D. STL-output er standard og slicer-uavhengig. 3MF-output gir best resultat med slicere som leser flermateriale-metadata.
+  - q: Hva er den beste Gridfinity-generatoren?
+    a: Det kommer an på hva du skal lage. For en enkelt bin holder enhver parametrisk generator med 3D-forhåndsvisning i sanntid, og OpenSCAD-baserte skript gir dypest konfigurasjon hvis du er komfortabel med kode. For å organisere en hel skuff er denne generatoren det sterkeste valget — den er bygget inn i en layout-planlegger, så bins, grunnplater og skuffeplanen deler samme mål og eksporteres sammen som utskriftsliste, en kombinasjon frittstående bin-generatorer ikke tilbyr.
 navCta:
   label: Åpne generatoren
   href: /designer?utm_source=gridfinity-generator&utm_medium=nav&utm_campaign=bin
@@ -109,7 +111,7 @@ navCta:
 
 # Gridfinity-generator
 
-En gratis Gridfinity-generator på nett for oppbevaringsbins og grunnplater. Still inn målene, velg funksjonene du trenger og last ned en STL-, STEP- eller 3MF-fil. Kjører i nettleseren — ingenting å installere — og fungerer offline etter første innlasting. To generatorer, ett verktøy, ingen konto.
+En gratis Gridfinity-generator på nett for oppbevaringsbins og grunnplater. Still inn målene, velg funksjonene du trenger og last ned en STL-, STEP- eller 3MF-fil. Kjører i nettleseren — ingenting å installere — og fungerer offline etter første innlasting. To generatorer, ett verktøy, ingen konto. Og i motsetning til frittstående bin-generatorer er begge bygget inn i en [layout-planlegger](/) — mål skuffen én gang, planlegg hele layouten og generer hver bin så den passer.
 
 [CTA: Åpne bin-generatoren](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Åpne grunnplate-generatoren](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
@@ -210,6 +212,17 @@ Tre eksportformater, valgt for forskjellige nedstrømsverktøy.
 Alle tre formatene kommer fra samme kildegeometri — mål og toleranser er identiske uansett hvilket du velger. Velg etter hva sliceren eller nedstrømsverktøyet ditt foretrekker.
 
 ## Sammenligninger
+
+### vs. andre nettbaserte generatorer
+
+Det finnes flere Gridfinity-generatorer i nettleseren, og de gode deler samme kjerne: parametriske bins, live forhåndsvisning, STL-nedlasting, ingenting å installere. Sammenligner du dem, er det disse detaljene som faktisk skiller:
+
+- **Eksportformater.** Alle generatorer eksporterer STL. Færre eksporterer STEP (for videre arbeid i CAD) og 3MF med farge-metadata (for flermateriale-skrivere). Denne eksporterer alle tre fra samme geometri.
+- **Grunnplater, ikke bare bins.** Skuffer måler sjelden et helt multiplum av 42mm. Se etter kantutfylling per side og automatisk oppdeling etter skriverflaten med justeringskoblinger — funksjonene som gjør en grunnplate til noe som faktisk fyller skuffen din, ikke bare en demo.
+- **Halve størrelser.** Trinn på 0,5 enheter betyr mer enn det høres ut som; det er slik du fyller de siste brysomme 21mm av en skuff.
+- **Offline- og kontokrav.** Noen generatorer rendrer på server, så de trenger tilkobling og kan ha kø. Denne genererer lokalt i nettleseren og fungerer offline som PWA, uten konto og uten opplasting.
+
+Den strukturelle forskjellen er det som omgir generatoren. Frittstående generatorer lager én bin om gangen, og skuffeplanen bor i hodet ditt eller i et regneark. Her er bin- og grunnplate-generatoren bygget inn i en layout-planlegger: du måler skuffen én gang, legger ut hver bin visuelt, og hver bin du genererer har allerede riktig footprint. Når layouten er ferdig, eksporterer du en utskriftsliste som dekker hver fil i skuffen — ingen kopiering av mål mellom verktøy.
 
 ### vs. OpenSCAD-skript (kennethjiang, vector76, andre)
 
