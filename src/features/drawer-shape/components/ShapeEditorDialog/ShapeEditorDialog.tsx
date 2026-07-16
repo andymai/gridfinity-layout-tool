@@ -116,11 +116,14 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     ).length;
     const result = mutations.setDrawerOutline(conversion.outline);
     if (!isOk(result)) return;
+    // A full-rectangle paint is normalized to "no outline" by the mutation
+    // (isRectangleEquivalent) — read the post-commit store state so
+    // `cleared` reflects what actually landed.
     trackDrawerShapeApplied({
       editor: 'cells',
       displaced_bins: displaced,
       used_trace: usedTraceRef.current,
-      cleared: false,
+      cleared: useLayoutStore.getState().layout.drawer.outline === undefined,
     });
     if (displaced > 0) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
