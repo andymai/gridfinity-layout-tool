@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.249.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.4...gridfinity-layout-tool-v4.249.0) (2026-07-16)
+
+
+### Features
+
+* **drawer:** enter measured drawer size in mm with fit and slack feedback ([#2606](https://github.com/andymai/gridfinity-layout-tool/issues/2606)) ([84a1a11](https://github.com/andymai/gridfinity-layout-tool/commit/84a1a11820dc283726e2f495d49ff261c35fd08b))
+
 ## [4.248.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.3...gridfinity-layout-tool-v4.248.4) (2026-07-16)
 
 
