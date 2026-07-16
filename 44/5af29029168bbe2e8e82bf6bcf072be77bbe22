@@ -1,0 +1,21 @@
+src/shell/Header/Header.tsx
+  s_1f61c6e1fbb01d::t_a498eb601c8972 151
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+  s_1f61c6e1fbb01d::t_30275ffcb05cbc 139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "445af29029168bbe2e8e82bf6bcf072be77bbe22",
+  "prompts": {},
+  "sessions": {
+    "s_1f61c6e1fbb01d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41dd1114-a9d9-4bbb-a041-2ae611589858",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
