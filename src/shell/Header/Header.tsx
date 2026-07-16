@@ -148,7 +148,7 @@ export function Header({ saveStatus }: HeaderProps) {
             className={`px-3 h-8 text-sm hover:scale-[1.02] ${activePress} text-content-secondary max-w-[200px]`}
             title={t('header.editLayoutName')}
           >
-            <span className="truncate">{layout.name}</span>
+            <span className="min-w-0 truncate">{layout.name}</span>
           </Button>
         )}
 

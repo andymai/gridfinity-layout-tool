@@ -136,7 +136,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
               className="text-sm px-1 py-1 rounded text-content flex items-center justify-center gap-1 hover:bg-transparent"
               aria-label={t('mobile.header.openLayoutsPanel')}
             >
-              <span className="truncate">{layout.name}</span>
+              <span className="min-w-0 truncate">{layout.name}</span>
               <svg
                 className="w-3 h-3 flex-shrink-0 text-content-tertiary"
                 fill="none"
