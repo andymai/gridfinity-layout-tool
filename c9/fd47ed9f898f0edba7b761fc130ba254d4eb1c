@@ -1,0 +1,45 @@
+src/i18n/locales/en.ts
+  s_1f61c6e1fbb01d::t_e87ed6074c6202 1205
+src/i18n/locales/ja.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/sv.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
+  s_1f61c6e1fbb01d::t_cf3afd4b8c265c 270-272
+src/i18n/locales/pt-BR.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/de.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/es.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/fr.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_1f61c6e1fbb01d::t_22aafc747a8411 444
+src/i18n/locales/nb.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/nl.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/it.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+src/i18n/locales/uk.json
+  s_1f61c6e1fbb01d::t_7404662b34e978 1915
+scripts/i18n-values-allowlist.json
+  s_1f61c6e1fbb01d::t_5cca3662174351 109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c9fd47ed9f898f0edba7b761fc130ba254d4eb1c",
+  "prompts": {},
+  "sessions": {
+    "s_1f61c6e1fbb01d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41dd1114-a9d9-4bbb-a041-2ae611589858",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
