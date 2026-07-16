@@ -285,9 +285,11 @@ const en: Record<string, string> = {
 
   // Sidebar Learn section — internal links to content pages (SEO / discoverability)
   'sidebar.learn': 'Learn',
+  'sidebar.about':
+    'Gridfinity Layout Tool is a free Gridfinity planner with built-in bin and baseplate generators. Plan your drawer on the 42mm grid, generate custom bins, and export STL, STEP, or 3MF files ready to print.',
   'sidebar.learn.whatIs': 'What is Gridfinity?',
   'sidebar.learn.guide': 'Planning Guide',
-  'sidebar.learn.generator': 'Generator',
+  'sidebar.learn.generator': 'Gridfinity Generator',
   'sidebar.learn.binGenerator': 'Bin Generator',
   'sidebar.learn.baseplateGenerator': 'Baseplate Generator',
   'sidebar.learn.calculator': 'Calculator',

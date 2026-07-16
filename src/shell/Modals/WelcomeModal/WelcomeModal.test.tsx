@@ -12,6 +12,7 @@ vi.mock('@/i18n', () => ({
     if (key === 'common.getStarted') return 'Get Started';
     return key;
   },
+  useLocale: () => ({ locale: 'en' }),
 }));
 
 const mockUseResponsive = vi.fn();

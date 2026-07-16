@@ -556,6 +556,9 @@ export function Sidebar() {
               <h2 className="text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider mb-2">
                 {t('sidebar.learn')}
               </h2>
+              <p className="text-xs text-content-tertiary leading-relaxed mb-2">
+                {t('sidebar.about')}
+              </p>
               <ul className="text-xs leading-relaxed space-y-1">
                 {LEARN_LINKS.map((link) => (
                   <li key={link.slug}>

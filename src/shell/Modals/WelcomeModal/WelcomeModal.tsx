@@ -8,7 +8,8 @@ import { layoutId } from '@/core/types';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks';
 import { Button } from '@/design-system';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useLocale } from '@/i18n';
+import { learnHref } from '@/shell/Sidebar/learnLinks';
 import { INSPIRATION_LAYOUTS } from '@/features/inspiration-gallery/data';
 import { LayoutThumbnailWithLabels } from '@/features/inspiration-gallery/components/LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '@/features/inspiration-gallery/types';
@@ -58,7 +59,46 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
 function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blank') => void }) {
   const t = useTranslation();
+  const { locale } = useLocale();
   const { isMobile } = useResponsive();
+
+  const aboutFooter = (
+    <div
+      className={
+        isMobile ? 'mt-8 max-w-xs' : 'border-t border-stroke-subtle flex-shrink-0 px-6 py-3'
+      }
+    >
+      <p className="text-xs text-content-tertiary leading-relaxed">
+        {t('sidebar.about')}{' '}
+        <a
+          href={learnHref('what-is-gridfinity', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-content"
+        >
+          {t('sidebar.learn.whatIs')}
+        </a>
+        {' · '}
+        <a
+          href={learnHref('guide', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-content"
+        >
+          {t('sidebar.learn.guide')}
+        </a>
+        {' · '}
+        <a
+          href={learnHref('gridfinity-generator', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-content"
+        >
+          {t('sidebar.learn.generator')}
+        </a>
+      </p>
+    </div>
+  );
   const [isImporting, setIsImporting] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -211,6 +251,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             >
               {t('onboarding.welcome.startDesigning')}
             </Button>
+            {aboutFooter}
           </div>
         ) : (
           /* Desktop — hero + template showcase (unchanged) */
@@ -267,6 +308,8 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
                 ))}
               </div>
             </div>
+
+            {aboutFooter}
           </>
         )}
       </div>

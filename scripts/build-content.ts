@@ -131,7 +131,7 @@ const FOOTER_LINKS: Record<
   }
 > = {
   en: {
-    generator: 'Generator',
+    generator: 'Gridfinity Generator',
     whatIs: 'What is Gridfinity?',
     bin: 'Bin Generator',
     baseplate: 'Baseplate Generator',
@@ -145,7 +145,7 @@ const FOOTER_LINKS: Record<
     terms: 'Terms',
   },
   de: {
-    generator: 'Generator',
+    generator: 'Gridfinity-Generator',
     whatIs: 'Was ist Gridfinity?',
     bin: 'Bin-Generator',
     baseplate: 'Grundplatten-Generator',
@@ -159,7 +159,7 @@ const FOOTER_LINKS: Record<
     terms: 'Nutzungsbedingungen',
   },
   fr: {
-    generator: 'Générateur',
+    generator: 'Générateur Gridfinity',
     whatIs: 'Qu’est-ce que Gridfinity ?',
     bin: 'Générateur de bins',
     baseplate: 'Générateur de plaques',
@@ -173,7 +173,7 @@ const FOOTER_LINKS: Record<
     terms: 'Conditions',
   },
   es: {
-    generator: 'Generador',
+    generator: 'Generador Gridfinity',
     whatIs: '¿Qué es Gridfinity?',
     bin: 'Generador de bins',
     baseplate: 'Generador de placas',
@@ -187,7 +187,7 @@ const FOOTER_LINKS: Record<
     terms: 'Términos',
   },
   'pt-BR': {
-    generator: 'Gerador',
+    generator: 'Gerador Gridfinity',
     whatIs: 'O que é Gridfinity?',
     bin: 'Gerador de bins',
     baseplate: 'Gerador de placas',
@@ -201,7 +201,7 @@ const FOOTER_LINKS: Record<
     terms: 'Termos',
   },
   nl: {
-    generator: 'Generator',
+    generator: 'Gridfinity-generator',
     whatIs: 'Wat is Gridfinity?',
     bin: 'Bin-generator',
     baseplate: 'Bodemplaat-generator',
@@ -215,7 +215,7 @@ const FOOTER_LINKS: Record<
     terms: 'Voorwaarden',
   },
   sv: {
-    generator: 'Generator',
+    generator: 'Gridfinity-generator',
     whatIs: 'Vad är Gridfinity?',
     bin: 'Bin-generator',
     baseplate: 'Bottenplatta-generator',
@@ -229,7 +229,7 @@ const FOOTER_LINKS: Record<
     terms: 'Villkor',
   },
   nb: {
-    generator: 'Generator',
+    generator: 'Gridfinity-generator',
     whatIs: 'Hva er Gridfinity?',
     bin: 'Bin-generator',
     baseplate: 'Grunnplate-generator',
@@ -243,7 +243,7 @@ const FOOTER_LINKS: Record<
     terms: 'Vilkår',
   },
   uk: {
-    generator: 'Генератор',
+    generator: 'Генератор Gridfinity',
     whatIs: 'Що таке Gridfinity?',
     bin: 'Генератор bin',
     baseplate: 'Генератор основи',
