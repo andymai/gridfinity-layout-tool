@@ -12,15 +12,17 @@ interface TabletPanelOverlayProps {
  * Slides in from specified side with backdrop.
  */
 export function TabletPanelOverlay({ isOpen, onClose, side, children }: TabletPanelOverlayProps) {
-  // Close on escape key
+  // Close on escape key. Capture phase so grid/canvas keydown handlers that
+  // stop propagation can't starve the overlay while it covers the screen.
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [isOpen, onClose]);
 
   // Prevent body scroll when open

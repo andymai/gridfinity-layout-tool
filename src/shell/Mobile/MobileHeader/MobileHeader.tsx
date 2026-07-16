@@ -4,7 +4,8 @@ import { useMobileStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
+import { GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import type { SaveStatus } from '@/shared/hooks';
 import { Button, IconButton } from '@/design-system';
@@ -58,7 +59,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
   };
 
   const handleNameSubmit = () => {
-    setName(editValue.trim() || 'Untitled layout');
+    setName(editValue.trim() || DEFAULT_LAYOUT_NAME);
     setIsEditing(false);
   };
 
@@ -80,7 +81,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
         </span>
         <div className="flex items-center gap-3">
           <a
-            href="https://ko-fi.com/andyaragon"
+            href={KOFI_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-accent hover:underline"
@@ -93,7 +94,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
             {t('sidebar.tip')}
           </a>
           <a
-            href="https://github.com/andymai/gridfinity-layout-tool"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-content-tertiary hover:underline"
@@ -132,7 +133,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                 e.preventDefault();
                 handleNameClick();
               }}
-              className="text-sm truncate py-1 rounded text-content flex items-center justify-center gap-1 hover:bg-transparent"
+              className="text-sm px-1 py-1 rounded text-content flex items-center justify-center gap-1 hover:bg-transparent"
               aria-label={t('mobile.header.openLayoutsPanel')}
             >
               <span className="truncate">{layout.name}</span>
@@ -166,25 +167,50 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
           {saveStatus !== 'idle' && (
             <div
               className="flex items-center justify-center w-7 h-7"
+              role="status"
               aria-live="polite"
-              aria-label={t('header.saved')}
+              aria-label={saveStatus === 'saving' ? t('header.saving') : t('header.saved')}
             >
-              <svg
-                className="w-3.5 h-3.5 text-success"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {ICON_PATHS.check.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d={d}
+              {saveStatus === 'saving' ? (
+                <svg
+                  className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-content-tertiary"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-20"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="3"
                   />
-                ))}
-              </svg>
+                  <path
+                    className="opacity-70"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-3.5 h-3.5 text-success"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  {ICON_PATHS.check.map((d) => (
+                    <path
+                      key={d}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d={d}
+                    />
+                  ))}
+                </svg>
+              )}
             </div>
           )}
           <IconButton

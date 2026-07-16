@@ -93,7 +93,7 @@ export function LanguageSelector() {
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="gap-1 px-2 text-sm text-content-secondary hover:text-content"
+        className="h-8 gap-1 px-2 text-sm text-content-secondary hover:text-content"
         title={t('header.changeLanguage')}
         aria-label={t('header.changeLanguage')}
         aria-expanded={isOpen}

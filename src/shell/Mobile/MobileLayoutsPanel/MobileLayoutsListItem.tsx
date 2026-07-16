@@ -102,7 +102,7 @@ export function LayoutListItem({
           onClick={() => onSelect(entry.id)}
           aria-current={isActive ? 'true' : undefined}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full min-w-0">
             <div className="flex-shrink-0">
               <LayoutThumbnail preview={entry.preview} size={48} />
             </div>

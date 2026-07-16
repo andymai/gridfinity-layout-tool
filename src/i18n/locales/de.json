@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Snapshot konnte nicht wiederhergestellt werden",
   "snapshots.restored": "Layout aus Snapshot wiederhergestellt",
   "snapshots.saveCheckpoint": "Checkpoint speichern",
-  "snapshots.title": "Versionsverlauf",
   "staging.binCount": "{count} Bins",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Alle löschen",

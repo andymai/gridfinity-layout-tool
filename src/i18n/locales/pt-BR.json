@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Falha ao restaurar o snapshot",
   "snapshots.restored": "Layout restaurado do snapshot",
   "snapshots.saveCheckpoint": "Salvar ponto de verificação",
-  "snapshots.title": "Histórico de versões",
   "staging.binCount": "{count} bins",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Limpar tudo",

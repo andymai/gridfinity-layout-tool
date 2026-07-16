@@ -27,23 +27,12 @@ export function TabletPanelTriggers({
         <IconButton
           size="lg"
           onClick={onOpenLeftPanel}
-          className="fixed top-16 left-4 z-30 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
-          style={{
-            background: 'var(--color-surface-elevated)',
-            border: '1px solid var(--border-default)',
-            animation: 'fade-in 0.3s ease-out',
-          }}
+          className="fixed top-28 left-4 z-30 rounded-full shadow-lg bg-surface-elevated border border-stroke text-content animate-fade-in transition-all duration-300 hover:scale-110 active:scale-95"
           aria-label={t('tablet.openLayersPanel')}
           title={t('tablet.layersCategories')}
         >
           {/* Layers icon */}
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            style={{ color: 'var(--text-content)' }}
-          >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -59,23 +48,12 @@ export function TabletPanelTriggers({
         <IconButton
           size="lg"
           onClick={onOpenRightPanel}
-          className="fixed top-16 right-4 z-30 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
-          style={{
-            background: 'var(--color-surface-elevated)',
-            border: '1px solid var(--border-default)',
-            animation: 'fade-in 0.3s ease-out',
-          }}
+          className="fixed top-28 right-4 z-30 rounded-full shadow-lg bg-surface-elevated border border-stroke text-content animate-fade-in transition-all duration-300 hover:scale-110 active:scale-95"
           aria-label={t('tablet.openInspectorPanel')}
           title={t('tablet.selectionActions')}
         >
           {/* Inspector/settings icon */}
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            style={{ color: 'var(--text-content)' }}
-          >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

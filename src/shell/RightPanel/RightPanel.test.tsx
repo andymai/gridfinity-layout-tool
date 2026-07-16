@@ -50,16 +50,49 @@ vi.mock('@/features/print-export/components', () => ({
   PrintListEmpty: () => <div data-testid="print-list-empty">No bins to print</div>,
 }));
 
-// Mock Collapsible
-vi.mock('@/design-system', async () => ({
-  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
-  Collapsible: ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div data-testid="collapsible-section">
-      <div data-testid="collapsible-title">{title}</div>
-      {children}
-    </div>
-  ),
-}));
+// Mock Collapsible — mirrors the primitive's toggle contract (aria-expanded
+// trigger named by title, optional badge/actions, content hidden collapsed)
+vi.mock('@/design-system', async () => {
+  const actual = await vi.importActual<typeof DesignSystem>('@/design-system');
+  const { useState } = await import('react');
+
+  function MockCollapsible({
+    title,
+    children,
+    badge,
+    actions,
+    expanded,
+    onExpandedChange,
+    defaultExpanded = true,
+  }: {
+    title: string;
+    children: React.ReactNode;
+    badge?: React.ReactNode;
+    actions?: React.ReactNode;
+    expanded?: boolean;
+    onExpandedChange?: (expanded: boolean) => void;
+    defaultExpanded?: boolean;
+  }) {
+    const [internal, setInternal] = useState(defaultExpanded);
+    const isExpanded = expanded ?? internal;
+    const toggle = () => {
+      onExpandedChange?.(!isExpanded);
+      setInternal(!isExpanded);
+    };
+    return (
+      <div data-testid="collapsible-section">
+        <button type="button" aria-expanded={isExpanded} onClick={toggle}>
+          <span data-testid="collapsible-title">{title}</span>
+          {badge}
+        </button>
+        {actions}
+        {isExpanded && children}
+      </div>
+    );
+  }
+
+  return { ...actual, Collapsible: MockCollapsible };
+});
 
 // Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
@@ -298,7 +331,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
-      expect(screen.getByTestId('collapsible-title')).toHaveTextContent('Selection');
+      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Selection');
     });
 
     it('shows SingleBinInspector when one bin selected', () => {
@@ -314,7 +347,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('single-bin-inspector')).toBeInTheDocument();
-      expect(screen.getByTestId('collapsible-title')).toHaveTextContent('Bin Properties');
+      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Bin Properties');
     });
 
     it('shows MultiBinInspector when multiple bins selected', () => {
@@ -329,7 +362,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('multi-bin-inspector')).toBeInTheDocument();
-      expect(screen.getByTestId('collapsible-title')).toHaveTextContent('Multi-selection');
+      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Multi-selection');
     });
 
     it('calls clearSelection when single inspector close clicked', () => {
@@ -528,7 +561,7 @@ describe('RightPanel', () => {
       // The checkmark SVG has text-[var(--color-success)] class
       const copyButton = screen.getByLabelText('Copy bin list as TSV');
       const svg = copyButton.querySelector('svg');
-      expect(svg).toHaveClass('text-[var(--color-success)]');
+      expect(svg).toHaveClass('text-success');
 
       vi.useRealTimers();
     });
@@ -559,15 +592,14 @@ describe('RightPanel', () => {
     it('has aria-expanded attribute on toggle button', () => {
       render(<RightPanel />);
 
-      // The toggle button contains "Bin List" text in an h2 - find by aria-expanded attribute
-      const toggleButton = screen.getByRole('button', { expanded: true });
+      const toggleButton = screen.getByRole('button', { name: /^bin list/i });
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('collapses print list when toggle clicked', () => {
       render(<RightPanel />);
 
-      const toggleButton = screen.getByRole('button', { expanded: true });
+      const toggleButton = screen.getByRole('button', { name: /^bin list/i });
       fireEvent.click(toggleButton);
 
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
@@ -576,14 +608,11 @@ describe('RightPanel', () => {
     it('expands print list when toggle clicked again', () => {
       render(<RightPanel />);
 
-      // Initially expanded
-      let toggleButton = screen.getByRole('button', { expanded: true });
+      const toggleButton = screen.getByRole('button', { name: /^bin list/i });
       fireEvent.click(toggleButton);
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
 
-      // Now collapsed - find by expanded: false
-      toggleButton = screen.getByRole('button', { expanded: false });
       fireEvent.click(toggleButton);
-
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
     });
   });

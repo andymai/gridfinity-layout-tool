@@ -159,7 +159,7 @@ export function Sidebar() {
     <aside
       data-sidebar
       className="flex-shrink-0 flex flex-col transition-all duration-200 ease-in-out bg-surface-secondary border-r border-stroke-subtle"
-      style={{ width: collapsed ? '40px' : '288px' }}
+      style={{ width: collapsed ? '48px' : '288px' }}
     >
       {collapsed ? (
         // Collapsed state - expand button at top, UserDock pinned at bottom
@@ -412,7 +412,7 @@ export function Sidebar() {
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
                     <div className="pt-2 space-y-1.5">
-                      <div className="text-content-tertiary text-[10px] mb-1">
+                      <div className="text-content-tertiary text-xxs mb-1">
                         {t('sidebar.halfUnitEdgePosition')}
                       </div>
                       {hasFractionalWidth && (
@@ -521,7 +521,7 @@ export function Sidebar() {
                       gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
                       heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
                     }
-                    className="text-[11px] py-1.5 px-2 mt-1 text-content-tertiary hover:text-content"
+                    className="text-xs py-1.5 px-2 mt-1 text-content-tertiary hover:text-content"
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
@@ -540,10 +540,10 @@ export function Sidebar() {
                 link equity from the SPA to /what-is-gridfinity et al. (which had zero
                 inbound links from the SPA before this section existed). */}
             <div className="px-4 py-4 border-t border-stroke-subtle">
-              <h2 className="text-xs leading-none font-semibold text-content-tertiary mb-2">
+              <h2 className="text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider mb-2">
                 {t('sidebar.learn')}
               </h2>
-              <ul className="text-[11px] leading-relaxed space-y-1">
+              <ul className="text-xs leading-relaxed space-y-1">
                 {LEARN_LINKS.map((link) => (
                   <li key={link.slug}>
                     <a

@@ -138,18 +138,21 @@ describe('useTabletPanels', () => {
     });
 
     it('does not toggle when already open', () => {
-      // Start with left panel open (not collapsed)
-      mockLeftPanelCollapsed = false;
-      mockRightPanelCollapsed = false;
+      // Boot collapsed (the mount effect's steady state), then user opens
+      mockLeftPanelCollapsed = true;
+      mockRightPanelCollapsed = true;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
 
+      act(() => {
+        result.current.openLeftPanel();
+      });
+      rerender();
       expect(result.current.leftPanelOpen).toBe(true);
 
       act(() => {
         result.current.openLeftPanel();
       });
-
       rerender();
 
       expect(result.current.leftPanelOpen).toBe(true);
@@ -158,18 +161,20 @@ describe('useTabletPanels', () => {
 
   describe('closeLeftPanel', () => {
     it('toggles left panel when not collapsed', () => {
-      // Start with left panel open (not collapsed)
-      mockLeftPanelCollapsed = false;
-      mockRightPanelCollapsed = false;
+      mockLeftPanelCollapsed = true;
+      mockRightPanelCollapsed = true;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
 
+      act(() => {
+        result.current.openLeftPanel();
+      });
+      rerender();
       expect(result.current.leftPanelOpen).toBe(true);
 
       act(() => {
         result.current.closeLeftPanel();
       });
-
       rerender();
 
       expect(result.current.leftPanelOpen).toBe(false);
@@ -214,18 +219,21 @@ describe('useTabletPanels', () => {
     });
 
     it('does not toggle when already open', () => {
-      // Start with right panel open (not collapsed)
-      mockLeftPanelCollapsed = false;
-      mockRightPanelCollapsed = false;
+      // Boot collapsed (the mount effect's steady state), then user opens
+      mockLeftPanelCollapsed = true;
+      mockRightPanelCollapsed = true;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
 
+      act(() => {
+        result.current.openRightPanel();
+      });
+      rerender();
       expect(result.current.rightPanelOpen).toBe(true);
 
       act(() => {
         result.current.openRightPanel();
       });
-
       rerender();
 
       expect(result.current.rightPanelOpen).toBe(true);
@@ -234,18 +242,20 @@ describe('useTabletPanels', () => {
 
   describe('closeRightPanel', () => {
     it('toggles right panel when not collapsed', () => {
-      // Start with right panel open (not collapsed)
-      mockLeftPanelCollapsed = false;
-      mockRightPanelCollapsed = false;
+      mockLeftPanelCollapsed = true;
+      mockRightPanelCollapsed = true;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
 
+      act(() => {
+        result.current.openRightPanel();
+      });
+      rerender();
       expect(result.current.rightPanelOpen).toBe(true);
 
       act(() => {
         result.current.closeRightPanel();
       });
-
       rerender();
 
       expect(result.current.rightPanelOpen).toBe(false);
@@ -383,42 +393,34 @@ describe('useTabletPanels', () => {
     });
   });
 
-  describe('no auto-collapse when already tablet', () => {
-    it('does not re-collapse on subsequent renders while staying tablet', () => {
-      // Start on tablet with both panels open
+  describe('auto-collapse when mounting at tablet width', () => {
+    it('collapses both panels when the page boots directly at tablet width', () => {
+      // Panels open (desktop default persisted in the store)
       mockLeftPanelCollapsed = false;
       mockRightPanelCollapsed = false;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
 
-      expect(result.current.leftPanelOpen).toBe(true);
-      expect(result.current.rightPanelOpen).toBe(true);
-
-      // User opens panels manually (already happened above by setting state to not collapsed)
-      // Now trigger a re-render while staying in tablet mode
+      // Mount effect collapses; re-render to observe the mocked store
       rerender();
 
-      // Panels should remain open (no auto-collapse)
-      expect(result.current.leftPanelOpen).toBe(true);
-      expect(result.current.rightPanelOpen).toBe(true);
+      expect(result.current.leftPanelOpen).toBe(false);
+      expect(result.current.rightPanelOpen).toBe(false);
     });
 
-    it('does not collapse when tablet state does not change', () => {
-      // Start on tablet with left panel open
+    it('does not re-collapse after the user reopens a panel while staying tablet', () => {
       mockLeftPanelCollapsed = false;
-      mockRightPanelCollapsed = true;
+      mockRightPanelCollapsed = false;
 
       const { result, rerender } = renderHook(() => useTabletPanels(true));
-
-      expect(result.current.leftPanelOpen).toBe(true);
-      expect(result.current.rightPanelOpen).toBe(false);
-
-      // Multiple re-renders while staying tablet
-      rerender();
-      rerender();
       rerender();
 
-      // Panel state should be unchanged
+      act(() => {
+        result.current.openLeftPanel();
+      });
+      rerender();
+      rerender();
+
       expect(result.current.leftPanelOpen).toBe(true);
       expect(result.current.rightPanelOpen).toBe(false);
     });

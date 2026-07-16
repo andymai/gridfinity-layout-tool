@@ -28,8 +28,10 @@ export function useTabletPanels(isTablet: boolean): TabletPanelsState {
   const toggleLeftPanel = useViewStore((state) => state.toggleLeftPanel);
   const toggleRightPanel = useViewStore((state) => state.toggleRightPanel);
 
-  // Track previous tablet state to detect mode entry
-  const wasTabletRef = useRef(isTablet);
+  // Track previous tablet state to detect mode entry. Starts false so a page
+  // that BOOTS at tablet width also counts as "entering" tablet mode —
+  // otherwise both overlays open on first load and bury the canvas.
+  const wasTabletRef = useRef(false);
 
   // Auto-collapse panels when entering tablet mode
   useEffect(() => {

@@ -183,10 +183,10 @@ export function ActiveLayoutActions({
           key={action.label}
           variant="secondary"
           onClick={() => action.handler(entryId)}
-          className="flex-1 h-11"
+          className="flex-1 min-w-0 h-11 px-2"
         >
-          <SvgIcon path={action.icon} className="w-4 h-4 mr-1.5" />
-          {action.label}
+          <SvgIcon path={action.icon} className="w-4 h-4 mr-1.5 flex-shrink-0" />
+          <span className="truncate">{action.label}</span>
         </Button>
       ))}
     </div>

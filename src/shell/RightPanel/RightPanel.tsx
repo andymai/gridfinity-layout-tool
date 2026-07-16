@@ -233,379 +233,362 @@ export function RightPanel() {
             </div>
 
             {/* Print List - Collapsible */}
-            <div data-print-list className="flex flex-col">
-              <div
-                className={`flex items-center justify-between px-4 py-3 ${printListExpanded ? 'border-b border-stroke-subtle' : ''}`}
-              >
-                <Button
-                  variant="ghost"
-                  className="gap-2 px-0 py-0 bg-transparent hover:bg-transparent"
-                  onClick={() => setPrintListExpanded(!printListExpanded)}
-                  aria-expanded={printListExpanded}
-                >
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 text-content-tertiary ${printListExpanded ? 'rotate-0' : '-rotate-90'}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                  <h2 className="section-header m-0">{t('rightPanel.binList')}</h2>
-                  {printList.rows.length > 0 && (
+            <div data-print-list className="px-4 py-3">
+              <Collapsible
+                title={t('rightPanel.binList')}
+                size="md"
+                expanded={printListExpanded}
+                onExpandedChange={setPrintListExpanded}
+                badge={
+                  printList.rows.length > 0 ? (
                     <span className="badge badge-info">{printList.totalBins}</span>
-                  )}
-                </Button>
-                {printList.rows.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    {/* Copy button */}
-                    <IconButton
-                      size="sm"
-                      touchTarget={false}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const tsv = exportPrintListTSV(printList.rows, {
-                          gridUnitMm: layout.gridUnitMm,
-                          categories: layout.categories,
-                        });
-                        void navigator.clipboard.writeText(tsv);
-                        setCopyFeedback(true);
-                        trackEvent('ui.layoutExported', { format: 'tsv' });
-                        setTimeout(() => setCopyFeedback(false), 2000);
-                      }}
-                      title={t('rightPanel.copyTSV')}
-                      aria-label={t('rightPanel.copyBinListAsTsv')}
-                    >
-                      {copyFeedback ? (
-                        <svg
-                          className="w-4 h-4 text-[var(--color-success)]"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          {ICON_PATHS.check.map((d) => (
-                            <path
-                              key={d}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d={d}
-                            />
-                          ))}
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          {ICON_PATHS.duplicate.map((d) => (
-                            <path
-                              key={d}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d={d}
-                            />
-                          ))}
-                        </svg>
-                      )}
-                    </IconButton>
-                    {/* Export entire layout (linked bins + baseplate) as a ZIP */}
-                    {linkedBinCount > 0 && (
+                  ) : undefined
+                }
+                actions={
+                  printList.rows.length > 0 ? (
+                    <div className="flex items-center gap-1">
+                      {/* Copy button */}
                       <IconButton
                         size="sm"
                         touchTarget={false}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLayoutExportOpen(true);
+                        onClick={() => {
+                          const tsv = exportPrintListTSV(printList.rows, {
+                            gridUnitMm: layout.gridUnitMm,
+                            categories: layout.categories,
+                          });
+                          void navigator.clipboard.writeText(tsv);
+                          setCopyFeedback(true);
+                          trackEvent('ui.layoutExported', { format: 'tsv' });
+                          setTimeout(() => setCopyFeedback(false), 2000);
                         }}
-                        title={t('layoutExport.button')}
-                        aria-label={t('layoutExport.button')}
+                        title={t('rightPanel.copyTSV')}
+                        aria-label={t('rightPanel.copyBinListAsTsv')}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          {ICON_PATHS.download.map((d) => (
-                            <path
-                              key={d}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d={d}
-                            />
-                          ))}
-                        </svg>
+                        {copyFeedback ? (
+                          <svg
+                            className="w-4 h-4 text-success"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            {ICON_PATHS.check.map((d) => (
+                              <path
+                                key={d}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d={d}
+                              />
+                            ))}
+                          </svg>
+                        ) : (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            {ICON_PATHS.duplicate.map((d) => (
+                              <path
+                                key={d}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d={d}
+                              />
+                            ))}
+                          </svg>
+                        )}
                       </IconButton>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`flex flex-col transition-all duration-200 ${printListExpanded ? 'opacity-100' : 'opacity-0 max-h-0 overflow-hidden'}`}
+                      {/* Export entire layout (linked bins + baseplate) as a ZIP */}
+                      {linkedBinCount > 0 && (
+                        <IconButton
+                          size="sm"
+                          touchTarget={false}
+                          onClick={() => setLayoutExportOpen(true)}
+                          title={t('layoutExport.button')}
+                          aria-label={t('layoutExport.button')}
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            {ICON_PATHS.download.map((d) => (
+                              <path
+                                key={d}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d={d}
+                              />
+                            ))}
+                          </svg>
+                        </IconButton>
+                      )}
+                    </div>
+                  ) : undefined
+                }
               >
-                <div>
-                  {printList.rows.length === 0 ? (
-                    <PrintListEmpty />
-                  ) : (
-                    <table className="w-full text-sm">
-                      <thead className="bg-surface-elevated">
-                        <tr>
-                          <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">
-                            {t('common.size')}
-                          </th>
-                          <th
-                            className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                            title={t('common.height')}
-                          >
-                            H
-                          </th>
-                          <th
-                            className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                            title={t('common.quantity')}
-                          >
-                            {t('rightPanel.qtyAbbrev')}
-                          </th>
-                          {printList.hasAnySplits && (
+                <div className="-mx-4 -mb-3 flex flex-col border-t border-stroke-subtle">
+                  <div>
+                    {printList.rows.length === 0 ? (
+                      <PrintListEmpty />
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-surface-elevated">
+                          <tr>
+                            <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">
+                              {t('common.size')}
+                            </th>
+                            <th
+                              className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated"
+                              title={t('common.height')}
+                            >
+                              H
+                            </th>
                             <th
                               className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                              title={t('rightPanel.piecesAfterSplit')}
+                              title={t('common.quantity')}
                             >
-                              {t('rightPanel.pcsAbbrev')}
+                              {t('rightPanel.qtyAbbrev')}
                             </th>
-                          )}
-                          <th
-                            className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                            title={t('rightPanel.filamentMeters')}
-                          >
-                            {t('rightPanel.filamentAbbrev')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {printList.rows.map((row, index) => {
-                          const isExpanded = expandedSplitRow === index;
-                          const [w, d] = row.size.split('×').map(Number);
-
-                          return (
-                            <React.Fragment
-                              key={`${row.size}-${row.height}-${row.labels.join(',')}-${index}`}
-                            >
-                              <tr
-                                className={`transition-colors hover:bg-surface-hover cursor-pointer ${isExpanded ? '' : 'border-b border-stroke-subtle'}`}
-                                onClick={() => {
-                                  printList.selectBinsByRow(row);
-                                  if (row.needsSplit) {
-                                    setExpandedSplitRow(isExpanded ? null : index);
-                                  }
-                                }}
+                            {printList.hasAnySplits && (
+                              <th
+                                className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
+                                title={t('rightPanel.piecesAfterSplit')}
                               >
-                                <td className="pl-4 pr-2 py-2 text-content">
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="inline-flex items-center gap-1.5">
-                                      <span
-                                        className="inline-flex gap-0.5"
-                                        title={row.categoryIds
-                                          .map(
-                                            (catId) =>
-                                              layout.categories.find((c) => c.id === catId)?.name ||
-                                              t('common.unknown')
-                                          )
-                                          .join(LIST_SEPARATOR)}
-                                      >
-                                        {row.categoryIds.slice(0, 3).map((catId) => {
-                                          const cat = layout.categories.find((c) => c.id === catId);
-                                          return (
-                                            <span
-                                              key={catId}
-                                              role="img"
-                                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                              style={{
-                                                backgroundColor:
-                                                  cat?.color || DEFAULT_CATEGORY_COLOR,
-                                              }}
-                                              aria-label={
-                                                cat?.name || t('rightPanel.unknownCategory')
-                                              }
+                                {t('rightPanel.pcsAbbrev')}
+                              </th>
+                            )}
+                            <th
+                              className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
+                              title={t('rightPanel.filamentMeters')}
+                            >
+                              {t('rightPanel.filamentAbbrev')}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {printList.rows.map((row, index) => {
+                            const isExpanded = expandedSplitRow === index;
+                            const [w, d] = row.size.split('×').map(Number);
+
+                            return (
+                              <React.Fragment
+                                key={`${row.size}-${row.height}-${row.labels.join(',')}-${index}`}
+                              >
+                                <tr
+                                  className={`transition-colors hover:bg-surface-hover cursor-pointer ${isExpanded ? '' : 'border-b border-stroke-subtle'}`}
+                                  onClick={() => {
+                                    printList.selectBinsByRow(row);
+                                    if (row.needsSplit) {
+                                      setExpandedSplitRow(isExpanded ? null : index);
+                                    }
+                                  }}
+                                >
+                                  <td className="pl-4 pr-2 py-2 text-content">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="inline-flex items-center gap-1.5">
+                                        <span
+                                          className="inline-flex gap-0.5"
+                                          title={row.categoryIds
+                                            .map(
+                                              (catId) =>
+                                                layout.categories.find((c) => c.id === catId)
+                                                  ?.name || t('common.unknown')
+                                            )
+                                            .join(LIST_SEPARATOR)}
+                                        >
+                                          {row.categoryIds.slice(0, 3).map((catId) => {
+                                            const cat = layout.categories.find(
+                                              (c) => c.id === catId
+                                            );
+                                            return (
+                                              <span
+                                                key={catId}
+                                                role="img"
+                                                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                                style={{
+                                                  backgroundColor:
+                                                    cat?.color || DEFAULT_CATEGORY_COLOR,
+                                                }}
+                                                aria-label={
+                                                  cat?.name || t('rightPanel.unknownCategory')
+                                                }
+                                              />
+                                            );
+                                          })}
+                                          {row.categoryIds.length > 3 && (
+                                            <span className="text-xxs text-content-disabled">
+                                              {t('rightPanel.moreCategories', {
+                                                count: row.categoryIds.length - 3,
+                                              })}
+                                            </span>
+                                          )}
+                                        </span>
+                                        {row.size}
+                                        {row.needsSplit && (
+                                          <svg
+                                            className={`w-3.5 h-3.5 flex-shrink-0 transition-transform text-warning ${isExpanded ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            aria-label={t('grid.clickToSeeSplitPreview')}
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M19 9l-7 7-7-7"
                                             />
-                                          );
-                                        })}
-                                        {row.categoryIds.length > 3 && (
-                                          <span className="text-[9px] text-content-disabled">
-                                            {t('rightPanel.moreCategories', {
-                                              count: row.categoryIds.length - 3,
-                                            })}
-                                          </span>
+                                          </svg>
                                         )}
                                       </span>
-                                      {row.size}
-                                      {row.needsSplit && (
-                                        <svg
-                                          className={`w-3.5 h-3.5 flex-shrink-0 transition-transform text-[var(--color-warning)] ${isExpanded ? 'rotate-180' : ''}`}
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                          stroke="currentColor"
-                                          aria-label={t('grid.clickToSeeSplitPreview')}
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M19 9l-7 7-7-7"
-                                          />
-                                        </svg>
-                                      )}
-                                    </span>
-                                    {(row.labels[0] ||
-                                      row.notes ||
-                                      (row.customProperties &&
-                                        Object.keys(row.customProperties).length > 0)) && (
-                                      <span className="flex items-center gap-1">
-                                        {row.labels[0] && (
-                                          <span
-                                            className="text-xs truncate text-content-tertiary max-w-[80px]"
-                                            title={row.labels[0]}
-                                          >
-                                            {row.labels[0]}
-                                          </span>
-                                        )}
-                                        {row.notes && (
-                                          <span title={row.notes}>
-                                            <svg
-                                              className="w-3 h-3 flex-shrink-0 text-content-disabled"
-                                              fill="none"
-                                              viewBox="0 0 24 24"
-                                              stroke="currentColor"
-                                              aria-label={t('grid.hasNotesAriaLabel')}
-                                            >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                                              />
-                                            </svg>
-                                          </span>
-                                        )}
-                                        {row.customProperties &&
-                                          Object.keys(row.customProperties).length > 0 && (
+                                      {(row.labels[0] ||
+                                        row.notes ||
+                                        (row.customProperties &&
+                                          Object.keys(row.customProperties).length > 0)) && (
+                                        <span className="flex items-center gap-1">
+                                          {row.labels[0] && (
                                             <span
-                                              title={t('rightPanel.customPropertiesCount', {
-                                                count: Object.keys(row.customProperties).length,
-                                              })}
+                                              className="text-xs truncate text-content-tertiary max-w-[80px]"
+                                              title={row.labels[0]}
                                             >
+                                              {row.labels[0]}
+                                            </span>
+                                          )}
+                                          {row.notes && (
+                                            <span title={row.notes}>
                                               <svg
                                                 className="w-3 h-3 flex-shrink-0 text-content-disabled"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 stroke="currentColor"
-                                                aria-label={t('grid.hasCustomPropertiesAriaLabel')}
+                                                aria-label={t('grid.hasNotesAriaLabel')}
                                               >
                                                 <path
                                                   strokeLinecap="round"
                                                   strokeLinejoin="round"
                                                   strokeWidth={2}
-                                                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                                                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
                                                 />
                                               </svg>
                                             </span>
                                           )}
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="px-2 py-2 text-content-tertiary">{row.height}u</td>
-                                <td className="px-2 py-2 text-right text-content">
-                                  {row.binCount}
-                                </td>
-                                {printList.hasAnySplits && (
-                                  <td className="px-2 py-2 text-right text-content">
-                                    {row.totalPieces}
-                                  </td>
-                                )}
-                                <td className="pl-2 pr-4 py-2 text-right text-content-tertiary">
-                                  {row.filament}
-                                </td>
-                              </tr>
-                              {isExpanded && (
-                                <tr className="bg-surface-elevated">
-                                  <td
-                                    colSpan={printList.hasAnySplits ? 5 : 4}
-                                    className="px-4 py-3 border-b border-stroke-subtle"
-                                  >
-                                    <div className="flex items-start gap-4">
-                                      <SplitPreview width={w} depth={d} pieces={row.pieces} />
-                                      <div className="text-xs text-content-secondary">
-                                        <div className="font-medium mb-1">
-                                          {t('rightPanel.splitInto')}
-                                          {row.totalPieces}
-                                          {t('rightPanel.pieces')}
-                                        </div>
-                                        {row.pieces.map((piece) => (
-                                          <div
-                                            key={`${piece.width}x${piece.depth}`}
-                                            className="text-content-tertiary"
-                                          >
-                                            {piece.count}× {piece.width}×{piece.depth}
-                                          </div>
-                                        ))}
-                                      </div>
+                                          {row.customProperties &&
+                                            Object.keys(row.customProperties).length > 0 && (
+                                              <span
+                                                title={t('rightPanel.customPropertiesCount', {
+                                                  count: Object.keys(row.customProperties).length,
+                                                })}
+                                              >
+                                                <svg
+                                                  className="w-3 h-3 flex-shrink-0 text-content-disabled"
+                                                  fill="none"
+                                                  viewBox="0 0 24 24"
+                                                  stroke="currentColor"
+                                                  aria-label={t(
+                                                    'grid.hasCustomPropertiesAriaLabel'
+                                                  )}
+                                                >
+                                                  <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                                                  />
+                                                </svg>
+                                              </span>
+                                            )}
+                                        </span>
+                                      )}
                                     </div>
                                   </td>
+                                  <td className="px-2 py-2 text-content-tertiary">{row.height}u</td>
+                                  <td className="px-2 py-2 text-right text-content">
+                                    {row.binCount}
+                                  </td>
+                                  {printList.hasAnySplits && (
+                                    <td className="px-2 py-2 text-right text-content">
+                                      {row.totalPieces}
+                                    </td>
+                                  )}
+                                  <td className="pl-2 pr-4 py-2 text-right text-content-tertiary">
+                                    {row.filament}
+                                  </td>
                                 </tr>
-                              )}
-                            </React.Fragment>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                {isExpanded && (
+                                  <tr className="bg-surface-elevated">
+                                    <td
+                                      colSpan={printList.hasAnySplits ? 5 : 4}
+                                      className="px-4 py-3 border-b border-stroke-subtle"
+                                    >
+                                      <div className="flex items-start gap-4">
+                                        <SplitPreview width={w} depth={d} pieces={row.pieces} />
+                                        <div className="text-xs text-content-secondary">
+                                          <div className="font-medium mb-1">
+                                            {t('rightPanel.splitInto')}
+                                            {row.totalPieces}
+                                            {t('rightPanel.pieces')}
+                                          </div>
+                                          {row.pieces.map((piece) => (
+                                            <div
+                                              key={`${piece.width}x${piece.depth}`}
+                                              className="text-content-tertiary"
+                                            >
+                                              {piece.count}× {piece.width}×{piece.depth}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  {printList.rows.length > 0 && (
+                    <div className="px-4 py-2 border-t border-stroke-subtle">
+                      <SettingsRow
+                        label={t('settings.nozzleSize')}
+                        htmlFor="rightPanelNozzle"
+                        tooltip={t('rightPanel.nozzleSizeTooltip')}
+                        unit="mm"
+                      >
+                        <DeferredNumberInput
+                          id="rightPanelNozzle"
+                          value={nozzleSizeMm}
+                          onChange={handleNozzleChange}
+                          min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                          max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                          step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+                          className="input w-14 py-0.5 px-1 text-xs text-right"
+                          aria-label={t('settings.nozzleSize')}
+                        />
+                      </SettingsRow>
+                    </div>
+                  )}
+                  {printList.rows.length > 0 && (
+                    <PrintListSummary
+                      totalBins={printList.totalBins}
+                      totalPieces={printList.totalPieces}
+                      totalFilament={printList.totalFilament}
+                      totalCost={printList.totalCost}
+                      totalPrintTimeHours={printList.totalPrintTimeHours}
+                      spoolPercentage={printList.spoolPercentage}
+                      hasAnySplits={printList.hasAnySplits}
+                      nozzleSizeMm={printList.nozzleSizeMm}
+                    />
                   )}
                 </div>
-
-                {printList.rows.length > 0 && (
-                  <div className="px-4 py-2 border-t border-stroke-subtle">
-                    <SettingsRow
-                      label={t('settings.nozzleSize')}
-                      htmlFor="rightPanelNozzle"
-                      tooltip={t('rightPanel.nozzleSizeTooltip')}
-                      unit="mm"
-                    >
-                      <DeferredNumberInput
-                        id="rightPanelNozzle"
-                        value={nozzleSizeMm}
-                        onChange={handleNozzleChange}
-                        min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
-                        max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
-                        step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
-                        className="input w-14 py-0.5 px-1 text-xs text-right"
-                        aria-label={t('settings.nozzleSize')}
-                      />
-                    </SettingsRow>
-                  </div>
-                )}
-                {printList.rows.length > 0 && (
-                  <PrintListSummary
-                    totalBins={printList.totalBins}
-                    totalPieces={printList.totalPieces}
-                    totalFilament={printList.totalFilament}
-                    totalCost={printList.totalCost}
-                    totalPrintTimeHours={printList.totalPrintTimeHours}
-                    spoolPercentage={printList.spoolPercentage}
-                    hasAnySplits={printList.hasAnySplits}
-                    nozzleSizeMm={printList.nozzleSizeMm}
-                  />
-                )}
-              </div>
+              </Collapsible>
             </div>
           </div>
         )}
@@ -616,7 +599,7 @@ export function RightPanel() {
         isOpen={deleteConfirmState !== null}
         title={deleteConfirmState?.title || ''}
         message={deleteConfirmState?.message || ''}
-        confirmText="Delete"
+        confirmText={t('common.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={cancelDelete}

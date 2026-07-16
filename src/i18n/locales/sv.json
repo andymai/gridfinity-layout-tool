@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Det gick inte att återställa ögonblicksbilden",
   "snapshots.restored": "Layout återställd från ögonblicksbild",
   "snapshots.saveCheckpoint": "Spara kontrollpunkt",
-  "snapshots.title": "Versionshistorik",
   "staging.binCount": "{count} fack",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Rensa alla",

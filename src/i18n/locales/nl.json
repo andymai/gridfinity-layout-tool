@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Herstel van snapshot mislukt",
   "snapshots.restored": "Layout hersteld van snapshot",
   "snapshots.saveCheckpoint": "Checkpoint opslaan",
-  "snapshots.title": "Versiegeschiedenis",
   "staging.binCount": "{count} bins",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Alles wissen",

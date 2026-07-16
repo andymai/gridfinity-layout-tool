@@ -338,7 +338,6 @@ const en: Record<string, string> = {
   'rightPanel.historyTab': 'History',
 
   // Snapshots / Version History
-  'snapshots.title': 'Version history',
   'snapshots.empty': 'No snapshots yet',
   'snapshots.emptyDescription': 'Snapshots are saved automatically every 2 minutes',
   'snapshots.restore': 'Restore',
@@ -676,7 +675,7 @@ const en: Record<string, string> = {
   'share.useShareLinkInstead': 'Use share link instead',
 
   // Layout Library
-  'layouts.newLayout': 'New Layout',
+  'layouts.newLayout': 'New layout',
   'layouts.createNewLayoutHint': 'Start with a blank canvas',
   'layouts.shareLayout': 'Share Layout',
   'layouts.searchPlaceholder': 'Search layouts...',

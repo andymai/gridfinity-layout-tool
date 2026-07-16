@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "スナップショットの復元に失敗しました",
   "snapshots.restored": "スナップショットからレイアウトを復元しました",
   "snapshots.saveCheckpoint": "チェックポイントを保存",
-  "snapshots.title": "バージョン履歴",
   "staging.binCount": "{count}個のビン",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "すべてクリア",

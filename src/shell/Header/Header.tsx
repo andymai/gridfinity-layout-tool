@@ -6,7 +6,7 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
 import { activePress, Button, IconButton } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
@@ -99,7 +99,7 @@ export function Header({ saveStatus }: HeaderProps) {
   };
 
   const handleNameSubmit = () => {
-    setName(editValue.trim() || 'Untitled layout');
+    setName(editValue.trim() || DEFAULT_LAYOUT_NAME);
     setIsEditing(false);
   };
 
@@ -145,10 +145,10 @@ export function Header({ saveStatus }: HeaderProps) {
             variant="ghost"
             size="sm"
             onClick={handleNameClick}
-            className={`px-3 py-1.5 h-auto text-sm hover:scale-[1.02] ${activePress} text-content-secondary truncate max-w-[200px]`}
+            className={`px-3 h-8 text-sm hover:scale-[1.02] ${activePress} text-content-secondary max-w-[200px]`}
             title={t('header.editLayoutName')}
           >
-            {layout.name}
+            <span className="truncate">{layout.name}</span>
           </Button>
         )}
 
@@ -159,7 +159,7 @@ export function Header({ saveStatus }: HeaderProps) {
           variant="ghost"
           size="sm"
           onClick={() => setPrintModalOpen(true)}
-          className={`px-2 py-1.5 h-auto text-sm gap-1.5 ${activePress} text-content-secondary`}
+          className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
           title={t('header.printLayout')}
           aria-label={t('header.printLayout')}
           leftIcon={
@@ -181,7 +181,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {/* Save status indicator */}
         {saveStatus === 'saving' && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 text-content-tertiary"
+            className="flex items-center gap-1.5 px-2 py-1 text-xxs mr-2 text-content-tertiary"
             aria-live="polite"
             role="status"
           >
@@ -210,7 +210,7 @@ export function Header({ saveStatus }: HeaderProps) {
         )}
         {saveStatus === 'saved' && (
           <div
-            className="flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
+            className="flex items-center gap-1.5 px-2 py-1 text-xxs mr-2 text-content-secondary animate-fade-in"
             aria-live="polite"
             role="status"
           >
@@ -242,6 +242,7 @@ export function Header({ saveStatus }: HeaderProps) {
             touchTarget={false}
             onClick={undo}
             disabled={!canUndo}
+            className="h-8 w-8"
             title={t('header.undoAction', { mod: modKey })}
             aria-label={t('header.undo', { mod: modKey })}
           >
@@ -259,6 +260,7 @@ export function Header({ saveStatus }: HeaderProps) {
             touchTarget={false}
             onClick={redo}
             disabled={!canRedo}
+            className="h-8 w-8"
             title={t('header.redoAction', { mod: modKey })}
             aria-label={t('header.redo', { mod: modKey })}
           >

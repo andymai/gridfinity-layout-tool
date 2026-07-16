@@ -124,7 +124,7 @@ export function PrintListSummary({
   return (
     <div className="px-4 py-3 border-t border-stroke-subtle bg-surface-elevated">
       {/* Primary row: Time & Cost (emphasized) + Bins */}
-      <div className="flex justify-between items-baseline mb-2">
+      <div className="flex flex-wrap justify-between items-baseline gap-x-3 gap-y-1 mb-2">
         <div className="flex items-baseline gap-4">
           <div title={t('print.summary.printTimeTooltip', { nozzle: nozzleSizeMm })}>
             <span className="text-xs text-content-tertiary mr-1">
@@ -143,7 +143,7 @@ export function PrintListSummary({
             </span>
           </div>
         </div>
-        <span className="text-sm text-content tabular-nums">
+        <span className="text-sm text-content tabular-nums whitespace-nowrap">
           {t('print.summary.bins', { count: totalBins })}
           {hasAnySplits && (
             <span className="text-content-tertiary">

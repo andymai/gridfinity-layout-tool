@@ -130,7 +130,7 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
       <Button
         variant="ghost"
         onClick={() => setOpen((v) => !v)}
-        className="h-auto gap-1.5 px-1.5 py-1 text-content-secondary hover:bg-surface-hover hover:text-content"
+        className="h-8 gap-1.5 px-1.5 text-content-secondary hover:bg-surface-hover hover:text-content"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t('header.switchLayout', { name: triggerName })}

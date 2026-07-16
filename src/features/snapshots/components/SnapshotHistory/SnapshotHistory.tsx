@@ -217,10 +217,9 @@ export function SnapshotHistory() {
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-2 border-b border-stroke-subtle">
-        <span className="text-xs font-medium text-content-secondary uppercase tracking-wider">
-          {t('snapshots.title')}
-        </span>
+      {/* The panel's HISTORY tab already labels this view, so the header row
+          carries only the checkpoint action. */}
+      <div className="flex items-center justify-end px-4 py-2 border-b border-stroke-subtle">
         <Button
           type="button"
           variant="ghost"

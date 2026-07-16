@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Kunne ikke gjenopprette snapshot",
   "snapshots.restored": "Layout gjenopprettet fra snapshot",
   "snapshots.saveCheckpoint": "Lagre kontrollpunkt",
-  "snapshots.title": "Versjonshistorikk",
   "staging.binCount": "{count} bins",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Tøm alle",

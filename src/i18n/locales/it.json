@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Ripristino dell'istantanea non riuscito",
   "snapshots.restored": "Layout ripristinato dall'istantanea",
   "snapshots.saveCheckpoint": "Salva checkpoint",
-  "snapshots.title": "Cronologia versioni",
   "staging.binCount": "{count} bin",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Cancella tutto",

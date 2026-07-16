@@ -2397,7 +2397,6 @@
   "snapshots.restoreFailed": "Не вдалося відновити знімок",
   "snapshots.restored": "Розкладку відновлено зі знімка",
   "snapshots.saveCheckpoint": "Зберегти контрольну точку",
-  "snapshots.title": "Історія версій",
   "staging.binCount": "{count} бінів",
   "staging.binTooltip": "{width}×{depth}×{height}u - {label}",
   "staging.clearAll": "Очистити все",

@@ -73,7 +73,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="ghost"
         onClick={handleFeedbackClick}
-        className="px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.sendFeedback')}
         aria-label={t('header.sendFeedback')}
       >
@@ -92,7 +92,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="ghost"
         onClick={handleHelpClick}
-        className="px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.showHelp')}
         aria-label={t('header.helpAndShortcuts')}
       >
@@ -112,7 +112,7 @@ export function HeaderSupportLinks() {
         href={GITHUB_REPO_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="btn btn-ghost px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.starOnGithub')}
         aria-label={t('header.starOnGithub')}
       >
@@ -128,7 +128,7 @@ export function HeaderSupportLinks() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleRedditClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="btn btn-ghost px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('common.redditCommunityAria')}
         aria-label={t('common.redditCommunityAria')}
       >
@@ -144,7 +144,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="primary"
         onClick={handleKofiClick}
-        className="px-3 py-1.5 text-sm leading-none flex items-center gap-1.5"
+        className="px-3 h-8 text-sm leading-none flex items-center gap-1.5"
         style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
         title={t('header.supportOnKofi')}
         aria-label={t('header.supportOnKofi')}
