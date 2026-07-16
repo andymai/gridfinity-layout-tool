@@ -31,7 +31,7 @@ faqs:
 
 # Hva er Gridfinity?
 
-Gridfinity er et modulært oppbevaringssystem du skriver ut selv i 3D. Zack Freedman, en maker og YouTuber, ga det ut i 2022. Det finnes nå over 10 000 gratis design bare på Printables.
+Gridfinity er et gratis, åpen kildekode-basert modulært oppbevaringssystem du skriver ut selv i 3D: bins i standardstørrelser hviler på et 42mm grunnplate-rutenett, så alle design fra alle makere er kompatible. Zack Freedman, en maker og YouTuber, skapte det i 2022, og det finnes nå over 10 000 gratis design bare på Printables.
 
 Idéen er enkel: alt bruker et 42-mm-rutenett. Bins hviler på grunnplater. Grunnplater legges side ved side for å fylle en hvilken som helst skuff. Når du vil omorganisere, løfter du opp bins og flytter dem.
 

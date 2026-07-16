@@ -21,7 +21,7 @@ faqs:
 
 # Tamanhos e dimensões Gridfinity
 
-O Gridfinity usa dois números: **unidades de grade** para a largura e a profundidade de um bin e **unidades de altura** para a altura. Conhecendo-os, você sabe o que cabe na sua gaveta e quais bins imprimir.
+**Tamanhos padrão do Gridfinity: uma unidade de grade mede 42mm × 42mm (largura e profundidade), e uma unidade de altura (1U) mede 7mm.** Todo bin e toda placa-base é um múltiplo desses dois números — um bin 2×3 de 6U mede 84mm × 126mm × 42mm. O modo meio bin adiciona passos de 0,5 unidade (21mm). Conhecendo esses dois números, você sabe o que cabe na sua gaveta e quais bins imprimir.
 
 ## Unidades de grade (largura e profundidade)
 

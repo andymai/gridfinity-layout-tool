@@ -21,7 +21,7 @@ faqs:
 
 # Tamaños y dimensiones Gridfinity
 
-Gridfinity usa dos números: **unidades de cuadrícula** para el ancho y la profundidad de un bin, y **unidades de altura** para la altura. Conociéndolas, sabes qué cabe en tu cajón y qué bins imprimir.
+**Tamaños estándar de Gridfinity: una unidad de cuadrícula mide 42mm × 42mm (ancho y profundidad), y una unidad de altura (1U) mide 7mm.** Cada bin y cada placa es un múltiplo de estos dos números — un bin 2×3 de 6U mide 84mm × 126mm × 42mm. El modo medio bin añade pasos de 0,5 unidades (21mm). Conociendo estos dos números, sabes qué cabe en tu cajón y qué bins imprimir.
 
 ## Unidades de cuadrícula (ancho y profundidad)
 

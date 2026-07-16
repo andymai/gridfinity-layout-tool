@@ -31,7 +31,7 @@ faqs:
 
 # What is Gridfinity?
 
-Gridfinity is a modular storage system you 3D print yourself. Zack Freedman, a maker and YouTuber, released it in 2022. There are now over 10,000 free designs on Printables alone.
+Gridfinity is a free, open-source modular storage system you 3D print yourself: bins in standard sizes rest on a 42mm baseplate grid, so every design from every maker is interchangeable. Zack Freedman, a maker and YouTuber, created it in 2022, and there are now over 10,000 free designs on Printables alone.
 
 The idea is simple: everything uses a 42mm grid. Bins rest on baseplates. Baseplates tile to fill any drawer. When you need to reorganize, pick up the bins and move them.
 

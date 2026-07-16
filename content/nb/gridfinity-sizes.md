@@ -21,7 +21,7 @@ faqs:
 
 # Gridfinity-størrelser og -mål
 
-Gridfinity bruker to tall: **rutenettsenheter** for binens bredde og dybde, og **høydeenheter** for høyden. Når du kjenner dem, vet du hva som passer i skuffen og hvilke bins du skal skrive ut.
+**Standard Gridfinity-størrelser: én rutenettsenhet er 42mm × 42mm (bredde og dybde), og én høydeenhet (1U) er 7mm.** Hver bin og hver grunnplate er et multiplum av disse to tallene — en 2×3-bin på 6U måler 84mm × 126mm × 42mm. Halv-bin-modus legger til trinn på 0,5 enheter (21mm). Når du kjenner disse to tallene, vet du hva som passer i skuffen og hvilke bins du skal skrive ut.
 
 ## Rutenettsenheter (bredde og dybde)
 

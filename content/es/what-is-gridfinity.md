@@ -31,7 +31,7 @@ faqs:
 
 # ¿Qué es Gridfinity?
 
-Gridfinity es un sistema de organización modular que tú mismo imprimes en 3D. Zack Freedman, un maker y YouTuber, lo publicó en 2022. Hoy hay más de 10 000 diseños gratuitos solo en Printables.
+Gridfinity es un sistema de organización modular, gratuito y de código abierto, que tú mismo imprimes en 3D: los bins de tamaños estándar se apoyan sobre una cuadrícula de placas de 42mm, así que cualquier diseño de cualquier maker es compatible. Zack Freedman, un maker y YouTuber, lo creó en 2022, y hoy hay más de 10 000 diseños gratuitos solo en Printables.
 
 La idea es sencilla: todo usa una cuadrícula de 42 mm. Los bins se apoyan sobre placas base. Las placas se embaldosan para cubrir cualquier cajón. Cuando quieras reorganizar, levantas los bins y los mueves.
 

@@ -25,7 +25,7 @@ faqs:
 
 # Gridfinity Sizes & Dimensions
 
-Gridfinity uses two numbers: **grid units** for how wide and deep a bin is, and **height units** for how tall. Once you know these, you can figure out what fits in your drawer and what bins to print.
+**Standard Gridfinity sizes: one grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Every bin and baseplate is a multiple of these two numbers — a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps. Once you know these two numbers, you can work out what fits in your drawer and which bins to print.
 
 ## Grid Units (Width & Depth)
 
