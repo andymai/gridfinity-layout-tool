@@ -1,0 +1,21 @@
+public/privacy/index.html
+  s_6223ae73204b1d::t_afcddb9ad5ed42 243
+public/terms/index.html
+  s_6223ae73204b1d::t_afcddb9ad5ed42 164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e026a0224cf2e4868a35422e419b474621028974",
+  "prompts": {},
+  "sessions": {
+    "s_6223ae73204b1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fd53fc02-5b5b-47e2-a6c9-8acce16bb4f8",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
