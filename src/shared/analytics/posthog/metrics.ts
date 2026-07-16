@@ -3,7 +3,7 @@
  * Pure functions that derive analytics data from Layout and store state.
  */
 
-import type { Layout, CategoryId } from '@/core/types';
+import type { Layout, CategoryId, OutlineAuthoringKind } from '@/core/types';
 import { DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions } from '@/core/constants';
 import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
@@ -84,7 +84,7 @@ export interface LayoutMetrics {
   feature_asymmetric_bed: boolean;
 
   // Drawer shape
-  drawer_shape_kind: string;
+  drawer_shape_kind: OutlineAuthoringKind | 'rectangle' | 'custom';
 
   // Print readiness
   has_oversized_bins: boolean;
