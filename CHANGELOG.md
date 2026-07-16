@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.248.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.3...gridfinity-layout-tool-v4.248.4) (2026-07-16)
+
+
+### Bug Fixes
+
+* **shell:** polish sidebars and top bar across desktop, tablet, and mobile ([#2603](https://github.com/andymai/gridfinity-layout-tool/issues/2603)) ([46d2d27](https://github.com/andymai/gridfinity-layout-tool/commit/46d2d27a4b31c52aeb46aa18954fd96f1d53ee6c))
+
 ## [4.248.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.2...gridfinity-layout-tool-v4.248.3) (2026-07-15)
 
 
