@@ -1,0 +1,49 @@
+content/sv/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_16b08325b24db6 226
+scripts/vercel-ignore.sh
+  s_6223ae73204b1d::t_45203c1f730a56 35-36
+content/es/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_f44624107b340e 226
+content/pt-BR/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_49eb0f4b777d65 226
+content/fr/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_a54b6187f1893a 226
+content/de/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_6000bf8e01744a 226
+content/uk/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_57eddce47ba411 226
+content/nb/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_233841b8ac70ca 226
+scripts/build-content.ts
+  s_6223ae73204b1d::t_bc1ec02f3bb47e 882
+content/gridfinity-generator.md
+  s_6223ae73204b1d::t_fc35f27469c22c 105-106
+  s_6223ae73204b1d::t_d7fdfd423c7a8d 218-227
+  s_6223ae73204b1d::t_c26cfb7de86291 114
+content/nl/gridfinity-generator.md
+  s_6223ae73204b1d::t_2ad5210c27dc35 105-106,114,216-225
+  s_6223ae73204b1d::t_2f8460162577db 226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c90d30e95e100c4e1f93ce39c520198973dc6bb0",
+  "prompts": {},
+  "sessions": {
+    "s_6223ae73204b1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fd53fc02-5b5b-47e2-a6c9-8acce16bb4f8",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
