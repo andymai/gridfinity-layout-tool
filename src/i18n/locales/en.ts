@@ -2568,7 +2568,8 @@ const en: Record<string, string> = {
   'collab.cursors.viewing': '{count} viewing',
   'collab.mobileButton.ariaLabel': '{count} collaborators - tap to see all',
   'collab.mobileButton.title': '{count} collaborators',
-  'collab.participantCount': '{count} {count, plural, one {person} other {people}}',
+  'collab.participantCount': '{count} people',
+  'collab.participantCountOne': '1 person',
 
   // Mobile Tabs
   'mobile.tabs.tools': 'Tools',

@@ -1075,6 +1075,7 @@
   "collab.noOneHere": "他に誰もいません",
   "collab.owner": "オーナー",
   "collab.participantCount": "{count}人",
+  "collab.participantCountOne": "1人",
   "collab.participants": "参加者",
   "collab.reconnecting": "再接続中",
   "collab.you": "(あなた)",

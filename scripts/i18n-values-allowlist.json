@@ -106,6 +106,7 @@
     "labs.engine.segmentBrepkit",
     "labs.engine.statusStable",
     "layers.rectangles",
+    "collab.participantCountOne",
     "mobile.layouts.layoutCountOne",
     "layouts.layoutJson",
     "layouts.layouts",
