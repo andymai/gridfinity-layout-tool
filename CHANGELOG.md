@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.250.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.249.0...gridfinity-layout-tool-v4.250.0) (2026-07-16)
+
+
+### Features
+
+* **seo:** answer-first lead paragraphs on sizes and what-is pages ([#2609](https://github.com/andymai/gridfinity-layout-tool/issues/2609)) ([c42da04](https://github.com/andymai/gridfinity-layout-tool/commit/c42da049d3c641f69e59cc99e60f89cec90df37d))
+* **seo:** make homepage content visible to search crawlers ([#2610](https://github.com/andymai/gridfinity-layout-tool/issues/2610)) ([df3a82c](https://github.com/andymai/gridfinity-layout-tool/commit/df3a82cff6a70b19579bac8a057497645083b4cf))
+* **seo:** position generator page against other online generators ([#2608](https://github.com/andymai/gridfinity-layout-tool/issues/2608)) ([43b1488](https://github.com/andymai/gridfinity-layout-tool/commit/43b14887cbe78f1fd13e21d776eaa6d7e653bff7))
+
 ## [4.249.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.248.4...gridfinity-layout-tool-v4.249.0) (2026-07-16)
 
 
