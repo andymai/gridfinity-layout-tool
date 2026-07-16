@@ -1,0 +1,53 @@
+content/fr/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/uk/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/de/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/fr/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/nb/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/pt-BR/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/sv/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/pt-BR/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/es/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/sv/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/nl/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/nb/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/uk/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/de/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/es/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 24
+content/nl/what-is-gridfinity.md
+  s_6223ae73204b1d::t_8a50bd694634b6 34
+content/gridfinity-sizes.md
+  s_6223ae73204b1d::t_8a50bd694634b6 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "db2e3304c45bdb00b0d2d942fe2ed0ffd9ff6884",
+  "prompts": {},
+  "sessions": {
+    "s_6223ae73204b1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fd53fc02-5b5b-47e2-a6c9-8acce16bb4f8",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
