@@ -1,0 +1,33 @@
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_485b4e27ca9e00::t_b9c330cffebdc8 157
+src/shared/hooks/useDrawerSettings.ts
+  s_485b4e27ca9e00::t_dca0f38bf25909 381-383,387
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_485b4e27ca9e00::t_82b9ba44d77d73 58,66-91
+src/shell/Sidebar/Sidebar.tsx
+  s_485b4e27ca9e00::t_79a5050352d8c5 405
+src/shared/utils/drawerFit.ts
+  s_485b4e27ca9e00::t_569f72839702cb 19-22,24
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_485b4e27ca9e00::t_5a7602dc879325 99
+  s_485b4e27ca9e00::t_ceb291d92034f5 1
+  s_485b4e27ca9e00::t_282e788fc65c76 69-84
+src/shared/utils/drawerFit.test.ts
+  s_485b4e27ca9e00::t_95ecbff8ccfd90 25,27-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e9afa2c02c5b797eafae95b1a1e2c0a5ce0ed7b5",
+  "prompts": {},
+  "sessions": {
+    "s_485b4e27ca9e00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "817a7ec6-e452-4113-a47d-f1a68a03e557",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
