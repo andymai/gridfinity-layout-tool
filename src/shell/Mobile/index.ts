@@ -1,3 +1,4 @@
+export { MobileAboutStrip } from './MobileAboutStrip';
 export { MobileHeader } from './MobileHeader';
 export { BottomNavBar } from './BottomNavBar';
 export { BottomSheet } from './BottomSheet';

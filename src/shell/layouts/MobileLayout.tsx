@@ -19,8 +19,8 @@ import {
   MobileSettingsPanel,
   MobileLayoutsPanel,
   BinContextMenuWrapper,
+  MobileAboutStrip,
 } from '@/shell/Mobile';
-import { MobileAboutStrip } from '@/shell/Mobile/MobileAboutStrip';
 import type { SaveStatus } from '@/shared/hooks';
 import { useOnboarding } from '@/features/onboarding';
 

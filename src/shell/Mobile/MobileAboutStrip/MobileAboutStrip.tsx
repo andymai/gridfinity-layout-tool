@@ -20,15 +20,30 @@ export function MobileAboutStrip() {
     <aside className="flex-shrink-0 px-4 py-2 border-t border-stroke-subtle bg-surface text-[11px] leading-relaxed text-content-tertiary">
       <p>
         {t('sidebar.about')}{' '}
-        <a href={learnHref('what-is-gridfinity', true, locale)} className="underline">
+        <a
+          href={learnHref('what-is-gridfinity', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           {t('sidebar.learn.whatIs')}
         </a>
         {' · '}
-        <a href={learnHref('guide', true, locale)} className="underline">
+        <a
+          href={learnHref('guide', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           {t('sidebar.learn.guide')}
         </a>
         {' · '}
-        <a href={learnHref('gridfinity-generator', true, locale)} className="underline">
+        <a
+          href={learnHref('gridfinity-generator', true, locale)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           {t('sidebar.learn.generator')}
         </a>
       </p>

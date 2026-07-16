@@ -1,28 +1,20 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { useLayoutStore } from '@/core/store/layout';
+import { resetAllStores, createTestBin, createTestLayout } from '@/test/testUtils';
 import { MobileAboutStrip } from './MobileAboutStrip';
-
-let binCount = 0;
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
   useLocale: () => ({ locale: 'en' }),
 }));
 
-vi.mock('@/core/store/layout', () => ({
-  useLayoutStore: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({
-      layout: {
-        get bins() {
-          return Array.from({ length: binCount });
-        },
-      },
-    }),
-}));
-
 describe('MobileAboutStrip', () => {
+  beforeEach(() => {
+    resetAllStores();
+  });
+
   it('renders the about blurb and content links on an empty grid', () => {
-    binCount = 0;
     render(<MobileAboutStrip />);
     expect(screen.getByText('sidebar.about', { exact: false })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'sidebar.learn.whatIs' })).toHaveAttribute(
@@ -40,7 +32,7 @@ describe('MobileAboutStrip', () => {
   });
 
   it('renders nothing once the grid has bins', () => {
-    binCount = 3;
+    useLayoutStore.setState({ layout: createTestLayout({ bins: [createTestBin()] }) });
     const { container } = render(<MobileAboutStrip />);
     expect(container).toBeEmptyDOMElement();
   });
