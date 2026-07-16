@@ -1,0 +1,151 @@
+src/i18n/locales/es.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+api/lib/validation.ts
+  s_485b4e27ca9e00::t_b50ba12dc72466 80
+  s_485b4e27ca9e00::t_29e3194bc9c490 366-380,385
+src/i18n/locales/it.json
+  s_485b4e27ca9e00::t_9eafdced18dc91 2572-2582
+src/i18n/locales/nb.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/core/cqrs/validation/schemas.ts
+  s_485b4e27ca9e00::t_77609df427ade9 191-196,204-211
+src/shared/components/index.ts
+  s_485b4e27ca9e00::t_d9b20d56601b01 8
+  s_485b4e27ca9e00::t_4b43e823f93626 9
+src/shared/analytics/posthog/index.ts
+  s_485b4e27ca9e00::t_0f52a2c48cde43 50-52
+  s_485b4e27ca9e00::t_847a90929373bc 30
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_485b4e27ca9e00::t_4daf71b5e6a2f4 44
+src/shared/components/EditableDimensions/index.ts
+  s_485b4e27ca9e00::t_7bb96ca22fb761 1
+src/shared/analytics/posthog/metrics.ts
+  s_485b4e27ca9e00::t_251752c36d3eca 246
+  s_485b4e27ca9e00::t_7203db7a5a1a5a 83
+src/i18n/locales/de.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_485b4e27ca9e00::t_f8f849cd81c50e 26
+  s_485b4e27ca9e00::t_2013dcf5b3a6cb 109
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.test.tsx
+  s_485b4e27ca9e00::t_0cdd8eacd474ad 51-56
+src/core/cqrs/commands/drawerCommands.ts
+  s_485b4e27ca9e00::t_4de813d47b5f0a 6-12,14-23
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_485b4e27ca9e00::t_fef0edeb8bafcc 21,29,41,53,66,80,94,106,118,130,136-176
+src/i18n/locales/pt-BR.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/shared/contexts/MutationsContext.tsx
+  s_485b4e27ca9e00::t_5fe6c332dc42bc 65
+  s_485b4e27ca9e00::t_4915661e32da87 22
+src/core/cqrs/projection/replay.ts
+  s_485b4e27ca9e00::t_6786bb2037ca48 137-139
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_485b4e27ca9e00::t_c44ac8f8cd149f 1-26,28-121,123-166
+  s_7fddca67d6dc19::t_2f06d22d9cb6a7 27,122
+src/shared/analytics/posthog/posthog.test.ts
+  s_485b4e27ca9e00::t_1fcdabc82e5f03 92-100
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_485b4e27ca9e00::t_2dc03d3d625d53 50-59
+  s_485b4e27ca9e00::t_71e255832a3cf6 167-169
+  s_485b4e27ca9e00::t_d8f45a83c031a2 26-30,38-46
+  s_485b4e27ca9e00::t_96701a04eb44be 112-115
+  s_485b4e27ca9e00::t_4ff920e3f44d2f 21
+src/i18n/locales/en.ts
+  s_485b4e27ca9e00::t_69c7d53812babd 2947-2959
+src/shared/utils/drawerFit.ts
+  s_485b4e27ca9e00::t_8619b892b2a4e3 1-35
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_485b4e27ca9e00::t_3a0cc5f6d2a5ac 1-105
+src/shared/analytics/posthog/eventsCore.test.ts
+  s_485b4e27ca9e00::t_45bfd4f41fddd8 75-110
+  s_485b4e27ca9e00::t_d0cab3f547cd5c 14-16
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_485b4e27ca9e00::t_0e846bca4b754f 99,111-122,138,150
+  s_485b4e27ca9e00::t_25e6e0482350bf 222
+  s_485b4e27ca9e00::t_a420e31dfc4227 17-39
+  s_485b4e27ca9e00::t_f0d5cf56697053 103-106,124,141,154,230
+  s_485b4e27ca9e00::t_843c87b98e4ac2 191-207
+  s_485b4e27ca9e00::t_f21aa999d893be 79-93
+  s_485b4e27ca9e00::t_4d00aa95ad6ec3 52-63
+  s_485b4e27ca9e00::t_a5d8e8a849de16 223
+src/i18n/locales/uk.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/core/cqrs/index.ts
+  s_485b4e27ca9e00::t_a77b2ca10eee99 65
+src/core/cqrs/commands/index.ts
+  s_485b4e27ca9e00::t_a77b2ca10eee99 44
+src/shared/utils/drawerFit.test.ts
+  s_485b4e27ca9e00::t_ebba23556d30b7 1,3-56
+  s_485b4e27ca9e00::t_00c751ffe4d34d 2
+src/shared/hooks/useDrawerSettings.ts
+  s_485b4e27ca9e00::t_c24722d3fc8cb3 358-359,364-367
+  s_485b4e27ca9e00::t_a9b5f4b1578d02 174
+  s_485b4e27ca9e00::t_f7b005528521d2 346-357,360-363,368-423
+  s_485b4e27ca9e00::t_1e49bc9e2c4eef 21-26,28
+  s_485b4e27ca9e00::t_7c1f2125259ded 520-527
+  s_485b4e27ca9e00::t_caba3c54e3b5d8 188,201
+  s_485b4e27ca9e00::t_412ba5d0cb044e 37-44,57-63
+  s_7fddca67d6dc19::t_3ecd72769f9a56 64
+src/i18n/locales/ja.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+api/lib/validation.test.ts
+  s_485b4e27ca9e00::t_c4c55a7c8255f7 258-292
+src/shared/analytics/posthog/eventsCore.ts
+  s_485b4e27ca9e00::t_a6752a5122724f 164-191
+src/i18n/locales/fr.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/shared/components/DrawerDimensionsSummary/index.ts
+  s_485b4e27ca9e00::t_2fbfb43c0264ac 1
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_485b4e27ca9e00::t_662553a1ccdfac 142-192,200-224
+  s_485b4e27ca9e00::t_c8d23b5b783a1e 193-199
+src/core/constants.ts
+  s_485b4e27ca9e00::t_76966bd500404a 45-48
+src/shared/analytics/posthog/events.ts
+  s_485b4e27ca9e00::t_641fce8c67884b 35-37,41
+src/i18n/locales/sv.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/shell/Sidebar/Sidebar.tsx
+  s_485b4e27ca9e00::t_6fc0c595a0c449 397-412
+  s_485b4e27ca9e00::t_f02a737474cabd 85-90
+  s_e1c9ad3495378a::t_451139f43a0923 14
+src/i18n/locales/nl.json
+  s_485b4e27ca9e00::t_19cb8f903a8d63 2572-2582
+src/core/types.ts
+  s_485b4e27ca9e00::t_3060d4c0e616c5 320-331,340-341
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_e1c9ad3495378a::t_1e6a645997bd37 10,45-50,148-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1d563dd753211f6394c6ce04ed2488ebbdc1dd03",
+  "prompts": {},
+  "sessions": {
+    "s_485b4e27ca9e00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "817a7ec6-e452-4113-a47d-f1a68a03e557",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_7fddca67d6dc19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "771ee67c-f316-473f-b0ec-0984cb53672f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e1c9ad3495378a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9e005044-5771-4265-ab76-92f74a8924b4",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
