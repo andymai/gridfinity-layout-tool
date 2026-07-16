@@ -226,6 +226,8 @@ Several browser-based Gridfinity generators exist, and the good ones share the s
 
 The structural difference is what surrounds the generator. Standalone generators make one bin at a time, and the drawer plan lives in your head or a spreadsheet. Here the bin and baseplate generators are built into a drawer layout planner: you measure the drawer once, lay out every bin visually, and each bin you generate already has the right footprint. When the layout is done, you export a print list covering every file in the drawer — no copying dimensions between tools.
 
+### vs. OpenSCAD scripts (kennethjiang, vector76, others)
+
 OpenSCAD scripts have been the workhorse of the Gridfinity community since the project started. They are powerful and free. They are also code — to change a bin's height, you edit a parameter in a text file and re-run the renderer. The render takes seconds for simple bins, minutes for complex ones.
 
 This generator runs in your browser with sliders and toggles. The 3D preview is real-time, not a render queue. You can adjust a magnet depth and see the effect instantly. STEP and 3MF outputs are first-class, not after-thoughts. If you're comfortable with OpenSCAD code and the customizer GUI is enough, those scripts are great. If you prefer a visual interface or you're on a phone, this is faster.
