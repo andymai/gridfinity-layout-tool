@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Elimina condivisione",
   "mobile.layouts.getIdeasForYourDrawer": "Trova idee per il tuo cassetto",
   "mobile.layouts.layoutCount": "{count} layout",
+  "mobile.layouts.layoutCountOne": "1 layout",
   "mobile.layouts.permission": "Autorizzazione",
   "mobile.layouts.previewBins": "{count} bin",
   "mobile.layouts.renameLayout": "Rinomina layout",

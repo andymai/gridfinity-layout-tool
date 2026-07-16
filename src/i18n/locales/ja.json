@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "共有を削除",
   "mobile.layouts.getIdeasForYourDrawer": "ドロワーのアイデアを取得",
   "mobile.layouts.layoutCount": "{count}件のレイアウト",
+  "mobile.layouts.layoutCountOne": "1件のレイアウト",
   "mobile.layouts.permission": "権限",
   "mobile.layouts.previewBins": "{count}個のビン",
   "mobile.layouts.renameLayout": "レイアウト名を変更",

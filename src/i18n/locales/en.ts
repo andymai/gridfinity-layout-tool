@@ -1202,6 +1202,7 @@ const en: Record<string, string> = {
   'mobile.layouts.deleteShare': 'Delete share',
   'mobile.layouts.getIdeasForYourDrawer': 'Get ideas for your drawer',
   'mobile.layouts.layoutCount': '{count} layouts',
+  'mobile.layouts.layoutCountOne': '1 layout',
   'mobile.layouts.permission': 'Permission',
   'mobile.layouts.previewBins': '{count} bins',
   'mobile.layouts.renameLayout': 'Rename layout',

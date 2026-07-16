@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Gedeeld verwijderen",
   "mobile.layouts.getIdeasForYourDrawer": "Ideeën voor je drawer",
   "mobile.layouts.layoutCount": "{count} indelingen",
+  "mobile.layouts.layoutCountOne": "1 indeling",
   "mobile.layouts.permission": "Toestemming",
   "mobile.layouts.previewBins": "{count} bins",
   "mobile.layouts.renameLayout": "Layout hernoemen",

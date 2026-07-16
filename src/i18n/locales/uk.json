@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Видалити публікацію",
   "mobile.layouts.getIdeasForYourDrawer": "Знайдіть ідеї для своєї шухляди",
   "mobile.layouts.layoutCount": "{count} розкладок",
+  "mobile.layouts.layoutCountOne": "1 розкладка",
   "mobile.layouts.permission": "Дозвіл",
   "mobile.layouts.previewBins": "{count} бінів",
   "mobile.layouts.renameLayout": "Перейменувати розкладку",

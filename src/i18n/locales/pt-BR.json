@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Excluir compartilhamento",
   "mobile.layouts.getIdeasForYourDrawer": "Obtenha ideias para seu drawer",
   "mobile.layouts.layoutCount": "{count} layouts",
+  "mobile.layouts.layoutCountOne": "1 layout",
   "mobile.layouts.permission": "Permissão",
   "mobile.layouts.previewBins": "{count} bins",
   "mobile.layouts.renameLayout": "Renomear layout",

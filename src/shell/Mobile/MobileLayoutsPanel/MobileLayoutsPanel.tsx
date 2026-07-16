@@ -267,7 +267,9 @@ export function MobileLayoutsPanel() {
   return (
     <div className="pb-4">
       <div className="text-sm text-content-tertiary mb-3">
-        {t('mobile.layouts.layoutCount', { count: entries.length })}
+        {entries.length === 1
+          ? t('mobile.layouts.layoutCountOne')
+          : t('mobile.layouts.layoutCount', { count: entries.length })}
       </div>
 
       <div className="space-y-2">

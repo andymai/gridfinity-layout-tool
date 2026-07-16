@@ -441,7 +441,7 @@ describe('MobileLayoutsPanel', () => {
 
     it('renders singular layout count', () => {
       render(<MobileLayoutsPanel />);
-      expect(screen.getByText('1 layouts')).toBeInTheDocument();
+      expect(screen.getByText('1 layout')).toBeInTheDocument();
     });
 
     it('disables delete button for only layout', () => {

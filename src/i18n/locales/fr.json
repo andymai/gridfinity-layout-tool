@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Supprimer le partage",
   "mobile.layouts.getIdeasForYourDrawer": "Des idées pour votre tiroir",
   "mobile.layouts.layoutCount": "{count} agencements",
+  "mobile.layouts.layoutCountOne": "1 agencement",
   "mobile.layouts.permission": "Permission",
   "mobile.layouts.previewBins": "{count} bins",
   "mobile.layouts.renameLayout": "Renommer le layout",

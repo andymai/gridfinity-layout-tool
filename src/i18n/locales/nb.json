@@ -1912,6 +1912,7 @@
   "mobile.layouts.deleteShare": "Slett deling",
   "mobile.layouts.getIdeasForYourDrawer": "Få ideer til skuffen din",
   "mobile.layouts.layoutCount": "{count} oppsett",
+  "mobile.layouts.layoutCountOne": "1 oppsett",
   "mobile.layouts.permission": "Tillatelse",
   "mobile.layouts.previewBins": "{count} bins",
   "mobile.layouts.renameLayout": "Gi nytt navn til layout",
