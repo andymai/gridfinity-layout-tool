@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
+  useLibraryStore,
   useSettingsStore,
   useToastStore,
   useSelectionStore,
@@ -171,7 +172,16 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     null
   );
   const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
-  const [halfFitSuggestion, setHalfFitSuggestion] = useState<HalfFitSuggestion | null>(null);
+  // The suggestion is anchored to the layout and drawer dims it was computed
+  // against; the effect below discards it the moment either drifts (layout
+  // switch, undo, stepper edit, canvas drag-resize), so accepting can never
+  // apply units derived from a different measurement.
+  const [halfFit, setHalfFit] = useState<{
+    suggestion: HalfFitSuggestion;
+    layoutId: string;
+    baseWidth: number;
+    baseDepth: number;
+  } | null>(null);
 
   // Layout store selectors
   const {
@@ -213,6 +223,18 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   // Selection store selectors
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+
+  // Derived, not effect-cleared: the suggestion only renders while its
+  // anchors still hold, so stale state simply stops showing (and is
+  // replaced on the next commit).
+  const halfFitSuggestion =
+    halfFit !== null &&
+    halfFit.layoutId === activeLayoutId &&
+    halfFit.baseWidth === (drawerWidth as number) &&
+    halfFit.baseDepth === (drawerDepth as number)
+      ? halfFit.suggestion
+      : null;
 
   const { settings, saveCurrentAsDefaults, saveCategoriesAsDefaults, updateSetting } =
     useSettingsStore(
@@ -390,7 +412,16 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
           };
         }
       }
-      setHalfFitSuggestion(suggestion);
+      setHalfFit(
+        suggestion === null
+          ? null
+          : {
+              suggestion,
+              layoutId: activeLayoutId,
+              baseWidth: widthFit.units,
+              baseDepth: depthFit.units,
+            }
+      );
 
       trackDrawerMeasuredCommitted({
         slack_width_mm: widthFit.slackMm,
@@ -399,25 +430,25 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         has_height: heightMm !== undefined,
       });
     },
-    [gridUnitMm, halfGridMode, heightUnitMm, updateDrawer]
+    [gridUnitMm, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
   );
 
   const acceptHalfFitSuggestion = useCallback(() => {
     if (halfFitSuggestion === null) return;
     setHalfGridMode(true);
     batch(() => updateDrawer({ width: halfFitSuggestion.width, depth: halfFitSuggestion.depth }));
-    setHalfFitSuggestion(null);
+    setHalfFit(null);
     trackDrawerHalfFitSuggestion('accepted');
   }, [halfFitSuggestion, setHalfGridMode, updateDrawer]);
 
   const dismissHalfFitSuggestion = useCallback(() => {
-    setHalfFitSuggestion(null);
+    setHalfFit(null);
     trackDrawerHalfFitSuggestion('dismissed');
   }, []);
 
   const clearMeasurement = useCallback(() => {
     batch(() => updateDrawer({ measuredMm: null }));
-    setHalfFitSuggestion(null);
+    setHalfFit(null);
     trackDrawerMeasurementCleared();
   }, [updateDrawer]);
 
