@@ -1,0 +1,49 @@
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
+  s_485b4e27ca9e00::t_2ee31813d70e93 10
+  s_9599a19035c5e3::t_5ac0c9374f6589 97-102
+src/shared/analytics/posthog/events.ts
+  s_485b4e27ca9e00::t_52e940eec83e8f 32-34,38-39
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.tsx
+  s_485b4e27ca9e00::t_35eb024e771751 10,39,106
+  s_9599a19035c5e3::t_65c6423461ece5 119-124,129,135
+src/shared/analytics/posthog/index.ts
+  s_485b4e27ca9e00::t_08ea7e4da90d3f 30-31
+  s_485b4e27ca9e00::t_388ca0db82bea7 46-48
+src/shared/analytics/posthog/eventsCore.test.ts
+  s_485b4e27ca9e00::t_18db4cfc855ef0 1-71
+src/shared/analytics/posthog/eventsCore.ts
+  s_485b4e27ca9e00::t_d33a3d129108ff 136-163
+src/shared/analytics/posthog/metrics.ts
+  s_485b4e27ca9e00::t_af6bea9a2b2389 82,86-87
+  s_485b4e27ca9e00::t_5a94fb8abdf757 197-199,202
+  s_485b4e27ca9e00::t_d08fa2def93832 200-201,244,248-249
+  s_9599a19035c5e3::t_9eabdc533e2bb0 88,250
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_9599a19035c5e3::t_ec635c9663c200 8,40,45-54,56,80,90
+src/shared/analytics/posthog/posthog.test.ts
+  s_9599a19035c5e3::t_d6d657de18e0fd 84-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "ad5abd6b7b27e611507281e16c021f21fa9c4adb",
+  "prompts": {},
+  "sessions": {
+    "s_485b4e27ca9e00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "817a7ec6-e452-4113-a47d-f1a68a03e557",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_9599a19035c5e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "32e6f9af-7a7b-4109-9238-7a4db39cad39",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
