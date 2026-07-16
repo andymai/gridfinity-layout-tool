@@ -41,6 +41,7 @@ export type {
 export type {
   DrawerCommand,
   UpdateDrawerCommand,
+  UpdateDrawerPayload,
   SetNameCommand,
   SetPrintBedSizeCommand,
   SetGridUnitMmCommand,

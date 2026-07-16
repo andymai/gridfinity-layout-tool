@@ -19,12 +19,11 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { createCqrsMutations, commandBus } from '@/core/cqrs';
-import type { CommandBus } from '@/core/cqrs';
+import type { CommandBus, UpdateDrawerPayload } from '@/core/cqrs';
 import type {
   Bin,
   Layer,
   Category,
-  Drawer,
   BinId,
   LayerId,
   CategoryId,
@@ -63,7 +62,7 @@ export interface Mutations {
   reorderLayers: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
 
   // Drawer operations
-  updateDrawer: (updates: Partial<Drawer>) => void;
+  updateDrawer: (updates: UpdateDrawerPayload) => void;
   setDrawerOutline: (outline: DrawerOutline | null) => Result<void, LayoutError>;
 
   // Category operations

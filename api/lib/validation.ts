@@ -77,6 +77,7 @@ interface DrawerShape {
   fractionalEdgeX?: 'start' | 'end';
   fractionalEdgeY?: 'start' | 'end';
   outline?: DrawerOutlineShape;
+  measuredMm?: { width: number; depth: number; height?: number };
 }
 
 interface LayerShape {
@@ -362,10 +363,26 @@ export function validateExpiration(days: unknown): days is ValidExpiration {
   );
 }
 
+/** Mirrors CONSTRAINTS.MEASURED_MM_MIN/MAX in src/core/constants.ts. */
+const MEASURED_MM_MIN = 1;
+const MEASURED_MM_MAX = 5000;
+
+function isValidMeasuredMm(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const boundedMm = (v: unknown): boolean =>
+    isNumber(v) && inRange(v, MEASURED_MM_MIN, MEASURED_MM_MAX);
+  return (
+    boundedMm(value.width) &&
+    boundedMm(value.depth) &&
+    (value.height === undefined || boundedMm(value.height))
+  );
+}
+
 // Type guards
 function isValidDrawer(value: unknown): value is DrawerShape {
   if (!isObject(value)) return false;
   if (value.outline !== undefined && !isValidDrawerOutline(value.outline)) return false;
+  if (value.measuredMm !== undefined && !isValidMeasuredMm(value.measuredMm)) return false;
   return (
     isNumber(value.width) &&
     isNumber(value.depth) &&

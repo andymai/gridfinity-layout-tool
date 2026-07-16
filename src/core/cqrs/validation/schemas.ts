@@ -188,7 +188,12 @@ const categoryUpdateSchema = z.object({
 
 /** category.delete */
 const categoryDeleteSchema = z.object({ id: categoryIdSchema });
-/** drawer.update: Partial<Drawer> */
+const measuredMmValue = z
+  .number()
+  .min(CONSTRAINTS.MEASURED_MM_MIN)
+  .max(CONSTRAINTS.MEASURED_MM_MAX);
+
+/** drawer.update: UpdateDrawerPayload */
 const drawerUpdateSchema = z
   .object({
     width: drawerDim,
@@ -196,6 +201,14 @@ const drawerUpdateSchema = z
     height: z.number().min(CONSTRAINTS.MIN_LAYER_HEIGHT),
     fractionalEdgeX: z.union([z.literal('start'), z.literal('end')]),
     fractionalEdgeY: z.union([z.literal('start'), z.literal('end')]),
+    // null clears the stored measurement
+    measuredMm: z
+      .object({
+        width: measuredMmValue,
+        depth: measuredMmValue,
+        height: measuredMmValue.optional(),
+      })
+      .nullable(),
   })
   .partial();
 

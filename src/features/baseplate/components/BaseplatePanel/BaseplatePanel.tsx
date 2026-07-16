@@ -41,7 +41,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
-import { EditableDimensions } from './EditableDimensions';
+import { EditableDimensions } from '@/shared/components/EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
 import { SplitViewStrip } from './SplitViewStrip';
 import { CornerRadiusControl } from './CornerRadiusControl';

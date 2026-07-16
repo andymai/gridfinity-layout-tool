@@ -134,6 +134,9 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       if ('outline' in event.payload.changes && event.payload.changes.outline === undefined) {
         delete next.drawer.outline;
       }
+      if ('measuredMm' in event.payload.changes && event.payload.changes.measuredMm === undefined) {
+        delete next.drawer.measuredMm;
+      }
       break;
 
     case 'drawer.outlineSet': {

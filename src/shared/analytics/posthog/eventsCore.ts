@@ -161,6 +161,34 @@ export function trackDrawerShapeReset(): void {
   trackEvent('drawer_shape_reset', {});
 }
 
+export interface DrawerMeasuredCommittedProperties {
+  /** Leftover mm per axis after fitting the grid (negative = clamped up). */
+  slack_width_mm: number;
+  slack_depth_mm: number;
+  /** Whether a tighter half-unit fit was offered after this commit. */
+  half_fit_offered: boolean;
+  has_height: boolean;
+}
+
+/** Track the user committing a measured drawer size in mm. */
+export function trackDrawerMeasuredCommitted(props: DrawerMeasuredCommittedProperties): void {
+  trackEvent('drawer_measured_committed', {
+    ...props,
+    slack_width_mm: Math.round(props.slack_width_mm * 10) / 10,
+    slack_depth_mm: Math.round(props.slack_depth_mm * 10) / 10,
+  });
+}
+
+/** Track the half-unit fit suggestion being acted on. */
+export function trackDrawerHalfFitSuggestion(action: 'accepted' | 'dismissed'): void {
+  trackEvent('drawer_half_fit_suggestion', { action });
+}
+
+/** Track the stored drawer measurement being cleared. */
+export function trackDrawerMeasurementCleared(): void {
+  trackEvent('drawer_measurement_cleared', {});
+}
+
 export const MILESTONE_THRESHOLDS: Array<{
   key: 'first_bin' | 'engaged' | 'substantial' | 'power_user';
   min: number;

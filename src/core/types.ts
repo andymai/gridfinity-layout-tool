@@ -317,6 +317,18 @@ export interface DrawerOutline {
   };
 }
 
+/**
+ * The user's tape-measure reading of the physical drawer, in mm. Kept
+ * alongside the derived grid dims so the fit slack stays visible after
+ * commit and the baseplate panel can pre-fill padding from it. Never
+ * consulted for geometry — the grid dims stay the source of truth.
+ */
+export interface MeasuredDrawerMm {
+  width: number; // mm
+  depth: number; // mm
+  height?: number; // mm
+}
+
 export interface Drawer {
   width: GridUnits; // 1-50
   depth: GridUnits; // 1-50
@@ -325,6 +337,8 @@ export interface Drawer {
   fractionalEdgeY?: FractionalEdge; // 'start' = bottom, 'end' = top (default)
   /** Non-rectangular boundary. Absent = full `width × depth` rectangle. */
   outline?: DrawerOutline;
+  /** Measured physical drawer size. Absent until the user enters one. */
+  measuredMm?: MeasuredDrawerMm;
 }
 
 export interface Category {

@@ -4,10 +4,10 @@ import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
-import { RulerIcon } from '@/design-system/Icon';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { DrawerShapeSection } from '@/features/drawer-shape';
@@ -42,6 +42,12 @@ export function MobileSettingsPanel() {
     widthStep,
     depthStep,
     realWorldDimensions,
+    measuredMm,
+    halfFitSuggestion,
+    handleMeasuredCommit,
+    acceptHalfFitSuggestion,
+    dismissHalfFitSuggestion,
+    clearMeasurement,
     maxGridUnits,
     gridUnitMm,
     heightUnitMm,
@@ -139,13 +145,24 @@ export function MobileSettingsPanel() {
           />
         </div>
 
-        {/* Real-world drawer dimensions */}
-        <div className="mt-3 flex items-center gap-1.5 text-sm text-content-tertiary">
-          <RulerIcon size="sm" />
-          <span className="tabular-nums">
-            {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} ×{' '}
-            {realWorldDimensions.height.toFixed(0)} mm
-          </span>
+        {/* Real-world drawer dimensions — tap to type a measured size */}
+        <div className="mt-1">
+          <DrawerDimensionsSummary
+            measuredMm={measuredMm}
+            gridWidthMm={realWorldDimensions.width}
+            gridDepthMm={realWorldDimensions.depth}
+            gridHeightMm={realWorldDimensions.height}
+            minMm={CONSTRAINTS.MEASURED_MM_MIN}
+            maxMm={CONSTRAINTS.MEASURED_MM_MAX}
+            minHeightMm={heightUnitMm}
+            maxHeightMm={CONSTRAINTS.GRID_MAX * heightUnitMm}
+            onCommit={handleMeasuredCommit}
+            suggestion={halfFitSuggestion}
+            onAcceptSuggestion={acceptHalfFitSuggestion}
+            onDismissSuggestion={dismissHalfFitSuggestion}
+            onClearMeasurement={clearMeasurement}
+            variant="mobile"
+          />
         </div>
       </section>
 

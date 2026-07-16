@@ -139,4 +139,87 @@ describe('v2 drawer.update with an outline', () => {
     if (!isOk(result)) return;
     expect('outline' in result.value.event.payload.changes).toBe(false);
   });
+
+  describe('measuredMm', () => {
+    it('stores the measured drawer size', () => {
+      const layout = makeLayout();
+      const result = updateDrawer.handle(
+        { width: 10, measuredMm: { width: 450, depth: 380, height: 60 } },
+        { aggregate: layout }
+      );
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.measuredMm).toEqual({
+        width: 450,
+        depth: 380,
+        height: 60,
+      });
+      const applied = produce(layout, (draft) => {
+        updateDrawer.apply({ type: 'drawer.updated', payload: result.value.event.payload }, draft);
+      });
+      expect(applied.drawer.measuredMm).toEqual({ width: 450, depth: 380, height: 60 });
+    });
+
+    it('clamps measured values to the sane mm range', () => {
+      const result = updateDrawer.handle(
+        { measuredMm: { width: 999999, depth: 0 } },
+        { aggregate: makeLayout() }
+      );
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.measuredMm).toEqual({
+        width: CONSTRAINTS.MEASURED_MM_MAX,
+        depth: CONSTRAINTS.MEASURED_MM_MIN,
+      });
+    });
+
+    it('null clears the stored measurement via a present-but-undefined change', () => {
+      const layout = {
+        ...makeLayout(),
+        drawer: { ...makeLayout().drawer, measuredMm: { width: 450, depth: 380 } },
+      };
+      const result = updateDrawer.handle({ measuredMm: null }, { aggregate: layout });
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('measuredMm' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.measuredMm).toBeUndefined();
+      const applied = produce(layout, (draft) => {
+        updateDrawer.apply({ type: 'drawer.updated', payload: result.value.event.payload }, draft);
+      });
+      expect('measuredMm' in applied.drawer).toBe(false);
+
+      // Replay must delete the key the same way apply() does.
+      const replayed = applyEvent(layout, {
+        type: 'drawer.updated',
+        payload: result.value.event.payload,
+      } as never);
+      expect('measuredMm' in replayed.drawer).toBe(false);
+    });
+
+    it('captures the previous measurement for undo', () => {
+      const layout = {
+        ...makeLayout(),
+        drawer: { ...makeLayout().drawer, measuredMm: { width: 450, depth: 380 } },
+      };
+      const result = updateDrawer.handle(
+        { measuredMm: { width: 500, depth: 400 } },
+        { aggregate: layout }
+      );
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.previous.measuredMm).toEqual({ width: 450, depth: 380 });
+    });
+
+    it('leaves the measurement untouched when not in the payload', () => {
+      const result = updateDrawer.handle({ width: 8 }, { aggregate: makeLayout() });
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('measuredMm' in result.value.event.payload.changes).toBe(false);
+    });
+  });
 });

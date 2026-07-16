@@ -255,6 +255,41 @@ describe('validateShareLayout', () => {
       }
     });
 
+    it('accepts a bounded measured drawer size', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 450, depth: 380, height: 90 };
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts a measured drawer size without height', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 450, depth: 380 };
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects an unbounded measured drawer width (1e9)', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 1_000_000_000, depth: 380 };
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+      }
+    });
+
+    it('rejects a non-numeric measured drawer size', () => {
+      const layout = createValidLayout();
+      layout.drawer.measuredMm = { width: 'wide', depth: 380 } as never;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+    });
+
     it('rejects drawer height below HEIGHT_MIN (mirrors client MIN_LAYER_HEIGHT=2)', () => {
       const layout = createValidLayout();
       layout.drawer.height = 1;

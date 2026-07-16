@@ -18,10 +18,15 @@ import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
-import type { BinId, Drawer, GridUnits } from '@/core/types';
+import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from './displacement';
+
+const measuredMmValue = z
+  .number()
+  .min(CONSTRAINTS.MEASURED_MM_MIN)
+  .max(CONSTRAINTS.MEASURED_MM_MAX);
 
 const payloadSchema = z
   .object({
@@ -30,8 +35,27 @@ const payloadSchema = z
     height: z.number().min(0),
     fractionalEdgeX: z.enum(['start', 'end']),
     fractionalEdgeY: z.enum(['start', 'end']),
+    // null clears the stored measurement (same present-key-undefined dance
+    // as the outline: apply() deletes it from the draft).
+    measuredMm: z
+      .object({
+        width: measuredMmValue,
+        depth: measuredMmValue,
+        height: measuredMmValue.optional(),
+      })
+      .nullable(),
   })
   .partial();
+
+function clampMeasuredMm(measured: MeasuredDrawerMm): MeasuredDrawerMm {
+  const clampMm = (v: number): number =>
+    clamp(v, CONSTRAINTS.MEASURED_MM_MIN, CONSTRAINTS.MEASURED_MM_MAX);
+  return {
+    width: clampMm(measured.width),
+    depth: clampMm(measured.depth),
+    ...(measured.height !== undefined ? { height: clampMm(measured.height) } : {}),
+  };
+}
 
 function capturePrevious(drawer: Drawer, changes: Partial<Drawer>): Partial<Drawer> {
   const previous: Partial<Drawer> = {};
@@ -85,6 +109,10 @@ export const updateDrawer = defineCommand({
     }
     if (payload.fractionalEdgeX !== undefined) changes.fractionalEdgeX = payload.fractionalEdgeX;
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;
+    if (payload.measuredMm !== undefined) {
+      changes.measuredMm =
+        payload.measuredMm === null ? undefined : clampMeasuredMm(payload.measuredMm);
+    }
 
     const newWidth: GridUnits = changes.width ?? drawer.width;
     const newDepth: GridUnits = changes.depth ?? drawer.depth;
@@ -135,6 +163,9 @@ export const updateDrawer = defineCommand({
     // and serialization see a truly absent field.
     if ('outline' in event.payload.changes && event.payload.changes.outline === undefined) {
       delete draft.drawer.outline;
+    }
+    if ('measuredMm' in event.payload.changes && event.payload.changes.measuredMm === undefined) {
+      delete draft.drawer.measuredMm;
     }
     if (event.payload.displacedBinIds.length > 0) {
       const idSet = new Set(event.payload.displacedBinIds);

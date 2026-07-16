@@ -42,6 +42,10 @@ export const CONSTRAINTS = {
   GRID_UNIT_MM_MIN: 20,
   GRID_UNIT_MM_MAX: 60,
   GRID_UNIT_MM_DEFAULT: 42,
+  // Measured drawer bounds (mm). Upper bound comfortably exceeds
+  // GRID_MAX × GRID_UNIT_MM_MAX (3000) while rejecting absurd input.
+  MEASURED_MM_MIN: 1,
+  MEASURED_MM_MAX: 5000,
   HEIGHT_UNIT_MM_MIN: 3,
   HEIGHT_UNIT_MM_MAX: 20,
   HEIGHT_UNIT_MM_DEFAULT: 7,

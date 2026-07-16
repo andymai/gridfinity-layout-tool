@@ -3,9 +3,24 @@
  */
 
 import type { BaseCommand } from '../types';
-import type { BaseplateDesignId, Drawer, DrawerOutline, StoredBaseplateParams } from '@/core/types';
+import type {
+  BaseplateDesignId,
+  Drawer,
+  DrawerOutline,
+  MeasuredDrawerMm,
+  StoredBaseplateParams,
+} from '@/core/types';
 
-export type UpdateDrawerCommand = BaseCommand<'drawer.update', Partial<Drawer>>;
+/**
+ * Drawer updates. `measuredMm: null` clears the stored measurement (the
+ * model field itself is `MeasuredDrawerMm | undefined`; null only exists
+ * on the command wire, like drawer.setOutline).
+ */
+export type UpdateDrawerPayload = Partial<Omit<Drawer, 'measuredMm'>> & {
+  readonly measuredMm?: MeasuredDrawerMm | null;
+};
+
+export type UpdateDrawerCommand = BaseCommand<'drawer.update', UpdateDrawerPayload>;
 
 /** Set or clear (null) the drawer's non-rectangular boundary. */
 export type SetDrawerOutlineCommand = BaseCommand<

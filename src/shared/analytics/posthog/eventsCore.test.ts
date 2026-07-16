@@ -11,6 +11,9 @@ vi.mock('./trackEvent', () => ({
 }));
 
 import {
+  trackDrawerHalfFitSuggestion,
+  trackDrawerMeasuredCommitted,
+  trackDrawerMeasurementCleared,
   trackDrawerShapeApplied,
   trackDrawerShapeEditorOpened,
   trackDrawerShapeReset,
@@ -67,5 +70,41 @@ describe('trackDrawerShapeReset', () => {
     trackDrawerShapeReset();
 
     expect(trackEventMock).toHaveBeenCalledWith('drawer_shape_reset', {});
+  });
+});
+
+describe('trackDrawerMeasuredCommitted', () => {
+  it('emits slack rounded to 0.1mm plus offer and height flags', () => {
+    trackDrawerMeasuredCommitted({
+      slack_width_mm: 29.97001,
+      slack_depth_mm: 2.04,
+      half_fit_offered: true,
+      has_height: false,
+    });
+
+    expect(trackEventMock).toHaveBeenCalledWith('drawer_measured_committed', {
+      slack_width_mm: 30,
+      slack_depth_mm: 2,
+      half_fit_offered: true,
+      has_height: false,
+    });
+  });
+});
+
+describe('trackDrawerHalfFitSuggestion', () => {
+  it('emits the action taken', () => {
+    trackDrawerHalfFitSuggestion('accepted');
+
+    expect(trackEventMock).toHaveBeenCalledWith('drawer_half_fit_suggestion', {
+      action: 'accepted',
+    });
+  });
+});
+
+describe('trackDrawerMeasurementCleared', () => {
+  it('emits with no properties', () => {
+    trackDrawerMeasurementCleared();
+
+    expect(trackEventMock).toHaveBeenCalledWith('drawer_measurement_cleared', {});
   });
 });

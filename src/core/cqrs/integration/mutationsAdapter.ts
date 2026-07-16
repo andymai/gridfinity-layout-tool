@@ -14,7 +14,6 @@ import type {
   CategoryId,
   Category,
   Layer,
-  Drawer,
   LayoutId,
   CloudShareInfo,
   StoredBaseplateParams,
@@ -24,6 +23,7 @@ import type {
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
 import { createCommand } from '../commands';
+import type { UpdateDrawerPayload } from '../commands/drawerCommands';
 import type { CommandBus } from '../bus/commandBus';
 import type { DomainEvent } from '../events';
 import type { CommandResult } from '../types';
@@ -106,7 +106,7 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return extractResult(result);
     },
 
-    updateDrawer(updates: Partial<Drawer>): void {
+    updateDrawer(updates: UpdateDrawerPayload): void {
       bus.dispatch(createCommand('drawer.update', updates));
     },
 

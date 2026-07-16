@@ -5,13 +5,13 @@ import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
-import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -82,6 +82,12 @@ export function Sidebar() {
     hasFractionalWidth,
     hasFractionalDepth,
     realWorldDimensions,
+    measuredMm,
+    halfFitSuggestion,
+    handleMeasuredCommit,
+    acceptHalfFitSuggestion,
+    dismissHalfFitSuggestion,
+    clearMeasurement,
     gridUnitMm,
     heightUnitMm,
     printBedSize,
@@ -388,15 +394,22 @@ export function Sidebar() {
                     </div>
                   </div>
 
-                  {/* Real-world drawer dimensions */}
-                  <div className="flex items-center justify-center gap-1 pt-2 text-content-tertiary">
-                    <RulerIcon size="xs" />
-                    <span className="tabular-nums">
-                      {realWorldDimensions.width.toFixed(0)} ×{' '}
-                      {realWorldDimensions.depth.toFixed(0)} ×{' '}
-                      {realWorldDimensions.height.toFixed(0)} mm
-                    </span>
-                  </div>
+                  {/* Real-world drawer dimensions — click to type a measured size */}
+                  <DrawerDimensionsSummary
+                    measuredMm={measuredMm}
+                    gridWidthMm={realWorldDimensions.width}
+                    gridDepthMm={realWorldDimensions.depth}
+                    gridHeightMm={realWorldDimensions.height}
+                    minMm={CONSTRAINTS.MEASURED_MM_MIN}
+                    maxMm={CONSTRAINTS.MEASURED_MM_MAX}
+                    minHeightMm={heightUnitMm}
+                    maxHeightMm={CONSTRAINTS.GRID_MAX * heightUnitMm}
+                    onCommit={handleMeasuredCommit}
+                    suggestion={halfFitSuggestion}
+                    onAcceptSuggestion={acceptHalfFitSuggestion}
+                    onDismissSuggestion={dismissHalfFitSuggestion}
+                    onClearMeasurement={clearMeasurement}
+                  />
 
                   {/* Half-bin mode toggle */}
                   <ToggleRow

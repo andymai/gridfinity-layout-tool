@@ -14,12 +14,17 @@ interface EditableDimensionsProps {
   readonly widthMm: number;
   /** Total depth in mm (grid + padding) when hasPadding, or grid-only mm otherwise. */
   readonly depthMm: number;
+  /** Optional third (height) value in mm; rendering it adds a third input. */
+  readonly heightMm?: number;
   /** Minimum allowed mm value (derived from GRID_MIN * gridUnitMm). */
   readonly minMm: number;
   /** Maximum allowed mm value (derived from GRID_MAX * gridUnitMm + max padding headroom). */
   readonly maxMm: number;
-  /** Called when the user commits new mm values. */
-  readonly onCommit: (widthMm: number, depthMm: number) => void;
+  /** Height bounds; default to minMm/maxMm when omitted. */
+  readonly minHeightMm?: number;
+  readonly maxHeightMm?: number;
+  /** Called when the user commits new mm values. heightMm rides along only when the height field is shown. */
+  readonly onCommit: (widthMm: number, depthMm: number, heightMm?: number) => void;
   /** Extra CSS classes for the outer wrapper. */
   readonly className?: string;
   /** Visual weight. 'primary' (default) matches the section headline; 'secondary' is a smaller/lighter companion to another primary value. */
@@ -30,6 +35,8 @@ interface EditableDimensionsProps {
   readonly widthLabel: string;
   /** Accessible label for the depth input. */
   readonly depthLabel: string;
+  /** Accessible label for the height input; required when heightMm is set. */
+  readonly heightLabel?: string;
 }
 
 /**
@@ -42,14 +49,18 @@ interface EditableDimensionsProps {
 export function EditableDimensions({
   widthMm,
   depthMm,
+  heightMm,
   minMm,
   maxMm,
+  minHeightMm,
+  maxHeightMm,
   onCommit,
   className,
   variant = 'primary',
   'aria-label': ariaLabel,
   widthLabel,
   depthLabel,
+  heightLabel,
 }: EditableDimensionsProps) {
   const restClass =
     variant === 'secondary'
@@ -65,9 +76,11 @@ export function EditableDimensions({
     variant === 'secondary'
       ? 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-xs tabular-nums text-content outline-none ring-1 ring-accent'
       : 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-content outline-none ring-1 ring-accent';
+  const hasHeight = heightMm !== undefined;
   const [editing, setEditing] = useState(false);
   const [localWidth, setLocalWidth] = useState('');
   const [localDepth, setLocalDepth] = useState('');
+  const [localHeight, setLocalHeight] = useState('');
   const widthRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -75,8 +88,9 @@ export function EditableDimensions({
   const enterEditMode = useCallback(() => {
     setLocalWidth(formatMm(widthMm));
     setLocalDepth(formatMm(depthMm));
+    setLocalHeight(heightMm !== undefined ? formatMm(heightMm) : '');
     setEditing(true);
-  }, [widthMm, depthMm]);
+  }, [widthMm, depthMm, heightMm]);
 
   // Focus width input when edit mode activates
   useEffect(() => {
@@ -86,15 +100,28 @@ export function EditableDimensions({
   }, [editing]);
 
   const clamp = useCallback((v: number) => clampRange(v, minMm, maxMm), [minMm, maxMm]);
+  const clampHeight = useCallback(
+    (v: number) => clampRange(v, minHeightMm ?? minMm, maxHeightMm ?? maxMm),
+    [minHeightMm, maxHeightMm, minMm, maxMm]
+  );
 
   const commit = useCallback(() => {
     const w = parseFloat(localWidth);
     const d = parseFloat(localDepth);
-    if (!Number.isNaN(w) && !Number.isNaN(d)) {
+    if (Number.isNaN(w) || Number.isNaN(d)) {
+      setEditing(false);
+      return;
+    }
+    if (hasHeight) {
+      const h = parseFloat(localHeight);
+      if (!Number.isNaN(h)) {
+        onCommit(clamp(w), clamp(d), clampHeight(h));
+      }
+    } else {
       onCommit(clamp(w), clamp(d));
     }
     setEditing(false);
-  }, [localWidth, localDepth, clamp, onCommit]);
+  }, [localWidth, localDepth, localHeight, hasHeight, clamp, clampHeight, onCommit]);
 
   const cancel = useCallback(() => {
     setEditing(false);
@@ -161,6 +188,23 @@ export function EditableDimensions({
           className={inputClass}
           aria-label={depthLabel}
         />
+        {hasHeight && (
+          <>
+            <span className={separatorClass}>&times;</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              step={0.1}
+              value={localHeight}
+              onChange={(e) => setLocalHeight(e.target.value)}
+              onKeyDown={handleKeyDown}
+              min={minHeightMm ?? minMm}
+              max={maxHeightMm ?? maxMm}
+              className={inputClass}
+              aria-label={heightLabel}
+            />
+          </>
+        )}
         <span className={suffixClass}>mm</span>
       </div>
     );
@@ -175,7 +219,8 @@ export function EditableDimensions({
       aria-label={ariaLabel}
     >
       <span>
-        {formatMm(widthMm)} &times; {formatMm(depthMm)} mm
+        {formatMm(widthMm)} &times; {formatMm(depthMm)}
+        {heightMm !== undefined ? <> &times; {formatMm(heightMm)}</> : null} mm
       </span>
       <PencilIcon
         size="xs"

@@ -27,6 +27,7 @@ export { computeLabsMetrics, computeLayoutMetrics } from './metrics';
 export type {
   AnalyticsTrigger,
   BinCreatedProperties,
+  DrawerMeasuredCommittedProperties,
   DrawerShapeAppliedProperties,
   DrawerShapeEditor,
   ActivityContext,
@@ -46,6 +47,9 @@ export {
   trackDrawerShapeEditorOpened,
   trackDrawerShapeApplied,
   trackDrawerShapeReset,
+  trackDrawerMeasuredCommitted,
+  trackDrawerHalfFitSuggestion,
+  trackDrawerMeasurementCleared,
   getActivityContext,
   buildHeartbeatPayload,
   trackHeartbeat,

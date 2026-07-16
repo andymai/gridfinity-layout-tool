@@ -62,6 +62,7 @@ export type {
   DeleteCategoryCommand,
   CategoryCommand,
   UpdateDrawerCommand,
+  UpdateDrawerPayload,
   SetNameCommand,
   SetPrintBedSizeCommand,
   SetGridUnitMmCommand,

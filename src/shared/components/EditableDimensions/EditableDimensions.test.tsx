@@ -134,4 +134,44 @@ describe('EditableDimensions', () => {
     const btn = screen.getByRole('button');
     expect(btn).toHaveTextContent(/441\.6\s*×\s*357\.2\s*mm/);
   });
+
+  describe('with a height field', () => {
+    const heightProps = {
+      ...defaultProps,
+      heightMm: 84,
+      minHeightMm: 7,
+      maxHeightMm: 350,
+      heightLabel: 'Height mm',
+    };
+
+    it('renders all three dimensions at rest', () => {
+      render(<EditableDimensions {...heightProps} />);
+      const btn = screen.getByRole('button', { name: 'Edit dimensions' });
+      expect(btn).toHaveTextContent(/441\s*×\s*357\s*×\s*84\s*mm/);
+    });
+
+    it('commits all three values, clamping height to its own bounds', () => {
+      const onCommit = vi.fn();
+      render(<EditableDimensions {...heightProps} onCommit={onCommit} />);
+      fireEvent.click(screen.getByRole('button'));
+
+      const heightInput = screen.getByLabelText('Height mm');
+      expect(heightInput).toHaveValue(84);
+      fireEvent.change(heightInput, { target: { value: '9999' } });
+      fireEvent.keyDown(heightInput, { key: 'Enter' });
+
+      expect(onCommit).toHaveBeenCalledWith(441, 357, 350);
+    });
+
+    it('does not commit when the height is invalid', () => {
+      const onCommit = vi.fn();
+      render(<EditableDimensions {...heightProps} onCommit={onCommit} />);
+      fireEvent.click(screen.getByRole('button'));
+
+      fireEvent.change(screen.getByLabelText('Height mm'), { target: { value: 'abc' } });
+      fireEvent.keyDown(screen.getByLabelText('Height mm'), { key: 'Enter' });
+
+      expect(onCommit).not.toHaveBeenCalled();
+    });
+  });
 });

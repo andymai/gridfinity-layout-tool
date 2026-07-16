@@ -89,6 +89,15 @@ describe('computeLayoutMetrics', () => {
       expect(metrics.drawer_shape_kind).toBe('rectangle');
     });
 
+    it('flags layouts with a stored measured drawer size', () => {
+      expect(computeLayoutMetrics(createTestLayout()).feature_measured_mm).toBe(false);
+
+      const layout = createTestLayout({
+        drawer: { width: 10, depth: 8, height: 12, measuredMm: { width: 450, depth: 380 } },
+      });
+      expect(computeLayoutMetrics(layout).feature_measured_mm).toBe(true);
+    });
+
     it('captures the authoring kind of a shaped drawer', () => {
       const layout = createTestLayout({
         drawer: {
