@@ -1,0 +1,19 @@
+src/i18n/locales/uk.json
+  s_1f61c6e1fbb01d::t_cebddf217188e7 1077
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d1c4b73a11916184bb7225c43dfea0586a58bb54",
+  "prompts": {},
+  "sessions": {
+    "s_1f61c6e1fbb01d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41dd1114-a9d9-4bbb-a041-2ae611589858",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
