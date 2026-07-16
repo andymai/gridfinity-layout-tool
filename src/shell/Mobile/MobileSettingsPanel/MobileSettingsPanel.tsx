@@ -154,7 +154,7 @@ export function MobileSettingsPanel() {
             gridHeightMm={realWorldDimensions.height}
             minMm={CONSTRAINTS.MEASURED_MM_MIN}
             maxMm={CONSTRAINTS.MEASURED_MM_MAX}
-            minHeightMm={heightUnitMm}
+            minHeightMm={CONSTRAINTS.MIN_LAYER_HEIGHT * heightUnitMm}
             maxHeightMm={CONSTRAINTS.GRID_MAX * heightUnitMm}
             onCommit={handleMeasuredCommit}
             suggestion={halfFitSuggestion}

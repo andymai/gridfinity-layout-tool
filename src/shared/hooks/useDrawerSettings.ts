@@ -378,11 +378,13 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         ...(heightMm !== undefined ? { height: heightMm } : {}),
       };
       // Floor at the 0.01-unit height resolution (mmToHeightUnits rounds,
-      // which could exceed the measured drawer by a hair).
+      // which could exceed the measured drawer by a hair). The floor clamp
+      // must match drawerUpdateSchema's MIN_LAYER_HEIGHT or validation
+      // silently rejects the whole command, measurement included.
       const heightUnitsValue =
         heightMm !== undefined
           ? (Math.max(
-              1,
+              CONSTRAINTS.MIN_LAYER_HEIGHT,
               Math.min(
                 CONSTRAINTS.GRID_MAX,
                 Math.floor((heightMm / heightUnitMm) * 100 + 1e-6) / 100

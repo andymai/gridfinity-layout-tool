@@ -22,10 +22,14 @@ describe('fitAxisUnits', () => {
     expect(fitAxisUnits(450, 42, false).units).toBe(10);
   });
 
-  it('clamps up to GRID_MIN for tiny measurements and reports negative slack', () => {
+  it('clamps tiny measurements to 1 whole unit and reports negative slack', () => {
     const fit = fitAxisUnits(10, 42, false);
-    expect(fit.units).toBe(0.5);
-    expect(fit.slackMm).toBe(10 - 0.5 * 42);
+    expect(fit.units).toBe(1);
+    expect(fit.slackMm).toBe(10 - 42);
+  });
+
+  it('clamps tiny measurements to half a unit when half units are allowed', () => {
+    expect(fitAxisUnits(10, 42, true).units).toBe(0.5);
   });
 
   it('clamps to GRID_MAX for oversized measurements', () => {

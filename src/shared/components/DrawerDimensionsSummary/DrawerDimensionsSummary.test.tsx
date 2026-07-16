@@ -55,7 +55,7 @@ describe('DrawerDimensionsSummary', () => {
     expect(screen.queryByText(/free/)).not.toBeInTheDocument();
   });
 
-  it('commits typed mm through onCommit', () => {
+  it('commits typed mm, dropping the seeded height the user never edited', () => {
     render(<DrawerDimensionsSummary {...defaultProps} />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
 
@@ -63,7 +63,32 @@ describe('DrawerDimensionsSummary', () => {
     fireEvent.change(screen.getByLabelText('Measured depth (mm)'), { target: { value: '380' } });
     fireEvent.keyDown(screen.getByLabelText('Measured depth (mm)'), { key: 'Enter' });
 
-    expect(defaultProps.onCommit).toHaveBeenCalledWith(450, 380, 84);
+    expect(defaultProps.onCommit).toHaveBeenCalledWith(450, 380, undefined);
+  });
+
+  it('commits an edited height as measured', () => {
+    render(<DrawerDimensionsSummary {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
+
+    fireEvent.change(screen.getByLabelText('Measured height (mm)'), { target: { value: '90' } });
+    fireEvent.keyDown(screen.getByLabelText('Measured height (mm)'), { key: 'Enter' });
+
+    expect(defaultProps.onCommit).toHaveBeenCalledWith(420, 336, 90);
+  });
+
+  it('keeps an existing measured height on an unchanged commit', () => {
+    render(
+      <DrawerDimensionsSummary
+        {...defaultProps}
+        measuredMm={{ width: 450, depth: 380, height: 90 }}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
+
+    fireEvent.change(screen.getByLabelText('Measured width (mm)'), { target: { value: '460' } });
+    fireEvent.keyDown(screen.getByLabelText('Measured width (mm)'), { key: 'Enter' });
+
+    expect(defaultProps.onCommit).toHaveBeenCalledWith(460, 380, 90);
   });
 
   it('fires onClearMeasurement from the clear button', () => {

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Button } from '@/design-system';
 import { RulerIcon, SparklesIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
@@ -65,6 +66,22 @@ export function DrawerDimensionsSummary({
   const overflowDepth = hasMeasurement ? gridDepthMm - measuredMm.depth : 0;
   const hasOverflow = overflowWidth > OVERFLOW_EPSILON_MM || overflowDepth > OVERFLOW_EPSILON_MM;
 
+  // The height field is seeded with the derived grid height when no height
+  // was measured. Committing that seed unchanged must not record it as a
+  // measurement — only pass height through when the user measured one
+  // before or actually edited the field.
+  const measuredHeight = measuredMm?.height;
+  const handleCommit = useCallback(
+    (widthMm: number, depthMm: number, heightMm?: number) => {
+      const heightWasSeeded =
+        measuredHeight === undefined &&
+        heightMm !== undefined &&
+        Math.abs(heightMm - gridHeightMm) < OVERFLOW_EPSILON_MM;
+      onCommit(widthMm, depthMm, heightWasSeeded ? undefined : heightMm);
+    },
+    [onCommit, measuredHeight, gridHeightMm]
+  );
+
   const actionClass = variant === 'mobile' ? 'text-sm h-9' : 'text-xs h-7';
 
   return (
@@ -79,7 +96,7 @@ export function DrawerDimensionsSummary({
           maxMm={maxMm}
           minHeightMm={minHeightMm}
           maxHeightMm={maxHeightMm}
-          onCommit={onCommit}
+          onCommit={handleCommit}
           variant="secondary"
           aria-label={t('drawerDims.editAria')}
           widthLabel={t('drawerDims.widthLabel')}
