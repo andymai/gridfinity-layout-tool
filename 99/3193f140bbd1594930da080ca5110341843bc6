@@ -1,0 +1,26 @@
+src/shared/hooks/useDrawerSettings.ts
+  s_485b4e27ca9e00::t_096fdbd8953d7e 226
+  s_485b4e27ca9e00::t_80f498c185ad54 415-419,421-424,433,440,445,451
+  s_485b4e27ca9e00::t_cd2efdb581aeb6 233
+  s_485b4e27ca9e00::t_5b29379fb877b5 6
+  s_485b4e27ca9e00::t_87f9041ed7a115 175-184
+  s_485b4e27ca9e00::t_b67ddd7433dd3f 227
+  s_485b4e27ca9e00::t_daa7a2c4edbe15 228-232,234-237
+  s_485b4e27ca9e00::t_5d2cd131ad6193 420
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "993193f140bbd1594930da080ca5110341843bc6",
+  "prompts": {},
+  "sessions": {
+    "s_485b4e27ca9e00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "817a7ec6-e452-4113-a47d-f1a68a03e557",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
