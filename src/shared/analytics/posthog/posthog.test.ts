@@ -98,6 +98,17 @@ describe('computeLayoutMetrics', () => {
       expect(computeLayoutMetrics(layout).feature_measured_mm).toBe(true);
     });
 
+    // A chamfered front-left corner — non-rectangular, so setDrawerOutline's
+    // isRectangleEquivalent normalization would NOT strip it. Exact-rectangle
+    // outlines never survive a write and would test an unreachable state.
+    const chamferedVertices = [
+      { x: 21, y: 0 },
+      { x: 420, y: 0 },
+      { x: 420, y: 336 },
+      { x: 0, y: 336 },
+      { x: 0, y: 21 },
+    ];
+
     it('captures the authoring kind of a shaped drawer', () => {
       const layout = createTestLayout({
         drawer: {
@@ -105,12 +116,7 @@ describe('computeLayoutMetrics', () => {
           depth: 8,
           height: 12,
           outline: {
-            vertices: [
-              { x: 0, y: 0 },
-              { x: 420, y: 0 },
-              { x: 420, y: 336 },
-              { x: 0, y: 336 },
-            ],
+            vertices: chamferedVertices,
             authoring: { kind: 'corners' },
           },
         },
@@ -128,12 +134,7 @@ describe('computeLayoutMetrics', () => {
           depth: 8,
           height: 12,
           outline: {
-            vertices: [
-              { x: 0, y: 0 },
-              { x: 420, y: 0 },
-              { x: 420, y: 336 },
-              { x: 0, y: 336 },
-            ],
+            vertices: chamferedVertices,
           },
         },
       });
