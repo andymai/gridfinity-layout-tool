@@ -100,12 +100,11 @@ export function sanitizeParams(params: ResolvedBaseplateParams): ResolvedBasepla
   const clampFinite = (v: number, min: number, max: number): number =>
     Number.isFinite(v) ? clamp(v, min, max) : min;
 
-  // Outline coordinates are grid-local mm; nonzero padding would shift the
-  // plate frame relative to them, so zero it at the generator boundary
-  // (buildFullParams already does this upstream — enforce the contract here
-  // for direct callers).
-  const clampPadding = (v: number): number =>
-    params.outline !== undefined ? 0 : clampFinite(v, 0, 100);
+  // Outline coordinates are PLATE-local mm — they span the padded extent
+  // (totalW × totalD), not just the grid. buildFullParams regenerates
+  // corner-cut outlines over the padded rectangle; other authoring kinds
+  // arrive with zero padding, where plate-local == grid-local.
+  const clampPadding = (v: number): number => clampFinite(v, 0, 100);
 
   return {
     ...params,

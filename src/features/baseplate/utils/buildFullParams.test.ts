@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { buildFullParams } from './buildFullParams';
+import { buildFullParams, maxCornerRadiusMm, plainRoundingLimit } from './buildFullParams';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
+import type { CornerCutParams, DrawerOutline } from '@/core/types';
 
 describe('buildFullParams', () => {
   const storedBase = {
@@ -369,5 +371,194 @@ describe('drawer outline handling', () => {
     const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
     expect(result.outline).toBeUndefined();
     expect(result.paddingLeft).toBe(1.0);
+  });
+});
+
+describe('corner-cut shape + padding composition', () => {
+  const storedBase = {
+    magnetHoles: true,
+    magnetDiameter: 6.5,
+    magnetDepth: 2.4,
+    paddingLeft: 1.0,
+    paddingRight: 2.0,
+    paddingFront: 3.0,
+    paddingBack: 4.0,
+  };
+  const cuts: CornerCutParams = {
+    tl: { kind: 'radius', r: 60 },
+    tr: { kind: 'radius', r: 60 },
+    bl: { kind: 'chamfer', size: 20 },
+    br: { kind: 'none' },
+  };
+  // 10×8 drawer at 42mm → 420×336mm grid.
+  const cornerOutline: DrawerOutline = {
+    vertices: cornerCutVertices(420, 336, cuts),
+    authoring: { kind: 'corners', corners: cuts },
+  };
+
+  it('re-inscribes the cuts on the padded rectangle and keeps padding', () => {
+    const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end', undefined, cornerOutline);
+    expect(result.paddingLeft).toBe(1.0);
+    expect(result.paddingRight).toBe(2.0);
+    expect(result.paddingFront).toBe(3.0);
+    expect(result.paddingBack).toBe(4.0);
+    // totalW = 420 + 1 + 2 = 423, totalD = 336 + 3 + 4 = 343.
+    expect(result.outline?.vertices).toEqual(cornerCutVertices(423, 343, cuts));
+    expect(result.outline?.authoring).toEqual(cornerOutline.authoring);
+  });
+
+  it('reuses the stored outline identity at zero padding', () => {
+    const stored = {
+      ...storedBase,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, cornerOutline);
+    expect(result.outline).toBe(cornerOutline);
+    expect(result.paddingLeft).toBe(0);
+  });
+
+  it('still zeroes rounding and detach for corner-cut shapes', () => {
+    const stored = {
+      ...storedBase,
+      cornerRadius: 4,
+      cornerRadii: { tl: 4, tr: 4, bl: 4, br: 4 },
+      detachMargins: true,
+      detachMarginConnector: true,
+    };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, cornerOutline);
+    expect(result.cornerRadius).toBe(0);
+    expect(result.cornerRadii).toBeUndefined();
+    expect(result.detachMargins).toBe(false);
+    expect(result.detachMarginConnector).toBe(false);
+  });
+
+  it('falls back to shape-subsumes-padding when the authoring echo drifted', () => {
+    const drifted: DrawerOutline = {
+      // Vertices from DIFFERENT cuts than the echo claims.
+      vertices: cornerCutVertices(420, 336, { ...cuts, tl: { kind: 'radius', r: 30 } }),
+      authoring: { kind: 'corners', corners: cuts },
+    };
+    const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end', undefined, drifted);
+    expect(result.outline).toBe(drifted);
+    expect(result.paddingLeft).toBe(0);
+    expect(result.paddingBack).toBe(0);
+  });
+});
+
+describe('large corner radius → outline conversion', () => {
+  const storedBase = {
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2.4,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+  };
+
+  it('keeps the plain rounding path for radii within the limit', () => {
+    // Limit with zero padding: 42/2 = 21.
+    const result = buildFullParams({ ...storedBase, cornerRadius: 21 }, 10, 8, 42, 'end', 'end');
+    expect(result.outline).toBeUndefined();
+    expect(result.cornerRadius).toBe(21);
+  });
+
+  it('padding raises the plain rounding limit', () => {
+    const stored = {
+      ...storedBase,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingFront: 10,
+      paddingBack: 10,
+      cornerRadius: 30,
+    };
+    expect(plainRoundingLimit(42, 10)).toBe(31);
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+    expect(result.outline).toBeUndefined();
+    expect(result.cornerRadius).toBe(30);
+  });
+
+  it('converts a beyond-limit radius to a radius-cut outline', () => {
+    const result = buildFullParams({ ...storedBase, cornerRadius: 60 }, 10, 8, 42, 'end', 'end');
+    const r60: CornerCutParams = {
+      tl: { kind: 'radius', r: 60 },
+      tr: { kind: 'radius', r: 60 },
+      bl: { kind: 'radius', r: 60 },
+      br: { kind: 'radius', r: 60 },
+    };
+    expect(result.outline?.vertices).toEqual(cornerCutVertices(420, 336, r60));
+    expect(result.cornerRadius).toBe(0);
+    expect(result.cornerRadii).toBeUndefined();
+    expect(result.detachMargins).toBe(false);
+  });
+
+  it('converts when ANY per-corner radius exceeds the limit', () => {
+    const stored = { ...storedBase, cornerRadii: { tl: 60, tr: 4, bl: 0, br: 4 } };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+    expect(result.outline?.vertices).toEqual(
+      cornerCutVertices(420, 336, {
+        tl: { kind: 'radius', r: 60 },
+        tr: { kind: 'radius', r: 4 },
+        bl: { kind: 'none' },
+        br: { kind: 'radius', r: 4 },
+      })
+    );
+  });
+
+  it('clamps converted radii to the geometric ceiling', () => {
+    // 2×2 grid → 84×84mm; ceiling is 84/2 − 0.1 = 41.9.
+    const result = buildFullParams({ ...storedBase, cornerRadius: 100 }, 2, 2, 42, 'end', 'end');
+    expect(maxCornerRadiusMm(84, 84)).toBeCloseTo(41.9);
+    const r: CornerCutParams['tl'] = { kind: 'radius', r: 41.9 };
+    expect(result.outline?.vertices).toEqual(
+      cornerCutVertices(84, 84, { tl: r, tr: r, bl: r, br: r })
+    );
+  });
+
+  it('converts with padding kept — the padded extent hosts the arcs', () => {
+    const stored = {
+      ...storedBase,
+      paddingLeft: 11,
+      paddingRight: 11,
+      paddingFront: 11,
+      paddingBack: 11,
+      cornerRadius: 45,
+    };
+    const result = buildFullParams(stored, 4, 6, 42, 'end', 'end');
+    // totalW = 168 + 22 = 190, totalD = 252 + 22 = 274.
+    const r: CornerCutParams['tl'] = { kind: 'radius', r: 45 };
+    expect(result.outline?.vertices).toEqual(
+      cornerCutVertices(190, 274, { tl: r, tr: r, bl: r, br: r })
+    );
+    expect(result.paddingLeft).toBe(11);
+  });
+
+  it('never converts while stacking (rounding is stripped instead)', () => {
+    const stored = {
+      ...storedBase,
+      cornerRadius: 60,
+      stackPrint: { enabled: true, gapMm: 0.2 as never },
+    };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+    expect(result.outline).toBeUndefined();
+    expect(result.cornerRadius).toBe(0);
+  });
+
+  it('converts on unsynced custom-size plates too', () => {
+    const stored = {
+      ...storedBase,
+      syncWithLayout: false,
+      baseplateWidth: 5,
+      baseplateDepth: 5,
+      cornerRadius: 60,
+    };
+    const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+    const r: CornerCutParams['tl'] = { kind: 'radius', r: 60 };
+    expect(result.outline?.vertices).toEqual(
+      cornerCutVertices(210, 210, { tl: r, tr: r, bl: r, br: r })
+    );
   });
 });

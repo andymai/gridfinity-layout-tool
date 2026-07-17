@@ -6,15 +6,15 @@
  * `buildSlabProfile` — the caller extrudes it and translates by the slab
  * offset exactly like the corner-rounding profile.
  *
- * Straight axis-aligned segments lying on a half-grid line are nudged
- * COPLANAR_OVERLAP toward the loop's OUTSIDE (right of CCW travel), so the
- * outline-clip intersect never runs face-on-face against the slab's bbox or
- * a pocket wall — pocket mouths open to the full cell at the slab top
- * (INSET_TOP = 0), putting walls exactly on every cell boundary, and a
- * coplanar boolean there is pathologically slow on brepkit (>30s vs <2s).
+ * Straight axis-aligned segments lying on a half-grid line or a plate bbox
+ * face are nudged COPLANAR_OVERLAP toward the loop's OUTSIDE (right of CCW
+ * travel), so the outline-clip intersect never runs face-on-face against the
+ * slab's bbox or a pocket wall — pocket mouths open to the full cell at the
+ * slab top (INSET_TOP = 0), putting walls exactly on every cell boundary, and
+ * a coplanar boolean there is pathologically slow on brepkit (>30s vs <2s).
  * The nudge cuts through solid material 0.01mm into the excluded region
- * instead. Assumes plate-local origin == grid origin (shaped plates carry
- * zero padding by construction).
+ * instead. Padding shifts the grid within the plate-local frame, so grid
+ * lines sit at padding + k·halfPitch while the bbox faces stay at 0/total.
  */
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
@@ -41,8 +41,11 @@ export interface OutlineFrame {
   /** Plate outer extent (mm) — the outline's coordinate space spans it. */
   readonly totalW: number;
   readonly totalD: number;
-  /** Grid pitch (mm); cell boundaries sit at multiples of half of it. */
+  /** Grid pitch (mm); cell boundaries sit at multiples of half of it,
+   * offset by the left/front padding in plate-local coords. */
   readonly gridUnitMm: number;
+  readonly paddingLeft?: number;
+  readonly paddingFront?: number;
 }
 
 /**
@@ -59,14 +62,20 @@ export function buildOutlineDrawing(outline: DrawerOutline, frame: OutlineFrame)
   const halfW = frame.totalW / 2;
   const halfD = frame.totalD / 2;
   const halfPitch = frame.gridUnitMm / 2;
+  const padLeft = frame.paddingLeft ?? 0;
+  const padFront = frame.paddingFront ?? 0;
   const points = verts.map((v) => ({
     x: v.x,
     y: v.y,
     bulge: v.bulge ?? 0,
   }));
 
-  const onHalfGridLine = (value: number): number | null => {
-    const snapped = Math.round(value / halfPitch) * halfPitch;
+  // Coplanar candidates per axis: the plate bbox faces (0 and total) plus the
+  // grid lines, which padding offsets within the plate-local frame.
+  const onCoplanarLine = (value: number, padding: number, total: number): number | null => {
+    if (Math.abs(value) <= COPLANAR_OVERLAP) return 0;
+    if (Math.abs(value - total) <= COPLANAR_OVERLAP) return total;
+    const snapped = padding + Math.round((value - padding) / halfPitch) * halfPitch;
     return Math.abs(value - snapped) <= COPLANAR_OVERLAP ? snapped : null;
   };
   const n = points.length;
@@ -75,7 +84,7 @@ export function buildOutlineDrawing(outline: DrawerOutline, frame: OutlineFrame)
     const b = points[(i + 1) % n];
     if (Math.abs(verts[i].bulge ?? 0) >= BULGE_EPS) continue;
     if (Math.abs(a.x - b.x) <= COPLANAR_OVERLAP) {
-      const line = onHalfGridLine(a.x);
+      const line = onCoplanarLine(a.x, padLeft, frame.totalW);
       if (line !== null && Math.abs(b.y - a.y) > COPLANAR_OVERLAP) {
         // Vertical segment on a cell boundary: right of travel is +x when
         // heading up. Both endpoints move so the segment stays vertical.
@@ -84,7 +93,7 @@ export function buildOutlineDrawing(outline: DrawerOutline, frame: OutlineFrame)
         b.x = shifted;
       }
     } else if (Math.abs(a.y - b.y) <= COPLANAR_OVERLAP) {
-      const line = onHalfGridLine(a.y);
+      const line = onCoplanarLine(a.y, padFront, frame.totalD);
       if (line !== null) {
         // Horizontal segment: right of travel is −y when heading +x.
         const shifted = line - Math.sign(b.x - a.x) * COPLANAR_OVERLAP;

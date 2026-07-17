@@ -14,6 +14,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBaseplate, getKernelName } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { DrawerOutline } from '@/core/types';
 
@@ -187,14 +188,20 @@ describe('baseplate outline geometry', () => {
     }
   );
 
-  it('over-tile cuts outline-clipped pockets in partial cells', { timeout: 240_000 }, () => {
-    const gen = getGenerateBaseplate();
-    const solidPartials = gen(defaults({ outline: CHAMFER }), NO_OP, true);
-    const clippedPartials = gen(defaults({ outline: CHAMFER, overTile: true }), NO_OP, true);
-    assertStructurallyValid(clippedPartials, 'chamfer + over-tile');
-    // The diagonal-crossed cells gain pockets (clipped by the intersect).
-    expect(clippedPartials.triangleCount).toBeGreaterThan(solidPartials.triangleCount);
-  });
+  it(
+    'boundary-clipped pockets are cut regardless of over-tile (which owns only the padding ring)',
+    { timeout: 240_000 },
+    () => {
+      const gen = getGenerateBaseplate();
+      const off = gen(defaults({ outline: CHAMFER }), NO_OP, true);
+      const on = gen(defaults({ outline: CHAMFER, overTile: true }), NO_OP, true);
+      assertStructurallyValid(off, 'chamfer');
+      assertStructurallyValid(on, 'chamfer + over-tile');
+      // The diagonal-crossed cells keep trimmed sockets by default; with zero
+      // padding there is no margin ring, so over-tile changes nothing.
+      expect(on.triangleCount).toBe(off.triangleCount);
+    }
+  );
 
   it('composes with solidFloor', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
@@ -277,4 +284,91 @@ describe('baseplate outline geometry', () => {
       expect(countVerticesIn(result.vertices, 2, 2, 98, 98)).toBe(0);
     }
   );
+
+  it('composes a padded corner-cut outline (issue #2612)', { timeout: 240_000 }, () => {
+    // 4×4 grid + 10mm padding per side → 188×188 plate; all corners R50.
+    // The outline spans the PADDED extent; the padding-aware coplanar nudge
+    // and cell classification must line up with the offset grid.
+    const gen = getGenerateBaseplate();
+    const PAD = 10;
+    const T = 4 * U + 2 * PAD; // 188
+    const outline: DrawerOutline = {
+      vertices: cornerCutVertices(T, T, {
+        tl: { kind: 'radius', r: 50 },
+        tr: { kind: 'radius', r: 50 },
+        bl: { kind: 'radius', r: 50 },
+        br: { kind: 'radius', r: 50 },
+      }),
+    };
+    const result = gen(
+      defaults({
+        outline,
+        paddingLeft: PAD,
+        paddingRight: PAD,
+        paddingFront: PAD,
+        paddingBack: PAD,
+      }),
+      NO_OP,
+      true
+    );
+    assertStructurallyValid(result, 'padded corner-cut');
+    // Symmetric padding keeps the mesh centered: extent is the padded plate.
+    const bb = boundingBox(result.vertices);
+    expect(bb.maxX - bb.minX).toBeCloseTo(T, 0);
+    expect(bb.maxY - bb.minY).toBeCloseTo(T, 0);
+    // Deep corner beyond the arc is cut away: plate-local [0,10]² → mesh
+    // [−94,−84]² (distance to the R50 arc center at (50,50) is > 50 there).
+    expect(countVerticesIn(result.vertices, -93, -93, -85, -85)).toBe(0);
+    // Padding ring material survives away from the corners (mid-left edge).
+    expect(countVerticesIn(result.vertices, -94, -10, -84 + 0.5, 10)).toBeGreaterThan(0);
+  });
+
+  it('over-tile fills the padded ring of a corner-cut shape', { timeout: 240_000 }, () => {
+    const gen = getGenerateBaseplate();
+    const PAD = 10;
+    const T = 4 * U + 2 * PAD;
+    const outline: DrawerOutline = {
+      vertices: cornerCutVertices(T, T, {
+        tl: { kind: 'radius', r: 50 },
+        tr: { kind: 'radius', r: 50 },
+        bl: { kind: 'radius', r: 50 },
+        br: { kind: 'radius', r: 50 },
+      }),
+    };
+    const padded = {
+      paddingLeft: PAD,
+      paddingRight: PAD,
+      paddingFront: PAD,
+      paddingBack: PAD,
+    };
+    const solidRing = gen(defaults({ outline, ...padded }), NO_OP, true);
+    const tiledRing = gen(defaults({ outline, ...padded, overTile: true }), NO_OP, true);
+    assertStructurallyValid(tiledRing, 'padded corner-cut + over-tile');
+    // 10mm margins clear the 8mm printable-tile floor → the ring gains
+    // outline-clipped pockets.
+    expect(tiledRing.triangleCount).toBeGreaterThan(solidRing.triangleCount);
+  });
+
+  it('cuts a geometric-max corner radius, trimming corner sockets', { timeout: 240_000 }, () => {
+    // What buildFullParams emits for cornerRadius 60 on a 4×4 plate: a
+    // radius-cut outline over the (unpadded) extent. The R60 arc consumes
+    // most of each corner cell; its socket survives only where ≥25% of the
+    // cell does.
+    const gen = getGenerateBaseplate();
+    const outline: DrawerOutline = {
+      vertices: cornerCutVertices(4 * U, 4 * U, {
+        tl: { kind: 'radius', r: 60 },
+        tr: { kind: 'radius', r: 60 },
+        bl: { kind: 'radius', r: 60 },
+        br: { kind: 'radius', r: 60 },
+      }),
+    };
+    const result = gen(defaults({ outline }), NO_OP, true);
+    assertStructurallyValid(result, 'R60 rounded plate');
+    const bb = boundingBox(result.vertices);
+    expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
+    // Deep corner beyond the R60 arc: plate-local [0,17]² → mesh [−84,−67]²
+    // (distance from (60,60) to (17,17) ≈ 60.8 > 60).
+    expect(countVerticesIn(result.vertices, -83, -83, -68, -68)).toBe(0);
+  });
 });

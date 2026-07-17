@@ -62,6 +62,7 @@ import {
 import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
 import { isSeamConnectorStyle } from '@/shared/types/bin';
+import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
@@ -258,14 +259,27 @@ export function BaseplatePanel() {
   // Mutually exclusive with stack-print (stacking wins) — keyed on the stored
   // flag, not the export-format-aware `stackEnabled` above.
   const stackPrintOn = baseplateParams.stackPrint?.enabled === true;
-  // Mirrors buildFullParams's outline gate: the drawer shape subsumes padding,
-  // corner rounding, and detached margins (margins are emergent from
-  // outline ∩ grid), so those controls hide. Stacking wins over the shape
+  // Mirrors buildFullParams's outline gate. Corner-cut shapes compose with
+  // padding (the cuts are re-inscribed on the padded rectangle), so padding
+  // stays live and only corner rounding + detached margins hide. Painted/pen/
+  // trace shapes have no parametric resize: they subsume padding too, so all
+  // those controls hide behind the notice. Stacking wins over the shape
   // (uniform rectangular tiles), so the stack section stays functional — but
   // via the export-format-aware `stackEnabled`: STEP clears stackPrint before
   // buildFullParams, so a STEP export of a stacked shaped drawer IS shaped and
   // the panel must say so.
-  const shapedOn = drawerOutline !== undefined && synced && !stackEnabled;
+  const outlineActive = drawerOutline !== undefined && synced && !stackEnabled;
+  const cornerShaped =
+    outlineActive &&
+    drawerOutline.authoring?.kind === 'corners' &&
+    drawerOutline.authoring.corners !== undefined &&
+    cornerCutsMatchVertices(
+      drawerOutline.vertices,
+      gridWidthMm,
+      gridDepthMm,
+      drawerOutline.authoring.corners
+    );
+  const shapedOn = outlineActive && !cornerShaped;
   const canDetach =
     baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
@@ -298,9 +312,39 @@ export function BaseplatePanel() {
    * 1. Snap down to the largest valid grid size that fits (half-unit or whole-unit)
    * 2. Distribute remaining mm evenly as padding (left=right, front=back)
    * 3. Auto-uncheck "Sync with layout"
+   *
+   * Exception: a synced corner-cut shaped plate keeps sync AND its shape —
+   * the grid is fixed by the layout, so the whole remainder becomes padding
+   * (the basket workflow: measure, type dims, rounded shape persists).
    */
   const handleDimensionCommit = useCallback(
     (targetWidthMm: number, targetDepthMm: number) => {
+      const cornerShapeState = useLayoutStore.getState().layout;
+      const cornerShapeParams = cornerShapeState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const outline = cornerShapeState.drawer.outline;
+      const cuts = outline?.authoring?.kind === 'corners' ? outline.authoring.corners : undefined;
+      const drawerWidthMm = cornerShapeState.drawer.width * gridUnitMm;
+      const drawerDepthMm = cornerShapeState.drawer.depth * gridUnitMm;
+      if (
+        cornerShapeParams.syncWithLayout !== false &&
+        outline !== undefined &&
+        cuts !== undefined &&
+        cornerCutsMatchVertices(outline.vertices, drawerWidthMm, drawerDepthMm, cuts)
+      ) {
+        const halfPad = (targetMm: number, gridMm: number): number =>
+          Math.min(PADDING_MAX, Math.max(0, Math.floor(((targetMm - gridMm) / 2) * 100) / 100));
+        const padW = halfPad(targetWidthMm, drawerWidthMm);
+        const padD = halfPad(targetDepthMm, drawerDepthMm);
+        useLayoutStore.getState().setBaseplateParams({
+          ...cornerShapeParams,
+          paddingLeft: mm(padW),
+          paddingRight: mm(padW),
+          paddingFront: mm(padD),
+          paddingBack: mm(padD),
+        });
+        return;
+      }
+
       const step = halfGridMode ? 0.5 : 1;
 
       const rawWidthUnits = targetWidthMm / gridUnitMm;
@@ -439,6 +483,11 @@ export function BaseplatePanel() {
                 <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
                   {t('baseplate.padding')}
                 </div>
+                {cornerShaped && (
+                  <p className="text-[11px] leading-relaxed text-content-tertiary">
+                    {t('baseplate.cornerShapedPaddingNotice')}
+                  </p>
+                )}
                 <PaddingSchematic
                   baseplateParams={baseplateParams}
                   updateParam={updateParam}
@@ -526,7 +575,9 @@ export function BaseplatePanel() {
                     />
                   </div>
                 )}
-                {hasPadding && (
+                {/* Detached rails have no outline awareness — a corner-cut
+                    shape's arcs would need arc-clipped rail geometry. */}
+                {hasPadding && !cornerShaped && (
                   <div className="border-t border-stroke-subtle pt-3">
                     <FeatureToggle
                       label={t('baseplate.detachMargins')}
@@ -725,18 +776,19 @@ export function BaseplatePanel() {
                       }
                     />
                   </div>
-                  {!shapedOn && (
+                  {!shapedOn && !cornerShaped && (
                     <div className="border-t border-stroke-subtle pt-3">
                       <CornerRadiusControl
                         cornerRadius={baseplateParams.cornerRadius}
                         cornerRadii={baseplateParams.cornerRadii}
-                        maxRadius={
-                          gridUnitMm / 2 +
-                          Math.min(
-                            Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
-                            Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
-                          )
-                        }
+                        // Geometric max (up to a pill shape), floored to the
+                        // slider's 0.5 step. Radii beyond the plain rounding
+                        // limit become a radius-cut outline downstream, which
+                        // trims or drops the sockets the arc consumes.
+                        maxRadius={Math.max(
+                          0,
+                          Math.floor((Math.min(totalWidthMm, totalDepthMm) / 2 - 0.1) * 2) / 2
+                        )}
                         onUniformChange={(r) => {
                           updateParam('cornerRadius', mm(r));
                           updateParam('cornerRadii', undefined);

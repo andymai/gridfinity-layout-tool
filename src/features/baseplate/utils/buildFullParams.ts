@@ -4,9 +4,120 @@
  * With direct per-side padding, the conversion is a straightforward pass-through.
  */
 
-import type { DrawerOutline, MagnetAnchor, StoredBaseplateParams } from '@/core/types';
+import type {
+  CornerCutParams,
+  DrawerOutline,
+  MagnetAnchor,
+  StoredBaseplateParams,
+} from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import {
+  clampCornerCuts,
+  cornerCutVertices,
+  cornerCutsMatchVertices,
+} from '@/shared/utils/cornerCutOutline';
+
+/** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
+ * own geometric radius clamp). */
+const CUT_GEOMETRY_MARGIN_MM = 0.1;
+
+/**
+ * Largest corner radius the plain rounding path may cut: the arc can enter
+ * the outer corner cell but never past its center, so pockets survive intact.
+ * Radii beyond this are converted to an outline so the generator's cell
+ * classification drops/clips the sockets the arc consumes.
+ */
+export function plainRoundingLimit(gridUnitMm: number, minPaddingMm: number): number {
+  return gridUnitMm / 2 + minPaddingMm;
+}
+
+/** Geometric ceiling for any corner radius on a totalW × totalD plate. */
+export function maxCornerRadiusMm(totalW: number, totalD: number): number {
+  return Math.min(totalW, totalD) / 2 - CUT_GEOMETRY_MARGIN_MM;
+}
+
+/**
+ * The resolved outline (plate-local mm, spanning the padded extent) plus the
+ * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
+ * padded rectangle so padding composes; every other authoring surface
+ * (cells/trace/pen) has no parametric resize, so the shape subsumes padding.
+ */
+function resolveOutline(
+  drawerOutline: DrawerOutline | undefined,
+  outlineOn: boolean,
+  stored: StoredBaseplateParams,
+  widthMm: number,
+  depthMm: number,
+  gridUnitMm: number
+): { outline: DrawerOutline | undefined; paddingOn: boolean } {
+  if (outlineOn && drawerOutline !== undefined) {
+    // The authoring echo is a round-trip hint, never trusted blindly: only
+    // regenerate from it when it provably reproduces the stored vertices.
+    const cuts =
+      drawerOutline.authoring?.kind === 'corners' ? drawerOutline.authoring.corners : undefined;
+    const cornerShaped =
+      cuts !== undefined && cornerCutsMatchVertices(drawerOutline.vertices, widthMm, depthMm, cuts);
+    if (!cornerShaped) return { outline: drawerOutline, paddingOn: false };
+
+    const totalW = widthMm + stored.paddingLeft + stored.paddingRight;
+    const totalD = depthMm + stored.paddingFront + stored.paddingBack;
+    if (totalW === widthMm && totalD === depthMm) {
+      // Zero padding: the stored outline IS the padded outline — reuse it so
+      // the cache identity stays byte-stable.
+      return { outline: drawerOutline, paddingOn: true };
+    }
+    return {
+      outline: {
+        vertices: cornerCutVertices(
+          totalW,
+          totalD,
+          clampCornerCuts(cuts, totalW, totalD, CUT_GEOMETRY_MARGIN_MM)
+        ),
+        authoring: drawerOutline.authoring,
+      },
+      paddingOn: true,
+    };
+  }
+
+  // No active drawer shape: corner radii beyond the plain rounding limit
+  // become a radius-cut outline, so the generator's cell classification
+  // handles the sockets the arc consumes (the plain path must never orphan a
+  // pocket, which is why it clamps at the limit).
+  const radii = stored.cornerRadii ?? {
+    tl: stored.cornerRadius ?? 0,
+    tr: stored.cornerRadius ?? 0,
+    bl: stored.cornerRadius ?? 0,
+    br: stored.cornerRadius ?? 0,
+  };
+  const maxRadius = Math.max(radii.tl, radii.tr, radii.bl, radii.br);
+  const minPadding = Math.min(
+    Math.min(stored.paddingLeft, stored.paddingRight),
+    Math.min(stored.paddingFront, stored.paddingBack)
+  );
+  if (maxRadius <= plainRoundingLimit(gridUnitMm, minPadding)) {
+    return { outline: undefined, paddingOn: true };
+  }
+  const totalW = widthMm + stored.paddingLeft + stored.paddingRight;
+  const totalD = depthMm + stored.paddingFront + stored.paddingBack;
+  const radiusCut = (r: number): CornerCutParams['tl'] =>
+    r > 0 ? { kind: 'radius', r } : { kind: 'none' };
+  const cuts = clampCornerCuts(
+    {
+      tl: radiusCut(radii.tl),
+      tr: radiusCut(radii.tr),
+      bl: radiusCut(radii.bl),
+      br: radiusCut(radii.br),
+    },
+    totalW,
+    totalD,
+    CUT_GEOMETRY_MARGIN_MM
+  );
+  return {
+    outline: { vertices: cornerCutVertices(totalW, totalD, cuts) },
+    paddingOn: true,
+  };
+}
 
 /**
  * Build full generation params from the stored per-layout config.
@@ -14,10 +125,12 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
  * Applied only when the baseplate syncs with the layout (a custom-size plate
  * has no defined relationship to the drawer shape) and stack printing is off
- * (stacking needs uniform rectangular tiles). While active it subsumes
- * padding, corner rounding, and detached margins — margins are emergent from
- * outline ∩ grid — so those params are functionally zeroed, stored values
- * untouched (the stack-print stripping precedent).
+ * (stacking needs uniform rectangular tiles). Corner-cut shapes compose with
+ * padding — the cuts are re-inscribed on the padded rectangle, so the
+ * resolved outline is plate-local over the padded extent. Painted/pen/trace
+ * shapes have no parametric resize, so while active they subsume padding,
+ * corner rounding, and detached margins — those params are functionally
+ * zeroed, stored values untouched (the stack-print stripping precedent).
  */
 export function buildFullParams(
   stored: StoredBaseplateParams,
@@ -45,11 +158,28 @@ export function buildFullParams(
   // user's settings return intact when stacking is turned off.
   const stackingOn = stored.stackPrint?.enabled === true;
   const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
-  // Detach is mutually exclusive with stacking (stacking wins). Padding stays at
-  // its stored values here — `emitMargins` and the camera/dimension overlay need
-  // the true outer extent; the body mesh zeroes detached sides downstream.
   const outlineOn = drawerOutline !== undefined && synced && !stackingOn;
-  const detachMargins = stored.detachMargins === true && !stackingOn && !outlineOn;
+
+  const { outline, paddingOn } = stackingOn
+    ? { outline: undefined, paddingOn: true }
+    : resolveOutline(
+        drawerOutline,
+        outlineOn,
+        stored,
+        width * gridUnitMm,
+        depth * gridUnitMm,
+        gridUnitMm
+      );
+  // An outline carries its own corner geometry as arcs and shares the same
+  // post-cache intersect slot, so rounding is zeroed whenever one is active —
+  // whether it came from the drawer shape or from the radius conversion above.
+  const roundingOn = !stackingOn && outline === undefined;
+  // Detach is mutually exclusive with stacking (stacking wins) and with any
+  // active outline (rails have no outline awareness — margins would need
+  // arc-clipped rail geometry). Padding stays at its stored values here —
+  // `emitMargins` and the camera/dimension overlay need the true outer extent;
+  // the body mesh zeroes detached sides downstream.
+  const detachMargins = stored.detachMargins === true && !stackingOn && outline === undefined;
   // The connector is only meaningful when margins actually detach.
   const detachMarginConnector = detachMargins && stored.detachMarginConnector === true;
 
@@ -58,15 +188,15 @@ export function buildFullParams(
     depth,
     gridUnitMm,
     nozzleSizeMm,
-    outline: outlineOn ? drawerOutline : undefined,
+    outline,
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
     magnetAnchor,
-    paddingLeft: outlineOn ? 0 : stored.paddingLeft,
-    paddingRight: outlineOn ? 0 : stored.paddingRight,
-    paddingFront: outlineOn ? 0 : stored.paddingFront,
-    paddingBack: outlineOn ? 0 : stored.paddingBack,
+    paddingLeft: paddingOn ? stored.paddingLeft : 0,
+    paddingRight: paddingOn ? stored.paddingRight : 0,
+    paddingFront: paddingOn ? stored.paddingFront : 0,
+    paddingBack: paddingOn ? stored.paddingBack : 0,
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
@@ -90,13 +220,8 @@ export function buildFullParams(
     // while stacking (restored when stacking is off, like magnets above).
     solidFloor: stackingOn ? false : stored.solidFloor,
     solidFloorThickness: stored.solidFloorThickness,
-    // Corner rounding only applies to the assembled drawer's outer corners, so
-    // it makes the corner tiles differ from the rest. Stacking wants uniform,
-    // interchangeable tiles, so square them off (also restored when off).
-    // An outline carries its own corner geometry as arcs and shares the same
-    // post-cache intersect slot, so rounding is zeroed for shaped plates too.
-    cornerRadius: stackingOn || outlineOn ? 0 : stored.cornerRadius,
-    cornerRadii: stackingOn || outlineOn ? undefined : stored.cornerRadii,
+    cornerRadius: roundingOn ? stored.cornerRadius : 0,
+    cornerRadii: roundingOn ? stored.cornerRadii : undefined,
     detachMargins,
     detachMarginConnector,
   };

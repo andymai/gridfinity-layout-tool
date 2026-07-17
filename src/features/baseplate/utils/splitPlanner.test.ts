@@ -1709,3 +1709,96 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint(b2));
   });
 });
+
+describe('padded shaped plates (corner-cut shapes compose with padding)', () => {
+  const U = 42;
+  const PAD = 10;
+  // 8×8 grid + 10mm padding per side → 356×356 plate-local extent.
+  // 189mm bed still tiles 4-unit chunks 2×2 (first/last carry the padding).
+  const BED = 4.5 * U;
+  const paddedShapedParams = (
+    outline: ResolvedBaseplateParams['outline']
+  ): ResolvedBaseplateParams =>
+    makeParams({
+      width: 8,
+      depth: 8,
+      paddingLeft: PAD,
+      paddingRight: PAD,
+      paddingFront: PAD,
+      paddingBack: PAD,
+      connectorNubs: true,
+      outline,
+    });
+
+  // Plate-local mm: the grid spans [10, 346]; B2's padded window is [178, 356]².
+  const GRID_MID = PAD + 4 * U; // 178
+
+  /** L-shape: B2's padded window is exactly the notch → dropped. */
+  const L_OUTLINE_PADDED = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 356, y: 0 },
+      { x: 356, y: GRID_MID },
+      { x: GRID_MID, y: GRID_MID },
+      { x: GRID_MID, y: 356 },
+      { x: 0, y: 356 },
+    ],
+  };
+
+  /** Diagonal chamfer across B2's padded window. */
+  const CHAMFER_OUTLINE_PADDED = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 356, y: 0 },
+      { x: 356, y: GRID_MID },
+      { x: GRID_MID, y: 356 },
+      { x: 0, y: 356 },
+    ],
+  };
+
+  it('drops the piece whose padded window is outside; padding rides on edge pieces', () => {
+    const parent = paddedShapedParams(L_OUTLINE_PADDED);
+    const tiling = computeBaseplateTiling(parent, BED);
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.pieces.map((p) => p.label).sort()).toEqual(['A1', 'A2', 'B1']);
+
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const a1 = pieceToBaseplateParams(byLabel.get('A1') as BaseplatePiece, parent);
+    expect(a1.paddingLeft).toBe(PAD);
+    expect(a1.paddingFront).toBe(PAD);
+    expect(a1.paddingRight).toBe(0);
+    expect(a1.paddingBack).toBe(0);
+    const b1 = pieceToBaseplateParams(byLabel.get('B1') as BaseplatePiece, parent);
+    expect(b1.paddingLeft).toBe(0);
+    expect(b1.paddingRight).toBe(PAD);
+  });
+
+  it('keeps connectors on full interior seams under padding', () => {
+    const tiling = computeBaseplateTiling(paddedShapedParams(L_OUTLINE_PADDED), BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    expect(byLabel.get('A1')?.edges.right).toBe('join');
+    expect(byLabel.get('A1')?.edges.back).toBe('join');
+    expect(byLabel.get('B1')?.edges.back).toBe('exterior');
+    expect(byLabel.get('A2')?.edges.right).toBe('exterior');
+  });
+
+  it('partial pieces get a piece-local outline in their own padded frame', () => {
+    const parent = paddedShapedParams(CHAMFER_OUTLINE_PADDED);
+    const tiling = computeBaseplateTiling(parent, BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const a1 = byLabel.get('A1');
+    const b2 = byLabel.get('B2');
+    // A1's padded window [0,178]² is fully inside → pure rectangle.
+    expect(a1?.outlineWindowOriginMm).toBeUndefined();
+    // B2's frame origin is its padded window's bottom-left in plate-local mm.
+    expect(b2?.outlineWindowOriginMm).toEqual({ x: GRID_MID, y: GRID_MID });
+
+    const b2Params = pieceToBaseplateParams(b2 as BaseplatePiece, parent);
+    // The diagonal's endpoints land in B2's local frame (0..178 spans its
+    // 4 grid units + 10mm exterior padding).
+    expect(b2Params.outline?.vertices).toContainEqual({ x: 356 - GRID_MID, y: 0 });
+    expect(b2Params.outline?.vertices).toContainEqual({ x: 0, y: 356 - GRID_MID });
+    expect(b2Params.paddingRight).toBe(PAD);
+    expect(b2Params.paddingBack).toBe(PAD);
+  });
+});

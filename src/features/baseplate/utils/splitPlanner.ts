@@ -948,8 +948,10 @@ export function computeBaseplateTiling(
  * reclassification break. Congruent pieces still dedupe via identical
  * fingerprints.
  *
- * Shaped plates carry zero padding (sanitized upstream), so windows are pure
- * grid extents and margins are always empty.
+ * The outline is plate-local mm over the padded extent (corner-cut shapes
+ * compose with padding), so windows are the pieces' padded slab extents:
+ * the grid sits offset by the left/front padding, and first/last pieces
+ * carry their exterior padding.
  */
 function applyOutlineToTiling(
   tiling: BaseplateTiling,
@@ -959,12 +961,17 @@ function applyOutlineToTiling(
 ): BaseplateTiling {
   const outline = params.outline as DrawerOutline;
   const u = params.gridUnitMm;
+  const padL = params.paddingLeft;
+  const padF = params.paddingFront;
 
+  // The piece slab IS the clip window, so the window spans the piece's full
+  // padded extent — a corner piece whose grid cells are all outside can still
+  // survive as the padding material the arc leaves behind.
   const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => ({
-    x0: piece.gridOffsetX * u,
-    y0: piece.gridOffsetY * u,
-    x1: (piece.gridOffsetX + piece.widthUnits) * u,
-    y1: (piece.gridOffsetY + piece.depthUnits) * u,
+    x0: padL + piece.gridOffsetX * u - piece.paddingLeft,
+    y0: padF + piece.gridOffsetY * u - piece.paddingFront,
+    x1: padL + (piece.gridOffsetX + piece.widthUnits) * u + piece.paddingRight,
+    y1: padF + (piece.gridOffsetY + piece.depthUnits) * u + piece.paddingBack,
   });
 
   const classByKey = new Map<string, RegionClass>();
@@ -976,20 +983,24 @@ function applyOutlineToTiling(
     classByKey.get(`${col},${row}`) ?? 'outside';
 
   // A seam keeps its connector only when the one-cell band on BOTH sides of
-  // the entire shared span is fully inside the outline.
+  // the entire shared span is fully inside the outline. Bands are pure GRID
+  // extents (seams are interior, padding-free), offset into plate-local mm.
   const fullSeam = (piece: BaseplatePiece, side: 'left' | 'right' | 'front' | 'back'): boolean => {
-    const w = windowOf(piece);
+    const gx0 = padL + piece.gridOffsetX * u;
+    const gx1 = padL + (piece.gridOffsetX + piece.widthUnits) * u;
+    const gy0 = padF + piece.gridOffsetY * u;
+    const gy1 = padF + (piece.gridOffsetY + piece.depthUnits) * u;
     if (side === 'left' || side === 'right') {
-      const xB = side === 'left' ? w.x0 : w.x1;
+      const xB = side === 'left' ? gx0 : gx1;
       return (
-        classifyRect(outline, xB - u, w.y0, xB, w.y1) === 'inside' &&
-        classifyRect(outline, xB, w.y0, xB + u, w.y1) === 'inside'
+        classifyRect(outline, xB - u, gy0, xB, gy1) === 'inside' &&
+        classifyRect(outline, xB, gy0, xB + u, gy1) === 'inside'
       );
     }
-    const yB = side === 'front' ? w.y0 : w.y1;
+    const yB = side === 'front' ? gy0 : gy1;
     return (
-      classifyRect(outline, w.x0, yB - u, w.x1, yB) === 'inside' &&
-      classifyRect(outline, w.x0, yB, w.x1, yB + u) === 'inside'
+      classifyRect(outline, gx0, yB - u, gx1, yB) === 'inside' &&
+      classifyRect(outline, gx0, yB, gx1, yB + u) === 'inside'
     );
   };
 

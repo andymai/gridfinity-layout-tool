@@ -319,13 +319,15 @@ export function buildBaseplateSolid(
     const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
     return classifyRect(outline, x0, y0, x0 + w, y0 + d);
   };
-  // A partial cell only gets an (outline-clipped) pocket under overTile, and
-  // only when enough of it survives to be a usable socket — the same sliver
-  // philosophy as MIN_PRINTABLE_TILE_MM, expressed as an area fraction.
+  // A boundary-clipped cell keeps its (outline-trimmed) pocket only when
+  // enough of it survives to be a usable socket — the same sliver philosophy
+  // as MIN_PRINTABLE_TILE_MM, expressed as an area fraction. Applies to
+  // nominal cells and over-tile margin tiles alike, so a large corner arc
+  // trims sockets progressively instead of deleting whole corner cells.
   const pocketDecision = (cell: CellInfo): 'full' | 'clipped' | 'none' => {
     const cls = classifyCell(cell);
     if (cls === 'inside') return 'full';
-    if (cls === 'outside' || overTile !== true) return 'none';
+    if (cls === 'outside') return 'none';
     const w = cell.widthUnits * gridUnitMm;
     const d = cell.depthUnits * gridUnitMm;
     const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
@@ -422,7 +424,10 @@ export function buildBaseplateSolid(
   //
   // Max radius: half a grid unit + padding. The arc can enter the corner cell
   // but won't reach past the cell center, preserving the pocket structure.
-  // Also clamped to half the slab to prevent degenerate geometry.
+  // Also clamped to half the slab to prevent degenerate geometry. Radii
+  // beyond this limit never reach the rounding path: buildFullParams converts
+  // them to a radius-cut outline, whose cell classification above handles the
+  // sockets the arc consumes.
   const minPadding = Math.min(
     Math.min(paddingLeft, paddingRight),
     Math.min(paddingFront, paddingBack)
@@ -438,7 +443,13 @@ export function buildBaseplateSolid(
   // construction (buildFullParams zeroes radii for shaped plates); the else-if
   // keeps the generator self-consistent when called directly.
   if (outline !== undefined) {
-    const outlineProfile = buildOutlineDrawing(outline, { totalW, totalD, gridUnitMm });
+    const outlineProfile = buildOutlineDrawing(outline, {
+      totalW,
+      totalD,
+      gridUnitMm,
+      paddingLeft,
+      paddingFront,
+    });
     const outlineSlab = (
       outlineProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
     ).extrude(-totalHeight);

@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BaseplatePanel } from './BaseplatePanel';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { BaseplateTiling } from '../../types/tiling';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
+import type { CornerCutParams } from '@/core/types';
 
 // Mock i18n
 vi.mock('@/i18n', () => ({
@@ -1054,5 +1056,121 @@ describe('shaped drawer (outline present)', () => {
     mockExportFormat = 'step';
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
+  });
+});
+
+describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockLayoutState = {
+      layout: {
+        drawer: { width: 4, depth: 6 },
+        gridUnitMm: 42,
+        magnetAnchor: undefined,
+        printBedSize: 256,
+        baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
+      },
+      setBaseplateParams: mockSetBaseplateParams,
+      setPrintBedSize: mockSetPrintBedSize,
+      setMagnetAnchor: mockSetMagnetAnchor,
+    };
+    mockExportFormat = 'stl';
+    mockTiling = null;
+  });
+
+  // 4×6 drawer at 42mm → 168×252mm grid, tr/tl rounded 50mm.
+  const CUTS: CornerCutParams = {
+    tl: { kind: 'radius', r: 50 },
+    tr: { kind: 'radius', r: 50 },
+    bl: { kind: 'none' },
+    br: { kind: 'none' },
+  };
+  const CORNER_OUTLINE = {
+    vertices: cornerCutVertices(168, 252, CUTS),
+    authoring: { kind: 'corners', corners: CUTS },
+  };
+
+  it('keeps padding controls, shows the corner-shape note, hides rounding', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: CORNER_OUTLINE } as never;
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.cornerShapedPaddingNotice')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+    expect(screen.queryByText('baseplate.cornerRadius')).toBeNull();
+  });
+
+  it('hides detach margins even with detach-worthy padding', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: CORNER_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: 35,
+      paddingRight: 35,
+      paddingFront: 35,
+      paddingBack: 35,
+    };
+    render(<BaseplatePanel />);
+    expect(screen.queryByText('baseplate.detachMargins')).toBeNull();
+  });
+
+  it('treats a drifted authoring echo as a painted shape', () => {
+    mockLayoutState.layout.drawer = {
+      width: 4,
+      depth: 6,
+      outline: {
+        // Vertices from different cuts than the echo claims.
+        vertices: cornerCutVertices(168, 252, { ...CUTS, tl: { kind: 'radius', r: 20 } }),
+        authoring: { kind: 'corners', corners: CUTS },
+      },
+    } as never;
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.padding')).toBeNull();
+  });
+
+  it('mm entry keeps sync + shape and distributes the remainder as padding', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: CORNER_OUTLINE } as never;
+    render(<BaseplatePanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+    const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+    const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+    // 190×290 basket over the fixed 168×252 grid → 11mm / 19mm per side.
+    fireEvent.change(widthInput, { target: { value: '190' } });
+    fireEvent.change(depthInput, { target: { value: '290' } });
+    fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+    expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paddingLeft: 11,
+        paddingRight: 11,
+        paddingFront: 19,
+        paddingBack: 19,
+      })
+    );
+    const call = mockSetBaseplateParams.mock.calls.at(-1)?.[0] as {
+      syncWithLayout?: boolean;
+      baseplateWidth?: number;
+    };
+    expect(call.syncWithLayout).not.toBe(false);
+    expect(call.baseplateWidth).toBeUndefined();
+  });
+
+  it('mm entry clamps below-grid targets to zero padding', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: CORNER_OUTLINE } as never;
+    render(<BaseplatePanel />);
+    fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+    const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+    const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+    fireEvent.change(widthInput, { target: { value: '100' } });
+    fireEvent.change(depthInput, { target: { value: '252' } });
+    fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+    expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+      })
+    );
   });
 });

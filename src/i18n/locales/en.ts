@@ -2373,6 +2373,8 @@ const en: Record<string, string> = {
   'baseplate.padding': 'Padding',
   'baseplate.shapedDrawerNotice':
     'This drawer has a custom shape. Padding, corner rounding, and detached margins are set by the shape — edit it in the Layout tab.',
+  'baseplate.cornerShapedPaddingNotice':
+    'Corner rounding comes from the drawer shape (Layout tab). Padding extends the plate outward around the shaped outline.',
   'baseplate.overTile': 'Fill padding with grid tiles',
   'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':
@@ -2510,7 +2512,8 @@ const en: Record<string, string> = {
   'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.cornerRadius': 'Corner radius',
-  'baseplate.cornerRadiusInfo': 'Outer corner radius for fitting in rounded enclosures',
+  'baseplate.cornerRadiusInfo':
+    'Outer corner radius for fitting in rounded enclosures. Large radii trim or remove the corner sockets they pass through.',
   'baseplate.cornerRadiusTL': 'Top-left',
   'baseplate.cornerRadiusTR': 'Top-right',
   'baseplate.cornerRadiusBL': 'Bottom-left',
