@@ -51,6 +51,7 @@ import { StackPrintSection } from './StackPrintSection';
 import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
+import { maxCornerRadiusMm } from '../../utils/buildFullParams';
 import type { StackPrintParams } from '@/core/types';
 import { PADDING_MAX } from '../PaddingStepper';
 import { Stepper } from '@/design-system/Stepper';
@@ -323,8 +324,10 @@ export function BaseplatePanel() {
       const cornerShapeParams = cornerShapeState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       const outline = cornerShapeState.drawer.outline;
       const cuts = outline?.authoring?.kind === 'corners' ? outline.authoring.corners : undefined;
-      const drawerWidthMm = cornerShapeState.drawer.width * gridUnitMm;
-      const drawerDepthMm = cornerShapeState.drawer.depth * gridUnitMm;
+      // Derive entirely from the fresh store read — mixing in the captured
+      // gridUnitMm could compute padding against a stale drawer size.
+      const drawerWidthMm = cornerShapeState.drawer.width * cornerShapeState.gridUnitMm;
+      const drawerDepthMm = cornerShapeState.drawer.depth * cornerShapeState.gridUnitMm;
       if (
         cornerShapeParams.syncWithLayout !== false &&
         outline !== undefined &&
@@ -787,7 +790,7 @@ export function BaseplatePanel() {
                         // trims or drops the sockets the arc consumes.
                         maxRadius={Math.max(
                           0,
-                          Math.floor((Math.min(totalWidthMm, totalDepthMm) / 2 - 0.1) * 2) / 2
+                          Math.floor(maxCornerRadiusMm(totalWidthMm, totalDepthMm) * 2) / 2
                         )}
                         onUniformChange={(r) => {
                           updateParam('cornerRadius', mm(r));
