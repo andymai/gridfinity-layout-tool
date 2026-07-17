@@ -1,0 +1,24 @@
+src/features/bin-designer/constants/defaults.test.ts
+  s_e2394dc42b9931::t_fff15a72ea4006 130-186
+api/lib/designerValidation.ts
+  s_e2394dc42b9931::t_6a1f7c0462a762 828-837
+  s_e2394dc42b9931::t_f6cd373f289dd7 716-719
+src/features/bin-designer/constants/defaults.ts
+  s_e2394dc42b9931::t_fc3062dcc28c66 661-680,694-697
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f8e697fba1b1a8a19bd0f2adf99dfe97175b1dda",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
