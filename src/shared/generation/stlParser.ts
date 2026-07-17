@@ -137,7 +137,10 @@ export function parseSTLAscii(buffer: ArrayBuffer): Result<ParsedSTLMesh, Valida
   let facetVertexCount = -1;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    // Keyword matching is case-insensitive (some exporters write FACET/VERTEX);
+    // lowercasing the whole line is safe for the numeric tokens too (only an
+    // exponent 'E' can change, and Number() accepts either case).
+    const line = lines[i].trim().toLowerCase();
     if (line.startsWith('vertex')) {
       if (facetVertexCount < 0) {
         return err(

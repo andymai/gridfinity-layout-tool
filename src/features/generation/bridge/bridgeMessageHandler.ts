@@ -93,6 +93,11 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
       pending.reject(new Error(message));
     }
     ctx.pendingExports.clear();
+
+    for (const pending of ctx.pendingImports.values()) {
+      pending.reject(new Error(message));
+    }
+    ctx.pendingImports.clear();
   });
 
   ctx.worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
