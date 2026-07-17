@@ -127,6 +127,63 @@ describe('DEFAULT_BIN_PARAMS', () => {
 });
 
 describe('migrateParams', () => {
+  it('drops orphaned mesh cutouts and unreferenced mesh assets together', () => {
+    const asset = {
+      name: 'wrench',
+      data: 'AAAA',
+      triangleCount: 12,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 20, y: 10 },
+        ],
+      ],
+    };
+    const meshCutout = {
+      id: 'mesh-1',
+      shape: 'mesh',
+      meshId: 'kept',
+      x: 0,
+      y: 0,
+      width: 20,
+      depth: 10,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+    } as const;
+    const orphanCutout = { ...meshCutout, id: 'mesh-2', meshId: 'ghost' };
+
+    const result = migrateParams({
+      cutouts: [meshCutout, orphanCutout],
+      meshAssets: { kept: asset, unreferenced: asset },
+    });
+
+    expect(result.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+    expect(Object.keys(result.meshAssets ?? {})).toEqual(['kept']);
+  });
+
+  it('clears meshAssets entirely when nothing references it', () => {
+    const asset = {
+      name: 'wrench',
+      data: 'AAAA',
+      triangleCount: 12,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 20, y: 10 },
+        ],
+      ],
+    };
+    const result = migrateParams({ meshAssets: { stray: asset } });
+    expect(result.meshAssets).toBeUndefined();
+  });
+
   it('should handle legacy boolean scoop: true', () => {
     const result = migrateParams({ scoop: true as any });
     expect(result.scoop).toEqual({ ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto' });

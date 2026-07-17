@@ -713,10 +713,10 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     return validationError('MISSING_PARAMS', 'params must be an object');
   }
 
-  const hasMeshAssets = isObject(params.meshAssets) && Object.keys(params.meshAssets).length > 0;
-  if (!hasMeshAssets && sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
-  }
+  // The tighter no-mesh cap is applied AFTER validateMeshAssets below: the
+  // raised budget must be earned by a structurally valid mesh design (assets
+  // deep-validated and cross-referenced by mesh cutouts), never by merely
+  // having a non-empty `meshAssets` key.
 
   // Dimensions
   if (
@@ -823,6 +823,16 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.meshAssets !== undefined || Array.isArray(params.cutouts)) {
     const meshErr = validateMeshAssets(params.meshAssets, params.cutouts);
     if (meshErr) return validationError('INVALID_PARAMS', meshErr);
+  }
+
+  // Conditional payload cap: only a validated mesh design (non-empty assets
+  // that survived validateMeshAssets, which guarantees each is referenced by a
+  // mesh cutout) earns the raised MESH_MAX_PAYLOAD_BYTES budget checked at the
+  // top; everything else keeps the 100KB cap.
+  const hasValidMeshImprints =
+    isObject(params.meshAssets) && Object.keys(params.meshAssets).length > 0;
+  if (!hasValidMeshImprints && sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
+    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
   }
 
   if (params.textDefaults !== undefined) {
