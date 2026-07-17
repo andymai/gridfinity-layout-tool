@@ -35,3 +35,9 @@ hatching, baseplate generation/splitting) derives from it.
 3. Reopening the editor rasterizes the stored outline back to cells with the
    same `classifyRect` predicate placement uses — a cell is filled iff bins
    may occupy it.
+4. The corner-cut vertex geometry lives in
+   `@/shared/utils/cornerCutOutline` (not here) so the baseplate's
+   `buildFullParams` can re-inscribe the same cuts on the padded plate
+   rectangle (issue #2612). `cornersToOutline` is a thin wrapper that adds
+   the `authoring` echo; that echo is only trusted downstream after
+   `cornerCutsMatchVertices` proves it reproduces the stored vertices.
