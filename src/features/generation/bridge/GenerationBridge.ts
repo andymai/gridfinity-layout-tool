@@ -327,7 +327,7 @@ export class GenerationBridge {
     }
     this.pendingExports.clear();
     for (const pending of this.pendingImports.values()) {
-      pending.reject(new Error('Worker was reset after a generation timeout'));
+      pending.reject(new Error('Worker was reset'));
     }
     this.pendingImports.clear();
     // Errors here surface on the next generation's init() await; swallow the

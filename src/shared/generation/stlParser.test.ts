@@ -154,6 +154,22 @@ ${SINGLE_FACET}`;
     expect(result.value.vertices[8]).toBeCloseTo(-1);
   });
 
+  it('parses uppercase keywords (case-insensitive exporters)', () => {
+    const body = `FACET NORMAL 0 0 1
+  OUTER LOOP
+    VERTEX 0 0 0
+    VERTEX 1.5E1 0 0
+    VERTEX 0 1 0
+  ENDLOOP
+ENDFACET
+`;
+    const result = parseSTLAscii(asciiSTL(body));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(9);
+    expect(result.value.vertices[3]).toBeCloseTo(15);
+  });
+
   it('tolerates CRLF line endings and garbage normals', () => {
     const body =
       'facet normal foo bar baz\r\n outer loop\r\n vertex 0 0 0\r\n vertex 1 0 0\r\n vertex 0 1 0\r\n endloop\r\nendfacet\r\n';
