@@ -21,8 +21,8 @@ import type { Result, ValidationError } from '@/core/result';
 
 /** A 2D silhouette ring point in mm, in the mesh's lay-flat XY frame. */
 export interface MeshOutlinePoint {
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
 }
 
 /**
