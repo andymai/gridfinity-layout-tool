@@ -77,12 +77,16 @@ export function useStlImport(): UseStlImportReturn {
     async (flips: MeshImportFlips): Promise<void> => {
       const buffer = bufferRef.current;
       if (!buffer) return;
+      // cancel() nulls bufferRef; a resolving in-flight run must then discard
+      // its result silently instead of re-opening the dialog (or toasting).
+      const isCancelled = (): boolean => bufferRef.current !== buffer;
       setImporting(true);
       try {
         const bridge = await bridgeManager.acquire();
         try {
           // slice(): importMesh transfers its input; keep our copy intact.
           const outcome = await bridge.importMesh(buffer.slice(0), fileNameRef.current, flips);
+          if (isCancelled()) return;
           if (!outcome.ok) {
             addToast(t(ERROR_TOAST_KEYS[outcome.reason]), 'error');
             trackEvent('stl_import', { success: false, error_code: outcome.reason });
@@ -105,6 +109,7 @@ export function useStlImport(): UseStlImportReturn {
           bridgeManager.release();
         }
       } catch {
+        if (isCancelled()) return;
         addToast(t('toast.stlImport.parseFailed'), 'error');
         trackEvent('stl_import', { success: false, error_code: 'worker_failed' });
         bufferRef.current = null;

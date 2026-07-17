@@ -105,6 +105,42 @@ describe('useStlImport', () => {
     expect(result.current.pending).toBeNull();
   });
 
+  it('discards an in-flight import resolved after cancel (no dialog re-open)', async () => {
+    let resolveImport: (value: unknown) => void = () => undefined;
+    importMesh.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveImport = resolve;
+        })
+    );
+    const { result } = renderHook(() => useStlImport());
+
+    act(() => {
+      feedFile(makeFile());
+    });
+    // Let the file read + acquire settle so importMesh is actually in flight
+    await waitFor(() => {
+      expect(importMesh).toHaveBeenCalled();
+    });
+
+    act(() => {
+      result.current.cancel();
+    });
+    await act(async () => {
+      resolveImport({
+        ok: true,
+        asset,
+        positions: new Float32Array(9),
+        indices: new Uint32Array(3),
+        suggestedCutDepth: 5,
+      });
+      await Promise.resolve();
+    });
+
+    expect(result.current.pending).toBeNull();
+    expect(useToastStore.getState().toasts).toHaveLength(0);
+  });
+
   it('places the pending mesh as a centered cutout with its asset', async () => {
     importMesh.mockResolvedValue({
       ok: true,

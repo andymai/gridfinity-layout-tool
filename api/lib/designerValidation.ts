@@ -668,6 +668,17 @@ function validateMeshAssets(value: unknown, cutouts: unknown): string | null {
       return `cutouts[${index}].meshId must reference an entry in meshAssets`;
     }
   }
+
+  // Reverse check: every stored asset must be referenced by a mesh cutout.
+  // The client GCs assets when their last reference is deleted, so a legit
+  // payload never carries orphans — but a crafted one could use them to claim
+  // the raised mesh payload cap while shipping no mesh functionality at all.
+  const referencedIds = new Set(meshCutoutIds.map((c) => c.meshId));
+  for (const [id] of entries) {
+    if (!referencedIds.has(id)) {
+      return `meshAssets.${id} is not referenced by any mesh cutout`;
+    }
+  }
   return null;
 }
 

@@ -8,7 +8,7 @@
  * mesh is never scaled.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -35,6 +35,13 @@ function ToolMesh({ pending }: { readonly pending: PendingStlImport }) {
     geo.computeVertexNormals();
     return geo;
   }, [pending]);
+
+  // Each flip replaces the geometry — dispose the old GPU buffers.
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   return (
     <Center>
