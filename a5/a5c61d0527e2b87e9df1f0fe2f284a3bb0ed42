@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/pipeline/stages/meshImprintStage.ts
+  s_e2394dc42b9931::t_01c328932eef5f 15-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a5a5c61d0527e2b87e9df1f0fe2f284a3bb0ed42",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
