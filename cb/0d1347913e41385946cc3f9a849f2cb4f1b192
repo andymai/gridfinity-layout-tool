@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_e2394dc42b9931::t_1ef5cb909d84db 80-82,89,112
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_e2394dc42b9931::t_f86bdc44c0a642 11
+  s_e2394dc42b9931::t_054774ca4c8478 39-45
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_e2394dc42b9931::t_89be38ee24cc78 108-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cb0d1347913e41385946cc3f9a849f2cb4f1b192",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
