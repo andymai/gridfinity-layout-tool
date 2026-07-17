@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.252.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.251.0...gridfinity-layout-tool-v4.252.0) (2026-07-17)
+
+
+### Features
+
+* **designer:** import STL files as 3D imprint cutouts ([#2618](https://github.com/andymai/gridfinity-layout-tool/issues/2618)) ([54356f7](https://github.com/andymai/gridfinity-layout-tool/commit/54356f73b8b10aba1cedeeab692a8ff036c51ba2))
+
 ## [4.251.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.250.0...gridfinity-layout-tool-v4.251.0) (2026-07-17)
 
 
