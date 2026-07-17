@@ -1,0 +1,19 @@
+src/shared/generation/meshAsset.ts
+  s_e2394dc42b9931::t_0f7c15983d9439 24-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "07191c1010b2a11dd461d293fee08e9f9fa27914",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
