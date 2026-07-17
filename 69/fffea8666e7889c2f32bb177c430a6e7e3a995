@@ -1,0 +1,92 @@
+src/i18n/locales/en.ts
+  s_e2394dc42b9931::t_8619f9d79b07f4 1248
+  s_e2394dc42b9931::t_bb1a7392c3ddd8 1245-1247,1249-1250,1933,2027-2034
+scripts/i18n-values-allowlist.json
+  s_e2394dc42b9931::t_0404db8c4905f1 4,7-30,32-37,39-43,45,49,51,53-54,59-70,73-77,79-85,90-94,99-100,102-106,108-110,113,115-121,126,130,134-153,162,169,174,176-178,188,210,213,218-220,222-223,227,231-232,238,241
+src/i18n/locales/pt-BR.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.test.tsx
+  s_e2394dc42b9931::t_60540a41b126d5 1-9
+src/i18n/locales/fr.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/features/bin-designer/types/cutout.ts
+  s_e2394dc42b9931::t_8619f9d79b07f4 56-62
+  s_e2394dc42b9931::t_61c1cc30d138b2 116
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeControls.tsx
+  s_e2394dc42b9931::t_61c1cc30d138b2 22,115-116
+  s_e2394dc42b9931::t_deb56d252bc9fa 117-118
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_e2394dc42b9931::t_eae1bcb7e9822d 47-48,62,321-348
+  s_e2394dc42b9931::t_6acf1424a9c077 349-351
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
+  s_e2394dc42b9931::t_612ca00cb537e8 1-168
+src/i18n/locales/es.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/features/bin-designer/components/panel/CutoutsSection/MeshCutoutInfo.tsx
+  s_e2394dc42b9931::t_349efe56250210 1-36
+src/features/bin-designer/components/panel/CutoutsSection/MeshCutoutInfo.test.tsx
+  s_e2394dc42b9931::t_1d825f1ed79287 1-55
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_e2394dc42b9931::t_cca06b413fcfc0 18,168,464,472-478
+  s_e2394dc42b9931::t_182ebb3eabd735 479
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_e2394dc42b9931::t_49c136c56b3222 1-14,16-19,22-62,64-85,88-92,94-125,127-128
+  s_e2394dc42b9931::t_6c3ee236acd083 15,63,86-87,126
+  s_e2394dc42b9931::t_c65b8b9c3a9711 20-21
+  s_e2394dc42b9931::t_babdde9a0e4e59 93
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_e2394dc42b9931::t_cca06b413fcfc0 29,116,364,374-380
+  s_e2394dc42b9931::t_1581ca1416117d 381
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_e2394dc42b9931::t_7fef639062cb74 136,146,197-205
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeBadge.tsx
+  s_e2394dc42b9931::t_f2f6996ee32aba 22-23,58-63
+  s_e2394dc42b9931::t_78fb5241064b93 64-65
+src/i18n/locales/de.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/i18n/locales/uk.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_e2394dc42b9931::t_fea6aff6065d66 1-139
+src/i18n/locales/nb.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/i18n/locales/sv.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.test.tsx
+  s_e2394dc42b9931::t_545d7ca92f53f7 1-84
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_e2394dc42b9931::t_f0700588e1f9bd 66
+  s_e2394dc42b9931::t_c6131cbe678bcb 1-21,23-65,67-225
+  s_e2394dc42b9931::t_c74d397c7a164b 22
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_e2394dc42b9931::t_f033ab4d5e1539 30
+  s_e2394dc42b9931::t_aca8114db049c2 53-70
+src/i18n/locales/it.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/i18n/locales/ja.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+src/shared/generation/bridge.ts
+  s_e2394dc42b9931::t_39fed0f07a9c2e 33
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_e2394dc42b9931::t_7b5c93feeb305b 454-457
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/index.ts
+  s_e2394dc42b9931::t_819adf1df5c7fc 1-3
+src/i18n/locales/nl.json
+  s_e2394dc42b9931::t_6f1309d5350cfc 2708-2722
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "69fffea8666e7889c2f32bb177c430a6e7e3a995",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
