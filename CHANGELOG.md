@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.251.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.250.0...gridfinity-layout-tool-v4.251.0) (2026-07-17)
+
+
+### Features
+
+* **baseplate:** compose padding with corner-cut shapes, lift corner radius cap ([#2619](https://github.com/andymai/gridfinity-layout-tool/issues/2619)) ([35c7519](https://github.com/andymai/gridfinity-layout-tool/commit/35c7519ea6c8b538f14902d83481b35d669ae650))
+
 ## [4.250.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.249.0...gridfinity-layout-tool-v4.250.0) (2026-07-16)
 
 
