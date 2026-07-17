@@ -1,0 +1,76 @@
+src/features/generation/worker/generators/pipeline/context.ts
+  s_e2394dc42b9931::t_0712067e8d241d 32
+src/features/generation/worker/generators/meshImprint.ts
+  s_e2394dc42b9931::t_e1660705464449 618-619,622-627
+  s_e2394dc42b9931::t_70b2b9692506b0 425
+  s_e2394dc42b9931::t_697f38934736d3 1-424,426-536,538-586,588-617,620-621,629-631
+  s_e2394dc42b9931::t_d2e531918573e1 587
+  s_e2394dc42b9931::t_d0cdedaa174021 537
+  s_e2394dc42b9931::t_9bf98874c7ba57 628
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_e2394dc42b9931::t_bb9b114903b12c 514-516,523-545,555,675,779
+  s_e2394dc42b9931::t_968c93369e22f3 41-42
+  s_e2394dc42b9931::t_d75ae869617a2a 613-614,673
+  s_e2394dc42b9931::t_5201d8f7523faa 664-666
+  s_5e405101d80a5b::t_9c05b7a0475d3a 607-612,615-627,674,676-680,713-715,746-748,778,780,788-795
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_e2394dc42b9931::t_89c6970a4f7cee 44,51
+  s_e2394dc42b9931::t_56ab16444e8817 20
+src/features/generation/worker/generators/binExporter.ts
+  s_e2394dc42b9931::t_e406455f414d7d 15-16
+  s_38d3958cd84f35::t_0f524fcfa155ef 43-65
+src/features/generation/worker/generation.worker.ts
+  s_e2394dc42b9931::t_5c00e269736542 100
+  s_e2394dc42b9931::t_d2cd2f01f1275b 186
+  s_e2394dc42b9931::t_58c0214f1a66c7 56
+src/features/generation/worker/manifoldRuntime.ts
+  s_e2394dc42b9931::t_3964af164302ff 22
+  s_e2394dc42b9931::t_cc6ad2b33bdfae 61-69,72-86
+src/features/generation/worker/handlers/splitHandler.ts
+  s_e2394dc42b9931::t_0669e5f678b37c 63,121
+  s_e2394dc42b9931::t_5a84fb30c51702 24-33,37,87
+src/features/generation/worker/generators/pipeline/stages/meshImprintStage.ts
+  s_e2394dc42b9931::t_1e125e0fe74032 1-27
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_e2394dc42b9931::t_a0bfc206e1bf87 108-112,114,117,119-130
+  s_e2394dc42b9931::t_801acd45ffa9ca 163,268
+  s_e2394dc42b9931::t_de76e388c924dd 20,155,259
+  s_e2394dc42b9931::t_7aaef33eb85de8 189-191,193
+  s_e2394dc42b9931::t_a99915ae731420 187,192,194-198,200-209
+  s_e2394dc42b9931::t_ecfc22a9f431bf 199
+  s_e2394dc42b9931::t_21a2369978d565 1-19,21-107,113,115-116,118,131-154,156-162,164-186,188,210-258,260-267,269-271
+src/features/generation/worker/handlers/generateHandler.ts
+  s_e2394dc42b9931::t_c4cb2784c686a6 18,21-34,46,48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4b9c5be55e82dc944b96b2bd5b4ac24136b93bed",
+  "prompts": {},
+  "sessions": {
+    "s_38d3958cd84f35": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc5ac8b2-b474-4c23-b601-2b384eec3726",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_5e405101d80a5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38b14465-1669-46ed-85ca-11e12ced65df",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
