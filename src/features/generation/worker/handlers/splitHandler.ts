@@ -21,9 +21,20 @@ import {
   extractExportTransferBuffers,
   classifyExportError,
 } from './workerContext';
+import { prepareMeshImprints } from '../generators/meshImprint';
+
+/** Best-effort mesh-imprint pre-pass; a failure degrades to pocket-less pieces. */
+async function prepareImprintsSafe(params: GenerateSplitPreviewMessage['payload']['params']) {
+  try {
+    await prepareMeshImprints(params);
+  } catch (e) {
+    console.warn('[Split] mesh imprint prepare failed; splitting without pockets:', e);
+  }
+}
 
 export async function handleSplitPreview(message: GenerateSplitPreviewMessage): Promise<void> {
   const payload = message.payload;
+  await prepareImprintsSafe(payload.params);
   await runExport(
     payload.requestId,
     'SPLIT_PREVIEW_RESULT',
@@ -49,6 +60,7 @@ export async function handleSplitPreviewRange(
 ): Promise<void> {
   const { requestId, params, cutPlanesX, cutPlanesY, pieceIndices, splitConnectorConfig } =
     message.payload;
+  await prepareImprintsSafe(params);
   await runExport(
     requestId,
     'SPLIT_PREVIEW_RESULT',
@@ -72,6 +84,7 @@ export async function handleSplitPreviewRange(
 
 export async function handleSplitExport(message: ExportSplitMessage): Promise<void> {
   const payload = message.payload;
+  await prepareImprintsSafe(payload.params);
   await runExport(
     payload.requestId,
     'SPLIT_EXPORT_RESULT',
@@ -105,6 +118,7 @@ export async function handleSplitExportRange(message: ExportSplitRangeMessage): 
     angularTolerance,
     splitConnectorConfig,
   } = message.payload;
+  await prepareImprintsSafe(params);
   await runExport(
     requestId,
     'SPLIT_EXPORT_RESULT',

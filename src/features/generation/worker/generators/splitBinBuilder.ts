@@ -38,6 +38,8 @@ import { buildWallCutoutCuts } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { imprintPieceArrays } from './meshImprint';
+import { deriveDimensions } from './pipeline/context';
 
 /** Result of a split export: array of piece buffers with grid labels */
 export interface SplitExportResult {
@@ -509,15 +511,38 @@ function splitSolidIntoPieces(
  */
 function tessellateAndExportPiece(
   piece: SplitPieceInfo,
+  params: BinParams,
+  outerW: number,
+  outerD: number,
   tolerance: number,
   angularTolerance: number
 ): ArrayBuffer {
   const { solid: pieceSolid } = piece;
   try {
     const m = mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
-    const normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
-    const indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
+    let vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
+    let normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
+    let indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
+    // Mesh imprint pockets subtract post-tessellation (they never exist on
+    // the BREP solid). Export pieces stay in the bin frame, so tools place
+    // directly; a pocket straddling a seam cuts every piece it touches.
+    const imprinted = imprintPieceArrays(
+      vertices,
+      indices,
+      params,
+      deriveDimensions(params, true),
+      {
+        minX: piece.xMinFromOrigin - outerW / 2,
+        minY: piece.yMinFromOrigin - outerD / 2,
+        maxX: piece.xMinFromOrigin - outerW / 2 + piece.widthMm,
+        maxY: piece.yMinFromOrigin - outerD / 2 + piece.depthMm,
+      }
+    );
+    if (imprinted) {
+      vertices = imprinted.positions;
+      normals = imprinted.normals;
+      indices = imprinted.indices;
+    }
     return buildSTLBufferFromIndexed(vertices, normals, indices, `gridfinity-piece-${piece.label}`);
   } finally {
     pieceSolid.delete();
@@ -527,6 +552,7 @@ function tessellateAndExportPiece(
 /** Tessellate a split piece into preview mesh data */
 function tessellatePiece(
   piece: SplitPieceInfo,
+  params: BinParams,
   outerW: number,
   outerD: number,
   pitch: GridPitch
@@ -578,6 +604,27 @@ function tessellatePiece(
     pieceSolid.delete();
   }
 
+  // Mesh imprint pockets subtract post-tessellation. The preview mesh was
+  // recentered on the piece, so tools shift into the same local frame and the
+  // clip bounds are the piece's local bbox.
+  const imprinted = imprintPieceArrays(
+    meshData.vertices,
+    meshData.indices,
+    params,
+    deriveDimensions(params, false),
+    { minX: -widthMm / 2, minY: -depthMm / 2, maxX: widthMm / 2, maxY: depthMm / 2 },
+    { x: pieceCenterX, y: pieceCenterY }
+  );
+  if (imprinted) {
+    meshData = {
+      ...meshData,
+      vertices: imprinted.positions,
+      normals: imprinted.normals,
+      indices: imprinted.indices,
+      edgeVertices: creaseEdges({ vertices: imprinted.positions, triangles: imprinted.indices }),
+    };
+  }
+
   return {
     vertices: meshData.vertices,
     normals: meshData.normals,
@@ -614,13 +661,23 @@ export async function exportSplitBin(
   splitConnectorConfig?: SplitConnectorConfig
 ): Promise<SplitExportResult> {
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  const pitch = pitchFromParams(params);
+  const outerW = params.width * pitch.x - CLEARANCE;
+  const outerD = params.depth * pitch.y - CLEARANCE;
 
   const pieces: SplitExportResult['pieces'] = [];
   let nextIdx = 0;
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      const data = tessellateAndExportPiece(
+        piece,
+        params,
+        outerW,
+        outerD,
+        tolerance,
+        angularTolerance
+      );
       pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
@@ -653,7 +710,9 @@ export function generateSplitPreview(
   const outerW = params.width * pitch.x - CLEARANCE;
   const outerD = params.depth * pitch.y - CLEARANCE;
 
-  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, pitch)) };
+  return {
+    pieces: splitPieces.map((piece) => tessellatePiece(piece, params, outerW, outerD, pitch)),
+  };
 }
 
 /**
@@ -684,7 +743,9 @@ export function generateSplitPreviewRange(
 
   // splitPieces are exactly the requested pieces (cut-skipped otherwise);
   // tessellate them all. The pool re-sorts by col/row, so order is irrelevant.
-  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, pitch)) };
+  return {
+    pieces: splitPieces.map((piece) => tessellatePiece(piece, params, outerW, outerD, pitch)),
+  };
 }
 
 /**
@@ -714,6 +775,9 @@ export async function exportSplitBinRange(
     splitConnectorConfig,
     new Set(pieceIndices)
   );
+  const pitch = pitchFromParams(params);
+  const outerW = params.width * pitch.x - CLEARANCE;
+  const outerD = params.depth * pitch.y - CLEARANCE;
 
   // splitPieces are exactly the requested pieces — export them all.
   const pieces: SplitExportResult['pieces'] = [];
@@ -721,7 +785,14 @@ export async function exportSplitBinRange(
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      const data = tessellateAndExportPiece(
+        piece,
+        params,
+        outerW,
+        outerD,
+        tolerance,
+        angularTolerance
+      );
       pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {

@@ -19,6 +19,7 @@
 import type { ManifoldToplevel } from 'manifold-3d';
 
 let modulePromise: Promise<ManifoldToplevel> | null = null;
+let loadedModule: ManifoldToplevel | null = null;
 
 async function instantiate(): Promise<ManifoldToplevel> {
   const [{ default: ManifoldModule }, manifoldWasmUrlMod] = await Promise.all([
@@ -57,9 +58,29 @@ async function instantiate(): Promise<ManifoldToplevel> {
 
 /** Load (once) and return the raw manifold-3d module for this worker. */
 export function getManifoldModule(): Promise<ManifoldToplevel> {
-  modulePromise ??= instantiate().catch((error: unknown) => {
-    modulePromise = null;
-    throw error;
-  });
+  modulePromise ??= instantiate()
+    .then((module) => {
+      loadedModule = module;
+      return module;
+    })
+    .catch((error: unknown) => {
+      modulePromise = null;
+      throw error;
+    });
   return modulePromise;
+}
+
+/**
+ * Synchronous accessor for the already-loaded module, for callers inside the
+ * synchronous generation pipeline. Returns null until `getManifoldModule()`
+ * has resolved (an async pre-pass awaits it before generation starts).
+ */
+export function getLoadedManifoldModule(): ManifoldToplevel | null {
+  return loadedModule;
+}
+
+/** Test hook: inject an fs-instantiated module (node has no fetch loader). */
+export function setManifoldModuleForTests(module: ManifoldToplevel): void {
+  loadedModule = module;
+  modulePromise = Promise.resolve(module);
 }

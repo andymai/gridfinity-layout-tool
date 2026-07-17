@@ -15,7 +15,22 @@ import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
 import { isAbortError } from '../generators/utils/abort';
+import { prepareMeshImprints } from '../generators/meshImprint';
 import { runGeneration, runWarm, reportProgress, getActiveRequestId } from './workerContext';
+
+/**
+ * Decode any referenced mesh imprint assets before the synchronous pipeline
+ * runs (the imprint stage consumes the prepared cache). Best-effort: on
+ * failure the stage no-ops and the bin renders without pockets rather than
+ * failing the whole generation.
+ */
+async function prepareImprintsSafe(params: GenerateMessage['payload']['params']): Promise<void> {
+  try {
+    await prepareMeshImprints(params);
+  } catch (e) {
+    console.warn('[BinGen] mesh imprint prepare failed; generating without pockets:', e);
+  }
+}
 
 /**
  * Speculative idle warm: build the export-quality (fused) shell so the next
@@ -28,8 +43,9 @@ export function handleWarm(message: WarmMessage): void {
   });
 }
 
-export function handleGenerate(message: GenerateMessage): void {
+export async function handleGenerate(message: GenerateMessage): Promise<void> {
   const { params, requestId } = message.payload;
+  await prepareImprintsSafe(params);
   runGeneration(
     (signal, perf): MeshData => {
       const onProgress = (stage: string, progress: number) => {

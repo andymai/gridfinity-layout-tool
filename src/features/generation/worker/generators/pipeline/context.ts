@@ -29,7 +29,7 @@ import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '..
 import { pitchFromParams, pitchKeySegments } from '../gridPitch';
 
 /** Derive all dimensions from bin parameters. */
-function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
+export function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- fallback for legacy BinParams without heightUnitMm
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = params.height * heightUnit;

@@ -12,6 +12,8 @@ import { getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCac
 import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
+import { hasMeshImprints, prepareMeshImprints } from './meshImprint';
+import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -38,6 +40,29 @@ async function runExportAttempt(
   onProgress?: (progress: number) => void
 ): Promise<ExportResult> {
   onProgress?.(0.02);
+
+  // Mesh imprint designs export the imprinted MESH, never the BREP solid —
+  // the pocket subtraction happens post-tessellation (meshImprintStage), so
+  // `exportSolidToStl(solid, …)` would silently ship a bin without pockets.
+  if (hasMeshImprints(params)) {
+    if (format === 'step') {
+      throw new Error(
+        'STEP export is not available for designs with mesh imprint cutouts — use STL or 3MF'
+      );
+    }
+    await prepareMeshImprints(params);
+    const meshData = generateBin(params, (_stage, p) => onProgress?.(0.02 + p * 0.9), true);
+    onProgress?.(0.95);
+    const data = buildSTLBufferFromIndexed(
+      meshData.vertices,
+      meshData.normals,
+      meshData.indices,
+      name
+    );
+    onProgress?.(1);
+    return { data, fileName: `${name}.stl`, faceGroups: meshData.faceGroups };
+  }
+
   let faceGroups: readonly FaceGroupData[] | undefined;
   if (!isLastSolidExportQuality()) {
     // Generation is the bulk of export → map its stage progress to 2%–85%.
