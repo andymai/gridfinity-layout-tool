@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.252.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.0...gridfinity-layout-tool-v4.252.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **print-export:** stop zeroing acceleration in multi-color 3MF exports ([#2623](https://github.com/andymai/gridfinity-layout-tool/issues/2623)) ([d49503d](https://github.com/andymai/gridfinity-layout-tool/commit/d49503dc62dec3a3c9f4fe954ebcd8bd0c523f73))
+
 ## [4.252.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.251.0...gridfinity-layout-tool-v4.252.0) (2026-07-17)
 
 
