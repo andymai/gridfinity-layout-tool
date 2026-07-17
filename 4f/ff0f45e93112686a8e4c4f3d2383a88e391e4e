@@ -1,0 +1,30 @@
+src/features/generation/README.md
+  s_e2394dc42b9931::t_2cc3b8a52495e9 91
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e2394dc42b9931::t_0961238ee6ea2f 983-987
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_e2394dc42b9931::t_994971805f1b39 21,239-252
+  s_e2394dc42b9931::t_5ae8b88c51467d 253-254
+src/features/bin-designer/README.md
+  s_e2394dc42b9931::t_2cc3b8a52495e9 169-172
+src/features/generation/worker/generators/meshImprint.ts
+  s_e2394dc42b9931::t_8313cbd4bf6b57 481-484,486-487,494,504,506-519
+  s_e2394dc42b9931::t_2af5a1572bb9c7 25-29
+  s_e2394dc42b9931::t_42b26c20d6feaf 561-562
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4fff0f45e93112686a8e4c4f3d2383a88e391e4e",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
