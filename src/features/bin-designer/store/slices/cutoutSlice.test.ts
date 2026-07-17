@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 
 describe('cutoutSlice - consolidated actions', () => {
   beforeEach(() => {
@@ -782,6 +784,127 @@ describe('cutoutSlice - consolidated actions', () => {
       const { cutouts } = useDesignerStore.getState().params;
       expect(cutouts[0]).toMatchObject({ color: '#ef4444', colorScope: 'floor' });
       expect(cutouts[1]).toMatchObject({ color: '#ef4444', colorScope: 'floor' });
+    });
+  });
+
+  describe('mesh assets lifecycle', () => {
+    const createMeshAsset = (): MeshAsset => ({
+      name: 'wrench',
+      data: 'AAAA',
+      triangleCount: 12,
+      sizeMm: { x: 20, y: 10, z: 5 },
+      outlines: [
+        [
+          { x: 0, y: 0 },
+          { x: 20, y: 0 },
+          { x: 20, y: 10 },
+          { x: 0, y: 10 },
+        ],
+      ],
+    });
+
+    const createMeshCutout = (overrides: Partial<Cutout> = {}): Cutout =>
+      createTestCutout({ id: 'mesh-1', shape: 'mesh', meshId: 'asset-1', ...overrides });
+
+    it('addMeshCutout stores the cutout and its asset in one history entry', () => {
+      const { addMeshCutout } = useDesignerStore.getState();
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      addMeshCutout(createMeshCutout(), createMeshAsset());
+
+      const { params, history } = useDesignerStore.getState();
+      expect(params.cutouts).toHaveLength(1);
+      expect(params.meshAssets?.['asset-1']?.name).toBe('wrench');
+      expect(history.past.length).toBe(historyBefore + 1);
+    });
+
+    it('addMeshCutout rejects non-mesh shapes and missing meshId', () => {
+      const { addMeshCutout } = useDesignerStore.getState();
+      addMeshCutout(createTestCutout({ id: 'x' }), createMeshAsset());
+      addMeshCutout(createMeshCutout({ meshId: undefined }), createMeshAsset());
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutouts).toHaveLength(0);
+      expect(params.meshAssets).toBeUndefined();
+    });
+
+    it('addMeshCutout enforces the per-design asset cap', () => {
+      const { addMeshCutout } = useDesignerStore.getState();
+      for (let i = 0; i < MAX_MESH_ASSETS_PER_DESIGN + 2; i++) {
+        addMeshCutout(
+          createMeshCutout({ id: `mesh-${i}`, meshId: `asset-${i}` }),
+          createMeshAsset()
+        );
+      }
+      const { params } = useDesignerStore.getState();
+      expect(Object.keys(params.meshAssets ?? {})).toHaveLength(MAX_MESH_ASSETS_PER_DESIGN);
+      expect(params.cutouts).toHaveLength(MAX_MESH_ASSETS_PER_DESIGN);
+    });
+
+    it('removeCutout GCs the asset when the last reference goes', () => {
+      const { addMeshCutout, removeCutout } = useDesignerStore.getState();
+      addMeshCutout(createMeshCutout(), createMeshAsset());
+
+      removeCutout('mesh-1');
+
+      expect(useDesignerStore.getState().params.meshAssets).toBeUndefined();
+    });
+
+    it('keeps a shared asset while other cutouts still reference it', () => {
+      const { addMeshCutout, removeCutout } = useDesignerStore.getState();
+      addMeshCutout(createMeshCutout({ id: 'mesh-a' }), createMeshAsset());
+      addMeshCutout(createMeshCutout({ id: 'mesh-b' }), createMeshAsset());
+
+      removeCutout('mesh-a');
+
+      const { params } = useDesignerStore.getState();
+      expect(params.meshAssets?.['asset-1']).toBeDefined();
+
+      removeCutout('mesh-b');
+      expect(useDesignerStore.getState().params.meshAssets).toBeUndefined();
+    });
+
+    it('removeCutoutsBatch and clearCutouts GC assets', () => {
+      const { addMeshCutout, removeCutoutsBatch, clearCutouts, addCutout } =
+        useDesignerStore.getState();
+      addMeshCutout(createMeshCutout({ id: 'mesh-a' }), createMeshAsset());
+      addMeshCutout(createMeshCutout({ id: 'mesh-b', meshId: 'asset-2' }), createMeshAsset());
+      addCutout(createTestCutout({ id: 'rect-1' }));
+
+      removeCutoutsBatch(['mesh-a']);
+      expect(useDesignerStore.getState().params.meshAssets?.['asset-1']).toBeUndefined();
+      expect(useDesignerStore.getState().params.meshAssets?.['asset-2']).toBeDefined();
+
+      clearCutouts();
+      expect(useDesignerStore.getState().params.meshAssets).toBeUndefined();
+    });
+
+    it('duplicated mesh cutouts share the original asset (no payload growth)', () => {
+      const { addMeshCutout, duplicateCutouts, removeCutout } = useDesignerStore.getState();
+      addMeshCutout(createMeshCutout(), createMeshAsset());
+
+      duplicateCutouts(['mesh-1']);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutouts).toHaveLength(2);
+      expect(params.cutouts[1].meshId).toBe('asset-1');
+      expect(Object.keys(params.meshAssets ?? {})).toHaveLength(1);
+
+      removeCutout('mesh-1');
+      expect(useDesignerStore.getState().params.meshAssets?.['asset-1']).toBeDefined();
+    });
+
+    it('undo restores both the cutout and its asset', () => {
+      const { addMeshCutout, removeCutout } = useDesignerStore.getState();
+      addMeshCutout(createMeshCutout(), createMeshAsset());
+      removeCutout('mesh-1');
+      expect(useDesignerStore.getState().params.meshAssets).toBeUndefined();
+
+      useDesignerStore.getState().undo();
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutouts).toHaveLength(1);
+      expect(params.meshAssets?.['asset-1']?.name).toBe('wrench');
     });
   });
 });

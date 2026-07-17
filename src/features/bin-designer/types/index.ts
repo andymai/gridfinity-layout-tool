@@ -6,6 +6,7 @@
  */
 
 import type { SaveStatus } from '@/shared/types/saveStatus';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type {
   FaceGroupData,
   CoarseLODData,
@@ -595,6 +596,13 @@ export interface BinParams {
   readonly inserts: Insert[];
   readonly cutouts: Cutout[];
   readonly cutoutConfig: CutoutConfig;
+  /**
+   * Imported STL imprint meshes, keyed by the id that `Cutout.meshId`
+   * references (shape 'mesh' cutouts). Absent/empty for designs without mesh
+   * imprints, so existing designs serialize byte-identically. Entries are
+   * GC'd by the store when the last referencing cutout is deleted.
+   */
+  readonly meshAssets?: Record<string, MeshAsset>;
   readonly wallPattern: WallPatternConfig;
   /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
   readonly splitConnectors?: SplitConnectorConfig;
@@ -1068,6 +1076,7 @@ export interface DesignerState {
 
   // Cutout actions
   addCutout: (cutout: Cutout) => void;
+  addMeshCutout: (cutout: Cutout, asset: MeshAsset) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
   clearCutouts: () => void;

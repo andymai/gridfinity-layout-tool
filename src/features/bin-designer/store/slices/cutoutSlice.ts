@@ -17,6 +17,8 @@ import type {
   GroupOp,
 } from '../../types';
 import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
@@ -57,6 +59,22 @@ function expandIdsToGroups(
     }
   }
   return idSet;
+}
+
+/**
+ * Drop mesh assets no cutout references anymore. Runs after every deletion
+ * path so a deleted mesh cutout doesn't strand its (100KB+) asset in the
+ * design; undo restores both together because history snapshots full params.
+ */
+function gcMeshAssets(state: Draft<DesignerState>): void {
+  const assets = state.params.meshAssets;
+  if (!assets) return;
+  const referenced = new Set(
+    state.params.cutouts.map((c) => c.meshId).filter((id): id is string => id !== undefined)
+  );
+  const kept = Object.entries(assets).filter(([id]) => referenced.has(id));
+  if (kept.length === Object.keys(assets).length) return;
+  state.params.meshAssets = kept.length > 0 ? Object.fromEntries(kept) : undefined;
 }
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -197,11 +215,31 @@ export function createCutoutSlice(set: Set) {
       });
     },
 
+    /**
+     * Add a mesh imprint cutout together with its stored asset (one history
+     * entry, so undo removes both). No-ops when the design is already at the
+     * asset cap — callers surface that limit before invoking.
+     */
+    addMeshCutout: (cutout: Cutout, asset: MeshAsset) => {
+      const meshId = cutout.meshId;
+      if (cutout.shape !== 'mesh' || meshId === undefined) return;
+      set((state) => {
+        const existing = state.params.meshAssets ?? {};
+        if (!(meshId in existing) && Object.keys(existing).length >= MAX_MESH_ASSETS_PER_DESIGN) {
+          return;
+        }
+        pushHistoryEntry(state);
+        state.params.meshAssets = { ...existing, [meshId]: asset };
+        state.params.cutouts = [...state.params.cutouts, cutout];
+      });
+    },
+
     removeCutout: (id: string) => {
       set((state) => {
         pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.filter((c) => c.id !== id);
         state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        gcMeshAssets(state);
       });
     },
 
@@ -222,6 +260,7 @@ export function createCutoutSlice(set: Set) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.cutouts = [];
+        gcMeshAssets(state);
       });
     },
 
@@ -345,6 +384,7 @@ export function createCutoutSlice(set: Set) {
         const idSet = new Set(ids);
         state.params.cutouts = state.params.cutouts.filter((c) => !idSet.has(c.id));
         state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        gcMeshAssets(state);
       });
     },
   };

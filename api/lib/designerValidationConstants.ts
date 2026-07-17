@@ -43,6 +43,18 @@ export const CONSTRAINTS = {
   MAX_INSERT_DIMENSION: 200,
   MAX_INSERT_DEPTH: 50,
   MAX_PAYLOAD_BYTES: 100_000, // 100KB max for designer shares
+  // Mesh imprint assets (STL import). These mirror the client caps in
+  // `src/shared/generation/meshAsset.ts` — keep in sync. Designs carrying
+  // meshAssets get the raised payload cap; everything else keeps 100KB.
+  MESH_MAX_PAYLOAD_BYTES: 2_000_000,
+  MAX_MESH_ASSETS: 8,
+  MAX_MESH_ASSET_TRIANGLES: 50_000,
+  MAX_MESH_OUTLINE_POINTS: 2000,
+  MAX_MESH_NAME_LENGTH: 64,
+  // Compressed+base64 payload per asset. Typical 50k-tri assets land at
+  // 200-500KB; this bounds a crafted blob without pinching real imports.
+  MAX_MESH_DATA_LENGTH: 900_000,
+  MAX_MESH_SIZE_MM: 1000,
   // Mask cells are half-bin resolution: 10 grid units × 2 = 20 cells per
   // side. Mirrors MAX_MASK_DIMENSION in `src/shared/utils/cellMask.ts`.
   MAX_MASK_DIMENSION: 20,

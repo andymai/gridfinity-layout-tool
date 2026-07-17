@@ -19,10 +19,10 @@
 import { err, ok, validationImportFailed } from '@/core/result';
 import type { Result, ValidationError } from '@/core/result';
 
-/** A 2D silhouette ring in mm, in the mesh's lay-flat XY frame. */
+/** A 2D silhouette ring point in mm, in the mesh's lay-flat XY frame. */
 export interface MeshOutlinePoint {
-  readonly x: number;
-  readonly y: number;
+  x: number;
+  y: number;
 }
 
 /**
@@ -40,9 +40,10 @@ export interface MeshAsset {
   /**
    * Top-down silhouette outer rings (holes dropped), simplified. Powers the 2D
    * footprint render, clearance offset, and chamfer rim without decoding the
-   * mesh on the main thread.
+   * mesh on the main thread. Mutable array types (like `BinParams.cutouts`)
+   * so the asset nests cleanly inside immer drafts of `BinParams`.
    */
-  readonly outlines: ReadonlyArray<ReadonlyArray<MeshOutlinePoint>>;
+  readonly outlines: MeshOutlinePoint[][];
 }
 
 /** Why a mesh import failed — drives the user-facing toast + analytics reason. */

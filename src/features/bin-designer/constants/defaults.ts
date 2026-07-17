@@ -671,9 +671,15 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    cutouts: (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts).map((c) =>
-      migrateCutout(c as Cutout & LegacyCutoutFields)
-    ),
+    cutouts: (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts)
+      .map((c) => migrateCutout(c as Cutout & LegacyCutoutFields))
+      // A mesh cutout without its asset can't generate anything — drop
+      // orphans (crafted/corrupt designs) instead of erroring downstream.
+      .filter(
+        (c) =>
+          c.shape !== 'mesh' ||
+          (c.meshId !== undefined && params.meshAssets?.[c.meshId] !== undefined)
+      ),
     cutoutConfig,
     wallPattern: wallPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors, wallHeightMm),
@@ -735,6 +741,10 @@ export const STYLE_DEFAULT_OMIT_KEYS = [
   'cellMask',
   'compartments',
   'cutouts',
+  // Mesh imprint assets are per-design geometry AND large (100KB+ compressed
+  // STL data) — carrying them into "default for new bins" would bloat every
+  // subsequent design.
+  'meshAssets',
   'inserts',
   'handles',
   'walls',

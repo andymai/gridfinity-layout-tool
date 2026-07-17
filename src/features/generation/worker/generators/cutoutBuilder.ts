@@ -980,6 +980,11 @@ export function buildCutoutCuts(
   innerD: number,
   wallHeight: number
 ): CutoutTools {
+  // Mesh imprints are not profile-extrudable: they subtract post-tessellation
+  // in the mesh domain (meshImprint stage), never through the BREP cut path.
+  if (params.cutouts.some((c) => c.shape === 'mesh')) {
+    params = { ...params, cutouts: params.cutouts.filter((c) => c.shape !== 'mesh') };
+  }
   if (params.cutouts.length === 0) return { cutTools: [], fuseTools: [] };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).

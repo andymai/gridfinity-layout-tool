@@ -122,6 +122,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'featureColors',
   'lid',
   'textDefaults',
+  'meshAssets',
 ]);
 
 /**
@@ -566,6 +567,110 @@ function validateCutouts(value: unknown): string | null {
   return null;
 }
 
+const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
+// eslint-disable-next-line no-control-regex -- reject control chars in user-supplied asset names/ids
+const CONTROL_CHARS_REGEX = /[\u0000-\u001f\u007f]/;
+const ALLOWED_MESH_ASSET_KEYS = new Set(['name', 'data', 'triangleCount', 'sizeMm', 'outlines']);
+
+/**
+ * Validate the mesh imprint asset map (STL imports). The mesh geometry itself
+ * is regenerated client-side from the compressed data, but a crafted blob
+ * could smuggle megabytes of junk or orphan references, so structure, caps,
+ * and cutout cross-references are all enforced here.
+ */
+function validateMeshAssets(value: unknown, cutouts: unknown): string | null {
+  const meshCutoutIds: { index: number; meshId: unknown }[] = [];
+  if (Array.isArray(cutouts)) {
+    for (let i = 0; i < cutouts.length; i++) {
+      const c: unknown = cutouts[i];
+      if (isObject(c) && c.shape === 'mesh') meshCutoutIds.push({ index: i, meshId: c.meshId });
+    }
+  }
+
+  if (value === undefined) {
+    return meshCutoutIds.length > 0
+      ? `cutouts[${meshCutoutIds[0].index}] has shape 'mesh' but meshAssets is missing`
+      : null;
+  }
+  if (!isObject(value)) return 'meshAssets must be an object';
+
+  const entries = Object.entries(value);
+  if (entries.length > CONSTRAINTS.MAX_MESH_ASSETS) {
+    return `max ${CONSTRAINTS.MAX_MESH_ASSETS} mesh assets`;
+  }
+  for (const [id, assetRaw] of entries) {
+    if (id.length === 0 || id.length > 64 || CONTROL_CHARS_REGEX.test(id)) {
+      return 'meshAssets keys must be non-empty strings (max 64 chars)';
+    }
+    if (!isObject(assetRaw)) return `meshAssets.${id} must be an object`;
+    for (const key of Object.keys(assetRaw)) {
+      if (!ALLOWED_MESH_ASSET_KEYS.has(key)) return `meshAssets.${id} has unknown key: ${key}`;
+    }
+    const a = assetRaw;
+    if (
+      !isString(a.name) ||
+      a.name.length === 0 ||
+      a.name.length > CONSTRAINTS.MAX_MESH_NAME_LENGTH ||
+      CONTROL_CHARS_REGEX.test(a.name)
+    ) {
+      return `meshAssets.${id}.name must be a clean string (max ${CONSTRAINTS.MAX_MESH_NAME_LENGTH} chars)`;
+    }
+    if (
+      !isString(a.data) ||
+      a.data.length === 0 ||
+      a.data.length > CONSTRAINTS.MAX_MESH_DATA_LENGTH ||
+      !BASE64_REGEX.test(a.data)
+    ) {
+      return `meshAssets.${id}.data must be base64 (max ${CONSTRAINTS.MAX_MESH_DATA_LENGTH} chars)`;
+    }
+    if (
+      !isNumber(a.triangleCount) ||
+      !Number.isInteger(a.triangleCount) ||
+      !inRange(a.triangleCount, 1, CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES)
+    ) {
+      return `meshAssets.${id}.triangleCount must be an integer in [1, ${CONSTRAINTS.MAX_MESH_ASSET_TRIANGLES}]`;
+    }
+    if (!isObject(a.sizeMm)) return `meshAssets.${id}.sizeMm must be an object`;
+    for (const axis of ['x', 'y', 'z'] as const) {
+      const v = a.sizeMm[axis];
+      if (!isNumber(v) || v <= 0 || v > CONSTRAINTS.MAX_MESH_SIZE_MM) {
+        return `meshAssets.${id}.sizeMm.${axis} must be in (0, ${CONSTRAINTS.MAX_MESH_SIZE_MM}]`;
+      }
+    }
+    if (!Array.isArray(a.outlines) || a.outlines.length === 0) {
+      return `meshAssets.${id}.outlines must be a non-empty array`;
+    }
+    let totalPoints = 0;
+    for (const ring of a.outlines) {
+      if (!Array.isArray(ring) || ring.length < 3) {
+        return `meshAssets.${id}.outlines rings need at least 3 points`;
+      }
+      totalPoints += ring.length;
+      for (const point of ring) {
+        if (
+          !isObject(point) ||
+          !isNumber(point.x) ||
+          !isNumber(point.y) ||
+          Math.abs(point.x) > CONSTRAINTS.MAX_MESH_SIZE_MM ||
+          Math.abs(point.y) > CONSTRAINTS.MAX_MESH_SIZE_MM
+        ) {
+          return `meshAssets.${id}.outlines points must be finite {x, y} within ±${CONSTRAINTS.MAX_MESH_SIZE_MM}mm`;
+        }
+      }
+    }
+    if (totalPoints > CONSTRAINTS.MAX_MESH_OUTLINE_POINTS) {
+      return `meshAssets.${id}.outlines exceed ${CONSTRAINTS.MAX_MESH_OUTLINE_POINTS} total points`;
+    }
+  }
+
+  for (const { index, meshId } of meshCutoutIds) {
+    if (!isString(meshId) || !(meshId in value)) {
+      return `cutouts[${index}].meshId must reference an entry in meshAssets`;
+    }
+  }
+  return null;
+}
+
 /**
  * Validate and normalize a designer share payload according to server-side constraints.
  *
@@ -574,8 +679,10 @@ function validateCutouts(value: unknown): string | null {
  * @returns A result object: on success `{ valid: true, payload }` where `payload` contains the validated `type`, `version`, and `params`; on failure `{ valid: false, error }` where `error` includes a `code` and human-readable `message` describing the validation failure.
  */
 export function validateDesignerShare(body: unknown, sizeBytes: number): DesignerValidationResult {
-  if (sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
+  // Hard ceiling first; the tighter no-mesh cap is applied once params are
+  // parsed and we know whether the design legitimately carries mesh assets.
+  if (sizeBytes > CONSTRAINTS.MESH_MAX_PAYLOAD_BYTES) {
+    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 2MB)');
   }
 
   if (!isObject(body)) {
@@ -593,6 +700,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   const params = body.params;
   if (!isObject(params)) {
     return validationError('MISSING_PARAMS', 'params must be an object');
+  }
+
+  const hasMeshAssets = isObject(params.meshAssets) && Object.keys(params.meshAssets).length > 0;
+  if (!hasMeshAssets && sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
+    return validationError('SIZE_EXCEEDED', 'Designer share payload too large (max 100KB)');
   }
 
   // Dimensions
@@ -695,6 +807,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.cutouts !== undefined) {
     const cutoutsErr = validateCutouts(params.cutouts);
     if (cutoutsErr) return validationError('INVALID_PARAMS', cutoutsErr);
+  }
+
+  if (params.meshAssets !== undefined || Array.isArray(params.cutouts)) {
+    const meshErr = validateMeshAssets(params.meshAssets, params.cutouts);
+    if (meshErr) return validationError('INVALID_PARAMS', meshErr);
   }
 
   if (params.textDefaults !== undefined) {
