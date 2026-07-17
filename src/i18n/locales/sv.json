@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Höjdenhet",
   "sidebar.heightUnitTooltip": "Storleken på en höjdenhet i mm (standard-Gridfinity = 7mm)",
   "sidebar.printBed": "Utskriftsbädd",
-  "sidebar.printBedTooltip": "Bins som är bredare än {maxWidth} eller djupare än {maxDepth} delas upp för utskrift"
+  "sidebar.printBedTooltip": "Bins som är bredare än {maxWidth} eller djupare än {maxDepth} delas upp för utskrift",
+  "binDesigner.cutouts.importStl": "Importera STL",
+  "binDesigner.cutouts.stlImport.title": "Placera STL-avtryck",
+  "binDesigner.cutouts.stlImport.processing": "Bearbetar mesh…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} trianglar",
+  "binDesigner.cutouts.stlImport.flipAxis": "Rotera {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Modellen är större än lådans insida. Den placeras ändå — förstora lådan eller använd en mindre modell för en komplett ficka.",
+  "binDesigner.cutouts.stlImport.place": "Placera i lådan",
+  "binDesigner.cutouts.shapeName.mesh": "STL-avtryck",
+  "toast.stlImport.success": "\"{name}\" placerad som 3D-avtryck",
+  "toast.stlImport.parseFailed": "Kunde inte läsa STL-filen",
+  "toast.stlImport.fileTooLarge": "STL-filen är för stor (max 50MB)",
+  "toast.stlImport.notManifold": "Meshen är inte vattentät — reparera den i din slicer och exportera igen",
+  "toast.stlImport.empty": "STL-filen innehåller ingen utskrivbar geometri",
+  "toast.stlImport.assetLimit": "En design kan innehålla upp till {count} importerade meshar"
 }

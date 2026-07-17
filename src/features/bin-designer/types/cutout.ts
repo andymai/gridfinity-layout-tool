@@ -53,7 +53,13 @@ export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
  * shapes grow their profile dimensions; paths offset their flattened outline
  * outward at generation time (same polygon offset used for the path chamfer).
  */
-export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot', 'path'];
+export const CLEARANCE_SHAPES: readonly CutoutShape[] = [
+  'circle',
+  'polygon',
+  'slot',
+  'path',
+  'mesh',
+];
 
 /** Largest entry-chamfer width (mm) the editor allows. */
 export const MAX_CUTOUT_CHAMFER = 5;
@@ -107,6 +113,7 @@ export const CHAMFER_SHAPES: readonly CutoutShape[] = [
   'polygon',
   'slot',
   'path',
+  'mesh',
 ];
 
 /** Layout mode for a parametric cutout array. */

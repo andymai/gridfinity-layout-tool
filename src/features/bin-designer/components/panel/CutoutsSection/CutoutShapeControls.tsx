@@ -19,6 +19,7 @@ import {
   maxAcrossFlats,
 } from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
+import { MeshCutoutInfo } from './MeshCutoutInfo';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { resizeKeepingCenter } from './cutoutHelpers';
 import { HEX_ACROSS_FLATS_PRESETS, CIRCLE_DIAMETER_PRESETS } from './cutoutShapePresets';
@@ -109,6 +110,10 @@ export function CutoutShapeControls({
         />
       </div>
     );
+  }
+
+  if (cutout.shape === 'mesh') {
+    return <MeshCutoutInfo cutout={cutout} />;
   }
 
   if (cutout.shape === 'circle') {

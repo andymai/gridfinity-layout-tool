@@ -19,6 +19,8 @@ function shapeName(shape: CutoutShape, t: ReturnType<typeof useTranslation>): st
       return t('binDesigner.cutouts.addPolygon');
     case 'slot':
       return t('binDesigner.cutouts.addSlot');
+    case 'mesh':
+      return t('binDesigner.cutouts.shapeName.mesh');
     case 'path':
     default:
       return t('binDesigner.cutouts.shapeName.path');
@@ -51,6 +53,14 @@ function ShapeGlyph({ shape }: { readonly shape: CutoutShape }): ReactNode {
       return (
         <svg {...common}>
           <rect x="1" y="4" width="12" height="6" rx="3" />
+        </svg>
+      );
+    case 'mesh':
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <path d="M7 1.5L12 4v6l-5 2.5L2 10V4z" />
+          <path d="M2 4l5 2.5L12 4" />
+          <path d="M7 6.5V13" />
         </svg>
       );
     case 'path':

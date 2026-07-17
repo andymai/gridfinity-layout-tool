@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "高さユニット",
   "sidebar.heightUnitTooltip": "高さユニット1つのサイズ（mm）（標準Gridfinity = 7mm）",
   "sidebar.printBed": "プリントベッド",
-  "sidebar.printBedTooltip": "{maxWidth} より広い、または {maxDepth} より深い bin は印刷のために分割されます"
+  "sidebar.printBedTooltip": "{maxWidth} より広い、または {maxDepth} より深い bin は印刷のために分割されます",
+  "binDesigner.cutouts.importStl": "STLをインポート",
+  "binDesigner.cutouts.stlImport.title": "STLインプリントを配置",
+  "binDesigner.cutouts.stlImport.processing": "メッシュを処理中…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} 三角形",
+  "binDesigner.cutouts.stlImport.flipAxis": "{axis} 回転",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "このモデルはビンの内寸より大きいです。そのまま配置されますが、完全なポケットにはビンを大きくするか、より小さいモデルを使用してください。",
+  "binDesigner.cutouts.stlImport.place": "ビンに配置",
+  "binDesigner.cutouts.shapeName.mesh": "STLインプリント",
+  "toast.stlImport.success": "「{name}」を3Dインプリントとして配置しました",
+  "toast.stlImport.parseFailed": "STLファイルを読み込めませんでした",
+  "toast.stlImport.fileTooLarge": "STLファイルが大きすぎます（最大50MB）",
+  "toast.stlImport.notManifold": "メッシュが水密ではありません。スライサーで修復して再エクスポートしてください",
+  "toast.stlImport.empty": "STLに印刷可能な形状が含まれていません",
+  "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です"
 }

@@ -26,6 +26,7 @@ import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
+import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { InspectorDock } from './InspectorDock';
@@ -112,6 +113,7 @@ export function CutoutWorkspace() {
 
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
+  const stlImport = useStlImport();
   const scanEnabled = useFeatureFlag('scan_with_phone');
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
@@ -359,6 +361,7 @@ export function CutoutWorkspace() {
               onGridSizeChange={setGridSize}
               vertical
               onImportSvg={triggerSvgImport}
+              onImportStl={stlImport.triggerImport}
               onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
             />
           </div>
@@ -367,6 +370,14 @@ export function CutoutWorkspace() {
         {scanEnabled && (
           <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
         )}
+
+        <StlImportDialog
+          pending={stlImport.pending}
+          importing={stlImport.importing}
+          onFlip={stlImport.flip}
+          onPlace={stlImport.place}
+          onCancel={stlImport.cancel}
+        />
 
         {/* Center: Rulers + Canvas */}
         <div className="flex flex-1 flex-col overflow-hidden">

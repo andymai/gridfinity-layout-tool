@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Unidad de altura",
   "sidebar.heightUnitTooltip": "Tamaño de una unidad de altura en mm (Gridfinity estándar = 7mm)",
   "sidebar.printBed": "Cama de impresión",
-  "sidebar.printBedTooltip": "Los bins más anchos de {maxWidth} o más profundos de {maxDepth} se dividirán para imprimir"
+  "sidebar.printBedTooltip": "Los bins más anchos de {maxWidth} o más profundos de {maxDepth} se dividirán para imprimir",
+  "binDesigner.cutouts.importStl": "Importar STL",
+  "binDesigner.cutouts.stlImport.title": "Colocar huella STL",
+  "binDesigner.cutouts.stlImport.processing": "Procesando malla…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} triángulos",
+  "binDesigner.cutouts.stlImport.flipAxis": "Girar {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Este modelo es más grande que el interior del contenedor. Se colocará de todos modos: amplía el contenedor o usa un modelo más pequeño para una cavidad completa.",
+  "binDesigner.cutouts.stlImport.place": "Colocar en el contenedor",
+  "binDesigner.cutouts.shapeName.mesh": "Huella STL",
+  "toast.stlImport.success": "\"{name}\" colocado como huella 3D",
+  "toast.stlImport.parseFailed": "No se pudo leer el archivo STL",
+  "toast.stlImport.fileTooLarge": "El archivo STL es demasiado grande (máx. 50MB)",
+  "toast.stlImport.notManifold": "La malla no es estanca: repárala en tu slicer y vuelve a exportarla",
+  "toast.stlImport.empty": "El STL no contiene geometría imprimible",
+  "toast.stlImport.assetLimit": "Un diseño puede contener hasta {count} mallas importadas"
 }

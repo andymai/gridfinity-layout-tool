@@ -451,8 +451,10 @@ export function SceneContent({
         />
       )}
 
-      {/* Resize handles on single selected cutout (not during interactions) */}
-      {selectedCutout && !isInteracting && (
+      {/* Resize handles on single selected cutout (not during interactions).
+          Mesh imprints are shape-locked: their footprint is derived from the
+          imported mesh, so resizing is meaningless — move/rotate only. */}
+      {selectedCutout && selectedCutout.shape !== 'mesh' && !isInteracting && (
         <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />
       )}
 

@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Hoogte-eenheid",
   "sidebar.heightUnitTooltip": "Grootte van één hoogte-eenheid in mm (standaard Gridfinity = 7mm)",
   "sidebar.printBed": "Printbed",
-  "sidebar.printBedTooltip": "Bins die breder zijn dan {maxWidth} of dieper dan {maxDepth} worden gesplitst voor het printen"
+  "sidebar.printBedTooltip": "Bins die breder zijn dan {maxWidth} of dieper dan {maxDepth} worden gesplitst voor het printen",
+  "binDesigner.cutouts.importStl": "STL importeren",
+  "binDesigner.cutouts.stlImport.title": "STL-afdruk plaatsen",
+  "binDesigner.cutouts.stlImport.processing": "Mesh verwerken…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} driehoeken",
+  "binDesigner.cutouts.stlImport.flipAxis": "{axis} draaien",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Dit model is groter dan de binnenkant van de bak. Het wordt toch geplaatst — vergroot de bak of gebruik een kleiner model voor een volledige uitsparing.",
+  "binDesigner.cutouts.stlImport.place": "In bak plaatsen",
+  "binDesigner.cutouts.shapeName.mesh": "STL-afdruk",
+  "toast.stlImport.success": "\"{name}\" geplaatst als 3D-afdruk",
+  "toast.stlImport.parseFailed": "Kon het STL-bestand niet lezen",
+  "toast.stlImport.fileTooLarge": "STL-bestand is te groot (max. 50MB)",
+  "toast.stlImport.notManifold": "Mesh is niet waterdicht — repareer deze in je slicer en exporteer opnieuw",
+  "toast.stlImport.empty": "STL bevat geen printbare geometrie",
+  "toast.stlImport.assetLimit": "Een ontwerp kan maximaal {count} geïmporteerde meshes bevatten"
 }

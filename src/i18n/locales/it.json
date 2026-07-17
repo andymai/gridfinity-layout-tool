@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Unità altezza",
   "sidebar.heightUnitTooltip": "Dimensione di un'unità di altezza in mm (Gridfinity standard = 7mm)",
   "sidebar.printBed": "Piano di stampa",
-  "sidebar.printBedTooltip": "I bin più larghi di {maxWidth} o più profondi di {maxDepth} verranno divisi per la stampa"
+  "sidebar.printBedTooltip": "I bin più larghi di {maxWidth} o più profondi di {maxDepth} verranno divisi per la stampa",
+  "binDesigner.cutouts.importStl": "Importa STL",
+  "binDesigner.cutouts.stlImport.title": "Posiziona l'impronta STL",
+  "binDesigner.cutouts.stlImport.processing": "Elaborazione della mesh…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} triangoli",
+  "binDesigner.cutouts.stlImport.flipAxis": "Ruota {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Questo modello è più grande dell'interno del contenitore. Verrà comunque posizionato: ingrandisci il contenitore o usa un modello più piccolo per una tasca completa.",
+  "binDesigner.cutouts.stlImport.place": "Posiziona nel contenitore",
+  "binDesigner.cutouts.shapeName.mesh": "Impronta STL",
+  "toast.stlImport.success": "\"{name}\" posizionato come impronta 3D",
+  "toast.stlImport.parseFailed": "Impossibile leggere il file STL",
+  "toast.stlImport.fileTooLarge": "Il file STL è troppo grande (max 50MB)",
+  "toast.stlImport.notManifold": "La mesh non è a tenuta stagna: riparala nello slicer e riesportala",
+  "toast.stlImport.empty": "Lo STL non contiene geometria stampabile",
+  "toast.stlImport.assetLimit": "Un progetto può contenere fino a {count} mesh importate"
 }

@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Unidade de altura",
   "sidebar.heightUnitTooltip": "Tamanho de uma unidade de altura em mm (Gridfinity padrão = 7mm)",
   "sidebar.printBed": "Mesa de impressão",
-  "sidebar.printBedTooltip": "Bins mais largos que {maxWidth} ou mais profundos que {maxDepth} serão divididos para impressão"
+  "sidebar.printBedTooltip": "Bins mais largos que {maxWidth} ou mais profundos que {maxDepth} serão divididos para impressão",
+  "binDesigner.cutouts.importStl": "Importar STL",
+  "binDesigner.cutouts.stlImport.title": "Posicionar molde STL",
+  "binDesigner.cutouts.stlImport.processing": "Processando malha…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} triângulos",
+  "binDesigner.cutouts.stlImport.flipAxis": "Girar {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Este modelo é maior que o interior da caixa. Ele será posicionado mesmo assim — aumente a caixa ou use um modelo menor para um encaixe completo.",
+  "binDesigner.cutouts.stlImport.place": "Posicionar na caixa",
+  "binDesigner.cutouts.shapeName.mesh": "Molde STL",
+  "toast.stlImport.success": "\"{name}\" posicionado como molde 3D",
+  "toast.stlImport.parseFailed": "Não foi possível ler o arquivo STL",
+  "toast.stlImport.fileTooLarge": "O arquivo STL é muito grande (máx. 50MB)",
+  "toast.stlImport.notManifold": "A malha não é estanque — repare no seu fatiador e exporte novamente",
+  "toast.stlImport.empty": "O STL não contém geometria imprimível",
+  "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas"
 }

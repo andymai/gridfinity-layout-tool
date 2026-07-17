@@ -133,7 +133,7 @@ export function SingleCutoutInspector({
               max={binWidth}
               step={0.5}
               unit="mm"
-              disabled={disabled}
+              disabled={disabled || cutout.shape === 'mesh'}
             />
             <CompactNumberInput
               label="H"
@@ -143,7 +143,7 @@ export function SingleCutoutInspector({
               max={binDepth}
               step={0.5}
               unit="mm"
-              disabled={disabled}
+              disabled={disabled || cutout.shape === 'mesh'}
             />
             <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
@@ -194,13 +194,15 @@ export function SingleCutoutInspector({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
               disabled={disabled}
             />
-            <CutoutScoopControls
-              key={cutout.id}
-              cutout={cutout}
-              preview={preview.get(cutout.id)}
-              disabled={disabled}
-              onUpdate={(patch) => onUpdate(cutout.id, patch)}
-            />
+            {cutout.shape !== 'mesh' && (
+              <CutoutScoopControls
+                key={cutout.id}
+                cutout={cutout}
+                preview={preview.get(cutout.id)}
+                disabled={disabled}
+                onUpdate={(patch) => onUpdate(cutout.id, patch)}
+              />
+            )}
           </div>
         </Collapsible>
       </div>

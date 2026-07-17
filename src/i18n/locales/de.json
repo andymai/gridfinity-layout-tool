@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Höheneinheit",
   "sidebar.heightUnitTooltip": "Größe einer Höheneinheit in mm (Standard-Gridfinity = 7mm)",
   "sidebar.printBed": "Druckbett",
-  "sidebar.printBedTooltip": "Bins, die breiter als {maxWidth} oder tiefer als {maxDepth} sind, werden zum Drucken geteilt"
+  "sidebar.printBedTooltip": "Bins, die breiter als {maxWidth} oder tiefer als {maxDepth} sind, werden zum Drucken geteilt",
+  "binDesigner.cutouts.importStl": "STL importieren",
+  "binDesigner.cutouts.stlImport.title": "STL-Abdruck platzieren",
+  "binDesigner.cutouts.stlImport.processing": "Mesh wird verarbeitet…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} Dreiecke",
+  "binDesigner.cutouts.stlImport.flipAxis": "{axis} drehen",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Dieses Modell ist größer als der Behälterinnenraum. Es wird trotzdem platziert — vergrößere den Behälter oder nutze ein kleineres Modell für eine vollständige Tasche.",
+  "binDesigner.cutouts.stlImport.place": "In Behälter platzieren",
+  "binDesigner.cutouts.shapeName.mesh": "STL-Abdruck",
+  "toast.stlImport.success": "\"{name}\" als 3D-Abdruck platziert",
+  "toast.stlImport.parseFailed": "STL-Datei konnte nicht gelesen werden",
+  "toast.stlImport.fileTooLarge": "STL-Datei ist zu groß (max. 50MB)",
+  "toast.stlImport.notManifold": "Mesh ist nicht wasserdicht — im Slicer reparieren und neu exportieren",
+  "toast.stlImport.empty": "STL enthält keine druckbare Geometrie",
+  "toast.stlImport.assetLimit": "Ein Design kann bis zu {count} importierte Meshes enthalten"
 }

@@ -44,6 +44,8 @@ interface CutoutShapeToolbarProps {
   readonly vertical?: boolean;
   /** Callback to trigger SVG file import. When omitted, the button is hidden. */
   readonly onImportSvg?: () => void;
+  /** Callback to trigger STL mesh import. When omitted, the button is hidden. */
+  readonly onImportStl?: () => void;
   /** Callback to open the scan-with-phone dialog. When omitted, the button is hidden. */
   readonly onScanWithPhone?: () => void;
 }
@@ -57,6 +59,7 @@ export function CutoutShapeToolbar({
   onGridSizeChange,
   vertical = false,
   onImportSvg,
+  onImportStl,
   onScanWithPhone,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
@@ -312,6 +315,37 @@ export function CutoutShapeToolbar({
               <path d="M2 9v2.5a1 1 0 001 1h8a1 1 0 001-1V9" />
             </svg>
             {!vertical && t('binDesigner.cutouts.importSvg')}
+          </Button>
+        )}
+
+      {onImportStl &&
+        wrap(
+          t('binDesigner.cutouts.importStl'),
+          'J',
+          <Button
+            type="button"
+            variant="ghost"
+            touchTarget={false}
+            className={`${btnBase} ${btnInactive}`}
+            onClick={onImportStl}
+            aria-label={t('binDesigner.cutouts.importStl')}
+            title={!vertical ? t('binDesigner.cutouts.importStl') : undefined}
+          >
+            <svg
+              className={iconSize}
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Isometric cube: an imported 3D solid */}
+              <path d="M7 1.5L12 4v6l-5 2.5L2 10V4z" />
+              <path d="M2 4l5 2.5L12 4" />
+              <path d="M7 6.5V13" />
+            </svg>
+            {!vertical && t('binDesigner.cutouts.importStl')}
           </Button>
         )}
 

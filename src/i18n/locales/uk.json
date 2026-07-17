@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Одиниця висоти",
   "sidebar.heightUnitTooltip": "Розмір однієї одиниці висоти в мм (стандартний Gridfinity = 7mm)",
   "sidebar.printBed": "Друкарський стіл",
-  "sidebar.printBedTooltip": "Bin, ширші за {maxWidth} або глибші за {maxDepth}, будуть розділені для друку"
+  "sidebar.printBedTooltip": "Bin, ширші за {maxWidth} або глибші за {maxDepth}, будуть розділені для друку",
+  "binDesigner.cutouts.importStl": "Імпортувати STL",
+  "binDesigner.cutouts.stlImport.title": "Розмістити STL-відбиток",
+  "binDesigner.cutouts.stlImport.processing": "Обробка сітки…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} трикутників",
+  "binDesigner.cutouts.stlImport.flipAxis": "Повернути {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Ця модель більша за внутрішній простір контейнера. Її все одно буде розміщено — збільште контейнер або використайте меншу модель для повної кишені.",
+  "binDesigner.cutouts.stlImport.place": "Розмістити в контейнері",
+  "binDesigner.cutouts.shapeName.mesh": "STL-відбиток",
+  "toast.stlImport.success": "«{name}» розміщено як 3D-відбиток",
+  "toast.stlImport.parseFailed": "Не вдалося прочитати файл STL",
+  "toast.stlImport.fileTooLarge": "Файл STL завеликий (макс. 50 МБ)",
+  "toast.stlImport.notManifold": "Сітка не герметична — виправте її у слайсері та експортуйте знову",
+  "toast.stlImport.empty": "STL не містить придатної для друку геометрії",
+  "toast.stlImport.assetLimit": "Дизайн може містити до {count} імпортованих сіток"
 }

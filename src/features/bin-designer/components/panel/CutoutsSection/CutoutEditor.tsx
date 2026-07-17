@@ -15,6 +15,7 @@ import { useTranslation } from '@/i18n';
 import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { useSvgImport } from './svgImport';
+import { useStlImport, StlImportDialog } from './stlImport';
 import { ScanWithPhoneDialog } from './scanImport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
@@ -164,6 +165,7 @@ export function CutoutEditor() {
 
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
+  const stlImport = useStlImport();
   const scanEnabled = useFeatureFlag('scan_with_phone');
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
@@ -459,12 +461,21 @@ export function CutoutEditor() {
         gridSize={gridSize}
         onGridSizeChange={setGridSize}
         onImportSvg={triggerSvgImport}
+        onImportStl={stlImport.triggerImport}
         onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
       />
 
       {scanEnabled && (
         <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
       )}
+
+      <StlImportDialog
+        pending={stlImport.pending}
+        importing={stlImport.importing}
+        onFlip={stlImport.flip}
+        onPlace={stlImport.place}
+        onCancel={stlImport.cancel}
+      />
 
       {/* Global top offset control */}
       <div className="rounded border border-stroke-subtle bg-surface-elevated p-3">

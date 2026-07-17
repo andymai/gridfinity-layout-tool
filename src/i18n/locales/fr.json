@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Unité de hauteur",
   "sidebar.heightUnitTooltip": "Taille d'une unité de hauteur en mm (Gridfinity standard = 7mm)",
   "sidebar.printBed": "Plateau d'impression",
-  "sidebar.printBedTooltip": "Les bins plus larges que {maxWidth} ou plus profonds que {maxDepth} seront divisés pour l'impression"
+  "sidebar.printBedTooltip": "Les bins plus larges que {maxWidth} ou plus profonds que {maxDepth} seront divisés pour l'impression",
+  "binDesigner.cutouts.importStl": "Importer un STL",
+  "binDesigner.cutouts.stlImport.title": "Placer l'empreinte STL",
+  "binDesigner.cutouts.stlImport.processing": "Traitement du maillage…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} triangles",
+  "binDesigner.cutouts.stlImport.flipAxis": "Pivoter {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Ce modèle est plus grand que l'intérieur du bac. Il sera placé quand même — agrandissez le bac ou utilisez un modèle plus petit pour une empreinte complète.",
+  "binDesigner.cutouts.stlImport.place": "Placer dans le bac",
+  "binDesigner.cutouts.shapeName.mesh": "Empreinte STL",
+  "toast.stlImport.success": "\"{name}\" placé comme empreinte 3D",
+  "toast.stlImport.parseFailed": "Impossible de lire le fichier STL",
+  "toast.stlImport.fileTooLarge": "Le fichier STL est trop volumineux (max. 50 Mo)",
+  "toast.stlImport.notManifold": "Le maillage n'est pas étanche — réparez-le dans votre slicer puis réexportez-le",
+  "toast.stlImport.empty": "Le STL ne contient aucune géométrie imprimable",
+  "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés"
 }

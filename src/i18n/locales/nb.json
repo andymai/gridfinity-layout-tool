@@ -2705,5 +2705,19 @@
   "sidebar.heightUnit": "Høydeenhet",
   "sidebar.heightUnitTooltip": "Størrelsen på én høydeenhet i mm (standard Gridfinity = 7mm)",
   "sidebar.printBed": "Printplate",
-  "sidebar.printBedTooltip": "Bins som er bredere enn {maxWidth} eller dypere enn {maxDepth}, deles opp for utskrift"
+  "sidebar.printBedTooltip": "Bins som er bredere enn {maxWidth} eller dypere enn {maxDepth}, deles opp for utskrift",
+  "binDesigner.cutouts.importStl": "Importer STL",
+  "binDesigner.cutouts.stlImport.title": "Plasser STL-avtrykk",
+  "binDesigner.cutouts.stlImport.processing": "Behandler mesh…",
+  "binDesigner.cutouts.stlImport.triangles": "{count} trekanter",
+  "binDesigner.cutouts.stlImport.flipAxis": "Roter {axis}",
+  "binDesigner.cutouts.stlImport.oversizeWarning": "Denne modellen er større enn innsiden av boksen. Den plasseres likevel — gjør boksen større eller bruk en mindre modell for en full lomme.",
+  "binDesigner.cutouts.stlImport.place": "Plasser i boksen",
+  "binDesigner.cutouts.shapeName.mesh": "STL-avtrykk",
+  "toast.stlImport.success": "«{name}» plassert som 3D-avtrykk",
+  "toast.stlImport.parseFailed": "Kunne ikke lese STL-filen",
+  "toast.stlImport.fileTooLarge": "STL-filen er for stor (maks 50MB)",
+  "toast.stlImport.notManifold": "Meshen er ikke vanntett — reparer den i sliceren og eksporter på nytt",
+  "toast.stlImport.empty": "STL-filen inneholder ingen printbar geometri",
+  "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher"
 }
