@@ -1,0 +1,81 @@
+src/features/generation/bridge/bridgeTypes.ts
+  s_e2394dc42b9931::t_0f13514ca44b2e 21
+  s_e2394dc42b9931::t_0565eda2c47b30 48-67
+src/features/generation/worker/generators/meshImport.ts
+  s_e2394dc42b9931::t_5be1f92b5759df 1-21,28-173,178-193,195-291
+  s_e2394dc42b9931::t_2f8276a5107b87 174-177,194
+  s_e2394dc42b9931::t_c405504e4a76a8 22-27
+src/shared/generation/meshAsset.test.ts
+  s_e2394dc42b9931::t_4e4442c2a39679 1-110
+src/features/generation/worker/manifoldRuntime.ts
+  s_e2394dc42b9931::t_abd2126c405be4 1-63
+  s_e2394dc42b9931::t_2c121522f11f91 64-65
+src/features/generation/worker/handlers/importMeshHandler.ts
+  s_e2394dc42b9931::t_ed4400a248700e 1-43
+src/features/generation/worker/wasmInstantiator.ts
+  s_e2394dc42b9931::t_b976f39f46d2c8 139-142
+  s_e2394dc42b9931::t_07f60d8c7ec44e 14
+src/shared/generation/meshAsset.ts
+  s_e2394dc42b9931::t_8a69609296a3ff 48-57
+  s_e2394dc42b9931::t_815760489e8fb2 1-47,58-217
+src/features/generation/bridge/GenerationBridge.ts
+  s_e2394dc42b9931::t_6743b69bfbffdd 90
+  s_e2394dc42b9931::t_6139bb96fdaeb9 257-279
+  s_e2394dc42b9931::t_1c9dbf23903075 53,55
+  s_e2394dc42b9931::t_7c763c2de8dc05 133-142
+  s_e2394dc42b9931::t_ae85658a04c042 350-353
+  s_e2394dc42b9931::t_9f4e0c3e6b4047 329-332
+  s_e2394dc42b9931::t_a31a391c642403 256
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_e2394dc42b9931::t_6e4a57fb6bdc54 126-153
+  s_e2394dc42b9931::t_f0d3ffa2d445e7 26,47-53
+src/features/generation/worker/generators/meshImport.test.ts
+  s_e2394dc42b9931::t_a4b23c81db931c 192
+  s_e2394dc42b9931::t_37b0f6db14b600 1-12,14-78,80-191,193-237,239-251
+  s_e2394dc42b9931::t_857f046d655f84 79,238
+  s_e2394dc42b9931::t_b653ba24092983 13
+src/shared/generation/stlParser.ts
+  s_e2394dc42b9931::t_19e5ed762c5b19 2,5-6,12-15
+  s_e2394dc42b9931::t_71fdb4f04822fe 106-207
+  s_38d3958cd84f35::t_01d0313046abe1 208-209
+src/shared/generation/stlParser.test.ts
+  s_e2394dc42b9931::t_57c0f6707949dc 241
+  s_e2394dc42b9931::t_2877a357918076 2,6-19
+  s_e2394dc42b9931::t_561b26968dfacb 125-240,242-244
+  s_e2394dc42b9931::t_2ae55e2901b315 20
+src/features/generation/bridge/types.ts
+  s_e2394dc42b9931::t_d5c3de405102f3 373-374
+  s_e2394dc42b9931::t_49e7ee26efb1df 605-622
+  s_e2394dc42b9931::t_bebd665e3baffd 68-88
+  s_e2394dc42b9931::t_c6376f84f2a189 15-19
+src/features/generation/worker/generation.worker.ts
+  s_e2394dc42b9931::t_b88023280d96f7 174-177
+  s_e2394dc42b9931::t_fde5cafde9d380 55
+src/features/generation/worker/handlers/importMeshHandler.test.ts
+  s_e2394dc42b9931::t_9c8ff18078e8f3 1-80
+  s_38d3958cd84f35::t_df77837894d5f1 81-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "16b4511e3d1a6e43fc4dcb93a6d0089ac25a00b0",
+  "prompts": {},
+  "sessions": {
+    "s_38d3958cd84f35": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc5ac8b2-b474-4c23-b601-2b384eec3726",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
