@@ -12,7 +12,9 @@ import { applyMeshImprints, hasMeshImprints } from '../../meshImprint';
 import { checkCancelled } from '../../utils/abort';
 
 export const meshImprintStage: PipelineStage = {
-  name: 'merge',
+  // Distinct name (like booleanStage's 'boolean') so the perf breakdown gets
+  // its own row instead of folding into the translate/tessellate 'merge' bucket.
+  name: 'meshImprint',
   progressValue: 0.98,
 
   shouldRun(ctx: PipelineContext): boolean {
