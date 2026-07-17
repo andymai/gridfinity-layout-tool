@@ -635,11 +635,9 @@ describe('threemfExporter', () => {
       expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
     });
 
-    // Pin acceleration to "use machine default" so Orca doesn't inherit
-    // Bambu's profile defaults (via our BambuStudio identity claim) and
-    // surface a false-positive comparison warning when the inherited travel
-    // value exceeds the user's printer's machine_max_acceleration_extruding.
-    it('pins acceleration to machine defaults to silence Orca comparison warning', () => {
+    // Regression for #2622: pinning acceleration hid the user's tuned profile
+    // and inflated multi-color print time (see buildProjectSettingsConfig).
+    it('does not pin acceleration (would strip the user profile and slow the print)', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'accel',
@@ -649,8 +647,8 @@ describe('threemfExporter', () => {
         },
       });
       const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.default_acceleration).toBe('0');
-      expect(config.travel_acceleration).toBe('0');
+      expect(config.default_acceleration).toBeUndefined();
+      expect(config.travel_acceleration).toBeUndefined();
     });
 
     it('omits project_settings.config when no colorConfig is provided', () => {
