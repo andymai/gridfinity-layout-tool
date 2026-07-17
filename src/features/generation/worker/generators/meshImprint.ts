@@ -22,6 +22,11 @@ import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
 import { isOk } from '@/core/result';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import {
+  cutoutColorTag,
+  cutoutUnitKey,
+  enumerateCutoutColorUnits,
+} from '@/shared/generation/cutoutColorUnits';
 import { CREASE_ANGLE_RAD } from '@/shared/constants/tessellation';
 import type { FaceGroupData, MeshData } from '../../bridge/types';
 import type { BinDimensions } from './pipeline/types';
@@ -473,13 +478,20 @@ export function imprintArrays(
   const module = activeModule ?? getLoadedManifoldModule();
   if (!module) return null;
 
+  // Cavity color: the same tag contract as 2D cutouts. Ordinals come from the
+  // FULL cutout list (matching the paint layer and cutoutBuilder).
+  const colorOrdinal = new Map(enumerateCutoutColorUnits(params.cutouts).map((u, i) => [u.key, i]));
+
   const tools: Manifold[] = [];
+  /** Provenance id → face tag for tool-carved cavity faces. */
+  const toolIdToTag = new Map<number, number>();
   const disposals: Manifold[] = [];
   try {
     for (const cutout of cutouts) {
       const asset = params.meshAssets?.[cutout.meshId ?? ''];
       if (!asset) continue;
       const prepared = preparedTools.get(asset.data);
+      const cutoutParts: Manifold[] = [];
       for (const instance of expandCutoutArray(cutout)) {
         if (clip && !boundsOverlap(instanceBounds(instance, frame), clip)) continue;
         const placed = buildInstanceTool(
@@ -489,10 +501,23 @@ export function imprintArrays(
           instance,
           frame
         );
-        if (placed) tools.push(placed);
+        if (placed) cutoutParts.push(placed);
       }
+      if (cutoutParts.length === 0) continue;
+      disposals.push(...cutoutParts);
+      // One fresh provenance id per colorable unit: faces the boolean keeps
+      // from this cutout's tools resolve to its cavity color tag.
+      const unionAll =
+        cutoutParts.length === 1 ? cutoutParts[0] : module.Manifold.union(cutoutParts);
+      if (cutoutParts.length > 1) disposals.push(unionAll);
+      const stamped = unionAll.asOriginal();
+      disposals.push(stamped);
+      toolIdToTag.set(
+        stamped.originalID(),
+        cutoutColorTag(colorOrdinal.get(cutoutUnitKey(cutout)) ?? 0)
+      );
+      tools.push(stamped);
     }
-    disposals.push(...tools);
     if (tools.length === 0) return null;
 
     const runs = encodeRuns(module, indices.length, faceGroups);
@@ -533,7 +558,8 @@ export function imprintArrays(
         const start = outMesh.runIndex[r];
         const count = outMesh.runIndex[r + 1] - start;
         if (count === 0) continue;
-        const tag = runs.idToTag.get(outMesh.runOriginalID[r]) ?? TAG_UNKNOWN;
+        const id = outMesh.runOriginalID[r];
+        const tag = runs.idToTag.get(id) ?? toolIdToTag.get(id) ?? TAG_UNKNOWN;
         const previous = outFaceGroups.at(-1);
         if (previous && previous.tag === tag && previous.start + previous.count === start) {
           outFaceGroups[outFaceGroups.length - 1] = {

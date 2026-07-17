@@ -166,6 +166,10 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   cutouts. Array controls (now `+/-` steppers) appear in both the full-screen
   workspace and the sidebar editor (`CutoutArrayControls`).
 
+### Mesh imprint cutouts (STL import)
+
+`shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. The compressed mesh lives in `BinParams.meshAssets` (content shared across duplicates/arrays; store GCs an asset when its last referencing cutout is deleted — see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
+
 ## Gotchas
 
 1. **Compartment cells must form rectangles** - `isRectangularSelection()` validates

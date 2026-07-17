@@ -18,6 +18,7 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { isOk } from '@/core/result';
 import { SOCKET_HEIGHT } from './generatorConstants';
 import { deriveDimensions } from './pipeline/context';
+import { CUTOUT_COLOR_TAG_BASE } from '@/shared/generation/cutoutColorUnits';
 
 let module: ManifoldToplevel;
 let toolAsset: MeshAsset;
@@ -233,6 +234,22 @@ describe('mesh imprint generation (occt + manifold)', () => {
     // Restore the good asset for any later tests.
     clearMeshImprintCache();
     await prepareMeshImprints(solidBinParams([meshCutout()]), module);
+  }, 120_000);
+
+  it('tags tool-carved faces with the cutout color tag', async () => {
+    const params = solidBinParams([meshCutout({ color: '#ef4444', colorScope: 'floorAndWalls' })]);
+    await prepareMeshImprints(params, module);
+    const imprinted = getGenerateBin()(params, undefined, true);
+
+    const tags = new Set((imprinted.faceGroups ?? []).map((g) => g.tag));
+    // First colorable unit → ordinal 0 → CUTOUT_COLOR_TAG_BASE.
+    expect(tags.has(CUTOUT_COLOR_TAG_BASE)).toBe(true);
+    // Tagged ranges must stay within bounds and 3-aligned.
+    for (const g of imprinted.faceGroups ?? []) {
+      expect(g.start % 3).toBe(0);
+      expect(g.count % 3).toBe(0);
+      expect(g.start + g.count).toBeLessThanOrEqual(imprinted.indices.length);
+    }
   }, 120_000);
 
   it('expands parametric arrays into one pocket per instance', async () => {

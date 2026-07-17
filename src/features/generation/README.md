@@ -88,6 +88,7 @@ Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive via `fuseAllBisect` / `cutAllBisect` (n-way batch first, recursive bisect on failure)
 4. **Translate** (`translateStage`) — Z-offset for socket-based bins (applied to `solid` **and** `deferredSolid` so they stay aligned)
 5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction; meshes `deferredSolid` separately and concatenates via `mergeShapeMeshes` (visually identical to the fused shell — socket meets the body only at a hidden interface). The socket mesh is cached by geometry identity (`socketMeshCache`, keyed via `deferredSolidKey`) so non-dimension edits skip re-tessellating the base.
+6. **Mesh imprint** (`meshImprintStage`) — subtracts imported STL tools (mesh cutouts, `shape: 'mesh'`) from the tessellated mesh via raw manifold-3d. Requires the async `prepareMeshImprints()` pre-pass (worker handlers await it — the pipeline itself is synchronous); `faceGroups` tags ride through the boolean as Manifold runs, tool-carved faces get the cutout's color tag, and normals/edges are rebuilt (crease-aware) afterwards. GOTCHA: exports for mesh-bearing designs must serialize the imprinted `MeshData` (`buildSTLBufferFromIndexed`), never `exportSolidToStl` — the BREP solid has no pockets. STEP is unavailable for these designs.
 
 ## Cross-session mesh cache
 
