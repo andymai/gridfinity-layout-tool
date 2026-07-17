@@ -1,0 +1,51 @@
+src/shared/generation/meshAsset.ts
+  s_e2394dc42b9931::t_ce657c24a2de21 22,24-25
+  s_e2394dc42b9931::t_bcbce0ef69ae66 43-44,46
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e2394dc42b9931::t_788a3d89eb628c 983-987
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_e2394dc42b9931::t_c5c526d576b944 4-5
+  s_e2394dc42b9931::t_5ee37fe9355386 789-909
+api/lib/designerValidationConstants.ts
+  s_e2394dc42b9931::t_f452fee6e5a4a5 46-57
+src/features/bin-designer/types/index.ts
+  s_e2394dc42b9931::t_e78c59dfdd2282 9
+  s_e2394dc42b9931::t_d0f9f65ee5f32a 1079
+  s_e2394dc42b9931::t_cfd9b82ccd276c 605
+  s_e2394dc42b9931::t_d4fe34dbe08164 599-604
+api/lib/designerValidation.ts
+  s_e2394dc42b9931::t_d06771dc93bdd2 570,572-673,812-814
+  s_e2394dc42b9931::t_04b2ff48302779 571
+  s_e2394dc42b9931::t_5ec9ddb234a211 682-685
+  s_e2394dc42b9931::t_3f7339451d3b6d 125
+  s_e2394dc42b9931::t_8c9ba31da6914a 705-709,815
+  s_e2394dc42b9931::t_48742829da2465 816
+src/features/bin-designer/constants/defaults.ts
+  s_e2394dc42b9931::t_bcb3ef6590f27e 744-747
+  s_e2394dc42b9931::t_82311543759a6f 674-682
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_e2394dc42b9931::t_62890b5a8cd1a7 218-236,242
+  s_e2394dc42b9931::t_a99e2a12aae95b 263
+  s_e2394dc42b9931::t_28bc98e6236b2e 387
+  s_e2394dc42b9931::t_f13b2893d5dc7c 64-79
+  s_e2394dc42b9931::t_41bcfc99299183 20-21
+src/features/bin-designer/types/cutout.ts
+  s_e2394dc42b9931::t_3a754e9d945621 351-359
+  s_e2394dc42b9931::t_737ff79ae540bf 17-21,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d3b6d2868f5440b81232897e23bcfc6837f83125",
+  "prompts": {},
+  "sessions": {
+    "s_e2394dc42b9931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a348eb91-d5ae-4fb8-a6c3-7dd84ec11f7e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
