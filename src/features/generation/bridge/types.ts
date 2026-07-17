@@ -12,6 +12,11 @@ import type {
   MarginPiece,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
+import type {
+  MeshAsset,
+  MeshImportErrorReason,
+  MeshImportFlips,
+} from '@/shared/generation/meshAsset';
 
 /** Geometry kernel backend for BREP operations */
 export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
@@ -60,7 +65,27 @@ export type WorkerMessage =
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
-  | ExportSplitRangeMessage;
+  | ExportSplitRangeMessage
+  | ImportMeshMessage;
+
+/**
+ * Parse + normalize an uploaded STL into a compressed `MeshAsset` (mesh
+ * imprint import). Runs on the raw manifold-3d module, so it works on any
+ * kernel's worker without touching the active brepjs kernel.
+ */
+export interface ImportMeshMessage {
+  readonly type: 'IMPORT_MESH';
+  readonly payload: ImportMeshPayload;
+}
+
+export interface ImportMeshPayload {
+  readonly requestId: string;
+  /** Raw STL file contents (transferred, not copied). */
+  readonly buffer: ArrayBuffer;
+  readonly fileName: string;
+  /** Quarter-turn corrections applied after auto lay-flat. */
+  readonly flips?: MeshImportFlips;
+}
 
 export interface InitMessage {
   readonly type: 'INIT';
@@ -345,6 +370,8 @@ export type WorkerResponse =
   | DividersExportResultResponse
   | CombinedExportResultResponse
   | SplitExportResultResponse
+  | ImportMeshResultResponse
+  | ImportMeshErrorResponse
   | CacheStatsResponse
   | KernelPerfStatsResponse
   | BooleanFallbackStatsResponse
@@ -573,6 +600,24 @@ export interface SplitExportResultResponse {
   readonly type: 'SPLIT_EXPORT_RESULT';
   readonly requestId: string;
   readonly pieces: readonly SplitExportPiece[];
+}
+
+export interface ImportMeshResultResponse {
+  readonly type: 'IMPORT_MESH_RESULT';
+  readonly requestId: string;
+  readonly asset: MeshAsset;
+  /** Decimated, oriented preview mesh (transferred). */
+  readonly positions: Float32Array;
+  readonly indices: Uint32Array;
+  /** Default pocket depth: the oriented mesh height (mm). */
+  readonly suggestedCutDepth: number;
+}
+
+export interface ImportMeshErrorResponse {
+  readonly type: 'IMPORT_MESH_ERROR';
+  readonly requestId: string;
+  readonly reason: MeshImportErrorReason;
+  readonly error: string;
 }
 
 /** A single piece from a split preview (mesh data for Three.js rendering) */

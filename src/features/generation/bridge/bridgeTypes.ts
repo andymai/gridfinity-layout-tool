@@ -18,6 +18,7 @@ import type {
   BooleanFallbackEntry,
   PerfSnapshot,
 } from './types';
+import type { MeshAsset, MeshImportErrorReason } from '@/shared/generation/meshAsset';
 
 /** Callback for progress updates during generation */
 export type ProgressCallback = (stage: GenerationStage, progress: number) => void;
@@ -43,6 +44,26 @@ export interface DividersExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
 }
+
+/**
+ * Outcome of a mesh (STL) import. Import failures are expected user-input
+ * conditions (broken mesh, wrong format), so they resolve as `ok: false`
+ * rather than rejecting — rejection is reserved for worker-lifecycle
+ * failures (destroyed/reset mid-request).
+ */
+export type MeshImportOutcome =
+  | {
+      readonly ok: true;
+      readonly asset: MeshAsset;
+      readonly positions: Float32Array;
+      readonly indices: Uint32Array;
+      readonly suggestedCutDepth: number;
+    }
+  | {
+      readonly ok: false;
+      readonly reason: MeshImportErrorReason;
+      readonly message: string;
+    };
 
 /** Result from a combined bin + dividers export */
 export interface CombinedExportResult {

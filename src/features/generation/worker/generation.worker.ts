@@ -52,6 +52,7 @@ import {
   handleSplitExport,
   handleSplitExportRange,
 } from './handlers/splitHandler';
+import { handleImportMesh } from './handlers/importMeshHandler';
 
 /** Initialize the geometry kernel selected by the INIT message. */
 async function initKernel(kernel: KernelName = 'occt-wasm'): Promise<void> {
@@ -168,6 +169,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_SPLIT_RANGE':
         await handleSplitExportRange(message);
+        break;
+
+      case 'IMPORT_MESH':
+        await handleImportMesh(message);
         break;
 
       case 'CANCEL':

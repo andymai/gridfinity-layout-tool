@@ -11,6 +11,7 @@
 import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel } from 'brepjs';
 
 import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
+import { getManifoldModule } from './manifoldRuntime';
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
 import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
@@ -135,23 +136,10 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 export async function loadManifold(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
-  // Dynamic imports keep the manifold WASM out of the main worker chunk. The
-  // Emscripten factory locates its .wasm by environment detection, which fails
-  // in Vite ES module workers; fetch+validate the ?url-resolved binary ourselves
-  // and hand it to the factory so a stale-asset HTML response fails loud here
-  // rather than as an opaque WASM CompileError deep in Emscripten.
-  const [{ default: ManifoldModule }, manifoldWasmUrlMod] = await Promise.all([
-    import('manifold-3d'),
-    import('manifold-3d/manifold.wasm?url'),
-  ]);
-
-  const wasmBinary = await fetchWasmBinary(manifoldWasmUrlMod.default, 'Manifold');
-  // The published manifold-3d types only expose `locateFile`, but the Emscripten
-  // runtime also honors `wasmBinary` (skips its own fetch entirely).
-  const module = await ManifoldModule({ wasmBinary } as unknown as {
-    locateFile: () => string;
-  });
-  module.setup();
+  // The raw module lives in manifoldRuntime so mesh import/imprint code can
+  // share the same instance (and the occt worker can lazy-load it without
+  // registering a kernel).
+  const module = await getManifoldModule();
   initFromManifold(module);
   const manifoldKernel = getKernel('manifold');
   manifoldKernel.setQuality?.('draft');

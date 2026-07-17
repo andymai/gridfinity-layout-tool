@@ -23,6 +23,7 @@ import type {
   PendingExport,
   PendingExportMap,
   ThreadingInfo,
+  MeshImportOutcome,
 } from './bridgeTypes';
 
 export interface MessageHandlerContext {
@@ -43,6 +44,13 @@ export interface MessageHandlerContext {
   readonly itemCache: DedupCache;
   readonly pendingExports: PendingExportMap;
   readonly pendingEstimates: Map<string, (predictedMs: number | null) => void>;
+  readonly pendingImports: Map<
+    string,
+    {
+      readonly resolve: (result: MeshImportOutcome) => void;
+      readonly reject: (error: Error) => void;
+    }
+  >;
   clearPending: () => void;
   clearExportTimer: (pending: PendingExport<unknown>) => void;
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;
@@ -114,6 +122,34 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
       case 'ESTIMATE_RESULT':
         ctx.pendingEstimates.get(response.requestId)?.(response.predictedMs);
         break;
+
+      case 'IMPORT_MESH_RESULT': {
+        const pendingImport = ctx.pendingImports.get(response.requestId);
+        if (pendingImport) {
+          ctx.pendingImports.delete(response.requestId);
+          pendingImport.resolve({
+            ok: true,
+            asset: response.asset,
+            positions: response.positions,
+            indices: response.indices,
+            suggestedCutDepth: response.suggestedCutDepth,
+          });
+        }
+        break;
+      }
+
+      case 'IMPORT_MESH_ERROR': {
+        const pendingImport = ctx.pendingImports.get(response.requestId);
+        if (pendingImport) {
+          ctx.pendingImports.delete(response.requestId);
+          pendingImport.resolve({
+            ok: false,
+            reason: response.reason,
+            message: response.error,
+          });
+        }
+        break;
+      }
 
       case 'MESH_RESULT':
         if (response.requestId === ctx.currentRequestId && ctx.pendingResolve) {

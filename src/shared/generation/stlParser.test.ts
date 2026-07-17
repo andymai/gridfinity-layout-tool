@@ -1,7 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { parseSTLBinary } from './stlParser';
+import { parseSTLBinary, parseSTLAscii, parseSTL } from './stlParser';
 import { isOk, isErr } from '@/core/result';
 import { buildSTLBuffer } from '@/shared/generation/export';
+
+function asciiSTL(body: string, name = 'test'): ArrayBuffer {
+  const text = `solid ${name}\n${body}endsolid ${name}\n`;
+  const encoded = new TextEncoder().encode(text);
+  return encoded.buffer.slice(encoded.byteOffset, encoded.byteOffset + encoded.byteLength);
+}
+
+const SINGLE_FACET = `facet normal 0 0 1
+  outer loop
+    vertex 0 0 0
+    vertex 1 0 0
+    vertex 0 1 0
+  endloop
+endfacet
+`;
 
 describe('parseSTLBinary', () => {
   /** Build a binary STL with known data for round-trip testing */
@@ -105,5 +120,125 @@ describe('parseSTLBinary', () => {
     if (!isOk(result)) return;
     expect(result.value.vertices).toHaveLength(0);
     expect(result.value.normals).toHaveLength(0);
+  });
+});
+
+describe('parseSTLAscii', () => {
+  it('parses a single facet with replicated normals', () => {
+    const result = parseSTLAscii(asciiSTL(SINGLE_FACET));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+
+    expect(result.value.vertices).toHaveLength(9);
+    expect(Array.from(result.value.vertices)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    for (let i = 0; i < 9; i += 3) {
+      expect(result.value.normals[i + 2]).toBeCloseTo(1);
+    }
+  });
+
+  it('parses multiple facets and scientific-notation coordinates', () => {
+    const body = `facet normal 0 0 1
+  outer loop
+    vertex 1.5e1 0 0
+    vertex 0 2.5E-1 0
+    vertex 0 0 -1e0
+  endloop
+endfacet
+${SINGLE_FACET}`;
+    const result = parseSTLAscii(asciiSTL(body));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(18);
+    expect(result.value.vertices[0]).toBeCloseTo(15);
+    expect(result.value.vertices[4]).toBeCloseTo(0.25);
+    expect(result.value.vertices[8]).toBeCloseTo(-1);
+  });
+
+  it('tolerates CRLF line endings and garbage normals', () => {
+    const body =
+      'facet normal foo bar baz\r\n outer loop\r\n vertex 0 0 0\r\n vertex 1 0 0\r\n vertex 0 1 0\r\n endloop\r\nendfacet\r\n';
+    const result = parseSTLAscii(asciiSTL(body));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(9);
+    expect(result.value.normals[0]).toBe(0);
+  });
+
+  it('returns Err on facet with wrong vertex count', () => {
+    const body = `facet normal 0 0 1
+  outer loop
+    vertex 0 0 0
+    vertex 1 0 0
+  endloop
+endfacet
+`;
+    const result = parseSTLAscii(asciiSTL(body));
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.errors[0]).toMatch(/2 vertices/);
+  });
+
+  it('returns Err on malformed vertex coordinates', () => {
+    const body = `facet normal 0 0 1
+  outer loop
+    vertex 0 0 zero
+    vertex 1 0 0
+    vertex 0 1 0
+  endloop
+endfacet
+`;
+    const result = parseSTLAscii(asciiSTL(body));
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.errors[0]).toMatch(/malformed vertex/);
+  });
+
+  it('returns Err on vertex outside a facet', () => {
+    const result = parseSTLAscii(asciiSTL('vertex 0 0 0\n'));
+    expect(isErr(result)).toBe(true);
+  });
+
+  it('returns Err when no facets are present', () => {
+    const result = parseSTLAscii(asciiSTL(''));
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+    expect(result.error.errors[0]).toMatch(/no facets/);
+  });
+});
+
+describe('parseSTL format detection', () => {
+  it('routes binary buffers to the binary parser', () => {
+    const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    const result = parseSTL(buildSTLBuffer(vertices, normals, 'test'));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(9);
+  });
+
+  it('routes ASCII buffers to the ASCII parser', () => {
+    const result = parseSTL(asciiSTL(SINGLE_FACET));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(9);
+  });
+
+  it('prefers binary when the header starts with "solid" but sizes match binary layout', () => {
+    const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    const buffer = buildSTLBuffer(vertices, normals, 'test');
+    // Overwrite the 80-byte header so it begins with the ASCII keyword.
+    new Uint8Array(buffer).set(new TextEncoder().encode('solid binary-trap'), 0);
+    const result = parseSTL(buffer);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.vertices).toHaveLength(9);
+    expect(result.value.vertices[3]).toBeCloseTo(1);
+  });
+
+  it('falls through to a binary error for unrecognizable buffers', () => {
+    const junk = new TextEncoder().encode('not an stl at all').buffer;
+    const result = parseSTL(junk);
+    expect(isErr(result)).toBe(true);
   });
 });

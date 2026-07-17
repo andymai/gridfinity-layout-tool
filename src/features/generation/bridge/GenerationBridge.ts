@@ -50,7 +50,9 @@ import {
   type ExportSlot,
   type PendingExport,
   type PendingExportMap,
+  type MeshImportOutcome,
 } from './bridgeTypes';
+import type { MeshImportFlips } from '@/shared/generation/meshAsset';
 import { extractThreadingInfo, createDedupCache } from './bridgeHelpers';
 import { installMessageHandler } from './bridgeMessageHandler';
 import {
@@ -85,6 +87,7 @@ export type {
   BooleanFallbackStatsPayload,
   BooleanFallbackStatsCallback,
   ThreadingInfo,
+  MeshImportOutcome,
 } from './bridgeTypes';
 export { ExportTimeoutError } from './bridgeTypes';
 
@@ -126,6 +129,16 @@ export class GenerationBridge {
   /** Pending cost-estimate requests keyed by their requestId. */
   readonly pendingEstimates = new Map<string, (predictedMs: number | null) => void>();
   private estimateSeq = 0;
+
+  /** Pending mesh-import requests keyed by their requestId. */
+  readonly pendingImports = new Map<
+    string,
+    {
+      readonly resolve: (result: MeshImportOutcome) => void;
+      readonly reject: (error: Error) => void;
+    }
+  >();
+  private importSeq = 0;
 
   constructor(kernel: KernelName = 'occt-wasm') {
     this.kernel = kernel;
@@ -241,6 +254,30 @@ export class GenerationBridge {
   }
 
   /**
+   * Parse + normalize an uploaded STL into a compressed `MeshAsset` in the
+   * worker. The file buffer is transferred (the caller's copy is detached).
+   * Import failures (broken mesh, bad format) resolve as `ok: false`; the
+   * promise rejects only on worker-lifecycle failures.
+   */
+  importMesh(
+    buffer: ArrayBuffer,
+    fileName: string,
+    flips?: MeshImportFlips
+  ): Promise<MeshImportOutcome> {
+    if (this.isDestroyed || !this.worker) {
+      return Promise.reject(new Error('Bridge not initialized'));
+    }
+    const requestId = `import-${++this.importSeq}`;
+    return new Promise((resolve, reject) => {
+      this.pendingImports.set(requestId, { resolve, reject });
+      this.worker?.postMessage(
+        { type: 'IMPORT_MESH', payload: { requestId, buffer, fileName, flips } },
+        [buffer]
+      );
+    });
+  }
+
+  /**
    * Speculatively build the export-quality (fused) shell during idle so a
    * subsequent export skips the deferred socket↔body fuse. Best-effort and
    * fire-and-forget: skipped when the worker is busy or already warming, and
@@ -289,6 +326,10 @@ export class GenerationBridge {
       pending.reject(new Error('Worker was reset after a generation timeout'));
     }
     this.pendingExports.clear();
+    for (const pending of this.pendingImports.values()) {
+      pending.reject(new Error('Worker was reset after a generation timeout'));
+    }
+    this.pendingImports.clear();
     // Errors here surface on the next generation's init() await; swallow the
     // unhandled rejection from this eager warm-up.
     void this.init().catch(() => {});
@@ -306,6 +347,10 @@ export class GenerationBridge {
       pending.reject(new Error('Bridge destroyed'));
     }
     this.pendingExports.clear();
+    for (const pending of this.pendingImports.values()) {
+      pending.reject(new Error('Bridge destroyed'));
+    }
+    this.pendingImports.clear();
 
     if (this.worker) {
       // terminate() frees the entire WASM heap — no explicit cleanup needed
