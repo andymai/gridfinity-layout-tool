@@ -105,8 +105,8 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   if (!asset || !fillGeometry) return null;
 
   const effective = previewOverrides ? { ...cutout, ...previewOverrides } : cutout;
-  const groupX = effective.x + cutout.width / 2;
-  const groupY = effective.y + cutout.depth / 2;
+  const groupX = effective.x + effective.width / 2;
+  const groupY = effective.y + effective.depth / 2;
   const rotationZ = -(effective.rotation * Math.PI) / 180;
 
   const strokeColor = isSelected
