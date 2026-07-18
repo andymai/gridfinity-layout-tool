@@ -1,0 +1,39 @@
+src/features/generation/worker/wasmInstantiator.ts
+  s_38d3958cd84f35::t_66639033d666ad 111-125,131-133,138,143-176
+  s_38d3958cd84f35::t_51827d42bba2a0 177
+src/features/generation/worker/generators/binGenerator.scenario.export-integrity.test.ts
+  s_38d3958cd84f35::t_b2ebd0c704b9f0 48,54,60,62-66,69-70
+  s_38d3958cd84f35::t_dc678da5bfb8a8 27
+  s_38d3958cd84f35::t_d229cdef95e639 237
+  s_38d3958cd84f35::t_12909766928a89 233,239
+  s_38d3958cd84f35::t_5481424893ab32 53,84
+  s_38d3958cd84f35::t_dd1393be3247c4 178,186
+  s_38d3958cd84f35::t_f4b2fbf3bf814e 195
+  s_38d3958cd84f35::t_13ce05a47574c7 68
+  s_38d3958cd84f35::t_7204938bf22d12 234-236,238
+  s_38d3958cd84f35::t_89471a8d8a83b2 49
+  s_38d3958cd84f35::t_b5f6c3ff50669f 32-47,50-52,55-59,61,67,75-83
+  s_38d3958cd84f35::t_daa1722fb69cad 180-185
+  s_38d3958cd84f35::t_6bceff54a1d93d 196-232
+src/features/generation/worker/handlers/workerContext.ts
+  s_38d3958cd84f35::t_88c901f77b79a4 12-23
+  s_38d3958cd84f35::t_11e266727c55ef 59-82
+  s_38d3958cd84f35::t_ac3e56e21a6c89 296-300
+  s_38d3958cd84f35::t_45c3de16a13254 396-398
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f8432720838717aaacd07923bb9dfb2cde319353",
+  "prompts": {},
+  "sessions": {
+    "s_38d3958cd84f35": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc5ac8b2-b474-4c23-b601-2b384eec3726",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
