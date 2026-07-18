@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.252.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.1...gridfinity-layout-tool-v4.252.2) (2026-07-18)
+
+
+### Bug Fixes
+
+* **worker:** recover the brepkit kernel after a borrow-flag poison ([#2626](https://github.com/andymai/gridfinity-layout-tool/issues/2626)) ([49767d0](https://github.com/andymai/gridfinity-layout-tool/commit/49767d08e7d0463f18a89d0042150f461a3fe1bc))
+
 ## [4.252.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.0...gridfinity-layout-tool-v4.252.1) (2026-07-17)
 
 
