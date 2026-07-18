@@ -113,7 +113,7 @@ function simplifyRingToBudget(
   let epsilon = OUTLINE_EPSILON_MM;
   let out = simplifyRdp(ring, epsilon);
   while (out.length > budget && epsilon < OUTLINE_EPSILON_SOFT_MAX_MM) {
-    epsilon *= 2;
+    epsilon = Math.min(epsilon * 2, OUTLINE_EPSILON_SOFT_MAX_MM);
     out = simplifyRdp(ring, epsilon);
   }
   return out;
@@ -161,7 +161,7 @@ function extractOutlines(oriented: Manifold): MeshOutlinePoint[][] {
       while (outlines.length > 1 && total() > MAX_MESH_OUTLINE_POINTS) outlines.pop();
       let epsilon = OUTLINE_EPSILON_SOFT_MAX_MM;
       while (total() > MAX_MESH_OUTLINE_POINTS && epsilon < OUTLINE_EPSILON_HARD_MAX_MM) {
-        epsilon *= 2;
+        epsilon = Math.min(epsilon * 2, OUTLINE_EPSILON_HARD_MAX_MM);
         outlines = [simplifyRdp(kept[0], epsilon)];
       }
       return outlines.filter((ring) => ring.length >= 3);
