@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.253.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.2...gridfinity-layout-tool-v4.253.0) (2026-07-18)
+
+
+### Features
+
+* **designer:** precise scanned-STL outlines, 5mm clearance cap, free import rotation ([#2628](https://github.com/andymai/gridfinity-layout-tool/issues/2628)) ([9651642](https://github.com/andymai/gridfinity-layout-tool/commit/9651642bf9dbb1b89c3deec1045d5a027b1e8879))
+
 ## [4.252.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.1...gridfinity-layout-tool-v4.252.2) (2026-07-18)
 
 
