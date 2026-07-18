@@ -10,7 +10,6 @@ import {
   unwrap,
   fuse,
   cut,
-  clone,
   translate,
   intersect,
   getBounds,
@@ -380,10 +379,11 @@ function splitSolidIntoPieces(
           at: [boxCenterX, boxCenterY, 0],
         });
 
-        // Split body with cutting box — intersect creates new shape, inputs persist
-        const bodyClone = unwrap(clone(bodySolid));
-        let piece = unwrap(intersect(bodyClone, cuttingBox));
-        bodyClone.delete();
+        // intersect creates a new shape and inputs persist, so pass the solids
+        // directly. Never clone-and-delete here: the Manifold kernel's clone()
+        // aliases the underlying solid, so deleting the clone frees the shared
+        // native object out from under later iterations.
+        let piece = unwrap(intersect(bodySolid, cuttingBox));
 
         // Validate that the boolean intersection preserved the full geometry.
         // The Z extent comes out far shorter than the bin height in two cases:
@@ -413,14 +413,10 @@ function splitSolidIntoPieces(
           );
         }
 
-        // Split and fuse lip piece using a clone of the same cutting box
+        // Split and fuse lip piece using the same cutting box
         if (lipSolid) {
           try {
-            const lipClone = unwrap(clone(lipSolid));
-            const boxClone = unwrap(clone(cuttingBox));
-            const lipPiece = unwrap(intersect(lipClone, boxClone));
-            lipClone.delete();
-            boxClone.delete();
+            const lipPiece = unwrap(intersect(lipSolid, cuttingBox));
             const oldPiece = piece;
             piece = unwrap(fuse(oldPiece, lipPiece));
             oldPiece.delete();
