@@ -1,0 +1,21 @@
+package.json
+  s_6621518790775f::t_add30e1d2f533d 119
+pnpm-lock.yaml
+  s_6621518790775f::t_bda5019272240f 71-72,3114-3115,8656
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "ac9147afb81e24ecaa7667b2f2f51553190b67b9",
+  "prompts": {},
+  "sessions": {
+    "s_6621518790775f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f9b17881-bb98-4ecb-aff3-071ae0880f3c",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
