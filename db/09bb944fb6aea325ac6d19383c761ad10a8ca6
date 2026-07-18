@@ -1,0 +1,85 @@
+src/features/generation/bridge/GenerationBridge.ts
+  s_c87609547e348d::t_35e716792eac87 55,265,274
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_c87609547e348d::t_8dc7fb06aecbef 5-7,16,18,21-22,27,60,101-116,118-137
+  s_c87609547e348d::t_5483fbada0bf93 117
+src/i18n/locales/it.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/i18n/locales/ja.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/i18n/locales/en.ts
+  s_c87609547e348d::t_7fcc606bf06640 2032
+src/features/generation/worker/generators/meshImport.test.ts
+  s_c87609547e348d::t_5d535c6ca5c247 255-257,259-260,265-271,274
+  s_c87609547e348d::t_7fd701fe817e8a 8,253-254
+  s_c87609547e348d::t_5e94e9227bcbef 144,148,158-185
+  s_c87609547e348d::t_63a0c0422feebd 302
+  s_c87609547e348d::t_812181c74e3642 250-252,258,261-264,272-273,275-301,303-305
+  s_c87609547e348d::t_b939d648454426 186
+src/features/generation/worker/generators/meshImport.ts
+  s_c87609547e348d::t_80810b162c0839 61-74
+  s_c87609547e348d::t_3d8e705988e93f 25
+  s_c87609547e348d::t_2eafed8d0a8108 286-291,294
+  s_c87609547e348d::t_2e628c9bccca47 4
+  s_c87609547e348d::t_1f27b6730610fe 97-118,123-130,137,139-141,143-160,162,164
+  s_c87609547e348d::t_644dddf399bf69 223-225,230
+src/features/generation/bridge/types.ts
+  s_c87609547e348d::t_35e716792eac87 18
+  s_c87609547e348d::t_b1e90816458742 86-87
+src/features/bin-designer/types/index.ts
+  s_c87609547e348d::t_61369e5a8d2a86 716
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_c87609547e348d::t_629f33d8a0b355 6,8,22,45,57-58,77,88,105,148-149,151-153,230
+src/i18n/locales/uk.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/i18n/locales/nb.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/i18n/locales/sv.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+api/lib/designerValidationConstants.ts
+  s_c87609547e348d::t_cf1d47a2f47136 52
+src/features/generation/worker/handlers/importMeshHandler.ts
+  s_c87609547e348d::t_35e716792eac87 16,18
+src/features/bin-designer/components/panel/CutoutsSection/CutoutFitControls.tsx
+  s_c87609547e348d::t_b9af6597f0b2a7 11-16
+  s_c87609547e348d::t_227f236655bc9a 65
+src/i18n/locales/de.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/features/bin-designer/types/cutout.ts
+  s_c87609547e348d::t_a5b356216607a6 64-67
+src/i18n/locales/es.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/i18n/locales/fr.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.test.ts
+  s_c87609547e348d::t_9d1499bafe9d2d 144-178
+src/shared/generation/meshAsset.ts
+  s_c87609547e348d::t_2d98831127764f 52-53
+  s_c87609547e348d::t_3b831a2527508c 66
+src/i18n/locales/nl.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.test.tsx
+  s_c87609547e348d::t_8bdf1800fee9a1 2,37,49,57,62,69-73,77-93,99
+src/i18n/locales/pt-BR.json
+  s_c87609547e348d::t_7fcc606bf06640 2715
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_c87609547e348d::t_69e24d575b2383 377
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_c87609547e348d::t_69e24d575b2383 475
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "db09bb944fb6aea325ac6d19383c761ad10a8ca6",
+  "prompts": {},
+  "sessions": {
+    "s_c87609547e348d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f4e6a23d-8240-4c08-a3b1-e14300eef8bd",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
