@@ -1,0 +1,25 @@
+package.json
+  s_6621518790775f::t_ad12e718b562e9 120
+  s_6621518790775f::t_508c19a1eb99bb 119,131
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_6621518790775f::t_6144b30915b67d 416,419
+  s_6621518790775f::t_f77d6eaf6604e8 382-386
+pnpm-lock.yaml
+  s_6621518790775f::t_f5ccfa48d0745e 71-72,74-75,107-108,3114-3115,3121,3132-3133,4640-4641,8656,8661-8662,8664,10205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "ba85f7f10502a53938ecb59cbca77dc55f1945d2",
+  "prompts": {},
+  "sessions": {
+    "s_6621518790775f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f9b17881-bb98-4ecb-aff3-071ae0880f3c",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
