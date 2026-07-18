@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/meshImport.test.ts
+  s_c87609547e348d::t_ddcfb751379422 304-320,322-361,363-387
+  s_c87609547e348d::t_1e1bf6915b9d49 82-93,235-236,281,321,362
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/useStlImport.ts
+  s_c87609547e348d::t_d723064598dc50 72
+src/features/bin-designer/components/panel/CutoutsSection/stlImport/StlImportDialog.tsx
+  s_c87609547e348d::t_d723064598dc50 41
+src/features/generation/worker/generators/meshImport.ts
+  s_c87609547e348d::t_d723064598dc50 109-112,146
+  s_c87609547e348d::t_24e802bc978cf3 297,300-302
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "078d5f184c276df2e7dd917ccd95e33767dcfa2c",
+  "prompts": {},
+  "sessions": {
+    "s_c87609547e348d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f4e6a23d-8240-4c08-a3b1-e14300eef8bd",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
