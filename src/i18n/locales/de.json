@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "Mesh wird verarbeitet…",
   "binDesigner.cutouts.stlImport.triangles": "{count} Dreiecke",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} drehen",
+  "binDesigner.cutouts.stlImport.rotateAxis": "{axis}-Rotation (Grad)",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Dieses Modell ist größer als der Behälterinnenraum. Es wird trotzdem platziert — vergrößere den Behälter oder nutze ein kleineres Modell für eine vollständige Tasche.",
   "binDesigner.cutouts.stlImport.place": "In Behälter platzieren",
   "binDesigner.cutouts.shapeName.mesh": "STL-Abdruck",

@@ -13,9 +13,9 @@ import { importMeshFromStl } from '../generators/meshImport';
 import { formatError } from './workerContext';
 
 export async function handleImportMesh(message: ImportMeshMessage): Promise<void> {
-  const { requestId, buffer, fileName, flips } = message.payload;
+  const { requestId, buffer, fileName, rotation } = message.payload;
   try {
-    const result = await importMeshFromStl(buffer, fileName, flips);
+    const result = await importMeshFromStl(buffer, fileName, rotation);
     if (isErr(result)) {
       const response: ImportMeshErrorResponse = {
         type: 'IMPORT_MESH_ERROR',

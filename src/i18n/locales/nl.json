@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "Mesh verwerken…",
   "binDesigner.cutouts.stlImport.triangles": "{count} driehoeken",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} draaien",
+  "binDesigner.cutouts.stlImport.rotateAxis": "{axis} roteren (graden)",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Dit model is groter dan de binnenkant van de bak. Het wordt toch geplaatst — vergroot de bak of gebruik een kleiner model voor een volledige uitsparing.",
   "binDesigner.cutouts.stlImport.place": "In bak plaatsen",
   "binDesigner.cutouts.shapeName.mesh": "STL-afdruk",

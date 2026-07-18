@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "Bearbetar mesh…",
   "binDesigner.cutouts.stlImport.triangles": "{count} trianglar",
   "binDesigner.cutouts.stlImport.flipAxis": "Rotera {axis}",
+  "binDesigner.cutouts.stlImport.rotateAxis": "Rotera {axis} (grader)",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Modellen är större än lådans insida. Den placeras ändå — förstora lådan eller använd en mindre modell för en komplett ficka.",
   "binDesigner.cutouts.stlImport.place": "Placera i lådan",
   "binDesigner.cutouts.shapeName.mesh": "STL-avtryck",

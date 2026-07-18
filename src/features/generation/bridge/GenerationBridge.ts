@@ -52,7 +52,7 @@ import {
   type PendingExportMap,
   type MeshImportOutcome,
 } from './bridgeTypes';
-import type { MeshImportFlips } from '@/shared/generation/meshAsset';
+import type { MeshImportRotation } from '@/shared/generation/meshAsset';
 import { extractThreadingInfo, createDedupCache } from './bridgeHelpers';
 import { installMessageHandler } from './bridgeMessageHandler';
 import {
@@ -262,7 +262,7 @@ export class GenerationBridge {
   importMesh(
     buffer: ArrayBuffer,
     fileName: string,
-    flips?: MeshImportFlips
+    rotation?: MeshImportRotation
   ): Promise<MeshImportOutcome> {
     if (this.isDestroyed || !this.worker) {
       return Promise.reject(new Error('Bridge not initialized'));
@@ -271,7 +271,7 @@ export class GenerationBridge {
     return new Promise((resolve, reject) => {
       this.pendingImports.set(requestId, { resolve, reject });
       this.worker?.postMessage(
-        { type: 'IMPORT_MESH', payload: { requestId, buffer, fileName, flips } },
+        { type: 'IMPORT_MESH', payload: { requestId, buffer, fileName, rotation } },
         [buffer]
       );
     });

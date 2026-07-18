@@ -2,8 +2,9 @@
  * Orientation confirmation dialog for STL mesh imprint import.
  *
  * Shows the decimated, auto-laid-flat tool mesh in a small 3D viewer with
- * quarter-turn flip buttons (each flip re-runs the worker pipeline on the
- * retained file buffer), the footprint dimensions, and an oversize warning
+ * per-axis rotation controls — free degrees via stepper/typed input plus a
+ * quarter-turn button (every change re-runs the worker pipeline on the
+ * retained file buffer) — the footprint dimensions, and an oversize warning
  * when the tool won't fit the current bin interior. mm are physical — the
  * mesh is never scaled.
  */
@@ -12,17 +13,18 @@ import { useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { Dialog, Button } from '@/design-system';
+import { Dialog, Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import type { MeshImportFlips } from '@/shared/generation/meshAsset';
+import type { MeshImportRotation } from '@/shared/generation/meshAsset';
 import type { PendingStlImport } from './useStlImport';
 
-const FLIP_AXES: readonly (keyof MeshImportFlips)[] = ['x', 'y', 'z'];
+const ROTATION_AXES: readonly (keyof MeshImportRotation)[] = ['x', 'y', 'z'];
+const ROTATION_STEP_DEG = 15;
 
 interface StlImportDialogProps {
   readonly pending: PendingStlImport | null;
   readonly importing: boolean;
-  readonly onFlip: (axis: keyof MeshImportFlips) => void;
+  readonly onRotate: (axis: keyof MeshImportRotation, degrees: number) => void;
   readonly onPlace: () => void;
   readonly onCancel: () => void;
 }
@@ -55,7 +57,7 @@ function ToolMesh({ pending }: { readonly pending: PendingStlImport }) {
 export function StlImportDialog({
   pending,
   importing,
-  onFlip,
+  onRotate,
   onPlace,
   onCancel,
 }: StlImportDialogProps) {
@@ -96,22 +98,43 @@ export function StlImportDialog({
                 })}
               </div>
             </div>
-            <div className="flex gap-1.5">
-              {FLIP_AXES.map((axis) => (
-                <Button
-                  key={axis}
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={importing}
-                  onClick={() => onFlip(axis)}
-                  aria-label={t('binDesigner.cutouts.stlImport.flipAxis', {
-                    axis: axis.toUpperCase(),
-                  })}
-                >
-                  {t('binDesigner.cutouts.stlImport.flipAxis', { axis: axis.toUpperCase() })}
-                </Button>
-              ))}
+            <div className="flex flex-col gap-1.5">
+              {ROTATION_AXES.map((axis) => {
+                const degrees = pending.rotation[axis];
+                return (
+                  <div key={axis} className="flex items-center justify-end gap-1.5">
+                    <span className="w-3 text-xs font-medium text-content-secondary">
+                      {axis.toUpperCase()}
+                    </span>
+                    <Stepper
+                      size="sm"
+                      value={degrees}
+                      onChange={(v) => onRotate(axis, v)}
+                      onStep={(delta) => onRotate(axis, degrees + delta * ROTATION_STEP_DEG)}
+                      min={-360}
+                      max={360}
+                      step={ROTATION_STEP_DEG}
+                      inputDecimals={1}
+                      disabled={importing}
+                      aria-label={t('binDesigner.cutouts.stlImport.rotateAxis', {
+                        axis: axis.toUpperCase(),
+                      })}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={importing}
+                      onClick={() => onRotate(axis, degrees + 90)}
+                      aria-label={t('binDesigner.cutouts.stlImport.flipAxis', {
+                        axis: axis.toUpperCase(),
+                      })}
+                    >
+                      {t('binDesigner.cutouts.stlImport.flipAxis', { axis: axis.toUpperCase() })}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

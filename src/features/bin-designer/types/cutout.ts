@@ -61,6 +61,10 @@ export const CLEARANCE_SHAPES: readonly CutoutShape[] = [
   'mesh',
 ];
 
+/** Largest insertion clearance (mm) the editor allows. Sized for hand-scanned
+ *  meshes whose surfaces wobble a few mm; parametric shapes rarely need >0.5. */
+export const MAX_CUTOUT_CLEARANCE = 5;
+
 /** Largest entry-chamfer width (mm) the editor allows. */
 export const MAX_CUTOUT_CHAMFER = 5;
 

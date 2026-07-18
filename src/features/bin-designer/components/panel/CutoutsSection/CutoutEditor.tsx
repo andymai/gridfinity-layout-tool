@@ -472,7 +472,7 @@ export function CutoutEditor() {
       <StlImportDialog
         pending={stlImport.pending}
         importing={stlImport.importing}
-        onFlip={stlImport.flip}
+        onRotate={stlImport.setAxisRotation}
         onPlace={stlImport.place}
         onCancel={stlImport.cancel}
       />

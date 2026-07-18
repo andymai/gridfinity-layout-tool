@@ -1,7 +1,7 @@
 /**
  * STL → MeshAsset import pipeline (worker-side).
  *
- * parse → weld/merge (repair) → manifold-check → auto lay-flat → user flips →
+ * parse → weld/merge (repair) → manifold-check → auto lay-flat → user rotation →
  * decimate to budget → silhouette outlines → quantize+compress.
  *
  * Runs on the raw manifold-3d module (independent of the worker's brepjs
@@ -22,7 +22,7 @@ import {
 import type {
   MeshAsset,
   MeshImportErrorReason,
-  MeshImportFlips,
+  MeshImportRotation,
   MeshOutlinePoint,
 } from '@/shared/generation/meshAsset';
 import { simplifyRdp } from '@/shared/scanTrace/simplify';
@@ -58,6 +58,20 @@ const LAY_FLAT_CANDIDATES: ReadonlyArray<readonly [number, number, number]> = [
 
 const DECIMATE_TOLERANCES_MM = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2] as const;
 const OUTLINE_EPSILON_MM = 0.05;
+/** Simplification stops coarsening here so a detailed silhouette is never
+ *  crushed to a blob just to fit its budget share — overflow is resolved by
+ *  dropping the smallest rings instead. */
+const OUTLINE_EPSILON_SOFT_MAX_MM = 0.5;
+/** Last-resort ceiling when a single ring alone overflows the total cap. */
+const OUTLINE_EPSILON_HARD_MAX_MM = 5;
+/** Rings below this share of the largest ring's area are scan-noise specks… */
+const SPECK_RELATIVE_AREA = 0.002;
+/** …unless they clear this absolute area — a real small feature (a 3mm probe
+ *  tip) must survive no matter how large the tool it belongs to. */
+const SPECK_KEEP_AREA_MM2 = 4;
+/** Floor of the shared point budget per kept ring, so small real features
+ *  stay round-ish instead of collapsing to triangles. */
+const MIN_RING_BUDGET = 16;
 
 function sanitizeName(fileName: string): string {
   return (
@@ -80,32 +94,74 @@ function signedArea(ring: ReadonlyArray<readonly [number, number]>): number {
   return area / 2;
 }
 
+function ringPerimeter(ring: ReadonlyArray<MeshOutlinePoint>): number {
+  let length = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i];
+    const b = ring[(i + 1) % ring.length];
+    length += Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  return length;
+}
+
+/** Epsilon ladder from {@link OUTLINE_EPSILON_MM}, doubling while the ring is
+ *  over budget — but never past the soft cap: fidelity beats budget share. */
+function simplifyRingToBudget(ring: ReadonlyArray<MeshOutlinePoint>, budget: number) {
+  let epsilon = OUTLINE_EPSILON_MM;
+  let out = simplifyRdp(ring, epsilon);
+  while (out.length > budget && epsilon < OUTLINE_EPSILON_SOFT_MAX_MM) {
+    epsilon *= 2;
+    out = simplifyRdp(ring, epsilon);
+  }
+  return out;
+}
+
 /**
  * Extract simplified outer silhouette rings from the oriented manifold.
  * Holes (negative-area rings) are dropped: the footprint, clearance offset,
  * and chamfer rim all operate on the insertion opening, which is the outer
- * boundary. Point count is capped by re-simplifying with a doubled epsilon.
+ * boundary.
+ *
+ * Scanned meshes project with speck rings (noise islands) and dense, noisy
+ * contours, so the point cap is enforced without sacrificing the outline the
+ * user actually cares about: specks are filtered by area first, the shared
+ * budget is split across the surviving rings by perimeter, and each ring's
+ * epsilon stops coarsening at a soft cap. If the total still overflows, the
+ * smallest rings are dropped whole — never the main outline's detail.
  */
 function extractOutlines(oriented: Manifold): MeshOutlinePoint[][] {
   const projected: CrossSection = oriented.project();
   try {
     const simplified = projected.simplify(0.02);
     try {
-      const rings = simplified
+      const outer = simplified
         .toPolygons()
-        .filter((ring) => signedArea(ring) > 0)
-        .map((ring) => ring.map(([x, y]) => ({ x, y })));
+        .map((ring) => ({ ring, area: signedArea(ring) }))
+        .filter(({ area }) => area > 0);
+      if (outer.length === 0) return [];
 
-      let epsilon = OUTLINE_EPSILON_MM;
-      let outlines = rings.map((ring) => simplifyRdp(ring, epsilon));
-      while (
-        outlines.reduce((total, ring) => total + ring.length, 0) > MAX_MESH_OUTLINE_POINTS &&
-        epsilon < 5
-      ) {
+      const largestArea = Math.max(...outer.map(({ area }) => area));
+      const speckThreshold = Math.min(largestArea * SPECK_RELATIVE_AREA, SPECK_KEEP_AREA_MM2);
+      const kept = outer
+        .filter(({ area }) => area >= speckThreshold)
+        .sort((a, b) => b.area - a.area)
+        .map(({ ring }) => ring.map(([x, y]): MeshOutlinePoint => ({ x, y })));
+
+      const totalPerimeter = kept.reduce((sum, ring) => sum + ringPerimeter(ring), 0);
+      let outlines = kept.map((ring) => {
+        const share = totalPerimeter > 0 ? ringPerimeter(ring) / totalPerimeter : 0;
+        const budget = Math.max(MIN_RING_BUDGET, Math.floor(MAX_MESH_OUTLINE_POINTS * share));
+        return simplifyRingToBudget(ring, budget);
+      });
+
+      const total = (): number => outlines.reduce((sum, ring) => sum + ring.length, 0);
+      while (outlines.length > 1 && total() > MAX_MESH_OUTLINE_POINTS) outlines.pop();
+      let epsilon = OUTLINE_EPSILON_SOFT_MAX_MM;
+      while (total() > MAX_MESH_OUTLINE_POINTS && epsilon < OUTLINE_EPSILON_HARD_MAX_MM) {
         epsilon *= 2;
-        outlines = rings.map((ring) => simplifyRdp(ring, epsilon));
+        outlines = [simplifyRdp(kept[0], epsilon)];
       }
-      return outlines;
+      return outlines.filter((ring) => ring.length >= 3);
     } finally {
       simplified.delete();
     }
@@ -164,14 +220,14 @@ function decimateToBudget(manifold: Manifold): Manifold | null {
 /**
  * Full import: STL buffer → compressed MeshAsset + preview arrays.
  *
- * `flips` compose AFTER the deterministic auto lay-flat, so re-running with
- * different flips is stable (the auto orientation never changes for a given
- * file).
+ * `rotation` (degrees per axis, any angle) composes AFTER the deterministic
+ * auto lay-flat, so re-running with a different rotation is stable (the auto
+ * orientation never changes for a given file).
  */
 export async function importMeshFromStl(
   buffer: ArrayBuffer,
   fileName: string,
-  flips: MeshImportFlips = { x: 0, y: 0, z: 0 },
+  rotation: MeshImportRotation = { x: 0, y: 0, z: 0 },
   // Node tests inject an fs-instantiated module; the worker's fetch-based
   // loader can't run outside the browser.
   moduleOverride?: ManifoldToplevel
@@ -227,13 +283,15 @@ export async function importMeshFromStl(
     solid = decimated;
 
     const layFlat = pickLayFlatRotation(solid);
-    const flipRotation: readonly [number, number, number] = [
-      (((flips.x % 4) + 4) % 4) * 90,
-      (((flips.y % 4) + 4) % 4) * 90,
-      (((flips.z % 4) + 4) % 4) * 90,
+    const normalizeDeg = (deg: number): number =>
+      Number.isFinite(deg) ? ((deg % 360) + 360) % 360 : 0;
+    const userRotation: readonly [number, number, number] = [
+      normalizeDeg(rotation.x),
+      normalizeDeg(rotation.y),
+      normalizeDeg(rotation.z),
     ];
     const laid = solid.rotate([...layFlat]);
-    const flipped = laid.rotate([...flipRotation]);
+    const flipped = laid.rotate([...userRotation]);
     laid.delete();
 
     const box = flipped.boundingBox();

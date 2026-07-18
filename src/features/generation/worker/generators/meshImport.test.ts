@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { ManifoldToplevel } from 'manifold-3d';
+import type { Manifold, ManifoldToplevel } from 'manifold-3d';
 import { importMeshFromStl } from './meshImport';
 import {
   decodeMeshData,
@@ -141,11 +141,11 @@ describe('importMeshFromStl', () => {
     expect(footprint[1]).toBeCloseTo(20, 3);
   });
 
-  it('applies quarter-turn flips after lay-flat', async () => {
+  it('applies quarter-turn rotation after lay-flat', async () => {
     const result = await importMeshFromStl(
       soupToBinarySTL(boxSoup(20, 10, 5)),
       'flipped.stl',
-      { x: 1, y: 0, z: 0 },
+      { x: 90, y: 0, z: 0 },
       module
     );
     expect(isOk(result)).toBe(true);
@@ -153,6 +153,35 @@ describe('importMeshFromStl', () => {
     // 90° about X swaps the lay-flat Y (10) into Z
     expect(result.value.asset.sizeMm.z).toBeCloseTo(10, 3);
     expect(result.value.suggestedCutDepth).toBeCloseTo(10, 3);
+  });
+
+  it('applies free-angle rotation (45° about Z grows the footprint to the diagonal)', async () => {
+    const result = await importMeshFromStl(
+      soupToBinarySTL(boxSoup(20, 10, 5)),
+      'tilted.stl',
+      { x: 0, y: 0, z: 45 },
+      module
+    );
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const { sizeMm } = result.value.asset;
+    const diagonal = (20 + 10) / Math.SQRT2;
+    expect(sizeMm.x).toBeCloseTo(diagonal, 2);
+    expect(sizeMm.y).toBeCloseTo(diagonal, 2);
+    expect(sizeMm.z).toBeCloseTo(5, 3);
+  });
+
+  it('normalizes rotation angles modulo 360', async () => {
+    const result = await importMeshFromStl(
+      soupToBinarySTL(boxSoup(20, 10, 5)),
+      'wrapped.stl',
+      { x: -270, y: 720, z: 0 },
+      module
+    );
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    // -270 ≡ 90 about X swaps the lay-flat Y (10) into Z; 720 ≡ 0 is a no-op
+    expect(result.value.asset.sizeMm.z).toBeCloseTo(10, 3);
   });
 
   it('imports ASCII STL through the same pipeline', async () => {
@@ -215,6 +244,62 @@ describe('importMeshFromStl', () => {
       expect(result.value.asset.sizeMm.z).toBeCloseTo(40, 0);
     } finally {
       sphere.delete();
+    }
+  }, 60_000);
+
+  it('keeps scanned-silhouette detail while filtering speck rings', async () => {
+    // Synthetic "scan": a detailed round tool, one real small feature (a 3mm
+    // prong), and 60 sub-mm noise islands scattered around them.
+    const scratch: Manifold[] = [];
+    const track = (m: Manifold): Manifold => {
+      scratch.push(m);
+      return m;
+    };
+    const parts = [
+      track(module.Manifold.cylinder(5, 30, 30, 128)),
+      track(track(module.Manifold.cube([3, 3, 5])).translate([40, 0, 0])),
+    ];
+    for (let i = 0; i < 60; i++) {
+      const angle = (i / 60) * Math.PI * 2;
+      parts.push(
+        track(
+          track(module.Manifold.cube([0.5, 0.5, 0.5])).translate([
+            50 * Math.cos(angle),
+            50 * Math.sin(angle),
+            0,
+          ])
+        )
+      );
+    }
+    const noisy = track(module.Manifold.union(parts));
+    try {
+      const mesh = noisy.getMesh();
+      const soup = new Float32Array(mesh.triVerts.length * 3);
+      for (let i = 0; i < mesh.triVerts.length; i++) {
+        const vi = mesh.triVerts[i];
+        soup[i * 3] = mesh.vertProperties[vi * mesh.numProp];
+        soup[i * 3 + 1] = mesh.vertProperties[vi * mesh.numProp + 1];
+        soup[i * 3 + 2] = mesh.vertProperties[vi * mesh.numProp + 2];
+      }
+
+      const result = await importMeshFromStl(soupToBinarySTL(soup), 'scan.stl', undefined, module);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      const { outlines } = result.value.asset;
+
+      // Specks (0.25mm² each) are filtered; the tool and its 9mm² prong survive.
+      expect(outlines).toHaveLength(2);
+      const areas = outlines.map(ringArea).sort((a, b) => b - a);
+      expect(areas[0]).toBeCloseTo(Math.PI * 30 * 30, -2);
+      expect(areas[1]).toBeCloseTo(9, 0);
+
+      // The main silhouette keeps real detail instead of collapsing to a box.
+      const mainRing = outlines.reduce((a, b) => (ringArea(a) >= ringArea(b) ? a : b));
+      expect(mainRing.length).toBeGreaterThanOrEqual(40);
+      const total = outlines.reduce((sum, ring) => sum + ring.length, 0);
+      expect(total).toBeLessThanOrEqual(4000);
+    } finally {
+      for (const m of scratch) m.delete();
     }
   }, 60_000);
 

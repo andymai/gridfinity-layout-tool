@@ -3,9 +3,9 @@
  *
  * Owns: file input, worker round-trip (parse/repair/lay-flat/decimate happen
  * in the generation worker via `bridge.importMesh`), the pending orientation
- * dialog state, flip re-runs, and final placement via `addMeshCutout`.
+ * dialog state, rotation re-runs, and final placement via `addMeshCutout`.
  *
- * The raw file buffer is kept for the dialog's lifetime so 90° flip
+ * The raw file buffer is kept for the dialog's lifetime so orientation
  * corrections can re-run the worker pipeline (each run transfers a copy —
  * the worker detaches its input).
  */
@@ -19,7 +19,7 @@ import { bridgeManager } from '@/shared/generation/bridge';
 import type {
   MeshAsset,
   MeshImportErrorReason,
-  MeshImportFlips,
+  MeshImportRotation,
 } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN, MAX_MESH_FILE_BYTES } from '@/shared/generation/meshAsset';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
@@ -42,7 +42,7 @@ export interface PendingStlImport {
   readonly indices: Uint32Array;
   readonly suggestedCutDepth: number;
   readonly fileName: string;
-  readonly flips: MeshImportFlips;
+  readonly rotation: MeshImportRotation;
   /** True when the footprint exceeds the bin interior (warn, never scale). */
   readonly oversized: boolean;
 }
@@ -54,8 +54,8 @@ export interface UseStlImportReturn {
   readonly pending: PendingStlImport | null;
   /** True while the worker is parsing/repairing/decimating. */
   readonly importing: boolean;
-  /** Re-run the import with an extra quarter-turn about the given axis. */
-  readonly flip: (axis: keyof MeshImportFlips) => void;
+  /** Re-run the import with the given axis set to an absolute angle (degrees). */
+  readonly setAxisRotation: (axis: keyof MeshImportRotation, degrees: number) => void;
   /** Place the pending mesh as a cutout at the interior center. */
   readonly place: () => void;
   /** Discard the pending import. */
@@ -74,7 +74,7 @@ export function useStlImport(): UseStlImportReturn {
   const fileNameRef = useRef<string>('');
 
   const runImport = useCallback(
-    async (flips: MeshImportFlips): Promise<void> => {
+    async (rotation: MeshImportRotation): Promise<void> => {
       const buffer = bufferRef.current;
       if (!buffer) return;
       // cancel() nulls bufferRef; a resolving in-flight run must then discard
@@ -85,7 +85,7 @@ export function useStlImport(): UseStlImportReturn {
         const bridge = await bridgeManager.acquire();
         try {
           // slice(): importMesh transfers its input; keep our copy intact.
-          const outcome = await bridge.importMesh(buffer.slice(0), fileNameRef.current, flips);
+          const outcome = await bridge.importMesh(buffer.slice(0), fileNameRef.current, rotation);
           if (isCancelled()) return;
           if (!outcome.ok) {
             addToast(t(ERROR_TOAST_KEYS[outcome.reason]), 'error');
@@ -102,7 +102,7 @@ export function useStlImport(): UseStlImportReturn {
             indices: outcome.indices,
             suggestedCutDepth: outcome.suggestedCutDepth,
             fileName: fileNameRef.current,
-            flips,
+            rotation,
             oversized: asset.sizeMm.x > innerW || asset.sizeMm.y > innerD,
           });
         } finally {
@@ -145,11 +145,12 @@ export function useStlImport(): UseStlImportReturn {
     [addToast, t, runImport]
   );
 
-  const flip = useCallback(
-    (axis: keyof MeshImportFlips) => {
+  const setAxisRotation = useCallback(
+    (axis: keyof MeshImportRotation, degrees: number) => {
       if (!pending || importing) return;
-      const flips = { ...pending.flips, [axis]: (pending.flips[axis] + 1) % 4 };
-      void runImport(flips);
+      const normalized = Number.isFinite(degrees) ? ((degrees % 360) + 360) % 360 : 0;
+      if (normalized === pending.rotation[axis]) return;
+      void runImport({ ...pending.rotation, [axis]: normalized });
     },
     [pending, importing, runImport]
   );
@@ -226,5 +227,5 @@ export function useStlImport(): UseStlImportReturn {
     fileInputRef.current?.click();
   }, []);
 
-  return { triggerImport, pending, importing, flip, place, cancel };
+  return { triggerImport, pending, importing, setAxisRotation, place, cancel };
 }

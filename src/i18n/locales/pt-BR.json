@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "Processando malha…",
   "binDesigner.cutouts.stlImport.triangles": "{count} triângulos",
   "binDesigner.cutouts.stlImport.flipAxis": "Girar {axis}",
+  "binDesigner.cutouts.stlImport.rotateAxis": "Rotação {axis} (graus)",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Este modelo é maior que o interior da caixa. Ele será posicionado mesmo assim — aumente a caixa ou use um modelo menor para um encaixe completo.",
   "binDesigner.cutouts.stlImport.place": "Posicionar na caixa",
   "binDesigner.cutouts.shapeName.mesh": "Molde STL",

@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "メッシュを処理中…",
   "binDesigner.cutouts.stlImport.triangles": "{count} 三角形",
   "binDesigner.cutouts.stlImport.flipAxis": "{axis} 回転",
+  "binDesigner.cutouts.stlImport.rotateAxis": "{axis} 回転（度）",
   "binDesigner.cutouts.stlImport.oversizeWarning": "このモデルはビンの内寸より大きいです。そのまま配置されますが、完全なポケットにはビンを大きくするか、より小さいモデルを使用してください。",
   "binDesigner.cutouts.stlImport.place": "ビンに配置",
   "binDesigner.cutouts.shapeName.mesh": "STLインプリント",

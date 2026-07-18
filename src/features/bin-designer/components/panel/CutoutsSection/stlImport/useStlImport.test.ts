@@ -141,6 +141,41 @@ describe('useStlImport', () => {
     expect(useToastStore.getState().toasts).toHaveLength(0);
   });
 
+  it('re-runs the import with a normalized axis rotation', async () => {
+    importMesh.mockResolvedValue({
+      ok: true,
+      asset,
+      positions: new Float32Array(9),
+      indices: new Uint32Array(3),
+      suggestedCutDepth: 5,
+    });
+    const { result } = renderHook(() => useStlImport());
+
+    act(() => {
+      feedFile(makeFile());
+    });
+    await waitFor(() => {
+      expect(result.current.pending).not.toBeNull();
+    });
+    expect(importMesh).toHaveBeenLastCalledWith(expect.anything(), 'tool.stl', {
+      x: 0,
+      y: 0,
+      z: 0,
+    });
+
+    act(() => {
+      result.current.setAxisRotation('z', -15);
+    });
+    await waitFor(() => {
+      expect(result.current.pending?.rotation).toEqual({ x: 0, y: 0, z: 345 });
+    });
+    expect(importMesh).toHaveBeenLastCalledWith(expect.anything(), 'tool.stl', {
+      x: 0,
+      y: 0,
+      z: 345,
+    });
+  });
+
   it('places the pending mesh as a centered cutout with its asset', async () => {
     importMesh.mockResolvedValue({
       ok: true,

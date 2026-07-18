@@ -2029,6 +2029,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.stlImport.processing': 'Processing mesh…',
   'binDesigner.cutouts.stlImport.triangles': '{count} triangles',
   'binDesigner.cutouts.stlImport.flipAxis': 'Flip {axis}',
+  'binDesigner.cutouts.stlImport.rotateAxis': 'Rotate {axis} (degrees)',
   'binDesigner.cutouts.stlImport.oversizeWarning':
     'This model is larger than the bin interior. It will be placed anyway — enlarge the bin or use a smaller model for a full pocket.',
   'binDesigner.cutouts.stlImport.place': 'Place in bin',

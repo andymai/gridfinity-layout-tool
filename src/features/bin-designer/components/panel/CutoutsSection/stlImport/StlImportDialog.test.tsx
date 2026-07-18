@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { PendingStlImport } from './useStlImport';
 
 // jsdom has no WebGL — stub the 3D viewer internals.
@@ -34,7 +34,7 @@ const pending: PendingStlImport = {
   indices: new Uint32Array(3),
   suggestedCutDepth: 5,
   fileName: 'wrench.stl',
-  flips: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 30 },
   oversized: false,
 };
 
@@ -46,7 +46,7 @@ describe('StlImportDialog', () => {
       <StlImportDialog
         pending={null}
         importing={false}
-        onFlip={noop}
+        onRotate={noop}
         onPlace={noop}
         onCancel={noop}
       />
@@ -54,19 +54,41 @@ describe('StlImportDialog', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows the asset details and flip controls', () => {
+  it('shows the asset details and rotation controls', () => {
     render(
       <StlImportDialog
         pending={pending}
         importing={false}
-        onFlip={noop}
+        onRotate={noop}
         onPlace={noop}
         onCancel={noop}
       />
     );
     expect(screen.getByText('wrench')).toBeInTheDocument();
     expect(screen.getByText(/20\.0 × 10\.0 × 5\.0 mm/)).toBeInTheDocument();
+    for (const axis of ['X', 'Y', 'Z']) {
+      expect(screen.getByLabelText(`Rotate ${axis} (degrees)`)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `Flip ${axis}` })).toBeInTheDocument();
+    }
+    expect(screen.getByLabelText('Rotate Z (degrees)')).toHaveValue(30);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('reports rotation changes from steppers and quarter-turn buttons', () => {
+    const onRotate = vi.fn();
+    render(
+      <StlImportDialog
+        pending={pending}
+        importing={false}
+        onRotate={onRotate}
+        onPlace={noop}
+        onCancel={noop}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Increase Rotate Z (degrees)' }));
+    expect(onRotate).toHaveBeenCalledWith('z', 45);
+    fireEvent.click(screen.getByRole('button', { name: 'Flip X' }));
+    expect(onRotate).toHaveBeenCalledWith('x', 90);
   });
 
   it('warns when the mesh exceeds the bin interior', () => {
@@ -74,7 +96,7 @@ describe('StlImportDialog', () => {
       <StlImportDialog
         pending={{ ...pending, oversized: true }}
         importing={false}
-        onFlip={noop}
+        onRotate={noop}
         onPlace={noop}
         onCancel={noop}
       />

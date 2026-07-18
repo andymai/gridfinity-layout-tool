@@ -15,7 +15,7 @@ import type { GridfinityItem } from '@/shared/types/item';
 import type {
   MeshAsset,
   MeshImportErrorReason,
-  MeshImportFlips,
+  MeshImportRotation,
 } from '@/shared/generation/meshAsset';
 
 /** Geometry kernel backend for BREP operations */
@@ -83,8 +83,8 @@ export interface ImportMeshPayload {
   /** Raw STL file contents (transferred, not copied). */
   readonly buffer: ArrayBuffer;
   readonly fileName: string;
-  /** Quarter-turn corrections applied after auto lay-flat. */
-  readonly flips?: MeshImportFlips;
+  /** Per-axis rotation (degrees) applied after auto lay-flat. */
+  readonly rotation?: MeshImportRotation;
 }
 
 export interface InitMessage {

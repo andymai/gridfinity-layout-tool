@@ -713,6 +713,7 @@ export {
   CLEARANCE_SHAPES,
   defaultEntryChamfer,
   maxEntryChamfer,
+  MAX_CUTOUT_CLEARANCE,
   MAX_CUTOUT_CHAMFER,
   CHAMFER_SHAPES,
   CUTOUT_ARRAY_MODES,

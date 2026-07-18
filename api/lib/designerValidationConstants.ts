@@ -49,7 +49,7 @@ export const CONSTRAINTS = {
   MESH_MAX_PAYLOAD_BYTES: 2_000_000,
   MAX_MESH_ASSETS: 8,
   MAX_MESH_ASSET_TRIANGLES: 50_000,
-  MAX_MESH_OUTLINE_POINTS: 2000,
+  MAX_MESH_OUTLINE_POINTS: 4000,
   MAX_MESH_NAME_LENGTH: 64,
   // Compressed+base64 payload per asset. Typical 50k-tri assets land at
   // 200-500KB; this bounds a crafted blob without pinching real imports.

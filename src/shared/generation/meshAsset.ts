@@ -49,8 +49,8 @@ export interface MeshAsset {
 /** Why a mesh import failed — drives the user-facing toast + analytics reason. */
 export type MeshImportErrorReason = 'too_large' | 'parse_failed' | 'not_manifold' | 'empty';
 
-/** Quarter-turn counts (0–3) applied about each axis AFTER auto lay-flat. */
-export interface MeshImportFlips {
+/** Rotation in degrees applied about each axis AFTER auto lay-flat. */
+export interface MeshImportRotation {
   readonly x: number;
   readonly y: number;
   readonly z: number;
@@ -63,7 +63,7 @@ export const MAX_MESH_ASSET_TRIANGLES = 50_000;
 /** Max mesh assets per design. */
 export const MAX_MESH_ASSETS_PER_DESIGN = 8;
 /** Max total silhouette points across all outlines of one asset. */
-export const MAX_MESH_OUTLINE_POINTS = 2000;
+export const MAX_MESH_OUTLINE_POINTS = 4000;
 
 const MAGIC = 0x314d4741; // 'GMA1'
 const HEADER_BYTES = 4 + 4 + 4 + 6 * 4;

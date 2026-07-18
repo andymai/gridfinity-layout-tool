@@ -2712,6 +2712,7 @@
   "binDesigner.cutouts.stlImport.processing": "Elaborazione della mesh…",
   "binDesigner.cutouts.stlImport.triangles": "{count} triangoli",
   "binDesigner.cutouts.stlImport.flipAxis": "Ruota {axis}",
+  "binDesigner.cutouts.stlImport.rotateAxis": "Rotazione {axis} (gradi)",
   "binDesigner.cutouts.stlImport.oversizeWarning": "Questo modello è più grande dell'interno del contenitore. Verrà comunque posizionato: ingrandisci il contenitore o usa un modello più piccolo per una tasca completa.",
   "binDesigner.cutouts.stlImport.place": "Posiziona nel contenitore",
   "binDesigner.cutouts.shapeName.mesh": "Impronta STL",

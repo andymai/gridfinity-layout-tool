@@ -8,7 +8,12 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { CLEARANCE_SHAPES, CHAMFER_SHAPES, maxEntryChamfer } from '@/features/bin-designer/types';
+import {
+  CLEARANCE_SHAPES,
+  CHAMFER_SHAPES,
+  MAX_CUTOUT_CLEARANCE,
+  maxEntryChamfer,
+} from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { Stepper } from '@/design-system';
 import { clamp } from '@/shared/utils/math';
@@ -57,7 +62,7 @@ export function CutoutFitControls({
           value={cutout.clearance ?? 0}
           onChange={(clearance) => onUpdate({ clearance })}
           min={0}
-          max={2}
+          max={MAX_CUTOUT_CLEARANCE}
           disabled={disabled}
         />
       )}
