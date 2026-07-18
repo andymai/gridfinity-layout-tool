@@ -9,8 +9,18 @@
 import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../../bridge/types';
 import { stageStats } from './stageStats';
-import { getAllShapeCacheStats, resetAllShapeCacheStats } from '../generators/shapeCache';
-import { getBaseplateCacheStats, resetBaseplateCacheStats } from '../generators/baseplateGenerator';
+import {
+  getAllShapeCacheStats,
+  resetAllShapeCacheStats,
+  clearAllCaches,
+} from '../generators/shapeCache';
+import {
+  getBaseplateCacheStats,
+  resetBaseplateCacheStats,
+  clearBaseplateCaches,
+} from '../generators/baseplateGenerator';
+import { clearMeshImprintCache } from '../generators/meshImprint';
+import { recoverBrepkitKernel, getLastBrepkitPanic } from '../wasmInstantiator';
 import {
   getBooleanFallbackStats,
   resetBooleanFallbackStats,
@@ -44,6 +54,30 @@ export function reportProgress(
 /** Format an error message from an unknown thrown value */
 export function formatError(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
+}
+
+/** Borrow-flag poison signature thrown by every op after the kernel is stranded. */
+const POISON_RE = /recursive use of an object|unsafe aliasing/i;
+
+/**
+ * brepkit kernel-poison recovery. A stranded wasm borrow flag (brepkit task #14:
+ * a `raw_vec` capacity-overflow panic-abort, or a JS exception unwinding through
+ * a `&mut self` method) makes every later request throw "recursive use / unsafe
+ * aliasing"; left unhandled the worker stays bricked until the page reloads. When
+ * the active kernel is brepkit and this error is the poison signature (or
+ * brepkit's panic hook recorded a trap on the poisoning request itself), drop the
+ * now-stale cache handles that index the dead arena and recreate the kernel so the
+ * NEXT request runs on a fresh borrow flag. No-op for occt-wasm/manifold.
+ */
+function maybeRecoverPoisonedKernel(errorMsg: string): void {
+  if (activeKernel !== 'brepkit') return;
+  if (!POISON_RE.test(errorMsg) && !getLastBrepkitPanic()) return;
+  clearAllCaches();
+  clearBaseplateCaches();
+  clearMeshImprintCache();
+  if (recoverBrepkitKernel()) {
+    console.warn('[Worker] brepkit kernel was poisoned; recreated it for the next request.');
+  }
 }
 
 /** Check kernel init state, responding with error if not ready. */
@@ -258,8 +292,12 @@ export function runGeneration(
     }
   } catch (e) {
     if (isAbortError(e)) return;
-    if (activeRequestId !== requestId) return;
     const errorMsg = formatError(e);
+    // Recreate the kernel if this failure stranded brepkit's borrow flag, so the
+    // next request isn't cascaded into "recursive use" — even when this request
+    // was already superseded (the poison is global to the kernel).
+    maybeRecoverPoisonedKernel(errorMsg);
+    if (activeRequestId !== requestId) return;
 
     console.error(`[${logPrefix}] Generation failed:`, errorMsg);
     if (e instanceof Error && e.stack) {
@@ -355,6 +393,9 @@ export async function runExport<TPayload extends Record<string, unknown>>(
     const response = { type: responseType, requestId, ...payload };
     self.postMessage(response, { transfer: transferFn(payload) });
   } catch (e) {
+    // Recreate the kernel if this export stranded brepkit's borrow flag, so the
+    // next request isn't cascaded into "recursive use".
+    maybeRecoverPoisonedKernel(formatError(e));
     const errorCode = classifyError?.(e);
     respond({
       type: 'ERROR',

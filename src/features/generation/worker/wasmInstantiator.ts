@@ -108,19 +108,71 @@ async function loadEmbeddedFonts(): Promise<void> {
  * wraps it with brepjs's `BrepkitAdapter`, and registers it as the active kernel.
  * Brepkit does not support threading, so `isThreaded` is always false.
  */
+/**
+ * Minimal shape of brepkit-wasm's module surface used for kernel creation and
+ * panic capture, cached so {@link recoverBrepkitKernel} can recreate the kernel
+ * without re-importing.
+ */
+interface BrepkitModule {
+  BrepKernel: new () => unknown;
+  /** Root panic text captured by brepkit's panic hook (`crates/wasm/src/panics.rs`). */
+  lastPanicMessage?: () => string | undefined;
+  clearLastPanicMessage?: () => void;
+}
+
+/** Set once brepkit is loaded; drives in-place kernel recovery. */
+let brepkitModule: BrepkitModule | null = null;
+
 export async function loadBrepkit(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
   // Dynamic import to keep the brepkit WASM out of the main chunk.
   // brepkit-wasm's entry JS handles its own WASM instantiation internally.
-  const { BrepKernel } = await import('brepkit-wasm');
-  const kernel = new BrepKernel();
+  const bkw = (await import('brepkit-wasm')) as unknown as BrepkitModule;
+  brepkitModule = bkw;
+  const kernel = new bkw.BrepKernel();
   // BrepkitAdapter accepts KernelInstance (typed as `any` in brepjs)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
   const adapter = new BrepkitAdapter(kernel as any);
   registerKernel('brepkit', adapter);
+  bkw.clearLastPanicMessage?.();
 
   return { isThreaded: false, hardwareConcurrency };
+}
+
+/**
+ * Recreate the brepkit kernel after a borrow-flag POISON.
+ *
+ * The brepkit WASM kernel is a per-worker singleton whose wasm-bindgen borrow
+ * flag can be permanently stranded (brepkit task #14): a `raw_vec` capacity-
+ * overflow Rust panic (wasm is `panic=abort`, so the trap never releases the
+ * `&mut self` borrow), or a JS exception unwinding through a `&mut self` method
+ * that leaves the `BorrowMut` guard undropped. Once stranded, EVERY later call
+ * throws "recursive use of an object detected ... unsafe aliasing", and no Rust
+ * code can reset the flag — the only recovery is a NEW `BrepKernel`.
+ *
+ * A fresh kernel re-registered as the default reroutes all subsequent brepjs ops
+ * (they resolve `getKernel()` per call). The CALLER must first drop cache
+ * handles that index the now-dead arena (socket/lip/box/shell/lastSolid,
+ * baseplate, mesh-imprint) — brepkit's `dispose` is a no-op, so that is safe even
+ * while poisoned. Returns `false` (no-op) if brepkit was never loaded.
+ */
+export function recoverBrepkitKernel(): boolean {
+  if (!brepkitModule) return false;
+  const kernel = new brepkitModule.BrepKernel();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
+  registerKernel('brepkit', new BrepkitAdapter(kernel as any));
+  brepkitModule.clearLastPanicMessage?.();
+  return true;
+}
+
+/**
+ * Root panic text captured by brepkit's panic hook if the last op trapped, else
+ * `undefined`. Used to detect a panic-abort poison that left no catchable JS
+ * error on the poisoning request itself.
+ */
+export function getLastBrepkitPanic(): string | undefined {
+  return brepkitModule?.lastPanicMessage?.();
 }
 
 /**

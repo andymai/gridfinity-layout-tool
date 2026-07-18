@@ -24,16 +24,64 @@ import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { ALL_SCENARIOS } from './scenarios';
-import { setLastSolid } from './shapeCache';
+import { setLastSolid, clearAllCaches } from './shapeCache';
 import type * as BinExporterModule from './binExporter';
 
 let exportBin: typeof BinExporterModule.exportBin;
+
+// ── brepkit kernel-poison recovery ─────────────────────────────────────────
+// The brepkit WASM kernel is a per-worker singleton whose arena grows across
+// every scenario. Two distinct bugs strand its wasm-bindgen borrow flag once
+// enough state accumulates (see brepkit task #14):
+//   1. a `raw_vec` "capacity overflow" Rust panic (panic=abort → the trap never
+//      releases the &mut self borrow), first observed on the magnet+halfSockets
+//      scenario;
+//   2. a NON-panic stranding (a JS exception unwinding through a &mut self wasm
+//      method leaves the BorrowMut guard undropped), observed on honeycomb
+//      custom shapes — this one recurs as the arena regrows.
+// Either strands the kernel so EVERY later scenario throws "recursive use of an
+// object detected which would lead to unsafe aliasing in rust" in ~0ms — a
+// cascade that masked ~180 scenarios behind the FIRST victim. catch_unwind is
+// inert on wasm (panic=abort) and Rust cannot reset the flag; the only recovery
+// is a NEW BrepKernel. This harness detects the poison signature and recreates
+// the kernel so each later scenario runs healthy, revealing the true pass/fail.
+const KERNEL_IS_BREPKIT = ['brepkit', 'wasm'].includes(process.env['BREPJS_KERNEL'] ?? '');
+const POISON_RE = /recursive use of an object|unsafe aliasing/i;
+let lastPanicMessage: (() => string | undefined) | null = null;
+let clearLastPanicMessage: (() => void) | null = null;
+let poisoned = false;
+
+/**
+ * Recreate the poisoned singleton BrepKernel. Cached socket/lip/box/shell solids
+ * (and lastSolid) index the DEAD arena, so clearAllCaches() must drop them first
+ * — brepkit's dispose is a no-op, so that is safe even while poisoned. A fresh
+ * BrepKernel has a fresh borrow flag; re-registering it as the default reroutes
+ * all later brepjs ops (they resolve getKernel() per call).
+ */
+async function recoverBrepkitKernel(): Promise<void> {
+  clearAllCaches();
+  const { registerKernel, BrepkitAdapter } = await import('brepjs');
+  const brepkitWasm = await import('brepkit-wasm');
+  const kernel = new brepkitWasm.BrepKernel();
+  registerKernel('brepkit', new BrepkitAdapter(kernel as any));
+  clearLastPanicMessage?.();
+  poisoned = false;
+}
 
 beforeAll(async () => {
   const { initBrepjs } = await import('./__kernel-tests__/wasmInit');
   await initBrepjs();
   exportBin = (await import('./binExporter')).exportBin;
-}, 60_000);
+  if (KERNEL_IS_BREPKIT) {
+    const bkw = (await import('brepkit-wasm')) as unknown as {
+      lastPanicMessage?: () => string | undefined;
+      clearLastPanicMessage?: () => void;
+    };
+    lastPanicMessage = bkw.lastPanicMessage ?? null;
+    clearLastPanicMessage = bkw.clearLastPanicMessage ?? null;
+    clearLastPanicMessage?.();
+  }
+}, 120_000);
 
 interface ManifoldStats {
   triangleCount: number;
@@ -127,8 +175,15 @@ describe('export integrity: full scenario matrix → binary STL', () => {
   // production a preview pass (forExport=false) clears the flag on every param
   // change; this loop never previews, so we clear it explicitly. The
   // param-keyed intermediate LRU caches (socket/lip/box) stay warm for speed.
-  beforeEach(() => {
+  beforeEach(async () => {
     setLastSolid(null);
+    // Recover if the prior scenario stranded the kernel — detected by the
+    // borrow-flag poison signature in its error (`poisoned`, covers both the
+    // panic-abort and non-panic stranding) OR by a recorded Rust panic that
+    // left no catchable JS error on this scenario yet (lastPanicMessage).
+    if (KERNEL_IS_BREPKIT && (poisoned || lastPanicMessage?.())) {
+      await recoverBrepkitKernel();
+    }
   });
 
   for (const scenario of ALL_SCENARIOS) {
@@ -137,42 +192,51 @@ describe('export integrity: full scenario matrix → binary STL', () => {
     it(
       label,
       async () => {
-        const params = buildParams(scenario.params);
-        const result = await exportBin(params, 'stl');
+        try {
+          const params = buildParams(scenario.params);
+          const result = await exportBin(params, 'stl');
 
-        // 1. Buffer is well-formed and parseable (the occt-wasm STL bug).
-        const stats = analyze(result.data, scenario.name);
+          // 1. Buffer is well-formed and parseable (the occt-wasm STL bug).
+          const stats = analyze(result.data, scenario.name);
 
-        // 2. Non-empty printable solid (the compound-cut empty-result bug).
-        expect(stats.triangleCount, `${scenario.name}: triangle count`).toBeGreaterThan(0);
+          // 2. Non-empty printable solid (the compound-cut empty-result bug).
+          expect(stats.triangleCount, `${scenario.name}: triangle count`).toBeGreaterThan(0);
 
-        // 3. No NaN/Infinity coordinates.
-        expect(stats.minFinite, `${scenario.name}: finite coordinates`).toBe(true);
+          // 3. No NaN/Infinity coordinates.
+          expect(stats.minFinite, `${scenario.name}: finite coordinates`).toBe(true);
 
-        // 4. Hole-free: no boundary edges. This is the real printable-watertight
-        //    guarantee and holds for EVERY scenario, including the measure-zero
-        //    self-contact cases.
-        expect(stats.boundaryEdges, `${scenario.name}: boundary edges`).toBe(0);
+          // 4. Hole-free: no boundary edges. This is the real printable-watertight
+          //    guarantee and holds for EVERY scenario, including the measure-zero
+          //    self-contact cases.
+          expect(stats.boundaryEdges, `${scenario.name}: boundary edges`).toBe(0);
 
-        // 5. Fully 2-manifold (no edge shared by >2 triangles) — required of
-        //    every scenario except the documented measure-zero self-contact
-        //    cases (see MEASURE_ZERO_SELF_CONTACT_SCENARIOS). Those are bounded
-        //    on BOTH sides rather than left unchecked: a lower bound of >0 makes
-        //    the carve-out self-expiring — if a kernel upgrade ever resolves the
-        //    pinch, this fails and signals the scenario can rejoin the strict
-        //    tier — and the upper cap catches a hole-free-but-manifold-broken
-        //    regression that the boundary-edge check (4) alone would miss.
-        if (measureZeroSelfContact) {
-          expect(
-            stats.nonManifoldEdges,
-            `${scenario.name}: non-manifold edges (self-contact must persist)`
-          ).toBeGreaterThan(0);
-          expect(
-            stats.nonManifoldEdges,
-            `${scenario.name}: non-manifold edges (must stay bounded)`
-          ).toBeLessThanOrEqual(MAX_MEASURE_ZERO_CONTACT_EDGES);
-        } else {
-          expect(stats.nonManifoldEdges, `${scenario.name}: non-manifold edges`).toBe(0);
+          // 5. Fully 2-manifold (no edge shared by >2 triangles) — required of
+          //    every scenario except the documented measure-zero self-contact
+          //    cases (see MEASURE_ZERO_SELF_CONTACT_SCENARIOS). Those are bounded
+          //    on BOTH sides rather than left unchecked: a lower bound of >0 makes
+          //    the carve-out self-expiring — if a kernel upgrade ever resolves the
+          //    pinch, this fails and signals the scenario can rejoin the strict
+          //    tier — and the upper cap catches a hole-free-but-manifold-broken
+          //    regression that the boundary-edge check (4) alone would miss.
+          if (measureZeroSelfContact) {
+            expect(
+              stats.nonManifoldEdges,
+              `${scenario.name}: non-manifold edges (self-contact must persist)`
+            ).toBeGreaterThan(0);
+            expect(
+              stats.nonManifoldEdges,
+              `${scenario.name}: non-manifold edges (must stay bounded)`
+            ).toBeLessThanOrEqual(MAX_MEASURE_ZERO_CONTACT_EDGES);
+          } else {
+            expect(stats.nonManifoldEdges, `${scenario.name}: non-manifold edges`).toBe(0);
+          }
+        } catch (e) {
+          // Flag borrow-flag poison so beforeEach recreates the kernel before
+          // the next scenario — stops one stranding from cascading into ~0ms
+          // "recursive use" failures across every later scenario.
+          const msg = e instanceof Error ? e.message : String(e);
+          if (KERNEL_IS_BREPKIT && POISON_RE.test(msg)) poisoned = true;
+          throw e;
         }
       },
       scenario.timeout
