@@ -72,11 +72,23 @@ const POISON_RE = /recursive use of an object|unsafe aliasing/i;
 function maybeRecoverPoisonedKernel(errorMsg: string): void {
   if (activeKernel !== 'brepkit') return;
   if (!POISON_RE.test(errorMsg) && !getLastBrepkitPanic()) return;
-  clearAllCaches();
-  clearBaseplateCaches();
-  clearMeshImprintCache();
-  if (recoverBrepkitKernel()) {
-    console.warn('[Worker] brepkit kernel was poisoned; recreated it for the next request.');
+  // Best-effort cache eviction: disposal calls shape.delete() on the poisoned
+  // kernel. brepkit's dispose is a no-op (safe even while poisoned), but guard
+  // anyway so a throwing disposer can't prevent the essential step — recreating
+  // the kernel — from running.
+  for (const clear of [clearAllCaches, clearBaseplateCaches, clearMeshImprintCache]) {
+    try {
+      clear();
+    } catch (err) {
+      console.warn('[Worker] cache eviction during kernel recovery failed (continuing):', err);
+    }
+  }
+  try {
+    if (recoverBrepkitKernel()) {
+      console.warn('[Worker] brepkit kernel was poisoned; recreated it for the next request.');
+    }
+  } catch (err) {
+    console.error('[Worker] brepkit kernel recovery failed:', err);
   }
 }
 

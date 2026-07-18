@@ -5,6 +5,11 @@ import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 // Spy for the manifold kernel's raw-module circular-angle override.
 const mockSetMinCircularAngle = vi.fn();
 
+// Spies for brepkit's panic-hook surface. Named `mock*` so vitest permits the
+// hoisted `vi.mock('brepkit-wasm')` factory to reference them.
+const mockLastPanicMessage = vi.fn<() => string | undefined>(() => undefined);
+const mockClearLastPanicMessage = vi.fn<() => void>();
+
 // Mock all heavy dependencies before importing the module under test
 vi.mock('brepjs', () => ({
   registerKernel: vi.fn(),
@@ -47,8 +52,8 @@ vi.mock('brepkit-wasm', () => ({
   // Panic-hook surface used by loadBrepkit / recoverBrepkitKernel. Vitest throws
   // on access of any named export the factory omits, so these must be present
   // even though the module accesses them via optional chaining.
-  lastPanicMessage: (): string | undefined => undefined,
-  clearLastPanicMessage: (): void => undefined,
+  lastPanicMessage: mockLastPanicMessage,
+  clearLastPanicMessage: mockClearLastPanicMessage,
 }));
 
 /** A minimal valid WASM binary: the 4-byte magic `\0asm` + version word. */
@@ -165,6 +170,51 @@ describe('wasmInstantiator', () => {
       expect(registerKernel).toHaveBeenCalledWith('brepkit', expect.anything());
       expect(result.isThreaded).toBe(false);
       expect(result.hardwareConcurrency).toBeGreaterThan(0);
+    });
+
+    it('clears any stale panic message on load', async () => {
+      const { loadBrepkit } = await import('./wasmInstantiator');
+      await loadBrepkit();
+      expect(mockClearLastPanicMessage).toHaveBeenCalled();
+    });
+  });
+
+  describe('recoverBrepkitKernel', () => {
+    it('returns false and does nothing when brepkit was never loaded', async () => {
+      const { registerKernel } = await import('brepjs');
+      const { recoverBrepkitKernel } = await import('./wasmInstantiator');
+
+      expect(recoverBrepkitKernel()).toBe(false);
+      expect(registerKernel).not.toHaveBeenCalled();
+    });
+
+    it('recreates and re-registers the kernel after load', async () => {
+      const { registerKernel, BrepkitAdapter } = await import('brepjs');
+      const { loadBrepkit, recoverBrepkitKernel } = await import('./wasmInstantiator');
+
+      await loadBrepkit();
+      vi.mocked(registerKernel).mockClear();
+      vi.mocked(BrepkitAdapter).mockClear();
+      mockClearLastPanicMessage.mockClear();
+
+      expect(recoverBrepkitKernel()).toBe(true);
+      expect(BrepkitAdapter).toHaveBeenCalledTimes(1);
+      expect(registerKernel).toHaveBeenCalledWith('brepkit', expect.anything());
+      expect(mockClearLastPanicMessage).toHaveBeenCalled();
+    });
+  });
+
+  describe('getLastBrepkitPanic', () => {
+    it('returns undefined before brepkit is loaded', async () => {
+      const { getLastBrepkitPanic } = await import('./wasmInstantiator');
+      expect(getLastBrepkitPanic()).toBeUndefined();
+    });
+
+    it('surfaces the panic hook value after load', async () => {
+      const { loadBrepkit, getLastBrepkitPanic } = await import('./wasmInstantiator');
+      await loadBrepkit();
+      mockLastPanicMessage.mockReturnValue('capacity overflow');
+      expect(getLastBrepkitPanic()).toBe('capacity overflow');
     });
   });
 });

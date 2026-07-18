@@ -59,7 +59,14 @@ let poisoned = false;
  * all later brepjs ops (they resolve getKernel() per call).
  */
 async function recoverBrepkitKernel(): Promise<void> {
-  clearAllCaches();
+  // Best-effort: dispose calls shape.delete() on the dead arena (brepkit's
+  // dispose is a no-op, safe while poisoned), but never let a throwing disposer
+  // block the fresh kernel below — that recreation is what actually recovers.
+  try {
+    clearAllCaches();
+  } catch {
+    /* fresh kernel below restores health regardless */
+  }
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
   const brepkitWasm = await import('brepkit-wasm');
   const kernel = new brepkitWasm.BrepKernel();
