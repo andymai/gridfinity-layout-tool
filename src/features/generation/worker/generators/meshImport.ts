@@ -150,9 +150,10 @@ function extractOutlines(oriented: Manifold): MeshOutlinePoint[][] {
         .sort((a, b) => b.area - a.area)
         .map(({ ring }) => ring.map(([x, y]): MeshOutlinePoint => ({ x, y })));
 
-      const totalPerimeter = kept.reduce((sum, ring) => sum + ringPerimeter(ring), 0);
-      let outlines = kept.map((ring) => {
-        const share = totalPerimeter > 0 ? ringPerimeter(ring) / totalPerimeter : 0;
+      const perimeters = kept.map(ringPerimeter);
+      const totalPerimeter = perimeters.reduce((sum, length) => sum + length, 0);
+      let outlines = kept.map((ring, i) => {
+        const share = totalPerimeter > 0 ? perimeters[i] / totalPerimeter : 0;
         const budget = Math.max(MIN_RING_BUDGET, Math.floor(MAX_MESH_OUTLINE_POINTS * share));
         return simplifyRingToBudget(ring, budget);
       });
