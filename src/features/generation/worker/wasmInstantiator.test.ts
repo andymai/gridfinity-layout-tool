@@ -44,6 +44,11 @@ vi.mock('manifold-3d/manifold.wasm?url', () => ({ default: '/mocked/manifold.was
 vi.mock('brepkit-wasm', () => ({
   // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Mock class for BrepKernel constructor
   BrepKernel: class MockBrepKernel {},
+  // Panic-hook surface used by loadBrepkit / recoverBrepkitKernel. Vitest throws
+  // on access of any named export the factory omits, so these must be present
+  // even though the module accesses them via optional chaining.
+  lastPanicMessage: (): string | undefined => undefined,
+  clearLastPanicMessage: (): void => undefined,
 }));
 
 /** A minimal valid WASM binary: the 4-byte magic `\0asm` + version word. */
