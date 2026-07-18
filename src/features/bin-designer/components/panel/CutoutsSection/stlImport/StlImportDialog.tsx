@@ -38,7 +38,7 @@ function ToolMesh({ pending }: { readonly pending: PendingStlImport }) {
     return geo;
   }, [pending]);
 
-  // Each flip replaces the geometry — dispose the old GPU buffers.
+  // Each rotation change replaces the geometry — dispose the old GPU buffers.
   useEffect(() => {
     return () => {
       geometry.dispose();

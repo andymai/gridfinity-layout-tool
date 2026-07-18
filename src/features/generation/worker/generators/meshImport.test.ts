@@ -79,6 +79,18 @@ function soupToAsciiSTL(soup: Float32Array): ArrayBuffer {
   return encoded.buffer.slice(0, encoded.byteLength);
 }
 
+function manifoldToSoup(manifold: Manifold): Float32Array {
+  const mesh = manifold.getMesh();
+  const soup = new Float32Array(mesh.triVerts.length * 3);
+  for (let i = 0; i < mesh.triVerts.length; i++) {
+    const vi = mesh.triVerts[i];
+    soup[i * 3] = mesh.vertProperties[vi * mesh.numProp];
+    soup[i * 3 + 1] = mesh.vertProperties[vi * mesh.numProp + 1];
+    soup[i * 3 + 2] = mesh.vertProperties[vi * mesh.numProp + 2];
+  }
+  return soup;
+}
+
 function ringArea(ring: ReadonlyArray<MeshOutlinePoint>): number {
   let area = 0;
   for (let i = 0; i < ring.length; i++) {
@@ -220,15 +232,8 @@ describe('importMeshFromStl', () => {
     // it through STL as the "user upload"
     const sphere = module.Manifold.sphere(20, 360);
     try {
-      const mesh = sphere.getMesh();
-      const soup = new Float32Array(mesh.triVerts.length * 3);
-      for (let i = 0; i < mesh.triVerts.length; i++) {
-        const vi = mesh.triVerts[i];
-        soup[i * 3] = mesh.vertProperties[vi * mesh.numProp];
-        soup[i * 3 + 1] = mesh.vertProperties[vi * mesh.numProp + 1];
-        soup[i * 3 + 2] = mesh.vertProperties[vi * mesh.numProp + 2];
-      }
-      expect(mesh.triVerts.length / 3).toBeGreaterThan(MAX_MESH_ASSET_TRIANGLES);
+      const soup = manifoldToSoup(sphere);
+      expect(soup.length / 9).toBeGreaterThan(MAX_MESH_ASSET_TRIANGLES);
 
       const result = await importMeshFromStl(
         soupToBinarySTL(soup),
@@ -273,14 +278,7 @@ describe('importMeshFromStl', () => {
     }
     const noisy = track(module.Manifold.union(parts));
     try {
-      const mesh = noisy.getMesh();
-      const soup = new Float32Array(mesh.triVerts.length * 3);
-      for (let i = 0; i < mesh.triVerts.length; i++) {
-        const vi = mesh.triVerts[i];
-        soup[i * 3] = mesh.vertProperties[vi * mesh.numProp];
-        soup[i * 3 + 1] = mesh.vertProperties[vi * mesh.numProp + 1];
-        soup[i * 3 + 2] = mesh.vertProperties[vi * mesh.numProp + 2];
-      }
+      const soup = manifoldToSoup(noisy);
 
       const result = await importMeshFromStl(soupToBinarySTL(soup), 'scan.stl', undefined, module);
       expect(isOk(result)).toBe(true);
@@ -298,6 +296,90 @@ describe('importMeshFromStl', () => {
       expect(mainRing.length).toBeGreaterThanOrEqual(40);
       const total = outlines.reduce((sum, ring) => sum + ring.length, 0);
       expect(total).toBeLessThanOrEqual(4000);
+    } finally {
+      for (const m of scratch) m.delete();
+    }
+  }, 60_000);
+
+  it('keeps a sub-4mm² feature on a small tool (relative speck threshold binds)', async () => {
+    // Small tool: largest ring ~314mm², so the relative threshold (0.63mm²)
+    // binds instead of the 4mm² absolute cap. A 1mm² prong must survive it
+    // while 0.25mm² specks are still filtered.
+    const scratch: Manifold[] = [];
+    const track = (m: Manifold): Manifold => {
+      scratch.push(m);
+      return m;
+    };
+    const parts = [
+      track(module.Manifold.cylinder(5, 10, 10, 64)),
+      track(track(module.Manifold.cube([1, 1, 5])).translate([15, 0, 0])),
+      track(track(module.Manifold.cube([0.5, 0.5, 0.5])).translate([20, 0, 0])),
+      track(track(module.Manifold.cube([0.5, 0.5, 0.5])).translate([0, 20, 0])),
+    ];
+    const noisy = track(module.Manifold.union(parts));
+    try {
+      const soup = manifoldToSoup(noisy);
+
+      const result = await importMeshFromStl(
+        soupToBinarySTL(soup),
+        'small-tool.stl',
+        undefined,
+        module
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      const areas = result.value.asset.outlines.map(ringArea).sort((a, b) => b - a);
+      expect(areas).toHaveLength(2);
+      expect(areas[0]).toBeCloseTo(Math.PI * 10 * 10, -1);
+      expect(areas[1]).toBeCloseTo(1, 1);
+    } finally {
+      for (const m of scratch) m.delete();
+    }
+  }, 60_000);
+
+  it('drops smallest rings (never main-outline detail) when the point budget overflows', async () => {
+    // 500 real (well above speck size) small rings alongside one main ring
+    // overflow the 4000-point cap even after per-ring simplification.
+    const scratch: Manifold[] = [];
+    const track = (m: Manifold): Manifold => {
+      scratch.push(m);
+      return m;
+    };
+    const parts = [track(module.Manifold.cylinder(5, 30, 30, 128))];
+    for (let i = 0; i < 500; i++) {
+      parts.push(
+        track(
+          track(module.Manifold.cylinder(5, 4, 4, 24)).translate([
+            40 + (i % 23) * 12,
+            Math.floor(i / 23) * 12,
+            0,
+          ])
+        )
+      );
+    }
+    const crowded = track(module.Manifold.union(parts));
+    try {
+      const soup = manifoldToSoup(crowded);
+
+      const result = await importMeshFromStl(
+        soupToBinarySTL(soup),
+        'crowded.stl',
+        undefined,
+        module
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      const { outlines } = result.value.asset;
+
+      const total = outlines.reduce((sum, ring) => sum + ring.length, 0);
+      expect(total).toBeLessThanOrEqual(4000);
+      // Some small rings were dropped, but never all of them…
+      expect(outlines.length).toBeGreaterThan(1);
+      expect(outlines.length).toBeLessThan(501);
+      // …and the main ring survives with its detail intact (rings are stored
+      // largest-first).
+      expect(ringArea(outlines[0])).toBeCloseTo(Math.PI * 30 * 30, -2);
+      expect(outlines[0].length).toBeGreaterThanOrEqual(24);
     } finally {
       for (const m of scratch) m.delete();
     }

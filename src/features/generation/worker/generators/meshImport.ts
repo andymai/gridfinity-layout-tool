@@ -106,7 +106,10 @@ function ringPerimeter(ring: ReadonlyArray<MeshOutlinePoint>): number {
 
 /** Epsilon ladder from {@link OUTLINE_EPSILON_MM}, doubling while the ring is
  *  over budget — but never past the soft cap: fidelity beats budget share. */
-function simplifyRingToBudget(ring: ReadonlyArray<MeshOutlinePoint>, budget: number) {
+function simplifyRingToBudget(
+  ring: ReadonlyArray<MeshOutlinePoint>,
+  budget: number
+): MeshOutlinePoint[] {
   let epsilon = OUTLINE_EPSILON_MM;
   let out = simplifyRdp(ring, epsilon);
   while (out.length > budget && epsilon < OUTLINE_EPSILON_SOFT_MAX_MM) {
@@ -140,7 +143,7 @@ function extractOutlines(oriented: Manifold): MeshOutlinePoint[][] {
         .filter(({ area }) => area > 0);
       if (outer.length === 0) return [];
 
-      const largestArea = Math.max(...outer.map(({ area }) => area));
+      const largestArea = outer.reduce((max, { area }) => (area > max ? area : max), 0);
       const speckThreshold = Math.min(largestArea * SPECK_RELATIVE_AREA, SPECK_KEEP_AREA_MM2);
       const kept = outer
         .filter(({ area }) => area >= speckThreshold)
@@ -291,12 +294,12 @@ export async function importMeshFromStl(
       normalizeDeg(rotation.z),
     ];
     const laid = solid.rotate([...layFlat]);
-    const flipped = laid.rotate([...userRotation]);
+    const rotated = laid.rotate([...userRotation]);
     laid.delete();
 
-    const box = flipped.boundingBox();
-    oriented = flipped.translate([-box.min[0], -box.min[1], -box.min[2]]);
-    flipped.delete();
+    const box = rotated.boundingBox();
+    oriented = rotated.translate([-box.min[0], -box.min[1], -box.min[2]]);
+    rotated.delete();
 
     const finalBox = oriented.boundingBox();
     const sizeMm = {

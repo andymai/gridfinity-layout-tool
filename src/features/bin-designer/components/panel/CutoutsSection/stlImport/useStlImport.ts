@@ -69,7 +69,7 @@ export function useStlImport(): UseStlImportReturn {
 
   const [pending, setPending] = useState<PendingStlImport | null>(null);
   const [importing, setImporting] = useState(false);
-  /** Raw file bytes retained while the dialog is open, for flip re-runs. */
+  /** Raw file bytes retained while the dialog is open, for rotation re-runs. */
   const bufferRef = useRef<ArrayBuffer | null>(null);
   const fileNameRef = useRef<string>('');
 
