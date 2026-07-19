@@ -1,0 +1,59 @@
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_dcdbb1be393448::t_3691cdeb072104 169-228
+src/i18n/locales/es.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_dcdbb1be393448::t_c17d165a790dcd 65,94,130-143,145-158
+  s_dcdbb1be393448::t_248ff2d5923948 352-360
+  s_dcdbb1be393448::t_65f4f0dbb8fdc0 196-222
+  s_dcdbb1be393448::t_820b8850caba93 27-28,48,52-53,81,91
+  s_dcdbb1be393448::t_87ce8709bccbe6 54-58,73
+  s_dcdbb1be393448::t_3e2700529a7a7c 49-51,59-64,68-72,74,78-80,82,87-88,159,185,223,361
+src/i18n/locales/nl.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/pt-BR.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_dcdbb1be393448::t_e793c4d928dcd8 1-133
+src/i18n/locales/uk.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/fr.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/sv.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/en.ts
+  s_dcdbb1be393448::t_74d5341c416192 1567
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_dcdbb1be393448::t_d1a366fa120457 216,218-225,227-228,230-252,254-278,280-304,306-310,312-325,327-340,343-350
+  s_dcdbb1be393448::t_f1b698ec0e2d58 388,391,394-395,404-408
+  s_dcdbb1be393448::t_e828603426a8d5 47-48,351-356,409-414
+src/i18n/locales/it.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/ja.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/de.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/i18n/locales/nb.json
+  s_dcdbb1be393448::t_74d5341c416192 856
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_dcdbb1be393448::t_c28156ec592619 122
+  s_dcdbb1be393448::t_9512efbe309ae5 1,5,15-17,29-32,49,61,69-121,123-139
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_dcdbb1be393448::t_a8fbad41a38bff 6-9,12-13,15-19,21,42-91,111,116-123,126-127,130-143,149-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "dcfa782a56c15126a7a894b7fdcf5d496cf4d644",
+  "prompts": {},
+  "sessions": {
+    "s_dcdbb1be393448": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e84e3cc8-06c1-416b-9251-130a1c4ef0d6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
