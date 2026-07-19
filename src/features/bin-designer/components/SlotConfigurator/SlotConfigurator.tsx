@@ -70,13 +70,27 @@ export function SlotConfigurator() {
   );
 
   const slotCount = useMemo(() => {
-    return enabledAxes.reduce(
-      (sum, axis) =>
-        sum +
-        calculateSlotPositions(axisInnerDim(axis), slotConfig[axis].pitch, lipOverhang).length,
-      0
-    );
-  }, [enabledAxes, slotConfig, axisInnerDim, lipOverhang]);
+    const axisCount = (axis: SlotAxis): number =>
+      calculateSlotPositions(axisInnerDim(axis), slotConfig[axis].pitch, lipOverhang).length;
+
+    // Insert mode: one axis holds long dividers; the other's rows hold one
+    // short divider PER COMPARTMENT, so count rows × (longCount + 1).
+    const mode = resolveCrossDividerMode(slotConfig, dividerPieces.thickness);
+    if (activeDirection === 'both' && mode.style === 'insert') {
+      const shortAxis: SlotAxis = mode.longAxis === 'y' ? 'x' : 'y';
+      const longCount = axisCount(mode.longAxis);
+      if (longCount > 0) return longCount + axisCount(shortAxis) * (longCount + 1);
+    }
+
+    return enabledAxes.reduce((sum, axis) => sum + axisCount(axis), 0);
+  }, [
+    enabledAxes,
+    slotConfig,
+    axisInnerDim,
+    lipOverhang,
+    activeDirection,
+    dividerPieces.thickness,
+  ]);
 
   const setDirection = useCallback(
     (direction: SlotDirection) => {
@@ -165,9 +179,11 @@ export function SlotConfigurator() {
         effectiveSlotDepth,
         dividerPieces.clearance
       );
+    const fullLengthEntries = (): { key: string; length: number }[] =>
+      enabledAxes.map((axis) => ({ key: axis, length: fullLength(axis) }));
 
     if (activeDirection !== 'both' || effectiveCrossMode.style !== 'insert') {
-      return enabledAxes.map((axis) => ({ key: axis, length: fullLength(axis) }));
+      return fullLengthEntries();
     }
 
     const effectiveLongAxis = effectiveCrossMode.longAxis;
@@ -179,8 +195,19 @@ export function SlotConfigurator() {
       lipOverhang
     );
     if (longPositions.length === 0) {
-      return enabledAxes.map((axis) => ({ key: axis, length: fullLength(axis) }));
+      return fullLengthEntries();
     }
+    const entries: { key: string; length: number }[] = [
+      { key: effectiveLongAxis, length: fullLength(effectiveLongAxis) },
+    ];
+    // Short pieces only exist where the short axis has rows to seat them
+    const rows = calculateSlotPositions(
+      effectiveLongAxis === 'y' ? innerD : innerW,
+      slotConfig[shortAxis].pitch,
+      lipOverhang
+    );
+    if (rows.length === 0) return entries;
+
     const spans = calculateShortDividerSpans(longPositions, shortSpanDim, dividerPieces.thickness);
     const lengths = calculateShortDividerLengths(
       spans,
@@ -188,9 +215,6 @@ export function SlotConfigurator() {
       getReceptacleDepth(dividerPieces.thickness),
       dividerPieces.clearance
     );
-    const entries: { key: string; length: number }[] = [
-      { key: effectiveLongAxis, length: fullLength(effectiveLongAxis) },
-    ];
     if (lengths.interior !== null && lengths.interior > 0) {
       entries.push({ key: 'short-interior', length: lengths.interior });
     }

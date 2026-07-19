@@ -200,7 +200,23 @@ describe('buildUniqueDividerPieces', () => {
       expect(cut).toHaveBeenCalledTimes(2);
     });
 
-    it('falls back to plain full pieces when the long axis has no dividers', () => {
+    it('emits only the long piece when the short axis has no rows', () => {
+      const params = insertParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 50 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'insert',
+          longAxis: 'y',
+        },
+      });
+      // innerD=40 at x-pitch 50 → 0 rows → no grooves, no short pieces
+      const pieces = buildUniqueDividerPieces(params, 80, 40, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual(['divider-vertical']);
+      expect(cut).not.toHaveBeenCalled();
+    });
+
+    it('falls back to cross-lap when the long axis has no dividers', () => {
       const params = insertParams({
         slotConfig: {
           ...DEFAULT_BIN_PARAMS.slotConfig,
@@ -210,8 +226,7 @@ describe('buildUniqueDividerPieces', () => {
           longAxis: 'y',
         },
       });
-      // innerW=80 at y-pitch 50 → 2 compartments? round(80/50)=2 → 1 divider.
-      // Use a span that yields zero: innerW=40 at pitch 50 → 1 compartment
+      // innerW=40 at pitch 50 → 1 compartment → 0 long dividers
       const pieces = buildUniqueDividerPieces(params, 40, 60, 30, false);
       expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
     });

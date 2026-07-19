@@ -20,6 +20,7 @@ import { exportMargin } from '../generators/baseplateMargin';
 import { exportConnectorSample } from '../generators/connectorSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
+import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -195,10 +196,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const binSolid = getLastSolid();
         if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- gridUnitMm is typed required but persisted configs predating the field may not have it; preserve the runtime fallback
-        const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
-        const outerW = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
-        const outerD = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
+        // Y axis uses gridUnitMmY when set (non-square grid); equal to X for
+        // square grids — matches the STL divider path in dividerExport.ts.
+        const { x: unitX, y: unitY } = pitchFromParams(params);
+        const outerW = params.width * unitX - GRIDFINITY.TOLERANCE;
+        const outerD = params.depth * unitY - GRIDFINITY.TOLERANCE;
         const innerW = outerW - 2 * params.wallThickness;
         const innerD = outerD - 2 * params.wallThickness;
         const totalHeight = params.height * params.heightUnitMm;

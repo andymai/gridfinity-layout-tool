@@ -37,6 +37,7 @@ vi.mock('three', () => {
   class MockBufferGeometry {
     setAttribute = vi.fn();
     setIndex = vi.fn();
+    computeVertexNormals = vi.fn();
     dispose = vi.fn();
   }
 
@@ -132,5 +133,64 @@ describe('GhostDividerPieces', () => {
     });
     const { container } = render(<GhostDividerPieces />);
     expect(container.firstChild).not.toBeNull();
+  });
+
+  describe('cross divider modes', () => {
+    const bothAxesParams = (slotOverrides: Record<string, unknown> = {}) => ({
+      ...DEFAULT_BIN_PARAMS,
+      style: 'slotted' as const,
+      width: 2,
+      depth: 2,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+        ...slotOverrides,
+      },
+      dividerPieces: { height: 'auto' as const, thickness: 1.6, clearance: 0.25 },
+    });
+
+    it('lap mode renders in-bin ghosts plus one reference piece per axis', () => {
+      useDesignerStore.setState({ params: bothAxesParams({ crossStyle: 'lap' }) });
+      const { container } = render(<GhostDividerPieces />);
+      expect(container.querySelectorAll('mesh')).toHaveLength(3);
+    });
+
+    it('insert mode renders the long reference plus interior and edge short pieces', () => {
+      useDesignerStore.setState({
+        params: bothAxesParams({ crossStyle: 'insert', longAxis: 'y' }),
+      });
+      const { container } = render(<GhostDividerPieces />);
+      // in-bin ghosts + long piece + short interior + short edge
+      expect(container.querySelectorAll('mesh')).toHaveLength(4);
+    });
+
+    it('insert mode without short-axis rows renders only the long reference', () => {
+      useDesignerStore.setState({
+        params: {
+          ...bothAxesParams({
+            crossStyle: 'insert',
+            longAxis: 'y',
+            // depth 1 at 50mm pitch → innerD too small for any rows
+            x: { enabled: true, pitch: 50 },
+          }),
+          depth: 1,
+        },
+      });
+      const { container } = render(<GhostDividerPieces />);
+      expect(container.querySelectorAll('mesh')).toHaveLength(2);
+    });
+
+    it('insert mode degrades to lap rendering when the divider is too thin', () => {
+      useDesignerStore.setState({
+        params: {
+          ...bothAxesParams({ crossStyle: 'insert', longAxis: 'y' }),
+          dividerPieces: { height: 'auto' as const, thickness: 1.0, clearance: 0.25 },
+        },
+      });
+      const { container } = render(<GhostDividerPieces />);
+      // Same shape as lap mode: ghosts + one reference per axis
+      expect(container.querySelectorAll('mesh')).toHaveLength(3);
+    });
   });
 });

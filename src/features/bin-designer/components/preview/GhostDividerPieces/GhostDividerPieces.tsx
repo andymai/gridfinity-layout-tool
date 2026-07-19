@@ -41,6 +41,65 @@ const GHOST_LINGER_MS = 1500;
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_COLOR = '#d4d8dc';
 
+/**
+ * Split a span into the gaps left between crossing dividers, each `gapWidth`
+ * wide. Returns the center and length of every positive-length gap (from the
+ * span edge to the first divider, between dividers, and to the far edge).
+ */
+function slotSegments(
+  positions: number[],
+  span: number,
+  gapWidth: number
+): { center: number; len: number }[] {
+  const sorted = [...positions].sort((a, b) => a - b);
+  const edges = [
+    -span / 2,
+    ...sorted.flatMap((p) => [p - gapWidth / 2, p + gapWidth / 2]),
+    span / 2,
+  ];
+  const segments: { center: number; len: number }[] = [];
+  for (let i = 0; i < edges.length; i += 2) {
+    const len = edges[i + 1] - edges[i];
+    if (len > 0) segments.push({ center: (edges[i] + edges[i + 1]) / 2, len });
+  }
+  return segments;
+}
+
+/** Merge translated boxes into one BufferGeometry, remapping vertex indices. */
+function mergeBoxes(
+  boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[],
+  computeNormals: boolean
+): THREE.BufferGeometry {
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const vec = new THREE.Vector3();
+
+  for (const { w, d, h, matrix } of boxes) {
+    const box = new THREE.BoxGeometry(w, d, h);
+    const pos = box.getAttribute('position');
+    const index = box.getIndex();
+    if (!index) {
+      box.dispose();
+      continue;
+    }
+    const offset = positions.length / 3;
+    for (let v = 0; v < pos.count; v++) {
+      vec.set(pos.getX(v), pos.getY(v), pos.getZ(v)).applyMatrix4(matrix);
+      positions.push(vec.x, vec.y, vec.z);
+    }
+    for (let j = 0; j < index.count; j++) {
+      indices.push(index.array[j] + offset);
+    }
+    box.dispose();
+  }
+
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  merged.setIndex(indices);
+  if (computeNormals) merged.computeVertexNormals();
+  return merged;
+}
+
 export function GhostDividerPieces() {
   const { invalidate } = useThree();
 
@@ -125,29 +184,21 @@ export function GhostDividerPieces() {
     const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
     const { thickness, clearance } = dividerPieces;
     const crossMode = resolveCrossDividerMode(slotConfig, thickness);
+    const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
+    const boxZ = floorZ + dividerHeight / 2;
+    const at = (x: number, y: number): THREE.Matrix4 =>
+      new THREE.Matrix4().makeTranslation(x, y, boxZ);
 
-    const matrices: THREE.Matrix4[] = [];
-    const boxSizes: { w: number; d: number; h: number }[] = [];
+    const boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[] = [];
 
     // In insert mode the short-axis ghosts are segmented per compartment:
     // one box per gap between long dividers (and between wall and divider).
+    // Sub-0.5mm slivers are dropped.
     const compartmentSegments = (
       longPositions: number[],
       innerDim: number
-    ): { center: number; len: number }[] => {
-      const sorted = [...longPositions].sort((a, b) => a - b);
-      const edges = [
-        -innerDim / 2,
-        ...sorted.flatMap((p) => [p - thickness / 2, p + thickness / 2]),
-        innerDim / 2,
-      ];
-      const segments: { center: number; len: number }[] = [];
-      for (let i = 0; i < edges.length; i += 2) {
-        const len = edges[i + 1] - edges[i];
-        if (len > 0.5) segments.push({ center: (edges[i] + edges[i + 1]) / 2, len });
-      }
-      return segments;
-    };
+    ): { center: number; len: number }[] =>
+      slotSegments(longPositions, innerDim, thickness).filter((s) => s.len > 0.5);
 
     const xPositions = slotConfig.y.enabled
       ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
@@ -163,86 +214,49 @@ export function GhostDividerPieces() {
 
     // X-axis dividers: span width (X), positioned along depth (Y)
     if (slotConfig.x.enabled) {
-      const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerW, slotDepth, clearance);
       const segmented = insertActive && crossMode.longAxis === 'y';
 
       for (const yPos of yPositions) {
         if (segmented) {
           for (const seg of compartmentSegments(xPositions, innerW)) {
-            const matrix = new THREE.Matrix4();
-            matrix.makeTranslation(seg.center, yPos, floorZ + dividerHeight / 2);
-            matrices.push(matrix);
-            boxSizes.push({ w: seg.len, d: thickness, h: dividerHeight });
+            boxes.push({
+              w: seg.len,
+              d: thickness,
+              h: dividerHeight,
+              matrix: at(seg.center, yPos),
+            });
           }
         } else {
-          const matrix = new THREE.Matrix4();
-          matrix.makeTranslation(0, yPos, floorZ + dividerHeight / 2);
-          matrices.push(matrix);
-          boxSizes.push({ w: divLength, d: thickness, h: dividerHeight });
+          boxes.push({ w: divLength, d: thickness, h: dividerHeight, matrix: at(0, yPos) });
         }
       }
     }
 
     // Y-axis dividers: span depth (Y), positioned along width (X)
     if (slotConfig.y.enabled) {
-      const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerD, slotDepth, clearance);
       const segmented = insertActive && crossMode.longAxis === 'x';
 
       for (const xPos of xPositions) {
         if (segmented) {
           for (const seg of compartmentSegments(yPositions, innerD)) {
-            const matrix = new THREE.Matrix4();
-            matrix.makeTranslation(xPos, seg.center, floorZ + dividerHeight / 2);
-            matrices.push(matrix);
-            boxSizes.push({ w: thickness, d: seg.len, h: dividerHeight });
+            boxes.push({
+              w: thickness,
+              d: seg.len,
+              h: dividerHeight,
+              matrix: at(xPos, seg.center),
+            });
           }
         } else {
-          const matrix = new THREE.Matrix4();
-          matrix.makeTranslation(xPos, 0, floorZ + dividerHeight / 2);
-          matrices.push(matrix);
-          boxSizes.push({ w: thickness, d: divLength, h: dividerHeight });
+          boxes.push({ w: thickness, d: divLength, h: dividerHeight, matrix: at(xPos, 0) });
         }
       }
     }
 
-    if (matrices.length === 0) return null;
+    if (boxes.length === 0) return null;
 
-    // Merge all boxes into a single BufferGeometry
-    const allPositions: number[] = [];
-    const allIndices: number[] = [];
-
-    for (let i = 0; i < matrices.length; i++) {
-      const { w, d, h } = boxSizes[i];
-      const box = new THREE.BoxGeometry(w, d, h);
-      const positions = box.getAttribute('position');
-      const index = box.getIndex();
-      if (!index) {
-        box.dispose();
-        continue;
-      }
-
-      const offset = allPositions.length / 3;
-
-      for (let v = 0; v < positions.count; v++) {
-        const vec = new THREE.Vector3(positions.getX(v), positions.getY(v), positions.getZ(v));
-        vec.applyMatrix4(matrices[i]);
-        allPositions.push(vec.x, vec.y, vec.z);
-      }
-
-      for (let j = 0; j < index.count; j++) {
-        allIndices.push(index.array[j] + offset);
-      }
-
-      box.dispose();
-    }
-
-    const merged = new THREE.BufferGeometry();
-    merged.setAttribute('position', new THREE.Float32BufferAttribute(allPositions, 3));
-    merged.setIndex(allIndices);
-
-    return merged;
+    return mergeBoxes(boxes, false);
   }, [
     shouldShow,
     slotConfig,
@@ -307,67 +321,43 @@ export function GhostDividerPieces() {
       }
 
       const intactH = dividerHeight - notchDepth;
-      const segments: { x: number; z: number; w: number; h: number }[] = [
+      const segZ = notchFromTop ? intactH / 2 : -intactH / 2;
+      const boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[] = [
         // Intact strip: bottom for top-notched pieces, top for bottom-notched
         {
-          x: 0,
-          z: notchFromTop ? -notchDepth / 2 : notchDepth / 2,
           w: length,
+          d: thickness,
           h: intactH,
+          matrix: new THREE.Matrix4().makeTranslation(
+            0,
+            0,
+            notchFromTop ? -notchDepth / 2 : notchDepth / 2
+          ),
         },
       ];
 
-      const sorted = [...notchPositions].sort((a, b) => a - b);
-      const edges = [
-        -length / 2,
-        ...sorted.flatMap((p) => [p - slotWidth / 2, p + slotWidth / 2]),
-        length / 2,
-      ];
-      const segZ = notchFromTop
-        ? (dividerHeight - notchDepth) / 2
-        : -(dividerHeight - notchDepth) / 2;
-      for (let i = 0; i < edges.length; i += 2) {
-        const w = edges[i + 1] - edges[i];
-        if (w <= 0) continue;
-        segments.push({ x: (edges[i] + edges[i + 1]) / 2, z: segZ, w, h: notchDepth });
+      for (const seg of slotSegments(notchPositions, length, slotWidth)) {
+        boxes.push({
+          w: seg.len,
+          d: thickness,
+          h: notchDepth,
+          matrix: new THREE.Matrix4().makeTranslation(seg.center, 0, segZ),
+        });
       }
 
-      const positions: number[] = [];
-      const indices: number[] = [];
-      for (const seg of segments) {
-        const boxGeo = new THREE.BoxGeometry(seg.w, thickness, seg.h);
-        const pos = boxGeo.getAttribute('position');
-        const index = boxGeo.getIndex();
-        if (!index) {
-          boxGeo.dispose();
-          continue;
-        }
-        const offset = positions.length / 3;
-        for (let v = 0; v < pos.count; v++) {
-          positions.push(pos.getX(v) + seg.x, pos.getY(v), pos.getZ(v) + seg.z);
-        }
-        for (let j = 0; j < index.count; j++) {
-          indices.push(index.array[j] + offset);
-        }
-        boxGeo.dispose();
-      }
-      const merged = new THREE.BufferGeometry();
-      merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      merged.setIndex(indices);
-      merged.computeVertexNormals();
-      return merged;
+      return mergeBoxes(boxes, true);
     };
 
     const pieces: {
-      axis: 'x' | 'y';
+      key: string;
       geometry: THREE.BufferGeometry;
       position: [number, number, number];
       rotation: [number, number, number];
     }[] = [];
 
     // In insert mode the long piece renders plain (grooves are too shallow
-    // to read at preview scale) and the short axis shows the interior
-    // compartment piece (or the edge piece when only one long divider exists).
+    // to read at preview scale) and the short axis shows the compartment
+    // pieces — interior and edge — stacked outward from the bin.
     const crossMode = resolveCrossDividerMode(slotConfig, thickness);
     const longPositions =
       bothAxes && crossMode.style === 'insert'
@@ -378,58 +368,73 @@ export function GhostDividerPieces() {
           )
         : [];
     const insertActive = bothAxes && crossMode.style === 'insert' && longPositions.length > 0;
+    // Short pieces only exist where the short axis has rows to seat them
+    const rows = insertActive
+      ? calculateSlotPositions(
+          crossMode.longAxis === 'y' ? innerD : innerW,
+          slotConfig[crossMode.longAxis === 'y' ? 'x' : 'y'].pitch,
+          lipOverhang
+        )
+      : [];
 
-    const shortLength = (spanDim: number): number | null => {
+    const shortLengths = (spanDim: number): { interior: number | null; edge: number | null } => {
       const spans = calculateShortDividerSpans(longPositions, spanDim, thickness);
-      const lengths = calculateShortDividerLengths(
+      return calculateShortDividerLengths(
         spans,
         slotDepth,
         getReceptacleDepth(thickness),
         clearance
       );
-      return lengths.interior ?? lengths.edge;
     };
 
-    if (slotConfig.x.enabled) {
-      const isShortAxis = insertActive && crossMode.longAxis === 'y';
-      const length = isShortAxis
-        ? shortLength(innerW)
-        : calculateDividerLength(innerW, slotDepth, clearance);
-      const notches =
-        bothAxes && !insertActive
-          ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
-          : [];
-      if (length !== null && length > 0) {
-        // X-axis divider spans X → place offset in +Y (behind bin)
-        pieces.push({
-          axis: 'x',
-          geometry: buildPieceGeometry(length, notches, true),
-          position: [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2],
-          rotation: [0, 0, 0],
-        });
-      }
-    }
+    // Base position for each axis's reference, plus the direction to stack
+    // additional pieces further away from the bin.
+    const addAxisPieces = (axis: 'x' | 'y'): void => {
+      const spanDim = axis === 'x' ? innerW : innerD;
+      const crossPitch = axis === 'x' ? slotConfig.y.pitch : slotConfig.x.pitch;
+      const basePosition: [number, number, number] =
+        axis === 'x'
+          ? [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2]
+          : [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2];
+      const stackStep: [number, number] = axis === 'x' ? [0, thickness + 5] : [thickness + 5, 0];
+      const rotation: [number, number, number] = axis === 'x' ? [0, 0, 0] : [0, 0, Math.PI / 2];
+      const notchFromTop = axis === 'x';
 
-    if (slotConfig.y.enabled) {
-      const isShortAxis = insertActive && crossMode.longAxis === 'x';
-      const length = isShortAxis
-        ? shortLength(innerD)
-        : calculateDividerLength(innerD, slotDepth, clearance);
-      const notches =
-        bothAxes && !insertActive
-          ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
-          : [];
-      if (length !== null && length > 0) {
-        // Y-axis divider spans Y → place offset in +X (right of bin),
-        // rotated 90° around Z so its length runs along Y
+      const push = (key: string, length: number, notches: number[], index: number): void => {
         pieces.push({
-          axis: 'y',
-          geometry: buildPieceGeometry(length, notches, false),
-          position: [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2],
-          rotation: [0, 0, Math.PI / 2],
+          key,
+          geometry: buildPieceGeometry(length, notches, notchFromTop),
+          position: [
+            basePosition[0] + index * stackStep[0],
+            basePosition[1] + index * stackStep[1],
+            basePosition[2],
+          ],
+          rotation,
         });
+      };
+
+      const isShortAxis = insertActive && crossMode.longAxis !== axis;
+      if (isShortAxis) {
+        if (rows.length === 0) return;
+        const lengths = shortLengths(spanDim);
+        let index = 0;
+        if (lengths.interior !== null && lengths.interior > 0) {
+          push(`${axis}-interior`, lengths.interior, [], index++);
+        }
+        if (lengths.edge !== null && lengths.edge > 0) {
+          push(`${axis}-edge`, lengths.edge, [], index);
+        }
+        return;
       }
-    }
+
+      const length = calculateDividerLength(spanDim, slotDepth, clearance);
+      const notches =
+        bothAxes && !insertActive ? calculateSlotPositions(spanDim, crossPitch, lipOverhang) : [];
+      if (length > 0) push(axis, length, notches, 0);
+    };
+
+    if (slotConfig.x.enabled) addAxisPieces('x');
+    if (slotConfig.y.enabled) addAxisPieces('y');
 
     return pieces;
   }, [
@@ -495,7 +500,7 @@ export function GhostDividerPieces() {
       {referenceMaterial &&
         referencePieces.map((piece) => (
           <mesh
-            key={piece.axis}
+            key={piece.key}
             geometry={piece.geometry}
             material={referenceMaterial}
             position={piece.position}

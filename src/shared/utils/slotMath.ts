@@ -117,10 +117,7 @@ export function calculateDividerLength(
   return innerDim + 2 * tabEngagement(slotDepth, clearance);
 }
 
-/**
- * Tab engagement depth for one divider end given the receiving slot depth.
- * Clamped to MIN_TAB_ENGAGEMENT so the divider always locks in.
- */
+/** Tab engagement depth for one divider end given the receiving slot depth. */
 export function tabEngagement(slotDepth: number, clearance: number): number {
   return Math.max(MIN_TAB_ENGAGEMENT, slotDepth - clearance - DIVIDER_LENGTH_CLEARANCE);
 }
@@ -134,8 +131,9 @@ export const RECEPTACLE_DEPTH_RATIO = 0.3;
 
 /**
  * Minimum divider thickness for functional face receptacles (mm).
- * Below this the per-face groove drops under ~0.35mm — too shallow to
- * register a short divider — and the remaining web becomes fragile.
+ * Below this the per-face groove (thickness × RECEPTACLE_DEPTH_RATIO)
+ * is too shallow to register a short divider, and the remaining web
+ * becomes fragile.
  */
 export const MIN_DIVIDER_FOR_RECEPTACLES = 1.2;
 
@@ -193,8 +191,12 @@ export function calculateShortDividerSpans(
 /**
  * Short divider piece lengths from compartment spans.
  *
- * Interior pieces engage a face receptacle on both ends; edge pieces
- * engage a wall slot on one end and a receptacle on the other.
+ * Interior pieces engage a face receptacle on both ends. Edge pieces
+ * engage a wall slot on one end and a receptacle on the other, but use
+ * the SHALLOWER of the two tab depths on both ends: a symmetric piece
+ * can be installed in either orientation, whereas a longer wall tab
+ * would bottom out in the receptacle groove when flipped and hold the
+ * piece proud of the wall.
  */
 export function calculateShortDividerLengths(
   spans: { interior: number | null; edge: number | null },
@@ -204,9 +206,10 @@ export function calculateShortDividerLengths(
 ): { interior: number | null; edge: number | null } {
   const wallTab = tabEngagement(wallSlotDepth, clearance);
   const receptacleTab = tabEngagement(receptacleDepth, clearance);
+  const edgeTab = Math.min(wallTab, receptacleTab);
   return {
     interior: spans.interior !== null ? spans.interior + 2 * receptacleTab : null,
-    edge: spans.edge !== null ? spans.edge + wallTab + receptacleTab : null,
+    edge: spans.edge !== null ? spans.edge + 2 * edgeTab : null,
   };
 }
 

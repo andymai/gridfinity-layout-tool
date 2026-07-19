@@ -226,12 +226,13 @@ describe('calculateShortDividerSpans', () => {
 });
 
 describe('calculateShortDividerLengths', () => {
-  it('adds receptacle tabs on both interior ends and mixed tabs on edge pieces', () => {
+  it('adds receptacle tabs on interior ends and symmetric min-tabs on edge pieces', () => {
     // receptacle depth 0.48, clearance 0.25 → tab clamps to 0.3 minimum;
-    // wall slot depth 1.0 → wall tab = 1.0 − 0.25 − 0.3 = 0.45
+    // wall slot depth 1.0 → wall tab = 0.45, but edge pieces use
+    // min(wallTab, receptacleTab) on BOTH ends so they fit either way round
     const lengths = calculateShortDividerLengths({ interior: 18.4, edge: 19.2 }, 1.0, 0.48, 0.25);
     expect(lengths.interior).toBeCloseTo(18.4 + 0.6, 10);
-    expect(lengths.edge).toBeCloseTo(19.2 + 0.45 + 0.3, 10);
+    expect(lengths.edge).toBeCloseTo(19.2 + 0.6, 10);
   });
 
   it('passes through null spans', () => {

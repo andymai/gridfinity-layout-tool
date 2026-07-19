@@ -53,7 +53,7 @@ export function buildDividerPiece(length: number, thickness: number, height: num
   return box(length, height, thickness, { at: [0, 0, thickness / 2] });
 }
 
-/** Cut a fused compound of cutter boxes from a piece, disposing intermediates. */
+/** Cut fused cutters from a piece. Consumes piece and cutters; passthrough when cutters is empty. */
 function applyCuts(piece: Shape3D, cutters: Shape3D[]): Shape3D {
   if (cutters.length === 0) return piece;
   const compound = cutters.length === 1 ? cutters[0] : unwrap(fuseAll(cutters as ValidSolid[]));
@@ -213,9 +213,10 @@ export function buildUniqueDividerPieces(
   }
 
   const longPositions = longAxis === 'y' ? crossingsForX : crossingsForY;
-  // Insert mode needs at least one long divider to receive the short
-  // pieces; with none, both directions are plain full-length pieces that
-  // can never cross (nothing to insert the long pieces into either).
+  // Insert mode needs at least one long divider to carry receptacles for
+  // the short pieces. With none, fall through to the lap path: the piece
+  // crossed by the (absent) long dividers comes out plain; the other
+  // keeps its lap notches.
   if (crossStyle === 'insert' && longPositions.length > 0) {
     const shortAxis = longAxis === 'y' ? 'x' : 'y';
     const shortSpanDim = shortAxis === 'x' ? innerW : innerD;
@@ -233,19 +234,23 @@ export function buildUniqueDividerPieces(
     );
     addPiece(longPiece, axisLabel(longAxis));
 
-    const spans = calculateShortDividerSpans(longPositions, shortSpanDim, thickness);
-    const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
-    if (lengths.interior !== null && lengths.interior > 0) {
-      addPiece(
-        buildDividerPiece(lengths.interior, thickness, dividerHeight),
-        `${axisLabel(shortAxis)}-compartment`
-      );
-    }
-    if (lengths.edge !== null && lengths.edge > 0) {
-      addPiece(
-        buildDividerPiece(lengths.edge, thickness, dividerHeight),
-        `${axisLabel(shortAxis)}-compartment-edge`
-      );
+    // Short pieces only exist where there are rows to seat them —
+    // groovePositions are also the short direction's wall slot rows.
+    if (groovePositions.length > 0) {
+      const spans = calculateShortDividerSpans(longPositions, shortSpanDim, thickness);
+      const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
+      if (lengths.interior !== null && lengths.interior > 0) {
+        addPiece(
+          buildDividerPiece(lengths.interior, thickness, dividerHeight),
+          `${axisLabel(shortAxis)}-compartment`
+        );
+      }
+      if (lengths.edge !== null && lengths.edge > 0) {
+        addPiece(
+          buildDividerPiece(lengths.edge, thickness, dividerHeight),
+          `${axisLabel(shortAxis)}-compartment-edge`
+        );
+      }
     }
     return pieces;
   }
@@ -253,29 +258,22 @@ export function buildUniqueDividerPieces(
   // Lap mode (or insert fallback): full-length pieces both directions,
   // notched at every crossing so they interlock. X pieces are notched from
   // the top so bottom-notched Y pieces drop over them.
-  let xPiece = buildFullPiece('x');
-  xPiece = cutCrossLapNotches(
-    xPiece,
-    crossingsForX,
-    slotWidth,
-    notchDepth,
-    dividerHeight,
-    thickness,
-    true
-  );
-  addPiece(xPiece, axisLabel('x'));
-
-  let yPiece = buildFullPiece('y');
-  yPiece = cutCrossLapNotches(
-    yPiece,
-    crossingsForY,
-    slotWidth,
-    notchDepth,
-    dividerHeight,
-    thickness,
-    false
-  );
-  addPiece(yPiece, axisLabel('y'));
+  const lapPieces: { axis: 'x' | 'y'; crossings: number[]; fromTop: boolean }[] = [
+    { axis: 'x', crossings: crossingsForX, fromTop: true },
+    { axis: 'y', crossings: crossingsForY, fromTop: false },
+  ];
+  for (const { axis, crossings, fromTop } of lapPieces) {
+    const piece = cutCrossLapNotches(
+      buildFullPiece(axis),
+      crossings,
+      slotWidth,
+      notchDepth,
+      dividerHeight,
+      thickness,
+      fromTop
+    );
+    addPiece(piece, axisLabel(axis));
+  }
 
   return pieces;
 }
