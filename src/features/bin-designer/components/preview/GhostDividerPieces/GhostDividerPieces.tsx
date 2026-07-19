@@ -6,9 +6,9 @@
  * (not just during generation), so users can see divider placement
  * without waiting for mesh regeneration.
  *
- * Also renders a single reference divider piece offset from the bin,
- * showing the T-shaped cross-section (wall + edge tabs) so users can
- * visualize the actual divider geometry without exporting.
+ * Also renders a reference divider piece per enabled axis offset from
+ * the bin — including cross-lap notches when both directions are on —
+ * so users can visualize the actual divider geometry without exporting.
  *
  * Pattern matches GhostLabelTabs.tsx (batched geometry with matrix transforms).
  */
