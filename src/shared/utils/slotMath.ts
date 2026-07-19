@@ -153,7 +153,9 @@ export function resolveCrossDividerMode(
   slotConfig: SlotConfig,
   dividerThickness: number
 ): { style: CrossDividerStyle; longAxis: 'x' | 'y' } {
-  const longAxis = slotConfig.longAxis ?? 'y';
+  // Clamp persisted values: imported configs merge unvalidated, and a bad
+  // longAxis would otherwise be used as an index into slotConfig.
+  const longAxis = slotConfig.longAxis === 'x' ? 'x' : 'y';
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
   const style: CrossDividerStyle =
     bothAxes &&
@@ -183,7 +185,14 @@ export function calculateShortDividerSpans(
 ): { interior: number | null; edge: number | null } {
   if (longPositions.length === 0) return { interior: null, edge: null };
   const sorted = [...longPositions].sort((a, b) => a - b);
-  const interior = sorted.length >= 2 ? sorted[1] - sorted[0] - dividerThickness : null;
+  // calculateSlotPositions spaces dividers uniformly, but take the minimum
+  // gap so a single interior piece stays safe in every compartment even if
+  // positions ever become non-uniform.
+  let minGap = Infinity;
+  for (let i = 1; i < sorted.length; i++) {
+    minGap = Math.min(minGap, sorted[i] - sorted[i - 1]);
+  }
+  const interior = sorted.length >= 2 ? minGap - dividerThickness : null;
   const edge = sorted[0] + innerDim / 2 - dividerThickness / 2;
   return { interior, edge };
 }

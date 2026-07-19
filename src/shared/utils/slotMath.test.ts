@@ -223,6 +223,12 @@ describe('calculateShortDividerSpans', () => {
     expect(spans.interior).toBeCloseTo(18.4, 10);
     expect(spans.edge).toBeCloseTo(19.2, 10);
   });
+
+  it('uses the minimum gap for non-uniform positions', () => {
+    // Gaps of 15 and 25 → the piece must fit the 15mm compartment
+    const spans = calculateShortDividerSpans([-20, -5, 20], 80, 1.6);
+    expect(spans.interior).toBeCloseTo(15 - 1.6, 10);
+  });
 });
 
 describe('calculateShortDividerLengths', () => {
@@ -272,5 +278,13 @@ describe('resolveCrossDividerMode', () => {
   it('ignores insert when only one axis is enabled', () => {
     const single = bothConfig({ crossStyle: 'insert', y: { enabled: false, pitch: 20 } });
     expect(resolveCrossDividerMode(single, 1.6).style).toBe('lap');
+  });
+
+  it('clamps corrupted persisted values to safe defaults', () => {
+    const corrupted = bothConfig({
+      crossStyle: 'diagonal' as never,
+      longAxis: 'z' as never,
+    });
+    expect(resolveCrossDividerMode(corrupted, 1.6)).toEqual({ style: 'lap', longAxis: 'y' });
   });
 });

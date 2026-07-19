@@ -148,7 +148,7 @@ export function SlotConfigurator() {
 
   // ── Cross divider mode (both-axes only) ─────────────────────────────
   const requestedCrossStyle: CrossDividerStyle = slotConfig.crossStyle ?? 'lap';
-  const longAxis = slotConfig.longAxis ?? 'y';
+  const longAxis: SlotAxis = slotConfig.longAxis === 'x' ? 'x' : 'y';
   const effectiveCrossMode = resolveCrossDividerMode(slotConfig, dividerPieces.thickness);
   const insertTooThin =
     activeDirection === 'both' &&
