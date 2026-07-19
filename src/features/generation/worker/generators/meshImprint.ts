@@ -110,6 +110,9 @@ export async function prepareMeshImprints(
     let topShoulder = 0;
     const decoded = await decodeMeshData(asset.data);
     if (isOk(decoded)) {
+      // Compute the shoulder first (pure JS): a throw here then can't strand an
+      // already-allocated WASM manifold.
+      topShoulder = minTopShoulder(decoded.value.positions, decoded.value.indices);
       try {
         const mesh = new module.Mesh({
           numProp: 3,
@@ -118,7 +121,6 @@ export async function prepareMeshImprints(
         });
         mesh.merge();
         manifold = new module.Manifold(mesh);
-        topShoulder = minTopShoulder(decoded.value.positions, decoded.value.indices);
       } catch {
         manifold = null;
       }
@@ -207,32 +209,37 @@ function minTopShoulder(positions: Float32Array, indices: Uint32Array): number {
   const spanX = maxX - minX || 1;
   const spanY = maxY - minY || 1;
   const cellTop = new Float32Array(N * N).fill(-Infinity);
+  // `| 0` truncates toward zero; (v - m) is always ≥ 0 here, so it equals floor.
+  const cellIndex = (v: number, s: number, m: number): number =>
+    Math.max(0, (((v - m) / s) * N) | 0);
   for (let t = 0; t < indices.length; t += 3) {
     const a = indices[t] * 3;
     const b = indices[t + 1] * 3;
     const c = indices[t + 2] * 3;
-    const zMax = Math.max(positions[a + 2], positions[b + 2], positions[c + 2]);
-    // Sample every grid centre inside the triangle's XY bounds, keeping the max
-    // z per covered cell (the surface top there).
-    const lo = (v: number, s: number, m: number): number =>
-      Math.max(0, Math.floor((((v - m) / s) * N) | 0));
-    const cx0 = lo(Math.min(positions[a], positions[b], positions[c]), spanX, minX);
+    // Sample every grid centre inside the triangle's XY bounds, keeping the
+    // highest interpolated surface height per cell (the top there).
+    const cx0 = cellIndex(Math.min(positions[a], positions[b], positions[c]), spanX, minX);
     const cx1 = Math.min(
       N - 1,
-      lo(Math.max(positions[a], positions[b], positions[c]), spanX, minX)
+      cellIndex(Math.max(positions[a], positions[b], positions[c]), spanX, minX)
     );
-    const cy0 = lo(Math.min(positions[a + 1], positions[b + 1], positions[c + 1]), spanY, minY);
+    const cy0 = cellIndex(
+      Math.min(positions[a + 1], positions[b + 1], positions[c + 1]),
+      spanY,
+      minY
+    );
     const cy1 = Math.min(
       N - 1,
-      lo(Math.max(positions[a + 1], positions[b + 1], positions[c + 1]), spanY, minY)
+      cellIndex(Math.max(positions[a + 1], positions[b + 1], positions[c + 1]), spanY, minY)
     );
     for (let cy = cy0; cy <= cy1; cy++) {
       const py = minY + ((cy + 0.5) / N) * spanY;
       for (let cx = cx0; cx <= cx1; cx++) {
         const px = minX + ((cx + 0.5) / N) * spanX;
-        if (pointInTriangle(px, py, positions, a, b, c)) {
+        const z = triangleTopZ(px, py, positions, a, b, c);
+        if (!Number.isNaN(z)) {
           const idx = cy * N + cx;
-          if (zMax > cellTop[idx]) cellTop[idx] = zMax;
+          if (z > cellTop[idx]) cellTop[idx] = z;
         }
       }
     }
@@ -244,19 +251,23 @@ function minTopShoulder(positions: Float32Array, indices: Uint32Array): number {
   return Number.isFinite(shoulder) ? shoulder : 0;
 }
 
-function pointInTriangle(
+/** Barycentric-interpolated surface z at (px,py) inside triangle (a,b,c), or
+ *  NaN when the point falls outside it. */
+function triangleTopZ(
   px: number,
   py: number,
   p: Float32Array,
   a: number,
   b: number,
   c: number
-): boolean {
+): number {
   const d = (p[b + 1] - p[c + 1]) * (p[a] - p[c]) + (p[c] - p[b]) * (p[a + 1] - p[c + 1]);
-  if (d === 0) return false;
+  if (d === 0) return NaN;
   const l1 = ((p[b + 1] - p[c + 1]) * (px - p[c]) + (p[c] - p[b]) * (py - p[c + 1])) / d;
   const l2 = ((p[c + 1] - p[a + 1]) * (px - p[c]) + (p[a] - p[c]) * (py - p[c + 1])) / d;
-  return l1 >= -0.001 && l2 >= -0.001 && l1 + l2 <= 1.001;
+  const l3 = 1 - l1 - l2;
+  if (l1 < -0.001 || l2 < -0.001 || l3 < -0.001) return NaN;
+  return l1 * p[a + 2] + l2 * p[b + 2] + l3 * p[c + 2];
 }
 
 /**

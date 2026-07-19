@@ -262,7 +262,9 @@ describe('mesh imprint generation (occt + manifold)', () => {
     });
     check.merge();
     const solid = new module.Manifold(check);
-    const componentCount = solid.decompose().length;
+    const comps = solid.decompose();
+    const componentCount = comps.length;
+    comps.forEach((c) => c.delete());
     solid.delete();
     expect(componentCount).toBe(1);
 
@@ -339,7 +341,9 @@ describe('mesh imprint generation (occt + manifold)', () => {
     });
     check.merge();
     const solid = new module.Manifold(check);
-    const componentCount = solid.decompose().length;
+    const comps = solid.decompose();
+    const componentCount = comps.length;
+    comps.forEach((c) => c.delete());
     solid.delete();
     expect(componentCount).toBe(1);
     expect(Array.from(imprinted.vertices).every(Number.isFinite)).toBe(true);
