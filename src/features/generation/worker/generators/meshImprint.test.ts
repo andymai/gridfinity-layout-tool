@@ -210,6 +210,141 @@ describe('mesh imprint generation (occt + manifold)', () => {
     expect(looseMax).toBeLessThan(tightMax + 2.0);
   }, 120_000);
 
+  it('preserves relief below the shoulder instead of flattening to the silhouette', async () => {
+    // A tool whose 3D form differs from its silhouette: a wide top slab
+    // (20×10×3) on a narrow base (10×10×2). The projected silhouette is the
+    // full 20×10, so the old full-depth silhouette prism carved a flat-floored
+    // box. Wide-top/narrow-base has no undercut and no roofed recess, so the
+    // contoured pocket stays a single connected solid.
+    const base = module.Manifold.cube([10, 10, 2], false).translate([5, 0, 0]);
+    const top = module.Manifold.cube([20, 10, 3], false).translate([0, 0, 2]);
+    const stepped = module.Manifold.union([base, top]);
+    base.delete();
+    top.delete();
+    const gm = stepped.getMesh();
+    stepped.delete();
+    const soup = new Float32Array(gm.triVerts.length * 3);
+    for (let i = 0; i < gm.triVerts.length; i++) {
+      const v = gm.triVerts[i];
+      soup[i * 3] = gm.vertProperties[v * gm.numProp];
+      soup[i * 3 + 1] = gm.vertProperties[v * gm.numProp + 1];
+      soup[i * 3 + 2] = gm.vertProperties[v * gm.numProp + 2];
+    }
+    const importedStepped = await importMeshFromStl(
+      buildSTLBuffer(soup, new Float32Array(soup.length), 'stepped'),
+      'stepped.stl',
+      undefined,
+      module
+    );
+    if (!isOk(importedStepped)) {
+      throw new Error(`stepped import failed: ${importedStepped.error.message}`);
+    }
+    const stepAsset = importedStepped.value.asset;
+
+    // Nonzero clearance is the exact case the old prism flattened.
+    const cutout = meshCutout({
+      meshId: 'stepped',
+      clearance: 0.5,
+      width: stepAsset.sizeMm.x,
+      depth: stepAsset.sizeMm.y,
+      cutDepth: stepAsset.sizeMm.z,
+    });
+    const params = solidBinParams([cutout], { stepped: stepAsset });
+    clearMeshImprintCache();
+    await prepareMeshImprints(params, module);
+    const imprinted = getGenerateBin()(params, undefined, true);
+
+    // A single connected solid — never a floating island.
+    const check = new module.Mesh({
+      numProp: 3,
+      vertProperties: imprinted.vertices,
+      triVerts: imprinted.indices,
+    });
+    check.merge();
+    const solid = new module.Manifold(check);
+    const componentCount = solid.decompose().length;
+    solid.delete();
+    expect(componentCount).toBe(1);
+
+    const { innerW, innerD } = deriveDimensions(params, true);
+    const ox = -innerW / 2 + 10;
+    const oy = -innerD / 2 + 10;
+    const sx = stepAsset.sizeMm.x;
+    const sy = stepAsset.sizeMm.y;
+    // Center is covered by base + top → deepest floor (~zBottom).
+    const center = {
+      minX: ox + sx / 2 - 2,
+      maxX: ox + sx / 2 + 2,
+      minY: oy + sy / 2 - 2,
+      maxY: oy + sy / 2 + 2,
+    };
+    // The x≈0 edge is covered by the top slab only → floor ~2mm shallower.
+    const edge = { minX: ox + 0.5, maxX: ox + 3.5, minY: oy + sy / 2 - 2, maxY: oy + sy / 2 + 2 };
+    const centerFloor = minZInRegion(imprinted, center);
+    const edgeFloor = minZInRegion(imprinted, edge);
+    expect(Number.isFinite(centerFloor)).toBe(true);
+    expect(Number.isFinite(edgeFloor)).toBe(true);
+    // Relief preserved: the edge floor sits ~2mm above the center floor. The
+    // old full-depth prism made both equal (a flat silhouette pocket).
+    expect(edgeFloor - centerFloor).toBeGreaterThan(1.0);
+  }, 120_000);
+
+  it('imprints an enclosed top recess as a single solid (no floating island)', async () => {
+    // A cup: a box with a deep recess in its top face. A raw contour subtract
+    // would leave the recess as bin material surrounded by cavity — a floating
+    // island. Filling above the shoulder flattens the trapped recess instead.
+    const box = module.Manifold.cube([20, 20, 10], false);
+    const well = module.Manifold.cube([12, 12, 7], false).translate([4, 4, 4]);
+    const cup = box.subtract(well);
+    box.delete();
+    well.delete();
+    const gm = cup.getMesh();
+    cup.delete();
+    const soup = new Float32Array(gm.triVerts.length * 3);
+    for (let i = 0; i < gm.triVerts.length; i++) {
+      const v = gm.triVerts[i];
+      soup[i * 3] = gm.vertProperties[v * gm.numProp];
+      soup[i * 3 + 1] = gm.vertProperties[v * gm.numProp + 1];
+      soup[i * 3 + 2] = gm.vertProperties[v * gm.numProp + 2];
+    }
+    const importedCup = await importMeshFromStl(
+      buildSTLBuffer(soup, new Float32Array(soup.length), 'cup'),
+      'cup.stl',
+      undefined,
+      module
+    );
+    if (!isOk(importedCup)) throw new Error(`cup import failed: ${importedCup.error.message}`);
+    const cupAsset = importedCup.value.asset;
+
+    const params = solidBinParams(
+      [
+        meshCutout({
+          meshId: 'cup',
+          clearance: 0.5,
+          width: cupAsset.sizeMm.x,
+          depth: cupAsset.sizeMm.y,
+          cutDepth: cupAsset.sizeMm.z,
+        }),
+      ],
+      { cup: cupAsset }
+    );
+    clearMeshImprintCache();
+    await prepareMeshImprints(params, module);
+    const imprinted = getGenerateBin()(params, undefined, true);
+
+    const check = new module.Mesh({
+      numProp: 3,
+      vertProperties: imprinted.vertices,
+      triVerts: imprinted.indices,
+    });
+    check.merge();
+    const solid = new module.Manifold(check);
+    const componentCount = solid.decompose().length;
+    solid.delete();
+    expect(componentCount).toBe(1);
+    expect(Array.from(imprinted.vertices).every(Number.isFinite)).toBe(true);
+  }, 120_000);
+
   it('skips hidden mesh cutouts', async () => {
     const params = solidBinParams([meshCutout({ hidden: true })]);
     expect(hasMeshImprints(params)).toBe(false);

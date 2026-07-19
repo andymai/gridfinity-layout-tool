@@ -27,11 +27,12 @@ import {
   cutoutUnitKey,
   enumerateCutoutColorUnits,
 } from '@/shared/generation/cutoutColorUnits';
-import { CREASE_ANGLE_RAD } from '@/shared/constants/tessellation';
 import type { FaceGroupData, MeshData } from '../../bridge/types';
 import type { BinDimensions } from './pipeline/types';
 import { SOCKET_HEIGHT } from './generatorConstants';
 import { creaseEdges } from './utils/creaseEdges';
+import { computeCreaseNormals } from './meshImprintNormals';
+import type { NormalizedMesh } from './meshImprintNormals';
 import { getLoadedManifoldModule, getManifoldModule } from '../manifoldRuntime';
 
 /** FeatureTag.UNKNOWN — faces with no recorded provenance. */
@@ -43,6 +44,13 @@ const MAX_CHAMFER_SLICES = 5;
 /** Tools extend this far above the solid surface so the cut never leaves a
  *  coplanar skin film at the opening. */
 const TOP_OVERSHOOT_MM = 0.5;
+/** The contoured pocket preserves relief BELOW the tool's lowest top-shoulder
+ *  and flattens the silhouette above it (a top-face recess can't survive in a
+ *  straight-up-removable pocket without stranding a floating boss). The shoulder
+ *  is sampled on a grid this many cells across each axis; the margin drops the
+ *  fill line below it so sampling slop never raises it into a roof. */
+const SHOULDER_GRID = 72;
+const SHOULDER_MARGIN_MM = 1;
 /** Prepared tool manifolds kept per worker (content-keyed). */
 const MAX_PREPARED_TOOLS = 16;
 
@@ -50,6 +58,9 @@ interface PreparedTool {
   /** null = asset failed to decode/build — imprint falls back to a flat
    *  outline-prism pocket for that cutout. */
   readonly manifold: Manifold | null;
+  /** Lowest top-shoulder (mm) of the decoded mesh; the silhouette is filled
+   *  flat above it. 0 when unavailable (flattens the whole pocket). */
+  readonly topShoulder: number;
 }
 
 const preparedTools = new Map<string, PreparedTool>();
@@ -96,6 +107,7 @@ export async function prepareMeshImprints(
     if (!asset || preparedTools.has(asset.data)) continue;
 
     let manifold: Manifold | null = null;
+    let topShoulder = 0;
     const decoded = await decodeMeshData(asset.data);
     if (isOk(decoded)) {
       try {
@@ -106,6 +118,7 @@ export async function prepareMeshImprints(
         });
         mesh.merge();
         manifold = new module.Manifold(mesh);
+        topShoulder = minTopShoulder(decoded.value.positions, decoded.value.indices);
       } catch {
         manifold = null;
       }
@@ -118,7 +131,7 @@ export async function prepareMeshImprints(
         preparedTools.delete(oldest);
       }
     }
-    preparedTools.set(asset.data, { manifold });
+    preparedTools.set(asset.data, { manifold, topShoulder });
   }
 }
 
@@ -170,14 +183,98 @@ function outlinesToPolygons(asset: MeshAsset): Vec2[][] {
 }
 
 /**
+ * The tool's lowest top-shoulder (mm): the minimum over the footprint of the
+ * top-surface height, sampled on a {@link SHOULDER_GRID} raster. Filling the
+ * silhouette from this height up removes every roof — nothing above a shoulder
+ * can strand a floating boss — while the contoured relief BELOW it (the part a
+ * straight-up lift actually clears) is preserved. Returns 0 when no cell is
+ * sampled (degenerate mesh), which fills the whole pocket flat (safe).
+ *
+ * The mesh is origin-normalized by the importer, so z spans [0, sizeZ].
+ */
+function minTopShoulder(positions: Float32Array, indices: Uint32Array): number {
+  const N = SHOULDER_GRID;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < positions.length; i += 3) {
+    minX = Math.min(minX, positions[i]);
+    maxX = Math.max(maxX, positions[i]);
+    minY = Math.min(minY, positions[i + 1]);
+    maxY = Math.max(maxY, positions[i + 1]);
+  }
+  const spanX = maxX - minX || 1;
+  const spanY = maxY - minY || 1;
+  const cellTop = new Float32Array(N * N).fill(-Infinity);
+  for (let t = 0; t < indices.length; t += 3) {
+    const a = indices[t] * 3;
+    const b = indices[t + 1] * 3;
+    const c = indices[t + 2] * 3;
+    const zMax = Math.max(positions[a + 2], positions[b + 2], positions[c + 2]);
+    // Sample every grid centre inside the triangle's XY bounds, keeping the max
+    // z per covered cell (the surface top there).
+    const lo = (v: number, s: number, m: number): number =>
+      Math.max(0, Math.floor((((v - m) / s) * N) | 0));
+    const cx0 = lo(Math.min(positions[a], positions[b], positions[c]), spanX, minX);
+    const cx1 = Math.min(
+      N - 1,
+      lo(Math.max(positions[a], positions[b], positions[c]), spanX, minX)
+    );
+    const cy0 = lo(Math.min(positions[a + 1], positions[b + 1], positions[c + 1]), spanY, minY);
+    const cy1 = Math.min(
+      N - 1,
+      lo(Math.max(positions[a + 1], positions[b + 1], positions[c + 1]), spanY, minY)
+    );
+    for (let cy = cy0; cy <= cy1; cy++) {
+      const py = minY + ((cy + 0.5) / N) * spanY;
+      for (let cx = cx0; cx <= cx1; cx++) {
+        const px = minX + ((cx + 0.5) / N) * spanX;
+        if (pointInTriangle(px, py, positions, a, b, c)) {
+          const idx = cy * N + cx;
+          if (zMax > cellTop[idx]) cellTop[idx] = zMax;
+        }
+      }
+    }
+  }
+  let shoulder = Infinity;
+  for (let i = 0; i < cellTop.length; i++) {
+    if (cellTop[i] > -Infinity && cellTop[i] < shoulder) shoulder = cellTop[i];
+  }
+  return Number.isFinite(shoulder) ? shoulder : 0;
+}
+
+function pointInTriangle(
+  px: number,
+  py: number,
+  p: Float32Array,
+  a: number,
+  b: number,
+  c: number
+): boolean {
+  const d = (p[b + 1] - p[c + 1]) * (p[a] - p[c]) + (p[c] - p[b]) * (p[a + 1] - p[c + 1]);
+  if (d === 0) return false;
+  const l1 = ((p[b + 1] - p[c + 1]) * (px - p[c]) + (p[c] - p[b]) * (py - p[c + 1])) / d;
+  const l2 = ((p[c + 1] - p[a + 1]) * (px - p[c]) + (p[a] - p[c]) * (py - p[c + 1])) / d;
+  return l1 >= -0.001 && l2 >= -0.001 && l1 + l2 <= 1.001;
+}
+
+/**
  * Build the full subtract tool for one placed cutout instance in world space:
- * the contoured mesh (when available), the XY clearance prism, and the
+ * the contoured tool with the silhouette filled flat above its lowest
+ * top-shoulder, a lateral-clearance skirt around the silhouette, and the
  * entry-chamfer ring stack. Falls back to a flat outline-prism pocket when the
  * asset's manifold failed to build.
+ *
+ * Filling above the shoulder keeps the underside/lower relief the user can
+ * actually nest onto while flattening only the trapped upper recesses — cheap
+ * (one union, like a plain prism) and free of the floating islands a raw
+ * contour subtract would leave. To imprint a distinctive face, orient it down.
  */
 function buildInstanceTool(
   module: ManifoldToplevel,
   tool: Manifold | null,
+  topShoulder: number,
   asset: MeshAsset,
   cutout: Cutout,
   frame: ImprintFrame
@@ -212,16 +309,33 @@ function buildInstanceTool(
 
     const parts: Manifold[] = [];
 
-    if (tool) {
-      // Tall tools poke above the surface (cutDepth < mesh height) — that's
-      // fine, the overshoot just cuts through the opening.
-      parts.push(placeLocal(tool));
-    }
-
     const baseSection = new module.CrossSection(outlinesToPolygons(asset), 'Positive');
     crossSections.push(baseSection);
 
-    if (!tool || clearance > 0) {
+    if (tool) {
+      const sizeZ = asset.sizeMm.z;
+      // Fill the silhouette from just below the lowest top-shoulder up past the
+      // opening: recesses above it become flat opening (no roofs, no stranded
+      // bosses) while the relief below survives. Extrude starts at z=0, so lift
+      // the cap to the fill line. The +overshoot pokes above the surface.
+      const fillFrom = Math.max(0, Math.min(topShoulder - SHOULDER_MARGIN_MM, sizeZ));
+      const cap = track(module.Manifold.extrude(baseSection, sizeZ + TOP_OVERSHOOT_MM - fillFrom));
+      const filled = track(cap.translate([0, 0, fillFrom]));
+      let grown = track(module.Manifold.union([tool, filled]));
+      if (clearance > 0) {
+        // Lateral fit slack: widen only the outer wall with a hollow silhouette
+        // ring extruded full-depth (a 3D offset of the mesh is far costlier).
+        const offsetSection = baseSection.offset(clearance, 'Round');
+        crossSections.push(offsetSection);
+        const ring = offsetSection.subtract(baseSection);
+        crossSections.push(ring);
+        const skirt = track(module.Manifold.extrude(ring, cutDepth + TOP_OVERSHOOT_MM));
+        grown = track(module.Manifold.union([grown, skirt]));
+      }
+      parts.push(placeLocal(grown));
+    } else {
+      // Fallback: the asset's manifold failed to build — flat outline-prism
+      // pocket (no relief available to preserve).
       let section = baseSection;
       if (clearance > 0) {
         section = baseSection.offset(clearance, 'Round');
@@ -306,151 +420,6 @@ function encodeRuns(
   return { runIndex, runOriginalID, idToTag };
 }
 
-// ── Post-boolean normals ─────────────────────────────────────────────────────
-
-interface NormalizedMesh {
-  readonly positions: Float32Array;
-  readonly normals: Float32Array;
-  readonly indices: Uint32Array;
-}
-
-/**
- * Area-weighted vertex normals with crease splitting: triangles around a
- * vertex are clustered by walking shared edges whose dihedral angle stays
- * under the crease threshold; each cluster gets its own smoothed normal (the
- * vertex is duplicated per extra cluster). Matches the visual contract of the
- * occt tessellation (smooth curves, crisp feature edges) without relying on
- * property propagation through the boolean.
- */
-function computeCreaseNormals(positions: Float32Array, indices: Uint32Array): NormalizedMesh {
-  const triCount = indices.length / 3;
-  const vertCount = positions.length / 3;
-  const cosThreshold = Math.cos(CREASE_ANGLE_RAD);
-
-  const faceNormals = new Float32Array(triCount * 3);
-  const faceAreas = new Float32Array(triCount);
-  for (let t = 0; t < triCount; t++) {
-    const a = indices[t * 3];
-    const b = indices[t * 3 + 1];
-    const c = indices[t * 3 + 2];
-    const ax = positions[a * 3];
-    const ay = positions[a * 3 + 1];
-    const az = positions[a * 3 + 2];
-    const ux = positions[b * 3] - ax;
-    const uy = positions[b * 3 + 1] - ay;
-    const uz = positions[b * 3 + 2] - az;
-    const vx = positions[c * 3] - ax;
-    const vy = positions[c * 3 + 1] - ay;
-    const vz = positions[c * 3 + 2] - az;
-    const nx = uy * vz - uz * vy;
-    const ny = uz * vx - ux * vz;
-    const nz = ux * vy - uy * vx;
-    const len = Math.hypot(nx, ny, nz);
-    faceAreas[t] = len / 2;
-    if (len > 0) {
-      faceNormals[t * 3] = nx / len;
-      faceNormals[t * 3 + 1] = ny / len;
-      faceNormals[t * 3 + 2] = nz / len;
-    }
-  }
-
-  // Incident triangle corners per vertex: (tri, corner) pairs.
-  const incidentCount = new Uint32Array(vertCount);
-  for (let i = 0; i < indices.length; i++) incidentCount[indices[i]]++;
-  const incidentStart = new Uint32Array(vertCount + 1);
-  for (let v = 0; v < vertCount; v++) incidentStart[v + 1] = incidentStart[v] + incidentCount[v];
-  const incident = new Uint32Array(indices.length);
-  const fill = incidentStart.slice(0, vertCount);
-  for (let i = 0; i < indices.length; i++) {
-    incident[fill[indices[i]]++] = i;
-  }
-
-  const outPositions: number[] = [];
-  const outNormals: number[] = [];
-  const outIndices = new Uint32Array(indices.length);
-
-  const smoothDot = (t1: number, t2: number): boolean =>
-    faceNormals[t1 * 3] * faceNormals[t2 * 3] +
-      faceNormals[t1 * 3 + 1] * faceNormals[t2 * 3 + 1] +
-      faceNormals[t1 * 3 + 2] * faceNormals[t2 * 3 + 2] >=
-    cosThreshold;
-
-  for (let v = 0; v < vertCount; v++) {
-    const start = incidentStart[v];
-    const end = incidentStart[v + 1];
-    const cornerCount = end - start;
-    if (cornerCount === 0) continue;
-
-    // Cluster incident triangles: same cluster when connected through an
-    // edge at this vertex with a sub-threshold dihedral.
-    const tris: number[] = [];
-    for (let k = start; k < end; k++) tris.push(Math.floor(incident[k] / 3));
-    const cluster = new Int32Array(cornerCount).fill(-1);
-    let clusterCount = 0;
-    for (let seed = 0; seed < cornerCount; seed++) {
-      if (cluster[seed] !== -1) continue;
-      const id = clusterCount++;
-      const queue = [seed];
-      cluster[seed] = id;
-      while (queue.length > 0) {
-        const current = queue.pop();
-        if (current === undefined) break;
-        const tCur = tris[current];
-        for (let other = 0; other < cornerCount; other++) {
-          if (cluster[other] !== -1) continue;
-          const tOther = tris[other];
-          if (sharesEdgeAt(indices, tCur, tOther, v) && smoothDot(tCur, tOther)) {
-            cluster[other] = id;
-            queue.push(other);
-          }
-        }
-      }
-    }
-
-    // Emit one output vertex per cluster with its accumulated normal.
-    const clusterVertex: number[] = new Array<number>(clusterCount);
-    for (let cl = 0; cl < clusterCount; cl++) {
-      let nx = 0;
-      let ny = 0;
-      let nz = 0;
-      for (let k = 0; k < cornerCount; k++) {
-        if (cluster[k] !== cl) continue;
-        const t = tris[k];
-        nx += faceNormals[t * 3] * faceAreas[t];
-        ny += faceNormals[t * 3 + 1] * faceAreas[t];
-        nz += faceNormals[t * 3 + 2] * faceAreas[t];
-      }
-      const len = Math.hypot(nx, ny, nz) || 1;
-      const outIdx = outPositions.length / 3;
-      outPositions.push(positions[v * 3], positions[v * 3 + 1], positions[v * 3 + 2]);
-      outNormals.push(nx / len, ny / len, nz / len);
-      clusterVertex[cl] = outIdx;
-    }
-    for (let k = 0; k < cornerCount; k++) {
-      outIndices[incident[start + k]] = clusterVertex[cluster[k]];
-    }
-  }
-
-  return {
-    positions: Float32Array.from(outPositions),
-    normals: Float32Array.from(outNormals),
-    indices: outIndices,
-  };
-}
-
-/** True when triangles `t1` and `t2` share an edge incident to vertex `v`. */
-function sharesEdgeAt(indices: Uint32Array, t1: number, t2: number, v: number): boolean {
-  if (t1 === t2) return false;
-  for (let i = 0; i < 3; i++) {
-    const a = indices[t1 * 3 + i];
-    if (a === v) continue;
-    for (let j = 0; j < 3; j++) {
-      if (indices[t2 * 3 + j] === a) return true;
-    }
-  }
-  return false;
-}
-
 // ── Core ─────────────────────────────────────────────────────────────────────
 
 export interface ImprintedArrays {
@@ -497,6 +466,7 @@ export function imprintArrays(
         const placed = buildInstanceTool(
           module,
           prepared?.manifold ?? null,
+          prepared?.topShoulder ?? 0,
           asset,
           instance,
           frame
@@ -544,7 +514,19 @@ export function imprintArrays(
     const result = binManifold.subtract(toolUnion);
     disposals.push(result);
 
-    const outMesh = result.getMesh();
+    // Never emit a floating island: if a pathological tool stranded a
+    // disconnected piece the shoulder fill missed, keep only the largest
+    // component. decompose carries provenance runs through, so tags survive.
+    let solid = result;
+    const components = result.decompose();
+    if (components.length > 1) {
+      components.forEach((c) => disposals.push(c));
+      solid = components.reduce((largest, c) => (c.volume() > largest.volume() ? c : largest));
+    } else {
+      components.forEach((c) => c.delete());
+    }
+
+    const outMesh = solid.getMesh();
     const outPositions =
       outMesh.numProp === 3
         ? outMesh.vertProperties
