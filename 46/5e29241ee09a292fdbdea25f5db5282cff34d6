@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/__kernel-tests__/scenarioRunner.ts
+  s_38d3958cd84f35::t_da3ba13aa2f3a9 33-36
+  s_38d3958cd84f35::t_79b75ceec1a85f 32
+vitest.config.ts
+  s_38d3958cd84f35::t_0c864e5ca1679f 57-73
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.compartments.test.ts.brepkit.snap
+  s_38d3958cd84f35::t_9715d7ff3c30bb 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "465e29241ee09a292fdbdea25f5db5282cff34d6",
+  "prompts": {},
+  "sessions": {
+    "s_38d3958cd84f35": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc5ac8b2-b474-4c23-b601-2b384eec3726",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
