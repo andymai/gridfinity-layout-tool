@@ -41,6 +41,8 @@ const DEFAULT_SLOT_CONFIG: SlotConfig = {
   y: { enabled: false, pitch: 20 },
   width: 2.0,
   depth: 1.0,
+  crossStyle: 'lap',
+  longAxis: 'y',
 } as const;
 
 /** Default divider piece configuration */

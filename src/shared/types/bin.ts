@@ -27,6 +27,7 @@ export type {
   WallSide,
   SlotConfig,
   AxisSlotConfig,
+  CrossDividerStyle,
   DividerPieceConfig,
   Insert,
   InsertShape,

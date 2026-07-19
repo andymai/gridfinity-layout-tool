@@ -23,7 +23,11 @@ import {
   calculateSlotPositions,
   calculateDividerHeight,
   calculateDividerLength,
+  calculateShortDividerLengths,
+  calculateShortDividerSpans,
   getEffectiveSlotDimensions,
+  getReceptacleDepth,
+  resolveCrossDividerMode,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 
@@ -120,35 +124,86 @@ export function GhostDividerPieces() {
 
     const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
     const { thickness, clearance } = dividerPieces;
+    const crossMode = resolveCrossDividerMode(slotConfig, thickness);
 
     const matrices: THREE.Matrix4[] = [];
     const boxSizes: { w: number; d: number; h: number }[] = [];
 
+    // In insert mode the short-axis ghosts are segmented per compartment:
+    // one box per gap between long dividers (and between wall and divider).
+    const compartmentSegments = (
+      longPositions: number[],
+      innerDim: number
+    ): { center: number; len: number }[] => {
+      const sorted = [...longPositions].sort((a, b) => a - b);
+      const edges = [
+        -innerDim / 2,
+        ...sorted.flatMap((p) => [p - thickness / 2, p + thickness / 2]),
+        innerDim / 2,
+      ];
+      const segments: { center: number; len: number }[] = [];
+      for (let i = 0; i < edges.length; i += 2) {
+        const len = edges[i + 1] - edges[i];
+        if (len > 0.5) segments.push({ center: (edges[i] + edges[i + 1]) / 2, len });
+      }
+      return segments;
+    };
+
+    const xPositions = slotConfig.y.enabled
+      ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
+      : [];
+    const yPositions = slotConfig.x.enabled
+      ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
+      : [];
+    const insertActive =
+      slotConfig.x.enabled &&
+      slotConfig.y.enabled &&
+      crossMode.style === 'insert' &&
+      (crossMode.longAxis === 'y' ? xPositions : yPositions).length > 0;
+
     // X-axis dividers: span width (X), positioned along depth (Y)
     if (slotConfig.x.enabled) {
-      const yPositions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
       const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerW, slotDepth, clearance);
+      const segmented = insertActive && crossMode.longAxis === 'y';
 
       for (const yPos of yPositions) {
-        const matrix = new THREE.Matrix4();
-        matrix.makeTranslation(0, yPos, floorZ + dividerHeight / 2);
-        matrices.push(matrix);
-        boxSizes.push({ w: divLength, d: thickness, h: dividerHeight });
+        if (segmented) {
+          for (const seg of compartmentSegments(xPositions, innerW)) {
+            const matrix = new THREE.Matrix4();
+            matrix.makeTranslation(seg.center, yPos, floorZ + dividerHeight / 2);
+            matrices.push(matrix);
+            boxSizes.push({ w: seg.len, d: thickness, h: dividerHeight });
+          }
+        } else {
+          const matrix = new THREE.Matrix4();
+          matrix.makeTranslation(0, yPos, floorZ + dividerHeight / 2);
+          matrices.push(matrix);
+          boxSizes.push({ w: divLength, d: thickness, h: dividerHeight });
+        }
       }
     }
 
     // Y-axis dividers: span depth (Y), positioned along width (X)
     if (slotConfig.y.enabled) {
-      const xPositions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
       const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
       const divLength = calculateDividerLength(innerD, slotDepth, clearance);
+      const segmented = insertActive && crossMode.longAxis === 'x';
 
       for (const xPos of xPositions) {
-        const matrix = new THREE.Matrix4();
-        matrix.makeTranslation(xPos, 0, floorZ + dividerHeight / 2);
-        matrices.push(matrix);
-        boxSizes.push({ w: thickness, d: divLength, h: dividerHeight });
+        if (segmented) {
+          for (const seg of compartmentSegments(yPositions, innerD)) {
+            const matrix = new THREE.Matrix4();
+            matrix.makeTranslation(xPos, seg.center, floorZ + dividerHeight / 2);
+            matrices.push(matrix);
+            boxSizes.push({ w: thickness, d: seg.len, h: dividerHeight });
+          }
+        } else {
+          const matrix = new THREE.Matrix4();
+          matrix.makeTranslation(xPos, 0, floorZ + dividerHeight / 2);
+          matrices.push(matrix);
+          boxSizes.push({ w: thickness, d: divLength, h: dividerHeight });
+        }
       }
     }
 
@@ -310,12 +365,41 @@ export function GhostDividerPieces() {
       rotation: [number, number, number];
     }[] = [];
 
-    if (slotConfig.x.enabled) {
-      const length = calculateDividerLength(innerW, slotDepth, clearance);
-      const notches = bothAxes
-        ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
+    // In insert mode the long piece renders plain (grooves are too shallow
+    // to read at preview scale) and the short axis shows the interior
+    // compartment piece (or the edge piece when only one long divider exists).
+    const crossMode = resolveCrossDividerMode(slotConfig, thickness);
+    const longPositions =
+      bothAxes && crossMode.style === 'insert'
+        ? calculateSlotPositions(
+            crossMode.longAxis === 'y' ? innerW : innerD,
+            slotConfig[crossMode.longAxis].pitch,
+            lipOverhang
+          )
         : [];
-      if (length > 0) {
+    const insertActive = bothAxes && crossMode.style === 'insert' && longPositions.length > 0;
+
+    const shortLength = (spanDim: number): number | null => {
+      const spans = calculateShortDividerSpans(longPositions, spanDim, thickness);
+      const lengths = calculateShortDividerLengths(
+        spans,
+        slotDepth,
+        getReceptacleDepth(thickness),
+        clearance
+      );
+      return lengths.interior ?? lengths.edge;
+    };
+
+    if (slotConfig.x.enabled) {
+      const isShortAxis = insertActive && crossMode.longAxis === 'y';
+      const length = isShortAxis
+        ? shortLength(innerW)
+        : calculateDividerLength(innerW, slotDepth, clearance);
+      const notches =
+        bothAxes && !insertActive
+          ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
+          : [];
+      if (length !== null && length > 0) {
         // X-axis divider spans X → place offset in +Y (behind bin)
         pieces.push({
           axis: 'x',
@@ -327,11 +411,15 @@ export function GhostDividerPieces() {
     }
 
     if (slotConfig.y.enabled) {
-      const length = calculateDividerLength(innerD, slotDepth, clearance);
-      const notches = bothAxes
-        ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
-        : [];
-      if (length > 0) {
+      const isShortAxis = insertActive && crossMode.longAxis === 'x';
+      const length = isShortAxis
+        ? shortLength(innerD)
+        : calculateDividerLength(innerD, slotDepth, clearance);
+      const notches =
+        bothAxes && !insertActive
+          ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
+          : [];
+      if (length !== null && length > 0) {
         // Y-axis divider spans Y → place offset in +X (right of bin),
         // rotated 90° around Z so its length runs along Y
         pieces.push({

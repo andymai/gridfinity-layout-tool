@@ -39,7 +39,9 @@ export async function exportDividers(
   const innerD = outerD - 2 * wallThickness;
   const hasLip = params.base.stackingLip;
 
-  const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+  const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip).map(
+    (p) => p.shape
+  );
 
   if (pieces.length === 0) {
     throw new Error('No divider pieces to export');
@@ -103,24 +105,19 @@ export async function exportDividerPiecesSeparately(
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
   if (pieces.length === 0) return [];
 
-  // Build axis labels matching piece order from buildUniqueDividerPieces
-  const labels: string[] = [];
-  if (params.slotConfig.x.enabled) labels.push('divider-horizontal');
-  if (params.slotConfig.y.enabled) labels.push('divider-vertical');
-
   const results: CombinedExportPiece[] = [];
   try {
-    for (let i = 0; i < pieces.length; i++) {
+    for (const { shape, label } of pieces) {
       if (format === 'step') {
-        const blob = unwrapExportBlob(exportSTEP(pieces[i]), 'STEP');
-        results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+        const blob = unwrapExportBlob(exportSTEP(shape), 'STEP');
+        results.push({ data: await blob.arrayBuffer(), label });
       } else {
-        const data = await exportSolidToStl(pieces[i], labels[i], tolerance, angularTolerance);
-        results.push({ data, label: labels[i] });
+        const data = await exportSolidToStl(shape, label, tolerance, angularTolerance);
+        results.push({ data, label });
       }
     }
   } finally {
-    for (const p of pieces) p.delete();
+    for (const p of pieces) p.shape.delete();
   }
   return results;
 }

@@ -207,7 +207,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const hasLip = params.base.stackingLip;
 
         const dividerSolids = hasDividers
-          ? buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip)
+          ? buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip).map((p) => p.shape)
           : [];
         // Lid is built in lid-local Z (Y=0 = lid floor top). Lift it so the
         // mating cavity (Y = anchorZ, negative) sits at world Z = totalHeight

@@ -13,8 +13,11 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateDividerLength,
+  calculateShortDividerLengths,
+  calculateShortDividerSpans,
   calculateSlotPositions,
   getEffectiveSlotDimensions,
+  getReceptacleDepth,
 } from '@/shared/utils/slotMath';
 
 const INNER_W = 80;
@@ -70,7 +73,9 @@ describe(`cross-lap divider pieces on ${getKernelName()}`, () => {
     const dividerHeight = WALL_HEIGHT; // height 'auto', no lip
     const notchDepth = dividerHeight / 2 + clearance;
 
-    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false);
+    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false).map(
+      (p) => p.shape
+    );
     expect(pieces).toHaveLength(2);
 
     const expected = [
@@ -118,7 +123,9 @@ describe(`cross-lap divider pieces on ${getKernelName()}`, () => {
     const { thickness, clearance } = params.dividerPieces;
     const { slotDepth } = getEffectiveSlotDimensions(params.wallThickness, thickness, clearance);
 
-    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false);
+    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false).map(
+      (p) => p.shape
+    );
     expect(pieces).toHaveLength(1);
 
     try {
@@ -128,6 +135,59 @@ describe(`cross-lap divider pieces on ${getKernelName()}`, () => {
       expect(vol).toBeCloseTo(solid, 0);
     } finally {
       for (const p of pieces) p.delete();
+    }
+  });
+
+  it('insert mode: grooves remove exactly 2n receptacle volumes; short pieces stay solid', async () => {
+    const { mesh } = await import('brepjs');
+    const { buildUniqueDividerPieces } = await import('../dividerBuilder');
+
+    const params = makeParams({
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+        crossStyle: 'insert',
+        longAxis: 'y',
+      },
+    });
+    const { thickness, clearance } = params.dividerPieces;
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(
+      params.wallThickness,
+      thickness,
+      clearance
+    );
+    const grooveDepth = getReceptacleDepth(thickness);
+
+    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false);
+    expect(pieces.map((p) => p.label)).toEqual([
+      'divider-vertical',
+      'divider-horizontal-compartment',
+      'divider-horizontal-compartment-edge',
+    ]);
+
+    const longPositions = calculateSlotPositions(INNER_W, params.slotConfig.y.pitch, 0);
+    const groovePositions = calculateSlotPositions(INNER_D, params.slotConfig.x.pitch, 0);
+    const spans = calculateShortDividerSpans(longPositions, INNER_W, thickness);
+    const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
+
+    const expectedVolumes = [
+      calculateDividerLength(INNER_D, slotDepth, clearance) * WALL_HEIGHT * thickness -
+        2 * groovePositions.length * slotWidth * WALL_HEIGHT * grooveDepth,
+      (lengths.interior ?? 0) * WALL_HEIGHT * thickness,
+      (lengths.edge ?? 0) * WALL_HEIGHT * thickness,
+    ];
+
+    try {
+      for (let i = 0; i < pieces.length; i++) {
+        const m = mesh(pieces[i].shape, { tolerance: 0.01, angularTolerance: 5, cache: false });
+        for (const v of m.vertices) expect(Number.isFinite(v)).toBe(true);
+        const vol = meshVolume(m.vertices, m.triangles);
+        expect(vol).toBeGreaterThan(0);
+        expect(vol).toBeCloseTo(expectedVolumes[i], 0);
+      }
+    } finally {
+      for (const p of pieces) p.shape.delete();
     }
   });
 });

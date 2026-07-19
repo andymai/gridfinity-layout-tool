@@ -139,6 +139,17 @@ export interface AxisSlotConfig {
   readonly pitch: number;
 }
 
+export const CROSS_DIVIDER_STYLES = ['lap', 'insert'] as const;
+
+/**
+ * How cross dividers engage when both slot axes are enabled:
+ * - 'lap': full-length dividers in both directions, interlocking via
+ *   egg-crate cross-lap notches
+ * - 'insert': full-length dividers along one axis (`longAxis`) carrying
+ *   face receptacles; the other axis uses short per-compartment pieces
+ */
+export type CrossDividerStyle = (typeof CROSS_DIVIDER_STYLES)[number];
+
 /** Slot configuration for removable divider walls */
 export interface SlotConfig {
   /** Slots on left/right walls (for Y-axis dividers) */
@@ -149,6 +160,12 @@ export interface SlotConfig {
   readonly width: number;
   /** Slot cut depth into wall in mm */
   readonly depth: number;
+  /** Cross divider engagement when both axes are enabled. Optional for
+   *  persisted configs predating the field; treated as 'lap'. */
+  readonly crossStyle?: CrossDividerStyle;
+  /** Axis that keeps full-length dividers in 'insert' mode. Optional;
+   *  treated as 'y'. */
+  readonly longAxis?: 'x' | 'y';
 }
 
 /** Configuration for removable divider pieces */

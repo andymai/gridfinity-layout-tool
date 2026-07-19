@@ -211,6 +211,88 @@ describe('SlotConfigurator', () => {
     expect(pitchControls).toHaveLength(2);
   });
 
+  it('shows the cross divider style toggle only when both axes are enabled', () => {
+    const single = render(<SlotConfigurator />);
+    expect(screen.queryByText(/interlocking/i)).not.toBeInTheDocument();
+    single.unmount();
+
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+      },
+    });
+    render(<SlotConfigurator />);
+    expect(screen.getByText(/interlocking/i)).toBeInTheDocument();
+    expect(screen.getByText(/per compartment/i)).toBeInTheDocument();
+  });
+
+  it('sets crossStyle when per-compartment is clicked', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+      },
+    });
+    const setParam = vi.fn();
+    useDesignerStore.setState({ setParam });
+
+    render(<SlotConfigurator />);
+    fireEvent.click(screen.getByText(/per compartment/i));
+
+    expect(setParam).toHaveBeenCalledWith(
+      'slotConfig',
+      expect.objectContaining({ crossStyle: 'insert' })
+    );
+  });
+
+  it('shows the long-direction picker and short piece dimensions in insert mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'insert',
+          longAxis: 'y',
+        },
+      },
+    });
+    const { container } = render(<SlotConfigurator />);
+    expect(screen.getByText(/full-length direction/i)).toBeInTheDocument();
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/middle/i);
+    expect(text).toMatch(/edge/i);
+  });
+
+  it('warns when the divider is too thin for per-compartment mode', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'insert',
+        },
+        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25 },
+      },
+    });
+    render(<SlotConfigurator />);
+    expect(screen.getByText(/at least 1\.2mm/i)).toBeInTheDocument();
+  });
+
   it('shows divider dimensions for both pieces when both axes are enabled', () => {
     useDesignerStore.setState({
       params: {

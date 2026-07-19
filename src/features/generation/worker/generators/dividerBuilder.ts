@@ -3,10 +3,14 @@
  *
  * Generates removable divider pieces — flat rectangular walls whose
  * length includes tab engagement depth on each end so they slot into
- * the wall cuts. When both axes are enabled, cross-lap notches are cut
- * at every crossing position so X and Y dividers interlock egg-crate
- * style: X dividers are notched from the top, Y dividers from the
- * bottom, each to just past half height.
+ * the wall cuts. With both axes enabled, cross dividers engage one of
+ * two ways (slotConfig.crossStyle):
+ * - 'lap': full-length pieces both directions, interlocking egg-crate
+ *   style via cross-lap notches (X pieces notched from the top,
+ *   Y pieces from the bottom, each to just past half height)
+ * - 'insert': full-length pieces along one axis carry vertical face
+ *   receptacles; the other axis becomes short per-compartment pieces
+ *   (interior divider-to-divider, edge wall-to-divider)
  */
 
 import { box, cut, fuseAll, translate, unwrap } from 'brepjs';
@@ -15,13 +19,23 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   calculateDividerHeight,
   calculateDividerLength,
+  calculateShortDividerLengths,
+  calculateShortDividerSpans,
   calculateSlotPositions,
+  getReceptacleDepth,
+  resolveCrossDividerMode,
 } from '@/shared/utils/slotMath';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
 
 // Re-export shared math so existing imports from generation internals still work
 export { calculateDividerHeight, calculateDividerLength };
+
+/** A unique divider solid plus its export label. */
+export interface LabeledDividerPiece {
+  readonly shape: Shape3D;
+  readonly label: string;
+}
 
 /**
  * Build a single divider piece laid flat for FDM printing.
@@ -37,6 +51,19 @@ export { calculateDividerHeight, calculateDividerLength };
  */
 export function buildDividerPiece(length: number, thickness: number, height: number): Shape3D {
   return box(length, height, thickness, { at: [0, 0, thickness / 2] });
+}
+
+/** Cut a fused compound of cutter boxes from a piece, disposing intermediates. */
+function applyCuts(piece: Shape3D, cutters: Shape3D[]): Shape3D {
+  if (cutters.length === 0) return piece;
+  const compound = cutters.length === 1 ? cutters[0] : unwrap(fuseAll(cutters as ValidSolid[]));
+  const result = unwrap(cut(piece, compound));
+  piece.delete();
+  compound.delete();
+  if (cutters.length > 1) {
+    for (const c of cutters) c.delete();
+  }
+  return result;
 }
 
 /**
@@ -64,8 +91,6 @@ function cutCrossLapNotches(
   thickness: number,
   fromTop: boolean
 ): Shape3D {
-  if (positions.length === 0) return piece;
-
   // Extend past the edge (Y) and through the thickness (Z) so the cutter
   // never leaves coplanar faces with the piece.
   const cutterDepth = notchDepth + COPLANAR_OVERLAP;
@@ -77,26 +102,56 @@ function cutCrossLapNotches(
   const cutters: Shape3D[] = positions.map((x) =>
     box(notchWidth, cutterDepth, cutterHeight, { at: [x, edgeY, thickness / 2] })
   );
+  return applyCuts(piece, cutters);
+}
 
-  const compound = cutters.length === 1 ? cutters[0] : unwrap(fuseAll(cutters as ValidSolid[]));
-  const notched = unwrap(cut(piece, compound));
+/**
+ * Cut vertical receptacle grooves into both faces of a flat divider piece.
+ *
+ * Grooves run the full installed height (local Y) at each cross position
+ * (local X), recessed into the piece's two thickness faces (local Z), so
+ * a short divider's tab can slide down from the top on either side.
+ *
+ * @param piece Flat divider piece (consumed — disposed after the cut)
+ * @param positions Groove centers along the length, relative to center
+ * @param grooveWidth Groove opening (matches wall slot width)
+ * @param grooveDepth Recess depth per face
+ * @param height Divider height in mm
+ * @param thickness Divider thickness in mm
+ */
+function cutReceptacleGrooves(
+  piece: Shape3D,
+  positions: number[],
+  grooveWidth: number,
+  grooveDepth: number,
+  height: number,
+  thickness: number
+): Shape3D {
+  const cutterDepth = grooveDepth + COPLANAR_OVERLAP;
+  const cutterHeight = height + 2 * COPLANAR_OVERLAP;
 
-  piece.delete();
-  compound.delete();
-  if (cutters.length > 1) {
-    for (const c of cutters) c.delete();
-  }
-  return notched;
+  const cutters: Shape3D[] = positions.flatMap((x) => [
+    // Bottom face (Z=0): recess reaches up to grooveDepth
+    box(grooveWidth, cutterHeight, cutterDepth, {
+      at: [x, 0, (grooveDepth - COPLANAR_OVERLAP) / 2],
+    }),
+    // Top face (Z=thickness): recess reaches down to thickness − grooveDepth
+    box(grooveWidth, cutterHeight, cutterDepth, {
+      at: [x, 0, thickness - (grooveDepth - COPLANAR_OVERLAP) / 2],
+    }),
+  ]);
+  return applyCuts(piece, cutters);
 }
 
 /**
  * Build one divider piece per unique shape for a slotted bin.
  *
- * X-axis and Y-axis dividers may differ in length (they span different
- * interior dimensions), so up to two distinct pieces are returned.
- * Users duplicate instances in their slicer as needed.
+ * Single-axis bins get one piece. Both-axes bins get either two
+ * interlocking full-length pieces ('lap') or a receptacle-grooved long
+ * piece plus short per-compartment pieces ('insert'). Users duplicate
+ * instances in their slicer as needed.
  *
- * @returns Array of 1-2 divider solids (one per enabled axis), or empty
+ * Pieces are stacked side-by-side on the plate (5mm gaps) in return order.
  */
 export function buildUniqueDividerPieces(
   params: BinParams,
@@ -104,7 +159,7 @@ export function buildUniqueDividerPieces(
   innerD: number,
   wallHeight: number,
   hasLip: boolean
-): Shape3D[] {
+): LabeledDividerPiece[] {
   if (params.style !== 'slotted') return [];
 
   const { slotConfig, dividerPieces } = params;
@@ -114,6 +169,7 @@ export function buildUniqueDividerPieces(
   const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
 
   const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
+  const { style: crossStyle, longAxis } = resolveCrossDividerMode(slotConfig, thickness);
   // Cross positions must match the wall slot positions, which the pipeline
   // computes with the lip overhang as edge inset (see buildSlotCutsInScope).
   const edgeInset = hasLip ? Math.max(0, LIP_TAPER_WIDTH - params.wallThickness) : 0;
@@ -121,51 +177,105 @@ export function buildUniqueDividerPieces(
   // over-extrusion can't hold the upper divider proud of the rim.
   const notchDepth = dividerHeight / 2 + clearance;
 
-  const pieces: Shape3D[] = [];
+  // Positions of the perpendicular dividers along each piece's length.
+  // An X-spanning piece is crossed by Y-axis dividers (positions along
+  // innerW) and vice versa.
+  const crossingsForX = calculateSlotPositions(innerW, slotConfig.y.pitch, edgeInset);
+  const crossingsForY = calculateSlotPositions(innerD, slotConfig.x.pitch, edgeInset);
 
-  // One X-axis divider (spans width) — notched from the top at each
-  // Y-divider position so bottom-notched Y dividers drop over it
-  if (slotConfig.x.enabled) {
-    const length = calculateDividerLength(innerW, slotDepth, clearance);
-    let piece = buildDividerPiece(length, thickness, dividerHeight);
-    if (bothAxes) {
-      const crossings = calculateSlotPositions(innerW, slotConfig.y.pitch, edgeInset);
-      piece = cutCrossLapNotches(
-        piece,
-        crossings,
-        slotWidth,
-        notchDepth,
-        dividerHeight,
-        thickness,
-        true
-      );
-    }
-    pieces.push(piece);
-  }
+  const axisLabel = (axis: 'x' | 'y'): string =>
+    axis === 'x' ? 'divider-horizontal' : 'divider-vertical';
 
-  // One Y-axis divider (spans depth) — offset in Y if both axes enabled
-  if (slotConfig.y.enabled) {
-    const length = calculateDividerLength(innerD, slotDepth, clearance);
-    let piece = buildDividerPiece(length, thickness, dividerHeight);
-    if (bothAxes) {
-      const crossings = calculateSlotPositions(innerD, slotConfig.x.pitch, edgeInset);
-      piece = cutCrossLapNotches(
-        piece,
-        crossings,
-        slotWidth,
-        notchDepth,
-        dividerHeight,
-        thickness,
-        false
-      );
+  const pieces: LabeledDividerPiece[] = [];
+  const addPiece = (shape: Shape3D, label: string): void => {
+    const yOffset = pieces.length * (dividerHeight + 5);
+    if (yOffset === 0) {
+      pieces.push({ shape, label });
+      return;
     }
-    const yOffset = pieces.length > 0 ? dividerHeight + 5 : 0;
     // translate() creates a new shape — dispose the pre-translation piece
     // to prevent leaking its intermediate handle across regenerations.
-    const translated = translate(piece, [0, yOffset, 0]);
-    piece.delete();
-    pieces.push(translated);
+    const translated = translate(shape, [0, yOffset, 0]);
+    shape.delete();
+    pieces.push({ shape: translated, label });
+  };
+
+  const buildFullPiece = (axis: 'x' | 'y'): Shape3D => {
+    const innerDim = axis === 'x' ? innerW : innerD;
+    const length = calculateDividerLength(innerDim, slotDepth, clearance);
+    return buildDividerPiece(length, thickness, dividerHeight);
+  };
+
+  if (!bothAxes) {
+    if (slotConfig.x.enabled) addPiece(buildFullPiece('x'), axisLabel('x'));
+    if (slotConfig.y.enabled) addPiece(buildFullPiece('y'), axisLabel('y'));
+    return pieces;
   }
+
+  const longPositions = longAxis === 'y' ? crossingsForX : crossingsForY;
+  // Insert mode needs at least one long divider to receive the short
+  // pieces; with none, both directions are plain full-length pieces that
+  // can never cross (nothing to insert the long pieces into either).
+  if (crossStyle === 'insert' && longPositions.length > 0) {
+    const shortAxis = longAxis === 'y' ? 'x' : 'y';
+    const shortSpanDim = shortAxis === 'x' ? innerW : innerD;
+    const grooveDepth = getReceptacleDepth(thickness);
+    const groovePositions = longAxis === 'y' ? crossingsForY : crossingsForX;
+
+    let longPiece = buildFullPiece(longAxis);
+    longPiece = cutReceptacleGrooves(
+      longPiece,
+      groovePositions,
+      slotWidth,
+      grooveDepth,
+      dividerHeight,
+      thickness
+    );
+    addPiece(longPiece, axisLabel(longAxis));
+
+    const spans = calculateShortDividerSpans(longPositions, shortSpanDim, thickness);
+    const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
+    if (lengths.interior !== null && lengths.interior > 0) {
+      addPiece(
+        buildDividerPiece(lengths.interior, thickness, dividerHeight),
+        `${axisLabel(shortAxis)}-compartment`
+      );
+    }
+    if (lengths.edge !== null && lengths.edge > 0) {
+      addPiece(
+        buildDividerPiece(lengths.edge, thickness, dividerHeight),
+        `${axisLabel(shortAxis)}-compartment-edge`
+      );
+    }
+    return pieces;
+  }
+
+  // Lap mode (or insert fallback): full-length pieces both directions,
+  // notched at every crossing so they interlock. X pieces are notched from
+  // the top so bottom-notched Y pieces drop over them.
+  let xPiece = buildFullPiece('x');
+  xPiece = cutCrossLapNotches(
+    xPiece,
+    crossingsForX,
+    slotWidth,
+    notchDepth,
+    dividerHeight,
+    thickness,
+    true
+  );
+  addPiece(xPiece, axisLabel('x'));
+
+  let yPiece = buildFullPiece('y');
+  yPiece = cutCrossLapNotches(
+    yPiece,
+    crossingsForY,
+    slotWidth,
+    notchDepth,
+    dividerHeight,
+    thickness,
+    false
+  );
+  addPiece(yPiece, axisLabel('y'));
 
   return pieces;
 }

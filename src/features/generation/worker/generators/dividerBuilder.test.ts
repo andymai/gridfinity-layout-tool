@@ -137,4 +137,83 @@ describe('buildUniqueDividerPieces', () => {
     expect(fuseAll).toHaveBeenCalledTimes(1);
     expect(vi.mocked(fuseAll).mock.calls[0][0]).toHaveLength(3);
   });
+
+  it('labels full-length pieces by axis', () => {
+    const params = makeSlottedParams({
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 40 },
+        y: { enabled: true, pitch: 40 },
+      },
+    });
+    const pieces = buildUniqueDividerPieces(params, 80, 80, 30, false);
+    expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
+  });
+
+  describe('insert mode', () => {
+    const insertParams = (overrides: Partial<BinParams> = {}): BinParams =>
+      makeSlottedParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'insert',
+          longAxis: 'y',
+        },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        ...overrides,
+      });
+
+    it('emits a grooved long piece plus interior and edge short pieces', () => {
+      const pieces = buildUniqueDividerPieces(insertParams(), 80, 60, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual([
+        'divider-vertical',
+        'divider-horizontal-compartment',
+        'divider-horizontal-compartment-edge',
+      ]);
+      // Grooves sit at the short-axis positions along the long piece
+      // (innerD=60 at 20mm x-pitch → 2 positions), cut into both faces
+      // → 4 cutters fused, one boolean cut; short pieces stay uncut
+      expect(cut).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(fuseAll).mock.calls[0][0]).toHaveLength(4);
+    });
+
+    it('short pieces are shorter than the full span', () => {
+      buildUniqueDividerPieces(insertParams(), 80, 60, 30, false);
+      const boxCalls = vi.mocked(box).mock.calls;
+      // Piece boxes (skip groove cutters, which have cutterHeight > height):
+      // interior span = 20 − 1.6 = 18.4 plus two receptacle tabs (0.3 min
+      // each) → 19.0; edge span = 20 − 0.8 = 19.2 plus wall+receptacle tabs
+      const pieceLengths = boxCalls.filter((c) => c[1] === 30).map((c) => c[0]);
+      expect(pieceLengths.length).toBe(3);
+      expect(pieceLengths[1]).toBeCloseTo(19.0, 5);
+      expect(pieceLengths[2]).toBeCloseTo(19.8, 5);
+    });
+
+    it('falls back to cross-lap when the divider is too thin for receptacles', () => {
+      const params = insertParams({
+        dividerPieces: { height: 'auto', thickness: 1.0, clearance: 0.25 },
+      });
+      const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
+      // Cross-lap cuts both pieces
+      expect(cut).toHaveBeenCalledTimes(2);
+    });
+
+    it('falls back to plain full pieces when the long axis has no dividers', () => {
+      const params = insertParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 50 },
+          crossStyle: 'insert',
+          longAxis: 'y',
+        },
+      });
+      // innerW=80 at y-pitch 50 → 2 compartments? round(80/50)=2 → 1 divider.
+      // Use a span that yields zero: innerW=40 at pitch 50 → 1 compartment
+      const pieces = buildUniqueDividerPieces(params, 40, 60, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
+    });
+  });
 });
