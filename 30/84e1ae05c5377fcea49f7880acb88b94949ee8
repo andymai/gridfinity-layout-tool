@@ -1,0 +1,86 @@
+src/i18n/locales/uk.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/features/generation/worker/generators/dividerExport.ts
+  s_dcdbb1be393448::t_b3db7c6d525988 42-44
+  s_dcdbb1be393448::t_7ece29dff3b516 110,112-113,115-116,120
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_dcdbb1be393448::t_0953811ffccc06 480-482,487-494
+  s_dcdbb1be393448::t_74276d4d4fc936 293
+  s_dcdbb1be393448::t_4d66247dc9a3f2 20-21,23-25,30
+  s_dcdbb1be393448::t_427acd2540d56a 268
+  s_dcdbb1be393448::t_79df35c5a73b47 135-148,151-212
+  s_dcdbb1be393448::t_6d3846f440e132 215-216
+  s_dcdbb1be393448::t_06964ab76f8e8a 213,262-267,269-292,294-318
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_dcdbb1be393448::t_ce2fbccd27a30e 215,217
+  s_dcdbb1be393448::t_8d166d5d0a5877 214,216,218-295
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_dcdbb1be393448::t_137de2b4f1250f 127,150,368-378,380-402,414-422
+  s_dcdbb1be393448::t_f4ee03f0c597d8 26-27,29-30
+  s_dcdbb1be393448::t_458c869b7018e6 179-183,191,194-205
+  s_dcdbb1be393448::t_79d705eb251c3c 132-149,151-163,168,171-178,206
+src/features/bin-designer/constants/defaults.ts
+  s_dcdbb1be393448::t_b831552db36c9c 44-45
+src/shared/utils/slotMath.test.ts
+  s_dcdbb1be393448::t_358258f391640c 2,7-8,10,12,14-15
+  s_dcdbb1be393448::t_30468bc4549e6f 191-274
+  s_dcdbb1be393448::t_bc54cd06ecd983 275
+src/i18n/locales/de.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/i18n/locales/it.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/i18n/locales/ja.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/shared/utils/slotMath.ts
+  s_dcdbb1be393448::t_ce59a46924d1aa 117-147,170-210
+  s_dcdbb1be393448::t_9daa0a7fe0d46c 9
+  s_dcdbb1be393448::t_0f86ee20e790c9 148-169
+src/i18n/locales/pt-BR.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/features/bin-designer/types/index.ts
+  s_dcdbb1be393448::t_e0536b9a051226 142-152,163-168
+src/shared/types/bin.ts
+  s_dcdbb1be393448::t_563ea4eb9ca415 30
+src/i18n/locales/en.ts
+  s_dcdbb1be393448::t_0953811ffccc06 1568-1574
+  s_dcdbb1be393448::t_1e279cd4d48c82 1575
+src/i18n/locales/fr.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/i18n/locales/nb.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/i18n/locales/sv.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_dcdbb1be393448::t_0953811ffccc06 224,279
+  s_dcdbb1be393448::t_3502fe60ad1eb1 6-13,22-23,25-26,34-39,56-68,105-106,108-131,133-143,149-152,154,162,172,180-194,196-212,215-223,225-241,244-250,253-278
+src/features/generation/worker/handlers/exportHandler.ts
+  s_dcdbb1be393448::t_13d5f6febb30e9 210
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_dcdbb1be393448::t_ab22a204cc4326 174-176
+  s_dcdbb1be393448::t_8df5b51e6a32b5 187
+  s_dcdbb1be393448::t_4006972244ad27 140-173,177-186,188-218
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_dcdbb1be393448::t_87da651ee15c30 76-78,126-128
+  s_dcdbb1be393448::t_0953811ffccc06 191-192
+  s_dcdbb1be393448::t_4bef5b76944579 16-17,20,140-190
+src/i18n/locales/nl.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+src/i18n/locales/es.json
+  s_dcdbb1be393448::t_0953811ffccc06 857-863
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "3084e1ae05c5377fcea49f7880acb88b94949ee8",
+  "prompts": {},
+  "sessions": {
+    "s_dcdbb1be393448": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e84e3cc8-06c1-416b-9251-130a1c4ef0d6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
