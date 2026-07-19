@@ -1,0 +1,40 @@
+src/features/generation/worker/generators/meshImprintNormals.ts
+  s_1a5ddf5221ef02::t_c04d44571170c3 1-154
+src/features/generation/worker/generators/meshImprint.ts
+  s_1a5ddf5221ef02::t_a95e091d2f0eaa 192,194,206,260-261
+  s_1a5ddf5221ef02::t_90c18ecd4acc62 47-53
+  s_1a5ddf5221ef02::t_94ba6f6e2a5f0b 34-35
+  s_1a5ddf5221ef02::t_92ff0c711ddbba 61-63
+  s_1a5ddf5221ef02::t_f2dd95145fe854 315,325-326,328-338
+  s_1a5ddf5221ef02::t_2eb6bd5f1d91b1 264-265,268-272,277
+  s_1a5ddf5221ef02::t_3a0af9c7232d0d 316-324,327
+  s_1a5ddf5221ef02::t_017fd96ddff065 469
+  s_1a5ddf5221ef02::t_c074ecfb58f0d7 110,121,134
+  s_1a5ddf5221ef02::t_ca28496da12f88 186-191,193,195-205,207-259
+  s_1a5ddf5221ef02::t_9fe9afce4e9b53 517-529
+  s_1a5ddf5221ef02::t_1f8a0157389c07 185
+src/features/generation/worker/generators/meshImprintNormals.test.ts
+  s_1a5ddf5221ef02::t_cd62a0679b28f6 1-45
+src/features/generation/README.md
+  s_1a5ddf5221ef02::t_1a15b588bc39bc 91
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_1a5ddf5221ef02::t_49787a76691795 213-278,280-291
+  s_1a5ddf5221ef02::t_76368247b839c2 292-347
+  s_1a5ddf5221ef02::t_3af6ac76bccf2d 279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "65a40dd4cbec89fce7ab46519304879acc2598be",
+  "prompts": {},
+  "sessions": {
+    "s_1a5ddf5221ef02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6c8a809b-3c78-45dd-a663-d4c78ebbc26a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
