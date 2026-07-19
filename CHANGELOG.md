@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.256.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.255.0...gridfinity-layout-tool-v4.256.0) (2026-07-19)
+
+
+### Features
+
+* **designer:** preserve tool relief in STL imprint pockets ([#2639](https://github.com/andymai/gridfinity-layout-tool/issues/2639)) ([a5eb89c](https://github.com/andymai/gridfinity-layout-tool/commit/a5eb89c387cb9ce7f44537bba3a38ee63a619c4c))
+
 ## [4.255.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.254.0...gridfinity-layout-tool-v4.255.0) (2026-07-19)
 
 
