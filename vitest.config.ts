@@ -54,6 +54,23 @@ export default defineConfig({
   test: {
     globals: true,
     testTimeout: 30000,
+    // Kernel-specific snapshot files: scenario triangle counts depend on the
+    // active kernel's tessellation density, so route each non-default kernel to
+    // its own `.<kernel>.snap`. The default (occt-wasm) keeps the plain `.snap`
+    // files, so existing baselines are untouched; BREPJS_KERNEL=brepkit
+    // reads/writes `.brepkit.snap`. Without this a single shared snapshot could
+    // only ever match one kernel. (resolveSnapshotPath is a root-only vitest
+    // option — it cannot live in a project config.)
+    resolveSnapshotPath: (testPath: string, snapExtension: string): string => {
+      const raw = process.env.BREPJS_KERNEL ?? '';
+      const kernel = raw === 'wasm' ? 'brepkit' : raw;
+      const suffix = kernel && kernel !== 'occt-wasm' ? `.${kernel}` : '';
+      return path.join(
+        path.dirname(testPath),
+        '__snapshots__',
+        `${path.basename(testPath)}${suffix}${snapExtension}`
+      );
+    },
     pool: 'threads',
     maxWorkers: process.env.CI ? '100%' : '75%',
     coverage: {

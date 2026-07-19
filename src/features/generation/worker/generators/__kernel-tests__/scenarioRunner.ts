@@ -29,6 +29,11 @@ function runScenario(scenario: ScenarioCase, timings: TimingEntry[]): void {
     if (scenario.assert === 'snapshot') {
       expect(result.vertices.length).toBeGreaterThan(0);
       expect(result.triangleCount).toBeGreaterThan(0);
+      // Triangle counts are kernel-specific (each kernel tessellates to its
+      // own density). The vitest config's `resolveSnapshotPath` routes each
+      // non-default kernel to its own `.<kernel>.snap` file, so occt-wasm and
+      // brepkit pin separate baselines instead of sharing one that only the
+      // default kernel can match. See vitest.config.ts.
       expect(result.triangleCount).toMatchSnapshot();
     } else {
       assertStructurallyValid(result, scenario.name);

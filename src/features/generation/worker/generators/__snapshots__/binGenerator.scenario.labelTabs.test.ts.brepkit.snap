@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label tabs > 1×1 label both collision drops front 1`] = `2168`;
+
+exports[`label tabs > 2×2 label bracket center 1`] = `4364`;
+
+exports[`label tabs > 2×2 label bracket left 1`] = `4364`;
+
+exports[`label tabs > 2×2 label bracket right 1`] = `4364`;
+
+exports[`label tabs > 2×2 label disabled 1`] = `4172`;
+
+exports[`label tabs > 2×2 label front edge 1`] = `4364`;
+
+exports[`label tabs > 2×2 label solid left 1`] = `4196`;
+
+exports[`label tabs > 2×2×4 label both + inset 5mm 1`] = `4284`;
+
+exports[`label tabs > 2×2×4 label both edges 1`] = `4556`;
+
+exports[`label tabs > 2×2×6 label dropped (height = 20mm) 1`] = `4388`;
