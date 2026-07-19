@@ -304,6 +304,7 @@ export function GhostDividerPieces() {
     };
 
     const pieces: {
+      axis: 'x' | 'y';
       geometry: THREE.BufferGeometry;
       position: [number, number, number];
       rotation: [number, number, number];
@@ -317,6 +318,7 @@ export function GhostDividerPieces() {
       if (length > 0) {
         // X-axis divider spans X → place offset in +Y (behind bin)
         pieces.push({
+          axis: 'x',
           geometry: buildPieceGeometry(length, notches, true),
           position: [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2],
           rotation: [0, 0, 0],
@@ -333,6 +335,7 @@ export function GhostDividerPieces() {
         // Y-axis divider spans Y → place offset in +X (right of bin),
         // rotated 90° around Z so its length runs along Y
         pieces.push({
+          axis: 'y',
           geometry: buildPieceGeometry(length, notches, false),
           position: [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2],
           rotation: [0, 0, Math.PI / 2],
@@ -402,9 +405,9 @@ export function GhostDividerPieces() {
         <mesh geometry={geometry} material={material} position={[0, 0, 0]} renderOrder={1} />
       )}
       {referenceMaterial &&
-        referencePieces.map((piece, i) => (
+        referencePieces.map((piece) => (
           <mesh
-            key={i}
+            key={piece.axis}
             geometry={piece.geometry}
             material={referenceMaterial}
             position={piece.position}

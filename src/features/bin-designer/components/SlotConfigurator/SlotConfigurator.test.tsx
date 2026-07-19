@@ -193,6 +193,7 @@ describe('SlotConfigurator', () => {
       params: {
         ...DEFAULT_BIN_PARAMS,
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 20 },
           y: { enabled: true, pitch: 30 },
         },
@@ -217,6 +218,7 @@ describe('SlotConfigurator', () => {
         width: 2,
         depth: 3,
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 20 },
           y: { enabled: true, pitch: 20 },
         },
