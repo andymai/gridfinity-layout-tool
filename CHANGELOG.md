@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.254.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.253.0...gridfinity-layout-tool-v4.254.0) (2026-07-19)
+
+
+### Features
+
+* **designer:** interlocking dividers for both directions at once ([#2632](https://github.com/andymai/gridfinity-layout-tool/issues/2632)) ([aeb7be5](https://github.com/andymai/gridfinity-layout-tool/commit/aeb7be53fad1e402a38da0e2c7479670b3126d53))
+
 ## [4.253.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.252.2...gridfinity-layout-tool-v4.253.0) (2026-07-18)
 
 
