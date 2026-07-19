@@ -1,0 +1,58 @@
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_dcdbb1be393448::t_08a4b01867c5df 198
+  s_dcdbb1be393448::t_5aec16a07e71fb 73-93
+  s_dcdbb1be393448::t_2e5b5f9276a46f 200-210
+  s_dcdbb1be393448::t_151bf091a6927d 182-183,186
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_dcdbb1be393448::t_573bbeba45e28e 261-276
+  s_dcdbb1be393448::t_0b386fd65da9b1 216-219
+  s_dcdbb1be393448::t_87889cbd3200cf 237-253
+  s_48aeca9903ae48::t_4f140cb3682567 56
+src/features/generation/worker/handlers/exportHandler.ts
+  s_dcdbb1be393448::t_7ebab8f8ac066d 199-203
+  s_dcdbb1be393448::t_a386d5a878f6cd 23
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_dcdbb1be393448::t_9bf9baeed6a79e 503
+  s_dcdbb1be393448::t_77c598f2ab008b 231,252,257,259
+  s_dcdbb1be393448::t_e748698ebf73d4 187-190,192,196,200-201
+  s_dcdbb1be393448::t_e6e91eeb739ecb 44-102
+  s_dcdbb1be393448::t_aabb1b94612fd1 352,359-360,371-378,380,382,390-403,405-412,414-427,430,432-437
+  s_dcdbb1be393448::t_01cca439ab0d07 223-228,244-249,331-335
+  s_dcdbb1be393448::t_b4c0512464e326 324-325,329,339-345,348
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.test.tsx
+  s_dcdbb1be393448::t_385641205bcc22 40
+  s_dcdbb1be393448::t_0e307915f6207f 137-195
+src/shared/utils/slotMath.ts
+  s_dcdbb1be393448::t_758a96c27f82ad 194-199,209,212
+  s_dcdbb1be393448::t_2fa037a810f213 134-136
+  s_dcdbb1be393448::t_bd0ed51a564260 120
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_dcdbb1be393448::t_6e99db4bc00c58 203-218
+  s_dcdbb1be393448::t_aa0b95c4fe41d3 219,229
+src/shared/utils/slotMath.test.ts
+  s_dcdbb1be393448::t_ef29440f4a6286 229,231-232,235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "eb03fd6b8818dc75085255d1f843b0a4ed6d85e2",
+  "prompts": {},
+  "sessions": {
+    "s_48aeca9903ae48": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aec88108353194345",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_dcdbb1be393448": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e84e3cc8-06c1-416b-9251-130a1c4ef0d6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
