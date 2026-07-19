@@ -24,7 +24,8 @@ import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import type { DividerPieceConfig } from '../../types';
 
-type SlotDirection = 'vertical' | 'horizontal';
+type SlotDirection = 'vertical' | 'horizontal' | 'both';
+type SlotAxis = 'x' | 'y';
 
 export function SlotConfigurator() {
   const { params, setParam } = useDesignerStore(
@@ -44,42 +45,53 @@ export function SlotConfigurator() {
   const lipOverhang = stackingLip ? Math.max(0, lipTaperWidth - params.wallThickness) : 0;
 
   // ── Slot direction / count ──────────────────────────────────────────
-  const activeDirection: SlotDirection = slotConfig.y.enabled ? 'vertical' : 'horizontal';
-  const activeAxis = activeDirection === 'vertical' ? 'y' : 'x';
-  const activePitch = slotConfig[activeAxis].pitch;
-  const activeInnerDim = activeAxis === 'x' ? innerD : innerW;
+  const activeDirection: SlotDirection =
+    slotConfig.x.enabled && slotConfig.y.enabled
+      ? 'both'
+      : slotConfig.y.enabled
+        ? 'vertical'
+        : 'horizontal';
+  const enabledAxes = useMemo<SlotAxis[]>(
+    () =>
+      activeDirection === 'both' ? ['y', 'x'] : activeDirection === 'vertical' ? ['y'] : ['x'],
+    [activeDirection]
+  );
+
+  // X-axis slots sit on the left/right walls, spaced along the depth;
+  // Y-axis slots sit on the front/back walls, spaced along the width.
+  const axisInnerDim = useCallback(
+    (axis: SlotAxis) => (axis === 'x' ? innerD : innerW),
+    [innerD, innerW]
+  );
 
   const slotCount = useMemo(() => {
-    return calculateSlotPositions(activeInnerDim, activePitch, lipOverhang).length;
-  }, [activeInnerDim, activePitch, lipOverhang]);
+    return enabledAxes.reduce(
+      (sum, axis) =>
+        sum +
+        calculateSlotPositions(axisInnerDim(axis), slotConfig[axis].pitch, lipOverhang).length,
+      0
+    );
+  }, [enabledAxes, slotConfig, axisInnerDim, lipOverhang]);
 
   const setDirection = useCallback(
     (direction: SlotDirection) => {
-      if (direction === 'vertical') {
-        setParam('slotConfig', {
-          ...slotConfig,
-          x: { ...slotConfig.x, enabled: false },
-          y: { ...slotConfig.y, enabled: true },
-        });
-      } else {
-        setParam('slotConfig', {
-          ...slotConfig,
-          x: { ...slotConfig.x, enabled: true },
-          y: { ...slotConfig.y, enabled: false },
-        });
-      }
+      setParam('slotConfig', {
+        ...slotConfig,
+        x: { ...slotConfig.x, enabled: direction !== 'vertical' },
+        y: { ...slotConfig.y, enabled: direction !== 'horizontal' },
+      });
     },
     [slotConfig, setParam]
   );
 
-  const updateActivePitch = useCallback(
-    (pitch: number) => {
+  const updateAxisPitch = useCallback(
+    (axis: SlotAxis, pitch: number) => {
       setParam('slotConfig', {
         ...slotConfig,
-        [activeAxis]: { ...slotConfig[activeAxis], pitch },
+        [axis]: { ...slotConfig[axis], pitch },
       });
     },
-    [slotConfig, setParam, activeAxis]
+    [slotConfig, setParam]
   );
 
   const clampPitch = useCallback(
@@ -115,20 +127,36 @@ export function SlotConfigurator() {
     dividerPieces.clearance
   ).slotDepth;
 
-  const dividerLength = useMemo(() => {
-    if (!slotConfig.x.enabled && !slotConfig.y.enabled) return null;
-    const dim = slotConfig.y.enabled ? innerD : innerW;
-    return calculateDividerLength(dim, effectiveSlotDepth, dividerPieces.clearance);
-  }, [
-    slotConfig.x.enabled,
-    slotConfig.y.enabled,
-    innerW,
-    innerD,
-    effectiveSlotDepth,
-    dividerPieces.clearance,
-  ]);
+  // Divider length per enabled axis: X-axis dividers span the width,
+  // Y-axis dividers span the depth.
+  const dividerLengths = useMemo(
+    () =>
+      enabledAxes.map((axis) => ({
+        axis,
+        length: calculateDividerLength(
+          axis === 'x' ? innerW : innerD,
+          effectiveSlotDepth,
+          dividerPieces.clearance
+        ),
+      })),
+    [enabledAxes, innerW, innerD, effectiveSlotDepth, dividerPieces.clearance]
+  );
 
-  const directions: SlotDirection[] = ['vertical', 'horizontal'];
+  const directions: SlotDirection[] = ['vertical', 'horizontal', 'both'];
+  const directionLabel = useCallback(
+    (direction: SlotDirection) =>
+      direction === 'vertical'
+        ? t('binDesigner.slotVertical')
+        : direction === 'horizontal'
+          ? t('binDesigner.slotHorizontal')
+          : t('binDesigner.slotBoth'),
+    [t]
+  );
+  const axisLabel = useCallback(
+    (axis: SlotAxis) =>
+      axis === 'y' ? t('binDesigner.slotVertical') : t('binDesigner.slotHorizontal'),
+    [t]
+  );
   const wallTooThin = params.wallThickness < MIN_WALL_FOR_SLOTS;
 
   return (
@@ -154,9 +182,7 @@ export function SlotConfigurator() {
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
               }`}
             >
-              {direction === 'vertical'
-                ? t('binDesigner.slotVertical')
-                : t('binDesigner.slotHorizontal')}
+              {directionLabel(direction)}
             </Button>
           ))}
         </div>
@@ -167,27 +193,34 @@ export function SlotConfigurator() {
         {t('binDesigner.slotCount', { count: slotCount })}
       </div>
 
-      {/* Compartment width */}
-      <div>
-        <span className="mb-1 block text-xs text-content-tertiary">
-          {t('binDesigner.slotSpacing')}
-        </span>
-        <Stepper
-          value={activePitch}
-          onChange={(v) => updateActivePitch(clampPitch(v))}
-          onStep={(delta) =>
-            updateActivePitch(
-              clampPitch(activePitch + delta * DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP)
-            )
-          }
-          min={DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH}
-          max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
-          step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
-          size="md"
-          fullWidth
-          aria-label={t('binDesigner.slotSpacing')}
-        />
-      </div>
+      {/* Compartment width (one control per enabled direction) */}
+      {enabledAxes.map((axis) => {
+        const label =
+          enabledAxes.length > 1
+            ? `${t('binDesigner.slotSpacing')} — ${axisLabel(axis)}`
+            : t('binDesigner.slotSpacing');
+        return (
+          <div key={axis}>
+            <span className="mb-1 block text-xs text-content-tertiary">{label}</span>
+            <Stepper
+              value={slotConfig[axis].pitch}
+              onChange={(v) => updateAxisPitch(axis, clampPitch(v))}
+              onStep={(delta) =>
+                updateAxisPitch(
+                  axis,
+                  clampPitch(slotConfig[axis].pitch + delta * DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP)
+                )
+              }
+              min={DESIGNER_CONSTRAINTS.MIN_SLOT_PITCH}
+              max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
+              step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
+              size="md"
+              fullWidth
+              aria-label={label}
+            />
+          </div>
+        );
+      })}
 
       {/* ── Divider piece settings ─────────────────────────────────── */}
 
@@ -316,11 +349,16 @@ export function SlotConfigurator() {
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">
-          {dividerLength !== null
-            ? t('binDesigner.dividerDimensions', {
-                length: String(Math.round(dividerLength * 10) / 10),
-                height: String(Math.round(dividerHeight * 10) / 10),
-              })
+          {dividerLengths.length > 0
+            ? dividerLengths
+                .map(({ axis, length }) => {
+                  const dims = t('binDesigner.dividerDimensions', {
+                    length: String(Math.round(length * 10) / 10),
+                    height: String(Math.round(dividerHeight * 10) / 10),
+                  });
+                  return dividerLengths.length > 1 ? `${axisLabel(axis)}: ${dims}` : dims;
+                })
+                .join(' · ')
             : t('binDesigner.dividerHeightOnly', {
                 height: String(Math.round(dividerHeight * 10) / 10),
               })}

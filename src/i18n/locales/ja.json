@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count}個の仕切り板",
   "binDesigner.slotDirection": "方向",
   "binDesigner.slotHorizontal": "水平",
+  "binDesigner.slotBoth": "両方",
   "binDesigner.slotSpacing": "区画の幅",
   "binDesigner.slotVertical": "垂直",
   "binDesigner.slotWallTooThin": "スロット使用時は壁厚を{min}mm以上にしてください",

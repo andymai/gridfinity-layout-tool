@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} scheidingswanden",
   "binDesigner.slotDirection": "Richting",
   "binDesigner.slotHorizontal": "Horizontaal",
+  "binDesigner.slotBoth": "Beide",
   "binDesigner.slotSpacing": "Vakbreedte",
   "binDesigner.slotVertical": "Verticaal",
   "binDesigner.slotWallTooThin": "Wanddikte moet minstens {min}mm voor slots zijn",

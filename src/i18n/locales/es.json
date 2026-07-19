@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} divisores",
   "binDesigner.slotDirection": "Dirección",
   "binDesigner.slotHorizontal": "Horizontal",
+  "binDesigner.slotBoth": "Ambas",
   "binDesigner.slotSpacing": "Ancho de compartimento",
   "binDesigner.slotVertical": "Vertical",
   "binDesigner.slotWallTooThin": "El grosor de la pared debe ser al menos {min}mm para las ranuras",

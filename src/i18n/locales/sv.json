@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} avdelare",
   "binDesigner.slotDirection": "Riktning",
   "binDesigner.slotHorizontal": "Horisontell",
+  "binDesigner.slotBoth": "Båda",
   "binDesigner.slotSpacing": "Fackbredd",
   "binDesigner.slotVertical": "Vertikal",
   "binDesigner.slotWallTooThin": "Väggtjockleken måste vara minst {min}mm för slitsar",

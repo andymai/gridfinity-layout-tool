@@ -166,4 +166,64 @@ describe('SlotConfigurator', () => {
       expect(setParam).toHaveBeenCalled();
     }
   });
+
+  it('shows a both-directions toggle button', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByText(/both/i)).toBeInTheDocument();
+  });
+
+  it('enables both axes when both is clicked', () => {
+    const setParam = vi.fn();
+    useDesignerStore.setState({ setParam });
+
+    render(<SlotConfigurator />);
+    fireEvent.click(screen.getByText(/both/i));
+
+    expect(setParam).toHaveBeenCalledWith(
+      'slotConfig',
+      expect.objectContaining({
+        x: expect.objectContaining({ enabled: true }),
+        y: expect.objectContaining({ enabled: true }),
+      })
+    );
+  });
+
+  it('shows a spacing control per direction when both axes are enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 30 },
+        },
+      },
+    });
+    render(<SlotConfigurator />);
+
+    const bothButton = screen.getByText(/both/i);
+    expect(bothButton).toHaveClass('bg-accent');
+
+    const spinbuttons = screen.getAllByRole('spinbutton');
+    const pitchControls = spinbuttons.filter((el) =>
+      el.getAttribute('aria-label')?.includes('Compartment width')
+    );
+    expect(pitchControls).toHaveLength(2);
+  });
+
+  it('shows divider dimensions for both pieces when both axes are enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 3,
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+        },
+      },
+    });
+    const { container } = render(<SlotConfigurator />);
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/vertical.*×.*mm.*horizontal.*×.*mm/is);
+  });
 });

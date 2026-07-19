@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} розділювачів",
   "binDesigner.slotDirection": "Напрямок",
   "binDesigner.slotHorizontal": "Горизонтальний",
+  "binDesigner.slotBoth": "Обидва",
   "binDesigner.slotSpacing": "Ширина відсіку",
   "binDesigner.slotVertical": "Вертикальний",
   "binDesigner.slotWallTooThin": "Товщина стінки має бути не менше {min}мм для слотів",

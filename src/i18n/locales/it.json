@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} divisori",
   "binDesigner.slotDirection": "Direzione",
   "binDesigner.slotHorizontal": "Orizzontale",
+  "binDesigner.slotBoth": "Entrambe",
   "binDesigner.slotSpacing": "Larghezza scomparto",
   "binDesigner.slotVertical": "Verticale",
   "binDesigner.slotWallTooThin": "Lo spessore delle pareti deve essere di almeno {min}mm per le fessure",

@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} séparateurs",
   "binDesigner.slotDirection": "Direction",
   "binDesigner.slotHorizontal": "Horizontal",
+  "binDesigner.slotBoth": "Les deux",
   "binDesigner.slotSpacing": "Largeur de compartiment",
   "binDesigner.slotVertical": "Vertical",
   "binDesigner.slotWallTooThin": "L'épaisseur de paroi doit être d'au moins {min}mm pour les fentes",

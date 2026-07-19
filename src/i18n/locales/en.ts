@@ -1564,6 +1564,7 @@ const en: Record<string, string> = {
   'binDesigner.slotDirection': 'Direction',
   'binDesigner.slotVertical': 'Vertical',
   'binDesigner.slotHorizontal': 'Horizontal',
+  'binDesigner.slotBoth': 'Both',
   'binDesigner.slotSpacing': 'Compartment width',
   'binDesigner.slotCount': '{count} dividers',
   'binDesigner.slotWallTooThin': 'Wall thickness must be at least {min}mm for slots',

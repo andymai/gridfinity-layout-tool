@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} divisórias",
   "binDesigner.slotDirection": "Direção",
   "binDesigner.slotHorizontal": "Horizontal",
+  "binDesigner.slotBoth": "Ambas",
   "binDesigner.slotSpacing": "Largura do compartimento",
   "binDesigner.slotVertical": "Vertical",
   "binDesigner.slotWallTooThin": "A espessura da parede deve ser de pelo menos {min}mm para slots",

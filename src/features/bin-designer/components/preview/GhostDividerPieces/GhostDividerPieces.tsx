@@ -44,7 +44,8 @@ export function GhostDividerPieces() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -212,51 +213,147 @@ export function GhostDividerPieces() {
 
   const ghostVisible = shouldShow && geometry !== null && geometry !== hiddenGeometry;
 
-  // ── Reference divider: single box offset from the bin ──────────────────
+  // ── Reference dividers: one piece per enabled axis, offset from the bin ──
   // Tab thickness simplifies to exactly `thickness` (slotWidth - 2*clearance
-  // = thickness + 2*clearance - 2*clearance), so the divider is a plain
-  // rectangular wall — one BoxGeometry suffices.
-  const referenceGeometry = useMemo(() => {
-    if (!shouldShow) return null;
-
-    const { thickness, clearance } = dividerPieces;
-    const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
-    const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
-
-    const isXFirst = slotConfig.x.enabled;
-    const divLength = isXFirst
-      ? calculateDividerLength(innerW, slotDepth, clearance)
-      : calculateDividerLength(innerD, slotDepth, clearance);
-
-    if (divLength <= 0 || dividerHeight <= 0) return null;
-
-    return new THREE.BoxGeometry(divLength, thickness, dividerHeight);
-  }, [shouldShow, slotConfig, dividerPieces, innerW, innerD, wallThickness, wallHeight, hasLip]);
-
-  // Position: offset from the bin, raised so bottom sits at bin floor level
+  // = thickness + 2*clearance - 2*clearance), so a single-direction divider
+  // is a plain rectangular wall. With both directions enabled, each piece
+  // carries cross-lap notches (X pieces notched from the top, Y from the
+  // bottom) — modeled here as merged box segments to match the export.
   const dividerHeight = useMemo(() => {
     if (!shouldShow) return 0;
     return calculateDividerHeight(dividerPieces, wallHeight, hasLip);
   }, [shouldShow, dividerPieces, wallHeight, hasLip]);
 
-  const referencePosition = useMemo<[number, number, number]>(() => {
-    if (!shouldShow) return [0, 0, 0];
+  const referencePieces = useMemo(() => {
+    if (!shouldShow) return [];
 
-    const isXFirst = slotConfig.x.enabled;
-    if (isXFirst) {
-      // X-axis divider spans X direction → place offset in +Y (behind bin)
-      return [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2];
+    const { thickness, clearance } = dividerPieces;
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(
+      wallThickness,
+      thickness,
+      clearance
+    );
+    if (dividerHeight <= 0) return [];
+
+    const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
+    const notchDepth = dividerHeight / 2 + clearance;
+
+    // Build a reference piece as merged boxes: full-height wall when there
+    // are no notches, otherwise an intact half plus segments between notches.
+    // Local space matches the rendered mesh: X = length, Y = thickness,
+    // Z = installed height (centered).
+    const buildPieceGeometry = (
+      length: number,
+      notchPositions: number[],
+      notchFromTop: boolean
+    ): THREE.BufferGeometry => {
+      if (notchPositions.length === 0) {
+        return new THREE.BoxGeometry(length, thickness, dividerHeight);
+      }
+
+      const intactH = dividerHeight - notchDepth;
+      const segments: { x: number; z: number; w: number; h: number }[] = [
+        // Intact strip: bottom for top-notched pieces, top for bottom-notched
+        {
+          x: 0,
+          z: notchFromTop ? -notchDepth / 2 : notchDepth / 2,
+          w: length,
+          h: intactH,
+        },
+      ];
+
+      const sorted = [...notchPositions].sort((a, b) => a - b);
+      const edges = [
+        -length / 2,
+        ...sorted.flatMap((p) => [p - slotWidth / 2, p + slotWidth / 2]),
+        length / 2,
+      ];
+      const segZ = notchFromTop
+        ? (dividerHeight - notchDepth) / 2
+        : -(dividerHeight - notchDepth) / 2;
+      for (let i = 0; i < edges.length; i += 2) {
+        const w = edges[i + 1] - edges[i];
+        if (w <= 0) continue;
+        segments.push({ x: (edges[i] + edges[i + 1]) / 2, z: segZ, w, h: notchDepth });
+      }
+
+      const positions: number[] = [];
+      const indices: number[] = [];
+      for (const seg of segments) {
+        const boxGeo = new THREE.BoxGeometry(seg.w, thickness, seg.h);
+        const pos = boxGeo.getAttribute('position');
+        const index = boxGeo.getIndex();
+        if (!index) {
+          boxGeo.dispose();
+          continue;
+        }
+        const offset = positions.length / 3;
+        for (let v = 0; v < pos.count; v++) {
+          positions.push(pos.getX(v) + seg.x, pos.getY(v), pos.getZ(v) + seg.z);
+        }
+        for (let j = 0; j < index.count; j++) {
+          indices.push(index.array[j] + offset);
+        }
+        boxGeo.dispose();
+      }
+      const merged = new THREE.BufferGeometry();
+      merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      merged.setIndex(indices);
+      merged.computeVertexNormals();
+      return merged;
+    };
+
+    const pieces: {
+      geometry: THREE.BufferGeometry;
+      position: [number, number, number];
+      rotation: [number, number, number];
+    }[] = [];
+
+    if (slotConfig.x.enabled) {
+      const length = calculateDividerLength(innerW, slotDepth, clearance);
+      const notches = bothAxes
+        ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
+        : [];
+      if (length > 0) {
+        // X-axis divider spans X → place offset in +Y (behind bin)
+        pieces.push({
+          geometry: buildPieceGeometry(length, notches, true),
+          position: [0, outerD / 2 + REFERENCE_GAP, floorZ + dividerHeight / 2],
+          rotation: [0, 0, 0],
+        });
+      }
     }
-    // Y-axis divider spans Y direction → place offset in +X (right of bin),
-    // rotated 90° around Z so its length runs along Y
-    return [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2];
-  }, [shouldShow, slotConfig, outerW, outerD, floorZ, dividerHeight]);
 
-  // Rotation: Y-axis dividers need 90° Z rotation so they span the Y direction
-  const referenceRotation = useMemo<[number, number, number]>(() => {
-    if (!shouldShow) return [0, 0, 0];
-    return slotConfig.x.enabled ? [0, 0, 0] : [0, 0, Math.PI / 2];
-  }, [shouldShow, slotConfig]);
+    if (slotConfig.y.enabled) {
+      const length = calculateDividerLength(innerD, slotDepth, clearance);
+      const notches = bothAxes
+        ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
+        : [];
+      if (length > 0) {
+        // Y-axis divider spans Y → place offset in +X (right of bin),
+        // rotated 90° around Z so its length runs along Y
+        pieces.push({
+          geometry: buildPieceGeometry(length, notches, false),
+          position: [outerW / 2 + REFERENCE_GAP, 0, floorZ + dividerHeight / 2],
+          rotation: [0, 0, Math.PI / 2],
+        });
+      }
+    }
+
+    return pieces;
+  }, [
+    shouldShow,
+    slotConfig,
+    dividerPieces,
+    innerW,
+    innerD,
+    outerW,
+    outerD,
+    wallThickness,
+    dividerHeight,
+    floorZ,
+    lipOverhang,
+  ]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;
@@ -288,14 +385,14 @@ export function GhostDividerPieces() {
     return () => {
       geometry?.dispose();
       material?.dispose();
-      referenceGeometry?.dispose();
+      for (const piece of referencePieces) piece.geometry.dispose();
       referenceMaterial?.dispose();
     };
-  }, [geometry, material, referenceGeometry, referenceMaterial]);
+  }, [geometry, material, referencePieces, referenceMaterial]);
 
   useEffect(() => {
-    if (geometry || referenceGeometry) invalidate();
-  }, [geometry, material, referenceGeometry, referenceMaterial, ghostVisible, invalidate]);
+    if (geometry || referencePieces.length > 0) invalidate();
+  }, [geometry, material, referencePieces, referenceMaterial, ghostVisible, invalidate]);
 
   if (!shouldShow) return null;
 
@@ -304,15 +401,17 @@ export function GhostDividerPieces() {
       {ghostVisible && material && (
         <mesh geometry={geometry} material={material} position={[0, 0, 0]} renderOrder={1} />
       )}
-      {referenceGeometry && referenceMaterial && (
-        <mesh
-          geometry={referenceGeometry}
-          material={referenceMaterial}
-          position={referencePosition}
-          rotation={referenceRotation}
-          renderOrder={1}
-        />
-      )}
+      {referenceMaterial &&
+        referencePieces.map((piece, i) => (
+          <mesh
+            key={i}
+            geometry={piece.geometry}
+            material={referenceMaterial}
+            position={piece.position}
+            rotation={piece.rotation}
+            renderOrder={1}
+          />
+        ))}
     </>
   );
 }

@@ -853,6 +853,7 @@
   "binDesigner.slotCount": "{count} Trennwände",
   "binDesigner.slotDirection": "Richtung",
   "binDesigner.slotHorizontal": "Horizontal",
+  "binDesigner.slotBoth": "Beide",
   "binDesigner.slotSpacing": "Fachbreite",
   "binDesigner.slotVertical": "Vertikal",
   "binDesigner.slotWallTooThin": "Wandstärke muss mindestens {min}mm für Schlitze sein",
