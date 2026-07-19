@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.255.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.254.0...gridfinity-layout-tool-v4.255.0) (2026-07-19)
+
+
+### Features
+
+* **designer:** per-compartment cross dividers with face receptacles ([#2635](https://github.com/andymai/gridfinity-layout-tool/issues/2635)) ([eddb8a6](https://github.com/andymai/gridfinity-layout-tool/commit/eddb8a6ff675be3999c99be44597f5fdd4e1db67))
+
 ## [4.254.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.253.0...gridfinity-layout-tool-v4.254.0) (2026-07-19)
 
 
