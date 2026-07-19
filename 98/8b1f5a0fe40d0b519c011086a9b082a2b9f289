@@ -1,0 +1,25 @@
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_dcdbb1be393448::t_26ac89ccbef5fd 151
+src/shared/utils/slotMath.ts
+  s_dcdbb1be393448::t_edaf1c12013ac9 156-158
+  s_dcdbb1be393448::t_e0e9142c8d0dca 188-195
+src/shared/utils/slotMath.test.ts
+  s_dcdbb1be393448::t_90eecfd9d3283c 226-231
+  s_dcdbb1be393448::t_928aacbbd30b7f 282-289
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "988b1f5a0fe40d0b519c011086a9b082a2b9f289",
+  "prompts": {},
+  "sessions": {
+    "s_dcdbb1be393448": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e84e3cc8-06c1-416b-9251-130a1c4ef0d6",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
