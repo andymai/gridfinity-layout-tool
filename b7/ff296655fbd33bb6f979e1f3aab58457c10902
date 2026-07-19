@@ -1,0 +1,22 @@
+src/features/generation/worker/generators/meshImprint.ts
+  s_1a5ddf5221ef02::t_7cf78e5d6f026d 113-115
+  s_1a5ddf5221ef02::t_f5c525a13772cb 212-214,219-221,224-229,233,239-240,242,254-256,263,265,268-270
+src/features/generation/worker/generators/meshImprint.test.ts
+  s_1a5ddf5221ef02::t_e15688524121b1 265-267,344-346
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b7ff296655fbd33bb6f979e1f3aab58457c10902",
+  "prompts": {},
+  "sessions": {
+    "s_1a5ddf5221ef02": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6c8a809b-3c78-45dd-a663-d4c78ebbc26a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
