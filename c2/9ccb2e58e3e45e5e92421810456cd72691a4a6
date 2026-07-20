@@ -1,0 +1,41 @@
+src/i18n/locales/nl.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/de.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/sv.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/es.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/nb.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_e22c16986e8ee6::t_1ae4a122755046 632-635
+src/i18n/locales/fr.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/en.ts
+  s_e22c16986e8ee6::t_663e7ce3cb1090 1598
+src/i18n/locales/ja.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/it.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/pt-BR.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+src/i18n/locales/uk.json
+  s_e22c16986e8ee6::t_5fe0d9eb621108 869
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c29ccb2e58e3e45e5e92421810456cd72691a4a6",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
