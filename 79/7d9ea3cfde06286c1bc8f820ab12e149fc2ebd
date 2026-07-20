@@ -1,0 +1,25 @@
+src/shell/RightPanel/RightPanel.tsx
+  s_f4b08d773a2db5::t_dd06bb50bbb5ee 240
+src/design-system/Collapsible/Collapsible.tsx
+  s_f4b08d773a2db5::t_824db7f6f27512 200
+  s_f4b08d773a2db5::t_96a1aaaed30449 97-102
+  s_f4b08d773a2db5::t_2ff5084de49a08 167
+src/shell/Sidebar/Sidebar.test.tsx
+  s_f4b08d773a2db5::t_a63a69621f764e 399
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "797d9ea3cfde06286c1bc8f820ab12e149fc2ebd",
+  "prompts": {},
+  "sessions": {
+    "s_f4b08d773a2db5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fcf41dc8-a073-4ecf-9071-02a5dbf50e7e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
