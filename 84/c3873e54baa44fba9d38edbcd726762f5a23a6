@@ -1,0 +1,19 @@
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_b7d0404d7dbbaa 336-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "84c3873e54baa44fba9d38edbcd726762f5a23a6",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
