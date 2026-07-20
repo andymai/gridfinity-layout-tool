@@ -1,0 +1,58 @@
+src/features/bin-designer/utils/compartments.ts
+  s_e22c16986e8ee6::t_b7379e32553609 783-790
+src/shared/utils/authoredDividerMath.test.ts
+  s_e22c16986e8ee6::t_665c0f36f7b076 54-69
+  s_e22c16986e8ee6::t_3fe90831bd5cd8 51-53
+  s_e22c16986e8ee6::t_f40b84702b02f4 70-72
+  s_e22c16986e8ee6::t_dacba844ff1dfc 1-50,73-78
+src/shared/utils/authoredDividerMath.ts
+  s_e22c16986e8ee6::t_bf5137c6895c22 1-87,90-100,107-135
+  s_e22c16986e8ee6::t_477f617b6b699a 101-106
+  s_66bc315cd14c9f::t_b50f6f26e5050e 88-89
+src/shared/types/bin.ts
+  s_e22c16986e8ee6::t_13439b4a6bb070 32
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_e22c16986e8ee6::t_4310e6e1895f7e 1-13,15-43,45-120
+  s_e22c16986e8ee6::t_ae361ca46b5ad4 14
+  s_e22c16986e8ee6::t_023f96936188aa 44
+src/shared/utils/compartmentGeometry.ts
+  s_e22c16986e8ee6::t_497be476cca9fb 1-95
+  s_66bc315cd14c9f::t_110273b488e6d9 96-115
+src/features/generation/worker/generators/slotBuilder.ts
+  s_e22c16986e8ee6::t_8d16ab57e3459a 324-375,377-381
+  s_e22c16986e8ee6::t_722d155b1eb037 26
+src/features/bin-designer/types/index.ts
+  s_e22c16986e8ee6::t_bc9dfbf8c91112 170-179
+  s_e22c16986e8ee6::t_ce57f9aaed6dbb 200-206
+  s_e22c16986e8ee6::t_012dfecef1ef31 10
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_e22c16986e8ee6::t_a9e85b3d9ee616 33-34
+  s_e22c16986e8ee6::t_379955b4cdd334 334-384
+  s_e22c16986e8ee6::t_c5e11b86d305c9 174-179
+src/features/bin-designer/constants/defaults.ts
+  s_e22c16986e8ee6::t_995967bf4909a9 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "5c73bdca6885a8afa35a61b17d0510c2e1fe13fe",
+  "prompts": {},
+  "sessions": {
+    "s_66bc315cd14c9f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d5cf920e-f24c-4579-9ada-8acb88694731",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
