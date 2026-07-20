@@ -5,7 +5,7 @@
  * listed here is exactly what prints.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -69,23 +69,43 @@ export function LabelPlatesControls() {
     });
   }, [downloadPlates, activeFormat, baseName, t]);
 
+  // Preview requests are token-guarded: closing and reopening while a fetch
+  // is in flight must not let the stale resolution overwrite (or close) the
+  // newer preview.
+  const previewTokenRef = useRef(0);
+
+  const closePreview = useCallback(() => {
+    previewTokenRef.current++;
+    setPreviewOpen(false);
+    setPreviewMesh(null);
+  }, []);
+
   const openPreview = useCallback(() => {
+    const token = ++previewTokenRef.current;
     setPreviewOpen(true);
     setPreviewLoading(true);
+    setPreviewMesh(null);
     void fetchPreviewStl()
       .then((data) => {
-        if (!data) return;
-        const parsed = parseSTLBinary(data);
-        if (isErr(parsed)) return;
+        if (token !== previewTokenRef.current) return;
+        const parsed = data ? parseSTLBinary(data) : null;
+        if (!parsed || isErr(parsed)) {
+          useToastStore.getState().addToast(t('binDesigner.plates.exportFailed'), 'error');
+          setPreviewOpen(false);
+          return;
+        }
         setPreviewMesh({ vertices: parsed.value.vertices, normals: parsed.value.normals });
       })
       .catch((error: unknown) => {
+        if (token !== previewTokenRef.current) return;
         useToastStore
           .getState()
           .addToast(getErrorMessage(error, t('binDesigner.plates.exportFailed')), 'error');
         setPreviewOpen(false);
       })
-      .finally(() => setPreviewLoading(false));
+      .finally(() => {
+        if (token === previewTokenRef.current) setPreviewLoading(false);
+      });
   }, [fetchPreviewStl, t]);
 
   if (plates.length === 0) return null;
@@ -141,14 +161,7 @@ export function LabelPlatesControls() {
         sectionDescription={t('binDesigner.plates.dialogDescription')}
       />
 
-      <Dialog.Root
-        open={previewOpen}
-        onClose={() => {
-          setPreviewOpen(false);
-          setPreviewMesh(null);
-        }}
-        size="md"
-      >
+      <Dialog.Root open={previewOpen} onClose={closePreview} size="md">
         <Dialog.Header
           title={t('binDesigner.plates.previewTitle')}
           closeAriaLabel={t('common.closeDialog')}
