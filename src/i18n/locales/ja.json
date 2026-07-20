@@ -866,7 +866,7 @@
   "binDesigner.slotPartialNeedsLap": "部分的な長さにはかみ合うクロス仕切りが必要です",
   "binDesigner.slotSnapTooThin": "折り取り式のピースには少なくとも {min}mm の仕切り厚が必要です",
   "binDesigner.slotPartialSummary": "{count} 個、{min}〜{max} × {height}mm",
-  "binDesigner.slotPartialCapped": "最長を制限",
+  "binDesigner.slotPartialCapped": "{count} サイズ省略",
   "binDesigner.dividerShortInterior": "中央",
   "binDesigner.dividerShortEdge": "端",
   "binDesigner.slotSpacing": "区画の幅",

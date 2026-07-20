@@ -629,7 +629,10 @@ export function SlotConfigurator() {
                     max: String(Math.round(max * 10) / 10),
                     height: String(Math.round(dividerHeight * 10) / 10),
                   });
-                  const capped = dropped > 0 ? ` (${t('binDesigner.slotPartialCapped')})` : '';
+                  const capped =
+                    dropped > 0
+                      ? ` (${t('binDesigner.slotPartialCapped', { count: dropped })})`
+                      : '';
                   return `${axisLabel(axis)}: ${summary}${capped}`;
                 })
                 .join(' · ')

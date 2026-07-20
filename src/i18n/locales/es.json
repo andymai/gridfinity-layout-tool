@@ -866,7 +866,7 @@
   "binDesigner.slotPartialNeedsLap": "Las longitudes parciales requieren divisores cruzados entrelazados",
   "binDesigner.slotSnapTooThin": "El grosor del divisor debe ser de al menos {min}mm para piezas partibles",
   "binDesigner.slotPartialSummary": "{count} piezas, {min}–{max} × {height}mm",
-  "binDesigner.slotPartialCapped": "la más larga limitada",
+  "binDesigner.slotPartialCapped": "{count} tamaños omitidos",
   "binDesigner.dividerShortInterior": "Centro",
   "binDesigner.dividerShortEdge": "Borde",
   "binDesigner.slotSpacing": "Ancho de compartimento",

@@ -866,7 +866,7 @@
   "binDesigner.slotPartialNeedsLap": "Delvise lengder krever sammenlåsende kryssdelere",
   "binDesigner.slotSnapTooThin": "Delertykkelsen må være minst {min}mm for knekkbare stykker",
   "binDesigner.slotPartialSummary": "{count} stykker, {min}–{max} × {height}mm",
-  "binDesigner.slotPartialCapped": "lengste begrenset",
+  "binDesigner.slotPartialCapped": "{count} størrelser utelatt",
   "binDesigner.dividerShortInterior": "Midt",
   "binDesigner.dividerShortEdge": "Kant",
   "binDesigner.slotSpacing": "Rombredde",

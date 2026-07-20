@@ -866,7 +866,7 @@
   "binDesigner.slotPartialNeedsLap": "Les longueurs partielles nécessitent des séparateurs croisés imbriqués",
   "binDesigner.slotSnapTooThin": "L’épaisseur du séparateur doit être d’au moins {min}mm pour les pièces sécables",
   "binDesigner.slotPartialSummary": "{count} pièces, {min}–{max} × {height}mm",
-  "binDesigner.slotPartialCapped": "la plus longue limitée",
+  "binDesigner.slotPartialCapped": "{count} tailles omises",
   "binDesigner.dividerShortInterior": "Milieu",
   "binDesigner.dividerShortEdge": "Bord",
   "binDesigner.slotSpacing": "Largeur de compartiment",
