@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Назва шару",
   "layers.maxHeightFull": "Висоту шухляди заповнено ({current}/{max}u)",
   "layers.maxLayersReached": "Досягнуто максимуму {max} шарів",
-  "layers.noBins": "Немає бінів",
   "layers.noBinsToClear": "Немає бінів для очищення",
   "layers.noGaps": "Немає проміжків",
   "layers.noGapsToFill": "Немає проміжків для заповнення",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "Файл STL завеликий (макс. 50 МБ)",
   "toast.stlImport.notManifold": "Сітка не герметична — виправте її у слайсері та експортуйте знову",
   "toast.stlImport.empty": "STL не містить придатної для друку геометрії",
-  "toast.stlImport.assetLimit": "Дизайн може містити до {count} імпортованих сіток"
+  "toast.stlImport.assetLimit": "Дизайн може містити до {count} імпортованих сіток",
+  "sidebar.groupPaint": "Малювання",
+  "sidebar.groupEdit": "Редагування",
+  "sidebar.groupDrawer": "Шухляда",
+  "sidebar.groupResources": "Ресурси",
+  "sidebar.advanced": "Додатково",
+  "sidebar.drawerHeight": "Висота шухляди",
+  "layers.clearLayerLabel": "Очистити шар"
 }

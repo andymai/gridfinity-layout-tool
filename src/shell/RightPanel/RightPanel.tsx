@@ -388,7 +388,7 @@ export function RightPanel() {
                                     }
                                   }}
                                 >
-                                  <td className="pl-4 pr-2 py-2 text-content">
+                                  <td className="pl-4 pr-2 py-2 align-top text-content">
                                     <div className="flex flex-col gap-0.5">
                                       <span className="inline-flex items-center gap-1.5">
                                         <span
@@ -506,16 +506,18 @@ export function RightPanel() {
                                       )}
                                     </div>
                                   </td>
-                                  <td className="px-2 py-2 text-content-tertiary">{row.height}u</td>
-                                  <td className="px-2 py-2 text-right text-content">
+                                  <td className="px-2 py-2 align-top text-content-tertiary">
+                                    {row.height}u
+                                  </td>
+                                  <td className="px-2 py-2 align-top text-right text-content">
                                     {row.binCount}
                                   </td>
                                   {printList.hasAnySplits && (
-                                    <td className="px-2 py-2 text-right text-content">
+                                    <td className="px-2 py-2 align-top text-right text-content">
                                       {row.totalPieces}
                                     </td>
                                   )}
-                                  <td className="pl-2 pr-4 py-2 text-right text-content-tertiary">
+                                  <td className="pl-2 pr-4 py-2 align-top text-right text-content-tertiary">
                                     {row.filament}
                                   </td>
                                 </tr>

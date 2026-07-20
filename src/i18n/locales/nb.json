@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Lagnavn",
   "layers.maxHeightFull": "Drawer høyde full ({current}/{max}u)",
   "layers.maxLayersReached": "Maksimalt {max} lag nådd",
-  "layers.noBins": "Ingen bins",
   "layers.noBinsToClear": "Ingen bins å tømme",
   "layers.noGaps": "Ingen hull",
   "layers.noGapsToFill": "Ingen hull å fylle",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "STL-filen er for stor (maks 50MB)",
   "toast.stlImport.notManifold": "Meshen er ikke vanntett — reparer den i sliceren og eksporter på nytt",
   "toast.stlImport.empty": "STL-filen inneholder ingen printbar geometri",
-  "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher"
+  "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher",
+  "sidebar.groupPaint": "Maling",
+  "sidebar.groupEdit": "Rediger",
+  "sidebar.groupDrawer": "Skuff",
+  "sidebar.groupResources": "Ressurser",
+  "sidebar.advanced": "Avansert",
+  "sidebar.drawerHeight": "Skuffhøyde",
+  "layers.clearLayerLabel": "Tøm lag"
 }

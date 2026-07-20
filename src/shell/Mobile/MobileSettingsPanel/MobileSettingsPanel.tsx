@@ -130,7 +130,9 @@ export function MobileSettingsPanel() {
 
         {/* Height */}
         <div>
-          <label className="block text-sm mb-1 text-content-tertiary">{t('common.heightMm')}</label>
+          <label className="block text-sm mb-1 text-content-tertiary">
+            {t('sidebar.drawerHeight')}
+          </label>
           <Stepper
             value={drawer.height * heightUnitMm}
             onChange={handleDrawerHeightInput}

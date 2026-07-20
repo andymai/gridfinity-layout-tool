@@ -86,7 +86,7 @@ describe('ActiveLayerPanel', () => {
     it('renders clear button', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText('No bins')).toBeInTheDocument();
+      expect(screen.getByText('Clear layer')).toBeInTheDocument();
     });
 
     it('returns null when no active layer', () => {
@@ -273,8 +273,8 @@ describe('ActiveLayerPanel', () => {
     it('shows disabled when no bins', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText('No bins')).toBeInTheDocument();
-      expect(screen.getByText('No bins').closest('button')).toBeDisabled();
+      expect(screen.getByText('Clear layer')).toBeInTheDocument();
+      expect(screen.getByText('Clear layer').closest('button')).toBeDisabled();
     });
 
     it('shows confirmation dialog on clear click', () => {

@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Nom du layer",
   "layers.maxHeightFull": "Hauteur du tiroir pleine ({current}/{max}u)",
   "layers.maxLayersReached": "Maximum de layers atteint",
-  "layers.noBins": "Aucun bin",
   "layers.noBinsToClear": "Aucun bin à effacer",
   "layers.noGaps": "Aucun trou",
   "layers.noGapsToFill": "Aucun trou à combler",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "Le fichier STL est trop volumineux (max. 50 Mo)",
   "toast.stlImport.notManifold": "Le maillage n'est pas étanche — réparez-le dans votre slicer puis réexportez-le",
   "toast.stlImport.empty": "Le STL ne contient aucune géométrie imprimable",
-  "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés"
+  "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés",
+  "sidebar.groupPaint": "Peinture",
+  "sidebar.groupEdit": "Édition",
+  "sidebar.groupDrawer": "Tiroir",
+  "sidebar.groupResources": "Ressources",
+  "sidebar.advanced": "Avancé",
+  "sidebar.drawerHeight": "Hauteur du tiroir",
+  "layers.clearLayerLabel": "Vider la couche"
 }

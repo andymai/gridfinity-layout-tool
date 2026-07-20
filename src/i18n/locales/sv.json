@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Lagernamn",
   "layers.maxHeightFull": "Lådhöjd full ({current}/{max}u)",
   "layers.maxLayersReached": "Maximalt {max} lager nådda",
-  "layers.noBins": "Inga fack",
   "layers.noBinsToClear": "Inga fack att rensa",
   "layers.noGaps": "Inga luckor",
   "layers.noGapsToFill": "Inga luckor att fylla",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "STL-filen är för stor (max 50MB)",
   "toast.stlImport.notManifold": "Meshen är inte vattentät — reparera den i din slicer och exportera igen",
   "toast.stlImport.empty": "STL-filen innehåller ingen utskrivbar geometri",
-  "toast.stlImport.assetLimit": "En design kan innehålla upp till {count} importerade meshar"
+  "toast.stlImport.assetLimit": "En design kan innehålla upp till {count} importerade meshar",
+  "sidebar.groupPaint": "Målning",
+  "sidebar.groupEdit": "Redigera",
+  "sidebar.groupDrawer": "Låda",
+  "sidebar.groupResources": "Resurser",
+  "sidebar.advanced": "Avancerat",
+  "sidebar.drawerHeight": "Lådhöjd",
+  "layers.clearLayerLabel": "Rensa lager"
 }

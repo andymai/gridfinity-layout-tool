@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "レイヤー名",
   "layers.maxHeightFull": "ドロワー高さがいっぱいです({current}/{max}u)",
   "layers.maxLayersReached": "最大{max}個のレイヤーに達しました",
-  "layers.noBins": "ビンなし",
   "layers.noBinsToClear": "クリアするビンがありません",
   "layers.noGaps": "隙間なし",
   "layers.noGapsToFill": "埋める隙間がありません",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "STLファイルが大きすぎます（最大50MB）",
   "toast.stlImport.notManifold": "メッシュが水密ではありません。スライサーで修復して再エクスポートしてください",
   "toast.stlImport.empty": "STLに印刷可能な形状が含まれていません",
-  "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です"
+  "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です",
+  "sidebar.groupPaint": "ペイント",
+  "sidebar.groupEdit": "編集",
+  "sidebar.groupDrawer": "ドロワー",
+  "sidebar.groupResources": "リソース",
+  "sidebar.advanced": "詳細設定",
+  "sidebar.drawerHeight": "ドロワーの高さ",
+  "layers.clearLayerLabel": "レイヤーをクリア"
 }

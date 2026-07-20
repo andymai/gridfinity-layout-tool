@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Layernaam",
   "layers.maxHeightFull": "Ladehoogte vol ({current}/{max}u)",
   "layers.maxLayersReached": "Maximaal aantal layers bereikt",
-  "layers.noBins": "Geen bins",
   "layers.noBinsToClear": "Geen bins om te wissen",
   "layers.noGaps": "Geen gaten",
   "layers.noGapsToFill": "Geen gaten om te vullen",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "STL-bestand is te groot (max. 50MB)",
   "toast.stlImport.notManifold": "Mesh is niet waterdicht — repareer deze in je slicer en exporteer opnieuw",
   "toast.stlImport.empty": "STL bevat geen printbare geometrie",
-  "toast.stlImport.assetLimit": "Een ontwerp kan maximaal {count} geïmporteerde meshes bevatten"
+  "toast.stlImport.assetLimit": "Een ontwerp kan maximaal {count} geïmporteerde meshes bevatten",
+  "sidebar.groupPaint": "Verven",
+  "sidebar.groupEdit": "Bewerken",
+  "sidebar.groupDrawer": "Lade",
+  "sidebar.groupResources": "Bronnen",
+  "sidebar.advanced": "Geavanceerd",
+  "sidebar.drawerHeight": "Ladehoogte",
+  "layers.clearLayerLabel": "Laag wissen"
 }

@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Nome livello",
   "layers.maxHeightFull": "Altezza del cassetto piena ({current}/{max}u)",
   "layers.maxLayersReached": "Raggiunto il massimo di {max} livelli",
-  "layers.noBins": "Nessun bin",
   "layers.noBinsToClear": "Nessun bin da svuotare",
   "layers.noGaps": "Nessuno spazio",
   "layers.noGapsToFill": "Nessuno spazio da riempire",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "Il file STL è troppo grande (max 50MB)",
   "toast.stlImport.notManifold": "La mesh non è a tenuta stagna: riparala nello slicer e riesportala",
   "toast.stlImport.empty": "Lo STL non contiene geometria stampabile",
-  "toast.stlImport.assetLimit": "Un progetto può contenere fino a {count} mesh importate"
+  "toast.stlImport.assetLimit": "Un progetto può contenere fino a {count} mesh importate",
+  "sidebar.groupPaint": "Pittura",
+  "sidebar.groupEdit": "Modifica",
+  "sidebar.groupDrawer": "Cassetto",
+  "sidebar.groupResources": "Risorse",
+  "sidebar.advanced": "Avanzate",
+  "sidebar.drawerHeight": "Altezza cassetto",
+  "layers.clearLayerLabel": "Svuota livello"
 }

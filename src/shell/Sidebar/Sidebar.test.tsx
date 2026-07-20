@@ -396,11 +396,11 @@ describe('Sidebar', () => {
     });
   });
 
-  describe('physical units', () => {
-    it('renders Physical Units section', () => {
+  describe('advanced units', () => {
+    it('renders Advanced section', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Physical Units')).toBeInTheDocument();
+      expect(screen.getByText('Advanced')).toBeInTheDocument();
     });
 
     it('renders grid unit input', () => {

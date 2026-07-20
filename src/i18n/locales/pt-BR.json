@@ -1757,7 +1757,6 @@
   "layers.layerNamePlaceholder": "Nome do layer",
   "layers.maxHeightFull": "Altura da gaveta cheia ({current}/{max}u)",
   "layers.maxLayersReached": "Máximo de layers atingido",
-  "layers.noBins": "Nenhum bin",
   "layers.noBinsToClear": "Nenhum bin para limpar",
   "layers.noGaps": "Nenhuma lacuna",
   "layers.noGapsToFill": "Nenhuma lacuna para preencher",
@@ -2729,5 +2728,12 @@
   "toast.stlImport.fileTooLarge": "O arquivo STL é muito grande (máx. 50MB)",
   "toast.stlImport.notManifold": "A malha não é estanque — repare no seu fatiador e exporte novamente",
   "toast.stlImport.empty": "O STL não contém geometria imprimível",
-  "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas"
+  "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas",
+  "sidebar.groupPaint": "Pintura",
+  "sidebar.groupEdit": "Editar",
+  "sidebar.groupDrawer": "Gaveta",
+  "sidebar.groupResources": "Recursos",
+  "sidebar.advanced": "Avançado",
+  "sidebar.drawerHeight": "Altura da gaveta",
+  "layers.clearLayerLabel": "Limpar camada"
 }
