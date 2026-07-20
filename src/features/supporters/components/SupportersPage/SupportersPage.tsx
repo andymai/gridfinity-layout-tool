@@ -262,7 +262,11 @@ export function SupportersPage() {
 
   const handleFind = () => {
     const query = findQuery.trim();
-    if (!query) return;
+    if (!query) {
+      // Clear any lingering "not found"/"multiple" message from a prior search.
+      setFindStatus(null);
+      return;
+    }
     const needle = query.toLowerCase();
     const named = bins.filter((b): b is SupporterBin & { name: string } => b.name !== null);
 

@@ -9,10 +9,12 @@
  *
  * With `--csv <Transaction_All.csv>` it enriches those seed records with real
  * join dates and messages from a Ko-fi transaction export, and writes a
- * per-currency `supporters:totals` baseline. Names are attributed only when they
- * appear in the reconciled public list in `supporters.json`; everyone else is
- * seeded anonymously (date only, no name or message). Messages and emails from
- * the CSV are never written to disk — only into Redis.
+ * per-currency `supporters:totals` baseline **only when that hash is still
+ * empty**, so re-running never clobbers counters the webhook has since
+ * incremented. Names are attributed only when they appear in the reconciled
+ * public list in `supporters.json`; everyone else is seeded anonymously (date
+ * only, no name or message). Messages and emails from the CSV are never written
+ * to disk — only into Redis.
  *
  * Usage:
  *   REDIS_URL=rediss://… pnpm seed-supporters [--csv path/to/Transaction_All.csv] [--dry-run]
@@ -96,9 +98,23 @@ async function main(): Promise<void> {
     const before = await redis.hlen(supportersDonorsKey());
     await redis.hset(supportersDonorsKey(), entries);
     const after = await redis.hlen(supportersDonorsKey());
-    for (const [cur, minor] of Object.entries(totals)) {
-      await redis.hset(supportersTotalsKey(), cur, String(minor));
+
+    // Only seed the totals baseline into an empty hash: the webhook increments
+    // this same key with HINCRBY, so overwriting it on a re-run would discard
+    // every payment recorded since the first backfill.
+    if (Object.keys(totals).length > 0) {
+      const existingTotals = await redis.hlen(supportersTotalsKey());
+      if (existingTotals === 0) {
+        for (const [cur, minor] of Object.entries(totals)) {
+          await redis.hset(supportersTotalsKey(), cur, String(minor));
+        }
+      } else {
+        console.log(
+          `Skipped totals baseline: ${supportersTotalsKey()} already has ${existingTotals} entr${existingTotals === 1 ? 'y' : 'ies'} (would clobber live counters).`
+        );
+      }
     }
+
     console.log(`Done. ${supportersDonorsKey()}: ${before} → ${after} donors.`);
   } finally {
     redis.disconnect();
