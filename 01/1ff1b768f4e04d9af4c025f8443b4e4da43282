@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/dividerExport.test.ts
+  s_e22c16986e8ee6::t_d3af83b1820892 1-35
+src/features/generation/worker/generators/dividerExport.ts
+  s_e22c16986e8ee6::t_55082507e686aa 20-36
+  s_e22c16986e8ee6::t_9fcc2a55e2c9b8 15
+  s_e22c16986e8ee6::t_61b59eb3f799fd 51,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "011ff1b768f4e04d9af4c025f8443b4e4da43282",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
