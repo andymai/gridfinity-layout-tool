@@ -42,7 +42,7 @@ function GroupLabel({ children }: { children: ReactNode }) {
     <div
       role="heading"
       aria-level={3}
-      className="px-4 pt-4 pb-1.5 text-xs font-semibold text-content-tertiary select-none"
+      className="px-4 pt-4 pb-1.5 text-xs font-semibold tracking-wide text-content-tertiary select-none"
     >
       {children}
     </div>
