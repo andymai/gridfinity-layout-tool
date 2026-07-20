@@ -1,0 +1,73 @@
+src/i18n/locales/sv.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/nb.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_db6e280faa3f84::t_327fc3c1af9161 257
+  s_db6e280faa3f84::t_ec53d2a7db0645 237,239,242
+  s_db6e280faa3f84::t_c798505304e6aa 238,240
+  s_db6e280faa3f84::t_34398cce6234db 255
+  s_db6e280faa3f84::t_95b1b778fc5167 50
+src/i18n/locales/nl.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/uk.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/es.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/shell/Sidebar/Sidebar.tsx
+  s_db6e280faa3f84::t_39371cfeb22da1 40-41,47-51
+  s_db6e280faa3f84::t_af01a790ae6f49 555
+  s_db6e280faa3f84::t_d8066d401cc2de 210
+  s_db6e280faa3f84::t_cfd559385365a7 1
+  s_db6e280faa3f84::t_ebcab64c29f850 566-586
+  s_db6e280faa3f84::t_d1bfc590688acb 556
+  s_db6e280faa3f84::t_f8326cdc888d3d 391
+  s_db6e280faa3f84::t_83d013e336ede7 589-592
+  s_db6e280faa3f84::t_4a30f5c960f74c 42-46
+  s_db6e280faa3f84::t_7a7c2393aefa56 259,263-264
+  s_db6e280faa3f84::t_55898947e5eb7a 336-338
+  s_db6e280faa3f84::t_ed569b2dfe4e8d 475-478,481
+  s_db6e280faa3f84::t_e8149e69d65421 564-565
+  s_db6e280faa3f84::t_aaeedc11fc4c3a 70
+src/i18n/locales/fr.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/ja.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/shell/RightPanel/RightPanel.tsx
+  s_db6e280faa3f84::t_2814dc80d77e27 509-512,516,520
+  s_db6e280faa3f84::t_fd006f45e728ad 391
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_db6e280faa3f84::t_9eb093f7190635 276-277
+  s_db6e280faa3f84::t_98f1fe8d35729f 89
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_db6e280faa3f84::t_7f4eed870f023a 133-135
+src/i18n/locales/pt-BR.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/de.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/it.json
+  s_db6e280faa3f84::t_2e82b2ccf01689 2731-2738
+src/i18n/locales/en.ts
+  s_db6e280faa3f84::t_d6371983879031 256-261
+  s_db6e280faa3f84::t_3f5c473ce3654b 476
+src/shell/Sidebar/Sidebar.test.tsx
+  s_db6e280faa3f84::t_7fc81dd6dd7cfe 399-400,403
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_db6e280faa3f84::t_6355b9d7da462b 43-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "3a32f9029c1f3535063129b2e30a59d49d5f67b4",
+  "prompts": {},
+  "sessions": {
+    "s_db6e280faa3f84": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be2030fc-f537-45a7-9d39-8b1031e0dbe9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
