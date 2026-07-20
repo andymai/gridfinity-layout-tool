@@ -29,6 +29,7 @@ export type {
   AxisSlotConfig,
   CrossDividerStyle,
   PartialDividerStyle,
+  SlotLayout,
   DividerPieceConfig,
   Insert,
   InsertShape,

@@ -780,112 +780,14 @@ export function remapDividerOverrides(
 
 // Wall Segment Derivation
 
-/** A horizontal or vertical wall segment in bin-interior coordinates (mm) */
-export interface WallSegment {
-  /** Start X position in mm from bin interior left edge */
-  readonly x: number;
-  /** Start Y position in mm from bin interior front edge */
-  readonly y: number;
-  /** Length in mm */
-  readonly length: number;
-  /** Wall orientation */
-  readonly orientation: 'horizontal' | 'vertical';
-}
-
-/**
- * Derive divider wall segments from the compartment grid.
- *
- * Scans adjacent cells and places wall segments at boundaries where
- * neighboring cells have different compartment IDs. Merges consecutive
- * segments along the same grid line into longer walls.
- *
- * @param config - The compartment configuration
- * @param innerW - Interior width of the bin in mm
- * @param innerD - Interior depth of the bin in mm
- * @returns Array of wall segments with positions in mm
- */
-export function deriveWallSegments(
-  config: CompartmentConfig,
-  innerW: number,
-  innerD: number
-): WallSegment[] {
-  const { cols, rows } = config;
-  if (cols <= 1 && rows <= 1) return [];
-
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  const segments: WallSegment[] = [];
-
-  // Vertical walls: scan each column boundary (between col i and col i+1)
-  for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
-    const x = colBoundary * cellW;
-    // Find consecutive runs of boundaries (rows where left != right)
-    let segStart: number | null = null;
-
-    for (let row = 0; row < rows; row++) {
-      const leftId = getCellId(config, colBoundary - 1, row);
-      const rightId = getCellId(config, colBoundary, row);
-
-      if (leftId !== rightId) {
-        if (segStart === null) segStart = row;
-      } else {
-        if (segStart !== null) {
-          segments.push({
-            x,
-            y: segStart * cellD,
-            length: (row - segStart) * cellD,
-            orientation: 'vertical',
-          });
-          segStart = null;
-        }
-      }
-    }
-    // Close any trailing segment
-    if (segStart !== null) {
-      segments.push({
-        x,
-        y: segStart * cellD,
-        length: (rows - segStart) * cellD,
-        orientation: 'vertical',
-      });
-    }
-  }
-
-  // Horizontal walls: scan each row boundary (between row i and row i+1)
-  for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
-    const y = rowBoundary * cellD;
-    let segStart: number | null = null;
-
-    for (let col = 0; col < cols; col++) {
-      const topId = getCellId(config, col, rowBoundary - 1);
-      const bottomId = getCellId(config, col, rowBoundary);
-
-      if (topId !== bottomId) {
-        if (segStart === null) segStart = col;
-      } else {
-        if (segStart !== null) {
-          segments.push({
-            x: segStart * cellW,
-            y,
-            length: (col - segStart) * cellW,
-            orientation: 'horizontal',
-          });
-          segStart = null;
-        }
-      }
-    }
-    if (segStart !== null) {
-      segments.push({
-        x: segStart * cellW,
-        y,
-        length: (cols - segStart) * cellW,
-        orientation: 'horizontal',
-      });
-    }
-  }
-
-  return segments;
-}
+// Wall-segment geometry lives in shared/ so the generation worker can derive
+// walls without importing across feature boundaries. Re-exported here for the
+// existing bin-designer consumers; CompartmentConfig satisfies CompartmentGrid.
+export {
+  deriveWallSegments,
+  type WallSegment,
+  type CompartmentGrid,
+} from '@/shared/utils/compartmentGeometry';
 
 // Migration from Legacy DividerConfig
 

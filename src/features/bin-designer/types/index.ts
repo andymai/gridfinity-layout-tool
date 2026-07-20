@@ -7,6 +7,7 @@
 
 import type { SaveStatus } from '@/shared/types/saveStatus';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
+import type { CompartmentGrid } from '@/shared/utils/compartmentGeometry';
 import type {
   FaceGroupData,
   CoarseLODData,
@@ -166,6 +167,16 @@ export const PARTIAL_DIVIDER_STYLES = ['full', 'snappable', 'lengthSet'] as cons
  */
 export type PartialDividerStyle = (typeof PARTIAL_DIVIDER_STYLES)[number];
 
+export const SLOT_LAYOUTS = ['even', 'custom'] as const;
+
+/**
+ * How removable divider positions are decided:
+ * - 'even': evenly spaced by pitch (the historical parametric behavior).
+ * - 'custom': derived from an authored cols×rows grid (`SlotConfig.customGrid`),
+ *   producing pieces that map 1:1 to a drawn layout.
+ */
+export type SlotLayout = (typeof SLOT_LAYOUTS)[number];
+
 /** Slot configuration for removable divider walls */
 export interface SlotConfig {
   /** Slots on left/right walls (for Y-axis dividers) */
@@ -186,6 +197,13 @@ export interface SlotConfig {
    *  mode is 'lap'. Optional for persisted configs predating the field;
    *  treated as 'full'. */
   readonly partialStyle?: PartialDividerStyle;
+  /** Layout strategy for the removable pieces. 'even' (default) spaces them by
+   *  pitch; 'custom' derives them from an authored grid (`customGrid`). */
+  readonly layout?: SlotLayout;
+  /** Authored cols×rows grid backing 'custom' layout. Owned by slotConfig (not
+   *  shared with the standard compartment grid) to keep the style→config
+   *  invariant; intentionally omits angled-divider / label fields. */
+  readonly customGrid?: CompartmentGrid;
 }
 
 /** Configuration for removable divider pieces */

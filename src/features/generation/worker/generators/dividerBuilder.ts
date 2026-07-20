@@ -30,6 +30,8 @@ import {
   resolvePartialStyle,
   SNAP_SCORE_WIDTH,
 } from '@/shared/utils/slotMath';
+import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
+import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
 
@@ -168,6 +170,12 @@ export function buildUniqueDividerPieces(
   hasLip: boolean
 ): LabeledDividerPiece[] {
   if (params.style !== 'slotted') return [];
+
+  // Custom (authored-layout) removable dividers take a separate path: pieces
+  // come from the drawn grid, not from parametric pitch.
+  if (params.slotConfig.layout === 'custom') {
+    return buildAuthoredDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+  }
 
   const { slotConfig, dividerPieces } = params;
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
@@ -321,5 +329,56 @@ export function buildUniqueDividerPieces(
     addPiece(piece, axisLabel(axis));
   }
 
+  return pieces;
+}
+
+/**
+ * Build removable divider pieces from an authored (custom-layout) grid.
+ *
+ * Each wall segment becomes one flat piece: wall-tab ends where it meets a bin
+ * wall, abutting ends at T-junctions, and cross-lap notches where perpendicular
+ * segments cross it (vertical pieces notched from the top, horizontal from the
+ * bottom, so they interlock). Pieces stack side-by-side on the plate, labeled
+ * in reading order to match the assembly map.
+ */
+export function buildAuthoredDividerPieces(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hasLip: boolean
+): LabeledDividerPiece[] {
+  const { slotConfig, dividerPieces } = params;
+  const grid = slotConfig.customGrid;
+  if (!grid) return [];
+
+  const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
+  const { thickness, clearance } = dividerPieces;
+  const dividerHeight = calculateDividerHeight(dividerPieces, wallHeight, hasLip);
+  const notchDepth = dividerHeight / 2 + clearance;
+
+  const segments = deriveWallSegments(grid, innerW, innerD);
+  const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
+
+  const pieces: LabeledDividerPiece[] = [];
+  let yOffset = 0;
+  for (const spec of specs) {
+    let shape = cutCrossLapNotches(
+      buildDividerPiece(spec.length, thickness, dividerHeight),
+      spec.notchOffsets,
+      slotWidth,
+      notchDepth,
+      dividerHeight,
+      thickness,
+      spec.fromTop
+    );
+    if (yOffset > 0) {
+      const translated = translate(shape, [0, yOffset, 0]);
+      shape.delete();
+      shape = translated;
+    }
+    pieces.push({ shape, label: spec.label });
+    yOffset += dividerHeight + 5;
+  }
   return pieces;
 }

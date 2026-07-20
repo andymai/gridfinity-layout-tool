@@ -23,6 +23,7 @@ import {
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 import { COPLANAR_OVERLAP } from './generatorConstants';
+import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 
 // Re-export shared math for generation-internal consumers
 export { calculateSlotPositions };
@@ -320,16 +321,64 @@ function buildSlotCutsInScope(
     }
   };
 
-  // X-axis slots: cut into left and right walls (for Y-direction dividers)
-  if (slotConfig.x.enabled) {
-    const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
-    addAxisSlots('x', innerW, positions);
-  }
+  if (slotConfig.layout === 'custom' && slotConfig.customGrid) {
+    // Authored layout: cut only the wall(s) each segment actually touches
+    // (a custom divider may reach one wall, both, or neither).
+    const EPS = 1e-6;
+    const keepSide = (touched: boolean, cutter: Shape3D): void => {
+      if (touched) slots.push(scope.register(cutter));
+      else cutter.delete();
+    };
+    for (const seg of deriveWallSegments(slotConfig.customGrid, innerW, innerD)) {
+      const vertical = seg.orientation === 'vertical';
+      // Vertical dividers seat in the front/back walls (axis 'y') at x; the
+      // low/high ends touch the front (y=0) / back (y=innerD) walls.
+      const axis = vertical ? 'y' : 'x';
+      const halfSpan = vertical ? innerD / 2 : innerW / 2;
+      const crossPos = vertical ? seg.x - innerW / 2 : seg.y - innerD / 2;
+      const runMax = vertical ? innerD : innerW;
+      const low = vertical ? seg.y : seg.x;
+      const lowTouch = low <= EPS;
+      const highTouch = low + seg.length >= runMax - EPS;
 
-  // Y-axis slots: cut into front and back walls (for X-direction dividers)
-  if (slotConfig.y.enabled) {
-    const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
-    addAxisSlots('y', innerD, positions);
+      const [negWall, posWall] = createMirroredCutters(
+        slotDepth,
+        slotWidth,
+        slotHeight,
+        halfSpan,
+        crossPos,
+        floorZ,
+        axis
+      );
+      keepSide(lowTouch, negWall);
+      keepSide(highTouch, posWall);
+
+      if (lipInfo && lipOverhang > 0) {
+        const [negLip, posLip] = createMirroredLipCutters(
+          lipOverhang,
+          slotWidth,
+          lipCutHeight,
+          halfSpan,
+          crossPos,
+          lipCutStartZ,
+          axis
+        );
+        keepSide(lowTouch, negLip);
+        keepSide(highTouch, posLip);
+      }
+    }
+  } else {
+    // X-axis slots: cut into left and right walls (for Y-direction dividers)
+    if (slotConfig.x.enabled) {
+      const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang);
+      addAxisSlots('x', innerW, positions);
+    }
+
+    // Y-axis slots: cut into front and back walls (for X-direction dividers)
+    if (slotConfig.y.enabled) {
+      const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang);
+      addAxisSlots('y', innerD, positions);
+    }
   }
 
   if (slots.length === 0) return null;
