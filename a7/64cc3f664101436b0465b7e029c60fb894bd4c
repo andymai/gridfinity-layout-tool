@@ -1,0 +1,93 @@
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_6c62be59b4191b 9
+  s_e22c16986e8ee6::t_c80d64aab8df31 351-352,363,366-367,371,377-380,382-383
+  s_e22c16986e8ee6::t_9cbb2fabcdc278 263-265
+  s_e22c16986e8ee6::t_fd6e8a3cea84af 252-262,266-350,353-362,364-365,368-370,372-376,381,384-389
+src/i18n/locales/es.json
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_e22c16986e8ee6::t_a2d98433484ffa 181-185
+  s_e22c16986e8ee6::t_3016a38f942535 260-267,269-272,274-275,277-283,285,295-306,309,311-319
+  s_e22c16986e8ee6::t_73a6397cbf5e4b 20,26,33
+  s_e22c16986e8ee6::t_a25f3b143c0473 175-180,186-193
+  s_e22c16986e8ee6::t_1a660d0602ad54 454-458
+  s_e22c16986e8ee6::t_97ce15802e771c 623-629,631-632,635
+  s_e22c16986e8ee6::t_7d4aba69779cd2 28
+  s_e22c16986e8ee6::t_5ecc8bd50a6869 419-453
+  s_e22c16986e8ee6::t_7e97425c8def24 276,284,286-294
+  s_e22c16986e8ee6::t_00866f207e7751 268
+  s_e22c16986e8ee6::t_b9589ce7ee78cf 273
+  s_e22c16986e8ee6::t_4fdedad2a940cd 636-638
+  s_e22c16986e8ee6::t_6678c0045dfd1f 639-654
+src/i18n/locales/nl.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_e22c16986e8ee6::t_cc5f5a49c6938e 369-379
+  s_e22c16986e8ee6::t_8c1c40096ee5d4 313-368,380
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_e22c16986e8ee6::t_22403d8b8bcda0 197-281,283-293
+  s_e22c16986e8ee6::t_608cd213481579 16-17,23-24
+  s_e22c16986e8ee6::t_b7bfe3e34468bb 282
+src/shared/types/bin.ts
+  s_e22c16986e8ee6::t_85b6b28baaafb1 31
+src/i18n/locales/uk.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+src/shared/utils/slotMath.test.ts
+  s_e22c16986e8ee6::t_19098bbbf873d3 295-393
+  s_e22c16986e8ee6::t_f2f32f1b82e28a 13-15,18
+src/i18n/locales/en.ts
+  s_e22c16986e8ee6::t_fd90a2c8aaad2e 1596
+  s_e22c16986e8ee6::t_4af84f13b45963 1591-1595,1597-1598
+src/i18n/locales/fr.json
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+src/i18n/locales/it.json
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+src/features/bin-designer/types/index.ts
+  s_e22c16986e8ee6::t_31a3a2a8032c77 185-188
+  s_e22c16986e8ee6::t_04717eac92e605 153-168
+src/i18n/locales/nb.json
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+src/i18n/locales/de.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_e22c16986e8ee6::t_e4485131d12b6c 22-23,28,30-31
+  s_e22c16986e8ee6::t_445f08b5564420 234
+  s_e22c16986e8ee6::t_62126b63338886 114,116-120,124,129
+  s_e22c16986e8ee6::t_e870f345cd180d 272-277,279-320
+src/i18n/locales/ja.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+src/i18n/locales/pt-BR.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+src/features/bin-designer/constants/defaults.ts
+  s_e22c16986e8ee6::t_7ac141996b1948 46
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_e22c16986e8ee6::t_e8d55c50f39bd2 234-319
+src/i18n/locales/sv.json
+  s_e22c16986e8ee6::t_55e0c8590ef489 862-866,868-869
+  s_e22c16986e8ee6::t_0a0d9a0665b026 867
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a764cc3f664101436b0465b7e029c60fb894bd4c",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
