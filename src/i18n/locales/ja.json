@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "ラベルプレートの書き出し",
   "binDesigner.plates.dialogDescription": "各ソケットに1枚ずつ、コンパートメントのラベルテキストを載せたプレートをまとめた印刷用ファイルです。文字の深さはレイヤー単位にスナップされるため、フィラメント交換1回で2色のラベルが印刷できます。",
   "binDesigner.plates.previewTitle": "ラベルプレートのプレビュー",
-  "binDesigner.plates.previewLoading": "プレビューを生成中…"
+  "binDesigner.plates.previewLoading": "プレビューを生成中…",
+  "layoutExport.progress.labels": "ラベルプレートを書き出し中（{current}/{total}）"
 }

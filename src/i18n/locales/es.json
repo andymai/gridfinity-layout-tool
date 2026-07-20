@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Exportar placas de etiqueta",
   "binDesigner.plates.dialogDescription": "Un archivo imprimible con una placa por alojamiento, con el texto de etiqueta de su compartimento. La profundidad del texto se ajusta a capas completas: un solo cambio de filamento imprime etiquetas a dos colores.",
   "binDesigner.plates.previewTitle": "Vista previa de placas de etiqueta",
-  "binDesigner.plates.previewLoading": "Generando vista previa…"
+  "binDesigner.plates.previewLoading": "Generando vista previa…",
+  "layoutExport.progress.labels": "Exportando placas de etiqueta ({current}/{total})"
 }

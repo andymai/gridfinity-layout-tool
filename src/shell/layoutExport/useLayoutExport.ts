@@ -42,7 +42,12 @@ import {
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
 import type { LoadedDesign } from './planLayoutBinExport';
+import { planLabelPlateExport } from './planLabelPlateExport';
+import { dedupeFileNames } from './dedupeFileNames';
+import { snapTextDepthToLayers } from '@/shared/constants/labelPlates';
+import type { LabelPlateExportSpec } from '@/shared/generation/bridge';
 import { buildLayoutManifest } from './buildLayoutManifest';
+import type { ManifestLabelGroup } from './buildLayoutManifest';
 
 type Progress = { current: number; total: number; label?: string } | null;
 
@@ -255,6 +260,81 @@ export function useLayoutExport(): UseLayoutExportReturn {
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
+        // Phase 1.7 — swappable label plates for socket-mode designs (#2666):
+        // per-design bed-sized sheets in labels/. A plate failure must not
+        // lose a good bin export, so it degrades to an archive without labels.
+        const platePlan = planLabelPlateExport(
+          bins,
+          loaded,
+          layout.printBedSize,
+          layout.printBedDepth ?? layout.printBedSize
+        );
+        const labelFiles: ZipBinaryFile[] = [];
+        const manifestLabels: ManifestLabelGroup[] = [];
+        if (platePlan.totalPlates > 0) {
+          try {
+            const sheetNames = dedupeFileNames(
+              platePlan.groups.flatMap((g) =>
+                g.sheets.map(
+                  (_, si) =>
+                    `${
+                      g.designName
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '') || 'design'
+                    }_plates_${si + 1}.${format}`
+                )
+              )
+            );
+            let nameIndex = 0;
+            const sheetTotal = platePlan.groups.reduce((sum, g) => sum + g.sheets.length, 0);
+            for (const group of platePlan.groups) {
+              const options = {
+                textMode:
+                  group.textDefaults.mode === 'emboss' ? ('emboss' as const) : ('deboss' as const),
+                textDepthMm: snapTextDepthToLayers(
+                  group.textDefaults.depth,
+                  printSettings.layerHeightMm
+                ),
+                textDefaults: group.textDefaults,
+                v1Channels: true,
+              };
+              const sheetPaths: string[] = [];
+              for (const sheet of group.sheets) {
+                setExportProgress({
+                  current: nameIndex,
+                  total: sheetTotal,
+                  label: t('layoutExport.progress.labels', {
+                    current: nameIndex + 1,
+                    total: sheetTotal,
+                  }),
+                });
+                const path = `labels/${sheetNames[nameIndex++]}`;
+                const specs: LabelPlateExportSpec[] = sheet.map((p) => ({
+                  widthU: p.widthU,
+                  text: p.text,
+                  position: p.position,
+                }));
+                const result = await bridge.exportLabelPlates(specs, options, workerFormat);
+                const data =
+                  format === '3mf'
+                    ? await stlTo3mf(result.data, baseNameOf(path), printSettings)
+                    : result.data;
+                labelFiles.push({ path, data });
+                sheetPaths.push(path);
+              }
+              manifestLabels.push({
+                designName: group.designName,
+                sheetPaths,
+                plates: group.manifestPlates,
+              });
+            }
+          } catch {
+            labelFiles.length = 0;
+            manifestLabels.length = 0;
+          }
+        }
+
         // Phase 2 — baseplate. A baseplate failure (e.g. a degenerate drawer)
         // must not lose a good bin export, so it degrades to a bins-only archive.
         const bp = await buildBaseplateExportPieces(bridge, pool, {
@@ -301,6 +381,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // Assemble the archive.
         const binaryFiles: ZipBinaryFile[] = [
           ...binFiles,
+          ...labelFiles,
           ...(bp
             ? bp.pieces.map((p) => ({
                 path: `baseplate/${p.label ? `${bp.baseNameNoExt}_${p.label}` : bp.baseNameNoExt}${bp.extension}`,
@@ -319,6 +400,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 guidePath: bp.guideText ? 'baseplate/print-guide.txt' : undefined,
               }
             : null,
+          labels: manifestLabels.length > 0 ? manifestLabels : null,
           skipped: plan.skipped,
           totals: plan.totals,
         });

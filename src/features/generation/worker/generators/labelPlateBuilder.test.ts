@@ -77,6 +77,27 @@ describe('labelPlateBuilder', () => {
     }
   });
 
+  it('honors explicit sheet positions', () => {
+    const pieces = buildLabelPlates(
+      [
+        { widthU: 1, text: '', position: [-50, 20] },
+        { widthU: 1, text: '', position: [50, -20] },
+      ],
+      OPTS
+    );
+    try {
+      const boxes = pieces.map((p) => {
+        const m = mesh(p, { tolerance: 0.05, angularTolerance: 10 });
+        return boundingBox(new Float32Array(m.vertices));
+      });
+      expect((boxes[0].minX + boxes[0].maxX) / 2).toBeCloseTo(-50, 1);
+      expect((boxes[0].minY + boxes[0].maxY) / 2).toBeCloseTo(20, 1);
+      expect((boxes[1].minX + boxes[1].maxX) / 2).toBeCloseTo(50, 1);
+    } finally {
+      for (const p of pieces) p.delete();
+    }
+  });
+
   it('lays out multiple plates without overlap', () => {
     const pieces = buildLabelPlates(
       [

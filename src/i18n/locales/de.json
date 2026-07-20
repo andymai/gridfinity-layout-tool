@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Etikettenplatten exportieren",
   "binDesigner.plates.dialogDescription": "Eine druckbare Datei mit einer Platte pro Aufnahme, jeweils mit dem Beschriftungstext des Fachs. Die Texttiefe rastet auf ganze Schichten ein — ein einziger Filamentwechsel druckt zweifarbige Etiketten.",
   "binDesigner.plates.previewTitle": "Vorschau der Etikettenplatten",
-  "binDesigner.plates.previewLoading": "Vorschau wird erstellt…"
+  "binDesigner.plates.previewLoading": "Vorschau wird erstellt…",
+  "layoutExport.progress.labels": "Etikettenplatten werden exportiert ({current}/{total})"
 }

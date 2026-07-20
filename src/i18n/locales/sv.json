@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Exportera etikettplattor",
   "binDesigner.plates.dialogDescription": "En utskrivbar fil med en platta per fäste, med fackets etikettext. Textdjupet snäpper till hela lager — ett enda filamentbyte ger tvåfärgade etiketter.",
   "binDesigner.plates.previewTitle": "Förhandsgranskning av etikettplattor",
-  "binDesigner.plates.previewLoading": "Genererar förhandsgranskning…"
+  "binDesigner.plates.previewLoading": "Genererar förhandsgranskning…",
+  "layoutExport.progress.labels": "Exporterar etikettplattor ({current}/{total})"
 }

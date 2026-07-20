@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Експорт пластин етикеток",
   "binDesigner.plates.dialogDescription": "Один файл для друку з пластиною для кожного гнізда з текстом етикетки відсіку. Глибина тексту вирівнюється за цілими шарами — одна заміна філаменту друкує двоколірні етикетки.",
   "binDesigner.plates.previewTitle": "Перегляд пластин етикеток",
-  "binDesigner.plates.previewLoading": "Створення перегляду…"
+  "binDesigner.plates.previewLoading": "Створення перегляду…",
+  "layoutExport.progress.labels": "Експорт пластин етикеток ({current}/{total})"
 }

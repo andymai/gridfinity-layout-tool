@@ -238,6 +238,12 @@ export interface ExportConnectorSampleMessage {
 export interface LabelPlateExportSpec {
   readonly widthU: 1 | 2 | 3;
   readonly text: string;
+  /**
+   * Plate center on the bed (mm). When absent the builder stacks plates in
+   * a single centered column; the layout batch export passes packed sheet
+   * positions instead.
+   */
+  readonly position?: readonly [number, number];
 }
 
 /**

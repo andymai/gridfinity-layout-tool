@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Exportar placas de rótulo",
   "binDesigner.plates.dialogDescription": "Um arquivo imprimível com uma placa por encaixe, com o texto de rótulo do compartimento. A profundidade do texto se alinha a camadas inteiras: uma única troca de filamento imprime rótulos em duas cores.",
   "binDesigner.plates.previewTitle": "Prévia das placas de rótulo",
-  "binDesigner.plates.previewLoading": "Gerando prévia…"
+  "binDesigner.plates.previewLoading": "Gerando prévia…",
+  "layoutExport.progress.labels": "Exportando placas de rótulo ({current}/{total})"
 }

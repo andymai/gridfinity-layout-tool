@@ -128,6 +128,16 @@ export function effectiveLabelSocketClearance(
   return Math.max(0, scaled + offset);
 }
 
+/**
+ * Snap a text depth to a whole multiple of the layer height, clamped to the
+ * 1-layer..0.4mm band — the filament-swap two-color contract for plates.
+ */
+export function snapTextDepthToLayers(depthMm: number, layerHeightMm: number): number {
+  if (!Number.isFinite(layerHeightMm) || layerHeightMm <= 0) return Math.min(0.4, depthMm);
+  const snapped = Math.round(depthMm / layerHeightMm) * layerHeightMm;
+  return Math.round(Math.min(0.4, Math.max(layerHeightMm, snapped)) * 100) / 100;
+}
+
 /** Outer X span a socket needs for a given plate width (pocket + walls). */
 export function labelSocketOuterWidthMm(widthU: LabelPlateWidthU, clearanceMm: number): number {
   return labelPlateWidthMm(widthU) + clearanceMm + 2 * LABEL_SOCKET_WALL_MM;

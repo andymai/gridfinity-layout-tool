@@ -93,4 +93,30 @@ describe('buildLayoutManifest', () => {
     expect(text).toContain('(no linked bin designs to export)');
     expect(text).not.toContain('─── Baseplate ───');
   });
+
+  it('renders the label plates section with quantities and sheet paths', () => {
+    const text = buildLayoutManifest(
+      base({
+        labels: [
+          {
+            designName: 'Hardware',
+            sheetPaths: ['labels/hardware_plates_1.stl'],
+            plates: [
+              { widthU: 1, text: 'SCREWS', quantity: 2 },
+              { widthU: 2, text: '', quantity: 1 },
+            ],
+          },
+        ],
+      })
+    );
+    expect(text).toContain('Label plates');
+    expect(text).toContain('labels/hardware_plates_1.stl');
+    expect(text).toContain('2\u00d7 1U "SCREWS"');
+    expect(text).toContain('1\u00d7 2U (blank)');
+  });
+
+  it('omits the label plates section when absent', () => {
+    expect(buildLayoutManifest(base())).not.toContain('Label plates');
+    expect(buildLayoutManifest(base({ labels: null }))).not.toContain('Label plates');
+  });
 });

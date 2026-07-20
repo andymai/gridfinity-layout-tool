@@ -337,6 +337,7 @@ const en: Record<string, string> = {
   'layoutExport.success': 'Layout exported.',
   'layoutExport.progress.bins': 'Exporting bins ({current}/{total})',
   'layoutExport.progress.baseplate': 'Exporting baseplate ({current}/{total})',
+  'layoutExport.progress.labels': 'Exporting label plates ({current}/{total})',
   'rightPanel.customPropertiesCount': '{count} custom properties',
   'rightPanel.expandRightPanel': 'Expand right panel',
   'rightPanel.filamentAbbrev': 'Fil.',

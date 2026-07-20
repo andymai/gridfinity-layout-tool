@@ -33,6 +33,18 @@ export interface ManifestSkipped {
   readonly meshDesignsStepSkipped?: number;
 }
 
+/** One swappable-label sheet family in the labels/ folder (#2666). */
+export interface ManifestLabelGroup {
+  readonly designName: string;
+  readonly sheetPaths: readonly string[];
+  /** Unique plates with physical quantities (identical plates collapsed). */
+  readonly plates: readonly {
+    readonly widthU: number;
+    readonly text: string;
+    readonly quantity: number;
+  }[];
+}
+
 export interface LayoutManifestInput {
   readonly layoutName: string;
   /** The per-file format inside the ZIP. */
@@ -40,6 +52,8 @@ export interface LayoutManifestInput {
   readonly bins: readonly ManifestBinEntry[];
   /** Present when a baseplate is included; guidePath is set when it ships a guide. */
   readonly baseplate?: { readonly pieceCount: number; readonly guidePath?: string } | null;
+  /** Present when socket-mode designs shipped swappable label plates. */
+  readonly labels?: readonly ManifestLabelGroup[] | null;
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
 }
@@ -109,6 +123,29 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       lines.push(`  See ${baseplate.guidePath} for the assembly map and per-piece details.`);
     }
     lines.push('');
+  }
+
+  const labels = input.labels ?? [];
+  if (labels.length > 0) {
+    lines.push('─── Label plates ────────────────────────────────', '');
+    lines.push(
+      '  Swappable label plates for socket-mode bins, packed onto bed-sized',
+      '  sheets in the labels/ folder. Print each sheet once (flat, no',
+      '  supports); a single filament swap at the text layers prints',
+      '  two-color labels.',
+      ''
+    );
+    for (const group of labels) {
+      lines.push(`  Design: ${group.designName}`);
+      for (const path of group.sheetPaths) {
+        lines.push(`    ${path}`);
+      }
+      for (const p of group.plates) {
+        const label = p.text.length > 0 ? `"${p.text}"` : '(blank)';
+        lines.push(`      ${p.quantity}× ${p.widthU}U ${label}`);
+      }
+      lines.push('');
+    }
   }
 
   const skippedLines: string[] = [];

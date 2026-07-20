@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Esporta targhette etichetta",
   "binDesigner.plates.dialogDescription": "Un file stampabile con una targhetta per ogni sede, con il testo di etichetta del suo scomparto. La profondità del testo si allinea a layer interi: un solo cambio filamento stampa etichette bicolore.",
   "binDesigner.plates.previewTitle": "Anteprima targhette etichetta",
-  "binDesigner.plates.previewLoading": "Generazione anteprima…"
+  "binDesigner.plates.previewLoading": "Generazione anteprima…",
+  "layoutExport.progress.labels": "Esportazione targhette etichetta ({current}/{total})"
 }

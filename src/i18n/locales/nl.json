@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Labelplaatjes exporteren",
   "binDesigner.plates.dialogDescription": "Eén printbaar bestand met per houder een plaatje, met de labeltekst van het vak. De tekstdiepte klikt vast op hele lagen — één filamentwissel print tweekleurige labels.",
   "binDesigner.plates.previewTitle": "Voorbeeld labelplaatjes",
-  "binDesigner.plates.previewLoading": "Voorbeeld genereren…"
+  "binDesigner.plates.previewLoading": "Voorbeeld genereren…",
+  "layoutExport.progress.labels": "Labelplaatjes exporteren ({current}/{total})"
 }

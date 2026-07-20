@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Exporter les plaques d'étiquette",
   "binDesigner.plates.dialogDescription": "Un fichier imprimable avec une plaque par logement, portant le texte d'étiquette de son compartiment. La profondeur du texte s'aligne sur des couches entières : un seul changement de filament imprime des étiquettes bicolores.",
   "binDesigner.plates.previewTitle": "Aperçu des plaques d'étiquette",
-  "binDesigner.plates.previewLoading": "Génération de l'aperçu…"
+  "binDesigner.plates.previewLoading": "Génération de l'aperçu…",
+  "layoutExport.progress.labels": "Export des plaques d'étiquette ({current}/{total})"
 }

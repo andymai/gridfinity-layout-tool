@@ -2809,5 +2809,6 @@
   "binDesigner.plates.dialogTitle": "Eksporter etikettplater",
   "binDesigner.plates.dialogDescription": "Én utskriftsklar fil med en plate per sokkel, med rommets etikettekst. Tekstdybden festes til hele lag — ett filamentbytte gir tofargede etiketter.",
   "binDesigner.plates.previewTitle": "Forhåndsvisning av etikettplater",
-  "binDesigner.plates.previewLoading": "Genererer forhåndsvisning…"
+  "binDesigner.plates.previewLoading": "Genererer forhåndsvisning…",
+  "layoutExport.progress.labels": "Eksporterer etikettplater ({current}/{total})"
 }

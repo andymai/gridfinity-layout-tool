@@ -52,6 +52,8 @@ import { buildBaseplateSTL } from './baseplateSTL';
 export interface LabelPlateSpec {
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
+  /** Plate center on the bed (mm); absent = single centered column layout. */
+  readonly position?: readonly [number, number];
 }
 
 export interface LabelPlateBuildOptions {
@@ -193,8 +195,8 @@ export function buildLabelPlates(
   const totalY = specs.length * pitch - PLATE_GAP;
   return specs.map((spec, i) => {
     const plate = buildLabelPlate(spec, opts);
-    const y = -totalY / 2 + LABEL_PLATE_HEIGHT_MM / 2 + i * pitch;
-    const placed = translate(plate, [0, y, 0]);
+    const [x, y] = spec.position ?? [0, -totalY / 2 + LABEL_PLATE_HEIGHT_MM / 2 + i * pitch];
+    const placed = translate(plate, [x, y, 0]);
     plate.delete();
     return placed;
   });

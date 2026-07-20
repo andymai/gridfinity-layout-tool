@@ -25,23 +25,18 @@ import {
   triggerDownload,
 } from '@/shared/generation/exportUtils';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
+import {
+  effectiveLabelSocketClearance,
+  snapTextDepthToLayers,
+} from '@/shared/constants/labelPlates';
+
+export { snapTextDepthToLayers } from '@/shared/constants/labelPlates';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 import type { LabelPlatePlanEntry } from '@/shared/utils/labelSocketPlan';
 import type { LabelPlateExportOptions, LabelPlateExportSpec } from '@/shared/generation/bridge';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
 export const LABEL_PLATES_BASE_NAME = 'label-plates';
-
-/**
- * Snap the configured text depth to a whole multiple of the layer height,
- * clamped to the spec's 1-layer..0.4mm band — the filament-swap contract.
- */
-export function snapTextDepthToLayers(depthMm: number, layerHeightMm: number): number {
-  if (!Number.isFinite(layerHeightMm) || layerHeightMm <= 0) return Math.min(0.4, depthMm);
-  const snapped = Math.round(depthMm / layerHeightMm) * layerHeightMm;
-  return Math.round(Math.min(0.4, Math.max(layerHeightMm, snapped)) * 100) / 100;
-}
 
 interface UseLabelPlateExportReturn {
   readonly plates: readonly LabelPlatePlanEntry[];
