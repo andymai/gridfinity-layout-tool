@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.264.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.263.0...gridfinity-layout-tool-v4.264.0) (2026-07-20)
+
+
+### Features
+
+* **designer:** swappable-label socket mode for label tabs ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2669](https://github.com/andymai/gridfinity-layout-tool/issues/2669)) ([e1a2d29](https://github.com/andymai/gridfinity-layout-tool/commit/e1a2d29258beb02d53d9aed67aed88c5215fff80))
+
 ## [4.263.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.262.0...gridfinity-layout-tool-v4.263.0) (2026-07-20)
 
 
