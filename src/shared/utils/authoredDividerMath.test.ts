@@ -69,6 +69,12 @@ describe('computeAuthoredDividers', () => {
     expect(pieces.find((p) => p.orientation === 'horizontal')?.fromTop).toBe(false);
   });
 
+  it('returns no segments for a malformed grid (guards NaN coords)', () => {
+    // cells length mismatched with cols*rows (e.g. corrupted persisted config)
+    expect(deriveWallSegments({ cols: 2, rows: 2, cells: [0, 1] }, 80, 80)).toEqual([]);
+    expect(deriveWallSegments({ cols: 0, rows: 3, cells: [] }, 80, 80)).toEqual([]);
+  });
+
   it('returns nothing for a single-compartment grid', () => {
     const grid: CompartmentGrid = { cols: 1, rows: 1, cells: [0] };
     expect(

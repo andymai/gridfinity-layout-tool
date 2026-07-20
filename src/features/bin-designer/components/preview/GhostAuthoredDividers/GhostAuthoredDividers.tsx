@@ -80,13 +80,16 @@ export function GhostAuthoredDividers() {
       const isV = p.orientation === 'vertical';
       const a0 = Math.max(0, p.start);
       const a1 = Math.min(isV ? innerD : innerW, p.end);
-      // Interior coords → centered scene coords.
+      // Interior coords → centered scene coords. Asymmetric overhang shifts the
+      // interior center by (offsetX, offsetY), matching the seated mesh.
+      const cx = (v: number) => v - innerW / 2 + ovh.offsetX;
+      const cy = (v: number) => v - innerD / 2 + ovh.offsetY;
       const start: [number, number, number] = isV
-        ? [p.pos - innerW / 2, a0 - innerD / 2, topZ]
-        : [a0 - innerW / 2, p.pos - innerD / 2, topZ];
+        ? [cx(p.pos), cy(a0), topZ]
+        : [cx(a0), cy(p.pos), topZ];
       const end: [number, number, number] = isV
-        ? [p.pos - innerW / 2, a1 - innerD / 2, topZ]
-        : [a1 - innerW / 2, p.pos - innerD / 2, topZ];
+        ? [cx(p.pos), cy(a1), topZ]
+        : [cx(a1), cy(p.pos), topZ];
       // Place the label ~30% along the divider (not the center) so the labels
       // of two crossing dividers don't stack on the same point.
       const t = 0.3;
@@ -106,6 +109,8 @@ export function GhostAuthoredDividers() {
     wallThickness,
     dividerPieces.thickness,
     dividerPieces.clearance,
+    ovh.offsetX,
+    ovh.offsetY,
   ]);
 
   if (labels.length === 0) return null;

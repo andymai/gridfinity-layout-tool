@@ -280,19 +280,24 @@ export const MIN_LAP_PARTIAL_LENGTH = 2;
  * x/y.enabled flags — which are meaningless in custom mode. Callers gate on
  * `style === 'slotted'` themselves.
  */
+/** A custom grid has divider walls only when it holds more than one
+ *  compartment (a fully-merged grid produces no walls). */
+function customGridHasWalls(slotConfig: SlotConfig): boolean {
+  const g = slotConfig.customGrid;
+  return !!g && new Set(g.cells).size > 1;
+}
+
 export function slottedHasDividers(slotConfig: SlotConfig): boolean {
-  if (slotConfig.layout === 'custom') {
-    const g = slotConfig.customGrid;
-    return !!g && (g.cols > 1 || g.rows > 1);
-  }
+  if (slotConfig.layout === 'custom') return customGridHasWalls(slotConfig);
   return slotConfig.x.enabled || slotConfig.y.enabled;
 }
 
 /**
  * Which bin walls carry divider slots, keyed by side. In 'custom' layout any
  * wall can hold slots (the authored grid decides), so all four are reported as
- * slotted — callers that skip slotted walls (e.g. wall patterns) then leave
- * them plain, which is the safe choice.
+ * slotted when the grid has walls — callers that skip slotted walls (e.g. wall
+ * patterns) then leave them plain, which is the safe choice. A fully-merged
+ * grid has no walls, so every side is slot-free.
  */
 export function slottedWalls(slotConfig: SlotConfig): {
   front: boolean;
@@ -300,8 +305,9 @@ export function slottedWalls(slotConfig: SlotConfig): {
   left: boolean;
   right: boolean;
 } {
-  if (slotConfig.layout === 'custom' && slotConfig.customGrid) {
-    return { front: true, back: true, left: true, right: true };
+  if (slotConfig.layout === 'custom') {
+    const w = customGridHasWalls(slotConfig);
+    return { front: w, back: w, left: w, right: w };
   }
   // y-axis dividers seat in front/back walls; x-axis in left/right.
   return {

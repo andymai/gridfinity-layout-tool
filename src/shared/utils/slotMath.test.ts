@@ -421,6 +421,9 @@ describe('slottedHasDividers', () => {
     // A 1x1 grid has no walls.
     const single = cfg({ layout: 'custom', customGrid: { cols: 1, rows: 1, cells: [0] } });
     expect(slottedHasDividers(single)).toBe(false);
+    // A multi-cell grid fully merged into one compartment also has no walls.
+    const merged = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 2, cells: [0, 0, 0, 0] } });
+    expect(slottedHasDividers(merged)).toBe(false);
   });
 });
 
@@ -437,8 +440,13 @@ describe('slottedWalls', () => {
     expect(slottedWalls(cfg())).toEqual({ front: false, back: false, left: true, right: true });
   });
 
-  it('treats every wall as slotted in custom layout', () => {
+  it('treats every wall as slotted in custom layout with walls', () => {
     const custom = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 2, cells: [0, 1, 2, 3] } });
     expect(slottedWalls(custom)).toEqual({ front: true, back: true, left: true, right: true });
+  });
+
+  it('reports all walls slot-free when a custom grid is fully merged', () => {
+    const merged = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 2, cells: [0, 0, 0, 0] } });
+    expect(slottedWalls(merged)).toEqual({ front: false, back: false, left: false, right: false });
   });
 });

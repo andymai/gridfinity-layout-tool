@@ -49,6 +49,10 @@ export function deriveWallSegments(
   innerD: number
 ): WallSegment[] {
   const { cols, rows } = grid;
+  // Guard malformed grids (slot configs aren't deep-validated server-side): a
+  // corrupted persisted customGrid would otherwise divide by <1 or index past
+  // the cells array, producing NaN/Infinity coordinates.
+  if (cols < 1 || rows < 1 || grid.cells.length !== cols * rows) return [];
   if (cols <= 1 && rows <= 1) return [];
 
   const cellW = innerW / cols;
