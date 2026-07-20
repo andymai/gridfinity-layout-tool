@@ -57,12 +57,12 @@ import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../u
  * while the user is in ortho mode.
  */
 function BaseplatePreviewContextSync() {
-  const { gl, scene, camera } = useThree();
+  const { gl, scene, camera, invalidate } = useThree();
   useEffect(() => {
     if (camera instanceof PerspectiveCamera) {
-      setPreviewContext(gl, scene, camera);
+      setPreviewContext(gl, scene, camera, invalidate);
     }
-  }, [gl, scene, camera]);
+  }, [gl, scene, camera, invalidate]);
   return null;
 }
 

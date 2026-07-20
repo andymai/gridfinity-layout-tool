@@ -35,15 +35,29 @@ test.describe('Baseplate Library Thumbnails', () => {
       .poll(
         () =>
           page.evaluate(async () => {
-            const db: IDBDatabase = await new Promise((resolve, reject) => {
+            // Only inspect the DB the app already created — opening it here must
+            // never create an empty, store-less DB (that would break the app's
+            // own versioned open). Return false so the poll keeps retrying until
+            // the app has written its first design.
+            const dbs = await indexedDB.databases();
+            if (!dbs.some((d) => d.name === 'gridfinity-baseplate-v1')) return false;
+            const db = await new Promise<IDBDatabase | null>((resolve) => {
               const req = indexedDB.open('gridfinity-baseplate-v1');
               req.onsuccess = () => resolve(req.result);
-              req.onerror = () => reject(req.error);
+              req.onerror = () => resolve(null);
             });
-            const designs: { thumbnail: string | null }[] = await new Promise((resolve, reject) => {
-              const req = db.transaction('designs').objectStore('designs').getAll();
-              req.onsuccess = () => resolve(req.result);
-              req.onerror = () => reject(req.error);
+            if (!db || !db.objectStoreNames.contains('designs')) {
+              db?.close();
+              return false;
+            }
+            const designs = await new Promise<{ thumbnail: string | null }[]>((resolve) => {
+              try {
+                const req = db.transaction('designs').objectStore('designs').getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve([]);
+              } catch {
+                resolve([]);
+              }
             });
             db.close();
             return designs.some((d) => typeof d.thumbnail === 'string' && d.thumbnail.length > 0);

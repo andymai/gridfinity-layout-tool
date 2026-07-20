@@ -112,16 +112,30 @@ export function useBaseplateAutoSave(): SaveStatus {
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<StoredBaseplateParams | undefined>(undefined);
   const lastActiveId = useRef<BaseplateDesignId | null>(null);
+  // Since a save now awaits generation-settle + a delay, two saves for the same
+  // design can overlap. Each save carries a token; scheduling a newer one flips
+  // the previous token so the older save bails before its read-modify-write can
+  // land stale params/thumbnail (or flash a stale "saved" status). Same shape as
+  // the designer's `useAutoSave`.
+  const abortTokenRef = useRef<{ current: boolean }>({ current: false });
+  // The one-time backfill is likewise superseded by any real edit (its own save
+  // captures) — flipped from the save effect so a slow backfill can't overwrite
+  // the edit's params with a thumbnail-only write.
+  const backfillAbortRef = useRef<{ current: boolean }>({ current: false });
 
   const performSave = useCallback(
-    async (paramsToSave: StoredBaseplateParams, designId: BaseplateDesignId): Promise<void> => {
+    async (
+      paramsToSave: StoredBaseplateParams,
+      designId: BaseplateDesignId,
+      abortToken: { current: boolean }
+    ): Promise<void> => {
       setStatus('saving');
 
-      // The active design can switch while any await below is in flight.
-      // Reporting or persisting this save's outcome then would flash a status —
-      // or a thumbnail — belonging to the old design.
+      // Bail when a newer save superseded this one (token flipped) or the active
+      // design switched — either way, reporting or persisting this save's
+      // outcome would clobber newer data or flash a stale status/thumbnail.
       const superseded = (): boolean =>
-        useLayoutStore.getState().layout.activeBaseplateId !== designId;
+        abortToken.current || useLayoutStore.getState().layout.activeBaseplateId !== designId;
 
       // Wait for the mesh to settle, then let R3F flush the final frame, so the
       // capture reads the finished geometry rather than a ghost wireframe.
@@ -133,6 +147,7 @@ export function useBaseplateAutoSave(): SaveStatus {
       // `null` (capture unavailable — e.g. WebGL context lost) leaves the stored
       // thumbnail untouched rather than clearing it; a data URL replaces it.
       const thumbnail = captureBaseplateThumbnailAtPreset(resolveThumbnailFraming(paramsToSave));
+      if (superseded()) return;
 
       const result = await updateDesignParams(designId, paramsToSave, thumbnail ?? undefined);
       if (superseded()) return;
@@ -166,9 +181,10 @@ export function useBaseplateAutoSave(): SaveStatus {
     const designId = activeBaseplateId;
     thumbnailBackfilledFor.current = designId;
 
-    let cancelled = false;
+    const token = { current: false };
+    backfillAbortRef.current = token;
     const stale = (): boolean =>
-      cancelled || useLayoutStore.getState().layout.activeBaseplateId !== designId;
+      token.current || useLayoutStore.getState().layout.activeBaseplateId !== designId;
 
     void (async () => {
       const existing = await loadDesign(designId);
@@ -194,7 +210,7 @@ export function useBaseplateAutoSave(): SaveStatus {
     })();
 
     return () => {
-      cancelled = true;
+      token.current = true;
     };
   }, [activeBaseplateId]);
 
@@ -225,17 +241,25 @@ export function useBaseplateAutoSave(): SaveStatus {
       return;
     }
 
+    // This edit is now the authority for the design's params and thumbnail:
+    // supersede any in-flight save and the one-time backfill so neither can land
+    // a stale write after it.
+    abortTokenRef.current.current = true;
+    backfillAbortRef.current.current = true;
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
+    const abortToken = { current: false };
+    abortTokenRef.current = abortToken;
     const designId = activeBaseplateId;
     const paramsToSave = params;
     timerRef.current = setTimeout(() => {
-      void performSave(paramsToSave, designId);
+      void performSave(paramsToSave, designId, abortToken);
     }, AUTO_SAVE_DELAY_MS);
 
     return () => {
+      abortToken.current = true;
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }

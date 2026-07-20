@@ -36,21 +36,29 @@ let previewCanvasEl: HTMLCanvasElement | null = null;
 let previewRenderer: WebGLRenderer | null = null;
 let previewScene: Scene | null = null;
 let previewCamera: PerspectiveCamera | null = null;
+let previewInvalidate: (() => void) | null = null;
 
 /** Register the DOM canvas used as the capture source. */
 export function setPreviewCanvas(canvas: HTMLCanvasElement): void {
   previewCanvasEl = canvas;
 }
 
-/** Register the Three.js context for preset-angle captures. */
+/**
+ * Register the Three.js context for preset-angle captures. `invalidate` is
+ * R3F's demand-frame trigger: after a capture restores the camera we call it so
+ * R3F repaints with whatever camera is actually active (e.g. the orthographic
+ * one), rather than leaving our manual perspective frame on screen.
+ */
 export function setPreviewContext(
   renderer: WebGLRenderer,
   scene: Scene,
-  camera: PerspectiveCamera
+  camera: PerspectiveCamera,
+  invalidate?: () => void
 ): void {
   previewRenderer = renderer;
   previewScene = scene;
   previewCamera = camera;
+  previewInvalidate = invalidate ?? null;
 }
 
 /** Clear all registered references (on preview unmount). */
@@ -59,6 +67,7 @@ export function clearPreviewCanvas(): void {
   previewRenderer = null;
   previewScene = null;
   previewCamera = null;
+  previewInvalidate = null;
 }
 
 export interface ThumbnailCaptureOptions {
@@ -123,9 +132,20 @@ export function captureBaseplateThumbnailAtPreset(
   framing: BaseplateThumbnailFraming,
   options?: ThumbnailCaptureOptions
 ): string | null {
-  if (!previewRenderer || !previewScene || !previewCamera) {
+  const renderer = previewRenderer;
+  const scene = previewScene;
+  const camera = previewCamera;
+  if (!renderer || !scene || !camera) {
     return captureThumbnail(options);
   }
+
+  // Saved outside the try so restoration in `finally` always runs — even if
+  // `render()` throws on context loss, the live preview must not be left at the
+  // capture pose with overlays hidden.
+  const savedPosition = camera.position.clone();
+  const savedUp = camera.up.clone();
+  const savedQuaternion = camera.quaternion.clone();
+  const hidden: { visible: boolean }[] = [];
 
   try {
     const { width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack } =
@@ -143,47 +163,47 @@ export function captureBaseplateThumbnailAtPreset(
       paddingRight,
       paddingFront,
       paddingBack,
-      previewCamera.fov
+      camera.fov
     );
 
-    const savedPosition = previewCamera.position.clone();
-    const savedUp = previewCamera.up.clone();
-    const savedQuaternion = previewCamera.quaternion.clone();
-
-    previewCamera.position.copy(
+    camera.position.copy(
       new Vector3(CAPTURE_DIRECTION[0], CAPTURE_DIRECTION[1], CAPTURE_DIRECTION[2])
         .multiplyScalar(idealDistance)
         .add(center)
     );
-    previewCamera.up.set(0, 0, 1);
-    previewCamera.lookAt(center);
-    previewCamera.updateProjectionMatrix();
+    camera.up.set(0, 0, 1);
+    camera.lookAt(center);
+    camera.updateProjectionMatrix();
 
     // Hide transient overlays (ghost outline sits at renderOrder 3) so a
     // mid-edit wireframe never bleeds into the saved image.
-    const hidden: { obj: { visible: boolean } }[] = [];
-    previewScene.traverse((obj) => {
+    scene.traverse((obj) => {
       if (obj.renderOrder >= 2 && obj.visible) {
-        hidden.push({ obj });
+        hidden.push(obj);
         obj.visible = false;
       }
     });
 
-    previewRenderer.render(previewScene, previewCamera);
-    const result = captureThumbnail(options);
-
-    for (const { obj } of hidden) {
-      obj.visible = true;
-    }
-
-    previewCamera.position.copy(savedPosition);
-    previewCamera.up.copy(savedUp);
-    previewCamera.quaternion.copy(savedQuaternion);
-    previewCamera.updateProjectionMatrix();
-    previewRenderer.render(previewScene, previewCamera);
-
-    return result;
+    renderer.render(scene, camera);
+    return captureThumbnail(options);
   } catch {
     return captureThumbnail(options);
+  } finally {
+    for (const obj of hidden) {
+      obj.visible = true;
+    }
+    camera.position.copy(savedPosition);
+    camera.up.copy(savedUp);
+    camera.quaternion.copy(savedQuaternion);
+    camera.updateProjectionMatrix();
+    // Repaint the restored pose. `render()` can throw on context loss, so guard
+    // it; `invalidate()` then lets R3F redraw with the actually-active camera
+    // (perspective or orthographic) on its next demand frame.
+    try {
+      renderer.render(scene, camera);
+    } catch {
+      // Context lost — nothing to restore onto; R3F's error boundary handles it.
+    }
+    previewInvalidate?.();
   }
 }

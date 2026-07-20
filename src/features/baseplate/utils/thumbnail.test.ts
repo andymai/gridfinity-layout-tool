@@ -155,4 +155,51 @@ describe('captureBaseplateThumbnailAtPreset', () => {
     // Restored after capture so the live preview keeps its overlay.
     expect(ghost.visible).toBe(true);
   });
+
+  it('restores the camera and overlays even when render throws (context loss)', () => {
+    const renderCalls = vi.fn();
+    const renderer = {
+      render: vi.fn(() => {
+        // First render (the preset frame) throws, e.g. GL context loss.
+        if (renderCalls.mock.calls.length === 0) {
+          renderCalls();
+          throw new Error('context lost');
+        }
+        renderCalls();
+      }),
+    } as unknown as WebGLRenderer;
+    const scene = new Scene();
+    const ghost = new Mesh();
+    ghost.renderOrder = 3;
+    scene.add(ghost);
+    const camera = new PerspectiveCamera(45, 1, 0.1, 20_000);
+    camera.position.set(100, -100, 80);
+    camera.lookAt(0, 0, 0);
+    const originalPosition = camera.position.clone();
+    const originalQuaternion = camera.quaternion.clone();
+
+    setPreviewCanvas(mockCanvas);
+    setPreviewContext(renderer, scene, camera);
+
+    // Falls back to a current-view capture rather than throwing.
+    expect(captureBaseplateThumbnailAtPreset(FRAMING)).toBe('data:image/webp;base64,mockThumb');
+    // The live preview must not be left mutated by the aborted capture.
+    expect(ghost.visible).toBe(true);
+    expect(camera.position.distanceTo(originalPosition)).toBeLessThan(1e-6);
+    expect(camera.quaternion.angleTo(originalQuaternion)).toBeLessThan(1e-6);
+  });
+
+  it('invalidates so R3F repaints with the active camera after restoring', () => {
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(45, 1, 0.1, 20_000);
+    const invalidate = vi.fn();
+
+    setPreviewCanvas(mockCanvas);
+    setPreviewContext(renderer, scene, camera, invalidate);
+
+    captureBaseplateThumbnailAtPreset(FRAMING);
+
+    expect(invalidate).toHaveBeenCalledTimes(1);
+  });
 });
