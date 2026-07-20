@@ -24,7 +24,14 @@ import type {
   MarginPiece,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
-import type { WorkerMessage, WorkerResponse, WorkerCacheStats, ExportFormat } from './types';
+import type {
+  WorkerMessage,
+  WorkerResponse,
+  WorkerCacheStats,
+  ExportFormat,
+  LabelPlateExportOptions,
+  LabelPlateExportSpec,
+} from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
 import {
   generateBin as generateBinImpl,
@@ -68,6 +75,7 @@ import {
   exportConnectorKey as exportConnectorKeyImpl,
   exportMargin as exportMarginImpl,
   exportConnectorSample as exportConnectorSampleImpl,
+  exportLabelPlates as exportLabelPlatesImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -522,6 +530,14 @@ export class GenerationBridge {
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
     return exportConnectorSampleImpl(this, params, format, options);
+  }
+
+  exportLabelPlates(
+    plates: readonly LabelPlateExportSpec[],
+    options: LabelPlateExportOptions,
+    format: ExportFormat
+  ): Promise<BaseplateExportResult> {
+    return exportLabelPlatesImpl(this, plates, options, format);
   }
 
   /** Whether the bridge has been destroyed */

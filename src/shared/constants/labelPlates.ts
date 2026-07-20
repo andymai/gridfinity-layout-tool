@@ -43,6 +43,28 @@ export const LABEL_PLATE_THICKNESS_MM = 1.2;
 export const LABEL_PLATE_CORNER_RADIUS_MM = 0.5;
 
 /**
+ * Plate perimeter latch groove (the negative the socket ribs click into):
+ * inset depth per side (`latchX`), band height (`latchZ`), and start height
+ * above the plate bottom. Full-footprint bottom (0.2) and top (0.4) flanges
+ * remain on either side of the band.
+ */
+export const LABEL_PLATE_LATCH_INSET_MM = 0.2;
+export const LABEL_PLATE_LATCH_BAND_MM = 0.6;
+export const LABEL_PLATE_LATCH_START_MM = 0.2;
+
+/**
+ * v1 backward-compat channels on 1U plates (the standard's default): three
+ * T-profile channels cut into the underside at these X offsets, letting the
+ * plate also click into legacy v1 sockets. Mouth 1.0mm wide × 0.2mm tall at
+ * the bottom face, widening to a 2.0mm cavity up to 0.8mm.
+ */
+export const LABEL_PLATE_V1_CHANNEL_XS_MM: readonly number[] = [-12.133, 0, 12.133];
+export const LABEL_PLATE_V1_MOUTH_WIDTH_MM = 1;
+export const LABEL_PLATE_V1_MOUTH_HEIGHT_MM = 0.2;
+export const LABEL_PLATE_V1_CAVITY_WIDTH_MM = 2;
+export const LABEL_PLATE_V1_CAVITY_TOP_MM = 0.8;
+
+/**
  * Socket pocket = plate + this TOTAL clearance in X and Y (`socket_offset`
  * in the standard) — total, not per-side.
  */

@@ -43,6 +43,7 @@ graph TB
 - `worker/generators/cutoutBuilder.ts` — solid-mode cutout cuts
 - `worker/generators/labelTabBuilder.ts` — label tab shelves + gussets; in swappable-label socket mode (#2666) the shelf thickens and gets a click-in plate pocket + retention ribs per `@/shared/constants/labelPlates`, with a bin-spanning fallback when no compartment fits a standard plate (plan math shared with the UI via `@/shared/utils/labelSocketPlan`)
 - `worker/generators/textBuilder.ts` — engraved/embossed/through-cut text solids; auto-fits font size to the host (see Gotchas re: linear sizing) and resolves the stencil-font swap for through-cut
+- `worker/generators/labelPlateBuilder.ts` — printable swappable label plates (#2666): interchange-spec body + latch groove + v1-compat channels from `@/shared/constants/labelPlates`, layer-snapped emboss/deboss text; exported via `EXPORT_LABEL_PLATES` (compound → STL/STEP, connectorSample pattern)
 - `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
 - `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
 - `worker/generators/handleBuilder.ts` — handle hole through-cuts in bin walls

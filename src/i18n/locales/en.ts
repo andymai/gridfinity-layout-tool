@@ -1657,6 +1657,17 @@ const en: Record<string, string> = {
   'binDesigner.plateFitOffset': 'Plate fit offset',
   'binDesigner.plateFitOffsetHint':
     'Fine-tune the socket fit for your printer: negative = tighter, positive = looser.',
+  'binDesigner.plates.title': 'Label plates',
+  'binDesigner.plates.blank': 'blank',
+  'binDesigner.plates.preview': 'Preview plates',
+  'binDesigner.plates.export': 'Export plates',
+  'binDesigner.plates.exportComplete': 'Label plates exported',
+  'binDesigner.plates.exportFailed': 'Label plate export failed',
+  'binDesigner.plates.dialogTitle': 'Export label plates',
+  'binDesigner.plates.dialogDescription':
+    'One printable file with a plate for each socket, carrying its compartment label text. Text depth snaps to whole layers, so a single filament swap prints two-color labels.',
+  'binDesigner.plates.previewTitle': 'Label plates preview',
+  'binDesigner.plates.previewLoading': 'Generating preview…',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
   'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',

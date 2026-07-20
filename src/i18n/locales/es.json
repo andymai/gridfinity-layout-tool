@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Ninguna placa estándar cabe",
   "binDesigner.plateSpanningNote": "Los compartimentos son demasiado estrechos para placas individuales; se usa un solo alojamiento a lo ancho del contenedor.",
   "binDesigner.plateFitOffset": "Ajuste de la placa",
-  "binDesigner.plateFitOffsetHint": "Afina el ajuste del alojamiento para tu impresora: negativo = más apretado, positivo = más holgado."
+  "binDesigner.plateFitOffsetHint": "Afina el ajuste del alojamiento para tu impresora: negativo = más apretado, positivo = más holgado.",
+  "binDesigner.plates.title": "Placas de etiqueta",
+  "binDesigner.plates.blank": "vacía",
+  "binDesigner.plates.preview": "Vista previa de placas",
+  "binDesigner.plates.export": "Exportar placas",
+  "binDesigner.plates.exportComplete": "Placas de etiqueta exportadas",
+  "binDesigner.plates.exportFailed": "Error al exportar las placas de etiqueta",
+  "binDesigner.plates.dialogTitle": "Exportar placas de etiqueta",
+  "binDesigner.plates.dialogDescription": "Un archivo imprimible con una placa por alojamiento, con el texto de etiqueta de su compartimento. La profundidad del texto se ajusta a capas completas: un solo cambio de filamento imprime etiquetas a dos colores.",
+  "binDesigner.plates.previewTitle": "Vista previa de placas de etiqueta",
+  "binDesigner.plates.previewLoading": "Generando vista previa…"
 }

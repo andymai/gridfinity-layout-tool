@@ -15,7 +15,12 @@ import type {
   MarginPiece,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
-import type { WorkerMessage, ExportFormat } from './types';
+import type {
+  WorkerMessage,
+  ExportFormat,
+  LabelPlateExportOptions,
+  LabelPlateExportSpec,
+} from './types';
 import {
   computeBaseplateExportTimeoutMs,
   computeExportTimeoutMs,
@@ -382,6 +387,28 @@ export function exportConnectorSample(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
       },
+    })
+  );
+}
+
+/**
+ * Export swappable label plates (#2666). Like the fit-sample tray, the work
+ * is small and footprint-independent (a handful of flat plates + text
+ * booleans), so it shares the fixed generous export ceiling.
+ */
+export function exportLabelPlates(
+  ctx: BridgeExportContext,
+  plates: readonly LabelPlateExportSpec[],
+  options: LabelPlateExportOptions,
+  format: ExportFormat
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    CONNECTOR_SAMPLE_TIMEOUT_MS,
+    (requestId) => ({
+      type: 'EXPORT_LABEL_PLATES',
+      payload: { plates, options, requestId, format },
     })
   );
 }

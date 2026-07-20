@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Nessuna targhetta standard entra",
   "binDesigner.plateSpanningNote": "Gli scomparti sono troppo stretti per targhette singole: viene usata una sola sede a tutta larghezza.",
   "binDesigner.plateFitOffset": "Gioco della targhetta",
-  "binDesigner.plateFitOffsetHint": "Regola il gioco della sede per la tua stampante: negativo = più stretto, positivo = più largo."
+  "binDesigner.plateFitOffsetHint": "Regola il gioco della sede per la tua stampante: negativo = più stretto, positivo = più largo.",
+  "binDesigner.plates.title": "Targhette etichetta",
+  "binDesigner.plates.blank": "vuota",
+  "binDesigner.plates.preview": "Anteprima targhette",
+  "binDesigner.plates.export": "Esporta targhette",
+  "binDesigner.plates.exportComplete": "Targhette etichetta esportate",
+  "binDesigner.plates.exportFailed": "Esportazione delle targhette non riuscita",
+  "binDesigner.plates.dialogTitle": "Esporta targhette etichetta",
+  "binDesigner.plates.dialogDescription": "Un file stampabile con una targhetta per ogni sede, con il testo di etichetta del suo scomparto. La profondità del testo si allinea a layer interi: un solo cambio filamento stampa etichette bicolore.",
+  "binDesigner.plates.previewTitle": "Anteprima targhette etichetta",
+  "binDesigner.plates.previewLoading": "Generazione anteprima…"
 }

@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Kein Standard-Etikett passt",
   "binDesigner.plateSpanningNote": "Die Fächer sind zu schmal für einzelne Etiketten — stattdessen wird eine behälterbreite Aufnahme verwendet.",
   "binDesigner.plateFitOffset": "Etiketten-Passung",
-  "binDesigner.plateFitOffsetHint": "Feinabstimmung der Aufnahme für deinen Drucker: negativ = strammer, positiv = lockerer."
+  "binDesigner.plateFitOffsetHint": "Feinabstimmung der Aufnahme für deinen Drucker: negativ = strammer, positiv = lockerer.",
+  "binDesigner.plates.title": "Etikettenplatten",
+  "binDesigner.plates.blank": "leer",
+  "binDesigner.plates.preview": "Platten-Vorschau",
+  "binDesigner.plates.export": "Platten exportieren",
+  "binDesigner.plates.exportComplete": "Etikettenplatten exportiert",
+  "binDesigner.plates.exportFailed": "Export der Etikettenplatten fehlgeschlagen",
+  "binDesigner.plates.dialogTitle": "Etikettenplatten exportieren",
+  "binDesigner.plates.dialogDescription": "Eine druckbare Datei mit einer Platte pro Aufnahme, jeweils mit dem Beschriftungstext des Fachs. Die Texttiefe rastet auf ganze Schichten ein — ein einziger Filamentwechsel druckt zweifarbige Etiketten.",
+  "binDesigner.plates.previewTitle": "Vorschau der Etikettenplatten",
+  "binDesigner.plates.previewLoading": "Vorschau wird erstellt…"
 }

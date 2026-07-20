@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { planLabelSockets } from './labelSocketPlan';
+import { planLabelSockets, planLabelPlates } from './labelSocketPlan';
 import type { CompartmentConfig } from '@/shared/types/bin';
 
 const CLEARANCE = 0.3;
@@ -85,5 +85,51 @@ describe('planLabelSockets', () => {
     // 39.1mm hosts a 1U socket at 0.3 clearance (38.3) but not at 1.0 (39.0
     // still fits) — push to 1.2 so it tips over the edge.
     expect(planLabelSockets(grid(1, 1, [0]), 39.1, 1.2).anyFits).toBe(false);
+  });
+});
+
+describe('planLabelPlates', () => {
+  it('emits one plate per socketed compartment carrying its text', () => {
+    const plates = planLabelPlates(
+      grid(2, 1, [0, 1], { compartmentTexts: ['SCREWS', '  BOLTS '] }),
+      123.1,
+      CLEARANCE,
+      'FALLBACK'
+    );
+    expect(plates).toEqual([
+      { compartmentId: 0, widthU: 1, text: 'SCREWS' },
+      { compartmentId: 1, widthU: 1, text: 'BOLTS' },
+    ]);
+  });
+
+  it('skips compartments whose tab hosts no socket', () => {
+    // 4 columns on a 3U bin: outer columns (~29mm) fit nothing; a merged
+    // middle pair (~60mm) fits 1U.
+    const plates = planLabelPlates(
+      grid(4, 1, [0, 1, 1, 2], { compartmentTexts: ['A', 'B', 'C'] }),
+      123.1,
+      CLEARANCE,
+      ''
+    );
+    expect(plates).toEqual([{ compartmentId: 1, widthU: 1, text: 'B' }]);
+  });
+
+  it('emits a single fallback-text plate for the spanning socket', () => {
+    const plates = planLabelPlates(
+      grid(4, 1, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }),
+      81.1,
+      CLEARANCE,
+      ' Hardware '
+    );
+    expect(plates).toEqual([{ compartmentId: null, widthU: 2, text: 'Hardware' }]);
+  });
+
+  it('emits no plates when nothing fits', () => {
+    expect(planLabelPlates(grid(1, 1, [0]), 18.35, CLEARANCE, 'X')).toEqual([]);
+  });
+
+  it('produces blank plates for compartments without text', () => {
+    const plates = planLabelPlates(grid(1, 1, [0]), 39.1, CLEARANCE, '');
+    expect(plates).toEqual([{ compartmentId: 0, widthU: 1, text: '' }]);
   });
 });

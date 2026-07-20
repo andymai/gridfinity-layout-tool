@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Geen standaardplaatje past",
   "binDesigner.plateSpanningNote": "De vakken zijn te smal voor losse plaatjes — er wordt één houder over de hele breedte gebruikt.",
   "binDesigner.plateFitOffset": "Plaatpassing",
-  "binDesigner.plateFitOffsetHint": "Stem de houderpassing af op je printer: negatief = strakker, positief = losser."
+  "binDesigner.plateFitOffsetHint": "Stem de houderpassing af op je printer: negatief = strakker, positief = losser.",
+  "binDesigner.plates.title": "Labelplaatjes",
+  "binDesigner.plates.blank": "leeg",
+  "binDesigner.plates.preview": "Plaatjes bekijken",
+  "binDesigner.plates.export": "Plaatjes exporteren",
+  "binDesigner.plates.exportComplete": "Labelplaatjes geëxporteerd",
+  "binDesigner.plates.exportFailed": "Exporteren van labelplaatjes mislukt",
+  "binDesigner.plates.dialogTitle": "Labelplaatjes exporteren",
+  "binDesigner.plates.dialogDescription": "Eén printbaar bestand met per houder een plaatje, met de labeltekst van het vak. De tekstdiepte klikt vast op hele lagen — één filamentwissel print tweekleurige labels.",
+  "binDesigner.plates.previewTitle": "Voorbeeld labelplaatjes",
+  "binDesigner.plates.previewLoading": "Voorbeeld genereren…"
 }

@@ -45,6 +45,40 @@ export interface LabelSocketPlan {
   readonly anyFits: boolean;
 }
 
+/** One printable plate derived from a socket-mode design. */
+export interface LabelPlatePlanEntry {
+  /** Compartment the plate labels, or null for the bin-spanning socket. */
+  readonly compartmentId: number | null;
+  readonly widthU: LabelPlateWidthU;
+  readonly text: string;
+}
+
+/**
+ * Enumerate the plates a socket-mode design needs: one per socketed
+ * compartment carrying its `compartmentTexts` entry (or the spanning
+ * fallback's single plate carrying `fallbackText`). Shares `planLabelSockets`
+ * so the plate set can never disagree with the cut sockets.
+ */
+export function planLabelPlates(
+  compartments: CompartmentConfig,
+  innerWmm: number,
+  clearanceMm: number,
+  fallbackText: string
+): LabelPlatePlanEntry[] {
+  const plan = planLabelSockets(compartments, innerWmm, clearanceMm);
+  if (plan.spanningWidthU !== null) {
+    return [{ compartmentId: null, widthU: plan.spanningWidthU, text: fallbackText.trim() }];
+  }
+  const texts = compartments.compartmentTexts ?? [];
+  return plan.compartments
+    .filter((p) => p.plateWidthU !== null)
+    .map((p) => ({
+      compartmentId: p.compartmentId,
+      widthU: p.plateWidthU as LabelPlateWidthU,
+      text: (texts[p.compartmentId] ?? '').trim(),
+    }));
+}
+
 export function planLabelSockets(
   compartments: CompartmentConfig,
   innerWmm: number,

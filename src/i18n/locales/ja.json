@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "標準プレートが入りません",
   "binDesigner.plateSpanningNote": "コンパートメントが狭すぎるため、ビン全幅の1つのソケットを使用します。",
   "binDesigner.plateFitOffset": "プレートの合わせ調整",
-  "binDesigner.plateFitOffsetHint": "プリンターに合わせてソケットのはめあいを微調整：マイナス＝きつく、プラス＝ゆるく。"
+  "binDesigner.plateFitOffsetHint": "プリンターに合わせてソケットのはめあいを微調整：マイナス＝きつく、プラス＝ゆるく。",
+  "binDesigner.plates.title": "ラベルプレート",
+  "binDesigner.plates.blank": "空白",
+  "binDesigner.plates.preview": "プレートをプレビュー",
+  "binDesigner.plates.export": "プレートを書き出す",
+  "binDesigner.plates.exportComplete": "ラベルプレートを書き出しました",
+  "binDesigner.plates.exportFailed": "ラベルプレートの書き出しに失敗しました",
+  "binDesigner.plates.dialogTitle": "ラベルプレートの書き出し",
+  "binDesigner.plates.dialogDescription": "各ソケットに1枚ずつ、コンパートメントのラベルテキストを載せたプレートをまとめた印刷用ファイルです。文字の深さはレイヤー単位にスナップされるため、フィラメント交換1回で2色のラベルが印刷できます。",
+  "binDesigner.plates.previewTitle": "ラベルプレートのプレビュー",
+  "binDesigner.plates.previewLoading": "プレビューを生成中…"
 }

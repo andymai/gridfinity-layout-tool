@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Ingen standardplatta passar",
   "binDesigner.plateSpanningNote": "Facken är för smala för egna plattor — ett enda fäste över hela lådans bredd används i stället.",
   "binDesigner.plateFitOffset": "Plattpassning",
-  "binDesigner.plateFitOffsetHint": "Finjustera fästets passning för din skrivare: negativt = tätare, positivt = lösare."
+  "binDesigner.plateFitOffsetHint": "Finjustera fästets passning för din skrivare: negativt = tätare, positivt = lösare.",
+  "binDesigner.plates.title": "Etikettplattor",
+  "binDesigner.plates.blank": "tom",
+  "binDesigner.plates.preview": "Förhandsgranska plattor",
+  "binDesigner.plates.export": "Exportera plattor",
+  "binDesigner.plates.exportComplete": "Etikettplattor exporterade",
+  "binDesigner.plates.exportFailed": "Export av etikettplattor misslyckades",
+  "binDesigner.plates.dialogTitle": "Exportera etikettplattor",
+  "binDesigner.plates.dialogDescription": "En utskrivbar fil med en platta per fäste, med fackets etikettext. Textdjupet snäpper till hela lager — ett enda filamentbyte ger tvåfärgade etiketter.",
+  "binDesigner.plates.previewTitle": "Förhandsgranskning av etikettplattor",
+  "binDesigner.plates.previewLoading": "Genererar förhandsgranskning…"
 }

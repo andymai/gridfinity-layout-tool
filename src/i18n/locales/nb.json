@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Ingen standardplate passer",
   "binDesigner.plateSpanningNote": "Rommene er for smale for egne plater — én sokkel i hele boksens bredde brukes i stedet.",
   "binDesigner.plateFitOffset": "Platepasning",
-  "binDesigner.plateFitOffsetHint": "Finjuster sokkelpasningen for skriveren din: negativ = strammere, positiv = løsere."
+  "binDesigner.plateFitOffsetHint": "Finjuster sokkelpasningen for skriveren din: negativ = strammere, positiv = løsere.",
+  "binDesigner.plates.title": "Etikettplater",
+  "binDesigner.plates.blank": "tom",
+  "binDesigner.plates.preview": "Forhåndsvis plater",
+  "binDesigner.plates.export": "Eksporter plater",
+  "binDesigner.plates.exportComplete": "Etikettplater eksportert",
+  "binDesigner.plates.exportFailed": "Eksport av etikettplater mislyktes",
+  "binDesigner.plates.dialogTitle": "Eksporter etikettplater",
+  "binDesigner.plates.dialogDescription": "Én utskriftsklar fil med en plate per sokkel, med rommets etikettekst. Tekstdybden festes til hele lag — ett filamentbytte gir tofargede etiketter.",
+  "binDesigner.plates.previewTitle": "Forhåndsvisning av etikettplater",
+  "binDesigner.plates.previewLoading": "Genererer forhåndsvisning…"
 }

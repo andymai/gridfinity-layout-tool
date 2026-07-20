@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Nenhuma placa padrão cabe",
   "binDesigner.plateSpanningNote": "Os compartimentos são estreitos demais para placas individuais — um único encaixe na largura total é usado.",
   "binDesigner.plateFitOffset": "Ajuste da placa",
-  "binDesigner.plateFitOffsetHint": "Ajuste fino do encaixe para a sua impressora: negativo = mais justo, positivo = mais folgado."
+  "binDesigner.plateFitOffsetHint": "Ajuste fino do encaixe para a sua impressora: negativo = mais justo, positivo = mais folgado.",
+  "binDesigner.plates.title": "Placas de rótulo",
+  "binDesigner.plates.blank": "vazia",
+  "binDesigner.plates.preview": "Prévia das placas",
+  "binDesigner.plates.export": "Exportar placas",
+  "binDesigner.plates.exportComplete": "Placas de rótulo exportadas",
+  "binDesigner.plates.exportFailed": "Falha ao exportar as placas de rótulo",
+  "binDesigner.plates.dialogTitle": "Exportar placas de rótulo",
+  "binDesigner.plates.dialogDescription": "Um arquivo imprimível com uma placa por encaixe, com o texto de rótulo do compartimento. A profundidade do texto se alinha a camadas inteiras: uma única troca de filamento imprime rótulos em duas cores.",
+  "binDesigner.plates.previewTitle": "Prévia das placas de rótulo",
+  "binDesigner.plates.previewLoading": "Gerando prévia…"
 }

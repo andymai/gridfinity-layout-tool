@@ -30,4 +30,8 @@ export type {
   ExportFormat,
   ExportErrorCode,
 } from '@/features/generation/bridge';
+export type {
+  LabelPlateExportOptions,
+  LabelPlateExportSpec,
+} from '@/features/generation/bridge/types';
 export type { MeshImportOutcome } from '@/features/generation/bridge/bridgeTypes';

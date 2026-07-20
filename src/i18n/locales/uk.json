@@ -2799,5 +2799,15 @@
   "binDesigner.plateWidthNoFit": "Жодна стандартна пластина не підходить",
   "binDesigner.plateSpanningNote": "Відсіки завузькі для окремих пластин — використовується одне гніздо на всю ширину контейнера.",
   "binDesigner.plateFitOffset": "Підгонка пластини",
-  "binDesigner.plateFitOffsetHint": "Точне налаштування посадки гнізда для вашого принтера: менше = щільніше, більше = вільніше."
+  "binDesigner.plateFitOffsetHint": "Точне налаштування посадки гнізда для вашого принтера: менше = щільніше, більше = вільніше.",
+  "binDesigner.plates.title": "Пластини етикеток",
+  "binDesigner.plates.blank": "порожня",
+  "binDesigner.plates.preview": "Переглянути пластини",
+  "binDesigner.plates.export": "Експортувати пластини",
+  "binDesigner.plates.exportComplete": "Пластини етикеток експортовано",
+  "binDesigner.plates.exportFailed": "Не вдалося експортувати пластини етикеток",
+  "binDesigner.plates.dialogTitle": "Експорт пластин етикеток",
+  "binDesigner.plates.dialogDescription": "Один файл для друку з пластиною для кожного гнізда з текстом етикетки відсіку. Глибина тексту вирівнюється за цілими шарами — одна заміна філаменту друкує двоколірні етикетки.",
+  "binDesigner.plates.previewTitle": "Перегляд пластин етикеток",
+  "binDesigner.plates.previewLoading": "Створення перегляду…"
 }

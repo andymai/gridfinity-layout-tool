@@ -10,6 +10,7 @@ import type {
   ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
+  TextStyleDefaults,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type {
@@ -62,6 +63,7 @@ export type WorkerMessage =
   | ExportBaseplateMarginMessage
   | ExportConnectorKeyMessage
   | ExportConnectorSampleMessage
+  | ExportLabelPlatesMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -230,6 +232,39 @@ export interface ExportBaseplateMarginPayload {
 export interface ExportConnectorSampleMessage {
   readonly type: 'EXPORT_CONNECTOR_SAMPLE';
   readonly payload: ExportBaseplatePayload;
+}
+
+/** One swappable label plate to build (#2666): standard width + its text. */
+export interface LabelPlateExportSpec {
+  readonly widthU: 1 | 2 | 3;
+  readonly text: string;
+}
+
+/**
+ * Build options for label plates. `textDepthMm` arrives pre-snapped to a
+ * whole layer-height multiple (the main thread owns print settings).
+ */
+export interface LabelPlateExportOptions {
+  readonly textMode: 'emboss' | 'deboss';
+  readonly textDepthMm: number;
+  readonly textDefaults: TextStyleDefaults;
+  readonly v1Channels: boolean;
+}
+
+/**
+ * Export swappable label plates for a socket-mode design (#2666). Reuses the
+ * BASEPLATE_EXPORT_RESULT response shape (data + format + fileName).
+ */
+export interface ExportLabelPlatesMessage {
+  readonly type: 'EXPORT_LABEL_PLATES';
+  readonly payload: ExportLabelPlatesPayload;
+}
+
+export interface ExportLabelPlatesPayload {
+  readonly plates: readonly LabelPlateExportSpec[];
+  readonly options: LabelPlateExportOptions;
+  readonly requestId: string;
+  readonly format: ExportFormat;
 }
 
 export interface ExportMessage {
