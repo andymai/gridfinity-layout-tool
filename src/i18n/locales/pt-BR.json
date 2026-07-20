@@ -865,7 +865,7 @@
   "binDesigner.slotPartialLengthSet": "Conjunto de comprimentos",
   "binDesigner.slotPartialNeedsLap": "Comprimentos parciais exigem divisórias cruzadas entrelaçadas",
   "binDesigner.slotSnapTooThin": "A espessura da divisória deve ser de pelo menos {min}mm para peças destacáveis",
-  "binDesigner.slotPartialSummary": "{count} peças, {min}–{max}mm",
+  "binDesigner.slotPartialSummary": "{count} peças, {min}–{max} × {height}mm",
   "binDesigner.slotPartialCapped": "mais longa limitada",
   "binDesigner.dividerShortInterior": "Centro",
   "binDesigner.dividerShortEdge": "Borda",

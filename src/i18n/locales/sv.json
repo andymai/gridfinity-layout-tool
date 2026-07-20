@@ -865,7 +865,7 @@
   "binDesigner.slotPartialLengthSet": "Längduppsättning",
   "binDesigner.slotPartialNeedsLap": "Delvisa längder kräver sammanlänkande korsavdelare",
   "binDesigner.slotSnapTooThin": "Avdelartjockleken måste vara minst {min}mm för brytbara bitar",
-  "binDesigner.slotPartialSummary": "{count} bitar, {min}–{max}mm",
+  "binDesigner.slotPartialSummary": "{count} bitar, {min}–{max} × {height}mm",
   "binDesigner.slotPartialCapped": "längsta begränsad",
   "binDesigner.dividerShortInterior": "Mitt",
   "binDesigner.dividerShortEdge": "Kant",

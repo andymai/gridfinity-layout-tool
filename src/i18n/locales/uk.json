@@ -865,7 +865,7 @@
   "binDesigner.slotPartialLengthSet": "Набір довжин",
   "binDesigner.slotPartialNeedsLap": "Часткові довжини потребують зчеплених перехресних роздільників",
   "binDesigner.slotSnapTooThin": "Товщина роздільника має бути щонайменше {min}мм для відламних деталей",
-  "binDesigner.slotPartialSummary": "{count} деталей, {min}–{max}мм",
+  "binDesigner.slotPartialSummary": "{count} деталей, {min}–{max} × {height}мм",
   "binDesigner.slotPartialCapped": "найдовшу обмежено",
   "binDesigner.dividerShortInterior": "Середина",
   "binDesigner.dividerShortEdge": "Край",

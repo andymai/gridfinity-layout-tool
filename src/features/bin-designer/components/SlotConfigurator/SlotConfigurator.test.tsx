@@ -364,7 +364,8 @@ describe('SlotConfigurator', () => {
     it('summarizes the length-set family in the readout', () => {
       useDesignerStore.setState({ params: bothLap('lengthSet') });
       const { container } = render(<SlotConfigurator />);
-      expect(container.textContent ?? '').toMatch(/\d+ pieces,/i);
+      // Count, length range, and height (× {height}mm) all stay visible.
+      expect(container.textContent ?? '').toMatch(/\d+ pieces,.*×.*mm/i);
     });
 
     it('warns when the divider is too thin for snappable pieces', () => {

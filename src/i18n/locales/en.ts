@@ -1594,7 +1594,7 @@ const en: Record<string, string> = {
   'binDesigner.slotPartialLengthSet': 'Length set',
   'binDesigner.slotPartialNeedsLap': 'Partial lengths need interlocking cross dividers',
   'binDesigner.slotSnapTooThin': 'Divider thickness must be at least {min}mm for snappable pieces',
-  'binDesigner.slotPartialSummary': '{count} pieces, {min}–{max}mm',
+  'binDesigner.slotPartialSummary': '{count} pieces, {min}–{max} × {height}mm',
   'binDesigner.slotPartialCapped': 'longest capped',
   'binDesigner.dividerShortInterior': 'Middle',
   'binDesigner.dividerShortEdge': 'Edge',

@@ -865,7 +865,7 @@
   "binDesigner.slotPartialLengthSet": "Set di lunghezze",
   "binDesigner.slotPartialNeedsLap": "Le lunghezze parziali richiedono divisori incrociati a incastro",
   "binDesigner.slotSnapTooThin": "Lo spessore del divisore deve essere di almeno {min}mm per i pezzi spezzabili",
-  "binDesigner.slotPartialSummary": "{count} pezzi, {min}–{max}mm",
+  "binDesigner.slotPartialSummary": "{count} pezzi, {min}–{max} × {height}mm",
   "binDesigner.slotPartialCapped": "la più lunga limitata",
   "binDesigner.dividerShortInterior": "Centro",
   "binDesigner.dividerShortEdge": "Bordo",

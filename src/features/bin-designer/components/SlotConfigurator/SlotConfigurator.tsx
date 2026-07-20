@@ -627,6 +627,7 @@ export function SlotConfigurator() {
                     count,
                     min: String(Math.round(min * 10) / 10),
                     max: String(Math.round(max * 10) / 10),
+                    height: String(Math.round(dividerHeight * 10) / 10),
                   });
                   const capped = dropped > 0 ? ` (${t('binDesigner.slotPartialCapped')})` : '';
                   return `${axisLabel(axis)}: ${summary}${capped}`;

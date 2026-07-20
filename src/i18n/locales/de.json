@@ -865,7 +865,7 @@
   "binDesigner.slotPartialLengthSet": "Längensatz",
   "binDesigner.slotPartialNeedsLap": "Teillängen benötigen verzahnte Quertrenner",
   "binDesigner.slotSnapTooThin": "Trennerdicke muss für brechbare Stücke mindestens {min}mm betragen",
-  "binDesigner.slotPartialSummary": "{count} Stücke, {min}–{max}mm",
+  "binDesigner.slotPartialSummary": "{count} Stücke, {min}–{max} × {height}mm",
   "binDesigner.slotPartialCapped": "längste begrenzt",
   "binDesigner.dividerShortInterior": "Mitte",
   "binDesigner.dividerShortEdge": "Rand",
