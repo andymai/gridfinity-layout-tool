@@ -707,14 +707,15 @@ export function remapCompartmentTexts(
  * Reindex the parallel per-compartment swappable-label plate width overrides
  * through an `oldId → newId` map, mirroring `remapCompartmentTexts`. IDs
  * absent from the remap drop their override; new IDs (splits) get `null`
- * (auto width). Returns an empty array when nothing survives so the caller
- * can collapse it to "no overrides".
+ * (auto width). Returns `undefined` when no numeric override survives —
+ * the "no overrides set" state, matching the field's compact-storage
+ * convention (`setCompartmentPlateWidth` does the same).
  */
 export function remapLabelPlateWidths(
   oldWidths: readonly (number | null)[] | undefined,
   remap: ReadonlyMap<number, number>
-): (number | null)[] {
-  if (!oldWidths || oldWidths.length === 0) return [];
+): (number | null)[] | undefined {
+  if (!oldWidths || oldWidths.length === 0) return undefined;
   let maxNewId = -1;
   for (const newId of remap.values()) {
     if (newId > maxNewId) maxNewId = newId;
@@ -728,7 +729,7 @@ export function remapLabelPlateWidths(
       anySet = true;
     }
   }
-  return anySet ? out : [];
+  return anySet ? out : undefined;
 }
 
 /**

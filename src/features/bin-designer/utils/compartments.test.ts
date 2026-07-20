@@ -790,9 +790,9 @@ describe('compartments', () => {
   });
 
   describe('remapLabelPlateWidths', () => {
-    it('returns empty array for undefined or empty input', () => {
-      expect(remapLabelPlateWidths(undefined, new Map())).toEqual([]);
-      expect(remapLabelPlateWidths([], new Map([[0, 0]]))).toEqual([]);
+    it('returns undefined for undefined or empty input', () => {
+      expect(remapLabelPlateWidths(undefined, new Map())).toBeUndefined();
+      expect(remapLabelPlateWidths([], new Map([[0, 0]]))).toBeUndefined();
     });
 
     it('migrates overrides into the new ID slots, nulling new IDs from splits', () => {
@@ -815,12 +815,12 @@ describe('compartments', () => {
       expect(out).toEqual([1, 2]);
     });
 
-    it('collapses to empty when no numeric override survives', () => {
+    it('collapses to undefined when no numeric override survives', () => {
       const remap = new Map([
         [0, 0],
         [1, 1],
       ]);
-      expect(remapLabelPlateWidths([null, null, 2], remap)).toEqual([]);
+      expect(remapLabelPlateWidths([null, null, 2], remap)).toBeUndefined();
     });
   });
 

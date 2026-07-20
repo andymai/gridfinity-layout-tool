@@ -476,8 +476,8 @@ export function createParamSlice(set: Set, get: Get) {
         while (next.length > 0 && next[next.length - 1] === null) next.pop();
         state.params.compartments = {
           ...state.params.compartments,
-          // Omit the field entirely when every entry is auto so persisted
-          // JSON stays tidy (mirrors compartmentTexts / dividerHeight).
+          // Reset to undefined when every entry is auto — dropped from
+          // persisted JSON on stringify (same convention as compartmentTexts).
           ...(next.length > 0 ? { labelPlateWidths: next } : { labelPlateWidths: undefined }),
         };
       });

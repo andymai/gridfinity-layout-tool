@@ -87,7 +87,9 @@ function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpe
     const inPocketY = y > pocketYNear - 0.05 && y < pocketYFar + 0.05;
     if (!inPocketY) continue;
     if (Math.abs(nz) < 0.9) continue;
-    if (Math.abs(z - floorZ) < 0.05) {
+    // Floor measurement wants strictly up-facing triangles; the rib band
+    // below keeps both directions (rib undersides face down).
+    if (nz > 0.9 && Math.abs(z - floorZ) < 0.05) {
       floorCount++;
       if (x < floorMinX) floorMinX = x;
       if (x > floorMaxX) floorMaxX = x;
