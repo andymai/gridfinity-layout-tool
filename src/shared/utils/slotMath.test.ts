@@ -10,8 +10,12 @@ import {
   getReceptacleDepth,
   resolveCompartmentDividerHeight,
   resolveCrossDividerMode,
+  resolvePartialStyle,
+  calculateLapPartialSegments,
+  calculateLapSnapPositions,
   MIN_COMPARTMENT_DIVIDER_HEIGHT,
   MIN_DIVIDER_FOR_RECEPTACLES,
+  MIN_DIVIDER_FOR_SNAP,
   RECEPTACLE_DEPTH_RATIO,
 } from './slotMath';
 
@@ -286,5 +290,104 @@ describe('resolveCrossDividerMode', () => {
       longAxis: 'z' as never,
     });
     expect(resolveCrossDividerMode(corrupted, 1.6)).toEqual({ style: 'lap', longAxis: 'y' });
+  });
+});
+
+describe('resolvePartialStyle', () => {
+  const bothConfig = (overrides: Partial<SlotConfig> = {}): SlotConfig => ({
+    x: { enabled: true, pitch: 20 },
+    y: { enabled: true, pitch: 20 },
+    width: 2.0,
+    depth: 1.0,
+    ...overrides,
+  });
+
+  it('defaults to full when the field is absent', () => {
+    expect(resolvePartialStyle(bothConfig(), 1.6)).toBe('full');
+  });
+
+  it('honors lengthSet in lap mode', () => {
+    expect(resolvePartialStyle(bothConfig({ partialStyle: 'lengthSet' }), 1.6)).toBe('lengthSet');
+  });
+
+  it('forces full when only one axis is enabled', () => {
+    const single = bothConfig({ partialStyle: 'lengthSet', y: { enabled: false, pitch: 20 } });
+    expect(resolvePartialStyle(single, 1.6)).toBe('full');
+  });
+
+  it('forces full in insert mode (spanning pieces cannot cross continuous long dividers)', () => {
+    const insert = bothConfig({ partialStyle: 'lengthSet', crossStyle: 'insert' });
+    expect(resolvePartialStyle(insert, 1.6)).toBe('full');
+  });
+
+  it('still applies when insert degrades to lap below the receptacle floor', () => {
+    const insert = bothConfig({ partialStyle: 'lengthSet', crossStyle: 'insert' });
+    expect(resolvePartialStyle(insert, MIN_DIVIDER_FOR_RECEPTACLES - 0.1)).toBe('lengthSet');
+  });
+
+  it('degrades snappable to full below the snap thickness floor', () => {
+    const snap = bothConfig({ partialStyle: 'snappable' });
+    expect(resolvePartialStyle(snap, MIN_DIVIDER_FOR_SNAP - 0.1)).toBe('full');
+    expect(resolvePartialStyle(snap, MIN_DIVIDER_FOR_SNAP)).toBe('snappable');
+  });
+});
+
+describe('calculateLapSnapPositions', () => {
+  it('places a score just outboard of each crossing notch', () => {
+    // slotWidth 2.1 → half-width 1.05 on the + side of each crossing
+    expect(calculateLapSnapPositions([-20, 0, 20], 2.1)).toEqual([-18.95, 1.05, 21.05]);
+  });
+
+  it('sorts crossings before offsetting', () => {
+    expect(calculateLapSnapPositions([20, -20, 0], 2)).toEqual([-19, 1, 21]);
+  });
+});
+
+describe('calculateLapPartialSegments', () => {
+  // innerDim 80 at 20mm pitch → crossings [-20, 0, 20] (3 dividers, 4 compartments)
+  const crossings = calculateSlotPositions(80, 20);
+
+  it('emits the full piece plus wall-anchored and interior spans', () => {
+    const { segments, dropped } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25);
+    expect(segments.map((s) => s.labelSuffix)).toEqual(['', '1u', '2u', '3u', '1u-mid', '2u-mid']);
+    expect(dropped).toBe(0);
+  });
+
+  it('spans the full interior wall-to-wall for the full piece', () => {
+    const { segments } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25);
+    // wallTab = max(0.3, 1.0 − 0.25 − 0.3) = 0.45 per end
+    expect(segments[0].length).toBeCloseTo(80.9, 5);
+    expect(segments[0].notchOffsets).toEqual([-20, 0, 20]);
+  });
+
+  it('notches interior crossings only, abutting the terminal divider', () => {
+    const { segments } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25);
+    const oneU = segments.find((s) => s.labelSuffix === '1u');
+    const threeU = segments.find((s) => s.labelSuffix === '3u');
+    // 1-compartment edge piece grips only the wall — no interior notches
+    expect(oneU?.notchOffsets).toEqual([]);
+    // 3-compartment edge piece crosses two interior dividers
+    expect(threeU?.notchOffsets).toHaveLength(2);
+  });
+
+  it('sizes interior mid pieces face-to-face between two dividers', () => {
+    const { segments } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25);
+    const oneMid = segments.find((s) => s.labelSuffix === '1u-mid');
+    // spacing 20 − thickness 1.6 = 18.4, no interior notch
+    expect(oneMid?.length).toBeCloseTo(18.4, 5);
+    expect(oneMid?.notchOffsets).toEqual([]);
+  });
+
+  it('honors the per-axis cap and reports dropped survivors', () => {
+    const { segments, dropped } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25, 3);
+    expect(segments.map((s) => s.labelSuffix)).toEqual(['', '1u', '2u']);
+    expect(dropped).toBe(3);
+  });
+
+  it('skips slivers below the minimum length', () => {
+    // Tight 6mm pitch with a thick divider makes interior mids collapse
+    const tight = calculateSlotPositions(24, 6);
+    const { segments } = calculateLapPartialSegments(tight, 24, 4, 1.0, 0.25);
+    for (const s of segments) expect(s.length).toBeGreaterThanOrEqual(2);
   });
 });

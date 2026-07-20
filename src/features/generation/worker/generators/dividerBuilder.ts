@@ -19,11 +19,16 @@ import type { BinParams } from '@/shared/types/bin';
 import {
   calculateDividerHeight,
   calculateDividerLength,
+  calculateLapPartialSegments,
+  calculateLapSnapPositions,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   calculateSlotPositions,
   getReceptacleDepth,
+  getSnapScoreDepth,
   resolveCrossDividerMode,
+  resolvePartialStyle,
+  SNAP_SCORE_WIDTH,
 } from '@/shared/utils/slotMath';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
@@ -106,20 +111,22 @@ function cutCrossLapNotches(
 }
 
 /**
- * Cut vertical receptacle grooves into both faces of a flat divider piece.
+ * Cut vertical grooves into both faces of a flat divider piece.
  *
- * Grooves run the full installed height (local Y) at each cross position
- * (local X), recessed into the piece's two thickness faces (local Z), so
- * a short divider's tab can slide down from the top on either side.
+ * Grooves run the full installed height (local Y) at each position (local X),
+ * recessed into the piece's two thickness faces (local Z). Insert mode uses
+ * slot-wide grooves as receptacles a short divider's tab slides into;
+ * snappable mode uses narrow, shallow grooves as a symmetric score line so
+ * the piece breaks cleanly along the retained web.
  *
  * @param piece Flat divider piece (consumed — disposed after the cut)
  * @param positions Groove centers along the length, relative to center
- * @param grooveWidth Groove opening (matches wall slot width)
+ * @param grooveWidth Groove opening along the length
  * @param grooveDepth Recess depth per face
  * @param height Divider height in mm
  * @param thickness Divider thickness in mm
  */
-function cutReceptacleGrooves(
+function cutFaceGrooves(
   piece: Shape3D,
   positions: number[],
   grooveWidth: number,
@@ -224,7 +231,7 @@ export function buildUniqueDividerPieces(
     const groovePositions = longAxis === 'y' ? crossingsForY : crossingsForX;
 
     let longPiece = buildFullPiece(longAxis);
-    longPiece = cutReceptacleGrooves(
+    longPiece = cutFaceGrooves(
       longPiece,
       groovePositions,
       slotWidth,
@@ -262,16 +269,55 @@ export function buildUniqueDividerPieces(
     { axis: 'x', crossings: crossingsForX, fromTop: true },
     { axis: 'y', crossings: crossingsForY, fromTop: false },
   ];
+  // Partial-length pieces are only offered in genuine lap topology (a spanning
+  // piece rides over crossing dividers via notches). The insert fallback above
+  // never reaches here with a partial style — resolvePartialStyle returns
+  // 'full' unless the effective cross mode is lap.
+  const partialStyle = resolvePartialStyle(slotConfig, thickness);
+
   for (const { axis, crossings, fromTop } of lapPieces) {
-    const piece = cutCrossLapNotches(
-      buildFullPiece(axis),
-      crossings,
-      slotWidth,
-      notchDepth,
-      dividerHeight,
-      thickness,
-      fromTop
-    );
+    const notch = (piece: Shape3D, positions: number[]): Shape3D =>
+      cutCrossLapNotches(
+        piece,
+        positions,
+        slotWidth,
+        notchDepth,
+        dividerHeight,
+        thickness,
+        fromTop
+      );
+
+    if (partialStyle === 'lengthSet') {
+      const innerDim = axis === 'x' ? innerW : innerD;
+      const { segments } = calculateLapPartialSegments(
+        crossings,
+        innerDim,
+        thickness,
+        slotDepth,
+        clearance
+      );
+      for (const seg of segments) {
+        const piece = notch(
+          buildDividerPiece(seg.length, thickness, dividerHeight),
+          seg.notchOffsets
+        );
+        const label = seg.labelSuffix ? `${axisLabel(axis)}-${seg.labelSuffix}` : axisLabel(axis);
+        addPiece(piece, label);
+      }
+      continue;
+    }
+
+    let piece = notch(buildFullPiece(axis), crossings);
+    if (partialStyle === 'snappable') {
+      piece = cutFaceGrooves(
+        piece,
+        calculateLapSnapPositions(crossings, slotWidth),
+        SNAP_SCORE_WIDTH,
+        getSnapScoreDepth(thickness),
+        dividerHeight,
+        thickness
+      );
+    }
     addPiece(piece, axisLabel(axis));
   }
 

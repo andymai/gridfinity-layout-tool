@@ -13,11 +13,15 @@ import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import {
   calculateDividerLength,
+  calculateLapPartialSegments,
+  calculateLapSnapPositions,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   calculateSlotPositions,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
+  getSnapScoreDepth,
+  SNAP_SCORE_WIDTH,
 } from '@/shared/utils/slotMath';
 
 const INNER_W = 80;
@@ -186,6 +190,103 @@ describe(`cross-lap divider pieces on ${getKernelName()}`, () => {
         expect(vol).toBeGreaterThan(0);
         expect(vol).toBeCloseTo(expectedVolumes[i], 0);
       }
+    } finally {
+      for (const p of pieces) p.shape.delete();
+    }
+  });
+
+  it('lengthSet: each family piece loses exactly its notch volume and stays finite', async () => {
+    const { mesh } = await import('brepjs');
+    const { buildUniqueDividerPieces } = await import('../dividerBuilder');
+
+    const params = makeParams({
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+        crossStyle: 'lap',
+        partialStyle: 'lengthSet',
+      },
+    });
+    const { thickness, clearance } = params.dividerPieces;
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(
+      params.wallThickness,
+      thickness,
+      clearance
+    );
+    const notchDepth = WALL_HEIGHT / 2 + clearance;
+
+    // Reconstruct the X-axis family the builder emits (crossed by Y positions).
+    const xCrossings = calculateSlotPositions(INNER_W, params.slotConfig.y.pitch, 0);
+    const { segments } = calculateLapPartialSegments(
+      xCrossings,
+      INNER_W,
+      thickness,
+      slotDepth,
+      clearance
+    );
+
+    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false);
+    const xPieces = pieces.filter((p) => p.label.startsWith('divider-horizontal'));
+    expect(xPieces).toHaveLength(segments.length);
+
+    try {
+      for (let i = 0; i < xPieces.length; i++) {
+        const m = mesh(xPieces[i].shape, { tolerance: 0.01, angularTolerance: 5, cache: false });
+        for (const v of m.vertices) expect(Number.isFinite(v)).toBe(true);
+        const vol = meshVolume(m.vertices, m.triangles);
+        const solid = segments[i].length * WALL_HEIGHT * thickness;
+        const notchVol = segments[i].notchOffsets.length * slotWidth * notchDepth * thickness;
+        expect(vol).toBeGreaterThan(0);
+        expect(vol).toBeCloseTo(solid - notchVol, 0);
+      }
+    } finally {
+      for (const p of pieces) p.shape.delete();
+    }
+  });
+
+  it('snappable: score grooves remove some material and the mesh stays finite', async () => {
+    const { mesh } = await import('brepjs');
+    const { buildUniqueDividerPieces } = await import('../dividerBuilder');
+
+    const params = makeParams({
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+        crossStyle: 'lap',
+        partialStyle: 'snappable',
+      },
+    });
+    const { thickness, clearance } = params.dividerPieces;
+    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(
+      params.wallThickness,
+      thickness,
+      clearance
+    );
+    const notchDepth = WALL_HEIGHT / 2 + clearance;
+
+    const xCrossings = calculateSlotPositions(INNER_W, params.slotConfig.y.pitch, 0);
+    const scoreCount = calculateLapSnapPositions(xCrossings, slotWidth).length;
+    const notchedSolid =
+      calculateDividerLength(INNER_W, slotDepth, clearance) * WALL_HEIGHT * thickness -
+      xCrossings.length * slotWidth * notchDepth * thickness;
+    // Upper bound of score removal (both faces, full height); actual is less
+    // where a score overlaps an already-cut notch, so the volume lands in the
+    // open interval (notchedSolid − nominalScore, notchedSolid).
+    const nominalScore =
+      scoreCount * 2 * getSnapScoreDepth(thickness) * SNAP_SCORE_WIDTH * WALL_HEIGHT;
+
+    const pieces = buildUniqueDividerPieces(params, INNER_W, INNER_D, WALL_HEIGHT, false);
+    expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
+    const xPiece = pieces[0];
+
+    try {
+      const m = mesh(xPiece.shape, { tolerance: 0.01, angularTolerance: 5, cache: false });
+      for (const v of m.vertices) expect(Number.isFinite(v)).toBe(true);
+      const vol = meshVolume(m.vertices, m.triangles);
+      expect(vol).toBeGreaterThan(notchedSolid - nominalScore);
+      expect(vol).toBeLessThan(notchedSolid);
     } finally {
       for (const p of pieces) p.shape.delete();
     }

@@ -6,7 +6,7 @@
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';
-import type { CrossDividerStyle, SlotConfig } from '@/shared/types/bin';
+import type { CrossDividerStyle, PartialDividerStyle, SlotConfig } from '@/shared/types/bin';
 
 const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER;
 
@@ -248,4 +248,142 @@ export function getEffectiveSlotDimensions(
   const rawDepth = Math.min(1.5, Math.max(0.5, wallThickness * 0.5));
   const slotDepth = Math.min(rawDepth, wallThickness * 0.8);
   return { slotWidth, slotDepth };
+}
+
+/**
+ * Minimum divider thickness (mm) for snappable scoring. Below this the 40%
+ * web left between opposing score grooves is too thin to survive printing,
+ * so snappable degrades to a plain full-length piece.
+ */
+export const MIN_DIVIDER_FOR_SNAP = 1.0;
+
+/** Score groove depth per face, as a fraction of divider thickness. */
+export const SNAP_SCORE_RATIO = 0.3;
+
+/** Score groove opening along the piece length (mm) — a narrow snap line. */
+export const SNAP_SCORE_WIDTH = 0.6;
+
+/** Per-face snap score depth for a given divider thickness. */
+export function getSnapScoreDepth(dividerThickness: number): number {
+  return dividerThickness * SNAP_SCORE_RATIO;
+}
+
+/** Hard ceiling on emitted lap partial pieces per axis, to bound export size. */
+export const MAX_LAP_PARTIAL_PIECES = 8;
+
+/** Shortest lap partial piece worth emitting (mm) — below this it's a sliver. */
+export const MIN_LAP_PARTIAL_LENGTH = 2;
+
+/**
+ * Resolve the effective partial-divider style for a slot configuration.
+ *
+ * Partial pieces only make sense in interlocking (lap) egg-crate topology:
+ * a spanning piece rides over crossing dividers via cross-lap notches. Insert
+ * mode's continuous long dividers can't be crossed, and single-axis pieces
+ * have no perpendicular seat, so both force 'full'. Snappable additionally
+ * needs enough thickness to leave a printable web, else it degrades to 'full'.
+ */
+export function resolvePartialStyle(
+  slotConfig: SlotConfig,
+  dividerThickness: number
+): PartialDividerStyle {
+  const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
+  if (!bothAxes) return 'full';
+  if (resolveCrossDividerMode(slotConfig, dividerThickness).style !== 'lap') return 'full';
+
+  const requested = slotConfig.partialStyle ?? 'full';
+  if (requested === 'snappable' && dividerThickness < MIN_DIVIDER_FOR_SNAP) return 'full';
+  return requested;
+}
+
+/**
+ * Score-groove centers along a full lap piece for snappable mode.
+ *
+ * A score sits just outboard (+ side) of each crossing notch, so snapping
+ * there leaves the wall-anchored (− side) remainder with a complete cross-lap
+ * notch that still grips its last crossing divider.
+ */
+export function calculateLapSnapPositions(
+  crossings: readonly number[],
+  slotWidth: number
+): number[] {
+  return [...crossings].sort((a, b) => a - b).map((p) => p + slotWidth / 2);
+}
+
+/** A lap divider piece: total length, cross-lap notch centers (relative to
+ *  the piece's own center), and a label suffix identifying its span. */
+export interface LapDividerSegment {
+  readonly length: number;
+  readonly notchOffsets: number[];
+  readonly labelSuffix: string;
+}
+
+/**
+ * Build the family of lap divider pieces for 'lengthSet' partial mode.
+ *
+ * Emits, in priority order (so the per-axis cap keeps the most useful):
+ * 1. the full wall-to-wall piece (notched at every crossing),
+ * 2. wall-anchored "edge" pieces spanning 1..m compartments from a wall to a
+ *    crossing divider's near face (one set covers both walls by flipping),
+ * 3. interior "mid" pieces spanning 1..m−1 compartments between two crossing
+ *    dividers.
+ *
+ * Positions are derived from the actual crossing centers (uniform in practice
+ * via calculateSlotPositions) so spacing is never assumed. Slivers below
+ * MIN_LAP_PARTIAL_LENGTH are skipped; `dropped` reports how many survivors the
+ * cap discarded so the UI can note it.
+ *
+ * @param crossings Crossing centers along the piece, relative to interior center
+ * @param innerDim Interior span wall-to-wall in mm
+ * @param dividerThickness Divider wall thickness in mm
+ * @param wallSlotDepth Wall slot cut depth in mm (for the wall tab)
+ * @param clearance Fit tolerance in mm
+ * @param cap Max pieces to emit (defaults to MAX_LAP_PARTIAL_PIECES)
+ */
+export function calculateLapPartialSegments(
+  crossings: readonly number[],
+  innerDim: number,
+  dividerThickness: number,
+  wallSlotDepth: number,
+  clearance: number,
+  cap: number = MAX_LAP_PARTIAL_PIECES
+): { segments: LapDividerSegment[]; dropped: number } {
+  const sorted = [...crossings].sort((a, b) => a - b);
+  const count = sorted.length;
+  const wallTab = tabEngagement(wallSlotDepth, clearance);
+  const half = dividerThickness / 2;
+  const leftEnd = -innerDim / 2 - wallTab;
+
+  const all: LapDividerSegment[] = [];
+  const add = (length: number, notchOffsets: number[], labelSuffix: string): void => {
+    if (length >= MIN_LAP_PARTIAL_LENGTH) all.push({ length, notchOffsets, labelSuffix });
+  };
+
+  // 1. Full wall-to-wall piece, centered at 0.
+  add(innerDim + 2 * wallTab, sorted.slice(), '');
+
+  // 2. Wall-anchored edge pieces: left wall → near face of the j-th divider.
+  for (let j = 1; j <= count; j++) {
+    const rightEnd = sorted[j - 1] - half;
+    const center = (leftEnd + rightEnd) / 2;
+    add(
+      rightEnd - leftEnd,
+      sorted.slice(0, j - 1).map((x) => x - center),
+      `${j}u`
+    );
+  }
+
+  // 3. Interior pieces: right face of divider 1 → left face of divider 1+k.
+  for (let k = 1; k <= count - 1; k++) {
+    const leftFace = sorted[0] + half;
+    const rightFace = sorted[k] - half;
+    const center = (leftFace + rightFace) / 2;
+    add(
+      rightFace - leftFace,
+      sorted.slice(1, k).map((x) => x - center),
+      `${k}u-mid`
+    );
+  }
+
+  return { segments: all.slice(0, cap), dropped: Math.max(0, all.length - cap) };
 }

@@ -17,17 +17,20 @@ import {
   calculateSlotPositions,
   calculateDividerLength,
   calculateDividerHeight,
+  calculateLapPartialSegments,
   calculateShortDividerLengths,
   calculateShortDividerSpans,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
   resolveCrossDividerMode,
+  resolvePartialStyle,
   MIN_DIVIDER_FOR_RECEPTACLES,
+  MIN_DIVIDER_FOR_SNAP,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
-import type { CrossDividerStyle, DividerPieceConfig } from '../../types';
+import type { CrossDividerStyle, DividerPieceConfig, PartialDividerStyle } from '../../types';
 
 type SlotDirection = 'vertical' | 'horizontal' | 'both';
 type SlotAxis = 'x' | 'y';
@@ -169,6 +172,25 @@ export function SlotConfigurator() {
     [slotConfig, setParam]
   );
 
+  // ── Partial-length pieces (lap topology only) ───────────────────────
+  const requestedPartialStyle: PartialDividerStyle = slotConfig.partialStyle ?? 'full';
+  const effectivePartialStyle = resolvePartialStyle(slotConfig, dividerPieces.thickness);
+  // Partial pieces need interlocking cross dividers — a spanning piece rides
+  // over crossings via notches, which insert's continuous long dividers lack.
+  const partialAvailable = activeDirection === 'both' && effectiveCrossMode.style === 'lap';
+  // Snappable needs a printable web; below the floor it degrades to full.
+  const snappableTooThin =
+    partialAvailable &&
+    requestedPartialStyle === 'snappable' &&
+    dividerPieces.thickness < MIN_DIVIDER_FOR_SNAP;
+
+  const setPartialStyle = useCallback(
+    (partialStyle: PartialDividerStyle) => {
+      setParam('slotConfig', { ...slotConfig, partialStyle });
+    },
+    [slotConfig, setParam]
+  );
+
   // Piece dimension readout entries, per effective mode. Lap/single-axis
   // bins list one full-length piece per enabled axis; insert mode lists
   // the grooved long piece plus the short compartment pieces.
@@ -235,9 +257,66 @@ export function SlotConfigurator() {
     lipOverhang,
   ]);
 
+  // Length-set piece family summary per axis, for the calculated-dimensions
+  // readout. Empty unless the effective partial style is 'lengthSet'.
+  const partialSummary = useMemo(() => {
+    if (effectivePartialStyle !== 'lengthSet') return [];
+    const axes: { axis: SlotAxis; innerDim: number; crossings: number[] }[] = [
+      {
+        axis: 'x',
+        innerDim: innerW,
+        crossings: calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang),
+      },
+      {
+        axis: 'y',
+        innerDim: innerD,
+        crossings: calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang),
+      },
+    ];
+    return axes.flatMap(({ axis, innerDim, crossings }) => {
+      const { segments, dropped } = calculateLapPartialSegments(
+        crossings,
+        innerDim,
+        dividerPieces.thickness,
+        effectiveSlotDepth,
+        dividerPieces.clearance
+      );
+      if (segments.length === 0) return [];
+      const lengths = segments.map((s) => s.length);
+      return [
+        {
+          axis,
+          count: segments.length,
+          dropped,
+          min: Math.min(...lengths),
+          max: Math.max(...lengths),
+        },
+      ];
+    });
+  }, [
+    effectivePartialStyle,
+    innerW,
+    innerD,
+    slotConfig,
+    lipOverhang,
+    dividerPieces.thickness,
+    dividerPieces.clearance,
+    effectiveSlotDepth,
+  ]);
+
   const directions: SlotDirection[] = ['vertical', 'horizontal', 'both'];
   const crossStyles: CrossDividerStyle[] = ['lap', 'insert'];
+  const partialStyles: PartialDividerStyle[] = ['full', 'snappable', 'lengthSet'];
   const longAxisOptions: SlotAxis[] = ['y', 'x'];
+  const partialStyleLabel = useCallback(
+    (style: PartialDividerStyle) =>
+      style === 'full'
+        ? t('binDesigner.slotPartialFull')
+        : style === 'snappable'
+          ? t('binDesigner.slotPartialSnappable')
+          : t('binDesigner.slotPartialLengthSet'),
+    [t]
+  );
   const directionLabel = useCallback(
     (direction: SlotDirection) =>
       direction === 'vertical'
@@ -335,6 +414,46 @@ export function SlotConfigurator() {
           {insertTooThin && (
             <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
               {t('binDesigner.slotInsertTooThin', { min: MIN_DIVIDER_FOR_RECEPTACLES })}
+            </p>
+          )}
+
+          {/* Partial-length pieces (interlocking cross dividers only) */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-content-tertiary">
+              {t('binDesigner.slotPartialStyle')}
+            </span>
+            <div className="flex gap-0.5">
+              {partialStyles.map((style) => {
+                const active = partialAvailable
+                  ? requestedPartialStyle === style
+                  : style === 'full';
+                return (
+                  <Button
+                    key={style}
+                    type="button"
+                    variant="ghost"
+                    disabled={!partialAvailable}
+                    onClick={() => setPartialStyle(style)}
+                    className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                      active
+                        ? 'bg-accent text-on-accent hover:bg-accent'
+                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                    } ${partialAvailable ? '' : 'opacity-40'}`}
+                  >
+                    {partialStyleLabel(style)}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+          {!partialAvailable && (
+            <p className="text-[11px] text-content-tertiary">
+              {t('binDesigner.slotPartialNeedsLap')}
+            </p>
+          )}
+          {snappableTooThin && (
+            <p className="rounded bg-warning/10 px-2 py-1.5 text-[11px] text-warning">
+              {t('binDesigner.slotSnapTooThin', { min: MIN_DIVIDER_FOR_SNAP })}
             </p>
           )}
         </>
@@ -501,26 +620,38 @@ export function SlotConfigurator() {
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">
-          {pieceLengths.length > 0
-            ? pieceLengths
-                .map(({ key, length }) => {
-                  const dims = t('binDesigner.dividerDimensions', {
-                    length: String(Math.round(length * 10) / 10),
-                    height: String(Math.round(dividerHeight * 10) / 10),
+          {partialSummary.length > 0
+            ? partialSummary
+                .map(({ axis, count, dropped, min, max }) => {
+                  const summary = t('binDesigner.slotPartialSummary', {
+                    count,
+                    min: String(Math.round(min * 10) / 10),
+                    max: String(Math.round(max * 10) / 10),
                   });
-                  if (pieceLengths.length === 1) return dims;
-                  const label =
-                    key === 'short-interior'
-                      ? t('binDesigner.dividerShortInterior')
-                      : key === 'short-edge'
-                        ? t('binDesigner.dividerShortEdge')
-                        : axisLabel(key as SlotAxis);
-                  return `${label}: ${dims}`;
+                  const capped = dropped > 0 ? ` (${t('binDesigner.slotPartialCapped')})` : '';
+                  return `${axisLabel(axis)}: ${summary}${capped}`;
                 })
                 .join(' · ')
-            : t('binDesigner.dividerHeightOnly', {
-                height: String(Math.round(dividerHeight * 10) / 10),
-              })}
+            : pieceLengths.length > 0
+              ? pieceLengths
+                  .map(({ key, length }) => {
+                    const dims = t('binDesigner.dividerDimensions', {
+                      length: String(Math.round(length * 10) / 10),
+                      height: String(Math.round(dividerHeight * 10) / 10),
+                    });
+                    if (pieceLengths.length === 1) return dims;
+                    const label =
+                      key === 'short-interior'
+                        ? t('binDesigner.dividerShortInterior')
+                        : key === 'short-edge'
+                          ? t('binDesigner.dividerShortEdge')
+                          : axisLabel(key as SlotAxis);
+                    return `${label}: ${dims}`;
+                  })
+                  .join(' · ')
+              : t('binDesigner.dividerHeightOnly', {
+                  height: String(Math.round(dividerHeight * 10) / 10),
+                })}
         </span>
       </div>
     </div>

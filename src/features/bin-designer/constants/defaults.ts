@@ -43,6 +43,7 @@ const DEFAULT_SLOT_CONFIG: SlotConfig = {
   depth: 1.0,
   crossStyle: 'lap',
   longAxis: 'y',
+  partialStyle: 'full',
 } as const;
 
 /** Default divider piece configuration */

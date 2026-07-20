@@ -150,6 +150,22 @@ export const CROSS_DIVIDER_STYLES = ['lap', 'insert'] as const;
  */
 export type CrossDividerStyle = (typeof CROSS_DIVIDER_STYLES)[number];
 
+export const PARTIAL_DIVIDER_STYLES = ['full', 'snappable', 'lengthSet'] as const;
+
+/**
+ * How the interlocking (lap) cross dividers are offered when partial-length
+ * pieces are wanted. Only meaningful when the effective cross mode is 'lap'
+ * (both axes, egg-crate) — insert mode's continuous long dividers cannot be
+ * crossed by a spanning piece, and single-axis pieces have no perpendicular
+ * seat, so both force 'full'.
+ * - 'full': one full wall-to-wall piece per axis (historical behavior)
+ * - 'snappable': the full piece is scored just outboard of each crossing so
+ *   it snaps to length while the wall-anchored remainder keeps a full notch
+ * - 'lengthSet': a family of purpose-built pieces (wall-anchored and interior)
+ *   spanning 1..N compartments, each with the correct cross-lap notches
+ */
+export type PartialDividerStyle = (typeof PARTIAL_DIVIDER_STYLES)[number];
+
 /** Slot configuration for removable divider walls */
 export interface SlotConfig {
   /** Slots on left/right walls (for Y-axis dividers) */
@@ -166,6 +182,10 @@ export interface SlotConfig {
   /** Axis that keeps full-length dividers in 'insert' mode. Optional;
    *  treated as 'y'. */
   readonly longAxis?: 'x' | 'y';
+  /** Partial-length divider offering, honored only when the effective cross
+   *  mode is 'lap'. Optional for persisted configs predating the field;
+   *  treated as 'full'. */
+  readonly partialStyle?: PartialDividerStyle;
 }
 
 /** Configuration for removable divider pieces */
