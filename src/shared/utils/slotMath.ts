@@ -333,10 +333,11 @@ export interface LapDividerSegment {
  * 3. interior "mid" pieces spanning 1..m−1 compartments between two crossing
  *    dividers.
  *
- * Positions are derived from the actual crossing centers (uniform in practice
- * via calculateSlotPositions) so spacing is never assumed. Slivers below
- * MIN_LAP_PARTIAL_LENGTH are skipped; `dropped` reports how many survivors the
- * cap discarded so the UI can note it.
+ * Positions come from the actual crossing centers (uniform in practice via
+ * calculateSlotPositions). Interior mid pieces anchor to the first divider as
+ * their left face, so for non-uniform input the emitted set may not cover every
+ * unique compartment span. Slivers below MIN_LAP_PARTIAL_LENGTH are skipped;
+ * `dropped` reports how many survivors the cap discarded so the UI can note it.
  *
  * @param crossings Crossing centers along the piece, relative to interior center
  * @param innerDim Interior span wall-to-wall in mm
