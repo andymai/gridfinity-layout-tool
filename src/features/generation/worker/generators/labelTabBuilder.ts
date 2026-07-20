@@ -47,7 +47,7 @@ type TabAnchor = 'back' | 'front';
 
 /** Socket-mode build inputs resolved once per bin from the shared plan. */
 interface SocketBuildInfo {
-  /** Effective TOTAL pocket clearance (spec + nozzle scaling + fit offset). */
+  /** Effective TOTAL pocket clearance (spec + user fit offset). */
   readonly clearanceMm: number;
   /** Plate width per compartment ID; absent = that tab gets a plain shelf. */
   readonly plateByCompartment: ReadonlyMap<number, LabelPlateWidthU>;
@@ -678,8 +678,8 @@ function applySocket(
   const pocketW = labelPlateWidthMm(ctx.plateWidthU) + ctx.clearanceMm;
   const pocketD = LABEL_PLATE_HEIGHT_MM + ctx.clearanceMm;
 
-  // Defense in depth: the plan already sized the plate to the tab, but a
-  // crafted payload (short depth, huge fit offset) could still overflow.
+  // Defense in depth: the plan already sized the plate to the tab width, but
+  // a crafted payload (short depth, huge fit offset) could still overflow.
   if (pocketW + 2 * wall > ctx.tabWidth + 0.01) return tabSolid;
   if (pocketD + 2 * wall > ctx.tabDepth + 0.01) return tabSolid;
 
@@ -825,6 +825,12 @@ export const labelTabsFeature: FeatureBuilder = {
         quantize(dim.innerD),
         quantize(dim.interiorHeight),
         quantize(params.wallThickness),
+        // Divider thickness drives gusset width and the per-group divider
+        // deductions (and thus the discrete socket plate width). shellKey
+        // folds it in only on the compartments-baked-into-shell path, so it
+        // must be keyed here explicitly or a thickness-only edit serves a
+        // stale tab from the feature cache.
+        quantize(params.compartments.thickness),
         params.compartments.cols,
         params.compartments.rows,
         params.compartments.cells.join(','),

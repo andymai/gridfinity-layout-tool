@@ -401,11 +401,10 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
-    it('demotes edges=both → back when even minimum depth cannot fit two tabs', () => {
-      // 0.5u bin: innerD ≈ 18mm. MIN_LABEL_TAB_DEPTH = 8mm so 2·8 = 16 fits,
-      // but if we shrink further with a smaller cell... actually let's use a
-      // multi-row setup where individual cells are too small for two tabs.
-      // 1×1 bin with 5 rows: cellD = innerD/5 ≈ 7.6mm. 2·8 = 16 > 7.6 → demote.
+    it('demotes edges=both → back when two tabs cannot fit but one can', () => {
+      // 1×1 bin with 3 rows: cellD ≈ 13mm. Two 8mm-minimum tabs can't share
+      // a 13mm compartment, but a single tab fits fine → demote to back and
+      // land on a depth that actually generates.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -413,10 +412,16 @@ describe('useLabelTabsSection', () => {
           depth: 1,
           compartments: {
             ...DEFAULT_BIN_PARAMS.compartments,
-            rows: 5,
-            cells: [0, 1, 2, 3, 4],
+            rows: 3,
+            cells: [0, 1, 2],
           },
-          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'both', depth: 12, inset: 0 },
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            edges: 'both',
+            depth: 12,
+            inset: 0,
+          },
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
@@ -427,6 +432,10 @@ describe('useLabelTabsSection', () => {
 
       const after = useDesignerStore.getState().params.label;
       expect(after.edges).toBe('back');
+      expect(after.enabled).toBe(true);
+
+      const { result: rerendered } = renderHook(() => useLabelTabsSection());
+      expect(rerendered.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
     it('clamps height back into range when it is too low for the current depth', () => {
@@ -554,6 +563,79 @@ describe('useLabelTabsSection', () => {
       });
 
       expect(result.current.state.tabDepthMin).toBe(14);
+    });
+
+    it('autoFix demotes socket mode to text when compartments are too shallow', () => {
+      // Three stacked rows on a 1×1 bin: ~13mm-deep compartments fit a text
+      // tab but not the 14mm socket depth floor — clamping depth alone is a
+      // dead end, so the fix must fall back to text mode.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          height: 6,
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            mode: 'socket',
+            depth: 14,
+          },
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 1,
+            rows: 3,
+            cells: [0, 1, 2],
+          },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const { label } = useDesignerStore.getState().params;
+      expect(label.mode).toBe('text');
+      expect(label.enabled).toBe(true);
+      expect(label.depth).toBeLessThan(14);
+
+      const { result: after } = renderHook(() => useLabelTabsSection());
+      expect(after.current.state.tabsWillSilentlyDrop).toBe(false);
+    });
+
+    it('autoFix disables the feature when no mode fits the compartments', () => {
+      // Five stacked rows: ~7.8mm compartments are below even the 8mm text
+      // depth floor — nothing fits, so the fix disables the feature instead
+      // of clamping to an infeasible depth.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          height: 6,
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            mode: 'socket',
+            depth: 14,
+          },
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 1,
+            rows: 5,
+            cells: [0, 1, 2, 3, 4],
+          },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      expect(useDesignerStore.getState().params.label.enabled).toBe(false);
     });
 
     it('setPlateFitOffset stores the offset on the label config', () => {

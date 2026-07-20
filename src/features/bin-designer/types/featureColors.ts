@@ -350,7 +350,7 @@ export function isSingleColor(
  */
 export interface ActiveZonesParams {
   readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
-  readonly label: { readonly enabled: boolean };
+  readonly label: { readonly enabled: boolean; readonly mode?: 'text' | 'socket' };
   readonly scoop: { readonly enabled: boolean };
   readonly lid: { readonly enabled: boolean };
   readonly compartments: {
@@ -412,8 +412,13 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const cells = p.compartments.cells;
   const firstCell = cells[0] ?? 0;
   const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
+  // Socket-mode tabs carry a plate pocket, not engraved text — texts may
+  // persist in the config (they label grid cells and feed future plates)
+  // but produce no text geometry, so the zone must not reach the exporter.
   const hasTabText =
-    p.label.enabled && (p.compartments.compartmentTexts ?? []).some((t) => t.trim().length > 0);
+    p.label.enabled &&
+    (p.label.mode ?? 'text') !== 'socket' &&
+    (p.compartments.compartmentTexts ?? []).some((t) => t.trim().length > 0);
   const hasCutoutText = (p.cutouts ?? []).some(
     (c) => c.engraveLabel === true && c.label.trim().length > 0
   );

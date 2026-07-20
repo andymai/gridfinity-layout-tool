@@ -108,12 +108,12 @@ export function useLabelTabsSection() {
       // update so a single undo restores the prior state.
       if (mode === 'socket' && label.depth < MIN_LABEL_SOCKET_TAB_DEPTH_MM) {
         const depth = MIN_LABEL_SOCKET_TAB_DEPTH_MM;
-        const currentHeight = label.height;
-        if (currentHeight !== undefined && currentHeight <= depth) {
-          updateLabel({ mode, depth, height: Math.min(depth + 1, wallHeightMm) });
-        } else {
-          updateLabel({ mode, depth });
-        }
+        const liftHeight = label.height !== undefined && label.height <= depth;
+        updateLabel({
+          mode,
+          depth,
+          ...(liftHeight ? { height: Math.min(depth + 1, wallHeightMm) } : {}),
+        });
       } else {
         updateLabel({ mode });
       }
@@ -312,11 +312,11 @@ export function useLabelTabsSection() {
     return false;
   }, [label.depth, label.inset, label.height, edgesValue, innerD, compartmentDepths, wallHeightMm]);
 
-  // Auto-fix: walk the priority order inset → depth → height → edges,
+  // Auto-fix: walk the priority order inset → depth → height → edges → mode,
   // applying the smallest change(s) that get the geometry to generate. Goal
-  // is to preserve user intent (edges/alignment/support) while undoing the
-  // dimensional misconfig. Mutates via `updateLabel` so the change is a
-  // single undo entry (Ctrl+Z restores the prior state).
+  // is to preserve user intent (mode over edges, both over dimensions) while
+  // undoing the dimensional misconfig. Mutates via `updateLabel` so the
+  // change is a single undo entry (Ctrl+Z restores the prior state).
   const autoFixDimensions = useCallback(() => {
     const minAny = Number.isFinite(compartmentDepths.minAny) ? compartmentDepths.minAny : innerD;
     const minBoth = Number.isFinite(compartmentDepths.minBothAnchored)
@@ -325,40 +325,46 @@ export function useLabelTabsSection() {
 
     let nextDepth = label.depth;
     const nextInset = 0;
-    let nextEdges: typeof edgesValue = edgesValue;
     let nextHeight = label.height;
     let nextEnabled = label.enabled;
+    const currentMode = label.mode ?? 'text';
 
-    const MIN_DEPTH =
-      (label.mode ?? 'text') === 'socket'
-        ? MIN_LABEL_SOCKET_TAB_DEPTH_MM
-        : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
     // Height-derived ceiling: tabHeight = tabDepth, must be ≤ wallHeight
     // (and strictly < explicit height when set). Use `nextHeight - 1` when
     // explicit so we keep ≥1mm gusset clearance; else use wallHeight - 1.
     const heightCeiling = Math.floor((nextHeight ?? wallHeightMm) - 1);
-    const maxDepthForSingle = Math.max(
-      MIN_DEPTH,
-      Math.min(tabDepthMax, Math.floor(minAny) - 1, heightCeiling)
-    );
-    const maxDepthForBoth = Math.max(
-      MIN_DEPTH,
-      Math.min(tabDepthMax, Math.floor(minBoth / 2) - 1, heightCeiling)
-    );
+    const depthFloor = (mode: LabelTabMode): number =>
+      mode === 'socket' ? MIN_LABEL_SOCKET_TAB_DEPTH_MM : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
+    const depthCeil = (edges: LabelTabEdges): number =>
+      edges === 'both'
+        ? Math.min(tabDepthMax, Math.floor(minBoth / 2) - 1, heightCeiling)
+        : Math.min(tabDepthMax, Math.floor(minAny) - 1, heightCeiling);
 
-    // Step 1 + 2: inset → 0, then clamp depth to fit the current edges mode.
-    if (nextEdges === 'both' && 2 * MIN_DEPTH > minBoth) {
-      // Step 4 (fallback): even minimum depth can't fit two tabs. Demote.
-      nextEdges = 'back';
-      nextDepth = Math.min(nextDepth, maxDepthForSingle);
-    } else if (nextEdges === 'both') {
-      nextDepth = Math.min(nextDepth, maxDepthForBoth);
+    // A (mode, edges) pair is feasible when the mode's depth floor fits under
+    // the edges config's ceiling. Try candidates in intent-preservation order:
+    // keep both → drop 'both' → drop socket → drop both. Socket mode's raised
+    // 14mm floor makes the current pair infeasible on shallow compartments,
+    // so clamping depth alone can never resolve it — demotion is the fix.
+    const candidates: Array<{ mode: LabelTabMode; edges: LabelTabEdges }> = [
+      { mode: currentMode, edges: edgesValue },
+      ...(edgesValue === 'both' ? [{ mode: currentMode, edges: 'back' as const }] : []),
+      ...(currentMode === 'socket' ? [{ mode: 'text' as const, edges: edgesValue }] : []),
+      ...(currentMode === 'socket' && edgesValue === 'both'
+        ? [{ mode: 'text' as const, edges: 'back' as const }]
+        : []),
+    ];
+    const fit = candidates.find((c) => depthFloor(c.mode) <= depthCeil(c.edges));
+
+    const nextMode = fit?.mode ?? currentMode;
+    const nextEdges = fit?.edges ?? edgesValue;
+    if (fit) {
+      nextDepth = Math.max(depthFloor(fit.mode), Math.min(nextDepth, depthCeil(fit.edges)));
     } else {
-      nextDepth = Math.min(nextDepth, maxDepthForSingle);
+      // No configuration fits this bin's compartments → disable the feature.
+      nextEnabled = false;
     }
-    nextDepth = Math.max(MIN_DEPTH, nextDepth);
 
-    // Step 3: keep height valid given the (possibly new) depth.
+    // Keep height valid given the (possibly new) depth.
     if (nextHeight !== undefined) {
       const minHeight = nextDepth + 1;
       const maxHeight = wallHeightMm;
@@ -379,6 +385,7 @@ export function useLabelTabsSection() {
       depth: nextDepth,
       inset: nextInset,
       edges: nextEdges,
+      ...(nextMode !== currentMode ? { mode: nextMode } : {}),
       ...(nextHeight !== undefined ? { height: nextHeight } : {}),
     });
   }, [
@@ -427,7 +434,6 @@ export function useLabelTabsSection() {
     });
   }, [isSocketMode, socketPlan, compartments, t]);
 
-  // Depth floor rises in socket mode so the tab can host the pocket.
   const tabDepthMin = isSocketMode
     ? MIN_LABEL_SOCKET_TAB_DEPTH_MM
     : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;

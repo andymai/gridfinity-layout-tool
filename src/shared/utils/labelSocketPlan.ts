@@ -74,7 +74,7 @@ export function planLabelSockets(
       const fittingWidthsU = LABEL_PLATE_WIDTHS_U.filter(
         (u) => labelSocketOuterWidthMm(u, clearanceMm) <= availableWidthMm
       );
-      const autoWidthU = fittingWidthsU.length ? fittingWidthsU[fittingWidthsU.length - 1] : null;
+      const autoWidthU = fittingWidthsU.at(-1) ?? null;
 
       const override = overrides?.[id];
       const plateWidthU =

@@ -464,8 +464,9 @@ export function createParamSlice(set: Set, get: Get) {
     setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => {
       const { params } = get();
       const prev = params.compartments.labelPlateWidths ?? [];
-      // No-op guard: Select fires on every pick; an unchanged value must not
-      // push a history entry. Treat undefined and null as the same auto state.
+      // No-op guard: an unchanged value must not push a history entry or
+      // regeneration. A padded explicit null and an absent slot are the same
+      // auto state, so compare through the ?? null lens.
       if ((prev[compartmentId] ?? null) === widthU) return;
 
       set((state) => {
@@ -478,7 +479,7 @@ export function createParamSlice(set: Set, get: Get) {
           ...state.params.compartments,
           // Reset to undefined when every entry is auto — dropped from
           // persisted JSON on stringify (same convention as compartmentTexts).
-          ...(next.length > 0 ? { labelPlateWidths: next } : { labelPlateWidths: undefined }),
+          labelPlateWidths: next.length > 0 ? next : undefined,
         };
       });
     },

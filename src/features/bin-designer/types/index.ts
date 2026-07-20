@@ -369,8 +369,8 @@ export interface LabelTabConfig {
   /**
    * Signed fit offset (mm) added to the TOTAL socket clearance in socket
    * mode, for per-printer fit calibration. Bounds
-   * `[LABEL_PLATE_FIT_OFFSET_MIN, LABEL_PLATE_FIT_OFFSET_MAX]`; rides on
-   * top of the nozzle-aware clearance scaling.
+   * `[LABEL_PLATE_FIT_OFFSET_MIN, LABEL_PLATE_FIT_OFFSET_MAX]`; see
+   * `effectiveLabelSocketClearance`.
    */
   readonly plateFitOffset?: number;
   /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */

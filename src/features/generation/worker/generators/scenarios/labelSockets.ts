@@ -1,10 +1,10 @@
 /**
  * Swappable-label socket mode scenarios (#2666).
  *
- * The custom asserts are the PR's merge gate: they verify the cut pocket
- * against the pinned interchange spec (`@/shared/constants/labelPlates`)
- * from the actual mesh — plate width + 0.3mm total clearance, 1.2mm pocket
- * depth, and the 0.2×0.4mm rib band 0.2mm above the pocket floor.
+ * The custom asserts verify the cut pocket against the pinned interchange
+ * spec (`@/shared/constants/labelPlates`) from the actual mesh — plate
+ * width + 0.3mm total clearance, 1.2mm pocket depth, and rib band planes
+ * at floor+0.2/+0.6.
  *
  * All socket scenarios disable the stacking lip so the mesh maxZ IS the
  * shelf top (plus the COPLANAR_OVERLAP proud lip), making pocket Z-planes
@@ -48,8 +48,8 @@ interface PocketExpectation {
  * Derives every expected plane from params + the pinned spec, then checks
  * the mesh has vertices on them:
  *  - pocket floor at (shelf top − 1.2mm), X-extent = ±(plate + clearance)/2
- *  - rib band faces 0.2→0.6mm above the floor, protruding 0.2mm into the
- *    pocket from both long walls
+ *  - horizontal rib band planes at floor+0.2 and floor+0.6 (protrusion
+ *    depth and per-wall coverage are not measured here)
  */
 function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpectation): void {
   const { vertices } = result;
@@ -238,8 +238,9 @@ export const labelSockets: ScenarioCase[] = [
     timeout: 90_000,
   }),
 
-  // Text-mode regression sentinel: mode absent must stay byte-identical to
-  // the legacy path (same snapshot family as the labelTabs domain).
+  // Text-mode sentinel: mode absent takes the legacy code path; the
+  // snapshot pins its triangle count so socket-mode changes can't perturb
+  // text-mode geometry.
   defineScenario('label sockets', '1×1 text mode unchanged', {
     params: {
       width: 1,

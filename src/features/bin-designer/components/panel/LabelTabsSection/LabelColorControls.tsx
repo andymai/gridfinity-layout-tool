@@ -39,11 +39,12 @@ export function LabelColorControls() {
   const t = useTranslation();
   const [recentColors, setRecentColors] = useState<readonly string[]>([]);
 
-  const { featureColors, colorTool } = useDesignerStore(
+  const { featureColors, colorTool, labelMode } = useDesignerStore(
     useShallow((s) => ({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       featureColors: s.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG,
       colorTool: s.ui.colorTool,
+      labelMode: s.params.label.mode ?? 'text',
     }))
   );
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
@@ -103,20 +104,25 @@ export function LabelColorControls() {
           onGestureEnd={commitTransaction}
           onClickOverride={swapActive ? () => swapZoneWithToast('labelTab') : undefined}
         />
-        <ColorZoneRow
-          zone="text"
-          label={t('binDesigner.colors.text')}
-          color={textColor}
-          defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.text}
-          otherColors={otherColors(textColor, tabColor, bodyColor)}
-          bodyColor={bodyColor}
-          recentColors={recentColors}
-          onChange={(hex) => applyColor({ text: hex }, hex)}
-          onHover={setHoveredColorZone}
-          onGestureStart={startTransaction}
-          onGestureEnd={commitTransaction}
-          onClickOverride={swapActive ? () => swapZoneWithToast('text') : undefined}
-        />
+        {/* Socket-mode tabs carry a plate pocket instead of engraved text, so
+            the text zone produces no geometry there (computeActiveZones gates
+            it the same way). */}
+        {labelMode !== 'socket' && (
+          <ColorZoneRow
+            zone="text"
+            label={t('binDesigner.colors.text')}
+            color={textColor}
+            defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.text}
+            otherColors={otherColors(textColor, tabColor, bodyColor)}
+            bodyColor={bodyColor}
+            recentColors={recentColors}
+            onChange={(hex) => applyColor({ text: hex }, hex)}
+            onHover={setHoveredColorZone}
+            onGestureStart={startTransaction}
+            onGestureEnd={commitTransaction}
+            onClickOverride={swapActive ? () => swapZoneWithToast('text') : undefined}
+          />
+        )}
       </div>
     </div>
   );
