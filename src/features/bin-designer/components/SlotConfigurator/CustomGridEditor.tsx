@@ -36,6 +36,13 @@ function uniformGrid(cols: number, rows: number): CompartmentGrid {
 const SEAT_FRICTION = '#f59e0b';
 const SEAT_ANCHORED = '#22c55e';
 
+/** A grid is usable only if its dimensions are >= 1 and cells match cols×rows.
+ *  Slot configs aren't deep-validated server-side, so a corrupted persisted
+ *  customGrid must not reach the renderer / Math.max(...cells). */
+function isWellFormed(g: CompartmentGrid): boolean {
+  return g.cols >= 1 && g.rows >= 1 && g.cells.length === g.cols * g.rows;
+}
+
 const CELL_COLORS = [
   '#60a5fa',
   '#f472b6',
@@ -53,7 +60,8 @@ export function CustomGridEditor() {
   );
   const t = useTranslation();
   const { slotConfig, dividerPieces } = params;
-  const grid = slotConfig.customGrid ?? uniformGrid(2, 2);
+  const stored = slotConfig.customGrid;
+  const grid = stored && isWellFormed(stored) ? stored : uniformGrid(2, 2);
   const { cols, rows, cells } = grid;
 
   const [selection, setSelection] = useState<Set<number>>(new Set());
