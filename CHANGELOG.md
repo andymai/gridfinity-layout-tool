@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.260.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.2...gridfinity-layout-tool-v4.260.3) (2026-07-20)
+
+
+### Bug Fixes
+
+* **shell:** bin list table edge-to-edge and sidebar group cleanup ([#2663](https://github.com/andymai/gridfinity-layout-tool/issues/2663)) ([10cae9a](https://github.com/andymai/gridfinity-layout-tool/commit/10cae9a4061c4c862451b251ee89d4642c9006f4))
+
 ## [4.260.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.1...gridfinity-layout-tool-v4.260.2) (2026-07-20)
 
 
