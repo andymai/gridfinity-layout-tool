@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "La malla no es estanca: repárala en tu slicer y vuelve a exportarla",
   "toast.stlImport.empty": "El STL no contiene geometría imprimible",
   "toast.stlImport.assetLimit": "Un diseño puede contener hasta {count} mallas importadas",
-  "sidebar.groupPaint": "Pintura",
-  "sidebar.groupEdit": "Editar",
-  "sidebar.groupDrawer": "Cajón",
-  "sidebar.groupResources": "Recursos",
-  "sidebar.advanced": "Avanzado",
   "sidebar.drawerHeight": "Altura del cajón",
   "layers.clearLayerLabel": "Vaciar capa"
 }

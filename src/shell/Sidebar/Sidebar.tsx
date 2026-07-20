@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, Suspense, type ReactNode } from 'react';
+import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
@@ -37,18 +37,6 @@ const SettingsModal = lazyWithRetry(() =>
   import('@/shell/Modals/SettingsModal').then(namedExport('SettingsModal'))
 );
 
-function GroupLabel({ children }: { children: ReactNode }) {
-  return (
-    <div
-      role="heading"
-      aria-level={3}
-      className="px-4 pt-4 pb-1.5 text-xs font-semibold tracking-wide text-content-tertiary select-none"
-    >
-      {children}
-    </div>
-  );
-}
-
 export function Sidebar() {
   const t = useTranslation();
   const { locale } = useLocale();
@@ -60,7 +48,7 @@ export function Sidebar() {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
-  const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(false);
+  const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(true);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const handleScroll = useCallback(() => {
@@ -249,12 +237,10 @@ export function Sidebar() {
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto scrollbar-thin flex flex-col"
           >
-            <GroupLabel>{t('sidebar.groupPaint')}</GroupLabel>
             <div data-active-layer-panel className="border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
 
-            <GroupLabel>{t('sidebar.groupEdit')}</GroupLabel>
             <div
               data-layers-panel
               data-help-target="layers-panel"
@@ -325,8 +311,6 @@ export function Sidebar() {
                 </svg>
               </Button>
             </div>
-
-            <GroupLabel>{t('sidebar.groupDrawer')}</GroupLabel>
 
             <div data-grid-size-panel>
               <Collapsible
@@ -465,13 +449,9 @@ export function Sidebar() {
               </Collapsible>
             </div>
 
-            <div data-active-baseplate-panel className="border-t border-stroke-subtle">
-              <ActiveBaseplatePanel />
-            </div>
-
             <div data-units-panel className="border-t border-stroke-subtle">
               <Collapsible
-                title={t('sidebar.advanced')}
+                title={t('common.physicalUnits')}
                 size="md"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
@@ -554,11 +534,14 @@ export function Sidebar() {
               </Collapsible>
             </div>
 
+            <div data-active-baseplate-panel className="border-t border-stroke-subtle">
+              <ActiveBaseplatePanel />
+            </div>
+
             {/* Learn links are real <a href> so Google passes link equity from the SPA to
                 /what-is-gridfinity et al. Collapsible keeps them in the DOM (still crawlable). */}
             <div className="border-t border-stroke-subtle">
-              <GroupLabel>{t('sidebar.groupResources')}</GroupLabel>
-              <div className="px-4 pb-4">
+              <div className="px-4 pt-4 pb-4">
                 <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
                   <p className="text-xs text-content-tertiary leading-relaxed mb-2">
                     {t('sidebar.about')}

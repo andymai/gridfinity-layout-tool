@@ -233,10 +233,11 @@ export function RightPanel() {
             </div>
 
             {/* Print List - Collapsible */}
-            <div data-print-list className="px-4 py-3">
+            <div data-print-list className="py-3">
               <Collapsible
                 title={t('rightPanel.binList')}
                 size="md"
+                className="[&>div:first-child]:px-4"
                 expanded={printListExpanded}
                 onExpandedChange={setPrintListExpanded}
                 badge={
@@ -331,7 +332,7 @@ export function RightPanel() {
                   ) : undefined
                 }
               >
-                <div className="-mx-4 -mb-3 flex flex-col border-t border-stroke-subtle">
+                <div className="-mb-3 flex flex-col border-t border-stroke-subtle">
                   <div>
                     {printList.rows.length === 0 ? (
                       <PrintListEmpty />

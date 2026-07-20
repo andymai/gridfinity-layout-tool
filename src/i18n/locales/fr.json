@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "Le maillage n'est pas étanche — réparez-le dans votre slicer puis réexportez-le",
   "toast.stlImport.empty": "Le STL ne contient aucune géométrie imprimable",
   "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés",
-  "sidebar.groupPaint": "Peinture",
-  "sidebar.groupEdit": "Édition",
-  "sidebar.groupDrawer": "Tiroir",
-  "sidebar.groupResources": "Ressources",
-  "sidebar.advanced": "Avancé",
   "sidebar.drawerHeight": "Hauteur du tiroir",
   "layers.clearLayerLabel": "Vider la couche"
 }

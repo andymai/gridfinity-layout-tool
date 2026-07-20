@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "メッシュが水密ではありません。スライサーで修復して再エクスポートしてください",
   "toast.stlImport.empty": "STLに印刷可能な形状が含まれていません",
   "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です",
-  "sidebar.groupPaint": "ペイント",
-  "sidebar.groupEdit": "編集",
-  "sidebar.groupDrawer": "ドロワー",
-  "sidebar.groupResources": "リソース",
-  "sidebar.advanced": "詳細設定",
   "sidebar.drawerHeight": "ドロワーの高さ",
   "layers.clearLayerLabel": "レイヤーをクリア"
 }

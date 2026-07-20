@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "Meshen er ikke vanntett — reparer den i sliceren og eksporter på nytt",
   "toast.stlImport.empty": "STL-filen inneholder ingen printbar geometri",
   "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher",
-  "sidebar.groupPaint": "Maling",
-  "sidebar.groupEdit": "Rediger",
-  "sidebar.groupDrawer": "Skuff",
-  "sidebar.groupResources": "Ressurser",
-  "sidebar.advanced": "Avansert",
   "sidebar.drawerHeight": "Skuffhøyde",
   "layers.clearLayerLabel": "Tøm lag"
 }

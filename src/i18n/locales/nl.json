@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "Mesh is niet waterdicht — repareer deze in je slicer en exporteer opnieuw",
   "toast.stlImport.empty": "STL bevat geen printbare geometrie",
   "toast.stlImport.assetLimit": "Een ontwerp kan maximaal {count} geïmporteerde meshes bevatten",
-  "sidebar.groupPaint": "Verven",
-  "sidebar.groupEdit": "Bewerken",
-  "sidebar.groupDrawer": "Lade",
-  "sidebar.groupResources": "Bronnen",
-  "sidebar.advanced": "Geavanceerd",
   "sidebar.drawerHeight": "Ladehoogte",
   "layers.clearLayerLabel": "Laag wissen"
 }

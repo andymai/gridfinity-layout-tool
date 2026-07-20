@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "A malha não é estanque — repare no seu fatiador e exporte novamente",
   "toast.stlImport.empty": "O STL não contém geometria imprimível",
   "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas",
-  "sidebar.groupPaint": "Pintura",
-  "sidebar.groupEdit": "Editar",
-  "sidebar.groupDrawer": "Gaveta",
-  "sidebar.groupResources": "Recursos",
-  "sidebar.advanced": "Avançado",
   "sidebar.drawerHeight": "Altura da gaveta",
   "layers.clearLayerLabel": "Limpar camada"
 }

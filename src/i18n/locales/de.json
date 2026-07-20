@@ -2756,11 +2756,6 @@
   "toast.stlImport.notManifold": "Mesh ist nicht wasserdicht — im Slicer reparieren und neu exportieren",
   "toast.stlImport.empty": "STL enthält keine druckbare Geometrie",
   "toast.stlImport.assetLimit": "Ein Design kann bis zu {count} importierte Meshes enthalten",
-  "sidebar.groupPaint": "Malen",
-  "sidebar.groupEdit": "Bearbeiten",
-  "sidebar.groupDrawer": "Schublade",
-  "sidebar.groupResources": "Ressourcen",
-  "sidebar.advanced": "Erweitert",
   "sidebar.drawerHeight": "Schubladenhöhe",
   "layers.clearLayerLabel": "Ebene leeren"
 }
