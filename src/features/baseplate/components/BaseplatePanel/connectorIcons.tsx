@@ -7,7 +7,8 @@
  *   (TONGUE_BASE_HALF 1.0 → TONGUE_TIP_HALF 1.3), drawn slightly apart.
  * - Puzzle: a jigsaw tab (narrow neck flaring to a wider rounded head) mating into
  *   its groove — the stronger locking variant (PUZZLE_NECK_HALF → PUZZLE_HEAD_HALF).
- * - Dovetail key: the standalone double-dovetail key, a horizontal bowtie.
+ * - Key: the standalone dogbone key — two rounded puzzle lobes joined by a
+ *   narrow neck (PUZZLE_NECK_HALF → PUZZLE_HEAD_HALF, mirrored at the waist).
  * - Snap clip: the X-Z cross-section — two legs joined by a flush top bridge with
  *   a central flex slot, each leg carrying an outward barb near its tip.
  *
@@ -68,11 +69,14 @@ export function IconConnectorPuzzle() {
   );
 }
 
-/** Dovetail key: the standalone double-dovetail key, drawn as a horizontal bowtie. */
+/** Seam key: the standalone dogbone key — two rounded lobes joined by a narrow
+ *  neck at the seam (drawn horizontal, matching its seated orientation). */
 export function IconConnectorDovetailKey() {
   return (
     <svg {...svgProps}>
-      <path d="M4 8L16 14L28 8V24L16 18L4 24Z" {...solid} />
+      <rect x="4" y="8" width="9.5" height="16" rx="3.5" {...solid} />
+      <rect x="18.5" y="8" width="9.5" height="16" rx="3.5" {...solid} />
+      <rect x="12" y="13" width="8" height="6" rx="1" {...solid} />
     </svg>
   );
 }

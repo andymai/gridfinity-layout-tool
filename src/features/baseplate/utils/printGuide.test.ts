@@ -178,7 +178,7 @@ describe('generatePrintGuide', () => {
     expect(guide).not.toContain('168.0 × 168.0');
   });
 
-  it('dovetail key mode reports flush plates (no tongue) and a connector-keys section', () => {
+  it('key mode reports flush plates (no tongue) and a connector-keys section', () => {
     const params = makeParams({
       width: 8,
       depth: 4,
@@ -204,7 +204,7 @@ describe('generatePrintGuide', () => {
     expect(guide).not.toContain('169.5');
 
     // Header + key section.
-    expect(guide).toContain('dovetail key connectors');
+    expect(guide).toContain('puzzle key connectors');
     expect(guide).toContain('Connector keys');
     expect(guide).toContain('gridfinity-baseplate_key.stl');
     expect(guide).toContain('Hammer one into each seam junction');
@@ -242,7 +242,7 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('until it clicks');
     expect(guide).toContain('barbs print in-plane');
     expect(guide).not.toContain('Hammer one into each seam junction');
-    expect(guide).not.toContain('dovetail_key (');
+    expect(guide).not.toContain('puzzle_key (');
     expect(keyCount).toBeGreaterThan(0);
 
     // Fit note uses the snap-clip per-side clearance (0.1), not the dovetail key's.

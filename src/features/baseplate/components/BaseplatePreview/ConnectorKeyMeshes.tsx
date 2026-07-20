@@ -1,12 +1,13 @@
 /**
- * Renders the seated dovetail keys in the split-baseplate preview.
+ * Renders the seated seam keys in the split-baseplate preview.
  *
- * A key is a straight extrusion of the same 6-point dovetail key profile the worker
- * builds (`buildDovetailKey`), so this procedural mesh is geometrically identical
- * to the exported part — no BREP round-trip needed for a draft preview. One key
- * is placed at every seam junction (see `computeSeamJunctions`), rotated 90° on
- * horizontal seams. Hidden in exploded mode, since keys only make sense when the
- * pieces are assembled.
+ * A key is a straight extrusion of the same puzzle-lobe dogbone profile the
+ * worker builds (`buildDovetailKey` — two mirrored puzzle lobes, #2637), so this
+ * procedural mesh matches the exported part (minus the worker's socket relief,
+ * a cosmetic-only difference like the snap clip's). One key is placed at every
+ * seam junction (see `computeSeamJunctions`), rotated 90° on horizontal seams.
+ * Hidden in exploded mode, since keys only make sense when the pieces are
+ * assembled.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -22,9 +23,12 @@ import type { ConnectorKeyMesh } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { computeSeamJunctions } from '../../utils/connectorKeys';
 import {
-  TONGUE_PROTRUSION,
-  TONGUE_BASE_HALF,
-  TONGUE_TIP_HALF,
+  PUZZLE_NECK_HALF,
+  PUZZLE_NECK_PROTRUSION,
+  PUZZLE_HEAD_HALF,
+  PUZZLE_PROTRUSION,
+  PUZZLE_ARMPIT_FILLET,
+  PUZZLE_HEAD_FILLET,
   SNAP_CLIP,
   snapClipLevels,
 } from '@/shared/constants/connectors';
@@ -41,20 +45,44 @@ function getAccentHex(): string {
   return raw || FALLBACK_ACCENT;
 }
 
-/** Build the dovetail key profile centered on the origin, long axis along X. */
+/** Build the dogbone key profile (two mirrored puzzle lobes) centered on the
+ *  origin, long axis along X — matching the worker's `buildDovetailKey`. */
 function buildKeyGeometry(totalHeight: number): THREE.ExtrudeGeometry {
-  const P = TONGUE_PROTRUSION;
-  const bW = TONGUE_BASE_HALF;
-  const tW = TONGUE_TIP_HALF;
-  const shape = new THREE.Shape();
-  shape.moveTo(-P, tW);
-  shape.lineTo(0, bW);
-  shape.lineTo(P, tW);
-  shape.lineTo(P, -tW);
-  shape.lineTo(0, -bW);
-  shape.lineTo(-P, -tW);
-  shape.closePath();
-  const geometry = new THREE.ExtrudeGeometry(shape, {
+  const nH = PUZZLE_NECK_HALF;
+  const hH = PUZZLE_HEAD_HALF;
+  const nP = PUZZLE_NECK_PROTRUSION;
+  const reach = PUZZLE_PROTRUSION;
+  const fA = PUZZLE_ARMPIT_FILLET;
+  const fH = PUZZLE_HEAD_FILLET;
+  const pts: Array<[number, number]> = [
+    [nP, nH],
+    [nP, hH],
+    [reach, hH],
+    [reach, -hH],
+    [nP, -hH],
+    [nP, -nH],
+    [-nP, -nH],
+    [-nP, -hH],
+    [-reach, -hH],
+    [-reach, hH],
+    [-nP, hH],
+    [-nP, nH],
+  ];
+  const corners: Corner[] = [
+    { r: fA }, // +x armpit
+    { r: fH }, // +x shoulder
+    { r: fH }, // +x tip
+    { r: fH }, // +x tip
+    { r: fH }, // +x shoulder
+    { r: fA }, // +x armpit
+    { r: fA }, // −x armpit
+    { r: fH }, // −x shoulder
+    { r: fH }, // −x tip
+    { r: fH }, // −x tip
+    { r: fH }, // −x shoulder
+    { r: fA }, // −x armpit
+  ];
+  const geometry = new THREE.ExtrudeGeometry(roundedShape(pts, corners), {
     depth: totalHeight,
     bevelEnabled: false,
     steps: 1,

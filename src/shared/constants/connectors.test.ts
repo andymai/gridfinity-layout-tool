@@ -6,6 +6,8 @@ import {
   CONNECTOR_FIT_OFFSET_MIN,
   CONNECTOR_FIT_OFFSET_MAX,
   TONGUE_PROTRUSION,
+  TONGUE_BASE_HALF,
+  TONGUE_TIP_HALF,
   PUZZLE_NECK_HALF,
   PUZZLE_HEAD_HALF,
   PUZZLE_NECK_PROTRUSION,
@@ -77,6 +79,26 @@ describe('puzzle connector lock geometry (issue #2241)', () => {
   it('shares the legacy reach so split-plate bed-budget / bbox math is unchanged', () => {
     expect(PUZZLE_PROTRUSION).toBe(TONGUE_PROTRUSION);
     expect(PUZZLE_NECK_PROTRUSION).toBeLessThan(PUZZLE_PROTRUSION);
+  });
+});
+
+describe('seam key printable undercut (issue #2637)', () => {
+  it('keeps the undercut above the FDM swallow budget the bowtie key fell below', () => {
+    // The original key was two mirrored dovetail tongues: TONGUE_BASE_HALF →
+    // TONGUE_TIP_HALF = 0.3mm/side of undercut. A 0.4mm nozzle rounds outside
+    // AND pocket corners by ~the nozzle radius, first-layer squish spreads
+    // another ~0.2mm, and the press-fit clearance eats the rest — printed keys
+    // came out near-rectangular and pulled straight out. The key now shares the
+    // puzzle lobe profile; this pins its undercut above that swallow budget so
+    // a future retune can't quietly regress the lock into decoration again.
+    const undercutPerSide = PUZZLE_HEAD_HALF - PUZZLE_NECK_HALF;
+    const cornerRounding = NOZZLE_BASELINE / 2;
+    const firstLayerSquish = 0.2;
+    const swallowBudget = cornerRounding + firstLayerSquish + DOVETAIL_KEY_CLEARANCE;
+    expect(undercutPerSide).toBeGreaterThanOrEqual(2 * swallowBudget);
+    // The legacy taper demonstrably failed this bar (#2637).
+    const legacyUndercut = TONGUE_TIP_HALF - TONGUE_BASE_HALF;
+    expect(legacyUndercut).toBeLessThan(2 * swallowBudget);
   });
 });
 

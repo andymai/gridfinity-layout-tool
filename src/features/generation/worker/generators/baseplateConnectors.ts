@@ -20,12 +20,14 @@
  * Convention: left/front = tongue (male, fused), right/back = groove (female,
  * cut). Inverted by `invertDovetails`.
  *
- * Dovetail-key style (`connectorStyle === 'dovetailKey'`): every join edge is female
+ * Key style (`connectorStyle === 'dovetailKey'`): every join edge is female
  * (groove only, no tongue), and a separate `buildDovetailKey()` part is hammered
- * into the seam. Two opposing grooves across a seam form one dovetail key cavity —
- * narrow at the seam, wide into each piece — that the key locks into. The
- * groove uses the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails`
- * and `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
+ * into the seam. Two opposing PUZZLE grooves across a seam form one dogbone
+ * cavity — narrow at the seam, flaring to a rounded lobe inside each piece —
+ * that the key locks into (the legacy trapezoid grooves' 0.3 mm/side undercut
+ * printed away to nothing, #2637; see {@link buildDovetailKey}). The groove uses
+ * the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails` and
+ * `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
  *
  * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
  * matching the pre-Z-shift coordinate system (slab top at Z=0, bottom at
@@ -380,7 +382,9 @@ export function buildConnectors(
           grooves.push(...makeSnapPocket(pt, w, bp, d, snapLevels));
         } else if (isDovetailKey) {
           // Both sides of every seam are female; the key supplies the male half.
-          grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
+          // Puzzle-lobe grooves: the dogbone key's 1.0 mm/side undercut survives
+          // FDM where the legacy trapezoid's 0.3 mm/side did not (#2637).
+          grooves.push(makePuzzleGroove(pt, w, bp, d, cl, ext, totalHeight));
         } else if (paired) {
           const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
           const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
@@ -592,28 +596,72 @@ export function makePuzzleGroove(
 }
 
 /**
- * Free-standing dovetail key for `connectorStyle === 'dovetailKey'`: two dovetail
- * tongues mirrored across the waist into one prism, centered on the origin with
- * its long axis along X. Narrow at the waist (`TONGUE_BASE_HALF`, sits at the
- * seam), wide at both wing tips (`TONGUE_TIP_HALF`, captured inside each piece).
+ * Free-standing seam key for `connectorStyle === 'dovetailKey'`: two puzzle
+ * lobes mirrored across the waist into one dogbone prism, centered on the
+ * origin with its long axis along X. Narrow at the waist (`PUZZLE_NECK_HALF`,
+ * sits across the seam), flaring to a rounded head inside each piece
+ * (`PUZZLE_HEAD_HALF`), mating the puzzle grooves the key mode cuts.
  *
- * Built at nominal tongue dimensions — the seam grooves carry
- * `DOVETAIL_KEY_CLEARANCE`, so the per-face gap to the pocket comes from there.
- * Extruded upward so the bottom sits at Z=0 (bed-ready); full height matches the
- * plate's `totalHeight` so the seated key is flush with the plate top.
+ * This replaced the original double-dovetail bowtie: its 0.3 mm/side undercut
+ * was swallowed whole by FDM corner rounding + first-layer squish, so printed
+ * keys came out near-rectangular and wouldn't hold (#2637). The puzzle lobe's
+ * 1.0 mm/side undercut (`PUZZLE_HEAD_HALF − PUZZLE_NECK_HALF`) is the profile
+ * the integral 'puzzle' style already prints reliably. The style id stays
+ * `dovetailKey` so saved designs keep working; plates printed with the old
+ * trapezoid grooves need a reprint to accept the new key — those keys never
+ * held, so there is no working fit to preserve.
+ *
+ * Built at nominal dimensions — the seam grooves carry
+ * `DOVETAIL_KEY_CLEARANCE`, so the per-face gap to the cavity comes from there.
+ * The head corners are then relieved against the four bin feet flanking the
+ * junction ({@link relieveForNeighborSockets}): the socket mouth opens to the
+ * full cell at the slab top, and the wider head (vs the old 1.3 mm half-width
+ * tips) reaches into it near the top. Extruded downward for the relief (seated
+ * frame, feet carve from the top), then lifted so the bottom sits at Z=0
+ * (bed-ready, relief scallops up); full height matches the plate's
+ * `totalHeight` so the seated key is flush with the plate top.
  */
-export function buildDovetailKey(totalHeight: number): Shape3D {
-  const P = TONGUE_PROTRUSION;
-  const bW = TONGUE_BASE_HALF;
-  const tW = TONGUE_TIP_HALF;
-  const profile = draw([-P, tW])
-    .lineTo([0, bW])
-    .lineTo([P, tW])
-    .lineTo([P, -tW])
-    .lineTo([0, -bW])
-    .lineTo([-P, -tW])
+export function buildDovetailKey(totalHeight: number, gridUnitMm: number): Shape3D {
+  const nH = PUZZLE_NECK_HALF;
+  const hH = PUZZLE_HEAD_HALF;
+  const nP = PUZZLE_NECK_PROTRUSION;
+  const reach = PUZZLE_PROTRUSION;
+  const fA = PUZZLE_ARMPIT_FILLET;
+  const fH = PUZZLE_HEAD_FILLET;
+  // Start mid-neck-top (a straight-edge point, not a corner) so close() needs
+  // no corner treatment; every real corner gets the puzzle profile's fillet.
+  const profile = draw([0, nH])
+    .lineTo([nP, nH])
+    .customCorner(fA) // +x armpit (re-entrant neck→head notch)
+    .lineTo([nP, hH])
+    .customCorner(fH) // +x shoulder
+    .lineTo([reach, hH])
+    .customCorner(fH) // +x tip
+    .lineTo([reach, -hH])
+    .customCorner(fH) // +x tip
+    .lineTo([nP, -hH])
+    .customCorner(fH) // +x shoulder
+    .lineTo([nP, -nH])
+    .customCorner(fA) // +x armpit
+    .lineTo([-nP, -nH])
+    .customCorner(fA) // −x armpit
+    .lineTo([-nP, -hH])
+    .customCorner(fH) // −x shoulder
+    .lineTo([-reach, -hH])
+    .customCorner(fH) // −x tip
+    .lineTo([-reach, hH])
+    .customCorner(fH) // −x tip
+    .lineTo([-nP, hH])
+    .customCorner(fH) // −x shoulder
+    .lineTo([-nP, nH])
+    .customCorner(fA) // −x armpit
     .close();
-  return sketch(profile, 'XY', 0).extrude(totalHeight);
+  const seated = sketch(profile, 'XY', 0).extrude(-totalHeight);
+  const relieved = relieveForNeighborSockets(seated, gridUnitMm);
+  if (relieved !== seated) seated.delete();
+  const lifted = translate(relieved, [0, 0, totalHeight]);
+  relieved.delete();
+  return lifted;
 }
 
 /**
@@ -671,40 +719,27 @@ export function makeSnapPocket(
   return [recess, bearing, lowerThroat, chamber];
 }
 
-/** Per-side gap between the relieved clip and the nominal seated bin foot (mm). */
-const SNAP_CLIP_SOCKET_RELIEF_GAP = 0.3;
+/** Per-side gap between a relieved seam part and the nominal seated bin foot (mm). */
+const CONNECTOR_SOCKET_RELIEF_GAP = 0.3;
 
 /**
- * Carve the clip's top-bridge outer corners back so they clear the bin feet of
- * the edge sockets flanking each seam.
+ * Subtract the four bin-foot envelopes flanking a seam junction from a seated
+ * connector part (part top at Z=0, junction at the XY origin).
  *
  * The gridfinity socket mouth opens to the FULL cell at the slab top
- * (`INSET_TOP = 0`), so a top-inserted staple's flush bridge otherwise pokes
- * into the open socket corners exactly where a bin foot seats — ~0.7mm³ per
- * adjacent foot, all of it in the top `BRIDGE_THK` band (the deep barb/ledge
- * snap features sit inside the foot's 4mm corner radius and don't interfere).
- *
- * The relief subtracts the four neighbouring full-cell foot envelopes (grown by
- * {@link SNAP_CLIP_SOCKET_RELIEF_GAP}) but only ABOVE the catch ledge, so the
- * snap engagement is provably untouched. Full-cell neighbours are the worst
- * case, so the single printed clip part clears half-cell, margin, and corner
- * neighbours too. Reuses {@link buildSingleCellSocket} so the relief tracks the
- * real socket profile and can't drift.
+ * (`INSET_TOP = 0`), so any top-flush part spanning a junction pokes into the
+ * open socket corners exactly where a bin foot seats. Each foot envelope is
+ * grown by {@link CONNECTOR_SOCKET_RELIEF_GAP}. With `floorZ` set, feet are
+ * clipped to the band above it so deeper features (the snap clip's barb/catch
+ * zone) are provably untouched; without it the full envelope is subtracted —
+ * the socket funnel recedes from the junction with depth, so deeper cuts fall
+ * outside a small junction part anyway. Full-cell neighbours are the worst
+ * case, so a relieved part clears half-cell, margin, and corner neighbours too.
+ * Reuses {@link buildSingleCellSocket} so the relief tracks the real socket
+ * profile and can't drift.
  */
-function relieveClipForSockets(
-  clip: Shape3D,
-  totalHeight: number,
-  gridUnitMm: number,
-  nozzleSizeMm?: number
-): Shape3D {
-  const lv = snapClipLevels(totalHeight, 0, nozzleSizeMm);
-  // Cover the bridge band + margin, but stay clear above the catch ledge so the
-  // barb and its catch face are never touched. totalHeight ≥ SOCKET_HEIGHT keeps
-  // catchZ ≤ −2.8, so this floor always lands safely above it.
-  const floorZ = -(SNAP_CLIP.BRIDGE_THK + 0.8);
-  if (floorZ <= lv.catchZ) return clip;
-
-  const footCell = gridUnitMm - CLEARANCE + 2 * SNAP_CLIP_SOCKET_RELIEF_GAP;
+function relieveForNeighborSockets(part: Shape3D, gridUnitMm: number, floorZ?: number): Shape3D {
+  const footCell = gridUnitMm - CLEARANCE + 2 * CONNECTOR_SOCKET_RELIEF_GAP;
   const half = gridUnitMm / 2;
   // Loft the foot once and clone it to each of the four neighbouring cells.
   const baseFoot = buildSingleCellSocket(footCell, footCell);
@@ -714,6 +749,10 @@ function relieveClipForSockets(
       const cx = sx * half;
       const cy = sy * half;
       const foot = translate(unwrap(clone(baseFoot)), [cx, cy, 0]);
+      if (floorZ === undefined) {
+        cutters.push(foot as ValidSolid);
+        continue;
+      }
       const cap = sketch(
         draw([cx - gridUnitMm, cy - gridUnitMm])
           .lineTo([cx + gridUnitMm, cy - gridUnitMm])
@@ -733,11 +772,34 @@ function relieveClipForSockets(
       }
     }
   }
-  // cutAll keeps its inputs; free the tools (the caller owns `clip`).
-  const relieved = unwrap(cutAll(clip as ValidSolid, cutters));
+  // cutAll keeps its inputs; free the tools (the caller owns `part`).
+  const relieved = unwrap(cutAll(part as ValidSolid, cutters));
   for (const c of cutters) c.delete();
   baseFoot.delete();
   return relieved;
+}
+
+/**
+ * Carve the clip's top-bridge outer corners back so they clear the bin feet of
+ * the edge sockets flanking each seam — ~0.7mm³ per adjacent foot un-relieved,
+ * all of it in the top `BRIDGE_THK` band (the deep barb/ledge snap features sit
+ * inside the foot's 4mm corner radius and don't interfere). Relief is clipped
+ * to the band above the catch ledge so the snap engagement is provably
+ * untouched.
+ */
+function relieveClipForSockets(
+  clip: Shape3D,
+  totalHeight: number,
+  gridUnitMm: number,
+  nozzleSizeMm?: number
+): Shape3D {
+  const lv = snapClipLevels(totalHeight, 0, nozzleSizeMm);
+  // Cover the bridge band + margin, but stay clear above the catch ledge so the
+  // barb and its catch face are never touched. totalHeight ≥ SOCKET_HEIGHT keeps
+  // catchZ ≤ −2.8, so this floor always lands safely above it.
+  const floorZ = -(SNAP_CLIP.BRIDGE_THK + 0.8);
+  if (floorZ <= lv.catchZ) return clip;
+  return relieveForNeighborSockets(clip, gridUnitMm, floorZ);
 }
 
 /**

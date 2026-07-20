@@ -9,8 +9,11 @@
  *
  * The dovetail is a trapezoidal prism, narrow at the wall (BASE_HALF) and wider
  * at the protruding tip (TIP_HALF), reaching PROTRUSION past the wall. The
- * dovetail key (`connectorStyle: 'dovetailKey'`) is two of these mirrored across
- * the waist into one part hammered into the seam.
+ * seam key (`connectorStyle: 'dovetailKey'`) is two PUZZLE lobes mirrored across
+ * the waist into one dogbone part hammered into the seam — it was originally two
+ * mirrored dovetails, but that profile's 0.3 mm/side undercut printed away to
+ * nothing (#2637), so the key adopted the puzzle profile that already survives
+ * FDM on the integral 'puzzle' style. The style id keeps its historical name.
  */
 
 import {
@@ -72,12 +75,14 @@ export const PUZZLE_HEAD_FILLET = 0.4;
 export const TONGUE_CLEARANCE = 0.15;
 
 /**
- * Per-side groove clearance for the hammered-in dovetail key (mm). Tighter than
- * the slip-fit dovetail so the key holds vertically by friction. 0.075 mm/side
- * lands at the snug "finger-snap" end of FDM dovetail fits for PLA/PETG — and
- * FDM pockets shrink, so the realized fit is tighter still. Drop toward 0.05 for
- * a harder press; the dominant fit factor is first-layer elephant-foot squish,
- * so see the print guide's connector-key tuning notes before changing this.
+ * Per-side groove clearance for the hammered-in seam key (mm). Tighter than
+ * the slip-fit dovetail so the key holds vertically by friction — pull-apart
+ * retention comes from the puzzle lobe's mechanical undercut, but lift-out is
+ * friction-only. 0.075 mm/side lands at the snug "finger-snap" end of FDM
+ * press fits for PLA/PETG — and FDM pockets shrink, so the realized fit is
+ * tighter still. Drop toward 0.05 for a harder press; the dominant fit factor
+ * is first-layer elephant-foot squish, so see the print guide's connector-key
+ * tuning notes before changing this.
  */
 export const DOVETAIL_KEY_CLEARANCE = 0.075;
 

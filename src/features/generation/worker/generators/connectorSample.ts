@@ -284,9 +284,10 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
         frontFeature = { kind: 'pocket', levels };
         backFeature = { kind: 'pocket', levels };
       } else if (style.key === 'dovetailKey') {
+        // Key mode cuts puzzle-lobe grooves (the dogbone key's cavity, #2637).
         const clearance = effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset, params.nozzleSizeMm);
-        frontFeature = { kind: 'groove', clearance, puzzle: false };
-        backFeature = { kind: 'groove', clearance, puzzle: false };
+        frontFeature = { kind: 'groove', clearance, puzzle: true };
+        backFeature = { kind: 'groove', clearance, puzzle: true };
       } else {
         // Integral tongue/groove (dovetail or puzzle): nominal tongue, offset rides
         // on the female groove. Puzzle shares the dovetail's base groove clearance.
@@ -311,7 +312,7 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
       const part =
         style.loose === 'clip'
           ? buildSnapClipForPrint(totalHeight, gridUnitMm, params.nozzleSizeMm)
-          : buildDovetailKey(totalHeight);
+          : buildDovetailKey(totalHeight, gridUnitMm);
       const placed = translate(part, [looseX, cellY, -totalHeight]);
       part.delete();
       pieces.push(placed);

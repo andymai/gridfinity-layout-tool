@@ -2455,9 +2455,9 @@ const en: Record<string, string> = {
   'baseplate.maxPrintHeightTooltip':
     "Your printer's max Z height. Stack printing fits as many baseplates per stack as this allows.",
   'baseplate.nozzleSizeTooltip':
-    'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
+    'Your printer nozzle diameter. Connector keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
-    'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
+    'Sized for a {nozzle}mm nozzle — connector keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.enable': 'Vertical stack',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
@@ -2512,12 +2512,12 @@ const en: Record<string, string> = {
   'baseplate.connectors.snapClipNoStack': "Can't be vertically stacked",
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.puzzle': 'Puzzle',
-  'baseplate.connectorStyle.dovetailKey': 'Dovetail key',
+  'baseplate.connectorStyle.dovetailKey': 'Puzzle key',
   'baseplate.connectorStyle.snapClip': 'Snap clip',
   'baseplate.connectorDesc.none': 'Pieces sit loose',
   'baseplate.connectorDesc.dovetail': 'Printed sliding joint',
   'baseplate.connectorDesc.puzzle': 'Locks pieces together',
-  'baseplate.connectorDesc.dovetailKey': 'Separate bowtie key',
+  'baseplate.connectorDesc.dovetailKey': 'Separate locking key',
   'baseplate.connectorDesc.snapClip': 'Snap-in seam clip',
   'baseplate.connectorFit.label': 'Tolerance',
   'baseplate.connectorFit.info':

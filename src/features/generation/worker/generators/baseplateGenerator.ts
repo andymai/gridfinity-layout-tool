@@ -677,7 +677,7 @@ export async function exportConnectorKey(
   const key =
     params.connectorStyle === 'snapClip'
       ? buildSnapClipForPrint(totalHeight, params.gridUnitMm, params.nozzleSizeMm)
-      : buildDovetailKey(totalHeight);
+      : buildDovetailKey(totalHeight, params.gridUnitMm);
   try {
     const name = 'connector_key';
     if (format === 'step') {
