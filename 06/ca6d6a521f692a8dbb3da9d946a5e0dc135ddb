@@ -1,0 +1,329 @@
+src/features/bin-designer/components/preview/GhostSlotLines/GhostSlotLines.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 38-39,77-79
+e2e/stl-bin-import.spec.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-167
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 174-229
+src/features/bin-designer/components/preview/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 26
+src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 363-416
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 45,50
+.github/workflows/smoke-preview.yml
+  s_3c1428c0ef138e::t_764a5be06338f4 40-45,49-50,52,57,130
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 23,25-30,385-387,599-603,605-622,624-657,659-664,722-723,726-727,730-739,741-742,752-755,775-776,782-802
+  s_3c1428c0ef138e::t_042ed125580d9b 803-804
+src/i18n/locales/sv.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shared/hooks/useLinkedDesignDividers.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-138
+src/features/baseplate/components/BaseplatePanel/connectorIcons.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 10-11,72-73,77-79
+CHANGELOG.md
+  s_3c1428c0ef138e::t_764a5be06338f4 3-9,11-21,25,27,29-33,37,43,49,55,61,67,73,79,85,91,97-99,105,111,117,123,129,135,141,147,153,159,165,171,177,183,189,195,201,207,213,219,225,231,237,243,249,255,261,267,273,279,285,291,297,303,309,315,321,327,333,339,345,351,357,363,369,375,381,387,393,399,405,409,415,421,427,433,439,445,451,457,463,469,475,481,487,493,499,505,511,517,523,529,535,541,547,553,559,565,571,577,583,589,595,601,607,613,619,625,631,637,643,649,655,661,667,673,679,685,691,697,703,709,715,721,727,733,739,745,751,757,763,769,775,781,787,793,799,805,811,817,823,829,835
+src/features/generation/bridge/bridgeTypes.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 61
+src/i18n/locales/pt-BR.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shared/utils/slotMath.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 13-17,20,297-452
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-91
+src/features/bin-designer/sync/designAdapter.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 17,71-73,84-86
+src/features/grid-editor/components/Grid/IsometricPreview/MergedBinMeshes/geometryCache.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 2,6,24-34,41-42,44,52
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/SelectedBin.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-35
+src/i18n/locales/it.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/i18n/locales/en.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1570,1587-1603,1784-1785,2077-2093,2520,2522,2579,2584
+src/features/generation/worker/generators/wallPatterns.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 12,65-66
+src/features/bin-designer/components/DesignImportView/DesignImportView.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 18-22,34,88-93,101,126-129,142,173,193-197
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 313-381
+src/features/grid-editor/components/Grid/IsometricPreview/MergedBinMeshes/MergedBinMeshes.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 4,19,43-44
+src/shared/constants/connectors.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 12-16,78-85,139-156,172-173,175-188,202-207,240-243,280-283,297
+src/shell/Sidebar/Sidebar.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1,51,454,537-540,544
+src/features/print-export/README.md
+  s_3c1428c0ef138e::t_764a5be06338f4 66
+src/features/bin-designer/components/ImportBinDialog/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-3
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/ExplodedLayerGroup.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1,5,7-12,29-31,52-53,65-71,104-114,118,120-122
+src/shared/utils/overhang.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-77
+src/features/generation/worker/handlers/importMeshHandler.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 29,31-39
+src/shared/items/registerDescriptors.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 8,19
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-144
+src/features/bin-designer/store/customBinRegistry.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 11,52-57,104,130
+src/features/generation/worker/generators/slotBuilder.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 26,324-375,377-381
+src/features/grid-editor/components/Grid/IsometricPreview/useBinsToRender.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 46-78
+src/shared/items/registry.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 23,26,31
+src/i18n/locales/fr.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shared/hooks/useBinGeometry.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 343-447,521-537,540
+  s_3c1428c0ef138e::t_46ff8bfd33fe87 538-539,541
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 32-33,130-132
+  s_3c1428c0ef138e::t_a1d278052746df 133-134
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 255-392
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-253
+src/features/grid-editor/components/Grid/IsometricPreview/AnimatedBinMesh/AnimatedBinMesh.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 27
+src/features/generation/worker/generators/snapClipPullApart.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 47-51
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 141
+src/features/bin-designer/utils/meshGridDetection.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-93
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-6
+src/features/bin-designer/components/ImportBinDialog/ImportBinDialog.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-115
+src/shared/hooks/useBinGeometry.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 87-113,119-120,133,386-479,498,501-502
+src/shared/hooks/useLinkedDesignDividers.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-193
+src/features/generation/worker/generators/overhang.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 2-4,6
+src/features/bin-designer/constants/defaults.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 46-47
+src/i18n/locales/es.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/features/generation/worker/generators/connectorKeyFit.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-152
+src/features/print-export/utils/split.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 200-204
+src/features/generation/worker/generation.worker.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 57,125,188
+src/shared/constants/snapClipInsertion.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-126
+src/shell/RightPanel/RightPanel.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 236,240,335
+src/features/generation/worker/generators/meshImport.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 114,122-123
+src/i18n/locales/nl.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shared/printSettings/standardBinVolume.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 3,110-133
+  s_3c1428c0ef138e::t_b6f6ee4b4c59e7 134-135
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 20,26,28,33-39,181-214,281-327,330,332-340,364-365,367,369,371,374,376,381,387-389,391,393,395,397,400,402,407,412-438,440-509,512-514,516-548,673-711,713-716
+src/features/bin-designer/components/preview/GhostAuthoredDividers/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1
+src/i18n/locales/uk.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shell/Sidebar/Sidebar.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 399-400,403
+src/shared/utils/compartmentGeometry.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-119
+src/features/grid-editor/components/Grid/IsometricPreview/useBinsToRender.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 2,5,17-18,32,78-79,117
+src/features/bin-designer/components/ImportBinDialog/useImportBinDesign.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-198
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 2,4-10,26-31,48-49,51-85
+src/i18n/locales/ja.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-81
+src/features/bin-designer/utils/meshGridDetection.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-67
+src/features/generation/README.md
+  s_3c1428c0ef138e::t_764a5be06338f4 112-137
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 16-17,23-24,197-293
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 22-23,28,30-31,33-34,116,118-122,126,131,174-181,244,282-287,289-370,375,377-383
+src/features/generation/worker/generators/dividerExport.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 15,20-36,51,108
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 42,458
+src/features/generation/worker/generators/baseplateGenerator.scenario.snapClip.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 179-181,185
+src/shared/hooks/useExplodedLayerView.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 2,6,24-25,48-49,65,115-116,142
+src/shared/utils/authoredDividerMath.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-137
+src/features/generation/worker/items/importedMeshItem.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-124
+src/shell/layoutExport/useLayoutExport.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 24,26-28,192,237-253
+  s_3c1428c0ef138e::t_07212d77388b49 254-257
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 90-116
+src/shared/items/importedMesh/descriptor.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-104
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 75-90
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetailKey.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 3-4,6-10,12-13,20,120,124,147,159,161,163,165,167,169
+src/features/bin-designer/hooks/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 2
+src/features/bin-designer/hooks/useImportedDesignAutoSave.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-149
+src/features/bin-designer/hooks/useImportedDesignAutoSave.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-132
+src/features/generation/worker/generators/dividerExport.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-35
+src/features/grid-editor/components/Grid/IsometricPreview/BinMesh/BinMesh.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 5,16,33,42
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/placement.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-59
+src/features/baseplate/README.md
+  s_3c1428c0ef138e::t_764a5be06338f4 93
+package.json
+  s_3c1428c0ef138e::t_764a5be06338f4 4,117,133,165,169,171,176,178,189,191-193,197,200
+src/design-system/Collapsible/Collapsible.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 97-102,167,200
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-91
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 39-40,120-130,629-644
+src/features/bin-designer/components/ImportBinDialog/useImportBinDesign.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-239
+src/features/generation/bridge/types.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 614-615
+src/i18n/locales/nb.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/shared/printSettings/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 123
+src/shared/types/bin.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 31-32
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 680
+src/features/generation/worker/items/importedMeshItem.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-125
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 17-24,163-171,179,221-227,265,352-353,366-376,380,382-384
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 49-64
+src/shared/utils/authoredDividerMath.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-84
+src/shared/types/item.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 13,15,46,79-100
+src/features/generation/worker/handlers/generateItemHandler.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-88
+src/features/bin-designer/utils/compartments.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 783-790
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-107
+src/features/bin-designer/utils/designKind.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 18-19,25-26
+src/features/generation/worker/items/registerGenerators.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 8,13
+src/features/generation/worker/items/generatorRegistry.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 17-23
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/useDesignGeometries.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-140
+src/shared/items/importedMesh/descriptor.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-104
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 18-20,22-25,46-55,58,109-111,115-118,125-133,166-193,201-206,208-209,243-277,280,282
+src/shell/styles/themes.css
+  s_3c1428c0ef138e::t_764a5be06338f4 225
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/SelectedBin.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-68
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-64
+src/shared/constants/connectors.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 9-10,85-101
+  s_3c1428c0ef138e::t_55c43fe4224042 102-104
+src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 11-16,54-60,297-301,343-347
+src/features/generation/worker/generators/meshImport.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 43-45,340-346
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-181
+src/features/design-linking/README.md
+  s_3c1428c0ef138e::t_764a5be06338f4 55
+src/features/bin-designer/types/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 10,154-179,196-206
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-120
+src/features/bin-designer/README.md
+  s_3c1428c0ef138e::t_764a5be06338f4 174-204
+src/features/bin-designer/components/ImportBinDialog/ImportBinDialog.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-222
+src/core/labs/features.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 160-170
+  s_3c1428c0ef138e::t_abbebd4c44bdc3 159
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.test.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-43
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-288
+src/features/bin-designer/index.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 46,48-51
+src/features/generation/worker/generators/connectorSample.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 287,289-290,315
+src/i18n/locales/de.json
+  s_3c1428c0ef138e::t_764a5be06338f4 36,42,53,105,579,671-672,865-881,2767-2781
+src/features/generation/worker/handlers/exportHandler.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 16,180
+src/features/generation/worker/handlers/generateItemHandler.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 15-16,19,21-30
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-208
+.github/workflows/codeql.yml
+  s_3c1428c0ef138e::t_764a5be06338f4 32,37,40
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 1-65
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 234-319
+.release-please-manifest.json
+  s_3c1428c0ef138e::t_764a5be06338f4 2
+src/features/baseplate/utils/printGuide.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 181,207,245
+src/shared/utils/slotMath.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 9,252-443
+src/features/baseplate/utils/printGuide.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 232,249,292,409
+src/features/print-export/utils/split.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 202-241
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_3c1428c0ef138e::t_764a5be06338f4 19,59-60
+  s_3c1428c0ef138e::t_99482238ff7920 61
+src/shared/printSettings/standardBinVolume.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 177-194
+src/features/bin-designer/utils/designKind.test.ts
+  s_3c1428c0ef138e::t_764a5be06338f4 1-67
+.github/workflows/smoke-postpromote.yml
+  s_3c1428c0ef138e::t_764a5be06338f4 68
+pnpm-lock.yaml
+  s_3c1428c0ef138e::t_52e721593df691 57,65-66,113-114,148,151,154,163,177-178,189-190,195-196,199,210-211,214,216-217,223,226,229,249-250,255-256,258-259,261-262,265,273-274,280,282-283,286,289,292,307,882-883,1632-1633,1755-1756,1758-1759,2024-2025,2030-2031,2036-2037,2042-2043,2048-2049,2054-2055,2061-2062,2068-2069,2075-2076,2082-2083,2089-2090,2096-2097,2102-2103,2107-2108,2113-2114,2511-2512,2539-2540,2811-2812,2815-2816,2833-2834,3083-3084,3103-3104,3140-3141,3184-3185,3439-3440,3568-3569,3607-3608,3916-3919,3962-3963,4025-4028,4263-4264,4410-4411,4451-4452,4481-4483,4551-4552,4607-4608,4790-4791,4794-4795,4804-4810,4816-4817,5006-5007,5319-5320,5331-5332,5445-5446,5653-5654,6739,6742,6776,6954,6956,6961,6965,6983,6985,7200,7334,7397,7401,7415,7417-7418,7440,7442,7444,7627,7639,7642,7682,7685,7688,7691,7694,7697,7700,7703,7706,7709,7712,7715,7718,7725,7728,7766,7938,7943,8046,8054,8072,8085,8088,8090-8091,8093-8094,8101,8108,8131,8135,8137,8160,8162,8166,8288,8297,8333,8339,8384,8392,8396,8399,8413,8424,8430,8459,8641,8660,8690,8692-8696,8736,8829,8972,9126,9131,9134,9144,9148-9149,9151,9155,9157,9159,9161,9174,9184,9193,9197,9204,9206,9219,9221,9562-9565,9601,9666-9670,9899,10032,10040,10042,10076,10094-10095,10125,10143,10188,10361,10395,10397,10401,10403-10404,10408,10411-10412,10418,10422,10457,10589,10606,10608,10611-10627,10634,10869,10871,10995,11012,11123,11176,11178-11179,11181-11182,11265,11267,11298,11303,11309,11311,11313,11318,11322,11326-11327,11330,11334-11335,11338,11342-11343,11354,11356,11359,11376,11380
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "06ca6d6a521f692a8dbb3da9d946a5e0dc135ddb",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
