@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.260.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.0...gridfinity-layout-tool-v4.260.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **baseplate:** snap clip can actually be inserted — thin the retaining wall, trim the barb ([#2643](https://github.com/andymai/gridfinity-layout-tool/issues/2643)) ([5456f0d](https://github.com/andymai/gridfinity-layout-tool/commit/5456f0d4a3087178257c88fbb088a85693f0a7aa)), closes [#2638](https://github.com/andymai/gridfinity-layout-tool/issues/2638)
+
 ## [4.260.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.259.0...gridfinity-layout-tool-v4.260.0) (2026-07-20)
 
 
