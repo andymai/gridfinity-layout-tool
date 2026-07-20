@@ -1,0 +1,61 @@
+src/i18n/locales/it.json
+  s_e22c16986e8ee6::t_683d8aee473fab 868
+  s_e22c16986e8ee6::t_01609da0a22968 869-876
+src/i18n/locales/fr.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_e22c16986e8ee6::t_b743fb2ee855b3 189,191-192,194-199,201
+  s_e22c16986e8ee6::t_c0d83107a7567f 220
+  s_e22c16986e8ee6::t_71b43da9a0e557 1-21,23-37,42-188,190,193,200,202-219,221-280
+  s_e22c16986e8ee6::t_8ead2ac00a1c7f 38-41
+  s_e22c16986e8ee6::t_94172e59092efb 22
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.test.tsx
+  s_e22c16986e8ee6::t_8fd4dd0d42a98c 1-63
+src/i18n/locales/uk.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+src/i18n/locales/nb.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+src/i18n/locales/en.ts
+  s_e22c16986e8ee6::t_77a922a9efe2e4 1597-1605
+src/i18n/locales/de.json
+  s_e22c16986e8ee6::t_683d8aee473fab 868
+  s_e22c16986e8ee6::t_01609da0a22968 869-876
+src/i18n/locales/sv.json
+  s_e22c16986e8ee6::t_1f07e06079a97e 868
+  s_e22c16986e8ee6::t_01609da0a22968 869-876
+src/i18n/locales/nl.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+src/i18n/locales/pt-BR.json
+  s_e22c16986e8ee6::t_1f07e06079a97e 868
+  s_e22c16986e8ee6::t_01609da0a22968 869-876
+src/i18n/locales/es.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_e22c16986e8ee6::t_718019b7c11e9f 364-365,367,369,371,374,376,381,387-389,391,393
+  s_e22c16986e8ee6::t_3fe3c3fffdb937 673-677
+  s_e22c16986e8ee6::t_ecb94ae46ea744 33-39
+  s_e22c16986e8ee6::t_4cfec69f607032 182-196
+  s_e22c16986e8ee6::t_166d655dc8900e 707-709
+  s_e22c16986e8ee6::t_5c97fccbef2423 678-680
+  s_e22c16986e8ee6::t_f1083cbd9e5021 704-706
+  s_e22c16986e8ee6::t_c571ea3d7bec13 710-712
+  s_e22c16986e8ee6::t_ea0a329687e83b 395,397,400,402,407,412-438,440-509,512-514,516-546,681-684,687-691,694-703,713-716
+src/i18n/locales/ja.json
+  s_e22c16986e8ee6::t_01609da0a22968 868-876
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d54273ab884e6cad404d80cd873060802c1ccf88",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
