@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.259.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.258.0...gridfinity-layout-tool-v4.259.0) (2026-07-20)
+
+
+### Features
+
+* **supporters:** recency signals, supporter messages, and find-your-bin ([#2648](https://github.com/andymai/gridfinity-layout-tool/issues/2648)) ([6508777](https://github.com/andymai/gridfinity-layout-tool/commit/6508777503a8ddfe48568963f1cec6fdaf2257ee))
+
 ## [4.258.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.257.0...gridfinity-layout-tool-v4.258.0) (2026-07-20)
 
 
