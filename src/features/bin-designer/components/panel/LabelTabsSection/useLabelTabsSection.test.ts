@@ -488,4 +488,82 @@ describe('useLabelTabsSection', () => {
       expect(after.inset).toBe(before.inset ?? 0);
     });
   });
+
+  describe('socket mode (#2666)', () => {
+    it('setTabMode(socket) lifts depth to the socket minimum', () => {
+      // Default depth is 12 — below the 14mm socket floor.
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabMode('socket');
+      });
+
+      const { label } = useDesignerStore.getState().params;
+      expect(label.mode).toBe('socket');
+      expect(label.depth).toBe(14);
+    });
+
+    it('setTabMode(socket) keeps a depth already above the minimum', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 20 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabMode('socket');
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(20);
+    });
+
+    it('reports the plate plan for the default 2×2 bin', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', depth: 14 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      // Default bin is 2×2 with a single compartment (~81.1mm inner) → 2U.
+      expect(result.current.state.isSocketMode).toBe(true);
+      expect(result.current.state.socketUnavailable).toBe(false);
+      expect(result.current.state.socketSpanningWidthU).toBeNull();
+      expect(result.current.state.plateWidthRows).toHaveLength(1);
+      expect(result.current.state.plateWidthRows[0].autoWidthU).toBe(2);
+    });
+
+    it('disables the socket segment when nothing fits', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 0.5 },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      expect(result.current.state.socketUnavailable).toBe(true);
+    });
+
+    it('raises the depth stepper floor in socket mode', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabDepthMin).toBe(8);
+
+      act(() => {
+        result.current.handlers.setTabMode('socket');
+      });
+
+      expect(result.current.state.tabDepthMin).toBe(14);
+    });
+
+    it('setPlateFitOffset stores the offset on the label config', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setPlateFitOffset(0.1);
+      });
+
+      expect(useDesignerStore.getState().params.label.plateFitOffset).toBe(0.1);
+    });
+  });
 });

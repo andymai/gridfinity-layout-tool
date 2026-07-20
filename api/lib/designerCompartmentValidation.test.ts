@@ -365,6 +365,31 @@ describe('validateCompartments', () => {
         validateCompartments({ ...validCompartments(), compartmentTexts: ['x'.repeat(51)] })
       ).toBe('compartments.compartmentTexts[0] must not exceed 50 characters');
     });
+
+    it('accepts labelPlateWidths with standard widths and nulls (#2666)', () => {
+      expect(validateCompartments({ ...validCompartments(), labelPlateWidths: [2] })).toBeNull();
+      expect(validateCompartments({ ...validCompartments(), labelPlateWidths: [null] })).toBeNull();
+    });
+
+    it('rejects labelPlateWidths that is not an array', () => {
+      expect(validateCompartments({ ...validCompartments(), labelPlateWidths: 2 })).toBe(
+        'compartments.labelPlateWidths must be an array'
+      );
+    });
+
+    it('rejects labelPlateWidths longer than cols × rows', () => {
+      expect(validateCompartments({ ...validCompartments(), labelPlateWidths: [1, 2] })).toBe(
+        'compartments.labelPlateWidths length must not exceed cols × rows (1)'
+      );
+    });
+
+    it('rejects a non-standard labelPlateWidths entry', () => {
+      for (const bad of [4, 0, 1.5, '2', {}]) {
+        expect(validateCompartments({ ...validCompartments(), labelPlateWidths: [bad] })).toBe(
+          'compartments.labelPlateWidths[0] must be null or one of: 1, 2, 3'
+        );
+      }
+    });
   });
 
   describe('dividerHeight', () => {

@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "Файл STL завеликий (макс. 50 МБ)",
   "toast.stlImport.notManifold": "Сітка не герметична — виправте її у слайсері та експортуйте знову",
   "toast.stlImport.empty": "STL не містить придатної для друку геометрії",
-  "toast.stlImport.assetLimit": "Дизайн може містити до {count} імпортованих сіток"
+  "toast.stlImport.assetLimit": "Дизайн може містити до {count} імпортованих сіток",
+  "binDesigner.tabMode": "Стиль етикетки",
+  "binDesigner.tabMode.text": "Друкований текст",
+  "binDesigner.tabMode.socket": "Змінна етикетка",
+  "binDesigner.tabMode.socketHint": "Вкладка отримує гніздо із защіпкою для окремо надрукованих змінних пластин етикеток. Сумісно з пластинами стандарту Cullenect (напр., із gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Контейнер завузький для стандартної пластини етикетки",
+  "binDesigner.plateWidth": "Ширина пластини",
+  "binDesigner.plateWidthAuto": "Авто ({width})",
+  "binDesigner.plateWidthAria": "Ширина пластини для відсіку {n}",
+  "binDesigner.plateWidthNoFit": "Жодна стандартна пластина не підходить",
+  "binDesigner.plateSpanningNote": "Відсіки завузькі для окремих пластин — використовується одне гніздо на всю ширину контейнера.",
+  "binDesigner.plateFitOffset": "Підгонка пластини",
+  "binDesigner.plateFitOffsetHint": "Точне налаштування посадки гнізда для вашого принтера: менше = щільніше, більше = вільніше."
 }

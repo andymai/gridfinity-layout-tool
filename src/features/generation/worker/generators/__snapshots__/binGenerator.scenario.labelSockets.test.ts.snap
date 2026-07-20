@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `836`;
+
+exports[`label sockets > 1×1 text mode unchanged 1`] = `708`;
+
+exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `2820`;
+
+exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `2176`;
+
+exports[`label sockets > 3×1 override forces a 1U plate 1`] = `1384`;
+
+exports[`label sockets > 3×1 socket auto-quantizes to 3U 1`] = `1384`;

@@ -21,6 +21,7 @@ export type {
   LabelTabConfig,
   LabelTabAlignment,
   LabelTabEdges,
+  LabelTabMode,
   WallCutout,
   WallCutoutShape,
   WallConfig,

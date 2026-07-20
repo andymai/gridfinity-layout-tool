@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "STL-filen er for stor (maks 50MB)",
   "toast.stlImport.notManifold": "Meshen er ikke vanntett — reparer den i sliceren og eksporter på nytt",
   "toast.stlImport.empty": "STL-filen inneholder ingen printbar geometri",
-  "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher"
+  "toast.stlImport.assetLimit": "Et design kan inneholde opptil {count} importerte mesher",
+  "binDesigner.tabMode": "Etikettstil",
+  "binDesigner.tabMode.text": "Trykt tekst",
+  "binDesigner.tabMode.socket": "Utskiftbar etikett",
+  "binDesigner.tabMode.socketHint": "Fliken får en klikk-inn-sokkel for separat printede utskiftbare etikettplater. Kompatibel med plater etter Cullenect-standarden (f.eks. fra gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Boksen er for smal for en standard etikettplate",
+  "binDesigner.plateWidth": "Platebredde",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Platebredde for rom {n}",
+  "binDesigner.plateWidthNoFit": "Ingen standardplate passer",
+  "binDesigner.plateSpanningNote": "Rommene er for smale for egne plater — én sokkel i hele boksens bredde brukes i stedet.",
+  "binDesigner.plateFitOffset": "Platepasning",
+  "binDesigner.plateFitOffsetHint": "Finjuster sokkelpasningen for skriveren din: negativ = strammere, positiv = løsere."
 }

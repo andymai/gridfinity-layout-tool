@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "STLファイルが大きすぎます（最大50MB）",
   "toast.stlImport.notManifold": "メッシュが水密ではありません。スライサーで修復して再エクスポートしてください",
   "toast.stlImport.empty": "STLに印刷可能な形状が含まれていません",
-  "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です"
+  "toast.stlImport.assetLimit": "1つのデザインに取り込めるメッシュは最大 {count} 個です",
+  "binDesigner.tabMode": "ラベルスタイル",
+  "binDesigner.tabMode.text": "印刷テキスト",
+  "binDesigner.tabMode.socket": "交換式ラベル",
+  "binDesigner.tabMode.socketHint": "タブに、別途印刷した交換式ラベルプレートをはめ込むソケットが付きます。Cullenect規格のプレート（gflabelなど）と互換性があります。",
+  "binDesigner.tabMode.socketTooNarrow": "ビンが狭すぎて標準ラベルプレートが入りません",
+  "binDesigner.plateWidth": "プレート幅",
+  "binDesigner.plateWidthAuto": "自動（{width}）",
+  "binDesigner.plateWidthAria": "コンパートメント{n}のプレート幅",
+  "binDesigner.plateWidthNoFit": "標準プレートが入りません",
+  "binDesigner.plateSpanningNote": "コンパートメントが狭すぎるため、ビン全幅の1つのソケットを使用します。",
+  "binDesigner.plateFitOffset": "プレートの合わせ調整",
+  "binDesigner.plateFitOffsetHint": "プリンターに合わせてソケットのはめあいを微調整：マイナス＝きつく、プラス＝ゆるく。"
 }

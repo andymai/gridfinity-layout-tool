@@ -32,6 +32,13 @@ export const CONSTRAINTS = {
   // Inset moves the tab inward from its anchor wall (#1898).
   MIN_LABEL_TAB_INSET: 0,
   MAX_LABEL_TAB_INSET: 100,
+  // Swappable-label socket mode (#2666). Mirrors
+  // `src/shared/constants/labelPlates.ts` — socket-mode tabs need extra
+  // depth to host the 11.3mm pocket, and the fit offset rides on the total
+  // pocket clearance so its bounds keep the clearance in [0.1, 0.8].
+  MIN_LABEL_SOCKET_TAB_DEPTH: 14,
+  LABEL_PLATE_FIT_OFFSET_MIN: -0.2,
+  LABEL_PLATE_FIT_OFFSET_MAX: 0.5,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
   // Exterior-wall collar (issue #2500) — mirrors client
@@ -59,3 +66,11 @@ export const CONSTRAINTS = {
   // side. Mirrors MAX_MASK_DIMENSION in `src/shared/utils/cellMask.ts`.
   MAX_MASK_DIMENSION: 20,
 } as const;
+
+/**
+ * Standard swappable-label plate widths in pitch units (#2666). Mirrors
+ * `LABEL_PLATE_WIDTHS_U` in `src/shared/constants/labelPlates.ts`. Shared
+ * here so `designerCompartmentValidation.ts` can validate the
+ * per-compartment `labelPlateWidths` overrides without a circular import.
+ */
+export const VALID_LABEL_PLATE_WIDTHS: readonly number[] = [1, 2, 3];

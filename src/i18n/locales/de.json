@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "STL-Datei ist zu groß (max. 50MB)",
   "toast.stlImport.notManifold": "Mesh ist nicht wasserdicht — im Slicer reparieren und neu exportieren",
   "toast.stlImport.empty": "STL enthält keine druckbare Geometrie",
-  "toast.stlImport.assetLimit": "Ein Design kann bis zu {count} importierte Meshes enthalten"
+  "toast.stlImport.assetLimit": "Ein Design kann bis zu {count} importierte Meshes enthalten",
+  "binDesigner.tabMode": "Etikettenstil",
+  "binDesigner.tabMode.text": "Gedruckter Text",
+  "binDesigner.tabMode.socket": "Wechseletikett",
+  "binDesigner.tabMode.socketHint": "Die Lasche erhält eine Einrast-Aufnahme für separat gedruckte Wechseletiketten. Kompatibel mit Etiketten nach Cullenect-Standard (z. B. aus gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Behälter ist zu schmal für ein Standard-Etikett",
+  "binDesigner.plateWidth": "Etikettenbreite",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Etikettenbreite für Fach {n}",
+  "binDesigner.plateWidthNoFit": "Kein Standard-Etikett passt",
+  "binDesigner.plateSpanningNote": "Die Fächer sind zu schmal für einzelne Etiketten — stattdessen wird eine behälterbreite Aufnahme verwendet.",
+  "binDesigner.plateFitOffset": "Etiketten-Passung",
+  "binDesigner.plateFitOffsetHint": "Feinabstimmung der Aufnahme für deinen Drucker: negativ = strammer, positiv = lockerer."
 }

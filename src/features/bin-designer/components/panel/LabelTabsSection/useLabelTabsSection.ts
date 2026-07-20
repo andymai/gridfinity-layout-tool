@@ -5,10 +5,16 @@ import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
+import {
+  MIN_LABEL_SOCKET_TAB_DEPTH_MM,
+  effectiveLabelSocketClearance,
+} from '@/shared/constants/labelPlates';
+import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
 import type {
   LabelTabAlignment,
   LabelTabEdges,
+  LabelTabMode,
   LabelTabSupport,
   TextFontFamily,
   TextMode,
@@ -22,6 +28,7 @@ export function useLabelTabsSection() {
     textDefaults,
     updateLabel,
     setCompartmentText,
+    setCompartmentPlateWidth,
     setTextDefaults,
     setLabelTabTextStyle,
     params,
@@ -32,6 +39,7 @@ export function useLabelTabsSection() {
       textDefaults: s.params.textDefaults,
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
+      setCompartmentPlateWidth: s.setCompartmentPlateWidth,
       setTextDefaults: s.setTextDefaults,
       setLabelTabTextStyle: s.setLabelTabTextStyle,
       params: s.params,
@@ -89,6 +97,33 @@ export function useLabelTabsSection() {
   const setTabEdges = useCallback(
     (edges: LabelTabEdges) => {
       updateLabel({ edges });
+    },
+    [updateLabel]
+  );
+
+  const setTabMode = useCallback(
+    (mode: LabelTabMode) => {
+      // Socket-mode tabs need extra depth for the pocket. Lift depth (and an
+      // explicit height, mirroring `setTabDepth`'s lockstep rule) in the same
+      // update so a single undo restores the prior state.
+      if (mode === 'socket' && label.depth < MIN_LABEL_SOCKET_TAB_DEPTH_MM) {
+        const depth = MIN_LABEL_SOCKET_TAB_DEPTH_MM;
+        const currentHeight = label.height;
+        if (currentHeight !== undefined && currentHeight <= depth) {
+          updateLabel({ mode, depth, height: Math.min(depth + 1, wallHeightMm) });
+        } else {
+          updateLabel({ mode, depth });
+        }
+      } else {
+        updateLabel({ mode });
+      }
+    },
+    [label.depth, label.height, updateLabel, wallHeightMm]
+  );
+
+  const setPlateFitOffset = useCallback(
+    (plateFitOffset: number) => {
+      updateLabel({ plateFitOffset });
     },
     [updateLabel]
   );
@@ -158,8 +193,10 @@ export function useLabelTabsSection() {
     } else if (compartments.cols >= 3) {
       availableWidth -= compartments.thickness;
     }
-    return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
-  }, [params, compartments.cols, compartments.thickness, label.width]);
+    // Socket mode forces full-width tabs (the pocket needs the room).
+    const widthPercent = (label.mode ?? 'text') === 'socket' ? 100 : label.width;
+    return Math.round(((availableWidth * widthPercent) / 100) * 10) / 10;
+  }, [params, compartments.cols, compartments.thickness, label.width, label.mode]);
 
   // Resolved tab height for display: explicit value when set, otherwise
   // wall top (the default-when-absent contract from `LabelTabConfig`).
@@ -292,7 +329,10 @@ export function useLabelTabsSection() {
     let nextHeight = label.height;
     let nextEnabled = label.enabled;
 
-    const MIN_DEPTH = DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
+    const MIN_DEPTH =
+      (label.mode ?? 'text') === 'socket'
+        ? MIN_LABEL_SOCKET_TAB_DEPTH_MM
+        : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
     // Height-derived ceiling: tabHeight = tabDepth, must be ≤ wallHeight
     // (and strictly < explicit height when set). Use `nextHeight - 1` when
     // explicit so we keep ≥1mm gusset clearance; else use wallHeight - 1.
@@ -345,6 +385,7 @@ export function useLabelTabsSection() {
     label.depth,
     label.height,
     label.enabled,
+    label.mode,
     edgesValue,
     compartmentDepths,
     innerD,
@@ -353,15 +394,55 @@ export function useLabelTabsSection() {
     updateLabel,
   ]);
 
+  // Swappable-label socket mode (#2666). The plan is the same math the
+  // worker runs, so pickers/warnings can never disagree with the geometry.
+  const isSocketMode = (label.mode ?? 'text') === 'socket';
+
+  const socketPlan = useMemo(() => {
+    const { innerW } = binDimensions(params);
+    const clearanceMm = effectiveLabelSocketClearance(undefined, label.plateFitOffset);
+    return planLabelSockets(compartments, innerW, clearanceMm);
+  }, [params, compartments, label.plateFitOffset]);
+
+  // Socket segment disabled when no standard plate fits anywhere, even
+  // bin-spanning \u2014 sockets are never emitted at nonstandard widths.
+  const socketUnavailable = !socketPlan.anyFits;
+
+  const plateWidthRows = useMemo(() => {
+    if (!isSocketMode || socketPlan.spanningWidthU !== null) return [];
+    const planById = new Map(socketPlan.compartments.map((p) => [p.compartmentId, p]));
+    const overrides = compartments.labelPlateWidths ?? [];
+    const ids = getCompartmentReadingOrder(compartments);
+    return ids.map((id, idx) => {
+      const plan = planById.get(id);
+      const override = overrides[id];
+      return {
+        id,
+        displayNumber: idx + 1,
+        label: t('binDesigner.compartmentNumberLabel', { n: idx + 1 }),
+        fittingWidthsU: plan?.fittingWidthsU ?? [],
+        autoWidthU: plan?.autoWidthU ?? null,
+        overrideU: typeof override === 'number' ? override : null,
+      };
+    });
+  }, [isSocketMode, socketPlan, compartments, t]);
+
+  // Depth floor rises in socket mode so the tab can host the pocket.
+  const tabDepthMin = isSocketMode
+    ? MIN_LABEL_SOCKET_TAB_DEPTH_MM
+    : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
+
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
     const supportName = t(`binDesigner.tabSupport.${label.support}`);
-    const parts = [supportName, `${label.width}%`];
-    if (label.alignment !== 'left') {
+    const parts = isSocketMode
+      ? [t('binDesigner.tabMode.socket'), supportName]
+      : [supportName, `${label.width}%`];
+    if (!isSocketMode && label.alignment !== 'left') {
       parts.push(t(`binDesigner.alignment.${label.alignment}`));
     }
     return parts.join(' \u00b7 ');
-  }, [label.enabled, label.support, label.width, label.alignment, t]);
+  }, [label.enabled, label.support, label.width, label.alignment, isSocketMode, t]);
 
   const disabledReason = tooShort
     ? t('binDesigner.labelTabsUnavailableMinHeight')
@@ -404,10 +485,15 @@ export function useLabelTabsSection() {
       heightIsExplicit,
       tabHeightMin,
       tabHeightMax,
+      tabDepthMin,
       tabDepthMax,
       tabInsetMax,
       tabsWillSilentlyDrop,
       compartmentTextRows,
+      isSocketMode,
+      socketUnavailable,
+      socketSpanningWidthU: socketPlan.spanningWidthU,
+      plateWidthRows,
     },
     handlers: {
       toggleLabelTabs,
@@ -418,6 +504,9 @@ export function useLabelTabsSection() {
       setTabAlignment,
       setTabEdges,
       setTabInset,
+      setTabMode,
+      setPlateFitOffset,
+      setCompartmentPlateWidth,
       autoFixDimensions,
       setCompartmentText,
       setTextFont,

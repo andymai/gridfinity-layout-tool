@@ -18,18 +18,40 @@ import {
   clone,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
-import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
+import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
   getCompartmentBounds,
 } from '@/shared/types/bin';
+import {
+  LABEL_PLATE_CORNER_RADIUS_MM,
+  LABEL_PLATE_HEIGHT_MM,
+  LABEL_SOCKET_POCKET_DEPTH_MM,
+  LABEL_SOCKET_RIB_HEIGHT_MM,
+  LABEL_SOCKET_RIB_PROTRUSION_MM,
+  LABEL_SOCKET_RIB_START_MM,
+  LABEL_SOCKET_SHELF_THICKNESS_MM,
+  LABEL_SOCKET_WALL_MM,
+  effectiveLabelSocketClearance,
+  labelPlateWidthMm,
+} from '@/shared/constants/labelPlates';
+import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid } from './textBuilder';
 
 type TabAnchor = 'back' | 'front';
+
+/** Socket-mode build inputs resolved once per bin from the shared plan. */
+interface SocketBuildInfo {
+  /** Effective TOTAL pocket clearance (spec + nozzle scaling + fit offset). */
+  readonly clearanceMm: number;
+  /** Plate width per compartment ID; absent = that tab gets a plain shelf. */
+  readonly plateByCompartment: ReadonlyMap<number, LabelPlateWidthU>;
+}
 
 interface TabBuildDimensions {
   readonly innerW: number;
@@ -40,6 +62,13 @@ interface TabBuildDimensions {
   readonly tabDepth: number;
   readonly shelfTopZ: number;
   readonly wallThickness: number;
+  /**
+   * Shelf plate thickness: `wallThickness` in text mode; thickened to host
+   * the pocket + solid floor in socket mode.
+   */
+  readonly shelfT: number;
+  /** Non-null in swappable-label socket mode (#2666). */
+  readonly socket: SocketBuildInfo | null;
 }
 
 /**
@@ -135,6 +164,35 @@ function buildLabelTabsInScope(
   // opposite wall and fuse into it as a bridge. Silent null-fallback here.
   if (tabDepth >= innerD) return null;
 
+  // Swappable-label socket mode (#2666): resolve which standard plate each
+  // compartment's tab hosts from the shared plan (same math the UI uses for
+  // warnings/pickers). When no compartment fits, the plan degrades to one
+  // socket on a single bin-spanning tab at the outer wall(s).
+  const mode = params.label.mode ?? 'text';
+  let socket: SocketBuildInfo | null = null;
+  let spanningWidthU: LabelPlateWidthU | null = null;
+  if (mode === 'socket') {
+    // Nozzle passed as undefined (baseline): the bin worker receives only the
+    // persisted BinParams — no settings seam exists on this path, and baking
+    // the printer's nozzle into a synced design would be wrong on the user's
+    // other devices. `plateFitOffset`'s range covers wide-nozzle calibration
+    // manually until such a seam exists.
+    const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+    const plan = planLabelSockets(params.compartments, innerW, clearanceMm);
+    spanningWidthU = plan.spanningWidthU;
+    const plateByCompartment = new Map<number, LabelPlateWidthU>();
+    if (spanningWidthU !== null) {
+      plateByCompartment.set(0, spanningWidthU);
+    } else {
+      for (const p of plan.compartments) {
+        if (p.plateWidthU !== null) plateByCompartment.set(p.compartmentId, p.plateWidthU);
+      }
+    }
+    socket = { clearanceMm, plateByCompartment };
+  }
+  const shelfT = socket ? Math.max(wallThickness, LABEL_SOCKET_SHELF_THICKNESS_MM) : wallThickness;
+  if (shelfT >= tabHeight) return null;
+
   const dims: TabBuildDimensions = {
     innerW,
     innerD,
@@ -144,22 +202,51 @@ function buildLabelTabsInScope(
     tabDepth,
     shelfTopZ,
     wallThickness,
+    shelfT,
+    socket,
   };
 
   const edges = params.label.edges ?? 'back';
   const includeBack = edges === 'back' || edges === 'both';
   const includeFront = edges === 'front' || edges === 'both';
-  const collidingFrontIds =
-    edges === 'both' ? findCollidingFrontCompartments(params, dims) : new Set<number>();
 
   const allTabs: Shape3D[] = [];
 
-  for (let row = 0; row < rows; row++) {
+  if (spanningWidthU !== null) {
+    // Bin-spanning fallback: model the whole interior as one synthetic 1×1
+    // compartment and reuse the regular tab assembly. The spanning tab
+    // anchors to the outer wall(s) only — interior divider rows can't host
+    // it — and spans wall to wall (compartment 0 covers every column).
+    const spanningParams: BinParams = {
+      ...params,
+      compartments: {
+        cols: 1,
+        rows: 1,
+        thickness: params.compartments.thickness,
+        cells: [0],
+      },
+    };
+    const spanDims: TabBuildDimensions = { ...dims, cellW: innerW, cellD: innerD };
+    const inset = params.label.inset ?? 0;
+    const spanColliding =
+      edges === 'both' && 2 * tabDepth + 2 * inset > innerD ? new Set([0]) : new Set<number>();
     if (includeBack) {
-      allTabs.push(...buildTabsAtRow(scope, params, row, 'back', dims, collidingFrontIds));
+      allTabs.push(...buildTabsAtRow(scope, spanningParams, 0, 'back', spanDims, spanColliding));
     }
     if (includeFront) {
-      allTabs.push(...buildTabsAtRow(scope, params, row, 'front', dims, collidingFrontIds));
+      allTabs.push(...buildTabsAtRow(scope, spanningParams, 0, 'front', spanDims, spanColliding));
+    }
+  } else {
+    const collidingFrontIds =
+      edges === 'both' ? findCollidingFrontCompartments(params, dims) : new Set<number>();
+
+    for (let row = 0; row < rows; row++) {
+      if (includeBack) {
+        allTabs.push(...buildTabsAtRow(scope, params, row, 'back', dims, collidingFrontIds));
+      }
+      if (includeFront) {
+        allTabs.push(...buildTabsAtRow(scope, params, row, 'front', dims, collidingFrontIds));
+      }
     }
   }
 
@@ -280,8 +367,8 @@ function buildTabsAtRow(
   const widthPercent = params.label.width;
   const alignment = params.label.alignment;
   const inset = params.label.inset ?? 0;
-  const { innerW, innerD, cellW, cellD, tabHeight, tabDepth, shelfTopZ, wallThickness } = dims;
-  const wt = wallThickness;
+  const { innerW, innerD, cellW, cellD, tabHeight, tabDepth, shelfTopZ, shelfT, socket } = dims;
+  const wt = shelfT;
   const gt = thickness;
 
   // depthSign tracks which direction the tab body extends from the anchor:
@@ -380,8 +467,11 @@ function buildTabsAtRow(
     const availableRight = groupRight - rightDeduction;
     const availableWidth = availableRight - availableLeft;
 
-    // Compute tab width from percentage of available group width
-    const tabWidth = (availableWidth * widthPercent) / 100;
+    // Compute tab width from percentage of available group width. Socket
+    // mode ignores the percentage and always spans the full group — the
+    // pocket needs the room, and `alignment` instead positions the socket
+    // within the tab (below).
+    const tabWidth = socket ? availableWidth : (availableWidth * widthPercent) / 100;
     if (tabWidth <= 0) {
       col = groupEnd;
       continue;
@@ -389,7 +479,7 @@ function buildTabsAtRow(
 
     // Compute X offset based on alignment within the group
     let tabXStart: number;
-    if (alignment === 'left') {
+    if (socket || alignment === 'left') {
       tabXStart = availableLeft;
     } else if (alignment === 'right') {
       tabXStart = availableRight - tabWidth;
@@ -513,19 +603,37 @@ function buildTabsAtRow(
       }
     }
 
-    // Engraved per-compartment text on the shelf top, in local frame so it
-    // travels with the tab through the world translation below. centerY is
-    // half-way along the shelf body (depthSign-aware).
-    tabSolid = applyTabText(scope, tabSolid, {
-      text: params.compartments.compartmentTexts?.[cellId] ?? '',
-      textDefaults: params.textDefaults,
-      labelTextStyle: params.label.textStyle,
-      tabWidth,
-      tabDepth,
-      tabHeight,
-      shelfThickness: wt,
-      centerYSign: depthSign,
-    });
+    if (socket) {
+      // Swappable-label socket on the shelf top (#2666). Compartments whose
+      // tab can't host a standard plate keep a plain shelf — the UI surfaces
+      // the same condition as a warning so missing sockets aren't a mystery.
+      const plateWidthU = socket.plateByCompartment.get(cellId);
+      if (plateWidthU !== undefined) {
+        tabSolid = applySocket(scope, tabSolid, {
+          plateWidthU,
+          clearanceMm: socket.clearanceMm,
+          tabWidth,
+          tabDepth,
+          tabHeight,
+          alignment,
+          depthSign,
+        });
+      }
+    } else {
+      // Engraved per-compartment text on the shelf top, in local frame so it
+      // travels with the tab through the world translation below. centerY is
+      // half-way along the shelf body (depthSign-aware).
+      tabSolid = applyTabText(scope, tabSolid, {
+        text: params.compartments.compartmentTexts?.[cellId] ?? '',
+        textDefaults: params.textDefaults,
+        labelTextStyle: params.label.textStyle,
+        tabWidth,
+        tabDepth,
+        tabHeight,
+        shelfThickness: wt,
+        centerYSign: depthSign,
+      });
+    }
 
     // Position: X at alignment offset, Y at anchor wall + inset offset,
     // Z at gusset base (= shelfTopZ - tabHeight).
@@ -537,6 +645,97 @@ function buildTabsAtRow(
   }
 
   return result;
+}
+
+/**
+ * Cut a swappable-label socket into the shelf top and fuse the retention
+ * ribs (#2666). Local tab frame: shelf spans X:[0,tabWidth],
+ * Y:[depthSign·tabDepth, 0] with the shelf top at Z=tabHeight.
+ *
+ * Pocket = plate footprint + total clearance, one pocket-wall margin in
+ * from the anchor wall, placed along X by `alignment`. Ribs sit on the two
+ * long (X-parallel) pocket walls: 0.2mm proud, 0.4mm tall, starting 0.2mm
+ * above the pocket floor — the band the plate's perimeter latch clicks
+ * behind.
+ *
+ * Best-effort like `applyTabText`: geometry that doesn't fit or a boolean
+ * that throws leaves the plain shelf rather than tanking the tab build.
+ */
+function applySocket(
+  scope: DisposalScope,
+  tabSolid: Shape3D,
+  ctx: {
+    plateWidthU: LabelPlateWidthU;
+    clearanceMm: number;
+    tabWidth: number;
+    tabDepth: number;
+    tabHeight: number;
+    alignment: 'left' | 'center' | 'right';
+    depthSign: 1 | -1;
+  }
+): Shape3D {
+  const wall = LABEL_SOCKET_WALL_MM;
+  const pocketW = labelPlateWidthMm(ctx.plateWidthU) + ctx.clearanceMm;
+  const pocketD = LABEL_PLATE_HEIGHT_MM + ctx.clearanceMm;
+
+  // Defense in depth: the plan already sized the plate to the tab, but a
+  // crafted payload (short depth, huge fit offset) could still overflow.
+  if (pocketW + 2 * wall > ctx.tabWidth + 0.01) return tabSolid;
+  if (pocketD + 2 * wall > ctx.tabDepth + 0.01) return tabSolid;
+
+  let pocketX0: number;
+  if (ctx.alignment === 'left') {
+    pocketX0 = wall;
+  } else if (ctx.alignment === 'right') {
+    pocketX0 = ctx.tabWidth - wall - pocketW;
+  } else {
+    pocketX0 = (ctx.tabWidth - pocketW) / 2;
+  }
+  const centerX = pocketX0 + pocketW / 2;
+  const centerY = ctx.depthSign * (wall + pocketD / 2);
+  const floorZ = ctx.tabHeight - LABEL_SOCKET_POCKET_DEPTH_MM;
+
+  try {
+    const pocketCutter = scope.register(
+      translate(
+        scope.register(
+          sketch(
+            drawRoundedRectangle(pocketW, pocketD, LABEL_PLATE_CORNER_RADIUS_MM),
+            'XY',
+            floorZ
+          ).extrude(LABEL_SOCKET_POCKET_DEPTH_MM + COPLANAR_MARGIN)
+        ),
+        [centerX, centerY, 0]
+      )
+    );
+    let result = scope.register(unwrap(cut(tabSolid as ValidSolid, pocketCutter as ValidSolid)));
+
+    // Ribs: full pocket-X span (square ends fuse into the rounded corners,
+    // matching the standard), embedded slightly into the wall so the fuse
+    // never leaves a coplanar seam.
+    const ribEmbed = 0.1;
+    const ribT = LABEL_SOCKET_RIB_PROTRUSION_MM + ribEmbed;
+    const ribZ0 = floorZ + LABEL_SOCKET_RIB_START_MM;
+    const ribProfile = draw([-pocketW / 2, -ribT / 2])
+      .lineTo([pocketW / 2, -ribT / 2])
+      .lineTo([pocketW / 2, ribT / 2])
+      .lineTo([-pocketW / 2, ribT / 2])
+      .close();
+    for (const side of [-1, 1] as const) {
+      const wallY = centerY + (side * pocketD) / 2;
+      const ribCenterY = wallY - side * (ribT / 2 - ribEmbed);
+      const rib = scope.register(
+        translate(
+          scope.register(sketch(ribProfile, 'XY', ribZ0).extrude(LABEL_SOCKET_RIB_HEIGHT_MM)),
+          [centerX, ribCenterY, 0]
+        )
+      );
+      result = scope.register(unwrap(fuse(result, rib as ValidSolid)));
+    }
+    return result;
+  } catch {
+    return tabSolid;
+  }
 }
 
 /**
@@ -604,12 +803,22 @@ export const labelTabsFeature: FeatureBuilder = {
   shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
+    // Socket mode (#2666): geometry additionally depends on the
+    // per-compartment width overrides (mode + plateFitOffset already ride in
+    // `stableSerialize(params.label)` below). Keyed only in socket mode so
+    // text-mode tabs don't churn when overrides linger in the config.
+    const socketKeyPart =
+      (params.label.mode ?? 'text') === 'socket'
+        ? stableSerialize(params.compartments.labelPlateWidths ?? [])
+        : 'text';
     return compactKey(
       buildCacheKey(
+        // `v6`: #2666 added swappable-label socket mode.
         // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
-        'v5',
+        'v6',
+        socketKeyPart,
         dim.shellKey,
         stableSerialize(params.label),
         quantize(dim.innerW),

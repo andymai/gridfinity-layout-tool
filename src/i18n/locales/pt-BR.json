@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "O arquivo STL é muito grande (máx. 50MB)",
   "toast.stlImport.notManifold": "A malha não é estanque — repare no seu fatiador e exporte novamente",
   "toast.stlImport.empty": "O STL não contém geometria imprimível",
-  "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas"
+  "toast.stlImport.assetLimit": "Um projeto pode conter até {count} malhas importadas",
+  "binDesigner.tabMode": "Estilo do rótulo",
+  "binDesigner.tabMode.text": "Texto impresso",
+  "binDesigner.tabMode.socket": "Rótulo intercambiável",
+  "binDesigner.tabMode.socketHint": "A aba recebe um encaixe de clique para placas de rótulo intercambiáveis impressas separadamente. Compatível com placas do padrão Cullenect (ex.: do gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "O compartimento é estreito demais para uma placa padrão",
+  "binDesigner.plateWidth": "Largura da placa",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Largura da placa do compartimento {n}",
+  "binDesigner.plateWidthNoFit": "Nenhuma placa padrão cabe",
+  "binDesigner.plateSpanningNote": "Os compartimentos são estreitos demais para placas individuais — um único encaixe na largura total é usado.",
+  "binDesigner.plateFitOffset": "Ajuste da placa",
+  "binDesigner.plateFitOffsetHint": "Ajuste fino do encaixe para a sua impressora: negativo = mais justo, positivo = mais folgado."
 }

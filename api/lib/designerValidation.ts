@@ -66,6 +66,8 @@ const VALID_BASE_STYLES = [
   'flat',
 ] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
+// Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts` (#2666).
+const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
@@ -351,6 +353,36 @@ function validateLabel(label: unknown): string | null {
     if (label.textStyle !== undefined) {
       const styleErr = validateTextStyleOverride(label.textStyle, 'label.textStyle');
       if (styleErr) return styleErr;
+    }
+    // Optional swappable-label mode (#2666); absent = 'text' (legacy).
+    if (
+      label.mode !== undefined &&
+      !VALID_LABEL_TAB_MODES.includes(label.mode as (typeof VALID_LABEL_TAB_MODES)[number])
+    ) {
+      return `label.mode must be one of: ${VALID_LABEL_TAB_MODES.join(', ')}`;
+    }
+    // Cross-field: socket-mode tabs must be deep enough to host the pocket.
+    // Without this a crafted payload passes the generic depth range but the
+    // builder silently drops every socket.
+    if (
+      label.mode === 'socket' &&
+      isNumber(label.depth) &&
+      label.depth < CONSTRAINTS.MIN_LABEL_SOCKET_TAB_DEPTH
+    ) {
+      return `label.depth must be at least ${CONSTRAINTS.MIN_LABEL_SOCKET_TAB_DEPTH} when label.mode is "socket"`;
+    }
+    // Optional signed fit offset for socket clearance calibration (#2666).
+    if (label.plateFitOffset !== undefined) {
+      if (
+        !isNumber(label.plateFitOffset) ||
+        !inRange(
+          label.plateFitOffset,
+          CONSTRAINTS.LABEL_PLATE_FIT_OFFSET_MIN,
+          CONSTRAINTS.LABEL_PLATE_FIT_OFFSET_MAX
+        )
+      ) {
+        return `label.plateFitOffset must be ${CONSTRAINTS.LABEL_PLATE_FIT_OFFSET_MIN}-${CONSTRAINTS.LABEL_PLATE_FIT_OFFSET_MAX}`;
+      }
     }
   }
   return null;

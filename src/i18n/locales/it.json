@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "Il file STL è troppo grande (max 50MB)",
   "toast.stlImport.notManifold": "La mesh non è a tenuta stagna: riparala nello slicer e riesportala",
   "toast.stlImport.empty": "Lo STL non contiene geometria stampabile",
-  "toast.stlImport.assetLimit": "Un progetto può contenere fino a {count} mesh importate"
+  "toast.stlImport.assetLimit": "Un progetto può contenere fino a {count} mesh importate",
+  "binDesigner.tabMode": "Stile etichetta",
+  "binDesigner.tabMode.text": "Testo stampato",
+  "binDesigner.tabMode.socket": "Etichetta intercambiabile",
+  "binDesigner.tabMode.socketHint": "La linguetta riceve una sede a incastro per targhette etichetta intercambiabili stampate a parte. Compatibile con targhette standard Cullenect (ad es. da gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Il contenitore è troppo stretto per una targhetta standard",
+  "binDesigner.plateWidth": "Larghezza targhetta",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Larghezza targhetta per lo scomparto {n}",
+  "binDesigner.plateWidthNoFit": "Nessuna targhetta standard entra",
+  "binDesigner.plateSpanningNote": "Gli scomparti sono troppo stretti per targhette singole: viene usata una sola sede a tutta larghezza.",
+  "binDesigner.plateFitOffset": "Gioco della targhetta",
+  "binDesigner.plateFitOffsetHint": "Regola il gioco della sede per la tua stampante: negativo = più stretto, positivo = più largo."
 }

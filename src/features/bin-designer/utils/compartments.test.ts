@@ -17,6 +17,7 @@ import {
   normalizeIds,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
+  remapLabelPlateWidths,
   remapDividerOverrides,
   rectStraddlesTiltedDivider,
   validateDividerOverride,
@@ -785,6 +786,73 @@ describe('compartments', () => {
       // new compartment 1 gets ''.
       expect(split.cells).toEqual([0, 1, 2, 3]);
       expect(split.compartmentTexts).toEqual(['MERGED', '', 'SOLO', 'OTHER']);
+    });
+  });
+
+  describe('remapLabelPlateWidths', () => {
+    it('returns empty array for undefined or empty input', () => {
+      expect(remapLabelPlateWidths(undefined, new Map())).toEqual([]);
+      expect(remapLabelPlateWidths([], new Map([[0, 0]]))).toEqual([]);
+    });
+
+    it('migrates overrides into the new ID slots, nulling new IDs from splits', () => {
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+        [4, 2],
+        [2, 3],
+      ]);
+      const out = remapLabelPlateWidths([2, null, 1, 3], remap);
+      expect(out).toEqual([2, null, null, 1]);
+    });
+
+    it('drops overrides for compartments that disappeared from the remap', () => {
+      const remap = new Map([
+        [0, 0],
+        [3, 1],
+      ]);
+      const out = remapLabelPlateWidths([1, 2, 3, 2], remap);
+      expect(out).toEqual([1, 2]);
+    });
+
+    it('collapses to empty when no numeric override survives', () => {
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+      ]);
+      expect(remapLabelPlateWidths([null, null, 2], remap)).toEqual([]);
+    });
+  });
+
+  describe('mergeCells with labelPlateWidths', () => {
+    it('keeps surviving overrides remapped after a merge', () => {
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        labelPlateWidths: [1, 2, null, 3],
+      };
+      const merged = mergeCells(config, [0, 1]);
+      expect(merged?.cells).toEqual([0, 0, 1, 2]);
+      // Old ID 1 (override 2) was stomped by the merge; 0 keeps 1U, old 3
+      // (override 3U) renumbers to 2.
+      expect(merged?.labelPlateWidths).toEqual([1, null, 3]);
+    });
+  });
+
+  describe('splitCompartment with labelPlateWidths', () => {
+    it('keeps the parent override and nulls the new compartment', () => {
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 0, 1, 2],
+        labelPlateWidths: [2, 1, null],
+      };
+      const split = splitCompartment(config, 0);
+      expect(split.cells).toEqual([0, 1, 2, 3]);
+      expect(split.labelPlateWidths).toEqual([2, null, 1, null]);
     });
   });
 

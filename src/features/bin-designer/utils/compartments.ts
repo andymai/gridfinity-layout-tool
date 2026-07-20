@@ -597,6 +597,9 @@ export function mergeCells(
     ...(config.compartmentTexts && {
       compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
     }),
+    ...(config.labelPlateWidths && {
+      labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
+    }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
@@ -632,6 +635,9 @@ export function splitCompartment(
     cells: normalized,
     ...(config.compartmentTexts && {
       compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
+    }),
+    ...(config.labelPlateWidths && {
+      labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
@@ -695,6 +701,34 @@ export function remapCompartmentTexts(
     if (typeof t === 'string') out[newId] = t;
   }
   return out;
+}
+
+/**
+ * Reindex the parallel per-compartment swappable-label plate width overrides
+ * through an `oldId → newId` map, mirroring `remapCompartmentTexts`. IDs
+ * absent from the remap drop their override; new IDs (splits) get `null`
+ * (auto width). Returns an empty array when nothing survives so the caller
+ * can collapse it to "no overrides".
+ */
+export function remapLabelPlateWidths(
+  oldWidths: readonly (number | null)[] | undefined,
+  remap: ReadonlyMap<number, number>
+): (number | null)[] {
+  if (!oldWidths || oldWidths.length === 0) return [];
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: (number | null)[] = new Array<number | null>(maxNewId + 1).fill(null);
+  let anySet = false;
+  for (const [oldId, newId] of remap) {
+    const w = oldWidths[oldId];
+    if (typeof w === 'number') {
+      out[newId] = w;
+      anySet = true;
+    }
+  }
+  return anySet ? out : [];
 }
 
 /**

@@ -82,6 +82,7 @@
     "binDesigner.multiColor.experimental",
     "binDesigner.nameStyle.compact",
     "binDesigner.overhang.title",
+    "binDesigner.plateWidthAuto",
     "binDesigner.projectionPerspective",
     "binDesigner.radius",
     "binDesigner.scoopRadius",

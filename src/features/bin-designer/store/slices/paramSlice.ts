@@ -34,6 +34,7 @@ import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import {
   carryCompartmentTextsByPosition,
+  remapLabelPlateWidths,
   isRectangularSelection,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
@@ -331,7 +332,14 @@ export function createParamSlice(set: Set, get: Get) {
         const cells = Array.from({ length: rows * cols }, (_, i) => i);
         // Divider overrides key on adjacencies the fresh uniform grid no longer
         // has — drop them. Labels carry by position above where they fit.
-        const { compartmentTexts: _t, dividerOverrides: _o, ...keep } = state.params.compartments;
+        // Plate-width overrides drop too: the fresh grid's compartment sizes
+        // invalidate the old choices, and auto re-fits per compartment.
+        const {
+          compartmentTexts: _t,
+          labelPlateWidths: _w,
+          dividerOverrides: _o,
+          ...keep
+        } = state.params.compartments;
         state.params.compartments = {
           ...keep,
           cols,
@@ -361,11 +369,15 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevPlateWidths = state.params.compartments.labelPlateWidths;
         const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevPlateWidths
+            ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
+            : {}),
           ...(prevOverrides
             ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
             : {}),
@@ -404,11 +416,15 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevPlateWidths = state.params.compartments.labelPlateWidths;
         const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevPlateWidths
+            ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
+            : {}),
           ...(prevOverrides
             ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
             : {}),
@@ -441,6 +457,28 @@ export function createParamSlice(set: Set, get: Get) {
         state.params.compartments = {
           ...state.params.compartments,
           ...(next.length > 0 ? { compartmentTexts: next } : { compartmentTexts: undefined }),
+        };
+      });
+    },
+
+    setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => {
+      const { params } = get();
+      const prev = params.compartments.labelPlateWidths ?? [];
+      // No-op guard: Select fires on every pick; an unchanged value must not
+      // push a history entry. Treat undefined and null as the same auto state.
+      if ((prev[compartmentId] ?? null) === widthU) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.slice();
+        while (next.length <= compartmentId) next.push(null);
+        next[compartmentId] = widthU;
+        while (next.length > 0 && next[next.length - 1] === null) next.pop();
+        state.params.compartments = {
+          ...state.params.compartments,
+          // Omit the field entirely when every entry is auto so persisted
+          // JSON stays tidy (mirrors compartmentTexts / dividerHeight).
+          ...(next.length > 0 ? { labelPlateWidths: next } : { labelPlateWidths: undefined }),
         };
       });
     },

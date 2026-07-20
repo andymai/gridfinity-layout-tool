@@ -29,14 +29,22 @@ import type {
   TextFontFamily,
   TextMode,
 } from '../../../types';
+import {
+  LABEL_PLATE_FIT_OFFSET_MAX,
+  LABEL_PLATE_FIT_OFFSET_MIN,
+  LABEL_PLATE_FIT_OFFSET_STEP,
+  labelPlateWidthMm,
+} from '@/shared/constants/labelPlates';
 import { CompartmentTextInput } from './CompartmentTextInput';
 import { LabelColorControls } from './LabelColorControls';
 import { useLabelTabsSection } from './useLabelTabsSection';
+import type { LabelTabMode } from '../../../types';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
 const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
 const EDGES_OPTIONS: LabelTabEdges[] = ['back', 'front', 'both'];
 const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
+const TAB_MODE_OPTIONS: LabelTabMode[] = ['text', 'socket'];
 
 const FONT_OPTIONS: readonly TextFontFamily[] = [
   'atkinson',
@@ -115,6 +123,137 @@ export function LabelTabsSection() {
       disabledReason={meta.disabledReason}
       primaryControls={
         <>
+          {/* Label style — printed-in text vs a click-in socket for
+              separately printed swappable label plates (#2666). */}
+          <div>
+            <span className="mb-1 block text-xs font-medium text-content-secondary">
+              {t('binDesigner.tabMode')}
+            </span>
+            <div role="group" aria-label={t('binDesigner.tabMode')} className={SEGMENT_GROUP_CLASS}>
+              {TAB_MODE_OPTIONS.map((option) => {
+                const current = state.label.mode ?? 'text';
+                const socketDisabled = option === 'socket' && state.socketUnavailable;
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant="ghost"
+                    touchTarget={false}
+                    onClick={() => handlers.setTabMode(option)}
+                    aria-pressed={current === option}
+                    disabled={socketDisabled}
+                    title={socketDisabled ? t('binDesigner.tabMode.socketTooNarrow') : undefined}
+                    className={`flex-1 ${getSegmentClass(current === option)}`}
+                  >
+                    {t(`binDesigner.tabMode.${option}`)}
+                  </Button>
+                );
+              })}
+            </div>
+            {state.isSocketMode && (
+              <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+                <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                <span>{t('binDesigner.tabMode.socketHint')}</span>
+              </p>
+            )}
+          </div>
+
+          {state.isSocketMode && (
+            <>
+              {state.socketSpanningWidthU !== null && (
+                <p className="flex items-start gap-1 text-xs text-content-tertiary">
+                  <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                  <span>{t('binDesigner.plateSpanningNote')}</span>
+                </p>
+              )}
+              {state.plateWidthRows.length > 0 && (
+                <div>
+                  <span className="mb-1 block text-xs font-medium text-content-secondary">
+                    {t('binDesigner.plateWidth')}
+                  </span>
+                  <ul className="flex flex-col gap-1.5">
+                    {state.plateWidthRows.map((row) => (
+                      <li key={row.id} className="flex items-center gap-2">
+                        <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
+                          {row.label}
+                        </span>
+                        {row.fittingWidthsU.length === 0 || row.autoWidthU === null ? (
+                          <span className="text-xs text-warning">
+                            {t('binDesigner.plateWidthNoFit')}
+                          </span>
+                        ) : (
+                          <Select
+                            size="sm"
+                            fullWidth
+                            value={
+                              row.overrideU !== null &&
+                              row.fittingWidthsU.some((u) => u === row.overrideU)
+                                ? String(row.overrideU)
+                                : 'auto'
+                            }
+                            onChange={(e) =>
+                              handlers.setCompartmentPlateWidth(
+                                row.id,
+                                e.target.value === 'auto' ? null : Number(e.target.value)
+                              )
+                            }
+                            aria-label={t('binDesigner.plateWidthAria', {
+                              n: row.displayNumber,
+                            })}
+                            options={[
+                              {
+                                id: 'auto',
+                                name: t('binDesigner.plateWidthAuto', {
+                                  width: `${row.autoWidthU}U`,
+                                }),
+                              },
+                              ...row.fittingWidthsU.map((u): SelectOption => ({
+                                id: String(u),
+                                // Technical readout, deliberately untranslated
+                                // (same convention as dimensionsReadout).
+                                name: `${u}U · ${labelPlateWidthMm(u)} mm`,
+                              })),
+                            ]}
+                          />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="min-w-0">
+                <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
+                  {t('binDesigner.plateFitOffset')}
+                  <span title={t('binDesigner.plateFitOffsetHint')} className="inline-flex">
+                    <InfoIcon size="xs" className="text-content-tertiary" />
+                  </span>
+                </span>
+                <Stepper
+                  value={state.label.plateFitOffset ?? 0}
+                  onChange={handlers.setPlateFitOffset}
+                  onStep={(delta) =>
+                    handlers.setPlateFitOffset(
+                      Math.round(
+                        Math.min(
+                          LABEL_PLATE_FIT_OFFSET_MAX,
+                          Math.max(
+                            LABEL_PLATE_FIT_OFFSET_MIN,
+                            (state.label.plateFitOffset ?? 0) + delta * LABEL_PLATE_FIT_OFFSET_STEP
+                          )
+                        ) * 100
+                      ) / 100
+                    )
+                  }
+                  min={LABEL_PLATE_FIT_OFFSET_MIN}
+                  max={LABEL_PLATE_FIT_OFFSET_MAX}
+                  step={LABEL_PLATE_FIT_OFFSET_STEP}
+                  size="md"
+                  aria-label={t('binDesigner.plateFitOffset')}
+                />
+              </div>
+            </>
+          )}
+
           {compartmentLabels}
 
           {/* Edges — the most fundamental choice (1 tab vs 2) and the entry
@@ -196,8 +335,11 @@ export function LabelTabsSection() {
               </div>
 
               {/* Alignment — hidden at width=100% because the control has no
-                  visible effect when the tab spans the whole column (#1898). */}
-              {state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH && (
+                  visible effect when the tab spans the whole column (#1898).
+                  Always shown in socket mode, where it positions the socket
+                  within the (always full-width) tab instead. */}
+              {(state.isSocketMode ||
+                state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH) && (
                 <div>
                   <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
                     {t('binDesigner.tabAlignment')}
@@ -236,31 +378,36 @@ export function LabelTabsSection() {
                 size="sm"
               >
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="min-w-0">
-                    <span className="mb-1 block text-xs text-content-tertiary">
-                      {t('binDesigner.tabWidth')}
-                    </span>
-                    <Stepper
-                      value={state.label.width}
-                      onChange={handlers.setTabWidth}
-                      onStep={(delta) =>
-                        handlers.setTabWidth(
-                          Math.min(
-                            DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
-                            Math.max(
-                              DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
-                              state.label.width + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP
+                  {/* Width % hidden in socket mode — the tab always spans the
+                      full compartment so the pocket has room. */}
+                  {!state.isSocketMode && (
+                    <div className="min-w-0">
+                      <span className="mb-1 block text-xs text-content-tertiary">
+                        {t('binDesigner.tabWidth')}
+                      </span>
+                      <Stepper
+                        value={state.label.width}
+                        onChange={handlers.setTabWidth}
+                        onStep={(delta) =>
+                          handlers.setTabWidth(
+                            Math.min(
+                              DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
+                              Math.max(
+                                DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
+                                state.label.width +
+                                  delta * DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP
+                              )
                             )
                           )
-                        )
-                      }
-                      min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
-                      max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
-                      step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
-                      size="md"
-                      aria-label={t('binDesigner.labelTabs.widthAria')}
-                    />
-                  </div>
+                        }
+                        min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
+                        max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
+                        step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
+                        size="md"
+                        aria-label={t('binDesigner.labelTabs.widthAria')}
+                      />
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <span className="mb-1 block text-xs text-content-tertiary">
                       {t('binDesigner.tabDepth')}
@@ -273,13 +420,13 @@ export function LabelTabsSection() {
                           Math.min(
                             state.tabDepthMax,
                             Math.max(
-                              DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH,
+                              state.tabDepthMin,
                               state.label.depth + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP
                             )
                           )
                         )
                       }
-                      min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}
+                      min={state.tabDepthMin}
                       max={state.tabDepthMax}
                       step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
                       size="md"
@@ -342,105 +489,109 @@ export function LabelTabsSection() {
             </div>
           </Collapsible>
 
-          <Collapsible title={t('binDesigner.tabEngravedText')} defaultExpanded={false} size="sm">
-            <div className="space-y-2">
-              {/* Mode picker */}
-              <div>
-                <span className="mb-1 block text-xs text-content-tertiary">
-                  {t('binDesigner.textMode')}
-                </span>
-                <div
-                  role="group"
-                  aria-label={t('binDesigner.textMode')}
-                  className={SEGMENT_GROUP_CLASS}
-                >
-                  {MODE_OPTIONS.map((option) => (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant="ghost"
-                      touchTarget={false}
-                      onClick={() => handlers.setTextMode(option)}
-                      aria-pressed={state.textDefaults.mode === option}
-                      className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
-                    >
-                      {t(`binDesigner.textMode.${option}`)}
-                    </Button>
-                  ))}
-                </div>
-                {state.textDefaults.mode === 'through-cut' && (
-                  <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
-                    <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-                    <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
-                  </p>
-                )}
-              </div>
-
-              {/* Font + (conditional) depth, side by side when both visible */}
-              <div className="flex items-end gap-2">
-                <div className="min-w-0 flex-1">
+          {/* Engraving styles the printed-in text; irrelevant when the tab
+              face carries a socket instead. */}
+          {!state.isSocketMode && (
+            <Collapsible title={t('binDesigner.tabEngravedText')} defaultExpanded={false} size="sm">
+              <div className="space-y-2">
+                {/* Mode picker */}
+                <div>
                   <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.textFont')}
+                    {t('binDesigner.textMode')}
                   </span>
-                  <Select
-                    size="sm"
-                    fullWidth
-                    // Through-cut forces Allerta Stencil at render time; show
-                    // that as the value so the disabled state isn't misleading.
-                    // The user's font preference is preserved in
-                    // `textDefaults.font` and restored on switching back.
-                    value={
-                      state.textDefaults.mode === 'through-cut'
-                        ? 'allerta-stencil'
-                        : state.textDefaults.font
-                    }
-                    onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
-                    disabled={state.textDefaults.mode === 'through-cut'}
-                    aria-label={t('binDesigner.textFont')}
-                    options={FONT_OPTIONS.map((f): SelectOption => ({
-                      id: f,
-                      name: t(`binDesigner.textFont.${f}`),
-                    }))}
-                  />
+                  <div
+                    role="group"
+                    aria-label={t('binDesigner.textMode')}
+                    className={SEGMENT_GROUP_CLASS}
+                  >
+                    {MODE_OPTIONS.map((option) => (
+                      <Button
+                        key={option}
+                        type="button"
+                        variant="ghost"
+                        touchTarget={false}
+                        onClick={() => handlers.setTextMode(option)}
+                        aria-pressed={state.textDefaults.mode === option}
+                        className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
+                      >
+                        {t(`binDesigner.textMode.${option}`)}
+                      </Button>
+                    ))}
+                  </div>
+                  {state.textDefaults.mode === 'through-cut' && (
+                    <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+                      <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                      <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
+                    </p>
+                  )}
                 </div>
-                {state.textDefaults.mode !== 'through-cut' && (
+
+                {/* Font + (conditional) depth, side by side when both visible */}
+                <div className="flex items-end gap-2">
                   <div className="min-w-0 flex-1">
                     <span className="mb-1 block text-xs text-content-tertiary">
-                      {t('binDesigner.textDepth')}
+                      {t('binDesigner.textFont')}
                     </span>
-                    <Stepper
-                      value={state.textDefaults.depth}
-                      onChange={handlers.setTextDepth}
-                      onStep={(delta) =>
-                        handlers.setTextDepth(
-                          Math.min(
-                            TEXT_DEPTH_MAX,
-                            Math.max(
-                              TEXT_DEPTH_MIN,
-                              state.textDefaults.depth + delta * TEXT_DEPTH_STEP
-                            )
-                          )
-                        )
+                    <Select
+                      size="sm"
+                      fullWidth
+                      // Through-cut forces Allerta Stencil at render time; show
+                      // that as the value so the disabled state isn't misleading.
+                      // The user's font preference is preserved in
+                      // `textDefaults.font` and restored on switching back.
+                      value={
+                        state.textDefaults.mode === 'through-cut'
+                          ? 'allerta-stencil'
+                          : state.textDefaults.font
                       }
-                      min={TEXT_DEPTH_MIN}
-                      max={TEXT_DEPTH_MAX}
-                      step={TEXT_DEPTH_STEP}
-                      size="md"
-                      aria-label={t('binDesigner.textDepth')}
+                      onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
+                      disabled={state.textDefaults.mode === 'through-cut'}
+                      aria-label={t('binDesigner.textFont')}
+                      options={FONT_OPTIONS.map((f): SelectOption => ({
+                        id: f,
+                        name: t(`binDesigner.textFont.${f}`),
+                      }))}
                     />
                   </div>
-                )}
+                  {state.textDefaults.mode !== 'through-cut' && (
+                    <div className="min-w-0 flex-1">
+                      <span className="mb-1 block text-xs text-content-tertiary">
+                        {t('binDesigner.textDepth')}
+                      </span>
+                      <Stepper
+                        value={state.textDefaults.depth}
+                        onChange={handlers.setTextDepth}
+                        onStep={(delta) =>
+                          handlers.setTextDepth(
+                            Math.min(
+                              TEXT_DEPTH_MAX,
+                              Math.max(
+                                TEXT_DEPTH_MIN,
+                                state.textDefaults.depth + delta * TEXT_DEPTH_STEP
+                              )
+                            )
+                          )
+                        }
+                        min={TEXT_DEPTH_MIN}
+                        max={TEXT_DEPTH_MAX}
+                        step={TEXT_DEPTH_STEP}
+                        size="md"
+                        aria-label={t('binDesigner.textDepth')}
+                      />
+                    </div>
+                  )}
+                </div>
+                <LabelSizeControl
+                  className="mt-3"
+                  labelClassName="text-xs text-content-tertiary"
+                  value={state.label.textStyle?.fontSizeOverride}
+                  onChange={handlers.setTextSize}
+                  min={state.textDefaults.minFontSize}
+                  max={state.textDefaults.maxFontSize}
+                />
               </div>
-              <LabelSizeControl
-                className="mt-3"
-                labelClassName="text-xs text-content-tertiary"
-                value={state.label.textStyle?.fontSizeOverride}
-                onChange={handlers.setTextSize}
-                min={state.textDefaults.minFontSize}
-                max={state.textDefaults.maxFontSize}
-              />
-            </div>
-          </Collapsible>
+            </Collapsible>
+          )}
         </>
       }
     />

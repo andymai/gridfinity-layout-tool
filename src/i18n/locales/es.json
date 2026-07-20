@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "El archivo STL es demasiado grande (máx. 50MB)",
   "toast.stlImport.notManifold": "La malla no es estanca: repárala en tu slicer y vuelve a exportarla",
   "toast.stlImport.empty": "El STL no contiene geometría imprimible",
-  "toast.stlImport.assetLimit": "Un diseño puede contener hasta {count} mallas importadas"
+  "toast.stlImport.assetLimit": "Un diseño puede contener hasta {count} mallas importadas",
+  "binDesigner.tabMode": "Estilo de etiqueta",
+  "binDesigner.tabMode.text": "Texto impreso",
+  "binDesigner.tabMode.socket": "Etiqueta intercambiable",
+  "binDesigner.tabMode.socketHint": "La pestaña recibe un alojamiento a presión para placas de etiqueta intercambiables impresas por separado. Compatible con placas del estándar Cullenect (p. ej., de gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "El contenedor es demasiado estrecho para una placa estándar",
+  "binDesigner.plateWidth": "Ancho de placa",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Ancho de placa del compartimento {n}",
+  "binDesigner.plateWidthNoFit": "Ninguna placa estándar cabe",
+  "binDesigner.plateSpanningNote": "Los compartimentos son demasiado estrechos para placas individuales; se usa un solo alojamiento a lo ancho del contenedor.",
+  "binDesigner.plateFitOffset": "Ajuste de la placa",
+  "binDesigner.plateFitOffsetHint": "Afina el ajuste del alojamiento para tu impresora: negativo = más apretado, positivo = más holgado."
 }

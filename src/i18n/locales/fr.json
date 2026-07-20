@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "Le fichier STL est trop volumineux (max. 50 Mo)",
   "toast.stlImport.notManifold": "Le maillage n'est pas étanche — réparez-le dans votre slicer puis réexportez-le",
   "toast.stlImport.empty": "Le STL ne contient aucune géométrie imprimable",
-  "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés"
+  "toast.stlImport.assetLimit": "Un design peut contenir jusqu'à {count} maillages importés",
+  "binDesigner.tabMode": "Style d'étiquette",
+  "binDesigner.tabMode.text": "Texte imprimé",
+  "binDesigner.tabMode.socket": "Étiquette interchangeable",
+  "binDesigner.tabMode.socketHint": "L'onglet reçoit un logement à clipser pour des plaques d'étiquette interchangeables imprimées séparément. Compatible avec les plaques au standard Cullenect (p. ex. gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Le bac est trop étroit pour une plaque standard",
+  "binDesigner.plateWidth": "Largeur de plaque",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Largeur de plaque du compartiment {n}",
+  "binDesigner.plateWidthNoFit": "Aucune plaque standard ne convient",
+  "binDesigner.plateSpanningNote": "Les compartiments sont trop étroits pour des plaques individuelles — un seul logement sur toute la largeur du bac est utilisé.",
+  "binDesigner.plateFitOffset": "Ajustement de la plaque",
+  "binDesigner.plateFitOffsetHint": "Affinez l'ajustement du logement pour votre imprimante : négatif = plus serré, positif = plus lâche."
 }

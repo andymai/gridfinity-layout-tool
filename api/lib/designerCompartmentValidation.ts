@@ -8,7 +8,7 @@
  */
 
 import { isNumber, inRange, isObject } from './validationUtils.js';
-import { CONSTRAINTS } from './designerValidationConstants.js';
+import { CONSTRAINTS, VALID_LABEL_PLATE_WIDTHS } from './designerValidationConstants.js';
 
 /**
  * Validates a dividers object (legacy format) ensuring x and y counts and thickness fall within allowed ranges.
@@ -142,6 +142,23 @@ export function validateCompartments(compartments: unknown): string | null {
       }
       if (t.length > 50) {
         return `compartments.compartmentTexts[${i}] must not exceed 50 characters`;
+      }
+    }
+  }
+  // Optional per-compartment swappable-label plate width overrides (#2666).
+  // Entries are null (auto) or a standard plate width; length bounded like
+  // compartmentTexts so a direct HTTP POST can't smuggle an unbounded array.
+  if (compartments.labelPlateWidths !== undefined) {
+    if (!Array.isArray(compartments.labelPlateWidths)) {
+      return 'compartments.labelPlateWidths must be an array';
+    }
+    if (compartments.labelPlateWidths.length > expectedLength) {
+      return `compartments.labelPlateWidths length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.labelPlateWidths.length; i++) {
+      const w = compartments.labelPlateWidths[i] as unknown;
+      if (w !== null && !VALID_LABEL_PLATE_WIDTHS.includes(w as number)) {
+        return `compartments.labelPlateWidths[${i}] must be null or one of: ${VALID_LABEL_PLATE_WIDTHS.join(', ')}`;
       }
     }
   }

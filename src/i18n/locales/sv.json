@@ -2729,5 +2729,17 @@
   "toast.stlImport.fileTooLarge": "STL-filen är för stor (max 50MB)",
   "toast.stlImport.notManifold": "Meshen är inte vattentät — reparera den i din slicer och exportera igen",
   "toast.stlImport.empty": "STL-filen innehåller ingen utskrivbar geometri",
-  "toast.stlImport.assetLimit": "En design kan innehålla upp till {count} importerade meshar"
+  "toast.stlImport.assetLimit": "En design kan innehålla upp till {count} importerade meshar",
+  "binDesigner.tabMode": "Etikettstil",
+  "binDesigner.tabMode.text": "Tryckt text",
+  "binDesigner.tabMode.socket": "Utbytbar etikett",
+  "binDesigner.tabMode.socketHint": "Fliken får ett klickfäste för separat utskrivna utbytbara etikettplattor. Kompatibel med plattor enligt Cullenect-standarden (t.ex. från gflabel).",
+  "binDesigner.tabMode.socketTooNarrow": "Lådan är för smal för en standardplatta",
+  "binDesigner.plateWidth": "Plattbredd",
+  "binDesigner.plateWidthAuto": "Auto ({width})",
+  "binDesigner.plateWidthAria": "Plattbredd för fack {n}",
+  "binDesigner.plateWidthNoFit": "Ingen standardplatta passar",
+  "binDesigner.plateSpanningNote": "Facken är för smala för egna plattor — ett enda fäste över hela lådans bredd används i stället.",
+  "binDesigner.plateFitOffset": "Plattpassning",
+  "binDesigner.plateFitOffsetHint": "Finjustera fästets passning för din skrivare: negativt = tätare, positivt = lösare."
 }

@@ -1612,6 +1612,21 @@ const en: Record<string, string> = {
   'binDesigner.tabEngravedText': 'Engraved text',
   'binDesigner.tabEngravedTextPlaceholder': 'e.g. SCREWS',
   'binDesigner.tabEngravedTextAriaLabel': 'Engraved text for compartment {n}',
+  'binDesigner.tabMode': 'Label style',
+  'binDesigner.tabMode.text': 'Printed text',
+  'binDesigner.tabMode.socket': 'Swappable label',
+  'binDesigner.tabMode.socketHint':
+    'The tab gets a click-in socket for separately printed swappable label plates. Compatible with Cullenect-standard plates (e.g. from gflabel).',
+  'binDesigner.tabMode.socketTooNarrow': 'Bin is too narrow for a standard label plate',
+  'binDesigner.plateWidth': 'Plate width',
+  'binDesigner.plateWidthAuto': 'Auto ({width})',
+  'binDesigner.plateWidthAria': 'Plate width for compartment {n}',
+  'binDesigner.plateWidthNoFit': 'No standard plate fits',
+  'binDesigner.plateSpanningNote':
+    'Compartments are too narrow for individual plates — one bin-wide socket is used instead.',
+  'binDesigner.plateFitOffset': 'Plate fit offset',
+  'binDesigner.plateFitOffsetHint':
+    'Fine-tune the socket fit for your printer: negative = tighter, positive = looser.',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
   'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',

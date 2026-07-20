@@ -242,6 +242,17 @@ export interface CompartmentConfig {
    */
   readonly compartmentTexts?: string[];
   /**
+   * Optional per-compartment swappable-label plate width overrides, in
+   * standard plate units (1 | 2 | 3), indexed by compartment ID after
+   * `normalizeIds`. Missing / null entries mean auto (largest standard
+   * width that fits — see `planLabelSockets`). Only consulted when
+   * `label.mode === 'socket'`. Kept in lockstep with `cells` via
+   * `normalizeIdsWithRemap`, like `compartmentTexts`.
+   *
+   * Mutable element type mirrors sibling arrays (Immer `Draft` requirement).
+   */
+  readonly labelPlateWidths?: (number | null)[];
+  /**
    * Optional per-divider tilt overrides. Each entry shifts the endpoints of
    * one interior divider away from its axis-aligned grid position, producing
    * an angled (tapered) divider — useful for wedge-shaped compartments
@@ -338,9 +349,30 @@ export type LabelTabSupport = 'bracket' | 'solid' | 'fillet';
  */
 export type LabelTabEdges = 'back' | 'front' | 'both';
 
+/**
+ * What the label tab face carries: engraved/embossed text (legacy default)
+ * or a click-in socket for swappable label plates (#2666). Socket geometry
+ * follows the de-facto interchange standard pinned in
+ * `@/shared/constants/labelPlates`, so separately printed plates transfer
+ * between bins and ecosystem plates click in.
+ */
+export type LabelTabMode = 'text' | 'socket';
+
 /** Label tab configuration for back-wall identification shelf */
 export interface LabelTabConfig {
   readonly enabled: boolean;
+  /**
+   * Tab face mode. Absent = 'text' — the legacy engraved/embossed text
+   * behavior, so existing saved designs are untouched.
+   */
+  readonly mode?: LabelTabMode;
+  /**
+   * Signed fit offset (mm) added to the TOTAL socket clearance in socket
+   * mode, for per-printer fit calibration. Bounds
+   * `[LABEL_PLATE_FIT_OFFSET_MIN, LABEL_PLATE_FIT_OFFSET_MAX]`; rides on
+   * top of the nozzle-aware clearance scaling.
+   */
+  readonly plateFitOffset?: number;
   /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
   readonly support: LabelTabSupport;
   /** Depth of tab from inner back wall (horizontal inward), in mm */
@@ -1060,6 +1092,7 @@ export interface DesignerState {
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
+  setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 

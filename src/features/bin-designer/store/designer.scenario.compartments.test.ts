@@ -798,6 +798,63 @@ describe('DesignerStore - compartment actions', () => {
     });
   });
 
+  describe('setCompartmentPlateWidth (#2666)', () => {
+    it('stores an override on the specified compartment', () => {
+      const { setCompartmentGrid, setCompartmentPlateWidth } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateWidth(1, 2);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelPlateWidths).toEqual([null, 2]);
+    });
+
+    it('collapses to undefined when every entry returns to auto', () => {
+      const { setCompartmentGrid, setCompartmentPlateWidth } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateWidth(0, 1);
+      setCompartmentPlateWidth(0, null);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelPlateWidths).toBeUndefined();
+    });
+
+    it('does not push history for a no-op write', () => {
+      const { setCompartmentGrid, setCompartmentPlateWidth } = useDesignerStore.getState();
+      setCompartmentGrid(1, 1);
+      setCompartmentPlateWidth(0, 1);
+      const beforeHistoryLength = useDesignerStore.getState().history.past.length;
+
+      setCompartmentPlateWidth(0, 1);
+      expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
+    });
+
+    it('remaps overrides in lockstep through a merge (gotcha #6)', () => {
+      const { setCompartmentGrid, setCompartmentPlateWidth, mergeCells } =
+        useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateWidth(0, 1);
+      setCompartmentPlateWidth(1, 2);
+
+      // Merge both cells: target ID 0 keeps its override; old ID 1's drops.
+      mergeCells([0, 1]);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cells).toEqual([0, 0]);
+      expect(params.compartments.labelPlateWidths).toEqual([1]);
+    });
+
+    it('drops overrides on a grid reset (no valid remap exists)', () => {
+      const { setCompartmentGrid, setCompartmentPlateWidth } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateWidth(0, 2);
+
+      useDesignerStore.getState().setCompartmentGrid(3, 1);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelPlateWidths).toBeUndefined();
+    });
+  });
+
   describe('setCompartmentDividerHeight', () => {
     it('stores a numeric height on the compartments config', () => {
       const { setCompartmentDividerHeight } = useDesignerStore.getState();
