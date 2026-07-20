@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.262.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.261.0...gridfinity-layout-tool-v4.262.0) (2026-07-20)
+
+
+### Features
+
+* **designer:** tag appearance customization (icons & colors) ([#2652](https://github.com/andymai/gridfinity-layout-tool/issues/2652)) ([c661bcb](https://github.com/andymai/gridfinity-layout-tool/commit/c661bcbdec53f2315f292af112c3e74014fd7e0f))
+
 ## [4.261.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.3...gridfinity-layout-tool-v4.261.0) (2026-07-20)
 
 
