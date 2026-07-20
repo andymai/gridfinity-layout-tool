@@ -63,3 +63,4 @@ splitBinSize(w, d, maxUnits):
 1. **Dividers not counted** - estimate may undercount filament
 2. **Staging bins excluded** - only placed bins in print list
 3. **Category grouping optional** - toggle in UI
+4. **Group key includes `linkedDesignId`** - bins with identical dims/category/label but different linked designs (e.g. an imported-mesh bin next to a parametric bin) are different printed parts and get separate rows. Estimates for imported-mesh rows still use the standard-bin model here (this feature cannot legally import design data); the accurate volume-based number lives in the layout-export manifest (`estimateMeshFilament`).

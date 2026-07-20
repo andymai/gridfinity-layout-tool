@@ -84,11 +84,40 @@ function addQuad(
   colors.push(...faceColors);
 }
 
+// Minimum divider wall thickness in grid units (~1.26mm at 42mm) so thin
+// real-world dividers stay visible at preview scale
+const MIN_DIVIDER_THICKNESS = 0.03;
+
+/**
+ * One axis-aligned divider wall segment, positioned in fractions (0-1) of the
+ * bin's interior span. Vertical segments run along the depth axis at x;
+ * horizontal segments run along the width axis at y.
+ */
+export interface BinDividerSegment {
+  x: number;
+  y: number;
+  length: number;
+  orientation: 'horizontal' | 'vertical';
+}
+
+/** Compartment divider walls to render inside the bin cavity. */
+export interface BinDividersSpec {
+  /** Stable identity for geometry caching (designId:updatedAt). */
+  sig: string;
+  segments: BinDividerSegment[];
+  /** Divider wall thickness in scene grid units. */
+  thickness: number;
+  /** Divider height in scene grid units, or null for full interior height. */
+  height: number | null;
+}
+
 interface BinGeometryProps {
   width: number;
   depth: number;
   height: number;
   baseColor: string;
+  /** Interior compartment dividers (from a linked bin-designer design). */
+  dividers?: BinDividersSpec;
 }
 
 /**
@@ -101,6 +130,7 @@ export function createBinGeometry({
   depth,
   height,
   baseColor,
+  dividers,
 }: BinGeometryProps): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
@@ -353,6 +383,100 @@ export function createBinGeometry({
     topColor
   );
 
+  // Compartment divider walls from a linked design: thin boxes rising from the
+  // interior floor, positioned by interior-span fractions so they track the
+  // preview's own wall thickness rather than the design's physical walls.
+  if (dividers && dividers.segments.length > 0) {
+    const innerW = ix1 - ix0;
+    const innerD = iy1 - iy0;
+    const halfThickness = Math.max(dividers.thickness, MIN_DIVIDER_THICKNESS) / 2;
+    const dividerTopZ =
+      dividers.height === null
+        ? interiorCeilingZ
+        : Math.min(interiorCeilingZ, interiorFloorZ + dividers.height);
+    const dividerSideColor = interiorWallColor;
+    const dividerTopColor = adjustColor(color, -0.05);
+
+    for (const segment of dividers.segments) {
+      let dx0: number, dx1: number, dy0: number, dy1: number;
+      if (segment.orientation === 'vertical') {
+        const centerX = ix0 + segment.x * innerW;
+        dx0 = centerX - halfThickness;
+        dx1 = centerX + halfThickness;
+        dy0 = iy0 + segment.y * innerD;
+        dy1 = dy0 + segment.length * innerD;
+      } else {
+        const centerY = iy0 + segment.y * innerD;
+        dy0 = centerY - halfThickness;
+        dy1 = centerY + halfThickness;
+        dx0 = ix0 + segment.x * innerW;
+        dx1 = dx0 + segment.length * innerW;
+      }
+
+      // Clamp into the cavity so dividers never poke through exterior walls
+      dx0 = Math.max(ix0, dx0);
+      dx1 = Math.min(ix1, dx1);
+      dy0 = Math.max(iy0, dy0);
+      dy1 = Math.min(iy1, dy1);
+      if (dx1 <= dx0 || dy1 <= dy0 || dividerTopZ <= interiorFloorZ) continue;
+
+      // Front face (y = dy0)
+      addQuad(
+        positions,
+        colors,
+        new THREE.Vector3(dx0, dy0, interiorFloorZ),
+        new THREE.Vector3(dx1, dy0, interiorFloorZ),
+        new THREE.Vector3(dx1, dy0, dividerTopZ),
+        new THREE.Vector3(dx0, dy0, dividerTopZ),
+        dividerSideColor
+      );
+
+      // Right face (x = dx1)
+      addQuad(
+        positions,
+        colors,
+        new THREE.Vector3(dx1, dy0, interiorFloorZ),
+        new THREE.Vector3(dx1, dy1, interiorFloorZ),
+        new THREE.Vector3(dx1, dy1, dividerTopZ),
+        new THREE.Vector3(dx1, dy0, dividerTopZ),
+        dividerSideColor
+      );
+
+      // Back face (y = dy1)
+      addQuad(
+        positions,
+        colors,
+        new THREE.Vector3(dx1, dy1, interiorFloorZ),
+        new THREE.Vector3(dx0, dy1, interiorFloorZ),
+        new THREE.Vector3(dx0, dy1, dividerTopZ),
+        new THREE.Vector3(dx1, dy1, dividerTopZ),
+        dividerSideColor
+      );
+
+      // Left face (x = dx0)
+      addQuad(
+        positions,
+        colors,
+        new THREE.Vector3(dx0, dy1, interiorFloorZ),
+        new THREE.Vector3(dx0, dy0, interiorFloorZ),
+        new THREE.Vector3(dx0, dy0, dividerTopZ),
+        new THREE.Vector3(dx0, dy1, dividerTopZ),
+        dividerSideColor
+      );
+
+      // Top face
+      addQuad(
+        positions,
+        colors,
+        new THREE.Vector3(dx0, dy0, dividerTopZ),
+        new THREE.Vector3(dx1, dy0, dividerTopZ),
+        new THREE.Vector3(dx1, dy1, dividerTopZ),
+        new THREE.Vector3(dx0, dy1, dividerTopZ),
+        dividerTopColor
+      );
+    }
+  }
+
   // Set geometry attributes
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -371,10 +495,11 @@ export function useBinGeometry({
   depth,
   height,
   baseColor,
+  dividers,
 }: BinGeometryProps): THREE.BufferGeometry {
   const geometry = useMemo(
-    () => createBinGeometry({ width, depth, height, baseColor }),
-    [width, depth, height, baseColor]
+    () => createBinGeometry({ width, depth, height, baseColor, dividers }),
+    [width, depth, height, baseColor, dividers]
   );
 
   // Cleanup geometry on dependency change or unmount

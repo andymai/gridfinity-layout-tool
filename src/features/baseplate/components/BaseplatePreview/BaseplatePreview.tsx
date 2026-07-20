@@ -9,9 +9,10 @@
  */
 
 import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
+import { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
@@ -42,6 +43,28 @@ import { useGenerationElapsed } from './useGenerationElapsed';
 import { useBaseplateKeyboard } from '../../hooks/useBaseplateKeyboard';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
+
+/**
+ * Publishes the live renderer/scene/camera to the thumbnail-capture util.
+ *
+ * `Canvas.onCreated` fires against R3F's transient default camera, which
+ * `CameraRig` immediately replaces via `makeDefault`, so we resync through
+ * `useThree().camera`. Only the perspective camera is published: the capture
+ * math reads `camera.fov`, which is `undefined` on the orthographic camera and
+ * would yield NaN-positioned (blank) frames. Drei's `<PerspectiveCamera>` stays
+ * mounted across projection toggles, so the last-published reference stays valid
+ * while the user is in ortho mode.
+ */
+function BaseplatePreviewContextSync() {
+  const { gl, scene, camera, invalidate } = useThree();
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera) {
+      setPreviewContext(gl, scene, camera, invalidate);
+    }
+  }, [gl, scene, camera, invalidate]);
+  return null;
+}
 
 interface BaseplatePreviewProps {
   width: number;
@@ -68,6 +91,9 @@ export function BaseplatePreview({
   const { isDesktop } = useResponsive();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
   const webgl = detectWebGL();
+
+  // Release the thumbnail-capture references when the preview unmounts.
+  useEffect(() => () => clearPreviewCanvas(), []);
 
   const {
     wasmStatus,
@@ -282,9 +308,13 @@ export function BaseplatePreview({
             <WebGLErrorBoundary component="baseplate">
               <Canvas
                 frameloop="demand"
-                gl={{ antialias: true }}
+                // preserveDrawingBuffer keeps the framebuffer readable after
+                // compositing so the library thumbnail can be captured from it.
+                gl={{ antialias: true, preserveDrawingBuffer: true }}
+                onCreated={({ gl }) => setPreviewCanvas(gl.domElement)}
                 onPointerMissed={handlePointerMissed}
               >
+                <BaseplatePreviewContextSync />
                 <CameraRig
                   projection={projection}
                   initialPosition={[100, -100, 80]}

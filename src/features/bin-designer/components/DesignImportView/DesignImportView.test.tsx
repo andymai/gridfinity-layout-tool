@@ -360,4 +360,58 @@ describe('DesignImportView', () => {
     // Check error messages appear
     expect(screen.getByText('Validation errors')).toBeInTheDocument();
   });
+
+  describe('STL routing (stl_bin_import)', () => {
+    function stlFile(name = 'bin.stl'): File {
+      return new File([new Uint8Array(100)], name, { type: 'model/stl' });
+    }
+
+    function dropFile(container: HTMLElement, file: File): void {
+      const dropZone = container.querySelector('[class*="border-dashed"]') as HTMLElement;
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    }
+
+    it('routes a dropped .stl to onStlFile when provided', () => {
+      const onStlFile = vi.fn();
+      const { container } = render(<DesignImportView {...defaultProps} onStlFile={onStlFile} />);
+      dropFile(container, stlFile());
+      expect(onStlFile).toHaveBeenCalledTimes(1);
+      expect(onStlFile.mock.calls[0][0].name).toBe('bin.stl');
+      expect(defaultProps.onImport).not.toHaveBeenCalled();
+    });
+
+    it('routes an .stl picked via the file input to onStlFile', () => {
+      const onStlFile = vi.fn();
+      const { container } = render(<DesignImportView {...defaultProps} onStlFile={onStlFile} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      expect(input.accept).toBe('.json,.stl');
+      fireEvent.change(input, { target: { files: [stlFile('picked.stl')] } });
+      expect(onStlFile).toHaveBeenCalledTimes(1);
+      expect(onStlFile.mock.calls[0][0].name).toBe('picked.stl');
+    });
+
+    it('matches .STL case-insensitively', () => {
+      const onStlFile = vi.fn();
+      const { container } = render(<DesignImportView {...defaultProps} onStlFile={onStlFile} />);
+      dropFile(container, stlFile('UPPER.STL'));
+      expect(onStlFile).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects a dropped .stl when onStlFile is absent (flag off)', () => {
+      const { container } = render(<DesignImportView {...defaultProps} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      expect(input.accept).toBe('.json');
+      dropFile(container, stlFile());
+      expect(screen.getByText('Validation errors')).toBeInTheDocument();
+    });
+
+    it('drop-zone text mentions STL only when onStlFile is provided', () => {
+      const { unmount } = render(<DesignImportView {...defaultProps} onStlFile={vi.fn()} />);
+      expect(screen.getByText(/JSON or STL file/)).toBeInTheDocument();
+      unmount();
+      render(<DesignImportView {...defaultProps} />);
+      expect(screen.getByText(/design JSON file here/)).toBeInTheDocument();
+      expect(screen.queryByText(/JSON or STL file/)).not.toBeInTheDocument();
+    });
+  });
 });

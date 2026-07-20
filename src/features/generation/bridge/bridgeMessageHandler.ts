@@ -138,6 +138,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
             positions: response.positions,
             indices: response.indices,
             suggestedCutDepth: response.suggestedCutDepth,
+            volumeMm3: response.volumeMm3,
           });
         }
         break;

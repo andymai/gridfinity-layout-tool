@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import type { Bin, Layer, Category } from '@/core/types';
+import type { Bin, Layer, Category, DesignId } from '@/core/types';
 import type { LayerViewMode } from '@/core/store/view';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
+import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
@@ -13,6 +14,8 @@ interface UseBinsToRenderOptions {
   activeLayerIndex: number;
   layerViewMode: LayerViewMode;
   heightToGridScale: number;
+  /** Divider specs for linked designs, keyed by design id. */
+  designDividers?: Map<DesignId, BinDividersSpec>;
 }
 
 /**
@@ -26,6 +29,7 @@ export function useBinsToRender({
   activeLayerIndex,
   layerViewMode,
   heightToGridScale,
+  designDividers,
 }: UseBinsToRenderOptions): BinRenderData[] {
   // Performance: Create O(1) lookup maps to avoid O(n^2) .findIndex()/.find() calls in render loop
   const layerIndexMap = useMemo(() => new Map(layers.map((l, idx) => [l.id, idx])), [layers]);
@@ -71,6 +75,8 @@ export function useBinsToRender({
         clearanceHeight: (bin.clearanceHeight || 0) * heightToGridScale,
         color,
         opacity: 1,
+        dividers:
+          bin.linkedDesignId !== undefined ? designDividers?.get(bin.linkedDesignId) : undefined,
       });
     }
 
@@ -108,5 +114,6 @@ export function useBinsToRender({
     activeLayerIndex,
     layerViewMode,
     heightToGridScale,
+    designDividers,
   ]);
 }

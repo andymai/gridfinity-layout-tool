@@ -176,13 +176,13 @@ describe('baseplateGenerator — snap-clip connectors (issue #1610)', () => {
       // SOCKET_HEIGHT slab (no magnets) = 5mm. The FDM-balanced edge treatments
       // (slot-root fillets, top chamfer, slot-mouth fillets) plus relieving the
       // top-bridge corners against the four neighbouring full-cell bin feet leave
-      // ~46.6mm³ (legs trimmed to LEG_W 0.95 to make room for the retaining wall
-      // while keeping the outer footprint), and a seated clip clears bins in the
-      // edge sockets flanking each seam (see snapClipSocketInterference.test.ts).
+      // ~46.1mm³ (barb trimmed to 0.3 and the lead-in stretched to 0.7 by the
+      // #2638 insertability retune), and a seated clip clears bins in the edge
+      // sockets flanking each seam (see snapClipSocketInterference.test.ts).
       const totalHeight = 5;
       const clip = buildSnapClip(totalHeight, 42);
       const vClip = vol(clip);
-      expect(vClip, 'relieved + filleted clip volume').toBeCloseTo(46.6, 1);
+      expect(vClip, 'relieved + filleted clip volume').toBeCloseTo(46.1, 1);
 
       // Print orientation is a rigid transform — volume is preserved exactly.
       const printClip = buildSnapClipForPrint(totalHeight, 42);

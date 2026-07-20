@@ -39,7 +39,7 @@ export function useSupportersData(): { data: SupportersData; settled: boolean } 
       .then((json: unknown) => {
         // An empty store means the seed hasn't run — keep the bundled list
         // rather than wiping the baseplate to nothing.
-        if (isSupportersData(json) && json.named.length + json.anonymousCount > 0) {
+        if (isSupportersData(json) && json.supporters.length > 0) {
           setData(json);
         }
       })

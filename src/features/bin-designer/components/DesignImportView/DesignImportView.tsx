@@ -15,6 +15,11 @@ import { Button } from '@/design-system';
 interface DesignImportViewProps {
   onImport: (design: { name: string; params: BinParams }) => void;
   onCancel: () => void;
+  /**
+   * When provided (stl_bin_import labs flag), `.stl` files picked or dropped
+   * here are routed to the imported-bin flow instead of being rejected.
+   */
+  onStlFile?: (file: File) => void;
 }
 
 interface ImportPreview {
@@ -26,7 +31,7 @@ interface ImportPreview {
 /**
  * Import view with drag-and-drop file support and paste area.
  */
-export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) {
+export function DesignImportView({ onImport, onCancel, onStlFile }: DesignImportViewProps) {
   const t = useTranslation();
   const [jsonText, setJsonText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
@@ -80,6 +85,12 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
       const file = e.target.files?.[0];
       if (!file) return;
 
+      if (onStlFile && file.name.toLowerCase().endsWith('.stl')) {
+        onStlFile(file);
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const text = event.target?.result as string;
@@ -87,7 +98,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
       };
       reader.readAsText(file);
     },
-    [processInput]
+    [processInput, onStlFile]
   );
 
   const handleDragOver = useCallback((e: DragEvent) => {
@@ -112,6 +123,10 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
       if (files.length === 0) return;
 
       const file = files[0];
+      if (onStlFile && file.name.toLowerCase().endsWith('.stl')) {
+        onStlFile(file);
+        return;
+      }
       if (!file.name.endsWith('.json')) {
         setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
@@ -124,7 +139,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
       };
       reader.readAsText(file);
     },
-    [processInput, t]
+    [processInput, t, onStlFile]
   );
 
   const handleImport = useCallback(() => {
@@ -155,7 +170,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
         <input
           ref={fileInputRef}
           type="file"
-          accept=".json"
+          accept={onStlFile ? '.json,.stl' : '.json'}
           onChange={handleFileUpload}
           className="hidden"
         />
@@ -175,7 +190,11 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
         </svg>
 
         <p className="text-content-secondary mb-2">
-          {isDragging ? t('layouts.dropFileHere') : t('binDesigner.dragDropDesignJson')}
+          {isDragging
+            ? t('layouts.dropFileHere')
+            : onStlFile
+              ? t('binDesigner.dragDropDesignFile')
+              : t('binDesigner.dragDropDesignJson')}
         </p>
         <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
         <Button

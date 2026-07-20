@@ -42,10 +42,12 @@ import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { ToolRackParameterPanel } from '../panel/ToolRackSection/ToolRackParameterPanel';
+import { ImportedMeshPanel } from '../panel/ImportedMeshSection/ImportedMeshPanel';
 
 export function ParameterPanel() {
   const itemKind = useDesignerStore((s) => s.itemKind);
   if (itemKind === 'toolRack') return <ToolRackParameterPanel />;
+  if (itemKind === 'importedMesh') return <ImportedMeshPanel />;
   return <BinParameterPanel />;
 }
 

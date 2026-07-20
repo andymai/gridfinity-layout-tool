@@ -1,10 +1,15 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { Group } from 'three';
-import type { LayerId } from '@/core/types';
+import type { DesignId, LayerId } from '@/core/types';
 import { MergedBinMeshes } from '../MergedBinMeshes';
-import { BinMesh } from '../BinMesh';
+import {
+  LinkedBinMesh,
+  SelectedBin,
+  partitionByDesignMesh,
+  type DesignGeometryEntry,
+} from '../LinkedBinMeshes';
 import { LayerLabel } from './LayerLabel';
 import { lerpStep } from './lerpStep';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
@@ -21,6 +26,9 @@ interface ExplodedLayerGroupProps {
   layerHeightMm: number;
   nonSelectedBins: BinRenderData[];
   selectedBins: BinRenderData[];
+  /** Resolved real geometries for linked designs, keyed by design id. */
+  designGeometries: Map<DesignId, DesignGeometryEntry>;
+  gridUnitMm: number;
   explodedZOffset: number;
   isActive: boolean;
   drawerWidth: number;
@@ -41,6 +49,8 @@ export function ExplodedLayerGroup({
   layerHeightMm,
   nonSelectedBins,
   selectedBins,
+  designGeometries,
+  gridUnitMm,
   explodedZOffset,
   isActive,
   drawerWidth,
@@ -51,6 +61,13 @@ export function ExplodedLayerGroup({
 }: ExplodedLayerGroupProps) {
   const groupRef = useRef<Group>(null);
   const currentZRef = useRef(0);
+
+  // Split non-selected bins: linked bins with a resolved design mesh render
+  // the real geometry individually; the rest go through the merged-box path.
+  const { designMeshBins, plainBins } = useMemo(
+    () => partitionByDesignMesh(nonSelectedBins, designGeometries),
+    [nonSelectedBins, designGeometries]
+  );
 
   useFrame((_, delta) => {
     const newZ = lerpStep(currentZRef.current, explodedZOffset, delta);
@@ -84,20 +101,25 @@ export function ExplodedLayerGroup({
       )}
 
       {/* Non-selected bins: merged for performance */}
-      <MergedBinMeshes bins={nonSelectedBins} />
+      <MergedBinMeshes bins={plainBins} />
+
+      {/* Linked bins with a resolved design mesh: real geometry */}
+      {designMeshBins.map(({ binData, entry }) => (
+        <LinkedBinMesh
+          key={`design-${binData.bin.id}`}
+          binData={binData}
+          entry={entry}
+          gridUnitMm={gridUnitMm}
+        />
+      ))}
 
       {/* Selected bins: individual meshes for glow animation */}
       {selectedBins.map((binData) => (
-        <BinMesh
+        <SelectedBin
           key={binData.bin.id}
-          bin={binData.bin}
-          x={binData.x}
-          y={binData.y}
-          z={binData.z}
-          height={binData.height}
-          color={binData.color}
-          opacity={binData.opacity}
-          isSelected={true}
+          binData={binData}
+          designGeometries={designGeometries}
+          gridUnitMm={gridUnitMm}
         />
       ))}
 

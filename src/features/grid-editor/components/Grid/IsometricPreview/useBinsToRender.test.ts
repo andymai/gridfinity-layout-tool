@@ -43,6 +43,39 @@ describe('useBinsToRender', () => {
     expect(result.current).toEqual([]);
   });
 
+  it('attaches divider specs for bins linked to designs', () => {
+    const bins = [
+      createTestBin({ id: 'bin-1', linkedDesignId: 'design-1' } as Partial<Bin>),
+      createTestBin({ id: 'bin-2' }),
+    ];
+    const spec = {
+      sig: 'design-1:2026',
+      segments: [{ x: 0.5, y: 0, length: 1, orientation: 'vertical' as const }],
+      thickness: 0.03,
+      height: null,
+    };
+    const designDividers = new Map([
+      [bins[0].linkedDesignId as NonNullable<Bin['linkedDesignId']>, spec],
+    ]);
+
+    const { result } = renderHook(() =>
+      useBinsToRender({
+        bins,
+        layers: defaultLayers,
+        categories: defaultCategories,
+        activeLayerIndex: 0,
+        layerViewMode: 'all',
+        heightToGridScale: 7 / 42,
+        designDividers,
+      })
+    );
+
+    const linked = result.current.find((b) => b.bin.id === 'bin-1');
+    const unlinked = result.current.find((b) => b.bin.id === 'bin-2');
+    expect(linked?.dividers).toBe(spec);
+    expect(unlinked?.dividers).toBeUndefined();
+  });
+
   it('filters out staging bins', () => {
     const bins = [createTestBin({ layerId: '__staging__' })];
 

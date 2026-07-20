@@ -1,5 +1,11 @@
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import {
+  tagAppearanceKey,
+  tagTint,
+  useTagAppearanceStore,
+} from '@/features/bin-designer/store/tagAppearance';
+import { TagGlyph } from '../../TagGlyph';
 
 interface TagFilterBarProps {
   allTags: readonly string[];
@@ -11,6 +17,7 @@ interface TagFilterBarProps {
 /** Toggle-chip row for filtering the design list by tag. Hidden when no tags exist. */
 export function TagFilterBar({ allTags, activeTags, onToggle, onClear }: TagFilterBarProps) {
   const t = useTranslation();
+  const appearances = useTagAppearanceStore((s) => s.appearances);
   if (allTags.length === 0) return null;
 
   const activeSet = new Set(activeTags.map((x) => x.toLowerCase()));
@@ -23,6 +30,7 @@ export function TagFilterBar({ allTags, activeTags, onToggle, onClear }: TagFilt
     >
       {allTags.map((tag) => {
         const isActive = activeSet.has(tag.toLowerCase());
+        const appearance = appearances[tagAppearanceKey(tag)];
         return (
           <Button
             key={tag}
@@ -30,14 +38,22 @@ export function TagFilterBar({ allTags, activeTags, onToggle, onClear }: TagFilt
             variant="ghost"
             onClick={() => onToggle(tag)}
             aria-pressed={isActive}
-            className={`max-w-[10rem] truncate rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`inline-flex max-w-[10rem] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
               isActive
                 ? 'border-accent bg-accent text-on-accent hover:bg-accent'
                 : 'border-stroke bg-surface text-content-secondary hover:bg-surface-hover'
             }`}
+            // The colored tint only applies while inactive — the active state
+            // keeps the accent background so filter state stays unmistakable.
+            style={
+              !isActive && appearance?.color !== undefined
+                ? { backgroundColor: tagTint(appearance.color) }
+                : undefined
+            }
             title={tag}
           >
-            {tag}
+            <TagGlyph appearance={appearance} />
+            <span className="truncate">{tag}</span>
           </Button>
         );
       })}

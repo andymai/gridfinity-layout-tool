@@ -40,7 +40,12 @@ export function ActiveBaseplatePanel() {
   );
 
   return (
-    <Collapsible title={t('baseplate.title')} size="md" actions={manageButton}>
+    <Collapsible
+      title={t('baseplate.title')}
+      size="md"
+      actions={manageButton}
+      defaultExpanded={false}
+    >
       <Select
         value={activeBaseplateId ?? ''}
         onValueChange={handleChange}

@@ -72,6 +72,22 @@ describe('buildLayoutManifest', () => {
     expect(withSkips).toContain('2 linked designs skipped (could not be loaded)');
   });
 
+  it('renders the imported-mesh STEP skip line', () => {
+    const manifest = buildLayoutManifest(
+      base({
+        skipped: {
+          unlinkedBins: 0,
+          nonBinDesigns: 0,
+          missingDesigns: 0,
+          meshDesignsStepSkipped: 2,
+        },
+      })
+    );
+    expect(manifest).toContain(
+      '2 imported designs skipped (STEP is not available for imported meshes — export STL or 3MF)'
+    );
+  });
+
   it('handles a bins-only or baseplate-absent export', () => {
     const text = buildLayoutManifest(base({ bins: [], baseplate: null }));
     expect(text).toContain('(no linked bin designs to export)');

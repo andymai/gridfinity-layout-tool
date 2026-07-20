@@ -171,4 +171,60 @@ describe('LinkDesignDialog', () => {
     render(<LinkDesignDialog />);
     expect(screen.getByLabelText('common.close')).toBeInTheDocument();
   });
+
+  it('lists imported-mesh designs with a matching footprint, excludes tool racks', async () => {
+    mockListDesigns.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          id: 'design-1',
+          name: 'Parametric Box',
+          params: { width: 2, depth: 3, height: 5, compartments: { cells: [0] } },
+          thumbnail: null,
+        },
+        {
+          id: 'mesh-1',
+          name: 'Imported Holder',
+          kind: 'importedMesh',
+          envelope: { width: 2, depth: 3 },
+          structure: { kind: 'importedMesh', heightUnits: 2 },
+          thumbnail: null,
+        },
+        {
+          id: 'mesh-2',
+          name: 'Wrong Footprint Mesh',
+          kind: 'importedMesh',
+          envelope: { width: 4, depth: 4 },
+          structure: { kind: 'importedMesh', heightUnits: 2 },
+          thumbnail: null,
+        },
+        {
+          id: 'rack-1',
+          name: 'Tool Rack',
+          kind: 'toolRack',
+          envelope: { width: 2, depth: 3 },
+          structure: { kind: 'toolRack' },
+          thumbnail: null,
+        },
+      ],
+    });
+
+    vi.mocked(useLinkingStore).mockReturnValue({
+      pendingLinkDesign: {
+        binId: 'bin-1',
+        footprint: { width: 2, depth: 3 },
+        binHeight: 2,
+      },
+      hideLinkDesignDialog: vi.fn(),
+    });
+
+    render(<LinkDesignDialog />);
+
+    expect(await screen.findByText('Imported Holder')).toBeInTheDocument();
+    expect(screen.getByText('Parametric Box')).toBeInTheDocument();
+    // Imported designs carry a kind badge
+    expect(screen.getByText('binDesigner.itemKind.importedMesh')).toBeInTheDocument();
+    expect(screen.queryByText('Wrong Footprint Mesh')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tool Rack')).not.toBeInTheDocument();
+  });
 });

@@ -611,6 +611,8 @@ export interface ImportMeshResultResponse {
   readonly indices: Uint32Array;
   /** Default pocket depth: the oriented mesh height (mm). */
   readonly suggestedCutDepth: number;
+  /** Solid volume of the oriented manifold in mm³. */
+  readonly volumeMm3: number;
 }
 
 export interface ImportMeshErrorResponse {

@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   ping: vi.fn(),
   set: vi.fn(),
   hset: vi.fn(),
+  hincrby: vi.fn(),
 }));
 
 vi.mock('./lib/rateLimit.js', () => ({
@@ -81,7 +82,13 @@ describe('kofi-webhook', () => {
     mocks.ping.mockResolvedValue('PONG');
     mocks.set.mockResolvedValue('OK');
     mocks.hset.mockResolvedValue(1);
-    mocks.getRedis.mockReturnValue({ ping: mocks.ping, set: mocks.set, hset: mocks.hset });
+    mocks.hincrby.mockResolvedValue(1);
+    mocks.getRedis.mockReturnValue({
+      ping: mocks.ping,
+      set: mocks.set,
+      hset: mocks.hset,
+      hincrby: mocks.hincrby,
+    });
     mocks.checkRateLimit.mockResolvedValue({ allowed: true, remaining: 59, resetAt: 0 });
   });
 
@@ -173,18 +180,50 @@ describe('kofi-webhook', () => {
     expect(mocks.hset).not.toHaveBeenCalled();
   });
 
-  it('stores a private supporter as anonymous rather than dropping them', async () => {
-    await handle(payload({ is_public: false }));
+  it('stores a private supporter as anonymous with no message', async () => {
+    await handle(payload({ is_public: false, message: 'secret note' }));
     expect(mocks.hset).toHaveBeenCalledTimes(1);
-    expect(mocks.hset.mock.calls[0][2]).toBe('');
+    const record = JSON.parse(mocks.hset.mock.calls[0][2]);
+    expect(record.n).toBe('');
+    expect(record.m).toBeUndefined();
   });
 
-  it('never writes the email or amount', async () => {
-    await handle(payload({ amount: '5.00', message: 'thanks!' }));
+  it('stores a public supporter as a record with name, date, and message', async () => {
+    await handle(payload({ timestamp: '2026-07-01T13:04:30Z', message: 'thanks!' }));
+    const record = JSON.parse(mocks.hset.mock.calls[0][2]);
+    expect(record.n).toBe('Jo Example');
+    expect(record.t).toBe('2026-07-01T13:04:30.000Z');
+    expect(record.m).toBe('thanks!');
+  });
+
+  it('never writes the email or amount into the donor record', async () => {
+    await handle(payload({ amount: '5.00' }));
     const written = JSON.stringify(mocks.hset.mock.calls[0]);
     expect(written).not.toContain('jo@example.com');
     expect(written).not.toContain('5.00');
-    expect(written).not.toContain('thanks!');
+  });
+
+  it('folds the amount into a collect-only per-currency total', async () => {
+    await handle(payload({ amount: '5.00', currency: 'usd' }));
+    expect(mocks.hincrby).toHaveBeenCalledWith('supporters:totals', 'USD', 500);
+  });
+
+  it('skips the total when the amount is missing or unparseable', async () => {
+    await handle(payload({ amount: 'free', currency: 'USD' }));
+    expect(mocks.hincrby).not.toHaveBeenCalled();
+  });
+
+  it('counts a renewal toward the total even though it creates no bin', async () => {
+    await handle(
+      payload({
+        is_subscription_payment: true,
+        is_first_subscription_payment: false,
+        amount: '3.00',
+        currency: 'EUR',
+      })
+    );
+    expect(mocks.hincrby).toHaveBeenCalledWith('supporters:totals', 'EUR', 300);
+    expect(mocks.hset).not.toHaveBeenCalled();
   });
 
   it.each([

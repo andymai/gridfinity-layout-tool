@@ -23,6 +23,7 @@ export { GhostCompartmentPreview } from './GhostCompartmentPreview';
 export { GhostLabelTabs } from './GhostLabelTabs';
 export { GhostScoops } from './GhostScoops';
 export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
+export { GhostAuthoredDividers } from './GhostAuthoredDividers';
 export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';

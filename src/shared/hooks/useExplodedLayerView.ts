@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import type { Bin, Layer, Category, LayerId } from '@/core/types';
+import type { Bin, Layer, Category, LayerId, DesignId } from '@/core/types';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isOk } from '@/core/result';
+import type { BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 
 /** Gap between layers in grid units when exploded. */
 const EXPLODE_GAP = 2.5;
@@ -20,6 +21,8 @@ export interface BinRenderData {
   clearanceHeight: number;
   color: string;
   opacity: number;
+  /** Compartment dividers from the bin's linked design, if any. */
+  dividers?: BinDividersSpec;
 }
 
 /** Per-layer grouping for exploded view rendering. */
@@ -42,6 +45,8 @@ interface UseExplodedLayerViewOptions {
   activeLayerId: LayerId;
   isExplodedView: boolean;
   isExitAnimating?: boolean;
+  /** Divider specs for linked designs, keyed by design id. */
+  designDividers?: Map<DesignId, BinDividersSpec>;
 }
 
 /**
@@ -57,6 +62,7 @@ export function useExplodedLayerView({
   activeLayerId,
   isExplodedView,
   isExitAnimating = false,
+  designDividers,
 }: UseExplodedLayerViewOptions): LayerRenderGroup[] | null {
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
 
@@ -106,6 +112,8 @@ export function useExplodedLayerView({
         clearanceHeight: (bin.clearanceHeight || 0) * heightToGridScale,
         color,
         opacity: group.opacity,
+        dividers:
+          bin.linkedDesignId !== undefined ? designDividers?.get(bin.linkedDesignId) : undefined,
       });
     }
 
@@ -131,5 +139,6 @@ export function useExplodedLayerView({
     heightToGridScale,
     heightUnitMm,
     activeLayerId,
+    designDividers,
   ]);
 }

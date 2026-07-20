@@ -229,7 +229,7 @@ function generateConnectorKeySection(
   // Total clearance = both per-side pocket walls of the seated part combined.
   const baseClearance = isSnapClip ? SNAP_CLIP_CLEARANCE : DOVETAIL_KEY_CLEARANCE;
   const totalClearance = 2 * effectiveClearance(baseClearance, offset);
-  const partName = isSnapClip ? 'snap_clip' : 'dovetail_key';
+  const partName = isSnapClip ? 'snap_clip' : 'puzzle_key';
   const seatLine = isSnapClip
     ? '    Press one into each seam junction from the top until it clicks; the bridge sits flush.'
     : '    Hammer one into each seam junction from the top, flush with the surface.';
@@ -246,7 +246,7 @@ function generateConnectorKeySection(
         "      • Won't click in? Raise the Connector fit offset (looser). Too loose? Lower it.",
       ]
     : [
-        '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
+        '      • Use a 0.4mm nozzle — larger nozzles lose the lobe detail.',
         '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
         '        cancel first-layer squish (the biggest cause of an over-tight key).',
         '      • Print the key flat on the bed (as oriented); 2+ walls.',
@@ -289,7 +289,7 @@ function generateHeader(
   if (params.connectorNubs)
     features.push(
       params.connectorStyle === 'dovetailKey'
-        ? 'dovetail key connectors'
+        ? 'puzzle key connectors'
         : params.connectorStyle === 'snapClip'
           ? 'snap clip connectors'
           : 'connectors'
@@ -406,7 +406,7 @@ function generatePieceTable(
     if (parentParams.connectorNubs)
       features.push(
         parentParams.connectorStyle === 'dovetailKey'
-          ? 'dovetail key grooves'
+          ? 'puzzle key grooves'
           : parentParams.connectorStyle === 'snapClip'
             ? 'snap clip pockets'
             : 'connectors'

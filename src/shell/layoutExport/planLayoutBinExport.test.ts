@@ -252,4 +252,142 @@ describe('planLayoutBinExport', () => {
       expect(plan.exportable[0].path).not.toContain('_extended');
     });
   });
+
+  describe('imported-mesh designs', () => {
+    function meshDesign(id: string, name: string, volumeMm3?: number): SavedDesign {
+      return {
+        id: designId(id),
+        name,
+        kind: 'importedMesh',
+        envelope: {
+          width: 2,
+          depth: 1,
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+          attachment: {
+            magnetHoles: false,
+            magnetDiameter: 6.5,
+            magnetDepth: 2.4,
+            screwHoles: false,
+            screwDiameter: 3,
+          },
+          featureColors: DEFAULT_BIN_PARAMS.featureColors,
+        },
+        structure: {
+          kind: 'importedMesh',
+          heightUnits: 3,
+          asset: {
+            name,
+            data: 'AAAA',
+            triangleCount: 12,
+            sizeMm: { x: 83.5, y: 41.5, z: 21 },
+            outlines: [],
+          },
+          ...(volumeMm3 !== undefined ? { volumeMm3 } : {}),
+        },
+        thumbnail: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        exportFileNameConfig: null,
+      };
+    }
+
+    it('exports a mesh design with quantity grouping and a manifest entry', () => {
+      const bins = [
+        linkedBin('m1'),
+        { ...linkedBin('m1'), id: createTestBin({ x: 3 }).id, x: 3 },
+      ] as Bin[];
+      const loaded: LoadedDesign[] = [{ id: designId('m1'), design: meshDesign('m1', 'widget') }];
+
+      const plan = planLayoutBinExport(
+        bins,
+        loaded,
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        undefined
+      );
+
+      expect(plan.skipped.nonBinDesigns).toBe(0);
+      expect(plan.meshExportable).toHaveLength(1);
+      expect(plan.meshExportable[0].path).toBe('bins/widget.stl');
+      expect(plan.meshExportable[0].quantity).toBe(2);
+      const entry = plan.manifestBins.find((b) => b.designName === 'widget');
+      expect(entry?.widthUnits).toBe(2);
+      expect(entry?.heightUnits).toBe(3);
+      expect(entry?.quantity).toBe(2);
+      expect(plan.totals.filamentGrams).toBeGreaterThan(0);
+    });
+
+    it('uses the measured volume for the estimate when present', () => {
+      const bins = [linkedBin('m1')] as Bin[];
+      const withVolume = planLayoutBinExport(
+        bins,
+        [{ id: designId('m1'), design: meshDesign('m1', 'widget', 10_000) }],
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        undefined
+      );
+      // 10 cm³ of PLA ≈ 12.4 g — clearly distinct from the standard-bin model.
+      const entry = withVolume.manifestBins[0];
+      expect(entry.filamentGrams).toBeCloseTo(12.4, 0);
+    });
+
+    it('dedupes a mesh name against a parametric design with the same stem', () => {
+      const bins = [
+        linkedBin('d1'),
+        { ...linkedBin('m1'), id: createTestBin({ x: 3 }).id, x: 3 },
+      ] as Bin[];
+      const loaded: LoadedDesign[] = [
+        { id: designId('d1'), design: design('d1', 'widget') },
+        { id: designId('m1'), design: meshDesign('m1', 'widget') },
+      ];
+      const plan = planLayoutBinExport(
+        bins,
+        loaded,
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        undefined
+      );
+      const allPaths = [...plan.exportable.map((e) => e.path), plan.meshExportable[0].path];
+      expect(new Set(allPaths).size).toBe(allPaths.length);
+    });
+
+    it('skips mesh designs under STEP with a dedicated tally', () => {
+      const bins = [linkedBin('m1')] as Bin[];
+      const plan = planLayoutBinExport(
+        bins,
+        [{ id: designId('m1'), design: meshDesign('m1', 'widget') }],
+        'step',
+        { ...CONFIG, format: 'step' },
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        undefined
+      );
+      expect(plan.meshExportable).toHaveLength(0);
+      expect(plan.skipped.meshDesignsStepSkipped).toBe(1);
+      expect(plan.manifestBins).toHaveLength(0);
+    });
+
+    it('still tallies tool racks (non-mesh paramsless designs) as nonBinDesigns', () => {
+      const bins = [linkedBin('r1')] as Bin[];
+      const rack: SavedDesign = { ...design('r1', 'Rack'), params: undefined, kind: 'toolRack' };
+      const plan = planLayoutBinExport(
+        bins,
+        [{ id: designId('r1'), design: rack }],
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        undefined
+      );
+      expect(plan.skipped.nonBinDesigns).toBe(1);
+      expect(plan.meshExportable).toHaveLength(0);
+    });
+  });
 });

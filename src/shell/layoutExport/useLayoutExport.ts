@@ -21,7 +21,11 @@ import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
+import { decodeMeshData } from '@/shared/generation/meshAsset';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+// Deep import: the STL builder lives in the worker-adjacent export module; the
+// generation barrel would pull the whole bridge stack into this chunk.
+import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
@@ -185,7 +189,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
         // export STL geometry.
         const workerFormat: ExportFormat = format === 'step' ? 'step' : 'stl';
-        const binTotal = plan.exportable.length;
+        const binTotal = plan.exportable.length + plan.meshExportable.length;
         const binLabel = (current: number): string =>
           t('layoutExport.progress.bins', { current, total: binTotal });
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
@@ -226,6 +230,27 @@ export function useLayoutExport(): UseLayoutExportReturn {
         for (const e of companions) {
           const result = await bridge.exportCombined(e.params, workerFormat);
           binFiles.push(...(await combinedFiles(result, format, e.path, e.params, printSettings)));
+          done++;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
+        }
+
+        // Phase 1.5 — imported-mesh designs: the stored asset IS the geometry,
+        // decoded and re-serialized here on the main thread (no worker slot
+        // needed). Plan already excludes these under STEP. A single corrupt
+        // asset skips that design rather than aborting the whole archive.
+        for (const m of plan.meshExportable) {
+          const decoded = await decodeMeshData(m.asset.data);
+          if (isOk(decoded)) {
+            const stl = buildSTLBufferFromIndexed(
+              decoded.value.positions,
+              new Float32Array(0),
+              decoded.value.indices,
+              baseNameOf(m.path)
+            );
+            const data =
+              format === '3mf' ? await stlTo3mf(stl, baseNameOf(m.path), printSettings) : stl;
+            binFiles.push({ path: m.path, data });
+          }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }

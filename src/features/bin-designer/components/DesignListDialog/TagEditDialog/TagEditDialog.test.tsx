@@ -56,4 +56,11 @@ describe('TagEditDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     expect(onSave).toHaveBeenCalledWith(['kitchen', 'screws']);
   });
+
+  it('adds an existing tag via its suggestion then saves it', () => {
+    const { onSave } = setup({ suggestions: ['kitchen', 'screws'] });
+    fireEvent.click(screen.getByRole('button', { name: /add tag screws/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    expect(onSave).toHaveBeenCalledWith(['kitchen', 'screws']);
+  });
 });

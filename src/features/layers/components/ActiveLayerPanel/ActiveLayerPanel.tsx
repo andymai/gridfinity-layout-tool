@@ -47,6 +47,7 @@ export function ActiveLayerPanel() {
 
   const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
   const layerBins = getLayerBins(layout.bins, activeLayerId);
+  const hasBins = layerBins.length > 0;
 
   // Calculate empty cells for Fill gaps button
   const totalCells = layout.drawer.width * layout.drawer.depth;
@@ -233,10 +234,12 @@ export function ActiveLayerPanel() {
           variant="ghost"
           fullWidth
           onClick={() => setShowClearConfirm(true)}
-          disabled={layerBins.length === 0}
-          className="text-sm h-8 gap-1.5 text-error hover:bg-error/10 hover:text-error"
+          disabled={!hasBins}
+          className={`text-sm h-8 gap-1.5 ${
+            hasBins ? 'text-error hover:bg-error/10 hover:text-error' : ''
+          }`}
           title={
-            layerBins.length > 0
+            hasBins
               ? t('layers.clearBinsTitle', { count: layerBins.length })
               : t('layers.noBinsToClear')
           }
@@ -249,9 +252,9 @@ export function ActiveLayerPanel() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          {layerBins.length > 0
+          {hasBins
             ? t('layers.clearBins', { count: layerBins.length })
-            : t('layers.noBins')}
+            : t('layers.clearLayerLabel')}
         </Button>
       </div>
 

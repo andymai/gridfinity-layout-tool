@@ -40,6 +40,9 @@ export interface MeshImportResult {
   readonly indices: Uint32Array;
   /** Default pocket depth: the oriented mesh height (mm). */
   readonly suggestedCutDepth: number;
+  /** Solid volume in mm³ of the oriented manifold; powers filament estimates
+   *  for whole-bin imports. */
+  readonly volumeMm3: number;
 }
 
 /**
@@ -334,7 +337,13 @@ export async function importMeshFromStl(
       outlines,
     };
 
-    return ok({ asset, positions, indices, suggestedCutDepth: sizeMm.z });
+    return ok({
+      asset,
+      positions,
+      indices,
+      suggestedCutDepth: sizeMm.z,
+      volumeMm3: oriented.volume(),
+    });
   } finally {
     solid.delete();
     oriented?.delete();

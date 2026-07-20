@@ -15,8 +15,14 @@ import { generateFileName } from '@/features/bin-designer';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { resolveBinMarginOverhang } from '@/shared/utils/drawerMargin';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
+import type { ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
 import type { PrintSettings } from '@/shared/printSettings';
-import { estimateStandardBinFilament } from '@/shared/printSettings/standardBinVolume';
+import {
+  estimateMeshFilament,
+  estimateStandardBinFilament,
+} from '@/shared/printSettings/standardBinVolume';
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
 
@@ -37,8 +43,19 @@ export interface LayoutExportable {
   readonly companions: readonly string[];
 }
 
+/** An imported-mesh design to export: the stored asset IS the geometry —
+ *  decoded and re-serialized on the main thread, no worker round-trip. */
+export interface LayoutMeshExportable {
+  readonly asset: MeshAsset;
+  /** ZIP path, e.g. `bins/widget_bin.stl`. */
+  readonly path: string;
+  readonly quantity: number;
+  readonly designName: string;
+}
+
 export interface LayoutBinExportPlan {
   readonly exportable: readonly LayoutExportable[];
+  readonly meshExportable: readonly LayoutMeshExportable[];
   readonly manifestBins: ManifestBinEntry[];
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
@@ -89,17 +106,31 @@ export function planLayoutBinExport(
 ): LayoutBinExportPlan {
   const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
 
-  // Design-level skip tally + a lookup of usable (bin) designs.
+  // Design-level skip tally + lookups of usable designs. Imported-mesh
+  // designs export their stored asset directly; other paramsless kinds
+  // (tool racks) stay in the skipped bucket.
   let nonBinDesigns = 0;
   let missingDesigns = 0;
   const designById = new Map<DesignId, SavedDesign>();
+  const meshDesignById = new Map<
+    DesignId,
+    { design: SavedDesign; envelope: ItemEnvelope; structure: ImportedMeshStructure }
+  >();
   for (const { id, design } of loaded) {
     if (!design) {
       missingDesigns++;
       continue;
     }
     if (!design.params) {
-      nonBinDesigns++;
+      if (design.structure?.kind === 'importedMesh' && design.envelope) {
+        meshDesignById.set(id, {
+          design,
+          envelope: design.envelope,
+          structure: design.structure,
+        });
+      } else {
+        nonBinDesigns++;
+      }
       continue;
     }
     designById.set(id, design);
@@ -132,8 +163,34 @@ export function planLayoutBinExport(
     usable.push(group);
   }
 
-  const fileNames = dedupeFileNames(
-    usable.map((u) => {
+  // Group linked bins on imported-mesh designs by design id (no overhang or
+  // margin variants — a stored mesh is not extendable). STEP cannot carry a
+  // mesh (no BREP solid), so under STEP these become a skip tally instead.
+  interface MeshExportGroup {
+    readonly design: SavedDesign;
+    readonly envelope: ItemEnvelope;
+    readonly structure: ImportedMeshStructure;
+    quantity: number;
+  }
+  const meshGroups = new Map<DesignId, MeshExportGroup>();
+  for (const b of bins) {
+    if (b.linkedDesignId === undefined) continue;
+    const mesh = meshDesignById.get(b.linkedDesignId);
+    if (!mesh) continue;
+    const existing = meshGroups.get(b.linkedDesignId);
+    if (existing) {
+      existing.quantity++;
+    } else {
+      meshGroups.set(b.linkedDesignId, { ...mesh, quantity: 1 });
+    }
+  }
+  const meshUsable = format === 'step' ? [] : [...meshGroups.values()];
+  const meshDesignsStepSkipped = format === 'step' ? meshGroups.size : 0;
+
+  // One dedupe pass across bin AND mesh names so an imported design can't
+  // silently collide with a parametric design of the same stem.
+  const fileNames = dedupeFileNames([
+    ...usable.map((u) => {
       const name = generateFileName(
         u.params,
         format,
@@ -141,10 +198,15 @@ export function planLayoutBinExport(
         u.design.name
       );
       return u.extended ? withExtendedSuffix(name) : name;
-    })
-  );
+    }),
+    ...meshUsable.map(
+      (m) => `${importedMeshDescriptor.exportFileName(m.envelope, m.structure)}.${format}`
+    ),
+  ]);
+  const meshFileNames = fileNames.slice(usable.length);
 
-  const paths = fileNames.map((name) => `bins/${name}`);
+  const paths = fileNames.slice(0, usable.length).map((name) => `bins/${name}`);
+  const meshPaths = meshFileNames.map((name) => `bins/${name}`);
   const companions = usable.map((u) => binCompanions(u.params));
   const exportable = usable.map((u, i) => ({
     params: u.params,
@@ -178,10 +240,46 @@ export function planLayoutBinExport(
     };
   });
 
+  const meshExportable: LayoutMeshExportable[] = meshUsable.map((m, i) => ({
+    asset: m.structure.asset,
+    path: meshPaths[i],
+    quantity: m.quantity,
+    designName: m.design.name,
+  }));
+
+  for (let i = 0; i < meshUsable.length; i++) {
+    const m = meshUsable[i];
+    // Measured solid volume beats the standard-bin wall model when present
+    // (pre-volume imports fall back to the analytical estimate).
+    const est = m.structure.volumeMm3
+      ? estimateMeshFilament(m.structure.volumeMm3, printSettings)
+      : estimateStandardBinFilament(
+          m.envelope.width,
+          m.envelope.depth,
+          m.structure.heightUnits,
+          printSettings,
+          m.envelope.gridUnitMm,
+          m.envelope.heightUnitMm
+        );
+    totalGrams += est.gramsFilament * m.quantity;
+    totalMinutes += est.printTimeMinutes * m.quantity;
+    manifestBins.push({
+      path: meshPaths[i],
+      designName: m.design.name,
+      widthUnits: m.envelope.width,
+      depthUnits: m.envelope.depth,
+      heightUnits: m.structure.heightUnits,
+      quantity: m.quantity,
+      filamentGrams: est.gramsFilament,
+      printTimeMinutes: est.printTimeMinutes,
+    });
+  }
+
   return {
     exportable,
+    meshExportable,
     manifestBins,
-    skipped: { unlinkedBins, nonBinDesigns, missingDesigns },
+    skipped: { unlinkedBins, nonBinDesigns, missingDesigns, meshDesignsStepSkipped },
     totals: { filamentGrams: totalGrams, printTimeMinutes: totalMinutes },
   };
 }

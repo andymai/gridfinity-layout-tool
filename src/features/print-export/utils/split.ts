@@ -197,8 +197,11 @@ export function generatePrintList(
   >();
 
   for (const bin of placedBins) {
-    // Consolidate bins with same size + height + label + category
-    const key = `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.label || ''}`;
+    // Consolidate bins with same size + height + label + category + linked
+    // design. Link identity matters: two designs with identical dimensions
+    // (e.g. an imported mesh next to a parametric bin) are different printed
+    // parts and must not merge into one row.
+    const key = `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.label || ''}:${bin.linkedDesignId ?? ''}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count++;

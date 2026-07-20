@@ -1,4 +1,5 @@
 export { useAutoSave } from './useAutoSave';
+export { useImportedDesignAutoSave } from './useImportedDesignAutoSave';
 export { useBackgroundThumbnailRegen } from './useBackgroundThumbnailRegen';
 export { useCreateFromBin } from './useCreateFromBin';
 export { useDesignerInit } from './useDesignerInit';

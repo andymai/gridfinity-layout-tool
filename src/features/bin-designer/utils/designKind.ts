@@ -15,13 +15,15 @@ export interface DesignFootprint {
   readonly height: number;
 }
 
-/** Display footprint (grid units) for any kind; height is 0 for non-bin items. */
+/** Display footprint (grid units) for any kind; height is 0 for non-bin items
+ *  without a claimed height (imported meshes claim one via `heightUnits`). */
 export function designFootprint(design: SavedDesign): DesignFootprint {
   if (design.params) {
     return { width: design.params.width, depth: design.params.depth, height: design.params.height };
   }
   if (design.envelope) {
-    return { width: design.envelope.width, depth: design.envelope.depth, height: 0 };
+    const height = design.structure?.kind === 'importedMesh' ? design.structure.heightUnits : 0;
+    return { width: design.envelope.width, depth: design.envelope.depth, height };
   }
   return { width: 0, depth: 0, height: 0 };
 }

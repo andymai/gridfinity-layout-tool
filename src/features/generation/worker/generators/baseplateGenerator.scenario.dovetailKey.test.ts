@@ -1,21 +1,23 @@
 // @vitest-environment node
 /**
- * Scenario tests for dovetail-key connectors (issue #1610).
+ * Scenario tests for key connectors (`connectorStyle: 'dovetailKey'`, issue
+ * #1610; dogbone profile since #2637).
  *
- * Dovetail key mode cuts a female groove on BOTH sides of every seam and ships a
- * separate hammered-in key. These tests verify, against the real OCCT kernel,
- * that:
- *   1. a dovetail key baseplate exports a watertight STL (the doubled grooves don't
+ * Key mode cuts a female puzzle groove on BOTH sides of every seam and ships a
+ * separate hammered-in dogbone key (two mirrored puzzle lobes — the original
+ * double-dovetail's 0.3 mm/side undercut printed away to nothing). These tests
+ * verify, against the real OCCT kernel, that:
+ *   1. a key-mode baseplate exports a watertight STL (the doubled grooves don't
  *      create boundary/non-manifold edges), and
- *   2. the standalone connector key is a valid solid with the expected dovetail key
- *      footprint — narrow waist at the seam, wide wings, key length = 2×P.
+ *   2. the standalone connector key is a valid solid with the expected dogbone
+ *      footprint — narrow waist at the seam, wide lobes, key length = 2×P.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { TONGUE_PROTRUSION, TONGUE_BASE_HALF, TONGUE_TIP_HALF } from './generatorConstants';
+import { PUZZLE_PROTRUSION, PUZZLE_NECK_HALF, PUZZLE_HEAD_HALF } from './generatorConstants';
 
 type ExportFn = (
   params: ResolvedBaseplateParams,
@@ -115,11 +117,11 @@ function analyze(stl: ArrayBuffer): MeshStats {
   };
 }
 
-describe('baseplateGenerator — dovetail key connectors (issue #1610)', () => {
+describe('baseplateGenerator — key connectors (issue #1610)', () => {
   const TEST_TIMEOUT_MS = 60_000;
 
   it(
-    'dovetail key baseplate with join edges exports a watertight STL',
+    'key-mode baseplate with join edges exports a watertight STL',
     async () => {
       // A middle tile with three join edges: every seam side is a female groove.
       const params = defaults({
@@ -142,7 +144,7 @@ describe('baseplateGenerator — dovetail key connectors (issue #1610)', () => {
   );
 
   it(
-    'connector key is a valid solid with a dovetail key footprint',
+    'connector key is a valid solid with a dogbone footprint',
     async () => {
       const params = defaults({ connectorNubs: true, connectorStyle: 'dovetailKey' });
       const { data, fileName } = await exportConnectorKey(params, 'stl');
@@ -154,17 +156,17 @@ describe('baseplateGenerator — dovetail key connectors (issue #1610)', () => {
       expect(stats.nonManifoldEdges).toBe(0);
       expect(stats.boundaryEdges).toBe(0);
 
-      // Long axis along X spans both wings: 2 × protrusion.
+      // Long axis along X spans both lobes: 2 × protrusion.
       const width = stats.bounds.maxX - stats.bounds.minX;
-      expect(width).toBeCloseTo(2 * TONGUE_PROTRUSION, 1);
+      expect(width).toBeCloseTo(2 * PUZZLE_PROTRUSION, 1);
 
-      // Cross axis spans the wing tips (wide end).
+      // Cross axis spans the lobe heads (wide end).
       const depth = stats.bounds.maxY - stats.bounds.minY;
-      expect(depth).toBeCloseTo(2 * TONGUE_TIP_HALF, 1);
+      expect(depth).toBeCloseTo(2 * PUZZLE_HEAD_HALF, 1);
 
-      // The waist (narrow end) must be strictly narrower than the wings, or the
+      // The waist (neck) must be strictly narrower than the lobes, or the
       // key wouldn't lock — sanity-check the defining constants.
-      expect(TONGUE_BASE_HALF).toBeLessThan(TONGUE_TIP_HALF);
+      expect(PUZZLE_NECK_HALF).toBeLessThan(PUZZLE_HEAD_HALF);
 
       // Bed-ready: bottom sits at Z=0, full socket height (no magnets here = 5mm).
       expect(stats.bounds.minZ).toBeCloseTo(0, 1);

@@ -120,5 +120,6 @@ export type { StandardBinEstimate, StandardBinComponents } from './standardBinVo
 export {
   estimateStandardBinVolume,
   estimateStandardBinFilament,
+  estimateMeshFilament,
   standardBinSolidComponents,
 } from './standardBinVolume';

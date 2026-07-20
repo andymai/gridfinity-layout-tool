@@ -14,6 +14,13 @@ export interface ItemExportResult {
 
 export interface ItemGeneratorModule {
   readonly kind: ItemKind;
+  /**
+   * Optional async pre-pass awaited by the GENERATE_ITEM handler before the
+   * synchronous `generate` runs — for module loads or asset decodes that
+   * cannot happen inside the sync generation pipeline (same contract as
+   * `prepareMeshImprints` for mesh-imprint bins).
+   */
+  readonly prepare?: (item: GridfinityItem) => Promise<void>;
   readonly generate: (
     item: GridfinityItem,
     onProgress: ProgressFn,

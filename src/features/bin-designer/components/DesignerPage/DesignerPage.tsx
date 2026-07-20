@@ -16,6 +16,7 @@ import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysi
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
 import { useCreateFromBin } from '@/features/bin-designer/hooks/useCreateFromBin';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
+import { useImportedDesignAutoSave } from '@/features/bin-designer/hooks/useImportedDesignAutoSave';
 import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailCapture';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
@@ -54,6 +55,9 @@ export function DesignerPage() {
 
   // Auto-save params to IndexedDB (debounced 1s)
   useAutoSave();
+
+  // Auto-save for imported-mesh designs (footprint edits + one-time thumbnail)
+  useImportedDesignAutoSave();
 
   // Capture thumbnail after first mesh generation (for designs created from bins)
   useThumbnailCapture();

@@ -54,6 +54,7 @@ import {
 } from './handlers/splitHandler';
 import { handleImportMesh } from './handlers/importMeshHandler';
 import { clearMeshImprintCache } from './generators/meshImprint';
+import { clearImportedMeshCache } from './items/importedMeshItem';
 
 /** Initialize the geometry kernel selected by the INIT message. */
 async function initKernel(kernel: KernelName = 'occt-wasm'): Promise<void> {
@@ -121,7 +122,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         break;
 
       case 'GENERATE_ITEM':
-        handleGenerateItem(message);
+        await handleGenerateItem(message);
         break;
 
       case 'EXPORT_ITEM':
@@ -184,6 +185,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         clearAllCaches();
         clearBaseplateCaches();
         clearMeshImprintCache();
+        clearImportedMeshCache();
         respond({ type: 'CLEANUP_DONE' });
         break;
     }

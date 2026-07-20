@@ -3,10 +3,22 @@ import type { Redis } from 'ioredis';
 import { filterDisplayName } from './contentFilter.js';
 import { supportersDonorsKey } from './redisKeys.js';
 
+/**
+ * One supporter as served to the page. `name` is null for anyone shown
+ * anonymously (opted out, blank, or filter-rejected). `message` only ever
+ * accompanies a name: Ko-fi's `is_public` gates the whole shout-out, so an
+ * opted-out supporter surfaces neither their name nor their words.
+ */
+export interface SupporterRecord {
+  name: string | null;
+  /** ISO timestamp of when they first supported. Absent on legacy entries. */
+  joinedAt?: string;
+  message?: string;
+}
+
 /** Public shape served by `/api/supporters` and mirrored by the bundled JSON fallback. */
 export interface SupportersPayload {
-  named: string[];
-  anonymousCount: number;
+  supporters: SupporterRecord[];
 }
 
 /** The subset of Ko-fi's webhook `data` payload we act on. Everything else is discarded. */
@@ -18,10 +30,17 @@ export interface KofiPayload {
   email?: string | null;
   is_subscription_payment?: boolean;
   is_first_subscription_payment?: boolean;
+  timestamp?: string | null;
+  amount?: string | null;
+  currency?: string | null;
+  message?: string | null;
 }
 
 /** Ko-fi allows long names; the tape texture wraps but can't absorb an essay. */
 export const MAX_DISPLAY_NAME_LENGTH = 32;
+
+/** A supporter message shows on a bin's tape card; keep it to a glanceable line. */
+export const MAX_MESSAGE_LENGTH = 140;
 
 /**
  * Characters that must never reach a rendered supporter name:
@@ -136,6 +155,93 @@ export function normalizeDisplayName(
 }
 
 /**
+ * Reduce a Ko-fi `message` to something safe to render, or null to show none.
+ *
+ * Same gauntlet as a display name (bound, strip invisibles, cap, content
+ * filter) since the two share every threat, just at a longer length. Callers
+ * pass this only for named/public supporters — an opted-out supporter's words
+ * never reach here.
+ */
+export function filterMessage(rawMessage: string | null | undefined): string | null {
+  const bounded = (rawMessage ?? '').trim().slice(0, SANITIZE_INPUT_CAP);
+  const cleaned = stripUnsafeNameChars(bounded).trim().slice(0, MAX_MESSAGE_LENGTH);
+  if (!cleaned) return null;
+  if (!filterDisplayName(cleaned).passed) return null;
+  return cleaned;
+}
+
+/**
+ * Parse a Ko-fi `amount` string (e.g. `"3.00"`) into integer minor units, or
+ * null if it isn't a non-negative number. Integer cents so the collect-only
+ * counter uses HINCRBY (exact) rather than HINCRBYFLOAT (drifts).
+ */
+export function parseAmountMinorUnits(rawAmount: string | null | undefined): number | null {
+  if (typeof rawAmount !== 'string') return null;
+  const value = Number.parseFloat(rawAmount.trim());
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * 100);
+}
+
+/** Normalize a Ko-fi `currency` to a 3-letter ISO code (uppercased), or null. */
+export function normalizeCurrency(rawCurrency: string | null | undefined): string | null {
+  if (typeof rawCurrency !== 'string') return null;
+  const code = rawCurrency.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(code) ? code : null;
+}
+
+/**
+ * Ko-fi's ISO `timestamp`, re-serialized to canonical ISO, or now if it's
+ * missing or unparseable — a supporter with a slightly-off join time beats a
+ * supporter with none (which would drop them out of every recency view).
+ */
+export function normalizeJoinedAt(rawTimestamp: string | null | undefined): string {
+  if (typeof rawTimestamp === 'string') {
+    const parsed = Date.parse(rawTimestamp);
+    if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
+  }
+  return new Date().toISOString();
+}
+
+/**
+ * Serialize a supporter into the `supporters:donors` hash value.
+ *
+ * Compact keys (`n`/`t`/`m`) because this is a hot hash read on every page
+ * load. A message is written only alongside a name — see `SupporterRecord`.
+ */
+export function serializeDonorRecord(record: SupporterRecord): string {
+  const payload: { n: string; t?: string; m?: string } = { n: record.name ?? '' };
+  if (record.joinedAt) payload.t = record.joinedAt;
+  if (record.name && record.message) payload.m = record.message;
+  return JSON.stringify(payload);
+}
+
+/**
+ * Parse a `supporters:donors` hash value, tolerating both shapes.
+ *
+ * The value was historically a bare display name (`''` = anonymous). New writes
+ * are JSON `{n,t,m}`. `JSON.parse` on a legacy name either throws (most names)
+ * or yields a scalar/array (names like `123` or `null`); both fall through to
+ * the legacy branch, so a real name is never mistaken for a record.
+ */
+export function parseDonorRecord(raw: string): SupporterRecord {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { name: raw || null };
+  }
+  if (typeof parsed === 'object' && parsed !== null && 'n' in parsed) {
+    const rec = parsed as { n?: unknown; t?: unknown; m?: unknown };
+    const name = typeof rec.n === 'string' && rec.n ? rec.n : null;
+    const record: SupporterRecord = { name };
+    if (typeof rec.t === 'string' && rec.t) record.joinedAt = rec.t;
+    if (name && typeof rec.m === 'string' && rec.m) record.message = rec.m;
+    return record;
+  }
+  return { name: raw || null };
+}
+
+/**
  * Parse Ko-fi's form-encoded webhook body.
  *
  * Ko-fi POSTs `application/x-www-form-urlencoded` with a single `data` field
@@ -164,18 +270,12 @@ export function parseKofiPayload(body: unknown): KofiPayload | null {
 /**
  * Read the supporter list out of Redis.
  *
- * Named order is whatever Redis hands back; the page shuffles on render anyway,
- * so no one is permanently first.
+ * Order is whatever Redis hands back; the page shuffles on render anyway, so no
+ * one is permanently first. Legacy bare-string values coexist with the JSON
+ * records until the backfill rewrites them — `parseDonorRecord` handles both.
  */
 export async function readSupporters(redis: Redis): Promise<SupportersPayload> {
   const donors = await redis.hgetall(supportersDonorsKey());
-  const named: string[] = [];
-  let anonymousCount = 0;
-
-  for (const name of Object.values(donors)) {
-    if (name) named.push(name);
-    else anonymousCount += 1;
-  }
-
-  return { named, anonymousCount };
+  const supporters = Object.values(donors).map(parseDonorRecord);
+  return { supporters };
 }

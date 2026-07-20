@@ -52,3 +52,4 @@ graph TB
 
 1. **Sync checks fit** — bins that no longer fit after dimension change are unlinked with notification
 2. **Registry is lightweight** — `CustomBinRegistry` in localStorage holds refs, full designs in IndexedDB
+3. **Linkable kinds** — `LinkDesignDialog` admits parametric bins AND `importedMesh` designs (footprint read via `designFootprint()` from the bin-designer barrel, since non-bin kinds have no `params`); tool racks stay excluded. Never filter candidates with `params !== undefined` — that silently drops imported bins. Imported entries render with a kind badge; they are resize-inert (`useBinResizedListener` early-returns on paramsless designs — the mesh is immutable).

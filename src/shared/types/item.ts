@@ -10,8 +10,9 @@
  * placeable unit remains `Bin` — do not reuse `ItemKind` for layout entities.
  */
 import type { BinParams, FeatureColorConfig } from '@/shared/types/bin';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 
-export type ItemKind = 'bin' | 'toolRack';
+export type ItemKind = 'bin' | 'toolRack' | 'importedMesh';
 
 /**
  * The baseplate-mating subset shared by every kind. For bins this is a
@@ -42,11 +43,7 @@ export interface ItemEnvelope {
 
 /** Fields hoisted from `BinParams` into the shared envelope. */
 export type EnvelopeOwnedBinKeys =
-  | 'width'
-  | 'depth'
-  | 'gridUnitMm'
-  | 'heightUnitMm'
-  | 'featureColors';
+  'width' | 'depth' | 'gridUnitMm' | 'heightUnitMm' | 'featureColors';
 
 /** Bin structure = today's BinParams minus the envelope-owned fields, tagged. */
 export type BinStructure = Omit<BinParams, EnvelopeOwnedBinKeys> & {
@@ -79,7 +76,28 @@ export interface ToolRackStructure {
   readonly cornerRadius?: number;
 }
 
-export type ItemStructure = BinStructure | ToolRackStructure;
+/**
+ * A bin imported from an STL file: the stored mesh IS the geometry. Immutable
+ * apart from the claimed grid footprint (envelope width/depth + `heightUnits`),
+ * which the user can override when auto-detection reads an off-grid model.
+ */
+export interface ImportedMeshStructure {
+  readonly kind: 'importedMesh';
+  /**
+   * Claimed height in Gridfinity height units (totalH ≈ heightUnits ×
+   * `envelope.heightUnitMm`). Drives layout stacking/blocked zones, never
+   * rescales the mesh.
+   */
+  readonly heightUnits: number;
+  /** Compressed GMA1 mesh + metadata (name, triangleCount, sizeMm, outlines). */
+  readonly asset: MeshAsset;
+  /** Solid volume in mm³ measured at import time; powers filament estimates. */
+  readonly volumeMm3?: number;
+  /** Original STL file name for provenance display. */
+  readonly sourceFileName?: string;
+}
+
+export type ItemStructure = BinStructure | ToolRackStructure | ImportedMeshStructure;
 
 export interface GridfinityItem {
   readonly envelope: ItemEnvelope;

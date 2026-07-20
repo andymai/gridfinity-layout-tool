@@ -7,9 +7,9 @@ import { readSupporters } from './lib/supporters.js';
 /**
  * Public supporter list for the /supporters page.
  *
- * Returns display names only — never emails, amounts, or messages. Cached at
- * the edge because the payload changes at most a few times a day, so the
- * origin only sees cache misses.
+ * Returns display names, join dates, and public messages — never emails or
+ * amounts. Cached at the edge because the payload changes at most a few times a
+ * day, so the origin only sees cache misses.
  *
  * Any failure returns a non-200 on purpose: the client keeps its bundled
  * fallback list, so a stale page beats an empty baseplate.

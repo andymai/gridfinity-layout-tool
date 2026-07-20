@@ -16,7 +16,8 @@
  *   users:{uid}:profile             → user profile (email, provider, etc.)
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
  *   users:{uid}:indexUpdatedAt      → ms timestamp for If-Modified-Since on /api/sync/manifest
- *   supporters:donors               → HASH of donorId → display name ('' = anonymous)
+ *   supporters:donors               → HASH of donorId → JSON {n,t,m} record (legacy: bare name)
+ *   supporters:totals               → HASH of currency → received minor units (collect-only)
  *   supporters:msg:{messageId}      → Ko-fi webhook dedupe marker
  */
 
@@ -77,9 +78,17 @@ export function userTombstoneSweptAtKey(userId: string): string {
   return `users:${userId}:tombstoneSweptAt`;
 }
 
-/** HASH of Ko-fi supporters: donorId → display name (empty string = anonymous). */
+/** HASH of Ko-fi supporters: donorId → JSON `{n,t,m}` record (legacy values are a bare name). */
 export function supportersDonorsKey(): string {
   return 'supporters:donors';
+}
+
+/**
+ * HASH of received totals keyed by currency, in integer minor units (cents).
+ * Collect-only: incremented on every payment, never served to the page.
+ */
+export function supportersTotalsKey(): string {
+  return 'supporters:totals';
 }
 
 /** Dedupe marker for a Ko-fi webhook delivery (their retries reuse `message_id`). */

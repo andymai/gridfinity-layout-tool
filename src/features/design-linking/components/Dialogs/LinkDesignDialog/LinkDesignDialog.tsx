@@ -8,7 +8,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { isOk } from '@/core/result';
-import { listDesigns, type SavedDesign } from '@/features/bin-designer';
+import {
+  designFootprint,
+  isBinDesign,
+  listDesigns,
+  type SavedDesign,
+} from '@/features/bin-designer';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
@@ -46,10 +51,13 @@ export function LinkDesignDialog() {
   const compatibleDesigns = useMemo(() => {
     if (!pendingLinkDesign) return [];
     const { width, depth } = pendingLinkDesign.footprint;
-    // Only bin designs are linkable to layout bins (non-bin items have no `params`).
-    return designs.filter(
-      (d) => d.params !== undefined && d.params.width === width && d.params.depth === depth
-    );
+    // Linkable kinds: parametric bins and imported meshes. Other non-bin
+    // items (tool racks) have no bin semantics and stay excluded.
+    return designs.filter((d) => {
+      if (!isBinDesign(d) && d.structure?.kind !== 'importedMesh') return false;
+      const fp = designFootprint(d);
+      return fp.width === width && fp.depth === depth;
+    });
   }, [designs, pendingLinkDesign]);
 
   // Further filter by search query
@@ -286,9 +294,11 @@ export function LinkDesignDialog() {
             /* Design list */
             <ul className="space-y-1.5">
               {filteredDesigns.map((design) => {
-                if (!design.params) return null;
-                const { width: dw, depth: dd, height: dh, compartments } = design.params;
-                const numCompartments = new Set(compartments.cells).size;
+                const { width: dw, depth: dd, height: dh } = designFootprint(design);
+                const numCompartments = design.params
+                  ? new Set(design.params.compartments.cells).size
+                  : 0;
+                const isImportedMesh = design.structure?.kind === 'importedMesh';
                 const heightMismatch = dh !== binHeight;
 
                 return (
@@ -330,6 +340,11 @@ export function LinkDesignDialog() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-medium text-content">{design.name}</p>
+                          {isImportedMesh && (
+                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded bg-surface-elevated text-content-secondary">
+                              {t('binDesigner.itemKind.importedMesh')}
+                            </span>
+                          )}
                           {heightMismatch && (
                             <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded bg-status-warning/10 text-status-warning">
                               {t('designLinking.linkDialog.heightMismatch')}

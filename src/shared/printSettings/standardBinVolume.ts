@@ -174,6 +174,24 @@ export function estimateStandardBinFilament(
     heightUnitMm
   );
 
+  return estimateFromVolume(volumeMm3, settings);
+}
+
+/**
+ * Estimate filament from a MEASURED solid volume (mm³) — e.g. the Manifold
+ * volume of an imported bin STL. More accurate than the standard-bin model
+ * for arbitrary geometry: bin walls print solid, so measured solid volume ≈
+ * extruded plastic (infill only matters for thick solid regions, which
+ * Gridfinity bins barely have).
+ */
+export function estimateMeshFilament(
+  volumeMm3: number,
+  settings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): StandardBinEstimate {
+  return estimateFromVolume(volumeMm3, settings);
+}
+
+function estimateFromVolume(volumeMm3: number, settings: PrintSettings): StandardBinEstimate {
   const volumeCm3 = volumeMm3 / 1000;
   const gramsFilament = volumeCm3 * PLA_DENSITY;
   const metersFilament = volumeMm3 / FILAMENT_AREA_MM2 / 1000;

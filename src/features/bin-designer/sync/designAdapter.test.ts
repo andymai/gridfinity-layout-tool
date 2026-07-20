@@ -87,6 +87,33 @@ describe('designAdapter.get', () => {
   });
 });
 
+describe('designAdapter non-bin kinds (local-only)', () => {
+  function nonBinDesign(id: string): SavedDesign {
+    const base = savedDesign(id, '2026-04-01T00:00:00.000Z', 'Imported');
+    // Non-bin kinds persist kind + envelope + structure and OMIT params.
+    const { params: _params, ...rest } = base;
+    return {
+      ...rest,
+      kind: 'importedMesh',
+      envelope: { width: 2, depth: 1 } as SavedDesign['envelope'],
+      structure: { kind: 'importedMesh' } as SavedDesign['structure'],
+    };
+  }
+
+  it('list() excludes paramsless designs so they never upload', async () => {
+    listDesignsMock.mockResolvedValueOnce(
+      ok([savedDesign('a', '2026-01-01T00:00:00.000Z', 'Alpha'), nonBinDesign('m')])
+    );
+    const items = await designAdapter.list();
+    expect(items.map((i) => i.id)).toEqual(['a']);
+  });
+
+  it('get() returns null for a paramsless design (engine drops the push)', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(nonBinDesign('m')));
+    expect(await designAdapter.get('m')).toBe(null);
+  });
+});
+
 describe('designAdapter tags', () => {
   it('list carries tags in the payload', async () => {
     listDesignsMock.mockResolvedValueOnce(

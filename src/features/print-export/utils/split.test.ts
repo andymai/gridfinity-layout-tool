@@ -199,6 +199,46 @@ describe('generatePrintList', () => {
     expect(rows[0].totalPieces).toBe(2);
   });
 
+  it('does not merge bins linked to different designs even with identical dims', () => {
+    const base = {
+      layerId: 'l1',
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'c1',
+      label: '',
+      notes: '',
+    };
+    const bins = [
+      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
+      { ...base, id: '2', x: 2, linkedDesignId: 'design-b' },
+      { ...base, id: '3', x: 4 }, // unlinked
+    ] as unknown as Bin[];
+    const rows = generatePrintList(bins, 4);
+    expect(rows).toHaveLength(3);
+  });
+
+  it('still merges bins linked to the same design', () => {
+    const base = {
+      layerId: 'l1',
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'c1',
+      label: '',
+      notes: '',
+    };
+    const bins = [
+      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
+      { ...base, id: '2', x: 2, linkedDesignId: 'design-a' },
+    ] as unknown as Bin[];
+    const rows = generatePrintList(bins, 4);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+  });
+
   it('excludes staging bins', () => {
     const bins: Bin[] = [
       {

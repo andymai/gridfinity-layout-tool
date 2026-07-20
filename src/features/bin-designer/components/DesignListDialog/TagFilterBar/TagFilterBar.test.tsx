@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TagFilterBar } from './TagFilterBar';
+import { useTagAppearanceStore } from '@/features/bin-designer/store/tagAppearance';
+
+beforeEach(() => {
+  useTagAppearanceStore.setState({ appearances: {} });
+});
 
 describe('TagFilterBar', () => {
   it('renders nothing when there are no tags', () => {
@@ -38,5 +43,23 @@ describe('TagFilterBar', () => {
     );
     fireEvent.click(screen.getByText(/clear/i));
     expect(onClear).toHaveBeenCalled();
+  });
+
+  it('renders the tag icon and tints inactive chips with the tag color', () => {
+    useTagAppearanceStore.setState({
+      appearances: { kitchen: { icon: '🔧' }, screws: { color: '#f87171' } },
+    });
+    render(
+      <TagFilterBar
+        allTags={['kitchen', 'screws']}
+        activeTags={['screws']}
+        onToggle={vi.fn()}
+        onClear={vi.fn()}
+      />
+    );
+    expect(screen.getByText('🔧')).toBeInTheDocument();
+    // Active chip keeps the accent background — no inline tint.
+    const active = screen.getByRole('button', { name: /screws/i });
+    expect(active.getAttribute('style') ?? '').not.toContain('background-color');
   });
 });

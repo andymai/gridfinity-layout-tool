@@ -100,6 +100,7 @@
     "binDesigner.splitPinDiameter",
     "binDesigner.tabDimensionsGroup",
     "binDesigner.tabSupport",
+    "binDesigner.tagManager.colorLabel",
     "binDesigner.textFont.allerta-stencil",
     "binDesigner.textFont.atkinson",
     "binDesigner.textFont.jetbrains-mono",

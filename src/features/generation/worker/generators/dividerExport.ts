@@ -12,10 +12,28 @@ import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
 import { pitchFromParams } from './gridPitch';
+import { resolveOverhang, overhangExpansion } from './overhang';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 
 const CLEARANCE = GRIDFINITY.TOLERANCE;
+
+/**
+ * Interior dimensions the divider pieces span. Mirrors the pipeline's
+ * `context.ts`: the interior grows into the overhang in lockstep with the body,
+ * so pieces must span the expanded interior to reach the wall slots the body
+ * cuts at those positions.
+ */
+export function dividerInteriorDims(params: BinParams): { innerW: number; innerD: number } {
+  const { x: unitX, y: unitY } = pitchFromParams(params);
+  const ovh = overhangExpansion(resolveOverhang(params.overhang));
+  const outerW = params.width * unitX - CLEARANCE + ovh.addW;
+  const outerD = params.depth * unitY - CLEARANCE + ovh.addD;
+  return {
+    innerW: outerW - 2 * params.wallThickness,
+    innerD: outerD - 2 * params.wallThickness,
+  };
+}
 const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 
 /**
@@ -26,17 +44,11 @@ const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 export async function exportDividers(
   params: BinParams
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
-  const wallThickness = params.wallThickness;
   const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  // Y axis uses gridUnitMmY when set (non-square grid); equal to X for square.
-  const { x: unitX, y: unitY } = pitchFromParams(params);
-  const outerW = params.width * unitX - CLEARANCE;
-  const outerD = params.depth * unitY - CLEARANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD } = dividerInteriorDims(params);
   const hasLip = params.base.stackingLip;
 
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip).map(
@@ -89,17 +101,11 @@ export async function exportDividerPiecesSeparately(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<CombinedExportPiece[]> {
-  const wallThickness = params.wallThickness;
   const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
-  // Y axis uses gridUnitMmY when set (non-square grid); equal to X for square.
-  const { x: unitX, y: unitY } = pitchFromParams(params);
-  const outerW = params.width * unitX - CLEARANCE;
-  const outerD = params.depth * unitY - CLEARANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
+  const { innerW, innerD } = dividerInteriorDims(params);
   const hasLip = params.base.stackingLip;
 
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);

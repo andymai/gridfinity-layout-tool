@@ -157,6 +157,18 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    id: 'stl_bin_import',
+    name: 'Import STL as Bin',
+    description:
+      'Import a downloaded Gridfinity bin STL as a design in your library — footprint auto-detected, linkable to layout bins, re-exportable as STL or 3MF.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Early feature. Imported bins are view-only (no compartments or cutouts), stay on this device (no cloud sync), and cannot export STEP.',
+    addedAt: '2026-07',
+    requiresRefresh: false,
+  },
+  {
     id: 'bin_recommender',
     name: 'Suggested Bin Sizes',
     description:

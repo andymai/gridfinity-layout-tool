@@ -44,7 +44,11 @@ beforeAll(async () => {
 describe('snap-clip pull-apart capture (issue #1610 follow-up)', () => {
   const GU = 42;
   const H = 5; // SOCKET_HEIGHT slab, worst case (thinnest viable)
-  const PULL = 0.4; // mm of plate separation to probe (> seated clearance)
+  // Plate separation to probe. The retaining wall sits GAP_HALF − BEAR_WALL
+  // (0.4mm) off the leg's inner face — deliberate pinch room without which the
+  // clip cannot be inserted at all (#2638) — so bearing engages beyond that
+  // slop, not at the old 0.1mm. Probe past it.
+  const PULL = 0.7;
 
   // Right plate: solid body x∈[0,GU] with the seam at x=0 (its left edge is the
   // join). The real seam pocket is cut from the slab so the bearing geometry is

@@ -222,6 +222,7 @@ html[data-density='comfortable'] {
 [data-layers-panel],
 [data-categories-panel],
 [data-grid-size-panel],
+[data-active-baseplate-panel],
 [data-units-panel] {
   padding: var(--space-panel);
 }

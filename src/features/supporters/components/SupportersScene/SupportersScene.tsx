@@ -22,6 +22,7 @@ import {
 import type { SupporterBin } from '../../utils/supportersData';
 import { computeBaseplateLayout, computeCameraFrame } from '../../utils/supportersLayout';
 import type { BaseplateLayout, CameraFrame } from '../../utils/supportersLayout';
+import { CameraFocus, type FlyToRequest } from './CameraFocus';
 import { getSupportersPalette } from '../../scene/palette';
 import type { SupportersAccent, SupportersPalette } from '../../scene/palette';
 import { createTabLabelTexture } from '../../scene/labelTexture';
@@ -49,6 +50,8 @@ interface SceneProps {
   onSelect: (id: string) => void;
   /** Localized text printed on anonymous supporters' label tabs. */
   anonymousLabel: string;
+  /** Fly the camera to a supporter's bin (find-your-bin); null while idle. */
+  flyTo: FlyToRequest | null;
 }
 
 interface BakedGeometry {
@@ -82,6 +85,7 @@ export function SupportersScene({
   focusedId,
   onSelect,
   anonymousLabel,
+  flyTo,
 }: SceneProps) {
   const binGltf = useGLTF(BIN_MESH_URL, true);
   const plateGltf = useGLTF(PLATE_CELL_MESH_URL, true);
@@ -108,6 +112,7 @@ export function SupportersScene({
       <fog attach="fog" args={[palette.fog, frame.distance * 1.05, frame.distance * 3.4]} />
 
       <CameraRig frame={frame} reducedMotion={reducedMotion} onIntroDone={setIntroDone} />
+      <CameraFocus bins={bins} layout={layout} request={flyTo} reducedMotion={reducedMotion} />
       <OrbitControls
         makeDefault
         enabled={introDone}
@@ -407,6 +412,8 @@ function BinInstances({
         tiltX = MathUtils.clamp(dz * influence * 0.14, -0.18, 0.18);
         tiltZ = MathUtils.clamp(-dx * influence * 0.14, -0.18, 0.18);
       }
+      // The most recent supporter sits a touch proud so the glow reads as arrival.
+      if (seat.bin.isNewest) lift += 0.12;
       if (focused) lift += 0.5;
 
       tmpPosition.set(seat.x, baseY + appear * lift, seat.z);
@@ -425,9 +432,13 @@ function BinInstances({
       }
       const mat = labelMats.current[i];
       if (mat) {
+        // Focus wins; otherwise the newest supporter breathes a soft glow (a
+        // static one under reduced motion, where elapsed is Infinity and sin() NaNs).
+        const newestGlow = reducedMotion ? 0.22 : 0.16 + 0.1 * Math.sin(elapsed.current * 2.2);
+        const target = focused ? 0.45 : seat.bin.isNewest ? newestGlow : 0;
         mat.emissiveIntensity = MathUtils.lerp(
           mat.emissiveIntensity,
-          focused ? 0.45 : 0,
+          target,
           reducedMotion ? 1 : 0.15
         );
       }

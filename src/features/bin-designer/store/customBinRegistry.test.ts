@@ -46,6 +46,22 @@ describe('customBinRegistry', () => {
       expect(loadRegistry()).toEqual([]);
     });
 
+    it('round-trips the optional kind field and drops unknown kinds', () => {
+      const mixed = [
+        { ...makeRef('mesh-1'), kind: 'importedMesh' },
+        { ...makeRef('rack-1'), kind: 'toolRack' },
+        { ...makeRef('bad-1'), kind: 'hologram' },
+        makeRef('bin-1'),
+      ];
+      localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify(mixed));
+      const loaded = loadRegistry();
+      expect(loaded.find((r) => r.id === 'mesh-1')?.kind).toBe('importedMesh');
+      expect(loaded.find((r) => r.id === 'rack-1')?.kind).toBe('toolRack');
+      // Unknown kind is stripped, entry itself survives (kind is advisory).
+      expect(loaded.find((r) => r.id === 'bad-1')?.kind).toBeUndefined();
+      expect(loaded.find((r) => r.id === 'bin-1')?.kind).toBeUndefined();
+    });
+
     it('drops entries that are missing or have wrong-typed fields', () => {
       const mixed = [
         makeRef('bin-1'),

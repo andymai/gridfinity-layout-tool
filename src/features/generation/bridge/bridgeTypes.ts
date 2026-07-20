@@ -58,6 +58,7 @@ export type MeshImportOutcome =
       readonly positions: Float32Array;
       readonly indices: Uint32Array;
       readonly suggestedCutDepth: number;
+      readonly volumeMm3: number;
     }
   | {
       readonly ok: false;

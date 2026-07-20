@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  estimateMeshFilament,
   estimateStandardBinVolume,
   estimateStandardBinFilament,
   standardBinSolidComponents,
@@ -103,6 +104,32 @@ describe('standardBinVolume', () => {
         nozzleSizeMm: 0.6,
       }).volumeMm3;
       expect(v06).toBe(v04);
+    });
+  });
+
+  describe('estimateMeshFilament', () => {
+    it('converts a measured volume: 10cm³ of PLA ≈ 12.4g', () => {
+      const est = estimateMeshFilament(10_000);
+      expect(est.gramsFilament).toBeCloseTo(12.4, 0);
+      expect(est.volumeMm3).toBe(10_000);
+      expect(est.metersFilament).toBeGreaterThan(0);
+      expect(est.printTimeMinutes).toBeGreaterThan(0);
+      expect(est.costUSD).toBeGreaterThan(0);
+    });
+
+    it('matches the standard-bin math for the same volume', () => {
+      // Same volume in must produce the same filament out — the mesh
+      // estimator shares the conversion with the standard-bin model.
+      const standard = estimateStandardBinFilament(1, 1, 3);
+      const mesh = estimateMeshFilament(standard.volumeMm3);
+      expect(mesh.gramsFilament).toBeCloseTo(standard.gramsFilament, 1);
+      expect(mesh.printTimeMinutes).toBe(standard.printTimeMinutes);
+    });
+
+    it('is monotonic in volume', () => {
+      expect(estimateMeshFilament(20_000).printTimeMinutes).toBeGreaterThan(
+        estimateMeshFilament(5_000).printTimeMinutes
+      );
     });
   });
 

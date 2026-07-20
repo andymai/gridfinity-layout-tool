@@ -109,6 +109,32 @@ Requests tagged with `requestId`; cancelled requests ignored.
 
 **Responses:** INIT_READY, PROGRESS, MESH_RESULT, EXPORT_RESULT, DIVIDERS_EXPORT_RESULT, SPLIT_EXPORT_RESULT, ERROR
 
+## Item Kinds (`worker/items/`)
+
+Non-bin item kinds (`toolRack`, `importedMesh`) generate via `GENERATE_ITEM` /
+`EXPORT_ITEM`: `generateItemHandler` dispatches through
+`getItemGenerator(item.structure.kind)` (`generatorRegistry.ts`, populated by
+`registerGenerators.ts` at worker start).
+
+- **`prepare?` pre-pass**: `ItemGeneratorModule.prepare` is an optional async
+  hook awaited by the handler **before** the strictly synchronous
+  `runGeneration` — for module loads or asset decodes (same contract as
+  `prepareMeshImprints`). A prepare failure responds `ERROR` keyed to the
+  request; nothing downstream would, and the bridge would otherwise hang
+  until its generation timeout hard-resets the worker.
+- **`importedMeshItem.ts`**: the stored GMA1 asset IS the geometry. `prepare`
+  decodes it into a small content-keyed cache, `generate` re-frames the
+  cached arrays into the preview convention (XY-centered, Z=0 bottom; stored
+  frame is bbox-min-at-origin) with empty normals/edges (`useMeshGeometry`
+  recomputes both), `export` serializes STL via `buildSTLBufferFromIndexed`
+  and throws for STEP (a mesh has no BREP solid). Cache cleared on CLEANUP
+  (`clearImportedMeshCache`).
+- **GOTCHA — descriptors in the worker**: `registerDescriptors()` never runs
+  in the worker bundle (it is a main-thread module). Worker code must import
+  descriptors directly (e.g. `importedMeshDescriptor`), never via
+  `getItemDescriptor()` — the registry lookup throws at runtime, and a unit
+  test that imports `@/shared/items/registerDescriptors` will mask it.
+
 ## Manifold Draft Preview (`manifold_preview`, graduated)
 
 A second `GenerationBridge('manifold')` runs the Manifold mesh-CSG kernel at pinned draft quality in its own worker, acquired via `BridgeManager.acquirePreview()` / `releasePreview()` (ref-counted, idle-kept, independent of the exact bridge; init failure is non-fatal). Consumers render a fast coarse draft on the leading edge of an edit, then the exact occt-wasm result supersedes it. `worker/wasmInstantiator.ts:loadManifold()` dynamically imports `manifold-3d` + its WASM (`?url` for the Vite worker) and registers the kernel via brepjs `initFromManifold`. `KernelName` gains `'manifold'`. Graduated out of Labs (always on) — the flag id remains as the runtime gate (`isFeatureEnabled('manifold_preview')`, now always true) and a draft init failure degrades gracefully to the exact-only path; exports always use the exact kernel.

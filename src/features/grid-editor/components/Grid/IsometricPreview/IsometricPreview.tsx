@@ -9,12 +9,19 @@ import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { Scene, type SceneHandle } from './Scene';
-import { BinMesh } from './BinMesh';
 import { BatchedCornerMarkers } from './BatchedCornerMarkers';
 import { BinMarginExtensions } from './BinMarginExtensions';
 import { MergedBinMeshes } from './MergedBinMeshes';
 import { ExplodedLayerGroup } from './ExplodedLayerGroup';
 import { useExplodedLayerView } from '@/shared/hooks/useExplodedLayerView';
+import { useLinkedDesignDividers } from '@/shared/hooks/useLinkedDesignDividers';
+import { useLinkedDesignMeshes } from '@/shared/hooks/useLinkedDesignMeshes';
+import {
+  LinkedBinMesh,
+  SelectedBin,
+  useDesignGeometries,
+  partitionByDesignMesh,
+} from './LinkedBinMeshes';
 import { useTranslation } from '@/i18n';
 import { useSettingsStore } from '@/core/store/settings';
 import { useBinsToRender } from './useBinsToRender';
@@ -153,6 +160,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     [printBedSize, printBedDepth, gridUnitMm]
   );
 
+  // Compartment dividers for bins linked to saved designs (loaded async
+  // from designer storage; bins render as plain boxes until specs arrive)
+  const designDividers = useLinkedDesignDividers(bins, gridUnitMm);
+
+  // Real generated meshes for linked designs; unresolved bins keep the
+  // stylized box, with dividers as the intermediate fallback.
+  const designMeshes = useLinkedDesignMeshes(bins);
+  const designGeometries = useDesignGeometries(designMeshes);
+
   const binsToRender = useBinsToRender({
     bins,
     layers,
@@ -160,6 +176,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     activeLayerIndex,
     layerViewMode,
     heightToGridScale,
+    designDividers,
   });
 
   // Animated bin transitions (spring drop-in, shrink+fade exit).
@@ -201,6 +218,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     };
   }, [stableBins, binsToRender, selectedBinIds, maxGridUnits]);
 
+  // Split non-selected bins: linked bins with a resolved design mesh render
+  // the real geometry individually; the rest go through the merged-box path.
+  const { designMeshBins, plainBins } = useMemo(
+    () => partitionByDesignMesh(nonSelectedBins, designGeometries),
+    [nonSelectedBins, designGeometries]
+  );
+
   // Track exit animation — keep groups mounted with offset=0 so useFrame can lerp back.
   // The cleanup function fires when isExplodedView goes from true→false, starting exit animation.
   const [isExplodeExiting, setIsExplodeExiting] = useState(false);
@@ -238,6 +262,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     activeLayerId,
     isExplodedView,
     isExitAnimating: isExplodeExiting,
+    designDividers,
   });
 
   // Pre-split exploded groups into selected/non-selected bins (avoids .filter() in JSX)
@@ -324,6 +349,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 layerHeightMm={group.labelHeightMm}
                 nonSelectedBins={group.nonSelectedBins}
                 selectedBins={group.selectedBins}
+                designGeometries={designGeometries}
+                gridUnitMm={gridUnitMm}
                 explodedZOffset={group.explodedZOffset}
                 isActive={group.isActive}
                 drawerWidth={drawer.width}
@@ -336,20 +363,25 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           ) : (
             <>
               {/* Non-selected bins: merged geometry for performance */}
-              <MergedBinMeshes bins={nonSelectedBins} />
+              <MergedBinMeshes bins={plainBins} />
+
+              {/* Linked bins with a resolved design mesh: real geometry */}
+              {designMeshBins.map(({ binData, entry }) => (
+                <LinkedBinMesh
+                  key={`design-${binData.bin.id}`}
+                  binData={binData}
+                  entry={entry}
+                  gridUnitMm={gridUnitMm}
+                />
+              ))}
 
               {/* Selected bins: individual meshes for glow animation */}
               {selectedBins.map((binData) => (
-                <BinMesh
+                <SelectedBin
                   key={binData.bin.id}
-                  bin={binData.bin}
-                  x={binData.x}
-                  y={binData.y}
-                  z={binData.z}
-                  height={binData.height}
-                  color={binData.color}
-                  opacity={binData.opacity}
-                  isSelected={true}
+                  binData={binData}
+                  designGeometries={designGeometries}
+                  gridUnitMm={gridUnitMm}
                 />
               ))}
 

@@ -14,6 +14,7 @@ import {
   loadDesign,
   saveDesign,
 } from '@/features/bin-designer/storage/DesignerStorage';
+import { isBinDesign } from '@/features/bin-designer/utils/designKind';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 
@@ -67,7 +68,9 @@ export const designAdapter: DesignAdapter = {
   async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
     if (!isOk(result)) return [];
-    return result.value.map((d) => ({
+    // Cloud sync carries bin params only; non-bin kinds (toolRack,
+    // importedMesh) are local-only and must never upload `params: undefined`.
+    return result.value.filter(isBinDesign).map((d) => ({
       id: d.id,
       payload: { name: d.name, params: d.params, tags: d.tags },
       modifiedAt: toMs(d.updatedAt),
@@ -78,6 +81,9 @@ export const designAdapter: DesignAdapter = {
     const result = await loadDesign(designId(id));
     if (!isOk(result)) return null;
     const d = result.value;
+    // Non-bin kinds are local-only: returning null makes the engine drop the
+    // outbox entry as a no-op (it never tombstones on a null get).
+    if (!isBinDesign(d)) return null;
     return {
       id: d.id,
       payload: { name: d.name, params: d.params, tags: d.tags },

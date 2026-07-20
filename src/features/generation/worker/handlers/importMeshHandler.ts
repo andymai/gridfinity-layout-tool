@@ -26,9 +26,17 @@ export async function handleImportMesh(message: ImportMeshMessage): Promise<void
       self.postMessage(response);
       return;
     }
-    const { asset, positions, indices, suggestedCutDepth } = result.value;
+    const { asset, positions, indices, suggestedCutDepth, volumeMm3 } = result.value;
     self.postMessage(
-      { type: 'IMPORT_MESH_RESULT', requestId, asset, positions, indices, suggestedCutDepth },
+      {
+        type: 'IMPORT_MESH_RESULT',
+        requestId,
+        asset,
+        positions,
+        indices,
+        suggestedCutDepth,
+        volumeMm3,
+      },
       { transfer: [positions.buffer, indices.buffer] }
     );
   } catch (e) {

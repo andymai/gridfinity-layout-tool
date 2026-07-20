@@ -5,7 +5,9 @@
  */
 import { binGeneratorModule } from './binItem';
 import { registerItemGenerator } from './generatorRegistry';
+import { importedMeshGeneratorModule } from './importedMeshItem';
 import { toolRackGeneratorModule } from './toolRackItem';
 
 registerItemGenerator(binGeneratorModule);
 registerItemGenerator(toolRackGeneratorModule);
+registerItemGenerator(importedMeshGeneratorModule);

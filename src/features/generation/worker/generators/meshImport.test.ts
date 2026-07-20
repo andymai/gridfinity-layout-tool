@@ -111,7 +111,7 @@ describe('importMeshFromStl', () => {
     );
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
-    const { asset, positions, indices, suggestedCutDepth } = result.value;
+    const { asset, positions, indices, suggestedCutDepth, volumeMm3 } = result.value;
 
     expect(asset.name).toBe('Wrench Holder');
     expect(asset.triangleCount).toBe(12);
@@ -119,6 +119,8 @@ describe('importMeshFromStl', () => {
     expect(asset.sizeMm.y).toBeCloseTo(10, 3);
     expect(asset.sizeMm.z).toBeCloseTo(5, 3);
     expect(suggestedCutDepth).toBeCloseTo(5, 3);
+    // Solid volume of the 20×10×5 box — powers whole-bin filament estimates.
+    expect(volumeMm3).toBeCloseTo(1000, 1);
 
     expect(asset.outlines).toHaveLength(1);
     expect(ringArea(asset.outlines[0])).toBeCloseTo(200, 0);

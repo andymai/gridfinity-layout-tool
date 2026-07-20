@@ -51,6 +51,7 @@ graph TB
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
+- `store/tagAppearance.ts` — device-local per-tag icon/color (localStorage `gridfinity-tag-appearance-v1`), keyed by lowercased tag; rendered by `TagGlyph` in every tag chip and edited via `TagManagerDialog` (Saved Designs ⋯ menu → "Manage tags…")
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs (incl. optional `tags`; `updateDesignTags` replaces a design's tag set)
 - `storage/defaultParamsStorage.ts` — user's custom "default for new bins" (localStorage). Stores a style-only `Partial<BinParams>` (per-design geometry stripped via `extractStyleDefaults`/`STYLE_DEFAULT_OMIT_KEYS`); `loadDefaultParams` re-completes it via `migrateParams`. Read at the single `defaultsForNewDesign()` chokepoint so `newDesign`/`resetToDefaults` both honor it
@@ -169,6 +170,37 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 ### Mesh imprint cutouts (STL import)
 
 `shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. The compressed mesh lives in `BinParams.meshAssets` (content shared across duplicates/arrays; store GCs an asset when its last referencing cutout is deleted — see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
+
+### Imported bin designs (STL → design, `stl_bin_import` labs flag)
+
+Distinct from mesh imprints: here the uploaded STL **is** the design — a whole
+Gridfinity bin (e.g. downloaded from Printables) saved as an `importedMesh`
+item kind (`kind` + `envelope` + `structure`, no `params`). The structure
+(`ImportedMeshStructure` in `@/shared/types/item`) holds the GMA1-compressed
+`MeshAsset`, the claimed `heightUnits`, the measured `volumeMm3` (filament
+estimates), and the source file name.
+
+- **Import flow**: `DesignImportView` accepts `.stl` when the flag is on and
+  routes to `components/ImportBinDialog/` (`useImportBinDesign` →
+  `bridge.importMesh` → orientation preview → `detectGridFromSize` →
+  eager `saveDesign` + `customBinRegistry` upsert + `loadDesign`).
+- **Grid detection** (`utils/meshGridDetection.ts`): W/D snap to 0.5-unit
+  steps against `W·gridUnit − TOLERANCE`; height tests both lipless (`H·7`)
+  and lipped (`H·7 + 4.4`) reads so a lipped 3U bin (25.4mm) reads as 3U.
+  Deviation > 2mm/axis flags the off-grid warning. The claimed footprint only
+  affects layout planning — **the mesh is never rescaled**.
+- **Panel**: `panel/ImportedMeshSection/ImportedMeshPanel.tsx` (read-mostly:
+  stats, footprint steppers, STL/3MF export — STEP is impossible, no BREP).
+- **Persistence**: `useAutoSave` is bin-params-only, so
+  `hooks/useImportedDesignAutoSave.ts` covers footprint edits (load → merge →
+  save, preserving the captured thumbnail) and the one-time thumbnail capture
+  after first generation.
+- **Registry**: `CustomBinRef.kind?: ItemKind` (absent = bin) lets the
+  planner/link dialog identify imported entries; `designFootprint()` in
+  `utils/designKind.ts` reads dimensions for any kind.
+- **Scope (v1)**: local-only — cloud sync deliberately skips non-bin kinds
+  (`sync/designAdapter.ts` filters with `isBinDesign`); the layout grid/3D
+  view renders the standard box + link badge, not the real mesh.
 
 ## Gotchas
 

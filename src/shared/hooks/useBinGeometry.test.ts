@@ -340,6 +340,111 @@ describe('useBinGeometry', () => {
     });
   });
 
+  describe('compartment dividers', () => {
+    const twoSegmentDividers = {
+      sig: 'design-1:2026-01-01',
+      segments: [
+        { x: 0.5, y: 0, length: 1, orientation: 'vertical' as const },
+        { x: 0, y: 0.5, length: 0.5, orientation: 'horizontal' as const },
+      ],
+      thickness: 0.03,
+      height: null,
+    };
+
+    it('adds 5 quads (30 vertices) per divider segment', () => {
+      const geometry = createBinGeometry({
+        width: 2,
+        depth: 2,
+        height: 1,
+        baseColor: '#ff0000',
+        dividers: twoSegmentDividers,
+      });
+
+      // Base bin is 18 quads (108 vertices); each divider adds 4 sides + top
+      expect(geometry.attributes.position.count).toBe(108 + 2 * 30);
+      geometry.dispose();
+    });
+
+    it('produces no NaN positions with dividers', () => {
+      const geometry = createBinGeometry({
+        width: 2,
+        depth: 3,
+        height: 2,
+        baseColor: '#00ff00',
+        dividers: twoSegmentDividers,
+      });
+
+      const positions = geometry.attributes.position.array as Float32Array;
+      for (let i = 0; i < positions.length; i++) {
+        expect(Number.isFinite(positions[i])).toBe(true);
+      }
+      geometry.dispose();
+    });
+
+    it('keeps divider vertices inside the bin footprint', () => {
+      const geometry = createBinGeometry({
+        width: 2,
+        depth: 2,
+        height: 1,
+        baseColor: '#0000ff',
+        dividers: twoSegmentDividers,
+      });
+
+      geometry.computeBoundingBox();
+      const box = geometry.boundingBox as THREE.Box3;
+      expect(box.min.x).toBeGreaterThanOrEqual(0);
+      expect(box.max.x).toBeLessThanOrEqual(2);
+      expect(box.min.y).toBeGreaterThanOrEqual(0);
+      expect(box.max.y).toBeLessThanOrEqual(2);
+      expect(box.max.z).toBeLessThanOrEqual(1);
+      geometry.dispose();
+    });
+
+    it('truncates partial-height dividers below the rim', () => {
+      const partialHeight = 0.2;
+      const geometry = createBinGeometry({
+        width: 2,
+        depth: 2,
+        height: 1,
+        baseColor: '#ff0000',
+        dividers: { ...twoSegmentDividers, height: partialHeight },
+      });
+
+      // Divider top sits at interior floor (zGap 0.03 + offset 0.01) + height
+      const expectedTopZ = 0.04 + partialHeight;
+      const positions = geometry.attributes.position.array as Float32Array;
+      let hasDividerTop = false;
+      for (let i = 2; i < positions.length; i += 3) {
+        if (Math.abs(positions[i] - expectedTopZ) < 1e-6) {
+          hasDividerTop = true;
+          break;
+        }
+      }
+      expect(hasDividerTop).toBe(true);
+      geometry.dispose();
+    });
+
+    it('empty segments produce the same geometry as no dividers', () => {
+      const plain = createBinGeometry({
+        width: 1,
+        depth: 1,
+        height: 1,
+        baseColor: '#ff0000',
+      });
+      const withEmpty = createBinGeometry({
+        width: 1,
+        depth: 1,
+        height: 1,
+        baseColor: '#ff0000',
+        dividers: { sig: 'x', segments: [], thickness: 0.03, height: null },
+      });
+
+      expect(withEmpty.attributes.position.count).toBe(plain.attributes.position.count);
+      plain.dispose();
+      withEmpty.dispose();
+    });
+  });
+
   describe('useBinGeometry hook', () => {
     it('returns a BufferGeometry', () => {
       const { result } = renderHook(() =>
@@ -409,6 +514,27 @@ describe('useBinGeometry', () => {
       const initialGeometry = result.current;
 
       rerender({ baseColor: '#00ff00' });
+
+      expect(result.current).not.toBe(initialGeometry);
+    });
+
+    it('creates new geometry when dividers change', () => {
+      const dividersA = {
+        sig: 'a',
+        segments: [{ x: 0.5, y: 0, length: 1, orientation: 'vertical' as const }],
+        thickness: 0.03,
+        height: null,
+      };
+      const dividersB = { ...dividersA, sig: 'b' };
+      const { result, rerender } = renderHook(
+        ({ dividers }) =>
+          useBinGeometry({ width: 1, depth: 1, height: 1, baseColor: '#ff0000', dividers }),
+        { initialProps: { dividers: dividersA } }
+      );
+
+      const initialGeometry = result.current;
+
+      rerender({ dividers: dividersB });
 
       expect(result.current).not.toBe(initialGeometry);
     });

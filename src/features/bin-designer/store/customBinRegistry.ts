@@ -8,6 +8,7 @@
  */
 
 import type { DesignId } from '@/core/types';
+import type { ItemKind } from '@/shared/types/item';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
 import { isOk } from '@/core/result';
@@ -48,6 +49,12 @@ export interface CustomBinRef {
   readonly fractionalEdgeY?: 'start' | 'end';
   readonly fractionalEdgeManualX?: boolean;
   readonly fractionalEdgeManualY?: boolean;
+  /**
+   * Item kind of the design; absent = parametric bin (pre-kind registry
+   * entries and every bin save omit it). `importedMesh` designs are immutable
+   * meshes — the planner/inspector use this to suppress resize affordances.
+   */
+  readonly kind?: ItemKind;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -94,6 +101,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     fractionalEdgeY,
     fractionalEdgeManualX,
     fractionalEdgeManualY,
+    kind,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -119,6 +127,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     ...(edgeY ? { fractionalEdgeY: edgeY } : {}),
     ...(typeof fractionalEdgeManualX === 'boolean' ? { fractionalEdgeManualX } : {}),
     ...(typeof fractionalEdgeManualY === 'boolean' ? { fractionalEdgeManualY } : {}),
+    ...(kind === 'bin' || kind === 'toolRack' || kind === 'importedMesh' ? { kind } : {}),
     updatedAt,
   };
 }

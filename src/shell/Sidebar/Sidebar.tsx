@@ -15,7 +15,6 @@ import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSum
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
-import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ToggleRow } from '@/shared/components/ToggleRow';
@@ -38,13 +37,6 @@ const SettingsModal = lazyWithRetry(() =>
   import('@/shell/Modals/SettingsModal').then(namedExport('SettingsModal'))
 );
 
-/**
- * Renders the left-hand Tools sidebar with collapsed and expanded states, user controls for drawer/grid settings, and access to auxiliary panels.
- *
- * The component displays panels for active layer, layers, categories, an Inspiration Gallery entry, and physical/grid unit settings. It supports a half-bin mode and fractional-edge controls when applicable, and conditionally mounts lazy-loaded modals for the Inspiration Gallery and Settings.
- *
- * @returns The sidebar element as JSX to be mounted in the application layout.
- */
 export function Sidebar() {
   const t = useTranslation();
   const { locale } = useLocale();
@@ -55,9 +47,8 @@ export function Sidebar() {
     undefined
   );
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { isDesktop } = useResponsive();
   const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
-  const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(isDesktop);
+  const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(true);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const handleScroll = useCallback(() => {
@@ -197,7 +188,7 @@ export function Sidebar() {
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >
-            <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider">
+            <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary tracking-wide">
               {t('sidebar.tools')}
             </h2>
             <IconButton
@@ -249,6 +240,7 @@ export function Sidebar() {
             <div data-active-layer-panel className="border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
+
             <div
               data-layers-panel
               data-help-target="layers-panel"
@@ -262,9 +254,6 @@ export function Sidebar() {
               className="border-b border-stroke-subtle"
             >
               <CategoriesPanel />
-            </div>
-            <div data-active-baseplate-panel className="border-b border-stroke-subtle">
-              <ActiveBaseplatePanel />
             </div>
 
             {/* Inspiration Gallery - Prominent placement */}
@@ -323,8 +312,7 @@ export function Sidebar() {
               </Button>
             </div>
 
-            {/* Grid Size */}
-            <div data-grid-size-panel className="mt-auto">
+            <div data-grid-size-panel>
               <Collapsible
                 title={t('sidebar.gridSize')}
                 size="md"
@@ -377,7 +365,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={t('sidebar.maxHeight')}
                       >
-                        {t('common.heightMm')}
+                        {t('sidebar.drawerHeight')}
                       </label>
                       <Stepper
                         value={drawer.height * heightUnitMm}
@@ -461,7 +449,6 @@ export function Sidebar() {
               </Collapsible>
             </div>
 
-            {/* Physical Units */}
             <div data-units-panel className="border-t border-stroke-subtle">
               <Collapsible
                 title={t('common.physicalUnits')}
@@ -538,10 +525,8 @@ export function Sidebar() {
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
-                  {/* Occasional-use calculator — nested `size="sm"` section,
-                      collapsed by default so it costs nothing until asked for. */}
-                  <div className="pt-2 mt-1 border-t border-stroke-subtle">
-                    <Collapsible title={t('stackSolver.title')} size="sm" defaultExpanded={false}>
+                  <div className="mt-2 pl-3 border-l-2 border-stroke-subtle">
+                    <Collapsible title={t('stackSolver.title')} size="md" defaultExpanded={false}>
                       <HeightUnitSolver heightUnitMm={heightUnitMm} onApply={setHeightUnitMm} />
                     </Collapsible>
                   </div>
@@ -549,33 +534,40 @@ export function Sidebar() {
               </Collapsible>
             </div>
 
-            {/* Learn — internal links to content pages. Real <a href> so Google passes
-                link equity from the SPA to /what-is-gridfinity et al. (which had zero
-                inbound links from the SPA before this section existed). */}
-            <div className="px-4 py-4 border-t border-stroke-subtle">
-              <h2 className="text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider mb-2">
-                {t('sidebar.learn')}
-              </h2>
-              <p className="text-xs text-content-tertiary leading-relaxed mb-2">
-                {t('sidebar.about')}
-              </p>
-              <ul className="text-xs leading-relaxed space-y-1">
-                {LEARN_LINKS.map((link) => (
-                  <li key={link.slug}>
-                    <a
-                      href={learnHref(link.slug, link.localized, locale)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-content-tertiary hover:text-content hover:underline"
-                    >
-                      {t(link.labelKey)}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <div data-active-baseplate-panel className="border-t border-stroke-subtle">
+              <ActiveBaseplatePanel />
             </div>
 
-            <AttributionFooter />
+            {/* Learn links are real <a href> so Google passes link equity from the SPA to
+                /what-is-gridfinity et al. Collapsible keeps them in the DOM (still crawlable). */}
+            <div className="border-t border-stroke-subtle">
+              <div className="px-4 pt-4 pb-4">
+                <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
+                  <p className="text-xs text-content-tertiary leading-relaxed mb-2">
+                    {t('sidebar.about')}
+                  </p>
+                  <ul className="text-xs leading-relaxed space-y-1">
+                    {LEARN_LINKS.map((link) => (
+                      <li key={link.slug}>
+                        <a
+                          href={learnHref(link.slug, link.localized, locale)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-content-tertiary hover:text-content hover:underline"
+                        >
+                          {t(link.labelKey)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </Collapsible>
+              </div>
+            </div>
+
+            {/* Anchor attribution to the bottom so it never floats mid-panel on tall viewports */}
+            <div className="mt-auto">
+              <AttributionFooter />
+            </div>
           </div>
           {cloudSyncEnabled && (
             <UserDock

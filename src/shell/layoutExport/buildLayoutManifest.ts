@@ -29,6 +29,8 @@ export interface ManifestSkipped {
   readonly nonBinDesigns: number;
   /** Linked design ids that failed to load (deleted/stale). */
   readonly missingDesigns: number;
+  /** Imported-mesh designs skipped under STEP (a mesh has no BREP solid). */
+  readonly meshDesignsStepSkipped?: number;
 }
 
 export interface LayoutManifestInput {
@@ -123,6 +125,11 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   if (skipped.missingDesigns > 0) {
     skippedLines.push(
       `  ${skipped.missingDesigns} linked ${plural(skipped.missingDesigns, 'design')} skipped (could not be loaded).`
+    );
+  }
+  if (skipped.meshDesignsStepSkipped !== undefined && skipped.meshDesignsStepSkipped > 0) {
+    skippedLines.push(
+      `  ${skipped.meshDesignsStepSkipped} imported ${plural(skipped.meshDesignsStepSkipped, 'design')} skipped (STEP is not available for imported meshes — export STL or 3MF).`
     );
   }
   if (skippedLines.length > 0) {

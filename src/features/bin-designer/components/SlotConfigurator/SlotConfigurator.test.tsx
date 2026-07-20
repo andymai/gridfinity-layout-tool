@@ -310,4 +310,73 @@ describe('SlotConfigurator', () => {
     const text = container.textContent ?? '';
     expect(text).toMatch(/vertical.*×.*mm.*horizontal.*×.*mm/is);
   });
+
+  describe('partial-length pieces', () => {
+    const bothLap = (partialStyle?: 'full' | 'snappable' | 'lengthSet') => ({
+      ...DEFAULT_BIN_PARAMS,
+      width: 4,
+      depth: 3,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+        crossStyle: 'lap' as const,
+        partialStyle,
+      },
+    });
+
+    it('offers the piece-lengths selector in lap mode', () => {
+      useDesignerStore.setState({ params: bothLap() });
+      render(<SlotConfigurator />);
+      expect(screen.getByText(/piece lengths/i)).toBeInTheDocument();
+      expect(screen.getByText(/length set/i)).toBeInTheDocument();
+    });
+
+    it('sets partialStyle when a length option is clicked', () => {
+      const setParam = vi.fn();
+      useDesignerStore.setState({ params: bothLap(), setParam });
+      render(<SlotConfigurator />);
+      fireEvent.click(screen.getByText(/length set/i));
+      expect(setParam).toHaveBeenCalledWith(
+        'slotConfig',
+        expect.objectContaining({ partialStyle: 'lengthSet' })
+      );
+    });
+
+    it('disables the selector and notes the requirement in insert mode', () => {
+      useDesignerStore.setState({
+        params: {
+          ...bothLap('lengthSet'),
+          slotConfig: {
+            ...bothLap('lengthSet').slotConfig,
+            crossStyle: 'insert' as const,
+            longAxis: 'y' as const,
+          },
+          dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+        },
+      });
+      render(<SlotConfigurator />);
+      expect(screen.getByText(/interlocking cross dividers/i)).toBeInTheDocument();
+      const lengthSetButton = screen.getByText(/length set/i);
+      expect(lengthSetButton).toBeDisabled();
+    });
+
+    it('summarizes the length-set family in the readout', () => {
+      useDesignerStore.setState({ params: bothLap('lengthSet') });
+      const { container } = render(<SlotConfigurator />);
+      // Count, length range, and height (× {height}mm) all stay visible.
+      expect(container.textContent ?? '').toMatch(/\d+ pieces,.*×.*mm/i);
+    });
+
+    it('warns when the divider is too thin for snappable pieces', () => {
+      useDesignerStore.setState({
+        params: {
+          ...bothLap('snappable'),
+          dividerPieces: { height: 'auto', thickness: 0.8, clearance: 0.25 },
+        },
+      });
+      render(<SlotConfigurator />);
+      expect(screen.getByText(/for snappable pieces/i)).toBeInTheDocument();
+    });
+  });
 });

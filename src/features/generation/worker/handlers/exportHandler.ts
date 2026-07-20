@@ -13,6 +13,7 @@ import type {
   ExportCombinedMessage,
   CombinedExportPiece,
 } from '../../bridge/types';
+import { slottedHasDividers } from '@/shared/utils/slotMath';
 import { exportBin } from '../generators/binGenerator';
 import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate, exportConnectorKey } from '../generators/baseplateGenerator';
@@ -176,8 +177,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         reportProgress(requestId, 'merge', p * 0.95)
       );
 
-      const hasDividers =
-        params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
+      const hasDividers = params.style === 'slotted' && slottedHasDividers(params.slotConfig);
       // Lid emits a separate solid alongside the bin; included as its own
       // labeled piece for STL/3MF and folded into the STEP compound below.
       const hasLid = shouldGenerateLid(params);

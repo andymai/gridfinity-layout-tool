@@ -2,7 +2,7 @@ import { memo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { Bin } from '@/core/types';
-import { useBinGeometry } from '@/shared/hooks/useBinGeometry';
+import { useBinGeometry, type BinDividersSpec } from '@/shared/hooks/useBinGeometry';
 
 interface BinMeshProps {
   bin: Bin;
@@ -13,6 +13,7 @@ interface BinMeshProps {
   z: number;
   height: number;
   isSelected?: boolean;
+  dividers?: BinDividersSpec;
 }
 
 /**
@@ -29,6 +30,7 @@ export const BinMesh = memo(function BinMesh({
   opacity,
   height,
   isSelected = false,
+  dividers,
 }: BinMeshProps) {
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
 
@@ -37,6 +39,7 @@ export const BinMesh = memo(function BinMesh({
     depth: bin.depth,
     height,
     baseColor: color,
+    dividers,
   });
 
   // Animate emissive intensity for selected bins (slow pulse).

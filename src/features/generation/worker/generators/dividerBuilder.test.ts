@@ -231,4 +231,90 @@ describe('buildUniqueDividerPieces', () => {
       expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
     });
   });
+
+  describe('lap partial styles', () => {
+    const lapParams = (partialStyle: 'snappable' | 'lengthSet'): BinParams =>
+      makeSlottedParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 40 },
+          y: { enabled: true, pitch: 40 },
+          crossStyle: 'lap',
+          partialStyle,
+        },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+      });
+
+    it('scores both full pieces at snap positions in snappable mode', () => {
+      // 80mm at 40mm pitch → 1 crossing per axis → 1 notch + 1 snap score
+      // per piece. The score cuts both faces → 2 groove cutters fused per piece.
+      buildUniqueDividerPieces(lapParams('snappable'), 80, 80, 30, false);
+      const fuseArgLengths = vi.mocked(fuseAll).mock.calls.map((c) => c[0].length);
+      // Two pieces each fuse a 2-cutter score compound
+      expect(fuseArgLengths).toEqual([2, 2]);
+      // Two pieces are still emitted (not a family)
+    });
+
+    it('still emits exactly the two full pieces in snappable mode', () => {
+      const pieces = buildUniqueDividerPieces(lapParams('snappable'), 80, 80, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual(['divider-horizontal', 'divider-vertical']);
+    });
+
+    it('emits a labeled family per axis in lengthSet mode', () => {
+      // 80mm at 40mm pitch → 2 compartments, 1 crossing per axis.
+      // Per axis: full ('') + edge 1u (interior mid needs ≥2 dividers → none).
+      const pieces = buildUniqueDividerPieces(lapParams('lengthSet'), 80, 80, 30, false);
+      expect(pieces.map((p) => p.label)).toEqual([
+        'divider-horizontal',
+        'divider-horizontal-1u',
+        'divider-vertical',
+        'divider-vertical-1u',
+      ]);
+    });
+
+    it('emits interior mid pieces once there are enough crossings', () => {
+      const params = makeSlottedParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'lap',
+          partialStyle: 'lengthSet',
+        },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+      });
+      // 80mm at 20mm pitch → 4 compartments, 3 crossings per axis.
+      const pieces = buildUniqueDividerPieces(params, 80, 80, 30, false);
+      const xLabels = pieces.map((p) => p.label).filter((l) => l.startsWith('divider-horizontal'));
+      expect(xLabels).toEqual([
+        'divider-horizontal',
+        'divider-horizontal-1u',
+        'divider-horizontal-2u',
+        'divider-horizontal-3u',
+        'divider-horizontal-1u-mid',
+        'divider-horizontal-2u-mid',
+      ]);
+    });
+
+    it('ignores partialStyle when insert mode is active (no cross-spanning)', () => {
+      const params = makeSlottedParams({
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: true, pitch: 20 },
+          crossStyle: 'insert',
+          longAxis: 'y',
+          partialStyle: 'lengthSet',
+        },
+        dividerPieces: { height: 'auto', thickness: 1.6, clearance: 0.25 },
+      });
+      const pieces = buildUniqueDividerPieces(params, 80, 60, 30, false);
+      // Insert topology stands — grooved long piece + per-compartment shorts
+      expect(pieces.map((p) => p.label)).toEqual([
+        'divider-vertical',
+        'divider-horizontal-compartment',
+        'divider-horizontal-compartment-edge',
+      ]);
+    });
+  });
 });

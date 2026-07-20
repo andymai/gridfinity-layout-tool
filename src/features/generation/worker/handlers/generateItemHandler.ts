@@ -12,10 +12,22 @@ import {
   reportProgress,
   getActiveRequestId,
   classifyExportError,
+  formatError,
+  respond,
 } from './workerContext';
 
-export function handleGenerateItem(message: GenerateItemMessage): void {
+export async function handleGenerateItem(message: GenerateItemMessage): Promise<void> {
   const { item, requestId } = message.payload;
+  // Async pre-pass (asset decode, module load) — must complete before the
+  // strictly synchronous runGeneration pipeline starts. A pre-pass failure
+  // must respond ERROR here: nothing downstream would, and the bridge would
+  // hang until its generation timeout hard-resets the worker.
+  try {
+    await getItemGenerator(item.structure.kind).prepare?.(item);
+  } catch (e) {
+    respond({ type: 'ERROR', requestId, error: formatError(e) });
+    return;
+  }
   runGeneration(
     (signal) =>
       getItemGenerator(item.structure.kind).generate(

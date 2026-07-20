@@ -8,6 +8,8 @@ interface TagEditDialogProps {
   title: string;
   initialTags: readonly string[];
   saveLabel: string;
+  /** Tags already in use across all designs, offered as one-click suggestions. */
+  suggestions?: readonly string[];
   onSave: (tags: string[]) => void;
   onClose: () => void;
 }
@@ -18,6 +20,7 @@ export function TagEditDialog({
   title,
   initialTags,
   saveLabel,
+  suggestions,
   onSave,
   onClose,
 }: TagEditDialogProps) {
@@ -37,7 +40,7 @@ export function TagEditDialog({
     <Dialog.Root open={open} onClose={onClose} size="sm">
       <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} />
       <Dialog.Body>
-        <TagInput value={tags} onChange={setTags} />
+        <TagInput value={tags} onChange={setTags} suggestions={suggestions} />
       </Dialog.Body>
       <Dialog.Footer>
         <Button variant="ghost" onClick={onClose}>

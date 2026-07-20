@@ -43,8 +43,12 @@ export type { UseBinDefaults } from './hooks/useBinDefaults';
 // Deep path on purpose: the ./utils barrel re-exports ./thumbnail, which imports
 // the full three.js namespace for offscreen rendering. Pulling the barrel here
 // would drag three core onto first paint (this module is eagerly imported by App
-// and the sync flows). fileNaming is three-free.
+// and the sync flows). fileNaming and compartments are three-free.
 export { generateFileName } from './utils/fileNaming';
+export { designFootprint, isBinDesign } from './utils/designKind';
+// Exposed for the layout 3D preview (shared/hooks/useLinkedDesignDividers) to
+// derive compartment divider walls for bins linked to saved designs.
+export { deriveWallSegments } from './utils/compartments';
 
 // --- Sync ---
 // Exposed for `shared/sync/` to wire into the sync engine without reaching
