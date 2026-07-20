@@ -1,0 +1,77 @@
+scripts/i18n-values-allowlist.json
+  s_3c1428c0ef138e::t_c9b516a84cfbd1 102
+src/features/bin-designer/README.md
+  s_3c1428c0ef138e::t_b3d23cef4e128b 54
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
+  s_3c1428c0ef138e::t_a37e2b50af91e4 26,83,151,832,840-844,883-900
+src/features/bin-designer/components/DesignListDialog/TagEditDialog/TagEditDialog.test.tsx
+  s_3c1428c0ef138e::t_8aa5e7cbd8d74c 59-65
+src/features/bin-designer/components/DesignListDialog/TagEditDialog/TagEditDialog.tsx
+  s_3c1428c0ef138e::t_f17a2c13dbfc54 11-12,23,43
+src/features/bin-designer/components/DesignListDialog/TagFilterBar/TagFilterBar.test.tsx
+  s_3c1428c0ef138e::t_c3ed743010b45d 2,5-9,47-64
+src/features/bin-designer/components/DesignListDialog/TagFilterBar/TagFilterBar.tsx
+  s_3c1428c0ef138e::t_0f333065070189 3-8,20,33,41,46-52,55-56
+src/features/bin-designer/components/DesignListDialog/TagInput/TagInput.test.tsx
+  s_3c1428c0ef138e::t_83e68f12bd0938 2,5-9,44-77
+src/features/bin-designer/components/DesignListDialog/TagInput/TagInput.tsx
+  s_3c1428c0ef138e::t_354278d947c227 1,4,6-11,16-17,26,29,32-41,68-78,80-97,113-140
+src/features/bin-designer/components/DesignTagChips/DesignTagChips.test.tsx
+  s_3c1428c0ef138e::t_38113d055b46ac 2,5-9,30-39
+src/features/bin-designer/components/DesignTagChips/DesignTagChips.tsx
+  s_3c1428c0ef138e::t_cb5e46e3b98fc1 1-3,12,22-39
+src/features/bin-designer/components/TagGlyph/TagGlyph.test.tsx
+  s_3c1428c0ef138e::t_da1a0cb674f7a2 1-23
+src/features/bin-designer/components/TagGlyph/TagGlyph.tsx
+  s_3c1428c0ef138e::t_11c2454931dd7d 1-25
+src/features/bin-designer/components/TagGlyph/index.ts
+  s_3c1428c0ef138e::t_086569874eb378 1
+src/features/bin-designer/components/TagManagerDialog/TagManagerDialog.test.tsx
+  s_3c1428c0ef138e::t_c3924f04f688d4 1-64
+src/features/bin-designer/components/TagManagerDialog/TagManagerDialog.tsx
+  s_3c1428c0ef138e::t_dbfa399146a8d7 1-206
+src/features/bin-designer/components/TagManagerDialog/index.ts
+  s_3c1428c0ef138e::t_80198cc4562937 1
+src/features/bin-designer/store/tagAppearance.test.ts
+  s_3c1428c0ef138e::t_56691ba9b60360 1-74
+src/features/bin-designer/store/tagAppearance.ts
+  s_3c1428c0ef138e::t_3f26b7a0912d0b 1-148
+src/i18n/locales/de.json
+  s_3c1428c0ef138e::t_c1fcba10b8fc3f 934-943,949-950
+src/i18n/locales/en.ts
+  s_3c1428c0ef138e::t_8ac637e8902965 2385-2386,2393-2404
+src/i18n/locales/es.json
+  s_3c1428c0ef138e::t_e688d059083b8d 934-943,949-950
+src/i18n/locales/fr.json
+  s_3c1428c0ef138e::t_38a25717a212b7 934-943,949-950
+src/i18n/locales/it.json
+  s_3c1428c0ef138e::t_c01beca5b821cc 934-943,949-950
+src/i18n/locales/ja.json
+  s_3c1428c0ef138e::t_61e20348af22db 934-943,949-950
+src/i18n/locales/nb.json
+  s_3c1428c0ef138e::t_0991b89b7500fe 934-943,949-950
+src/i18n/locales/nl.json
+  s_3c1428c0ef138e::t_4dc940bcca7fb9 934-943,949-950
+src/i18n/locales/pt-BR.json
+  s_3c1428c0ef138e::t_e87402188ee6dc 934-943,949-950
+src/i18n/locales/sv.json
+  s_3c1428c0ef138e::t_1a87debd0cfebc 934-943,949-950
+src/i18n/locales/uk.json
+  s_3c1428c0ef138e::t_2fdf1b7b204f24 934-943,949-950
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "19d61d044cff9a043fa6f1c70b75069adc9a00fe",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
