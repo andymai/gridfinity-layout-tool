@@ -563,27 +563,29 @@ export function Sidebar() {
 
             {/* Learn links are real <a href> so Google passes link equity from the SPA to
                 /what-is-gridfinity et al. Collapsible keeps them in the DOM (still crawlable). */}
-            <GroupLabel>{t('sidebar.groupResources')}</GroupLabel>
-            <div className="px-4 pb-4 border-t border-stroke-subtle pt-3">
-              <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
-                <p className="text-xs text-content-tertiary leading-relaxed mb-2">
-                  {t('sidebar.about')}
-                </p>
-                <ul className="text-xs leading-relaxed space-y-1">
-                  {LEARN_LINKS.map((link) => (
-                    <li key={link.slug}>
-                      <a
-                        href={learnHref(link.slug, link.localized, locale)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-content-tertiary hover:text-content hover:underline"
-                      >
-                        {t(link.labelKey)}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </Collapsible>
+            <div className="border-t border-stroke-subtle">
+              <GroupLabel>{t('sidebar.groupResources')}</GroupLabel>
+              <div className="px-4 pb-4">
+                <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
+                  <p className="text-xs text-content-tertiary leading-relaxed mb-2">
+                    {t('sidebar.about')}
+                  </p>
+                  <ul className="text-xs leading-relaxed space-y-1">
+                    {LEARN_LINKS.map((link) => (
+                      <li key={link.slug}>
+                        <a
+                          href={learnHref(link.slug, link.localized, locale)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-content-tertiary hover:text-content hover:underline"
+                        >
+                          {t(link.labelKey)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </Collapsible>
+              </div>
             </div>
 
             {/* Anchor attribution to the bottom so it never floats mid-panel on tall viewports */}
