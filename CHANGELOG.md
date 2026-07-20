@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.260.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.259.0...gridfinity-layout-tool-v4.260.0) (2026-07-20)
+
+
+### Features
+
+* **designer:** partial-length and custom removable dividers ([#2651](https://github.com/andymai/gridfinity-layout-tool/issues/2651)) ([3ecf54c](https://github.com/andymai/gridfinity-layout-tool/commit/3ecf54ccf98a3c858310d0aa6dee682b0f82e857))
+
 ## [4.259.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.258.0...gridfinity-layout-tool-v4.259.0) (2026-07-20)
 
 
