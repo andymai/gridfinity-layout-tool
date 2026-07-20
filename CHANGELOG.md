@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.266.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.265.0...gridfinity-layout-tool-v4.266.0) (2026-07-20)
+
+
+### Features
+
+* **designer:** batch label plate export in the layout ZIP ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2675](https://github.com/andymai/gridfinity-layout-tool/issues/2675)) ([f5f2c50](https://github.com/andymai/gridfinity-layout-tool/commit/f5f2c50095428d6792679f92c527a13da5631855))
+
 ## [4.265.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.264.0...gridfinity-layout-tool-v4.265.0) (2026-07-20)
 
 
