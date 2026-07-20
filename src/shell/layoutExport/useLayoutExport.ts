@@ -271,7 +271,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         );
         const labelFiles: ZipBinaryFile[] = [];
         const manifestLabels: ManifestLabelGroup[] = [];
-        if (platePlan.totalPlates > 0) {
+        if (platePlan.groups.length > 0) {
           try {
             const sheetNames = dedupeFileNames(
               platePlan.groups.flatMap((g) =>
@@ -287,7 +287,13 @@ export function useLayoutExport(): UseLayoutExportReturn {
               )
             );
             let nameIndex = 0;
+            let sheetsDone = 0;
             const sheetTotal = platePlan.groups.reduce((sum, g) => sum + g.sheets.length, 0);
+            const sheetLabel = (current: number): string =>
+              t('layoutExport.progress.labels', { current, total: sheetTotal });
+            if (sheetTotal > 0) {
+              setExportProgress({ current: 0, total: sheetTotal, label: sheetLabel(0) });
+            }
             for (const group of platePlan.groups) {
               const options = {
                 textMode:
@@ -301,14 +307,6 @@ export function useLayoutExport(): UseLayoutExportReturn {
               };
               const sheetPaths: string[] = [];
               for (const sheet of group.sheets) {
-                setExportProgress({
-                  current: nameIndex,
-                  total: sheetTotal,
-                  label: t('layoutExport.progress.labels', {
-                    current: nameIndex + 1,
-                    total: sheetTotal,
-                  }),
-                });
                 const path = `labels/${sheetNames[nameIndex++]}`;
                 const specs: LabelPlateExportSpec[] = sheet.map((p) => ({
                   widthU: p.widthU,
@@ -322,11 +320,18 @@ export function useLayoutExport(): UseLayoutExportReturn {
                     : result.data;
                 labelFiles.push({ path, data });
                 sheetPaths.push(path);
+                sheetsDone++;
+                setExportProgress({
+                  current: sheetsDone,
+                  total: sheetTotal,
+                  label: sheetLabel(sheetsDone),
+                });
               }
               manifestLabels.push({
                 designName: group.designName,
                 sheetPaths,
                 plates: group.manifestPlates,
+                oversizedCount: group.oversizedCount,
               });
             }
           } catch {

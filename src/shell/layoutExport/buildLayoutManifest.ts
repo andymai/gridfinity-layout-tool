@@ -7,6 +7,7 @@
  */
 
 import type { ExportFileFormat } from '@/shared/types/bin';
+import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 
 export interface ManifestBinEntry {
   /** Path inside the ZIP, e.g. `bins/box_1x1x6.stl`. */
@@ -39,10 +40,12 @@ export interface ManifestLabelGroup {
   readonly sheetPaths: readonly string[];
   /** Unique plates with physical quantities (identical plates collapsed). */
   readonly plates: readonly {
-    readonly widthU: number;
+    readonly widthU: LabelPlateWidthU;
     readonly text: string;
     readonly quantity: number;
   }[];
+  /** Plates skipped because they exceed the usable print bed width. */
+  readonly oversizedCount?: number;
 }
 
 export interface LayoutManifestInput {
@@ -143,6 +146,11 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       for (const p of group.plates) {
         const label = p.text.length > 0 ? `"${p.text}"` : '(blank)';
         lines.push(`      ${p.quantity}× ${p.widthU}U ${label}`);
+      }
+      if (group.oversizedCount !== undefined && group.oversizedCount > 0) {
+        lines.push(
+          `      ${group.oversizedCount} ${plural(group.oversizedCount, 'plate')} skipped (wider than the print bed).`
+        );
       }
       lines.push('');
     }

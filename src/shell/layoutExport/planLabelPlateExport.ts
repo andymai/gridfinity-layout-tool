@@ -45,6 +45,8 @@ export interface LabelPlateDesignGroup {
   readonly textDefaults: TextStyleDefaults;
   readonly sheets: readonly (readonly PlacedLabelPlate[])[];
   readonly manifestPlates: readonly LabelPlateManifestEntry[];
+  /** Plates skipped because they are wider than the usable print bed. */
+  readonly oversizedCount: number;
 }
 
 export interface LabelPlateExportPlan {
@@ -59,8 +61,8 @@ const SHEET_GAP = 4;
 /**
  * Shelf-pack plates (already expanded to physical quantities) onto sheets of
  * `bedW × bedD` mm, widest-first so long plates anchor rows. Returns sheets
- * of centered plate positions. Plates wider than the usable bed are dropped
- * by the caller's fit test before this runs (standard widths cap at 120mm).
+ * of centered plate positions. Callers must pre-filter plates to the usable
+ * bed width — the packer places whatever it is given.
  */
 function packSheets(
   plates: readonly { widthU: LabelPlateWidthU; text: string }[],
@@ -148,12 +150,20 @@ export function planLabelPlateExport(
     // Expand to physical plates: per-compartment plates repeat per placed
     // bin; a spanning plate instead takes each bin's own label text.
     const spanning = planned.length === 1 && planned[0].compartmentId === null;
-    const physical: { widthU: LabelPlateWidthU; text: string }[] = spanning
+    const expanded: { widthU: LabelPlateWidthU; text: string }[] = spanning
       ? linkedBins.map((b) => ({
           widthU: planned[0].widthU,
           text: (b.label ?? '').trim() || design.name,
         }))
       : linkedBins.flatMap(() => planned.map((p) => ({ widthU: p.widthU, text: p.text })));
+
+    // Bed-fit guard: a plate wider than the usable bed (e.g. a 3U plate on
+    // a small printer) cannot ship on any sheet — skip it and surface the
+    // count so the manifest can say so instead of packing out of bounds.
+    const usableW = bedWidthMm - 2 * SHEET_MARGIN;
+    const physical = expanded.filter((p) => labelPlateWidthMm(p.widthU) <= usableW);
+    const oversizedCount = expanded.length - physical.length;
+    if (physical.length === 0 && oversizedCount === 0) continue;
 
     // Manifest quantities collapse identical (width, text) plates.
     const counts = new Map<string, LabelPlateManifestEntry>();
@@ -173,6 +183,7 @@ export function planLabelPlateExport(
       textDefaults: params.textDefaults,
       sheets: packSheets(physical, bedWidthMm, bedDepthMm),
       manifestPlates: [...counts.values()],
+      oversizedCount,
     });
   }
 

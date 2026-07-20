@@ -136,4 +136,28 @@ describe('planLabelPlateExport', () => {
     const placed = plan.groups[0].sheets.flat();
     expect(placed).toHaveLength(20);
   });
+
+  it('skips plates wider than the usable bed and reports the count', () => {
+    // Single-compartment 2U design → 2U plates (78mm). A 60mm bed has only
+    // 40mm usable width, so nothing can ship — but the skip is surfaced.
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Wide', {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 1,
+            rows: 1,
+            cells: [0],
+            compartmentTexts: ['BIG'],
+          },
+        }),
+      },
+    ];
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, 60, 60);
+    expect(plan.totalPlates).toBe(0);
+    expect(plan.groups).toHaveLength(1);
+    expect(plan.groups[0].sheets).toHaveLength(0);
+    expect(plan.groups[0].oversizedCount).toBe(1);
+  });
 });
