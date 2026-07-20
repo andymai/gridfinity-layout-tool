@@ -330,6 +330,11 @@ describe('resolvePartialStyle', () => {
     expect(resolvePartialStyle(snap, MIN_DIVIDER_FOR_SNAP - 0.1)).toBe('full');
     expect(resolvePartialStyle(snap, MIN_DIVIDER_FOR_SNAP)).toBe('snappable');
   });
+
+  it('clamps an unknown persisted partialStyle to full', () => {
+    const corrupted = bothConfig({ partialStyle: 'diagonal' as never });
+    expect(resolvePartialStyle(corrupted, 1.6)).toBe('full');
+  });
 });
 
 describe('calculateLapSnapPositions', () => {

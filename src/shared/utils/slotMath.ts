@@ -291,7 +291,12 @@ export function resolvePartialStyle(
   if (!bothAxes) return 'full';
   if (resolveCrossDividerMode(slotConfig, dividerThickness).style !== 'lap') return 'full';
 
-  const requested = slotConfig.partialStyle ?? 'full';
+  // Clamp persisted/imported values: like resolveCrossDividerMode, an unvalidated
+  // config could carry an unknown partialStyle that must not leak through.
+  const requested: PartialDividerStyle =
+    slotConfig.partialStyle === 'snappable' || slotConfig.partialStyle === 'lengthSet'
+      ? slotConfig.partialStyle
+      : 'full';
   if (requested === 'snappable' && dividerThickness < MIN_DIVIDER_FOR_SNAP) return 'full';
   return requested;
 }
