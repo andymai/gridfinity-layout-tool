@@ -1,0 +1,38 @@
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.test.tsx
+  s_e22c16986e8ee6::t_f68b2aa2d7cc63 57-74
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.tsx
+  s_e22c16986e8ee6::t_3686cd1cb4fbca 55-58
+  s_e22c16986e8ee6::t_86cd08cdbb48be 36,49
+  s_e22c16986e8ee6::t_fe64fe909cba3e 18
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_c668a79de1745e 345-349,355-356
+src/shared/utils/slotMath.test.ts
+  s_e22c16986e8ee6::t_79fa8bb9a5119e 343-345,349-350
+src/features/generation/worker/generators/overhang.ts
+  s_e22c16986e8ee6::t_cfd03308bc2a3b 2-4,6
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_e22c16986e8ee6::t_c51f4a951d2a4e 175-178
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_e22c16986e8ee6::t_5fdf1fb85e6de7 121-128
+  s_e22c16986e8ee6::t_db618b9c681cc3 19
+  s_e22c16986e8ee6::t_760cb2d5236aa7 24
+  s_e22c16986e8ee6::t_7ea3b7233ef0a9 61-66
+src/shared/utils/overhang.ts
+  s_e22c16986e8ee6::t_c4b365052812a7 1-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "50358d54ea13c82ffa9a75b12a1e394f2dc101e9",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
