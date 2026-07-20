@@ -67,7 +67,8 @@ export function buildSupporterBins(
     id: `s-${i}`,
     name: s.name,
     joinedAt: s.joinedAt,
-    message: s.message,
+    // A message never rides with an anonymous bin, even if the payload carries one.
+    message: s.name ? s.message : undefined,
     isNewest: i === newest,
   }));
 
@@ -132,16 +133,22 @@ export function supportHistogram(
 /** Narrow an unknown API response to `SupportersData`. */
 export function isSupportersData(value: unknown): value is SupportersData {
   if (typeof value !== 'object' || value === null) return false;
-  const candidate = value as Partial<SupportersData>;
-  return (
-    Array.isArray(candidate.supporters) &&
-    candidate.supporters.every(
-      (s) =>
-        typeof s === 'object' &&
-        s !== null &&
-        (s.name === null || typeof s.name === 'string') &&
-        (s.joinedAt === undefined || typeof s.joinedAt === 'string') &&
-        (s.message === undefined || typeof s.message === 'string')
-    )
-  );
+  // `unknown`-typed so the per-record checks below are genuinely load-bearing on
+  // untrusted input, not shortcut away by an over-trusting cast.
+  const supporters = (value as { supporters?: unknown }).supporters;
+  if (!Array.isArray(supporters)) return false;
+  return supporters.every((s: unknown) => {
+    if (typeof s !== 'object' || s === null) return false;
+    const record = s as { name?: unknown; joinedAt?: unknown; message?: unknown };
+    const nameOk = record.name === null || typeof record.name === 'string';
+    const joinedOk = record.joinedAt === undefined || typeof record.joinedAt === 'string';
+    // A message is only valid alongside a non-empty name: never trust a payload
+    // that would attribute words to an opted-out (anonymous) supporter.
+    const messageOk =
+      record.message === undefined ||
+      (typeof record.message === 'string' &&
+        typeof record.name === 'string' &&
+        record.name.length > 0);
+    return nameOk && joinedOk && messageOk;
+  });
 }

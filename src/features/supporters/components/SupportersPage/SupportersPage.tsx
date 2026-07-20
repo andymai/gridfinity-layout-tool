@@ -15,6 +15,7 @@ import {
   joinedThisMonth,
   supportHistogram,
   type SupportBucket,
+  type SupporterBin,
 } from '../../utils/supportersData';
 import { useSupportersData } from '../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../scene/palette';
@@ -259,18 +260,30 @@ export function SupportersPage() {
     const query = findQuery.trim();
     if (!query) return;
     const needle = query.toLowerCase();
-    const matches = bins.filter((b) => b.name?.toLowerCase().includes(needle));
-    if (matches.length === 0) {
+    const named = bins.filter((b): b is SupporterBin & { name: string } => b.name !== null);
+
+    // Exact (case-insensitive) name wins; only if none matches do we fall back to
+    // a substring. Both pools are sorted so the pick is stable across the shuffle.
+    const exact = named.filter((b) => b.name.toLowerCase() === needle);
+    const pool =
+      exact.length > 0
+        ? exact
+        : named
+            .filter((b) => b.name.toLowerCase().includes(needle))
+            .sort((a, b) => a.name.length - b.name.length || a.name.localeCompare(b.name));
+
+    if (pool.length === 0) {
       setFindStatus(t('supporters.find.notFound', { name: query }));
       return;
     }
-    const target = matches[0];
+    const target = pool[0];
     setFocusedId(target.id);
     flyNonce.current += 1;
     setFlyTo({ id: target.id, nonce: flyNonce.current });
+    // "1 of N named X" only makes sense for genuine duplicate names (exact matches).
     setFindStatus(
-      matches.length > 1
-        ? t('supporters.find.multiple', { count: matches.length, name: target.name ?? '' })
+      exact.length > 1
+        ? t('supporters.find.multiple', { count: exact.length, name: target.name })
         : null
     );
   };

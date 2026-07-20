@@ -2679,7 +2679,7 @@
   "supporters.thanksNamed": "Tack, {name}",
   "supporters.thanksAnon": "Tack, vän",
   "supporters.thisMonth": "{count} gick med den här månaden",
-  "supporters.justJoined": "Precis med",
+  "supporters.justJoined": "Precis gått med",
   "supporters.purpose": "Gratis, reklamfritt och integritetsvänligt, byggt och underhållet av en person. Ditt stöd håller det så.",
   "supporters.messageBy": "från {name}",
   "supporters.find.placeholder": "Hitta din bin",

@@ -79,6 +79,14 @@ describe('supportersData', () => {
       );
       expect(bins[0]).toMatchObject({ joinedAt: '2026-05-01T00:00:00Z', message: 'thanks!' });
     });
+
+    it('never carries a message onto an anonymous bin', () => {
+      const bins = buildSupporterBins(
+        { supporters: [{ name: null, message: 'should not show' }] },
+        () => 0
+      );
+      expect(bins[0].message).toBeUndefined();
+    });
   });
 
   describe('with live data', () => {
@@ -170,6 +178,8 @@ describe('isSupportersData', () => {
     ['a numeric name', { supporters: [{ name: 5 }] }],
     ['a non-string joinedAt', { supporters: [{ name: 'Ada', joinedAt: 5 }] }],
     ['a non-string message', { supporters: [{ name: 'Ada', message: 5 }] }],
+    ['a message on an anonymous record', { supporters: [{ name: null, message: 'leak' }] }],
+    ['a message on an empty-name record', { supporters: [{ name: '', message: 'leak' }] }],
   ])('rejects %s', (_label, value) => {
     expect(isSupportersData(value)).toBe(false);
   });

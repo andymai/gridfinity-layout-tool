@@ -48,9 +48,13 @@ export function CameraFocus({
 
   useEffect(() => {
     if (!request || request.nonce === lastNonce.current) return;
-    lastNonce.current = request.nonce;
+
     const index = bins.findIndex((b) => b.id === request.id);
-    if (index < 0) return;
+    if (index < 0) {
+      // Nothing to fly to — consume the request so it doesn't re-fire.
+      lastNonce.current = request.nonce;
+      return;
+    }
     const seat = layout.positions[index];
 
     // Aim above the bin so it lands in the lower-centre of frame, clear of the
@@ -59,7 +63,7 @@ export function CameraFocus({
     const dir = new Vector3(0.22, 0.72, 1).normalize();
     const toPos = new Vector3(seat.x, -0.2, seat.z).add(dir.multiplyScalar(5.4));
 
-    if (reducedMotion || !controls) {
+    if (reducedMotion) {
       camera.position.copy(toPos);
       if (controls) {
         controls.target.copy(toTarget);
@@ -68,8 +72,15 @@ export function CameraFocus({
         camera.lookAt(toTarget);
       }
       anim.current = null;
+      lastNonce.current = request.nonce;
       return;
     }
+
+    // The animated path drives `controls.target`; if OrbitControls isn't
+    // registered yet, leave the request unconsumed so this reruns (deps include
+    // `controls`) and applies the fly-to once controls mount.
+    if (!controls) return;
+
     anim.current = {
       fromPos: camera.position.clone(),
       toPos,
@@ -77,6 +88,7 @@ export function CameraFocus({
       toTarget,
       t: 0,
     };
+    lastNonce.current = request.nonce;
   }, [request, bins, layout, camera, controls, reducedMotion]);
 
   useFrame((_, delta) => {
