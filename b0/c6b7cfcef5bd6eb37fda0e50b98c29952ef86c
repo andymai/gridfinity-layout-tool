@@ -1,0 +1,23 @@
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_e22c16986e8ee6::t_807a7986061db9 192
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_6f5f7d38ad00eb 283-284,287-288
+src/shared/utils/authoredDividerMath.ts
+  s_e22c16986e8ee6::t_8db9e7a86f3e7e 110-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b0c6b7cfcef5bd6eb37fda0e50b98c29952ef86c",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
