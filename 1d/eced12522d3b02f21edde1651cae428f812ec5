@@ -1,0 +1,20 @@
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_e22c16986e8ee6::t_64d92628b2afc1 39-45
+  s_e22c16986e8ee6::t_d5396f2e61dcc7 63-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1deced12522d3b02f21edde1651cae428f812ec5",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
