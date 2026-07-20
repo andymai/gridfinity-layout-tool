@@ -332,7 +332,7 @@ export function RightPanel() {
                   ) : undefined
                 }
               >
-                <div className="-mb-3 flex flex-col border-t border-stroke-subtle">
+                <div className="flex flex-col border-t border-stroke-subtle">
                   <div>
                     {printList.rows.length === 0 ? (
                       <PrintListEmpty />
