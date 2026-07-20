@@ -39,6 +39,7 @@ import {
   GhostLabelTabs,
   GhostScoops,
   GhostSlotLines,
+  GhostAuthoredDividers,
   GhostDividerPieces,
   GhostCutouts,
   GhostWallCutouts,
@@ -454,6 +455,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                   <GhostLabelTabs />
                   <GhostScoops />
                   <GhostSlotLines />
+                  <GhostAuthoredDividers />
                   <GhostDividerPieces />
                   <GhostCutouts />
                   <GhostWallCutouts />
