@@ -1,0 +1,19 @@
+src/shell/Sidebar/Sidebar.tsx
+  s_db6e280faa3f84::t_009e1e7a12a09a 566-588
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "657e5514249f5af72a9dec9719dad6a0d152f1a4",
+  "prompts": {},
+  "sessions": {
+    "s_db6e280faa3f84": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be2030fc-f537-45a7-9d39-8b1031e0dbe9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
