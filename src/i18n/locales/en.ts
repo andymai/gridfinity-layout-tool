@@ -48,6 +48,17 @@ const en: Record<string, string> = {
   'supporters.cta.button': 'Support on Ko-fi',
   'supporters.optOut': 'Prefer not to be listed, or want your name changed?',
   'supporters.optOutLink': 'Let me know.',
+  'supporters.thisMonth': '{count} joined this month',
+  'supporters.justJoined': 'Just joined',
+  'supporters.purpose':
+    'This is free, ad-free, and privacy focused, built and maintained by one person. Your support keeps it that way.',
+  'supporters.messageBy': 'from {name}',
+  'supporters.find.placeholder': 'Find your bin',
+  'supporters.find.submit': 'Find',
+  'supporters.find.notFound': "No supporter named {name}. Anonymous supporters can't be searched.",
+  'supporters.find.multiple': 'Showing 1 of {count} named {name}.',
+  'supporters.sparklineLabel': 'New supporters over the last {count} months',
+  'supporters.sparklineCaption': 'new each month',
 
   // Common / Shared
   'common.save': 'Save',
