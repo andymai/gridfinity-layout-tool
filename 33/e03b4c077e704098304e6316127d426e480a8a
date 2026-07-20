@@ -1,0 +1,22 @@
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_5ad88eae11a012::t_4d3e171617ff64 265-269
+scripts/seed-supporters.ts
+  s_5ad88eae11a012::t_ab32b74dab9624 12-17
+  s_5ad88eae11a012::t_36b9daa91b9658 101-115,117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "33e03b4c077e704098304e6316127d426e480a8a",
+  "prompts": {},
+  "sessions": {
+    "s_5ad88eae11a012": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "088f5146-7c58-4868-a117-801a6b5de988",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
