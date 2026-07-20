@@ -1,37 +1,155 @@
 {
-  "_comment": "Reconciled against the Ko-fi transaction export on 2026-07-15 (50 unique supporters: 31 named, 19 who gave no name). Covers everyone up to the Ko-fi webhook going live on 2026-07-15; from then on `/api/kofi-webhook` records new supporters into Redis automatically and this file is only the offline fallback + the one-time seed source (`pnpm seed-supporters`). Display names only — NEVER store emails or amounts here. Ko-fi writes 'Supporter'/'Ko-fi Supporter' when someone gives no name; those are anonymous, not people, and belong in `anonymousCount`. Append new names to the end so the seed:named:N field mapping stays stable. Order is randomized at render.",
-  "named": [
-    "unpossible",
-    "Jürgen",
-    "PummeledLeftNut",
-    "Kalle",
-    "haliphax",
-    "DoogieWall",
-    "FilmCan",
-    "Spob",
-    "Gas Daddy",
-    "resch.cloud",
-    "TB",
-    "Beate Streif",
-    "MelvinMASV",
-    "Brad",
-    "Max",
-    "John",
-    "Diego Silva",
-    "Oxo",
-    "Martin",
-    "Rad",
-    "HK",
-    "JFM",
-    "Uncle Dave",
-    "Mawi",
-    "ChrisV",
-    "Bram",
-    "Allison Lee",
-    "Rob",
-    "Bandit 6",
-    "Carl",
-    "Dave"
-  ],
-  "anonymousCount": 19
+  "_comment": "Offline fallback + one-time seed source for the /supporters page. Names only — recency and messages live in Redis and are NEVER committed here (no dates, no messages, no emails, no amounts). Reconciled against the Ko-fi export on 2026-07-15 (50 people: 31 named, 19 who gave no name). From 2026-07-15 the Ko-fi webhook records new supporters into Redis; this file is the degraded fallback when /api/supporters is unreachable. `name: null` = someone who gave no name (anonymous). Order is randomized at render.",
+  "supporters": [
+    {
+      "name": "unpossible"
+    },
+    {
+      "name": "Jürgen"
+    },
+    {
+      "name": "PummeledLeftNut"
+    },
+    {
+      "name": "Kalle"
+    },
+    {
+      "name": "haliphax"
+    },
+    {
+      "name": "DoogieWall"
+    },
+    {
+      "name": "FilmCan"
+    },
+    {
+      "name": "Spob"
+    },
+    {
+      "name": "Gas Daddy"
+    },
+    {
+      "name": "resch.cloud"
+    },
+    {
+      "name": "TB"
+    },
+    {
+      "name": "Beate Streif"
+    },
+    {
+      "name": "MelvinMASV"
+    },
+    {
+      "name": "Brad"
+    },
+    {
+      "name": "Max"
+    },
+    {
+      "name": "John"
+    },
+    {
+      "name": "Diego Silva"
+    },
+    {
+      "name": "Oxo"
+    },
+    {
+      "name": "Martin"
+    },
+    {
+      "name": "Rad"
+    },
+    {
+      "name": "HK"
+    },
+    {
+      "name": "JFM"
+    },
+    {
+      "name": "Uncle Dave"
+    },
+    {
+      "name": "Mawi"
+    },
+    {
+      "name": "ChrisV"
+    },
+    {
+      "name": "Bram"
+    },
+    {
+      "name": "Allison Lee"
+    },
+    {
+      "name": "Rob"
+    },
+    {
+      "name": "Bandit 6"
+    },
+    {
+      "name": "Carl"
+    },
+    {
+      "name": "Dave"
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    },
+    {
+      "name": null
+    }
+  ]
 }

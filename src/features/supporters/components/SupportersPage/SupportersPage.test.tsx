@@ -48,12 +48,12 @@ describe('SupportersPage', () => {
   });
 
   it('lists every supporter for screen readers (named + anonymous)', () => {
+    const firstNamed = supportersData.supporters.find((s) => s.name)?.name ?? '';
+    const anonCount = supportersData.supporters.filter((s) => !s.name).length;
     render(<SupportersPage />);
-    expect(screen.getByText(supportersData.named[0])).toBeInTheDocument();
+    expect(screen.getByText(firstNamed)).toBeInTheDocument();
     // queryAllByText (not getAllByText) so the assertion holds even at 0 anonymous.
-    expect(screen.queryAllByText('supporters.anonymous')).toHaveLength(
-      supportersData.anonymousCount
-    );
+    expect(screen.queryAllByText('supporters.anonymous')).toHaveLength(anonCount);
   });
 
   it('never renders an email address', () => {

@@ -23,7 +23,7 @@ describe('useSupportersData', () => {
   });
 
   it('swaps in the live list', async () => {
-    const live = { named: ['Ada'], anonymousCount: 4 };
+    const live = { supporters: [{ name: 'Ada' }, { name: null }, { name: null }] };
     vi.mocked(fetch).mockResolvedValue(jsonResponse(live));
 
     const { result } = renderHook(() => useSupportersData());
@@ -40,7 +40,7 @@ describe('useSupportersData', () => {
   });
 
   it('keeps the fallback on a non-OK response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({ named: ['Ada'], anonymousCount: 0 }, false));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ supporters: [{ name: 'Ada' }] }, false));
 
     const { result } = renderHook(() => useSupportersData());
     await waitFor(() => expect(result.current.settled).toBe(true));
@@ -57,7 +57,7 @@ describe('useSupportersData', () => {
 
   // An unseeded Redis would otherwise wipe the baseplate to nothing.
   it('keeps the fallback when the store is empty', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({ named: [], anonymousCount: 0 }));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ supporters: [] }));
 
     const { result } = renderHook(() => useSupportersData());
     await waitFor(() => expect(result.current.settled).toBe(true));

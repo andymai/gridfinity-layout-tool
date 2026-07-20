@@ -19,6 +19,15 @@ import supporters from '../src/features/supporters/data/supporters.json' with { 
 
 const SUPPORTERS_DONORS_KEY = 'supporters:donors';
 
+/** Mirror of `serializeDonorRecord` in api/lib/supporters.ts (kept inline so the
+ *  script has no runtime dependency on the API bundle). */
+function serialize(record: { name: string | null; joinedAt?: string; message?: string }): string {
+  const payload: { n: string; t?: string; m?: string } = { n: record.name ?? '' };
+  if (record.joinedAt) payload.t = record.joinedAt;
+  if (record.name && record.message) payload.m = record.message;
+  return JSON.stringify(payload);
+}
+
 function parseRedisUrl(redisUrl: string) {
   const url = new URL(redisUrl);
   return {
@@ -34,24 +43,26 @@ function parseRedisUrl(redisUrl: string) {
 async function main(): Promise<void> {
   const dryRun = process.argv.includes('--dry-run');
 
-  // Field name → display name ('' means anonymous), matching the webhook's shape.
+  // Stable synthetic ids (`seed:*`) that no email-derived webhook id can collide
+  // with, so re-running rewrites the same fields rather than duplicating bins.
   const entries: Record<string, string> = {};
-  supporters.named.forEach((name, i) => {
-    entries[`seed:named:${i}`] = name;
+  let named = 0;
+  let anon = 0;
+  supporters.supporters.forEach((s) => {
+    if (s.name) {
+      entries[`seed:named:${named++}`] = serialize({ name: s.name, joinedAt: s.joinedAt });
+    } else {
+      entries[`seed:anon:${anon++}`] = serialize({ name: null, joinedAt: s.joinedAt });
+    }
   });
-  for (let i = 0; i < supporters.anonymousCount; i++) {
-    entries[`seed:anon:${i}`] = '';
-  }
 
   const total = Object.keys(entries).length;
-  console.log(
-    `Seeding ${total} supporters (${supporters.named.length} named, ${supporters.anonymousCount} anonymous)`
-  );
+  console.log(`Seeding ${total} supporters (${named} named, ${anon} anonymous)`);
 
   if (dryRun) {
     console.log('--dry-run: no writes. Fields that would be set:');
-    for (const [field, name] of Object.entries(entries)) {
-      console.log(`  ${field} = ${name || '(anonymous)'}`);
+    for (const [field, value] of Object.entries(entries)) {
+      console.log(`  ${field} = ${value}`);
     }
     return;
   }
