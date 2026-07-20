@@ -275,6 +275,44 @@ export const MAX_LAP_PARTIAL_PIECES = 8;
 export const MIN_LAP_PARTIAL_LENGTH = 2;
 
 /**
+ * Whether a slotted config produces removable dividers. In 'custom' layout that
+ * depends on the authored grid (a subdivided grid has walls), not the parametric
+ * x/y.enabled flags — which are meaningless in custom mode. Callers gate on
+ * `style === 'slotted'` themselves.
+ */
+export function slottedHasDividers(slotConfig: SlotConfig): boolean {
+  if (slotConfig.layout === 'custom') {
+    const g = slotConfig.customGrid;
+    return !!g && (g.cols > 1 || g.rows > 1);
+  }
+  return slotConfig.x.enabled || slotConfig.y.enabled;
+}
+
+/**
+ * Which bin walls carry divider slots, keyed by side. In 'custom' layout any
+ * wall can hold slots (the authored grid decides), so all four are reported as
+ * slotted — callers that skip slotted walls (e.g. wall patterns) then leave
+ * them plain, which is the safe choice.
+ */
+export function slottedWalls(slotConfig: SlotConfig): {
+  front: boolean;
+  back: boolean;
+  left: boolean;
+  right: boolean;
+} {
+  if (slotConfig.layout === 'custom' && slotConfig.customGrid) {
+    return { front: true, back: true, left: true, right: true };
+  }
+  // y-axis dividers seat in front/back walls; x-axis in left/right.
+  return {
+    front: slotConfig.y.enabled,
+    back: slotConfig.y.enabled,
+    left: slotConfig.x.enabled,
+    right: slotConfig.x.enabled,
+  };
+}
+
+/**
  * Resolve the effective partial-divider style for a slot configuration.
  *
  * Partial pieces only make sense in interlocking (lap) egg-crate topology:

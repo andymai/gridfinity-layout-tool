@@ -11,6 +11,8 @@ import {
   resolveCompartmentDividerHeight,
   resolveCrossDividerMode,
   resolvePartialStyle,
+  slottedHasDividers,
+  slottedWalls,
   calculateLapPartialSegments,
   calculateLapSnapPositions,
   MIN_COMPARTMENT_DIVIDER_HEIGHT,
@@ -394,5 +396,48 @@ describe('calculateLapPartialSegments', () => {
     const tight = calculateSlotPositions(24, 6);
     const { segments } = calculateLapPartialSegments(tight, 24, 4, 1.0, 0.25);
     for (const s of segments) expect(s.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('slottedHasDividers', () => {
+  const cfg = (o: Partial<SlotConfig> = {}): SlotConfig => ({
+    x: { enabled: false, pitch: 20 },
+    y: { enabled: false, pitch: 20 },
+    width: 2,
+    depth: 1,
+    ...o,
+  });
+
+  it('reflects x/y.enabled in even layout', () => {
+    expect(slottedHasDividers(cfg())).toBe(false);
+    expect(slottedHasDividers(cfg({ x: { enabled: true, pitch: 20 } }))).toBe(true);
+  });
+
+  it('uses the authored grid in custom layout, ignoring x/y.enabled', () => {
+    // Both axes off, but a subdivided custom grid still has dividers.
+    const custom = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 1, cells: [0, 1] } });
+    expect(slottedHasDividers(custom)).toBe(true);
+    // A 1x1 grid has no walls.
+    const single = cfg({ layout: 'custom', customGrid: { cols: 1, rows: 1, cells: [0] } });
+    expect(slottedHasDividers(single)).toBe(false);
+  });
+});
+
+describe('slottedWalls', () => {
+  const cfg = (o: Partial<SlotConfig> = {}): SlotConfig => ({
+    x: { enabled: true, pitch: 20 },
+    y: { enabled: false, pitch: 20 },
+    width: 2,
+    depth: 1,
+    ...o,
+  });
+
+  it('maps x→left/right and y→front/back in even layout', () => {
+    expect(slottedWalls(cfg())).toEqual({ front: false, back: false, left: true, right: true });
+  });
+
+  it('treats every wall as slotted in custom layout', () => {
+    const custom = cfg({ layout: 'custom', customGrid: { cols: 2, rows: 2, cells: [0, 1, 2, 3] } });
+    expect(slottedWalls(custom)).toEqual({ front: true, back: true, left: true, right: true });
   });
 });

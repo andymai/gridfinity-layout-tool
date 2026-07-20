@@ -9,6 +9,7 @@
 import type { BinParams } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
+import { slottedWalls } from '@/shared/utils/slotMath';
 import { CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, PatternCalculator } from './patterns';
@@ -61,12 +62,8 @@ export function getSlotFreeWalls(params: BinParams): SlotFreeWalls {
   if (params.style !== 'slotted') {
     return { front: true, back: true, left: true, right: true };
   }
-  return {
-    front: !params.slotConfig.y.enabled,
-    back: !params.slotConfig.y.enabled,
-    left: !params.slotConfig.x.enabled,
-    right: !params.slotConfig.x.enabled,
-  };
+  const walls = slottedWalls(params.slotConfig);
+  return { front: !walls.front, back: !walls.back, left: !walls.left, right: !walls.right };
 }
 /** Keep-out from wall top edge (stacking lip interface). */
 export const TOP_KEEP_OUT = 1.5;
