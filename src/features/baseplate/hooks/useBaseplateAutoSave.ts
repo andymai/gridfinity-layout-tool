@@ -17,14 +17,75 @@ import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
 import type { SaveStatus } from '@/shared/types/saveStatus';
 import { useLayoutStore } from '@/core/store/layout';
+import { useSettingsStore } from '@/core/store/settings';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import {
   updateDesignParams,
+  updateDesignThumbnail,
+  loadDesign,
   setActiveDesignId,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import { upsertRegistryEntry } from '@/features/baseplate/store/baseplateRegistry';
+import { useBaseplatePageStore } from '@/features/baseplate/store/baseplatePageStore';
+import { buildFullParams } from '@/features/baseplate/utils/buildFullParams';
+import {
+  captureBaseplateThumbnailAtPreset,
+  type BaseplateThumbnailFraming,
+} from '@/features/baseplate/utils/thumbnail';
 
 const AUTO_SAVE_DELAY_MS = 1000;
+
+/** Cap on how long a save waits for the mesh to settle before capturing. */
+const GENERATION_WAIT_MAX_MS = 5000;
+
+/**
+ * Resolve the plate framing (grid units + per-side mm padding) the thumbnail
+ * capture needs to place its isometric camera. Reads the same layout + settings
+ * inputs the generation pipeline uses, so the framing matches what's on screen.
+ */
+function resolveThumbnailFraming(stored: StoredBaseplateParams): BaseplateThumbnailFraming {
+  const { layout } = useLayoutStore.getState();
+  const nozzleSizeMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
+  const full = buildFullParams(
+    stored,
+    layout.drawer.width,
+    layout.drawer.depth,
+    layout.gridUnitMm,
+    layout.drawer.fractionalEdgeX ?? 'end',
+    layout.drawer.fractionalEdgeY ?? 'end',
+    nozzleSizeMm,
+    layout.drawer.outline
+  );
+  return {
+    width: full.width,
+    depth: full.depth,
+    gridUnitMm: full.gridUnitMm,
+    paddingLeft: full.paddingLeft,
+    paddingRight: full.paddingRight,
+    paddingFront: full.paddingFront,
+    paddingBack: full.paddingBack,
+  };
+}
+
+/**
+ * Resolve once mesh generation reaches a terminal state (`complete`/`error`) so
+ * the thumbnail captures the settled geometry, not a mid-edit draft. `idle` is
+ * treated as non-terminal (pre-generation); the timeout captures anyway if the
+ * worker is stuck. Bails early via `isCancelled` when the active design changes.
+ */
+function waitForGenerationSettled(isCancelled: () => boolean): Promise<void> {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = (): void => {
+      if (isCancelled()) return resolve();
+      const status = useBaseplatePageStore.getState().generation.status;
+      if (status === 'complete' || status === 'error') return resolve();
+      if (Date.now() - start > GENERATION_WAIT_MAX_MS) return resolve();
+      setTimeout(check, 150);
+    };
+    check();
+  });
+}
 
 export function useBaseplateAutoSave(): SaveStatus {
   const { params, activeBaseplateId } = useLayoutStore(
@@ -54,14 +115,27 @@ export function useBaseplateAutoSave(): SaveStatus {
 
   const performSave = useCallback(
     async (paramsToSave: StoredBaseplateParams, designId: BaseplateDesignId): Promise<void> => {
-      // TODO(Phase 1 follow-up): capture a baseplate preview thumbnail here once
-      // an offscreen capture util exists (BaseplatePreview has none today). Until
-      // then the thumbnail is left unchanged.
       setStatus('saving');
-      const result = await updateDesignParams(designId, paramsToSave);
-      // The active design can switch while IndexedDB awaits. Reporting this
-      // save's outcome now would flash a status belonging to the old design.
-      if (useLayoutStore.getState().layout.activeBaseplateId !== designId) return;
+
+      // The active design can switch while any await below is in flight.
+      // Reporting or persisting this save's outcome then would flash a status —
+      // or a thumbnail — belonging to the old design.
+      const superseded = (): boolean =>
+        useLayoutStore.getState().layout.activeBaseplateId !== designId;
+
+      // Wait for the mesh to settle, then let R3F flush the final frame, so the
+      // capture reads the finished geometry rather than a ghost wireframe.
+      await waitForGenerationSettled(superseded);
+      if (superseded()) return;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (superseded()) return;
+
+      // `null` (capture unavailable — e.g. WebGL context lost) leaves the stored
+      // thumbnail untouched rather than clearing it; a data URL replaces it.
+      const thumbnail = captureBaseplateThumbnailAtPreset(resolveThumbnailFraming(paramsToSave));
+
+      const result = await updateDesignParams(designId, paramsToSave, thumbnail ?? undefined);
+      if (superseded()) return;
       if (!isOk(result)) {
         // Surfaced in the header rather than swallowed — the edit is still in
         // the layout, but it is no longer in the library.
@@ -79,6 +153,50 @@ export function useBaseplateAutoSave(): SaveStatus {
     },
     []
   );
+
+  // Backfill a thumbnail for the active design when it has none yet (e.g. it was
+  // created before capture existed, or on a device that never edited it). Runs
+  // once per design, silently (no save-status flicker) and only when the stored
+  // thumbnail is absent — edits are handled by performSave above. A data URL is
+  // ~tens of KB, so this fills the library gradually as designs are opened
+  // rather than regenerating every entry up front.
+  const thumbnailBackfilledFor = useRef<BaseplateDesignId | null>(null);
+  useEffect(() => {
+    if (!activeBaseplateId || thumbnailBackfilledFor.current === activeBaseplateId) return;
+    const designId = activeBaseplateId;
+    thumbnailBackfilledFor.current = designId;
+
+    let cancelled = false;
+    const stale = (): boolean =>
+      cancelled || useLayoutStore.getState().layout.activeBaseplateId !== designId;
+
+    void (async () => {
+      const existing = await loadDesign(designId);
+      if (stale() || !isOk(existing) || existing.value.thumbnail) return;
+
+      await waitForGenerationSettled(stale);
+      if (stale()) return;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (stale()) return;
+
+      const stored = useLayoutStore.getState().layout.baseplateParams;
+      if (!stored) return;
+      const thumbnail = captureBaseplateThumbnailAtPreset(resolveThumbnailFraming(stored));
+      if (!thumbnail || stale()) return;
+
+      const result = await updateDesignThumbnail(designId, thumbnail);
+      if (stale() || !isOk(result)) return;
+      upsertRegistryEntry({
+        id: result.value.id,
+        name: result.value.name,
+        updatedAt: result.value.updatedAt,
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBaseplateId]);
 
   useEffect(() => {
     // Skip first render (initial mount shouldn't trigger save)

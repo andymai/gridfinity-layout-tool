@@ -29,7 +29,8 @@ graph TB
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `components/BaseplateSelector.tsx` — header identity: the active design's name (click to rename) + a button opening the library. **No Save / Save As / New** — see "Design management" below
 - `hooks/useBaseplateInit.ts` — guarantees an active design exists
-- `hooks/useBaseplateAutoSave.ts` — debounced write-back to the active library design; also the source of the header's save status
+- `hooks/useBaseplateAutoSave.ts` — debounced write-back to the active library design; also the source of the header's save status. After the mesh settles it captures a preview thumbnail (`utils/thumbnail.ts`) into the library entry — on every edit, plus a one-time backfill when an opened design has none yet
+- `utils/thumbnail.ts` — captures the live `BaseplatePreview` canvas at a canonical steep-isometric angle and downscales to a WebP data URL for the library cards. `BaseplatePreview` registers its renderer/scene/camera here (`setPreviewContext`) and needs `preserveDrawingBuffer` on its `<Canvas>` so the framebuffer stays readable
 - `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section
 - `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces, minimizing **build-plate loads** (see Key Concepts)
