@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.265.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.264.0...gridfinity-layout-tool-v4.265.0) (2026-07-20)
+
+
+### Features
+
+* **designer:** printable label plates for socket-mode tabs ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2673](https://github.com/andymai/gridfinity-layout-tool/issues/2673)) ([c9e7a59](https://github.com/andymai/gridfinity-layout-tool/commit/c9e7a59e27313b58227f843a80cb83aae7981116))
+
 ## [4.264.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.263.0...gridfinity-layout-tool-v4.264.0) (2026-07-20)
 
 
