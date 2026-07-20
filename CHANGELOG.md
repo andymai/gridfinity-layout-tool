@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.257.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.256.0...gridfinity-layout-tool-v4.257.0) (2026-07-20)
+
+
+### Features
+
+* **baseplate:** compose stack printing with detached margins ([#2641](https://github.com/andymai/gridfinity-layout-tool/issues/2641)) ([#2645](https://github.com/andymai/gridfinity-layout-tool/issues/2645)) ([2b97376](https://github.com/andymai/gridfinity-layout-tool/commit/2b97376550900323b84d87c8b24c07dba01d6e30))
+
 ## [4.256.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.255.0...gridfinity-layout-tool-v4.256.0) (2026-07-19)
 
 
