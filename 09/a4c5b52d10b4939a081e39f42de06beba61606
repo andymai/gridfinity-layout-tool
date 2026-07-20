@@ -1,0 +1,19 @@
+.github/workflows/smoke-preview.yml
+  s_3c1428c0ef138e::t_02025cce43740f 40-45,49-50,52,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "09a4c5b52d10b4939a081e39f42de06beba61606",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
