@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.258.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.257.0...gridfinity-layout-tool-v4.258.0) (2026-07-20)
+
+
+### Features
+
+* **shell:** regroup sidebar into labeled clusters with progressive disclosure ([#2644](https://github.com/andymai/gridfinity-layout-tool/issues/2644)) ([ce08225](https://github.com/andymai/gridfinity-layout-tool/commit/ce0822588f362fee7088f4fe0998b3d222d4f1b8))
+
 ## [4.257.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.256.0...gridfinity-layout-tool-v4.257.0) (2026-07-20)
 
 
