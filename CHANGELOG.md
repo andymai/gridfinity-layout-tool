@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.261.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.3...gridfinity-layout-tool-v4.261.0) (2026-07-20)
+
+
+### Features
+
+* **preview:** render real design geometry for linked bins in 3D preview ([#2654](https://github.com/andymai/gridfinity-layout-tool/issues/2654)) ([7744398](https://github.com/andymai/gridfinity-layout-tool/commit/774439859c88f29133e0ce7a8afa54140cf234ea))
+
 ## [4.260.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.2...gridfinity-layout-tool-v4.260.3) (2026-07-20)
 
 ### Bug Fixes
