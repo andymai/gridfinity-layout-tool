@@ -54,6 +54,24 @@ describe('CustomGridEditor', () => {
     );
   });
 
+  it('splits every selected compartment in one stable pass', () => {
+    const setParam = vi.fn();
+    // Two horizontal bars: top row = compartment 0, bottom row = compartment 1.
+    seedCustom(2, 2, [0, 0, 1, 1]);
+    useDesignerStore.setState({ setParam });
+    render(<CustomGridEditor />);
+
+    // Select one cell from each merged compartment, then split.
+    fireEvent.click(screen.getByLabelText('cell 0,1')); // top bar
+    fireEvent.click(screen.getByLabelText('cell 0,0')); // bottom bar
+    fireEvent.click(screen.getByText(/split/i));
+
+    const call = setParam.mock.calls.find(([k]) => k === 'slotConfig');
+    const cells: number[] = call?.[1].customGrid.cells;
+    // Both compartments fully split → four distinct single-cell compartments.
+    expect(new Set(cells).size).toBe(4);
+  });
+
   it('surfaces a friction warning for an unanchored interior piece', () => {
     // col0 & col2 full; col1 split → a lone horizontal friction piece.
     seedCustom(3, 3, [0, 1, 2, 0, 3, 2, 0, 3, 2]);

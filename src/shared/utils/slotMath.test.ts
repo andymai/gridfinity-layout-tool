@@ -340,13 +340,14 @@ describe('resolvePartialStyle', () => {
 });
 
 describe('calculateLapSnapPositions', () => {
-  it('places a score just outboard of each crossing notch', () => {
-    // slotWidth 2.1 → half-width 1.05 on the + side of each crossing
-    expect(calculateLapSnapPositions([-20, 0, 20], 2.1)).toEqual([-18.95, 1.05, 21.05]);
+  it('places the whole score just outboard of each crossing notch', () => {
+    // offset = slotWidth/2 (1.05) + SNAP_SCORE_WIDTH/2 (0.3) = 1.35
+    expect(calculateLapSnapPositions([-20, 0, 20], 2.1)).toEqual([-18.65, 1.35, 21.35]);
   });
 
   it('sorts crossings before offsetting', () => {
-    expect(calculateLapSnapPositions([20, -20, 0], 2)).toEqual([-19, 1, 21]);
+    // offset = 2/2 (1) + 0.3 = 1.3
+    expect(calculateLapSnapPositions([20, -20, 0], 2)).toEqual([-18.7, 1.3, 21.3]);
   });
 });
 

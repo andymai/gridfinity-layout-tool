@@ -15,6 +15,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
+import { resolveOverhang, overhangExpansion } from '@/shared/utils/overhang';
 
 const WALL_COLOR = '#22d3ee';
 const LABEL_COLOR = '#e2e8f0';
@@ -32,6 +33,7 @@ export function GhostAuthoredDividers() {
     style,
     slotConfig,
     dividerPieces,
+    overhang,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -44,13 +46,16 @@ export function GhostAuthoredDividers() {
       style: s.params.style,
       slotConfig: s.params.slotConfig,
       dividerPieces: s.params.dividerPieces,
+      overhang: s.params.overhang,
     }))
   );
 
   const active = style === 'slotted' && slotConfig.layout === 'custom';
 
-  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
+  // Interior expands into the overhang in lockstep with the body.
+  const ovh = overhangExpansion(resolveOverhang(overhang));
+  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE + ovh.addW;
+  const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE + ovh.addD;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const topZ = height * heightUnitMm;

@@ -16,15 +16,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { Button, Stepper } from '@/design-system';
-import {
-  mergeCells,
-  splitCompartment,
-  isRectangularSelection,
-} from '@/features/bin-designer/utils';
+import { mergeCells, normalizeIds, isRectangularSelection } from '@/features/bin-designer/utils';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { getEffectiveSlotDimensions } from '@/shared/utils/slotMath';
+import { resolveOverhang, overhangExpansion } from '@/shared/utils/overhang';
 import { useTranslation } from '@/i18n';
 import type { CompartmentGrid } from '@/shared/utils/compartmentGeometry';
 
@@ -61,7 +58,12 @@ export function CustomGridEditor() {
 
   const [selection, setSelection] = useState<Set<number>>(new Set());
 
-  const { innerW, innerD } = binDimensions(params);
+  // The interior grows into the overhang in lockstep with the body, so map the
+  // grid over the expanded interior (matching the generated slots/pieces).
+  const nominal = binDimensions(params);
+  const ovh = overhangExpansion(resolveOverhang(params.overhang));
+  const innerW = nominal.innerW + ovh.addW;
+  const innerD = nominal.innerD + ovh.addD;
   const { slotDepth } = getEffectiveSlotDimensions(
     params.wallThickness,
     dividerPieces.thickness,
@@ -108,10 +110,6 @@ export function CustomGridEditor() {
 
   const selectionIndices = useMemo(() => [...selection], [selection]);
   const canMerge = selectionIndices.length >= 2 && isRectangularSelection(cols, selectionIndices);
-  const selectedCompartments = useMemo(
-    () => new Set(selectionIndices.map((i) => cells[i])),
-    [selectionIndices, cells]
-  );
   const canSplit = selectionIndices.length > 0;
 
   const doMerge = useCallback(() => {
@@ -120,13 +118,14 @@ export function CustomGridEditor() {
   }, [grid, dividerPieces.thickness, selectionIndices, commitGrid]);
 
   const doSplit = useCallback(() => {
-    let next: CompartmentGrid = grid;
-    for (const id of selectedCompartments) {
-      const res = splitCompartment({ ...next, thickness: dividerPieces.thickness }, id);
-      next = { cols: res.cols, rows: res.rows, cells: res.cells };
-    }
-    commitGrid(next);
-  }, [grid, dividerPieces.thickness, selectedCompartments, commitGrid]);
+    // Give every cell of each selected compartment its own id in one pass, then
+    // normalize once. Splitting compartment-by-compartment would be unstable —
+    // each split renumbers ids, invalidating the remaining targets.
+    const targets = new Set(selectionIndices.map((i) => cells[i]));
+    let nextId = Math.max(...cells) + 1;
+    const split = cells.map((id) => (targets.has(id) ? nextId++ : id));
+    commitGrid({ cols, rows, cells: normalizeIds(split) });
+  }, [cells, cols, rows, selectionIndices, commitGrid]);
 
   // Grid preview sizing: keep the interior aspect ratio, cap the long edge.
   const maxEdge = 168;

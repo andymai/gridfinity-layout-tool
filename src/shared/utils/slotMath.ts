@@ -342,15 +342,18 @@ export function resolvePartialStyle(
 /**
  * Score-groove centers along a full lap piece for snappable mode.
  *
- * A score sits just outboard (+ side) of each crossing notch, so snapping
- * there leaves the wall-anchored (− side) remainder with a complete cross-lap
- * notch that still grips its last crossing divider.
+ * The whole groove sits just outboard (+ side) of each crossing notch: the
+ * center is offset by half the notch width plus half the score width, so the
+ * score's inner edge meets the notch's outer edge. Snapping there leaves the
+ * wall-anchored (− side) remainder with a complete cross-lap notch that still
+ * grips its last crossing divider.
  */
 export function calculateLapSnapPositions(
   crossings: readonly number[],
   slotWidth: number
 ): number[] {
-  return [...crossings].sort((a, b) => a - b).map((p) => p + slotWidth / 2);
+  const offset = slotWidth / 2 + SNAP_SCORE_WIDTH / 2;
+  return [...crossings].sort((a, b) => a - b).map((p) => p + offset);
 }
 
 /** A lap divider piece: total length, cross-lap notch centers (relative to

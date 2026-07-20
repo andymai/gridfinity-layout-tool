@@ -172,8 +172,10 @@ export function buildUniqueDividerPieces(
   if (params.style !== 'slotted') return [];
 
   // Custom (authored-layout) removable dividers take a separate path: pieces
-  // come from the drawn grid, not from parametric pitch.
-  if (params.slotConfig.layout === 'custom') {
+  // come from the drawn grid, not from parametric pitch. Require customGrid so
+  // this stays consistent with slotBuilder (which only cuts authored slots when
+  // the grid is present, else falls back to parametric).
+  if (params.slotConfig.layout === 'custom' && params.slotConfig.customGrid) {
     return buildAuthoredDividerPieces(params, innerW, innerD, wallHeight, hasLip);
   }
 
