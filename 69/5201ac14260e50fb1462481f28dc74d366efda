@@ -1,0 +1,21 @@
+src/features/bin-designer/store/tagAppearance.test.ts
+  s_3c1428c0ef138e::t_26d6565103d3b6 24
+src/features/bin-designer/store/tagAppearance.ts
+  s_3c1428c0ef138e::t_3878a54d3f8dff 63-65,68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "695201ac14260e50fb1462481f28dc74d366efda",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
