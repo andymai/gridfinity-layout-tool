@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.260.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.1...gridfinity-layout-tool-v4.260.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **baseplate:** replace flat connector key with locking puzzle-lobe dogbone ([#2642](https://github.com/andymai/gridfinity-layout-tool/issues/2642)) ([921f102](https://github.com/andymai/gridfinity-layout-tool/commit/921f102b0a9c10450ca0ef922a6c9551a74ad505)), closes [#2637](https://github.com/andymai/gridfinity-layout-tool/issues/2637)
+
 ## [4.260.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.260.0...gridfinity-layout-tool-v4.260.1) (2026-07-20)
 
 
