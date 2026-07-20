@@ -1,0 +1,28 @@
+src/features/generation/worker/handlers/exportHandler.ts
+  s_e22c16986e8ee6::t_0227e3e92878d3 180
+  s_e22c16986e8ee6::t_e10db0914db3aa 16
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_112e1b8eb79710 277-314
+src/features/generation/worker/generators/wallPatterns.ts
+  s_e22c16986e8ee6::t_0b859840367ef0 12
+  s_e22c16986e8ee6::t_a299302d77cd19 65-66
+src/shared/utils/slotMath.test.ts
+  s_e22c16986e8ee6::t_9d9529954294da 401-443
+  s_e22c16986e8ee6::t_766b368397fdba 14-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f073b42205f5603022501bddf8bc27703206e2bb",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
