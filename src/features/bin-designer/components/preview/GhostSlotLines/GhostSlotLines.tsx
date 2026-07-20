@@ -35,7 +35,8 @@ export function GhostSlotLines() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
@@ -73,6 +74,9 @@ export function GhostSlotLines() {
     style === 'slotted' &&
     wallThickness >= MIN_WALL_FOR_SLOTS &&
     generationStatus === 'generating' &&
+    // Custom layout draws its own authored overlay (GhostAuthoredDividers);
+    // the parametric slot lines would show wrong positions and overlap it.
+    slotConfig.layout !== 'custom' &&
     (slotConfig.x.enabled || slotConfig.y.enabled);
 
   const geometry = useMemo(() => {
