@@ -1,0 +1,28 @@
+scripts/seed-supporters.core.test.ts
+  s_5ad88eae11a012::t_1c4899c7d76153 1-99
+  s_5ad88eae11a012::t_87dc32e2f993f5 100-102
+scripts/seed-supporters.core.ts
+  s_5ad88eae11a012::t_6339c2ec0cc516 1-178
+  s_5ad88eae11a012::t_5e0858406ee3b4 179-181
+  s_5ad88eae11a012::t_c37d2fb2853932 182-186
+scripts/seed-supporters.ts
+  s_5ad88eae11a012::t_9e4d2350a4a244 2,4-8,10-15,18,21,24-29,43-53,56,58-61,63-78,96-98,101
+  s_5ad88eae11a012::t_38a82f03254936 99-100
+  s_5ad88eae11a012::t_98574493049927 102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "bdf9d994750a9bc2e902135ed43abd795d7efe66",
+  "prompts": {},
+  "sessions": {
+    "s_5ad88eae11a012": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "088f5146-7c58-4868-a117-801a6b5de988",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
