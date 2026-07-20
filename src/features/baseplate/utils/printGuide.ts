@@ -70,7 +70,9 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       input.copies
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
-    ...(input.margins && input.margins.length > 0 ? [generateMarginSection(input.margins)] : []),
+    ...(input.margins && input.margins.length > 0
+      ? [generateMarginSection(input.margins, stackPrint ? input.copies : 1)]
+      : []),
     generateGridMap(tiling),
     generateFooter(),
   ];
@@ -81,9 +83,19 @@ export function generatePrintGuide(input: PrintGuideInput): string {
 /**
  * Standalone stack-print note for single-piece exports that have no split
  * piece table (e.g. one plate stacked into several capped-height towers).
+ * Detached margin rails, when present, ship flat alongside the towers.
  */
-export function generateStackPrintNote(stack: StackPrintParams): string {
-  return `${generateStackingSection(stack)}\n\n${generateFooter()}`;
+export function generateStackPrintNote(
+  stack: StackPrintParams,
+  margins?: PrintGuideInput['margins'],
+  copies = 1
+): string {
+  const sections = [
+    generateStackingSection(stack),
+    ...(margins && margins.length > 0 ? [generateMarginSection(margins, copies)] : []),
+    generateFooter(),
+  ];
+  return sections.join('\n\n');
 }
 
 /**
@@ -111,7 +123,11 @@ export function generateMarginGuide(margins: NonNullable<PrintGuideInput['margin
   return `${generateMarginSection(margins)}\n\n${generateFooter()}`;
 }
 
-function generateMarginSection(margins: NonNullable<PrintGuideInput['margins']>): string {
+function generateMarginSection(
+  margins: NonNullable<PrintGuideInput['margins']>,
+  copies = 1
+): string {
+  const n = Math.max(1, Math.floor(copies));
   const rows = margins.map(
     (m) =>
       `  ${m.fileName}  —  ${m.side}, ${m.lengthMm.toFixed(1)} × ${m.bandThicknessMm.toFixed(1)} mm`
@@ -121,6 +137,9 @@ function generateMarginSection(margins: NonNullable<PrintGuideInput['margins']>)
     '',
     '  These rails are the drawer-fit padding, printed separately. Fit them',
     '  around the body after printing; a misprinted rail can be reprinted alone.',
+    // Rails ship one file each while the stacked towers bake in every copy, so
+    // the per-rail print count is the only place the multiplier surfaces.
+    ...(n > 1 ? ['', `  Print each rail file ${n} times — one set per copy of the plate.`] : []),
     '',
     ...rows,
   ].join('\n');
@@ -131,8 +150,8 @@ function generateStackingSection(stack: StackPrintParams): string {
   return [
     '─── Stack printing ──────────────────────────────',
     '',
-    '  Each file is a ready-made VERTICAL STACK — print it ONCE to get all of its',
-    '  plates in a single job.',
+    '  Each plate file is a ready-made VERTICAL STACK — print it ONCE to get all',
+    '  of its plates in a single job.',
     '',
     '  ORIENTATION — print exactly as oriented in the file. The bottom plate is',
     '  right-side up (solid bed adhesion); every plate above it is flipped upside',

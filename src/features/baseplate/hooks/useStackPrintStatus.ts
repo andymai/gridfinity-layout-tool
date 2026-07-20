@@ -28,6 +28,8 @@ export interface StackPrintStatusInfo {
   readonly maxPrintHeightMm: number;
   /** Physical towers the current config produces — one entry per output file. */
   readonly plan: readonly PhysicalStack[];
+  /** Detached margin rails that ship as flat files alongside the towers (#2641). */
+  readonly railCount: number;
 }
 
 export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
@@ -84,5 +86,9 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     copies,
   ]);
 
-  return { status, gapMm, maxPrintHeightMm, plan };
+  // Margins are emitted only when detachMargins resolves on, so the tiling
+  // already gates the count.
+  const railCount = tiling?.margins.length ?? 0;
+
+  return { status, gapMm, maxPrintHeightMm, plan, railCount };
 }

@@ -53,14 +53,18 @@ const DEFAULT_STACK_PRINT: StackPrintParams = {
  * Summarise the print output (total plates + file count) so a stack that
  * auto-splits across the build-height cap isn't surprising. Returns null when
  * there's nothing to stack (≤1 plate) — the warnings already cover that.
+ * Detached margin rails count toward the file total (they ship as flat files
+ * alongside the towers, so "1 print file" would misdescribe the ZIP).
  */
 function stackOutputSummary(
   t: ReturnType<typeof useTranslation>,
-  plan: readonly PhysicalStack[]
+  plan: readonly PhysicalStack[],
+  railCount: number
 ): string | null {
   const plates = plan.reduce((sum, p) => sum + p.copies, 0);
   if (plates < 2) return null;
-  const files = plan.length;
+  const files = plan.length + railCount;
+  if (railCount > 0) return t('baseplate.stackPrint.output.withRails', { plates, files });
   if (files <= 1) return t('baseplate.stackPrint.output.oneFile', { plates });
   const breakdown = plan.map((p) => p.copies).join('+');
   return t('baseplate.stackPrint.output.manyFiles', { plates, files, breakdown });
@@ -96,11 +100,11 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
   const copies = stackPrint?.copies ?? STACK_PRINT_DEFAULT_COPIES;
 
-  const { status, maxPrintHeightMm, plan } = useStackPrintStatus(gapMm);
+  const { status, maxPrintHeightMm, plan, railCount } = useStackPrintStatus(gapMm);
   // Gate on `enabled` so the warning never surfaces while stacking is off, rather
   // than relying on FeatureToggle hiding the controls.
   const warning = enabled ? stackWarning(t, status, gapMm, maxPrintHeightMm) : null;
-  const outputSummary = enabled && !warning ? stackOutputSummary(t, plan) : null;
+  const outputSummary = enabled && !warning ? stackOutputSummary(t, plan, railCount) : null;
 
   const patch = (next: Partial<StackPrintParams>): void => {
     onChange({ enabled: true, gapMm, copies, ...next });

@@ -221,7 +221,8 @@ export async function buildBaseplateExportPieces(
   const baseNameNoExt = baseName.replace(/\.[^.]+$/, '');
   const extension = FORMAT_EXTENSIONS[format];
 
-  // Detached margin rails (issue #2392). Mutually exclusive with stacking.
+  // Detached margin rails (issue #2392). They also ship alongside stacked
+  // towers (#2641) — rails never stack, they print flat as separate pieces.
   const railMargins = fullParams.detachMargins ? tiling.margins : [];
   const exportRailPieces = async (): Promise<ExportPiece[]> => {
     const out: ExportPiece[] = [];
@@ -408,35 +409,36 @@ export async function buildBaseplateExportPieces(
   }
 
   if (stack && stackEnabled) {
-    const stlData = await getOrExport(buildExportCacheKey(fullParams, 'stl', nozzleMm), () =>
-      bridge.exportBaseplate(fullParams, 'stl').then((r) => r.data)
+    // The towers stack the BODY mesh — padding-free on detached sides, with the
+    // rails shipping as separate flat pieces alongside (#2641). The body centre
+    // must come from the same params the mesh was generated with, or the flipped
+    // copies re-seat off-axis by the removed padding.
+    const stlData = await getOrExport(buildExportCacheKey(bodyExportParams, 'stl', nozzleMm), () =>
+      bridge.exportBaseplate(bodyExportParams, 'stl').then((r) => r.data)
     );
     const source = parseStlSoup(stlData);
-    const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
+    const singleBodyY = bodyCenterYMm(bodyExportParams.paddingFront, bodyExportParams.paddingBack);
     const towers = planPhysicalStacks([{ label: 'plate', quantity: copies }], stackCap);
-    if (towers.length === 1) {
-      const blob = buildStackedFileBlob(
-        source,
-        baseNameNoExt,
-        towers[0].copies,
-        format,
-        stack,
-        singleBodyY,
-        printSettings
-      );
-      return {
-        pieces: [{ data: await blob.arrayBuffer(), label: '' }],
-        guideText: '',
-        baseNameNoExt,
-        extension,
-      };
-    }
+    const hasRails = railMargins.length > 0;
+    const multiTower = towers.length > 1;
+
+    let guideText = '';
+    if (hasRails) guideText = generateStackPrintNote(stack, marginGuideInfo, copies);
+    else if (multiTower) guideText = generateStackPrintNote(stack);
+
     const pieces: ExportPiece[] = [];
     for (let s = 0; s < towers.length; s++) {
-      const label = `${s + 1}`;
+      // Split towers carry a numeric suffix. A lone tower keeps the base name for
+      // a direct download, unless rails force a ZIP — then it takes the 'body'
+      // suffix to match the unstacked detach path.
+      let label: string;
+      if (multiTower) label = `${s + 1}`;
+      else if (hasRails) label = 'body';
+      else label = '';
+      const fileName = label ? `${baseNameNoExt}_${label}` : baseNameNoExt;
       const blob = buildStackedFileBlob(
         source,
-        `${baseNameNoExt}_${label}`,
+        fileName,
         towers[s].copies,
         format,
         stack,
@@ -445,7 +447,8 @@ export async function buildBaseplateExportPieces(
       );
       pieces.push({ data: await blob.arrayBuffer(), label });
     }
-    return { pieces, guideText: generateStackPrintNote(stack), baseNameNoExt, extension };
+    pieces.push(...(await exportRailPieces()));
+    return { pieces, guideText, baseNameNoExt, extension };
   }
 
   if (railMargins.length > 0) {

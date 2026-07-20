@@ -300,6 +300,57 @@ describe('buildFullParams', () => {
       expect(result.magnetHoles).toBe(true);
     });
   });
+
+  describe('detach margins × stack-print composition (#2641)', () => {
+    const detached = {
+      ...storedBase,
+      paddingLeft: 10,
+      paddingRight: 10,
+      detachMargins: true,
+      stackPrint: { enabled: true, gapMm: 0.2 as never },
+    };
+
+    it('keeps detachMargins active while stacking', () => {
+      const result = buildFullParams(detached, 10, 8, 42, 'end', 'end');
+      expect(result.detachMargins).toBe(true);
+      expect(result.paddingLeft).toBe(10);
+      expect(result.paddingRight).toBe(10);
+    });
+
+    it('keeps the seam connector for tongue/groove styles while stacking', () => {
+      const stored = {
+        ...detached,
+        connectorNubs: true,
+        connectorStyle: undefined,
+        detachMarginConnector: true,
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.detachMargins).toBe(true);
+      expect(result.detachMarginConnector).toBe(true);
+    });
+
+    it('drops the seam connector when stacking strips a snapClip style', () => {
+      // Stripping snapClip resolves connectorStyle to undefined, which the seam
+      // gate would read as the dovetail default — the unstacked plate has no
+      // seam (snapClip is not a seam style), so the stacked one must not either.
+      const stored = {
+        ...detached,
+        connectorNubs: true,
+        connectorStyle: 'snapClip' as const,
+        detachMarginConnector: true,
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.detachMargins).toBe(true);
+      expect(result.detachMarginConnector).toBe(false);
+    });
+
+    it('still strips rounding while stacking, so rails inherit square corners', () => {
+      const stored = { ...detached, cornerRadius: 4 };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.detachMargins).toBe(true);
+      expect(result.cornerRadius).toBe(0);
+    });
+  });
 });
 
 describe('drawer outline handling', () => {

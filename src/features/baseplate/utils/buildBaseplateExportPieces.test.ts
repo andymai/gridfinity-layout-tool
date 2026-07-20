@@ -10,13 +10,34 @@ function buf(byte: number, length = 8): ArrayBuffer {
   return b;
 }
 
+/** One-triangle binary STL — enough for the stack path's parse + re-encode. */
+function stlBuf(): ArrayBuffer {
+  const b = new ArrayBuffer(84 + 50);
+  const dv = new DataView(b);
+  dv.setUint32(80, 1, true);
+  const floats = [0, 0, 1, 0, 0, 0, 10, 0, 0, 0, 10, 0];
+  floats.forEach((v, i) => dv.setFloat32(84 + i * 4, v, true));
+  return b;
+}
+
 /** Minimal bridge stub — only the methods the tested branches touch. */
-function makeBridge(): { bridge: GenerationBridge; exportBaseplate: ReturnType<typeof vi.fn> } {
+function makeBridge(): {
+  bridge: GenerationBridge;
+  exportBaseplate: ReturnType<typeof vi.fn>;
+  exportMargin: ReturnType<typeof vi.fn>;
+} {
   const exportBaseplate = vi.fn((_, format: string) =>
-    Promise.resolve({ data: buf(0xa1, 12), fileName: `plate.${format}`, format })
+    Promise.resolve({
+      data: format === 'stl' ? stlBuf() : buf(0xa1, 12),
+      fileName: `plate.${format}`,
+      format,
+    })
   );
-  const bridge = { exportBaseplate } as unknown as GenerationBridge;
-  return { bridge, exportBaseplate };
+  const exportMargin = vi.fn((_params, _margin, format: string) =>
+    Promise.resolve({ data: stlBuf(), fileName: `margin.${format}`, format })
+  );
+  const bridge = { exportBaseplate, exportMargin } as unknown as GenerationBridge;
+  return { bridge, exportBaseplate, exportMargin };
 }
 
 const PRINT_SETTINGS = {
@@ -88,6 +109,54 @@ describe('buildBaseplateExportPieces', () => {
     expect(result.pieces.length).toBeGreaterThan(1);
     expect(result.pieces.every((p) => p.label.length > 0)).toBe(true);
     expect(result.guideText).toContain('Gridfinity Baseplate Print Guide');
+  });
+
+  it('ships rail pieces and a combined guide alongside a stacked tower (#2641)', async () => {
+    const { bridge, exportMargin } = makeBridge();
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          paddingLeft: 10,
+          paddingRight: 10,
+          detachMargins: true,
+          stackPrint: { enabled: true, gapMm: 0.2 as never, copies: 3 },
+        },
+      })
+    );
+
+    expect(exportMargin).toHaveBeenCalled();
+    const labels = result.pieces.map((p) => p.label);
+    expect(labels).toContain('body');
+    const railLabels = labels.filter((l) => l.startsWith('margin-'));
+    // One file per rail; the guide (not file duplication) carries the ×copies
+    // instruction, so each rail id must appear exactly once.
+    expect(railLabels.length).toBeGreaterThan(0);
+    expect(new Set(railLabels).size).toBe(railLabels.length);
+    expect(result.guideText).toContain('Stack printing');
+    expect(result.guideText).toContain('Detached margins');
+    expect(result.guideText).toContain('Print each rail file 3 times');
+  });
+
+  it('keeps the stacked single-file export labelless when nothing detaches', async () => {
+    const { bridge, exportMargin } = makeBridge();
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: 0.2 as never, copies: 3 },
+        },
+      })
+    );
+
+    expect(exportMargin).not.toHaveBeenCalled();
+    expect(result.pieces).toHaveLength(1);
+    expect(result.pieces[0].label).toBe('');
+    expect(result.guideText).toBe('');
   });
 
   it('reports progress during a split export', async () => {

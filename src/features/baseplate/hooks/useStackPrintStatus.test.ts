@@ -30,10 +30,14 @@ function piece(label: string, overrides: Partial<BaseplatePiece> = {}): Baseplat
   };
 }
 
-function tiling(pieces: BaseplatePiece[]): BaseplateTiling {
+function tiling(
+  pieces: BaseplatePiece[],
+  margins: BaseplateTiling['margins'] = []
+): BaseplateTiling {
   return {
     isSplit: true,
     pieces,
+    margins,
     cols: 2,
     rows: 1,
     totalWidthUnits: 4,
@@ -71,6 +75,32 @@ describe('useStackPrintStatus', () => {
       .setTiling(tiling([piece('A1', { depthUnits: 2 }), piece('B1', { depthUnits: 3 })]));
     const { result } = renderHook(() => useStackPrintStatus(0.2));
     expect(result.current.status).toEqual({ kind: 'singlePlate' });
+  });
+
+  it('counts detached margin rails so the file readout includes them (#2641)', () => {
+    useBaseplatePageStore.getState().setTiling(
+      tiling(
+        [piece('A1'), piece('A2')],
+        [
+          {
+            id: 'margin-right-1',
+            side: 'right',
+            role: 'long',
+            col: 1,
+            row: 0,
+            lengthMm: 84,
+            bandThicknessMm: 10,
+            ownedCorners: [],
+            worldOffsetMm: { x: 89, y: 0 },
+            overTile: false,
+            overTileHalfGrid: false,
+            overTileHalfGridSolidLeftover: false,
+          },
+        ]
+      )
+    );
+    const { result } = renderHook(() => useStackPrintStatus(0.2));
+    expect(result.current.railCount).toBe(1);
   });
 
   it('clears singlePlate and reports the plan when copies ≥ 2 on an unsplit drawer', () => {

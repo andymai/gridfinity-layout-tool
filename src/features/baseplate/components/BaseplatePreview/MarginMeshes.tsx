@@ -5,31 +5,24 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { MarginMeshEntry } from '../../store/baseplatePageStore';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
-import { EXPLODE_GAP_MM } from '../../constants';
-
-/** Extra outward gap (mm) so a rail reads as detached from its body piece. */
-const MARGIN_OUTWARD_GAP_MM = 8;
+import { railPosition } from './railPosition';
+import type { StackFieldSize } from './railPosition';
 
 /** Face opacity in xray mode (matches the body/split meshes). */
 const XRAY_OPACITY = 0.3;
-
-const SIDE_NORMAL: Record<MarginMeshEntry['side'], readonly [number, number]> = {
-  left: [-1, 0],
-  right: [1, 0],
-  front: [0, -1],
-  back: [0, 1],
-};
 
 function MarginRailMesh({
   entry,
   color,
   exploded,
   xray,
+  stackField,
 }: {
   entry: MarginMeshEntry;
   color: string;
   exploded: boolean;
   xray: boolean;
+  stackField?: StackFieldSize | null;
 }) {
   const { invalidate } = useThree();
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
@@ -45,14 +38,7 @@ function MarginRailMesh({
 
   if (!geometry) return null;
 
-  // In exploded view, track the adjacent body piece (col/row * gap, matching
-  // SplitBaseplateMeshes) so segments move with their piece, then step outward
-  // along the side normal so the rail visibly separates instead of overlapping.
-  const [nx, ny] = SIDE_NORMAL[entry.side];
-  const explodeX = exploded ? entry.col * EXPLODE_GAP_MM + nx * MARGIN_OUTWARD_GAP_MM : 0;
-  const explodeY = exploded ? entry.row * EXPLODE_GAP_MM + ny * MARGIN_OUTWARD_GAP_MM : 0;
-  const x = entry.worldOffsetMm.x + explodeX;
-  const y = entry.worldOffsetMm.y + explodeY;
+  const { x, y } = railPosition(entry, exploded, stackField);
 
   return (
     <group position={[x, y, 0.1]}>
@@ -78,10 +64,20 @@ function MarginRailMesh({
 
 /**
  * Renders detached margin rails (issue #2392). Each rail mesh is centered at the
- * origin and placed by its `worldOffsetMm`; rails render in every mode (split or
- * not) whenever `detachMargins` produced them.
+ * origin and placed by its `worldOffsetMm`; rails render in every mode (split,
+ * unsplit, or stacked) whenever `detachMargins` produced them. In stack-print
+ * mode pass `stackField` so rails ring the tower field instead of the absent
+ * assembled body (#2641).
  */
-export function MarginMeshes({ color, xray = false }: { color: string; xray?: boolean }) {
+export function MarginMeshes({
+  color,
+  xray = false,
+  stackField,
+}: {
+  color: string;
+  xray?: boolean;
+  stackField?: StackFieldSize | null;
+}) {
   const { marginMeshes, splitViewMode } = useBaseplatePageStore(
     useShallow((s) => ({ marginMeshes: s.marginMeshes, splitViewMode: s.splitViewMode }))
   );
@@ -98,6 +94,7 @@ export function MarginMeshes({ color, xray = false }: { color: string; xray?: bo
           color={color}
           exploded={exploded}
           xray={xray}
+          stackField={stackField}
         />
       ))}
     </>

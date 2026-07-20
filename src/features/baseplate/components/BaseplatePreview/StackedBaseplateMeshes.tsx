@@ -16,7 +16,7 @@ import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
-import { pieceToBaseplateParams } from '../../utils/splitPlanner';
+import { pieceToBaseplateParams, bodyParamsForDetach } from '../../utils/splitPlanner';
 import {
   stackGroupsFromTiling,
   planPhysicalStacks,
@@ -110,7 +110,11 @@ export function StackedBaseplateMeshes({
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
-    const singleBodyY = bodyCenterYMm(fullParams.paddingFront, fullParams.paddingBack);
+    // The unsplit mesh is generated from the detach-adjusted body params
+    // (padding-free on detached sides), so the body centre must come from the
+    // same params or flipped copies re-seat off-axis by the removed padding.
+    const singleBody = bodyParamsForDetach(fullParams);
+    const singleBodyY = bodyCenterYMm(singleBody.paddingFront, singleBody.paddingBack);
 
     // Index pieces/meshes by label once: the loop and the spatial-positioning
     // pass below both look up by label, so a per-tower find() would be O(n²).

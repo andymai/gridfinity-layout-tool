@@ -2416,7 +2416,6 @@ const en: Record<string, string> = {
   'baseplate.leftoverSolid': 'Solid',
   'baseplate.detachMargins': 'Detach margins as separate pieces',
   'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
-  'baseplate.detachMarginsStackConflict': 'Not available while stack printing is on.',
   'baseplate.detachMarginConnector': 'Add connector',
   'baseplate.detachMarginConnectorHint':
     'Adds a tongue-and-groove joint so the long rails clip onto the plate. Short rails and corners stay friction-fit.',
@@ -2470,6 +2469,8 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.output.oneFile': '{plates} plates stacked into 1 print file.',
   'baseplate.stackPrint.output.manyFiles':
     '{plates} plates across {files} print files ({breakdown}).',
+  'baseplate.stackPrint.output.withRails':
+    '{plates} plates across {files} print files, including detached margin rails.',
   'baseplate.stackPrint.tips.heading': 'Tips for separating',
   'baseplate.stackPrint.tips.single.heading': 'Single material',
   'baseplate.stackPrint.tips.single.body':

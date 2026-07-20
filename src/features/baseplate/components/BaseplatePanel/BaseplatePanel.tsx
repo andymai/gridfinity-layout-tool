@@ -256,10 +256,6 @@ export function BaseplatePanel() {
     [updateParam]
   );
 
-  // Detach margins: each side with padding ≥ threshold prints as its own rail.
-  // Mutually exclusive with stack-print (stacking wins) — keyed on the stored
-  // flag, not the export-format-aware `stackEnabled` above.
-  const stackPrintOn = baseplateParams.stackPrint?.enabled === true;
   // Mirrors buildFullParams's outline gate. Corner-cut shapes compose with
   // padding (the cuts are re-inscribed on the padded rectangle), so padding
   // stays live and only corner rounding + detached margins hide. Painted/pen/
@@ -286,9 +282,6 @@ export function BaseplatePanel() {
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingFront >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingBack >= MARGIN_MIN_DETACH_MM;
-  // Reflect the STORED opt-in in the toggle (it's preserved across stack-print),
-  // so when stack-print suppresses detach the switch reads as on-but-disabled
-  // rather than silently off.
   const detachStored = baseplateParams.detachMargins === true;
   const marginConnectorStored = baseplateParams.detachMarginConnector === true;
   // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
@@ -587,11 +580,9 @@ export function BaseplatePanel() {
                       checked={detachStored}
                       onChange={() => updateParam('detachMargins', !detachStored)}
                       disabledReason={
-                        stackPrintOn
-                          ? t('baseplate.detachMarginsStackConflict')
-                          : !detachStored && !canDetach
-                            ? t('baseplate.detachMarginsTooSmall')
-                            : undefined
+                        !detachStored && !canDetach
+                          ? t('baseplate.detachMarginsTooSmall')
+                          : undefined
                       }
                       primaryControls={
                         // On but nothing meets the threshold → no rails are emitted,

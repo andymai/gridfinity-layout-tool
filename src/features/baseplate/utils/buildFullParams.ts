@@ -174,14 +174,20 @@ export function buildFullParams(
   // post-cache intersect slot, so rounding is zeroed whenever one is active —
   // whether it came from the drawer shape or from the radius conversion above.
   const roundingOn = !stackingOn && outline === undefined;
-  // Detach is mutually exclusive with stacking (stacking wins) and with any
-  // active outline (rails have no outline awareness — margins would need
-  // arc-clipped rail geometry). Padding stays at its stored values here —
-  // `emitMargins` and the camera/dimension overlay need the true outer extent;
-  // the body mesh zeroes detached sides downstream.
-  const detachMargins = stored.detachMargins === true && !stackingOn && outline === undefined;
-  // The connector is only meaningful when margins actually detach.
-  const detachMarginConnector = detachMargins && stored.detachMarginConnector === true;
+  // Detach is mutually exclusive with any active outline (rails have no outline
+  // awareness — margins would need arc-clipped rail geometry). It COMPOSES with
+  // stacking (#2641): rails never enter the flipped towers — they export as
+  // separate flat pieces — and zeroing edge-piece padding makes more tiles share
+  // a fingerprint, so plates dedupe into taller identical stacks. Padding stays
+  // at its stored values here — `emitMargins` and the camera/dimension overlay
+  // need the true outer extent; the body mesh zeroes detached sides downstream.
+  const detachMargins = stored.detachMargins === true && outline === undefined;
+  // The connector is only meaningful when margins actually detach. When
+  // stacking strips a snapClip style to undefined, the seam gate downstream
+  // would read undefined as the dovetail default and emit seams the unstacked
+  // plate never had — so the strip turns the seam off too.
+  const detachMarginConnector =
+    detachMargins && stored.detachMarginConnector === true && !stripConnectors;
 
   return {
     width,

@@ -97,12 +97,23 @@ vi.mock('../../store/baseplatePageStore', () => ({
   },
 }));
 
+const pieceDefaults = {
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingFront: 0,
+  paddingBack: 0,
+  fractionalEdgeX: 'none',
+  fractionalEdgeY: 'none',
+  placementRotationDeg: 0,
+} as const;
+
 const splitTiling: BaseplateTiling = {
   isSplit: true,
   cols: 2,
   rows: 1,
   pieces: [
     {
+      ...pieceDefaults,
       label: 'A1',
       col: 0,
       row: 0,
@@ -110,9 +121,10 @@ const splitTiling: BaseplateTiling = {
       depthUnits: 4,
       gridOffsetX: 0,
       gridOffsetY: 0,
-      placementRotationDeg: 0,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
     },
     {
+      ...pieceDefaults,
       label: 'B1',
       col: 1,
       row: 0,
@@ -120,14 +132,16 @@ const splitTiling: BaseplateTiling = {
       depthUnits: 4,
       gridOffsetX: 5,
       gridOffsetY: 0,
-      placementRotationDeg: 0,
+      edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
     },
   ],
+  margins: [],
   totalWidthUnits: 9,
   totalDepthUnits: 6,
   stackCount: 1,
   stackSeparatorThickness: 0,
   bedLoads: 1,
+  paddingReductionHint: null,
 };
 
 describe('BaseplatePanel', () => {
@@ -446,6 +460,18 @@ describe('BaseplatePanel', () => {
         expect(
           screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
         ).not.toBeChecked();
+      });
+
+      it('keeps the detach margins toggle interactive (#2641)', () => {
+        mockLayoutState.layout.baseplateParams = {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          paddingLeft: 10,
+          paddingRight: 10,
+          detachMargins: true,
+          stackPrint: stacking,
+        };
+        render(<BaseplatePanel />);
+        expect(screen.getByRole('switch', { name: 'baseplate.detachMargins' })).toBeEnabled();
       });
 
       it('keeps magnets and corner radius for STEP exports (STEP never stacks)', () => {

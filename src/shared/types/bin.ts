@@ -326,8 +326,9 @@ export interface ResolvedBaseplateParams {
   /**
    * Detach the drawer-fit padding into separate printable rail pieces. When set,
    * the body slab is generated padding-free on detached sides and the margin
-   * rails are emitted as `BaseplateTiling.margins`. Mutually exclusive with
-   * `stackPrint` (stackPrint wins). Omit/false = padding stays integral.
+   * rails are emitted as `BaseplateTiling.margins`. Composes with `stackPrint`
+   * (#2641): rails export as flat pieces alongside the stacked towers.
+   * Omit/false = padding stays integral.
    */
   readonly detachMargins?: boolean;
   /**

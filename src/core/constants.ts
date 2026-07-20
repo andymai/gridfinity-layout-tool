@@ -391,10 +391,6 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
           },
         }
       : {}),
-    // Preserve the stored opt-in. Detach is mutually exclusive with stack-print,
-    // but that's resolved at generation/UI time (buildFullParams + the panel
-    // suppress detach while stacking is on) — erasing the flag on load would lose
-    // the user's intent if they later turn stacking off.
     ...(obj.detachMargins === true ? { detachMargins: true } : {}),
     // Only meaningful alongside detachMargins, but preserve the opt-in
     // independently so toggling detach off/on doesn't lose the connector intent.

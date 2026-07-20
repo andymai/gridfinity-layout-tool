@@ -331,11 +331,17 @@ export function BaseplatePreview({
                   <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
                 )}
 
-                {/* Detached margin rails render in every mode (split or not), but
-                    never alongside the stack preview — detach and stack-print are
-                    mutually exclusive, and a leftover rail mustn't linger on a
-                    mode switch. */}
-                {!stackEnabled && <MarginMeshes color={filamentColor} xray={xray} />}
+                {/* Detached margin rails render in every mode. In stack mode they
+                    ring the tower field (gated on stackBounds so a rail can't
+                    flash at a stale assembled position while the towers are
+                    still being built). */}
+                {(!stackEnabled || stackBounds !== null) && (
+                  <MarginMeshes
+                    color={filamentColor}
+                    xray={xray}
+                    stackField={stackEnabled ? stackBounds : null}
+                  />
+                )}
 
                 {/* Footprint grid renders in every mode so the scene always reads
                     as parts on a build plate (in stack mode it spans the towers). */}
