@@ -123,7 +123,11 @@ function CtaBurst({
   );
 }
 
-/** Muted line chart of new supporters per month. Purely decorative (aria-hidden). */
+/**
+ * Muted line chart of new supporters per month. The SVG itself is aria-hidden
+ * (the shapes carry no meaning to a screen reader); the labeled `<figure>`
+ * wrapper in the page is what conveys the chart to assistive tech.
+ */
 function Sparkline({ buckets, color }: { buckets: SupportBucket[]; color: string }) {
   const width = 104;
   const height = 30;
