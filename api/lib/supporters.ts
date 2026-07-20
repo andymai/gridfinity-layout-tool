@@ -171,6 +171,38 @@ export function filterMessage(rawMessage: string | null | undefined): string | n
 }
 
 /**
+ * Parse a Ko-fi `amount` string (e.g. `"3.00"`) into integer minor units, or
+ * null if it isn't a non-negative number. Integer cents so the collect-only
+ * counter uses HINCRBY (exact) rather than HINCRBYFLOAT (drifts).
+ */
+export function parseAmountMinorUnits(rawAmount: string | null | undefined): number | null {
+  if (typeof rawAmount !== 'string') return null;
+  const value = Number.parseFloat(rawAmount.trim());
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * 100);
+}
+
+/** Normalize a Ko-fi `currency` to a 3-letter ISO code (uppercased), or null. */
+export function normalizeCurrency(rawCurrency: string | null | undefined): string | null {
+  if (typeof rawCurrency !== 'string') return null;
+  const code = rawCurrency.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(code) ? code : null;
+}
+
+/**
+ * Ko-fi's ISO `timestamp`, re-serialized to canonical ISO, or now if it's
+ * missing or unparseable — a supporter with a slightly-off join time beats a
+ * supporter with none (which would drop them out of every recency view).
+ */
+export function normalizeJoinedAt(rawTimestamp: string | null | undefined): string {
+  if (typeof rawTimestamp === 'string') {
+    const parsed = Date.parse(rawTimestamp);
+    if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
+  }
+  return new Date().toISOString();
+}
+
+/**
  * Serialize a supporter into the `supporters:donors` hash value.
  *
  * Compact keys (`n`/`t`/`m`) because this is a hot hash read on every page

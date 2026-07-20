@@ -4,13 +4,18 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import { ErrorCode, methodNotAllowed } from './lib/shared.js';
-import { supportersDonorsKey, supportersMessageKey } from './lib/redisKeys.js';
+import { supportersDonorsKey, supportersMessageKey, supportersTotalsKey } from './lib/redisKeys.js';
 import {
   MESSAGE_DEDUPE_TTL_SECONDS,
   deriveDonorId,
+  filterMessage,
   messageDedupeId,
+  normalizeCurrency,
   normalizeDisplayName,
+  normalizeJoinedAt,
+  parseAmountMinorUnits,
   parseKofiPayload,
+  serializeDonorRecord,
 } from './lib/supporters.js';
 
 /** Cheap liveness probe used to tell a rate-limit rejection from a Redis outage. */
@@ -52,8 +57,10 @@ function tokensMatch(received: string, expected: string): boolean {
  * verification — that parse is the one thing an unauthenticated caller can
  * make us do, and Vercel's body cap bounds it.
  *
- * Stored: a pseudonymous donor id (see `deriveDonorId`) and a display name.
- * Never stored: the email, the amount, or the message the supporter left.
+ * Stored per supporter: a pseudonymous donor id (see `deriveDonorId`), a display
+ * name, a join timestamp, and — only for a public name — the message they left.
+ * The amount is folded into a collect-only per-currency total and never tied to
+ * a person. Never stored: the raw email.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -144,6 +151,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ ok: true, deduped: true });
     }
 
+    // Collect-only running total, kept before the renewal short-circuit so it
+    // captures every payment (renewals included), not just first bins. Integer
+    // minor units via HINCRBY stay exact; the figure is never served to the page.
+    const amountMinor = parseAmountMinorUnits(payload.amount);
+    const currency = normalizeCurrency(payload.currency);
+    if (amountMinor !== null && amountMinor > 0 && currency) {
+      await redis.hincrby(supportersTotalsKey(), currency, amountMinor);
+    }
+
     // Subscription renewals are the same person as the first payment. Skipping
     // them keeps one bin per supporter even if the email is missing (below).
     if (payload.is_subscription_payment && payload.is_first_subscription_payment === false) {
@@ -155,8 +171,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // silently colliding with someone else.
     const donorId = payload.email ? deriveDonorId(payload.email) : null;
     const displayName = normalizeDisplayName(payload.from_name, payload.is_public);
+    // A message rides only with a public name: an opted-out supporter surfaces
+    // neither, so we don't even filter their words.
+    const message = displayName ? filterMessage(payload.message) : null;
+    const record = serializeDonorRecord({
+      name: displayName,
+      joinedAt: normalizeJoinedAt(payload.timestamp),
+      message: message ?? undefined,
+    });
 
-    await redis.hset(supportersDonorsKey(), donorId ?? `anon-${randomUUID()}`, displayName ?? '');
+    await redis.hset(supportersDonorsKey(), donorId ?? `anon-${randomUUID()}`, record);
 
     return res.status(200).json({ ok: true });
   } catch (error) {
