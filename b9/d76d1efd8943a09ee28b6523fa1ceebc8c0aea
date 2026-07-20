@@ -1,0 +1,156 @@
+src/features/generation/worker/generators/connectorSample.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 287,289-290,315
+src/i18n/locales/fr.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/design-system/Collapsible/Collapsible.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 97-102,167,200
+src/features/bin-designer/utils/compartments.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 783-790
+src/features/baseplate/utils/printGuide.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 232,249,292,409
+.github/workflows/codeql.yml
+  s_3c1428c0ef138e::t_4de8bf6e176904 32,37,40
+src/features/bin-designer/components/preview/GhostAuthoredDividers/index.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1
+src/features/bin-designer/types/index.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 10,154-179,196-206
+src/shared/constants/connectors.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 9-10,85-101
+  s_3c1428c0ef138e::t_2fe708130f70f2 102-104
+src/shell/Sidebar/Sidebar.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 1,51,454,537-540,544
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 2,4-10,26-31,48-49,51-85
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 42,458
+src/i18n/locales/es.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/features/generation/worker/generators/wallPatterns.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 12,65-66
+.github/workflows/smoke-preview.yml
+  s_3c1428c0ef138e::t_4de8bf6e176904 40-45,49-50,52,57,130
+src/shared/constants/connectors.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 12-16,78-85,139-156,172-173,175-188,202-207,240-243,280-283,297
+CHANGELOG.md
+  s_3c1428c0ef138e::t_4de8bf6e176904 3-9,11-15,20,141,225,421,463,475,517,559,601,643,685,769
+  s_3c1428c0ef138e::t_78e9d01c3d55e5 16-19,21,25,27,29-33,37,43,49,55,61,67,73,79,85,91,97-99,105,111,117,123,129,135,147,153,159,165,171,177,183,189,195,201,207,213,219,231,237,243,249,255,261,267,273,279,285,291,297,303,309,315,321,327,333,339,345,351,357,363,369,375,381,387,393,399,405,409,415,427,433,439,445,451,457,469,481,487,493,499,505,511,523,529,535,541,547,553,565,571,577,583,589,595,607,613,619,625,631,637,649,655,661,667,673,679,691,697,703,709,715,721,727,733,739,745,751,757,763,775,781,787,793,799,805,811,817,823,829,835
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.test.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-81
+src/features/bin-designer/components/preview/GhostSlotLines/GhostSlotLines.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 38-39,77-79
+src/i18n/locales/it.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/shared/utils/authoredDividerMath.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-84
+src/i18n/locales/nl.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/shell/Sidebar/Sidebar.test.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 399-400,403
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetailKey.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 3-4,6-10,12-13,20,120,124,147,159,161,163,165,167,169
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 680
+src/i18n/locales/nb.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+.github/workflows/smoke-postpromote.yml
+  s_3c1428c0ef138e::t_4de8bf6e176904 68
+src/features/generation/worker/generators/dividerBuilder.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 234-319
+.release-please-manifest.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 2
+src/features/generation/worker/generators/snapClipPullApart.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 47-51
+src/features/generation/worker/generators/connectorKeyFit.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-152
+src/shared/types/bin.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 31-32
+src/shared/utils/compartmentGeometry.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-119
+src/i18n/locales/de.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/i18n/locales/ja.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 22-23,28,30-31,33-34,116,118-122,126,131,174-181,244,282-287,289-370,375,377-383
+src/features/bin-designer/components/preview/index.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 26
+src/features/generation/worker/generators/__kernel-tests__/authoredDividers.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-120
+src/features/generation/worker/generators/overhang.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 2-4,6
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 20,26,28,33-39,181-214,281-327,330,332-340,364-365,367,369,371,374,376,381,387-389,391,393,395,397,400,402,407,412-438,440-509,512-514,516-548,673-711,713-716
+src/shared/utils/authoredDividerMath.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-137
+src/shell/RightPanel/RightPanel.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 236,240,335
+src/i18n/locales/sv.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/shared/utils/overhang.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-77
+src/i18n/locales/en.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1587-1603,2506,2508,2565,2570
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 23,25-30,385-387,599-603,605-622,624-657,659-664,722-723,726-727,730-739,741-742,752-755,775-776,782-802
+  s_3c1428c0ef138e::t_b3f8d3aa117d39 803-804
+src/features/baseplate/utils/printGuide.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 181,207,245
+src/features/generation/worker/generators/dividerExport.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-35
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-288
+src/i18n/locales/uk.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/features/baseplate/README.md
+  s_3c1428c0ef138e::t_4de8bf6e176904 93
+src/shared/constants/snapClipInsertion.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-126
+src/features/generation/worker/generators/dividerExport.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 15,20-36,51,108
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 313-381
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.test.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-43
+src/shared/utils/slotMath.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 13-17,20,297-452
+src/features/baseplate/components/BaseplatePanel/connectorIcons.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 10-11,72-73,77-79
+src/shell/styles/themes.css
+  s_3c1428c0ef138e::t_4de8bf6e176904 225
+src/shared/utils/slotMath.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 9,252-443
+src/i18n/locales/pt-BR.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 36,42,53,105,865-881
+src/features/generation/worker/generators/baseplateGenerator.scenario.snapClip.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 179-181,185
+package.json
+  s_3c1428c0ef138e::t_4de8bf6e176904 4,117,133,165,169,171,176,178,189,191-193,197,200
+src/features/bin-designer/constants/defaults.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 46-47
+src/features/generation/worker/generators/slotBuilder.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 26,324-375,377-381
+src/features/generation/worker/generators/__kernel-tests__/dividerCrossLap.test.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 16-17,23-24,197-293
+src/features/generation/worker/handlers/exportHandler.ts
+  s_3c1428c0ef138e::t_4de8bf6e176904 16,180
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.tsx
+  s_3c1428c0ef138e::t_4de8bf6e176904 1-144
+pnpm-lock.yaml
+  s_3c1428c0ef138e::t_c8892006681ccd 57,65-66,113-114,148,151,154,163,177-178,189-190,195-196,199,210-211,214,216-217,223,226,229,249-250,255-256,258-259,261-262,265,273-274,280,282-283,286,289,292,307,882-883,1632-1633,1755-1756,1758-1759,2024-2025,2030-2031,2036-2037,2042-2043,2048-2049,2054-2055,2061-2062,2068-2069,2075-2076,2082-2083,2089-2090,2096-2097,2102-2103,2107-2108,2113-2114,2511-2512,2539-2540,2811-2812,2815-2816,2833-2834,3083-3084,3103-3104,3140-3141,3184-3185,3439-3440,3568-3569,3607-3608,3916-3919,3962-3963,4025-4028,4263-4264,4410-4411,4451-4452,4481-4483,4551-4552,4607-4608,4790-4791,4794-4795,4804-4810,4816-4817,5006-5007,5319-5320,5331-5332,5445-5446,5653-5654,6739,6742,6776,6954,6956,6961,6965,6983,6985,7200,7334,7397,7401,7415,7417-7418,7440,7442,7444,7627,7639,7642,7682,7685,7688,7691,7694,7697,7700,7703,7706,7709,7712,7715,7718,7725,7728,7766,7938,7943,8046,8054,8072,8085,8088,8090-8091,8093-8094,8101,8108,8131,8135,8137,8160,8162,8166,8288,8297,8333,8339,8384,8392,8396,8399,8413,8424,8430,8459,8641,8660,8690,8692-8696,8736,8829,8972,9126,9131,9134,9144,9148-9149,9151,9155,9157,9159,9161,9174,9184,9193,9197,9204,9206,9219,9221,9562-9565,9601,9666-9670,9899,10032,10040,10042,10076,10094-10095,10125,10143,10188,10361,10395,10397,10401,10403-10404,10408,10411-10412,10418,10422,10457,10589,10606,10608,10611-10627,10634,10869,10871,10995,11012,11123,11176,11178-11179,11181-11182,11265,11267,11298,11303,11309,11311,11313,11318,11322,11326-11327,11330,11334-11335,11338,11342-11343,11354,11356,11359,11376,11380
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b9d76d1efd8943a09ee28b6523fa1ceebc8c0aea",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
