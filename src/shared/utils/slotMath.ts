@@ -280,11 +280,12 @@ export const MIN_LAP_PARTIAL_LENGTH = 2;
  * x/y.enabled flags — which are meaningless in custom mode. Callers gate on
  * `style === 'slotted'` themselves.
  */
-/** A custom grid has divider walls only when it holds more than one
- *  compartment (a fully-merged grid produces no walls). */
+/** A custom grid has divider walls only when it is well-formed and holds more
+ *  than one compartment (a fully-merged or malformed grid produces no walls). */
 function customGridHasWalls(slotConfig: SlotConfig): boolean {
   const g = slotConfig.customGrid;
-  return !!g && new Set(g.cells).size > 1;
+  if (!g || g.cols < 1 || g.rows < 1 || g.cells.length !== g.cols * g.rows) return false;
+  return new Set(g.cells).size > 1;
 }
 
 export function slottedHasDividers(slotConfig: SlotConfig): boolean {

@@ -107,6 +107,8 @@ export function computeAuthoredDividers(
         crossings.push(pa.pos);
       }
     }
+    // Sort so notch offsets are deterministic regardless of segment order.
+    crossings.sort((a, b) => a - b);
 
     const a0IsWall = axis.a0 <= EPS;
     const a1IsWall = axis.a1 >= runMax - EPS;

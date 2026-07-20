@@ -189,6 +189,7 @@ export function CustomGridEditor() {
                   key={i}
                   role="button"
                   tabIndex={0}
+                  aria-pressed={selected}
                   onClick={() => toggleCell(index)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
