@@ -1,0 +1,25 @@
+src/shared/hooks/useLinkedDesignDividers.ts
+  s_3c1428c0ef138e::t_1f046f59ce2019 133
+  s_3c1428c0ef138e::t_364a4866aac893 30-32,41-48
+  s_3c1428c0ef138e::t_07f2054f24e364 49-50
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_3c1428c0ef138e::t_45cce8cc352af2 62-64,73-80
+  s_3c1428c0ef138e::t_3b951713ad12c0 203
+  s_3c1428c0ef138e::t_429e8fca4a639b 81-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "92d039225c4c5fa0abe1bf378318391b34538172",
+  "prompts": {},
+  "sessions": {
+    "s_3c1428c0ef138e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "409403c4-cce0-408d-a58e-e49de9c3ed6e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
