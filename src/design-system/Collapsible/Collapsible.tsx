@@ -94,6 +94,12 @@ export interface CollapsibleProps extends CollapsibleVariantProps {
    * Additional CSS classes for the container.
    */
   className?: string;
+
+  /**
+   * Additional CSS classes for the header row (title, badge, actions).
+   * Use to inset the header while leaving the content region full-width.
+   */
+  headerClassName?: string;
 }
 
 /**
@@ -158,6 +164,7 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
       summary,
       size = 'md',
       className,
+      headerClassName,
     },
     ref
   ) => {
@@ -190,7 +197,7 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
     return (
       <div ref={ref} className={className}>
         {/* Header row */}
-        <div className="flex items-center justify-between">
+        <div className={cn('flex items-center justify-between', headerClassName)}>
           <button
             id={triggerId}
             type="button"

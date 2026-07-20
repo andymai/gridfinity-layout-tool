@@ -237,7 +237,7 @@ export function RightPanel() {
               <Collapsible
                 title={t('rightPanel.binList')}
                 size="md"
-                className="[&>div:first-child]:px-4"
+                headerClassName="px-4"
                 expanded={printListExpanded}
                 onExpandedChange={setPrintListExpanded}
                 badge={

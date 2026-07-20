@@ -396,7 +396,7 @@ describe('Sidebar', () => {
     });
   });
 
-  describe('advanced units', () => {
+  describe('physical units', () => {
     it('renders Physical Units section', () => {
       render(<Sidebar />);
 
