@@ -37,22 +37,24 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      # Fork PRs and Dependabot runs execute without access to repo Actions
+      # secrets, so VERCEL_AUTOMATION_BYPASS_SECRET is empty and the protected
+      # preview redirects to SSO — the smoke spec can never reach it. Detect
+      # both and short-circuit cleanly; these PRs still get coverage from Build,
+      # Unit Tests, Quality, and CodeQL, plus the post-promote production smoke.
+      NO_SECRETS: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.full_name != github.repository }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      # Dependabot PR runs do not have access to repo Actions secrets, including
-      # VERCEL_AUTOMATION_BYPASS_SECRET — so the preview will return 401 and the
-      # smoke spec cannot run. Short-circuit cleanly: dep bumps still get
-      # coverage from Build, Unit Tests, Quality, and CodeQL.
-      - name: Skip — Dependabot PR
-        if: github.actor == 'dependabot[bot]'
+      - name: Skip — no secret access (fork or Dependabot PR)
+        if: env.NO_SECRETS == 'true'
         run: |
-          echo "::warning::Dependabot PR — VERCEL_AUTOMATION_BYPASS_SECRET unavailable; preview smoke is N/A."
+          echo "::warning::Fork or Dependabot PR — VERCEL_AUTOMATION_BYPASS_SECRET unavailable; preview smoke is N/A."
           echo "Coverage for this PR comes from CI Build, Unit Tests, Quality, and CodeQL."
 
       - name: Resolve Vercel preview URL
         id: preview
-        if: github.actor != 'dependabot[bot]'
+        if: env.NO_SECRETS == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
