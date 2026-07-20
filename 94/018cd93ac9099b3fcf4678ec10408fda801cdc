@@ -1,0 +1,30 @@
+src/shared/utils/slotMath.ts
+  s_e22c16986e8ee6::t_8df0ba62acd758 283-289,291,298-300,308-310
+src/shared/utils/slotMath.test.ts
+  s_e22c16986e8ee6::t_fa17e4cc74a3ec 424-426
+  s_e22c16986e8ee6::t_94101966c7882e 443,447-450
+  s_e22c16986e8ee6::t_48a63628fe6666 451
+src/shared/utils/authoredDividerMath.test.ts
+  s_e22c16986e8ee6::t_9666a88bbf7c6d 72-77
+src/features/bin-designer/components/preview/GhostAuthoredDividers/GhostAuthoredDividers.tsx
+  s_e22c16986e8ee6::t_632787b2e5f17d 83-86,88-89,91-92
+  s_e22c16986e8ee6::t_9914396d5fbb8e 112-113
+src/shared/utils/compartmentGeometry.ts
+  s_e22c16986e8ee6::t_f38a48808dfe64 52-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "94018cd93ac9099b3fcf4678ec10408fda801cdc",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
