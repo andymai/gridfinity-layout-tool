@@ -131,12 +131,24 @@ export function effectiveClearance(
  * ledge. Mirror grooves on both seam sides form the blind pockets.
  *
  * Pull-apart resistance: the pocket leaves a solid seam-side WALL intact in the
- * upper band (the leg root, which barely flexes), so a leg's inner face bears
- * against it — pulling the plates apart rams that wall into the leg like a real
- * staple. The lower band stays open to the seam so the leg tip can still pinch
- * inward to seat the barb. The legs sit `GAP_HALF` off the seam, leaving room for
- * the wall, with `LEG_W` trimmed to keep the original outer footprint (so the
- * clip still clears the bin feet in the cells flanking the seam).
+ * upper band, so a leg's inner face bears against it — pulling the plates apart
+ * rams that wall into the leg like a real staple. The legs sit `GAP_HALF` off
+ * the seam, leaving room for the wall, with `LEG_W` trimmed to keep the original
+ * outer footprint (so the clip still clears the bin feet in the cells flanking
+ * the seam).
+ *
+ * INSERTION KINEMATICS (issue #2638 — why the wall must be thinner than the
+ * slot): to pass the throat, each barb must deflect inward by
+ * `BARB_DEPTH − clearance`. The leg pivots at the bridge root, so with the wall
+ * nested between the legs the rotation is capped by `slot gap / contact depth`,
+ * and the cap is TIGHTEST early in the stroke, when the wall top first enters
+ * near the leg tips (contact depth ≈ the whole leg). The worst-case available
+ * barb deflection is therefore
+ *   `(GAP_HALF − BEAR_WALL) × (apex depth / tip depth)`   (both below the root)
+ * and it must exceed the needed pinch with margin. The original wall filled the
+ * slot to `GAP_HALF − clearance` (0.1mm of pinch room vs 0.35 needed) — the
+ * clip physically could not be inserted; `snapClipInsertion.test.ts` pins this
+ * budget so it cannot regress.
  *
  * The depths below are clamped to the slab height at build time so the snap
  * still seats on a thin baseplate and deepens automatically on taller bases.
@@ -152,13 +164,23 @@ export const SNAP_CLIP = {
    *  increase (~0.25mm) — acceptable on the rarer big-nozzle snap clips. */
   LEG_W: 0.95,
   /** Height of the seam-side retaining wall below the bridge (mm) — the band the
-   *  leg's inner face bears against. Tall for a substantial grip, but clamped
-   *  above the catch ledge (never eats the snap) and leaving enough free leg below
-   *  to flex: the leg only deflects in its lower span, so the upper band the wall
-   *  fills barely moves on insertion. */
+   *  leg's inner face bears against. Clamped above the catch ledge (never eats
+   *  the snap). */
   BEAR_DEPTH: 1.2,
-  /** Outward barb protrusion past the leg face = engagement depth (mm). */
-  BARB_DEPTH: 0.45,
+  /** Retaining-wall thickness from the seam (mm). Must leave real pinch room in
+   *  the flex slot (`GAP_HALF − BEAR_WALL`, see insertion kinematics above) —
+   *  the wall originally ran out to `GAP_HALF − clearance`, which blocked
+   *  insertion outright (#2638). 0.6 is the thickest wall that clears the
+   *  deflection budget on the thinnest viable slab (where the short leg gives
+   *  the barb the least travel). The cost is engagement slop: plates can
+   *  separate by up to the slot gap before the staple bears. 1.5 beads at the
+   *  0.4 baseline — a printable rib for a bearing surface. */
+  BEAR_WALL: 0.6,
+  /** Outward barb protrusion past the leg face = engagement depth (mm). Reduced
+   *  from 0.45: the needed pinch (`BARB_DEPTH − clearance`) must fit the
+   *  worst-case deflection budget (#2638), and 0.2mm of ledge engagement is
+   *  still a firm, removable snap. */
+  BARB_DEPTH: 0.3,
   /** Top bridge thickness; also the flush-recess depth in the slab top (mm). */
   BRIDGE_THK: 1.2,
   /** Clip length along the seam (mm). */
@@ -172,8 +194,12 @@ export const SNAP_CLIP = {
   BARB_APEX_FROM_TIP: 0.8,
   /** Catch (back) face rise from barb apex to the ledge (mm); shallow = removable. */
   CATCH_DROP: 0.5,
-  /** Lead-in (insertion) face drop from barb apex toward the tip (mm). */
-  LEAD_DROP: 0.5,
+  /** Lead-in (insertion) face drop from barb apex toward the tip (mm). Longer
+   *  than the catch face so insertion ramps gently (~23° from vertical at the
+   *  0.3 barb) while removal stays the steeper, firmer face. Leaves a 0.1mm
+   *  vertical land at the tip (`BARB_APEX_FROM_TIP − LEAD_DROP`) so the profile
+   *  never degenerates to coincident points. */
+  LEAD_DROP: 0.7,
   /** Minimum leg length below the bridge for the snap to function (mm). Below
    *  this the slab is too thin to flex; the generator skips snap pockets. */
   MIN_LEG: 2.0,
@@ -206,8 +232,10 @@ export interface SnapClipLevels {
   readonly throatDepthX: number;
   /** Pocket chamber outer-wall depth into the piece (mm). */
   readonly chamberDepthX: number;
-  /** Seam-side wall depth into the piece in the bearing band (= GAP_HALF − cl);
-   *  the leg's inner face bears against this for pull-apart resistance. */
+  /** Seam-side wall depth into the piece in the bearing band
+   *  (= min(BEAR_WALL, GAP_HALF − cl)); the leg's inner face bears against this
+   *  for pull-apart resistance. Thinner than the slot on purpose — the slack
+   *  (GAP_HALF − this) is the pinch room insertion needs (#2638). */
   readonly bearWallX: number;
   /** Bottom Z of the seam-side bearing band (negative), clamped above the catch
    *  ledge so it never eats the snap. Above this the pocket leaves the wall solid. */
@@ -244,9 +272,10 @@ export function snapClipLevels(
   const barbTip = legOuter + barbDepth;
   const viable =
     legBottom - SNAP_CLIP.BRIDGE_THK >= SNAP_CLIP.MIN_LEG && catchZ < -SNAP_CLIP.BRIDGE_THK;
-  // Retaining wall: plate left solid out to the leg's inner face (minus clearance)
-  // from the bridge underside down to the bearing-band bottom — clamped above the
-  // catch ledge so it never eats the snap chamber.
+  // Retaining wall: plate left solid out to BEAR_WALL from the seam, from the
+  // bridge underside down to the bearing-band bottom — clamped above the catch
+  // ledge so it never eats the snap chamber, and never thicker than the slot
+  // minus clearance (a wide-nozzle clearance can exceed GAP_HALF − BEAR_WALL).
   const bearBottomZ = Math.max(-(SNAP_CLIP.BRIDGE_THK + SNAP_CLIP.BEAR_DEPTH), catchZ);
   return {
     viable,
@@ -260,7 +289,7 @@ export function snapClipLevels(
     barbTip,
     throatDepthX: legOuter + cl,
     chamberDepthX: barbTip + cl,
-    bearWallX: SNAP_CLIP.GAP_HALF - cl,
+    bearWallX: Math.min(SNAP_CLIP.BEAR_WALL, SNAP_CLIP.GAP_HALF - cl),
     bearBottomZ,
   };
 }
