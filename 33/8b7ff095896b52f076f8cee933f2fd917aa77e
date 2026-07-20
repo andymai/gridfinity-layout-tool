@@ -1,0 +1,19 @@
+src/shell/RightPanel/RightPanel.tsx
+  s_f4b08d773a2db5::t_9df5bf2168fc30 335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "338b7ff095896b52f076f8cee933f2fd917aa77e",
+  "prompts": {},
+  "sessions": {
+    "s_f4b08d773a2db5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fcf41dc8-a073-4ecf-9071-02a5dbf50e7e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
