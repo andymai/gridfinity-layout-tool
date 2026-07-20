@@ -1,0 +1,20 @@
+src/features/bin-designer/components/preview/GhostSlotLines/GhostSlotLines.tsx
+  s_e22c16986e8ee6::t_df23d1d3e5d94e 77-79
+  s_e22c16986e8ee6::t_dd4a948720e6b1 38-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "2fdf5662e93e49f67397b4f1d984a2cf3f57c831",
+  "prompts": {},
+  "sessions": {
+    "s_e22c16986e8ee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1826da9-5132-4a53-97fe-6d30cca369a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
