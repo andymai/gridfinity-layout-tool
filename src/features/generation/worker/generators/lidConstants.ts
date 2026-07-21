@@ -158,12 +158,13 @@ export const LID_COPLANAR_MARGIN = 0.1;
 export const LID_MAGNET_BOSS_WALL = 1.5;
 
 /**
- * Extra inset (mm) of each corner post from the nominal grid corner, on top of
- * the boss radius. Keeps the post's outer edge inside the clearance-reduced
- * outer wall (~0.25mm/side) so the bin/lid footprint stays drawer-safe — the
- * "inward" placement decision from #2694.
+ * Radial gap (mm) kept between the lid's magnet boss and the stacking lip's
+ * inner face. The magnet centre is inset from the nominal corner by
+ * `LID_MAGNET_LIP_CLEARANCE + bossRadius`, so the boss hangs into the bin mouth
+ * clear of the lip when the lid seats, and the footprint stays drawer-safe (the
+ * magnets sit well inboard of every wall).
  */
-export const LID_MAGNET_EDGE_INSET = 0.6;
+export const LID_MAGNET_LIP_CLEARANCE = 3.5;
 
 /**
  * Vertical gap (mm) left between the lid boss's bottom face and the bin post's

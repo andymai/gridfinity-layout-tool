@@ -55,14 +55,37 @@ describe('magnetic-retention lid geometry', () => {
     assertStructurallyValid(result!, '1x1 magnetic lid');
   });
 
-  it('grows corner posts on the mating bin', async () => {
+  it('grows corner gusset pads on the mating bin', async () => {
     const generateBin = getGenerateBin();
     const base = { width: 2, depth: 2, height: 3 };
     const plain = generateBin(makeParams({ attachment: 'clickRails' }, base));
     const magnetic = generateBin(makeParams({ attachment: 'magnetic' }, base));
-    assertStructurallyValid(magnetic, '2x2 bin with magnetic lid posts');
-    // Posts add solid material + pockets, so the magnetic bin has more geometry.
+    assertStructurallyValid(magnetic, '2x2 bin with magnetic lid gusset pads');
+    // Pads add solid material + pockets, so the magnetic bin has more geometry.
     expect(magnetic.triangleCount).toBeGreaterThan(plain.triangleCount);
+  });
+
+  it('pads are top overhangs, not full-height columns (height-independent)', async () => {
+    const generateBin = getGenerateBin();
+    // The gusset pads live at the top rim, so the geometry they ADD over a
+    // plain bin must not scale with bin height. A returning full-column bug
+    // would make the delta grow with height. Compare the magnetic-vs-plain
+    // triangle delta at height 3 and height 6 — they should be close.
+    const deltaAt = (height: number): number => {
+      const plain = generateBin(
+        makeParams({ attachment: 'clickRails' }, { width: 2, depth: 2, height })
+      );
+      const magnetic = generateBin(
+        makeParams({ attachment: 'magnetic' }, { width: 2, depth: 2, height })
+      );
+      return magnetic.triangleCount - plain.triangleCount;
+    };
+    const d3 = deltaAt(3);
+    const d6 = deltaAt(6);
+    expect(d3).toBeGreaterThan(0);
+    // Allow tessellation jitter but reject height-scaling (a column would
+    // roughly double the added side-wall triangles from height 3 to 6).
+    expect(Math.abs(d6 - d3)).toBeLessThan(d3 * 0.5);
   });
 
   it('leaves the bin footprint unchanged (posts grow inward)', async () => {

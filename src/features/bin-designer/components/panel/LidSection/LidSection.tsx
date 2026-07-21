@@ -194,8 +194,121 @@ export function LidSection() {
       </div>
 
       {/* Attachment method (#2694) — how the lid retains onto the bin. One of
-          friction / click rails / magnetic; the sub-controls below key off it. */}
+          friction / click rails / magnetic. The mode's own controls render
+          directly below so they stay next to the selector. */}
       <AttachmentSelector value={state.attachment} onChange={handlers.setAttachment} t={t} />
+
+      {/* Magnetic retention (#2694) — dedicated corner magnets bond the lid to
+          the bin. Independent of the bin's base magnets. */}
+      {state.attachment === 'magnetic' && (
+        <div className="space-y-2">
+          <StepperField
+            label={t('binDesigner.lid.retentionMagnetDiameter')}
+            unit="mm"
+            value={state.retentionMagnetDiameter}
+            onChange={handlers.setRetentionMagnetDiameter}
+            onStep={(delta) =>
+              handlers.setRetentionMagnetDiameter(
+                state.retentionMagnetDiameter + delta * state.retentionMagnetStep
+              )
+            }
+            min={state.retentionMagnetDiameterMin}
+            max={state.retentionMagnetDiameterMax}
+            step={state.retentionMagnetStep}
+            size="md"
+            aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
+            commitMode="deferred"
+          />
+          <StepperField
+            label={t('binDesigner.lid.retentionMagnetDepth')}
+            unit="mm"
+            value={state.retentionMagnetDepth}
+            onChange={handlers.setRetentionMagnetDepth}
+            onStep={(delta) =>
+              handlers.setRetentionMagnetDepth(
+                state.retentionMagnetDepth + delta * state.retentionMagnetStep
+              )
+            }
+            min={state.retentionMagnetDepthMin}
+            max={state.retentionMagnetDepthMax}
+            step={state.retentionMagnetStep}
+            size="md"
+            aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
+            commitMode="deferred"
+          />
+          <p className="ml-1 text-[11px] leading-relaxed text-content-tertiary">
+            {t('binDesigner.lid.retentionMagnetHint', {
+              diameter: state.retentionMagnetDiameter.toFixed(1),
+              depth: state.retentionMagnetDepth.toFixed(1),
+            })}
+          </p>
+        </div>
+      )}
+
+      {/* Click rails — per-side. Each chip is an independent toggle: a
+          user can ship a hinge-feel lid (one side only), a label-tab-
+          friendly L+R pair, or all four for symmetric snap. When a feature
+          conflict disables a side (label tab on back, wall cutout/handle on a
+          given side) the chip is greyed out with a tooltip — the user's
+          persisted intent is kept so the rail returns when the conflict is
+          resolved. Only shown in click-rails attachment mode. */}
+      {state.attachment === 'clickRails' && (
+        <div>
+          <span className="mb-1 block text-xs font-medium text-content-secondary">
+            {t('binDesigner.lid.clickRails')}
+          </span>
+          <div className="flex gap-1">
+            {LID_RAIL_SIDES.map((side) => {
+              const isActive = state.clickRails[side];
+              const isAutoDisabled = state.disabledRails.has(side);
+              const effectiveActive = isActive && !isAutoDisabled;
+              const tooltip = isAutoDisabled
+                ? t('binDesigner.lid.clickRailDisabledBySide', {
+                    side: t(`binDesigner.lid.side.${side}`),
+                  })
+                : undefined;
+              return (
+                <Button
+                  key={side}
+                  type="button"
+                  variant="ghost"
+                  role="switch"
+                  aria-checked={effectiveActive}
+                  aria-disabled={isAutoDisabled}
+                  disabled={isAutoDisabled}
+                  title={tooltip}
+                  onClick={() => handlers.toggleClickRailSide(side)}
+                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                    isAutoDisabled
+                      ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
+                      : effectiveActive
+                        ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
+                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                  }`}
+                >
+                  {t(`binDesigner.lid.side.${side}`)}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {state.attachment === 'clickRails' && state.anyRail && (
+        <div className="space-y-1">
+          <SnappingSlider
+            label={t('binDesigner.lid.clickRailCoverage')}
+            value={state.clickRailCoverage}
+            onChange={handlers.setClickRailCoverage}
+            options={state.railCoverageOptions}
+            unit="%"
+          />
+          <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+            <RulerIcon size="xs" />
+            <span className="tabular-nums">{state.railsReadout}</span>
+          </div>
+        </div>
+      )}
 
       {/* Extra lid height (issue #2482) — deepens the lid cavity above the
           bin's lip so contents that stick up out of a short bin (toothpicks,
@@ -314,120 +427,6 @@ export function LidSection() {
             aria-label={t('binDesigner.lid.trayWallAria')}
             commitMode="deferred"
           />
-        </div>
-      )}
-
-      {/* Magnetic retention (#2694) — dedicated corner magnets bond the lid to
-          the bin. Independent of the bin's base magnets. */}
-      {state.attachment === 'magnetic' && (
-        <div className="space-y-2">
-          <StepperField
-            label={t('binDesigner.lid.retentionMagnetDiameter')}
-            unit="mm"
-            value={state.retentionMagnetDiameter}
-            onChange={handlers.setRetentionMagnetDiameter}
-            onStep={(delta) =>
-              handlers.setRetentionMagnetDiameter(
-                state.retentionMagnetDiameter + delta * state.retentionMagnetStep
-              )
-            }
-            min={state.retentionMagnetDiameterMin}
-            max={state.retentionMagnetDiameterMax}
-            step={state.retentionMagnetStep}
-            size="md"
-            aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
-            commitMode="deferred"
-          />
-          <StepperField
-            label={t('binDesigner.lid.retentionMagnetDepth')}
-            unit="mm"
-            value={state.retentionMagnetDepth}
-            onChange={handlers.setRetentionMagnetDepth}
-            onStep={(delta) =>
-              handlers.setRetentionMagnetDepth(
-                state.retentionMagnetDepth + delta * state.retentionMagnetStep
-              )
-            }
-            min={state.retentionMagnetDepthMin}
-            max={state.retentionMagnetDepthMax}
-            step={state.retentionMagnetStep}
-            size="md"
-            aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
-            commitMode="deferred"
-          />
-          <p className="ml-1 text-[11px] leading-relaxed text-content-tertiary">
-            {t('binDesigner.lid.retentionMagnetHint', {
-              diameter: state.retentionMagnetDiameter.toFixed(1),
-              depth: state.retentionMagnetDepth.toFixed(1),
-            })}
-          </p>
-        </div>
-      )}
-
-      {/* Click rails — per-side. Each chip is an independent toggle: a
-          user can ship a hinge-feel lid (one side only), a label-tab-
-          friendly L+R pair, or all four for symmetric snap. All four off
-          ⇒ friction-fit lid (mating cavity still wraps the lip; no
-          positive snap). When a feature conflict disables a side (label
-          tab on back, wall cutout/handle on a given side) the chip is
-          greyed out with a tooltip — the user's persisted intent is
-          kept so the rail returns when the conflict is resolved. Only shown
-          in click-rails attachment mode. */}
-      {state.attachment === 'clickRails' && (
-        <div>
-          <span className="mb-1 block text-xs font-medium text-content-secondary">
-            {t('binDesigner.lid.clickRails')}
-          </span>
-          <div className="flex gap-1">
-            {LID_RAIL_SIDES.map((side) => {
-              const isActive = state.clickRails[side];
-              const isAutoDisabled = state.disabledRails.has(side);
-              const effectiveActive = isActive && !isAutoDisabled;
-              const tooltip = isAutoDisabled
-                ? t('binDesigner.lid.clickRailDisabledBySide', {
-                    side: t(`binDesigner.lid.side.${side}`),
-                  })
-                : undefined;
-              return (
-                <Button
-                  key={side}
-                  type="button"
-                  variant="ghost"
-                  role="switch"
-                  aria-checked={effectiveActive}
-                  aria-disabled={isAutoDisabled}
-                  disabled={isAutoDisabled}
-                  title={tooltip}
-                  onClick={() => handlers.toggleClickRailSide(side)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isAutoDisabled
-                      ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
-                      : effectiveActive
-                        ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {t(`binDesigner.lid.side.${side}`)}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {state.attachment === 'clickRails' && state.anyRail && (
-        <div className="space-y-1">
-          <SnappingSlider
-            label={t('binDesigner.lid.clickRailCoverage')}
-            value={state.clickRailCoverage}
-            onChange={handlers.setClickRailCoverage}
-            options={state.railCoverageOptions}
-            unit="%"
-          />
-          <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-            <RulerIcon size="xs" />
-            <span className="tabular-nums">{state.railsReadout}</span>
-          </div>
         </div>
       )}
     </FeatureToggle>
