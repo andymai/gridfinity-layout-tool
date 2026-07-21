@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll } from 'vitest';
-import { isErr, loadFont, mesh } from 'brepjs';
+import { isErr, isOk, loadFont, measureVolume, mesh } from 'brepjs';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/features/bin-designer/types/text';
@@ -51,6 +51,28 @@ describe('labelPlateBuilder', () => {
     expect(bbox.maxY - bbox.minY).toBeCloseTo(LABEL_PLATE_HEIGHT_MM, 1);
     expect(bbox.maxZ - bbox.minZ).toBeCloseTo(LABEL_PLATE_THICKNESS_MM, 1);
     expect(bbox.minZ).toBeCloseTo(0, 3);
+  });
+
+  it('flares the v1 channel ends with the standard r0.5 lead-in', () => {
+    const withChannels = buildLabelPlate({ widthU: 1, text: '' }, OPTS);
+    const without = buildLabelPlate({ widthU: 1, text: '' }, { ...OPTS, v1Channels: false });
+    try {
+      const volOf = (s: typeof withChannels): number => {
+        const r = measureVolume(s);
+        if (!isOk(r)) throw new Error('measureVolume failed');
+        return r.value;
+      };
+      const removed = volOf(without) - volOf(withChannels);
+      // Sharp T-channels remove exactly 3 × (1.0·0.2·11 + 2.0·0.6·10.6)
+      // = 44.76mm³; the four r0.5 end flares per layer add
+      // 3 × 4 × (1−π/4)·0.5² × (0.2 + 0.6) ≈ 0.52mm³ on top. A sharp-cornered
+      // regression lands at 44.76 and fails the lower bound.
+      expect(removed).toBeGreaterThan(45.1);
+      expect(removed).toBeLessThan(45.45);
+    } finally {
+      withChannels.delete();
+      without.delete();
+    }
   });
 
   it('builds 2U and 3U plates without v1 channels', () => {

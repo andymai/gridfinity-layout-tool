@@ -74,6 +74,43 @@ const PLATE_GAP = 4;
 /** Keep text clear of the latch flanges. */
 const TEXT_MARGIN = 1.6;
 
+/**
+ * Plan-view cutter for one v1 channel layer: a slot of width `w` centered at
+ * `cx` spanning ±`flareY`, flaring outward with radius `r` at both ends and
+ * continuing at the flared width to ±`earY` (past the plate, so the cut
+ * always exits cleanly). The flare reproduces the r0.5 segment-corner
+ * rounding of the standard's v1 plate.
+ */
+function flaredSlot(cx: number, w: number, flareY: number, earY: number, r: number): Drawing {
+  // The ear must extend past the fillet tangent point (which sits exactly r
+  // from the wall) or the corner fillet consumes its whole neighbor segment
+  // and degenerates. The slack region only ever overlaps already-void space
+  // (outside the plate / inside the latch groove).
+  const slack = r;
+  const wallR = cx + w / 2;
+  const earR = wallR + r + slack;
+  const wallL = cx - w / 2;
+  const earL = wallL - r - slack;
+  return draw([cx, -earY])
+    .lineTo([earR, -earY])
+    .lineTo([earR, -flareY])
+    .lineTo([wallR, -flareY])
+    .customCorner(r)
+    .lineTo([wallR, flareY])
+    .customCorner(r)
+    .lineTo([earR, flareY])
+    .lineTo([earR, earY])
+    .lineTo([earL, earY])
+    .lineTo([earL, flareY])
+    .lineTo([wallL, flareY])
+    .customCorner(r)
+    .lineTo([wallL, -flareY])
+    .customCorner(r)
+    .lineTo([earL, -flareY])
+    .lineTo([earL, -earY])
+    .close();
+}
+
 function roundedRect(w: number, h: number, r: number): Drawing {
   const x0 = -w / 2;
   const x1 = w / 2;
@@ -126,26 +163,39 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
     const ring = scope.register(unwrap(cut(outerBand as ValidSolid, innerBand as ValidSolid)));
     solid = scope.register(unwrap(cut(solid as ValidSolid, ring)));
 
-    // v1 backward-compat channels (1U only): T-profile in the XZ plane cut
-    // through the full plate depth. Mouth at the bottom face widening into
-    // the cavity — the profile the legacy sockets' bottom tabs ride in.
+    // v1 backward-compat channels (1U only): the profile the legacy sockets'
+    // bottom tabs ride in — a narrow mouth at the bottom face widening into
+    // the cavity. Cut as two stacked plan-view prisms per channel so the
+    // channel ends can flare r0.5 like the standard's rounded segments
+    // (Cullenect.scad builds the v1 plate from RoundedCubes; the flare
+    // doubles as a lead-in for the tabs). The mouth spans the full plate
+    // depth and flares at the outline; the cavity ends at the latch inset
+    // and flares there, opening into the perimeter latch groove.
     if (opts.v1Channels && spec.widthU === 1) {
-      const cutters = LABEL_PLATE_V1_CHANNEL_XS_MM.map((cx) => {
-        const mouthHalf = LABEL_PLATE_V1_MOUTH_WIDTH_MM / 2;
-        const cavityHalf = LABEL_PLATE_V1_CAVITY_WIDTH_MM / 2;
-        const profile = draw([cx - mouthHalf, -COPLANAR_MARGIN])
-          .lineTo([cx - mouthHalf, LABEL_PLATE_V1_MOUTH_HEIGHT_MM])
-          .lineTo([cx - cavityHalf, LABEL_PLATE_V1_MOUTH_HEIGHT_MM])
-          .lineTo([cx - cavityHalf, LABEL_PLATE_V1_CAVITY_TOP_MM])
-          .lineTo([cx + cavityHalf, LABEL_PLATE_V1_CAVITY_TOP_MM])
-          .lineTo([cx + cavityHalf, LABEL_PLATE_V1_MOUTH_HEIGHT_MM])
-          .lineTo([cx + mouthHalf, LABEL_PLATE_V1_MOUTH_HEIGHT_MM])
-          .lineTo([cx + mouthHalf, -COPLANAR_MARGIN])
-          .close();
-        const prism = sketch(profile, 'XZ', -(h / 2 + COPLANAR_MARGIN)).extrude(
-          h + 2 * COPLANAR_MARGIN
-        );
-        return scope.register(prism);
+      const flareR = LABEL_PLATE_CORNER_RADIUS_MM;
+      const earY = h / 2 + COPLANAR_MARGIN;
+      const cutters = LABEL_PLATE_V1_CHANNEL_XS_MM.flatMap((cx) => {
+        // The mouth prism runs up to the cavity top: its plan silhouette is
+        // strictly inside the cavity's, so everything above the mouth zone
+        // is already removed by the cavity cut — no separate top margin
+        // needed, and the mouth/cavity boundary can't leave a coplanar seam.
+        const mouth = sketch(
+          flaredSlot(cx, LABEL_PLATE_V1_MOUTH_WIDTH_MM, h / 2, earY, flareR),
+          'XY',
+          -COPLANAR_MARGIN
+        ).extrude(LABEL_PLATE_V1_CAVITY_TOP_MM + COPLANAR_MARGIN);
+        const cavity = sketch(
+          flaredSlot(
+            cx,
+            LABEL_PLATE_V1_CAVITY_WIDTH_MM,
+            h / 2 - LABEL_PLATE_LATCH_INSET_MM,
+            earY,
+            flareR
+          ),
+          'XY',
+          LABEL_PLATE_V1_MOUTH_HEIGHT_MM
+        ).extrude(LABEL_PLATE_V1_CAVITY_TOP_MM - LABEL_PLATE_V1_MOUTH_HEIGHT_MM);
+        return [scope.register(mouth), scope.register(cavity)];
       });
       solid = scope.register(unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[])));
     }
