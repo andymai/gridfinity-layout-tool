@@ -23,7 +23,7 @@ import {
   effectiveLabelSocketClearance,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
-import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 import type { LoadedDesign } from './planLayoutBinExport';
 
@@ -31,12 +31,14 @@ import type { LoadedDesign } from './planLayoutBinExport';
 export interface PlacedLabelPlate {
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
+  readonly icon?: LabelPlateIconId;
   readonly position: readonly [number, number];
 }
 
 export interface LabelPlateManifestEntry {
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
+  readonly icon?: LabelPlateIconId;
   readonly quantity: number;
 }
 
@@ -67,7 +69,7 @@ const SHEET_GAP = 4;
  * bed width — the packer places whatever it is given.
  */
 function packSheets(
-  plates: readonly { widthU: LabelPlateWidthU; text: string }[],
+  plates: readonly { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[],
   bedW: number,
   bedD: number
 ): (readonly PlacedLabelPlate[])[] {
@@ -77,7 +79,15 @@ function packSheets(
   const sorted = [...plates].sort((a, b) => b.widthU - a.widthU);
 
   const sheets: PlacedLabelPlate[][] = [];
-  let current: { plates: { widthU: LabelPlateWidthU; text: string; x: number; y: number }[] } = {
+  let current: {
+    plates: {
+      widthU: LabelPlateWidthU;
+      text: string;
+      icon?: LabelPlateIconId;
+      x: number;
+      y: number;
+    }[];
+  } = {
     plates: [],
   };
   let cursorX = 0;
@@ -92,6 +102,7 @@ function packSheets(
       current.plates.map((p) => ({
         widthU: p.widthU,
         text: p.text,
+        ...(p.icon !== undefined ? { icon: p.icon } : {}),
         position: [
           p.x + labelPlateWidthMm(p.widthU) / 2 - maxX / 2,
           p.y + LABEL_PLATE_HEIGHT_MM / 2 - maxY / 2,
@@ -112,7 +123,13 @@ function packSheets(
     if (cursorY + LABEL_PLATE_HEIGHT_MM > usableD) {
       flush();
     }
-    current.plates.push({ widthU: plate.widthU, text: plate.text, x: cursorX, y: cursorY });
+    current.plates.push({
+      widthU: plate.widthU,
+      text: plate.text,
+      ...(plate.icon !== undefined ? { icon: plate.icon } : {}),
+      x: cursorX,
+      y: cursorY,
+    });
     cursorX += w + SHEET_GAP;
   }
   flush();
@@ -152,12 +169,18 @@ export function planLabelPlateExport(
     // Expand to physical plates: per-compartment plates repeat per placed
     // bin; a spanning plate instead takes each bin's own label text.
     const spanning = planned.length === 1 && planned[0].compartmentId === null;
-    const expanded: { widthU: LabelPlateWidthU; text: string }[] = spanning
+    const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] = spanning
       ? linkedBins.map((b) => ({
           widthU: planned[0].widthU,
           text: (b.label ?? '').trim() || design.name,
         }))
-      : linkedBins.flatMap(() => planned.map((p) => ({ widthU: p.widthU, text: p.text })));
+      : linkedBins.flatMap(() =>
+          planned.map((p) => ({
+            widthU: p.widthU,
+            text: p.text,
+            ...(p.icon !== undefined ? { icon: p.icon } : {}),
+          }))
+        );
 
     // Bed-fit guard: a plate wider than the usable bed (e.g. a 3U plate on
     // a small printer) cannot ship on any sheet — skip it and surface the
@@ -170,12 +193,17 @@ export function planLabelPlateExport(
     // Manifest quantities collapse identical (width, text) plates.
     const counts = new Map<string, LabelPlateManifestEntry>();
     for (const p of physical) {
-      const key = `${p.widthU}|${p.text}`;
+      const key = `${p.widthU}|${p.icon ?? ''}|${p.text}`;
       const existing = counts.get(key);
       if (existing) {
         counts.set(key, { ...existing, quantity: existing.quantity + 1 });
       } else {
-        counts.set(key, { widthU: p.widthU, text: p.text, quantity: 1 });
+        counts.set(key, {
+          widthU: p.widthU,
+          text: p.text,
+          ...(p.icon !== undefined ? { icon: p.icon } : {}),
+          quantity: 1,
+        });
       }
     }
 

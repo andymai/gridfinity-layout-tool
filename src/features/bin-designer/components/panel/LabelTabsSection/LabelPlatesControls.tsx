@@ -127,6 +127,11 @@ export function LabelPlatesControls() {
               <span className="truncate">
                 {plate.text.length > 0 ? plate.text : `(${t('binDesigner.plates.blank')})`}
               </span>
+              {plate.icon !== undefined && (
+                <span className="shrink-0 text-content-disabled">
+                  {t(`binDesigner.plateIcon.${plate.icon}`)}
+                </span>
+              )}
             </li>
           );
         })}

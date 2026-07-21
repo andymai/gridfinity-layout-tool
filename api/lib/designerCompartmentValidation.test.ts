@@ -390,6 +390,31 @@ describe('validateCompartments', () => {
         );
       }
     });
+
+    it('accepts labelIcons with allowlisted ids and nulls (#2666 follow-up)', () => {
+      expect(validateCompartments({ ...validCompartments(), labelIcons: ['bolt'] })).toBeNull();
+      expect(validateCompartments({ ...validCompartments(), labelIcons: [null] })).toBeNull();
+    });
+
+    it('rejects labelIcons that is not an array', () => {
+      expect(validateCompartments({ ...validCompartments(), labelIcons: 'bolt' })).toBe(
+        'compartments.labelIcons must be an array'
+      );
+    });
+
+    it('rejects labelIcons longer than cols × rows', () => {
+      expect(validateCompartments({ ...validCompartments(), labelIcons: ['bolt', 'nut'] })).toBe(
+        'compartments.labelIcons length must not exceed cols × rows (1)'
+      );
+    });
+
+    it('rejects an unknown labelIcons entry', () => {
+      for (const bad of ['hammer', 2, {}, '']) {
+        expect(validateCompartments({ ...validCompartments(), labelIcons: [bad] })).toBe(
+          'compartments.labelIcons[0] must be null or one of: bolt, screw, woodScrew, nut, washer, nail'
+        );
+      }
+    });
   });
 
   describe('dividerHeight', () => {

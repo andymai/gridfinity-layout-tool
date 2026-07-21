@@ -8,7 +8,11 @@
  */
 
 import { isNumber, inRange, isObject } from './validationUtils.js';
-import { CONSTRAINTS, VALID_LABEL_PLATE_WIDTHS } from './designerValidationConstants.js';
+import {
+  CONSTRAINTS,
+  VALID_LABEL_PLATE_ICONS,
+  VALID_LABEL_PLATE_WIDTHS,
+} from './designerValidationConstants.js';
 
 /**
  * Validates a dividers object (legacy format) ensuring x and y counts and thickness fall within allowed ranges.
@@ -159,6 +163,22 @@ export function validateCompartments(compartments: unknown): string | null {
       const w = compartments.labelPlateWidths[i] as unknown;
       if (w !== null && !VALID_LABEL_PLATE_WIDTHS.includes(w as number)) {
         return `compartments.labelPlateWidths[${i}] must be null or one of: ${VALID_LABEL_PLATE_WIDTHS.join(', ')}`;
+      }
+    }
+  }
+  // Optional per-compartment plate hardware icons (#2666 follow-up). Entries
+  // are null (no icon) or an allowlisted icon id; bounded like the widths.
+  if (compartments.labelIcons !== undefined) {
+    if (!Array.isArray(compartments.labelIcons)) {
+      return 'compartments.labelIcons must be an array';
+    }
+    if (compartments.labelIcons.length > expectedLength) {
+      return `compartments.labelIcons length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.labelIcons.length; i++) {
+      const icon = compartments.labelIcons[i] as unknown;
+      if (icon !== null && !VALID_LABEL_PLATE_ICONS.includes(icon as string)) {
+        return `compartments.labelIcons[${i}] must be null or one of: ${VALID_LABEL_PLATE_ICONS.join(', ')}`;
       }
     }
   }

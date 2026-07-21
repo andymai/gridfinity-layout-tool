@@ -42,6 +42,7 @@ export interface ManifestLabelGroup {
   readonly plates: readonly {
     readonly widthU: LabelPlateWidthU;
     readonly text: string;
+    readonly icon?: string;
     readonly quantity: number;
   }[];
   /** Plates skipped because they exceed the usable print bed width. */
@@ -145,7 +146,8 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       }
       for (const p of group.plates) {
         const label = p.text.length > 0 ? `"${p.text}"` : '(blank)';
-        lines.push(`      ${p.quantity}× ${p.widthU}U ${label}`);
+        const icon = p.icon !== undefined ? ` [${p.icon}]` : '';
+        lines.push(`      ${p.quantity}× ${p.widthU}U${icon} ${label}`);
       }
       if (group.oversizedCount !== undefined && group.oversizedCount > 0) {
         lines.push(

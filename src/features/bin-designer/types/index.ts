@@ -291,6 +291,14 @@ export interface CompartmentConfig {
    */
   readonly labelPlateWidths?: (number | null)[];
   /**
+   * Optional per-compartment hardware icon on the swappable label plate
+   * (`LabelPlateIconId` values), indexed by compartment ID after
+   * `normalizeIds`. Missing / null entries mean no icon. Only consulted when
+   * `label.mode === 'socket'`. Kept in lockstep with `cells` via
+   * `normalizeIdsWithRemap`, like `compartmentTexts`.
+   */
+  readonly labelIcons?: (string | null)[];
+  /**
    * Optional per-divider tilt overrides. Each entry shifts the endpoints of
    * one interior divider away from its axis-aligned grid position, producing
    * an angled (tapered) divider — useful for wedge-shaped compartments
@@ -1131,6 +1139,8 @@ export interface DesignerState {
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
+  /** Set a compartment's swappable-plate hardware icon (null = none). */
+  setCompartmentPlateIcon: (compartmentId: number, icon: string | null) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 

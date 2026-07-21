@@ -74,3 +74,16 @@ export const CONSTRAINTS = {
  * per-compartment `labelPlateWidths` overrides without a circular import.
  */
 export const VALID_LABEL_PLATE_WIDTHS: readonly number[] = [1, 2, 3];
+
+/**
+ * Mirrors `LABEL_PLATE_ICONS` in `src/shared/constants/labelPlates.ts` for
+ * the per-compartment `labelIcons` entries without a circular import.
+ */
+export const VALID_LABEL_PLATE_ICONS: readonly string[] = [
+  'bolt',
+  'screw',
+  'woodScrew',
+  'nut',
+  'washer',
+  'nail',
+];

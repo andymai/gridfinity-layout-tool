@@ -13,6 +13,7 @@ import type {
   TextStyleDefaults,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import type {
   MeshAsset,
   MeshImportErrorReason,
@@ -239,6 +240,8 @@ export interface ExportConnectorSampleMessage {
 export interface LabelPlateExportSpec {
   readonly widthU: 1 | 2 | 3;
   readonly text: string;
+  /** Hardware icon rendered beside the text. */
+  readonly icon?: LabelPlateIconId;
   /**
    * Plate center on the bed (mm). When absent the builder stacks plates in
    * a single centered column; the layout batch export passes packed sheet

@@ -54,6 +54,30 @@ describe('planLabelPlateExport', () => {
     expect(plan.totalPlates).toBe(0);
   });
 
+  it('keeps plates with the same text but different icons distinct in the manifest', () => {
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Icons', {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 2,
+            rows: 1,
+            cells: [0, 1],
+            compartmentTexts: ['M3', 'M3'],
+            labelIcons: ['bolt', 'nut'],
+          },
+        }),
+      },
+    ];
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED);
+    expect(plan.groups[0].manifestPlates).toHaveLength(2);
+    const icons = plan.groups[0].manifestPlates.map((p) => p.icon).sort();
+    expect(icons).toEqual(['bolt', 'nut']);
+    const placedIcons = plan.groups[0].sheets.flat().map((p) => p.icon);
+    expect(placedIcons.filter(Boolean)).toHaveLength(2);
+  });
+
   it('carries the design featureColors onto the group for 3MF paint_color', () => {
     const coloredParams: Partial<BinParams> = {
       featureColors: {

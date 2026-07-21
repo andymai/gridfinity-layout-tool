@@ -600,6 +600,9 @@ export function mergeCells(
     ...(config.labelPlateWidths && {
       labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
     }),
+    ...(config.labelIcons && {
+      labelIcons: remapLabelIcons(config.labelIcons, remap),
+    }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
@@ -638,6 +641,9 @@ export function splitCompartment(
     }),
     ...(config.labelPlateWidths && {
       labelPlateWidths: remapLabelPlateWidths(config.labelPlateWidths, remap),
+    }),
+    ...(config.labelIcons && {
+      labelIcons: remapLabelIcons(config.labelIcons, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
@@ -726,6 +732,32 @@ export function remapLabelPlateWidths(
     const w = oldWidths[oldId];
     if (typeof w === 'number') {
       out[newId] = w;
+      anySet = true;
+    }
+  }
+  return anySet ? out : undefined;
+}
+
+/**
+ * Remap per-compartment plate icons across a `normalizeIdsWithRemap`
+ * renumbering, exactly like `remapLabelPlateWidths` — icons whose
+ * compartment vanished drop; new IDs get no icon.
+ */
+export function remapLabelIcons(
+  oldIcons: readonly (string | null)[] | undefined,
+  remap: ReadonlyMap<number, number>
+): (string | null)[] | undefined {
+  if (!oldIcons || oldIcons.length === 0) return undefined;
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: (string | null)[] = new Array<string | null>(maxNewId + 1).fill(null);
+  let anySet = false;
+  for (const [oldId, newId] of remap) {
+    const icon = oldIcons[oldId];
+    if (typeof icon === 'string') {
+      out[newId] = icon;
       anySet = true;
     }
   }

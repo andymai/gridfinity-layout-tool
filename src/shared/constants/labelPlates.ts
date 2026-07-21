@@ -37,6 +37,19 @@ export function isLabelPlateWidthU(value: unknown): value is LabelPlateWidthU {
   return (LABEL_PLATE_WIDTHS_U as readonly unknown[]).includes(value);
 }
 
+/**
+ * Hardware icons a plate can carry beside its text (gflabel-style fastener
+ * silhouettes). Shared by the compartment icon picker, the server-side
+ * validation allowlist, and the worker's icon geometry so they never drift.
+ */
+export const LABEL_PLATE_ICONS = ['bolt', 'screw', 'woodScrew', 'nut', 'washer', 'nail'] as const;
+
+export type LabelPlateIconId = (typeof LABEL_PLATE_ICONS)[number];
+
+export function isLabelPlateIconId(value: unknown): value is LabelPlateIconId {
+  return (LABEL_PLATE_ICONS as readonly unknown[]).includes(value);
+}
+
 /** Plate body: 11mm tall (Y), 1.2mm thick (Z), 0.5mm corner radius. */
 export const LABEL_PLATE_HEIGHT_MM = 11;
 export const LABEL_PLATE_THICKNESS_MM = 1.2;

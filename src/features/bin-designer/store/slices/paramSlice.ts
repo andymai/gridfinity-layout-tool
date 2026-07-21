@@ -35,6 +35,7 @@ import { isErr } from '@/core/result';
 import {
   carryCompartmentTextsByPosition,
   remapLabelPlateWidths,
+  remapLabelIcons,
   isRectangularSelection,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
@@ -337,6 +338,7 @@ export function createParamSlice(set: Set, get: Get) {
         const {
           compartmentTexts: _t,
           labelPlateWidths: _w,
+          labelIcons: _i,
           dividerOverrides: _o,
           ...keep
         } = state.params.compartments;
@@ -370,6 +372,7 @@ export function createParamSlice(set: Set, get: Get) {
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
         const prevPlateWidths = state.params.compartments.labelPlateWidths;
+        const prevIcons = state.params.compartments.labelIcons;
         const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
@@ -378,6 +381,7 @@ export function createParamSlice(set: Set, get: Get) {
           ...(prevPlateWidths
             ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
             : {}),
+          ...(prevIcons ? { labelIcons: remapLabelIcons(prevIcons, remap) } : {}),
           ...(prevOverrides
             ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
             : {}),
@@ -417,6 +421,7 @@ export function createParamSlice(set: Set, get: Get) {
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
         const prevPlateWidths = state.params.compartments.labelPlateWidths;
+        const prevIcons = state.params.compartments.labelIcons;
         const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
@@ -425,6 +430,7 @@ export function createParamSlice(set: Set, get: Get) {
           ...(prevPlateWidths
             ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
             : {}),
+          ...(prevIcons ? { labelIcons: remapLabelIcons(prevIcons, remap) } : {}),
           ...(prevOverrides
             ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
             : {}),
@@ -480,6 +486,29 @@ export function createParamSlice(set: Set, get: Get) {
           // Reset to undefined when every entry is auto — dropped from
           // persisted JSON on stringify (same convention as compartmentTexts).
           labelPlateWidths: next.length > 0 ? next : undefined,
+        };
+      });
+    },
+
+    setCompartmentPlateIcon: (compartmentId: number, icon: string | null) => {
+      const { params } = get();
+      const prev = params.compartments.labelIcons ?? [];
+      // No-op guard mirrors setCompartmentPlateWidth: unchanged values must
+      // not push history or trigger regeneration.
+      if ((prev[compartmentId] ?? null) === icon) return;
+
+      set((state) => {
+        pushHistoryEntry(state, { affectsGeometry: false });
+        const next = prev.slice();
+        while (next.length <= compartmentId) next.push(null);
+        next[compartmentId] = icon;
+        while (next.length > 0 && next[next.length - 1] === null) next.pop();
+        state.params.compartments = {
+          ...state.params.compartments,
+          // Reset to undefined when no compartment carries an icon — dropped
+          // from persisted JSON on stringify (same convention as
+          // compartmentTexts).
+          labelIcons: next.length > 0 ? next : undefined,
         };
       });
     },

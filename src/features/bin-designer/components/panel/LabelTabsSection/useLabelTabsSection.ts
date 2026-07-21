@@ -8,6 +8,7 @@ import { getFeatureStatus } from '@/shared/constraints';
 import {
   MIN_LABEL_SOCKET_TAB_DEPTH_MM,
   effectiveLabelSocketClearance,
+  isLabelPlateIconId,
 } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
@@ -29,6 +30,7 @@ export function useLabelTabsSection() {
     updateLabel,
     setCompartmentText,
     setCompartmentPlateWidth,
+    setCompartmentPlateIcon,
     setTextDefaults,
     setLabelTabTextStyle,
     params,
@@ -40,6 +42,7 @@ export function useLabelTabsSection() {
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
       setCompartmentPlateWidth: s.setCompartmentPlateWidth,
+      setCompartmentPlateIcon: s.setCompartmentPlateIcon,
       setTextDefaults: s.setTextDefaults,
       setLabelTabTextStyle: s.setLabelTabTextStyle,
       params: s.params,
@@ -419,10 +422,12 @@ export function useLabelTabsSection() {
     if (!isSocketMode || socketPlan.spanningWidthU !== null) return [];
     const planById = new Map(socketPlan.compartments.map((p) => [p.compartmentId, p]));
     const overrides = compartments.labelPlateWidths ?? [];
+    const icons = compartments.labelIcons ?? [];
     const ids = getCompartmentReadingOrder(compartments);
     return ids.map((id, idx) => {
       const plan = planById.get(id);
       const override = overrides[id];
+      const icon = icons[id];
       return {
         id,
         displayNumber: idx + 1,
@@ -430,6 +435,7 @@ export function useLabelTabsSection() {
         fittingWidthsU: plan?.fittingWidthsU ?? [],
         autoWidthU: plan?.autoWidthU ?? null,
         overrideU: typeof override === 'number' ? override : null,
+        icon: isLabelPlateIconId(icon) ? icon : null,
       };
     });
   }, [isSocketMode, socketPlan, compartments, t]);
@@ -513,6 +519,7 @@ export function useLabelTabsSection() {
       setTabMode,
       setPlateFitOffset,
       setCompartmentPlateWidth,
+      setCompartmentPlateIcon,
       autoFixDimensions,
       setCompartmentText,
       setTextFont,

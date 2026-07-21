@@ -18,6 +18,7 @@ import {
   normalizeIdsWithRemap,
   remapCompartmentTexts,
   remapLabelPlateWidths,
+  remapLabelIcons,
   remapDividerOverrides,
   rectStraddlesTiltedDivider,
   validateDividerOverride,
@@ -821,6 +822,41 @@ describe('compartments', () => {
         [1, 1],
       ]);
       expect(remapLabelPlateWidths([null, null, 2], remap)).toBeUndefined();
+    });
+  });
+
+  describe('remapLabelIcons', () => {
+    it('returns undefined for undefined or empty input', () => {
+      expect(remapLabelIcons(undefined, new Map())).toBeUndefined();
+      expect(remapLabelIcons([], new Map([[0, 0]]))).toBeUndefined();
+    });
+
+    it('migrates icons into the new ID slots, nulling new IDs from splits', () => {
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+        [4, 2],
+        [2, 3],
+      ]);
+      const out = remapLabelIcons(['bolt', null, 'nut', 'washer'], remap);
+      expect(out).toEqual(['bolt', null, null, 'nut']);
+    });
+
+    it('drops icons for compartments that disappeared from the remap', () => {
+      const remap = new Map([
+        [0, 0],
+        [3, 1],
+      ]);
+      const out = remapLabelIcons(['nail', 'screw', 'bolt', 'screw'], remap);
+      expect(out).toEqual(['nail', 'screw']);
+    });
+
+    it('collapses to undefined when no icon survives', () => {
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+      ]);
+      expect(remapLabelIcons([null, null, 'bolt'], remap)).toBeUndefined();
     });
   });
 
