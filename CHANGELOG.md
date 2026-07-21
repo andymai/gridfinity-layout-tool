@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.268.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.268.0...gridfinity-layout-tool-v4.268.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* **designer:** flare v1-compat channel ends on 1U label plates ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2683](https://github.com/andymai/gridfinity-layout-tool/issues/2683)) ([0965a89](https://github.com/andymai/gridfinity-layout-tool/commit/0965a8989f231267b797bb425b672725c3d160c3))
+
 ## [4.268.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.267.0...gridfinity-layout-tool-v4.268.0) (2026-07-21)
 
 
