@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/patterns/trianglePattern.ts
+  s_d8f82741b94e26::t_d3337cde8de05f 25-27
+src/features/generation/worker/generators/patterns/trianglePattern.test.ts
+  s_d8f82741b94e26::t_38d28467cf8040 20-22
+src/features/generation/worker/generators/patterns/diamondPattern.test.ts
+  s_d8f82741b94e26::t_4ec0b90dcc04fa 9,11
+src/features/generation/worker/generators/patterns/diamondPattern.ts
+  s_d8f82741b94e26::t_5c0068f344e85d 41-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "2c9a4b2cd1c978866464de0e87c5339dd3e759df",
+  "prompts": {},
+  "sessions": {
+    "s_d8f82741b94e26": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "add50087-c4dc-4a50-bc16-242d2ddba861",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
