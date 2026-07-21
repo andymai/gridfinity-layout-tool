@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.269.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.268.1...gridfinity-layout-tool-v4.269.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** paint_color face zones for label plates ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2685](https://github.com/andymai/gridfinity-layout-tool/issues/2685)) ([8759ef9](https://github.com/andymai/gridfinity-layout-tool/commit/8759ef960930b13cbc040c84a0e2b14f8a481db0))
+
 ## [4.268.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.268.0...gridfinity-layout-tool-v4.268.1) (2026-07-21)
 
 
