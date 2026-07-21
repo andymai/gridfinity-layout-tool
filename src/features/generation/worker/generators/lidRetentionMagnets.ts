@@ -16,7 +16,7 @@
  * lid holes always line up with the bin's posts.
  */
 
-import { cylinder, unwrap, fuse, cutAll, translate } from 'brepjs';
+import { cylinder, unwrap, fuse, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -73,8 +73,13 @@ export function addLidRetentionMagnets(
   const cutterHeight = retentionMagnetDepth + LID_COPLANAR_MARGIN;
   const cutters: Shape3D[] = [];
   for (const [px, py] of positions) {
-    const cyl = cylinder(magnetRadius, cutterHeight, { at: [0, 0, cutterZ], axis: [0, 0, 1] });
-    cutters.push(scope.register(translate(cyl, [px, py, 0])));
+    // Place the cutter directly at the magnet position — avoids a `translate`
+    // that would leave the pre-translation cylinder as an unreleased WASM handle.
+    cutters.push(
+      scope.register(
+        cylinder(magnetRadius, cutterHeight, { at: [px, py, cutterZ], axis: [0, 0, 1] })
+      )
+    );
   }
 
   scope.register(result);

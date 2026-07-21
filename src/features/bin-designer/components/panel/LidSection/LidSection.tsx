@@ -7,6 +7,7 @@
  * magnets (gated on stackable top), and per-side click rails.
  */
 
+import { useCallback, useRef } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
 import { Button } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
@@ -18,10 +19,85 @@ import type {
   LidCompatibilityIssue,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES, LID_ATTACHMENTS } from '@/features/bin-designer/types';
+import type { LidAttachment } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { useLidSection } from './useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
+
+/** Attachment-mode picker as a proper radiogroup with roving tabindex +
+ *  arrow-key navigation, mirroring `ThicknessSelector`. */
+function AttachmentSelector({
+  value,
+  onChange,
+  t,
+}: {
+  value: LidAttachment;
+  onChange: (mode: LidAttachment) => void;
+  t: Translator;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const currentIndex = LID_ATTACHMENTS.indexOf(value);
+      let nextIndex: number;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % LID_ATTACHMENTS.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        nextIndex = (currentIndex - 1 + LID_ATTACHMENTS.length) % LID_ATTACHMENTS.length;
+      } else if (e.key === 'Home') {
+        nextIndex = 0;
+      } else if (e.key === 'End') {
+        nextIndex = LID_ATTACHMENTS.length - 1;
+      } else {
+        return;
+      }
+      e.preventDefault();
+      onChange(LID_ATTACHMENTS[nextIndex]);
+      groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
+    },
+    [value, onChange]
+  );
+
+  return (
+    <div>
+      <span className="mb-1 block text-xs font-medium text-content-secondary">
+        {t('binDesigner.lid.attachment')}
+      </span>
+      <div
+        ref={groupRef}
+        className="flex gap-1"
+        role="radiogroup"
+        aria-label={t('binDesigner.lid.attachment')}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+      >
+        {LID_ATTACHMENTS.map((mode) => {
+          const isActive = value === mode;
+          return (
+            <Button
+              key={mode}
+              type="button"
+              variant="ghost"
+              role="radio"
+              tabIndex={isActive ? 0 : -1}
+              aria-checked={isActive}
+              onClick={() => onChange(mode)}
+              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                isActive
+                  ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
+                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {t(`binDesigner.lid.attachment.${mode}`)}
+            </Button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /** Render a single compatibility issue as a colored bullet line with an
  *  optional one-click Fix button. The button is only shown for issues
@@ -119,33 +195,7 @@ export function LidSection() {
 
       {/* Attachment method (#2694) — how the lid retains onto the bin. One of
           friction / click rails / magnetic; the sub-controls below key off it. */}
-      <div>
-        <span className="mb-1 block text-xs font-medium text-content-secondary">
-          {t('binDesigner.lid.attachment')}
-        </span>
-        <div className="flex gap-1">
-          {LID_ATTACHMENTS.map((mode) => {
-            const isActive = state.attachment === mode;
-            return (
-              <Button
-                key={mode}
-                type="button"
-                variant="ghost"
-                role="radio"
-                aria-checked={isActive}
-                onClick={() => handlers.setAttachment(mode)}
-                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
-              >
-                {t(`binDesigner.lid.attachment.${mode}`)}
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      <AttachmentSelector value={state.attachment} onChange={handlers.setAttachment} t={t} />
 
       {/* Extra lid height (issue #2482) — deepens the lid cavity above the
           bin's lip so contents that stick up out of a short bin (toothpicks,

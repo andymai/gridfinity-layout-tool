@@ -78,6 +78,36 @@ describe('magnetic-retention lid geometry', () => {
     expect(magnetic.minX).toBeCloseTo(plain.minX, 1);
     expect(magnetic.minY).toBeCloseTo(plain.minY, 1);
   });
+
+  it('adds no bin posts when there is no stacking lip (nothing for the lid to mate)', async () => {
+    const generateBin = getGenerateBin();
+    const noLip = { base: { ...makeParams({}).base, stackingLip: false } };
+    // With no lip the lid can't be generated, so the bin must not grow orphan
+    // posts — magnetic and click-rails bins are identical.
+    const magnetic = generateBin(
+      makeParams({ attachment: 'magnetic' }, { width: 2, depth: 2, height: 3, ...noLip })
+    );
+    const plain = generateBin(
+      makeParams({ attachment: 'clickRails' }, { width: 2, depth: 2, height: 3, ...noLip })
+    );
+    expect(magnetic.triangleCount).toBe(plain.triangleCount);
+  });
+
+  it('adds no bin posts when the magnet is too deep for the bin (blocked lid)', async () => {
+    const generateBin = getGenerateBin();
+    // 1U bin interior can't hold a 6mm-deep magnet → magnetTooDeepForBin blocks
+    // the lid, so the bin must not cut a too-deep pocket through its floor.
+    const blocked = generateBin(
+      makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 6 } },
+        { width: 2, depth: 2, height: 1 }
+      )
+    );
+    const plain = generateBin(
+      makeParams({ attachment: 'clickRails' }, { width: 2, depth: 2, height: 1 })
+    );
+    expect(blocked.triangleCount).toBe(plain.triangleCount);
+  });
 });
 
 describe('tray-top lid geometry', () => {

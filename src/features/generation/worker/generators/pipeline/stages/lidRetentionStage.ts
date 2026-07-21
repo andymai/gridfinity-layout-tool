@@ -16,6 +16,7 @@
 import { cylinder, unwrap, fuse, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
+import { shouldGenerateLid } from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
 import {
@@ -29,7 +30,12 @@ export const lidRetentionStage: PipelineStage = {
   progressValue: 0.82,
 
   shouldRun(ctx: PipelineContext): boolean {
-    return ctx.solid !== null && usesMagneticLid(ctx.params);
+    // `usesMagneticLid` gates on the structural config (magnetic + lip +
+    // rectangular); `shouldGenerateLid` additionally rejects blocking
+    // compatibility issues (e.g. `magnetTooDeepForBin`). Both are required so a
+    // blocked lid — which is never generated/exported — doesn't leave the bin
+    // with orphan posts, or cut a too-deep pocket through the floor.
+    return ctx.solid !== null && usesMagneticLid(ctx.params) && shouldGenerateLid(ctx.params);
   },
 
   execute(ctx: PipelineContext): PipelineContext {

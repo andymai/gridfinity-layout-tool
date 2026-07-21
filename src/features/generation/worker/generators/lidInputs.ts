@@ -143,7 +143,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // modes force the persisted per-side flags off so switching modes keeps the
   // user's rail selection without generating it.
   const attachment = params.lid.attachment;
-  const retentionMagnets = attachment === 'magnetic' && !cellMask;
+  // Mirror the bin-side `usesMagneticLid` predicate exactly (magnetic + lip +
+  // rectangular). Without the `stackingLip` guard the lid would grow bosses in
+  // a state where the bin skips its matching posts, so the pair couldn't mate.
+  const retentionMagnets = attachment === 'magnetic' && params.base.stackingLip && !cellMask;
 
   // Tray recess only exists when the lid isn't stackable (a stack grid owns
   // the top surface otherwise).
