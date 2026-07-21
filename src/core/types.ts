@@ -533,6 +533,7 @@ export interface PrintRow {
   notes: string; // Notes (only for labeled/individual bins)
   binIds: BinId[]; // Original bin IDs for click-to-select
   customProperties?: Record<string, string>; // Custom properties (only for individual bins)
+  linkedDesignId?: DesignId; // Shared by all bins in the row (part of the group key)
 }
 export interface PrintListConfig {
   filamentCostPerKg: number; // $/kg - user configurable (default 20)
@@ -543,6 +544,7 @@ export interface EnhancedPrintRow extends PrintRow {
   area: number; // width * depth (for sorting)
   costEstimate: number; // $ based on filament usage
   spoolPercentage: number; // % of 1kg spool
+  labelPlateCount?: number; // Swappable label plates this row needs (socket-mode designs)
 }
 
 export interface PrintListGroup {

@@ -216,6 +216,11 @@ export function MobilePrintList() {
                       </div>
                     )}
                     <div className="text-xs text-content-disabled mt-0.5">~{row.filament}m</div>
+                    {(row.labelPlateCount ?? 0) > 0 && (
+                      <div className="text-xs text-content-disabled mt-0.5">
+                        {t('print.row.labelPlates', { count: row.labelPlateCount ?? 0 })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -257,6 +262,8 @@ export function MobilePrintList() {
           spoolPercentage={printList.spoolPercentage}
           hasAnySplits={printList.hasAnySplits}
           nozzleSizeMm={printList.nozzleSizeMm}
+          totalLabelPlates={printList.totalLabelPlates}
+          labelPlateWidthSummary={printList.labelPlateWidthSummary}
           compact
         />
       </div>

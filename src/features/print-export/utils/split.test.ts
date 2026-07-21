@@ -239,6 +239,28 @@ describe('generatePrintList', () => {
     expect(rows[0].binCount).toBe(2);
   });
 
+  it('carries the linked design id onto the row', () => {
+    const base = {
+      layerId: 'l1',
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'c1',
+      label: '',
+      notes: '',
+    };
+    const bins = [
+      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
+      { ...base, id: '2', x: 2 },
+    ] as unknown as Bin[];
+    const rows = generatePrintList(bins, 4);
+    const linked = rows.find((r) => r.linkedDesignId !== undefined);
+    const unlinked = rows.find((r) => r.linkedDesignId === undefined);
+    expect(linked?.linkedDesignId).toBe('design-a');
+    expect(unlinked).toBeDefined();
+  });
+
   it('excludes staging bins', () => {
     const bins: Bin[] = [
       {

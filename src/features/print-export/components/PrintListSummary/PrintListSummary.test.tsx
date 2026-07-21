@@ -108,6 +108,40 @@ describe('PrintListSummary', () => {
 
       expect(screen.getByText(/~25m/)).toBeInTheDocument();
     });
+
+    it('displays label plate count when present', () => {
+      render(
+        <PrintListSummary
+          {...defaultProps}
+          totalLabelPlates={5}
+          labelPlateWidthSummary="3× 1U, 2× 2U"
+          compact
+        />
+      );
+
+      expect(screen.getByText(/Label plates: 5/)).toBeInTheDocument();
+    });
+  });
+
+  describe('label plates line', () => {
+    it('is hidden when no plates are needed', () => {
+      render(<PrintListSummary {...defaultProps} />);
+
+      expect(screen.queryByText(/Label plates/)).not.toBeInTheDocument();
+    });
+
+    it('shows the count with the width breakdown in the tooltip', () => {
+      render(
+        <PrintListSummary
+          {...defaultProps}
+          totalLabelPlates={12}
+          labelPlateWidthSummary="8× 1U, 4× 2U"
+        />
+      );
+
+      expect(screen.getByText(/Label plates: 12/)).toBeInTheDocument();
+      expect(screen.getByTitle(/8× 1U, 4× 2U/)).toBeInTheDocument();
+    });
   });
 
   describe('edge cases', () => {

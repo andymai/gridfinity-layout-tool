@@ -8,6 +8,7 @@ import type {
   PrintListConfig,
   BinId,
   CategoryId,
+  DesignId,
 } from '@/core/types';
 import { getGridBins } from '@/shared/utils';
 import {
@@ -193,6 +194,7 @@ export function generatePrintList(
       notesList: string[]; // Collect all notes for merging
       binIds: BinId[];
       customPropertiesList: Array<Record<string, string> | undefined>; // Collect for merging
+      linkedDesignId?: DesignId;
     }
   >();
 
@@ -219,6 +221,7 @@ export function generatePrintList(
         notesList: [bin.notes],
         binIds: [bin.id],
         customPropertiesList: [bin.customProperties],
+        linkedDesignId: bin.linkedDesignId,
       });
     }
   }
@@ -266,6 +269,7 @@ export function generatePrintList(
       notes: mergedNotes,
       binIds: group.binIds,
       customProperties: mergedCustomProps,
+      linkedDesignId: group.linkedDesignId,
     });
   }
 

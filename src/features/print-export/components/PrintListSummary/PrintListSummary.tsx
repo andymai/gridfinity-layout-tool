@@ -11,6 +11,10 @@ interface PrintListSummaryProps {
   hasAnySplits: boolean;
   /** Nozzle size in mm for tooltip display */
   nozzleSizeMm: number;
+  /** Swappable label plates needed by socket-mode bins (0 hides the line) */
+  totalLabelPlates?: number;
+  /** Width breakdown for the tooltip, e.g. "8× 1U, 4× 2U" */
+  labelPlateWidthSummary?: string;
   /** Compact mode for mobile */
   compact?: boolean;
 }
@@ -48,9 +52,21 @@ export function PrintListSummary({
   spoolPercentage,
   hasAnySplits,
   nozzleSizeMm,
+  totalLabelPlates = 0,
+  labelPlateWidthSummary = '',
   compact = false,
 }: PrintListSummaryProps) {
   const t = useTranslation();
+
+  const labelPlatesLine =
+    totalLabelPlates > 0 ? (
+      <div
+        className="text-xs text-content-tertiary tabular-nums pt-2 border-t border-stroke-subtle"
+        title={t('print.summary.labelPlatesTooltip', { breakdown: labelPlateWidthSummary })}
+      >
+        {t('print.summary.labelPlates', { count: totalLabelPlates })}
+      </div>
+    ) : null;
 
   if (compact) {
     // Mobile compact layout
@@ -116,6 +132,7 @@ export function PrintListSummary({
             )}
           </div>
         </div>
+        {labelPlatesLine}
       </div>
     );
   }
@@ -185,6 +202,7 @@ export function PrintListSummary({
           )}
         </div>
       </div>
+      {labelPlatesLine && <div className="mt-2">{labelPlatesLine}</div>}
     </div>
   );
 }

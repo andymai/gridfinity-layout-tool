@@ -584,6 +584,10 @@ const en: Record<string, string> = {
   'print.summary.spoolCountOne': '1 spool',
   'print.summary.bins': '{count} bins',
   'print.summary.binsAndPieces': '{bins} bins & {pieces} pieces',
+  'print.summary.labelPlates': 'Label plates: {count}',
+  'print.summary.labelPlatesTooltip':
+    'Swappable label plates to print for bins with label sockets: {breakdown}',
+  'print.row.labelPlates': '{count} label plate(s)',
   'print.uncategorized': 'Uncategorized',
   'print.empty.title': 'No bins to print',
   'print.empty.message': 'Add bins to the grid to see the print list',

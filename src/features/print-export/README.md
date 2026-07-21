@@ -25,7 +25,9 @@ graph TB
 
 **Hooks:**
 
-- `hooks/usePrintList.ts` — aggregates bins into print rows, filtering/sorting
+- `hooks/usePrintList.ts` — aggregates bins into print rows, filtering/sorting; also
+  surfaces swappable label plate counts per row and in the summary via
+  `@/shared/hooks/useLabelPlateCounts` (socket-mode linked designs, #2666)
 
 **Utils:**
 
