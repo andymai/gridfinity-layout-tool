@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "トレイの縁の壁厚（ミリメートル）",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "カスタム形状ではコーナーマグネットを配置できません — ふたはマグネットなしの摩擦ばめに戻ります。",
   "binDesigner.lid.compat.magnetTooDeepForBin": "保持マグネットがビン内部に収まらないほど深くなっています — 深さを減らすか、背の高いビンを使用してください。",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "保持マグネットの深さを減らす"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "保持マグネットの深さを減らす",
+  "binDesigner.lid.compat.magnetBinTooSmall": "ビンが小さすぎてコーナーマグネットが入りません — 大きいビンを使うか、マグネット直径を小さくしてください。",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "大きいビンか小さいマグネットを使う"
 }

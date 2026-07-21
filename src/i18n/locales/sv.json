@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Brickkantens väggtjocklek i millimeter",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Anpassade former kan inte placera hörnmagneter — locket återgår till friktionsfäste utan magneter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Fästmagneten är djupare än vad lådans insida rymmer — minska djupet eller använd en högre låda.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "minska fästmagnetens djup"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "minska fästmagnetens djup",
+  "binDesigner.lid.compat.magnetBinTooSmall": "Lådan är för liten för hörnmagneter — använd en större låda eller en mindre magnetdiameter.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "använd en större låda eller en mindre magnet"
 }

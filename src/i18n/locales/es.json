@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Grosor del borde de la bandeja en milímetros",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Las formas personalizadas no pueden colocar imanes en las esquinas — la tapa vuelve al ajuste por fricción sin imanes.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "El imán de retención es más profundo de lo que cabe en el interior de la caja — reduce su profundidad o usa una caja más alta.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reducir la profundidad del imán de retención"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reducir la profundidad del imán de retención",
+  "binDesigner.lid.compat.magnetBinTooSmall": "La caja es demasiado pequeña para imanes en las esquinas — usa una caja más grande o un imán de menor diámetro.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "usar una caja más grande o un imán más pequeño"
 }

@@ -640,6 +640,19 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
     expect(issue?.severity).toBe('warning');
   });
 
+  it('blocks when the bin is too small to fit corner magnets', () => {
+    // A 0.5-unit-wide bin (half-width 10.5mm) can't hold the 6mm magnet's
+    // corner pads (need >= 5 + diameter = 11mm half-extent).
+    const params = magnetic({ width: 0.5 }, { retentionMagnet: { diameter: 6, depth: 2 } });
+    const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetBinTooSmall');
+    expect(issue?.severity).toBe('blocker');
+  });
+
+  it('does not flag a normal 2x2 bin as too small', () => {
+    const params = magnetic({ width: 2, depth: 2 });
+    expect(checkLidCompatibility(params).some((i) => i.id === 'magnetBinTooSmall')).toBe(false);
+  });
+
   it('blocks when the retention magnet is deeper than the bin interior', () => {
     const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 6 } });
     const issues = checkLidCompatibility(params);

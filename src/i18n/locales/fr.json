@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Épaisseur du rebord du plateau en millimètres",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Les formes personnalisées ne peuvent pas placer d'aimants d'angle — le couvercle revient à un ajustement par friction sans aimants.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "L'aimant de maintien est plus profond que ne peut le contenir l'intérieur du bac — réduisez sa profondeur ou utilisez un bac plus haut.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "réduire la profondeur de l'aimant de maintien"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "réduire la profondeur de l'aimant de maintien",
+  "binDesigner.lid.compat.magnetBinTooSmall": "Le bac est trop petit pour des aimants d'angle — utilisez un bac plus grand ou un aimant de plus petit diamètre.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "utiliser un bac plus grand ou un aimant plus petit"
 }

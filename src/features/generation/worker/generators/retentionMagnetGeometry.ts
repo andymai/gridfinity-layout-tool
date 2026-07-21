@@ -18,7 +18,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { LID_MAGNET_BOSS_WALL, LID_MAGNET_EDGE_INSET } from './lidConstants';
+import { LID_MAGNET_BOSS_WALL, LID_MAGNET_LIP_CLEARANCE } from './lidConstants';
 
 /** Radial material kept around the magnet in its post/boss (mm). */
 export function retentionBossRadius(magnetDiameter: number): number {
@@ -26,23 +26,33 @@ export function retentionBossRadius(magnetDiameter: number): number {
 }
 
 /**
- * The four corner magnet XY positions, centred on the origin like both the
- * bin body and the lid. Each post is inset from the NOMINAL footprint corner
- * by its own radius plus `LID_MAGNET_EDGE_INSET`, so its outer edge clears the
- * clearance-reduced outer wall (of both the slightly-larger bin body and the
- * slightly-smaller lid cavity) and the footprint stays drawer-safe. Posts weld
- * to the floor plates, not the walls, so they don't need wall tangency.
+ * Distance (mm) from the nominal footprint edge to the magnet centre.
+ *
+ * Set so the lid's boss (radius {@link retentionBossRadius}) sits fully INBOARD
+ * of the bin's stacking lip: `inset - bossRadius = LID_MAGNET_LIP_CLEARANCE`, so
+ * the boss can hang into the mouth without fouling the lip as the lid seats. The
+ * bin's corner gusset then reaches back OUT to the interior walls to anchor
+ * itself. Both parts use this same inset so their magnets stay coaxial.
+ */
+export function retentionMagnetInset(magnetDiameter: number): number {
+  return LID_MAGNET_LIP_CLEARANCE + retentionBossRadius(magnetDiameter);
+}
+
+/**
+ * The four corner magnet XY positions, centred on the origin like both the bin
+ * body and the lid, inset from the NOMINAL footprint corner by
+ * {@link retentionMagnetInset}. Nominal (not per-part) so the bin's slightly-
+ * larger body and the lid's slightly-smaller cavity keep the magnets coaxial.
  */
 export function retentionMagnetPositions(
   width: number,
   depth: number,
   gridUnitMmX: number,
   gridUnitMmY: number,
-  bossRadius: number
+  inset: number
 ): ReadonlyArray<readonly [number, number]> {
   const halfW = (width * gridUnitMmX) / 2;
   const halfD = (depth * gridUnitMmY) / 2;
-  const inset = bossRadius + LID_MAGNET_EDGE_INSET;
   const x = halfW - inset;
   const y = halfD - inset;
   return [
