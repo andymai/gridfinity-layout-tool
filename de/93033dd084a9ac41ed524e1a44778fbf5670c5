@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_d58241dc361fa8::t_c44126afe3b32b 73-77
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_d58241dc361fa8::t_973ba9d3068503 21
+  s_d58241dc361fa8::t_581266e2c89a63 48-52
+  s_d58241dc361fa8::t_8a6c6de01371e4 78,80-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "de93033dd084a9ac41ed524e1a44778fbf5670c5",
+  "prompts": {},
+  "sessions": {
+    "s_d58241dc361fa8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3487a736-3b7c-4c92-b73e-388d3550f862",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
