@@ -30,6 +30,7 @@ export interface LidMeshDataState {
   readonly faceGroups?: FaceGroupData[];
 }
 import type { DesignId, MagnetAnchor } from '@/core/types';
+import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type {
   ColorZone,
@@ -419,6 +420,14 @@ export interface LabelTabConfig {
    * `effectiveLabelSocketClearance`.
    */
   readonly plateFitOffset?: number;
+  /**
+   * Socket profile in socket mode. Absent = 'clickIn' — the Cullenect
+   * click-in pocket. 'slideChannel' swaps the retention ribs for overhanging
+   * lips with a side mouth: the plate slides in from the compartment side
+   * and parks behind a floor detent. Both styles take the same standard
+   * plates.
+   */
+  readonly socketStyle?: LabelSocketStyle;
   /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
   readonly support: LabelTabSupport;
   /** Depth of tab from inner back wall (horizontal inward), in mm */

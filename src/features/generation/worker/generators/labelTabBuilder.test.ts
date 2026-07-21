@@ -285,3 +285,85 @@ describe('buildLabelTabs', () => {
     }
   );
 });
+
+describe('slide-channel socket style (#2666 follow-up)', () => {
+  const socketParams = (socketStyle?: 'clickIn' | 'slideChannel') => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 1,
+    label: {
+      ...DEFAULT_BIN_PARAMS.label,
+      enabled: true,
+      mode: 'socket' as const,
+      depth: 14,
+      ...(socketStyle !== undefined ? { socketStyle } : {}),
+    },
+  });
+
+  it('builds a different solid than click-in with an open mouth at the free edge', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { measureVolume, mesh } = await import('brepjs');
+    const { isOk } = await import('@/core/result');
+    const vol = (s: NonNullable<ReturnType<typeof buildLabelTabs>>): number => {
+      const r = measureVolume(s);
+      if (!isOk(r)) throw new Error('measureVolume failed');
+      return r.value;
+    };
+
+    const click = buildLabelTabs(socketParams('clickIn'), 80, 80, 35, 1.2);
+    const slide = buildLabelTabs(socketParams('slideChannel'), 80, 80, 35, 1.2);
+    expect(click).not.toBeNull();
+    expect(slide).not.toBeNull();
+    const clickVol = vol(click as NonNullable<typeof click>);
+    const slideVol = vol(slide as NonNullable<typeof slide>);
+    expect(clickVol).toBeGreaterThan(0);
+    expect(slideVol).toBeGreaterThan(0);
+    // The styles must actually diverge (thicker shelf, deeper cavity, mouth).
+    expect(Math.abs(clickVol - slideVol)).toBeGreaterThan(3);
+
+    // Mouth check: the slide tab must have NO material across the pocket span
+    // at the tab's free (compartment-facing) edge within the cavity band —
+    // the corridor cuts through. The click-in tab keeps a solid wall there.
+    const wallHeight = 35;
+    const tabDepth = 14;
+    const freeEdgeY = tabDepth; // back-anchored tab sweeps +Y? probe both signs
+    const cavityMidZ = wallHeight - 1.2; // inside the pocket band for both
+    const hasMaterialNear = (
+      solid: NonNullable<ReturnType<typeof buildLabelTabs>>,
+      y: number
+    ): boolean => {
+      const m = mesh(solid, { tolerance: 0.1, angularTolerance: 10 });
+      const v = m.vertices;
+      for (let i = 0; i < v.length; i += 3) {
+        if (
+          Math.abs(Math.abs(v[i + 1]) - y) < 0.4 &&
+          Math.abs(v[i + 2] - cavityMidZ) < 0.5 &&
+          Math.abs(v[i] - 40) < 10
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+    // The click-in socket keeps its far wall (vertices present at the pocket's
+    // far side); the slide mouth removes the wall at the free edge entirely.
+    expect(hasMaterialNear(slide as NonNullable<typeof slide>, freeEdgeY)).toBe(false);
+  });
+
+  it('defaults to click-in geometry when socketStyle is absent', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { measureVolume } = await import('brepjs');
+    const { isOk } = await import('@/core/result');
+    const vol = (s: NonNullable<ReturnType<typeof buildLabelTabs>>): number => {
+      const r = measureVolume(s);
+      if (!isOk(r)) throw new Error('measureVolume failed');
+      return r.value;
+    };
+    const absent = buildLabelTabs(socketParams(undefined), 80, 80, 35, 1.2);
+    const click = buildLabelTabs(socketParams('clickIn'), 80, 80, 35, 1.2);
+    expect(vol(absent as NonNullable<typeof absent>)).toBeCloseTo(
+      vol(click as NonNullable<typeof click>),
+      6
+    );
+  });
+});

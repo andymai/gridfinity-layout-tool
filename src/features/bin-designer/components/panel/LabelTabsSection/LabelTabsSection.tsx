@@ -36,6 +36,7 @@ import {
   LABEL_PLATE_ICONS,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
+import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { CompartmentTextInput } from './CompartmentTextInput';
 import { LabelColorControls } from './LabelColorControls';
 import { LabelPlatesControls } from './LabelPlatesControls';
@@ -48,6 +49,7 @@ const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
 const EDGES_OPTIONS: LabelTabEdges[] = ['back', 'front', 'both'];
 const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
 const TAB_MODE_OPTIONS: LabelTabMode[] = ['text', 'socket'];
+const SOCKET_STYLE_OPTIONS: readonly LabelSocketStyle[] = ['clickIn', 'slideChannel'];
 
 const FONT_OPTIONS: readonly TextFontFamily[] = [
   'atkinson',
@@ -163,6 +165,39 @@ export function LabelTabsSection() {
 
           {state.isSocketMode && (
             <>
+              <div>
+                <span className="mb-1 block text-xs font-medium text-content-secondary">
+                  {t('binDesigner.socketStyle')}
+                </span>
+                <div
+                  role="group"
+                  aria-label={t('binDesigner.socketStyle')}
+                  className={SEGMENT_GROUP_CLASS}
+                >
+                  {SOCKET_STYLE_OPTIONS.map((option) => {
+                    const current = state.label.socketStyle ?? 'clickIn';
+                    return (
+                      <Button
+                        key={option}
+                        type="button"
+                        variant="ghost"
+                        touchTarget={false}
+                        onClick={() => handlers.setSocketStyle(option)}
+                        aria-pressed={current === option}
+                        className={`flex-1 ${getSegmentClass(current === option)}`}
+                      >
+                        {t(`binDesigner.socketStyle.${option}`)}
+                      </Button>
+                    );
+                  })}
+                </div>
+                {(state.label.socketStyle ?? 'clickIn') === 'slideChannel' && (
+                  <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+                    <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                    <span>{t('binDesigner.socketStyle.slideHint')}</span>
+                  </p>
+                )}
+              </div>
               {state.socketSpanningWidthU !== null && (
                 <p className="flex items-start gap-1 text-xs text-content-tertiary">
                   <InfoIcon size="xs" className="mt-0.5 shrink-0" />

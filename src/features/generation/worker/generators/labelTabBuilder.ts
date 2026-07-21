@@ -28,16 +28,22 @@ import {
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
+  LABEL_SOCKET_DETENT_DEPTH_MM,
+  LABEL_SOCKET_DETENT_HEIGHT_MM,
+  LABEL_SOCKET_LIP_OVERHANG_MM,
+  LABEL_SOCKET_LIP_THICKNESS_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_PROTRUSION_MM,
   LABEL_SOCKET_RIB_START_MM,
   LABEL_SOCKET_SHELF_THICKNESS_MM,
+  LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM,
+  LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_WALL_MM,
   effectiveLabelSocketClearance,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
-import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
@@ -51,6 +57,8 @@ interface SocketBuildInfo {
   readonly clearanceMm: number;
   /** Plate width per compartment ID; absent = that tab gets a plain shelf. */
   readonly plateByCompartment: ReadonlyMap<number, LabelPlateWidthU>;
+  /** Pocket profile: click-in ribs (default) or slide-in channel. */
+  readonly style: LabelSocketStyle;
 }
 
 interface TabBuildDimensions {
@@ -188,9 +196,16 @@ function buildLabelTabsInScope(
         if (p.plateWidthU !== null) plateByCompartment.set(p.compartmentId, p.plateWidthU);
       }
     }
-    socket = { clearanceMm, plateByCompartment };
+    socket = { clearanceMm, plateByCompartment, style: params.label.socketStyle ?? 'clickIn' };
   }
-  const shelfT = socket ? Math.max(wallThickness, LABEL_SOCKET_SHELF_THICKNESS_MM) : wallThickness;
+  const shelfT = socket
+    ? Math.max(
+        wallThickness,
+        socket.style === 'slideChannel'
+          ? LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM
+          : LABEL_SOCKET_SHELF_THICKNESS_MM
+      )
+    : wallThickness;
   if (shelfT >= tabHeight) return null;
 
   const dims: TabBuildDimensions = {
@@ -612,6 +627,7 @@ function buildTabsAtRow(
         tabSolid = applySocket(scope, tabSolid, {
           plateWidthU,
           clearanceMm: socket.clearanceMm,
+          style: socket.style,
           tabWidth,
           tabDepth,
           tabHeight,
@@ -667,6 +683,7 @@ function applySocket(
   ctx: {
     plateWidthU: LabelPlateWidthU;
     clearanceMm: number;
+    style: LabelSocketStyle;
     tabWidth: number;
     tabDepth: number;
     tabHeight: number;
@@ -701,6 +718,13 @@ function applySocket(
       topZ: ctx.tabHeight,
       plateWidthU: ctx.plateWidthU,
       clearanceMm: ctx.clearanceMm,
+      style: ctx.style,
+      // The slide mouth opens through the tab's compartment-facing edge —
+      // extend the cut from the pocket's far edge past the tab boundary.
+      mouth: {
+        sign: ctx.depthSign,
+        extendMm: ctx.tabDepth - wall - pocketD + 1,
+      },
     });
   } catch {
     return tabSolid;
@@ -708,11 +732,18 @@ function applySocket(
 }
 
 /**
- * Cut a swappable-label socket (pocket + retention ribs) into `solid`'s top
- * face, pocket centered at (centerX, centerY) with its floor at
- * topZ − pocket depth. Shared by the label-tab shelf and the fit-calibration
+ * Cut a swappable-label socket into `solid`'s top face, pocket centered at
+ * (centerX, centerY). Shared by the label-tab shelf and the fit-calibration
  * coupon so the printed socket can never drift between the two. Throws on
  * boolean failure — callers needing best-effort semantics wrap it.
+ *
+ * Styles (#2666 follow-up):
+ * - `clickIn` (default): pocket + retention ribs, floor at topZ − pocket
+ *   depth. The Cullenect-compatible profile.
+ * - `slideChannel`: pocket sunk one lip band + z-clearance deeper, with
+ *   overhanging lips left/right/anchor-side, a mouth corridor opening
+ *   `mouth.sign`-ward through the host's edge (`mouth.extendMm` past the
+ *   pocket), and a park detent on the corridor floor at the pocket edge.
  */
 export function cutLabelSocket(
   scope: DisposalScope,
@@ -723,10 +754,23 @@ export function cutLabelSocket(
     topZ: number;
     plateWidthU: LabelPlateWidthU;
     clearanceMm: number;
+    style?: LabelSocketStyle;
+    mouth?: { sign: 1 | -1; extendMm: number };
   }
 ): Shape3D {
   const pocketW = labelPlateWidthMm(ctx.plateWidthU) + ctx.clearanceMm;
   const pocketD = LABEL_PLATE_HEIGHT_MM + ctx.clearanceMm;
+
+  if ((ctx.style ?? 'clickIn') === 'slideChannel' && ctx.mouth) {
+    return cutSlideChannel(
+      scope,
+      solid,
+      { centerX: ctx.centerX, centerY: ctx.centerY, topZ: ctx.topZ, mouth: ctx.mouth },
+      pocketW,
+      pocketD
+    );
+  }
+
   const floorZ = ctx.topZ - LABEL_SOCKET_POCKET_DEPTH_MM;
 
   const pocketCutter = scope.register(
@@ -765,6 +809,78 @@ export function cutLabelSocket(
     );
     result = scope.register(unwrap(fuse(result, rib as ValidSolid)));
   }
+  return result;
+}
+
+/**
+ * Slide-channel variant of `cutLabelSocket`: a two-layer cut (cavity below,
+ * lip window above, stacked exactly like the v1 plate channels — no
+ * epsilon seams) plus a fused park detent at the pocket's mouth edge.
+ */
+function cutSlideChannel(
+  scope: DisposalScope,
+  solid: Shape3D,
+  ctx: {
+    centerX: number;
+    centerY: number;
+    topZ: number;
+    mouth: { sign: 1 | -1; extendMm: number };
+  },
+  pocketW: number,
+  pocketD: number
+): Shape3D {
+  const r = LABEL_PLATE_CORNER_RADIUS_MM;
+  const lipT = LABEL_SOCKET_LIP_THICKNESS_MM;
+  const overhang = LABEL_SOCKET_LIP_OVERHANG_MM;
+  const cavityTop = ctx.topZ - lipT;
+  const floorZ = cavityTop - LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM - LABEL_SOCKET_POCKET_DEPTH_MM;
+  const { sign, extendMm } = ctx.mouth;
+
+  // Cavity: pocket + mouth corridor at full plate width, up to the lip
+  // underside.
+  const cavityD = pocketD + extendMm;
+  const cavity = scope.register(
+    translate(
+      scope.register(
+        sketch(drawRoundedRectangle(pocketW, cavityD, r), 'XY', floorZ).extrude(cavityTop - floorZ)
+      ),
+      [ctx.centerX, ctx.centerY + (sign * extendMm) / 2, 0]
+    )
+  );
+  let result = scope.register(unwrap(cut(solid as ValidSolid, cavity as ValidSolid)));
+
+  // Lip window: inset by the overhang on the two side walls and the
+  // anchor-side wall; open through the mouth. Cut from the cavity top up
+  // past the shelf top.
+  const windowW = pocketW - 2 * overhang;
+  const windowD = pocketD - overhang + extendMm;
+  const window = scope.register(
+    translate(
+      scope.register(
+        sketch(drawRoundedRectangle(windowW, windowD, r), 'XY', cavityTop).extrude(lipT + 1)
+      ),
+      [ctx.centerX, ctx.centerY + (sign * (overhang + extendMm)) / 2, 0]
+    )
+  );
+  result = scope.register(unwrap(cut(result, window as ValidSolid)));
+
+  // Park detent: a low bar across the corridor floor just past the pocket
+  // edge — the plate rides over it on the way in and rests behind it.
+  const detentW = windowW;
+  const detentCenterY = ctx.centerY + sign * (pocketD / 2 + LABEL_SOCKET_DETENT_DEPTH_MM / 2);
+  const detent = scope.register(
+    translate(
+      scope.register(
+        sketch(
+          drawRoundedRectangle(detentW, LABEL_SOCKET_DETENT_DEPTH_MM, 0.2),
+          'XY',
+          floorZ
+        ).extrude(LABEL_SOCKET_DETENT_HEIGHT_MM)
+      ),
+      [ctx.centerX, detentCenterY, 0]
+    )
+  );
+  result = scope.register(unwrap(fuse(result, detent as ValidSolid)));
   return result;
 }
 
