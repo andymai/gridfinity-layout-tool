@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.273.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.272.0...gridfinity-layout-tool-v4.273.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** magnetic-retention lids and tray tops ([#2694](https://github.com/andymai/gridfinity-layout-tool/issues/2694)) ([#2696](https://github.com/andymai/gridfinity-layout-tool/issues/2696)) ([6049597](https://github.com/andymai/gridfinity-layout-tool/commit/60495976067fe3aa720248078e24ce18d1bc017c))
+
 ## [4.272.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.271.0...gridfinity-layout-tool-v4.272.0) (2026-07-21)
 
 
