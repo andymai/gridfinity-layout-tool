@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.271.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.270.0...gridfinity-layout-tool-v4.271.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** slide-channel socket style for label tabs ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2689](https://github.com/andymai/gridfinity-layout-tool/issues/2689)) ([d635b23](https://github.com/andymai/gridfinity-layout-tool/commit/d635b23d17040589e2b79f8a0e322331fa98da96))
+
 ## [4.270.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.269.0...gridfinity-layout-tool-v4.270.0) (2026-07-21)
 
 
