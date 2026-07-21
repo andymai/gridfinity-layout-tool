@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.274.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.2...gridfinity-layout-tool-v4.274.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** rearchitect lid customization into its own group ([#2702](https://github.com/andymai/gridfinity-layout-tool/issues/2702)) ([e6a475e](https://github.com/andymai/gridfinity-layout-tool/commit/e6a475e7a176c96cfe2e028dcd53bd1ab842dee9))
+
 ## [4.273.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.1...gridfinity-layout-tool-v4.273.2) (2026-07-21)
 
 
