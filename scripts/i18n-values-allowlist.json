@@ -78,6 +78,7 @@
     "binDesigner.layout",
     "binDesigner.lid.attachment.friction",
     "binDesigner.lid.outerDimensions",
+    "binDesigner.lid.topSurface.flat",
     "binDesigner.lid.railsTwoAxis",
     "binDesigner.lid.summary",
     "binDesigner.multiColor.experimental",

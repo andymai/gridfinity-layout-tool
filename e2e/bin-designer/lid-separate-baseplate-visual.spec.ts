@@ -1,11 +1,11 @@
 /**
  * Visual verification for the separate stack-grid baseplate (glue-on).
  *
- * Drives the lid panel end to end: enable the lid, expand Customize, turn on
- * the stackable top (grid fused on the lid), then split it into a separate
- * glue-on baseplate. Splitting must change the canvas — the lid loses its grid
- * and the baseplate renders as its own piece floating above the lid — and the
- * print-guidance hint must surface.
+ * Drives the redesigned lid group end to end: enable the lid (controls render
+ * directly), pick the Stackable top surface (grid fused on the lid), then split
+ * it into a separate glue-on baseplate. Splitting must change the canvas — the
+ * lid loses its grid and the baseplate renders as its own piece floating above
+ * the lid — and the print-guidance hint must surface.
  *
  * Run with: `pnpm test:e2e e2e/bin-designer/lid-separate-baseplate-visual.spec.ts`
  */
@@ -36,31 +36,30 @@ test.describe('Lid separate baseplate (visual)', () => {
     await expect(canvas).toBeVisible({ timeout: 120_000 });
     await waitForGenerationComplete(page);
 
-    // Enable the lid (requires the default stacking lip, which is on).
-    const lidToggle = page.getByRole('switch', { name: 'Lid' });
+    // Enable the lid (requires the default stacking lip, which is on). The
+    // grouped controls render directly — no Customize step.
+    const lidToggle = page.getByRole('switch', { name: 'Enable lid' });
     await lidToggle.scrollIntoViewIfNeeded();
     await lidToggle.click();
-    await expect(lidToggle).toHaveAttribute('aria-checked', 'true');
+    await expect(lidToggle).toBeChecked();
     await waitForGenerationComplete(page);
 
-    // Expand the lid's own Customize disclosure (scoped so we don't hit
-    // another feature's Customize link).
-    const lidRoot = lidToggle.locator('xpath=../..');
-    await lidRoot.getByRole('button', { name: /customize/i }).click();
-
-    // Turn on the stackable top → grid fuses onto the lid. The design-system
-    // Switch is an sr-only input wrapped in a <label>, so click the visible
-    // label text (scoped to the lid region) to toggle it.
-    const stackable = page.getByRole('switch', { name: 'Stackable top grid' });
-    await lidRoot.getByText('Stackable top grid', { exact: true }).click();
-    await expect(stackable).toBeChecked();
+    // Pick the Stackable top surface → grid fuses onto the lid.
+    const topSurface = page.getByRole('radiogroup', { name: 'Top surface' });
+    await topSurface.getByRole('radio', { name: 'Stackable' }).click();
+    await expect(topSurface.getByRole('radio', { name: 'Stackable' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
     await waitForGenerationComplete(page);
     const fused = await canvas.screenshot();
 
-    // The separate-baseplate switch becomes enabled once the stackable top is on.
+    // The separate-baseplate switch only renders under a stackable top. The
+    // design-system Switch is an sr-only input wrapped in a <label>, so click
+    // the visible label text to toggle it.
     const separate = page.getByRole('switch', { name: 'Separate baseplate (glue-on)' });
-    await expect(separate).toBeEnabled();
-    await lidRoot.getByText('Separate baseplate (glue-on)', { exact: true }).click();
+    await expect(separate).toBeVisible();
+    await page.getByText('Separate baseplate (glue-on)', { exact: true }).click();
     await expect(separate).toBeChecked();
     await waitForGenerationComplete(page);
     const split = await canvas.screenshot();

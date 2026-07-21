@@ -32,6 +32,7 @@ import { SetDefaultFooter } from '../panel/SetDefaultFooter';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
+import { useLidGroupSummary } from './useLidGroupSummary';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -56,6 +57,7 @@ function BinParameterPanel() {
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
+  const lidSummary = useLidGroupSummary();
   const { showLabelTabs, isCustomShape } = useDesignerStore(
     useShallow((s) => ({
       showLabelTabs: s.params.style === 'standard',
@@ -74,12 +76,14 @@ function BinParameterPanel() {
   const [shapeExpanded, setShapeExpanded] = useState(true);
   const [interiorExpanded, setInteriorExpanded] = useState(true);
   const [baseExpanded, setBaseExpanded] = useState(true);
+  const [lidExpanded, setLidExpanded] = useState(true);
 
   useEffect(() => {
     const handlers: Record<string, () => void> = {
       [helpJumpEventName('binDesigner:shape')]: () => setShapeExpanded(true),
       [helpJumpEventName('binDesigner:interior')]: () => setInteriorExpanded(true),
       [helpJumpEventName('binDesigner:base')]: () => setBaseExpanded(true),
+      [helpJumpEventName('binDesigner:lid')]: () => setLidExpanded(true),
     };
     for (const [name, fn] of Object.entries(handlers)) {
       window.addEventListener(name, fn);
@@ -128,9 +132,6 @@ function BinParameterPanel() {
             )}
             <PanelSection helpTarget="bd-walls">
               <WallsSection />
-              <div data-help-target="bd-lid" className="mt-4">
-                <LidSection />
-              </div>
             </PanelSection>
           </div>
         </StickyGroupHeader>
@@ -179,6 +180,21 @@ function BinParameterPanel() {
             </PanelSection>
             <PanelSection helpTarget="bd-physical-units">
               <PhysicalUnitsSection />
+            </PanelSection>
+          </div>
+        </StickyGroupHeader>
+
+        {/* Lid group — the lid is a distinct companion part, so it gets its own
+            top-level group rather than being buried under Walls. */}
+        <StickyGroupHeader
+          title={t('binDesigner.group.lid')}
+          expanded={lidExpanded}
+          onExpandedChange={setLidExpanded}
+          summary={lidSummary}
+        >
+          <div className="divide-y divide-stroke-subtle/50">
+            <PanelSection helpTarget="bd-lid">
+              <LidSection />
             </PanelSection>
           </div>
         </StickyGroupHeader>
