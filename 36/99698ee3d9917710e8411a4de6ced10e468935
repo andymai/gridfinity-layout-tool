@@ -1,0 +1,52 @@
+src/i18n/locales/fr.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_d58241dc361fa8::t_c222ed786fa9c6 643-655
+src/i18n/locales/en.ts
+  s_d58241dc361fa8::t_397cc970c82096 1831-1833
+src/i18n/locales/de.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/uk.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/nl.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/es.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/pt-BR.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/ja.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/it.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/i18n/locales/sv.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_d58241dc361fa8::t_63d2b3075e1daa 308
+  s_d58241dc361fa8::t_51d1646dd20c70 83-91
+  s_d58241dc361fa8::t_0a351743bc8f6e 53-54
+  s_d58241dc361fa8::t_50f30334b6fabf 309-332
+  s_d58241dc361fa8::t_791f40c5a50dba 82
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_d58241dc361fa8::t_39662d77507139 84-90,92-94
+  s_d58241dc361fa8::t_224bac323a26fe 95-97
+src/i18n/locales/nb.json
+  s_d58241dc361fa8::t_41b2e0c3cd488f 2863-2865
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_d58241dc361fa8::t_2bacdd20a81d0b 9-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "3699698ee3d9917710e8411a4de6ced10e468935",
+  "prompts": {},
+  "sessions": {
+    "s_d58241dc361fa8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3487a736-3b7c-4c92-b73e-388d3550f862",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
