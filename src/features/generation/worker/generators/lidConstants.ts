@@ -36,15 +36,25 @@ export { LID_CORNER_RADIUS, LID_FIT_CLEARANCE, LID_TOP_THICKNESS_BASE, LID_MAGNE
  *  `(LID_CORNER_RADIUS - LID_FIT_CLEARANCE) - LIP_BIG_TAPER = 1.85mm`. */
 export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BIG_TAPER;
 
+/** Minimum solid floor kept below a tray recess (mm) so the recess can't
+ *  break through into the mating cavity. */
+export const LID_TRAY_FLOOR = 0.8;
+
 /**
- * Floor plate thickness when magnet pockets are enabled. The pocket
- * needs at least `magnetDepth` of depth, plus a thin ceiling so the
- * pocket doesn't break through into the cavity. Falls back to the
- * baseline when magnets are off.
+ * Floor plate thickness. Grows for two independent reasons:
+ *  - stack-magnet pockets (`magnetHoles`) need `magnetDepth + ceiling`;
+ *  - a tray recess needs `trayDepth + floor` of plate below its bottom.
+ * Takes the larger requirement; falls back to the baseline when neither
+ * applies. `trayDepth` is 0 when there's no tray.
  */
-export function lidTopThickness(magnetHoles: boolean, magnetDepth: number): number {
-  if (!magnetHoles) return LID_TOP_THICKNESS_BASE;
-  return Math.max(LID_TOP_THICKNESS_BASE, magnetDepth + LID_MAGNET_CEILING);
+export function lidTopThickness(
+  magnetHoles: boolean,
+  magnetDepth: number,
+  trayDepth: number = 0
+): number {
+  const magnetNeed = magnetHoles ? magnetDepth + LID_MAGNET_CEILING : 0;
+  const trayNeed = trayDepth > 0 ? trayDepth + LID_TRAY_FLOOR : 0;
+  return Math.max(LID_TOP_THICKNESS_BASE, magnetNeed, trayNeed);
 }
 
 /** Extra clearance baked into the anchor calculation to compensate for
@@ -136,6 +146,34 @@ export const LID_CLICK_RAIL_TOP_CHAMFER = 0.8;
 
 /** Coplanar margin used at boolean cut/fuse interfaces. */
 export const LID_COPLANAR_MARGIN = 0.1;
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Lid-retention magnets (issue #2694). Four corner magnets bond the lid
+ * down onto the bin — a bin-side post rising to the lip top and a lid-side
+ * boss hanging to meet it. Shared placement lives in
+ * `retentionMagnetGeometry.ts`.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Radial plastic kept around a retention magnet inside its post/boss (mm). */
+export const LID_MAGNET_BOSS_WALL = 1.5;
+
+/**
+ * Extra inset (mm) of each corner post from the nominal grid corner, on top of
+ * the boss radius. Keeps the post's outer edge inside the clearance-reduced
+ * outer wall (~0.25mm/side) so the bin/lid footprint stays drawer-safe — the
+ * "inward" placement decision from #2694.
+ */
+export const LID_MAGNET_EDGE_INSET = 0.6;
+
+/**
+ * Vertical gap (mm) left between the lid boss's bottom face and the bin post's
+ * top face when the lid is fully seated. Keeps the four corner posts from
+ * bottoming out and lifting the lid off its lip; the magnets pull across it.
+ */
+export const LID_MAGNET_SEAT_GAP = 0.2;
+
+/** Retaining floor kept below a bin-post magnet pocket (mm). */
+export const LID_MAGNET_POST_FLOOR = 0.6;
 
 /** Tiny safety floor for rounded rectangle corner radii (avoids OCCT
  *  degeneracy when an inner inset equals the outer corner radius). */

@@ -810,15 +810,49 @@ describe('migrateParams', () => {
   it('passes through fully-specified lid config', () => {
     const lid = {
       enabled: true,
+      attachment: 'magnetic' as const,
       stackableTop: true,
       magnetHoles: true,
       separateStackPlate: true,
       clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
       extraHeightMm: 25,
+      retentionMagnet: { diameter: 8, depth: 3 },
+      tray: { enabled: true, depthMm: 5, wallMm: 3 },
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
+  });
+
+  it('derives attachment from legacy rails and backfills magnet/tray defaults', () => {
+    // Legacy lid predating the attachment field, with rails on → clickRails.
+    const withRails = migrateParams({
+      lid: { enabled: true, clickRails: { front: true, back: true, left: true, right: true } },
+    } as never);
+    expect(withRails.lid.attachment).toBe('clickRails');
+    expect(withRails.lid.retentionMagnet).toEqual({ diameter: 6, depth: 2 });
+    expect(withRails.lid.tray).toEqual({ enabled: false, depthMm: 4, wallMm: 2 });
+
+    // Legacy lid with all rails off → friction.
+    const noRails = migrateParams({
+      lid: { enabled: true, clickRails: { front: false, back: false, left: false, right: false } },
+    } as never);
+    expect(noRails.lid.attachment).toBe('friction');
+  });
+
+  it('clamps out-of-range retention magnet and tray dimensions', () => {
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        attachment: 'magnetic' as const,
+        retentionMagnet: { diameter: 999, depth: -5 },
+        tray: { enabled: true, depthMm: 999, wallMm: 0 },
+      },
+    } as never);
+    expect(result.lid.retentionMagnet.diameter).toBe(15); // max
+    expect(result.lid.retentionMagnet.depth).toBe(1); // min
+    expect(result.lid.tray.depthMm).toBe(30); // max
+    expect(result.lid.tray.wallMm).toBe(1); // min
   });
 
   it('backfills separateStackPlate=false for legacy lid configs missing the field', () => {

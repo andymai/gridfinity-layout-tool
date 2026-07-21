@@ -55,6 +55,68 @@ export const LID_EXTRA_HEIGHT_STEP_MM = 1;
  */
 export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = [50, 75, 100] as const;
 
+/**
+ * How the lid retains onto the bin. Mutually exclusive — a lid holds by
+ * exactly one mechanism:
+ * - `friction`: the mating shell wraps the lip; no positive retention.
+ * - `clickRails`: tapered snap rails on each enabled wall (the historical
+ *   behavior; sub-controlled by {@link LidConfig.clickRails}/`clickRailCoverage`).
+ * - `magnetic`: press-fit magnets in corner bosses on both the lid and the
+ *   bin's stacking lip bond the lid down (issue #2694). Independent of the
+ *   lip's grip, so it survives wall cutouts a rail lid couldn't.
+ */
+export type LidAttachment = 'friction' | 'clickRails' | 'magnetic';
+export const LID_ATTACHMENTS: readonly LidAttachment[] = [
+  'friction',
+  'clickRails',
+  'magnetic',
+] as const;
+
+/**
+ * Bounds for the dedicated lid-retention magnet (issue #2694). Separate from
+ * the bin's `base` magnet so a design can hold its lid with a different magnet
+ * than it uses in its feet. Defaults to the common 6mm × 2mm disc.
+ */
+export const LID_MAGNET_DIAMETER_MIN_MM = 3;
+export const LID_MAGNET_DIAMETER_MAX_MM = 15;
+export const LID_MAGNET_DIAMETER_DEFAULT_MM = 6;
+export const LID_MAGNET_DEPTH_MIN_MM = 1;
+export const LID_MAGNET_DEPTH_MAX_MM = 6;
+export const LID_MAGNET_DEPTH_DEFAULT_MM = 2;
+export const LID_MAGNET_DIMENSION_STEP_MM = 0.5;
+
+/**
+ * Bounds for the {@link LidTrayConfig} recess — a shallow tray shelled into the
+ * lid's top face (offered only when the lid has no stackable baseplate). Depth
+ * is how far the recess sinks below the top surface; wall is the rim thickness
+ * kept between the recess and the lid's outer perimeter.
+ */
+export const LID_TRAY_DEPTH_MIN_MM = 1;
+export const LID_TRAY_DEPTH_MAX_MM = 30;
+export const LID_TRAY_DEPTH_DEFAULT_MM = 4;
+export const LID_TRAY_WALL_MIN_MM = 1;
+export const LID_TRAY_WALL_MAX_MM = 10;
+export const LID_TRAY_WALL_DEFAULT_MM = 2;
+export const LID_TRAY_DIMENSION_STEP_MM = 0.5;
+
+/** Dedicated lid-retention magnet dimensions (mm). See {@link LidAttachment}. */
+export interface LidMagnetConfig {
+  readonly diameter: number;
+  readonly depth: number;
+}
+
+/**
+ * Shelled "tray" recess on the lid's top face (issue #2694). Only meaningful
+ * when the lid is NOT stackable — a stack grid and a recess can't share the
+ * top surface, so `resolveLidInputs` forces `enabled` off when `stackableTop`
+ * is on.
+ */
+export interface LidTrayConfig {
+  readonly enabled: boolean;
+  readonly depthMm: number;
+  readonly wallMm: number;
+}
+
 /** Wall sides that can carry a click rail. Same axis convention as the bin. */
 export type LidRailSide = 'front' | 'back' | 'left' | 'right';
 export const LID_RAIL_SIDES: readonly LidRailSide[] = ['front', 'back', 'left', 'right'] as const;
@@ -76,6 +138,18 @@ export interface LidClickRails {
 export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
   readonly enabled: boolean;
+  /**
+   * Retention mechanism (issue #2694). Exactly one of friction/clickRails/
+   * magnetic. `clickRails` reads the per-side {@link clickRails} object and
+   * `clickRailCoverage`; `magnetic` reads {@link retentionMagnet}; `friction`
+   * uses neither. The worker forces the click rails off unless this is
+   * `'clickRails'`, so switching modes preserves the per-side selection
+   * without generating it.
+   *
+   * Migration: legacy designs (pre-attachment) derive this from their rails —
+   * any side `true` → `'clickRails'`, otherwise `'friction'`.
+   */
+  readonly attachment: LidAttachment;
   /** Include Gridfinity stack-grid pattern on top of lid (other bins stack on it). */
   readonly stackableTop: boolean;
   /** Include magnet holes in the lid (uses bin's BaseConfig magnetDiameter).
@@ -125,6 +199,17 @@ export interface LidConfig {
    * this only lengthens the plain wall above the lip.
    */
   readonly extraHeightMm: number;
+  /**
+   * Dedicated retention-magnet dimensions used only when
+   * {@link attachment} === `'magnetic'`. Independent of the bin's `base`
+   * magnet so the lid and feet can take different discs.
+   */
+  readonly retentionMagnet: LidMagnetConfig;
+  /**
+   * Optional shelled tray recess on the top face. Only takes effect when the
+   * lid is not stackable (a stack grid owns the top surface otherwise).
+   */
+  readonly tray: LidTrayConfig;
 }
 
 /**
@@ -138,10 +223,22 @@ export interface LidConfig {
  */
 export const DEFAULT_LID_CONFIG: LidConfig = {
   enabled: false,
+  // `clickRails` preserves the historical default behavior (all four rails on)
+  // so enabling a lid without touching the mode still clicks shut.
+  attachment: 'clickRails',
   stackableTop: false,
   magnetHoles: false,
   separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
   extraHeightMm: 0,
+  retentionMagnet: {
+    diameter: LID_MAGNET_DIAMETER_DEFAULT_MM,
+    depth: LID_MAGNET_DEPTH_DEFAULT_MM,
+  },
+  tray: {
+    enabled: false,
+    depthMm: LID_TRAY_DEPTH_DEFAULT_MM,
+    wallMm: LID_TRAY_WALL_DEFAULT_MM,
+  },
 } as const;

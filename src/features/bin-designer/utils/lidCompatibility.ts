@@ -47,7 +47,10 @@ export type LidCompatibilityId =
   | 'labelTabs'
   | 'handles'
   | 'handlesAllSides'
-  | 'topDownCutoutsAtLip';
+  | 'topDownCutoutsAtLip'
+  // Magnetic-retention (#2694) specific:
+  | 'magnetsPolygonUnsupported'
+  | 'magnetTooDeepForBin';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -65,6 +68,14 @@ const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
  * marginal click grip. Below it, the extra height is negligible next to the grip.
  */
 const TALL_LID_LEVERAGE_WARN_MM = 10;
+
+/**
+ * Minimum retaining floor (mm) kept below a bin-side retention-magnet pocket
+ * before we warn. Mirrors the worker's `LID_MAGNET_POST_FLOOR`; duplicated as a
+ * local literal to avoid importing worker-side geometry constants across the
+ * feature boundary.
+ */
+const MAGNET_POST_MIN_FLOOR = 0.6;
 
 /**
  * Interior wall height available for handle holes (mm). Mirrors the
@@ -135,11 +146,16 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // warn about features the bin generator silently skips — false
   // positives erode trust in the rest of the warnings.
   const isPolygon = isPartialMask(params.cellMask);
+  // Magnetic retention (#2694) holds via corner magnets independent of the
+  // lip, so the rail/lip-grip warnings below don't apply — a magnetic lid
+  // seats fine even with cutouts on every wall. The magnetic branch adds its
+  // own checks instead.
+  const isMagnetic = params.lid.attachment === 'magnetic';
 
   // 1. Wall cutouts. Each enabled side removes lip material on that wall.
   //    All four sides cut → no lip anywhere → blocker (lid has nothing to
   //    grip). Some-sides cut → warning (lid still mates on remaining walls).
-  if (params.walls.enabled && !isPolygon) {
+  if (params.walls.enabled && !isPolygon && !isMagnetic) {
     const cutSides: LidCompatibilitySide[] = [];
     for (const side of WALL_SIDES) {
       if (params.walls[side].enabled) cutSides.push(side);
@@ -158,14 +174,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // 2. Wall pattern. Patterns extend up to (LIP_HEIGHT + 2)mm into the
   //    lip Z range (see `wallPatternBuilder.clipOvershoot`), perforating
   //    the lip's inner face that the lid's rails grip.
-  if (params.wallPattern.enabled && !isPolygon) {
+  if (params.wallPattern.enabled && !isPolygon && !isMagnetic) {
     issues.push({ id: 'wallPattern', severity: 'warning' });
   }
 
   // 3. Very short bins (1U). The rail extends ~5.7mm below the lip top,
   //    leaving only ~1.3mm of overlap with the bin's main wall on a 1U
   //    bin (totalH=7mm). The lid still seats but the click is marginal.
-  if (params.height <= 1) {
+  if (params.height <= 1 && !isMagnetic) {
     issues.push({ id: 'shortBin', severity: 'warning' });
     // A tall lid (issue #2482) on that already-marginal 1U grip adds a long
     // lever arm — the taller the cavity, the more a knock can pop the lid off
@@ -202,7 +218,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    it, so the back rail is auto-skipped during placement. The front
   //    rail is fine. Warn so the user understands why the back rail
   //    summary changes when label tabs are on.
-  if (params.label.enabled && !isPolygon) {
+  if (params.label.enabled && !isPolygon && !isMagnetic) {
     issues.push({ id: 'labelTabs', severity: 'warning', sides: ['back'] });
   }
 
@@ -213,7 +229,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    sides intruding → blocker (lid has no wall to grip). Interior
   //    handles (compartment dividers) don't touch the outer lip, so
   //    they're excluded.
-  if (params.handles.enabled && !isPolygon) {
+  if (params.handles.enabled && !isPolygon && !isMagnetic) {
     const interiorHeight = computeInteriorHeight(params);
     const intrudingSides: LidCompatibilitySide[] = [];
     for (const side of WALL_SIDES) {
@@ -234,7 +250,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    removes lip material at the cutout footprint. Only solid bins
   //    apply top-down cutouts; normal-style bins use floor inserts and
   //    don't carve into the rim.
-  if (params.style === 'solid' && !isPolygon && params.cutouts.length > 0) {
+  if (params.style === 'solid' && !isPolygon && !isMagnetic && params.cutouts.length > 0) {
     const interiorHeight = computeInteriorHeight(params);
     const lipBottom = lipBottomZ(interiorHeight);
     const topZ = interiorHeight - params.cutoutConfig.topOffset;
@@ -267,6 +283,28 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     new Set(params.compartments.cells).size > 1
   ) {
     issues.push({ id: 'compartmentDividers', severity: 'warning' });
+  }
+
+  // 10. Magnetic retention (#2694).
+  if (isMagnetic) {
+    // Corner magnet placement isn't defined on an arbitrary polygon outline,
+    // so a magnetic custom-shape lid falls back to a plain friction lid with
+    // no magnets. Warn so the user isn't surprised the magnets vanished.
+    if (isPolygon) {
+      issues.push({ id: 'magnetsPolygonUnsupported', severity: 'warning' });
+    } else {
+      // The bin post houses the magnet between the lip top and a retaining
+      // floor. If the magnet is deeper than the interior can hold (minus a
+      // thin floor), the pocket would punch through the bin floor — blocker
+      // when it can't fit at all, warning when the floor gets marginal.
+      const interiorHeight = computeInteriorHeight(params);
+      const depth = params.lid.retentionMagnet.depth;
+      if (depth >= interiorHeight) {
+        issues.push({ id: 'magnetTooDeepForBin', severity: 'blocker' });
+      } else if (interiorHeight - depth < MAGNET_POST_MIN_FLOOR) {
+        issues.push({ id: 'magnetTooDeepForBin', severity: 'warning' });
+      }
+    }
   }
 
   // Sort by severity so blockers always appear first in the panel.

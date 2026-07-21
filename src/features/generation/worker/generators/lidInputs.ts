@@ -6,7 +6,7 @@
  * and the conversions (clearance, corner radius, anchor Z) happen once.
  */
 
-import type { BinParams, LidCompatibilitySide } from '@/shared/types/bin';
+import type { BinParams, LidAttachment, LidCompatibilitySide } from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
 import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -44,6 +44,21 @@ export interface LidInputs {
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;
+  /** Retention mode. Drives which retention geometry the builder emits. */
+  readonly attachment: LidAttachment;
+  /**
+   * Whether to emit lid-to-bin retention magnets (issue #2694). True only when
+   * `attachment === 'magnetic'` and the footprint is rectangular (polygon bins
+   * are excluded). Dedicated dims — independent of the stack `magnet*` fields.
+   */
+  readonly retentionMagnets: boolean;
+  readonly retentionMagnetDiameter: number;
+  readonly retentionMagnetDepth: number;
+  /**
+   * Resolved tray recess. `enabled` is already gated on `!stackableTop` here,
+   * so the builder can trust it directly. Dimensions are pre-clamped upstream.
+   */
+  readonly tray: { readonly enabled: boolean; readonly depthMm: number; readonly wallMm: number };
   /** Magnet anchor (default 'edge'), injected from the layout so lid holes mate
    * with the bin base. See `MagnetAnchor` in `@/core/types`. */
   readonly magnetAnchor?: MagnetAnchor;
@@ -117,13 +132,30 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   // Single locked-down clearance — see comment on LID_FIT_CLEARANCE.
   const fitClearance = LID_FIT_CLEARANCE;
-  // Floor plate grows when magnets are enabled to fit the pocket plus
-  // a thin sealed ceiling above it (LID_MAGNET_CEILING).
-  const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
   const cellMask = isPartialMask(params.cellMask) ? params.cellMask : undefined;
+
+  // Retention mode (#2694). Magnetic retention needs the rectangular corner
+  // geometry, so polygon bins fall back to friction (the mating shell still
+  // wraps the lip). Click rails are only engaged in clickRails mode — other
+  // modes force the persisted per-side flags off so switching modes keeps the
+  // user's rail selection without generating it.
+  const attachment = params.lid.attachment;
+  const retentionMagnets = attachment === 'magnetic' && !cellMask;
+
+  // Tray recess only exists when the lid isn't stackable (a stack grid owns
+  // the top surface otherwise).
+  const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
+
+  // Floor plate grows when stack-magnet pockets need depth+ceiling OR a tray
+  // recess needs depth+floor below it — whichever is larger.
+  const topThickness = lidTopThickness(
+    params.lid.magnetHoles,
+    params.base.magnetDepth,
+    trayEnabled ? params.lid.tray.depthMm : 0
+  );
 
   // Overhang grows the bin's outer body + stacking lip outward (and shifts it
   // when the two opposite sides differ). The lid wraps that expanded body, so
@@ -170,6 +202,15 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     magnetDiameter: params.base.magnetDiameter,
     magnetDepth: params.base.magnetDepth,
     magnetAnchor: params.magnetAnchor,
+    attachment,
+    retentionMagnets,
+    retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
+    retentionMagnetDepth: params.lid.retentionMagnet.depth,
+    tray: {
+      enabled: trayEnabled,
+      depthMm: params.lid.tray.depthMm,
+      wallMm: params.lid.tray.wallMm,
+    },
     cellsX: params.width,
     cellsY: params.depth,
     fractionalEdgeX: params.fractionalEdgeX,
@@ -182,7 +223,13 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Z range). Centralised in `lidCompatibility.computeDisabledRails`
     // so the UI rail-summary and the worker placement code stay in sync.
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
-    clickRails: params.lid.clickRails,
+    // Rails only engage in clickRails mode; friction/magnetic force them off so
+    // the builder's rail pass is a no-op while the user's per-side choice is
+    // preserved on the persisted config.
+    clickRails:
+      attachment === 'clickRails'
+        ? params.lid.clickRails
+        : { front: false, back: false, left: false, right: false },
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.
     clickRailCoverage: params.lid.clickRailCoverage / 100,

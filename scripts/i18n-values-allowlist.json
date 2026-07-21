@@ -76,6 +76,7 @@
     "binDesigner.interiorSolid",
     "binDesigner.labelColor",
     "binDesigner.layout",
+    "binDesigner.lid.attachment.friction",
     "binDesigner.lid.outerDimensions",
     "binDesigner.lid.railsTwoAxis",
     "binDesigner.lid.summary",

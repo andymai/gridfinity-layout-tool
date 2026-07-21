@@ -71,6 +71,8 @@ const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
 const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
+// Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts` (#2694).
+const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
@@ -209,6 +211,49 @@ function validateWalls(walls: unknown): string | null {
         return `walls.${side}.depth must be 0-100`;
       }
     }
+  }
+  return null;
+}
+
+/**
+ * Validate the lid sub-object's geometry-driving fields (#2694). The worker
+ * feeds `retentionMagnet.*` and `tray.*` straight into BREP, so a crafted
+ * share could otherwise smuggle a runaway pocket/recess depth. Bounds mirror
+ * `src/features/bin-designer/types/lid.ts`. All fields optional/legacy-tolerant
+ * — only present values are range-checked, matching the pass-through history of
+ * the `lid` object.
+ */
+function validateLid(lid: unknown): string | null {
+  if (!isObject(lid)) return 'lid must be an object';
+  if (
+    lid.attachment !== undefined &&
+    !VALID_LID_ATTACHMENTS.includes(lid.attachment as (typeof VALID_LID_ATTACHMENTS)[number])
+  ) {
+    return `lid.attachment must be one of: ${VALID_LID_ATTACHMENTS.join(', ')}`;
+  }
+  if (
+    lid.extraHeightMm !== undefined &&
+    (!isNumber(lid.extraHeightMm) || !inRange(lid.extraHeightMm, 0, 100))
+  ) {
+    return 'lid.extraHeightMm must be 0-100';
+  }
+  if (lid.retentionMagnet !== undefined) {
+    const m = lid.retentionMagnet;
+    if (!isObject(m)) return 'lid.retentionMagnet must be an object';
+    if (isNumber(m.diameter) && !inRange(m.diameter, 3, 15)) {
+      return 'lid.retentionMagnet.diameter must be 3-15';
+    }
+    if (isNumber(m.depth) && !inRange(m.depth, 1, 6)) {
+      return 'lid.retentionMagnet.depth must be 1-6';
+    }
+  }
+  if (lid.tray !== undefined) {
+    const tr = lid.tray;
+    if (!isObject(tr)) return 'lid.tray must be an object';
+    if (tr.enabled !== undefined && !isBoolean(tr.enabled))
+      return 'lid.tray.enabled must be boolean';
+    if (isNumber(tr.depthMm) && !inRange(tr.depthMm, 1, 30)) return 'lid.tray.depthMm must be 1-30';
+    if (isNumber(tr.wallMm) && !inRange(tr.wallMm, 1, 10)) return 'lid.tray.wallMm must be 1-10';
   }
   return null;
 }
@@ -842,6 +887,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.walls !== undefined) {
     const wallsErr = validateWalls(params.walls);
     if (wallsErr) return validationError('INVALID_PARAMS', wallsErr);
+  }
+
+  if (params.lid !== undefined) {
+    const lidErr = validateLid(params.lid);
+    if (lidErr) return validationError('INVALID_PARAMS', lidErr);
   }
 
   // Custom-shape footprint: structurally-valid masks are enforced here so

@@ -599,3 +599,58 @@ describe('checkLidCompatibility', () => {
     });
   });
 });
+
+describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
+  function magnetic(overrides: Partial<BinParams>, lid: Partial<BinParams['lid']> = {}): BinParams {
+    return {
+      ...DEFAULT_BIN_PARAMS,
+      ...overrides,
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic', ...lid },
+    };
+  }
+
+  it('does NOT block on all-side wall cutouts — magnets hold independent of the lip', () => {
+    const params = magnetic({
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
+        back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+        left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+        right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+      },
+    });
+    const issues = checkLidCompatibility(params);
+    expect(issues.find((i) => i.id === 'wallCutoutsAllSides')).toBeUndefined();
+    expect(hasLidBlocker(issues)).toBe(false);
+  });
+
+  it('suppresses rail-grip warnings (label tabs) in magnetic mode', () => {
+    const params = magnetic({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    });
+    expect(checkLidCompatibility(params).find((i) => i.id === 'labelTabs')).toBeUndefined();
+  });
+
+  it('warns that custom shapes fall back to friction (no corner magnets)', () => {
+    const mask: CellMask = { cols: 4, rows: 4, cells: new Array(16).fill(1) as (0 | 1)[] };
+    mask.cells[0] = 0; // make it a partial (polygon) mask
+    const issues = checkLidCompatibility(magnetic({ cellMask: mask }));
+    const issue = issues.find((i) => i.id === 'magnetsPolygonUnsupported');
+    expect(issue?.severity).toBe('warning');
+  });
+
+  it('blocks when the retention magnet is deeper than the bin interior', () => {
+    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 6 } });
+    const issues = checkLidCompatibility(params);
+    const issue = issues.find((i) => i.id === 'magnetTooDeepForBin');
+    expect(issue?.severity).toBe('blocker');
+  });
+
+  it('warns when the retaining floor under the magnet gets marginal', () => {
+    // 1U bin interior ≈ 2mm; a 1.5mm magnet leaves only ~0.5mm floor (< 0.6mm).
+    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 1.5 } });
+    const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetTooDeepForBin');
+    expect(issue?.severity).toBe('warning');
+  });
+});

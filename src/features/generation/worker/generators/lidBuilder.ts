@@ -34,6 +34,8 @@ import { buildLidFloor, buildMatingShell } from './lidProfile';
 import { addClickRails } from './lidClickRail';
 import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
+import { addLidRetentionMagnets } from './lidRetentionMagnets';
+import { cutTrayRecess } from './lidTray';
 
 export { resolveLidInputs } from './lidInputs';
 export { chamferApexXForCavityWall } from './lidClickRail';
@@ -76,6 +78,13 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = addClickRails(scope, body, inputs, originToTag);
     }
 
+    // 2b. Retention magnets (#2694) — corner bosses hanging to the seated
+    //     interface, pockets opening down toward the bin's mating posts.
+    //     Mutually exclusive with rails via the attachment mode.
+    if (inputs.retentionMagnets) {
+      body = addLidRetentionMagnets(scope, body, inputs, originToTag);
+    }
+
     // 3. Optional magnet holes through the floor.
     //    Cut BEFORE the stack grid fuses on top: the cylinder's 0.1mm
     //    coplanar overshoot above Z=0 would otherwise hang inside the
@@ -100,6 +109,12 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       }
       scope.register(body);
       body = unwrap(fuse(body, stackGrid));
+    }
+
+    // 5. Optional tray recess (#2694). Only resolves when the lid isn't
+    //    stackable, so it never competes with the stack grid above.
+    if (inputs.tray.enabled) {
+      body = cutTrayRecess(scope, body, inputs);
     }
 
     return body as ValidSolid;
