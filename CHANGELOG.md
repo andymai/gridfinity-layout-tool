@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.273.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.0...gridfinity-layout-tool-v4.273.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* **designer:** correct magnetic lid geometry and panel layout ([#2694](https://github.com/andymai/gridfinity-layout-tool/issues/2694)) ([#2698](https://github.com/andymai/gridfinity-layout-tool/issues/2698)) ([a3d134b](https://github.com/andymai/gridfinity-layout-tool/commit/a3d134b3d005ad20c9c86cbda78c9ec6e704e77b))
+
 ## [4.273.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.272.0...gridfinity-layout-tool-v4.273.0) (2026-07-21)
 
 
