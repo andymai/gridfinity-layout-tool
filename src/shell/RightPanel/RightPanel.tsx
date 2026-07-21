@@ -511,15 +511,16 @@ export function RightPanel() {
                                           title={t('print.row.labelPlates', {
                                             count: row.labelPlateCount ?? 0,
                                           })}
+                                          aria-label={t('print.row.labelPlates', {
+                                            count: row.labelPlateCount ?? 0,
+                                          })}
                                         >
                                           <svg
                                             className="w-3 h-3 flex-shrink-0"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
-                                            aria-label={t('print.row.labelPlates', {
-                                              count: row.labelPlateCount ?? 0,
-                                            })}
+                                            aria-hidden="true"
                                           >
                                             <path
                                               strokeLinecap="round"

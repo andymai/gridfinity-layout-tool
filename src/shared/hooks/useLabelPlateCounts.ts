@@ -29,8 +29,16 @@ export interface DesignPlateSet {
   readonly widthsU: readonly LabelPlateWidthU[];
 }
 
-// null = design is not socket-mode, has no fitting plate, or failed to load.
-const plateSetCache = new Map<string, DesignPlateSet | null>();
+// Keyed by design id so repeated re-saves replace entries instead of
+// accumulating; `key` (id:updatedAt) detects staleness. A stale in-flight
+// load can briefly overwrite a fresher entry, in which case the key check in
+// the next effect run re-enqueues the fresh load — it converges in one pass.
+// plateSet null = not socket-mode, no fitting plate, or failed to load.
+interface CacheEntry {
+  readonly key: string;
+  readonly plateSet: DesignPlateSet | null;
+}
+const plateSetCache = new Map<DesignId, CacheEntry>();
 const inFlight = new Set<string>();
 
 /** Reset module state. @internal — for tests only. */
@@ -58,10 +66,10 @@ function enqueueLoad(id: DesignId, key: string, onSettled: () => void): void {
   inFlight.add(key);
   void loadDesign(id)
     .then((result) => {
-      plateSetCache.set(key, isOk(result) ? computePlateSet(result.value) : null);
+      plateSetCache.set(id, { key, plateSet: isOk(result) ? computePlateSet(result.value) : null });
     })
     .catch(() => {
-      plateSetCache.set(key, null);
+      plateSetCache.set(id, { key, plateSet: null });
     })
     .finally(() => {
       inFlight.delete(key);
@@ -95,7 +103,7 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
     for (const [id, key] of linkedRefs) {
-      if (!plateSetCache.has(key)) enqueueLoad(id, key, onSettled);
+      if (plateSetCache.get(id)?.key !== key) enqueueLoad(id, key, onSettled);
     }
     return () => {
       cancelled = true;
@@ -107,8 +115,8 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
     void loadTick;
     const sets = new Map<DesignId, DesignPlateSet>();
     for (const [id, key] of linkedRefs) {
-      const entry = plateSetCache.get(key);
-      if (entry) sets.set(id, entry);
+      const entry = plateSetCache.get(id);
+      if (entry && entry.key === key && entry.plateSet) sets.set(id, entry.plateSet);
     }
     return sets;
   }, [linkedRefs, loadTick]);
