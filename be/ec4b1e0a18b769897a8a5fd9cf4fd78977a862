@@ -1,0 +1,139 @@
+src/features/bin-designer/constants/defaults.ts
+  s_d58241dc361fa8::t_7b65ebd322d4f9 32-40,42
+  s_d58241dc361fa8::t_27b1e8bbae4616 822,826-827,830-832,839,841-842,845-848
+  s_d58241dc361fa8::t_e1800dd0ecef3e 197-262
+api/lib/designerValidation.ts
+  s_d58241dc361fa8::t_e09a6e04e8542c 74-75
+  s_d58241dc361fa8::t_502fed615d0dd8 218-260
+  s_d58241dc361fa8::t_c2202fcffd46fe 892-896
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_d58241dc361fa8::t_478f1bd2516880 74-76
+  s_d58241dc361fa8::t_e2f228b132a85e 61
+  s_d58241dc361fa8::t_43437e120c36a9 1-15,17-60,62-73,77-85
+  s_d58241dc361fa8::t_68dd2879c90625 16
+src/features/generation/worker/generators/retentionMagnetGeometry.test.ts
+  s_d58241dc361fa8::t_b4caa65b4245e7 1-6,8-26,28-30,32-42,45-84
+  s_d58241dc361fa8::t_80a8eb75ea826d 7
+  s_d58241dc361fa8::t_53854ab88be190 27,31,43-44
+src/i18n/locales/de.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_d58241dc361fa8::t_0f92ba9b269a01 45,51
+  s_d58241dc361fa8::t_0cc57387fff8dc 19
+e2e/bin-designer/lid-magnetic-tray-visual.spec.ts
+  s_d58241dc361fa8::t_20f6b9cc25581d 1-85
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_d58241dc361fa8::t_9872745428094c 272-273,278,280-327
+  s_d58241dc361fa8::t_2848bb53088c38 568,576-594,613,620-624
+  s_d58241dc361fa8::t_d6f79997c0f289 497-505,518-525
+  s_d58241dc361fa8::t_d43eb3f9d37ca3 15-24,26
+src/i18n/locales/nl.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_d58241dc361fa8::t_1d0cf4892fef81 48-62
+  s_d58241dc361fa8::t_d6b6c2f4af6e6f 193-196
+src/features/bin-designer/types/lid.ts
+  s_d58241dc361fa8::t_058e5e19680634 226-228,235-243
+  s_d58241dc361fa8::t_54c90580e351bd 58-119
+  s_d58241dc361fa8::t_c8d64ad6b0dced 202-212
+  s_d58241dc361fa8::t_4fcaf04142f6dc 141-152
+src/i18n/locales/en.ts
+  s_d58241dc361fa8::t_6217df876031d2 1782-1800
+  s_d58241dc361fa8::t_6b5748ccc99a97 1826-1830
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_d58241dc361fa8::t_c2b3408f354051 73-79
+  s_d58241dc361fa8::t_12ae01b8cf9496 184
+  s_d58241dc361fa8::t_591b1faaa65dfe 221
+  s_d58241dc361fa8::t_7592d287e180af 177
+  s_d58241dc361fa8::t_55e145d59b0e1e 50-53
+  s_d58241dc361fa8::t_99d1c44e3cb694 149-153
+  s_d58241dc361fa8::t_279b222fcff30e 158
+  s_d58241dc361fa8::t_2d17cf7c1ed8bb 288-309
+  s_d58241dc361fa8::t_86859fe492ef8d 253
+  s_d58241dc361fa8::t_e5ca24d1612ed1 232
+  s_d58241dc361fa8::t_e0691c24918ef6 72
+src/i18n/locales/fr.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/i18n/locales/pt-BR.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/generation/worker/generators/retentionMagnetGeometry.ts
+  s_d58241dc361fa8::t_9d9a4bb5831d82 1-20,22-29,35-44,48-73
+  s_d58241dc361fa8::t_e4de70b7ceca4b 21,30-34,45-47
+src/i18n/locales/sv.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_d58241dc361fa8::t_c263d7058d83f6 1-82
+src/features/generation/worker/generators/lidBuilder.ts
+  s_d58241dc361fa8::t_e406e329153a94 114-119
+  s_d58241dc361fa8::t_f3d56fca93c74d 37-38
+  s_d58241dc361fa8::t_6d6977c2a1d90d 81-87
+src/i18n/locales/nb.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/shared/types/bin.ts
+  s_d58241dc361fa8::t_75f2138ef4deb5 53-55
+scripts/i18n-values-allowlist.json
+  s_d58241dc361fa8::t_e8916dbf019808 79
+src/features/bin-designer/constants/defaults.test.ts
+  s_d58241dc361fa8::t_21d99c1fdc853e 813,820-821,827-856
+  s_d58241dc361fa8::t_4234adc7097ce7 857
+src/features/generation/worker/generators/lidConstants.ts
+  s_d58241dc361fa8::t_424c5bff28b004 161-168
+  s_d58241dc361fa8::t_2ab250bde98af0 150-160,169-177
+  s_d58241dc361fa8::t_426e8020b89496 39-42,44-48,50-57
+src/i18n/locales/es.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/generation/worker/generators/lidTray.ts
+  s_d58241dc361fa8::t_cae77581e60fd8 1-33
+src/features/generation/worker/generators/lidInputs.ts
+  s_d58241dc361fa8::t_ac19952a9bcb08 205-213
+  s_d58241dc361fa8::t_3e94cb3bcbe828 140-158
+  s_d58241dc361fa8::t_a6f979f19216eb 226-232
+  s_d58241dc361fa8::t_33d7070c212443 9
+  s_d58241dc361fa8::t_0ed60a896702dc 47-61
+  s_d58241dc361fa8::t_6d6102d3492b1a 159
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_d58241dc361fa8::t_28a512284cf2e4 107-113
+  s_d58241dc361fa8::t_9d3e588c594dda 1-75,80-90,92-106,114-127
+  s_d58241dc361fa8::t_b26410d20b1e63 76-79
+  s_d58241dc361fa8::t_a04affc930f004 91
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_d58241dc361fa8::t_c23dd7e4a9bc54 602-650,653-656
+  s_d58241dc361fa8::t_615bdb0b69feae 651-652
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_d58241dc361fa8::t_8f8f95aa8487e5 120-149,328,330-331,341-342,344-345,352,358-359,361-363
+  s_d58241dc361fa8::t_9da64b4e8dd8ef 366,368
+  s_d58241dc361fa8::t_ce06960ee8d35f 324-327
+  s_d58241dc361fa8::t_785a9168acae68 20
+  s_d58241dc361fa8::t_2b69698c51cb22 225-316,364
+  s_d58241dc361fa8::t_bac6a05282ce6a 329
+  s_d58241dc361fa8::t_78015511a5fc63 332-334,338-340
+  s_d58241dc361fa8::t_0b70a6a3a2d72b 343
+  s_d58241dc361fa8::t_6df2a96ffde8c6 346-351
+  s_d58241dc361fa8::t_d79d1caaf2737d 353-357
+  s_d58241dc361fa8::t_1a774e91d24780 360
+  s_d58241dc361fa8::t_bbb2ddd5a1606e 335-337
+src/i18n/locales/it.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/i18n/locales/uk.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+src/features/bin-designer/types/index.ts
+  s_d58241dc361fa8::t_066ce29cdff28a 100-107,117,121-134
+src/i18n/locales/ja.json
+  s_d58241dc361fa8::t_801328032cfacb 2843-2863
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "beec4b1e0a18b769897a8a5fd9cf4fd78977a862",
+  "prompts": {},
+  "sessions": {
+    "s_d58241dc361fa8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3487a736-3b7c-4c92-b73e-388d3550f862",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
