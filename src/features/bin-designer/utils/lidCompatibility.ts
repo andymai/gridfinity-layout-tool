@@ -50,7 +50,8 @@ export type LidCompatibilityId =
   | 'topDownCutoutsAtLip'
   // Magnetic-retention (#2694) specific:
   | 'magnetsPolygonUnsupported'
-  | 'magnetTooDeepForBin';
+  | 'magnetTooDeepForBin'
+  | 'magnetBinTooSmall';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -77,6 +78,16 @@ const TALL_LID_LEVERAGE_WARN_MM = 10;
  * constant across the feature boundary — the two must stay in sync by hand.
  */
 const MAGNET_POST_MIN_FLOOR = 0.6;
+
+/**
+ * Local mirrors of the worker's `LID_MAGNET_LIP_CLEARANCE` (3.5) and
+ * `LID_MAGNET_BOSS_WALL` (1.5), used to reject bins too small to place the four
+ * corner magnets. Duplicated as literals to avoid importing worker-side
+ * geometry constants across the feature boundary — keep in sync by hand with
+ * `retentionMagnetGeometry.ts` / `lidConstants.ts`.
+ */
+const MAGNET_LIP_CLEARANCE = 3.5;
+const MAGNET_BOSS_WALL = 1.5;
 
 /**
  * Interior wall height available for handle holes (mm). Mirrors the
@@ -294,16 +305,31 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     if (isPolygon) {
       issues.push({ id: 'magnetsPolygonUnsupported', severity: 'warning' });
     } else {
-      // The bin post houses the magnet between the lip top and a retaining
-      // floor. If the magnet is deeper than the interior can hold (minus a
-      // thin floor), the pocket would punch through the bin floor — blocker
-      // when it can't fit at all, warning when the floor gets marginal.
-      const interiorHeight = computeInteriorHeight(params);
-      const depth = params.lid.retentionMagnet.depth;
-      if (depth >= interiorHeight) {
-        issues.push({ id: 'magnetTooDeepForBin', severity: 'blocker' });
-      } else if (interiorHeight - depth < MAGNET_POST_MIN_FLOOR) {
-        issues.push({ id: 'magnetTooDeepForBin', severity: 'warning' });
+      const diameter = params.lid.retentionMagnet.diameter;
+      // XY bounds: the four corner pads are inset from each edge by
+      // `MAGNET_LIP_CLEARANCE + bossRadius`, and opposite pads must not overlap
+      // through the centre. That needs each half-extent >= inset + magnetRadius
+      // = MAGNET_LIP_CLEARANCE + MAGNET_BOSS_WALL + diameter. A too-small bin
+      // can't place the magnets at all — blocker.
+      const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
+      const minHalfMm = MAGNET_LIP_CLEARANCE + MAGNET_BOSS_WALL + diameter;
+      const tooSmall =
+        (params.width * params.gridUnitMm) / 2 < minHalfMm ||
+        (params.depth * gridUnitMmY) / 2 < minHalfMm;
+      if (tooSmall) {
+        issues.push({ id: 'magnetBinTooSmall', severity: 'blocker' });
+      } else {
+        // Z bounds: the pad houses the magnet between the (recessed) lip top and
+        // a retaining floor. If the magnet is deeper than the interior can hold
+        // (minus a thin floor), the pocket would punch through the bin floor —
+        // blocker when it can't fit at all, warning when the floor gets marginal.
+        const interiorHeight = computeInteriorHeight(params);
+        const depth = params.lid.retentionMagnet.depth;
+        if (depth >= interiorHeight) {
+          issues.push({ id: 'magnetTooDeepForBin', severity: 'blocker' });
+        } else if (interiorHeight - depth < MAGNET_POST_MIN_FLOOR) {
+          issues.push({ id: 'magnetTooDeepForBin', severity: 'warning' });
+        }
       }
     }
   }

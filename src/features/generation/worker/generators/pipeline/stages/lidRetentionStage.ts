@@ -81,12 +81,20 @@ export const lidRetentionStage: PipelineStage = {
     const lidFaceWorldZ = -(lidInputs.topThickness + depth) + (dim.totalHeight - lidInputs.anchorZ);
     const magnetTopZ = lidFaceWorldZ - LID_MAGNET_SEAT_GAP;
 
-    // Keep at least POST_FLOOR of pad below the magnet, and never dig below the
-    // interior floor — clamp the pocket depth to what the recessed pad can hold.
+    // Cap the pocket at what the recessed pad can hold while keeping POST_FLOOR
+    // of pad below the magnet. `availableForPocket` is guaranteed positive when
+    // this stage runs (the `magnetTooDeepForBin` blocker rejects magnets that
+    // don't fit), but clamp to >= 0 defensively so a marginal design never
+    // inverts the pocket. The pad bottom is additionally clamped to the interior
+    // floor so a deep magnet can never dig a pocket through it.
+    const floorTopZ = dim.totalHeight - dim.interiorHeight;
     const recessDepth = dim.totalHeight - magnetTopZ;
-    const availableForPocket = dim.interiorHeight - recessDepth - LID_MAGNET_POST_FLOOR;
-    const pocketDepth = Math.max(0.4, Math.min(depth, availableForPocket));
-    const padBottomZ = magnetTopZ - pocketDepth - LID_MAGNET_POST_FLOOR;
+    const availableForPocket = Math.max(
+      0,
+      dim.interiorHeight - recessDepth - LID_MAGNET_POST_FLOOR
+    );
+    const pocketDepth = Math.min(depth, availableForPocket);
+    const padBottomZ = Math.max(floorTopZ, magnetTopZ - pocketDepth - LID_MAGNET_POST_FLOOR);
     const padHeight = magnetTopZ - padBottomZ;
 
     const innerHalfW = dim.innerW / 2;

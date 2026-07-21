@@ -6,13 +6,15 @@
  * so the magnet's pole face meets the bin gusset's magnet across a thin gap.
  *
  * Coordinate frame is lid-local (see `lidConstants.ts`, Z=0 is the top surface):
- *   Z = 0                        top of the lid floor (the visible closed face)
- *   Z = -(depth + ceiling) = Zi  boss bottom / magnet mating face
- * The whole boss + magnet stay at or below Z=0, so the top face is flush — no
- * bumps poke through it. The boss sits INBOARD of the lip (see
- * `retentionMagnetInset`) so it drops into the bin mouth without fouling the
- * lip, welding to the floor plate above it. Placement XY is shared with the bin
- * via `retentionMagnetPositions`, keeping the magnets coaxial.
+ *   Z = 0               top of the lid floor (the visible closed face)
+ *   Z = -topThickness   floor underside = magnet TOP (the solid floor is the
+ *                       magnet's ceiling, so the top face stays smooth)
+ *   Z = -(topThickness + depth)   boss bottom / magnet mating face
+ * The whole boss + magnet stay below Z=0, so the top face is flush — no bumps or
+ * crease circles. The boss sits INBOARD of the lip (see `retentionMagnetInset`)
+ * so it drops into the bin mouth without fouling the lip, welding UP into the
+ * floor plate above it. Placement XY is shared with the bin via
+ * `retentionMagnetPositions`, keeping the magnets coaxial.
  */
 
 import { cylinder, unwrap, fuse, cutAll } from 'brepjs';

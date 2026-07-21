@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Wandstärke des Fachrands in Millimetern",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bei Sonderformen lassen sich keine Eckmagnete platzieren — der Deckel fällt auf Reibschluss ohne Magnete zurück.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Der Rückhaltemagnet ist tiefer als der Innenraum des Behälters fassen kann — verringere die Tiefe oder verwende einen höheren Behälter.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "Rückhaltemagnet-Tiefe verringern"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "Rückhaltemagnet-Tiefe verringern",
+  "binDesigner.lid.compat.magnetBinTooSmall": "Der Behälter ist zu klein für Eckmagnete — verwende einen größeren Behälter oder einen kleineren Magnetdurchmesser.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "größeren Behälter oder kleineren Magneten verwenden"
 }

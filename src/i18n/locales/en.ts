@@ -1828,6 +1828,9 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.magnetTooDeepForBin':
     'The retention magnet is deeper than the bin interior can hold — reduce its depth or use a taller bin.',
   'binDesigner.lid.compat.fix.magnetTooDeepForBin': 'reduce retention magnet depth',
+  'binDesigner.lid.compat.magnetBinTooSmall':
+    'The bin is too small to fit corner magnets — use a larger bin or a smaller magnet diameter.',
+  'binDesigner.lid.compat.fix.magnetBinTooSmall': 'use a larger bin or a smaller magnet',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',

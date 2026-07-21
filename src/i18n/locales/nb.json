@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Veggtykkelse på brettkanten i millimeter",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Egendefinerte former kan ikke plassere hjørnemagneter — lokket faller tilbake til friksjonsfeste uten magneter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Festemagneten er dypere enn beholderens innside rommer — reduser dybden eller bruk en høyere beholder.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduser dybden på festemagneten"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduser dybden på festemagneten",
+  "binDesigner.lid.compat.magnetBinTooSmall": "Beholderen er for liten for hjørnemagneter — bruk en større beholder eller mindre magnetdiameter.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "bruk en større beholder eller mindre magnet"
 }

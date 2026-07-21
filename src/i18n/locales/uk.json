@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Товщина стінки бортика лотка в міліметрах",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Для довільних форм не можна розмістити кутові магніти — кришка повертається до фрикційної посадки без магнітів.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Утримувальний магніт глибший, ніж уміщає внутрішній простір контейнера — зменшіть глибину або візьміть вищий контейнер.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "зменшити глибину утримувального магніту"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "зменшити глибину утримувального магніту",
+  "binDesigner.lid.compat.magnetBinTooSmall": "Контейнер замалий для кутових магнітів — візьміть більший контейнер або менший діаметр магніту.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "взяти більший контейнер або менший магніт"
 }

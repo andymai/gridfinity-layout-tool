@@ -2860,5 +2860,7 @@
   "binDesigner.lid.trayWallAria": "Wanddikte van de dienbladrand in millimeters",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bij aangepaste vormen kunnen geen hoekmagneten worden geplaatst — het deksel valt terug op klemvast zonder magneten.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "De retentiemagneet is dieper dan het binnenwerk van de bak aankan — verklein de diepte of gebruik een hogere bak.",
-  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "diepte van de retentiemagneet verkleinen"
+  "binDesigner.lid.compat.fix.magnetTooDeepForBin": "diepte van de retentiemagneet verkleinen",
+  "binDesigner.lid.compat.magnetBinTooSmall": "De bak is te klein voor hoekmagneten — gebruik een grotere bak of een kleinere magneetdiameter.",
+  "binDesigner.lid.compat.fix.magnetBinTooSmall": "gebruik een grotere bak of een kleinere magneet"
 }
