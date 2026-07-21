@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.267.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.266.1...gridfinity-layout-tool-v4.267.0) (2026-07-21)
+
+
+### Features
+
+* **print-export:** label plate counts in the print list ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2677](https://github.com/andymai/gridfinity-layout-tool/issues/2677)) ([2b1bc35](https://github.com/andymai/gridfinity-layout-tool/commit/2b1bc352394d7f15930b2e5487dc35a7f328fdad))
+
 ## [4.266.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.266.0...gridfinity-layout-tool-v4.266.1) (2026-07-21)
 
 
