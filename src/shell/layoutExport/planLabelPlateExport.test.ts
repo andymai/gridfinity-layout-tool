@@ -54,6 +54,24 @@ describe('planLabelPlateExport', () => {
     expect(plan.totalPlates).toBe(0);
   });
 
+  it('carries the design featureColors onto the group for 3MF paint_color', () => {
+    const coloredParams: Partial<BinParams> = {
+      featureColors: {
+        ...DEFAULT_BIN_PARAMS.featureColors,
+        enabled: true,
+        labelTab: '#112233',
+        text: '#ffffff',
+      },
+    };
+    const loaded: LoadedDesign[] = [
+      { id: designId('d1'), design: socketDesign('d1', 'Colored', coloredParams) },
+    ];
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED);
+    expect(plan.groups).toHaveLength(1);
+    expect(plan.groups[0].featureColors?.enabled).toBe(true);
+    expect(plan.groups[0].featureColors?.labelTab).toBe('#112233');
+  });
+
   it('multiplies per-compartment plates by placed-bin quantity and collapses manifest duplicates', () => {
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: socketDesign('d1', 'Hardware') }];
     const bins = [

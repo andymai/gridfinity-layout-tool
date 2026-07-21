@@ -21,6 +21,11 @@ import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
+import type { FaceGroupData } from '@/shared/types/generation';
+import type { FeatureColorConfig } from '@/shared/types/bin';
+// Deep import (not the barrel): this code only runs inside the lazy
+// layout-export chunk (same rationale as planLabelPlateExport's deep imports).
+import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import { decodeMeshData } from '@/shared/generation/meshAsset';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 // Deep import: the STL builder lives in the worker-adjacent export module; the
@@ -62,16 +67,30 @@ interface UseLayoutExportReturn {
   ) => Promise<boolean>;
 }
 
-/** Convert STL bytes to 3MF bytes (the bridge emits STL only). */
+/** Convert STL bytes to 3MF bytes (the bridge emits STL only). `plateColors`
+ *  adds label-plate paint_color zones (#2666) derived from the worker's face
+ *  provenance against the parsed triangle count. */
 async function stlTo3mf(
   stl: ArrayBuffer,
   name: string,
-  printSettings: { layerHeightMm: number; infillPercent: number }
+  printSettings: { layerHeightMm: number; infillPercent: number },
+  plateColors?: {
+    faceGroups: readonly FaceGroupData[] | undefined;
+    featureColors: FeatureColorConfig | undefined;
+  }
 ): Promise<ArrayBuffer> {
   const parsed = parseSTLBinary(stl);
   if (!isOk(parsed)) throw new Error(getUserMessage(parsed.error));
+  const colorConfig = plateColors
+    ? buildLabelPlateColorConfig(
+        plateColors.faceGroups,
+        parsed.value.vertices.length / 9,
+        plateColors.featureColors
+      )
+    : undefined;
   const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
     name,
+    colorConfig,
     printSettings: {
       layerHeight: printSettings.layerHeightMm,
       infillPercent: printSettings.infillPercent,
@@ -316,7 +335,10 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 const result = await bridge.exportLabelPlates(specs, options, workerFormat);
                 const data =
                   format === '3mf'
-                    ? await stlTo3mf(result.data, baseNameOf(path), printSettings)
+                    ? await stlTo3mf(result.data, baseNameOf(path), printSettings, {
+                        faceGroups: result.faceGroups,
+                        featureColors: group.featureColors,
+                      })
                     : result.data;
                 labelFiles.push({ path, data });
                 sheetPaths.push(path);

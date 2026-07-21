@@ -148,7 +148,12 @@ export async function handleExportLabelPlates(message: ExportLabelPlatesMessage)
     'BASEPLATE_EXPORT_RESULT',
     async () => {
       const result = await exportLabelPlates(payload.plates, payload.options, payload.format);
-      return { data: result.data, format: payload.format, fileName: result.fileName };
+      return {
+        data: result.data,
+        format: payload.format,
+        fileName: result.fileName,
+        faceGroups: result.faceGroups,
+      };
     },
     'Label plate export failed',
     (p) => [p.data],

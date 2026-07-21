@@ -11,6 +11,7 @@ import {
   LABEL_PLATE_THICKNESS_MM,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
+import { FeatureTag } from './featureTags';
 import { buildLabelPlate, buildLabelPlates, exportLabelPlates } from './labelPlateBuilder';
 import type { LabelPlateBuildOptions } from './labelPlateBuilder';
 
@@ -143,5 +144,29 @@ describe('labelPlateBuilder', () => {
     const { data, fileName } = await exportLabelPlates([{ widthU: 1, text: 'BOLTS' }], OPTS, 'stl');
     expect(fileName).toBe('label_plates.stl');
     expect(data.byteLength).toBeGreaterThan(1000);
+  });
+
+  it('tags text faces in the export faceGroups for paint_color mapping', async () => {
+    for (const textMode of ['deboss', 'emboss'] as const) {
+      const { data, faceGroups } = await exportLabelPlates(
+        [{ widthU: 1, text: 'BOLTS' }],
+        { ...OPTS, textMode },
+        'stl'
+      );
+      const groups = faceGroups ?? [];
+      const textIndexCount = groups
+        .filter((g) => g.tag === FeatureTag.TEXT)
+        .reduce((sum, g) => sum + g.count, 0);
+      expect(textIndexCount, textMode).toBeGreaterThan(0);
+      // Groups must cover the STL exactly (80-byte header + 4-byte count +
+      // 50 bytes per triangle) or the 3MF material indices would misalign.
+      const totalIndexCount = groups.reduce((sum, g) => sum + g.count, 0);
+      expect(totalIndexCount / 3, textMode).toBe((data.byteLength - 84) / 50);
+    }
+  });
+
+  it('emits no TEXT face groups for blank plates', async () => {
+    const { faceGroups } = await exportLabelPlates([{ widthU: 1, text: '' }], OPTS, 'stl');
+    expect((faceGroups ?? []).some((g) => g.tag === FeatureTag.TEXT)).toBe(false);
   });
 });

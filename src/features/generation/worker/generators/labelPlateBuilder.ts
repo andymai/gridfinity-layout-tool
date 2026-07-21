@@ -9,7 +9,9 @@
  * layer-height-multiple depth so a single filament swap yields clean
  * two-color text. Plates print flat, no supports.
  *
- * Export mirrors `connectorSample.ts`: pieces → compound → STL/STEP.
+ * Export mirrors `connectorSample.ts` (pieces → one STL/STEP), but fuses the
+ * disjoint plates instead of compounding so face-origin metadata survives —
+ * TEXT-tagged glyph faces ride along as `faceGroups` for 3MF paint_color.
  */
 
 import {
@@ -17,10 +19,10 @@ import {
   cut,
   cutAll,
   fuse,
-  clone,
-  compound,
+  fuseAll,
   mesh,
   exportSTEP,
+  setShapeOrigin,
   translate,
   unwrap,
   withScope,
@@ -42,8 +44,9 @@ import {
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { TextStyleDefaults } from '@/shared/types/bin';
-import type { ExportFormat } from '../../bridge/types';
+import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 import { COPLANAR_MARGIN } from './generatorConstants';
+import { FeatureTag } from './featureTags';
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -220,6 +223,11 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       });
       if (result) {
         try {
+          // Tag the text solid so its faces survive the boolean carrying
+          // FeatureTag.TEXT — the 3MF paint_color mapping colors exactly
+          // these triangles the text color (raised glyph faces on emboss,
+          // cavity faces on deboss).
+          setShapeOrigin(result.solid, FeatureTag.TEXT);
           const op = result.op === 'cut' ? cut : fuse;
           solid = scope.register(unwrap(op(solid as ValidSolid, result.solid as ValidSolid)));
         } catch {
@@ -229,7 +237,10 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       }
     }
 
-    return unwrap(clone(solid));
+    // Identity translate instead of clone(): both deep-copy the solid out of
+    // the disposal scope, but clone() drops the face-origin metadata the
+    // paint_color mapping needs, while translate propagates it.
+    return translate(solid, [0, 0, 0]);
   });
 }
 
@@ -261,16 +272,26 @@ export async function exportLabelPlates(
   specs: readonly LabelPlateSpec[],
   opts: LabelPlateBuildOptions,
   format: ExportFormat
-): Promise<{ data: ArrayBuffer; fileName: string }> {
+): Promise<{ data: ArrayBuffer; fileName: string; faceGroups?: readonly FaceGroupData[] }> {
   if (specs.length === 0) {
     throw new Error('No label plates to export');
   }
   const pieces = buildLabelPlates(specs, opts);
   let assembled: Shape3D;
-  try {
-    assembled = compound(pieces);
-  } finally {
-    for (const p of pieces) p.delete();
+  if (pieces.length === 1) {
+    // fuseAll would hand back this same handle — keep it directly so the
+    // pieces cleanup below can't free the shape we are about to mesh.
+    assembled = pieces[0];
+  } else {
+    try {
+      // fuseAll instead of compound(): the plates are disjoint so the result
+      // is geometrically identical, but fuseAll propagates the face-origin
+      // metadata (compound is a raw builder that drops it) — without which
+      // the TEXT faces can't be mapped to paint_color materials.
+      assembled = unwrap(fuseAll(pieces as ValidSolid[]));
+    } finally {
+      for (const p of pieces) p.delete();
+    }
   }
 
   try {
@@ -281,8 +302,16 @@ export async function exportLabelPlates(
       return { data, fileName: `${name}.step` };
     }
     const meshResult = mesh(assembled, { tolerance: 0.05, angularTolerance: 10 });
+    // Face provenance for STL→3MF paint_color: TEXT-tagged glyph faces map
+    // to the text color, everything else to the plate color. The STL below
+    // writes from this same tessellation, so the ranges stay aligned.
+    const faceGroups: FaceGroupData[] = meshResult.faceGroups.map((g) => ({
+      start: g.start,
+      count: g.count,
+      tag: g.origin === FeatureTag.TEXT ? FeatureTag.TEXT : FeatureTag.UNKNOWN,
+    }));
     const data = buildBaseplateSTL(meshResult, name);
-    return { data, fileName: `${name}.stl` };
+    return { data, fileName: `${name}.stl`, faceGroups };
   } finally {
     assembled.delete();
   }

@@ -25,6 +25,7 @@ import {
   triggerDownload,
 } from '@/shared/generation/exportUtils';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
 import {
   effectiveLabelSocketClearance,
   snapTextDepthToLayers,
@@ -96,8 +97,14 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
           const parseResult = parseSTLBinary(stlResult.data);
           if (isErr(parseResult)) throw new Error(getUserMessage(parseResult.error));
           const printSettings = useSettingsStore.getState().settings.printSettings;
+          const colorConfig = buildLabelPlateColorConfig(
+            stlResult.faceGroups,
+            parseResult.value.vertices.length / 9,
+            params.featureColors
+          );
           const blob = export3MF(parseResult.value.vertices, parseResult.value.normals, {
             name: baseName,
+            colorConfig,
             printSettings: {
               layerHeight: printSettings.layerHeightMm,
               infillPercent: printSettings.infillPercent,
@@ -123,7 +130,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
         setIsExporting(false);
       }
     },
-    [plates, buildRequest, t]
+    [plates, buildRequest, params, t]
   );
 
   const fetchPreviewStl = useCallback(async (): Promise<ArrayBuffer | null> => {
