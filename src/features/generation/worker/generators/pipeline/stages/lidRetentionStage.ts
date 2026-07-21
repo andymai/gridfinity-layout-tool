@@ -18,7 +18,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
-import { LID_COPLANAR_MARGIN } from '../../lidConstants';
+import { LID_COPLANAR_MARGIN, LID_MAGNET_POST_FLOOR } from '../../lidConstants';
 import {
   retentionBossRadius,
   retentionMagnetPositions,
@@ -45,6 +45,11 @@ export const lidRetentionStage: PipelineStage = {
     const { params, dimensions: dim } = ctx;
     const { diameter, depth } = params.lid.retentionMagnet;
     const magnetRadius = diameter / 2;
+    // Never cut deeper than leaves `LID_MAGNET_POST_FLOOR` of solid below the
+    // pocket, so the post can't be punched through even if a design slips past
+    // the `magnetTooDeepForBin` warning band. Clamped to > 0 so a tiny interior
+    // still yields a real (if shallow) pocket rather than an inverted one.
+    const pocketDepth = Math.max(0.4, Math.min(depth, dim.interiorHeight - LID_MAGNET_POST_FLOOR));
     const bossRadius = retentionBossRadius(diameter);
     const positions = retentionMagnetPositions(
       params.width,
@@ -70,11 +75,11 @@ export const lidRetentionStage: PipelineStage = {
       body = fused;
     }
 
-    // 2. Cut the upward-opening pockets. Cutter starts `magnetDepth` below the
+    // 2. Cut the upward-opening pockets. Cutter starts `pocketDepth` below the
     //    lip top and rises a hair past it so it bites cleanly through the top
-    //    face, leaving a retaining floor of post material below.
-    const cutterZ = interfaceZ - depth;
-    const cutterHeight = depth + LID_COPLANAR_MARGIN;
+    //    face, leaving at least `LID_MAGNET_POST_FLOOR` of post material below.
+    const cutterZ = interfaceZ - pocketDepth;
+    const cutterHeight = pocketDepth + LID_COPLANAR_MARGIN;
     const cutters: Shape3D[] = [];
     for (const [px, py] of positions) {
       cutters.push(

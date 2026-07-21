@@ -70,10 +70,11 @@ const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
 const TALL_LID_LEVERAGE_WARN_MM = 10;
 
 /**
- * Minimum retaining floor (mm) kept below a bin-side retention-magnet pocket
- * before we warn. Mirrors the worker's `LID_MAGNET_POST_FLOOR`; duplicated as a
- * local literal to avoid importing worker-side geometry constants across the
- * feature boundary.
+ * Retaining-floor threshold (mm): below this, the warning fires because the
+ * worker's `lidRetentionStage` clamps the pocket to keep this much material,
+ * so the magnet would seat shallower than requested. Kept as a local literal
+ * (value 0.6) rather than imported, to avoid pulling a worker-side geometry
+ * constant across the feature boundary — the two must stay in sync by hand.
  */
 const MAGNET_POST_MIN_FLOOR = 0.6;
 
