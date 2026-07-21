@@ -68,6 +68,7 @@ const VALID_BASE_STYLES = [
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts` (#2666).
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
+const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
@@ -360,6 +361,15 @@ function validateLabel(label: unknown): string | null {
       !VALID_LABEL_TAB_MODES.includes(label.mode as (typeof VALID_LABEL_TAB_MODES)[number])
     ) {
       return `label.mode must be one of: ${VALID_LABEL_TAB_MODES.join(', ')}`;
+    }
+    // Optional socket profile (#2666 follow-up); absent = 'clickIn'.
+    if (
+      label.socketStyle !== undefined &&
+      !VALID_LABEL_SOCKET_STYLES.includes(
+        label.socketStyle as (typeof VALID_LABEL_SOCKET_STYLES)[number]
+      )
+    ) {
+      return `label.socketStyle must be one of: ${VALID_LABEL_SOCKET_STYLES.join(', ')}`;
     }
     // Cross-field: socket-mode tabs must be deep enough to host the pocket.
     // Without this a crafted payload passes the generic depth range but the

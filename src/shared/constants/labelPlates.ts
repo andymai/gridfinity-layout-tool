@@ -98,6 +98,30 @@ export const LABEL_SOCKET_RIB_HEIGHT_MM = 0.4;
 export const LABEL_SOCKET_RIB_START_MM = 0.2;
 
 /**
+ * Slide-channel socket style (#2666 follow-up): instead of click-past ribs,
+ * retaining lips overhang the pocket's side and anchor walls, the mouth
+ * opens through the tab's compartment-facing edge, and a floor detent at
+ * the mouth parks the plate. Retention grips the plate's plain edges, so
+ * slide sockets take the same standard plates as click-in ones.
+ */
+export type LabelSocketStyle = 'clickIn' | 'slideChannel';
+
+export const LABEL_SOCKET_STYLES: readonly LabelSocketStyle[] = ['clickIn', 'slideChannel'];
+
+export function isLabelSocketStyle(value: unknown): value is LabelSocketStyle {
+  return (LABEL_SOCKET_STYLES as readonly unknown[]).includes(value);
+}
+
+/** Lip band above the plate: thickness (Z) and overhang into the pocket (XY). */
+export const LABEL_SOCKET_LIP_THICKNESS_MM = 0.6;
+export const LABEL_SOCKET_LIP_OVERHANG_MM = 1.2;
+/** Vertical slide clearance between plate top and lip underside. */
+export const LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM = 0.15;
+/** Park detent at the mouth: height above the floor and Y extent. */
+export const LABEL_SOCKET_DETENT_HEIGHT_MM = 0.3;
+export const LABEL_SOCKET_DETENT_DEPTH_MM = 0.8;
+
+/**
  * Solid floor kept beneath the pocket. The standard's socket test block
  * keeps a 1mm floor; 0.8mm (4 layers at 0.2) is enough to anchor the rib
  * bridge while keeping the shelf slim.
@@ -106,6 +130,12 @@ export const LABEL_SOCKET_FLOOR_MM = 0.8;
 
 /** Shelf plate thickness in socket mode: pocket depth + solid floor. */
 export const LABEL_SOCKET_SHELF_THICKNESS_MM = LABEL_SOCKET_POCKET_DEPTH_MM + LABEL_SOCKET_FLOOR_MM;
+
+/** Slide-channel shelves additionally host the z-clearance + lip band. */
+export const LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM =
+  LABEL_SOCKET_SHELF_THICKNESS_MM +
+  LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM +
+  LABEL_SOCKET_LIP_THICKNESS_MM;
 
 /** Minimum solid wall kept around the pocket on each side (mm). */
 export const LABEL_SOCKET_WALL_MM = 1;

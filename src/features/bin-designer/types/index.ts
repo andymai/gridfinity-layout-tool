@@ -30,6 +30,7 @@ export interface LidMeshDataState {
   readonly faceGroups?: FaceGroupData[];
 }
 import type { DesignId, MagnetAnchor } from '@/core/types';
+import type { LabelPlateIconId, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type {
   ColorZone,
@@ -291,9 +292,11 @@ export interface CompartmentConfig {
    */
   readonly labelPlateWidths?: (number | null)[];
   /**
-   * Optional per-compartment hardware icon on the swappable label plate
-   * (`LabelPlateIconId` values), indexed by compartment ID after
-   * `normalizeIds`. Missing / null entries mean no icon. Only consulted when
+   * Optional per-compartment hardware icon on the swappable label plate,
+   * indexed by compartment ID after `normalizeIds`. Missing / null entries
+   * mean no icon. Element type is loose like the sibling arrays (persisted
+   * payloads are untrusted); consumers validate against `LABEL_PLATE_ICONS`
+   * via `isLabelPlateIconId` before use. Only consulted when
    * `label.mode === 'socket'`. Kept in lockstep with `cells` via
    * `normalizeIdsWithRemap`, like `compartmentTexts`.
    */
@@ -419,6 +422,14 @@ export interface LabelTabConfig {
    * `effectiveLabelSocketClearance`.
    */
   readonly plateFitOffset?: number;
+  /**
+   * Socket profile in socket mode. Absent = 'clickIn' — the Cullenect
+   * click-in pocket. 'slideChannel' swaps the retention ribs for overhanging
+   * lips with a side mouth: the plate slides in from the compartment side
+   * and parks behind a floor detent. Both styles take the same standard
+   * plates.
+   */
+  readonly socketStyle?: LabelSocketStyle;
   /** Support structure: 'bracket' = open gussets, 'solid' = filled triangle */
   readonly support: LabelTabSupport;
   /** Depth of tab from inner back wall (horizontal inward), in mm */
@@ -1140,7 +1151,7 @@ export interface DesignerState {
   setCompartmentText: (compartmentId: number, text: string) => void;
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set a compartment's swappable-plate hardware icon (null = none). */
-  setCompartmentPlateIcon: (compartmentId: number, icon: string | null) => void;
+  setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 

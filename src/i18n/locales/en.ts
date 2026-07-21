@@ -1659,6 +1659,11 @@ const en: Record<string, string> = {
   'binDesigner.plateWidthNoFit': 'No standard plate fits',
   'binDesigner.plateSpanningNote':
     'Compartments are too narrow for individual plates — one bin-wide socket is used instead.',
+  'binDesigner.socketStyle': 'Socket style',
+  'binDesigner.socketStyle.clickIn': 'Click-in',
+  'binDesigner.socketStyle.slideChannel': 'Slide-in',
+  'binDesigner.socketStyle.slideHint':
+    'Plates slide in from the compartment side under retaining lips and park behind a small detent. Takes the same standard plates as click-in.',
   'binDesigner.plateIconAria': 'Plate icon for compartment {n}',
   'binDesigner.plateIcon.none': 'No icon',
   'binDesigner.plateIcon.bolt': 'Bolt',

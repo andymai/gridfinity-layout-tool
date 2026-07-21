@@ -285,3 +285,131 @@ describe('buildLabelTabs', () => {
     }
   );
 });
+
+describe('slide-channel socket style (#2666 follow-up)', () => {
+  const socketParams = (socketStyle?: 'clickIn' | 'slideChannel') => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 1,
+    label: {
+      ...DEFAULT_BIN_PARAMS.label,
+      enabled: true,
+      mode: 'socket' as const,
+      depth: 14,
+      // Center the socket so the probes below can target the pocket at x=0
+      // (the default left alignment parks it ~21mm off-center).
+      alignment: 'center' as const,
+      ...(socketStyle !== undefined ? { socketStyle } : {}),
+    },
+  });
+
+  it('builds a different solid than click-in with an open mouth at the free edge', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { measureVolume, mesh } = await import('brepjs');
+    const { isOk } = await import('@/core/result');
+    const vol = (s: NonNullable<ReturnType<typeof buildLabelTabs>>): number => {
+      const r = measureVolume(s);
+      if (!isOk(r)) throw new Error('measureVolume failed');
+      return r.value;
+    };
+
+    const click = buildLabelTabs(socketParams('clickIn'), 80, 80, 35, 1.2);
+    const slide = buildLabelTabs(socketParams('slideChannel'), 80, 80, 35, 1.2);
+    expect(click).not.toBeNull();
+    expect(slide).not.toBeNull();
+    const clickVol = vol(click as NonNullable<typeof click>);
+    const slideVol = vol(slide as NonNullable<typeof slide>);
+    expect(clickVol).toBeGreaterThan(0);
+    expect(slideVol).toBeGreaterThan(0);
+    // The styles must actually diverge (thicker shelf, deeper cavity, mouth).
+    expect(Math.abs(clickVol - slideVol)).toBeGreaterThan(3);
+
+    // Mouth check, self-validating against the world transform: probe BOTH
+    // Y-extremes of each tab across the pocket's central X span at cavity
+    // height. The click-in tab has walls at both extremes (0 open edges);
+    // the slide mouth cuts one extreme fully open (exactly 1). Asserting the
+    // click count too guards against probing a vacuously-empty location.
+    const wallHeight = 35;
+    // Inside the click pocket band (top 1.2) AND the slide cavity band
+    // (0.6–1.95 below the shelf top).
+    const cavityMidZ = wallHeight - 1.0;
+    // Exact point-in-triangle occupancy on each Y-extreme's edge plane at
+    // the pocket center (x=0, cavity height). Bbox/vertex probes both give
+    // wrong answers here: plain faces tessellate corner-only, and faces
+    // AROUND the mouth hole produce sliver triangles whose bounding boxes
+    // span the hole. A Y-extreme is closed when the probe point lies inside
+    // some on-plane triangle.
+    const openEdgeCount = (solid: NonNullable<ReturnType<typeof buildLabelTabs>>): number => {
+      const m = mesh(solid, { tolerance: 0.1, angularTolerance: 10 });
+      const v = m.vertices;
+      const tris = m.triangles;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 1; i < v.length; i += 3) {
+        if (v[i] < minY) minY = v[i];
+        if (v[i] > maxY) maxY = v[i];
+      }
+      const pointInTriangle = (
+        px: number,
+        pz: number,
+        ax: number,
+        az: number,
+        bx: number,
+        bz: number,
+        cx: number,
+        cz: number
+      ): boolean => {
+        const s1 = (bx - ax) * (pz - az) - (bz - az) * (px - ax);
+        const s2 = (cx - bx) * (pz - bz) - (cz - bz) * (px - bx);
+        const s3 = (ax - cx) * (pz - cz) - (az - cz) * (px - cx);
+        const hasNeg = s1 < 0 || s2 < 0 || s3 < 0;
+        const hasPos = s1 > 0 || s2 > 0 || s3 > 0;
+        return !(hasNeg && hasPos);
+      };
+      let open = 0;
+      for (const edgeY of [minY, maxY]) {
+        let material = false;
+        for (let ti = 0; ti < tris.length; ti += 3) {
+          const idx = [tris[ti], tris[ti + 1], tris[ti + 2]];
+          if (!idx.every((k) => Math.abs(v[k * 3 + 1] - edgeY) < 0.6)) continue;
+          if (
+            pointInTriangle(
+              0,
+              cavityMidZ,
+              v[idx[0] * 3],
+              v[idx[0] * 3 + 2],
+              v[idx[1] * 3],
+              v[idx[1] * 3 + 2],
+              v[idx[2] * 3],
+              v[idx[2] * 3 + 2]
+            )
+          ) {
+            material = true;
+            break;
+          }
+        }
+        if (!material) open++;
+      }
+      return open;
+    };
+    expect(openEdgeCount(click as NonNullable<typeof click>)).toBe(0);
+    expect(openEdgeCount(slide as NonNullable<typeof slide>)).toBe(1);
+  });
+
+  it('defaults to click-in geometry when socketStyle is absent', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { measureVolume } = await import('brepjs');
+    const { isOk } = await import('@/core/result');
+    const vol = (s: NonNullable<ReturnType<typeof buildLabelTabs>>): number => {
+      const r = measureVolume(s);
+      if (!isOk(r)) throw new Error('measureVolume failed');
+      return r.value;
+    };
+    const absent = buildLabelTabs(socketParams(undefined), 80, 80, 35, 1.2);
+    const click = buildLabelTabs(socketParams('clickIn'), 80, 80, 35, 1.2);
+    expect(vol(absent as NonNullable<typeof absent>)).toBeCloseTo(
+      vol(click as NonNullable<typeof click>),
+      6
+    );
+  });
+});

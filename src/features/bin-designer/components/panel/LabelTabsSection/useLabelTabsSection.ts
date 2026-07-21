@@ -12,6 +12,7 @@ import {
 } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
+import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
 import type {
   LabelTabAlignment,
   LabelTabEdges,
@@ -127,6 +128,14 @@ export function useLabelTabsSection() {
   const setPlateFitOffset = useCallback(
     (plateFitOffset: number) => {
       updateLabel({ plateFitOffset });
+    },
+    [updateLabel]
+  );
+
+  const setSocketStyle = useCallback(
+    (socketStyle: LabelSocketStyle) => {
+      // Store undefined for the default so legacy payloads stay byte-identical.
+      updateLabel({ socketStyle: socketStyle === 'clickIn' ? undefined : socketStyle });
     },
     [updateLabel]
   );
@@ -518,6 +527,7 @@ export function useLabelTabsSection() {
       setTabInset,
       setTabMode,
       setPlateFitOffset,
+      setSocketStyle,
       setCompartmentPlateWidth,
       setCompartmentPlateIcon,
       autoFixDimensions,

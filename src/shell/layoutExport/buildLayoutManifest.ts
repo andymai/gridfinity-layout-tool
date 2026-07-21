@@ -7,7 +7,7 @@
  */
 
 import type { ExportFileFormat } from '@/shared/types/bin';
-import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 
 export interface ManifestBinEntry {
   /** Path inside the ZIP, e.g. `bins/box_1x1x6.stl`. */
@@ -42,7 +42,7 @@ export interface ManifestLabelGroup {
   readonly plates: readonly {
     readonly widthU: LabelPlateWidthU;
     readonly text: string;
-    readonly icon?: string;
+    readonly icon?: LabelPlateIconId;
     readonly quantity: number;
   }[];
   /** Plates skipped because they exceed the usable print bed width. */
