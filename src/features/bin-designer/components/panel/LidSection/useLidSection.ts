@@ -25,6 +25,7 @@ import {
   isMagnetStyle,
   type LidAttachment,
   type LidClickRails,
+  type LidConfig,
   type LidRailSide,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
@@ -41,6 +42,44 @@ import type {
   LidCompatibilitySide,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
+
+/**
+ * View-layer projection of the lid's top-face treatment. The persisted model
+ * keeps `stackableTop` and `tray.enabled` as independent booleans (whose mutual
+ * exclusion the store enforces); the panel presents them as one three-way
+ * choice. No change to `LidConfig` — this is purely how the UI groups them.
+ */
+export type LidTopSurface = 'flat' | 'stackable' | 'tray';
+export const LID_TOP_SURFACES: readonly LidTopSurface[] = ['flat', 'stackable', 'tray'] as const;
+
+/**
+ * Pure value-summary string for a lid (attachment mode + rail status). Shared
+ * by the section body and the collapsed group header so the header can
+ * subscribe to just `lid` rather than re-running the whole section hook (with
+ * its broad params subscription and compatibility scan).
+ */
+export function lidValueSummary(lid: LidConfig, t: ReturnType<typeof useTranslation>): string {
+  if (lid.attachment === 'friction') return t('binDesigner.lid.summaryFriction');
+  if (lid.attachment === 'magnetic') {
+    return t('binDesigner.lid.summaryMagnetic', {
+      diameter: lid.retentionMagnet.diameter.toFixed(1),
+      depth: lid.retentionMagnet.depth.toFixed(1),
+    });
+  }
+  const railSideCount =
+    (lid.clickRails.front ? 1 : 0) +
+    (lid.clickRails.back ? 1 : 0) +
+    (lid.clickRails.left ? 1 : 0) +
+    (lid.clickRails.right ? 1 : 0);
+  if (railSideCount === 0) return t('binDesigner.lid.summaryNoRails');
+  if (railSideCount < 4) {
+    return t('binDesigner.lid.summaryPartialRails', {
+      coverage: lid.clickRailCoverage,
+      sides: railSideCount,
+    });
+  }
+  return t('binDesigner.lid.summary', { coverage: lid.clickRailCoverage });
+}
 
 /**
  * Build the `disabledReason` text shown on the lid toggle when blockers
@@ -230,15 +269,6 @@ export function useLidSection() {
   // hint when the user toggles magnets without a stack grid above).
   const binHasMagnets = isMagnetStyle(base.style);
 
-  // Magnet pockets only do something when a bin can stack on the lid above
-  // (the upper bin's base magnets meet the pocketed magnets through the
-  // floor). Without `stackableTop`, the toggle is gated and the worker
-  // skips the cuts even if the persisted flag is `true`.
-  const magnetsRequireStackable = lid.magnetHoles && !lid.stackableTop;
-  const magnetsDisabledReason = !lid.stackableTop
-    ? t('binDesigner.lid.magnetsRequireStackable')
-    : undefined;
-
   const railCoverageOptions: SnappingSliderOption[] = useMemo(
     () =>
       LID_CLICK_RAIL_COVERAGE_OPTIONS.map((value) => ({
@@ -264,26 +294,39 @@ export function useLidSection() {
     }
   }, [lid.enabled, lid.stackableTop, binHasMagnets, updateLid]);
 
-  const toggleStackableTop = useCallback(() => {
-    const next = !lid.stackableTop;
-    // Disabling the stack grid also clears magnets AND the separate-baseplate
-    // option — both only mean something when there IS a grid. Leaving them on
-    // would silently produce a lid whose floor pockets meet nothing / a
-    // baseplate split of a grid that no longer exists. Enabling it clears the
-    // tray recess — a stack grid and a recess can't share the top surface.
-    updateLid({
-      stackableTop: next,
-      magnetHoles: next ? lid.magnetHoles : false,
-      separateStackPlate: next ? lid.separateStackPlate : false,
-      tray: next ? { ...lid.tray, enabled: false } : lid.tray,
-    });
-  }, [lid.stackableTop, lid.magnetHoles, lid.separateStackPlate, lid.tray, updateLid]);
-
   const setAttachment = useCallback(
     (attachment: LidAttachment) => {
       updateLid({ attachment });
     },
     [updateLid]
+  );
+
+  // Three-way top-surface picker projected onto the two persisted booleans.
+  // Leaving stackable drops magnets + separate baseplate (they only mean
+  // something atop a grid), and the two treatments never coexist — the
+  // `setTopSurface` writes below enforce both.
+  const topSurface: LidTopSurface = lid.stackableTop
+    ? 'stackable'
+    : lid.tray.enabled
+      ? 'tray'
+      : 'flat';
+
+  const setTopSurface = useCallback(
+    (mode: LidTopSurface) => {
+      if (mode === 'stackable') {
+        updateLid({ stackableTop: true, tray: { ...lid.tray, enabled: false } });
+      } else {
+        // Flat or tray: no stack grid, so magnet pockets and the separate
+        // baseplate (both grid-only) are force-cleared. Tray owns the surface.
+        updateLid({
+          stackableTop: false,
+          magnetHoles: false,
+          separateStackPlate: false,
+          tray: { ...lid.tray, enabled: mode === 'tray' },
+        });
+      }
+    },
+    [lid.tray, updateLid]
   );
 
   const setRetentionMagnetDiameter = useCallback(
@@ -304,11 +347,6 @@ export function useLidSection() {
     },
     [lid.retentionMagnet, updateLid]
   );
-
-  const toggleTray = useCallback(() => {
-    if (lid.stackableTop) return; // Gated; a stack grid owns the top surface.
-    updateLid({ tray: { ...lid.tray, enabled: !lid.tray.enabled } });
-  }, [lid.stackableTop, lid.tray, updateLid]);
 
   const setTrayDepth = useCallback(
     (depthMm: number) => {
@@ -479,50 +517,10 @@ export function useLidSection() {
     });
   }, [t, railSummary]);
 
-  // Number of rail-enabled sides (out of 4). Used by valueSummary to
-  // distinguish the all-on, none-on, and partial cases without leaking
-  // the per-side flags into the summary string.
-  const railSideCount =
-    (lid.clickRails.front ? 1 : 0) +
-    (lid.clickRails.back ? 1 : 0) +
-    (lid.clickRails.left ? 1 : 0) +
-    (lid.clickRails.right ? 1 : 0);
-
-  // Rich value summary for the collapsed FeatureToggle header — rail
-  // status + a stack/magnet hint. Three rail branches: all sides on
-  // ("{coverage}% rails"), partial ("{coverage}% rails on N sides"),
-  // none ("no rails"). Wall thickness/fit no longer surface here since
-  // they're locked-down constants.
-  const valueSummary = useMemo(() => {
-    if (lid.attachment === 'friction') {
-      return t('binDesigner.lid.summaryFriction');
-    }
-    if (lid.attachment === 'magnetic') {
-      return t('binDesigner.lid.summaryMagnetic', {
-        diameter: lid.retentionMagnet.diameter.toFixed(1),
-        depth: lid.retentionMagnet.depth.toFixed(1),
-      });
-    }
-    if (railSideCount === 0) {
-      return t('binDesigner.lid.summaryNoRails');
-    }
-    if (railSideCount < 4) {
-      return t('binDesigner.lid.summaryPartialRails', {
-        coverage: lid.clickRailCoverage,
-        sides: railSideCount,
-      });
-    }
-    return t('binDesigner.lid.summary', {
-      coverage: lid.clickRailCoverage,
-    });
-  }, [
-    t,
-    lid.attachment,
-    lid.retentionMagnet.diameter,
-    lid.retentionMagnet.depth,
-    railSideCount,
-    lid.clickRailCoverage,
-  ]);
+  // Rich value summary for the collapsed group header. Shared with
+  // `useLidGroupSummary` via the pure `lidValueSummary` helper so the header
+  // can subscribe to just `lid` instead of re-running this whole hook.
+  const valueSummary = useMemo(() => lidValueSummary(lid, t), [lid, t]);
 
   // One-click resolution for issues that have a clean automatic fix.
   // Disables the conflicting feature at the section level (e.g. walls,
@@ -566,11 +564,10 @@ export function useLidSection() {
     state: {
       enabled: effectiveEnabled,
       attachment: lid.attachment,
+      topSurface,
       stackableTop: lid.stackableTop,
       magnetHoles: lid.magnetHoles,
       separateStackPlate: lid.separateStackPlate,
-      magnetsRequireStackable,
-      magnetsDisabledReason,
       magnetDiameter: base.magnetDiameter,
       magnetDepth: base.magnetDepth,
       // Dedicated retention-magnet dims + bounds (magnetic mode).
@@ -581,12 +578,9 @@ export function useLidSection() {
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
       retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
-      // Tray recess state + bounds. `trayDisabledReason` is set when a stack
-      // grid owns the top surface (mutually exclusive).
+      // Tray recess state + bounds. Mutual exclusion with the stack grid is
+      // handled by `setTopSurface`, so no disabled-reason string is needed.
       tray: lid.tray,
-      trayDisabledReason: lid.stackableTop
-        ? t('binDesigner.lid.trayRequiresNoStackable')
-        : undefined,
       trayDepthMin: LID_TRAY_DEPTH_MIN_MM,
       trayDepthMax: LID_TRAY_DEPTH_MAX_MM,
       trayWallMin: LID_TRAY_WALL_MIN_MM,
@@ -611,7 +605,7 @@ export function useLidSection() {
     handlers: {
       toggleEnabled,
       setAttachment,
-      toggleStackableTop,
+      setTopSurface,
       toggleMagnetHoles,
       toggleSeparateStackPlate,
       toggleClickRailSide,
@@ -619,7 +613,6 @@ export function useLidSection() {
       setExtraHeight,
       setRetentionMagnetDiameter,
       setRetentionMagnetDepth,
-      toggleTray,
       setTrayDepth,
       setTrayWall,
       fixIssue,

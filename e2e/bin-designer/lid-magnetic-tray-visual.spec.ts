@@ -1,13 +1,13 @@
 /**
  * Visual verification for magnetic-retention lids and tray tops (#2694).
  *
- * Drives the lid panel end to end:
- *   1. Enable the lid, expand Customize.
+ * Drives the redesigned lid group end to end:
+ *   1. Enable the lid — its controls render directly (no Customize step).
  *   2. Switch the attachment mode to Magnetic — the bin grows corner posts and
  *      the lid grows mating bosses, so the canvas must change, and the magnet
- *      controls + press-fit/polarity hint must surface.
- *   3. Switch to Friction and enable the Tray top — the lid's face recesses, so
- *      the canvas must change again.
+ *      press-fit/polarity hint must surface.
+ *   3. Switch to Friction and pick the Tray top surface — the lid's face
+ *      recesses, so the canvas must change again.
  *
  * Run with: `pnpm test:e2e e2e/bin-designer/lid-magnetic-tray-visual.spec.ts`
  */
@@ -36,22 +36,20 @@ test.describe('Lid magnetic retention + tray top (visual)', () => {
     await expect(canvas).toBeVisible({ timeout: 120_000 });
     await waitForGenerationComplete(page);
 
-    // Enable the lid (default stacking lip is on) and open its Customize panel.
-    const lidToggle = page.getByRole('switch', { name: 'Lid' });
+    // Enable the lid (default stacking lip is on). Controls appear directly.
+    const lidToggle = page.getByRole('switch', { name: 'Enable lid' });
     await lidToggle.scrollIntoViewIfNeeded();
     await lidToggle.click();
-    await expect(lidToggle).toHaveAttribute('aria-checked', 'true');
+    await expect(lidToggle).toBeChecked();
     await waitForGenerationComplete(page);
-
-    const lidRoot = lidToggle.locator('xpath=../..');
-    await lidRoot.getByRole('button', { name: /customize/i }).click();
 
     // Baseline: default click-rails attachment.
     const clickBaseline = await canvas.screenshot();
 
     // Switch to Magnetic — corner posts (bin) + bosses (lid) appear.
-    await lidRoot.getByRole('radio', { name: 'Magnetic' }).click();
-    await expect(lidRoot.getByRole('radio', { name: 'Magnetic' })).toHaveAttribute(
+    const attachment = page.getByRole('radiogroup', { name: 'Attachment' });
+    await attachment.getByRole('radio', { name: 'Magnetic' }).click();
+    await expect(attachment.getByRole('radio', { name: 'Magnetic' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
@@ -59,21 +57,23 @@ test.describe('Lid magnetic retention + tray top (visual)', () => {
     const magnetic = await canvas.screenshot();
     expect(clickBaseline.equals(magnetic)).toBe(false);
 
-    // Magnet controls + press-fit/polarity print hint surface.
+    // Magnet press-fit/polarity print hint surfaces.
     await expect(page.getByText(/Press a .* magnet into each corner/i)).toBeVisible();
 
     await test.info().attach('lid-magnetic.png', { body: magnetic, contentType: 'image/png' });
 
-    // Back to Friction, then enable the Tray top (available because the
+    // Back to Friction, then pick the Tray top surface (available because the
     // stackable top is off by default).
-    await lidRoot.getByRole('radio', { name: 'Friction' }).click();
+    await attachment.getByRole('radio', { name: 'Friction' }).click();
     await waitForGenerationComplete(page);
     const friction = await canvas.screenshot();
 
-    const trayToggle = page.getByRole('switch', { name: 'Tray top' });
-    await expect(trayToggle).toBeEnabled();
-    await lidRoot.getByText('Tray top', { exact: true }).click();
-    await expect(trayToggle).toBeChecked();
+    const topSurface = page.getByRole('radiogroup', { name: 'Top surface' });
+    await topSurface.getByRole('radio', { name: 'Tray' }).click();
+    await expect(topSurface.getByRole('radio', { name: 'Tray' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
     await waitForGenerationComplete(page);
     const tray = await canvas.screenshot();
 

@@ -1,15 +1,21 @@
 /**
- * Click-lock lid section.
+ * Lid section — top-level "Lid" group body.
+ *
+ * Organized around three ideas so the ~dozen knobs read as intent, not a
+ * flat wall of controls:
+ *   1. How it attaches — friction / click rails / magnetic (+ mode controls)
+ *   2. Top surface     — flat / stackable / tray (+ its sub-options)
+ *   3. Extra height     — deepen the cavity for tall contents
+ * Millimetre fine-tuning (magnet size, rail coverage, tray dimensions) lives
+ * under a collapsed "Advanced" disclosure so the default view stays scannable.
  *
  * Wall thickness, top thickness, and fit clearance are intentionally NOT
- * exposed: the click-lock geometry only works with one validated numeric
- * set (see `lidConstants.ts`). The user-facing knobs are stackable top,
- * magnets (gated on stackable top), and per-side click rails.
+ * exposed: the click-lock geometry only works with one validated numeric set
+ * (see `lidConstants.ts`).
  */
 
-import { useCallback, useRef } from 'react';
-import { FeatureToggle } from '../FeatureToggle';
-import { Button } from '@/design-system';
+import { useState } from 'react';
+import { Button, SegmentedControl, Collapsible } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
@@ -19,82 +25,31 @@ import type {
   LidCompatibilityIssue,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES, LID_ATTACHMENTS } from '@/features/bin-designer/types';
-import type { LidAttachment } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
-import { useLidSection } from './useLidSection';
+import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
 
-/** Attachment-mode picker as a proper radiogroup with roving tabindex +
- *  arrow-key navigation, mirroring `ThicknessSelector`. */
-function AttachmentSelector({
-  value,
-  onChange,
-  t,
-}: {
-  value: LidAttachment;
-  onChange: (mode: LidAttachment) => void;
-  t: Translator;
-}) {
-  const groupRef = useRef<HTMLDivElement>(null);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const currentIndex = LID_ATTACHMENTS.indexOf(value);
-      let nextIndex: number;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        nextIndex = (currentIndex + 1) % LID_ATTACHMENTS.length;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        nextIndex = (currentIndex - 1 + LID_ATTACHMENTS.length) % LID_ATTACHMENTS.length;
-      } else if (e.key === 'Home') {
-        nextIndex = 0;
-      } else if (e.key === 'End') {
-        nextIndex = LID_ATTACHMENTS.length - 1;
-      } else {
-        return;
-      }
-      e.preventDefault();
-      onChange(LID_ATTACHMENTS[nextIndex]);
-      groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
-    },
-    [value, onChange]
-  );
-
+/** Uppercase subsection label separating the lid's mental-model groups. */
+function SubHeader({ children }: { children: string }) {
   return (
-    <div>
-      <span className="mb-1 block text-xs font-medium text-content-secondary">
-        {t('binDesigner.lid.attachment')}
-      </span>
-      <div
-        ref={groupRef}
-        className="flex gap-1"
-        role="radiogroup"
-        aria-label={t('binDesigner.lid.attachment')}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-      >
-        {LID_ATTACHMENTS.map((mode) => {
-          const isActive = value === mode;
-          return (
-            <Button
-              key={mode}
-              type="button"
-              variant="ghost"
-              role="radio"
-              tabIndex={isActive ? 0 : -1}
-              aria-checked={isActive}
-              onClick={() => onChange(mode)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                isActive
-                  ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
-            >
-              {t(`binDesigner.lid.attachment.${mode}`)}
-            </Button>
-          );
-        })}
-      </div>
+    <span className="block text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
+      {children}
+    </span>
+  );
+}
+
+/** Small tertiary hint paragraph reused across the section. */
+function Hint({ children }: { children: string }) {
+  return <p className="text-[11px] leading-relaxed text-content-tertiary">{children}</p>;
+}
+
+/** Read-out row (ruler icon + tabular text). */
+function Readout({ children }: { children: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+      <RulerIcon size="xs" />
+      <span className="tabular-nums">{children}</span>
     </div>
   );
 }
@@ -146,289 +101,321 @@ function CompatibilityIssue({
   );
 }
 
+/** Per-side click-rail toggles. Multi-select (each wall independent), so this
+ *  stays a hand-rolled switch group rather than the single-select
+ *  SegmentedControl primitive. A side auto-disables when a feature conflict
+ *  (label tab, wall cutout, intruding handle) affects it; the user's persisted
+ *  intent is kept so the rail returns once the conflict is resolved. */
+function RailSides({
+  state,
+  onToggle,
+  t,
+}: {
+  state: ReturnType<typeof useLidSection>['state'];
+  onToggle: (side: (typeof LID_RAIL_SIDES)[number]) => void;
+  t: Translator;
+}) {
+  return (
+    <div>
+      <span className="mb-1 block text-xs font-medium text-content-secondary">
+        {t('binDesigner.lid.clickRails')}
+      </span>
+      <div className="flex gap-1">
+        {LID_RAIL_SIDES.map((side) => {
+          const isActive = state.clickRails[side];
+          const isAutoDisabled = state.disabledRails.has(side);
+          const effectiveActive = isActive && !isAutoDisabled;
+          const tooltip = isAutoDisabled
+            ? t('binDesigner.lid.clickRailDisabledBySide', {
+                side: t(`binDesigner.lid.side.${side}`),
+              })
+            : undefined;
+          return (
+            <Button
+              key={side}
+              type="button"
+              variant="ghost"
+              role="switch"
+              aria-checked={effectiveActive}
+              aria-disabled={isAutoDisabled}
+              disabled={isAutoDisabled}
+              title={tooltip}
+              onClick={() => onToggle(side)}
+              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                isAutoDisabled
+                  ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
+                  : effectiveActive
+                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {t(`binDesigner.lid.side.${side}`)}
+            </Button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function LidSection() {
   const { state, handlers, t } = useLidSection();
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  // Which fine-tuning knobs the Advanced disclosure holds depends on the
+  // current mode. When none apply (e.g. friction + flat) the disclosure is
+  // omitted entirely rather than shown empty.
+  const showMagnetAdvanced = state.attachment === 'magnetic';
+  const showCoverageAdvanced = state.attachment === 'clickRails' && state.anyRail;
+  const showTrayAdvanced = state.topSurface === 'tray';
+  const hasAdvanced = showMagnetAdvanced || showCoverageAdvanced || showTrayAdvanced;
 
   return (
-    <FeatureToggle
-      label={t('binDesigner.lid')}
-      checked={state.enabled}
-      onChange={handlers.toggleEnabled}
-      disabledReason={state.disabledReason}
-      valueSummary={state.valueSummary}
-    >
-      {/* Print-time hint — the mating cavity and click rails are
-          downward-facing overhangs that need supports for a clean print. */}
-      <p className="text-[11px] leading-relaxed text-content-tertiary">
-        {t('binDesigner.lid.printNote')}
-      </p>
-
-      {/* Compatibility notes — features that conflict with click-lock
-          mating. Only renders when there are issues; blockers and
-          warnings share the list and are color-coded by severity. */}
-      {state.compatibilityIssues.length > 0 && (
-        <div className="space-y-1 rounded-md border border-stroke-subtle bg-surface-secondary px-2.5 py-2">
-          <p className="text-[11px] font-medium text-content-secondary">
-            {t('binDesigner.lid.compat.heading')}
-          </p>
-          <ul className="space-y-1">
-            {state.compatibilityIssues.map((issue) => (
-              <CompatibilityIssue
-                key={issue.id}
-                issue={issue}
-                fixable={state.fixableIds.has(issue.id)}
-                onFix={handlers.fixIssue}
-                t={t}
-              />
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Live physical readout — grounds the params in real-world mm so
-          users can sanity-check before printing. Wall thickness / top
-          thickness used to live next to this but they're now fixed. */}
-      <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-        <RulerIcon size="xs" />
-        <span className="tabular-nums">{state.dimensionsReadout}</span>
-      </div>
-
-      {/* Attachment method (#2694) — how the lid retains onto the bin. One of
-          friction / click rails / magnetic. The mode's own controls render
-          directly below so they stay next to the selector. */}
-      <AttachmentSelector value={state.attachment} onChange={handlers.setAttachment} t={t} />
-
-      {/* Magnetic retention (#2694) — dedicated corner magnets bond the lid to
-          the bin. Independent of the bin's base magnets. */}
-      {state.attachment === 'magnetic' && (
-        <div className="space-y-2">
-          <StepperField
-            label={t('binDesigner.lid.retentionMagnetDiameter')}
-            unit="mm"
-            value={state.retentionMagnetDiameter}
-            onChange={handlers.setRetentionMagnetDiameter}
-            onStep={(delta) =>
-              handlers.setRetentionMagnetDiameter(
-                state.retentionMagnetDiameter + delta * state.retentionMagnetStep
-              )
-            }
-            min={state.retentionMagnetDiameterMin}
-            max={state.retentionMagnetDiameterMax}
-            step={state.retentionMagnetStep}
-            size="md"
-            aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
-            commitMode="deferred"
-          />
-          <StepperField
-            label={t('binDesigner.lid.retentionMagnetDepth')}
-            unit="mm"
-            value={state.retentionMagnetDepth}
-            onChange={handlers.setRetentionMagnetDepth}
-            onStep={(delta) =>
-              handlers.setRetentionMagnetDepth(
-                state.retentionMagnetDepth + delta * state.retentionMagnetStep
-              )
-            }
-            min={state.retentionMagnetDepthMin}
-            max={state.retentionMagnetDepthMax}
-            step={state.retentionMagnetStep}
-            size="md"
-            aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
-            commitMode="deferred"
-          />
-          <p className="ml-1 text-[11px] leading-relaxed text-content-tertiary">
-            {t('binDesigner.lid.retentionMagnetHint', {
-              diameter: state.retentionMagnetDiameter.toFixed(1),
-              depth: state.retentionMagnetDepth.toFixed(1),
-            })}
-          </p>
-        </div>
-      )}
-
-      {/* Click rails — per-side. Each chip is an independent toggle: a
-          user can ship a hinge-feel lid (one side only), a label-tab-
-          friendly L+R pair, or all four for symmetric snap. When a feature
-          conflict disables a side (label tab on back, wall cutout/handle on a
-          given side) the chip is greyed out with a tooltip — the user's
-          persisted intent is kept so the rail returns when the conflict is
-          resolved. Only shown in click-rails attachment mode. */}
-      {state.attachment === 'clickRails' && (
-        <div>
-          <span className="mb-1 block text-xs font-medium text-content-secondary">
-            {t('binDesigner.lid.clickRails')}
-          </span>
-          <div className="flex gap-1">
-            {LID_RAIL_SIDES.map((side) => {
-              const isActive = state.clickRails[side];
-              const isAutoDisabled = state.disabledRails.has(side);
-              const effectiveActive = isActive && !isAutoDisabled;
-              const tooltip = isAutoDisabled
-                ? t('binDesigner.lid.clickRailDisabledBySide', {
-                    side: t(`binDesigner.lid.side.${side}`),
-                  })
-                : undefined;
-              return (
-                <Button
-                  key={side}
-                  type="button"
-                  variant="ghost"
-                  role="switch"
-                  aria-checked={effectiveActive}
-                  aria-disabled={isAutoDisabled}
-                  disabled={isAutoDisabled}
-                  title={tooltip}
-                  onClick={() => handlers.toggleClickRailSide(side)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isAutoDisabled
-                      ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
-                      : effectiveActive
-                        ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
-                        : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {t(`binDesigner.lid.side.${side}`)}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {state.attachment === 'clickRails' && state.anyRail && (
-        <div className="space-y-1">
-          <SnappingSlider
-            label={t('binDesigner.lid.clickRailCoverage')}
-            value={state.clickRailCoverage}
-            onChange={handlers.setClickRailCoverage}
-            options={state.railCoverageOptions}
-            unit="%"
-          />
-          <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-            <RulerIcon size="xs" />
-            <span className="tabular-nums">{state.railsReadout}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Extra lid height (issue #2482) — deepens the lid cavity above the
-          bin's lip so contents that stick up out of a short bin (toothpicks,
-          skewers) are enclosed when the lid is on. 0 = the standard lid. The
-          lip grip + click rails are unchanged; only the wall above the lip
-          grows. */}
-      <div className="space-y-1">
-        <StepperField
-          label={t('binDesigner.lid.extraHeight')}
-          unit="mm"
-          value={state.extraHeightMm}
-          onChange={handlers.setExtraHeight}
-          onStep={(delta) =>
-            handlers.setExtraHeight(state.extraHeightMm + delta * state.extraHeightStep)
-          }
-          min={state.extraHeightMin}
-          max={state.extraHeightMax}
-          step={state.extraHeightStep}
-          size="md"
-          aria-label={t('binDesigner.lid.extraHeightAria')}
-          commitMode="deferred"
+    <div className="space-y-4">
+      {/* Master enable. Disabled (with a reason) when the bin has no stacking
+          lip or a blocker-severity feature conflict is unresolved. */}
+      <div>
+        <Switch
+          label={t('binDesigner.lid.enable')}
+          checked={state.enabled}
+          onChange={handlers.toggleEnabled}
+          disabled={!!state.disabledReason}
         />
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
-          {t('binDesigner.lid.extraHeightHint')}
-        </p>
+        {state.disabledReason && (
+          <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
+            {state.disabledReason}
+          </p>
+        )}
       </div>
 
-      {/* Switches for the orthogonal toggles. Magnet pockets only do
-          something when there's a stack grid above them (a bin stacked
-          ON the lid mates with the pockets through the floor) — gate
-          accordingly. */}
-      <Switch
-        label={t('binDesigner.lid.stackableTop')}
-        checked={state.stackableTop}
-        onChange={handlers.toggleStackableTop}
-      />
-      <Switch
-        label={t('binDesigner.lid.magnetHoles')}
-        checked={state.magnetHoles}
-        onChange={handlers.toggleMagnetHoles}
-        disabled={!state.stackableTop}
-      />
-      {state.magnetsDisabledReason && (
-        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
-          {state.magnetsDisabledReason}
-        </p>
-      )}
-      {state.magnetHoles && state.stackableTop && (
-        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
-          {t('binDesigner.lid.magnetSpec', {
-            diameter: state.magnetDiameter.toFixed(1),
-            depth: state.magnetDepth.toFixed(1),
-          })}
-        </p>
-      )}
+      {state.enabled && (
+        <>
+          {/* Print-time hint — the mating cavity and click rails are
+              downward-facing overhangs that need supports for a clean print. */}
+          <Hint>{t('binDesigner.lid.printNote')}</Hint>
 
-      {/* Print the stack grid as a separate glue-on baseplate. Gated on the
-          stackable top (the baseplate IS that grid). Lets the lid print
-          support-free while the baseplate prints flat in its own orientation. */}
-      <Switch
-        label={t('binDesigner.lid.separateStackPlate')}
-        checked={state.separateStackPlate}
-        onChange={handlers.toggleSeparateStackPlate}
-        disabled={!state.stackableTop}
-      />
-      {!state.stackableTop && (
-        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
-          {t('binDesigner.lid.separateStackPlateRequiresStackable')}
-        </p>
-      )}
-      {state.separateStackPlate && state.stackableTop && (
-        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
-          {t('binDesigner.lid.separateStackPlateHint')}
-        </p>
-      )}
+          {/* Compatibility notes — features that conflict with click-lock
+              mating. Only renders when there are issues; blockers and warnings
+              share the list and are color-coded by severity. */}
+          {state.compatibilityIssues.length > 0 && (
+            <div className="space-y-1 rounded-md border border-stroke-subtle bg-surface-secondary px-2.5 py-2">
+              <p className="text-[11px] font-medium text-content-secondary">
+                {t('binDesigner.lid.compat.heading')}
+              </p>
+              <ul className="space-y-1">
+                {state.compatibilityIssues.map((issue) => (
+                  <CompatibilityIssue
+                    key={issue.id}
+                    issue={issue}
+                    fixable={state.fixableIds.has(issue.id)}
+                    onFix={handlers.fixIssue}
+                    t={t}
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
 
-      {/* Tray top (#2694) — a shelled recess in the lid's top face so items
-          rest on the closed lid without sliding off. Mutually exclusive with a
-          stackable top (a stack grid owns that surface). */}
-      <Switch
-        label={t('binDesigner.lid.tray')}
-        checked={state.tray.enabled}
-        onChange={handlers.toggleTray}
-        disabled={state.stackableTop}
-      />
-      {state.trayDisabledReason && (
-        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
-          {state.trayDisabledReason}
-        </p>
+          {/* Live physical readout — grounds the params in real-world mm. */}
+          <Readout>{state.dimensionsReadout}</Readout>
+
+          {/* ── How it attaches ──────────────────────────────────────── */}
+          <section className="space-y-2">
+            <SubHeader>{t('binDesigner.lid.section.attaches')}</SubHeader>
+            <SegmentedControl
+              aria-label={t('binDesigner.lid.attachment')}
+              activeStyle="accent"
+              fullWidth
+              size="sm"
+              value={state.attachment}
+              onChange={handlers.setAttachment}
+              options={LID_ATTACHMENTS.map((mode) => ({
+                value: mode,
+                label: t(`binDesigner.lid.attachment.${mode}`),
+              }))}
+            />
+
+            {state.attachment === 'friction' && <Hint>{t('binDesigner.lid.frictionHint')}</Hint>}
+
+            {state.attachment === 'magnetic' && (
+              <Hint>
+                {t('binDesigner.lid.retentionMagnetHint', {
+                  diameter: state.retentionMagnetDiameter.toFixed(1),
+                  depth: state.retentionMagnetDepth.toFixed(1),
+                })}
+              </Hint>
+            )}
+
+            {state.attachment === 'clickRails' && (
+              <RailSides state={state} onToggle={handlers.toggleClickRailSide} t={t} />
+            )}
+          </section>
+
+          {/* ── Top surface ──────────────────────────────────────────── */}
+          <section className="space-y-2">
+            <SubHeader>{t('binDesigner.lid.section.topSurface')}</SubHeader>
+            <SegmentedControl
+              aria-label={t('binDesigner.lid.section.topSurface')}
+              activeStyle="accent"
+              fullWidth
+              size="sm"
+              value={state.topSurface}
+              onChange={handlers.setTopSurface}
+              options={LID_TOP_SURFACES.map((mode) => ({
+                value: mode,
+                label: t(`binDesigner.lid.topSurface.${mode}`),
+              }))}
+            />
+
+            {state.topSurface === 'flat' && <Hint>{t('binDesigner.lid.topSurface.flatHint')}</Hint>}
+
+            {state.topSurface === 'stackable' && (
+              <div className="space-y-2">
+                <Switch
+                  label={t('binDesigner.lid.magnetHoles')}
+                  checked={state.magnetHoles}
+                  onChange={handlers.toggleMagnetHoles}
+                />
+                {state.magnetHoles && (
+                  <Hint>
+                    {t('binDesigner.lid.magnetSpec', {
+                      diameter: state.magnetDiameter.toFixed(1),
+                      depth: state.magnetDepth.toFixed(1),
+                    })}
+                  </Hint>
+                )}
+                <Switch
+                  label={t('binDesigner.lid.separateStackPlate')}
+                  checked={state.separateStackPlate}
+                  onChange={handlers.toggleSeparateStackPlate}
+                />
+                {state.separateStackPlate && (
+                  <Hint>{t('binDesigner.lid.separateStackPlateHint')}</Hint>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Extra height (folded in) ─────────────────────────────── */}
+          <div className="space-y-1">
+            <StepperField
+              label={t('binDesigner.lid.extraHeight')}
+              unit="mm"
+              value={state.extraHeightMm}
+              onChange={handlers.setExtraHeight}
+              onStep={(delta) =>
+                handlers.setExtraHeight(state.extraHeightMm + delta * state.extraHeightStep)
+              }
+              min={state.extraHeightMin}
+              max={state.extraHeightMax}
+              step={state.extraHeightStep}
+              size="md"
+              aria-label={t('binDesigner.lid.extraHeightAria')}
+              commitMode="deferred"
+            />
+            <Hint>{t('binDesigner.lid.extraHeightHint')}</Hint>
+          </div>
+
+          {/* ── Advanced (millimetre fine-tuning) ────────────────────── */}
+          {hasAdvanced && (
+            <Collapsible
+              title={t('binDesigner.lid.advanced')}
+              size="sm"
+              expanded={advancedOpen}
+              onExpandedChange={setAdvancedOpen}
+            >
+              <div className="space-y-3 pt-2">
+                {showMagnetAdvanced && (
+                  <div className="space-y-2">
+                    <StepperField
+                      label={t('binDesigner.lid.retentionMagnetDiameter')}
+                      unit="mm"
+                      value={state.retentionMagnetDiameter}
+                      onChange={handlers.setRetentionMagnetDiameter}
+                      onStep={(delta) =>
+                        handlers.setRetentionMagnetDiameter(
+                          state.retentionMagnetDiameter + delta * state.retentionMagnetStep
+                        )
+                      }
+                      min={state.retentionMagnetDiameterMin}
+                      max={state.retentionMagnetDiameterMax}
+                      step={state.retentionMagnetStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
+                      commitMode="deferred"
+                    />
+                    <StepperField
+                      label={t('binDesigner.lid.retentionMagnetDepth')}
+                      unit="mm"
+                      value={state.retentionMagnetDepth}
+                      onChange={handlers.setRetentionMagnetDepth}
+                      onStep={(delta) =>
+                        handlers.setRetentionMagnetDepth(
+                          state.retentionMagnetDepth + delta * state.retentionMagnetStep
+                        )
+                      }
+                      min={state.retentionMagnetDepthMin}
+                      max={state.retentionMagnetDepthMax}
+                      step={state.retentionMagnetStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
+                      commitMode="deferred"
+                    />
+                  </div>
+                )}
+
+                {showCoverageAdvanced && (
+                  <div className="space-y-1">
+                    <SnappingSlider
+                      label={t('binDesigner.lid.clickRailCoverage')}
+                      value={state.clickRailCoverage}
+                      onChange={handlers.setClickRailCoverage}
+                      options={state.railCoverageOptions}
+                      unit="%"
+                    />
+                    <Readout>{state.railsReadout}</Readout>
+                  </div>
+                )}
+
+                {showTrayAdvanced && (
+                  <div className="space-y-2">
+                    <StepperField
+                      label={t('binDesigner.lid.trayDepth')}
+                      unit="mm"
+                      value={state.tray.depthMm}
+                      onChange={handlers.setTrayDepth}
+                      onStep={(delta) =>
+                        handlers.setTrayDepth(state.tray.depthMm + delta * state.trayStep)
+                      }
+                      min={state.trayDepthMin}
+                      max={state.trayDepthMax}
+                      step={state.trayStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.trayDepthAria')}
+                      commitMode="deferred"
+                    />
+                    <StepperField
+                      label={t('binDesigner.lid.trayWall')}
+                      unit="mm"
+                      value={state.tray.wallMm}
+                      onChange={handlers.setTrayWall}
+                      onStep={(delta) =>
+                        handlers.setTrayWall(state.tray.wallMm + delta * state.trayStep)
+                      }
+                      min={state.trayWallMin}
+                      max={state.trayWallMax}
+                      step={state.trayStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.trayWallAria')}
+                      commitMode="deferred"
+                    />
+                  </div>
+                )}
+              </div>
+            </Collapsible>
+          )}
+        </>
       )}
-      {state.tray.enabled && !state.stackableTop && (
-        <div className="ml-1 space-y-2">
-          <StepperField
-            label={t('binDesigner.lid.trayDepth')}
-            unit="mm"
-            value={state.tray.depthMm}
-            onChange={handlers.setTrayDepth}
-            onStep={(delta) => handlers.setTrayDepth(state.tray.depthMm + delta * state.trayStep)}
-            min={state.trayDepthMin}
-            max={state.trayDepthMax}
-            step={state.trayStep}
-            size="md"
-            aria-label={t('binDesigner.lid.trayDepthAria')}
-            commitMode="deferred"
-          />
-          <StepperField
-            label={t('binDesigner.lid.trayWall')}
-            unit="mm"
-            value={state.tray.wallMm}
-            onChange={handlers.setTrayWall}
-            onStep={(delta) => handlers.setTrayWall(state.tray.wallMm + delta * state.trayStep)}
-            min={state.trayWallMin}
-            max={state.trayWallMax}
-            step={state.trayStep}
-            size="md"
-            aria-label={t('binDesigner.lid.trayWallAria')}
-            commitMode="deferred"
-          />
-        </div>
-      )}
-    </FeatureToggle>
+    </div>
   );
 }

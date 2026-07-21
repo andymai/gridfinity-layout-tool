@@ -1748,17 +1748,23 @@ const en: Record<string, string> = {
   'binDesigner.cutoutTextOffsetX': 'Nudge X',
   'binDesigner.cutoutTextOffsetY': 'Nudge Y',
   'binDesigner.cutoutTextAngle': 'Angle',
-  'binDesigner.lid': 'Lid',
+  'binDesigner.lid.enable': 'Enable lid',
+  'binDesigner.lid.summaryDisabled': 'Off',
+  'binDesigner.lid.section.attaches': 'How it attaches',
+  'binDesigner.lid.section.topSurface': 'Top surface',
+  'binDesigner.lid.topSurface.flat': 'Flat',
+  'binDesigner.lid.topSurface.stackable': 'Stackable',
+  'binDesigner.lid.topSurface.tray': 'Tray',
+  'binDesigner.lid.topSurface.flatHint':
+    'A plain closed top. Nothing stacks on it and nothing rests in it.',
+  'binDesigner.lid.frictionHint':
+    'Grips the lip by friction alone, with no rails or magnets. Easiest to print and pull off.',
+  'binDesigner.lid.advanced': 'Advanced',
   'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
-  'binDesigner.lid.stackableTop': 'Stackable top grid',
   'binDesigner.lid.magnetHoles': 'Magnet pockets',
-  'binDesigner.lid.magnetsRequireStackable':
-    'Magnet pockets need a stackable top — the upper bin meets them through the floor.',
   'binDesigner.lid.magnetSpec':
     'Pocket: ⌀{diameter}mm × {depth}mm deep (matches bin magnet specs).',
   'binDesigner.lid.separateStackPlate': 'Separate baseplate (glue-on)',
-  'binDesigner.lid.separateStackPlateRequiresStackable':
-    'Turn on the stackable top first — the baseplate is that grid, printed as its own piece.',
   'binDesigner.lid.separateStackPlateHint':
     'Baseplate prints flat on its own (grid up, glue-face down) so the lid stays support-free. Glue it onto the lid’s top after printing.',
   'binDesigner.lid.extraHeight': 'Extra lid height',
@@ -1791,9 +1797,6 @@ const en: Record<string, string> = {
   'binDesigner.lid.retentionMagnetDepthAria': 'Retention magnet depth in millimeters',
   'binDesigner.lid.retentionMagnetHint':
     'Press a ⌀{diameter} × {depth} mm magnet into each corner of the bin and lid. Glue them in with matching poles facing so the lid only closes one way.',
-  'binDesigner.lid.tray': 'Tray top',
-  'binDesigner.lid.trayRequiresNoStackable':
-    'Turn off the stackable top first — a stack grid and a tray recess can’t share the top surface.',
   'binDesigner.lid.trayDepth': 'Tray depth',
   'binDesigner.lid.trayDepthAria': 'Tray recess depth in millimeters',
   'binDesigner.lid.trayWall': 'Tray rim',
@@ -1927,6 +1930,7 @@ const en: Record<string, string> = {
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
+  'binDesigner.group.lid': 'Lid',
   'binDesigner.group.colors': 'Multi-Color',
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
