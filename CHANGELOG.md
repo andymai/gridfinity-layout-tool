@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.273.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.1...gridfinity-layout-tool-v4.273.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* **designer:** reject bins where magnet corner pads would merge ([#2698](https://github.com/andymai/gridfinity-layout-tool/issues/2698)) ([#2700](https://github.com/andymai/gridfinity-layout-tool/issues/2700)) ([a0ae551](https://github.com/andymai/gridfinity-layout-tool/commit/a0ae5519995bd0bc9c748f00f40bb702baab4bb0))
+
 ## [4.273.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.0...gridfinity-layout-tool-v4.273.1) (2026-07-21)
 
 
