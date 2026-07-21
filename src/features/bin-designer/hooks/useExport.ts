@@ -28,6 +28,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { calcMaxGridUnits } from '@/core/constants';
+import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
@@ -270,6 +271,7 @@ export function useExport(): UseExportReturn {
         half_sockets: params.base.halfSockets,
         wall_pattern_enabled: params.wallPattern.enabled,
         wall_pattern: params.wallPattern.pattern,
+        wall_pattern_scale: params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE,
         handles_enabled: params.handles.enabled,
         cutout_count: params.cutouts.length,
         insert_count: params.inserts.length,

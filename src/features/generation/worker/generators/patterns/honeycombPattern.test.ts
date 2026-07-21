@@ -37,7 +37,8 @@ describe('HoneycombPatternCalculator', () => {
   it('returns correct shape metadata', () => {
     const calculator = new HoneycombPatternCalculator(2.0, 0.8);
     expect(calculator.getShapeRadius()).toBe(2.0);
-    expect(calculator.getSidesCount()).toBe(6);
+    const descriptor = calculator.getShapeDescriptor();
+    expect(descriptor).toEqual({ kind: 'polygon', radius: 2.0, sides: 6 });
     expect(calculator.getWebThickness()).toBe(0.8);
     expect(calculator.getPatternType()).toBe('honeycomb');
   });

@@ -5,11 +5,36 @@
  * The registry-based architecture allows easy addition of new patterns.
  */
 
-export type { PatternCalculator, PatternCenter, PatternGridConfig } from './types';
+export type {
+  PatternCalculator,
+  StampPatternCalculator,
+  MotifPatternCalculator,
+  BasePatternCalculator,
+  PatternCenter,
+  PatternGridConfig,
+  PatternStrategyKind,
+  ShapeDescriptor,
+  PolygonShape,
+  RectShape,
+  MotifCell,
+  MotifPath,
+  MotifSegment,
+  MotifMode,
+} from './types';
+export { isStampCalculator, isMotifCalculator, shapeDescriptorKey } from './types';
 
 // Grid utilities
-export { calculateStaggeredGrid } from './gridUtils';
+export { calculateStaggeredGrid, calculateAlignedGrid } from './gridUtils';
 export type { StaggeredGridConfig } from './gridUtils';
+
+// Scale model
+export {
+  PATTERN_WEB_THICKNESS,
+  clampScale,
+  scaleFactor,
+  resolveElementRadius,
+  elementRadiusFloor,
+} from './patternScale';
 
 // Calculators
 export {
@@ -18,6 +43,10 @@ export {
   DEFAULT_HEX_RADIUS,
   DEFAULT_HEX_WEB_THICKNESS,
 } from './honeycombPattern';
+export { RoundPatternCalculator, createRoundCalculator, ROUND_SIDES } from './roundPattern';
+export { DiamondPatternCalculator, createDiamondCalculator } from './diamondPattern';
+export { TrianglePatternCalculator, createTriangleCalculator } from './trianglePattern';
+export { SlotPatternCalculator, createSlotCalculator } from './slotPattern';
 
 // Registry
 export {

@@ -16,9 +16,11 @@ import type {
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
+  WallPatternType,
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
+import { DEFAULT_PATTERN_SCALE } from '../types';
 import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
@@ -54,10 +56,20 @@ const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
   clearance: 0.25,
 } as const;
 
+/** Valid wall pattern members — used to coerce crafted/removed values on load. */
+const VALID_WALL_PATTERNS = new Set<WallPatternType>([
+  'honeycomb',
+  'round',
+  'diamond',
+  'triangle',
+  'slots',
+]);
+
 /** Default wall pattern configuration: disabled */
 const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
+  scale: DEFAULT_PATTERN_SCALE,
 } as const;
 
 /** Default position fields shared by all wall cutouts */
@@ -596,7 +608,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
 
   // Migrate wallPattern config, handling 3 cases:
   // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference
-  let wallPatternConfig: WallPatternConfig = { enabled: false, pattern: 'honeycomb' };
+  let wallPatternConfig: WallPatternConfig = {
+    enabled: false,
+    pattern: 'honeycomb',
+    scale: DEFAULT_PATTERN_SCALE,
+  };
   if (params.wallPattern !== undefined) {
     wallPatternConfig = { ...wallPatternConfig, ...params.wallPattern };
   } else if (params.eco !== undefined) {
@@ -610,8 +626,24 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
               ? honeycombWall.mode !== 'none'
               : false,
         pattern: 'honeycomb',
+        scale: DEFAULT_PATTERN_SCALE,
       };
     }
+  }
+  // Coerce an unknown/removed pattern back to a valid member, and clamp a
+  // crafted or out-of-range scale into [0, 1] so persisted data stays honest.
+  {
+    const rawScale = wallPatternConfig.scale;
+    wallPatternConfig = {
+      ...wallPatternConfig,
+      pattern: VALID_WALL_PATTERNS.has(wallPatternConfig.pattern)
+        ? wallPatternConfig.pattern
+        : 'honeycomb',
+      scale:
+        typeof rawScale === 'number' && Number.isFinite(rawScale)
+          ? Math.min(1, Math.max(0, rawScale))
+          : DEFAULT_PATTERN_SCALE,
+    };
   }
 
   // Migrate cutoutConfig and handle legacy per-cutout topOffset

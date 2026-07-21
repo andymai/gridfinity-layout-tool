@@ -606,12 +606,21 @@ export type OverhangHighlightSide = 'left' | 'right' | 'front' | 'back' | 'feet'
 // Wall Pattern Types
 
 /** Supported wall pattern types. Extensible via pattern registry. */
-export type WallPatternType = 'honeycomb';
+export type WallPatternType = 'honeycomb' | 'round' | 'diamond' | 'triangle' | 'slots';
+
+/** Neutral pattern scale — reproduces each pattern's legacy element size. */
+export const DEFAULT_PATTERN_SCALE = 0.5;
 
 /** Wall pattern configuration — stored per design in BinParams */
 export interface WallPatternConfig {
   readonly enabled: boolean;
   readonly pattern: WallPatternType;
+  /**
+   * Normalized element scale in [0, 1] — finer (0) to bolder (1); 0.5 is
+   * neutral. Optional for back-compat with pre-scale saved designs; migration
+   * backfills it and the geometry layer defaults + clamps untrusted values.
+   */
+  readonly scale?: number;
 }
 
 /**

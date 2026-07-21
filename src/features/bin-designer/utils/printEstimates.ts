@@ -10,7 +10,8 @@
  * This avoids expensive mesh-based volume integration.
  */
 
-import type { BinParams, LabelTabSupport } from '@/features/bin-designer/types';
+import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
+import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import {
   compartmentHasTiltedBackWall,
@@ -149,10 +150,9 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeScoopVolume(params, outerW, outerD, wallThickness);
   }
 
-  // Wall pattern: honeycomb wall reduction
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pattern type may expand beyond 'honeycomb'
-  if (params.wallPattern.enabled && params.wallPattern.pattern === 'honeycomb') {
-    volume -= computeHoneycombWallReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
+  // Wall pattern: perforation reduces wall material (all pattern types).
+  if (params.wallPattern.enabled) {
+    volume -= computeWallPatternReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 
   // Exterior-wall collar (issue #2500): a walled ring raised above the nominal
@@ -473,12 +473,29 @@ function computeScoopVolume(
   return numScoops * volumePerScoop;
 }
 /**
- * Volume removed by honeycomb wall cutouts.
+ * Approximate open-area fraction of each pattern at neutral scale — the share
+ * of the wall face removed by the perforation. Honeycomb keeps its historical
+ * 0.907 so existing estimates are unchanged; the sparser patterns remove less.
  *
- * Approximation: hex grid packing density ~90.7% of the wall face area,
- * cut to a fraction of wall thickness (pocketed) or full thickness (perforated).
+ * Mirrors the geometry in patterns/* (cross-feature import not allowed). These
+ * are estimates; the true fraction shifts slightly with web and keep-outs.
  */
-function computeHoneycombWallReduction(
+const PATTERN_VOID_FRACTION: Record<WallPatternType, number> = {
+  honeycomb: 0.907,
+  round: 0.62,
+  diamond: 0.5,
+  triangle: 0.42,
+  slots: 0.48,
+};
+
+/**
+ * Volume removed by wall-pattern cutouts, for any pattern type.
+ *
+ * Approximation: pattern-specific open-area fraction of the wall face area,
+ * modulated by the scale slider (bolder = more open, web fixed), cut through
+ * the full wall thickness.
+ */
+function computeWallPatternReduction(
   params: BinParams,
   outerW: number,
   outerD: number,
@@ -494,7 +511,7 @@ function computeHoneycombWallReduction(
 
   const wallHeight = totalH - bottomH;
   // wallThickness clears the floor slab; the skirt is the solid band above it
-  // that anchors the lowest hex row (#2317). Mirrors wallPatterns.ts.
+  // that anchors the lowest element row (#2317). Mirrors wallPatterns.ts.
   const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
@@ -515,13 +532,16 @@ function computeHoneycombWallReduction(
 
   const wallFaceArea = slotFreeWallLength * patternHeight;
 
-  // Hex packing coverage ~90.7% (theoretical max; actual is lower due to web + keep-outs)
-  const hexCoverage = wallFaceArea * 0.907;
+  // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0).
+  const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const base = PATTERN_VOID_FRACTION[params.wallPattern.pattern] ?? 0.5;
+  const coverageFraction = Math.min(0.95, Math.max(0, base * (0.85 + 0.3 * scale)));
+  const coverage = wallFaceArea * coverageFraction;
 
-  // Material removed per unit area = wall thickness (hex prisms cut through wall)
+  // Material removed per unit area = wall thickness (prisms cut through wall)
   const cutDepth = wallThickness;
 
-  return hexCoverage * cutDepth;
+  return coverage * cutDepth;
 }
 export interface WallPatternSavings {
   readonly savingsPercent: number;
