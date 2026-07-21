@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.268.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.267.0...gridfinity-layout-tool-v4.268.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** label socket fit-calibration coupon ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2681](https://github.com/andymai/gridfinity-layout-tool/issues/2681)) ([53e142b](https://github.com/andymai/gridfinity-layout-tool/commit/53e142b438d75d0bf3eaecb9431f4231b2aca283))
+
 ## [4.267.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.266.1...gridfinity-layout-tool-v4.267.0) (2026-07-21)
 
 
