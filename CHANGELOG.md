@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.272.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.271.0...gridfinity-layout-tool-v4.272.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** add round, diamond, triangle, and slot wall patterns with scale control ([#2692](https://github.com/andymai/gridfinity-layout-tool/issues/2692)) ([773286d](https://github.com/andymai/gridfinity-layout-tool/commit/773286d6bdc89e60c6431f0993e2107d79319d3c))
+
 ## [4.271.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.270.0...gridfinity-layout-tool-v4.271.0) (2026-07-21)
 
 
