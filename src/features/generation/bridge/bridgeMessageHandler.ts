@@ -258,6 +258,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
           data: response.data,
           fileName: response.fileName,
           format: response.format,
+          faceGroups: response.faceGroups,
         });
         break;
 

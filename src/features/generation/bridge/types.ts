@@ -622,6 +622,8 @@ export interface BaseplateExportResultResponse {
   readonly data: ArrayBuffer;
   readonly format: ExportFormat;
   readonly fileName: string;
+  /** Present on label plate exports (#2666): STL→3MF paint_color mapping. */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 export interface DividersExportResultResponse {

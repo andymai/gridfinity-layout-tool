@@ -14,7 +14,7 @@
  */
 
 import type { Bin } from '@/core/types';
-import type { TextStyleDefaults } from '@/shared/types/bin';
+import type { FeatureColorConfig, TextStyleDefaults } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLayoutBinExport's deep imports).
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
@@ -43,6 +43,8 @@ export interface LabelPlateManifestEntry {
 export interface LabelPlateDesignGroup {
   readonly designName: string;
   readonly textDefaults: TextStyleDefaults;
+  /** Multi-color zones for 3MF paint_color (plate body + text). */
+  readonly featureColors: FeatureColorConfig | undefined;
   readonly sheets: readonly (readonly PlacedLabelPlate[])[];
   readonly manifestPlates: readonly LabelPlateManifestEntry[];
   /** Plates skipped because they are wider than the usable print bed. */
@@ -181,6 +183,7 @@ export function planLabelPlateExport(
     groups.push({
       designName: design.name,
       textDefaults: params.textDefaults,
+      featureColors: params.featureColors,
       sheets: packSheets(physical, bedWidthMm, bedDepthMm),
       manifestPlates: [...counts.values()],
       oversizedCount,
