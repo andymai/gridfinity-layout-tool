@@ -38,7 +38,9 @@ export class DiamondPatternCalculator implements StampPatternCalculator {
   }
 
   getShapeDescriptor(): ShapeDescriptor {
-    return { kind: 'polygon', radius: this.radius, sides: 4, rotation: 45 };
+    // drawPolysides places vertex 0 at the top, so a 4-gon is already on-point
+    // (a diamond); no rotation needed. Rotating 45° would flatten it to a square.
+    return { kind: 'polygon', radius: this.radius, sides: 4 };
   }
 
   getShapeRadius(): number {

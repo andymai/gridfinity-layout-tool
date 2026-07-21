@@ -22,9 +22,9 @@ import type {
 } from './types';
 import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
 
-/** drawPolysides(R, 3) points its first vertex at +X; +90° stands the apex up. */
-const APEX_UP_DEG = 90;
-const APEX_DOWN_DEG = 270;
+/** drawPolysides(R, 3) already points its apex up (vertex 0 at +Y); 180° flips it down. */
+const APEX_UP_DEG = 0;
+const APEX_DOWN_DEG = 180;
 
 export class TrianglePatternCalculator implements StampPatternCalculator {
   readonly strategy = 'stamp' as const;

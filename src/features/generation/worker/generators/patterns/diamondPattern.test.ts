@@ -6,14 +6,9 @@ describe('DiamondPatternCalculator', () => {
     expect(() => new DiamondPatternCalculator(0)).toThrow('radius must be positive');
   });
 
-  it('describes a 4-sided polygon rotated 45° into a diamond', () => {
+  it('describes an on-point 4-sided polygon (diamond), no rotation needed', () => {
     const calc = new DiamondPatternCalculator(2);
-    expect(calc.getShapeDescriptor()).toEqual({
-      kind: 'polygon',
-      radius: 2,
-      sides: 4,
-      rotation: 45,
-    });
+    expect(calc.getShapeDescriptor()).toEqual({ kind: 'polygon', radius: 2, sides: 4 });
     expect(calc.getPatternType()).toBe('diamond');
   });
 

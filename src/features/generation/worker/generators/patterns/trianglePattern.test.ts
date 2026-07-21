@@ -17,9 +17,9 @@ describe('TrianglePatternCalculator', () => {
     const centers = calc.calculateCenters({ fillW: 50, fillH: 50 });
     expect(centers.length).toBeGreaterThan(1);
     const rotations = new Set(centers.map((c) => c.rotation));
-    // Both orientations present → checkerboard flip is working.
-    expect(rotations.has(90)).toBe(true);
-    expect(rotations.has(270)).toBe(true);
+    // Both orientations present → apex-up (0°) / apex-down (180°) checkerboard.
+    expect(rotations.has(0)).toBe(true);
+    expect(rotations.has(180)).toBe(true);
   });
 
   it('returns no centers when the fill area is too small', () => {
