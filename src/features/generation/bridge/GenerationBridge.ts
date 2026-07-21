@@ -76,6 +76,7 @@ import {
   exportMargin as exportMarginImpl,
   exportConnectorSample as exportConnectorSampleImpl,
   exportLabelPlates as exportLabelPlatesImpl,
+  exportLabelFitSample as exportLabelFitSampleImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -538,6 +539,10 @@ export class GenerationBridge {
     format: ExportFormat
   ): Promise<BaseplateExportResult> {
     return exportLabelPlatesImpl(this, plates, options, format);
+  }
+
+  exportLabelFitSample(format: ExportFormat): Promise<BaseplateExportResult> {
+    return exportLabelFitSampleImpl(this, format);
   }
 
   /** Whether the bridge has been destroyed */

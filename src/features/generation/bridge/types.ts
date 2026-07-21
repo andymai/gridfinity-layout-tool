@@ -64,6 +64,7 @@ export type WorkerMessage =
   | ExportConnectorKeyMessage
   | ExportConnectorSampleMessage
   | ExportLabelPlatesMessage
+  | ExportLabelFitSampleMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -269,6 +270,22 @@ export interface ExportLabelPlatesMessage {
 export interface ExportLabelPlatesPayload {
   readonly plates: readonly LabelPlateExportSpec[];
   readonly options: LabelPlateExportOptions;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+}
+
+/**
+ * Export the label-socket fit-calibration card (#2666): 1U-socket coupons
+ * across a fit-offset ladder plus one nominal reference plate. The card is
+ * fully standard-defined, so the payload carries nothing beyond the format.
+ * Reuses the BASEPLATE_EXPORT_RESULT response shape.
+ */
+export interface ExportLabelFitSampleMessage {
+  readonly type: 'EXPORT_LABEL_FIT_SAMPLE';
+  readonly payload: ExportLabelFitSamplePayload;
+}
+
+export interface ExportLabelFitSamplePayload {
   readonly requestId: string;
   readonly format: ExportFormat;
 }

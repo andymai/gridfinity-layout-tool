@@ -693,49 +693,79 @@ function applySocket(
   }
   const centerX = pocketX0 + pocketW / 2;
   const centerY = ctx.depthSign * (wall + pocketD / 2);
-  const floorZ = ctx.tabHeight - LABEL_SOCKET_POCKET_DEPTH_MM;
 
   try {
-    const pocketCutter = scope.register(
-      translate(
-        scope.register(
-          sketch(
-            drawRoundedRectangle(pocketW, pocketD, LABEL_PLATE_CORNER_RADIUS_MM),
-            'XY',
-            floorZ
-          ).extrude(LABEL_SOCKET_POCKET_DEPTH_MM + COPLANAR_MARGIN)
-        ),
-        [centerX, centerY, 0]
-      )
-    );
-    let result = scope.register(unwrap(cut(tabSolid as ValidSolid, pocketCutter as ValidSolid)));
-
-    // Ribs: full pocket-X span (square ends fuse into the rounded corners,
-    // matching the standard), embedded slightly into the wall so the fuse
-    // never leaves a coplanar seam.
-    const ribEmbed = 0.1;
-    const ribT = LABEL_SOCKET_RIB_PROTRUSION_MM + ribEmbed;
-    const ribZ0 = floorZ + LABEL_SOCKET_RIB_START_MM;
-    const ribProfile = draw([-pocketW / 2, -ribT / 2])
-      .lineTo([pocketW / 2, -ribT / 2])
-      .lineTo([pocketW / 2, ribT / 2])
-      .lineTo([-pocketW / 2, ribT / 2])
-      .close();
-    for (const side of [-1, 1] as const) {
-      const wallY = centerY + (side * pocketD) / 2;
-      const ribCenterY = wallY - side * (ribT / 2 - ribEmbed);
-      const rib = scope.register(
-        translate(
-          scope.register(sketch(ribProfile, 'XY', ribZ0).extrude(LABEL_SOCKET_RIB_HEIGHT_MM)),
-          [centerX, ribCenterY, 0]
-        )
-      );
-      result = scope.register(unwrap(fuse(result, rib as ValidSolid)));
-    }
-    return result;
+    return cutLabelSocket(scope, tabSolid, {
+      centerX,
+      centerY,
+      topZ: ctx.tabHeight,
+      plateWidthU: ctx.plateWidthU,
+      clearanceMm: ctx.clearanceMm,
+    });
   } catch {
     return tabSolid;
   }
+}
+
+/**
+ * Cut a swappable-label socket (pocket + retention ribs) into `solid`'s top
+ * face, pocket centered at (centerX, centerY) with its floor at
+ * topZ − pocket depth. Shared by the label-tab shelf and the fit-calibration
+ * coupon so the printed socket can never drift between the two. Throws on
+ * boolean failure — callers needing best-effort semantics wrap it.
+ */
+export function cutLabelSocket(
+  scope: DisposalScope,
+  solid: Shape3D,
+  ctx: {
+    centerX: number;
+    centerY: number;
+    topZ: number;
+    plateWidthU: LabelPlateWidthU;
+    clearanceMm: number;
+  }
+): Shape3D {
+  const pocketW = labelPlateWidthMm(ctx.plateWidthU) + ctx.clearanceMm;
+  const pocketD = LABEL_PLATE_HEIGHT_MM + ctx.clearanceMm;
+  const floorZ = ctx.topZ - LABEL_SOCKET_POCKET_DEPTH_MM;
+
+  const pocketCutter = scope.register(
+    translate(
+      scope.register(
+        sketch(
+          drawRoundedRectangle(pocketW, pocketD, LABEL_PLATE_CORNER_RADIUS_MM),
+          'XY',
+          floorZ
+        ).extrude(LABEL_SOCKET_POCKET_DEPTH_MM + COPLANAR_MARGIN)
+      ),
+      [ctx.centerX, ctx.centerY, 0]
+    )
+  );
+  let result = scope.register(unwrap(cut(solid as ValidSolid, pocketCutter as ValidSolid)));
+
+  // Ribs: full pocket-X span (square ends fuse into the rounded corners,
+  // matching the standard), embedded slightly into the wall so the fuse
+  // never leaves a coplanar seam.
+  const ribEmbed = 0.1;
+  const ribT = LABEL_SOCKET_RIB_PROTRUSION_MM + ribEmbed;
+  const ribZ0 = floorZ + LABEL_SOCKET_RIB_START_MM;
+  const ribProfile = draw([-pocketW / 2, -ribT / 2])
+    .lineTo([pocketW / 2, -ribT / 2])
+    .lineTo([pocketW / 2, ribT / 2])
+    .lineTo([-pocketW / 2, ribT / 2])
+    .close();
+  for (const side of [-1, 1] as const) {
+    const wallY = ctx.centerY + (side * pocketD) / 2;
+    const ribCenterY = wallY - side * (ribT / 2 - ribEmbed);
+    const rib = scope.register(
+      translate(
+        scope.register(sketch(ribProfile, 'XY', ribZ0).extrude(LABEL_SOCKET_RIB_HEIGHT_MM)),
+        [ctx.centerX, ribCenterY, 0]
+      )
+    );
+    result = scope.register(unwrap(fuse(result, rib as ValidSolid)));
+  }
+  return result;
 }
 
 /**

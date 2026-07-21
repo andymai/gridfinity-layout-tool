@@ -10,6 +10,7 @@ import type {
   ExportConnectorKeyMessage,
   ExportConnectorSampleMessage,
   ExportLabelPlatesMessage,
+  ExportLabelFitSampleMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
   CombinedExportPiece,
@@ -21,6 +22,7 @@ import { exportBaseplate, exportConnectorKey } from '../generators/baseplateGene
 import { exportMargin } from '../generators/baseplateMargin';
 import { exportConnectorSample } from '../generators/connectorSample';
 import { exportLabelPlates } from '../generators/labelPlateBuilder';
+import { exportLabelFitSample } from '../generators/labelFitSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
@@ -149,6 +151,23 @@ export async function handleExportLabelPlates(message: ExportLabelPlatesMessage)
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Label plate export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportLabelFitSample(
+  message: ExportLabelFitSampleMessage
+): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'BASEPLATE_EXPORT_RESULT',
+    async () => {
+      const result = await exportLabelFitSample(payload.format);
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Label fit sample export failed',
     (p) => [p.data],
     classifyExportError
   );

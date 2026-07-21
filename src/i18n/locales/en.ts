@@ -1673,6 +1673,18 @@ const en: Record<string, string> = {
     'One printable file with a plate for each socket, carrying its compartment label text. Text depth snaps to whole layers, so a single filament swap prints two-color labels.',
   'binDesigner.plates.previewTitle': 'Label plates preview',
   'binDesigner.plates.previewLoading': 'Generating preview…',
+  'binDesigner.fitSample.button': 'Print fit test',
+  'binDesigner.fitSample.dialogTitle': 'Export fit test card',
+  'binDesigner.fitSample.dialogDescription':
+    'A small calibration card: five sockets stepping the fit offset from −0.10 to +0.10 mm, plus one standard blank plate. Find the socket that clicks best and enter its offset in the plate fit field.',
+  'binDesigner.fitSample.exportComplete': 'Fit test card exported',
+  'binDesigner.fitSample.exportFailed': 'Fit test card export failed',
+  'binDesigner.fitSample.tipsTitle': 'How to use',
+  'binDesigner.fitSample.tip1':
+    'Print flat, no supports, with the same material and settings as your bins.',
+  'binDesigner.fitSample.tip2':
+    'Click the included plate into each socket; pick the one that snaps in firmly and releases cleanly.',
+  'binDesigner.fitSample.tip3': 'Enter that socket’s embossed value in the plate fit offset field.',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
   'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',
