@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.270.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.269.0...gridfinity-layout-tool-v4.270.0) (2026-07-21)
+
+
+### Features
+
+* **designer:** hardware icons on swappable label plates ([#2666](https://github.com/andymai/gridfinity-layout-tool/issues/2666)) ([#2687](https://github.com/andymai/gridfinity-layout-tool/issues/2687)) ([e744326](https://github.com/andymai/gridfinity-layout-tool/commit/e7443262fadecd48f6227b2c6b1c683e7c28ff07))
+
 ## [4.269.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.268.1...gridfinity-layout-tool-v4.269.0) (2026-07-21)
 
 
