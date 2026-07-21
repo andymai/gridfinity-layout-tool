@@ -15,6 +15,7 @@ import {
   translateDrawing,
 } from 'brepjs';
 import type { Drawing, Shape3D } from 'brepjs';
+import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
@@ -87,14 +88,17 @@ function nailDrawing(): Drawing {
     .close();
 }
 
-const ICON_DRAWINGS: Record<LabelPlateIconId, () => Drawing> = {
-  bolt: boltDrawing,
-  screw: screwDrawing,
-  woodScrew: woodScrewDrawing,
-  nut: nutDrawing,
-  washer: washerDrawing,
-  nail: nailDrawing,
-};
+// Map, not a keyed object: the icon id crosses the worker message boundary,
+// and a Map lookup can neither reach the prototype chain nor dispatch to an
+// unexpected member on a crafted key (CodeQL js/unvalidated-dynamic-method-call).
+const ICON_DRAWINGS: ReadonlyMap<LabelPlateIconId, () => Drawing> = new Map([
+  ['bolt', boltDrawing],
+  ['screw', screwDrawing],
+  ['woodScrew', woodScrewDrawing],
+  ['nut', nutDrawing],
+  ['washer', washerDrawing],
+  ['nail', nailDrawing],
+]);
 
 export interface IconSolidOptions {
   readonly icon: LabelPlateIconId;
@@ -112,11 +116,16 @@ export interface IconSolidOptions {
 
 /**
  * Build the icon as a solid ready to fuse (emboss) or cut (deboss) into the
- * plate top, mirroring `buildTextSolid`'s epsilon conventions.
+ * plate top, mirroring `buildTextSolid`'s epsilon conventions. Returns null
+ * for an id outside the catalog (worker payloads are untrusted).
  */
-export function buildIconSolid(options: IconSolidOptions): { solid: Shape3D; op: 'fuse' | 'cut' } {
+export function buildIconSolid(
+  options: IconSolidOptions
+): { solid: Shape3D; op: 'fuse' | 'cut' } | null {
+  const drawIcon = isLabelPlateIconId(options.icon) ? ICON_DRAWINGS.get(options.icon) : undefined;
+  if (!drawIcon) return null;
   const drawing = translateDrawing(
-    scaleDrawing(ICON_DRAWINGS[options.icon](), options.sizeMm / (2 * FRAME_HALF), [0, 0]),
+    scaleDrawing(drawIcon(), options.sizeMm / (2 * FRAME_HALF), [0, 0]),
     [options.centerX, options.centerY]
   );
   const sketchZ =

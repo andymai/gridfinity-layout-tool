@@ -224,12 +224,14 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
           depthMm: opts.textDepthMm,
           mode: opts.textMode,
         });
-        scope.register(icon.solid);
-        // Icons take the text color in paint_color mapping — they are
-        // markings, same as glyphs.
-        setShapeOrigin(icon.solid, FeatureTag.TEXT);
-        const op = icon.op === 'cut' ? cut : fuse;
-        solid = scope.register(unwrap(op(solid as ValidSolid, icon.solid as ValidSolid)));
+        if (icon) {
+          scope.register(icon.solid);
+          // Icons take the text color in paint_color mapping — they are
+          // markings, same as glyphs.
+          setShapeOrigin(icon.solid, FeatureTag.TEXT);
+          const op = icon.op === 'cut' ? cut : fuse;
+          solid = scope.register(unwrap(op(solid as ValidSolid, icon.solid as ValidSolid)));
+        }
       } catch {
         // ship the plate without the icon
       }
