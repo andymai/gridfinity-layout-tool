@@ -1,0 +1,22 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_d58241dc361fa8::t_7153164bff4d19 309-315,317
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_d58241dc361fa8::t_a4a9845e07c1a4 656-663
+  s_d58241dc361fa8::t_601f5b6b95d66b 664-666
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f7e6e888a023fcb01410ae0b7b4c5767cefbf8e9",
+  "prompts": {},
+  "sessions": {
+    "s_d58241dc361fa8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3487a736-3b7c-4c92-b73e-388d3550f862",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
