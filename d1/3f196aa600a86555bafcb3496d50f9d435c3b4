@@ -1,0 +1,75 @@
+src/i18n/locales/es.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/it.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/nb.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_8c6d91aedf393f::t_16529866189900 577
+  s_8c6d91aedf393f::t_475541a44311e8 289-290,295
+  s_8c6d91aedf393f::t_fc08a518b11ef9 46-53
+  s_8c6d91aedf393f::t_56721973252973 618
+  s_8c6d91aedf393f::t_f53e70ef831ce3 591-592
+  s_8c6d91aedf393f::t_99814bfaea2d3b 274-277
+  s_8c6d91aedf393f::t_3c96cd69b0e570 278-288,291-294,296-301
+  s_8c6d91aedf393f::t_b2ccfe5a8f894e 45
+src/i18n/locales/uk.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/features/bin-designer/components/ParameterPanel/useLidGroupSummary.ts
+  s_8c6d91aedf393f::t_b73cf10c1afa46 1-10
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_8c6d91aedf393f::t_8bfaec80f2b7c9 14-15,21,23,26,30,35,39-48,52,60,64-70,72-77,80-85,88-100,104-110,112-174,182,224
+  s_100d196bea722f::t_b9022786ee5b93 175-177
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_8c6d91aedf393f::t_a3ab1d4f26a92a 2-10,13-14,17-18,29,33-38,40-45,47-48,50-52,104-160,163,165-171,173-186,188,191-195,197-217,219-220,222-236,238,240-247,249-252,254-417,419
+src/i18n/locales/sv.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/fr.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/ja.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+scripts/i18n-values-allowlist.json
+  s_8c6d91aedf393f::t_83e6021d353d4a 81
+e2e/bin-designer/lid-magnetic-tray-visual.spec.ts
+  s_8c6d91aedf393f::t_50ea838221dc20 4-5,8-10,39-40,43,50-52,60,65,67,71-76
+e2e/bin-designer/lid-separate-baseplate-visual.spec.ts
+  s_8c6d91aedf393f::t_f058f60b682558 4-8,39-41,44,47-53,57-59,61-62
+src/i18n/locales/de.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/en.ts
+  s_8c6d91aedf393f::t_93d003b4200874 1751-1762
+  s_8c6d91aedf393f::t_121c31d671d6c2 1933
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_8c6d91aedf393f::t_180df90c838325 187-201
+  s_8c6d91aedf393f::t_4c6b46a90bf9c8 60
+  s_8c6d91aedf393f::t_17518e261a110a 35
+  s_8c6d91aedf393f::t_60e1c71a7544da 79,86
+src/i18n/locales/nl.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+src/i18n/locales/pt-BR.json
+  s_8c6d91aedf393f::t_46fb30725d036e 2859-2870
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "d13f196aa600a86555bafcb3496d50f9d435c3b4",
+  "prompts": {},
+  "sessions": {
+    "s_100d196bea722f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da446227-6be1-4c2b-9ff1-db2f2d211969",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_8c6d91aedf393f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b64be216-5f36-4683-9954-ffdb61eb6559",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
