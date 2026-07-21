@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/scenarios/index.ts
+  s_d8f82741b94e26::t_62acc3ba90d056 40
+  s_d8f82741b94e26::t_7c41cfd0fcb009 80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "be3cdaa9b61689711b813d9b8288c7b0411385bf",
+  "prompts": {},
+  "sessions": {
+    "s_d8f82741b94e26": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "add50087-c4dc-4a50-bc16-242d2ddba861",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
