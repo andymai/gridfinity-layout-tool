@@ -14,12 +14,13 @@
 import type { CompartmentConfig } from '@/shared/types/bin';
 import { getCompartmentBounds } from '@/shared/types/bin';
 import {
+  isLabelPlateIconId,
   isLabelPlateWidthU,
   largestFittingPlateWidthU,
   labelSocketOuterWidthMm,
   LABEL_PLATE_WIDTHS_U,
 } from '@/shared/constants/labelPlates';
-import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 
 export interface LabelSocketCompartmentPlan {
   readonly compartmentId: number;
@@ -51,6 +52,8 @@ export interface LabelPlatePlanEntry {
   readonly compartmentId: number | null;
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
+  /** Hardware icon beside the text, from `compartments.labelIcons`. */
+  readonly icon?: LabelPlateIconId;
 }
 
 /**
@@ -70,13 +73,18 @@ export function planLabelPlates(
     return [{ compartmentId: null, widthU: plan.spanningWidthU, text: fallbackText.trim() }];
   }
   const texts = compartments.compartmentTexts ?? [];
+  const icons = compartments.labelIcons ?? [];
   return plan.compartments
     .filter((p) => p.plateWidthU !== null)
-    .map((p) => ({
-      compartmentId: p.compartmentId,
-      widthU: p.plateWidthU as LabelPlateWidthU,
-      text: (texts[p.compartmentId] ?? '').trim(),
-    }));
+    .map((p) => {
+      const icon = icons[p.compartmentId];
+      return {
+        compartmentId: p.compartmentId,
+        widthU: p.plateWidthU as LabelPlateWidthU,
+        text: (texts[p.compartmentId] ?? '').trim(),
+        ...(isLabelPlateIconId(icon) ? { icon } : {}),
+      };
+    });
 }
 
 export function planLabelSockets(

@@ -855,6 +855,62 @@ describe('DesignerStore - compartment actions', () => {
     });
   });
 
+  describe('setCompartmentPlateIcon (#2666 follow-up)', () => {
+    it('stores an icon on the specified compartment', () => {
+      const { setCompartmentGrid, setCompartmentPlateIcon } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateIcon(1, 'bolt');
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelIcons).toEqual([null, 'bolt']);
+    });
+
+    it('collapses to undefined when every icon is cleared', () => {
+      const { setCompartmentGrid, setCompartmentPlateIcon } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateIcon(0, 'nut');
+      setCompartmentPlateIcon(0, null);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelIcons).toBeUndefined();
+    });
+
+    it('does not push history for a no-op write', () => {
+      const { setCompartmentGrid, setCompartmentPlateIcon } = useDesignerStore.getState();
+      setCompartmentGrid(1, 1);
+      setCompartmentPlateIcon(0, 'washer');
+      const beforeHistoryLength = useDesignerStore.getState().history.past.length;
+
+      setCompartmentPlateIcon(0, 'washer');
+      expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
+    });
+
+    it('remaps icons in lockstep through a merge (gotcha #6)', () => {
+      const { setCompartmentGrid, setCompartmentPlateIcon, mergeCells } =
+        useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateIcon(0, 'screw');
+      setCompartmentPlateIcon(1, 'nail');
+
+      mergeCells([0, 1]);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cells).toEqual([0, 0]);
+      expect(params.compartments.labelIcons).toEqual(['screw']);
+    });
+
+    it('drops icons on a grid reset (no valid remap exists)', () => {
+      const { setCompartmentGrid, setCompartmentPlateIcon } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentPlateIcon(0, 'bolt');
+
+      useDesignerStore.getState().setCompartmentGrid(3, 1);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.labelIcons).toBeUndefined();
+    });
+  });
+
   describe('setCompartmentDividerHeight', () => {
     it('stores a numeric height on the compartments config', () => {
       const { setCompartmentDividerHeight } = useDesignerStore.getState();

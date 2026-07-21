@@ -1659,6 +1659,14 @@ const en: Record<string, string> = {
   'binDesigner.plateWidthNoFit': 'No standard plate fits',
   'binDesigner.plateSpanningNote':
     'Compartments are too narrow for individual plates — one bin-wide socket is used instead.',
+  'binDesigner.plateIconAria': 'Plate icon for compartment {n}',
+  'binDesigner.plateIcon.none': 'No icon',
+  'binDesigner.plateIcon.bolt': 'Bolt',
+  'binDesigner.plateIcon.screw': 'Screw',
+  'binDesigner.plateIcon.woodScrew': 'Wood screw',
+  'binDesigner.plateIcon.nut': 'Nut',
+  'binDesigner.plateIcon.washer': 'Washer',
+  'binDesigner.plateIcon.nail': 'Nail',
   'binDesigner.plateFitOffset': 'Plate fit offset',
   'binDesigner.plateFitOffsetHint':
     'Fine-tune the socket fit for your printer: negative = tighter, positive = looser.',

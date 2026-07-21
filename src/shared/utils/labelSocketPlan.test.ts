@@ -114,6 +114,22 @@ describe('planLabelPlates', () => {
     expect(plates).toEqual([{ compartmentId: 1, widthU: 1, text: 'B' }]);
   });
 
+  it('carries valid per-compartment icons and drops unknown ids', () => {
+    const plates = planLabelPlates(
+      grid(2, 1, [0, 1], {
+        compartmentTexts: ['A', 'B'],
+        labelIcons: ['bolt', 'not-a-real-icon'],
+      }),
+      123.1,
+      CLEARANCE,
+      ''
+    );
+    expect(plates).toEqual([
+      { compartmentId: 0, widthU: 1, text: 'A', icon: 'bolt' },
+      { compartmentId: 1, widthU: 1, text: 'B' },
+    ]);
+  });
+
   it('emits a single fallback-text plate for the spanning socket', () => {
     const plates = planLabelPlates(
       grid(4, 1, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }),

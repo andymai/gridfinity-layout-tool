@@ -74,7 +74,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
   } => {
     const layerHeightMm = useSettingsStore.getState().settings.printSettings.layerHeightMm;
     return {
-      specs: plates.map((p) => ({ widthU: p.widthU, text: p.text })),
+      specs: plates.map((p) => ({ widthU: p.widthU, text: p.text, icon: p.icon })),
       options: {
         textMode: textDefaults.mode === 'emboss' ? 'emboss' : 'deboss',
         textDepthMm: snapTextDepthToLayers(textDefaults.depth, layerHeightMm),

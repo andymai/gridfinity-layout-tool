@@ -33,6 +33,7 @@ import {
   LABEL_PLATE_FIT_OFFSET_MAX,
   LABEL_PLATE_FIT_OFFSET_MIN,
   LABEL_PLATE_FIT_OFFSET_STEP,
+  LABEL_PLATE_ICONS,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import { CompartmentTextInput } from './CompartmentTextInput';
@@ -214,6 +215,27 @@ export function LabelTabsSection() {
                                 // Technical readout, deliberately untranslated
                                 // (same convention as dimensionsReadout).
                                 name: `${u}U · ${labelPlateWidthMm(u)} mm`,
+                              })),
+                            ]}
+                          />
+                        )}
+                        {row.autoWidthU !== null && (
+                          <Select
+                            size="sm"
+                            value={row.icon ?? 'none'}
+                            onChange={(e) =>
+                              handlers.setCompartmentPlateIcon(
+                                row.id,
+                                e.target.value === 'none' ? null : e.target.value
+                              )
+                            }
+                            aria-label={t('binDesigner.plateIconAria', { n: row.displayNumber })}
+                            className="w-28 shrink-0"
+                            options={[
+                              { id: 'none', name: t('binDesigner.plateIcon.none') },
+                              ...LABEL_PLATE_ICONS.map((iconId): SelectOption => ({
+                                id: iconId,
+                                name: t(`binDesigner.plateIcon.${iconId}`),
                               })),
                             ]}
                           />

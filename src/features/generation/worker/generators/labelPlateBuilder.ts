@@ -42,19 +42,22 @@ import {
   LABEL_PLATE_V1_MOUTH_WIDTH_MM,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
-import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { TextStyleDefaults } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { FeatureTag } from './featureTags';
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
+import { buildIconSolid } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
 
 /** One plate to build: standard width + the text it carries (may be empty). */
 export interface LabelPlateSpec {
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
+  /** Hardware icon rendered beside the text (#2666 follow-up). */
+  readonly icon?: LabelPlateIconId;
   /** Plate center on the bed (mm); absent = single centered column layout. */
   readonly position?: readonly [number, number];
 }
@@ -76,6 +79,9 @@ export interface LabelPlateBuildOptions {
 const PLATE_GAP = 4;
 /** Keep text clear of the latch flanges. */
 const TEXT_MARGIN = 1.6;
+/** Hardware icon box edge (mm) and its gap to the text. */
+const ICON_SIZE = 6.5;
+const ICON_TEXT_GAP = 1.2;
 
 /**
  * Plan-view cutter for one v1 channel layer: a slot of width `w` centered at
@@ -203,16 +209,50 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       solid = scope.register(unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[])));
     }
 
-    // Text on the top face. Empty text yields a blank plate (still useful —
-    // ecosystem plates can be relabeled with a marker or reprinted later).
-    if (spec.text.trim().length > 0) {
+    // Hardware icon beside the text (#2666 follow-up): a square box at the
+    // left margin, centered when the plate carries no text. Best-effort like
+    // the text — a failed icon boolean ships the plate without it.
+    const hasText = spec.text.trim().length > 0;
+    if (spec.icon !== undefined) {
+      try {
+        const icon = buildIconSolid({
+          icon: spec.icon,
+          sizeMm: ICON_SIZE,
+          centerX: hasText ? -w / 2 + TEXT_MARGIN + ICON_SIZE / 2 : 0,
+          centerY: 0,
+          topZ: t,
+          depthMm: opts.textDepthMm,
+          mode: opts.textMode,
+        });
+        if (icon) {
+          scope.register(icon.solid);
+          // Icons take the text color in paint_color mapping — they are
+          // markings, same as glyphs.
+          setShapeOrigin(icon.solid, FeatureTag.TEXT);
+          const op = icon.op === 'cut' ? cut : fuse;
+          solid = scope.register(unwrap(op(solid as ValidSolid, icon.solid as ValidSolid)));
+        }
+      } catch {
+        // ship the plate without the icon
+      }
+    }
+
+    // Text on the top face, shifted right of the icon when one is present.
+    // Empty text yields a blank plate (still useful — ecosystem plates can
+    // be relabeled with a marker or reprinted later).
+    if (hasText) {
+      const textLeft =
+        spec.icon !== undefined
+          ? -w / 2 + TEXT_MARGIN + ICON_SIZE + ICON_TEXT_GAP
+          : -w / 2 + TEXT_MARGIN;
+      const textRight = w / 2 - TEXT_MARGIN;
       const result = buildTextSolid(scope, {
         text: spec.text,
         fontFamily: opts.textDefaults.font,
         mode: opts.textMode === 'emboss' ? 'emboss' : 'engrave',
-        availW: w - 2 * TEXT_MARGIN,
+        availW: textRight - textLeft,
         availD: h - 2 * TEXT_MARGIN,
-        centerX: 0,
+        centerX: (textLeft + textRight) / 2,
         centerY: 0,
         topZ: t,
         depth: opts.textDepthMm,

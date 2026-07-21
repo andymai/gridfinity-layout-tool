@@ -330,6 +330,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 const specs: LabelPlateExportSpec[] = sheet.map((p) => ({
                   widthU: p.widthU,
                   text: p.text,
+                  icon: p.icon,
                   position: p.position,
                 }));
                 const result = await bridge.exportLabelPlates(specs, options, workerFormat);
