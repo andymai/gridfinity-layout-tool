@@ -761,7 +761,13 @@ export function cutLabelSocket(
   const pocketW = labelPlateWidthMm(ctx.plateWidthU) + ctx.clearanceMm;
   const pocketD = LABEL_PLATE_HEIGHT_MM + ctx.clearanceMm;
 
-  if ((ctx.style ?? 'clickIn') === 'slideChannel' && ctx.mouth) {
+  if ((ctx.style ?? 'clickIn') === 'slideChannel') {
+    if (!ctx.mouth) {
+      // Throwing (not falling back to click-in) keeps a future call site from
+      // silently shipping the wrong retention profile; best-effort callers
+      // already wrap this function.
+      throw new Error('slideChannel socket requires a mouth direction');
+    }
     return cutSlideChannel(
       scope,
       solid,
