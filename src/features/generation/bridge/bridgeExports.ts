@@ -412,3 +412,23 @@ export function exportLabelPlates(
     })
   );
 }
+
+/**
+ * Export the label-socket fit-calibration card (#2666). Fixed small
+ * workload (five socket coupons + one plate), so it shares the fixed
+ * generous export ceiling.
+ */
+export function exportLabelFitSample(
+  ctx: BridgeExportContext,
+  format: ExportFormat
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    CONNECTOR_SAMPLE_TIMEOUT_MS,
+    (requestId) => ({
+      type: 'EXPORT_LABEL_FIT_SAMPLE',
+      payload: { requestId, format },
+    })
+  );
+}

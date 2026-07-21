@@ -38,6 +38,7 @@ import {
 import { CompartmentTextInput } from './CompartmentTextInput';
 import { LabelColorControls } from './LabelColorControls';
 import { LabelPlatesControls } from './LabelPlatesControls';
+import { LabelFitSampleButton } from './LabelFitSampleButton';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import type { LabelTabMode } from '../../../types';
 
@@ -252,6 +253,7 @@ export function LabelTabsSection() {
                   aria-label={t('binDesigner.plateFitOffset')}
                 />
               </div>
+              <LabelFitSampleButton />
               <LabelPlatesControls />
             </>
           )}
