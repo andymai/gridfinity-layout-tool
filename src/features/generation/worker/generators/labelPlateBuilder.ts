@@ -211,8 +211,10 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
 
     // Hardware icon beside the text (#2666 follow-up): a square box at the
     // left margin, centered when the plate carries no text. Best-effort like
-    // the text — a failed icon boolean ships the plate without it.
+    // the text — a failed icon boolean ships the plate without it, and the
+    // text only shifts right when the icon actually landed.
     const hasText = spec.text.trim().length > 0;
+    let iconApplied = false;
     if (spec.icon !== undefined) {
       try {
         const icon = buildIconSolid({
@@ -231,6 +233,7 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
           setShapeOrigin(icon.solid, FeatureTag.TEXT);
           const op = icon.op === 'cut' ? cut : fuse;
           solid = scope.register(unwrap(op(solid as ValidSolid, icon.solid as ValidSolid)));
+          iconApplied = true;
         }
       } catch {
         // ship the plate without the icon
@@ -241,10 +244,9 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
     // Empty text yields a blank plate (still useful — ecosystem plates can
     // be relabeled with a marker or reprinted later).
     if (hasText) {
-      const textLeft =
-        spec.icon !== undefined
-          ? -w / 2 + TEXT_MARGIN + ICON_SIZE + ICON_TEXT_GAP
-          : -w / 2 + TEXT_MARGIN;
+      const textLeft = iconApplied
+        ? -w / 2 + TEXT_MARGIN + ICON_SIZE + ICON_TEXT_GAP
+        : -w / 2 + TEXT_MARGIN;
       const textRight = w / 2 - TEXT_MARGIN;
       const result = buildTextSolid(scope, {
         text: spec.text,

@@ -24,6 +24,7 @@ import type {
   TextStyleOverride,
 } from '../../types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { TEXT_MAX_LENGTH } from '../../types/text';
 import {
   mergeLipConfig,
@@ -490,7 +491,7 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
-    setCompartmentPlateIcon: (compartmentId: number, icon: string | null) => {
+    setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => {
       const { params } = get();
       const prev = params.compartments.labelIcons ?? [];
       // No-op guard mirrors setCompartmentPlateWidth: unchanged values must

@@ -34,6 +34,7 @@ import {
   LABEL_PLATE_FIT_OFFSET_MIN,
   LABEL_PLATE_FIT_OFFSET_STEP,
   LABEL_PLATE_ICONS,
+  isLabelPlateIconId,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
@@ -261,7 +262,7 @@ export function LabelTabsSection() {
                             onChange={(e) =>
                               handlers.setCompartmentPlateIcon(
                                 row.id,
-                                e.target.value === 'none' ? null : e.target.value
+                                isLabelPlateIconId(e.target.value) ? e.target.value : null
                               )
                             }
                             aria-label={t('binDesigner.plateIconAria', { n: row.displayNumber })}

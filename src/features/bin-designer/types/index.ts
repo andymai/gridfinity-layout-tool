@@ -30,7 +30,7 @@ export interface LidMeshDataState {
   readonly faceGroups?: FaceGroupData[];
 }
 import type { DesignId, MagnetAnchor } from '@/core/types';
-import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type {
   ColorZone,
@@ -292,9 +292,11 @@ export interface CompartmentConfig {
    */
   readonly labelPlateWidths?: (number | null)[];
   /**
-   * Optional per-compartment hardware icon on the swappable label plate
-   * (`LabelPlateIconId` values), indexed by compartment ID after
-   * `normalizeIds`. Missing / null entries mean no icon. Only consulted when
+   * Optional per-compartment hardware icon on the swappable label plate,
+   * indexed by compartment ID after `normalizeIds`. Missing / null entries
+   * mean no icon. Element type is loose like the sibling arrays (persisted
+   * payloads are untrusted); consumers validate against `LABEL_PLATE_ICONS`
+   * via `isLabelPlateIconId` before use. Only consulted when
    * `label.mode === 'socket'`. Kept in lockstep with `cells` via
    * `normalizeIdsWithRemap`, like `compartmentTexts`.
    */
@@ -1149,7 +1151,7 @@ export interface DesignerState {
   setCompartmentText: (compartmentId: number, text: string) => void;
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set a compartment's swappable-plate hardware icon (null = none). */
-  setCompartmentPlateIcon: (compartmentId: number, icon: string | null) => void;
+  setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 
