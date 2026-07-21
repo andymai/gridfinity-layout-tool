@@ -306,13 +306,15 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
       issues.push({ id: 'magnetsPolygonUnsupported', severity: 'warning' });
     } else {
       const diameter = params.lid.retentionMagnet.diameter;
-      // XY bounds: the four corner pads are inset from each edge by
-      // `MAGNET_LIP_CLEARANCE + bossRadius`, and opposite pads must not overlap
-      // through the centre. That needs each half-extent >= inset + magnetRadius
-      // = MAGNET_LIP_CLEARANCE + MAGNET_BOSS_WALL + diameter. A too-small bin
-      // can't place the magnets at all — blocker.
+      // XY bounds: the four corner gusset pads are inset from each edge by
+      // `MAGNET_LIP_CLEARANCE + bossRadius` and each extends inward by a further
+      // `bossRadius`, so opposite pads only stay apart when each half-extent >=
+      // inset + bossRadius = MAGNET_LIP_CLEARANCE + 2*bossRadius
+      // = MAGNET_LIP_CLEARANCE + diameter + 2*MAGNET_BOSS_WALL (bossRadius =
+      // diameter/2 + MAGNET_BOSS_WALL). A smaller bin would merge the pads at
+      // the centre, so block it — the design can't place four clean corners.
       const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-      const minHalfMm = MAGNET_LIP_CLEARANCE + MAGNET_BOSS_WALL + diameter;
+      const minHalfMm = MAGNET_LIP_CLEARANCE + diameter + 2 * MAGNET_BOSS_WALL;
       const tooSmall =
         (params.width * params.gridUnitMm) / 2 < minHalfMm ||
         (params.depth * gridUnitMmY) / 2 < minHalfMm;
