@@ -25,6 +25,7 @@ import {
   isMagnetStyle,
   type LidAttachment,
   type LidClickRails,
+  type LidConfig,
   type LidRailSide,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
@@ -50,6 +51,35 @@ import type { SnappingSliderOption } from '../../controls/SnappingSlider';
  */
 export type LidTopSurface = 'flat' | 'stackable' | 'tray';
 export const LID_TOP_SURFACES: readonly LidTopSurface[] = ['flat', 'stackable', 'tray'] as const;
+
+/**
+ * Pure value-summary string for a lid (attachment mode + rail status). Shared
+ * by the section body and the collapsed group header so the header can
+ * subscribe to just `lid` rather than re-running the whole section hook (with
+ * its broad params subscription and compatibility scan).
+ */
+export function lidValueSummary(lid: LidConfig, t: ReturnType<typeof useTranslation>): string {
+  if (lid.attachment === 'friction') return t('binDesigner.lid.summaryFriction');
+  if (lid.attachment === 'magnetic') {
+    return t('binDesigner.lid.summaryMagnetic', {
+      diameter: lid.retentionMagnet.diameter.toFixed(1),
+      depth: lid.retentionMagnet.depth.toFixed(1),
+    });
+  }
+  const railSideCount =
+    (lid.clickRails.front ? 1 : 0) +
+    (lid.clickRails.back ? 1 : 0) +
+    (lid.clickRails.left ? 1 : 0) +
+    (lid.clickRails.right ? 1 : 0);
+  if (railSideCount === 0) return t('binDesigner.lid.summaryNoRails');
+  if (railSideCount < 4) {
+    return t('binDesigner.lid.summaryPartialRails', {
+      coverage: lid.clickRailCoverage,
+      sides: railSideCount,
+    });
+  }
+  return t('binDesigner.lid.summary', { coverage: lid.clickRailCoverage });
+}
 
 /**
  * Build the `disabledReason` text shown on the lid toggle when blockers
@@ -487,50 +517,10 @@ export function useLidSection() {
     });
   }, [t, railSummary]);
 
-  // Number of rail-enabled sides (out of 4). Used by valueSummary to
-  // distinguish the all-on, none-on, and partial cases without leaking
-  // the per-side flags into the summary string.
-  const railSideCount =
-    (lid.clickRails.front ? 1 : 0) +
-    (lid.clickRails.back ? 1 : 0) +
-    (lid.clickRails.left ? 1 : 0) +
-    (lid.clickRails.right ? 1 : 0);
-
-  // Rich value summary for the collapsed FeatureToggle header — rail
-  // status + a stack/magnet hint. Three rail branches: all sides on
-  // ("{coverage}% rails"), partial ("{coverage}% rails on N sides"),
-  // none ("no rails"). Wall thickness/fit no longer surface here since
-  // they're locked-down constants.
-  const valueSummary = useMemo(() => {
-    if (lid.attachment === 'friction') {
-      return t('binDesigner.lid.summaryFriction');
-    }
-    if (lid.attachment === 'magnetic') {
-      return t('binDesigner.lid.summaryMagnetic', {
-        diameter: lid.retentionMagnet.diameter.toFixed(1),
-        depth: lid.retentionMagnet.depth.toFixed(1),
-      });
-    }
-    if (railSideCount === 0) {
-      return t('binDesigner.lid.summaryNoRails');
-    }
-    if (railSideCount < 4) {
-      return t('binDesigner.lid.summaryPartialRails', {
-        coverage: lid.clickRailCoverage,
-        sides: railSideCount,
-      });
-    }
-    return t('binDesigner.lid.summary', {
-      coverage: lid.clickRailCoverage,
-    });
-  }, [
-    t,
-    lid.attachment,
-    lid.retentionMagnet.diameter,
-    lid.retentionMagnet.depth,
-    railSideCount,
-    lid.clickRailCoverage,
-  ]);
+  // Rich value summary for the collapsed group header. Shared with
+  // `useLidGroupSummary` via the pure `lidValueSummary` helper so the header
+  // can subscribe to just `lid` instead of re-running this whole hook.
+  const valueSummary = useMemo(() => lidValueSummary(lid, t), [lid, t]);
 
   // One-click resolution for issues that have a clean automatic fix.
   // Disables the conflicting feature at the section level (e.g. walls,
