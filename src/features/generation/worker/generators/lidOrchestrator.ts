@@ -45,6 +45,21 @@ function orientForPrint(lidSolid: Shape3D): Shape3D {
   }
 }
 
+/**
+ * Whether the lid should keep its natural (unflipped) orientation on export.
+ *
+ * A tray recess lives on the top face and the mating cavity on the underside;
+ * they want opposite print orientations and one side needs supports (#2694,
+ * decision D1 "auto by attachment"). Click-rail lids always flip so the rails
+ * print clean (the tray then needs supports); friction/magnetic tray lids skip
+ * the flip so the tray prints clean (the gentler cavity/magnet overhang takes
+ * the supports). Non-tray lids always flip, as before.
+ */
+function keepsNaturalOrientation(params: BinParams): boolean {
+  const trayActive = params.lid.tray.enabled && !params.lid.stackableTop;
+  return trayActive && params.lid.attachment !== 'clickRails';
+}
+
 export function generateLid(
   params: BinParams,
   onProgress?: ProgressFn,
@@ -175,7 +190,10 @@ export async function exportLid(
 ): Promise<LidExportResult | null> {
   if (!shouldGenerateLid(params)) return null;
 
-  const solid = orientForPrint(buildLid(params));
+  // Tray friction/magnetic lids export tray-up (unflipped) so the recess
+  // prints clean; everything else flips floor-down for a support-free cavity.
+  const built = buildLid(params);
+  const solid = keepsNaturalOrientation(params) ? built : orientForPrint(built);
   const name = `gridfinity-${params.width}x${params.depth}-lid`;
 
   // Same WASM-heap discipline as `generateLid`: the oriented solid is

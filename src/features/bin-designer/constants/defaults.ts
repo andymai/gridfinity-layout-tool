@@ -29,8 +29,17 @@ import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
+  LID_ATTACHMENTS,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_TRAY_DEPTH_MIN_MM,
+  LID_TRAY_DEPTH_MAX_MM,
+  LID_TRAY_WALL_MIN_MM,
+  LID_TRAY_WALL_MAX_MM,
 } from '../types/lid';
-import type { LidClickRails } from '../types/lid';
+import type { LidClickRails, LidAttachment, LidMagnetConfig, LidTrayConfig } from '../types/lid';
 import type { TextStyleDefaults } from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
@@ -183,6 +192,72 @@ function migrateExtraHeightMm(raw: unknown): number {
     return DEFAULT_LID_CONFIG.extraHeightMm;
   }
   return Math.min(LID_EXTRA_HEIGHT_MAX_MM, Math.max(LID_EXTRA_HEIGHT_MIN_MM, raw));
+}
+
+/**
+ * Resolve the lid retention mode. New designs store an explicit
+ * `attachment`; pre-#2694 designs predate the field, so derive it from the
+ * migrated per-side rails — any wall carrying a rail means the design relied
+ * on click retention (`'clickRails'`), otherwise it was friction-fit
+ * (`'friction'`). Never auto-derives `'magnetic'`: magnets require the new
+ * corner-boss geometry a legacy design never had.
+ */
+function migrateAttachment(raw: unknown, migratedRails: LidClickRails): LidAttachment {
+  if (typeof raw === 'string' && (LID_ATTACHMENTS as readonly string[]).includes(raw)) {
+    return raw as LidAttachment;
+  }
+  const anyRail =
+    migratedRails.front || migratedRails.back || migratedRails.left || migratedRails.right;
+  return anyRail ? 'clickRails' : 'friction';
+}
+
+/** Clamp a number into [min, max], falling back to `fallback` when non-finite. */
+function clampNumber(raw: unknown, min: number, max: number, fallback: number): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return fallback;
+  return Math.min(max, Math.max(min, raw));
+}
+
+/**
+ * Clamp the dedicated lid-retention magnet dims. Legacy-absent → factory
+ * default; out-of-range → clamped so a hand-edited share can't feed a magnet
+ * larger than the corner boss can house into the worker.
+ */
+function migrateRetentionMagnet(raw: unknown): LidMagnetConfig {
+  const obj = (raw && typeof raw === 'object' ? raw : {}) as Partial<LidMagnetConfig>;
+  return {
+    diameter: clampNumber(
+      obj.diameter,
+      LID_MAGNET_DIAMETER_MIN_MM,
+      LID_MAGNET_DIAMETER_MAX_MM,
+      DEFAULT_LID_CONFIG.retentionMagnet.diameter
+    ),
+    depth: clampNumber(
+      obj.depth,
+      LID_MAGNET_DEPTH_MIN_MM,
+      LID_MAGNET_DEPTH_MAX_MM,
+      DEFAULT_LID_CONFIG.retentionMagnet.depth
+    ),
+  };
+}
+
+/** Clamp the tray recess config; legacy-absent → factory default (disabled). */
+function migrateTray(raw: unknown): LidTrayConfig {
+  const obj = (raw && typeof raw === 'object' ? raw : {}) as Partial<LidTrayConfig>;
+  return {
+    enabled: obj.enabled === true,
+    depthMm: clampNumber(
+      obj.depthMm,
+      LID_TRAY_DEPTH_MIN_MM,
+      LID_TRAY_DEPTH_MAX_MM,
+      DEFAULT_LID_CONFIG.tray.depthMm
+    ),
+    wallMm: clampNumber(
+      obj.wallMm,
+      LID_TRAY_WALL_MIN_MM,
+      LID_TRAY_WALL_MAX_MM,
+      DEFAULT_LID_CONFIG.tray.wallMm
+    ),
+  };
 }
 
 /**
@@ -744,21 +819,33 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         fit: _legacyFit,
         wallThickness: _legacyWall,
         topThickness: _legacyTop,
+        attachment: rawAttachment,
         clickRails: rawClickRails,
         clickRailCoverage: rawCoverage,
         extraHeightMm: rawExtraHeight,
+        retentionMagnet: rawRetentionMagnet,
+        tray: rawTray,
         ...stored
       } = raw;
+      // Rails migrate first — `attachment` derives from them for legacy
+      // designs that predate the mode field.
+      const clickRails = migrateClickRails(rawClickRails);
       return {
         ...DEFAULT_LID_CONFIG,
         ...(stored as Partial<LidConfig>),
         // `clickRails` evolved from boolean → per-side object. Always
         // route through the migrator so the field is the right shape
         // regardless of how it was persisted.
-        clickRails: migrateClickRails(rawClickRails),
+        clickRails,
         clickRailCoverage: migrateClickRailCoverage(rawCoverage),
+        // Retention mode (#2694). Legacy designs infer it from their rails.
+        attachment: migrateAttachment(rawAttachment, clickRails),
         // Clamp the mm cavity boost so a corrupt design can't blow up the lid.
         extraHeightMm: migrateExtraHeightMm(rawExtraHeight),
+        // Dedicated magnet + tray configs — clamped so a hand-edited share
+        // can't drive runaway pocket/recess geometry.
+        retentionMagnet: migrateRetentionMagnet(rawRetentionMagnet),
+        tray: migrateTray(rawTray),
       };
     })(),
     ...(params.splitConnectors !== undefined

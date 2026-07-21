@@ -12,7 +12,18 @@ import {
   LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
   LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_DIMENSION_STEP_MM,
+  LID_TRAY_DEPTH_MIN_MM,
+  LID_TRAY_DEPTH_MAX_MM,
+  LID_TRAY_WALL_MIN_MM,
+  LID_TRAY_WALL_MAX_MM,
+  LID_TRAY_DIMENSION_STEP_MM,
   isMagnetStyle,
+  type LidAttachment,
   type LidClickRails,
   type LidRailSide,
 } from '@/features/bin-designer/types';
@@ -258,13 +269,62 @@ export function useLidSection() {
     // Disabling the stack grid also clears magnets AND the separate-baseplate
     // option — both only mean something when there IS a grid. Leaving them on
     // would silently produce a lid whose floor pockets meet nothing / a
-    // baseplate split of a grid that no longer exists.
+    // baseplate split of a grid that no longer exists. Enabling it clears the
+    // tray recess — a stack grid and a recess can't share the top surface.
     updateLid({
       stackableTop: next,
       magnetHoles: next ? lid.magnetHoles : false,
       separateStackPlate: next ? lid.separateStackPlate : false,
+      tray: next ? { ...lid.tray, enabled: false } : lid.tray,
     });
-  }, [lid.stackableTop, lid.magnetHoles, lid.separateStackPlate, updateLid]);
+  }, [lid.stackableTop, lid.magnetHoles, lid.separateStackPlate, lid.tray, updateLid]);
+
+  const setAttachment = useCallback(
+    (attachment: LidAttachment) => {
+      updateLid({ attachment });
+    },
+    [updateLid]
+  );
+
+  const setRetentionMagnetDiameter = useCallback(
+    (diameter: number) => {
+      const clamped = Math.min(
+        LID_MAGNET_DIAMETER_MAX_MM,
+        Math.max(LID_MAGNET_DIAMETER_MIN_MM, diameter)
+      );
+      updateLid({ retentionMagnet: { ...lid.retentionMagnet, diameter: clamped } });
+    },
+    [lid.retentionMagnet, updateLid]
+  );
+
+  const setRetentionMagnetDepth = useCallback(
+    (depth: number) => {
+      const clamped = Math.min(LID_MAGNET_DEPTH_MAX_MM, Math.max(LID_MAGNET_DEPTH_MIN_MM, depth));
+      updateLid({ retentionMagnet: { ...lid.retentionMagnet, depth: clamped } });
+    },
+    [lid.retentionMagnet, updateLid]
+  );
+
+  const toggleTray = useCallback(() => {
+    if (lid.stackableTop) return; // Gated; a stack grid owns the top surface.
+    updateLid({ tray: { ...lid.tray, enabled: !lid.tray.enabled } });
+  }, [lid.stackableTop, lid.tray, updateLid]);
+
+  const setTrayDepth = useCallback(
+    (depthMm: number) => {
+      const clamped = Math.min(LID_TRAY_DEPTH_MAX_MM, Math.max(LID_TRAY_DEPTH_MIN_MM, depthMm));
+      updateLid({ tray: { ...lid.tray, depthMm: clamped } });
+    },
+    [lid.tray, updateLid]
+  );
+
+  const setTrayWall = useCallback(
+    (wallMm: number) => {
+      const clamped = Math.min(LID_TRAY_WALL_MAX_MM, Math.max(LID_TRAY_WALL_MIN_MM, wallMm));
+      updateLid({ tray: { ...lid.tray, wallMm: clamped } });
+    },
+    [lid.tray, updateLid]
+  );
 
   const toggleMagnetHoles = useCallback(() => {
     if (!lid.stackableTop) return; // Gated; UI also disables the switch.
@@ -434,6 +494,15 @@ export function useLidSection() {
   // none ("no rails"). Wall thickness/fit no longer surface here since
   // they're locked-down constants.
   const valueSummary = useMemo(() => {
+    if (lid.attachment === 'friction') {
+      return t('binDesigner.lid.summaryFriction');
+    }
+    if (lid.attachment === 'magnetic') {
+      return t('binDesigner.lid.summaryMagnetic', {
+        diameter: lid.retentionMagnet.diameter.toFixed(1),
+        depth: lid.retentionMagnet.depth.toFixed(1),
+      });
+    }
     if (railSideCount === 0) {
       return t('binDesigner.lid.summaryNoRails');
     }
@@ -446,7 +515,14 @@ export function useLidSection() {
     return t('binDesigner.lid.summary', {
       coverage: lid.clickRailCoverage,
     });
-  }, [t, railSideCount, lid.clickRailCoverage]);
+  }, [
+    t,
+    lid.attachment,
+    lid.retentionMagnet.diameter,
+    lid.retentionMagnet.depth,
+    railSideCount,
+    lid.clickRailCoverage,
+  ]);
 
   // One-click resolution for issues that have a clean automatic fix.
   // Disables the conflicting feature at the section level (e.g. walls,
@@ -489,6 +565,7 @@ export function useLidSection() {
   return {
     state: {
       enabled: effectiveEnabled,
+      attachment: lid.attachment,
       stackableTop: lid.stackableTop,
       magnetHoles: lid.magnetHoles,
       separateStackPlate: lid.separateStackPlate,
@@ -496,6 +573,25 @@ export function useLidSection() {
       magnetsDisabledReason,
       magnetDiameter: base.magnetDiameter,
       magnetDepth: base.magnetDepth,
+      // Dedicated retention-magnet dims + bounds (magnetic mode).
+      retentionMagnetDiameter: lid.retentionMagnet.diameter,
+      retentionMagnetDepth: lid.retentionMagnet.depth,
+      retentionMagnetDiameterMin: LID_MAGNET_DIAMETER_MIN_MM,
+      retentionMagnetDiameterMax: LID_MAGNET_DIAMETER_MAX_MM,
+      retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
+      retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
+      retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
+      // Tray recess state + bounds. `trayDisabledReason` is set when a stack
+      // grid owns the top surface (mutually exclusive).
+      tray: lid.tray,
+      trayDisabledReason: lid.stackableTop
+        ? t('binDesigner.lid.trayRequiresNoStackable')
+        : undefined,
+      trayDepthMin: LID_TRAY_DEPTH_MIN_MM,
+      trayDepthMax: LID_TRAY_DEPTH_MAX_MM,
+      trayWallMin: LID_TRAY_WALL_MIN_MM,
+      trayWallMax: LID_TRAY_WALL_MAX_MM,
+      trayStep: LID_TRAY_DIMENSION_STEP_MM,
       clickRails: lid.clickRails,
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
@@ -514,12 +610,18 @@ export function useLidSection() {
     },
     handlers: {
       toggleEnabled,
+      setAttachment,
       toggleStackableTop,
       toggleMagnetHoles,
       toggleSeparateStackPlate,
       toggleClickRailSide,
       setClickRailCoverage,
       setExtraHeight,
+      setRetentionMagnetDiameter,
+      setRetentionMagnetDepth,
+      toggleTray,
+      setTrayDepth,
+      setTrayWall,
       fixIssue,
     },
     t,

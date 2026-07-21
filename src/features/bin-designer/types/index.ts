@@ -97,7 +97,14 @@ export interface PickerOverlayState {
  */
 export type ColorTool = 'eyedropper' | 'swap-pick-first' | 'swap-pick-second' | null;
 
-export type { LidConfig, LidClickRails, LidRailSide } from './lid';
+export type {
+  LidConfig,
+  LidClickRails,
+  LidRailSide,
+  LidAttachment,
+  LidMagnetConfig,
+  LidTrayConfig,
+} from './lid';
 export {
   DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
@@ -107,9 +114,24 @@ export {
   LID_MIN_RAIL_LENGTH,
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_RAIL_SIDES,
+  LID_ATTACHMENTS,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DIAMETER_DEFAULT_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_DEPTH_DEFAULT_MM,
+  LID_MAGNET_DIMENSION_STEP_MM,
+  LID_TRAY_DEPTH_MIN_MM,
+  LID_TRAY_DEPTH_MAX_MM,
+  LID_TRAY_DEPTH_DEFAULT_MM,
+  LID_TRAY_WALL_MIN_MM,
+  LID_TRAY_WALL_MAX_MM,
+  LID_TRAY_WALL_DEFAULT_MM,
+  LID_TRAY_DIMENSION_STEP_MM,
 } from './lid';
 
 // Bin Configuration Types

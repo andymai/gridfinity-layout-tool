@@ -1779,6 +1779,25 @@ const en: Record<string, string> = {
   'binDesigner.lid.summary': '{coverage}% rails',
   'binDesigner.lid.summaryPartialRails': '{coverage}% rails on {sides}/4',
   'binDesigner.lid.summaryNoRails': 'Friction-fit (no rails)',
+  'binDesigner.lid.summaryFriction': 'Friction-fit',
+  'binDesigner.lid.summaryMagnetic': 'Magnetic (⌀{diameter} × {depth} mm)',
+  'binDesigner.lid.attachment': 'Attachment',
+  'binDesigner.lid.attachment.friction': 'Friction',
+  'binDesigner.lid.attachment.clickRails': 'Click rails',
+  'binDesigner.lid.attachment.magnetic': 'Magnetic',
+  'binDesigner.lid.retentionMagnetDiameter': 'Magnet diameter',
+  'binDesigner.lid.retentionMagnetDiameterAria': 'Retention magnet diameter in millimeters',
+  'binDesigner.lid.retentionMagnetDepth': 'Magnet depth',
+  'binDesigner.lid.retentionMagnetDepthAria': 'Retention magnet depth in millimeters',
+  'binDesigner.lid.retentionMagnetHint':
+    'Press a ⌀{diameter} × {depth} mm magnet into each corner of the bin and lid. Glue them in with matching poles facing so the lid only closes one way.',
+  'binDesigner.lid.tray': 'Tray top',
+  'binDesigner.lid.trayRequiresNoStackable':
+    'Turn off the stackable top first — a stack grid and a tray recess can’t share the top surface.',
+  'binDesigner.lid.trayDepth': 'Tray depth',
+  'binDesigner.lid.trayDepthAria': 'Tray recess depth in millimeters',
+  'binDesigner.lid.trayWall': 'Tray rim',
+  'binDesigner.lid.trayWallAria': 'Tray rim wall thickness in millimeters',
   'binDesigner.lid.compat.heading': 'Compatibility notes',
   'binDesigner.lid.compat.wallCutouts':
     'Wall cutouts ({sides}) remove the lip on those walls — the lid loses grip there.',
@@ -1804,6 +1823,11 @@ const en: Record<string, string> = {
     'Handles on all four sides reach into the lip — no wall is left for the lid to grip.',
   'binDesigner.lid.compat.topDownCutoutsAtLip':
     'A solid-bin cutout reaches up into the lip — the lid may sit loosely above it.',
+  'binDesigner.lid.compat.magnetsPolygonUnsupported':
+    'Custom shapes can’t place corner magnets — the lid falls back to friction-fit with no magnets.',
+  'binDesigner.lid.compat.magnetTooDeepForBin':
+    'The retention magnet is deeper than the bin interior can hold — reduce its depth or use a taller bin.',
+  'binDesigner.lid.compat.fix.magnetTooDeepForBin': 'reduce retention magnet depth',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',
