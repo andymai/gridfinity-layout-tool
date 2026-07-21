@@ -1,0 +1,39 @@
+src/features/generation/worker/generators/lidConstants.ts
+  s_d58241dc361fa8::t_b7b063f774ac29 161-165,167
+src/features/generation/worker/generators/retentionMagnetGeometry.test.ts
+  s_d58241dc361fa8::t_2baae835157063 27-32,34-36,38,47-53,55-58,62
+  s_d58241dc361fa8::t_197a417a82e85a 4,8
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_d58241dc361fa8::t_77f6666da54154 2,4-15,19,22,35,40-43,53,65,71,83-93,97-99,101-119,125-127
+  s_d58241dc361fa8::t_58c0c5a59f837b 74-82
+  s_d58241dc361fa8::t_7f61d47394662d 27-29,31-32
+  s_d58241dc361fa8::t_cc5f30b0bb6b63 30
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_d58241dc361fa8::t_163e3adc786f51 58,63-64,68-88
+  s_d58241dc361fa8::t_252777cf905b67 89-90
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_d58241dc361fa8::t_9fda5e8334f85d 22,43
+  s_d58241dc361fa8::t_93c44839be4cb6 4-6,8-15,23-27,48-49,66,76-78
+  s_d58241dc361fa8::t_0e93aa1ec686f4 51-60
+src/features/generation/worker/generators/retentionMagnetGeometry.ts
+  s_d58241dc361fa8::t_a41aaa03fabf85 21,29-45,52
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_d58241dc361fa8::t_b0ac39d2be43ec 197-198,201-311
+  s_d58241dc361fa8::t_db0a7bd7fcf2a7 312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "7f10e16a6ebea3757880557fa086eae564cbb38a",
+  "prompts": {},
+  "sessions": {
+    "s_d58241dc361fa8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3487a736-3b7c-4c92-b73e-388d3550f862",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
