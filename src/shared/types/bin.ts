@@ -80,6 +80,7 @@ export {
   CLEARANCE_SHAPES,
   CHAMFER_SHAPES,
   MAX_ARRAY_INSTANCES,
+  DEFAULT_PATTERN_SCALE,
 } from '@/features/bin-designer/types';
 
 /**

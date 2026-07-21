@@ -1,26 +1,33 @@
 /**
  * Pattern registry — central mapping of pattern types to calculators.
  *
- * Provides factory functions to create pattern calculators based on pattern type
- * and bin dimensions. This is the single source of truth for pattern configuration.
+ * Provides factory functions to create pattern calculators based on pattern
+ * type, bin height, and normalized scale. Single source of truth for pattern
+ * configuration. Typed as `Record<WallPatternType, …>`, so adding a member to
+ * `WallPatternType` forces a matching entry here at compile time.
  *
  * To add a new pattern:
- * 1. Create a new calculator class implementing PatternCalculator
- * 2. Add an entry to PATTERN_REGISTRY with its factory function
- * 3. Update WallPatternType union in types/index.ts
+ * 1. Create a calculator implementing StampPatternCalculator (or, for complex
+ *    tiled motifs, MotifPatternCalculator).
+ * 2. Add an entry to PATTERN_REGISTRY with its factory function.
+ * 3. Update the WallPatternType union in types/index.ts.
  */
 
 import type { WallPatternType } from '@/shared/types/bin';
 import type { PatternCalculator } from './types';
 import type { HoneycombPatternCalculator } from './honeycombPattern';
 import { createHoneycombCalculator } from './honeycombPattern';
+import { createRoundCalculator } from './roundPattern';
+import { createDiamondCalculator } from './diamondPattern';
+import { createTriangleCalculator } from './trianglePattern';
+import { createSlotCalculator } from './slotPattern';
 
 /**
  * Registry entry for a pattern type.
  */
 export interface PatternRegistryEntry {
-  /** Factory function to create calculator with size-adaptive parameters */
-  createCalculator: (binHeight: number) => PatternCalculator;
+  /** Factory: builds a calculator with size- and scale-adaptive parameters. */
+  createCalculator: (binHeight: number, scale: number) => PatternCalculator;
   /** Human-readable display name (for debugging) */
   displayName: string;
 }
@@ -33,18 +40,37 @@ export const PATTERN_REGISTRY: Record<WallPatternType, PatternRegistryEntry> = {
     createCalculator: createHoneycombCalculator,
     displayName: 'Honeycomb',
   },
+  round: {
+    createCalculator: createRoundCalculator,
+    displayName: 'Round',
+  },
+  diamond: {
+    createCalculator: createDiamondCalculator,
+    displayName: 'Diamond',
+  },
+  triangle: {
+    createCalculator: createTriangleCalculator,
+    displayName: 'Triangle',
+  },
+  slots: {
+    createCalculator: createSlotCalculator,
+    displayName: 'Slots',
+  },
 };
 
 /**
- * Get a pattern calculator for the given pattern type and bin height.
+ * Get a pattern calculator for the given pattern type, bin height, and scale.
  *
  * @param pattern - The wall pattern type
- * @param binHeight - Bin height in grid units (affects pattern element size)
+ * @param binHeight - Bin height in grid units (affects element size)
+ * @param scale - Normalized pattern scale in [0, 1] (0.5 = neutral). Untrusted
+ *   values are clamped inside each factory.
  * @returns PatternCalculator instance configured for the pattern
  */
 export function getPatternCalculator(
   pattern: WallPatternType,
-  binHeight: number
+  binHeight: number,
+  scale = 0.5
 ): PatternCalculator {
   // Runtime guard: pattern may come from saved data that doesn't match current types
   const entry = (PATTERN_REGISTRY as Record<string, PatternRegistryEntry | undefined>)[pattern];
@@ -52,7 +78,7 @@ export function getPatternCalculator(
     const available = Object.keys(PATTERN_REGISTRY).join(', ');
     throw new Error(`Unknown wall pattern type: "${pattern}". Available patterns: ${available}`);
   }
-  return entry.createCalculator(binHeight);
+  return entry.createCalculator(binHeight, scale);
 }
 
 /**

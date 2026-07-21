@@ -27,6 +27,45 @@ function HoneycombIcon({ className }: { className?: string }) {
   );
 }
 
+/** SVG icon for round-hole pattern (single circle) */
+function RoundIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+    </svg>
+  );
+}
+
+/** SVG icon for diamond-lattice pattern (single diamond) */
+function DiamondIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="12,3 21,12 12,21 3,12" />
+    </svg>
+  );
+}
+
+/** SVG icon for triangular pattern (two alternating triangles) */
+function TriangleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="7,4 12,13 2,13" />
+      <polygon points="17,20 22,11 12,11" />
+    </svg>
+  );
+}
+
+/** SVG icon for vertical-slot pattern (three louvers) */
+function SlotsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="4" y="4" width="3.5" height="16" rx="1.5" />
+      <rect x="10.25" y="4" width="3.5" height="16" rx="1.5" />
+      <rect x="16.5" y="4" width="3.5" height="16" rx="1.5" />
+    </svg>
+  );
+}
+
 /** Pattern option configuration */
 interface PatternOption {
   value: WallPatternType | null;
@@ -38,6 +77,10 @@ interface PatternOption {
 const PATTERN_OPTIONS: PatternOption[] = [
   { value: null, labelKey: 'binDesigner.walls.pattern.none', icon: SolidIcon },
   { value: 'honeycomb', labelKey: 'binDesigner.walls.pattern.honeycomb', icon: HoneycombIcon },
+  { value: 'round', labelKey: 'binDesigner.walls.pattern.round', icon: RoundIcon },
+  { value: 'diamond', labelKey: 'binDesigner.walls.pattern.diamond', icon: DiamondIcon },
+  { value: 'triangle', labelKey: 'binDesigner.walls.pattern.triangle', icon: TriangleIcon },
+  { value: 'slots', labelKey: 'binDesigner.walls.pattern.slots', icon: SlotsIcon },
 ];
 
 interface PatternSelectorProps {

@@ -40,10 +40,14 @@ function buildWallPatternCompound(
   const elements: Shape3D[] = [];
   try {
     for (const center of wall.centers) {
-      const ops: TransformOp[] = [
-        { type: 'translate', v: [center.x, center.y, -halfDepth] },
-        { type: 'rotate', angle: 90, axis: [1, 0, 0] },
-      ];
+      const ops: TransformOp[] = [];
+      // Per-element in-plane spin (e.g. triangle up/down flip) BEFORE the
+      // element is positioned and stood up against the wall.
+      if (center.rotation !== undefined && center.rotation !== 0) {
+        ops.push({ type: 'rotate', angle: center.rotation, axis: [0, 0, 1] });
+      }
+      ops.push({ type: 'translate', v: [center.x, center.y, -halfDepth] });
+      ops.push({ type: 'rotate', angle: 90, axis: [1, 0, 0] });
       if (wall.zRotation !== undefined) {
         ops.push({ type: 'rotate', angle: wall.zRotation, axis: [0, 0, 1] });
       }

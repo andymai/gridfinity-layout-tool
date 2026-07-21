@@ -9,6 +9,10 @@ vi.mock('@/i18n', () => ({
       'binDesigner.walls.pattern.label': 'Wall pattern',
       'binDesigner.walls.pattern.none': 'Solid walls',
       'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
+      'binDesigner.walls.pattern.round': 'Round',
+      'binDesigner.walls.pattern.diamond': 'Diamond',
+      'binDesigner.walls.pattern.triangle': 'Triangle',
+      'binDesigner.walls.pattern.slots': 'Slots',
     };
     return translations[key] ?? key;
   },
@@ -28,9 +32,13 @@ describe('PatternSelector', () => {
     const select = screen.getByRole('combobox');
     const options = select.querySelectorAll('option');
 
-    expect(options).toHaveLength(2);
+    expect(options).toHaveLength(6);
     expect(options[0]).toHaveTextContent('Solid walls');
     expect(options[1]).toHaveTextContent('Honeycomb');
+    expect(options[2]).toHaveTextContent('Round');
+    expect(options[3]).toHaveTextContent('Diamond');
+    expect(options[4]).toHaveTextContent('Triangle');
+    expect(options[5]).toHaveTextContent('Slots');
   });
 
   it('shows "none" as selected when pattern is null', () => {

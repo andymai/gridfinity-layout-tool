@@ -15,19 +15,26 @@
  * across a point, not a flat edge).
  */
 
-import type { PatternCalculator, PatternCenter, PatternGridConfig } from './types';
+import type {
+  PatternCenter,
+  PatternGridConfig,
+  ShapeDescriptor,
+  StampPatternCalculator,
+} from './types';
 import { calculateStaggeredGrid } from './gridUtils';
+import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
 
 /** Default circumradius of each hex hole (center to vertex, mm). ~3.1mm flat-to-flat. */
 export const DEFAULT_HEX_RADIUS = 1.8;
 
 /** Default solid web thickness between adjacent hex holes (mm). */
-export const DEFAULT_HEX_WEB_THICKNESS = 0.8;
+export const DEFAULT_HEX_WEB_THICKNESS = PATTERN_WEB_THICKNESS;
 
 /**
  * Honeycomb pattern calculator using pointy-top hexagons.
  */
-export class HoneycombPatternCalculator implements PatternCalculator {
+export class HoneycombPatternCalculator implements StampPatternCalculator {
+  readonly strategy = 'stamp' as const;
   readonly hexRadius: number;
   readonly webThickness: number;
 
@@ -60,12 +67,12 @@ export class HoneycombPatternCalculator implements PatternCalculator {
     return calculateStaggeredGrid({ maxX, maxY, colSpacing, rowSpacing });
   }
 
-  getShapeRadius(): number {
-    return this.hexRadius;
+  getShapeDescriptor(): ShapeDescriptor {
+    return { kind: 'polygon', radius: this.hexRadius, sides: 6 };
   }
 
-  getSidesCount(): number {
-    return 6; // Hexagon
+  getShapeRadius(): number {
+    return this.hexRadius;
   }
 
   getWebThickness(): number {
@@ -86,12 +93,19 @@ export class HoneycombPatternCalculator implements PatternCalculator {
 }
 
 /**
- * Factory function for creating honeycomb calculators with size-adaptive radius.
+ * Factory for honeycomb calculators with size-adaptive, scale-driven radius.
  *
- * Smaller bins (≤3u height) use smaller hexes for better visual density.
- * Larger bins use bigger hexes for performance (fewer boolean operations).
+ * The adaptive base (smaller hexes on short bins for visual density, larger on
+ * tall bins for fewer boolean ops) is preserved; `scale` multiplies it, with
+ * the neutral 0.5 reproducing the legacy radius exactly.
  */
-export function createHoneycombCalculator(binHeight: number): HoneycombPatternCalculator {
-  const hexRadius = binHeight <= 3 ? 2.1 : 3.6;
-  return new HoneycombPatternCalculator(hexRadius, DEFAULT_HEX_WEB_THICKNESS);
+export function createHoneycombCalculator(
+  binHeight: number,
+  scale = 0.5
+): HoneycombPatternCalculator {
+  const base = binHeight <= 3 ? 2.1 : 3.6;
+  return new HoneycombPatternCalculator(
+    resolveElementRadius(base, binHeight, scale),
+    DEFAULT_HEX_WEB_THICKNESS
+  );
 }

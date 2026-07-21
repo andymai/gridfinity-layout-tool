@@ -7,6 +7,7 @@
  * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
+import { SliderInput } from '@/design-system';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
@@ -39,6 +40,20 @@ export function WallsSection() {
         />
         {state.patternPartialNote && state.patternEnabled && (
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
+        )}
+        {state.patternEnabled && !state.patternDisabled && (
+          <div className="mt-3">
+            <SliderInput
+              label={t('binDesigner.walls.pattern.scale')}
+              value={state.patternScalePercent}
+              onChange={handlers.handleScaleChange}
+              min={0}
+              max={100}
+              step={5}
+              unit="%"
+              info={t('binDesigner.walls.pattern.scaleHint')}
+            />
+          </div>
         )}
       </div>
       <WallCutoutsSection />

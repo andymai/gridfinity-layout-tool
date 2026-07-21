@@ -14,9 +14,11 @@
  *   - `wallPatternClips`     — cutout/handle/ramp clipping passes
  */
 
-import { drawPolysides, unwrap, clone, translate } from 'brepjs';
+import { drawPolysides, drawRoundedRectangle, rotate, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
+import { shapeDescriptorKey } from './patterns';
+import type { ShapeDescriptor } from './patterns';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
@@ -58,6 +60,25 @@ import {
 import { buildClippedWallPattern } from './wallPatternCompound';
 
 /**
+ * Build the extruded 2D element stamped at each pattern center.
+ *   polygon → regular prism (optionally z-rotated, e.g. diamond at 45°)
+ *   rect    → rounded-rectangle prism (vertical slots)
+ */
+function buildShapeTemplate(descriptor: ShapeDescriptor, cutDepth: number): Shape3D {
+  if (descriptor.kind === 'rect') {
+    return sketch(
+      drawRoundedRectangle(descriptor.width, descriptor.height, descriptor.cornerRadius),
+      'XY'
+    ).extrude(cutDepth);
+  }
+  const solid = sketch(drawPolysides(descriptor.radius, descriptor.sides), 'XY').extrude(cutDepth);
+  if (!descriptor.rotation) return solid;
+  const rotated = rotate(solid, descriptor.rotation, { axis: [0, 0, 1] });
+  solid.delete();
+  return rotated;
+}
+
+/**
  * Build wall pattern shapes for all walls with per-wall caching
  * and optional cutout clipping.
  *
@@ -72,19 +93,24 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
   if (!patternResult) return patternCutTargets;
 
-  const { descriptors: wallDescriptors, calculator } = patternResult;
+  // patternResult.calculator is a StampPatternCalculator: getPatternDescriptors
+  // filters motif patterns out of this pipeline (they build via motifBuilder).
+  const { descriptors: wallDescriptors, calculator, patternHeight } = patternResult;
   const cutDepth = params.wallThickness * 4;
   const halfDepth = cutDepth / 2;
   const patternType = calculator.getPatternType();
   const shapeRadius = calculator.getShapeRadius();
+  // Resolve the stamped shape from the canonical (bin-uniform) fill height so
+  // full-height rect slots size correctly; fillW is unused by the descriptor.
+  const descriptor = calculator.getShapeDescriptor({ fillW: 0, fillH: patternHeight });
+  const descriptorKey = shapeDescriptorKey(descriptor);
 
-  const templateKey = buildCacheKey('v1', patternType, quantize(shapeRadius), quantize(cutDepth));
+  const templateKey = buildCacheKey('v2', patternType, descriptorKey, quantize(cutDepth));
   const templateStart = perfCollector ? performance.now() : 0;
   let shapeTemplate = getPatternTemplateCache(templateKey);
   const templateCacheHit = shapeTemplate !== null;
   if (!shapeTemplate) {
-    const sides = calculator.getSidesCount();
-    shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
+    shapeTemplate = buildShapeTemplate(descriptor, cutDepth);
     setPatternTemplateCache(templateKey, shapeTemplate);
   }
   if (perfCollector) {
@@ -309,13 +335,14 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     // reused across parameter tweaks (#1422).
     const baseKey = compactKey(
       buildCacheKey(
-        'v1',
+        'v2',
         patternType,
-        quantize(shapeRadius),
+        descriptorKey,
         quantize(cutDepth),
         wall.centers.length,
         quantize(c0.x),
         quantize(c0.y),
+        quantize(c0.rotation ?? 0),
         quantize(wall.translateX),
         quantize(wall.translateY),
         quantize(wall.translateZ),

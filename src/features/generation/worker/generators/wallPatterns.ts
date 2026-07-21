@@ -7,13 +7,14 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { slottedWalls } from '@/shared/utils/slotMath';
 import { CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
-import type { PatternCenter, PatternCalculator } from './patterns';
-import { getPatternCalculator, PATTERN_REGISTRY } from './patterns';
+import type { PatternCenter, StampPatternCalculator } from './patterns';
+import { getPatternCalculator, isStampCalculator, PATTERN_REGISTRY } from './patterns';
 
 /**
  * Identifies which walls are free of divider slot grooves.
@@ -101,8 +102,8 @@ function getWallPatternDescriptors(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  calculator: PatternCalculator
-): WallPatternDescriptor[] | null {
+  calculator: StampPatternCalculator
+): { descriptors: WallPatternDescriptor[]; patternHeight: number } | null {
   if (!params.wallPattern.enabled) {
     return null;
   }
@@ -172,7 +173,7 @@ function getWallPatternDescriptors(
         seg.isOutermost
       );
     }
-    return descriptors.length > 0 ? descriptors : null;
+    return descriptors.length > 0 ? { descriptors, patternHeight } : null;
   }
 
   if (slotFree.front) addWall('front', innerW, 0, -innerD / 2);
@@ -180,7 +181,7 @@ function getWallPatternDescriptors(
   if (slotFree.left) addWall('left', innerD, -innerW / 2, 0, 90);
   if (slotFree.right) addWall('right', innerD, innerW / 2, 0, -90);
 
-  return descriptors.length > 0 ? descriptors : null;
+  return descriptors.length > 0 ? { descriptors, patternHeight } : null;
 }
 
 /**
@@ -344,7 +345,11 @@ export function getPatternDescriptors(
   innerW: number,
   innerD: number,
   wallHeight: number
-): { descriptors: WallPatternDescriptor[]; calculator: PatternCalculator } | null {
+): {
+  descriptors: WallPatternDescriptor[];
+  calculator: StampPatternCalculator;
+  patternHeight: number;
+} | null {
   // Runtime guard: wallPattern may be missing from old saved data
   const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
 
@@ -359,12 +364,22 @@ export function getPatternDescriptors(
     return null;
   }
 
-  const calculator = getPatternCalculator(wallPattern.pattern, params.height);
-  const descriptors = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
+  const scale = wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const calculator = getPatternCalculator(wallPattern.pattern, params.height, scale);
 
-  if (!descriptors) {
+  // Motif (tiled 2D) patterns don't use the stamp descriptor pipeline — they're
+  // built by motifBuilder.buildMotifCut (unit-tested standalone) and not yet
+  // wired here. No motif pattern ships in the registry, so this is unreachable
+  // in production today; documented seam for future complex patterns.
+  if (!isStampCalculator(calculator)) {
     return null;
   }
 
-  return { descriptors, calculator };
+  const result = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
+
+  if (!result) {
+    return null;
+  }
+
+  return { descriptors: result.descriptors, calculator, patternHeight: result.patternHeight };
 }

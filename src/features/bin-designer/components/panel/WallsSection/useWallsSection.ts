@@ -5,6 +5,7 @@ import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { WallPatternType } from '@/features/bin-designer/types';
+import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export function useWallsSection() {
@@ -29,6 +30,13 @@ export function useWallsSection() {
   );
 
   const handleChange = useCallback((v: number) => setParam('wallThickness', v), [setParam]);
+
+  // Pattern scale: stored normalized [0, 1]; the slider works in whole percent.
+  const patternScalePercent = Math.round((wallPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100);
+  const handleScaleChange = useCallback(
+    (percent: number) => updateWallPattern({ scale: Math.min(1, Math.max(0, percent / 100)) }),
+    [updateWallPattern]
+  );
 
   // Pattern selection handler
   const handlePatternChange = useCallback(
@@ -64,11 +72,12 @@ export function useWallsSection() {
       options,
       patternEnabled: wallPattern.enabled,
       pattern: wallPattern.pattern,
+      patternScalePercent,
       patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
     },
-    handlers: { handleChange, handlePatternChange },
+    handlers: { handleChange, handlePatternChange, handleScaleChange },
     t,
   };
 }
