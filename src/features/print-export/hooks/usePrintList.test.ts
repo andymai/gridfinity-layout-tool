@@ -4,7 +4,15 @@ import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, generateId } from '@/core/constants';
+import { designId } from '@/core/types';
 import type { Layout, Bin } from '@/core/types';
+import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
+
+vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
+  useLabelPlateCounts: vi.fn(() => new Map()),
+}));
+
+const mockUseLabelPlateCounts = vi.mocked(useLabelPlateCounts);
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {
@@ -40,6 +48,7 @@ function createTestLayout(bins: Bin[] = []): Layout {
 describe('usePrintList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseLabelPlateCounts.mockImplementation(() => new Map());
 
     // Reset stores
     const layout = createTestLayout();
@@ -407,6 +416,57 @@ describe('usePrintList', () => {
 
       // Should estimate partial spools
       expect(result.current.spoolEstimate).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('label plate counts', () => {
+    const D1 = designId('design-1');
+
+    it('reports zero plates when no socket-mode designs are placed', () => {
+      const layout = createTestLayout([createTestBin()]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => usePrintList());
+
+      expect(result.current.totalLabelPlates).toBe(0);
+      expect(result.current.labelPlateWidthSummary).toBe('');
+      expect(result.current.rows[0].labelPlateCount).toBeUndefined();
+    });
+
+    it('multiplies per-bin plates by bin count and aggregates widths', () => {
+      mockUseLabelPlateCounts.mockImplementation(
+        () => new Map([[D1, { perBin: 2, widthsU: [1, 2] as const }]])
+      );
+      const layout = createTestLayout([
+        createTestBin({ linkedDesignId: D1, width: 2 }),
+        createTestBin({ linkedDesignId: D1, width: 2, x: 2 }),
+        createTestBin({ x: 4 }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => usePrintList());
+
+      const linkedRow = result.current.rows.find((r) => r.linkedDesignId === D1);
+      expect(linkedRow?.labelPlateCount).toBe(4);
+      expect(result.current.totalLabelPlates).toBe(4);
+      expect(result.current.labelPlateWidthSummary).toBe('2× 1U, 2× 2U');
+    });
+
+    it('excludes hidden categories from plate totals', () => {
+      mockUseLabelPlateCounts.mockImplementation(
+        () => new Map([[D1, { perBin: 1, widthsU: [1] as const }]])
+      );
+      const layout = createTestLayout([createTestBin({ linkedDesignId: D1 })]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.totalLabelPlates).toBe(1);
+
+      act(() => {
+        result.current.toggleCategoryVisibility('cat1');
+      });
+
+      expect(result.current.totalLabelPlates).toBe(0);
     });
   });
 

@@ -1,0 +1,115 @@
+/**
+ * Count the swappable label plates each socket-mode linked design needs, for
+ * surfacing plate counts in the print list (#2666 follow-up).
+ *
+ * Loads linked designs from storage (results cached module-wide by design
+ * id + updatedAt, so a design re-save invalidates naturally) and derives the
+ * plate set through the same `planLabelPlates` math that cuts the sockets
+ * and packs the layout export — the counts can never disagree with what the
+ * ZIP export ships.
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import type { Bin, DesignId } from '@/core/types';
+import { isOk } from '@/core/result';
+import {
+  binDimensions,
+  loadDesign,
+  useCustomBins,
+  type SavedDesign,
+} from '@/features/bin-designer';
+import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
+import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
+
+/** The plates one placed bin of a socket-mode design needs. */
+export interface DesignPlateSet {
+  readonly perBin: number;
+  /** Plate widths in U, one entry per plate. */
+  readonly widthsU: readonly LabelPlateWidthU[];
+}
+
+// null = design is not socket-mode, has no fitting plate, or failed to load.
+const plateSetCache = new Map<string, DesignPlateSet | null>();
+const inFlight = new Set<string>();
+
+/** Reset module state. @internal — for tests only. */
+export function clearLabelPlateCountCache(): void {
+  plateSetCache.clear();
+  inFlight.clear();
+}
+
+function computePlateSet(design: SavedDesign): DesignPlateSet | null {
+  const params = design.params;
+  if (!params?.label.enabled || (params.label.mode ?? 'text') !== 'socket') return null;
+  const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+  const planned = planLabelPlates(
+    params.compartments,
+    binDimensions(params).innerW,
+    clearanceMm,
+    ''
+  );
+  if (planned.length === 0) return null;
+  return { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
+}
+
+function enqueueLoad(id: DesignId, key: string, onSettled: () => void): void {
+  if (inFlight.has(key)) return;
+  inFlight.add(key);
+  void loadDesign(id)
+    .then((result) => {
+      plateSetCache.set(key, isOk(result) ? computePlateSet(result.value) : null);
+    })
+    .catch(() => {
+      plateSetCache.set(key, null);
+    })
+    .finally(() => {
+      inFlight.delete(key);
+      onSettled();
+    });
+}
+
+/**
+ * Resolve plate requirements for every socket-mode design linked from the
+ * given bins. Designs still loading, unresolvable, or not in socket mode are
+ * absent from the returned map.
+ */
+export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPlateSet> {
+  const registry = useCustomBins();
+  const [loadTick, setLoadTick] = useState(0);
+
+  const linkedRefs = useMemo(() => {
+    const registryById = new Map(registry.map((ref) => [ref.id, ref]));
+    const refs = new Map<DesignId, string>();
+    for (const bin of bins) {
+      if (bin.linkedDesignId === undefined || refs.has(bin.linkedDesignId)) continue;
+      const ref = registryById.get(bin.linkedDesignId);
+      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}`);
+    }
+    return refs;
+  }, [bins, registry]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const onSettled = (): void => {
+      if (!cancelled) setLoadTick((tick) => tick + 1);
+    };
+    for (const [id, key] of linkedRefs) {
+      if (!plateSetCache.has(key)) enqueueLoad(id, key, onSettled);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [linkedRefs]);
+
+  return useMemo(() => {
+    // loadTick re-runs this memo when async loads land in the cache.
+    void loadTick;
+    const sets = new Map<DesignId, DesignPlateSet>();
+    for (const [id, key] of linkedRefs) {
+      const entry = plateSetCache.get(key);
+      if (entry) sets.set(id, entry);
+    }
+    return sets;
+  }, [linkedRefs, loadTick]);
+}

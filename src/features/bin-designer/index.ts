@@ -49,6 +49,9 @@ export { designFootprint, isBinDesign } from './utils/designKind';
 // Exposed for the layout 3D preview (shared/hooks/useLinkedDesignDividers) to
 // derive compartment divider walls for bins linked to saved designs.
 export { deriveWallSegments } from './utils/compartments';
+// Exposed for shared/hooks/useLabelPlateCounts (print-list plate counts) to
+// feed the same innerW into planLabelPlates that the worker uses.
+export { binDimensions } from './utils/binDimensions';
 
 // --- Sync ---
 // Exposed for `shared/sync/` to wire into the sync engine without reaching

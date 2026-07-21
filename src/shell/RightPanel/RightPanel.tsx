@@ -505,6 +505,32 @@ export function RightPanel() {
                                             )}
                                         </span>
                                       )}
+                                      {(row.labelPlateCount ?? 0) > 0 && (
+                                        <span
+                                          className="inline-flex items-center gap-1 text-xxs text-content-disabled"
+                                          title={t('print.row.labelPlates', {
+                                            count: row.labelPlateCount ?? 0,
+                                          })}
+                                        >
+                                          <svg
+                                            className="w-3 h-3 flex-shrink-0"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            aria-label={t('print.row.labelPlates', {
+                                              count: row.labelPlateCount ?? 0,
+                                            })}
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M5 8h14a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4a2 2 0 012-2z"
+                                            />
+                                          </svg>
+                                          {row.labelPlateCount}
+                                        </span>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-2 py-2 align-top text-content-tertiary">
@@ -588,6 +614,8 @@ export function RightPanel() {
                       spoolPercentage={printList.spoolPercentage}
                       hasAnySplits={printList.hasAnySplits}
                       nozzleSizeMm={printList.nozzleSizeMm}
+                      totalLabelPlates={printList.totalLabelPlates}
+                      labelPlateWidthSummary={printList.labelPlateWidthSummary}
                     />
                   )}
                 </div>

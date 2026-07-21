@@ -29,6 +29,8 @@ import type {
   CategoryId,
 } from '@/core/types';
 import { categoryId as toCategoryId } from '@/core/types';
+import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
+import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { useTranslation } from '@/i18n';
 
 const DEFAULT_FILTERS: PrintListFilters = {
@@ -52,6 +54,9 @@ export interface UsePrintListReturn {
   spoolEstimate: number;
   spoolPercentage: number;
   hasAnySplits: boolean;
+  totalLabelPlates: number;
+  /** Preformatted width breakdown, e.g. "8× 1U, 4× 2U". Empty when no plates. */
+  labelPlateWidthSummary: string;
 
   // Filter/sort state
   filters: PrintListFilters;
@@ -112,11 +117,27 @@ export function usePrintList(): UsePrintListReturn {
     [layout.bins, maxGridUnits, printSettings, config, layout.gridUnitMm, layout.heightUnitMm]
   );
 
+  // Swappable-label plates per socket-mode design (async design loads;
+  // rows gain counts as designs resolve).
+  const plateSets = useLabelPlateCounts(layout.bins);
+  const platedRows = useMemo(() => {
+    if (plateSets.size === 0) return baseRows;
+    return baseRows.map((row) => {
+      const set = row.linkedDesignId ? plateSets.get(row.linkedDesignId) : undefined;
+      return set ? { ...row, labelPlateCount: set.perBin * row.binCount } : row;
+    });
+  }, [baseRows, plateSets]);
+
   // Filtered and sorted rows
   const rows = useMemo(
     () =>
-      applyFiltersAndSort(baseRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder),
-    [baseRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder]
+      applyFiltersAndSort(
+        platedRows,
+        filters.hiddenCategoryIds,
+        filters.sortKey,
+        filters.sortOrder
+      ),
+    [platedRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder]
   );
 
   // Grouped rows (only computed when grouping is enabled)
@@ -138,6 +159,20 @@ export function usePrintList(): UsePrintListReturn {
     const bedCapacityUnits = maxGridUnits.width * maxGridUnits.depth;
     const numPrintJobs = estimatePrintJobs(totalFootprintUnits, bedCapacityUnits);
 
+    const totalLabelPlates = rows.reduce((sum, r) => sum + (r.labelPlateCount ?? 0), 0);
+    const plateWidthCounts = new Map<LabelPlateWidthU, number>();
+    for (const r of rows) {
+      const set = r.linkedDesignId ? plateSets.get(r.linkedDesignId) : undefined;
+      if (!set) continue;
+      for (const u of set.widthsU) {
+        plateWidthCounts.set(u, (plateWidthCounts.get(u) ?? 0) + r.binCount);
+      }
+    }
+    const labelPlateWidthSummary = [...plateWidthCounts.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([u, n]) => `${n}× ${u}U`)
+      .join(', ');
+
     return {
       totalBins,
       totalPieces,
@@ -147,9 +182,12 @@ export function usePrintList(): UsePrintListReturn {
       spoolEstimate: Math.ceil((totalFilament / config.metersPerKg) * 10) / 10,
       spoolPercentage: calcSpoolPercentage(totalFilament, config.metersPerKg),
       hasAnySplits,
+      totalLabelPlates,
+      labelPlateWidthSummary,
     };
   }, [
     rows,
+    plateSets,
     config.filamentCostPerKg,
     config.metersPerKg,
     printSettings,
