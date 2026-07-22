@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.282.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.1...gridfinity-layout-tool-v4.282.2) (2026-07-22)
+
+
+### Bug Fixes
+
+* **deps:** patch fast-uri and sharp security advisories ([#2731](https://github.com/andymai/gridfinity-layout-tool/issues/2731)) ([fca2878](https://github.com/andymai/gridfinity-layout-tool/commit/fca287859ec3f1e3e9a0ac8c5eccb593958f3256))
+
 ## [4.282.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.0...gridfinity-layout-tool-v4.282.1) (2026-07-22)
 
 
