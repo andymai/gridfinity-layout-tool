@@ -1,0 +1,21 @@
+src/i18n/locales/es.json
+  s_37af45d9af909d::t_5f5f6e113df9e3 90-91
+src/i18n/locales/nb.json
+  s_37af45d9af909d::t_6a699a715ab4f1 90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "8ad5bf5ebc634beda0ee2677a506e3e9acdb1575",
+  "prompts": {},
+  "sessions": {
+    "s_37af45d9af909d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91d671ca-54bd-4e63-a31c-3001264d1f94",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
