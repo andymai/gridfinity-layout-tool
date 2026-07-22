@@ -40,7 +40,13 @@ import {
   LID_TRAY_WALL_MAX_MM,
 } from '../types/lid';
 import type { LidClickRails, LidAttachment, LidMagnetConfig, LidTrayConfig } from '../types/lid';
-import type { SurfaceTextConfig, TextStyleDefaults } from '../types/text';
+import type {
+  SurfaceTextConfig,
+  TextFontFamily,
+  TextMode,
+  TextStyleDefaults,
+  TextStyleOverride,
+} from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
@@ -620,16 +626,59 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
  * through shape-checked only — field ranges are the share/sync validator's
  * job, matching how `label.textStyle` is handled.
  */
+const MIGRATE_TEXT_FONTS: readonly TextFontFamily[] = [
+  'atkinson',
+  'jetbrains-mono',
+  'allerta-stencil',
+];
+const MIGRATE_TEXT_MODES: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'];
+
+/**
+ * Sanitize a persisted surface-text style override field-by-field: unknown
+ * keys drop, enums must match, numbers must be finite and in the same ranges
+ * the share/sync validator enforces (`api/lib/designerValidation.ts`
+ * `validateTextDefaults`). Locally persisted or imported designs bypass that
+ * server mirror, and a malformed depth/size here would flow straight into the
+ * BREP worker via `resolveLidInputs`.
+ */
+function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = raw as Record<string, unknown>;
+  const num = (v: unknown, min: number, max: number): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : undefined;
+  const depth = num(value.depth, 0, 10);
+  const margin = num(value.margin, 0, 50);
+  const minFontSize = num(value.minFontSize, 0.5, 100);
+  const maxFontSize = num(value.maxFontSize, 0.5, 200);
+  const fontSizeOverride = num(value.fontSizeOverride, 0.5, 200);
+  const out: TextStyleOverride = {
+    ...(MIGRATE_TEXT_FONTS.includes(value.font as TextFontFamily)
+      ? { font: value.font as TextFontFamily }
+      : {}),
+    ...(MIGRATE_TEXT_MODES.includes(value.mode as TextMode)
+      ? { mode: value.mode as TextMode }
+      : {}),
+    ...(depth !== undefined ? { depth } : {}),
+    ...(margin !== undefined ? { margin } : {}),
+    ...(minFontSize !== undefined ? { minFontSize } : {}),
+    ...(maxFontSize !== undefined ? { maxFontSize } : {}),
+    ...(fontSizeOverride !== undefined ? { fontSizeOverride } : {}),
+  };
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
-  const { lidText, style } = raw as { lidText?: unknown; style?: SurfaceTextConfig['style'] };
-  const text = typeof lidText === 'string' ? lidText.slice(0, TEXT_MAX_LENGTH) : undefined;
-  const hasText = text !== undefined && text.trim() !== '';
-  const hasStyle = typeof style === 'object' && style !== null && Object.keys(style).length > 0;
-  if (!hasText && !hasStyle) return undefined;
+  const { lidText, style } = raw as { lidText?: unknown; style?: unknown };
+  // Trimmed on write (store setters) — trim again here so the worker (which
+  // trims before generating) and persisted state can't disagree.
+  const text = typeof lidText === 'string' ? lidText.slice(0, TEXT_MAX_LENGTH).trim() : undefined;
+  const hasText = text !== undefined && text !== '';
+  const migratedStyle = migrateTextStyleOverride(style);
+  if (!hasText && migratedStyle === undefined) return undefined;
   return {
     ...(hasText ? { lidText: text } : {}),
-    ...(hasStyle ? { style } : {}),
+    ...(migratedStyle !== undefined ? { style: migratedStyle } : {}),
   };
 }
 
@@ -903,6 +952,10 @@ export const STYLE_DEFAULT_OMIT_KEYS = [
   'cellMask',
   'compartments',
   'cutouts',
+  // Surface text is a per-design label ("Cables"), not a reusable style —
+  // carrying it into "default for new bins" would stamp one design's label
+  // onto every subsequent design.
+  'surfaceText',
   // Mesh imprint assets are per-design geometry AND large (100KB+ compressed
   // STL data) — carrying them into "default for new bins" would bloat every
   // subsequent design.

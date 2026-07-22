@@ -155,6 +155,16 @@ describe('DesignerStore - lid actions', () => {
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
 
+    it('stores the trimmed value, so trailing whitespace never regenerates', () => {
+      const { setLidText, undo } = useDesignerStore.getState();
+      setLidText('Cables ');
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
+      // A later commit differing only in outer whitespace is a no-op.
+      setLidText('  Cables');
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
     it('clearing the text preserves a style override', () => {
       const { setLidText, setSurfaceTextStyle } = useDesignerStore.getState();
       setLidText('Cables');

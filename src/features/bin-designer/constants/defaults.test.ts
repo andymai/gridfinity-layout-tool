@@ -243,6 +243,44 @@ describe('migrateParams', () => {
     expect(migrateParams({ surfaceText: { lidText: 42 } } as any).surfaceText).toBeUndefined();
   });
 
+  it('trims persisted lid text so store, worker, and geometry agree', () => {
+    const result = migrateParams({ surfaceText: { lidText: '  Cables  ' } });
+    expect(result.surfaceText?.lidText).toBe('Cables');
+  });
+
+  it('drops invalid surface-text style fields and keeps valid ones', () => {
+    const result = migrateParams({
+      surfaceText: {
+        lidText: 'ok',
+        style: {
+          mode: 'blast',
+          font: 'comic-sans',
+          depth: 0.6,
+          margin: 999,
+          minFontSize: Number.NaN,
+          fontSizeOverride: 'big',
+          evil: 1,
+        },
+      },
+    } as any);
+    // Only the in-range depth survives; every malformed field is dropped
+    // instead of flowing into the BREP worker via resolveLidInputs.
+    expect(result.surfaceText).toEqual({ lidText: 'ok', style: { depth: 0.6 } });
+
+    const allInvalid = migrateParams({
+      surfaceText: { style: { mode: 'blast', depth: -1 } },
+    } as any);
+    expect(allInvalid.surfaceText).toBeUndefined();
+  });
+
+  it('extractStyleDefaults drops the per-design surface text', () => {
+    const result = extractStyleDefaults({
+      ...DEFAULT_BIN_PARAMS,
+      surfaceText: { lidText: 'Cables' },
+    });
+    expect(result).not.toHaveProperty('surfaceText');
+  });
+
   it('defaults the exterior-wall collar to 0 for legacy designs', () => {
     const result = migrateParams({ width: 2, depth: 2, height: 3 });
     expect(result.extraWallHeightMm).toBe(0);

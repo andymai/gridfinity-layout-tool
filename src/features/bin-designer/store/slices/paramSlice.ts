@@ -556,7 +556,10 @@ export function createParamSlice(set: Set, get: Get) {
 
     setLidText: (text: string) => {
       const { params } = get();
-      const clamped = text.slice(0, TEXT_MAX_LENGTH);
+      // Trimmed on store: the worker trims before generating, so persisting
+      // outer whitespace would only create no-op history entries and
+      // regenerations for geometry that can't change.
+      const clamped = text.slice(0, TEXT_MAX_LENGTH).trim();
       // No-op guard: the input commits on both idle and blur; an unchanged
       // value must not push a history entry or regeneration.
       if ((params.surfaceText?.lidText ?? '') === clamped) return;
@@ -566,7 +569,7 @@ export function createParamSlice(set: Set, get: Get) {
         const { lidText: _drop, ...rest } = state.params.surfaceText ?? {};
         const next = {
           ...rest,
-          ...(clamped.trim() !== '' ? { lidText: clamped } : {}),
+          ...(clamped !== '' ? { lidText: clamped } : {}),
         };
         // Drop the whole key when nothing remains so pre-feature designs
         // (and cleared text) serialize byte-identically.
