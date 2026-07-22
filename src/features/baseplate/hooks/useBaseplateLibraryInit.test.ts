@@ -121,6 +121,40 @@ describe('useBaseplateLibraryInit', () => {
     expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
   });
 
+  it('does not re-materialize over a newer inline edit on a later resolve', async () => {
+    // Reproduces the unsaved-layout padding loss: an edit made after the design
+    // was materialized (and not yet persisted) must survive a remount instead of
+    // being clobbered by the stale library copy.
+    const saved = await saveDesign({ name: 'Baseplate 1', params, thumbnail: null });
+    if (!isOk(saved)) throw new Error('saveDesign failed');
+
+    useLayoutStore
+      .getState()
+      .importLayout(
+        createTestLayout({ baseplateParams: params, activeBaseplateId: saved.value.id })
+      );
+
+    // First resolve materializes the design (params already in sync).
+    const first = renderHook(() => useBaseplateLibraryInit());
+    await waitFor(() => {
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
+    });
+    first.unmount();
+
+    // Local edit the library hasn't caught up to yet (debounce-pending).
+    act(() => {
+      useLayoutStore.getState().setActiveBaseplateLocal(saved.value.id, {
+        ...params,
+        paddingLeft: 12 as StoredBaseplateParams['paddingLeft'],
+      });
+    });
+
+    // A second resolve (e.g. navigating back) must keep the newer inline edit.
+    renderHook(() => useBaseplateLibraryInit());
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(useLayoutStore.getState().layout.baseplateParams?.paddingLeft).toBe(12);
+  });
+
   it('does not stamp the seed onto a layout switched to mid-resolve', async () => {
     useLayoutStore
       .getState()

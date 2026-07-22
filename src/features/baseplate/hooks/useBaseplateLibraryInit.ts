@@ -60,6 +60,16 @@ export interface UseBaseplateLibraryInitOptions {
   readonly autoCreate?: boolean;
 }
 
+/**
+ * Designs whose library params have already been materialized into the layout
+ * this session. Re-materialize adopts cross-device edits on the FIRST resolve
+ * (a fresh load); on later mounts (tab navigation) the layout's inline params
+ * are the newest truth, so re-copying the design — which may not yet reflect a
+ * just-made, debounce-pending edit — would silently drop it (#2705 follow-up).
+ * Module-scoped so it survives the hook's per-route remounts.
+ */
+const materializedThisSession = new Set<string>();
+
 export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions): void {
   const autoCreate = options?.autoCreate ?? false;
   const activeLayoutId = useLayoutStore((s) => s.activeLayoutId);
@@ -108,14 +118,23 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           });
           setActiveDesignId(saved.value.id);
           setActiveBaseplateLocal(saved.value.id, saved.value.params);
+          // The layout now mirrors the freshly created design, so a later mount
+          // must not re-copy over a subsequent edit.
+          materializedThisSession.add(saved.value.id);
         }
       } else if (params) {
         const loaded = await loadDesign(activeId);
         if (isStale()) return false;
         if (isOk(loaded)) {
           setActiveDesignId(activeId);
-          if (!deepEqual(loaded.value.params, params)) {
-            setActiveBaseplateLocal(activeId, loaded.value.params);
+          // Adopt the library's params only on the first resolve this session
+          // (see `materializedThisSession`); later mounts keep the layout's
+          // newer inline params.
+          if (!materializedThisSession.has(activeId)) {
+            if (!deepEqual(loaded.value.params, params)) {
+              setActiveBaseplateLocal(activeId, loaded.value.params);
+            }
+            materializedThisSession.add(activeId);
           }
         } else if (loaded.error.code === 'STORAGE_NOT_FOUND') {
           // Only orphan when the design is genuinely gone (deleted on another
