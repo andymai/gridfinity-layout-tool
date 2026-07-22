@@ -131,7 +131,7 @@ function segmentsTouch(
  * graze is below print resolution and the BREP boolean handles it; exact
  * arc-arc intersection isn't worth the complexity here.
  */
-function isSelfIntersecting(pts: readonly OutlinePoint[]): boolean {
+export function isSelfIntersecting(pts: readonly OutlinePoint[]): boolean {
   const n = pts.length;
   for (let i = 0; i < n; i++) {
     const a = pts[i];

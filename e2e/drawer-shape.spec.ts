@@ -70,14 +70,15 @@ test.describe('Custom Drawer Shapes (#2528)', () => {
     // would not: useAutoSave persists a layout only once it is registered in the
     // library (has an activeLayoutId), which this test's pristine default layout
     // never triggers, so a reload would start from a blank rectangular drawer.
-    // The baseplate consumes the same outline: its padding controls give way to
-    // the shaped-drawer notice (plain React — a non-WebGL signal the baseplate is
-    // driven by the shape, not the bounding box).
+    // The baseplate consumes the same outline. A painted notch is rectilinear,
+    // so padding composes edge-by-edge (#2705): the padding controls stay live
+    // and a compose notice replaces the fully-subsumed shaped-drawer notice
+    // (plain React — a non-WebGL signal the baseplate is driven by the shape).
     await page.getByRole('tab', { name: 'Baseplate', exact: true }).click();
-    await expect(page.getByText(/this drawer has a custom shape/i)).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.getByRole('spinbutton', { name: 'Left', exact: true })).toHaveCount(0);
+    await expect(
+      page.getByText(/padding extends the plate outward around the drawer's custom shape/i)
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('spinbutton', { name: 'Left', exact: true })).toHaveCount(1);
     await page.screenshot({ path: testInfo.outputPath('drawer-shape-baseplate.png') });
   });
 

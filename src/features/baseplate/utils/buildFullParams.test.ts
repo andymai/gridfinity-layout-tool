@@ -398,7 +398,7 @@ describe('drawer outline handling', () => {
     ],
   };
 
-  it('applies the outline and zeroes the subsumed params', () => {
+  it('composes padding into a rectilinear shape and zeroes the subsumed params', () => {
     const stored = {
       ...storedBase,
       cornerRadius: 4,
@@ -407,11 +407,22 @@ describe('drawer outline handling', () => {
       detachMarginConnector: true,
     };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
-    expect(result.outline).toBe(outline);
-    expect(result.paddingLeft).toBe(0);
-    expect(result.paddingRight).toBe(0);
-    expect(result.paddingFront).toBe(0);
-    expect(result.paddingBack).toBe(0);
+    // Every edge offsets outward onto the padded plate extent (10x8 grid =
+    // 420x336mm; +L1/R2/F3/B4 -> 423x343), grid offset by (left, front).
+    expect(result.outline?.vertices).toEqual([
+      { x: 0, y: 0 },
+      { x: 423, y: 0 },
+      { x: 423, y: 175 },
+      { x: 171, y: 175 },
+      { x: 171, y: 343 },
+      { x: 0, y: 343 },
+    ]);
+    // Padding is now live (the plate spans the padded extent).
+    expect(result.paddingLeft).toBe(1.0);
+    expect(result.paddingRight).toBe(2.0);
+    expect(result.paddingFront).toBe(3.0);
+    expect(result.paddingBack).toBe(4.0);
+    // Rounding and detached margins still have no outline-aware geometry.
     expect(result.cornerRadius).toBe(0);
     expect(result.cornerRadii).toBeUndefined();
     expect(result.detachMargins).toBe(false);

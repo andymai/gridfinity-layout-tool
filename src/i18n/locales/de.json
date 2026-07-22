@@ -64,6 +64,8 @@
   "baseplate.cornerRadiusTR": "Oben-rechts",
   "baseplate.cornerRadiusUnlink": "Pro Ecke",
   "baseplate.cornerShapedPaddingNotice": "Die Eckenrundung ergibt sich aus der Schubladenform (Layout-Tab). Der Rand erweitert die Platte nach außen um die geformte Kontur.",
+  "baseplate.shapedPaddingNotice": "Der Rand erweitert die Platte nach außen um die benutzerdefinierte Form der Schublade.",
+  "baseplate.shapedPaddingTooLarge": "Der Rand ist zu groß für diese Form und wird ignoriert. Verkleinern Sie ihn, damit er um die Kontur passt.",
   "baseplate.decreasePadding": "{label} verkleinern",
   "baseplate.dovetails.invert": "Verbinder umkehren",
   "baseplate.editDimensions": "Grundplattenmaße bearbeiten",

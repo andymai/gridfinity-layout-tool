@@ -64,6 +64,8 @@
   "baseplate.cornerRadiusTR": "Haut-droit",
   "baseplate.cornerRadiusUnlink": "Par coin",
   "baseplate.cornerShapedPaddingNotice": "L’arrondi des coins provient de la forme du tiroir (onglet Disposition). La marge étend la plaque vers l’extérieur autour du contour façonné.",
+  "baseplate.shapedPaddingNotice": "La marge étend la plaque vers l’extérieur autour de la forme personnalisée du tiroir.",
+  "baseplate.shapedPaddingTooLarge": "La marge est trop grande pour cette forme, elle est donc ignorée. Réduisez-la pour qu'elle tienne autour du contour.",
   "baseplate.decreasePadding": "Diminuer {label}",
   "baseplate.dovetails.invert": "Inverser les connecteurs",
   "baseplate.editDimensions": "Modifier les dimensions de la plaque",

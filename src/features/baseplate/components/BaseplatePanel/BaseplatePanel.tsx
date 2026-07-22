@@ -64,6 +64,7 @@ import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { isRectilinearOutline, padRectilinearOutline } from '@/shared/utils/padOutline';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
@@ -280,7 +281,24 @@ export function BaseplatePanel() {
       gridDepthMm,
       drawerOutline.authoring.corners
     );
-  const shapedOn = outlineActive && !cornerShaped;
+  // A rectilinear freeform shape (painted cells, traced footprint) composes
+  // with padding edge-by-edge in buildFullParams, so its padding controls stay
+  // live — only corner rounding and detached margins (both outline-unaware)
+  // hide. Non-rectilinear shapes (arcs/pen) still subsume every param.
+  const rectilinearShaped = outlineActive && !cornerShaped && isRectilinearOutline(drawerOutline);
+  const shapedOn = outlineActive && !cornerShaped && !rectilinearShaped;
+  // Mirror buildFullParams: a rectilinear shape composes only while the padding
+  // stays valid. Padding large enough to collapse a notch/slot makes the
+  // resolver drop it, so the panel must say the padding is ignored rather than
+  // present it as applied.
+  const rectilinearPaddingComposes =
+    !rectilinearShaped ||
+    padRectilinearOutline(drawerOutline, {
+      left: baseplateParams.paddingLeft,
+      right: baseplateParams.paddingRight,
+      front: baseplateParams.paddingFront,
+      back: baseplateParams.paddingBack,
+    }) !== null;
   const canDetach =
     baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
@@ -488,6 +506,21 @@ export function BaseplatePanel() {
                     {t('baseplate.cornerShapedPaddingNotice')}
                   </p>
                 )}
+                {rectilinearShaped && (
+                  <p
+                    className={
+                      rectilinearPaddingComposes
+                        ? 'text-[11px] leading-relaxed text-content-tertiary'
+                        : 'text-[11px] leading-relaxed text-status-warning'
+                    }
+                  >
+                    {t(
+                      rectilinearPaddingComposes
+                        ? 'baseplate.shapedPaddingNotice'
+                        : 'baseplate.shapedPaddingTooLarge'
+                    )}
+                  </p>
+                )}
                 <PaddingSchematic
                   baseplateParams={baseplateParams}
                   updateParam={updateParam}
@@ -575,9 +608,11 @@ export function BaseplatePanel() {
                     />
                   </div>
                 )}
-                {/* Detached rails have no outline awareness — a corner-cut
-                    shape's arcs would need arc-clipped rail geometry. */}
-                {hasPadding && !cornerShaped && (
+                {/* Detached rails have no outline awareness (buildFullParams
+                    forces detachMargins off whenever an outline is active), so
+                    hide the control for every shaped plate, not just corner
+                    cuts. */}
+                {hasPadding && !outlineActive && (
                   <div className="border-t border-stroke-subtle pt-3">
                     <FeatureToggle
                       label={t('baseplate.detachMargins')}
@@ -774,7 +809,10 @@ export function BaseplatePanel() {
                       }
                     />
                   </div>
-                  {!shapedOn && !cornerShaped && (
+                  {/* Corner rounding is zeroed whenever an outline is active
+                      (the shape carries its own corners), so show the control
+                      only for an unshaped rectangular plate. */}
+                  {!outlineActive && (
                     <div className="border-t border-stroke-subtle pt-3">
                       <CornerRadiusControl
                         cornerRadius={baseplateParams.cornerRadius}
