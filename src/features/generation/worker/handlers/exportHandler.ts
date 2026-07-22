@@ -169,7 +169,7 @@ export async function handleExportLabelFitSample(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
     async () => {
-      const result = await exportLabelFitSample(payload.format);
+      const result = await exportLabelFitSample(payload.format, payload.nozzleSizeMm);
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Label fit sample export failed',

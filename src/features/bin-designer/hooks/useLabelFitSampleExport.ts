@@ -3,9 +3,10 @@
  * calibration print sweeping the socket clearance across a fit-offset ladder,
  * plus a nominal reference plate to click into each socket.
  *
- * The card is fully standard-defined — no design parameters ride along — so
- * the winning coupon's embossed offset maps 1:1 onto the design's
- * fit-offset field.
+ * No design parameters ride along, so the winning coupon's embossed offset
+ * maps 1:1 onto the design's fit-offset field. The one print SETTING that does
+ * ride along is the nozzle (#2690): coupons scale their nominal clearance to it
+ * just like real sockets, so the offset transfers on that same nozzle.
  */
 
 import { useCallback, useState } from 'react';
@@ -44,8 +45,9 @@ export function useLabelFitSampleExport(): UseLabelFitSampleExportReturn {
 
       setIsExporting(true);
       try {
+        const nozzleSizeMm = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
         if (format === '3mf') {
-          const stlResult = await bridge.exportLabelFitSample('stl');
+          const stlResult = await bridge.exportLabelFitSample('stl', nozzleSizeMm);
           const parseResult = parseSTLBinary(stlResult.data);
           if (isErr(parseResult)) throw new Error(getUserMessage(parseResult.error));
           const printSettings = useSettingsStore.getState().settings.printSettings;
@@ -62,7 +64,7 @@ export function useLabelFitSampleExport(): UseLabelFitSampleExportReturn {
           });
           triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {
-          const result = await bridge.exportLabelFitSample(format);
+          const result = await bridge.exportLabelFitSample(format, nozzleSizeMm);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
           triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
         }

@@ -180,12 +180,15 @@ function buildLabelTabsInScope(
   let socket: SocketBuildInfo | null = null;
   let spanningWidthU: LabelPlateWidthU | null = null;
   if (mode === 'socket') {
-    // Nozzle passed as undefined (baseline): the bin worker receives only the
-    // persisted BinParams — no settings seam exists on this path, and baking
-    // the printer's nozzle into a synced design would be wrong on the user's
-    // other devices. `plateFitOffset`'s range covers wide-nozzle calibration
-    // manually until such a seam exists.
-    const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+    // `nozzleSizeMm` is merged onto these params transiently at each generation
+    // boundary (`withSocketNozzle`) from the live print setting — it is never
+    // persisted into the synced design. Undefined here = the 0.4mm baseline
+    // (geometry unchanged). The user's `plateFitOffset` still stacks on top for
+    // per-printer calibration beyond the nozzle scaling.
+    const clearanceMm = effectiveLabelSocketClearance(
+      params.nozzleSizeMm,
+      params.label.plateFitOffset
+    );
     const plan = planLabelSockets(params.compartments, innerW, clearanceMm);
     spanningWidthU = plan.spanningWidthU;
     const plateByCompartment = new Map<number, LabelPlateWidthU>();

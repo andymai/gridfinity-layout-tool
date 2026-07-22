@@ -75,7 +75,7 @@ function makeBinDesign(): SavedDesign {
   return {
     id: D1,
     name: 'Test Design',
-    params: { width: 2, depth: 1 } as unknown as BinParams,
+    params: { width: 2, depth: 1, label: { enabled: false } } as unknown as BinParams,
     thumbnail: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',

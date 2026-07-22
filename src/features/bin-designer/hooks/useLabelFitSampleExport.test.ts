@@ -77,7 +77,8 @@ describe('useLabelFitSampleExport', () => {
     });
 
     expect(ok).toBe(true);
-    expect(exportLabelFitSample).toHaveBeenCalledWith('stl');
+    // Nozzle (default 0.4) threaded through so coupons scale like real sockets.
+    expect(exportLabelFitSample).toHaveBeenCalledWith('stl', 0.4);
     expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'label-fit-sample.stl');
   });
 
@@ -94,7 +95,7 @@ describe('useLabelFitSampleExport', () => {
     });
 
     expect(ok).toBe(true);
-    expect(exportLabelFitSample).toHaveBeenCalledWith('stl');
+    expect(exportLabelFitSample).toHaveBeenCalledWith('stl', 0.4);
     expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'my-card.3mf');
   });
 

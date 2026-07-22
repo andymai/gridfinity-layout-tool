@@ -29,6 +29,8 @@ import {
   savePersistedBinMesh,
 } from '@/shared/generation/meshPersistence';
 import { bridgeManager } from '@/shared/generation/bridge';
+import { withSocketNozzle } from '@/shared/generation/socketNozzle';
+import { useSettingsStore } from '@/core/store';
 import type { MeshData } from '@/shared/types/generation';
 
 /** A resolved design mesh ready for layout preview rendering. */
@@ -99,7 +101,8 @@ function centerImportedVertices(
 
 async function resolveDesignMesh(
   design: SavedDesign,
-  sig: string
+  sig: string,
+  nozzleSizeMm: number
 ): Promise<LinkedDesignMesh | null> {
   const structure = design.structure;
   if (structure?.kind === 'importedMesh' && design.envelope) {
@@ -124,7 +127,10 @@ async function resolveDesignMesh(
   const params = design.params;
   if (!params) return null;
 
-  const persistKey = binMeshCacheKey(params);
+  // Nozzle-merged (transient) so a socket bin's pocket matches the live print
+  // setting and shares the same cache key the designer preview persists under.
+  const genParams = withSocketNozzle(params, nozzleSizeMm);
+  const persistKey = binMeshCacheKey(genParams);
   const persisted = await loadPersistedBinMesh(persistKey);
   if (persisted) {
     return { sig, mesh: persisted, width: params.width, depth: params.depth };
@@ -134,7 +140,7 @@ async function resolveDesignMesh(
   // background thumbnail regeneration) and persist it for future sessions.
   const bridge = await bridgeManager.acquire();
   try {
-    const result = await bridge.generateImmediate(params);
+    const result = await bridge.generateImmediate(genParams);
     if (result.mesh.vertices.length === 0) return null;
     savePersistedBinMesh(persistKey, result.mesh);
     return { sig, mesh: result.mesh, width: params.width, depth: params.depth };
@@ -143,13 +149,20 @@ async function resolveDesignMesh(
   }
 }
 
-function enqueueResolve(id: DesignId, key: string, onSettled: () => void): void {
+function enqueueResolve(
+  id: DesignId,
+  key: string,
+  nozzleSizeMm: number,
+  onSettled: () => void
+): void {
   if (inFlight.has(key)) return;
   inFlight.add(key);
   resolveChain = resolveChain.then(async () => {
     try {
       const designResult = await loadDesign(id);
-      const entry = isOk(designResult) ? await resolveDesignMesh(designResult.value, key) : null;
+      const entry = isOk(designResult)
+        ? await resolveDesignMesh(designResult.value, key, nozzleSizeMm)
+        : null;
       setCachedMesh(key, entry);
     } catch {
       // Worker init/generation failure — cache the miss so we don't retry
@@ -170,6 +183,10 @@ function enqueueResolve(id: DesignId, key: string, onSettled: () => void): void 
 export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMesh> {
   const registry = useCustomBins();
   const [loadTick, setLoadTick] = useState(0);
+  // Part of the cache key so a nozzle change re-resolves socket-bin meshes at the
+  // new pocket clearance. Non-socket designs re-resolve too but hit the persisted
+  // mesh cache (their key is nozzle-invariant), so it stays cheap.
+  const nozzleSizeMm = useSettingsStore((state) => state.settings.printSettings.nozzleSizeMm);
 
   const linkedRefs = useMemo(() => {
     const registryById = new Map(registry.map((ref) => [ref.id, ref]));
@@ -177,10 +194,10 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
     for (const bin of bins) {
       if (bin.linkedDesignId === undefined || refs.has(bin.linkedDesignId)) continue;
       const ref = registryById.get(bin.linkedDesignId);
-      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}`);
+      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm}`);
     }
     return refs;
-  }, [bins, registry]);
+  }, [bins, registry, nozzleSizeMm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,12 +205,12 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
     for (const [id, key] of linkedRefs) {
-      if (!meshCache.has(key)) enqueueResolve(id, key, onSettled);
+      if (!meshCache.has(key)) enqueueResolve(id, key, nozzleSizeMm, onSettled);
     }
     return () => {
       cancelled = true;
     };
-  }, [linkedRefs]);
+  }, [linkedRefs, nozzleSizeMm]);
 
   return useMemo(() => {
     // loadTick re-runs this memo when async resolutions land in the cache

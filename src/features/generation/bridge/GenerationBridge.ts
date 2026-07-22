@@ -541,8 +541,11 @@ export class GenerationBridge {
     return exportLabelPlatesImpl(this, plates, options, format);
   }
 
-  exportLabelFitSample(format: ExportFormat): Promise<BaseplateExportResult> {
-    return exportLabelFitSampleImpl(this, format);
+  exportLabelFitSample(
+    format: ExportFormat,
+    nozzleSizeMm?: number
+  ): Promise<BaseplateExportResult> {
+    return exportLabelFitSampleImpl(this, format, nozzleSizeMm);
   }
 
   /** Whether the bridge has been destroyed */

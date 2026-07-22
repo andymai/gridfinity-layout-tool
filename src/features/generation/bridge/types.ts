@@ -291,6 +291,8 @@ export interface ExportLabelFitSampleMessage {
 export interface ExportLabelFitSamplePayload {
   readonly requestId: string;
   readonly format: ExportFormat;
+  /** Live print nozzle (mm) so coupons scale like the sockets they calibrate. */
+  readonly nozzleSizeMm?: number;
 }
 
 export interface ExportMessage {

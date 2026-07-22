@@ -140,7 +140,8 @@ export function planLabelPlateExport(
   bins: Bin[],
   loaded: readonly LoadedDesign[],
   bedWidthMm: number,
-  bedDepthMm: number
+  bedDepthMm: number,
+  nozzleSizeMm: number
 ): LabelPlateExportPlan {
   const designById = new Map(
     loaded.filter((l) => l.design?.params).map((l) => [l.id, l.design] as const)
@@ -157,7 +158,7 @@ export function planLabelPlateExport(
     const linkedBins = bins.filter((b) => b.linkedDesignId === id);
     if (linkedBins.length === 0) continue;
 
-    const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+    const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
     const planned = planLabelPlates(
       params.compartments,
       binDimensions(params).innerW,

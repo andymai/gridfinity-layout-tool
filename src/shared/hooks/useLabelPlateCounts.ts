@@ -20,6 +20,7 @@ import {
 } from '@/features/bin-designer';
 import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { useSettingsStore } from '@/core/store';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 
 /** The plates one placed bin of a socket-mode design needs. */
@@ -47,10 +48,10 @@ export function clearLabelPlateCountCache(): void {
   inFlight.clear();
 }
 
-function computePlateSet(design: SavedDesign): DesignPlateSet | null {
+function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlateSet | null {
   const params = design.params;
   if (!params?.label.enabled || (params.label.mode ?? 'text') !== 'socket') return null;
-  const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+  const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
   const planned = planLabelPlates(
     params.compartments,
     binDimensions(params).innerW,
@@ -61,12 +62,15 @@ function computePlateSet(design: SavedDesign): DesignPlateSet | null {
   return { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
 }
 
-function enqueueLoad(id: DesignId, key: string, onSettled: () => void): void {
+function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled: () => void): void {
   if (inFlight.has(key)) return;
   inFlight.add(key);
   void loadDesign(id)
     .then((result) => {
-      plateSetCache.set(id, { key, plateSet: isOk(result) ? computePlateSet(result.value) : null });
+      plateSetCache.set(id, {
+        key,
+        plateSet: isOk(result) ? computePlateSet(result.value, nozzleSizeMm) : null,
+      });
     })
     .catch(() => {
       plateSetCache.set(id, { key, plateSet: null });
@@ -85,6 +89,9 @@ function enqueueLoad(id: DesignId, key: string, onSettled: () => void): void {
 export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPlateSet> {
   const registry = useCustomBins();
   const [loadTick, setLoadTick] = useState(0);
+  // In the cache key so a nozzle change recomputes plate widths at the new
+  // socket clearance (a wider nozzle can drop a compartment from 2U to 1U).
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
   const linkedRefs = useMemo(() => {
     const registryById = new Map(registry.map((ref) => [ref.id, ref]));
@@ -92,10 +99,10 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
     for (const bin of bins) {
       if (bin.linkedDesignId === undefined || refs.has(bin.linkedDesignId)) continue;
       const ref = registryById.get(bin.linkedDesignId);
-      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}`);
+      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm}`);
     }
     return refs;
-  }, [bins, registry]);
+  }, [bins, registry, nozzleSizeMm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,12 +110,12 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
       if (!cancelled) setLoadTick((tick) => tick + 1);
     };
     for (const [id, key] of linkedRefs) {
-      if (plateSetCache.get(id)?.key !== key) enqueueLoad(id, key, onSettled);
+      if (plateSetCache.get(id)?.key !== key) enqueueLoad(id, key, nozzleSizeMm, onSettled);
     }
     return () => {
       cancelled = true;
     };
-  }, [linkedRefs]);
+  }, [linkedRefs, nozzleSizeMm]);
 
   return useMemo(() => {
     // loadTick re-runs this memo when async loads land in the cache.
