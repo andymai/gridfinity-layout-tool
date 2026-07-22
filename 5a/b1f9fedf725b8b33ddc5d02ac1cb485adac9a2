@@ -1,0 +1,23 @@
+src/shared/hooks/useDrawerSettings.ts
+  s_8e2f2b4a9dbc5f::t_39ea31ca21e800 486-487
+  s_8e2f2b4a9dbc5f::t_30f27c692de4b4 269-271
+  s_8e2f2b4a9dbc5f::t_4cc1afd957132e 194-198,204-205
+src/shared/hooks/useDrawerSettings.test.ts
+  s_8e2f2b4a9dbc5f::t_d47dec39814a61 589-599
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "5ab1f9fedf725b8b33ddc5d02ac1cb485adac9a2",
+  "prompts": {},
+  "sessions": {
+    "s_8e2f2b4a9dbc5f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf731dea-0e59-409d-bd2e-36d6c8db311d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
