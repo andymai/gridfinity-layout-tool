@@ -521,4 +521,81 @@ describe('useDrawerSettings', () => {
       expect(result.current.activeLayerHeight).toBe(3);
     });
   });
+
+  // #2705: committing a measured drawer size records the measurement and offers
+  // an opt-in fit, but never silently resizes the grid.
+  describe('measured-mm fit', () => {
+    // Default drawer is 10 × 8 at a 42mm pitch (420 × 336mm).
+    it('records the measurement without resizing the grid', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+
+      // Grid stays put (old behavior floored it to 9 × 7).
+      expect(result.current.drawer.width).toBe(10);
+      expect(result.current.drawer.depth).toBe(8);
+      expect(result.current.measuredMm).toEqual({ width: 400, depth: 300 });
+    });
+
+    it('offers the tightest fit as an opt-in suggestion', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+
+      // 400mm → 9.5 half-units is tighter than 9 whole; 300mm → 7 whole.
+      expect(result.current.drawerFitSuggestion).toEqual(
+        expect.objectContaining({ width: 9.5, depth: 7, isHalf: true })
+      );
+    });
+
+    it('applies the fit only when accepted (half fit also enables half-grid)', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      act(() => result.current.acceptDrawerFitSuggestion());
+
+      expect(result.current.drawer.width).toBe(9.5);
+      expect(result.current.drawer.depth).toBe(7);
+      expect(result.current.halfGridMode).toBe(true);
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+
+    it('offers no suggestion when the grid already fits', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      // Exactly the current grid extent: 10 × 8 at 42mm.
+      act(() => result.current.handleMeasuredCommit(420, 336));
+
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+
+    it('remembers a dismissal so the same measurement does not re-nag', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      expect(result.current.drawerFitSuggestion).not.toBeNull();
+
+      act(() => result.current.dismissDrawerFitSuggestion());
+      expect(result.current.drawerFitSuggestion).toBeNull();
+
+      // Re-committing the identical measurement stays quiet.
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      expect(result.current.drawerFitSuggestion).toBeNull();
+
+      // A different measurement offers a fit again.
+      act(() => result.current.handleMeasuredCommit(500, 300));
+      expect(result.current.drawerFitSuggestion).not.toBeNull();
+    });
+
+    it('drops the suggestion when the grid pitch changes (unit counts are stale)', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      expect(result.current.drawerFitSuggestion).not.toBeNull();
+
+      // The fit's unit counts were computed at 42mm; a new pitch invalidates them.
+      act(() => result.current.setGridUnitMm(40));
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+  });
 });

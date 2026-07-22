@@ -43,10 +43,10 @@ export function MobileSettingsPanel() {
     depthStep,
     realWorldDimensions,
     measuredMm,
-    halfFitSuggestion,
+    drawerFitSuggestion,
     handleMeasuredCommit,
-    acceptHalfFitSuggestion,
-    dismissHalfFitSuggestion,
+    acceptDrawerFitSuggestion,
+    dismissDrawerFitSuggestion,
     clearMeasurement,
     maxGridUnits,
     gridUnitMm,
@@ -159,9 +159,9 @@ export function MobileSettingsPanel() {
             minHeightMm={CONSTRAINTS.MIN_LAYER_HEIGHT * heightUnitMm}
             maxHeightMm={CONSTRAINTS.GRID_MAX * heightUnitMm}
             onCommit={handleMeasuredCommit}
-            suggestion={halfFitSuggestion}
-            onAcceptSuggestion={acceptHalfFitSuggestion}
-            onDismissSuggestion={dismissHalfFitSuggestion}
+            suggestion={drawerFitSuggestion}
+            onAcceptSuggestion={acceptDrawerFitSuggestion}
+            onDismissSuggestion={dismissDrawerFitSuggestion}
             onClearMeasurement={clearMeasurement}
             variant="mobile"
           />
