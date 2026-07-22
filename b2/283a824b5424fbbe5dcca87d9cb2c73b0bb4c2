@@ -1,0 +1,28 @@
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.test.tsx
+  s_8e2f2b4a9dbc5f::t_80a1eed3cdbfbe 58-112
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.tsx
+  s_8e2f2b4a9dbc5f::t_a0b387dacb5d60 8,17-21,61-62,64,66-69,77-79,84-92,99-105,112,119-120,135,142-144,161-173,175
+  s_8e2f2b4a9dbc5f::t_ad062728cfd8b9 106-110
+  s_8e2f2b4a9dbc5f::t_f383557ec507a4 111,113-118
+  s_8e2f2b4a9dbc5f::t_7cf3e8a91e8625 121-133
+  s_8e2f2b4a9dbc5f::t_98ce34355b2e1d 30-42,49-52
+  s_8e2f2b4a9dbc5f::t_a2feda4203d254 70-74,76,80-83
+  s_8e2f2b4a9dbc5f::t_d549ad303bc223 157-160
+  s_8e2f2b4a9dbc5f::t_74fab80aaf9f7a 93-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b2283a824b5424fbbe5dcca87d9cb2c73b0bb4c2",
+  "prompts": {},
+  "sessions": {
+    "s_8e2f2b4a9dbc5f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf731dea-0e59-409d-bd2e-36d6c8db311d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
