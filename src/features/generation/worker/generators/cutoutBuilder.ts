@@ -20,6 +20,7 @@ import {
   translate,
   fillet,
   intersect,
+  cut,
   rotate,
   edgeFinder,
   getBounds,
@@ -31,7 +32,7 @@ import {
   transformCopy,
   setShapeOrigin,
 } from 'brepjs';
-import type { TransformOp } from 'brepjs';
+import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
 import {
@@ -48,6 +49,7 @@ import {
 } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
+import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
@@ -1012,9 +1014,17 @@ export function buildCutoutCuts(
   // cutout is tagged (colored or not), so recoloring stays a pure read-side
   // change that never regenerates geometry.
   const rawTags: number[] = [];
+  // Cavity tool indices per cutout id — floor-embossed labels are carved OUT
+  // of their owning cavity tool rather than fused (see carveLabelFromCavities).
+  const cavityIndices = new Map<string, number[]>();
   const cavityTag = (cutout: Cutout): number =>
     cutoutColorTag(colorOrdinal.get(cutoutUnitKey(cutout)) ?? 0);
-  const pushRaw = (shape: Shape3D, tag: number): void => {
+  const pushRaw = (shape: Shape3D, tag: number, ownerId?: string): void => {
+    if (ownerId !== undefined) {
+      const list = cavityIndices.get(ownerId);
+      if (list) list.push(rawShapes.length);
+      else cavityIndices.set(ownerId, [rawShapes.length]);
+    }
     rawShapes.push(shape);
     rawTags.push(tag);
   };
@@ -1026,11 +1036,11 @@ export function buildCutoutCuts(
     if (cutout.groupId === null) {
       if (cutout.array) {
         for (const s of buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY)) {
-          pushRaw(s, cavityTag(cutout));
+          pushRaw(s, cavityTag(cutout), cutout.id);
         }
       } else {
         const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
-        if (shape) pushRaw(shape, cavityTag(cutout));
+        if (shape) pushRaw(shape, cavityTag(cutout), cutout.id);
       }
     } else {
       const list = groups.get(cutout.groupId);
@@ -1044,21 +1054,40 @@ export function buildCutoutCuts(
 
   for (const [, groupMembers] of groups) {
     const shape = buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY);
-    // All members share a groupId -> one unit, one color for the merged cavity.
-    if (shape) pushRaw(shape, cavityTag(groupMembers[0]));
+    if (shape) {
+      const idx = rawShapes.length;
+      // All members share a groupId -> one unit, one color for the merged cavity.
+      pushRaw(shape, cavityTag(groupMembers[0]));
+      for (const m of groupMembers) cavityIndices.set(m.id, [idx]);
+    }
   }
 
-  // Per-cutout label text on the bin top, adjacent to each cutout in the
-  // user-picked side direction. The design-level mode picks engrave (cut into
-  // the surface) or emboss (raised above it); through-cut falls back to engrave
-  // since punching bin-top text through the floor is meaningless. Engraved text
-  // joins the cut pile; embossed text is collected separately for fusing.
+  // Per-cutout label text, placed by the 9-point anchor: the outer anchors
+  // land on the bin top beside the cutout, `center` lands on the recess floor
+  // inside it. The design-level mode picks engrave (cut into the surface) or
+  // emboss (raised above it); through-cut falls back to engrave since punching
+  // bin-top text through the floor is meaningless. Engraved text joins the cut
+  // pile; top-surface embossed text is collected separately for fusing; floor
+  // embossed text is carved out of its cavity tool.
+  // Group op per groupId, keyed off the first member in cutouts order — the
+  // same member buildGroupedCutouts reads it from.
+  const groupOps = new Map<string, GroupOp>();
+  for (const c of params.cutouts) {
+    if (c.groupId !== null && !groupOps.has(c.groupId)) {
+      groupOps.set(c.groupId, c.groupOp ?? DEFAULT_GROUP_OP);
+    }
+  }
+
   const rawFuseShapes: Shape3D[] = [];
   for (const cutout of params.cutouts) {
     if (cutout.hidden === true) continue;
     if (cutout.engraveLabel !== true) continue;
     const label = cutout.label.trim();
     if (label === '') continue;
+    // Non-union groups (subtract/intersect/exclude) can hollow a member's
+    // footprint out of the final cavity, so a member-footprint floor guess may
+    // point at solid material. Only union cavities keep member floors intact.
+    const allowFloor = cutout.groupId === null || groupOps.get(cutout.groupId) === 'union';
     const textShape = buildCutoutLabel(
       cutout,
       label,
@@ -1067,12 +1096,15 @@ export function buildCutoutCuts(
       originX,
       originY,
       innerW,
-      innerD
+      innerD,
+      allowFloor
     );
     if (!textShape) continue;
     // Label text is its own color zone — tag it TEXT so an engraved label
     // sharing the cut pile doesn't inherit its cutout's cavity color.
     if (textShape.op === 'fuse') rawFuseShapes.push(textShape.solid);
+    else if (textShape.op === 'carve')
+      carveLabelFromCavities(textShape.solid, cavityIndices.get(cutout.id), rawShapes);
     else pushRaw(textShape.solid, FeatureTag.TEXT);
   }
 
@@ -1149,11 +1181,151 @@ function clipToInterior(
 /** A cutout label solid plus how it must be applied to the bin. */
 interface CutoutLabelShape {
   readonly solid: Shape3D;
-  readonly op: 'cut' | 'fuse';
+  /**
+   * `cut` engraves (bin top or recess floor), `fuse` embosses on the bin top,
+   * `carve` embosses on a recess floor: the solid must be subtracted from the
+   * owning cavity tool instead of fused (see {@link carveLabelFromCavities}).
+   */
+  readonly op: 'cut' | 'fuse' | 'carve';
+}
+
+/** Point-in-rounded-rect for a `2·hw × 2·hd` rect with corner radius `r`,
+ *  centered at the origin. */
+function roundedRectContains(lx: number, ly: number, hw: number, hd: number, r: number): boolean {
+  const ax = Math.abs(lx);
+  const ay = Math.abs(ly);
+  if (ax > hw || ay > hd) return false;
+  if (r <= 0) return true;
+  const ex = ax - (hw - r);
+  const ey = ay - (hd - r);
+  if (ex <= 0 || ey <= 0) return true;
+  return ex * ex + ey * ey <= r * r;
 }
 
 /**
- * Label text adjacent to a cutout, on the bin top surface.
+ * Whether a point (in the cutout's local, unrotated frame, origin at its
+ * center) lies inside the actual cavity footprint. Shape-aware so a label near
+ * a bounding-box corner of a circle/polygon/path isn't mistaken for "over the
+ * recess" and engraved at floor depth under solid fill. Degenerate polygons and
+ * paths extrude as their bounding box (see the shape builders), so their
+ * containment tests fall back to the same box.
+ */
+function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
+  const hw = cutout.width / 2;
+  const hd = cutout.depth / 2;
+  switch (cutout.shape) {
+    case 'circle':
+      return hw > 0 && hd > 0 && (lx / hw) ** 2 + (ly / hd) ** 2 <= 1;
+    case 'polygon': {
+      const pts = regularPolygonPoints(
+        clampPolygonSides(cutout.sides ?? DEFAULT_POLYGON_SIDES),
+        cutout.width,
+        cutout.depth
+      );
+      if (pts.length < 3) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
+      return pointInPolyline(pts, lx, ly);
+    }
+    case 'slot':
+      return roundedRectContains(lx, ly, hw, hd, slotCornerRadius(cutout.width, cutout.depth));
+    case 'path': {
+      const outline = pathOutline(cutout);
+      if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
+      return pointInPolyline(outline, lx, ly);
+    }
+    case 'mesh':
+      // Mesh imprints are filtered out before the label loop; unreachable.
+      return false;
+    case 'rectangle':
+      return roundedRectContains(lx, ly, hw, hd, Math.min(cutout.cornerRadius, hw, hd));
+  }
+}
+
+/**
+ * Z of the surface a cutout label lands on: the recess floor when the placed
+ * center sits inside the cutout's rotated footprint (the `center` anchor, or an
+ * offset drag ending over the cavity), the un-recessed fill top otherwise.
+ * Labels used to engrave at the fill top unconditionally, so a center-anchored
+ * label's shallow cut sat entirely inside the volume the cavity removes and
+ * vanished from the model (#2726).
+ */
+function labelSurfaceZ(
+  cutout: Cutout,
+  centerX: number,
+  centerY: number,
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): number {
+  const dx = centerX - (originX + cutout.x + cutout.width / 2);
+  const dy = centerY - (originY + cutout.y + cutout.depth / 2);
+  // Localize with the inverse of the shape's world rotation —
+  // buildUngroupedCutout rotates by -cutout.rotation, so invert with +rotation.
+  const theta = (cutout.rotation * Math.PI) / 180;
+  const c = Math.cos(theta);
+  const s = Math.sin(theta);
+  const lx = dx * c - dy * s;
+  const ly = dx * s + dy * c;
+  if (!labelCenterInFootprint(cutout, lx, ly)) return solidSurfaceZ;
+  return solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ);
+}
+
+/**
+ * Subtract a floor-embossed label from its cutout's cavity tools, leaving the
+ * glyphs standing on the recess floor once the cavity is cut from the bin.
+ * Raised text inside a recess cannot go through the fuse pile: the boolean
+ * stage fuses BEFORE it cuts, so fused glyphs would sit inside still-solid
+ * fill and the cavity cut would shear them away. Consumes `text`; a failed
+ * carve keeps the uncarved cavity and silently drops the label (matching
+ * {@link buildCutoutLabel}'s silent-skip contract).
+ */
+function boundsOverlap(a: Bounds3D, b: Bounds3D): boolean {
+  return (
+    a.xMin <= b.xMax &&
+    a.xMax >= b.xMin &&
+    a.yMin <= b.yMax &&
+    a.yMax >= b.yMin &&
+    a.zMin <= b.zMax &&
+    a.zMax >= b.zMin
+  );
+}
+
+function carveLabelFromCavities(
+  text: Shape3D,
+  indices: readonly number[] | undefined,
+  rawShapes: Shape3D[]
+): void {
+  try {
+    const textBounds = getBounds(text);
+    for (const i of indices ?? []) {
+      // Array instances all register under the master's id, but the glyphs
+      // occupy a single world location — skip tools the text can't touch so
+      // spaced instances don't pay (or risk) a pointless boolean. Every
+      // OVERLAPPING tool must be carved, though: an uncarved overlapping
+      // cavity would erase the standing text when it is subtracted.
+      if (!boundsOverlap(textBounds, getBounds(rawShapes[i]))) continue;
+      try {
+        // brepjs `cut` never consumes its operands (callers delete inputs
+        // themselves — see lightweightBaseBuilder), so reusing `text` across
+        // iterations is safe.
+        const carved = unwrap(cut(rawShapes[i] as ValidSolid, text as ValidSolid));
+        if (carved !== rawShapes[i]) {
+          rawShapes[i].delete();
+          rawShapes[i] = carved;
+        }
+      } catch {
+        // Keep the uncarved cavity; this label is silently skipped.
+      }
+    }
+  } finally {
+    text.delete();
+  }
+}
+
+/**
+ * Label text for a cutout: on the bin top beside it (outer anchors) or on the
+ * recess floor inside it (`center` anchor, see {@link labelSurfaceZ}).
+ * `allowFloor` gates the floor branch — callers pass false for members of
+ * non-union groups, whose final cavity may not contain the member's footprint.
  *
  * The side picker is interpreted in WORLD coordinates (top = +Y, etc.); text
  * reads left-to-right in world XY regardless of cutout rotation. The cutout
@@ -1162,8 +1334,9 @@ interface CutoutLabelShape {
  * and takes their min/max.
  *
  * The design-level mode selects `engrave` (recessed, returned with `op: 'cut'`)
- * or `emboss` (raised, returned with `op: 'fuse'`). `through-cut` falls back to
- * engrave — punching bin-top text through the floor is meaningless.
+ * or `emboss` (raised, returned with `op: 'fuse'` on the bin top, `op: 'carve'`
+ * on a recess floor). `through-cut` falls back to engrave — punching bin-top
+ * text through the floor is meaningless.
  *
  * Placement (side gap + rotation-aware AABB) is delegated to
  * `cutoutLabelPlacement` so the 2D editor preview tracks this engraving.
@@ -1178,7 +1351,8 @@ function buildCutoutLabel(
   originX: number,
   originY: number,
   innerW: number,
-  innerD: number
+  innerD: number,
+  allowFloor: boolean
 ): CutoutLabelShape | null {
   const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
   if (!placement) return null;
@@ -1193,6 +1367,13 @@ function buildCutoutLabel(
   // degrades to engrave.
   const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
 
+  const surfaceZ = allowFloor
+    ? labelSurfaceZ(cutout, centerX, centerY, solidSurfaceZ, originX, originY)
+    : solidSurfaceZ;
+  // A recess consuming the full fill depth leaves no floor to engrave into —
+  // the interior clip stops at z=0 to protect the base, so skip the label.
+  if (mode === 'engrave' && surfaceZ <= 0) return null;
+
   return withScope((scope: DisposalScope): CutoutLabelShape | null => {
     const result = buildTextSolid(scope, {
       text: label,
@@ -1202,9 +1383,9 @@ function buildCutoutLabel(
       availD,
       centerX,
       centerY,
-      topZ: solidSurfaceZ,
+      topZ: surfaceZ,
       depth: style.depth,
-      hostThickness: solidSurfaceZ,
+      hostThickness: surfaceZ,
       margin: style.margin,
       minFontSize: style.minFontSize,
       maxFontSize: style.maxFontSize,
@@ -1212,6 +1393,9 @@ function buildCutoutLabel(
       angleDeg: cutout.textAngle ?? 0,
     });
     if (!result) return null;
-    return { solid: unwrap(clone(result.solid)), op: result.op };
+    // Emboss below the fill top means "inside a recess" — reroute from the
+    // fuse pile to the cavity carve so the raised text survives the cut pass.
+    const op = result.op === 'fuse' && surfaceZ < solidSurfaceZ ? 'carve' : result.op;
+    return { solid: unwrap(clone(result.solid)), op };
   });
 }
