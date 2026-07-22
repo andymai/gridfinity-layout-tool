@@ -1,0 +1,60 @@
+src/i18n/locales/nb.json
+  s_8e2f2b4a9dbc5f::t_6096fd6878c938 2648-2651
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_8e2f2b4a9dbc5f::t_f45aca6977af3b 101,111,116-119,121,128-144
+  s_8e2f2b4a9dbc5f::t_5a0aee98a6c1ce 145-146
+src/i18n/locales/uk.json
+  s_8e2f2b4a9dbc5f::t_bc0fe2c0832439 2648-2651
+src/shell/Sidebar/Sidebar.tsx
+  s_8e2f2b4a9dbc5f::t_1e6d7e153999d0 77,79-80,400-402
+src/i18n/locales/ja.json
+  s_8e2f2b4a9dbc5f::t_631ea612ba0902 2648-2651
+src/i18n/locales/es.json
+  s_8e2f2b4a9dbc5f::t_31336d73d94de2 2648-2651
+src/i18n/locales/nl.json
+  s_8e2f2b4a9dbc5f::t_eea3dd18dc25fa 2648-2651
+src/shared/hooks/useDrawerSettings.test.ts
+  s_8e2f2b4a9dbc5f::t_817f25e8d50895 524-589
+src/i18n/locales/fr.json
+  s_8e2f2b4a9dbc5f::t_58c83e7ffbecf9 2648-2651
+src/i18n/locales/sv.json
+  s_8e2f2b4a9dbc5f::t_e1eb22b6d6dd73 2648-2651
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_8e2f2b4a9dbc5f::t_45a67fb6e21f93 159
+  s_8e2f2b4a9dbc5f::t_6efcd99f8cc9c5 6,28
+src/i18n/locales/en.ts
+  s_8e2f2b4a9dbc5f::t_ea2771f81a31c2 3151-3154
+src/i18n/locales/de.json
+  s_8e2f2b4a9dbc5f::t_1fa8d623b7a6ed 2648-2651
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_8e2f2b4a9dbc5f::t_1e6d7e153999d0 46,48-49,162-164
+src/i18n/locales/it.json
+  s_8e2f2b4a9dbc5f::t_ef3803fad68e52 2648-2651
+src/i18n/locales/pt-BR.json
+  s_8e2f2b4a9dbc5f::t_300abb43020096 2648-2651
+src/shared/hooks/useDrawerSettings.ts
+  s_8e2f2b4a9dbc5f::t_1e6d7e153999d0 71,262,505,507-509,512,640
+  s_8e2f2b4a9dbc5f::t_a790cc540e4b31 479-480
+  s_8e2f2b4a9dbc5f::t_47e9c7631ac0ef 405-410,440-471,487,491-501,506,516-519,521-522,524,529
+  s_8e2f2b4a9dbc5f::t_bab33a38f48345 44-49,54
+  s_8e2f2b4a9dbc5f::t_ad8fdca2497b87 204-211
+  s_8e2f2b4a9dbc5f::t_6efcd99f8cc9c5 73-74,199,504,514,642-643
+  s_8e2f2b4a9dbc5f::t_aa8cdd7b3a9e78 472
+  s_8e2f2b4a9dbc5f::t_768323f611e198 520
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fd329d3105e753fdf3fe0f345ee5d5bbc6f8b48f",
+  "prompts": {},
+  "sessions": {
+    "s_8e2f2b4a9dbc5f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf731dea-0e59-409d-bd2e-36d6c8db311d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
