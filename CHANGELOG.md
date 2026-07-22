@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.277.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.276.0...gridfinity-layout-tool-v4.277.0) (2026-07-22)
+
+
+### Features
+
+* **designer:** non-square grid polish — baseplate echo + outline overlay ([#2704](https://github.com/andymai/gridfinity-layout-tool/issues/2704)) ([5d80881](https://github.com/andymai/gridfinity-layout-tool/commit/5d80881fb9c36bdd5a6357d43b1975f94f4c0a1c))
+
 ## [4.276.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.275.0...gridfinity-layout-tool-v4.276.0) (2026-07-22)
 
 
