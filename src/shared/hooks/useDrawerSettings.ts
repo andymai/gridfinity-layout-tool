@@ -191,15 +191,18 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     null
   );
   const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
-  // The suggestion is anchored to the layout and drawer dims it was computed
-  // against; the effect below discards it the moment either drifts (layout
-  // switch, undo, stepper edit, canvas drag-resize), so accepting can never
-  // apply units derived from a different measurement.
+  // The suggestion is anchored to the layout, drawer dims, AND grid pitch it was
+  // computed against; the derived value below discards it the moment any drifts
+  // (layout switch, undo, stepper edit, canvas drag-resize, or a pitch change),
+  // so accepting can never apply unit counts derived at a different pitch — e.g.
+  // 9.5 units fitted at 42mm would be the wrong physical size at 40mm.
   const [halfFit, setHalfFit] = useState<{
     suggestion: DrawerFitSuggestion;
     layoutId: string;
     baseWidth: number;
     baseDepth: number;
+    basePitchX: number;
+    basePitchY: number;
   } | null>(null);
   // Remembers a dismissed fit so re-committing the SAME measured drawer doesn't
   // re-nag. Keyed by layout + measured mm; cleared when the measurement is
@@ -263,7 +266,9 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     halfFit !== null &&
     halfFit.layoutId === activeLayoutId &&
     halfFit.baseWidth === (drawerWidth as number) &&
-    halfFit.baseDepth === (drawerDepth as number)
+    halfFit.baseDepth === (drawerDepth as number) &&
+    halfFit.basePitchX === gridUnitMm &&
+    halfFit.basePitchY === gridUnitMmY
       ? halfFit.suggestion
       : null;
 
@@ -478,6 +483,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
               layoutId: activeLayoutId,
               baseWidth: drawerWidth,
               baseDepth: drawerDepth,
+              basePitchX: gridUnitMm,
+              basePitchY: gridUnitMmY,
             }
       );
 

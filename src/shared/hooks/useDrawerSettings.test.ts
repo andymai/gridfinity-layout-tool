@@ -586,5 +586,16 @@ describe('useDrawerSettings', () => {
       act(() => result.current.handleMeasuredCommit(500, 300));
       expect(result.current.drawerFitSuggestion).not.toBeNull();
     });
+
+    it('drops the suggestion when the grid pitch changes (unit counts are stale)', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      expect(result.current.drawerFitSuggestion).not.toBeNull();
+
+      // The fit's unit counts were computed at 42mm; a new pitch invalidates them.
+      act(() => result.current.setGridUnitMm(40));
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
   });
 });
