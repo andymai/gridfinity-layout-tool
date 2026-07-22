@@ -47,14 +47,17 @@ export interface GridResizeState {
 }
 
 export interface UseGridResizeOptions {
-  /** Cell size in pixels (already scaled by zoom) */
+  /** Cell size in pixels along X/columns (already scaled by zoom) */
   cellSize: number;
+  /** Cell size in pixels along Y/rows (non-square grid); defaults to cellSize */
+  cellSizeY?: number;
   /** Gap between grid cells in pixels */
   gap: number;
 }
 
 export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   const { cellSize, gap } = options;
+  const cellSizeY = options.cellSizeY ?? cellSize;
 
   const { drawer, updateDrawer } = useLayoutStore(
     useShallow((state) => ({
@@ -136,6 +139,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       const dx = e.clientX - resizeStart.x;
       const dy = e.clientY - resizeStart.y;
       const cellStep = cellSize + gap;
+      const cellStepY = cellSizeY + gap;
 
       const updates: Partial<typeof drawer> = {};
       const currentDrawer = drawerRef.current;
@@ -152,7 +156,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
 
       if (resizeDirection === 'depth' || resizeDirection === 'both') {
         // Depth increases downward visually (positive dy = increase depth)
-        const depthDelta = Math.round(dy / cellStep);
+        const depthDelta = Math.round(dy / cellStepY);
         const newDepth = clamp(
           resizeStart.depth + depthDelta,
           1,
@@ -227,7 +231,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       document.removeEventListener('pointerup', handlePointerUp);
       releaseCapture();
     };
-  }, [resizeDirection, resizeStart, cellSize, gap, updateDrawer]);
+  }, [resizeDirection, resizeStart, cellSize, cellSizeY, gap, updateDrawer]);
 
   // Confirm pending resize - move clipped bins to staging
   const confirmResize = useCallback(() => {

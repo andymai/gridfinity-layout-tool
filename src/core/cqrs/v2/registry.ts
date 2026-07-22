@@ -33,6 +33,7 @@ import { setDrawerOutline } from './domain/drawer/setDrawerOutline';
 import { setName } from './domain/layout/setName';
 import { setPrintBedSize } from './domain/layout/setPrintBedSize';
 import { setGridUnitMm } from './domain/layout/setGridUnitMm';
+import { setGridUnitMmY } from './domain/layout/setGridUnitMmY';
 import { setMagnetAnchor } from './domain/layout/setMagnetAnchor';
 import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
 import { setBaseplateParams } from './domain/layout/setBaseplateParams';
@@ -87,6 +88,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [setName.type]: wrapV2Handler(setName) as V2HandlerFn,
   [setPrintBedSize.type]: wrapV2Handler(setPrintBedSize) as V2HandlerFn,
   [setGridUnitMm.type]: wrapV2Handler(setGridUnitMm) as V2HandlerFn,
+  [setGridUnitMmY.type]: wrapV2Handler(setGridUnitMmY) as V2HandlerFn,
   [setMagnetAnchor.type]: wrapV2Handler(setMagnetAnchor) as V2HandlerFn,
   [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
   [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
@@ -127,6 +129,7 @@ export const v2Commands = [
   setName,
   setPrintBedSize,
   setGridUnitMm,
+  setGridUnitMmY,
   setMagnetAnchor,
   setHeightUnitMm,
   setBaseplateParams,

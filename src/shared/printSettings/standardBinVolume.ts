@@ -132,14 +132,16 @@ export function estimateStandardBinVolume(
   depthUnits: number,
   heightUnits: number,
   gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
-  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT,
+  gridUnitMmY: number = gridUnitMm
 ): number {
   const { walls, base, lip } = standardBinSolidComponents(
     widthUnits,
     depthUnits,
     heightUnits,
     gridUnitMm,
-    heightUnitMm
+    heightUnitMm,
+    gridUnitMmY
   );
   return Math.max(0, walls + base + lip);
 }
@@ -164,14 +166,16 @@ export function estimateStandardBinFilament(
   heightUnits: number,
   settings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
-  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT,
+  gridUnitMmY: number = gridUnitMm
 ): StandardBinEstimate {
   const volumeMm3 = estimateStandardBinVolume(
     widthUnits,
     depthUnits,
     heightUnits,
     gridUnitMm,
-    heightUnitMm
+    heightUnitMm,
+    gridUnitMmY
   );
 
   return estimateFromVolume(volumeMm3, settings);

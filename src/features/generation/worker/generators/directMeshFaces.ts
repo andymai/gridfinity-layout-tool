@@ -23,6 +23,7 @@
  */
 
 import { pocketCornerRadius } from './generatorTypes';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 import type { CellInfo } from './generatorTypes';
 import type { MeshBuilder } from './directMeshBuilder';
 import { CORNER_SEGMENTS } from './directMeshBuilder';
@@ -33,7 +34,7 @@ export function addPlateFace(
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
   offsetY: number,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   gridW: number,
   gridD: number,
   cells: ReadonlyArray<CellInfo>,
@@ -54,8 +55,10 @@ export function addPlateFace(
   pocketDepths?: { left: number; right: number; front: number; back: number }
 ): void {
   const nz = faceUp ? 1 : -1;
-  const gridHalfW = (gridW * gridUnitMm) / 2;
-  const gridHalfD = (gridD * gridUnitMm) / 2;
+  // `x` scales width/columns, `y` scales depth/rows (equal for a square grid).
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const gridHalfW = (gridW * unitX) / 2;
+  const gridHalfD = (gridD * unitY) / 2;
 
   // Padding ring is needed only when the outer perimeter actually extends
   // beyond the grid bounding box.
@@ -92,8 +95,8 @@ export function addPlateFace(
       mb,
       cell.centerX,
       cell.centerY,
-      cell.widthUnits * gridUnitMm,
-      cell.depthUnits * gridUnitMm,
+      cell.widthUnits * unitX,
+      cell.depthUnits * unitY,
       z,
       faceUp,
       outerPts,

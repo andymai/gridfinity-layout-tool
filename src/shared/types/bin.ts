@@ -228,6 +228,11 @@ export interface ResolvedBaseplateParams {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;
+  /**
+   * Depth-axis (Y) pitch for a non-square plate. Absent = square (equals
+   * {@link gridUnitMm}). Resolve with `gridUnitMmY ?? gridUnitMm`.
+   */
+  readonly gridUnitMmY?: number;
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
   readonly magnetDepth: number;

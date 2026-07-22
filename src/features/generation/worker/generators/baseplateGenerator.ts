@@ -164,7 +164,10 @@ export function generateBaseplate(
   // hole cylinders need tight angular tolerance; flat surfaces tolerate
   // coarser linear tolerance.
   const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
-  const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
+  const totalD =
+    params.depth * (params.gridUnitMmY ?? params.gridUnitMm) +
+    params.paddingFront +
+    params.paddingBack;
   const maxDimension = Math.max(totalW, totalD);
   let tolerance: number;
   let angularTolerance: number;
@@ -276,13 +279,18 @@ export function buildBaseplateSolid(
     overTileHalfGridSolidLeftover,
   } = params;
 
+  // Depth (Y) axis pitch for a non-square grid; equals gridUnitMm for square.
+  // Only the cell pitch stretches on Y — round features (magnets, corner radii,
+  // connectors) stay isotropic per gridPitch.ts.
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
+  const pitch = { x: gridUnitMm, y: gridUnitMmY };
   const floorDepth = baseplateFloorDepth(params);
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
-  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
+  const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
-  const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm: pitch };
 
   // Over-tile margin tiles (clipped padding tiles) are decomposed ONCE here and
   // reused everywhere they must agree: the pocket cuts (cache-miss branch below)
@@ -300,7 +308,7 @@ export function buildBaseplateSolid(
         width,
         depth,
         overTileMargins,
-        gridUnitMm,
+        pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
         overTileHalfGridSolidLeftover
@@ -314,7 +322,7 @@ export function buildBaseplateSolid(
   const classifyCell = (cell: CellInfo): RegionClass => {
     if (outline === undefined) return 'inside';
     const w = cell.widthUnits * gridUnitMm;
-    const d = cell.depthUnits * gridUnitMm;
+    const d = cell.depthUnits * gridUnitMmY;
     const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
     const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
     return classifyRect(outline, x0, y0, x0 + w, y0 + d);
@@ -329,7 +337,7 @@ export function buildBaseplateSolid(
     if (cls === 'inside') return 'full';
     if (cls === 'outside') return 'none';
     const w = cell.widthUnits * gridUnitMm;
-    const d = cell.depthUnits * gridUnitMm;
+    const d = cell.depthUnits * gridUnitMmY;
     const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;
     const y0 = cell.centerY - d / 2 + totalD / 2 - slabOffsetY;
     const fraction = insideAreaFraction(outline as DrawerOutline, x0, y0, x0 + w, y0 + d);
@@ -381,7 +389,7 @@ export function buildBaseplateSolid(
     const pockets: Shape3D[] = [];
     const addPocket = (cell: CellInfo): void => {
       const cellW_mm = cell.widthUnits * gridUnitMm;
-      const cellD_mm = cell.depthUnits * gridUnitMm;
+      const cellD_mm = cell.depthUnits * gridUnitMmY;
       const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
       // pocket from getPocketTemplate is a clone owned by caller — translate
       // produces a new shape, so dispose the pre-translation clone.
@@ -508,7 +516,7 @@ export function buildBaseplateSolid(
           magnetFrame,
           magnetDiameter / 2,
           magnetDepth,
-          gridUnitMm,
+          pitch,
           magnetAnchor
         )
       );
@@ -548,7 +556,7 @@ export function buildBaseplateSolid(
           floorFrame,
           magnetDiameter / 2,
           magnetDepth,
-          gridUnitMm,
+          pitch,
           params.lightweight,
           params.nozzleSizeMm,
           magnetAnchor
@@ -633,7 +641,10 @@ export async function exportBaseplate(
   const baseplate = buildBaseplateSolid(params, false);
   try {
     const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
-    const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
+    const totalD =
+      params.depth * (params.gridUnitMmY ?? params.gridUnitMm) +
+      params.paddingFront +
+      params.paddingBack;
     const name = `baseplate_${params.width}x${params.depth}_${Math.round(totalW)}x${Math.round(totalD)}mm`;
 
     if (format === 'step') {

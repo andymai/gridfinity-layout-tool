@@ -3,7 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useInteractionStore, useSettingsStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { calcMaxGridUnits, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
@@ -63,13 +64,16 @@ function BinComponent({
     categoryId: bin.category,
   });
 
-  const { printBedSize, printBedDepth, gridUnitMm } = useLayoutStore(
+  const { printBedSize, printBedDepth, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((state) => ({
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth,
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
   );
+
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
 
   const {
     handlePointerDown,
@@ -99,7 +103,7 @@ function BinComponent({
   const isMultiSelect = selectedBinIds.length > 1;
 
   // Calculate max grid units that fit on print bed (accounting for gaps)
-  const maxGrid = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth);
+  const maxGrid = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth, gridUnitMmY);
   const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
   const isTall = layer && bin.height > layer.height;
 
@@ -117,6 +121,7 @@ function BinComponent({
         fractionalEdgeX: drawer.fractionalEdgeX,
         fractionalEdgeY: drawer.fractionalEdgeY,
         cellSize,
+        cellSizeY,
         gap,
       }),
     [
@@ -129,6 +134,7 @@ function BinComponent({
       drawer.fractionalEdgeX,
       drawer.fractionalEdgeY,
       cellSize,
+      cellSizeY,
       gap,
     ]
   );

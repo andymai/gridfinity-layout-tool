@@ -31,6 +31,10 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `w:${params.width}`,
     `d:${params.depth}`,
     `g:${params.gridUnitMm}`,
+    // Only emitted for a non-square grid, so square pieces keep their fingerprint.
+    ...(params.gridUnitMmY !== undefined && params.gridUnitMmY !== params.gridUnitMm
+      ? [`gy:${params.gridUnitMmY}`]
+      : []),
     `mh:${params.magnetHoles ? 1 : 0}`,
     `md:${params.magnetDiameter}`,
     `mz:${params.magnetDepth}`,

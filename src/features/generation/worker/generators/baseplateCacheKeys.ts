@@ -15,6 +15,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { hashOutline } from '@/shared/utils/drawerOutline';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { pitchKeySegments } from './gridPitch';
 import {
   SIZE,
   TONGUE_CLEARANCE,
@@ -80,6 +81,11 @@ export function meshCacheKey(
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),
+    // Empty for a square grid, so existing square plates keep their cache identity.
+    ...pitchKeySegments(
+      { x: params.gridUnitMm, y: params.gridUnitMmY ?? params.gridUnitMm },
+      quantize
+    ),
     params.magnetHoles,
     quantize(params.magnetDiameter),
     quantize(params.magnetDepth),
@@ -141,6 +147,10 @@ export function slabPocketsCacheKey(
     quantize(params.width),
     quantize(params.depth),
     quantize(params.gridUnitMm),
+    ...pitchKeySegments(
+      { x: params.gridUnitMm, y: params.gridUnitMmY ?? params.gridUnitMm },
+      quantize
+    ),
     params.magnetHoles,
     quantize(params.magnetDepth),
     // The resolved floor depth sets the slab height + whether pockets are

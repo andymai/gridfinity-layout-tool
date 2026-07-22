@@ -105,13 +105,18 @@ export function generateBaseplateDirect(
 
   const mb = new MeshBuilder();
 
+  // Depth (Y) pitch for a non-square grid; equals gridUnitMm for square. Only
+  // the cell pitch stretches on Y — round features stay isotropic.
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
+  const pitch = { x: gridUnitMm, y: gridUnitMmY };
+
   // Slab dimensions — taller when a floor is left under the pockets. Magnets
   // require one; the standalone solidFloor option adds one without magnet holes.
   const floorDepth = baseplateFloorDepth(params);
   const hasFloor = floorDepth > 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
-  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
+  const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const resolved = resolveCornerRadii(params, maxRadius);
   const cornerR = Math.min(Math.max(resolved.tl, resolved.tr, resolved.bl, resolved.br), maxRadius);
@@ -120,7 +125,7 @@ export function generateBaseplateDirect(
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
 
-  const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm: pitch };
 
   // Collect all cells. Over-tile adds clipped pockets in the padding margins
   // (same frameCells layout as the BREP build). The solid padding ring then
@@ -145,25 +150,27 @@ export function generateBaseplateDirect(
         width,
         depth,
         margins,
-        gridUnitMm,
+        pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
         overTileHalfGridSolidLeftover
       )
     );
-    const depthOf = (p: number): number =>
+    // Left/right margins tile along X; front/back along Y — so a non-square
+    // grid reaches a different depth into each pair of margins.
+    const depthOf = (p: number, unit: number): number =>
       marginPocketDepthMm(
         p,
-        gridUnitMm,
+        unit,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid === true,
         overTileHalfGridSolidLeftover === true
       );
     pocketDepths = {
-      left: depthOf(paddingLeft),
-      right: depthOf(paddingRight),
-      front: depthOf(paddingFront),
-      back: depthOf(paddingBack),
+      left: depthOf(paddingLeft, gridUnitMm),
+      right: depthOf(paddingRight, gridUnitMm),
+      front: depthOf(paddingFront, gridUnitMmY),
+      back: depthOf(paddingBack, gridUnitMmY),
     };
     // Ring is needed only where a side leaves a solid (un-pocketed) band.
     drawRing =
@@ -185,7 +192,7 @@ export function generateBaseplateDirect(
 
   for (const cell of cells) {
     const cellW_mm = cell.widthUnits * gridUnitMm;
-    const cellD_mm = cell.depthUnits * gridUnitMm;
+    const cellD_mm = cell.depthUnits * gridUnitMmY;
     addPocketWalls(mb, cell.centerX, cell.centerY, cellW_mm, cellD_mm, totalHeight, floorDepth);
   }
 
@@ -197,7 +204,7 @@ export function generateBaseplateDirect(
     outerPts,
     slabOffsetX,
     slabOffsetY,
-    gridUnitMm,
+    pitch,
     width,
     depth,
     cells,
@@ -251,7 +258,7 @@ export function generateBaseplateDirect(
         cell,
         magnetRadius,
         gridUnitMm,
-        gridUnitMm,
+        gridUnitMmY,
         magnetAnchor
       )) {
         addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
@@ -271,7 +278,7 @@ export function generateBaseplateDirect(
         width,
         depth,
         margins,
-        gridUnitMm,
+        pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
         overTileHalfGridSolidLeftover
@@ -304,7 +311,8 @@ export function generateBaseplateDirect(
       edges,
       params.invertDovetails,
       fractionalEdgeX,
-      fractionalEdgeY
+      fractionalEdgeY,
+      gridUnitMmY
     );
     for (const pos of connPositions) {
       if (pos.isMale) {

@@ -19,8 +19,10 @@ export interface BinLayoutInput {
   fractionalEdgeX?: 'start' | 'end';
   /** Fractional edge Y placement */
   fractionalEdgeY?: 'start' | 'end';
-  /** Cell size in pixels */
+  /** Cell size in pixels along X/columns */
   cellSize: number;
+  /** Cell size in pixels along Y/rows (non-square grid); defaults to cellSize */
+  cellSizeY?: number;
   /** Gap between cells in pixels */
   gap: number;
 }
@@ -45,6 +47,7 @@ export interface BinLayoutResult {
  */
 export function calculateBinLayout(input: BinLayoutInput): BinLayoutResult {
   const { binX, binY, binWidth, binDepth, drawerWidth, drawerDepth, cellSize, gap } = input;
+  const cellSizeY = input.cellSizeY ?? cellSize;
   const fractionalEdgeX = input.fractionalEdgeX ?? 'end';
   const fractionalEdgeY = input.fractionalEdgeY ?? 'end';
 
@@ -106,7 +109,7 @@ export function calculateBinLayout(input: BinLayoutInput): BinLayoutResult {
 
   // Calculate actual pixel dimensions using shared fractional pixel utility
   const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (cellSizeY + gap) - gap;
 
   const binPixelWidth = calcFractionalPixelSize(binX, binWidth, {
     drawerDimension: drawerWidth,
@@ -118,7 +121,7 @@ export function calculateBinLayout(input: BinLayoutInput): BinLayoutResult {
   const binPixelHeight = calcFractionalPixelSize(binY, binDepth, {
     drawerDimension: drawerDepth,
     fractionalEdge: fractionalEdgeY,
-    cellSize,
+    cellSize: cellSizeY,
     gap,
   });
 
@@ -148,7 +151,7 @@ export function calculateBinLayout(input: BinLayoutInput): BinLayoutResult {
         offsetY = ((fractionalDepthPart - binEndY) / fractionalDepthPart) * fractionalCellHeight;
       } else {
         const integerY = binEndY - fractionalDepthPart;
-        offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
+        offsetY = (Math.ceil(integerY) - integerY) * (cellSizeY + gap);
       }
     } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
       if (binEndY > integerDepth) {
@@ -156,10 +159,10 @@ export function calculateBinLayout(input: BinLayoutInput): BinLayoutResult {
         offsetY =
           ((fractionalDepthPart - fractionalY) / fractionalDepthPart) * fractionalCellHeight;
       } else {
-        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSizeY + gap);
       }
     } else {
-      offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+      offsetY = (Math.ceil(binEndY) - binEndY) * (cellSizeY + gap);
     }
   }
 

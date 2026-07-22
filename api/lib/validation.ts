@@ -118,6 +118,7 @@ interface LayoutShape {
   printBedSize?: number;
   printBedDepth?: number;
   gridUnitMm?: number;
+  gridUnitMmY?: number;
   heightUnitMm?: number;
   magnetAnchor?: 'edge' | 'center';
 }
@@ -344,6 +345,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       printBedSize: isNumber(layout.printBedSize) ? layout.printBedSize : undefined,
       printBedDepth: isNumber(layout.printBedDepth) ? layout.printBedDepth : undefined,
       gridUnitMm: isNumber(layout.gridUnitMm) ? layout.gridUnitMm : undefined,
+      gridUnitMmY: isNumber(layout.gridUnitMmY) ? layout.gridUnitMmY : undefined,
       heightUnitMm: isNumber(layout.heightUnitMm) ? layout.heightUnitMm : undefined,
       magnetAnchor:
         layout.magnetAnchor === 'edge' || layout.magnetAnchor === 'center'

@@ -221,6 +221,9 @@ const layoutSetPrintBedSizeSchema = z.object({ size: positiveMm, depth: positive
 /** layout.setGridUnitMm */
 const layoutSetGridUnitMmSchema = z.object({ mm: positiveMm });
 
+/** layout.setGridUnitMmY — `mm: null` clears the non-square Y pitch. */
+const layoutSetGridUnitMmYSchema = z.object({ mm: positiveMm.nullable() });
+
 /** layout.setMagnetAnchor */
 const layoutSetMagnetAnchorSchema = z.object({ anchor: z.enum(['edge', 'center']) });
 
@@ -307,6 +310,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setName': layoutSetNameSchema,
   'layout.setPrintBedSize': layoutSetPrintBedSizeSchema,
   'layout.setGridUnitMm': layoutSetGridUnitMmSchema,
+  'layout.setGridUnitMmY': layoutSetGridUnitMmYSchema,
   'layout.setMagnetAnchor': layoutSetMagnetAnchorSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,

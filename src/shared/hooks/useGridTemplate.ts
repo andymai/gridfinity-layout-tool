@@ -70,14 +70,20 @@ export interface GridTemplateState {
 export interface UseGridTemplateOptions {
   /** Drawer dimensions */
   drawer: Drawer;
-  /** Cell size in pixels (already scaled by zoom if applicable) */
+  /** Cell size in pixels along X/columns (already scaled by zoom if applicable) */
   cellSize: number;
+  /**
+   * Cell size in pixels along Y/rows for a non-square grid. Defaults to
+   * {@link cellSize} (square), so square grids render byte-identically.
+   */
+  cellSizeY?: number;
   /** Gap between cells in pixels */
   gap: number;
 }
 
 export function useGridTemplate(options: UseGridTemplateOptions): GridTemplateState {
   const { drawer, cellSize, gap } = options;
+  const cellSizeY = options.cellSizeY ?? cellSize;
 
   return useMemo(() => {
     // Integer and fractional parts
@@ -101,7 +107,7 @@ export function useGridTemplate(options: UseGridTemplateOptions): GridTemplateSt
       ? fractionalWidthPart * (cellSize + gap) - gap
       : 0;
     const fractionalCellHeight = hasFractionalDepth
-      ? fractionalDepthPart * (cellSize + gap) - gap
+      ? fractionalDepthPart * (cellSizeY + gap) - gap
       : 0;
 
     // Generate CSS grid template for columns
@@ -115,9 +121,9 @@ export function useGridTemplate(options: UseGridTemplateOptions): GridTemplateSt
     // Note: CSS grid row 1 is at top, but our coordinate system has y=0 at bottom
     const gridTemplateRows = hasFractionalDepth
       ? fractionalEdgeY === 'end'
-        ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)` // Fractional at top (CSS row 1)
-        : `repeat(${integerDepth}, ${cellSize}px) ${fractionalCellHeight}px` // Fractional at bottom (CSS row last)
-      : `repeat(${gridRows}, ${cellSize}px)`;
+        ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSizeY}px)` // Fractional at top (CSS row 1)
+        : `repeat(${integerDepth}, ${cellSizeY}px) ${fractionalCellHeight}px` // Fractional at bottom (CSS row last)
+      : `repeat(${gridRows}, ${cellSizeY}px)`;
 
     // Helper: Get CSS column for integer cell index x (0-indexed)
     const getCssColForCell = (x: number): number => {
@@ -158,5 +164,13 @@ export function useGridTemplate(options: UseGridTemplateOptions): GridTemplateSt
       getCssColForCell,
       getCssRowForCell,
     };
-  }, [drawer.width, drawer.depth, drawer.fractionalEdgeX, drawer.fractionalEdgeY, cellSize, gap]);
+  }, [
+    drawer.width,
+    drawer.depth,
+    drawer.fractionalEdgeX,
+    drawer.fractionalEdgeY,
+    cellSize,
+    cellSizeY,
+    gap,
+  ]);
 }

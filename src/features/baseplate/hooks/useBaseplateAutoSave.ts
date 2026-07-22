@@ -19,6 +19,7 @@ import type { SaveStatus } from '@/shared/types/saveStatus';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import {
   updateDesignParams,
   updateDesignThumbnail,
@@ -54,7 +55,9 @@ function resolveThumbnailFraming(stored: StoredBaseplateParams): BaseplateThumbn
     layout.drawer.fractionalEdgeX ?? 'end',
     layout.drawer.fractionalEdgeY ?? 'end',
     nozzleSizeMm,
-    layout.drawer.outline
+    layout.drawer.outline,
+    layout.magnetAnchor,
+    effectiveGridUnitMmY(layout)
   );
   return {
     width: full.width,

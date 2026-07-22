@@ -4,7 +4,7 @@ import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
+import { Button, Collapsible, IconButton, Stepper, Switch } from '@/design-system';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
@@ -80,6 +80,8 @@ export function Sidebar() {
     dismissHalfFitSuggestion,
     clearMeasurement,
     gridUnitMm,
+    gridUnitMmY,
+    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -95,6 +97,8 @@ export function Sidebar() {
     handleHalfBinToggle,
     handleRemediate,
     setGridUnitMm,
+    setGridUnitMmY,
+    handleToggleNonSquareGrid,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
@@ -458,21 +462,61 @@ export function Sidebar() {
               >
                 <div className="text-xs text-content-secondary space-y-2">
                   <div data-help-target="grid-unit">
-                    <SettingsRow
-                      label={t('sidebar.gridUnit')}
-                      htmlFor="gridUnit"
-                      tooltip={t('sidebar.gridUnitTooltip')}
-                      unit="mm"
-                    >
-                      <DeferredNumberInput
-                        id="gridUnit"
-                        value={gridUnitMm}
-                        onChange={setGridUnitMm}
-                        min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-                        max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                        className="input w-14 py-0.5 px-1 text-xs text-right"
-                      />
-                    </SettingsRow>
+                    {nonSquareGrid ? (
+                      <>
+                        <SettingsRow
+                          label={t('sidebar.gridUnitX')}
+                          htmlFor="gridUnit"
+                          tooltip={t('sidebar.gridUnitXTooltip')}
+                          unit="mm"
+                        >
+                          <DeferredNumberInput
+                            id="gridUnit"
+                            value={gridUnitMm}
+                            onChange={setGridUnitMm}
+                            min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                            max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+                            className="input w-14 py-0.5 px-1 text-xs text-right"
+                          />
+                        </SettingsRow>
+                        <SettingsRow
+                          label={t('sidebar.gridUnitY')}
+                          htmlFor="gridUnitY"
+                          tooltip={t('sidebar.gridUnitYTooltip')}
+                          unit="mm"
+                        >
+                          <DeferredNumberInput
+                            id="gridUnitY"
+                            value={gridUnitMmY}
+                            onChange={setGridUnitMmY}
+                            min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                            max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+                            className="input w-14 py-0.5 px-1 text-xs text-right"
+                          />
+                        </SettingsRow>
+                      </>
+                    ) : (
+                      <SettingsRow
+                        label={t('sidebar.gridUnit')}
+                        htmlFor="gridUnit"
+                        tooltip={t('sidebar.gridUnitTooltip')}
+                        unit="mm"
+                      >
+                        <DeferredNumberInput
+                          id="gridUnit"
+                          value={gridUnitMm}
+                          onChange={setGridUnitMm}
+                          min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                          max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+                          className="input w-14 py-0.5 px-1 text-xs text-right"
+                        />
+                      </SettingsRow>
+                    )}
+                    <Switch
+                      label={t('sidebar.nonSquareGrid')}
+                      checked={nonSquareGrid}
+                      onChange={handleToggleNonSquareGrid}
+                    />
                   </div>
                   <div data-help-target="height-unit">
                     <SettingsRow

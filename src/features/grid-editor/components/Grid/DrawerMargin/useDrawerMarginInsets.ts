@@ -1,5 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
+import { getCellSizeY } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 
 export interface DrawerMarginInsets {
   /** Left overhang in px (−X). */
@@ -23,10 +25,11 @@ export interface DrawerMarginInsets {
  * they'd cover the overhang unless pushed out by exactly these amounts (#2549).
  */
 export function useDrawerMarginInsets(cellSize: number, gap: number): DrawerMarginInsets {
-  const { gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack, shaped } =
+  const { gridUnitMm, gridUnitMmY, paddingLeft, paddingRight, paddingFront, paddingBack, shaped } =
     useLayoutStore(
       useShallow((s) => ({
         gridUnitMm: s.layout.gridUnitMm,
+        gridUnitMmY: effectiveGridUnitMmY(s.layout),
         paddingLeft: s.layout.baseplateParams?.paddingLeft ?? 0,
         paddingRight: s.layout.baseplateParams?.paddingRight ?? 0,
         paddingFront: s.layout.baseplateParams?.paddingFront ?? 0,
@@ -41,14 +44,18 @@ export function useDrawerMarginInsets(cellSize: number, gap: number): DrawerMarg
   if (shaped) return { left: 0, right: 0, front: 0, back: 0 };
 
   // One grid unit spans `cellSize + gap` px (holds in half-grid mode — the
-  // per-unit pitch is invariant). Padding is a fraction of a unit in mm.
+  // per-unit pitch is invariant). Padding is a fraction of a unit in mm. The
+  // depth (front/back) axis uses the non-square Y pitch and cell size.
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
   const pxPerUnit = cellSize + gap;
+  const pxPerUnitY = cellSizeY + gap;
   const toPx = (mm: number): number => (Math.max(0, mm) / gridUnitMm) * pxPerUnit;
+  const toPxY = (mm: number): number => (Math.max(0, mm) / gridUnitMmY) * pxPerUnitY;
 
   return {
     left: toPx(paddingLeft),
     right: toPx(paddingRight),
-    front: toPx(paddingFront),
-    back: toPx(paddingBack),
+    front: toPxY(paddingFront),
+    back: toPxY(paddingBack),
   };
 }

@@ -64,6 +64,8 @@ const PACKING_SEARCH_MAX_PIECES = 16;
  */
 interface AxisConfig {
   readonly bedMm: number;
+  /** This axis's cell pitch in mm (X = gridUnitMm, Y = the non-square Y pitch). */
+  readonly gridUnitMm: number;
   readonly paddingStart: number;
   readonly paddingEnd: number;
   readonly startMaleMm: number;
@@ -72,6 +74,7 @@ interface AxisConfig {
 
 function makeAxisConfig(
   bedMm: number,
+  gridUnitMm: number,
   paddingStart: number,
   paddingEnd: number,
   connectorNubs: boolean | undefined,
@@ -85,11 +88,12 @@ function makeAxisConfig(
   const tongue = connectorNubs ? TONGUE_PROTRUSION : 0;
   const paired = !!preferIdenticalPieces && !!connectorNubs;
   if (paired) {
-    return { bedMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
+    return { bedMm, gridUnitMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
   }
   const startMale = !invertDovetails;
   return {
     bedMm,
+    gridUnitMm,
     paddingStart,
     paddingEnd,
     startMaleMm: startMale ? tongue : 0,
@@ -103,11 +107,8 @@ function makeAxisConfig(
  * Middle chunks have both sides joined, but exactly one is male regardless of
  * invert orientation, so this collapses to a single TONGUE_PROTRUSION.
  */
-function axisCapacity(
-  gridUnitMm: number,
-  axis: AxisConfig
-): { maxFirst: number; maxLast: number; maxMiddle: number } {
-  const { bedMm, paddingStart, paddingEnd, startMaleMm, endMaleMm } = axis;
+function axisCapacity(axis: AxisConfig): { maxFirst: number; maxLast: number; maxMiddle: number } {
+  const { bedMm, gridUnitMm, paddingStart, paddingEnd, startMaleMm, endMaleMm } = axis;
   return {
     maxFirst: Math.floor((bedMm - paddingStart - endMaleMm) / gridUnitMm),
     maxLast: Math.floor((bedMm - paddingEnd - startMaleMm) / gridUnitMm),
@@ -129,19 +130,14 @@ export function colToLetter(col: number): string {
  * Distributes units as equally as possible (minimizing variance) to support
  * the symmetry tiebreaker. Returns null if the partition is infeasible.
  */
-function partitionAxis(
-  totalUnits: number,
-  numChunks: number,
-  gridUnitMm: number,
-  axis: AxisConfig
-): number[] | null {
-  const { bedMm, paddingStart, paddingEnd, startMaleMm } = axis;
+function partitionAxis(totalUnits: number, numChunks: number, axis: AxisConfig): number[] | null {
+  const { bedMm, gridUnitMm, paddingStart, paddingEnd, startMaleMm } = axis;
   const intPart = Math.floor(totalUnits);
   const hasFrac = totalUnits - intPart >= FRACTIONAL_THRESHOLD;
 
   // Single-piece (numChunks=1) has no joins, so no tongue overhead.
   const maxWithBoth = Math.floor((bedMm - paddingStart - paddingEnd) / gridUnitMm);
-  const { maxFirst, maxLast, maxMiddle } = axisCapacity(gridUnitMm, axis);
+  const { maxFirst, maxLast, maxMiddle } = axisCapacity(axis);
 
   // Degenerate: bed can't hold even 1 unit in any position
   if (maxWithBoth < 1 || maxFirst < 1 || maxLast < 1 || maxMiddle < 1) {
@@ -224,11 +220,10 @@ function partitionAxis(
 function allPiecesFit(
   colSizes: number[],
   rowSizes: number[],
-  gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
 ): boolean {
-  return chunkSizesFit(colSizes, gridUnitMm, xAxis) && chunkSizesFit(rowSizes, gridUnitMm, yAxis);
+  return chunkSizesFit(colSizes, xAxis) && chunkSizesFit(rowSizes, yAxis);
 }
 
 /**
@@ -238,19 +233,19 @@ function allPiecesFit(
  * sides) carry a male tongue's protrusion when the convention assigns male to
  * that side, while female sides cut into the slab and add nothing.
  */
-function axisChunkMm(sizes: number[], gridUnitMm: number, axis: AxisConfig): number[] {
+function axisChunkMm(sizes: number[], axis: AxisConfig): number[] {
   const last = sizes.length - 1;
   return sizes.map((s, i) => {
     const padStart = i === 0 ? axis.paddingStart : 0;
     const padEnd = i === last ? axis.paddingEnd : 0;
     const tongueStart = i === 0 ? 0 : axis.startMaleMm;
     const tongueEnd = i === last ? 0 : axis.endMaleMm;
-    return s * gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
+    return s * axis.gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
   });
 }
 
-function chunkSizesFit(sizes: number[], gridUnitMm: number, axis: AxisConfig): boolean {
-  return axisChunkMm(sizes, gridUnitMm, axis).every((mm) => mm <= axis.bedMm + 0.001);
+function chunkSizesFit(sizes: number[], axis: AxisConfig): boolean {
+  return axisChunkMm(sizes, axis).every((mm) => mm <= axis.bedMm + 0.001);
 }
 
 /** Variance of an array — lower = more symmetric/equal. */
@@ -264,12 +259,11 @@ function symmetryScore(sizes: number[]): number {
 function tilingBedLoads(
   colSizes: number[],
   rowSizes: number[],
-  gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
 ): number {
-  const colMm = axisChunkMm(colSizes, gridUnitMm, xAxis);
-  const rowMm = axisChunkMm(rowSizes, gridUnitMm, yAxis);
+  const colMm = axisChunkMm(colSizes, xAxis);
+  const rowMm = axisChunkMm(rowSizes, yAxis);
   const footprints: Footprint[] = [];
   for (const d of rowMm) for (const w of colMm) footprints.push({ w, d });
   return estimateBedLoads(footprints, xAxis.bedMm, yAxis.bedMm);
@@ -298,7 +292,6 @@ interface TilingCandidate {
 function findMinPieceTiling(
   totalWidth: number,
   totalDepth: number,
-  gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
 ): MinPieceCandidate | null {
@@ -308,15 +301,15 @@ function findMinPieceTiling(
 
   for (let nc = 1; nc <= maxCols; nc++) {
     if (best && nc > best.pieceCount) break;
-    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, xAxis);
+    const colSizes = partitionAxis(totalWidth, nc, xAxis);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
       if (best && pieceCount > best.pieceCount) break;
-      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, yAxis);
+      const rowSizes = partitionAxis(totalDepth, nr, yAxis);
       if (!rowSizes) continue;
-      if (allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) {
+      if (allPiecesFit(colSizes, rowSizes, xAxis, yAxis)) {
         const variance = symmetryScore(colSizes) + symmetryScore(rowSizes);
         if (!best || pieceCount < best.pieceCount || variance < best.variance) {
           best = { colSizes, rowSizes, pieceCount, variance };
@@ -345,16 +338,15 @@ function findMinPieceTiling(
 function findOptimalTiling(
   totalWidth: number,
   totalDepth: number,
-  gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig
 ): { colSizes: number[]; rowSizes: number[] } {
-  const coarse = findMinPieceTiling(totalWidth, totalDepth, gridUnitMm, xAxis, yAxis);
+  const coarse = findMinPieceTiling(totalWidth, totalDepth, xAxis, yAxis);
   if (!coarse) {
     return { colSizes: [totalWidth], rowSizes: [totalDepth] };
   }
 
-  const coarseBedLoads = tilingBedLoads(coarse.colSizes, coarse.rowSizes, gridUnitMm, xAxis, yAxis);
+  const coarseBedLoads = tilingBedLoads(coarse.colSizes, coarse.rowSizes, xAxis, yAxis);
 
   // Large plate: the coarse split already packs near-optimally and the packing
   // search would be costly — keep it.
@@ -380,7 +372,7 @@ function findOptimalTiling(
     // get evaluated for the symmetry tiebreak.
     if (nc + MAX_EXTRA_PIECES_PER_BED_LOAD > best.cost) break;
 
-    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, xAxis);
+    const colSizes = partitionAxis(totalWidth, nc, xAxis);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
@@ -389,11 +381,11 @@ function findOptimalTiling(
       // best, no larger nr will either.
       if (pieceCount + MAX_EXTRA_PIECES_PER_BED_LOAD > best.cost) break;
 
-      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, yAxis);
+      const rowSizes = partitionAxis(totalDepth, nr, yAxis);
       if (!rowSizes) continue;
-      if (!allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) continue;
+      if (!allPiecesFit(colSizes, rowSizes, xAxis, yAxis)) continue;
 
-      const bedLoads = tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis);
+      const bedLoads = tilingBedLoads(colSizes, rowSizes, xAxis, yAxis);
       const cost = MAX_EXTRA_PIECES_PER_BED_LOAD * bedLoads + pieceCount;
       const variance = symmetryScore(colSizes) + symmetryScore(rowSizes);
       if (cost < best.cost || (cost === best.cost && variance < best.variance)) {
@@ -412,7 +404,6 @@ function findOptimalTiling(
 function computePaddingReductionHint(
   totalWidth: number,
   totalDepth: number,
-  gridUnitMm: number,
   xAxis: AxisConfig,
   yAxis: AxisConfig,
   currentPieceCount: number
@@ -428,7 +419,7 @@ function computePaddingReductionHint(
   const trySaving = (maxR: number, build: (r: number) => { x: AxisConfig; y: AxisConfig }) => {
     for (let r = 1; r <= maxR; r++) {
       const { x, y } = build(r);
-      const result = findOptimalTiling(totalWidth, totalDepth, gridUnitMm, x, y);
+      const result = findOptimalTiling(totalWidth, totalDepth, x, y);
       const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
       if (saved > 0) return { reductionMm: r, piecesSaved: saved };
     }
@@ -557,9 +548,10 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     fractionalEdgeX,
     fractionalEdgeY,
   } = params;
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   const { colSizes, rowSizes, colOffsets, rowOffsets } = layout;
   const halfW = (params.width * gridUnitMm) / 2;
-  const halfD = (params.depth * gridUnitMm) / 2;
+  const halfD = (params.depth * gridUnitMmY) / 2;
   const colLast = colSizes.length - 1;
   const rowLast = rowSizes.length - 1;
   const fill = {
@@ -571,7 +563,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
   const colCenter = (c: number): number =>
     colOffsets[c] * gridUnitMm + (colSizes[c] * gridUnitMm) / 2 - halfW;
   const rowCenter = (r: number): number =>
-    rowOffsets[r] * gridUnitMm + (rowSizes[r] * gridUnitMm) / 2 - halfD;
+    rowOffsets[r] * gridUnitMmY + (rowSizes[r] * gridUnitMmY) / 2 - halfD;
 
   const margins: MarginPiece[] = [];
   const push = (
@@ -672,7 +664,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     for (let r = 0; r <= rowLast; r++) {
       const extF = !det.front && r === 0 ? pf : 0;
       const extB = !det.back && r === rowLast ? pb : 0;
-      const len = rowSizes[r] * gridUnitMm + extF + extB;
+      const len = rowSizes[r] * gridUnitMmY + extF + extB;
       const cy = rowCenter(r) - extF / 2 + extB / 2;
       if (det.left) {
         const owned: MarginCorner[] = [];
@@ -700,7 +692,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
     for (let r = 0; r <= rowLast; r++) {
       const extF = r === 0 ? pf : 0;
       const extB = r === rowLast ? pb : 0;
-      const len = rowSizes[r] * gridUnitMm + extF + extB;
+      const len = rowSizes[r] * gridUnitMmY + extF + extB;
       const cy = rowCenter(r) - extF / 2 + extB / 2;
       const seam = seamFor(rowSizes[r], rowCenter(r) - cy, fractionalEdgeY);
       if (det.left) {
@@ -777,8 +769,10 @@ export function computeBaseplateTiling(
   // Pieces with dovetail connectors include male tongue protrusions in their bbox
   // (#1498). The planner reserves bed budget for those tongues so the resulting
   // STLs actually fit the bed.
+  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   const xAxis = makeAxisConfig(
     printBedWidthMm,
+    gridUnitMm,
     paddingLeft,
     paddingRight,
     connectorNubs,
@@ -787,6 +781,7 @@ export function computeBaseplateTiling(
   );
   const yAxis = makeAxisConfig(
     printBedDepthMm,
+    gridUnitMmY,
     paddingFront,
     paddingBack,
     connectorNubs,
@@ -797,7 +792,6 @@ export function computeBaseplateTiling(
   const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
     width,
     depth,
-    gridUnitMm,
     xAxis,
     yAxis
   );
@@ -806,13 +800,13 @@ export function computeBaseplateTiling(
   // Under preferIdenticalPieces, arrange palindromically so outer positions match.
   const colSizes = reorderForDisplay(
     rawColSizes,
-    axisCapacity(gridUnitMm, xAxis),
+    axisCapacity(xAxis),
     fractionalEdgeX === 'start',
     palindromic
   );
   const rowSizes = reorderForDisplay(
     rawRowSizes,
-    axisCapacity(gridUnitMm, yAxis),
+    axisCapacity(yAxis),
     fractionalEdgeY === 'start',
     palindromic
   );
@@ -821,7 +815,7 @@ export function computeBaseplateTiling(
   // between an edge position (padding overhead) and a middle one (tongue only),
   // which shifts a piece's physical footprint — so the search-time count isn't
   // guaranteed to match the tiling actually emitted.
-  const bedLoads = tilingBedLoads(colSizes, rowSizes, gridUnitMm, xAxis, yAxis);
+  const bedLoads = tilingBedLoads(colSizes, rowSizes, xAxis, yAxis);
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
   const colOffsets = cumulativeOffsets(colSizes);
@@ -901,14 +895,7 @@ export function computeBaseplateTiling(
   }
 
   const pieceCount = colSizes.length * rowSizes.length;
-  const paddingReductionHint = computePaddingReductionHint(
-    width,
-    depth,
-    gridUnitMm,
-    xAxis,
-    yAxis,
-    pieceCount
-  );
+  const paddingReductionHint = computePaddingReductionHint(width, depth, xAxis, yAxis, pieceCount);
 
   const tiling: BaseplateTiling = {
     isSplit,
@@ -961,6 +948,7 @@ function applyOutlineToTiling(
 ): BaseplateTiling {
   const outline = params.outline as DrawerOutline;
   const u = params.gridUnitMm;
+  const uy = params.gridUnitMmY ?? u;
   const padL = params.paddingLeft;
   const padF = params.paddingFront;
 
@@ -969,9 +957,9 @@ function applyOutlineToTiling(
   // survive as the padding material the arc leaves behind.
   const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => ({
     x0: padL + piece.gridOffsetX * u - piece.paddingLeft,
-    y0: padF + piece.gridOffsetY * u - piece.paddingFront,
+    y0: padF + piece.gridOffsetY * uy - piece.paddingFront,
     x1: padL + (piece.gridOffsetX + piece.widthUnits) * u + piece.paddingRight,
-    y1: padF + (piece.gridOffsetY + piece.depthUnits) * u + piece.paddingBack,
+    y1: padF + (piece.gridOffsetY + piece.depthUnits) * uy + piece.paddingBack,
   });
 
   const classByKey = new Map<string, RegionClass>();
@@ -1137,6 +1125,9 @@ export function pieceToBaseplateParams(
     width: piece.widthUnits,
     depth: piece.depthUnits,
     gridUnitMm: parentParams.gridUnitMm,
+    // A piece is only ever rotated 180° (preferIdenticalPieces), which preserves
+    // axis identity, so the parent's X/Y pitch carries straight through.
+    gridUnitMmY: parentParams.gridUnitMmY,
     outline: pieceOutline,
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,

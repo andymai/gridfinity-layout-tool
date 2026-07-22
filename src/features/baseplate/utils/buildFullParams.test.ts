@@ -98,6 +98,29 @@ describe('buildFullParams', () => {
     expect(result.gridUnitMm).toBe(42);
   });
 
+  it('defaults gridUnitMmY to the X pitch (square)', () => {
+    const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
+    expect(result.gridUnitMmY).toBe(42);
+  });
+
+  it('threads an explicit non-square Y pitch (#2704)', () => {
+    // gridUnitMmY is the last arg, after magnetAnchor.
+    const result = buildFullParams(
+      storedBase,
+      10,
+      8,
+      42,
+      'end',
+      'end',
+      undefined,
+      undefined,
+      'edge',
+      22
+    );
+    expect(result.gridUnitMm).toBe(42);
+    expect(result.gridUnitMmY).toBe(22);
+  });
+
   it('passes fractionalEdgeX through', () => {
     const start = buildFullParams(storedBase, 10, 8, 42, 'start', 'end');
     expect(start.fractionalEdgeX).toBe('start');
@@ -131,6 +154,7 @@ describe('buildFullParams', () => {
       width: 20,
       depth: 16,
       gridUnitMm: 42,
+      gridUnitMmY: 42,
       magnetHoles: false,
       magnetDiameter: 5.0,
       magnetDepth: 1.5,

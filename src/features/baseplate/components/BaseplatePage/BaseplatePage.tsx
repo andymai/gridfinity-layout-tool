@@ -15,7 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore } from '@/core/store/view';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { gridUnits } from '@/core/types';
+import { gridUnits, effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
@@ -69,6 +69,8 @@ export function BaseplatePage() {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    gridUnitMmY,
+    magnetAnchor,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -79,6 +81,8 @@ export function BaseplatePage() {
       drawerDepth: state.layout.drawer.depth,
       drawerOutline: state.layout.drawer.outline,
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
+      magnetAnchor: state.layout.magnetAnchor,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -143,7 +147,9 @@ export function BaseplatePage() {
         fractionalEdgeX,
         fractionalEdgeY,
         nozzleSizeMm,
-        drawerOutline
+        drawerOutline,
+        magnetAnchor,
+        gridUnitMmY
       ),
     [
       baseplateParams,
@@ -151,6 +157,8 @@ export function BaseplatePage() {
       drawerDepth,
       drawerOutline,
       gridUnitMm,
+      gridUnitMmY,
+      magnetAnchor,
       fractionalEdgeX,
       fractionalEdgeY,
       nozzleSizeMm,
