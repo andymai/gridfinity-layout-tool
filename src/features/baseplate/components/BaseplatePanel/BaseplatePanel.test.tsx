@@ -1056,7 +1056,7 @@ describe('shaped drawer (outline present)', () => {
       { x: 0, y: 6 * U },
     ],
   };
-  // Non-rectilinear (an arc), so padding stays fully subsumed.
+  // Non-rectilinear (an arc): padding still composes, edge-by-edge (#2705).
   const ARC_OUTLINE = {
     vertices: [
       { x: 0, y: 0, bulge: 0.4 },
@@ -1072,7 +1072,14 @@ describe('shaped drawer (outline present)', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
     expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
-    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+  });
+
+  it('composes padding for a non-rectilinear (arc) shape too', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: 5 };
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
   });
 
   it('warns when padding is too large to compose into the shape', () => {
@@ -1090,38 +1097,20 @@ describe('shaped drawer (outline present)', () => {
     expect(screen.queryByText('baseplate.shapedPaddingNotice')).toBeNull();
   });
 
-  it('hides padding controls for a non-rectilinear shape', () => {
-    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
-    render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
-    expect(screen.queryByText('baseplate.padding')).toBeNull();
-  });
-
-  it('keeps padding controls for unsynced (custom-size) plates', () => {
+  it('shows the plain padding controls (no shaped notice) for an unsynced plate', () => {
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       syncWithLayout: false,
     };
     render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
     expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.shapedPaddingNotice')).toBeNull();
   });
 
-  it('keeps padding controls when stack printing wins over the shape', () => {
-    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
-    mockLayoutState.layout.baseplateParams = {
-      ...DEFAULT_BASEPLATE_PARAMS,
-      stackPrint: { enabled: true, gapMm: 0.2 },
-    } as never;
-    render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
-  });
-
-  it('shows the shaped notice for STEP even with stacking stored on', () => {
+  it('shows the compose notice for STEP even with stacking stored on', () => {
     // STEP clears stackPrint before buildFullParams, so the exported solid IS
-    // shaped — the panel must follow the format-aware stackEnabled signal. A
-    // non-rectilinear shape keeps padding fully subsumed.
+    // shaped — the panel must follow the format-aware stackEnabled signal.
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
@@ -1129,7 +1118,7 @@ describe('shaped drawer (outline present)', () => {
     } as never;
     mockExportFormat = 'step';
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
   });
 });
 
@@ -1186,7 +1175,7 @@ describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {
     expect(screen.queryByText('baseplate.detachMargins')).toBeNull();
   });
 
-  it('treats a drifted authoring echo as a painted shape', () => {
+  it('treats a drifted authoring echo as a painted shape (padding still composes)', () => {
     mockLayoutState.layout.drawer = {
       width: 4,
       depth: 6,
@@ -1197,8 +1186,9 @@ describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {
       },
     } as never;
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
-    expect(screen.queryByText('baseplate.padding')).toBeNull();
+    // Not corner-shaped (echo mismatch), so it composes as a freeform shape.
+    expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
   });
 
   it('mm entry keeps sync + shape and distributes the remainder as padding', () => {
