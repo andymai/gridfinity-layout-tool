@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.276.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.275.0...gridfinity-layout-tool-v4.276.0) (2026-07-22)
+
+
+### Features
+
+* **designer:** non-square depth axis in the 3D layout preview ([#2704](https://github.com/andymai/gridfinity-layout-tool/issues/2704)) ([7f47d12](https://github.com/andymai/gridfinity-layout-tool/commit/7f47d12644aca146d212f94f7913958ec3d2dab7))
+
 ## [4.275.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.274.0...gridfinity-layout-tool-v4.275.0) (2026-07-22)
 
 
