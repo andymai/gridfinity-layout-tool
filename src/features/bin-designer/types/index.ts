@@ -48,7 +48,13 @@ export type {
 } from './featureColors';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { LidConfig } from './lid';
-import type { SurfaceTextConfig, TextStyleDefaults, TextStyleOverride } from './text';
+import type {
+  SurfaceTextConfig,
+  TextStyleDefaults,
+  TextStyleOverride,
+  WallTextSide,
+  WallTextVerticalAlign,
+} from './text';
 import type {
   Cutout,
   CutoutConfig,
@@ -67,12 +73,16 @@ export type {
   TextStyleDefaults,
   TextStyleOverride,
   SurfaceTextConfig,
+  WallTextSide,
+  WallTextVerticalAlign,
 } from './text';
 export {
   TEXT_MAX_LENGTH,
   TEXT_SIDE_TO_ANCHOR,
   DEFAULT_CUTOUT_TEXT_ANCHOR,
   withFontSizeOverride,
+  WALL_TEXT_SIDES,
+  WALL_TEXT_ALIGNS,
 } from './text';
 
 /**
@@ -1206,8 +1216,10 @@ export interface DesignerState {
   setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;
   setLabelTabTextStyle: (overrides: TextStyleOverride | null) => void;
 
-  // Surface text actions (lid top; walls in a follow-up)
+  // Surface text actions (lid top + outer walls)
   setLidText: (text: string) => void;
+  setWallText: (side: WallTextSide, text: string) => void;
+  setWallTextAlign: (align: WallTextVerticalAlign) => void;
   setSurfaceTextStyle: (overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions

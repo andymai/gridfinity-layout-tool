@@ -1,0 +1,154 @@
+/**
+ * Wall surface-text scenarios (issue #2695).
+ *
+ * Hand-written (not the snapshot runner) because text generation needs fonts
+ * in the brepjs registry, and because the interesting claims are positional —
+ * engrave must not move the outer bbox, emboss must extend it by exactly the
+ * clamped relief — which triangleCount snapshots can't express.
+ *
+ *   pnpm run test:run src/features/generation/worker/generators/binGenerator.scenario.wallText
+ */
+// @vitest-environment node
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { loadFont, isErr } from 'brepjs';
+import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { BinParams } from '@/shared/types/bin';
+import { canBinUseDirectMesh } from './binDirectMesh';
+import { WALL_TEXT_MAX_EMBOSS } from './wallTextLayout';
+
+beforeAll(async () => {
+  await initBrepjs();
+  for (const [file, family] of [
+    ['AtkinsonHyperlegible-Regular.ttf', 'atkinson'],
+    ['AllertaStencil-Regular.ttf', 'allerta-stencil'],
+  ] as const) {
+    const buf = readFileSync(resolve(__dirname, `../assets/fonts/${file}`));
+    const result = await loadFont(
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+      family
+    );
+    if (isErr(result)) throw new Error(`Font load failed: ${result.error.message}`);
+  }
+}, 30_000);
+
+function makeParams(
+  surfaceText: BinParams['surfaceText'],
+  extra: Partial<BinParams> = {}
+): BinParams {
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 4,
+    ...extra,
+    ...(surfaceText !== undefined ? { surfaceText } : {}),
+  };
+}
+
+describe('wall surface text scenarios', () => {
+  it('engraved front text changes the mesh without moving the outer bbox', () => {
+    const generateBin = getGenerateBin();
+    const plain = generateBin(makeParams(undefined));
+    const engraved = generateBin(makeParams({ walls: { front: 'ABC' } }));
+    assertStructurallyValid(engraved, 'engraved wall text');
+    expect(engraved.triangleCount).not.toBe(plain.triangleCount);
+    const a = boundingBox(plain.vertices);
+    const b = boundingBox(engraved.vertices);
+    expect(Math.abs(b.minY - a.minY)).toBeLessThan(0.01);
+    expect(Math.abs(b.maxY - a.maxY)).toBeLessThan(0.01);
+  });
+
+  it('embossed text extends the front face by the clamped relief', () => {
+    const generateBin = getGenerateBin();
+    const plain = generateBin(makeParams(undefined));
+    const embossed = generateBin(
+      // depth 5 must clamp to WALL_TEXT_MAX_EMBOSS so the relief can't ram
+      // an adjacent bin on the grid.
+      makeParams({ walls: { front: 'ABC' }, style: { mode: 'emboss', depth: 5 } })
+    );
+    assertStructurallyValid(embossed, 'embossed wall text');
+    const delta = boundingBox(plain.vertices).minY - boundingBox(embossed.vertices).minY;
+    expect(delta).toBeGreaterThan(WALL_TEXT_MAX_EMBOSS - 0.1);
+    expect(delta).toBeLessThan(WALL_TEXT_MAX_EMBOSS + 0.1);
+  });
+
+  it('through-cut text pierces the wall (stencil auto-swap) and stays valid', () => {
+    const generateBin = getGenerateBin();
+    const plain = generateBin(makeParams(undefined));
+    const pierced = generateBin(
+      makeParams({ walls: { front: 'AB' }, style: { mode: 'through-cut' } })
+    );
+    assertStructurallyValid(pierced, 'through-cut wall text');
+    expect(pierced.triangleCount).not.toBe(plain.triangleCount);
+  });
+
+  it('renders text on all four walls at once', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin(
+      makeParams({ walls: { front: 'A', back: 'B', left: 'C', right: 'D' } })
+    );
+    assertStructurallyValid(result, 'four-wall text');
+  });
+
+  it('clears the honeycomb pattern behind the text', () => {
+    const generateBin = getGenerateBin();
+    const wallPattern = { enabled: true, pattern: 'honeycomb', scale: 0.5 } as const;
+    const patternOnly = generateBin(makeParams(undefined, { wallPattern }));
+    const patternAndText = generateBin(makeParams({ walls: { front: 'ABC' } }, { wallPattern }));
+    assertStructurallyValid(patternAndText, 'pattern + wall text');
+    // The cleared pattern loses hex prisms AND gains glyph cuts — the mesh
+    // can't be identical to pattern-only.
+    expect(patternAndText.triangleCount).not.toBe(patternOnly.triangleCount);
+  });
+
+  it('auto-avoids a wall cutout on the same wall', () => {
+    const generateBin = getGenerateBin();
+    const walls = {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 70, depth: 50 },
+    };
+    const result = generateBin(makeParams({ walls: { front: 'ABC' } }, { walls }));
+    assertStructurallyValid(result, 'wall text + cutout');
+  });
+
+  it('stays valid on a half-grid width bin', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin(makeParams({ walls: { front: 'AB' } }, { width: 2.5 }));
+    assertStructurallyValid(result, 'half-grid wall text');
+  });
+
+  it('stays valid with asymmetric overhang', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin(
+      makeParams(
+        { walls: { front: 'ABC' } },
+        { overhang: { left: 0, right: 8, front: 0, back: 0 } }
+      )
+    );
+    assertStructurallyValid(result, 'overhang wall text');
+  });
+
+  it('polygon (cellMask) bins ignore wall text', () => {
+    const generateBin = getGenerateBin();
+    const mask = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+    };
+    const plain = generateBin(makeParams(undefined, { cellMask: mask }));
+    const withText = generateBin(makeParams({ walls: { front: 'ABC' } }, { cellMask: mask }));
+    expect(withText.triangleCount).toBe(plain.triangleCount);
+  });
+
+  it('wall text rejects the direct-mesh draft path', () => {
+    expect(canBinUseDirectMesh(makeParams(undefined))).toBe(true);
+    expect(canBinUseDirectMesh(makeParams({ walls: { front: 'ABC' } }))).toBe(false);
+    // Blank strings don't disqualify the draft.
+    expect(canBinUseDirectMesh(makeParams({ walls: { front: '   ' } }))).toBe(true);
+  });
+});

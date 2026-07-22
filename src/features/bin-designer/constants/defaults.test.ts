@@ -281,6 +281,33 @@ describe('migrateParams', () => {
     expect(result).not.toHaveProperty('surfaceText');
   });
 
+  it('preserves wall texts, dropping unknown sides and blank values', () => {
+    const result = migrateParams({
+      surfaceText: {
+        walls: { front: ' Cables ', diagonal: 'nope', back: '   ', left: 'x'.repeat(60) },
+        wallAlign: 'top',
+      },
+    } as any);
+    // Kept sides are clamped AND trimmed, like the lid text.
+    expect(result.surfaceText?.walls).toEqual({ front: 'Cables', left: 'x'.repeat(50) });
+    expect(result.surfaceText?.wallAlign).toBe('top');
+  });
+
+  it('drops wallAlign when it is the center default or no wall text remains', () => {
+    expect(
+      migrateParams({ surfaceText: { walls: { front: 'ok' }, wallAlign: 'center' } } as any)
+        .surfaceText?.wallAlign
+    ).toBeUndefined();
+    expect(
+      migrateParams({ surfaceText: { walls: { front: '  ' }, wallAlign: 'top' } } as any)
+        .surfaceText
+    ).toBeUndefined();
+    expect(
+      migrateParams({ surfaceText: { walls: { front: 'ok' }, wallAlign: 'sideways' } } as any)
+        .surfaceText?.wallAlign
+    ).toBeUndefined();
+  });
+
   it('defaults the exterior-wall collar to 0 for legacy designs', () => {
     const result = migrateParams({ width: 2, depth: 2, height: 3 });
     expect(result.extraWallHeightMm).toBe(0);

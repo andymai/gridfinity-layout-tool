@@ -62,6 +62,8 @@ export type {
   TextStyleDefaults,
   TextStyleOverride,
   SurfaceTextConfig,
+  WallTextSide,
+  WallTextVerticalAlign,
   DividerOverride,
   OverhangConfig,
 } from '@/features/bin-designer/types';
@@ -85,6 +87,8 @@ export {
   CHAMFER_SHAPES,
   MAX_ARRAY_INSTANCES,
   DEFAULT_PATTERN_SCALE,
+  WALL_TEXT_SIDES,
+  WALL_TEXT_ALIGNS,
 } from '@/features/bin-designer/types';
 
 /**

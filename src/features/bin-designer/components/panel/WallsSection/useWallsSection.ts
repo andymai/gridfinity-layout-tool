@@ -4,18 +4,35 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import type { WallPatternType } from '@/features/bin-designer/types';
-import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
+import type {
+  TextMode,
+  WallPatternType,
+  WallTextVerticalAlign,
+} from '@/features/bin-designer/types';
+import { DEFAULT_PATTERN_SCALE, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export function useWallsSection() {
-  const { wallThickness, wallPattern, params, setParam, updateWallPattern } = useDesignerStore(
+  const {
+    wallThickness,
+    wallPattern,
+    params,
+    setParam,
+    updateWallPattern,
+    setWallText,
+    setWallTextAlign,
+    setSurfaceTextStyle,
+  } = useDesignerStore(
     useShallow((s) => ({
       wallThickness: s.params.wallThickness,
       wallPattern: s.params.wallPattern,
       params: s.params,
       setParam: s.setParam,
       updateWallPattern: s.updateWallPattern,
+      setWallText: s.setWallText,
+      setWallTextAlign: s.setWallTextAlign,
+      setSurfaceTextStyle: s.setSurfaceTextStyle,
     }))
   );
   const t = useTranslation();
@@ -66,6 +83,35 @@ export function useWallsSection() {
     return undefined;
   }, [someWallsSlotted, patternStatus.available, t]);
 
+  // ── Wall surface text (#2695) ─────────────────────────────────────────
+  // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
+  // bins skip wall text entirely.
+  const wallTexts = params.surfaceText?.walls ?? {};
+  const wallTextAlign: WallTextVerticalAlign = params.surfaceText?.wallAlign ?? 'center';
+  const wallTextMode: TextMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
+  const hasAnyWallText = Object.values(wallTexts).some(
+    (text) => typeof text === 'string' && text.trim() !== ''
+  );
+  const wallTextDisabledReason = isPartialMask(params.cellMask)
+    ? t('binDesigner.walls.text.disabledPolygon')
+    : params.base.solid
+      ? t('binDesigner.walls.text.disabledSolid')
+      : undefined;
+
+  // Adapter matching the deferred-commit input's (id, value) signature; the
+  // id slot carries the wall side index into WALL_TEXT_SIDES.
+  const commitWallTextAt = useCallback(
+    (index: number, value: string) => setWallText(WALL_TEXT_SIDES[index], value),
+    [setWallText]
+  );
+
+  const setTextMode = useCallback(
+    (mode: TextMode) => {
+      setSurfaceTextStyle({ ...params.surfaceText?.style, mode });
+    },
+    [params.surfaceText, setSurfaceTextStyle]
+  );
+
   return {
     state: {
       wallThickness,
@@ -76,8 +122,20 @@ export function useWallsSection() {
       patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
+      wallTexts,
+      wallTextAlign,
+      wallTextMode,
+      hasAnyWallText,
+      wallTextDisabledReason,
     },
-    handlers: { handleChange, handlePatternChange, handleScaleChange },
+    handlers: {
+      handleChange,
+      handlePatternChange,
+      handleScaleChange,
+      commitWallTextAt,
+      setWallTextAlign,
+      setTextMode,
+    },
     t,
   };
 }

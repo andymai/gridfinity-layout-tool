@@ -102,14 +102,27 @@ export function withFontSizeOverride(
 /** Hard cap on a single text string — input above this is rejected. */
 export const TEXT_MAX_LENGTH = 50;
 
+/** Outer wall that can carry surface text. Same axis convention as the bin. */
+export type WallTextSide = 'front' | 'back' | 'left' | 'right';
+export const WALL_TEXT_SIDES: readonly WallTextSide[] = ['front', 'back', 'left', 'right'] as const;
+
+/**
+ * Vertical alignment of wall text within its clear region on the wall face.
+ * Shared across all walls (one knob, not four). Absent = 'center'.
+ */
+export type WallTextVerticalAlign = 'top' | 'center' | 'bottom';
+export const WALL_TEXT_ALIGNS: readonly WallTextVerticalAlign[] = [
+  'top',
+  'center',
+  'bottom',
+] as const;
+
 /**
  * Text on the design's exterior surfaces (issue #2695). One shared style for
  * all surface text (merged over `BinParams.textDefaults`), with a string per
- * surface. Today the lid top is the only surface; per-wall strings join in a
- * follow-up PR, which is why the strings are named per-surface rather than a
- * single `text` field.
+ * surface.
  *
- * Absent object or absent/empty `lidText` ⇒ no surface text; store setters
+ * Absent object or absent/empty strings ⇒ no surface text; store setters
  * drop the key entirely rather than persisting `{}` so pre-feature designs
  * serialize byte-identically.
  */
@@ -120,6 +133,15 @@ export interface SurfaceTextConfig {
    * face) or the bin has a polygon `cellMask` (auto-fit assumes a rectangle).
    */
   readonly lidText?: string;
+  /**
+   * Per-wall text on the bin's outer walls. Each string auto-fits into the
+   * largest clear region on its wall (avoiding wall cutouts and handles, and
+   * clearing any wall pattern behind it). Ignored for polygon `cellMask`
+   * bins and for walls occupied by slots (slotted style).
+   */
+  readonly walls?: Partial<Record<WallTextSide, string>>;
+  /** Vertical alignment of wall text within its clear region. Absent = 'center'. */
+  readonly wallAlign?: WallTextVerticalAlign;
   /** Shared style for all surface text, merged over `textDefaults`. */
   readonly style?: TextStyleOverride;
 }

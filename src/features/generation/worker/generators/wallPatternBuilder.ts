@@ -58,6 +58,8 @@ import {
   type RampZoneClipParams,
 } from './wallPatternTypes';
 import { buildClippedWallPattern } from './wallPatternCompound';
+import { computeWallTextLayouts } from './wallTextLayout';
+import type { WallTextLayout } from './wallTextLayout';
 
 /**
  * Build the extruded 2D element stamped at each pattern center.
@@ -165,6 +167,16 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       : buildHandleWallDefs(innerW, innerD);
   const handleWallDefForSide = new Map(handleWallDefs.map((d) => [d.side, d]));
 
+  // Wall text (#2695): the pattern is cleared behind each wall's fitted text
+  // bbox. The solver returns [] for polygon bins, so this composes with the
+  // polygon path below without extra guards. Positioning reuses the handle
+  // wall-def convention, so rect bins need the defs even with handles off.
+  const wallTextLayouts = computeWallTextLayouts(params, dim);
+  const wallTextBySide = new Map<string, WallTextLayout>(wallTextLayouts.map((l) => [l.side, l]));
+  const textWallDefs =
+    wallTextLayouts.length > 0 && !isPolygon ? buildHandleWallDefs(innerW, innerD) : [];
+  const textWallDefForSide = new Map(textWallDefs.map((d) => [d.side, d]));
+
   for (const wall of wallDescriptors) {
     checkCancelled(signal);
 
@@ -261,6 +273,21 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       }
     }
 
+    // Text border clipping (#2695) — clear the pattern behind the fitted
+    // text bbox (buildHandleClipBoxes adds CUTOUT_BORDER_WIDTH around it).
+    let textClip: HandleClipParams | null = null;
+    const textLayout = wall.allowClip ? wallTextBySide.get(wall.side) : undefined;
+    const textWall = textWallDefForSide.get(wall.side);
+    if (textLayout && textWall) {
+      textClip = {
+        segments: [{ offset: textLayout.centerU, width: textLayout.textW }],
+        effectiveHeight: textLayout.textH,
+        centerZ: textLayout.centerZ,
+        clipExtrudeDepth,
+        handleWall: textWall,
+      };
+    }
+
     const cutoutKeyPart = cutoutCfg?.enabled
       ? buildCacheKey(
           'clip',
@@ -350,10 +377,20 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       )
     );
 
+    const textKeyPart = textClip
+      ? buildCacheKey(
+          'txt',
+          quantize(textClip.segments[0].offset),
+          quantize(textClip.segments[0].width),
+          quantize(textClip.centerZ),
+          quantize(textClip.effectiveHeight)
+        )
+      : 'notxt';
+
     // Clipped-result key: derived from baseKey so cache entries for different
     // wall geometries can't collide via matching clip params.
     const clippedKey = compactKey(
-      buildCacheKey('v1', baseKey, cutoutKeyPart, handleKeyPart, rampKeyPart)
+      buildCacheKey('v1', baseKey, cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart)
     );
 
     const wallStart = perfCollector ? performance.now() : 0;
@@ -367,7 +404,8 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         baseKey,
         clip,
         handleClip,
-        rampClip
+        rampClip,
+        textClip
       );
       if (built) {
         setFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey, built);

@@ -338,14 +338,16 @@ function validateTextStyleOverride(value: unknown, label: string): string | null
   return null;
 }
 
-const ALLOWED_SURFACE_TEXT_KEYS = new Set(['lidText', 'style']);
+const ALLOWED_SURFACE_TEXT_KEYS = new Set(['lidText', 'walls', 'wallAlign', 'style']);
+const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
+const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
 
 /**
- * Exterior-surface text (issue #2695): lid-top text today, per-wall text in a
- * follow-up. Strings share the client's `TEXT_MAX_LENGTH = 50` cap (mirrored
- * numerically, like `compartmentTexts`); the style override reuses the
- * `textDefaults` field caps so a crafted share can't smuggle a depth/size
- * that crashes the BREP worker.
+ * Exterior-surface text (issue #2695): a lid-top string plus per-wall strings
+ * and a shared vertical alignment. Strings share the client's
+ * `TEXT_MAX_LENGTH = 50` cap (mirrored numerically, like `compartmentTexts`);
+ * the style override reuses the `textDefaults` field caps so a crafted share
+ * can't smuggle a depth/size that crashes the BREP worker.
  */
 function validateSurfaceText(value: unknown): string | null {
   if (!isObject(value)) return 'surfaceText must be an object';
@@ -361,6 +363,25 @@ function validateSurfaceText(value: unknown): string | null {
     if (value.lidText.length > 50) {
       return 'surfaceText.lidText must not exceed 50 characters';
     }
+  }
+  if (value.walls !== undefined) {
+    if (!isObject(value.walls)) return 'surfaceText.walls must be an object';
+    for (const key of Object.keys(value.walls)) {
+      if (!(VALID_WALL_TEXT_SIDES as readonly string[]).includes(key)) {
+        return `surfaceText.walls has unknown key: ${key}`;
+      }
+      const text = value.walls[key];
+      if (typeof text !== 'string') return `surfaceText.walls.${key} must be a string`;
+      if (text.length > 50) {
+        return `surfaceText.walls.${key} must not exceed 50 characters`;
+      }
+    }
+  }
+  if (
+    value.wallAlign !== undefined &&
+    !(VALID_WALL_TEXT_ALIGNS as readonly string[]).includes(value.wallAlign as string)
+  ) {
+    return `surfaceText.wallAlign must be one of: ${VALID_WALL_TEXT_ALIGNS.join(', ')}`;
   }
   if (value.style !== undefined) {
     const styleErr = validateTextStyleOverride(value.style, 'surfaceText.style');

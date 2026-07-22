@@ -112,9 +112,10 @@ export function buildClippedWallPattern(
   baseKey: string,
   clip: CutoutClipParams | null,
   handleClip: HandleClipParams | null,
-  rampClip: RampZoneClipParams | null
+  rampClip: RampZoneClipParams | null,
+  textClip: HandleClipParams | null = null
 ): Shape3D | null {
   const base = getCachedBaseCompound(shapeTemplate, wall, halfDepth, baseKey);
   if (!base) return null;
-  return applyWallPatternClips(base, wall, clip, handleClip, rampClip);
+  return applyWallPatternClips(base, wall, clip, handleClip, rampClip, textClip);
 }

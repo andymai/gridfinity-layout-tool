@@ -46,11 +46,18 @@ import type {
   TextMode,
   TextStyleDefaults,
   TextStyleOverride,
+  WallTextSide,
+  WallTextVerticalAlign,
 } from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
-import { DEFAULT_TEXT_STYLE_DEFAULTS, TEXT_MAX_LENGTH } from '../types/text';
+import {
+  DEFAULT_TEXT_STYLE_DEFAULTS,
+  TEXT_MAX_LENGTH,
+  WALL_TEXT_ALIGNS,
+  WALL_TEXT_SIDES,
+} from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -669,15 +676,46 @@ function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
 
 function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
-  const { lidText, style } = raw as { lidText?: unknown; style?: unknown };
+  const { lidText, walls, wallAlign, style } = raw as {
+    lidText?: unknown;
+    walls?: unknown;
+    wallAlign?: unknown;
+    style?: unknown;
+  };
   // Trimmed on write (store setters) — trim again here so the worker (which
   // trims before generating) and persisted state can't disagree.
   const text = typeof lidText === 'string' ? lidText.slice(0, TEXT_MAX_LENGTH).trim() : undefined;
   const hasText = text !== undefined && text !== '';
+
+  // Per-wall strings: keep only known sides with non-empty values, clamped
+  // and trimmed like the lid text.
+  const migratedWalls: Partial<Record<WallTextSide, string>> = {};
+  if (typeof walls === 'object' && walls !== null) {
+    for (const side of WALL_TEXT_SIDES) {
+      const value = (walls as Record<string, unknown>)[side];
+      if (typeof value === 'string' && value.trim() !== '') {
+        migratedWalls[side] = value.slice(0, TEXT_MAX_LENGTH).trim();
+      }
+    }
+  }
+  const hasWalls = Object.keys(migratedWalls).length > 0;
+
+  // Alignment only means something while wall text exists; 'center' is the
+  // implicit default, so it's dropped rather than persisted.
+  const align =
+    hasWalls &&
+    typeof wallAlign === 'string' &&
+    (WALL_TEXT_ALIGNS as readonly string[]).includes(wallAlign) &&
+    wallAlign !== 'center'
+      ? (wallAlign as WallTextVerticalAlign)
+      : undefined;
+
   const migratedStyle = migrateTextStyleOverride(style);
-  if (!hasText && migratedStyle === undefined) return undefined;
+  if (!hasText && !hasWalls && migratedStyle === undefined) return undefined;
   return {
     ...(hasText ? { lidText: text } : {}),
+    ...(hasWalls ? { walls: migratedWalls } : {}),
+    ...(align !== undefined ? { wallAlign: align } : {}),
     ...(migratedStyle !== undefined ? { style: migratedStyle } : {}),
   };
 }

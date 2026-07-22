@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { WallsSection } from './WallsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -45,6 +45,77 @@ describe('WallsSection', () => {
   it('always renders handle section', () => {
     render(<WallsSection />);
     expect(screen.getByText('Handles')).toBeInTheDocument();
+  });
+
+  describe('wall text (#2695)', () => {
+    it('renders one input per wall', () => {
+      render(<WallsSection />);
+      expect(screen.getByText('Wall text')).toBeInTheDocument();
+      for (const side of ['Front', 'Back', 'Left', 'Right']) {
+        expect(screen.getByRole('textbox', { name: `${side} wall text` })).toBeInTheDocument();
+      }
+    });
+
+    it('commits a wall string on blur', () => {
+      render(<WallsSection />);
+      const input = screen.getByRole('textbox', { name: 'Front wall text' });
+      fireEvent.change(input, { target: { value: 'Cables' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toBe('Cables');
+    });
+
+    it('shows mode + alignment pickers only when text is present', () => {
+      const { unmount } = render(<WallsSection />);
+      expect(screen.queryByRole('radio', { name: 'Emboss' })).not.toBeInTheDocument();
+      unmount();
+
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      expect(screen.getByRole('radio', { name: 'Emboss' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Top' })).toBeInTheDocument();
+    });
+
+    it('alignment picker writes wallAlign', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Top' }));
+      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
+    });
+
+    it('mode picker writes the shared surface style', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Emboss' }));
+      expect(useDesignerStore.getState().params.surfaceText?.style?.mode).toBe('emboss');
+    });
+
+    it('replaces the inputs with a reason for polygon and solid bins', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      const { unmount } = render(<WallsSection />);
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
+      expect(screen.getByText('Not available for custom-shape bins.')).toBeInTheDocument();
+      unmount();
+
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, solid: true } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
+      expect(screen.getByText('Not available for solid bins.')).toBeInTheDocument();
+    });
   });
 
   it('renders with honeycomb pattern selected', () => {
