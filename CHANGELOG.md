@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.282.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.281.0...gridfinity-layout-tool-v4.282.0) (2026-07-22)
+
+
+### Features
+
+* **labels:** scale label sockets to the print nozzle ([#2690](https://github.com/andymai/gridfinity-layout-tool/issues/2690)) ([#2727](https://github.com/andymai/gridfinity-layout-tool/issues/2727)) ([01b5694](https://github.com/andymai/gridfinity-layout-tool/commit/01b56940ef778e68ffc90ad4274c576e0da56e8d))
+
 ## [4.281.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.280.0...gridfinity-layout-tool-v4.281.0) (2026-07-22)
 
 
