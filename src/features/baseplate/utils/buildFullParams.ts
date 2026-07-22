@@ -17,6 +17,7 @@ import {
   cornerCutVertices,
   cornerCutsMatchVertices,
 } from '@/shared/utils/cornerCutOutline';
+import { padRectilinearOutline } from '@/shared/utils/padOutline';
 
 /** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
  * own geometric radius clamp). */
@@ -58,7 +59,23 @@ function resolveOutline(
       drawerOutline.authoring?.kind === 'corners' ? drawerOutline.authoring.corners : undefined;
     const cornerShaped =
       cuts !== undefined && cornerCutsMatchVertices(drawerOutline.vertices, widthMm, depthMm, cuts);
-    if (!cornerShaped) return { outline: drawerOutline, paddingOn: false };
+    if (!cornerShaped) {
+      // Freeform shapes (painted cells, traced footprints) have no parametric
+      // resize, but a *rectilinear* loop composes with padding edge-by-edge —
+      // every boundary edge, including notch walls, offsets outward onto the
+      // padded plate extent. Non-rectilinear shapes (arcs/diagonals) or
+      // paddings that would cross an edge yield null, leaving the shape to
+      // subsume padding (stored values untouched, functionally zeroed).
+      const padded = padRectilinearOutline(drawerOutline, {
+        left: stored.paddingLeft,
+        right: stored.paddingRight,
+        front: stored.paddingFront,
+        back: stored.paddingBack,
+      });
+      return padded !== null
+        ? { outline: padded, paddingOn: true }
+        : { outline: drawerOutline, paddingOn: false };
+    }
 
     const totalW = widthMm + stored.paddingLeft + stored.paddingRight;
     const totalD = depthMm + stored.paddingFront + stored.paddingBack;

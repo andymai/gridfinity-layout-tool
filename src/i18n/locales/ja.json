@@ -64,6 +64,7 @@
   "baseplate.cornerRadiusTR": "右上",
   "baseplate.cornerRadiusUnlink": "角ごとに設定",
   "baseplate.cornerShapedPaddingNotice": "角の丸みは引き出しの形状（レイアウトタブ）で決まります。パディングは形状の輪郭の外側にプレートを拡張します。",
+  "baseplate.shapedPaddingNotice": "パディングは引き出しのカスタム形状の外側にプレートを拡張します。",
   "baseplate.decreasePadding": "{label}を減らす",
   "baseplate.dovetails.invert": "コネクタを反転",
   "baseplate.editDimensions": "ベースプレートの寸法を編集",

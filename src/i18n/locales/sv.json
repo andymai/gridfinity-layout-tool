@@ -64,6 +64,7 @@
   "baseplate.cornerRadiusTR": "Övre höger",
   "baseplate.cornerRadiusUnlink": "Per hörn",
   "baseplate.cornerShapedPaddingNotice": "Hörnavrundningen kommer från lådans form (fliken Layout). Utfyllnaden utökar plattan utåt runt den formade konturen.",
+  "baseplate.shapedPaddingNotice": "Utfyllnaden utökar plattan utåt runt lådans anpassade form.",
   "baseplate.decreasePadding": "Minska {label}",
   "baseplate.dovetails.invert": "Invertera kopplingar",
   "baseplate.editDimensions": "Redigera bottenplattans mått",

@@ -64,6 +64,7 @@
   "baseplate.cornerRadiusTR": "Верхній правий",
   "baseplate.cornerRadiusUnlink": "Окремо для кожного кута",
   "baseplate.cornerShapedPaddingNotice": "Заокруглення кутів визначається формою шухляди (вкладка «Макет»). Відступи розширюють пластину назовні навколо фігурного контуру.",
+  "baseplate.shapedPaddingNotice": "Відступи розширюють пластину назовні навколо власної форми шухляди.",
   "baseplate.decreasePadding": "Зменшити {label}",
   "baseplate.dovetails.invert": "Інвертувати з’єднувачі",
   "baseplate.editDimensions": "Редагувати розміри базової плити",

@@ -64,6 +64,7 @@
   "baseplate.cornerRadiusTR": "Rechtsboven",
   "baseplate.cornerRadiusUnlink": "Per hoek",
   "baseplate.cornerShapedPaddingNotice": "De hoekafronding komt van de ladevorm (tabblad Indeling). De opvulling breidt de plaat naar buiten uit rond de gevormde contour.",
+  "baseplate.shapedPaddingNotice": "De opvulling breidt de plaat naar buiten uit rond de aangepaste vorm van de lade.",
   "baseplate.decreasePadding": "{label} verkleinen",
   "baseplate.dovetails.invert": "Verbinders omkeren",
   "baseplate.editDimensions": "Basisplaatafmetingen bewerken",
