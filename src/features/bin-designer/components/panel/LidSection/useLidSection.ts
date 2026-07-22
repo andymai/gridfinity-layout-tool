@@ -27,6 +27,7 @@ import {
   type LidClickRails,
   type LidConfig,
   type LidRailSide,
+  type TextMode,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -218,6 +219,8 @@ export function useLidSection() {
     updateHandles,
     updateWallPattern,
     setParam,
+    setLidText,
+    setSurfaceTextStyle,
   } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
@@ -229,6 +232,8 @@ export function useLidSection() {
       updateHandles: s.updateHandles,
       updateWallPattern: s.updateWallPattern,
       setParam: s.setParam,
+      setLidText: s.setLidText,
+      setSurfaceTextStyle: s.setSurfaceTextStyle,
     }))
   );
 
@@ -408,6 +413,32 @@ export function useLidSection() {
   // valueSummary's "no rails" branch.
   const anyRail =
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
+
+  // ── Lid-top text (#2695) ──────────────────────────────────────────────
+  // Mirrors the worker gates in `resolveLidInputs`: a stackable top owns the
+  // surface, and polygon lids are excluded (rectangular auto-fit).
+  const lidText = params.surfaceText?.lidText ?? '';
+  const textDisabledReason = lid.stackableTop
+    ? t('binDesigner.lid.text.disabledStackable')
+    : isPartialMask(params.cellMask)
+      ? t('binDesigner.lid.text.disabledPolygon')
+      : undefined;
+  // Effective mode: the shared surface-text override wins over textDefaults.
+  const textMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
+
+  // Adapter so the deferred-commit input (shared with compartment labels) can
+  // take the store action by reference; the id slot is unused for the lid.
+  const commitLidText = useCallback(
+    (_id: number, value: string) => setLidText(value),
+    [setLidText]
+  );
+
+  const setTextMode = useCallback(
+    (mode: TextMode) => {
+      setSurfaceTextStyle({ ...params.surfaceText?.style, mode });
+    },
+    [params.surfaceText, setSurfaceTextStyle]
+  );
 
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
   // readout matches the generated geometry. Floor thickness is dynamic
@@ -601,6 +632,11 @@ export function useLidSection() {
       railsReadout,
       compatibilityIssues,
       fixableIds: FIXABLE_IDS,
+      // Lid-top text (#2695)
+      lidText,
+      textMode,
+      textDisabledReason,
+      textOnTrayFloor: topSurface === 'tray',
     },
     handlers: {
       toggleEnabled,
@@ -616,6 +652,8 @@ export function useLidSection() {
       setTrayDepth,
       setTrayWall,
       fixIssue,
+      commitLidText,
+      setTextMode,
     },
     t,
   };

@@ -102,6 +102,28 @@ export function withFontSizeOverride(
 /** Hard cap on a single text string — input above this is rejected. */
 export const TEXT_MAX_LENGTH = 50;
 
+/**
+ * Text on the design's exterior surfaces (issue #2695). One shared style for
+ * all surface text (merged over `BinParams.textDefaults`), with a string per
+ * surface. Today the lid top is the only surface; per-wall strings join in a
+ * follow-up PR, which is why the strings are named per-surface rather than a
+ * single `text` field.
+ *
+ * Absent object or absent/empty `lidText` ⇒ no surface text; store setters
+ * drop the key entirely rather than persisting `{}` so pre-feature designs
+ * serialize byte-identically.
+ */
+export interface SurfaceTextConfig {
+  /**
+   * Text on the lid's top face — or the tray floor when the lid has a tray
+   * recess. Ignored when the lid is stackable (the stack grid owns the top
+   * face) or the bin has a polygon `cellMask` (auto-fit assumes a rectangle).
+   */
+  readonly lidText?: string;
+  /** Shared style for all surface text, merged over `textDefaults`. */
+  readonly style?: TextStyleOverride;
+}
+
 export const DEFAULT_TEXT_STYLE_DEFAULTS: TextStyleDefaults = {
   font: 'atkinson',
   mode: 'engrave',

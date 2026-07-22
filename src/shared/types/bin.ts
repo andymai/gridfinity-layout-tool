@@ -61,6 +61,7 @@ export type {
   CutoutTextOffset,
   TextStyleDefaults,
   TextStyleOverride,
+  SurfaceTextConfig,
   DividerOverride,
   OverhangConfig,
 } from '@/features/bin-designer/types';

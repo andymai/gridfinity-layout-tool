@@ -36,6 +36,7 @@ import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
 import { addLidRetentionMagnets } from './lidRetentionMagnets';
 import { cutTrayRecess } from './lidTray';
+import { applyLidText } from './lidTextBuilder';
 
 export { resolveLidInputs } from './lidInputs';
 export { chamferApexXForCavityWall } from './lidClickRail';
@@ -115,6 +116,13 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     //    stackable, so it never competes with the stack grid above.
     if (inputs.tray.enabled) {
       body = cutTrayRecess(scope, body, inputs);
+    }
+
+    // 6. Optional lid-top text (#2695). Runs AFTER the tray so tray-floor
+    //    text cuts into the recessed surface, not the pre-recess plate.
+    //    `inputs.text` is null for stackable/polygon lids.
+    if (inputs.text) {
+      body = applyLidText(scope, body, inputs, originToTag);
     }
 
     return body as ValidSolid;

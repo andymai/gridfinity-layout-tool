@@ -1758,6 +1758,13 @@ const en: Record<string, string> = {
   'binDesigner.lid.summaryDisabled': 'Off',
   'binDesigner.lid.section.attaches': 'How it attaches',
   'binDesigner.lid.section.topSurface': 'Top surface',
+  'binDesigner.lid.section.text': 'Lid text',
+  'binDesigner.lid.text.placeholder': 'e.g. Cables',
+  'binDesigner.lid.text.aria': 'Lid text',
+  'binDesigner.lid.text.disabledStackable':
+    'Not available with a stackable top — the stack grid owns the lid’s top face.',
+  'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
+  'binDesigner.lid.text.trayHint': 'Text is placed on the tray floor, inside the rim.',
   'binDesigner.lid.topSurface.flat': 'Flat',
   'binDesigner.lid.topSurface.stackable': 'Stackable',
   'binDesigner.lid.topSurface.tray': 'Tray',

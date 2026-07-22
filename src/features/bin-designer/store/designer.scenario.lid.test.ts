@@ -128,6 +128,72 @@ describe('DesignerStore - lid actions', () => {
     });
   });
 
+  describe('surface text (lid text, #2695)', () => {
+    it('setLidText writes surfaceText.lidText', () => {
+      const { setLidText } = useDesignerStore.getState();
+      setLidText('Cables');
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
+    });
+
+    it('clamps to TEXT_MAX_LENGTH (50)', () => {
+      const { setLidText } = useDesignerStore.getState();
+      setLidText('x'.repeat(60));
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toHaveLength(50);
+    });
+
+    it('clearing the text drops the surfaceText key entirely', () => {
+      const { setLidText } = useDesignerStore.getState();
+      setLidText('Cables');
+      setLidText('');
+      // Absent, not `{}` — pre-feature designs must serialize byte-identically.
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('whitespace-only text is treated as empty', () => {
+      const { setLidText } = useDesignerStore.getState();
+      setLidText('   ');
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('clearing the text preserves a style override', () => {
+      const { setLidText, setSurfaceTextStyle } = useDesignerStore.getState();
+      setLidText('Cables');
+      setSurfaceTextStyle({ mode: 'emboss' });
+      setLidText('');
+      const { surfaceText } = useDesignerStore.getState().params;
+      expect(surfaceText?.lidText).toBeUndefined();
+      expect(surfaceText?.style).toEqual({ mode: 'emboss' });
+    });
+
+    it('setSurfaceTextStyle(null) clears the style but keeps the text', () => {
+      const { setLidText, setSurfaceTextStyle } = useDesignerStore.getState();
+      setLidText('Cables');
+      setSurfaceTextStyle({ mode: 'through-cut' });
+      setSurfaceTextStyle(null);
+      const { surfaceText } = useDesignerStore.getState().params;
+      expect(surfaceText?.style).toBeUndefined();
+      expect(surfaceText?.lidText).toBe('Cables');
+    });
+
+    it('no-op guard: identical text does not push a history entry', () => {
+      const { setLidText, undo } = useDesignerStore.getState();
+      setLidText('Cables');
+      // Idle-flush + blur commit the same value twice; the second write
+      // must not create a second undo step.
+      setLidText('Cables');
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('undo reverts a text edit', () => {
+      const { setLidText, undo } = useDesignerStore.getState();
+      setLidText('Cables');
+      setLidText('Chargers');
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
+    });
+  });
+
   describe('compatibility checks', () => {
     it('shouldGenerateLid is false when lid disabled', () => {
       const { params } = useDesignerStore.getState();

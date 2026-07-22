@@ -780,6 +780,128 @@ describe('lid generation and export scenarios', () => {
     });
   });
 
+  describe('lid text (#2695)', () => {
+    // Text builds require fonts in the brepjs registry — without them
+    // buildTextSolid returns null and the lid silently ships textless,
+    // which is exactly the failure mode these tests must not mask.
+    beforeAll(async () => {
+      const { readFileSync } = await import('fs');
+      const { resolve } = await import('path');
+      const { loadFont, isErr } = await import('brepjs');
+      for (const [file, family] of [
+        ['AtkinsonHyperlegible-Regular.ttf', 'atkinson'],
+        // through-cut auto-swaps to the stencil font (resolveEffectiveFont).
+        ['AllertaStencil-Regular.ttf', 'allerta-stencil'],
+      ] as const) {
+        const buf = readFileSync(resolve(__dirname, `../assets/fonts/${file}`));
+        const result = await loadFont(
+          buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+          family
+        );
+        if (isErr(result)) throw new Error(`Font load failed: ${result.error.message}`);
+      }
+    }, 30_000);
+
+    const BASE = { width: 2, depth: 2, height: 3 } as const;
+
+    it('engraved text changes the mesh without raising the top', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const plain = generateLid(makeParams({}, BASE));
+      const engraved = generateLid(makeParams({}, { ...BASE, surfaceText: { lidText: 'ABC' } }));
+      expect(plain).not.toBeNull();
+      expect(engraved).not.toBeNull();
+      assertStructurallyValid(engraved!, 'engraved lid text');
+      expect(engraved!.triangleCount).not.toBe(plain!.triangleCount);
+      // Engraving recesses into the floor — the outer bbox must not move.
+      const a = boundingBox(plain!.vertices);
+      const b = boundingBox(engraved!.vertices);
+      expect(Math.abs(b.maxZ - a.maxZ)).toBeLessThan(0.01);
+    });
+
+    it('embossed text raises the top by the emboss depth', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const plain = generateLid(makeParams({}, BASE));
+      const embossed = generateLid(
+        makeParams({}, { ...BASE, surfaceText: { lidText: 'ABC', style: { mode: 'emboss' } } })
+      );
+      expect(plain).not.toBeNull();
+      expect(embossed).not.toBeNull();
+      assertStructurallyValid(embossed!, 'embossed lid text');
+      // Default text depth is 0.4mm; raised glyphs extend the bbox upward.
+      const delta = boundingBox(embossed!.vertices).maxZ - boundingBox(plain!.vertices).maxZ;
+      expect(delta).toBeGreaterThan(0.3);
+      expect(delta).toBeLessThan(0.5);
+    });
+
+    it('through-cut text produces a valid pierced mesh (stencil auto-swap)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const plain = generateLid(makeParams({}, BASE));
+      const pierced = generateLid(
+        makeParams({}, { ...BASE, surfaceText: { lidText: 'AB', style: { mode: 'through-cut' } } })
+      );
+      expect(plain).not.toBeNull();
+      expect(pierced).not.toBeNull();
+      assertStructurallyValid(pierced!, 'through-cut lid text');
+      expect(pierced!.triangleCount).not.toBe(plain!.triangleCount);
+    });
+
+    it('tray lid engraves the tray floor (no bbox change)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const tray = { tray: { enabled: true, depthMm: 4, wallMm: 2 } };
+      const plain = generateLid(makeParams(tray, BASE));
+      const engraved = generateLid(makeParams(tray, { ...BASE, surfaceText: { lidText: 'ABC' } }));
+      expect(plain).not.toBeNull();
+      expect(engraved).not.toBeNull();
+      assertStructurallyValid(engraved!, 'tray-floor lid text');
+      expect(engraved!.triangleCount).not.toBe(plain!.triangleCount);
+      const a = boundingBox(plain!.vertices);
+      const b = boundingBox(engraved!.vertices);
+      expect(Math.abs(b.maxZ - a.maxZ)).toBeLessThan(0.01);
+    });
+
+    it('stackable top ignores text (the stack grid owns the surface)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const plain = generateLid(makeParams({ stackableTop: true }, BASE));
+      const withText = generateLid(
+        makeParams({ stackableTop: true }, { ...BASE, surfaceText: { lidText: 'ABC' } })
+      );
+      expect(plain).not.toBeNull();
+      expect(withText).not.toBeNull();
+      expect(withText!.triangleCount).toBe(plain!.triangleCount);
+    });
+
+    it('polygon (cellMask) lids skip text', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK };
+      const plain = generateLid(makeParams({}, base));
+      const withText = generateLid(makeParams({}, { ...base, surfaceText: { lidText: 'ABC' } }));
+      expect(plain).not.toBeNull();
+      expect(withText).not.toBeNull();
+      expect(withText!.triangleCount).toBe(plain!.triangleCount);
+    });
+
+    it('non-square grid lid text stays valid', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const base = { ...BASE, gridUnitMmY: 36 };
+      const plain = generateLid(makeParams({}, base));
+      const engraved = generateLid(makeParams({}, { ...base, surfaceText: { lidText: 'ABC' } }));
+      expect(plain).not.toBeNull();
+      expect(engraved).not.toBeNull();
+      assertStructurallyValid(engraved!, 'non-square lid text');
+      expect(engraved!.triangleCount).not.toBe(plain!.triangleCount);
+    });
+
+    it('exports a valid STL for an engraved lid', async () => {
+      const { exportLid } = await import('./lidOrchestrator');
+      const result = await exportLid(
+        makeParams({}, { ...BASE, surfaceText: { lidText: 'Cables' } }),
+        'stl'
+      );
+      expect(result).not.toBeNull();
+      expect(result!.data.byteLength).toBeGreaterThan(0);
+    }, 60_000);
+  });
+
   describe('extra lid height (tall lid, issue #2482)', () => {
     it('builds a valid mesh with a large extra height', async () => {
       const { generateLid } = await import('./lidOrchestrator');

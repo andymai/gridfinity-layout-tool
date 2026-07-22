@@ -40,11 +40,11 @@ import {
   LID_TRAY_WALL_MAX_MM,
 } from '../types/lid';
 import type { LidClickRails, LidAttachment, LidMagnetConfig, LidTrayConfig } from '../types/lid';
-import type { TextStyleDefaults } from '../types/text';
+import type { SurfaceTextConfig, TextStyleDefaults } from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
-import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
+import { DEFAULT_TEXT_STYLE_DEFAULTS, TEXT_MAX_LENGTH } from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -613,6 +613,27 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
 }
 
 /**
+ * Normalize a persisted `surfaceText` value. Clamps the string to
+ * `TEXT_MAX_LENGTH` and collapses empty/junk objects to `undefined` so
+ * pre-feature designs (and designs whose text was cleared) serialize
+ * byte-identically to before the field existed. The style override passes
+ * through shape-checked only — field ranges are the share/sync validator's
+ * job, matching how `label.textStyle` is handled.
+ */
+function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const { lidText, style } = raw as { lidText?: unknown; style?: SurfaceTextConfig['style'] };
+  const text = typeof lidText === 'string' ? lidText.slice(0, TEXT_MAX_LENGTH) : undefined;
+  const hasText = text !== undefined && text.trim() !== '';
+  const hasStyle = typeof style === 'object' && style !== null && Object.keys(style).length > 0;
+  if (!hasText && !hasStyle) return undefined;
+  return {
+    ...(hasText ? { lidText: text } : {}),
+    ...(hasStyle ? { style } : {}),
+  };
+}
+
+/**
  * Populate missing bin parameters with default values.
  * Handles backward compatibility for old designs:
  * - scoop was boolean in earlier versions
@@ -855,6 +876,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       ...DEFAULT_TEXT_STYLE_DEFAULTS,
       ...((params as { textDefaults?: Partial<TextStyleDefaults> }).textDefaults ?? {}),
     },
+    // `...rest` carried the raw value through; this overrides it with the
+    // normalized form (or strips it entirely when empty/invalid).
+    surfaceText: migrateSurfaceText(params.surfaceText),
     // Clamp the exterior-wall collar so a corrupt design can't drive a runaway
     // box/lip height. `...rest` carried the raw value through; this overrides it.
     extraWallHeightMm: migrateExtraWallHeightMm(

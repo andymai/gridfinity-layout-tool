@@ -220,6 +220,29 @@ describe('migrateParams', () => {
     expect(result.fractionalEdgeY).toBe('end');
   });
 
+  it('leaves surfaceText absent for pre-feature designs', () => {
+    const result = migrateParams({ width: 2, depth: 2 });
+    expect(result.surfaceText).toBeUndefined();
+  });
+
+  it('preserves valid surfaceText and clamps overlong strings', () => {
+    const result = migrateParams({
+      surfaceText: { lidText: 'Cables', style: { mode: 'emboss' } },
+    });
+    expect(result.surfaceText).toEqual({ lidText: 'Cables', style: { mode: 'emboss' } });
+
+    const clamped = migrateParams({ surfaceText: { lidText: 'x'.repeat(60) } });
+    expect(clamped.surfaceText?.lidText).toHaveLength(50);
+  });
+
+  it('collapses empty/junk surfaceText to undefined', () => {
+    expect(migrateParams({ surfaceText: {} } as any).surfaceText).toBeUndefined();
+    expect(migrateParams({ surfaceText: { lidText: '   ' } } as any).surfaceText).toBeUndefined();
+    expect(migrateParams({ surfaceText: { style: {} } } as any).surfaceText).toBeUndefined();
+    expect(migrateParams({ surfaceText: 'label' } as any).surfaceText).toBeUndefined();
+    expect(migrateParams({ surfaceText: { lidText: 42 } } as any).surfaceText).toBeUndefined();
+  });
+
   it('defaults the exterior-wall collar to 0 for legacy designs', () => {
     const result = migrateParams({ width: 2, depth: 2, height: 3 });
     expect(result.extraWallHeightMm).toBe(0);
