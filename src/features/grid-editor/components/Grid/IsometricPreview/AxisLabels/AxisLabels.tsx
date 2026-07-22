@@ -7,6 +7,9 @@ import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 interface AxisLabelsProps {
   width: number;
   depth: number;
+  /** Depth-axis world scale for a non-square grid (1 = square). Compresses the
+   * Y tick + label positions to match the scaled floor, without squashing text. */
+  depthScale?: number;
   fractionalEdgeX?: FractionalEdge;
   fractionalEdgeY?: FractionalEdge;
 }
@@ -29,6 +32,7 @@ const FRACTIONAL_LABEL = '+.5';
 export function AxisLabels({
   width,
   depth,
+  depthScale = 1,
   fractionalEdgeX = 'end',
   fractionalEdgeY = 'end',
 }: AxisLabelsProps) {
@@ -88,16 +92,17 @@ export function AxisLabels({
       positions.push(x, -TICK_SIZE, 0.01);
     }
 
-    // Y-axis ticks (along left edge)
+    // Y-axis ticks (along left edge) — Y positions compress by depthScale to
+    // track the scaled floor; the tick marks themselves (along X) stay square.
     // Integer ticks
     for (let i = 0; i <= integerDepth; i++) {
-      const y = yOffset + i;
+      const y = (yOffset + i) * depthScale;
       positions.push(0, y, 0.01);
       positions.push(-TICK_SIZE, y, 0.01);
     }
     // Fractional tick
     if (hasFractionalDepth) {
-      const y = fractionalEdgeY === 'start' ? fractionalDepthPart : depth;
+      const y = (fractionalEdgeY === 'start' ? fractionalDepthPart : depth) * depthScale;
       positions.push(0, y, 0.01);
       positions.push(-TICK_SIZE, y, 0.01);
     }
@@ -116,6 +121,7 @@ export function AxisLabels({
     fractionalDepthPart,
     xOffset,
     yOffset,
+    depthScale,
     fractionalEdgeX,
     fractionalEdgeY,
   ]);
@@ -178,7 +184,7 @@ export function AxisLabels({
         return (
           <Text
             key={`y-${idx}`}
-            position={[-0.28, yPos, 0.01]}
+            position={[-0.28, yPos * depthScale, 0.01]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
             color={colors.labelColor}
             fillOpacity={isFractional ? FRACTIONAL_LABEL_OPACITY : LABEL_OPACITY}

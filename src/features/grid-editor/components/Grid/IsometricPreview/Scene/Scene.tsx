@@ -21,6 +21,7 @@ interface SceneProps {
   drawerDepth: number;
   drawerHeight: number;
   gridUnitMm: number;
+  gridUnitMmY: number;
   heightUnitMm: number;
   layoutName: string;
   isExpanded?: boolean;
@@ -77,6 +78,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       drawerDepth,
       drawerHeight,
       gridUnitMm,
+      gridUnitMmY,
       heightUnitMm,
       layoutName,
       isExpanded,
@@ -99,26 +101,31 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
     // Calculate height-to-grid scale from user settings
     const heightToGridScale = heightUnitMm / gridUnitMm;
+    // Depth-axis world scale for a non-square grid: 1 grid unit of depth is
+    // `gridUnitMmY/gridUnitMm` world units, so a 42×22 drawer renders shallow.
+    // Equals 1 for a square grid, leaving every existing preview unchanged.
+    const depthToGridScale = gridUnitMmY / gridUnitMm;
+    const scaledDepth = drawerDepth * depthToGridScale;
 
     // Calculate scene center for camera target
     const centerX = drawerWidth / 2;
-    const centerY = drawerDepth / 2;
+    const centerY = scaledDepth / 2;
     const centerZ = (drawerHeight * heightToGridScale) / 2;
 
     // Calculate default camera position - front-right view so FRONT is at bottom-left
     const defaultCameraPosition = useMemo(() => {
-      const maxDimension = Math.max(drawerWidth, drawerDepth);
+      const maxDimension = Math.max(drawerWidth, scaledDepth);
       const cameraDistance = maxDimension * 0.8;
       return [
         centerX + cameraDistance,
         centerY - cameraDistance,
         centerZ + cameraDistance * 0.7,
       ] as [number, number, number];
-    }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
+    }, [drawerWidth, scaledDepth, centerX, centerY, centerZ]);
 
     // Calculate preset camera positions
     const cameraPresets = useMemo(() => {
-      const maxDimension = Math.max(drawerWidth, drawerDepth);
+      const maxDimension = Math.max(drawerWidth, scaledDepth);
       const distance = maxDimension * 0.8;
 
       return {
@@ -130,7 +137,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         front: [centerX, centerY - distance * 1.2, centerZ] as [number, number, number],
         side: [centerX + distance * 1.2, centerY, centerZ] as [number, number, number],
       };
-    }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
+    }, [drawerWidth, scaledDepth, centerX, centerY, centerZ]);
 
     // Set camera up vector to Z-up and position to default view (only on initial mount)
     useEffect(() => {
@@ -167,7 +174,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       if (shouldFitZoom) {
         const fitZoom = calculateFitZoom(
           drawerWidth,
-          drawerDepth,
+          scaledDepth,
           drawerHeight,
           heightToGridScale,
           size.width,
@@ -180,7 +187,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       }
 
       prevSizeRef.current = { width: size.width, height: size.height };
-    }, [size, camera, drawerWidth, drawerDepth, drawerHeight, heightToGridScale]);
+    }, [size, camera, drawerWidth, scaledDepth, drawerHeight, heightToGridScale]);
 
     // Track rotation in ref during interaction (no React re-renders)
     const rotationRef = useRef(0);
@@ -317,7 +324,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         <ContactShadows
           position={[centerX, centerY, 0.01]}
           opacity={0.2}
-          scale={Math.max(drawerWidth, drawerDepth) * 1.2}
+          scale={Math.max(drawerWidth, scaledDepth) * 1.2}
           blur={3.5}
           far={drawerHeight * heightToGridScale}
           resolution={128}
@@ -325,16 +332,24 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           frames={isInteracting ? 0 : Infinity}
         />
 
-        {/* Floor grid, axis labels, and front label */}
-        <FloorGrid
-          width={drawerWidth}
-          depth={drawerDepth}
-          fractionalEdgeX={fractionalEdgeX}
-          fractionalEdgeY={fractionalEdgeY}
-        />
+        {/* Geometry (floor grid + bins) is compressed on the depth axis for a
+            non-square grid. Annotations stay outside this group and scale their
+            Y positions directly, so their glyphs/ticks never squash. */}
+        <group scale={[1, depthToGridScale, 1]}>
+          <FloorGrid
+            width={drawerWidth}
+            depth={drawerDepth}
+            fractionalEdgeX={fractionalEdgeX}
+            fractionalEdgeY={fractionalEdgeY}
+          />
+          {/* Bins */}
+          {children}
+        </group>
+
         <AxisLabels
           width={drawerWidth}
           depth={drawerDepth}
+          depthScale={depthToGridScale}
           fractionalEdgeX={fractionalEdgeX}
           fractionalEdgeY={fractionalEdgeY}
         />
@@ -346,13 +361,12 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           depth={drawerDepth}
           height={drawerHeight}
           gridUnitMm={gridUnitMm}
+          gridUnitMmY={gridUnitMmY}
+          depthScale={depthToGridScale}
           heightUnitMm={heightUnitMm}
         />
-        <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={drawerDepth} />
-        {showBananaScale && <BananaScale drawerDepth={drawerDepth} gridUnitMm={gridUnitMm} />}
-
-        {/* Bins */}
-        {children}
+        <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={scaledDepth} />
+        {showBananaScale && <BananaScale drawerDepth={scaledDepth} gridUnitMm={gridUnitMm} />}
       </>
     );
   }

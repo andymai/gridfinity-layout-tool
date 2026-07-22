@@ -38,14 +38,28 @@ describe('DrawerDimensions', () => {
 
   it('renders without crashing', () => {
     const { container } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     expect(container).toBeTruthy();
   });
 
   it('renders dimension lines', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     const lines = getAllByTestId('line');
     // Should have width, depth, and height dimension lines plus end caps (9 total)
@@ -54,7 +68,14 @@ describe('DrawerDimensions', () => {
 
   it('renders dimension text labels', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     const textElements = getAllByTestId('r3f-text');
     // Should have width, depth, and height labels (3 total)
@@ -63,7 +84,14 @@ describe('DrawerDimensions', () => {
 
   it('calculates correct width in mm', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     const textElements = getAllByTestId('r3f-text');
     // Width should be 10 * 42 = 420mm
@@ -72,16 +100,47 @@ describe('DrawerDimensions', () => {
 
   it('calculates correct depth in mm', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     const textElements = getAllByTestId('r3f-text');
     // Depth should be 8 * 42 = 336mm
     expect(textElements[1].textContent).toBe('336mm');
   });
 
+  it('uses the Y pitch for the depth label on a non-square grid (#2704)', () => {
+    const { getAllByTestId } = render(
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={22}
+        heightUnitMm={7}
+      />
+    );
+    const textElements = getAllByTestId('r3f-text');
+    // Depth uses the Y pitch: 8 * 22 = 176mm (not 8 * 42). Width stays 420mm.
+    expect(textElements[0].textContent).toBe('420mm');
+    expect(textElements[1].textContent).toBe('176mm');
+  });
+
   it('calculates correct height in mm', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     const textElements = getAllByTestId('r3f-text');
     // Height should be 21 * 7 = 147mm
@@ -90,14 +149,28 @@ describe('DrawerDimensions', () => {
 
   it('renders with fractional dimensions', () => {
     const { container } = render(
-      <DrawerDimensions width={10.5} depth={8.5} height={21} gridUnitMm={42} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10.5}
+        depth={8.5}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
     );
     expect(container).toBeTruthy();
   });
 
   it('renders with different grid unit size', () => {
     const { getAllByTestId } = render(
-      <DrawerDimensions width={10} depth={8} height={21} gridUnitMm={50} heightUnitMm={7} />
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={50}
+        gridUnitMmY={50}
+        heightUnitMm={7}
+      />
     );
     const textElements = getAllByTestId('r3f-text');
     // Width should be 10 * 50 = 500mm

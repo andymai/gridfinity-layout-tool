@@ -7,6 +7,10 @@ interface DrawerDimensionsProps {
   depth: number;
   height: number;
   gridUnitMm: number;
+  /** Depth-axis pitch (mm) — the true drawer depth for a non-square grid. */
+  gridUnitMmY: number;
+  /** Depth-axis world scale for a non-square grid (1 = square). */
+  depthScale?: number;
   heightUnitMm: number;
 }
 
@@ -26,15 +30,20 @@ export function DrawerDimensions({
   depth,
   height,
   gridUnitMm,
+  gridUnitMmY,
+  depthScale = 1,
   heightUnitMm,
 }: DrawerDimensionsProps) {
   const colors = useThreeColors();
   // Convert height from height-units to grid-units for 3D space
   const heightInGridUnits = height * (heightUnitMm / gridUnitMm);
+  // Depth axis is compressed in world space for a non-square grid; the mm label
+  // uses the true Y pitch.
+  const scaledDepth = depth * depthScale;
 
   // Calculate real-world dimensions in mm
   const widthMm = width * gridUnitMm;
-  const depthMm = depth * gridUnitMm;
+  const depthMm = depth * gridUnitMmY;
   const heightMm = height * heightUnitMm;
 
   const dimensions = useMemo(
@@ -56,11 +65,12 @@ export function DrawerDimensions({
           ] as [[number, number, number], [number, number, number]],
         },
       },
-      // Depth dimension - along left edge (X = -OFFSET)
+      // Depth dimension - along left edge (X = -OFFSET). Y positions compress by
+      // depthScale to track the scaled floor; the mm label is the true depth.
       depth: {
         start: [-OFFSET, 0, 0] as [number, number, number],
-        end: [-OFFSET, depth, 0] as [number, number, number],
-        labelPos: [-OFFSET - 0.3, depth / 2, 0] as [number, number, number],
+        end: [-OFFSET, scaledDepth, 0] as [number, number, number],
+        labelPos: [-OFFSET - 0.3, scaledDepth / 2, 0] as [number, number, number],
         label: `${depthMm}mm`,
         endCaps: {
           left: [
@@ -68,16 +78,16 @@ export function DrawerDimensions({
             [-OFFSET + END_CAP_SIZE, 0, 0],
           ] as [[number, number, number], [number, number, number]],
           right: [
-            [-OFFSET - END_CAP_SIZE, depth, 0],
-            [-OFFSET + END_CAP_SIZE, depth, 0],
+            [-OFFSET - END_CAP_SIZE, scaledDepth, 0],
+            [-OFFSET + END_CAP_SIZE, scaledDepth, 0],
           ] as [[number, number, number], [number, number, number]],
         },
       },
       // Height dimension - vertical along back-left corner
       height: {
-        start: [-OFFSET, depth + OFFSET, 0] as [number, number, number],
-        end: [-OFFSET, depth + OFFSET, heightInGridUnits] as [number, number, number],
-        labelPos: [-OFFSET - 0.3, depth + OFFSET, heightInGridUnits / 2] as [
+        start: [-OFFSET, scaledDepth + OFFSET, 0] as [number, number, number],
+        end: [-OFFSET, scaledDepth + OFFSET, heightInGridUnits] as [number, number, number],
+        labelPos: [-OFFSET - 0.3, scaledDepth + OFFSET, heightInGridUnits / 2] as [
           number,
           number,
           number,
@@ -85,17 +95,17 @@ export function DrawerDimensions({
         label: `${heightMm}mm`,
         endCaps: {
           left: [
-            [-OFFSET - END_CAP_SIZE, depth + OFFSET, 0],
-            [-OFFSET + END_CAP_SIZE, depth + OFFSET, 0],
+            [-OFFSET - END_CAP_SIZE, scaledDepth + OFFSET, 0],
+            [-OFFSET + END_CAP_SIZE, scaledDepth + OFFSET, 0],
           ] as [[number, number, number], [number, number, number]],
           right: [
-            [-OFFSET - END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
-            [-OFFSET + END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
+            [-OFFSET - END_CAP_SIZE, scaledDepth + OFFSET, heightInGridUnits],
+            [-OFFSET + END_CAP_SIZE, scaledDepth + OFFSET, heightInGridUnits],
           ] as [[number, number, number], [number, number, number]],
         },
       },
     }),
-    [width, depth, heightInGridUnits, widthMm, depthMm, heightMm]
+    [width, scaledDepth, heightInGridUnits, widthMm, depthMm, heightMm]
   );
 
   return (

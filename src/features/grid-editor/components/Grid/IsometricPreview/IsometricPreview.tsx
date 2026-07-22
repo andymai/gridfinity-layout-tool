@@ -2,6 +2,7 @@ import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { calcMaxGridUnits } from '@/core/constants';
@@ -104,6 +105,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     printBedSize,
     printBedDepth,
     gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     layoutName,
   } = useLayoutStore(
@@ -115,6 +117,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth,
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
       heightUnitMm: state.layout.heightUnitMm,
       layoutName: state.layout.name,
     }))
@@ -333,6 +336,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           drawerDepth={drawer.depth}
           drawerHeight={drawer.height}
           gridUnitMm={gridUnitMm}
+          gridUnitMmY={gridUnitMmY}
           heightUnitMm={heightUnitMm}
           layoutName={layoutName}
           isExpanded={isPreviewExpanded}

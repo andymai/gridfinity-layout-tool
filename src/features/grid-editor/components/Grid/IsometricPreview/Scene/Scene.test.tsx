@@ -190,6 +190,7 @@ describe('Scene', () => {
         drawerDepth={8}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
       >
@@ -206,6 +207,7 @@ describe('Scene', () => {
         drawerDepth={8}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
       >
@@ -222,6 +224,7 @@ describe('Scene', () => {
         drawerDepth={8}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
       >
@@ -238,6 +241,7 @@ describe('Scene', () => {
         drawerDepth={8}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
       >
@@ -254,6 +258,7 @@ describe('Scene', () => {
         drawerDepth={12}
         drawerHeight={30}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Large Layout"
       >
@@ -270,6 +275,7 @@ describe('Scene', () => {
         drawerDepth={8}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
         isExpanded={true}
@@ -287,6 +293,7 @@ describe('Scene', () => {
         drawerDepth={8.5}
         drawerHeight={21}
         gridUnitMm={42}
+        gridUnitMmY={42}
         heightUnitMm={7}
         layoutName="Test Layout"
         fractionalEdgeX="start"
