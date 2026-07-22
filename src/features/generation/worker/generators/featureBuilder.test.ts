@@ -21,7 +21,7 @@ type BuildCutoutCutsFn = (
   innerW: number,
   innerD: number,
   wallHeight: number
-) => Shape3D | null;
+) => { cutTools: Shape3D[]; fuseTools: Shape3D[] };
 type BuildLabelTabsFn = (
   params: BinParams,
   innerW: number,
@@ -52,9 +52,11 @@ let buildScoopRamps: BuildScoopRampsFn;
 let buildWallCutoutCuts: BuildWallCutoutCutsFn;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
+let shapeBounds: (shape: unknown) => { zMin: number; zMax: number };
+let shapeVolume: (shape: unknown) => number;
 
 beforeAll(async () => {
-  const { mesh: meshFn } = await import('brepjs');
+  const { mesh: meshFn, getBounds, measureVolume, unwrap } = await import('brepjs');
   await initTestKernel();
 
   // Cutout-label tests need the bundled Atkinson font (the textDefaults default);
@@ -77,6 +79,8 @@ beforeAll(async () => {
   buildWallCutoutCuts = mod.buildWallCutoutCuts;
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
+  shapeBounds = (shape) => getBounds(shape as never);
+  shapeVolume = (shape) => unwrap(measureVolume(shape as never));
 }, 30000);
 
 describe('buildCompartmentWalls', () => {
@@ -359,6 +363,73 @@ describe('buildCutoutCuts', () => {
     expect(fuseTools).toHaveLength(1);
     const meshed = meshShape(fuseTools[0]);
     expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  const recessedLabelCutout: BinParams['cutouts'][number] = {
+    id: 'c1',
+    shape: 'rectangle',
+    width: 40,
+    depth: 30,
+    cutDepth: 5,
+    x: 20,
+    y: 25,
+    rotation: 0,
+    cornerRadius: 0,
+    label: 'HI',
+    engraveLabel: true,
+    textAnchor: 'center',
+    groupId: null,
+  };
+
+  it('engraves a center-anchored label at the recess floor, not the bin top (#2726)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      cutouts: [recessedLabelCutout],
+    };
+    const { cutTools, fuseTools } = buildCutoutCuts(params, 80, 80, 16);
+    expect(fuseTools).toHaveLength(0);
+    expect(cutTools).toHaveLength(2);
+    // Fill top = 16, cavity floor = 11. The glyph cut must cap at the floor —
+    // a top-surface engraving would sit inside the cavity volume and vanish.
+    const zMaxes = cutTools.map((t) => shapeBounds(t).zMax).sort((a, b) => a - b);
+    expect(zMaxes[0]).toBeLessThan(11.5);
+    expect(zMaxes[1]).toBeGreaterThan(15.5);
+  }, 30000);
+
+  it('carves a floor-embossed center label out of the cavity instead of fusing it (#2726)', () => {
+    const emboss: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, mode: 'emboss' },
+      cutouts: [recessedLabelCutout],
+    };
+    const labeled = buildCutoutCuts(emboss, 80, 80, 16);
+    // No fuse tool: the pipeline fuses before it cuts, so fused floor text
+    // would be sheared off by the cavity cut. Instead the glyphs are carved
+    // out of the cavity tool and stand on the floor once it's subtracted.
+    expect(labeled.fuseTools).toHaveLength(0);
+    expect(labeled.cutTools).toHaveLength(1);
+
+    const plain = buildCutoutCuts(
+      { ...emboss, cutouts: [{ ...recessedLabelCutout, label: '' }] },
+      80,
+      80,
+      16
+    );
+    expect(shapeVolume(labeled.cutTools[0])).toBeLessThan(shapeVolume(plain.cutTools[0]) - 1);
+  }, 30000);
+
+  it('drops an engraved center label when the recess consumes the full fill depth', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      cutouts: [{ ...recessedLabelCutout, cutDepth: 16 }],
+    };
+    const { cutTools, fuseTools } = buildCutoutCuts(params, 80, 80, 16);
+    // Cavity only — no floor is left to engrave into.
+    expect(cutTools).toHaveLength(1);
+    expect(fuseTools).toHaveLength(0);
   }, 30000);
 });
 
