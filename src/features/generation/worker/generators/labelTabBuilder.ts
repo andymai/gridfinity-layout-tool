@@ -44,6 +44,7 @@ import {
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
@@ -960,11 +961,15 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     // Socket mode (#2666): geometry additionally depends on the
     // per-compartment width overrides (mode + plateFitOffset already ride in
-    // `stableSerialize(params.label)` below). Keyed only in socket mode so
-    // text-mode tabs don't churn when overrides linger in the config.
+    // `stableSerialize(params.label)` below) AND the print nozzle (#2690 — the
+    // pocket clearance scales to it, so two nozzles with identical overrides
+    // must not share a cache entry). Keyed only in socket mode so text-mode
+    // tabs don't churn when overrides/nozzle linger in the config.
     const socketKeyPart =
       (params.label.mode ?? 'text') === 'socket'
-        ? stableSerialize(params.compartments.labelPlateWidths ?? [])
+        ? `${stableSerialize(params.compartments.labelPlateWidths ?? [])}|n${quantize(
+            params.nozzleSizeMm ?? NOZZLE_BASELINE
+          )}`
         : 'text';
     return compactKey(
       buildCacheKey(

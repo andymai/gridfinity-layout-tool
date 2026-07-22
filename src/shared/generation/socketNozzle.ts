@@ -21,8 +21,22 @@ import type { BinParams } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 export function withSocketNozzle(params: BinParams, nozzleSizeMm: number): BinParams {
-  if (params.label.mode !== 'socket') return params;
-  if (!Number.isFinite(nozzleSizeMm) || nozzleSizeMm <= NOZZLE_BASELINE) return params;
-  if (params.nozzleSizeMm === nozzleSizeMm) return params;
-  return { ...params, nozzleSizeMm };
+  // Nozzle only changes geometry for an ENABLED socket tab above baseline;
+  // keying it in otherwise is pure cache churn.
+  const wanted =
+    params.label.enabled &&
+    params.label.mode === 'socket' &&
+    Number.isFinite(nozzleSizeMm) &&
+    nozzleSizeMm > NOZZLE_BASELINE
+      ? nozzleSizeMm
+      : undefined;
+  if (params.nozzleSizeMm === wanted) return params;
+  // Strip a stale injected nozzle when reverting to baseline so re-wrapping an
+  // already-merged params object (e.g. a draft path) can't carry a wide-nozzle
+  // pocket back into a 0.4mm generation.
+  if (wanted === undefined) {
+    const { nozzleSizeMm: _drop, ...rest } = params;
+    return rest;
+  }
+  return { ...params, nozzleSizeMm: wanted };
 }

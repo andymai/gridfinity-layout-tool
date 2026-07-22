@@ -38,6 +38,22 @@ describe('withSocketNozzle', () => {
     expect(withSocketNozzle(merged, 0.6)).toBe(merged);
   });
 
+  it('strips a stale injected nozzle when re-wrapped at the baseline', () => {
+    // A draft path can re-wrap an already-merged object; dropping back to 0.4
+    // must revert the pocket, not keep the wide-nozzle value.
+    const merged = withSocketNozzle(socketBin, 0.6);
+    const reverted = withSocketNozzle(merged, 0.4);
+    expect(reverted.nozzleSizeMm).toBeUndefined();
+  });
+
+  it('does not inject for a socket bin whose label is disabled', () => {
+    const disabled: BinParams = {
+      ...socketBin,
+      label: { ...socketBin.label, enabled: false },
+    };
+    expect(withSocketNozzle(disabled, 0.6)).toBe(disabled);
+  });
+
   it('ignores a non-finite nozzle', () => {
     expect(withSocketNozzle(socketBin, Number.NaN)).toBe(socketBin);
     expect(withSocketNozzle(socketBin, Number.POSITIVE_INFINITY)).toBe(socketBin);

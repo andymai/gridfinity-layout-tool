@@ -51,4 +51,15 @@ describe('labelTabsFeature.cacheKey', () => {
     const base = withCompartments({});
     expect(keyFor(base)).not.toBe(keyFor({ ...base, label: { ...base.label, mode: 'socket' } }));
   });
+
+  it('changes with the nozzle in socket mode but not in text mode (#2690)', () => {
+    // The socket pocket clearance scales to the nozzle, so two nozzles must
+    // never share a feature-cache entry; text-mode geometry is nozzle-invariant.
+    const socket = { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const };
+    const socketBase = { ...withCompartments({}), label: socket };
+    expect(keyFor(socketBase)).not.toBe(keyFor({ ...socketBase, nozzleSizeMm: 0.6 }));
+
+    const textBase = withCompartments({});
+    expect(keyFor(textBase)).toBe(keyFor({ ...textBase, nozzleSizeMm: 0.6 }));
+  });
 });
