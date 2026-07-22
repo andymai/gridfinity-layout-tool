@@ -12,9 +12,15 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import {
+  assertStructurallyValid,
+  boundingBox,
+  triangleArea,
+  triangleNormalZ,
+} from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
+import type { MeshData } from '@/features/generation/bridge/types';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -67,10 +73,13 @@ describe('magnetic-retention lid geometry', () => {
 
   it('pads are top overhangs, not full-height columns (height-independent)', async () => {
     const generateBin = getGenerateBin();
-    // The gusset pads live at the top rim, so the geometry they ADD over a
-    // plain bin must not scale with bin height. A returning full-column bug
-    // would make the delta grow with height. Compare the magnetic-vs-plain
-    // triangle delta at height 3 and height 6 — they should be close.
+    // The gusset pads (plus their fixed-depth 45° taper) live at the top rim,
+    // so the geometry they ADD over a plain bin must not scale with bin
+    // height. A returning full-column bug would make the delta grow with
+    // height. Compare the magnetic-vs-plain triangle delta at height 4 and
+    // height 7 — both tall enough that the taper floats above the floor (on
+    // shorter bins it clamps to the floor by design, which would skew the
+    // comparison).
     const deltaAt = (height: number): number => {
       const plain = generateBin(
         makeParams({ attachment: 'clickRails' }, { width: 2, depth: 2, height })
@@ -80,12 +89,73 @@ describe('magnetic-retention lid geometry', () => {
       );
       return magnetic.triangleCount - plain.triangleCount;
     };
-    const d3 = deltaAt(3);
-    const d6 = deltaAt(6);
-    expect(d3).toBeGreaterThan(0);
+    const d4 = deltaAt(4);
+    const d7 = deltaAt(7);
+    expect(d4).toBeGreaterThan(0);
     // Allow tessellation jitter but reject height-scaling (a column would
-    // roughly double the added side-wall triangles from height 3 to 6).
-    expect(Math.abs(d6 - d3)).toBeLessThan(d3 * 0.5);
+    // roughly double the added side-wall triangles from height 4 to 7).
+    expect(Math.abs(d7 - d4)).toBeLessThan(d4 * 0.5);
+  });
+
+  it('pad undersides taper at 45° — no flat overhang needing supports (#2712)', async () => {
+    const generateBin = getGenerateBin();
+    const base = { width: 2, depth: 2, height: 4 };
+    const magnetic = generateBin(makeParams({ attachment: 'magnetic' }, base));
+    const plain = generateBin(makeParams({ attachment: 'clickRails' }, base));
+    assertStructurallyValid(magnetic, '2x2 bin with tapered gusset pads');
+
+    // Sum downward-facing triangle area inside the corner-pad window: inboard
+    // of the walls and lip (3mm) but within the pads' reach of the corners
+    // (16mm), above the base/floor plate and below the rim. In this window
+    // the pads are the only geometry on a default bin. A face needs supports
+    // when it is closer to horizontal than the 45° FDM limit: nz below
+    // -cos(45°) ≈ -0.707. The threshold sits at -0.72 so the taper's exact
+    // 45° plane (nz = -0.7071) stays on the printable side while ANY steeper
+    // overhang — the pre-#2712 flat underside (nz ≈ -1) or a partial
+    // transition anywhere in between — counts as a violation, with no
+    // unclassified gap.
+    const downFacingAreas = (mesh: MeshData): { unsupported: number; taper: number } => {
+      const bb = boundingBox(mesh.vertices);
+      let unsupported = 0;
+      let taper = 0;
+      for (let i = 0; i < mesh.indices.length; i += 3) {
+        const a = mesh.indices[i];
+        const b = mesh.indices[i + 1];
+        const c = mesh.indices[i + 2];
+        const cx = (mesh.vertices[a * 3] + mesh.vertices[b * 3] + mesh.vertices[c * 3]) / 3;
+        const cy =
+          (mesh.vertices[a * 3 + 1] + mesh.vertices[b * 3 + 1] + mesh.vertices[c * 3 + 1]) / 3;
+        const cz =
+          (mesh.vertices[a * 3 + 2] + mesh.vertices[b * 3 + 2] + mesh.vertices[c * 3 + 2]) / 3;
+        const inCornerZone =
+          Math.abs(cx) > bb.maxX - 16 &&
+          Math.abs(cx) < bb.maxX - 3 &&
+          Math.abs(cy) > bb.maxY - 16 &&
+          Math.abs(cy) < bb.maxY - 3 &&
+          cz > 8 &&
+          cz < bb.maxZ - 0.5;
+        if (!inCornerZone) continue;
+        // Winding-based geometric normal, not the stored vertex normals: the
+        // index winding is consistently outward-oriented (bin floor bottoms
+        // read -1), while stored normals have flipped on boolean-result faces
+        // before and would silently blind this check.
+        const nz = triangleNormalZ(mesh.vertices, a, b, c);
+        const area = triangleArea(mesh.vertices, a, b, c);
+        if (nz < -0.72) unsupported += area;
+        else if (nz < -0.65) taper += area;
+      }
+      return { unsupported, taper };
+    };
+
+    const pads = downFacingAreas(magnetic);
+    // No support-requiring downward faces: the taper meets the pad bottom at
+    // the tongue tip, so only sub-mm² tessellation slivers may register.
+    expect(pads.unsupported).toBeLessThan(2);
+    // The 45° underside itself must be present in force (4 pads' worth).
+    expect(pads.taper).toBeGreaterThan(100);
+    // Control: the window really isolates the pads — a plain bin has nothing
+    // sloping down there, so the taper signal above comes from the pads.
+    expect(downFacingAreas(plain).taper).toBeLessThan(5);
   });
 
   it('leaves the bin footprint unchanged (posts grow inward)', async () => {
