@@ -1,0 +1,47 @@
+src/i18n/locales/de.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/uk.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.tsx
+  s_37af45d9af909d::t_c26b3b26cee800 4-5
+  s_37af45d9af909d::t_c91c8543c753f4 27,33,37-39,41,43,52,61
+src/i18n/locales/fr.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/en.ts
+  s_37af45d9af909d::t_bdbbf17c8fa1f0 2605-2607
+src/i18n/locales/it.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/sv.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_37af45d9af909d::t_8436d4264ee669 225-227
+  s_37af45d9af909d::t_d321a734f6dce1 64
+  s_37af45d9af909d::t_1a6f0fc4da3324 840-853
+  s_37af45d9af909d::t_28936d51c94b4d 101,114
+src/i18n/locales/nl.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/pt-BR.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/nb.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/es.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+src/i18n/locales/ja.json
+  s_37af45d9af909d::t_c7dc7e1bfa5615 90-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "d3908fd316274f962870f804ce7bb62513ebb6db",
+  "prompts": {},
+  "sessions": {
+    "s_37af45d9af909d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91d671ca-54bd-4e63-a31c-3001264d1f94",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
