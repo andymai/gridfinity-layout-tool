@@ -269,6 +269,26 @@ export function useBaseplateAutoSave(): SaveStatus {
     };
   }, [params, activeBaseplateId, performSave]);
 
+  // Flush a pending edit when the page unmounts (navigating away). The debounced
+  // save above is otherwise cancelled by its own cleanup, so a quick edit-then-
+  // leave would never reach the library — and `useBaseplateLibraryInit` would
+  // then re-materialize the stale design over the layout's newer inline params,
+  // silently dropping the edit (#2705 follow-up). Params-only (no thumbnail),
+  // fired before the next route's re-materialize reads the design.
+  const latestRef = useRef({ params, activeBaseplateId });
+  useEffect(() => {
+    latestRef.current = { params, activeBaseplateId };
+  });
+  useEffect(
+    () => () => {
+      const { params: pending, activeBaseplateId: designId } = latestRef.current;
+      if (designId && pending && pending !== lastSavedParams.current) {
+        void updateDesignParams(designId, pending);
+      }
+    },
+    []
+  );
+
   // An active design with no save in flight is, by definition, saved: its
   // params came out of the library. Mirrors the designer, which marks a loaded
   // design 'saved' rather than leaving the indicator blank until the first edit.
