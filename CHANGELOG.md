@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.275.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.274.0...gridfinity-layout-tool-v4.275.0) (2026-07-22)
+
+
+### Features
+
+* non-square grid for the layout and baseplates ([#2704](https://github.com/andymai/gridfinity-layout-tool/issues/2704)) ([4f60f1f](https://github.com/andymai/gridfinity-layout-tool/commit/4f60f1f79855f035ad4334eafe1304fd8c378f50))
+
 ## [4.274.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.273.2...gridfinity-layout-tool-v4.274.0) (2026-07-21)
 
 
