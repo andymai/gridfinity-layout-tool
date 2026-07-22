@@ -8,6 +8,7 @@ import {
   STAGING_ID,
   DEFAULT_CATEGORY_COLOR,
   getBaseCellSize,
+  getCellSizeY,
   BREAKPOINTS,
   getDefaultDrawerSize,
   migrateBaseplateParams,
@@ -280,6 +281,28 @@ describe('getBaseCellSize', () => {
     expect(getBaseCellSize(BREAKPOINTS.LG - 1)).toBe(36);
     // At LG threshold
     expect(getBaseCellSize(BREAKPOINTS.LG)).toBe(32);
+  });
+});
+
+describe('getCellSizeY', () => {
+  it('returns the X cell size unchanged for a square grid', () => {
+    expect(getCellSizeY(32, 42, 42)).toBe(32);
+  });
+
+  it('scales the row size by the pitch ratio for a non-square grid', () => {
+    // 42×21 → rows are half as tall.
+    expect(getCellSizeY(32, 42, 21)).toBe(16);
+    // 42×22 → round(32 * 22/42) = round(16.76) = 17.
+    expect(getCellSizeY(32, 42, 22)).toBe(17);
+  });
+
+  it('floors at 1px so an extreme ratio never collapses the row (#2704)', () => {
+    // 200×1 → round(32/200) = 0, clamped to 1 so the CSS row and pointer math survive.
+    expect(getCellSizeY(32, 200, 1)).toBe(1);
+  });
+
+  it('guards a non-positive X pitch against divide-by-zero', () => {
+    expect(getCellSizeY(32, 0, 22)).toBe(32);
   });
 });
 

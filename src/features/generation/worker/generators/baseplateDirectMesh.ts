@@ -230,7 +230,7 @@ export function generateBaseplateDirect(
       outerPts,
       slabOffsetX,
       slabOffsetY,
-      gridUnitMm,
+      pitch,
       width,
       depth,
       cells,
@@ -287,7 +287,7 @@ export function generateBaseplateDirect(
           cell,
           magnetRadius,
           gridUnitMm,
-          gridUnitMm,
+          gridUnitMmY,
           magnetAnchor
         )) {
           addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);

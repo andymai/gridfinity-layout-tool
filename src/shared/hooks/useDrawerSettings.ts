@@ -304,10 +304,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const realWorldDimensions = useMemo(
     () => ({
       width: drawerWidth * gridUnitMm,
-      depth: drawerDepth * gridUnitMm,
+      depth: drawerDepth * gridUnitMmY,
       height: drawerHeight * heightUnitMm,
     }),
-    [drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm]
+    [drawerWidth, drawerDepth, drawerHeight, gridUnitMm, gridUnitMmY, heightUnitMm]
   );
   // Stepper handlers (delta-based, respects step size)
   const handleDrawerWidthChange = useCallback(
@@ -395,7 +395,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const handleMeasuredCommit = useCallback(
     (widthMm: number, depthMm: number, heightMm?: number) => {
       const widthFit = fitAxisUnits(widthMm, gridUnitMm, halfGridMode);
-      const depthFit = fitAxisUnits(depthMm, gridUnitMm, halfGridMode);
+      const depthFit = fitAxisUnits(depthMm, gridUnitMmY, halfGridMode);
       const measured: MeasuredDrawerMm = {
         width: widthMm,
         depth: depthMm,
@@ -428,7 +428,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       let suggestion: HalfFitSuggestion | null = null;
       if (!halfGridMode) {
         const widthUpgrade = halfUnitUpgrade(widthMm, gridUnitMm, widthFit.units);
-        const depthUpgrade = halfUnitUpgrade(depthMm, gridUnitMm, depthFit.units);
+        const depthUpgrade = halfUnitUpgrade(depthMm, gridUnitMmY, depthFit.units);
         if (widthUpgrade !== null || depthUpgrade !== null) {
           suggestion = {
             width: gridUnits((widthUpgrade ?? widthFit).units),
@@ -456,7 +456,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         has_height: heightMm !== undefined,
       });
     },
-    [gridUnitMm, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
+    [gridUnitMm, gridUnitMmY, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
   );
 
   const acceptHalfFitSuggestion = useCallback(() => {

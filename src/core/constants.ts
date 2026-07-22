@@ -601,8 +601,11 @@ export function getBaseCellSize(viewportWidth: number): number {
  * `cellSize` unchanged for a square grid (`gridUnitMmY === gridUnitMm`).
  */
 export function getCellSizeY(cellSize: number, gridUnitMm: number, gridUnitMmY: number): number {
-  if (gridUnitMmY === gridUnitMm) return cellSize;
-  return Math.round((cellSize * gridUnitMmY) / gridUnitMm);
+  if (gridUnitMmY === gridUnitMm || gridUnitMm <= 0) return cellSize;
+  // Floor at 1px: an extreme ratio (e.g. 1mm vs 200mm) can round to 0, which
+  // would collapse the CSS grid row and make `relY / (cellSizeY + gap)` in the
+  // pointer→grid mapping snap every click to the same row.
+  return Math.max(1, Math.round((cellSize * gridUnitMmY) / gridUnitMm));
 }
 export const SHORTCUTS = {
   DELETE: ['Delete', 'Backspace'],
