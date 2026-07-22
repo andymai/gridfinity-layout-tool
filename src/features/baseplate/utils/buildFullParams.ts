@@ -17,7 +17,7 @@ import {
   cornerCutVertices,
   cornerCutsMatchVertices,
 } from '@/shared/utils/cornerCutOutline';
-import { padRectilinearOutline } from '@/shared/utils/padOutline';
+import { padOutline } from '@/shared/utils/padOutline';
 
 /** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
  * own geometric radius clamp). */
@@ -41,8 +41,8 @@ export function maxCornerRadiusMm(totalW: number, totalD: number): number {
 /**
  * The resolved outline (plate-local mm, spanning the padded extent) plus the
  * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
- * padded rectangle so padding composes; every other authoring surface
- * (cells/trace/pen) has no parametric resize, so the shape subsumes padding.
+ * padded rectangle; every other shape offsets its edges outward (`padOutline`).
+ * Either way padding composes, unless it would fold the loop (then it's zeroed).
  */
 function resolveOutline(
   drawerOutline: DrawerOutline | undefined,
@@ -60,13 +60,13 @@ function resolveOutline(
     const cornerShaped =
       cuts !== undefined && cornerCutsMatchVertices(drawerOutline.vertices, widthMm, depthMm, cuts);
     if (!cornerShaped) {
-      // Freeform shapes (painted cells, traced footprints) have no parametric
-      // resize, but a *rectilinear* loop composes with padding edge-by-edge —
-      // every boundary edge, including notch walls, offsets outward onto the
-      // padded plate extent. Non-rectilinear shapes (arcs/diagonals) or
-      // paddings that would cross an edge yield null, leaving the shape to
+      // Freeform shapes (painted cells, traced footprints, pen shapes with
+      // arcs/diagonals) have no parametric resize, so padding is composed
+      // edge-by-edge: every boundary edge — including a concave notch's walls —
+      // offsets outward onto the padded plate extent. Only paddings that would
+      // fold the loop (a collapsed notch/slot) yield null, leaving the shape to
       // subsume padding (stored values untouched, functionally zeroed).
-      const padded = padRectilinearOutline(drawerOutline, {
+      const padded = padOutline(drawerOutline, {
         left: stored.paddingLeft,
         right: stored.paddingRight,
         front: stored.paddingFront,
@@ -142,11 +142,11 @@ function resolveOutline(
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
  * Applied only when the baseplate syncs with the layout (a custom-size plate
  * has no defined relationship to the drawer shape) and stack printing is off
- * (stacking needs uniform rectangular tiles). Corner-cut shapes compose with
- * padding — the cuts are re-inscribed on the padded rectangle, so the
- * resolved outline is plate-local over the padded extent. Painted/pen/trace
- * shapes have no parametric resize, so while active they subsume padding,
- * corner rounding, and detached margins — those params are functionally
+ * (stacking needs uniform rectangular tiles). Padding composes with every
+ * shape — corner-cut shapes re-inscribe their cuts on the padded rectangle,
+ * all others offset their edges outward (`padOutline`) — so the resolved
+ * outline is plate-local over the padded extent. Corner rounding and detached
+ * margins are outline-unaware, so while a shape is active they are functionally
  * zeroed, stored values untouched (the stack-print stripping precedent).
  */
 export function buildFullParams(

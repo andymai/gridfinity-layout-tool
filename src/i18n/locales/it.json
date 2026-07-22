@@ -124,7 +124,6 @@
   "baseplate.detachMarginConnectorStyle": "Il connettore richiede lo stile di giunzione Coda di rondine o Puzzle.",
   "baseplate.overTileTooSmall": "Il margine è troppo piccolo su ogni bordo per contenere una tessera di griglia.",
   "baseplate.padding": "Margine",
-  "baseplate.shapedDrawerNotice": "Questo cassetto ha una forma personalizzata. Margine, arrotondamento degli angoli e margini staccati sono definiti dalla forma; modificala nella scheda Layout.",
   "baseplate.paddingAnchor.bc": "Ancora i bin al centro-fronte",
   "baseplate.paddingAnchor.bl": "Ancora i bin al fronte-sinistra",
   "baseplate.paddingAnchor.br": "Ancora i bin al fronte-destra",

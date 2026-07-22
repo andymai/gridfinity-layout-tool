@@ -521,16 +521,19 @@ describe('corner-cut shape + padding composition', () => {
     expect(result.detachMarginConnector).toBe(false);
   });
 
-  it('falls back to shape-subsumes-padding when the authoring echo drifted', () => {
+  it('composes padding as a freeform shape when the authoring echo drifted', () => {
     const drifted: DrawerOutline = {
-      // Vertices from DIFFERENT cuts than the echo claims.
+      // Vertices from DIFFERENT cuts than the echo claims, so the corner-cut
+      // fast path is skipped and the shape composes edge-by-edge instead.
       vertices: cornerCutVertices(420, 336, { ...cuts, tl: { kind: 'radius', r: 30 } }),
       authoring: { kind: 'corners', corners: cuts },
     };
     const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end', undefined, drifted);
-    expect(result.outline).toBe(drifted);
-    expect(result.paddingLeft).toBe(0);
-    expect(result.paddingBack).toBe(0);
+    expect(result.outline).toBeDefined();
+    expect(result.outline).not.toBe(drifted);
+    // Padding is live (passed through), not zeroed.
+    expect(result.paddingLeft).toBe(1);
+    expect(result.paddingBack).toBe(4);
   });
 });
 

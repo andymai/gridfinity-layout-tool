@@ -55,4 +55,59 @@ describe('DrawerOutlineOverlay', () => {
     // The boundary path is stroked, not filled.
     expect(paths[1].getAttribute('fill')).toBe('none');
   });
+
+  it('draws the padding rim and plate boundary when the baseplate has padding', () => {
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: { ...s.layout.drawer, width: gridUnits(6), depth: gridUnits(4), outline: L_SHAPE },
+        baseplateParams: {
+          ...s.layout.baseplateParams,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingFront: 8,
+          paddingBack: 8,
+        },
+      },
+    }));
+    const { container } = renderOverlay();
+    const paths = container.querySelectorAll('path');
+    // hatch + rim + plate boundary + shape boundary.
+    expect(paths).toHaveLength(4);
+    // The rim is an even-odd ring between plate and shape.
+    expect(paths[1].getAttribute('fill-rule')).toBe('evenodd');
+    expect(paths[1].getAttribute('class')).toContain('fill-accent');
+    // The plate boundary is a dashed accent stroke.
+    expect(paths[2].getAttribute('stroke-dasharray')).toBe('4 3');
+  });
+
+  it('omits the rim when padding would fold the shape (dropped by the resolver)', () => {
+    // A one-unit-wide top slot; 30+30mm L/R padding crosses its walls.
+    const SLOT: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 6 * U, y: 0 },
+        { x: 6 * U, y: 4 * U },
+        { x: 3.5 * U, y: 4 * U },
+        { x: 3.5 * U, y: 1 * U },
+        { x: 2.5 * U, y: 1 * U },
+        { x: 2.5 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: { ...s.layout.drawer, width: gridUnits(6), depth: gridUnits(4), outline: SLOT },
+        baseplateParams: {
+          ...s.layout.baseplateParams,
+          paddingLeft: 30,
+          paddingRight: 30,
+        },
+      },
+    }));
+    const { container } = renderOverlay();
+    // Falls back to hatch + boundary only — no rim/plate boundary.
+    expect(container.querySelectorAll('path')).toHaveLength(2);
+  });
 });

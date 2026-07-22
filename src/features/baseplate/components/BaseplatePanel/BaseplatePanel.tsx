@@ -64,7 +64,7 @@ import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
-import { isRectilinearOutline, padRectilinearOutline } from '@/shared/utils/padOutline';
+import { padOutline } from '@/shared/utils/padOutline';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
@@ -281,19 +281,17 @@ export function BaseplatePanel() {
       gridDepthMm,
       drawerOutline.authoring.corners
     );
-  // A rectilinear freeform shape (painted cells, traced footprint) composes
+  // Every freeform shape (painted cells, traced footprint, pen shape) composes
   // with padding edge-by-edge in buildFullParams, so its padding controls stay
-  // live — only corner rounding and detached margins (both outline-unaware)
-  // hide. Non-rectilinear shapes (arcs/pen) still subsume every param.
-  const rectilinearShaped = outlineActive && !cornerShaped && isRectilinearOutline(drawerOutline);
-  const shapedOn = outlineActive && !cornerShaped && !rectilinearShaped;
-  // Mirror buildFullParams: a rectilinear shape composes only while the padding
-  // stays valid. Padding large enough to collapse a notch/slot makes the
-  // resolver drop it, so the panel must say the padding is ignored rather than
-  // present it as applied.
-  const rectilinearPaddingComposes =
-    !rectilinearShaped ||
-    padRectilinearOutline(drawerOutline, {
+  // live — only corner rounding and detached margins (both outline-unaware) hide.
+  const freeformShaped = outlineActive && !cornerShaped;
+  // Mirror buildFullParams: the shape composes only while the padding stays
+  // valid. Padding large enough to fold the loop (a collapsed notch/slot) makes
+  // the resolver drop it, so the panel must say the padding is ignored rather
+  // than present it as applied.
+  const shapedPaddingComposes =
+    !freeformShaped ||
+    padOutline(drawerOutline, {
       left: baseplateParams.paddingLeft,
       right: baseplateParams.paddingRight,
       front: baseplateParams.paddingFront,
@@ -487,171 +485,160 @@ export function BaseplatePanel() {
               )}
             </div>
 
-            {/* Shaped drawer: padding/rounding/margins are subsumed by the
-                outline — point at the Layout tab instead of dead controls. */}
-            {shapedOn && (
-              <p className="border-t border-stroke-subtle pt-3 text-[11px] leading-relaxed text-content-tertiary">
-                {t('baseplate.shapedDrawerNotice')}
-              </p>
-            )}
-
-            {/* Padding — spatial schematic */}
-            {!shapedOn && (
-              <div className="space-y-2 border-t border-stroke-subtle pt-3">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
-                  {t('baseplate.padding')}
-                </div>
-                {cornerShaped && (
-                  <p className="text-[11px] leading-relaxed text-content-tertiary">
-                    {t('baseplate.cornerShapedPaddingNotice')}
-                  </p>
-                )}
-                {rectilinearShaped && (
-                  <p
-                    className={
-                      rectilinearPaddingComposes
-                        ? 'text-[11px] leading-relaxed text-content-tertiary'
-                        : 'text-[11px] leading-relaxed text-status-warning'
+            {/* Padding — spatial schematic. Padding composes with every shape,
+                so the controls stay live; a notice explains the shaped case. */}
+            <div className="space-y-2 border-t border-stroke-subtle pt-3">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+                {t('baseplate.padding')}
+              </div>
+              {cornerShaped && (
+                <p className="text-[11px] leading-relaxed text-content-tertiary">
+                  {t('baseplate.cornerShapedPaddingNotice')}
+                </p>
+              )}
+              {freeformShaped && (
+                <p
+                  className={
+                    shapedPaddingComposes
+                      ? 'text-[11px] leading-relaxed text-content-tertiary'
+                      : 'text-[11px] leading-relaxed text-status-warning'
+                  }
+                >
+                  {t(
+                    shapedPaddingComposes
+                      ? 'baseplate.shapedPaddingNotice'
+                      : 'baseplate.shapedPaddingTooLarge'
+                  )}
+                </p>
+              )}
+              <PaddingSchematic
+                baseplateParams={baseplateParams}
+                updateParam={updateParam}
+                updateParams={updateParams}
+              />
+              {hasPadding && (
+                <div className="border-t border-stroke-subtle pt-3">
+                  <FeatureToggle
+                    label={t('baseplate.overTile')}
+                    checked={fillOn}
+                    onChange={() => setMarginFillMode(fillOn ? 'solid' : 'tile')}
+                    disabledReason={
+                      !fillOn && !overTileStatus.canOverTile
+                        ? t('baseplate.overTileTooSmall')
+                        : undefined
                     }
-                  >
-                    {t(
-                      rectilinearPaddingComposes
-                        ? 'baseplate.shapedPaddingNotice'
-                        : 'baseplate.shapedPaddingTooLarge'
-                    )}
-                  </p>
-                )}
-                <PaddingSchematic
-                  baseplateParams={baseplateParams}
-                  updateParam={updateParam}
-                  updateParams={updateParams}
-                />
-                {hasPadding && (
-                  <div className="border-t border-stroke-subtle pt-3">
-                    <FeatureToggle
-                      label={t('baseplate.overTile')}
-                      checked={fillOn}
-                      onChange={() => setMarginFillMode(fillOn ? 'solid' : 'tile')}
-                      disabledReason={
-                        !fillOn && !overTileStatus.canOverTile
-                          ? t('baseplate.overTileTooSmall')
-                          : undefined
-                      }
-                      primaryControls={
-                        <div className="space-y-1.5">
-                          {overTileStatus.canOverTile ? (
-                            <>
-                              <CheckboxRow
-                                label={t('baseplate.preferHalfGrid')}
-                                checked={halfGridOn}
-                                onChange={(checked) =>
-                                  setMarginFillMode(checked ? 'halfGrid' : 'tile')
-                                }
-                                indent
-                              />
-                              {halfGridOn && (
-                                <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
-                                  <span className="text-xs text-content-secondary">
-                                    {t('baseplate.leftoverLabel')}
-                                  </span>
-                                  <SegmentedControl
-                                    aria-label={t('baseplate.leftoverLabel')}
-                                    size="sm"
-                                    options={[
-                                      { value: 'grid', label: t('baseplate.leftoverGrid') },
-                                      { value: 'solid', label: t('baseplate.leftoverSolid') },
-                                    ]}
-                                    value={leftoverMode}
-                                    onChange={setLeftoverMode}
-                                  />
-                                </div>
-                              )}
-                              <div className="space-y-1 text-[11px] leading-relaxed">
-                                <p className="text-content-tertiary">
-                                  {t(
-                                    halfGridOn
-                                      ? leftoverMode === 'solid'
-                                        ? 'baseplate.halfGridHintSolid'
-                                        : 'baseplate.halfGridHint'
-                                      : 'baseplate.overTileHint'
-                                  )}
-                                </p>
-                                {overTileStatus.tiled.length > 0 && (
-                                  <p className="text-content-secondary">
-                                    {t('baseplate.overTileFills', {
-                                      sides: overTileStatus.tiled
-                                        .map((e) => t(e.labelKey))
-                                        .join(', '),
-                                    })}
-                                  </p>
-                                )}
-                                {overTileStatus.tooSmall.length > 0 && (
-                                  <p className="text-content-tertiary">
-                                    {t('baseplate.overTileKeptSolid', {
-                                      sides: overTileStatus.tooSmall
-                                        .map((e) => t(e.labelKey))
-                                        .join(', '),
-                                    })}
-                                  </p>
-                                )}
+                    primaryControls={
+                      <div className="space-y-1.5">
+                        {overTileStatus.canOverTile ? (
+                          <>
+                            <CheckboxRow
+                              label={t('baseplate.preferHalfGrid')}
+                              checked={halfGridOn}
+                              onChange={(checked) =>
+                                setMarginFillMode(checked ? 'halfGrid' : 'tile')
+                              }
+                              indent
+                            />
+                            {halfGridOn && (
+                              <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
+                                <span className="text-xs text-content-secondary">
+                                  {t('baseplate.leftoverLabel')}
+                                </span>
+                                <SegmentedControl
+                                  aria-label={t('baseplate.leftoverLabel')}
+                                  size="sm"
+                                  options={[
+                                    { value: 'grid', label: t('baseplate.leftoverGrid') },
+                                    { value: 'solid', label: t('baseplate.leftoverSolid') },
+                                  ]}
+                                  value={leftoverMode}
+                                  onChange={setLeftoverMode}
+                                />
                               </div>
-                            </>
-                          ) : (
-                            // Fill is on but no edge can fit a tile right now — keep the
-                            // toggle enabled (so it can be turned off) and explain why.
-                            <p className="text-[11px] leading-relaxed text-content-tertiary">
-                              {t('baseplate.overTileTooSmall')}
-                            </p>
-                          )}
-                        </div>
-                      }
-                    />
-                  </div>
-                )}
-                {/* Detached rails have no outline awareness (buildFullParams
+                            )}
+                            <div className="space-y-1 text-[11px] leading-relaxed">
+                              <p className="text-content-tertiary">
+                                {t(
+                                  halfGridOn
+                                    ? leftoverMode === 'solid'
+                                      ? 'baseplate.halfGridHintSolid'
+                                      : 'baseplate.halfGridHint'
+                                    : 'baseplate.overTileHint'
+                                )}
+                              </p>
+                              {overTileStatus.tiled.length > 0 && (
+                                <p className="text-content-secondary">
+                                  {t('baseplate.overTileFills', {
+                                    sides: overTileStatus.tiled
+                                      .map((e) => t(e.labelKey))
+                                      .join(', '),
+                                  })}
+                                </p>
+                              )}
+                              {overTileStatus.tooSmall.length > 0 && (
+                                <p className="text-content-tertiary">
+                                  {t('baseplate.overTileKeptSolid', {
+                                    sides: overTileStatus.tooSmall
+                                      .map((e) => t(e.labelKey))
+                                      .join(', '),
+                                  })}
+                                </p>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          // Fill is on but no edge can fit a tile right now — keep the
+                          // toggle enabled (so it can be turned off) and explain why.
+                          <p className="text-[11px] leading-relaxed text-content-tertiary">
+                            {t('baseplate.overTileTooSmall')}
+                          </p>
+                        )}
+                      </div>
+                    }
+                  />
+                </div>
+              )}
+              {/* Detached rails have no outline awareness (buildFullParams
                     forces detachMargins off whenever an outline is active), so
                     hide the control for every shaped plate, not just corner
                     cuts. */}
-                {hasPadding && !outlineActive && (
-                  <div className="border-t border-stroke-subtle pt-3">
-                    <FeatureToggle
-                      label={t('baseplate.detachMargins')}
-                      checked={detachStored}
-                      onChange={() => updateParam('detachMargins', !detachStored)}
-                      disabledReason={
-                        !detachStored && !canDetach
-                          ? t('baseplate.detachMarginsTooSmall')
-                          : undefined
-                      }
-                      primaryControls={
-                        // On but nothing meets the threshold → no rails are emitted,
-                        // so say so rather than imply they will.
-                        !canDetach ? (
-                          <p className="text-[11px] leading-relaxed text-content-tertiary">
-                            {t('baseplate.detachMarginsTooSmall')}
+              {hasPadding && !outlineActive && (
+                <div className="border-t border-stroke-subtle pt-3">
+                  <FeatureToggle
+                    label={t('baseplate.detachMargins')}
+                    checked={detachStored}
+                    onChange={() => updateParam('detachMargins', !detachStored)}
+                    disabledReason={
+                      !detachStored && !canDetach ? t('baseplate.detachMarginsTooSmall') : undefined
+                    }
+                    primaryControls={
+                      // On but nothing meets the threshold → no rails are emitted,
+                      // so say so rather than imply they will.
+                      !canDetach ? (
+                        <p className="text-[11px] leading-relaxed text-content-tertiary">
+                          {t('baseplate.detachMarginsTooSmall')}
+                        </p>
+                      ) : (
+                        <div className="space-y-1">
+                          <CheckboxRow
+                            label={t('baseplate.detachMarginConnector')}
+                            checked={marginConnectorStored && marginConnectorStyleOk}
+                            onChange={(checked) => updateParam('detachMarginConnector', checked)}
+                            disabled={!marginConnectorStyleOk}
+                            indent
+                          />
+                          <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                            {marginConnectorStyleOk
+                              ? t('baseplate.detachMarginConnectorHint')
+                              : t('baseplate.detachMarginConnectorStyle')}
                           </p>
-                        ) : (
-                          <div className="space-y-1">
-                            <CheckboxRow
-                              label={t('baseplate.detachMarginConnector')}
-                              checked={marginConnectorStored && marginConnectorStyleOk}
-                              onChange={(checked) => updateParam('detachMarginConnector', checked)}
-                              disabled={!marginConnectorStyleOk}
-                              indent
-                            />
-                            <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
-                              {marginConnectorStyleOk
-                                ? t('baseplate.detachMarginConnectorHint')
-                                : t('baseplate.detachMarginConnectorStyle')}
-                            </p>
-                          </div>
-                        )
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+                        </div>
+                      )
+                    }
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </StickyGroupHeader>
 
