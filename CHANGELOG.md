@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.281.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.280.0...gridfinity-layout-tool-v4.281.0) (2026-07-22)
+
+
+### Features
+
+* **designer:** auto-fit surface text on the bin's outer walls ([#2695](https://github.com/andymai/gridfinity-layout-tool/issues/2695)) ([#2723](https://github.com/andymai/gridfinity-layout-tool/issues/2723)) ([1c44640](https://github.com/andymai/gridfinity-layout-tool/commit/1c446408f2359864962295cc04e95302356ea3c2))
+
 ## [4.280.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.279.1...gridfinity-layout-tool-v4.280.0) (2026-07-22)
 
 
