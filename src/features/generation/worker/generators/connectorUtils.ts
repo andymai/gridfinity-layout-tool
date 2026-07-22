@@ -28,7 +28,9 @@ export function computeConnectorPositions(
   edges: { left: string; right: string; front: string; back: string },
   invertDovetails?: boolean,
   fractionalEdgeX: 'start' | 'end' = 'end',
-  fractionalEdgeY: 'start' | 'end' = 'end'
+  fractionalEdgeY: 'start' | 'end' = 'end',
+  // Depth-axis pitch for a non-square grid; defaults to the square pitch.
+  gridUnitMmY: number = gridUnitMm
 ): ConnectorPos[] {
   const positions: ConnectorPos[] = [];
   const zCenter = totalHeight / 2;
@@ -38,7 +40,7 @@ export function computeConnectorPositions(
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
   // the half-cell is at the start (rotated piece under preferIdenticalPieces).
-  const yBoundaries = computeCellBoundariesMm(depth, gridUnitMm, fractionalEdgeY);
+  const yBoundaries = computeCellBoundariesMm(depth, gridUnitMmY, fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(width, gridUnitMm, fractionalEdgeX);
 
   const edgeDefs: ReadonlyArray<{

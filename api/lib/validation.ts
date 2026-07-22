@@ -118,6 +118,7 @@ interface LayoutShape {
   printBedSize?: number;
   printBedDepth?: number;
   gridUnitMm?: number;
+  gridUnitMmY?: number;
   heightUnitMm?: number;
   magnetAnchor?: 'edge' | 'center';
 }
@@ -344,6 +345,13 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       printBedSize: isNumber(layout.printBedSize) ? layout.printBedSize : undefined,
       printBedDepth: isNumber(layout.printBedDepth) ? layout.printBedDepth : undefined,
       gridUnitMm: isNumber(layout.gridUnitMm) ? layout.gridUnitMm : undefined,
+      // Match the command/store invariant (1–200mm). A shared layout with a
+      // zero/negative/extreme Y pitch would break canvas scaling and physical
+      // dimensions, so out-of-range values fall back to a square grid.
+      gridUnitMmY:
+        isNumber(layout.gridUnitMmY) && layout.gridUnitMmY >= 1 && layout.gridUnitMmY <= 200
+          ? layout.gridUnitMmY
+          : undefined,
       heightUnitMm: isNumber(layout.heightUnitMm) ? layout.heightUnitMm : undefined,
       magnetAnchor:
         layout.magnetAnchor === 'edge' || layout.magnetAnchor === 'center'

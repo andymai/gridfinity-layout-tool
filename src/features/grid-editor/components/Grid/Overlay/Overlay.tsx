@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useInteractionStore, useHalfGridModeStore } from '@/core/store';
+import { getCellSizeY } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import {
   calcFractionalPixelSize,
   toPixels,
@@ -65,14 +67,18 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   // Performance: Use focused stores directly instead of facade
   const interaction = useInteractionStore((state) => state.interaction);
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
-  const { drawer, bins } = useLayoutStore(
+  const { drawer, bins, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       bins: state.layout.bins,
+      gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
   );
 
   const visualCellSize = cellSize;
+  // Depth-axis cell size for a non-square grid; equals cellSize when square.
+  const visualCellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
   const visualDepth = drawer.depth;
   const integerDepth = Math.floor(drawer.depth);
 
@@ -87,7 +93,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   const fractionalWidthPart = drawer.width - Math.floor(drawer.width);
   const fractionalDepthPart = drawer.depth - Math.floor(drawer.depth);
   const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (visualCellSizeY + gap) - gap;
 
   // Shared fractional grid contexts for width and depth calculations
   const widthCtx: FractionalGridContext = {
@@ -99,12 +105,14 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   const depthCtx: FractionalGridContext = {
     drawerDimension: drawer.depth,
     fractionalEdge: fractionalEdgeY,
-    cellSize: visualCellSize,
+    cellSize: visualCellSizeY,
     gap,
   };
 
   // Helper to calculate pixel dimension for grid elements (standard calculation)
   const calcPixels = (units: number) => toPixels(units, visualCellSize, gap);
+  // Y/depth variant for a non-square grid (equals calcPixels when square).
+  const calcPixelsY = (units: number) => toPixels(units, visualCellSizeY, gap);
 
   // Calculate pixel width/height accounting for fractional edges
   const calcPixelWidth = (x: number, width: number) => calcFractionalPixelSize(x, width, widthCtx);
@@ -136,7 +144,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       // Integer rows are at CSS rows 1 to integerDepth
       if (binTopGridY <= fractionalDepthPart) {
         // Bin top is in fractional row at bottom
-        const fractionalRowCssTop = gap + integerDepth * (visualCellSize + gap);
+        const fractionalRowCssTop = gap + integerDepth * (visualCellSizeY + gap);
         const offsetFromTop =
           ((fractionalDepthPart - binTopGridY) / fractionalDepthPart) * fractionalCellHeight;
         return fractionalRowCssTop + offsetFromTop;
@@ -149,8 +157,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       // CSS row k (1-indexed from top) corresponds to integerY in [integerDepth-k, integerDepth-k+1)
       const cssTop =
         gap +
-        (integerDepth - 1 - wholeRows) * (visualCellSize + gap) +
-        (1 - fractionalPart) * visualCellSize;
+        (integerDepth - 1 - wholeRows) * (visualCellSizeY + gap) +
+        (1 - fractionalPart) * visualCellSizeY;
       return cssTop;
     }
 
@@ -165,12 +173,12 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       }
       // Bin top is in integer rows (below the fractional row)
       const integerTopY = topY - fractionalDepthPart;
-      return gap + fractionalCellHeight + gap + integerTopY * (visualCellSize + gap);
+      return gap + fractionalCellHeight + gap + integerTopY * (visualCellSizeY + gap);
     }
 
     // Standard case (no fractional depth)
     const topY = visualDepth - binTopGridY;
-    return gap + topY * (visualCellSize + gap);
+    return gap + topY * (visualCellSizeY + gap);
   };
 
   if (!interaction) return null;
@@ -379,7 +387,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const left = calcLeft(currentRect.x);
       const top = calcTop(currentRect.y, currentRect.depth);
       const rectWidth = calcPixels(currentRect.width);
-      const rectHeight = calcPixels(currentRect.depth);
+      const rectHeight = calcPixelsY(currentRect.depth);
 
       if (isFirstBin) {
         firstPreviewLeft = left;
@@ -398,7 +406,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const origLeft = calcLeft(originalBin.x);
         const origTop = calcTop(originalBin.y, originalBin.depth);
         const origWidth = calcPixels(originalBin.width);
-        const origHeight = calcPixels(originalBin.depth);
+        const origHeight = calcPixelsY(originalBin.depth);
 
         previews.push(
           <div
@@ -471,7 +479,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const left = calcLeft(currentCoord.x);
       const top = calcTop(currentCoord.y, bin.depth);
       const rectWidth = calcPixels(bin.width);
-      const rectHeight = calcPixels(bin.depth);
+      const rectHeight = calcPixelsY(bin.depth);
 
       previews.push(
         <div
@@ -526,7 +534,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const areaLeft = calcLeft(x1);
     const areaTop = calcTop(y1, areaDepth);
     const areaPixelWidth = calcPixels(areaWidth);
-    const areaPixelHeight = calcPixels(areaDepth);
+    const areaPixelHeight = calcPixelsY(areaDepth);
 
     previews.push(
       <div
@@ -553,7 +561,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           const left = calcLeft(binX);
           const top = calcTop(binY, paintSize.depth);
           const rectWidth = calcPixels(paintSize.width);
-          const rectHeight = calcPixels(paintSize.depth);
+          const rectHeight = calcPixelsY(paintSize.depth);
 
           previews.push(
             <div
@@ -581,7 +589,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const stripLeft = calcLeft(stripX);
         const stripTop = calcTop(y1, usedDepth);
         const stripWidth = calcPixels(remainderWidth);
-        const stripHeight = calcPixels(usedDepth);
+        const stripHeight = calcPixelsY(usedDepth);
 
         previews.push(
           <div
@@ -605,7 +613,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const stripLeft = calcLeft(x1);
         const stripTop = calcTop(stripY, remainderDepth);
         const stripWidth = calcPixels(areaWidth);
-        const stripHeight = calcPixels(remainderDepth);
+        const stripHeight = calcPixelsY(remainderDepth);
 
         previews.push(
           <div

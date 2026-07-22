@@ -170,6 +170,10 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       bus.dispatch(createCommand('layout.setGridUnitMm', { mm }));
     },
 
+    setGridUnitMmY(mm: number | null): void {
+      bus.dispatch(createCommand('layout.setGridUnitMmY', { mm }));
+    },
+
     setMagnetAnchor(anchor: 'edge' | 'center'): void {
       bus.dispatch(createCommand('layout.setMagnetAnchor', { anchor }));
     },

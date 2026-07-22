@@ -141,7 +141,9 @@ export function buildFullParams(
   fractionalEdgeY: 'start' | 'end',
   nozzleSizeMm?: number,
   drawerOutline?: DrawerOutline,
-  magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
@@ -167,7 +169,7 @@ export function buildFullParams(
         outlineOn,
         stored,
         width * gridUnitMm,
-        depth * gridUnitMm,
+        depth * gridUnitMmY,
         gridUnitMm
       );
   // An outline carries its own corner geometry as arcs and shares the same
@@ -193,6 +195,7 @@ export function buildFullParams(
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     nozzleSizeMm,
     outline,
     magnetHoles: stackingOn ? false : stored.magnetHoles,

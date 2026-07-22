@@ -85,6 +85,8 @@ export interface LayoutState {
 
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;
+  /** Set the depth-axis (Y) pitch, or `null` to clear back to a square grid. */
+  setGridUnitMmY: (mm: number | null) => void;
   setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
 

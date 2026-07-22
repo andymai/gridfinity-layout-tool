@@ -25,6 +25,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/generation/bridge';
@@ -180,6 +181,7 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // reference is a valid change signal under useShallow.
     drawerOutline: state.layout.drawer.outline,
     gridUnitMm: state.layout.gridUnitMm,
+    gridUnitMmY: effectiveGridUnitMmY(state.layout),
     printBedSize: state.layout.printBedSize,
     printBedDepth: state.layout.printBedDepth,
     fractionalEdgeX:
@@ -283,6 +285,7 @@ export function useBaseplateGeneration(): void {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    gridUnitMmY,
     magnetAnchor,
     printBedSize,
     printBedDepth,
@@ -827,7 +830,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeY ?? 'end',
           useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
           layoutState.layout.drawer.outline,
-          layoutState.layout.magnetAnchor
+          layoutState.layout.magnetAnchor,
+          effectiveGridUnitMmY(layoutState.layout)
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -881,7 +885,8 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeY,
       nozzleSizeMm,
       drawerOutline,
-      magnetAnchor
+      magnetAnchor,
+      gridUnitMmY
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -893,6 +898,7 @@ export function useBaseplateGeneration(): void {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    gridUnitMmY,
     magnetAnchor,
     printBedSize,
     printBedDepth,

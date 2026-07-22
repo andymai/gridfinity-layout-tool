@@ -9,6 +9,7 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
@@ -39,6 +40,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    gridUnitMmY,
     magnetAnchor,
     fractionalEdgeX,
     fractionalEdgeY,
@@ -51,6 +53,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       drawerDepth: state.layout.drawer.depth,
       drawerOutline: state.layout.drawer.outline,
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
       magnetAnchor: state.layout.magnetAnchor,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
@@ -90,6 +93,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             drawerDepth,
             drawerOutline,
             gridUnitMm,
+            gridUnitMmY,
             magnetAnchor,
             fractionalEdgeX,
             fractionalEdgeY,
@@ -160,6 +164,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       drawerDepth,
       drawerOutline,
       gridUnitMm,
+      gridUnitMmY,
       magnetAnchor,
       fractionalEdgeX,
       fractionalEdgeY,

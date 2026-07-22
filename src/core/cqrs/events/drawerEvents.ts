@@ -56,6 +56,12 @@ export type GridUnitMmSetEvent = BaseDomainEvent<
   { readonly mm: number; readonly previousMm: number }
 >;
 
+/** Non-square depth-axis pitch. `null` = square (Y pitch cleared). */
+export type GridUnitMmYSetEvent = BaseDomainEvent<
+  'layout.gridUnitMmYSet',
+  { readonly mm: number | null; readonly previousMmY: number | null }
+>;
+
 export type MagnetAnchorSetEvent = BaseDomainEvent<
   'layout.magnetAnchorSet',
   { readonly anchor: 'edge' | 'center'; readonly previousAnchor: 'edge' | 'center' }
@@ -87,6 +93,7 @@ export type DrawerEvent =
   | LayoutNameSetEvent
   | PrintBedSizeSetEvent
   | GridUnitMmSetEvent
+  | GridUnitMmYSetEvent
   | MagnetAnchorSetEvent
   | HeightUnitMmSetEvent
   | BaseplateParamsSetEvent

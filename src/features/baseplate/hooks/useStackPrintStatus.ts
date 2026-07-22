@@ -8,6 +8,7 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
@@ -37,6 +38,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -45,6 +47,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       drawerWidth: s.layout.drawer.width,
       drawerDepth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -64,7 +67,10 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,
-      nozzleSizeMm
+      nozzleSizeMm,
+      undefined,
+      undefined,
+      gridUnitMmY
     );
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
@@ -77,6 +83,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleSizeMm,

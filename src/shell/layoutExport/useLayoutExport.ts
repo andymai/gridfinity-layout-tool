@@ -11,6 +11,7 @@
 
 import { useCallback, useState } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
@@ -371,6 +372,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           drawerDepth: layout.drawer.depth,
           drawerOutline: layout.drawer.outline,
           gridUnitMm: layout.gridUnitMm,
+          gridUnitMmY: effectiveGridUnitMmY(layout),
           magnetAnchor: layout.magnetAnchor,
           fractionalEdgeX: layout.drawer.fractionalEdgeX ?? 'end',
           fractionalEdgeY: layout.drawer.fractionalEdgeY ?? 'end',

@@ -58,7 +58,15 @@ export interface Layout {
   drawer: Drawer;
   printBedSize: Mm; // print bed width in mm (e.g., 256 for Prusa MK3)
   printBedDepth?: Mm; // print bed depth in mm (undefined = same as printBedSize)
-  gridUnitMm: Mm; // mm per grid unit (default 42)
+  gridUnitMm: Mm; // mm per grid unit along X (default 42)
+  /**
+   * mm per grid unit along the depth (Y) axis for a non-square grid.
+   * `undefined` = square: the Y pitch equals {@link gridUnitMm}, and every
+   * square layout stays byte-identical. A concrete value edits X and Y
+   * independently (mirrors {@link BinParams.gridUnitMmY}). Resolve through
+   * {@link effectiveGridUnitMmY} rather than reading this field directly.
+   */
+  gridUnitMmY?: Mm;
   heightUnitMm: Mm; // mm per height unit (default 7)
   /** Magnet hole placement anchor (default 'edge'). See {@link MagnetAnchor}. */
   magnetAnchor?: MagnetAnchor;
@@ -70,6 +78,16 @@ export interface Layout {
   // Pointer to the active baseplate library design. null = detached inline draft
   // (unsaved New/Fork, or orphaned after the source design was deleted).
   activeBaseplateId?: BaseplateDesignId | null;
+}
+
+/**
+ * Resolve a layout's effective depth-axis (Y) grid pitch. Returns the explicit
+ * non-square {@link Layout.gridUnitMmY} when set, otherwise the square
+ * {@link Layout.gridUnitMm}. Single source for the `?? gridUnitMm` fallback so
+ * the store, canvas, baseplate params, and export path can't drift.
+ */
+export function effectiveGridUnitMmY(layout: Pick<Layout, 'gridUnitMm' | 'gridUnitMmY'>): Mm {
+  return layout.gridUnitMmY ?? layout.gridUnitMm;
 }
 
 /** Nine-point padding distribution anchor. First letter = vertical (t/m/b),

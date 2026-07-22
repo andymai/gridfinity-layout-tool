@@ -591,6 +591,22 @@ export function getBaseCellSize(viewportWidth: number): number {
   if (viewportWidth < BREAKPOINTS.LG) return 36; // Tablet (more space available)
   return 32; // Desktop (current default)
 }
+
+/**
+ * Depth-axis (Y/row) cell size in px for a non-square grid, derived from the
+ * X/column cell size scaled by the pitch ratio. Every 2D-canvas consumer that
+ * positions along Y (rows, height, pointer→grid) must derive its Y size through
+ * this helper so rendering and hit-testing agree. Rounded to match the integer
+ * px `cellSize` uses, keeping the CSS grid tracks pixel-aligned. Returns
+ * `cellSize` unchanged for a square grid (`gridUnitMmY === gridUnitMm`).
+ */
+export function getCellSizeY(cellSize: number, gridUnitMm: number, gridUnitMmY: number): number {
+  if (gridUnitMmY === gridUnitMm || gridUnitMm <= 0) return cellSize;
+  // Floor at 1px: an extreme ratio (e.g. 1mm vs 200mm) can round to 0, which
+  // would collapse the CSS grid row and make `relY / (cellSizeY + gap)` in the
+  // pointer→grid mapping snap every click to the same row.
+  return Math.max(1, Math.round((cellSize * gridUnitMmY) / gridUnitMm));
+}
 export const SHORTCUTS = {
   DELETE: ['Delete', 'Backspace'],
   ESCAPE: ['Escape'],

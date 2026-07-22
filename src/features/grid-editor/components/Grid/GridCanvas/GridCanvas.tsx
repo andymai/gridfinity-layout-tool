@@ -2,6 +2,8 @@ import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
+import { getCellSizeY } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
@@ -48,14 +50,19 @@ export function GridCanvas({
   onStartResize,
 }: GridCanvasProps) {
   const t = useTranslation();
-  const { drawer, bins, layers, categories } = useLayoutStore(
+  const { drawer, bins, layers, categories, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       bins: state.layout.bins,
       layers: state.layout.layers,
       categories: state.layout.categories,
+      gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
   );
+
+  // Depth-axis cell size for a non-square grid; equals cellSize when square.
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
 
   const { activeLayerId, selectedBinIds, setSelectedBin, setActiveLayer } = useSelectionStore(
     useShallow((state) => ({
@@ -153,7 +160,7 @@ export function GridCanvas({
     gridRows,
     getCssColForCell: getCssCol,
     getCssRowForCell: getCssRow,
-  } = useGridTemplate({ drawer, cellSize, gap });
+  } = useGridTemplate({ drawer, cellSize, cellSizeY, gap });
 
   // Generate grid cells for visual reference
   // Only render full integer cells - fractional portions are handled separately
@@ -167,7 +174,7 @@ export function GridCanvas({
             gridColumn: getCssCol(x),
             gridRow: getCssRow(y),
             width: cellSize,
-            height: cellSize,
+            height: cellSizeY,
             backgroundColor: 'var(--grid-cell)',
             borderRadius: '2px',
           }}
@@ -190,7 +197,7 @@ export function GridCanvas({
             gridColumn: fracColCss,
             gridRow: getCssRow(y),
             width: fractionalCellWidth,
-            height: cellSize,
+            height: cellSizeY,
             backgroundColor: 'var(--grid-cell)',
             borderRadius: '2px',
           }}
@@ -315,13 +322,13 @@ export function GridCanvas({
             ? toPixels(zone.width, cellSize, gap)
             : undefined;
           const zonePixelHeight = hasFractionalDims
-            ? toPixels(zone.depth, cellSize, gap)
+            ? toPixels(zone.depth, cellSizeY, gap)
             : undefined;
           // Calculate pixel offset for fractional positions
           const fractionalX = zone.x - Math.floor(zone.x);
           const fractionalYFromTop = Math.ceil(zone.y + zone.depth) - (zone.y + zone.depth);
           const offsetX = hasFractionalDims ? fractionalX * (cellSize + gap) : 0;
-          const offsetY = hasFractionalDims ? fractionalYFromTop * (cellSize + gap) : 0;
+          const offsetY = hasFractionalDims ? fractionalYFromTop * (cellSizeY + gap) : 0;
 
           return (
             <div

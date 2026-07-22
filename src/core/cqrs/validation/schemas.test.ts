@@ -43,9 +43,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 37 schemas', () => {
+  it('has exactly 38 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(37);
+    expect(registeredCount).toBe(38);
   });
 });
 

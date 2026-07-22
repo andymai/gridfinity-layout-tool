@@ -27,7 +27,13 @@ import {
 } from '@/shared/analytics/posthog';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category, GridUnits, HeightUnits, MeasuredDrawerMm } from '@/core/types';
-import { binId as toBinId, gridUnits, mm, mmToHeightUnits } from '@/core/types';
+import {
+  binId as toBinId,
+  effectiveGridUnitMmY,
+  gridUnits,
+  mm,
+  mmToHeightUnits,
+} from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
@@ -77,6 +83,10 @@ export interface UseDrawerSettingsReturn {
 
   // Physical units
   gridUnitMm: number;
+  /** Resolved depth-axis (Y) pitch — equals gridUnitMm for a square grid. */
+  gridUnitMmY: number;
+  /** True when the layout has an explicit non-square Y pitch set. */
+  nonSquareGrid: boolean;
   heightUnitMm: number;
   printBedSize: number;
   printBedDepth: number;
@@ -110,6 +120,10 @@ export interface UseDrawerSettingsReturn {
 
   // Physical unit handlers
   setGridUnitMm: (value: number) => void;
+  /** Set the depth-axis (Y) pitch, or `null` to clear back to a square grid. */
+  setGridUnitMmY: (value: number | null) => void;
+  /** Toggle non-square mode: enabling seeds Y from X, disabling clears to square. */
+  handleToggleNonSquareGrid: (enabled: boolean) => void;
   setHeightUnitMm: (value: number) => void;
   setPrintBedSize: (value: number, depth?: number) => void;
   resetGridfinityStandard: () => void;
@@ -187,6 +201,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const {
     layout,
     gridUnitMm,
+    gridUnitMmY,
+    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -200,6 +216,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     useShallow((state) => ({
       layout: state.layout,
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
+      nonSquareGrid: state.layout.gridUnitMmY !== undefined,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth ?? state.layout.printBedSize,
@@ -249,8 +267,14 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const addToast = useToastStore((state) => state.addToast);
 
   // Mutations (supports collaborative mode)
-  const { setGridUnitMm, setHeightUnitMm, setPrintBedSize, updateDrawer, updateBin } =
-    useMutations();
+  const {
+    setGridUnitMm,
+    setGridUnitMmY,
+    setHeightUnitMm,
+    setPrintBedSize,
+    updateDrawer,
+    updateBin,
+  } = useMutations();
 
   // Undo support
 
@@ -275,15 +299,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const hasFractionalDepth = drawerDepth % 1 !== 0;
   const widthStep = halfGridMode || hasFractionalWidth ? 0.5 : 1;
   const depthStep = halfGridMode || hasFractionalDepth ? 0.5 : 1;
-  const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth);
+  const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth, gridUnitMmY);
 
   const realWorldDimensions = useMemo(
     () => ({
       width: drawerWidth * gridUnitMm,
-      depth: drawerDepth * gridUnitMm,
+      depth: drawerDepth * gridUnitMmY,
       height: drawerHeight * heightUnitMm,
     }),
-    [drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm]
+    [drawerWidth, drawerDepth, drawerHeight, gridUnitMm, gridUnitMmY, heightUnitMm]
   );
   // Stepper handlers (delta-based, respects step size)
   const handleDrawerWidthChange = useCallback(
@@ -371,7 +395,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const handleMeasuredCommit = useCallback(
     (widthMm: number, depthMm: number, heightMm?: number) => {
       const widthFit = fitAxisUnits(widthMm, gridUnitMm, halfGridMode);
-      const depthFit = fitAxisUnits(depthMm, gridUnitMm, halfGridMode);
+      const depthFit = fitAxisUnits(depthMm, gridUnitMmY, halfGridMode);
       const measured: MeasuredDrawerMm = {
         width: widthMm,
         depth: depthMm,
@@ -404,7 +428,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       let suggestion: HalfFitSuggestion | null = null;
       if (!halfGridMode) {
         const widthUpgrade = halfUnitUpgrade(widthMm, gridUnitMm, widthFit.units);
-        const depthUpgrade = halfUnitUpgrade(depthMm, gridUnitMm, depthFit.units);
+        const depthUpgrade = halfUnitUpgrade(depthMm, gridUnitMmY, depthFit.units);
         if (widthUpgrade !== null || depthUpgrade !== null) {
           suggestion = {
             width: gridUnits((widthUpgrade ?? widthFit).units),
@@ -432,7 +456,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
         has_height: heightMm !== undefined,
       });
     },
-    [gridUnitMm, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
+    [gridUnitMm, gridUnitMmY, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
   );
 
   const acceptHalfFitSuggestion = useCallback(() => {
@@ -520,6 +544,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     });
   }, [setGridUnitMm, setHeightUnitMm]);
 
+  // Enabling non-square seeds the Y pitch from the current X (so the grid stays
+  // square until Y is edited); disabling clears it back to a square grid.
+  const handleToggleNonSquareGrid = useCallback(
+    (enabled: boolean) => {
+      setGridUnitMmY(enabled ? gridUnitMm : null);
+    },
+    [setGridUnitMmY, gridUnitMm]
+  );
+
   // Save current categories as defaults
   const handleSaveCategoriesAsDefaults = useCallback(() => {
     saveCategoriesAsDefaults(currentCategories);
@@ -568,6 +601,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     // Physical units
     gridUnitMm,
+    gridUnitMmY,
+    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -590,6 +625,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     handleRemediate,
     handleSaveDefaults,
     setGridUnitMm,
+    setGridUnitMmY,
+    handleToggleNonSquareGrid,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,

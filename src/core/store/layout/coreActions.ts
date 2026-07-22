@@ -87,6 +87,12 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
       });
     },
 
+    setGridUnitMmY: (mm: number | null): void => {
+      setLocal((state) => {
+        state.layout.gridUnitMmY = mm === null ? undefined : (clamp(mm, 1, 200) as Mm);
+      });
+    },
+
     setMagnetAnchor: (anchor: MagnetAnchor): void => {
       setLocal((state) => {
         state.layout.magnetAnchor = anchor;

@@ -15,9 +15,10 @@ import {
   useGridCoords,
 } from '@/features/grid-editor/hooks';
 import { useResponsive } from '@/shared/hooks';
-import { getBaseCellSize, HALF_BIN_SCALE } from '@/core/constants';
+import { getBaseCellSize, getCellSizeY, HALF_BIN_SCALE } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
 import type { GridUnits } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { DrawerMargin, useDrawerMarginInsets } from './DrawerMargin';
@@ -104,12 +105,14 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // Half-bin mode - single value, no useShallow needed
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
 
-  const { drawer, layers, bins, categories } = useLayoutStore(
+  const { drawer, layers, bins, categories, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       layers: state.layout.layers,
       bins: state.layout.bins,
       categories: state.layout.categories,
+      gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
   );
 
@@ -188,7 +191,11 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     handleResizeStart,
     confirmResize,
     cancelResize,
-  } = useGridResize({ cellSize: zoomedCellSize, gap });
+  } = useGridResize({
+    cellSize: zoomedCellSize,
+    cellSizeY: getCellSizeY(zoomedCellSize, gridUnitMm, gridUnitMmY),
+    gap,
+  });
 
   // Grid zoom hook - encapsulates zoom controls
   const zoomState = useGridZoom({
@@ -210,6 +217,8 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
   // Calculate cellSize using zoom from zoomState (may differ slightly due to fit-to-screen)
   const cellSize = Math.round(baseCellSize * zoomState.zoom);
+  // Depth-axis cell size for a non-square grid; equals cellSize when square.
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
 
   // Per-side overhang band (baseplate padding) in px. The row/column labels are
   // opaque and sit above the band, so on the padded left/front sides they'd hide
@@ -219,6 +228,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
   const visualCellSize = halfGridMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
+  const visualCellSizeY = halfGridMode ? (cellSizeY - gap) / HALF_BIN_SCALE : cellSizeY;
   // Scale factor for grid dimensions
   const scale = halfGridMode ? HALF_BIN_SCALE : 1;
 
@@ -255,12 +265,12 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
   // Grid dimensions in pixels
   const gridWidth = drawer.width * scale * (visualCellSize + gap) + gap;
-  const gridHeight = drawer.depth * scale * (visualCellSize + gap) + gap;
+  const gridHeight = drawer.depth * scale * (visualCellSizeY + gap) + gap;
 
   // Calculate axis label sizes for row/column labels
-  const fullRowSize = scale * visualCellSize + (scale - 1) * gap;
+  const fullRowSize = scale * visualCellSizeY + (scale - 1) * gap;
   const fractionalDepthPart = drawer.depth - labelsState.integerDepth;
-  const fractionalRowSize = fractionalDepthPart * (cellSize + gap) - gap;
+  const fractionalRowSize = fractionalDepthPart * (cellSizeY + gap) - gap;
 
   const fullColSize = scale * visualCellSize + (scale - 1) * gap;
   const fractionalWidthPart = drawer.width - labelsState.integerWidth;

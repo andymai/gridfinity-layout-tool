@@ -37,6 +37,12 @@ export type SetPrintBedSizeCommand = BaseCommand<
 
 export type SetGridUnitMmCommand = BaseCommand<'layout.setGridUnitMm', { readonly mm: number }>;
 
+/** `mm: null` clears the non-square Y pitch back to a square grid. */
+export type SetGridUnitMmYCommand = BaseCommand<
+  'layout.setGridUnitMmY',
+  { readonly mm: number | null }
+>;
+
 export type SetMagnetAnchorCommand = BaseCommand<
   'layout.setMagnetAnchor',
   { readonly anchor: 'edge' | 'center' }
@@ -60,6 +66,7 @@ export type DrawerCommand =
   | SetNameCommand
   | SetPrintBedSizeCommand
   | SetGridUnitMmCommand
+  | SetGridUnitMmYCommand
   | SetMagnetAnchorCommand
   | SetHeightUnitMmCommand
   | SetBaseplateParamsCommand

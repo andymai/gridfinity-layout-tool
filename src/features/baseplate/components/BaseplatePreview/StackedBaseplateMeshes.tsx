@@ -11,7 +11,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StackPrintParams } from '@/core/types';
-import { STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
+import { STACK_PRINT_DEFAULT_COPIES, effectiveGridUnitMmY } from '@/core/types';
 import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
@@ -71,6 +71,7 @@ export function StackedBaseplateMeshes({
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -79,6 +80,7 @@ export function StackedBaseplateMeshes({
       drawerWidth: s.layout.drawer.width,
       drawerDepth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -99,7 +101,10 @@ export function StackedBaseplateMeshes({
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,
-      nozzleSizeMm
+      nozzleSizeMm,
+      undefined,
+      undefined,
+      gridUnitMmY
     );
     const groups = stackGroupsFromTiling(
       tiling,
@@ -167,6 +172,7 @@ export function StackedBaseplateMeshes({
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleSizeMm,

@@ -85,6 +85,7 @@ export interface Mutations {
   setName: (name: string) => void;
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;
+  setGridUnitMmY: (mm: number | null) => void;
   setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
   setBaseplateParams: (params: StoredBaseplateParams) => void;

@@ -95,6 +95,26 @@ describe('useGridCoords', () => {
       expect(coord?.x).toBe(0);
     });
 
+    it('maps the Y axis by the depth pitch on a non-square grid (#2704)', () => {
+      const gridRef = createMockGridRef(0, 0);
+
+      // Non-square grid: Y pitch is half the X pitch, so rows are half as tall.
+      // cellSize = 32px (X), cellSizeY = round(32 * 21/42) = 16px (Y), gap = 1px.
+      const layout = useLayoutStore.getState().layout;
+      layout.gridUnitMm = 42 as typeof layout.gridUnitMm;
+      layout.gridUnitMmY = 21 as typeof layout.gridUnitMmY;
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useGridCoords(gridRef));
+
+      // X still uses the 32px cell: relX 16 → column 0.
+      // Y uses the 16px row (step 17): relY 42 → row index 2 from top →
+      // grid y = 8 - 2 - 1 = 5. On a square grid the same click would land on y=6.
+      const coord = result.current.getGridCoords(16, 42);
+      expect(coord?.x).toBe(0);
+      expect(coord?.y).toBe(5);
+    });
+
     it('calculates correct cell for different zoom levels', () => {
       const gridRef = createMockGridRef(0, 0);
 

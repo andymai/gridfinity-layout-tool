@@ -55,6 +55,8 @@ export interface BuildBaseplateExportInput {
    * decides applicability (sync mode, stacking). */
   readonly drawerOutline?: DrawerOutline;
   readonly gridUnitMm: number;
+  /** Depth-axis (Y) pitch for a non-square grid. Absent = square (equals gridUnitMm). */
+  readonly gridUnitMmY?: number;
   /** Layout-scoped magnet anchor (default 'edge'). */
   readonly magnetAnchor?: MagnetAnchor;
   readonly fractionalEdgeX: 'start' | 'end';
@@ -163,6 +165,7 @@ export async function buildBaseplateExportPieces(
     drawerDepth,
     drawerOutline,
     gridUnitMm,
+    gridUnitMmY,
     magnetAnchor,
     fractionalEdgeX,
     fractionalEdgeY,
@@ -188,7 +191,8 @@ export async function buildBaseplateExportPieces(
     fractionalEdgeY,
     nozzleMm,
     drawerOutline,
-    magnetAnchor
+    magnetAnchor,
+    gridUnitMmY
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
 
@@ -214,7 +218,8 @@ export async function buildBaseplateExportPieces(
     fractionalEdgeY,
     nozzleMm,
     drawerOutline,
-    magnetAnchor
+    magnetAnchor,
+    gridUnitMmY
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

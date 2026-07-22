@@ -223,7 +223,8 @@ export function planLayoutBinExport(
       u.params.height,
       printSettings,
       u.params.gridUnitMm,
-      u.params.heightUnitMm
+      u.params.heightUnitMm,
+      u.params.gridUnitMmY
     );
     totalGrams += est.gramsFilament * u.quantity;
     totalMinutes += est.printTimeMinutes * u.quantity;

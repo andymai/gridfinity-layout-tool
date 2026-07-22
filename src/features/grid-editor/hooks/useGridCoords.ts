@@ -4,7 +4,8 @@ import type { Coord, GridUnits } from '@/core/types';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
-import { getBaseCellSize, snapToHalf } from '@/core/constants';
+import { getBaseCellSize, getCellSizeY, snapToHalf } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { clamp } from '@/shared/utils/validation';
 import { useResponsive } from '@/shared/hooks';
 
@@ -68,10 +69,14 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const zoom = useViewStore((state) => state.zoom);
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const drawer = useLayoutStore((state) => state.layout.drawer);
+  const gridUnitMm = useLayoutStore((state) => state.layout.gridUnitMm);
+  const gridUnitMmY = useLayoutStore((state) => effectiveGridUnitMmY(state.layout));
   const { viewportWidth } = useResponsive();
 
-  // Base cell size at current zoom (represents 1 grid unit)
+  // Base cell size at current zoom (represents 1 grid unit). The depth axis uses
+  // a scaled size for a non-square grid; equal to cellSize when square.
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
   const gap = 1; // 1px gap between cells
 
   const getGridCoords = useCallback(
@@ -94,7 +99,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
       const fractionalWidthPart = drawer.width - Math.floor(drawer.width);
       const fractionalDepthPart = drawer.depth - Math.floor(drawer.depth);
       const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-      const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+      const fractionalCellHeight = fractionalDepthPart * (cellSizeY + gap) - gap;
 
       // Adjust X coordinate for fractional edge at start
       let cellX: number;
@@ -127,12 +132,12 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
           inCellY = relY - gap;
         } else {
           const adjustedY = relY - (fractionalCellHeight + gap);
-          cellY = Math.floor(adjustedY / (cellSize + gap));
-          inCellY = adjustedY - cellY * (cellSize + gap);
+          cellY = Math.floor(adjustedY / (cellSizeY + gap));
+          inCellY = adjustedY - cellY * (cellSizeY + gap);
         }
       } else {
-        cellY = Math.floor(relY / (cellSize + gap));
-        inCellY = relY - cellY * (cellSize + gap);
+        cellY = Math.floor(relY / (cellSizeY + gap));
+        inCellY = relY - cellY * (cellSizeY + gap);
       }
 
       // Convert to grid coordinates
@@ -141,7 +146,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
       if (halfGridMode) {
         // In half-bin mode, detect which half of the cell for 0.5 snapping
         const isLeftHalf = inCellX < (cellX === -1 ? fractionalCellWidth / 2 : cellSize / 2);
-        const isTopHalf = inCellY < (cellY === -1 ? fractionalCellHeight / 2 : cellSize / 2);
+        const isTopHalf = inCellY < (cellY === -1 ? fractionalCellHeight / 2 : cellSizeY / 2);
 
         let x: number;
         if (cellX === -1) {
@@ -198,6 +203,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     [
       gridRef,
       cellSize,
+      cellSizeY,
       gap,
       drawer.width,
       drawer.depth,
@@ -267,6 +273,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     clampCoords,
     isInBounds,
     cellSize,
+    cellSizeY,
     halfGridMode,
   };
 }

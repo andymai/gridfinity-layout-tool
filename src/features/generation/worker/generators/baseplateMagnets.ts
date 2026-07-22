@@ -21,7 +21,7 @@ import type { Shape3D } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import { SIZE, SOCKET_HEIGHT, COPLANAR_MARGIN, HOLE_OFFSET, forEachCell } from './generatorTypes';
-import { resolvePitch } from './gridPitch';
+import { resolvePitch, type GridUnitInput } from './gridPitch';
 
 /**
  * Center-to-wall inset (mm) of a standard magnet in a 42mm cell (`SIZE/2 −
@@ -214,13 +214,14 @@ export function buildPartialCellMagnetHoles(
   cells: readonly CellInfo[],
   magnetRadius: number,
   magnetDepth: number,
-  gridUnitMm: number,
+  gridUnitMm: GridUnitInput,
   anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
 ): Shape3D[] {
+  // `x` scales width, `y` scales depth (equal for a square grid).
+  const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
   const positions: Array<[number, number]> = [];
   for (const cell of cells) {
-    // Baseplate grid is square, so both axes use the same pitch.
-    positions.push(...magnetPositionsForCell(cell, magnetRadius, gridUnitMm, gridUnitMm, anchor));
+    positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor));
   }
   return buildMagnetCutters(positions, magnetRadius, magnetDepth);
 }

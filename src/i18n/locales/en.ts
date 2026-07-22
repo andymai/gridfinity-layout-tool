@@ -270,6 +270,12 @@ const en: Record<string, string> = {
   'sidebar.gridSize': 'Grid Size',
   'sidebar.gridUnit': 'Grid unit',
   'sidebar.gridUnitTooltip': 'Size of one grid unit in mm (standard Gridfinity = 42mm)',
+  'sidebar.gridUnitX': 'Grid unit X',
+  'sidebar.gridUnitXTooltip': 'Width of one grid cell in mm along X (standard Gridfinity = 42mm)',
+  'sidebar.gridUnitY': 'Grid unit Y',
+  'sidebar.gridUnitYTooltip':
+    "Depth of one grid cell in mm along Y. Set different from X to fill a drawer that isn't an exact multiple of 42mm (e.g. 42x22).",
+  'sidebar.nonSquareGrid': 'Non-square grid',
   'sidebar.heightUnit': 'Height unit',
   'sidebar.heightUnitTooltip': 'Height of one vertical unit in mm (standard = 7mm)',
   'sidebar.printBed': 'Print bed',

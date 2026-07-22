@@ -219,6 +219,8 @@ export function buildConnectors(
   const halfW = totalW / 2;
   const halfD = totalD / 2;
   const gridUnit = params.gridUnitMm;
+  // Depth-axis pitch for a non-square grid; equals gridUnit for square.
+  const gridUnitY = params.gridUnitMmY ?? gridUnit;
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
@@ -231,18 +233,18 @@ export function buildConnectors(
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
   // the half-cell is at the start (rotated piece under preferIdenticalPieces).
-  const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const yBoundaries = computeCellBoundariesMm(params.depth, gridUnitY, params.fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
 
   // Cell centers along each axis — where the margin-seam connector places one
   // tongue per cell (unlike the split-piece dovetails, which sit on boundaries).
-  const yCenters = computeCellCentersMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const yCenters = computeCellCentersMm(params.depth, gridUnitY, params.fractionalEdgeY);
   const xCenters = computeCellCentersMm(params.width, gridUnit, params.fractionalEdgeX);
 
   // Cell layout along each edge's boundary axis — used to subtract the
   // neighbouring piece's sockets from each tongue (the grid is continuous across
   // the seam, so the neighbour column shares this piece's boundary-axis cells).
-  const yCellSpans = cellSpansMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const yCellSpans = cellSpansMm(params.depth, gridUnitY, params.fractionalEdgeY);
   const xCellSpans = cellSpansMm(params.width, gridUnit, params.fractionalEdgeX);
 
   type Side = 'left' | 'right' | 'front' | 'back';
@@ -347,17 +349,21 @@ export function buildConnectors(
     tongue: Shape3D,
     bpTongue: number,
     def: (typeof edgeDefs)[number]
-  ): Shape3D =>
-    relieveTongueForSockets(
+  ): Shape3D => {
+    // The neighbour cell across the seam is a full grid unit along the protrude
+    // axis — X for left/right edges, Y (non-square pitch) for front/back.
+    const protrudePitch = def.protrudeAxis === 'x' ? gridUnit : gridUnitY;
+    return relieveTongueForSockets(
       tongue,
       bpTongue,
-      def.wallPos + def.protrudeDir * (gridUnit / 2),
+      def.wallPos + def.protrudeDir * (protrudePitch / 2),
       def.protrudeAxis,
       def.boundaryCells,
-      gridUnit,
+      protrudePitch,
       params.magnetHoles,
       forExport
     );
+  };
 
   // Build an XY point with wall/boundary coords assigned to the correct axis.
   // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.

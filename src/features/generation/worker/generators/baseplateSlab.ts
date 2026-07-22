@@ -109,6 +109,8 @@ export function sanitizeParams(params: ResolvedBaseplateParams): ResolvedBasepla
   return {
     ...params,
     gridUnitMm: clampFinite(params.gridUnitMm, 1, 200),
+    gridUnitMmY:
+      params.gridUnitMmY !== undefined ? clampFinite(params.gridUnitMmY, 1, 200) : undefined,
     magnetDiameter: clampFinite(params.magnetDiameter, 0.5, 20),
     magnetDepth: clampFinite(params.magnetDepth, 0.5, 10),
     paddingLeft: clampPadding(params.paddingLeft),
