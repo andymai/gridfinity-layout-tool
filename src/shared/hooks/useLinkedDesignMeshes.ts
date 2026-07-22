@@ -194,7 +194,10 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<DesignId, LinkedDesignMe
     for (const bin of bins) {
       if (bin.linkedDesignId === undefined || refs.has(bin.linkedDesignId)) continue;
       const ref = registryById.get(bin.linkedDesignId);
-      if (ref) refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm}`);
+      // Quantize the nozzle so float noise (e.g. 0.6000000000000001) can't
+      // fragment the cache key into avoidable misses.
+      if (ref)
+        refs.set(bin.linkedDesignId, `${ref.id}:${ref.updatedAt}:n${nozzleSizeMm.toFixed(3)}`);
     }
     return refs;
   }, [bins, registry, nozzleSizeMm]);

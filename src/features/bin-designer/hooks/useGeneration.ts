@@ -489,13 +489,17 @@ export function useGeneration(): void {
 
   // Re-generate when the print nozzle changes. Nozzle is not part of the design
   // (so it doesn't bump the epoch), but a socket bin's pocket clearance scales
-  // with it — only socket-mode bins need the regen; every other design is
-  // nozzle-invariant on this path.
+  // with it. Gate on `withSocketNozzle` itself (the single source of truth for
+  // "does the nozzle change geometry here") so we skip regen when it wouldn't —
+  // labels disabled, non-socket, or both nozzles at/below the 0.4mm baseline.
   useEffect(() => {
-    if (prevNozzleRef.current === nozzleSizeMm) return;
+    const prevNozzle = prevNozzleRef.current;
+    if (prevNozzle === nozzleSizeMm) return;
     prevNozzleRef.current = nozzleSizeMm;
-    if (!initializedRef.current) return;
-    if (itemKind !== 'bin' || params.label.mode !== 'socket') return;
+    if (!initializedRef.current || itemKind !== 'bin') return;
+    const before = withSocketNozzle(params, prevNozzle).nozzleSizeMm;
+    const after = withSocketNozzle(params, nozzleSizeMm).nozzleSizeMm;
+    if (before === after) return;
     void runGeneration(params);
   }, [nozzleSizeMm, itemKind, params, runGeneration]);
 }
