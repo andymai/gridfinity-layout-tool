@@ -127,6 +127,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'featureColors',
   'lid',
   'textDefaults',
+  'surfaceText',
   'meshAssets',
 ]);
 
@@ -333,6 +334,37 @@ function validateTextStyleOverride(value: unknown, label: string): string | null
     (!isNumber(fontSizeOverride) || !inRange(fontSizeOverride, 0.5, 200))
   ) {
     return `${label}.fontSizeOverride must be 0.5-200`;
+  }
+  return null;
+}
+
+const ALLOWED_SURFACE_TEXT_KEYS = new Set(['lidText', 'style']);
+
+/**
+ * Exterior-surface text (issue #2695): lid-top text today, per-wall text in a
+ * follow-up. Strings share the client's `TEXT_MAX_LENGTH = 50` cap (mirrored
+ * numerically, like `compartmentTexts`); the style override reuses the
+ * `textDefaults` field caps so a crafted share can't smuggle a depth/size
+ * that crashes the BREP worker.
+ */
+function validateSurfaceText(value: unknown): string | null {
+  if (!isObject(value)) return 'surfaceText must be an object';
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_SURFACE_TEXT_KEYS.has(key)) {
+      return `surfaceText has unknown key: ${key}`;
+    }
+  }
+
+  if (value.lidText !== undefined) {
+    if (typeof value.lidText !== 'string') return 'surfaceText.lidText must be a string';
+    if (value.lidText.length > 50) {
+      return 'surfaceText.lidText must not exceed 50 characters';
+    }
+  }
+  if (value.style !== undefined) {
+    const styleErr = validateTextStyleOverride(value.style, 'surfaceText.style');
+    if (styleErr) return styleErr;
   }
   return null;
 }
@@ -930,6 +962,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.textDefaults !== undefined) {
     const tdErr = validateTextDefaults(params.textDefaults);
     if (tdErr) return validationError('INVALID_PARAMS', tdErr);
+  }
+
+  if (params.surfaceText !== undefined) {
+    const stErr = validateSurfaceText(params.surfaceText);
+    if (stErr) return validationError('INVALID_PARAMS', stErr);
   }
 
   // Inserts

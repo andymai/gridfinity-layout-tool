@@ -40,11 +40,17 @@ import {
   LID_TRAY_WALL_MAX_MM,
 } from '../types/lid';
 import type { LidClickRails, LidAttachment, LidMagnetConfig, LidTrayConfig } from '../types/lid';
-import type { TextStyleDefaults } from '../types/text';
+import type {
+  SurfaceTextConfig,
+  TextFontFamily,
+  TextMode,
+  TextStyleDefaults,
+  TextStyleOverride,
+} from '../types/text';
 import { migrateWalls } from './paramMigration';
 import type { LegacyWallConfig } from './paramMigration';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
-import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
+import { DEFAULT_TEXT_STYLE_DEFAULTS, TEXT_MAX_LENGTH } from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -613,6 +619,70 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
 }
 
 /**
+ * Normalize a persisted `surfaceText` value. Clamps the string to
+ * `TEXT_MAX_LENGTH` and collapses empty/junk objects to `undefined` so
+ * pre-feature designs (and designs whose text was cleared) serialize
+ * byte-identically to before the field existed. The style override passes
+ * through shape-checked only — field ranges are the share/sync validator's
+ * job, matching how `label.textStyle` is handled.
+ */
+const MIGRATE_TEXT_FONTS: readonly TextFontFamily[] = [
+  'atkinson',
+  'jetbrains-mono',
+  'allerta-stencil',
+];
+const MIGRATE_TEXT_MODES: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'];
+
+/**
+ * Sanitize a persisted surface-text style override field-by-field: unknown
+ * keys drop, enums must match, numbers must be finite and in the same ranges
+ * the share/sync validator enforces (`api/lib/designerValidation.ts`
+ * `validateTextDefaults`). Locally persisted or imported designs bypass that
+ * server mirror, and a malformed depth/size here would flow straight into the
+ * BREP worker via `resolveLidInputs`.
+ */
+function migrateTextStyleOverride(raw: unknown): TextStyleOverride | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const value = raw as Record<string, unknown>;
+  const num = (v: unknown, min: number, max: number): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : undefined;
+  const depth = num(value.depth, 0, 10);
+  const margin = num(value.margin, 0, 50);
+  const minFontSize = num(value.minFontSize, 0.5, 100);
+  const maxFontSize = num(value.maxFontSize, 0.5, 200);
+  const fontSizeOverride = num(value.fontSizeOverride, 0.5, 200);
+  const out: TextStyleOverride = {
+    ...(MIGRATE_TEXT_FONTS.includes(value.font as TextFontFamily)
+      ? { font: value.font as TextFontFamily }
+      : {}),
+    ...(MIGRATE_TEXT_MODES.includes(value.mode as TextMode)
+      ? { mode: value.mode as TextMode }
+      : {}),
+    ...(depth !== undefined ? { depth } : {}),
+    ...(margin !== undefined ? { margin } : {}),
+    ...(minFontSize !== undefined ? { minFontSize } : {}),
+    ...(maxFontSize !== undefined ? { maxFontSize } : {}),
+    ...(fontSizeOverride !== undefined ? { fontSizeOverride } : {}),
+  };
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const { lidText, style } = raw as { lidText?: unknown; style?: unknown };
+  // Trimmed on write (store setters) — trim again here so the worker (which
+  // trims before generating) and persisted state can't disagree.
+  const text = typeof lidText === 'string' ? lidText.slice(0, TEXT_MAX_LENGTH).trim() : undefined;
+  const hasText = text !== undefined && text !== '';
+  const migratedStyle = migrateTextStyleOverride(style);
+  if (!hasText && migratedStyle === undefined) return undefined;
+  return {
+    ...(hasText ? { lidText: text } : {}),
+    ...(migratedStyle !== undefined ? { style: migratedStyle } : {}),
+  };
+}
+
+/**
  * Populate missing bin parameters with default values.
  * Handles backward compatibility for old designs:
  * - scoop was boolean in earlier versions
@@ -855,6 +925,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       ...DEFAULT_TEXT_STYLE_DEFAULTS,
       ...((params as { textDefaults?: Partial<TextStyleDefaults> }).textDefaults ?? {}),
     },
+    // `...rest` carried the raw value through; this overrides it with the
+    // normalized form (or strips it entirely when empty/invalid).
+    surfaceText: migrateSurfaceText(params.surfaceText),
     // Clamp the exterior-wall collar so a corrupt design can't drive a runaway
     // box/lip height. `...rest` carried the raw value through; this overrides it.
     extraWallHeightMm: migrateExtraWallHeightMm(
@@ -879,6 +952,10 @@ export const STYLE_DEFAULT_OMIT_KEYS = [
   'cellMask',
   'compartments',
   'cutouts',
+  // Surface text is a per-design label ("Cables"), not a reusable style —
+  // carrying it into "default for new bins" would stamp one design's label
+  // onto every subsequent design.
+  'surfaceText',
   // Mesh imprint assets are per-design geometry AND large (100KB+ compressed
   // STL data) — carrying them into "default for new bins" would bloat every
   // subsequent design.

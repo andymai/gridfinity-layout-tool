@@ -554,6 +554,41 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
+    setLidText: (text: string) => {
+      const { params } = get();
+      // Trimmed on store: the worker trims before generating, so persisting
+      // outer whitespace would only create no-op history entries and
+      // regenerations for geometry that can't change.
+      const clamped = text.slice(0, TEXT_MAX_LENGTH).trim();
+      // No-op guard: the input commits on both idle and blur; an unchanged
+      // value must not push a history entry or regeneration.
+      if ((params.surfaceText?.lidText ?? '') === clamped) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const { lidText: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(clamped !== '' ? { lidText: clamped } : {}),
+        };
+        // Drop the whole key when nothing remains so pre-feature designs
+        // (and cleared text) serialize byte-identically.
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setSurfaceTextStyle: (overrides: TextStyleOverride | null) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const { style: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(overrides !== null && Object.keys(overrides).length > 0 ? { style: overrides } : {}),
+        };
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
     setDividerOverride: (
       compartmentA: number,
       compartmentB: number,

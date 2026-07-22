@@ -207,6 +207,90 @@ describe('LidSection', () => {
     });
   });
 
+  describe('lid text (#2695)', () => {
+    it('renders the text input when the lid is enabled', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      expect(screen.getByText('Lid text')).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
+    });
+
+    it('commits the typed text to surfaceText.lidText on blur', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      const input = screen.getByRole('textbox', { name: 'Lid text' });
+      fireEvent.change(input, { target: { value: 'Cables' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
+    });
+
+    it('shows the mode picker only when text is present', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      const { unmount } = render(<LidSection />);
+      expect(screen.queryByRole('radio', { name: 'Emboss' })).not.toBeInTheDocument();
+      unmount();
+
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      expect(screen.getByRole('radio', { name: 'Emboss' })).toBeInTheDocument();
+    });
+
+    it('picking a mode writes the shared surface-text style', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Emboss' }));
+      expect(useDesignerStore.getState().params.surfaceText?.style?.mode).toBe('emboss');
+    });
+
+    it('shows the stencil note in through-cut mode', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables', style: { mode: 'through-cut' } },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/stencil/i)).toBeInTheDocument();
+    });
+
+    it('replaces the input with a reason when the top is stackable', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true },
+      });
+      render(<LidSection />);
+      expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
+      expect(screen.getByText(/stack grid owns/)).toBeInTheDocument();
+    });
+
+    it('replaces the input with a reason for custom-shape (cellMask) bins', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        // Partial 2×2 half-cell mask on a 1×1 bin — one corner missing.
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      });
+      render(<LidSection />);
+      expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
+      expect(screen.getByText('Not available for custom-shape bins.')).toBeInTheDocument();
+    });
+
+    it('shows the tray-floor hint when the tray is active', () => {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          tray: { ...DEFAULT_BIN_PARAMS.lid.tray, enabled: true },
+        },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/tray floor/)).toBeInTheDocument();
+    });
+  });
+
   describe('compatibility issues', () => {
     it('shows a Fix button on the label-tabs warning that disables the feature', () => {
       resetStore({

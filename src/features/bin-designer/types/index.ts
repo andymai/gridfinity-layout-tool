@@ -48,7 +48,7 @@ export type {
 } from './featureColors';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { LidConfig } from './lid';
-import type { TextStyleDefaults, TextStyleOverride } from './text';
+import type { SurfaceTextConfig, TextStyleDefaults, TextStyleOverride } from './text';
 import type {
   Cutout,
   CutoutConfig,
@@ -66,6 +66,7 @@ export type {
   CutoutTextOffset,
   TextStyleDefaults,
   TextStyleOverride,
+  SurfaceTextConfig,
 } from './text';
 export {
   TEXT_MAX_LENGTH,
@@ -751,6 +752,11 @@ export interface BinParams {
    * `TextStyleOverride` that selectively overrides these fields.
    */
   readonly textDefaults: TextStyleDefaults;
+  /**
+   * Text on exterior surfaces (lid top today; walls in a follow-up). Absent
+   * for designs without surface text so they serialize byte-identically.
+   */
+  readonly surfaceText?: SurfaceTextConfig;
   /** Click-lock lid configuration. Lid is generated as a separate companion solid. */
   readonly lid: LidConfig;
   /**
@@ -1199,6 +1205,10 @@ export interface DesignerState {
   // Text style actions (engraved text on label tabs and cutouts)
   setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;
   setLabelTabTextStyle: (overrides: TextStyleOverride | null) => void;
+
+  // Surface text actions (lid top; walls in a follow-up)
+  setLidText: (text: string) => void;
+  setSurfaceTextStyle: (overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;

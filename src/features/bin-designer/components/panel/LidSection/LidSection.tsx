@@ -25,8 +25,13 @@ import type {
   LidCompatibilityIssue,
 } from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES, LID_ATTACHMENTS } from '@/features/bin-designer/types';
+import type { TextMode } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
+import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { useLidSection, LID_TOP_SURFACES } from './useLidSection';
+
+/** Mode options for the lid-text picker, in the shared textMode order. */
+const TEXT_MODE_OPTIONS: readonly TextMode[] = ['engrave', 'emboss', 'through-cut'] as const;
 
 type Translator = ReturnType<typeof useTranslation>;
 
@@ -293,6 +298,47 @@ export function LidSection() {
                   <Hint>{t('binDesigner.lid.separateStackPlateHint')}</Hint>
                 )}
               </div>
+            )}
+          </section>
+
+          {/* ── Lid text (#2695) ─────────────────────────────────────── */}
+          <section className="space-y-2">
+            <SubHeader>{t('binDesigner.lid.section.text')}</SubHeader>
+            {state.textDisabledReason ? (
+              <Hint>{state.textDisabledReason}</Hint>
+            ) : (
+              <>
+                {/* Deferred-commit input shared with compartment labels so
+                    typing doesn't regenerate the lid per keystroke; the id
+                    slot is unused for the lid. */}
+                <CompartmentTextInput
+                  committedValue={state.lidText}
+                  compartmentId={0}
+                  placeholder={t('binDesigner.lid.text.placeholder')}
+                  ariaLabel={t('binDesigner.lid.text.aria')}
+                  onCommit={handlers.commitLidText}
+                />
+                {state.lidText.trim() !== '' && (
+                  <>
+                    <SegmentedControl
+                      aria-label={t('binDesigner.textMode')}
+                      activeStyle="accent"
+                      fullWidth
+                      size="sm"
+                      value={state.textMode}
+                      onChange={handlers.setTextMode}
+                      options={TEXT_MODE_OPTIONS.map((mode) => ({
+                        value: mode,
+                        label: t(`binDesigner.textMode.${mode}`),
+                      }))}
+                    />
+                    {state.textMode === 'through-cut' && (
+                      <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
+                    )}
+                    {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
+                  </>
+                )}
+              </>
             )}
           </section>
 

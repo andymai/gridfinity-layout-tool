@@ -6,7 +6,13 @@
  * and the conversions (clearance, corner radius, anchor Z) happen once.
  */
 
-import type { BinParams, LidAttachment, LidCompatibilitySide } from '@/shared/types/bin';
+import type {
+  BinParams,
+  LidAttachment,
+  LidCompatibilitySide,
+  TextFontFamily,
+  TextMode,
+} from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
 import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -18,6 +24,23 @@ import {
   lidTopThickness,
 } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
+
+/**
+ * Resolved lid-top text (issue #2695): the trimmed string plus the effective
+ * style — the design's `textDefaults` merged with the shared surface-text
+ * override. Null when there's no text or a gate rejects it (stackable top,
+ * polygon footprint).
+ */
+export interface LidTextInputs {
+  readonly value: string;
+  readonly font: TextFontFamily;
+  readonly mode: TextMode;
+  readonly depth: number;
+  readonly margin: number;
+  readonly minFontSize: number;
+  readonly maxFontSize: number;
+  readonly fontSizeOverride?: number;
+}
 
 /** Geometric inputs derived from BinParams. */
 export interface LidInputs {
@@ -115,6 +138,14 @@ export interface LidInputs {
   /** Custom-shape mask if the bin has one. Undefined = rectangular. */
   readonly cellMask: CellMask | undefined;
   /**
+   * Lid-top text, or null when absent/gated off. Rendered on the plain top
+   * face, or the tray floor when the tray recess is active. Gates mirror the
+   * LidSection UI: a stackable top owns the surface, and polygon lids are
+   * excluded (auto-fit assumes a rectangular face — same rectangularity
+   * restriction as `retentionMagnets`).
+   */
+  readonly text: LidTextInputs | null;
+  /**
    * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
    * perimeter, mating shell, floor, and click rails translate by this amount
    * so they wrap the bin's overhang-shifted outer body, while the stack grid
@@ -151,6 +182,25 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // Tray recess only exists when the lid isn't stackable (a stack grid owns
   // the top surface otherwise).
   const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
+
+  // Lid-top text (issue #2695). Shared surface style = design textDefaults
+  // merged with the surface-text override; a stackable top owns the surface
+  // and polygon lids are excluded (rectangular auto-fit), mirroring the UI.
+  const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
+  let text: LidTextInputs | null = null;
+  if (lidTextValue !== '' && !params.lid.stackableTop && !cellMask) {
+    const style = { ...params.textDefaults, ...params.surfaceText?.style };
+    text = {
+      value: lidTextValue,
+      font: style.font,
+      mode: style.mode,
+      depth: style.depth,
+      margin: style.margin,
+      minFontSize: style.minFontSize,
+      maxFontSize: style.maxFontSize,
+      ...(style.fontSizeOverride !== undefined ? { fontSizeOverride: style.fontSizeOverride } : {}),
+    };
+  }
 
   // Floor plate grows when stack-magnet pockets need depth+ceiling OR a tray
   // recess needs depth+floor below it — whichever is larger.
@@ -241,6 +291,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     anchorZ: lidAnchorZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
     wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
     cellMask,
+    text,
     outerOffsetX,
     outerOffsetY,
   };
