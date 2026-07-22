@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.278.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.278.0...gridfinity-layout-tool-v4.278.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* **drawer:** stop measured size from silently resizing the grid ([#2705](https://github.com/andymai/gridfinity-layout-tool/issues/2705)) ([#2715](https://github.com/andymai/gridfinity-layout-tool/issues/2715)) ([725eb7e](https://github.com/andymai/gridfinity-layout-tool/commit/725eb7e48d0a181a784e1c58d2c30b575bdf1352))
+
 ## [4.278.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.277.0...gridfinity-layout-tool-v4.278.0) (2026-07-22)
 
 
