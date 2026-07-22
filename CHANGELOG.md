@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.282.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.0...gridfinity-layout-tool-v4.282.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* **designer:** engrave cutout labels on the recess floor ([#2726](https://github.com/andymai/gridfinity-layout-tool/issues/2726)) ([#2729](https://github.com/andymai/gridfinity-layout-tool/issues/2729)) ([8ad0119](https://github.com/andymai/gridfinity-layout-tool/commit/8ad0119ee690c3e36fadac1ba8432a0d9a95388a))
+
 ## [4.282.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.281.0...gridfinity-layout-tool-v4.282.0) (2026-07-22)
 
 
