@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Profondeur",
   "baseplate.gridUnit": "Unité de grille",
   "baseplate.gridUnitTooltip": "Largeur d'un carré de grille (standard : 42mm)",
+  "baseplate.gridUnitY": "Unité de grille Y",
+  "baseplate.gridUnitYTooltip": "Profondeur d'une cellule de grille en mm le long de Y. Définissez-la différente de X pour remplir un tiroir qui n'est pas un multiple exact de 42mm (p. ex. 42x22).",
   "baseplate.gridWidth": "Largeur",
   "baseplate.inclPadding": "avec marge",
   "baseplate.increasePadding": "Augmenter {label}",

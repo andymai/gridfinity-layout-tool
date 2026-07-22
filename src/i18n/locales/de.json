@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Tiefe",
   "baseplate.gridUnit": "Rastereinheit",
   "baseplate.gridUnitTooltip": "Breite eines Gitterquadrats (Standard: 42mm)",
+  "baseplate.gridUnitY": "Rastereinheit Y",
+  "baseplate.gridUnitYTooltip": "Tiefe einer Rasterzelle in mm entlang Y. Abweichend von X einstellen, um eine Schublade zu füllen, die kein exaktes Vielfaches von 42mm ist (z.B. 42x22).",
   "baseplate.gridWidth": "Breite",
   "baseplate.inclPadding": "inkl. Rand",
   "baseplate.increasePadding": "{label} vergrößern",

@@ -1,6 +1,8 @@
 import { useId, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
+import { getCellSizeY } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { flattenOutline } from '@/shared/utils/drawerOutlineGeometry';
 
@@ -22,18 +24,23 @@ interface DrawerOutlineOverlayProps {
 export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProps) {
   const t = useTranslation();
   const patternId = useId();
-  const { outline, width, depth, gridUnitMm } = useLayoutStore(
+  const { outline, width, depth, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((s) => ({
       outline: s.layout.drawer.outline,
       width: s.layout.drawer.width,
       depth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
 
+  // The depth (Y) axis uses the non-square pitch + row size, so the hatch tracks
+  // the rectangular grid; both equal the X values for a square grid.
+  const cellSizeY = getCellSizeY(cellSize, gridUnitMm, gridUnitMmY);
   const unitPx = cellSize + gap;
+  const unitPxY = cellSizeY + gap;
   const totalW = width * unitPx - gap;
-  const totalD = depth * unitPx - gap;
+  const totalD = depth * unitPxY - gap;
 
   const path = useMemo(() => {
     if (outline === undefined) return null;
@@ -42,7 +49,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
     // at typical 2-4px gaps and irrelevant to placement (visual only).
     const px = (mm: number): number => Math.min(totalW, Math.max(0, (mm / gridUnitMm) * unitPx));
     const py = (mm: number): number =>
-      totalD - Math.min(totalD, Math.max(0, (mm / gridUnitMm) * unitPx));
+      totalD - Math.min(totalD, Math.max(0, (mm / gridUnitMmY) * unitPxY));
     const pts = flattenOutline(outline);
     const loop = pts
       .map((p, i) => `${i === 0 ? 'M' : 'L'}${px(p.x).toFixed(2)} ${py(p.y).toFixed(2)}`)
@@ -51,7 +58,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
       outside: `M0 0 H${totalW.toFixed(2)} V${totalD.toFixed(2)} H0 Z ${loop} Z`,
       boundary: `${loop} Z`,
     };
-  }, [outline, gridUnitMm, unitPx, totalW, totalD]);
+  }, [outline, gridUnitMm, gridUnitMmY, unitPx, unitPxY, totalW, totalD]);
 
   if (path === null) return null;
 

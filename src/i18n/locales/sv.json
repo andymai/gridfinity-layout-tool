@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Djup",
   "baseplate.gridUnit": "Rutnätsenhet",
   "baseplate.gridUnitTooltip": "Bredden på en rutnätsruta (standard: 42mm)",
+  "baseplate.gridUnitY": "Rutnätsenhet Y",
+  "baseplate.gridUnitYTooltip": "Djupet på en rutnätscell i mm längs Y. Ställ in den annorlunda än X för att fylla en låda som inte är en exakt multipel av 42mm (t.ex. 42x22).",
   "baseplate.gridWidth": "Bredd",
   "baseplate.inclPadding": "inkl. utfyllnad",
   "baseplate.increasePadding": "Öka {label}",
