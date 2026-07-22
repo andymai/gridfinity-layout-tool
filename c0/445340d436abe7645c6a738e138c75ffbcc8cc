@@ -1,0 +1,109 @@
+src/shell/layoutExport/useLayoutExport.ts
+  s_d42c2d43fd0107::t_d0a9ee78b808f8 259-262
+  s_d42c2d43fd0107::t_3641e018072094 231-233
+  s_d42c2d43fd0107::t_c4752dfb3cbf0a 296-297
+  s_d42c2d43fd0107::t_d4f7fab8ba7dc4 24
+src/features/bin-designer/hooks/useExport.ts
+  s_d42c2d43fd0107::t_df8b3d5e5f2467 344-349
+  s_d42c2d43fd0107::t_88e78897bd108c 471
+  s_d42c2d43fd0107::t_bdbc59f3863640 456-458
+  s_d42c2d43fd0107::t_bac550b0cd4259 359-361
+  s_d42c2d43fd0107::t_cc50eff9b7d69a 33
+  s_d42c2d43fd0107::t_ff459fb77c9032 496
+src/features/generation/bridge/bridgeExports.ts
+  s_d42c2d43fd0107::t_dd9cf48aa8aac4 423-424,432
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_d42c2d43fd0107::t_542143f4f7ceab 424-427,429
+  s_d42c2d43fd0107::t_41efa5d538ecb4 4
+  s_d42c2d43fd0107::t_9dca08457f8a82 54
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_d42c2d43fd0107::t_aadc8fb3429960 143-144
+  s_d42c2d43fd0107::t_dc40e687c580dc 161
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_d42c2d43fd0107::t_bc187497dcaf45 21
+  s_d42c2d43fd0107::t_cdfa6d2117b041 56-63
+  s_d42c2d43fd0107::t_722ecd11b26132 158-173
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_d42c2d43fd0107::t_d86a8dc8ba72c7 78
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_d42c2d43fd0107::t_25fc6c68c29462 32-33
+  s_d42c2d43fd0107::t_0c6084764ed387 186-189,197,200,208,213
+  s_d42c2d43fd0107::t_ac7394587c4a10 104-105
+  s_d42c2d43fd0107::t_3a9a3dc30f24e4 152-157,163-165
+  s_d42c2d43fd0107::t_f6c6e397c30fbf 130-133,143
+src/features/generation/worker/generators/labelFitSample.ts
+  s_d42c2d43fd0107::t_acef32090f0984 166,171
+  s_d42c2d43fd0107::t_37868080327348 16-20
+  s_d42c2d43fd0107::t_def9ced81e2374 114,117
+  s_d42c2d43fd0107::t_0cee450d142524 191,195
+src/features/generation/bridge/types.ts
+  s_d42c2d43fd0107::t_33fea118a85936 294-295
+src/features/bin-designer/hooks/useLabelFitSampleExport.ts
+  s_d42c2d43fd0107::t_446b790662a365 6-9
+  s_d42c2d43fd0107::t_5367cae7366968 48,50
+  s_d42c2d43fd0107::t_b4375c86f1d21a 67
+src/features/bin-designer/hooks/useLabelFitSampleExport.test.ts
+  s_d42c2d43fd0107::t_852d59df496bce 80-81
+  s_d42c2d43fd0107::t_a58443269d8f3f 98
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_d42c2d43fd0107::t_23f140c02b5b45 183-191
+src/shared/generation/socketNozzle.ts
+  s_d42c2d43fd0107::t_a80aaf11e253d6 24
+  s_d42c2d43fd0107::t_4ba9e48e5e02cb 1-23,25-28
+src/i18n/locales/en.ts
+  s_d42c2d43fd0107::t_a4681441d468f4 1698,1703,1705
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_d42c2d43fd0107::t_a2845a937f88b8 64-65,69-71,73
+src/features/bin-designer/hooks/useGeneration.ts
+  s_d42c2d43fd0107::t_4a8af48ec55003 364-367,375-379
+  s_d42c2d43fd0107::t_260979ab66c116 489-500
+  s_d42c2d43fd0107::t_b16085f904e847 269
+  s_d42c2d43fd0107::t_464cdc55a04db2 5,10
+  s_d42c2d43fd0107::t_690cc14de84c3f 223-231,237,240
+  s_d42c2d43fd0107::t_5b49e839ca8e79 290
+  s_d42c2d43fd0107::t_fd4ff4b9546d78 153
+  s_d42c2d43fd0107::t_a0b1e7bd81a717 261,264
+  s_d42c2d43fd0107::t_f99f2b7a08aef9 149-152,154
+  s_d42c2d43fd0107::t_3447097d16e82e 164-170
+  s_d42c2d43fd0107::t_7b04a8959be0fb 283
+src/shared/hooks/useLabelPlateCounts.ts
+  s_d42c2d43fd0107::t_cde271bfb20ce1 65,70-73
+  s_d42c2d43fd0107::t_51bc8a2607d0a2 92-94,102,105,113,118
+  s_d42c2d43fd0107::t_cb0d2599247d91 23
+  s_d42c2d43fd0107::t_1cd343e92c4f96 51,54
+src/shared/generation/socketNozzle.test.ts
+  s_d42c2d43fd0107::t_43977ebea2313e 1-45
+src/features/generation/bridge/GenerationBridge.ts
+  s_d42c2d43fd0107::t_aac9f0c7dfe7de 544-545
+  s_8d9683fb10832a::t_eb2fac9eebe2de 546-548
+src/features/generation/worker/handlers/exportHandler.ts
+  s_d42c2d43fd0107::t_152336f2e81a1f 172
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_d42c2d43fd0107::t_d06ffd539fe740 14-15
+src/features/bin-designer/types/index.ts
+  s_d42c2d43fd0107::t_d4c145e9da0423 720-727
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c0445340d436abe7645c6a738e138c75ffbcc8cc",
+  "prompts": {},
+  "sessions": {
+    "s_8d9683fb10832a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4bc81bdc-d97f-48ea-8bf0-8f57be4510ce",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d42c2d43fd0107": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f1eb415-9526-44f4-8e28-474a4ef960b9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
