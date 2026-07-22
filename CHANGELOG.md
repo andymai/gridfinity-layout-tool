@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.278.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.277.0...gridfinity-layout-tool-v4.278.0) (2026-07-22)
+
+
+### Features
+
+* **designer:** support-free tapered magnet pads with rounded corners ([#2714](https://github.com/andymai/gridfinity-layout-tool/issues/2714)) ([bc1f6db](https://github.com/andymai/gridfinity-layout-tool/commit/bc1f6db45c64bb03c7583cc415d836f55616d11c))
+
 ## [4.277.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.276.0...gridfinity-layout-tool-v4.277.0) (2026-07-22)
 
 
