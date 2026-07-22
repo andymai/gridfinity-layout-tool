@@ -61,12 +61,16 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
   const [isExporting, setIsExporting] = useState(false);
   const canExport = getActiveBridge() !== null;
 
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+
   const plates = useMemo(() => {
     if (!label.enabled || (label.mode ?? 'text') !== 'socket') return [];
     const { innerW } = binDimensions(params);
-    const clearanceMm = effectiveLabelSocketClearance(undefined, label.plateFitOffset);
+    // Same nozzle-scaled clearance the worker cuts with, so the widths planned
+    // here match the sockets — never offer a plate the widened pocket rejects.
+    const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
     return planLabelPlates(compartments, innerW, clearanceMm, '');
-  }, [params, compartments, label]);
+  }, [params, compartments, label, nozzleSizeMm]);
 
   const buildRequest = useCallback((): {
     specs: LabelPlateExportSpec[];

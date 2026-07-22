@@ -30,6 +30,7 @@ import { useToastStore } from '@/core/store/toast';
 import { calcMaxGridUnits } from '@/core/constants';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
+import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
@@ -340,6 +341,12 @@ export function useExport(): UseExportReturn {
 
       try {
         const fileName = generateFileName(params, format, config, designName);
+        // Scale a socket bin's pocket to the live nozzle at export (transient —
+        // never persisted into the design). No-op for non-socket bins.
+        const exportParams = withSocketNozzle(
+          params,
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+        );
         // Worker exports BREP only as 'stl' or 'step'; 3MF is packaged on the
         // main thread from the STL output.
         const workerFormat = format === 'step' ? 'step' : 'stl';
@@ -349,7 +356,9 @@ export function useExport(): UseExportReturn {
           // Reset per attempt so a resilience retry restarts the bar at 0
           // rather than jumping backwards from where the failed attempt left off.
           setExportProgress(0);
-          return bridge.exportCombined(params, workerFormat, { onProgress: setExportProgress });
+          return bridge.exportCombined(exportParams, workerFormat, {
+            onProgress: setExportProgress,
+          });
         });
         retryCount = exportResult.retryCount;
         restartCount = exportResult.restartCount;
@@ -444,6 +453,9 @@ export function useExport(): UseExportReturn {
           ...(params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
           nozzleSizeMm: useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
         };
+        // Scale a socket bin's pocket to the same nozzle the connectors use
+        // (transient — never persisted). No-op for non-socket bins.
+        const splitParams = withSocketNozzle(params, connectorConfig.nozzleSizeMm);
         const totalPieceCount = getSplitPieceCount(
           params.width,
           params.depth,
@@ -456,7 +468,7 @@ export function useExport(): UseExportReturn {
         // thing as a single retryable operation.
         const splitExport = await exportWithResilience(() =>
           runSplitBinExport(
-            params,
+            splitParams,
             cutPlanesX,
             cutPlanesY,
             totalPieceCount,
@@ -481,7 +493,7 @@ export function useExport(): UseExportReturn {
           const combined = await exportWithResilience(() => {
             const bridge = getActiveBridge();
             if (!bridge) throw new Error('Bridge not available');
-            return bridge.exportCombined(params, 'stl');
+            return bridge.exportCombined(splitParams, 'stl');
           });
           // Companion retries roll into the totals.
           retryCount += combined.retryCount;

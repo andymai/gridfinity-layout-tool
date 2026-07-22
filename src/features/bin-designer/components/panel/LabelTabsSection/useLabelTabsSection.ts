@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
@@ -50,6 +51,7 @@ export function useLabelTabsSection() {
     }))
   );
   const t = useTranslation();
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
   const labelStatus = getFeatureStatus(params, 'label');
 
@@ -419,9 +421,12 @@ export function useLabelTabsSection() {
 
   const socketPlan = useMemo(() => {
     const { innerW } = binDimensions(params);
-    const clearanceMm = effectiveLabelSocketClearance(undefined, label.plateFitOffset);
+    // Nozzle-scaled to match the worker's cut so pickers/warnings can never
+    // disagree with the geometry (a wider nozzle can drop a compartment from
+    // a 2U plate to 1U).
+    const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
     return planLabelSockets(compartments, innerW, clearanceMm);
-  }, [params, compartments, label.plateFitOffset]);
+  }, [params, compartments, label.plateFitOffset, nozzleSizeMm]);
 
   // Socket segment disabled when no standard plate fits anywhere, even
   // bin-spanning \u2014 sockets are never emitted at nonstandard widths.

@@ -14,11 +14,11 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
-  LABEL_SOCKET_CLEARANCE_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
   LABEL_SOCKET_WALL_MM,
+  effectiveLabelSocketClearance,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
@@ -53,8 +53,14 @@ interface PocketExpectation {
  */
 function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpectation): void {
   const { vertices } = result;
-  const pocketW = labelPlateWidthMm(exp.plateWidthU) + LABEL_SOCKET_CLEARANCE_MM;
-  const pocketD = LABEL_PLATE_HEIGHT_MM + LABEL_SOCKET_CLEARANCE_MM;
+  // Derive the expected clearance the SAME way the worker does, so a wide-nozzle
+  // scenario proves the generator actually read `params.nozzleSizeMm` (#2690).
+  const clearanceMm = effectiveLabelSocketClearance(
+    params.nozzleSizeMm,
+    params.label.plateFitOffset
+  );
+  const pocketW = labelPlateWidthMm(exp.plateWidthU) + clearanceMm;
+  const pocketD = LABEL_PLATE_HEIGHT_MM + clearanceMm;
 
   const outerD = params.depth * params.gridUnitMm - 0.5;
   const innerD = outerD - 2 * params.wallThickness;
@@ -147,6 +153,22 @@ export const labelSockets: ScenarioCase[] = [
     },
     customAssert: (result, params) =>
       assertSocketPocket(result, params, { plateWidthU: 3, label: '3x1-auto' }),
+  }),
+
+  // Wide nozzle (#2690): the pocket clearance scales up, so the measured pocket
+  // is wider than the 0.4mm baseline. The assert derives the expected width from
+  // `params.nozzleSizeMm`, so this fails if the generator ignores the nozzle.
+  defineScenario('label sockets', '3×1 socket on a 0.6mm nozzle widens the pocket', {
+    params: {
+      width: 3,
+      depth: 1,
+      height: 5,
+      base: NO_LIP_BASE,
+      label: SOCKET_LABEL,
+      nozzleSizeMm: 0.6,
+    },
+    customAssert: (result, params) =>
+      assertSocketPocket(result, params, { plateWidthU: 3, label: '3x1-nozzle-0.6' }),
   }),
 
   defineScenario('label sockets', '3×1 override forces a 1U plate', {

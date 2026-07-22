@@ -1695,14 +1695,14 @@ const en: Record<string, string> = {
   'binDesigner.fitSample.button': 'Print fit test',
   'binDesigner.fitSample.dialogTitle': 'Export fit test card',
   'binDesigner.fitSample.dialogDescription':
-    'A small calibration card: five sockets stepping the fit offset from −0.10 to +0.10 mm, plus one standard blank plate. Find the socket that clicks best and enter its offset in the plate fit field.',
+    'A calibration card sized to your current nozzle: five sockets stepping the fit offset from −0.10 to +0.10 mm around the nominal clearance, plus one standard blank plate. Print it, find the socket that clicks best, and enter its offset in the plate fit field.',
   'binDesigner.fitSample.exportComplete': 'Fit test card exported',
   'binDesigner.fitSample.exportFailed': 'Fit test card export failed',
   'binDesigner.fitSample.tipsTitle': 'How to use',
   'binDesigner.fitSample.tip1':
-    'Print flat, no supports, with the same material and settings as your bins.',
+    'Print flat, no supports, using the same nozzle, material, and settings as your bins — the fit depends on all three.',
   'binDesigner.fitSample.tip2':
-    'Click the included plate into each socket; pick the one that snaps in firmly and releases cleanly.',
+    'Click the included plate — or any Cullenect / gflabel plate you already own — into each socket, and pick the one that snaps in firmly and releases cleanly.',
   'binDesigner.fitSample.tip3': 'Enter that socket’s embossed value in the plate fit offset field.',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
   'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',

@@ -728,6 +728,14 @@ export interface BinParams {
    * ⇒ 'edge', the corner-tracking default; only observable at `gridUnitMm > 42`.
    */
   readonly magnetAnchor?: MagnetAnchor;
+  /**
+   * Print nozzle (mm) a label socket's pocket clearance scales to (#2690).
+   * Like {@link magnetAnchor}, this is INJECTED transiently at generation time
+   * (`withSocketNozzle`, from the live print setting) and never persisted — the
+   * store's params stay nozzle-free so a printer's nozzle never syncs to other
+   * devices or rides along in a shared design. Undefined ⇒ 0.4mm baseline.
+   */
+  readonly nozzleSizeMm?: number;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */
   readonly heightUnitMm: number;
   /** Wall thickness in mm (default 1.2) */

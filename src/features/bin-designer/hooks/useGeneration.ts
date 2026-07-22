@@ -2,10 +2,12 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
+import { useSettingsStore } from '@/core/store';
 import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import {
   binMeshCacheKey,
   loadPersistedBinMesh,
@@ -144,6 +146,12 @@ export function useGeneration(): void {
     }))
   );
 
+  // Nozzle is a live print SETTING, not part of the persisted design. Socket-mode
+  // bins scale their pocket clearance to it (`withSocketNozzle`), so a nozzle
+  // change must regenerate even though it doesn't bump the design epoch.
+  const nozzleSizeMm = useSettingsStore((state) => state.settings.printSettings.nozzleSizeMm);
+  const prevNozzleRef = useRef(nozzleSizeMm);
+
   const setGenerationStatus = useDesignerStore((state) => state.setGenerationStatus);
   const setGenerationResult = useDesignerStore((state) => state.setGenerationResult);
   const setDraftResult = useDesignerStore((state) => state.setDraftResult);
@@ -153,7 +161,13 @@ export function useGeneration(): void {
   const dispatchDraft = useCallback(
     (preview: GenerationBridge, currentParams: BinParams, token: number) => {
       void preview
-        .generateImmediate(currentParams, () => {})
+        .generateImmediate(
+          withSocketNozzle(
+            currentParams,
+            useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+          ),
+          () => {}
+        )
         .then((draft) => {
           if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
           // Draft perf is intentionally not pushed to perfHistory — the overlay
@@ -206,15 +220,24 @@ export function useGeneration(): void {
       }
       setGenerationStatus('generating');
 
+      // Merge the live nozzle setting into a throwaway params object for every
+      // generation-affecting call below (worker, direct mesh, estimate, cache
+      // key, export warm) so a socket's clearance scales with the nozzle. The
+      // persisted design (autosave) keeps using `currentParams` — nozzle-free.
+      const genParams = withSocketNozzle(
+        currentParams,
+        useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+      );
+
       // Instant synchronous draft (best-effort): for the common rectangular bin,
       // emit a procedural mesh on the main thread — no kernel, no WASM round-trip
       // — so something paints on the leading edge of an edit before the worker
       // even starts. Gated to bins the direct path renders faithfully; a throw
       // (degenerate input) silently degrades to the async paths below.
-      if (canBinUseDirectMesh(currentParams)) {
+      if (canBinUseDirectMesh(genParams)) {
         try {
           const start = performance.now();
-          const mesh = generateBinDirect(currentParams);
+          const mesh = generateBinDirect(genParams);
           if (token === genTokenRef.current && token > finalizedTokenRef.current) {
             setDraftResult(directMeshToPayload(mesh, performance.now() - start));
             directShownTokenRef.current = token;
@@ -235,15 +258,15 @@ export function useGeneration(): void {
       const skipBelowMs = draftSkipGate();
       const preview = previewBridgeRef.current;
       if (preview && !preview.isDestroyed && directShownTokenRef.current !== token) {
-        void bridge.estimateGenerate(currentParams).then((predictedMs) => {
+        void bridge.estimateGenerate(genParams).then((predictedMs) => {
           if (predictedMs !== null && predictedMs < skipBelowMs) return;
           if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-          dispatchDraft(preview, currentParams, token);
+          dispatchDraft(preview, genParams, token);
         });
       }
 
       try {
-        const result = await bridge.generate(currentParams, () => {});
+        const result = await bridge.generate(genParams, () => {});
 
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
@@ -257,14 +280,14 @@ export function useGeneration(): void {
         // Persist the exact preview mesh so reopening this design next session
         // paints instantly (pre-draft) instead of re-paying the cold start.
         // Fire-and-forget; refreshes LRU freshness even when the entry exists.
-        savePersistedBinMesh(binMeshCacheKey(currentParams), result.mesh);
+        savePersistedBinMesh(binMeshCacheKey(genParams), result.mesh);
 
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer
         // was already cleared at the start of this generation.)
         warmTimerRef.current = setTimeout(() => {
           warmTimerRef.current = null;
-          bridgeRef.current?.warmExport(currentParams);
+          bridgeRef.current?.warmExport(genParams);
         }, EXPORT_WARM_IDLE_MS);
       } catch (e) {
         // Cancelled requests are expected during rapid param changes
@@ -338,7 +361,10 @@ export function useGeneration(): void {
     // arbitration, the same way the Manifold pre-draft does. Not for generic items.
     const initialState = useDesignerStore.getState();
     if (initialState.itemKind === 'bin') {
-      const initialKey = binMeshCacheKey(initialState.params);
+      // Match the nozzle-merged key the exact mesh was persisted under, so a
+      // socket bin on a wide nozzle still finds its saved pre-draft.
+      const nozzle = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
+      const initialKey = binMeshCacheKey(withSocketNozzle(initialState.params, nozzle));
       void loadPersistedBinMesh(initialKey).then((cached) => {
         if (cancelled || !cached) return;
         if (genTokenRef.current !== 0 || finalizedTokenRef.current > 0) return;
@@ -346,7 +372,11 @@ export function useGeneration(): void {
         // the bridge is ready, so the token stays 0). Don't paint a pre-draft
         // for params the user has already moved on from.
         const now = useDesignerStore.getState();
-        if (now.itemKind !== 'bin' || binMeshCacheKey(now.params) !== initialKey) return;
+        if (
+          now.itemKind !== 'bin' ||
+          binMeshCacheKey(withSocketNozzle(now.params, nozzle)) !== initialKey
+        )
+          return;
         // Claim the generation token before painting. The Manifold pre-draft
         // fires only while the token is still 0, so without this a slower
         // Manifold draft would overwrite this exact-quality cached mesh with a
@@ -456,4 +486,20 @@ export function useGeneration(): void {
       void runGeneration(params);
     }
   }, [epoch, params, itemKind, structure, envelope, runGeneration, runItemGeneration]);
+
+  // Re-generate when the print nozzle changes. Nozzle is not part of the design
+  // (so it doesn't bump the epoch), but a socket bin's pocket clearance scales
+  // with it. Gate on `withSocketNozzle` itself (the single source of truth for
+  // "does the nozzle change geometry here") so we skip regen when it wouldn't —
+  // labels disabled, non-socket, or both nozzles at/below the 0.4mm baseline.
+  useEffect(() => {
+    const prevNozzle = prevNozzleRef.current;
+    if (prevNozzle === nozzleSizeMm) return;
+    prevNozzleRef.current = nozzleSizeMm;
+    if (!initializedRef.current || itemKind !== 'bin') return;
+    const before = withSocketNozzle(params, prevNozzle).nozzleSizeMm;
+    const after = withSocketNozzle(params, nozzleSizeMm).nozzleSizeMm;
+    if (before === after) return;
+    void runGeneration(params);
+  }, [nozzleSizeMm, itemKind, params, runGeneration]);
 }

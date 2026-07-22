@@ -21,6 +21,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
+import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { export3MF } from '@/shared/generation/export';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { FeatureColorConfig } from '@/shared/types/bin';
@@ -227,7 +228,9 @@ export function useLayoutExport(): UseLayoutExportReturn {
         let done = 0;
 
         if (simple.length > 0) {
-          const params = simple.map((e) => e.params);
+          // Scale each socket bin's pocket to the live nozzle (transient — never
+          // persisted). No-op for non-socket designs.
+          const params = simple.map((e) => withSocketNozzle(e.params, printSettings.nozzleSizeMm));
           let bytes: ArrayBuffer[];
           if (pool && !pool.isDestroyed && pool.size > 1) {
             const results = await pool.exportBins(params, workerFormat, (c) =>
@@ -253,7 +256,10 @@ export function useLayoutExport(): UseLayoutExportReturn {
         }
 
         for (const e of companions) {
-          const result = await bridge.exportCombined(e.params, workerFormat);
+          const result = await bridge.exportCombined(
+            withSocketNozzle(e.params, printSettings.nozzleSizeMm),
+            workerFormat
+          );
           binFiles.push(...(await combinedFiles(result, format, e.path, e.params, printSettings)));
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
@@ -287,7 +293,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
           bins,
           loaded,
           layout.printBedSize,
-          layout.printBedDepth ?? layout.printBedSize
+          layout.printBedDepth ?? layout.printBedSize,
+          printSettings.nozzleSizeMm
         );
         const labelFiles: ZipBinaryFile[] = [];
         const manifestLabels: ManifestLabelGroup[] = [];

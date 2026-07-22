@@ -44,6 +44,7 @@ import {
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
@@ -180,12 +181,15 @@ function buildLabelTabsInScope(
   let socket: SocketBuildInfo | null = null;
   let spanningWidthU: LabelPlateWidthU | null = null;
   if (mode === 'socket') {
-    // Nozzle passed as undefined (baseline): the bin worker receives only the
-    // persisted BinParams — no settings seam exists on this path, and baking
-    // the printer's nozzle into a synced design would be wrong on the user's
-    // other devices. `plateFitOffset`'s range covers wide-nozzle calibration
-    // manually until such a seam exists.
-    const clearanceMm = effectiveLabelSocketClearance(undefined, params.label.plateFitOffset);
+    // `nozzleSizeMm` is merged onto these params transiently at each generation
+    // boundary (`withSocketNozzle`) from the live print setting — it is never
+    // persisted into the synced design. Undefined here = the 0.4mm baseline
+    // (geometry unchanged). The user's `plateFitOffset` still stacks on top for
+    // per-printer calibration beyond the nozzle scaling.
+    const clearanceMm = effectiveLabelSocketClearance(
+      params.nozzleSizeMm,
+      params.label.plateFitOffset
+    );
     const plan = planLabelSockets(params.compartments, innerW, clearanceMm);
     spanningWidthU = plan.spanningWidthU;
     const plateByCompartment = new Map<number, LabelPlateWidthU>();
@@ -957,11 +961,15 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     // Socket mode (#2666): geometry additionally depends on the
     // per-compartment width overrides (mode + plateFitOffset already ride in
-    // `stableSerialize(params.label)` below). Keyed only in socket mode so
-    // text-mode tabs don't churn when overrides linger in the config.
+    // `stableSerialize(params.label)` below) AND the print nozzle (#2690 — the
+    // pocket clearance scales to it, so two nozzles with identical overrides
+    // must not share a cache entry). Keyed only in socket mode so text-mode
+    // tabs don't churn when overrides/nozzle linger in the config.
     const socketKeyPart =
       (params.label.mode ?? 'text') === 'socket'
-        ? stableSerialize(params.compartments.labelPlateWidths ?? [])
+        ? `${stableSerialize(params.compartments.labelPlateWidths ?? [])}|n${quantize(
+            params.nozzleSizeMm ?? NOZZLE_BASELINE
+          )}`
         : 'text';
     return compactKey(
       buildCacheKey(

@@ -49,7 +49,7 @@ describe('planLabelPlateExport', () => {
         }),
       },
     ];
-    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED);
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED, 0.4);
     expect(plan.groups).toHaveLength(0);
     expect(plan.totalPlates).toBe(0);
   });
@@ -70,7 +70,7 @@ describe('planLabelPlateExport', () => {
         }),
       },
     ];
-    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED);
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED, 0.4);
     expect(plan.groups[0].manifestPlates).toHaveLength(2);
     const icons = plan.groups[0].manifestPlates.map((p) => p.icon).sort();
     expect(icons).toEqual(['bolt', 'nut']);
@@ -90,7 +90,7 @@ describe('planLabelPlateExport', () => {
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: socketDesign('d1', 'Colored', coloredParams) },
     ];
-    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED);
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED, 0.4);
     expect(plan.groups).toHaveLength(1);
     expect(plan.groups[0].featureColors?.enabled).toBe(true);
     expect(plan.groups[0].featureColors?.labelTab).toBe('#112233');
@@ -103,7 +103,7 @@ describe('planLabelPlateExport', () => {
       { ...linkedBin('d1'), id: createTestBin({ x: 3 }).id, x: 3 },
     ] as Bin[];
 
-    const plan = planLabelPlateExport(bins, loaded, BED, BED);
+    const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     expect(plan.totalPlates).toBe(4);
     expect(plan.groups).toHaveLength(1);
     expect(plan.groups[0].manifestPlates).toEqual(
@@ -134,7 +134,7 @@ describe('planLabelPlateExport', () => {
       { ...linkedBin('d1', { label: '' }), id: createTestBin({ x: 3 }).id, x: 3 },
     ] as Bin[];
 
-    const plan = planLabelPlateExport(bins, loaded, BED, BED);
+    const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     expect(plan.totalPlates).toBe(2);
     expect(plan.groups[0].manifestPlates).toEqual(
       expect.arrayContaining([
@@ -152,7 +152,7 @@ describe('planLabelPlateExport', () => {
       x: i,
     })) as Bin[];
 
-    const plan = planLabelPlateExport(bins, loaded, BED, BED);
+    const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     const sheets = plan.groups[0].sheets;
     expect(sheets.length).toBeGreaterThan(0);
     const placed = sheets.flat();
@@ -173,7 +173,7 @@ describe('planLabelPlateExport', () => {
     })) as Bin[];
 
     // Tiny 60mm bed: one 1U plate per row, few rows per sheet.
-    const plan = planLabelPlateExport(bins, loaded, 60, 60);
+    const plan = planLabelPlateExport(bins, loaded, 60, 60, 0.4);
     expect(plan.groups[0].sheets.length).toBeGreaterThan(1);
     const placed = plan.groups[0].sheets.flat();
     expect(placed).toHaveLength(20);
@@ -196,7 +196,7 @@ describe('planLabelPlateExport', () => {
         }),
       },
     ];
-    const plan = planLabelPlateExport([linkedBin('d1')], loaded, 60, 60);
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, 60, 60, 0.4);
     expect(plan.totalPlates).toBe(0);
     expect(plan.groups).toHaveLength(1);
     expect(plan.groups[0].sheets).toHaveLength(0);

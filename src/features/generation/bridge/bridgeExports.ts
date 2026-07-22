@@ -420,7 +420,8 @@ export function exportLabelPlates(
  */
 export function exportLabelFitSample(
   ctx: BridgeExportContext,
-  format: ExportFormat
+  format: ExportFormat,
+  nozzleSizeMm?: number
 ): Promise<BaseplateExportResult> {
   return runExport<BaseplateExportResult>(
     ctx,
@@ -428,7 +429,7 @@ export function exportLabelFitSample(
     CONNECTOR_SAMPLE_TIMEOUT_MS,
     (requestId) => ({
       type: 'EXPORT_LABEL_FIT_SAMPLE',
-      payload: { requestId, format },
+      payload: { requestId, format, nozzleSizeMm },
     })
   );
 }

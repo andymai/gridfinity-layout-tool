@@ -13,6 +13,11 @@
  * 1:1 to bins. The offsets are absolute (the ladder is NOT centered on the
  * design's current fit offset), matching how the field is entered.
  *
+ * The nominal clearance the ladder sweeps around scales with the caller's
+ * live nozzle (`nozzleSizeMm`), exactly as real sockets do (#2690), so the
+ * winning offset a maker records on a wide-nozzle print transfers to their
+ * bins printed on that same nozzle. Undefined = the 0.4mm baseline.
+ *
  * Export mirrors `connectorSample.ts`: pieces → compound → one
  * ready-to-slice STL/STEP.
  */
@@ -106,10 +111,10 @@ function roundedRect(cx: number, cy: number, w: number, h: number, r: number): D
  * on the strip in front of the socket. The socket cut is required (a card
  * without sockets is useless); the label degrades best-effort.
  */
-function buildCoupon(cy: number, offset: number): Shape3D {
+function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefined): Shape3D {
   return withScope((scope: DisposalScope): Shape3D => {
     const t = LABEL_SOCKET_SHELF_THICKNESS_MM;
-    const clearanceMm = effectiveLabelSocketClearance(undefined, offset);
+    const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, offset);
     const pocketD = LABEL_PLATE_HEIGHT_MM + clearanceMm;
 
     let solid: Shape3D = scope.register(
@@ -158,12 +163,12 @@ function buildCoupon(cy: number, offset: number): Shape3D {
  * Build all card pieces as separate, bed-resting solids (Z≥0). Caller owns
  * the returned shapes (frees them after compounding).
  */
-export function buildLabelFitSampleCard(): Shape3D[] {
+export function buildLabelFitSampleCard(nozzleSizeMm?: number): Shape3D[] {
   const n = LABEL_FIT_SAMPLE_OFFSETS.length;
   const originY = ((n - 1) * ROW_PITCH) / 2;
 
   const pieces: Shape3D[] = LABEL_FIT_SAMPLE_OFFSETS.map((offset, i) =>
-    buildCoupon(originY - i * ROW_PITCH, offset)
+    buildCoupon(originY - i * ROW_PITCH, offset, nozzleSizeMm)
   );
 
   // One nominal blank reference plate beside the column: the offsets ride
@@ -183,10 +188,11 @@ export function buildLabelFitSampleCard(): Shape3D[] {
 /** Export the fit-calibration card as a single STL or STEP file. */
 export async function exportLabelFitSample(
   format: ExportFormat,
+  nozzleSizeMm?: number,
   tolerance?: number,
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
-  const pieces = buildLabelFitSampleCard();
+  const pieces = buildLabelFitSampleCard(nozzleSizeMm);
   let assembled: Shape3D;
   try {
     assembled = compound(pieces);
