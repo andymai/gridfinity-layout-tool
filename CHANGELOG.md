@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.279.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.278.1...gridfinity-layout-tool-v4.279.0) (2026-07-22)
+
+
+### Features
+
+* **baseplate:** compose padding into every custom shape + show its rim in the layout ([#2705](https://github.com/andymai/gridfinity-layout-tool/issues/2705)) ([#2718](https://github.com/andymai/gridfinity-layout-tool/issues/2718)) ([edebde2](https://github.com/andymai/gridfinity-layout-tool/commit/edebde249483f7a4df4a502381443c88952a0f8a))
+
 ## [4.278.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.278.0...gridfinity-layout-tool-v4.278.1) (2026-07-22)
 
 
