@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.280.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.279.1...gridfinity-layout-tool-v4.280.0) (2026-07-22)
+
+
+### Features
+
+* **designer:** engraved, embossed & through-cut text on the lid top ([#2695](https://github.com/andymai/gridfinity-layout-tool/issues/2695)) ([#2720](https://github.com/andymai/gridfinity-layout-tool/issues/2720)) ([56f45df](https://github.com/andymai/gridfinity-layout-tool/commit/56f45dfbaeba3d255e9f0d122e9914e48b5c3f6b))
+
 ## [4.279.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.279.0...gridfinity-layout-tool-v4.279.1) (2026-07-22)
 
 
