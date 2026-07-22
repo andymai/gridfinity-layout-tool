@@ -1032,6 +1032,7 @@ describe('shaped drawer (outline present)', () => {
   });
 
   const U = 42;
+  // Rectilinear L (a top-right notch): padding composes edge-by-edge (#2705).
   const L_OUTLINE = {
     vertices: [
       { x: 0, y: 0 },
@@ -1042,16 +1043,62 @@ describe('shaped drawer (outline present)', () => {
       { x: 0, y: 6 * U },
     ],
   };
+  // Rectilinear U with a one-unit top slot; wide L/R padding crosses its walls.
+  const SLOT_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 4 * U, y: 0 },
+      { x: 4 * U, y: 6 * U },
+      { x: 2.5 * U, y: 6 * U },
+      { x: 2.5 * U, y: 2 * U },
+      { x: 1.5 * U, y: 2 * U },
+      { x: 1.5 * U, y: 6 * U },
+      { x: 0, y: 6 * U },
+    ],
+  };
+  // Non-rectilinear (an arc), so padding stays fully subsumed.
+  const ARC_OUTLINE = {
+    vertices: [
+      { x: 0, y: 0, bulge: 0.4 },
+      { x: 4 * U, y: 0 },
+      { x: 4 * U, y: 6 * U },
+      { x: 0, y: 6 * U },
+    ],
+  };
 
-  it('hides padding controls and shows the shaped notice', () => {
+  it('composes padding and shows the compose notice for a rectilinear shape', () => {
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: 5 };
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.shapedDrawerNotice')).toBeNull();
+  });
+
+  it('warns when padding is too large to compose into the shape', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: SLOT_OUTLINE } as never;
+    // 30 + 30 mm crosses the 42mm slot, so buildFullParams drops the padding.
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: 30,
+      paddingRight: 30,
+    };
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedPaddingTooLarge')).toBeInTheDocument();
+    // Controls stay visible so the user can reduce the padding.
+    expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.shapedPaddingNotice')).toBeNull();
+  });
+
+  it('hides padding controls for a non-rectilinear shape', () => {
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedDrawerNotice')).toBeInTheDocument();
     expect(screen.queryByText('baseplate.padding')).toBeNull();
   });
 
   it('keeps padding controls for unsynced (custom-size) plates', () => {
-    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       syncWithLayout: false,
@@ -1062,7 +1109,7 @@ describe('shaped drawer (outline present)', () => {
   });
 
   it('keeps padding controls when stack printing wins over the shape', () => {
-    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       stackPrint: { enabled: true, gapMm: 0.2 },
@@ -1073,8 +1120,9 @@ describe('shaped drawer (outline present)', () => {
 
   it('shows the shaped notice for STEP even with stacking stored on', () => {
     // STEP clears stackPrint before buildFullParams, so the exported solid IS
-    // shaped — the panel must follow the format-aware stackEnabled signal.
-    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
+    // shaped — the panel must follow the format-aware stackEnabled signal. A
+    // non-rectilinear shape keeps padding fully subsumed.
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       stackPrint: { enabled: true, gapMm: 0.2 },

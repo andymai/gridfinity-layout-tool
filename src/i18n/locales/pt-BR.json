@@ -65,6 +65,7 @@
   "baseplate.cornerRadiusUnlink": "Por canto",
   "baseplate.cornerShapedPaddingNotice": "O arredondamento de cantos vem do formato da gaveta (aba Layout). O preenchimento estende a placa para fora ao redor do contorno moldado.",
   "baseplate.shapedPaddingNotice": "O preenchimento estende a placa para fora ao redor do formato personalizado da gaveta.",
+  "baseplate.shapedPaddingTooLarge": "O preenchimento é grande demais para este formato e é ignorado. Reduza-o para caber ao redor do contorno.",
   "baseplate.decreasePadding": "Diminuir {label}",
   "baseplate.dovetails.invert": "Inverter conectores",
   "baseplate.editDimensions": "Editar dimensões da base",

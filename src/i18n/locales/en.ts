@@ -2564,6 +2564,8 @@ const en: Record<string, string> = {
     'Corner rounding comes from the drawer shape (Layout tab). Padding extends the plate outward around the shaped outline.',
   'baseplate.shapedPaddingNotice':
     "Padding extends the plate outward around the drawer's custom shape.",
+  'baseplate.shapedPaddingTooLarge':
+    'Padding is too large for this shape, so it is ignored. Reduce it to fit around the outline.',
   'baseplate.overTile': 'Fill padding with grid tiles',
   'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':

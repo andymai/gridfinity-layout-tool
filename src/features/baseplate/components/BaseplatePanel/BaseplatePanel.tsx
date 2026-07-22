@@ -64,7 +64,7 @@ import type { StoredBaseplateParams } from '@/core/types';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
-import { isRectilinearOutline } from '@/shared/utils/padOutline';
+import { isRectilinearOutline, padRectilinearOutline } from '@/shared/utils/padOutline';
 
 /** How the drawer-fit padding margin is filled. */
 type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
@@ -287,6 +287,18 @@ export function BaseplatePanel() {
   // hide. Non-rectilinear shapes (arcs/pen) still subsume every param.
   const rectilinearShaped = outlineActive && !cornerShaped && isRectilinearOutline(drawerOutline);
   const shapedOn = outlineActive && !cornerShaped && !rectilinearShaped;
+  // Mirror buildFullParams: a rectilinear shape composes only while the padding
+  // stays valid. Padding large enough to collapse a notch/slot makes the
+  // resolver drop it, so the panel must say the padding is ignored rather than
+  // present it as applied.
+  const rectilinearPaddingComposes =
+    !rectilinearShaped ||
+    padRectilinearOutline(drawerOutline, {
+      left: baseplateParams.paddingLeft,
+      right: baseplateParams.paddingRight,
+      front: baseplateParams.paddingFront,
+      back: baseplateParams.paddingBack,
+    }) !== null;
   const canDetach =
     baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
     baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
@@ -495,8 +507,18 @@ export function BaseplatePanel() {
                   </p>
                 )}
                 {rectilinearShaped && (
-                  <p className="text-[11px] leading-relaxed text-content-tertiary">
-                    {t('baseplate.shapedPaddingNotice')}
+                  <p
+                    className={
+                      rectilinearPaddingComposes
+                        ? 'text-[11px] leading-relaxed text-content-tertiary'
+                        : 'text-[11px] leading-relaxed text-status-warning'
+                    }
+                  >
+                    {t(
+                      rectilinearPaddingComposes
+                        ? 'baseplate.shapedPaddingNotice'
+                        : 'baseplate.shapedPaddingTooLarge'
+                    )}
                   </p>
                 )}
                 <PaddingSchematic

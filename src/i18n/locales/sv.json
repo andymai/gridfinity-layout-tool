@@ -65,6 +65,7 @@
   "baseplate.cornerRadiusUnlink": "Per hörn",
   "baseplate.cornerShapedPaddingNotice": "Hörnavrundningen kommer från lådans form (fliken Layout). Utfyllnaden utökar plattan utåt runt den formade konturen.",
   "baseplate.shapedPaddingNotice": "Utfyllnaden utökar plattan utåt runt lådans anpassade form.",
+  "baseplate.shapedPaddingTooLarge": "Utfyllnaden är för stor för den här formen och ignoreras. Minska den så att den får plats runt konturen.",
   "baseplate.decreasePadding": "Minska {label}",
   "baseplate.dovetails.invert": "Invertera kopplingar",
   "baseplate.editDimensions": "Redigera bottenplattans mått",
