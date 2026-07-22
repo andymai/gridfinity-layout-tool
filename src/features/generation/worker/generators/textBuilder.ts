@@ -56,7 +56,11 @@ type Metrics = ReturnType<typeof textMetrics>;
 const metricsMemo = new Map<string, Metrics>();
 const METRICS_MEMO_MAX = 512;
 
-function measureText(text: string, fontSize: number, fontFamily: TextFontFamily): Metrics {
+/** Memoized `textMetrics`. Exported for the wall-text placement solver, which
+ *  needs the fitted glyph bbox to position text and clear the wall pattern
+ *  behind it (`wallTextLayout.ts`); everything else should go through
+ *  `buildTextSolid`. */
+export function measureText(text: string, fontSize: number, fontFamily: TextFontFamily): Metrics {
   const key = `${fontFamily}|${fontSize}|${text}`;
   const cached = metricsMemo.get(key);
   if (cached) return cached;

@@ -384,6 +384,12 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.cutouts.length > 0) return false;
   if (params.wallPattern.enabled) return false;
   if (params.lid.enabled) return false;
+  // Wall surface text (#2695) engraves/embosses the camera-visible outer
+  // walls; the procedural emitters don't render glyphs.
+  const wallTexts = params.surfaceText?.walls;
+  if (wallTexts && Object.values(wallTexts).some((t) => typeof t === 'string' && t.trim() !== '')) {
+    return false;
+  }
 
   // Exterior-wall collar (issue #2500) raises the walls + lip above the
   // nominal height; the direct-mesh builder models a fixed wall/lip Z, so a

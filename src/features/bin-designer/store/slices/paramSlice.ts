@@ -22,6 +22,8 @@ import type {
   LidConfig,
   TextStyleDefaults,
   TextStyleOverride,
+  WallTextSide,
+  WallTextVerticalAlign,
 } from '../../types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -573,6 +575,52 @@ export function createParamSlice(set: Set, get: Get) {
         };
         // Drop the whole key when nothing remains so pre-feature designs
         // (and cleared text) serialize byte-identically.
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setWallText: (side: WallTextSide, text: string) => {
+      const { params } = get();
+      // Trimmed on store, same rationale as setLidText: the worker trims
+      // before generating, so outer whitespace would only create no-op
+      // history entries and regenerations.
+      const clamped = text.slice(0, TEXT_MAX_LENGTH).trim();
+      // No-op guard: same idle-flush + blur double-commit as setLidText.
+      if ((params.surfaceText?.walls?.[side] ?? '') === clamped) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const { walls: prevWalls, wallAlign, ...rest } = state.params.surfaceText ?? {};
+        const { [side]: _drop, ...otherWalls } = prevWalls ?? {};
+        const walls = {
+          ...otherWalls,
+          ...(clamped !== '' ? { [side]: clamped } : {}),
+        };
+        const hasWalls = Object.keys(walls).length > 0;
+        const next = {
+          ...rest,
+          ...(hasWalls ? { walls } : {}),
+          // Alignment is meaningless without wall text — drop it with the
+          // last wall string so the config can collapse to absent.
+          ...(hasWalls && wallAlign !== undefined ? { wallAlign } : {}),
+        };
+        state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
+      });
+    },
+
+    setWallTextAlign: (align: WallTextVerticalAlign) => {
+      const { params } = get();
+      // 'center' is the implicit default — stored as an absent field.
+      const normalized = align === 'center' ? undefined : align;
+      if ((params.surfaceText?.wallAlign ?? undefined) === normalized) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const { wallAlign: _drop, ...rest } = state.params.surfaceText ?? {};
+        const next = {
+          ...rest,
+          ...(normalized !== undefined ? { wallAlign: normalized } : {}),
+        };
         state.params.surfaceText = Object.keys(next).length > 0 ? next : undefined;
       });
     },

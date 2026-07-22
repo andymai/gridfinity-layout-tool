@@ -296,6 +296,40 @@ describe('computeActiveZones', () => {
     });
     expect(zeroHeight.has('topAccent')).toBe(false);
   });
+
+  describe('wall surface text (#2695)', () => {
+    it('activates the text zone for a non-empty wall string', () => {
+      const zones = computeActiveZones({
+        ...baseParams,
+        surfaceText: { walls: { front: 'Cables' } },
+      });
+      expect(zones.has('text')).toBe(true);
+    });
+
+    it('ignores blank wall strings', () => {
+      const zones = computeActiveZones({
+        ...baseParams,
+        surfaceText: { walls: { front: '   ' } },
+      });
+      expect(zones.has('text')).toBe(false);
+    });
+
+    it('mirrors the worker gates: polygon and solid bins skip wall text', () => {
+      const polygon = computeActiveZones({
+        ...baseParams,
+        surfaceText: { walls: { front: 'Cables' } },
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      });
+      expect(polygon.has('text')).toBe(false);
+
+      const solid = computeActiveZones({
+        ...baseParams,
+        base: { style: 'standard', stackingLip: false, solid: true },
+        surfaceText: { walls: { front: 'Cables' } },
+      });
+      expect(solid.has('text')).toBe(false);
+    });
+  });
 });
 
 describe('maxZOfVertices', () => {

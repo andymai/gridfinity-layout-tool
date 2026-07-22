@@ -176,7 +176,8 @@ export function applyWallPatternClips(
   wall: WallPatternDescriptor,
   clip: CutoutClipParams | null,
   handleClip: HandleClipParams | null,
-  rampClip: RampZoneClipParams | null
+  rampClip: RampZoneClipParams | null,
+  textClip: HandleClipParams | null = null
 ): Shape3D | null {
   const tools: Shape3D[] = [];
 
@@ -187,6 +188,11 @@ export function applyWallPatternClips(
     }
     if (handleClip && handleClip.segments.length > 0) {
       tools.push(...buildHandleClipBoxes(handleClip));
+    }
+    // Wall text (#2695) clears the pattern behind its fitted bbox. Same box
+    // shape as a handle clip (single segment), so the builder is reused.
+    if (textClip && textClip.segments.length > 0) {
+      tools.push(...buildHandleClipBoxes(textClip));
     }
     if (rampClip && rampClip.zones.length > 0) {
       tools.push(...buildRampClipBoxes(wall, rampClip));

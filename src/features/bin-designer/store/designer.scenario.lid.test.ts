@@ -202,6 +202,51 @@ describe('DesignerStore - lid actions', () => {
       undo();
       expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
     });
+
+    it('setWallText writes per-side strings and clears them independently', () => {
+      const { setWallText } = useDesignerStore.getState();
+      setWallText('front', 'Cables');
+      setWallText('left', 'Chargers');
+      expect(useDesignerStore.getState().params.surfaceText?.walls).toEqual({
+        front: 'Cables',
+        left: 'Chargers',
+      });
+
+      setWallText('front', '');
+      expect(useDesignerStore.getState().params.surfaceText?.walls).toEqual({
+        left: 'Chargers',
+      });
+      setWallText('left', '');
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('setWallText clamps to TEXT_MAX_LENGTH and no-ops on identical values', () => {
+      const { setWallText, undo } = useDesignerStore.getState();
+      setWallText('front', 'x'.repeat(60));
+      expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toHaveLength(50);
+      setWallText('front', 'x'.repeat(60));
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('setWallTextAlign stores non-center values and drops center as the default', () => {
+      const { setWallText, setWallTextAlign } = useDesignerStore.getState();
+      setWallText('front', 'Cables');
+      setWallTextAlign('top');
+      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
+      setWallTextAlign('center');
+      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBeUndefined();
+      // Text survives the alignment churn.
+      expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toBe('Cables');
+    });
+
+    it('clearing the last wall text drops the alignment with it', () => {
+      const { setWallText, setWallTextAlign } = useDesignerStore.getState();
+      setWallText('front', 'Cables');
+      setWallTextAlign('bottom');
+      setWallText('front', '');
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
   });
 
   describe('compatibility checks', () => {

@@ -10,7 +10,8 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
-import type { BaseStyle } from './index';
+import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import type { BaseStyle, WallTextSide } from './index';
 
 /** Lip corner identifier — quadrant of the outer XY bbox. */
 export type LipCorner = 'frontLeft' | 'frontRight' | 'backRight' | 'backLeft';
@@ -349,7 +350,11 @@ export function isSingleColor(
  * the full `BinParams` type.
  */
 export interface ActiveZonesParams {
-  readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
+  readonly base: {
+    readonly style: BaseStyle;
+    readonly stackingLip: boolean;
+    readonly solid?: boolean;
+  };
   readonly label: { readonly enabled: boolean; readonly mode?: 'text' | 'socket' };
   readonly scoop: { readonly enabled: boolean };
   readonly lid: { readonly enabled: boolean };
@@ -358,6 +363,12 @@ export interface ActiveZonesParams {
     readonly compartmentTexts?: readonly string[];
   };
   readonly cutouts?: readonly { readonly engraveLabel?: boolean; readonly label: string }[];
+  /** Wall surface text (#2695) renders on the bin body, so it activates the
+   *  `text` zone. Mirrors the worker gates: polygon and solid-mode bins skip
+   *  wall text entirely (see `wallTextLayout.ts`). Lid text deliberately does
+   *  NOT activate the zone — the lid ships as a single color object. */
+  readonly surfaceText?: { readonly walls?: Readonly<Partial<Record<WallTextSide, string>>> };
+  readonly cellMask?: CellMask;
   /**
    * Active lip color-grid sizes. Determines which lip cells are exposed as
    * editable/active zones. Absent → treated as a uniform 1×1 lip (single
@@ -422,6 +433,13 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const hasCutoutText = (p.cutouts ?? []).some(
     (c) => c.engraveLabel === true && c.label.trim().length > 0
   );
+  // Wall surface text (#2695) — worker gates mirrored: no polygon, no solid.
+  const hasWallText =
+    p.base.solid !== true &&
+    !isPartialMask(p.cellMask) &&
+    Object.values(p.surfaceText?.walls ?? {}).some(
+      (t) => typeof t === 'string' && t.trim().length > 0
+    );
 
   const zones = new Set<ColorZone>(['body']);
   if (p.base.style !== 'flat') zones.add('base');
@@ -436,7 +454,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Lid color row for a config the worker won't export.
   if (p.lid.enabled && p.base.stackingLip) zones.add('lid');
   if (hasDividers) zones.add('dividers');
-  if (hasTabText || hasCutoutText) zones.add('text');
+  if (hasTabText || hasCutoutText || hasWallText) zones.add('text');
   // Top accent is independent of every other feature — a positive-height band
   // recolors the top of the bin whether or not it has a lip.
   const topAccent = p.featureColors?.topAccent;
