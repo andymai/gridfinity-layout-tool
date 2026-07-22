@@ -1,0 +1,277 @@
+src/core/cqrs/v2/domain/layout/setGridUnitMmY.test.ts
+  s_37af45d9af909d::t_c4271ba7e6cdbd 1-56
+src/core/cqrs/events/drawerEvents.ts
+  s_37af45d9af909d::t_2ed7f56a2bee61 96
+  s_37af45d9af909d::t_b8fff277150c04 59-64
+src/features/baseplate/utils/splitPlanner.ts
+  s_37af45d9af909d::t_73a3972112beb6 265-266
+  s_37af45d9af909d::t_829cf0681b8ce2 110-111
+  s_37af45d9af909d::t_e47cea50a0db68 133-134,140
+  s_37af45d9af909d::t_578d692381555c 375,384,386,388
+  s_37af45d9af909d::t_5e841fe7aa21a2 667,695
+  s_37af45d9af909d::t_ae4b751fadbe30 1128-1130
+  s_37af45d9af909d::t_049ef0a64f87dc 344,349
+  s_37af45d9af909d::t_8acec592aa2516 772,775,784
+  s_37af45d9af909d::t_594707d16d45d0 67-68,77,91,96
+  s_37af45d9af909d::t_52d1f350042df0 304,310,312
+  s_37af45d9af909d::t_b669dd2609810e 551,554,566
+  s_37af45d9af909d::t_4f7c07d14fe5cd 226
+  s_37af45d9af909d::t_e36b824c4cb5a9 236,243,247-248
+  s_37af45d9af909d::t_a52c64da051248 951,960,962
+  s_37af45d9af909d::t_fe04a9db142b4d 818
+  s_37af45d9af909d::t_0aceb3454303e6 422
+  s_37af45d9af909d::t_45b0f36b379de7 803,809
+  s_37af45d9af909d::t_f7e69b470b123e 898
+src/core/types.ts
+  s_37af45d9af909d::t_fd198881840c72 61-69
+  s_37af45d9af909d::t_b191885b9c2014 83-92
+src/i18n/locales/ja.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/shared/contexts/MutationsContext.tsx
+  s_37af45d9af909d::t_dbb39fb7c82205 88
+src/i18n/locales/sv.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/core/cqrs/commandDescriptions.ts
+  s_37af45d9af909d::t_030fd5ec79d965 32
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_37af45d9af909d::t_3a21fb81c465e8 34-37
+src/shared/hooks/useDrawerSettings.ts
+  s_37af45d9af909d::t_b3f34850becaff 547-555
+  s_37af45d9af909d::t_63530af3662739 123-126
+  s_37af45d9af909d::t_3ad1ed9be3bb8c 628-629
+  s_37af45d9af909d::t_e424b978356a5c 270-275,277
+  s_37af45d9af909d::t_4d76a8142d7126 204-205,219-220
+  s_37af45d9af909d::t_2fa8b5740df7bc 86-89
+  s_37af45d9af909d::t_b908e8914821fb 604-605
+  s_37af45d9af909d::t_e22a8e9beecdd0 302
+  s_37af45d9af909d::t_dbf11ed91c8a53 30-36
+  s_37af45d9af909d::t_29a96d9abc20e6 276
+src/shared/hooks/useGridTemplate.ts
+  s_37af45d9af909d::t_8706c7f7664ef6 73,75-79,86
+  s_37af45d9af909d::t_f43ec898aeaff9 110
+  s_37af45d9af909d::t_f6a339b0f8821c 167-175
+  s_37af45d9af909d::t_a760af7fbf52a0 124-126
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_37af45d9af909d::t_b802c82e2a3534 200
+  s_37af45d9af909d::t_92f5474a027553 5-6
+  s_37af45d9af909d::t_40b107f77e3818 177
+  s_37af45d9af909d::t_cbf17e958bcf71 325,331
+  s_37af45d9af909d::t_b679d8e981ba8e 53,59-60,64-65
+  s_37af45d9af909d::t_510e5eb8e2918e 163
+  s_37af45d9af909d::t_525447405ef34b 66
+src/i18n/locales/es.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_37af45d9af909d::t_6cf106940c3e3d 52
+src/features/generation/worker/generators/connectorUtils.ts
+  s_37af45d9af909d::t_1b82d0326cdae8 31-33
+  s_37af45d9af909d::t_8d45d174c7ea4e 43
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_37af45d9af909d::t_1e1cede641f696 888-889
+  s_37af45d9af909d::t_932752d5ab3bfc 28
+  s_37af45d9af909d::t_f70ca3426da829 288,901
+  s_37af45d9af909d::t_0e1eb997404cc9 184
+  s_37af45d9af909d::t_af1073d3f1ed95 833-834
+src/i18n/locales/nb.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/i18n/locales/en.ts
+  s_37af45d9af909d::t_33d6ee2043e3cb 273-278
+src/i18n/locales/uk.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_37af45d9af909d::t_dac51e082df620 220-221
+  s_37af45d9af909d::t_8e80296f63da7e 108,114-115
+  s_37af45d9af909d::t_3416618fdbc55c 231
+  s_37af45d9af909d::t_08d414a75009bd 268,271,273
+  s_37af45d9af909d::t_2dd84b792edef5 18
+  s_37af45d9af909d::t_2b6c7045e3ce1d 21
+  s_37af45d9af909d::t_1481d6a11ff145 194-198
+src/features/grid-editor/hooks/useGridCoords.test.ts
+  s_37af45d9af909d::t_8cc45fc8f3b416 98-117
+src/shared/types/bin.ts
+  s_37af45d9af909d::t_600b943f1e6f5e 231-235
+src/features/grid-editor/components/Grid/Overlay/Overlay.tsx
+  s_37af45d9af909d::t_0c8d6c30ced823 4-5
+  s_37af45d9af909d::t_694d8cdbc27b30 70,74-75,80-81
+  s_37af45d9af909d::t_a4f03e4da2a1e8 108
+  s_37af45d9af909d::t_57facf3a2fc2cc 147,160-161,176,181
+  s_37af45d9af909d::t_455d690342dc57 390,409,482,537,564,592,616
+  s_37af45d9af909d::t_3e83ccf916ae25 114-115
+  s_37af45d9af909d::t_ee4f54d8e64422 96
+src/features/grid-editor/components/Grid/Bin/calculateBinLayout.ts
+  s_37af45d9af909d::t_8032b2e5f8d429 22,24-25
+  s_37af45d9af909d::t_ab22fd14d68342 154,162,165
+  s_37af45d9af909d::t_838a976fd33829 50
+  s_37af45d9af909d::t_be891c06b8dfd3 112,124
+src/i18n/locales/it.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_37af45d9af909d::t_0ea311b6688862 559
+  s_37af45d9af909d::t_38fe6f24de7331 311
+  s_37af45d9af909d::t_41ec6506611a5a 282-286,289,293
+  s_37af45d9af909d::t_02fa763087a52d 392
+  s_37af45d9af909d::t_ad7516aae26e84 644-647
+  s_37af45d9af909d::t_bafca8ee76fca3 519
+  s_37af45d9af909d::t_fa22c90a08c3d5 325,340
+  s_37af45d9af909d::t_de8c993f20e744 167-170
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_37af45d9af909d::t_2c9a01e483b942 352-356,359,362,366
+  s_37af45d9af909d::t_64baa1d560924c 222-223
+  s_37af45d9af909d::t_f56e7e85c1a7b4 236,241,247
+src/i18n/locales/fr.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_37af45d9af909d::t_2769ad2d980cfe 72-73,84-85
+  s_37af45d9af909d::t_5b2df5973da756 18
+  s_37af45d9af909d::t_b4c713659072e9 150-152,160-161
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_37af45d9af909d::t_c6c3dc81a87476 24
+  s_37af45d9af909d::t_474a0b163d477b 217,220-221,224
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_37af45d9af909d::t_17bc0283b7498c 128
+  s_37af45d9af909d::t_ea8b01aa2cfd53 195
+  s_37af45d9af909d::t_a287cd2731b710 159-161,164,170-173
+  s_37af45d9af909d::t_50f354deb1f9d3 261
+  s_37af45d9af909d::t_dea54025b8fa78 108-112,119
+  s_37af45d9af909d::t_47a173fa8db37f 153,281
+  s_37af45d9af909d::t_70505a62f2ad9f 314-315
+  s_37af45d9af909d::t_a864dfdac77fd7 207
+src/shell/layoutExport/useLayoutExport.ts
+  s_37af45d9af909d::t_dfd4c31c222e21 375
+  s_37af45d9af909d::t_898da01c6cece4 14
+src/shell/Sidebar/Sidebar.tsx
+  s_37af45d9af909d::t_f8cc2a689678f4 83-84
+  s_37af45d9af909d::t_d50a557e3d5fb1 100-101
+  s_37af45d9af909d::t_3d52a64712270f 465-519
+  s_37af45d9af909d::t_828d6842a6f0e0 7
+src/core/store/layout/types.ts
+  s_37af45d9af909d::t_13b8f80b79091f 88-89
+src/core/cqrs/projection/replay.ts
+  s_37af45d9af909d::t_6dbc568473a511 170-173
+src/features/generation/worker/generators/baseplateSlab.ts
+  s_37af45d9af909d::t_417ee596a1a7b6 112-113
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_37af45d9af909d::t_51ea41e33148d6 226-227
+src/core/cqrs/versioning/eventVersions.ts
+  s_37af45d9af909d::t_b66f4180905e6d 42
+src/core/cqrs/v2/registry.ts
+  s_37af45d9af909d::t_a6a83c3929ca8c 91
+  s_37af45d9af909d::t_77f1c8c5684654 132
+  s_37af45d9af909d::t_dc6c826ac8602f 36
+src/features/generation/worker/generators/baseplateGenerator.scenario.nonSquare.test.ts
+  s_37af45d9af909d::t_f1278fdbcdbce0 1-80
+  s_37af45d9af909d::t_40970e0f9d4ec4 81-83
+  s_37af45d9af909d::t_556b7f5f931932 84
+src/features/grid-editor/components/Grid/DrawerMargin/useDrawerMarginInsets.ts
+  s_37af45d9af909d::t_c83802e0ebb2aa 28,32,47-49,51,53,58-59
+  s_37af45d9af909d::t_944eb696fd427f 3-4
+src/features/generation/worker/generators/directMeshFaces.ts
+  s_37af45d9af909d::t_23d2ce3f0e587b 98-99
+  s_37af45d9af909d::t_0baf76655f6684 37
+  s_37af45d9af909d::t_28b3c0cbf5c399 58-61
+  s_37af45d9af909d::t_1dc9294810562c 26
+src/i18n/locales/pt-BR.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_37af45d9af909d::t_775dd6c10ff92a 104-107
+  s_37af45d9af909d::t_8791867fc58178 14
+  s_37af45d9af909d::t_195226ef1fbf13 175
+  s_37af45d9af909d::t_cc8e73314751c8 74,83
+src/features/baseplate/hooks/useStackPrintStatus.ts
+  s_37af45d9af909d::t_b255e4ff69ecbd 11
+  s_37af45d9af909d::t_298cf85e6d480e 41,50
+  s_37af45d9af909d::t_86083472a80adf 86
+  s_37af45d9af909d::t_c5d31801494185 70-73
+src/core/cqrs/v2/domain/layout/setGridUnitMmY.ts
+  s_37af45d9af909d::t_a09966891c9a35 1-36
+src/core/store/layout/coreActions.ts
+  s_37af45d9af909d::t_b1f761ff0400d1 90-95
+src/shared/printSettings/standardBinVolume.ts
+  s_37af45d9af909d::t_cdf92a050a3e37 135-136,143-144
+  s_37af45d9af909d::t_0f2fd50d780194 169-170,177-178
+src/i18n/locales/de.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_37af45d9af909d::t_97272aa2add896 22
+  s_37af45d9af909d::t_f70e506ca9ddef 58-60
+api/lib/validation.ts
+  s_37af45d9af909d::t_4cf83a98f20b7b 348
+  s_37af45d9af909d::t_aea389112d4f7b 121
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_37af45d9af909d::t_640d6831df711d 194-195,221-222
+  s_37af45d9af909d::t_a0469cb31a8819 58-59
+  s_37af45d9af909d::t_45c31a3a93501d 168
+src/core/cqrs/commands/drawerCommands.ts
+  s_37af45d9af909d::t_5b399e1be641aa 40-45
+  s_37af45d9af909d::t_cb556ff7e6b6e8 69
+src/core/cqrs/validation/schemas.ts
+  s_37af45d9af909d::t_7211193e9da13f 224-226
+  s_37af45d9af909d::t_056fa6150af020 313
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_37af45d9af909d::t_329face275d4a9 12
+  s_37af45d9af909d::t_88fb276b5e25ba 167
+  s_37af45d9af909d::t_1e17006f38dfe7 43,56
+  s_37af45d9af909d::t_99da869721d609 96
+src/features/grid-editor/hooks/useGridCoords.ts
+  s_37af45d9af909d::t_88bf1a399b202a 206
+  s_37af45d9af909d::t_331dc7ffa51c78 276
+  s_37af45d9af909d::t_95c9dff950817b 102
+  s_37af45d9af909d::t_d5da0216fd0401 7-8
+  s_37af45d9af909d::t_bdaf36dc72805c 72-73,76-77,79
+  s_37af45d9af909d::t_e63ae0ca789c9b 135-136,139-140
+  s_37af45d9af909d::t_f85d1749465d21 149
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_37af45d9af909d::t_eb833323a9b4a0 101-112,119
+  s_37af45d9af909d::t_f0468820599543 113-118
+  s_37af45d9af909d::t_7690e604f4e816 120-122
+src/i18n/locales/nl.json
+  s_37af45d9af909d::t_5855d2463d1528 2781-2785
+src/core/constants.ts
+  s_37af45d9af909d::t_e13101c880fab8 594-606
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_37af45d9af909d::t_735287b43d5b01 18
+  s_37af45d9af909d::t_43ef0b20db79f1 84-88
+  s_37af45d9af909d::t_b56689de296591 150
+  s_37af45d9af909d::t_0f534e06cf3a33 151-153
+src/features/grid-editor/hooks/useGridResize.ts
+  s_37af45d9af909d::t_f00f1c89a52d3a 50,52-53,60
+  s_37af45d9af909d::t_9603700a8df91b 234
+  s_37af45d9af909d::t_811db04caff016 159
+  s_37af45d9af909d::t_fad27f0d82b850 142
+src/features/baseplate/utils/buildFullParams.ts
+  s_37af45d9af909d::t_102ca5f16f424d 144-146
+  s_37af45d9af909d::t_5900f567b36d5c 198
+  s_37af45d9af909d::t_0ab8c6acfc20f0 172
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_37af45d9af909d::t_9b4589f0de42e5 173-176
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_37af45d9af909d::t_aaa161b40b793e 124,137
+  s_37af45d9af909d::t_2343761cffc35b 67,72,76
+  s_37af45d9af909d::t_254325327c8c21 106
+  s_37af45d9af909d::t_99f70a12eab935 6-7
+  s_100d196bea722f::t_53dc48554a7dfc 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "61cc0aaaf3f56246d75360387e7e1ab39509fbca",
+  "prompts": {},
+  "sessions": {
+    "s_100d196bea722f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da446227-6be1-4c2b-9ff1-db2f2d211969",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_37af45d9af909d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91d671ca-54bd-4e63-a31c-3001264d1f94",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
