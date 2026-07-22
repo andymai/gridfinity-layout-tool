@@ -1,0 +1,36 @@
+src/core/cqrs/versioning/migrations.test.ts
+  s_37af45d9af909d::t_60f90b8715ec29 192
+api/lib/validation.ts
+  s_37af45d9af909d::t_1c48a03b44765c 348-354
+src/core/cqrs/validation/schemas.test.ts
+  s_37af45d9af909d::t_d1c8296f66553e 46,48
+src/core/constants.ts
+  s_37af45d9af909d::t_1a7db6b7b40d6a 604-608
+src/shared/hooks/useDrawerSettings.ts
+  s_37af45d9af909d::t_8f0433f019922b 307,310
+  s_37af45d9af909d::t_a1c0e4a41e7b9c 431
+  s_37af45d9af909d::t_0b7c7ab80d7fe8 398
+  s_37af45d9af909d::t_3ad3dbeb93904a 459
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_37af45d9af909d::t_ba0f9260f6e8b0 233
+  s_37af45d9af909d::t_07835cd9eee66e 290
+src/core/constants.test.ts
+  s_37af45d9af909d::t_b738e3d96b55c8 11
+  s_37af45d9af909d::t_ccfb1ad9afedc1 287-308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "e118c1e611b56658cdd5d84403ff7b3feba49284",
+  "prompts": {},
+  "sessions": {
+    "s_37af45d9af909d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91d671ca-54bd-4e63-a31c-3001264d1f94",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
