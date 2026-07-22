@@ -155,6 +155,46 @@ describe('useBaseplateLibraryInit', () => {
     expect(useLayoutStore.getState().layout.baseplateParams?.paddingLeft).toBe(12);
   });
 
+  it('still syncs a different layout that shares the same design', async () => {
+    // The session guard is keyed by (layout, design), so one layout adopting a
+    // design must not suppress another layout's required first sync of it.
+    const saved = await saveDesign({
+      name: 'Baseplate 1',
+      params: { ...params, magnetHoles: true },
+      thumbnail: null,
+    });
+    if (!isOk(saved)) throw new Error('saveDesign failed');
+
+    // Layout A adopts the design first (already in sync).
+    useLayoutStore.getState().importLayout(
+      createTestLayout({
+        baseplateParams: { ...params, magnetHoles: true },
+        activeBaseplateId: saved.value.id,
+      }),
+      layoutId('layout-a')
+    );
+    const a = renderHook(() => useBaseplateLibraryInit());
+    await waitFor(() => {
+      expect(useLayoutStore.getState().layout.activeBaseplateId).toBe(saved.value.id);
+    });
+    a.unmount();
+
+    // Layout B shares the design but its inline params are stale.
+    useLayoutStore.getState().importLayout(
+      createTestLayout({
+        baseplateParams: { ...params, magnetHoles: false },
+        activeBaseplateId: saved.value.id,
+      }),
+      layoutId('layout-b')
+    );
+    renderHook(() => useBaseplateLibraryInit());
+
+    // B's first resolve must still adopt the design's params.
+    await waitFor(() => {
+      expect(useLayoutStore.getState().layout.baseplateParams?.magnetHoles).toBe(true);
+    });
+  });
+
   it('does not stamp the seed onto a layout switched to mid-resolve', async () => {
     useLayoutStore
       .getState()
