@@ -431,6 +431,59 @@ describe('buildCutoutCuts', () => {
     expect(cutTools).toHaveLength(1);
     expect(fuseTools).toHaveLength(0);
   }, 30000);
+
+  it('keeps a label at the bin top when its center is outside a circle cutout footprint', () => {
+    // Offset drags the center to (13.5, 13.5) from the cutout center — inside
+    // the 30×30 bounding box but outside the circle, so the surface there is
+    // un-recessed fill and the engraving must stay at the top.
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      cutouts: [
+        {
+          ...recessedLabelCutout,
+          shape: 'circle',
+          width: 30,
+          depth: 30,
+          textOffset: { x: 13.5, y: 13.5 },
+        },
+      ],
+    };
+    const { cutTools } = buildCutoutCuts(params, 80, 80, 16);
+    expect(cutTools).toHaveLength(2);
+    for (const tool of cutTools) {
+      expect(shapeBounds(tool).zMax).toBeGreaterThan(15.5);
+    }
+  }, 30000);
+
+  it('keeps a label at the bin top for members of non-union groups', () => {
+    // A subtract group's final cavity may not contain the member's footprint,
+    // so the floor branch is disabled and the label engraves at the top.
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      cutoutConfig: { topOffset: 0 },
+      cutouts: [
+        { ...recessedLabelCutout, groupId: 'g1', groupOp: 'subtract' },
+        {
+          ...recessedLabelCutout,
+          id: 'c2',
+          x: 30,
+          y: 35,
+          width: 20,
+          depth: 10,
+          label: '',
+          engraveLabel: false,
+          groupId: 'g1',
+        },
+      ],
+    };
+    const { cutTools } = buildCutoutCuts(params, 80, 80, 16);
+    // One merged group cavity + one label tool, both reaching the bin top.
+    expect(cutTools).toHaveLength(2);
+    for (const tool of cutTools) {
+      expect(shapeBounds(tool).zMax).toBeGreaterThan(15.5);
+    }
+  }, 30000);
 });
 
 describe('buildLabelTabs', () => {

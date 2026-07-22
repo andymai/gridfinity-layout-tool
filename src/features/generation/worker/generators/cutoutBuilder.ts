@@ -32,7 +32,7 @@ import {
   transformCopy,
   setShapeOrigin,
 } from 'brepjs';
-import type { TransformOp } from 'brepjs';
+import type { TransformOp, Bounds3D } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
 import {
@@ -49,6 +49,7 @@ import {
 } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
+import { pointInPolyline } from '@/shared/utils/drawerOutlineGeometry';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
@@ -1068,12 +1069,25 @@ export function buildCutoutCuts(
   // bin-top text through the floor is meaningless. Engraved text joins the cut
   // pile; top-surface embossed text is collected separately for fusing; floor
   // embossed text is carved out of its cavity tool.
+  // Group op per groupId, keyed off the first member in cutouts order — the
+  // same member buildGroupedCutouts reads it from.
+  const groupOps = new Map<string, GroupOp>();
+  for (const c of params.cutouts) {
+    if (c.groupId !== null && !groupOps.has(c.groupId)) {
+      groupOps.set(c.groupId, c.groupOp ?? DEFAULT_GROUP_OP);
+    }
+  }
+
   const rawFuseShapes: Shape3D[] = [];
   for (const cutout of params.cutouts) {
     if (cutout.hidden === true) continue;
     if (cutout.engraveLabel !== true) continue;
     const label = cutout.label.trim();
     if (label === '') continue;
+    // Non-union groups (subtract/intersect/exclude) can hollow a member's
+    // footprint out of the final cavity, so a member-footprint floor guess may
+    // point at solid material. Only union cavities keep member floors intact.
+    const allowFloor = cutout.groupId === null || groupOps.get(cutout.groupId) === 'union';
     const textShape = buildCutoutLabel(
       cutout,
       label,
@@ -1082,7 +1096,8 @@ export function buildCutoutCuts(
       originX,
       originY,
       innerW,
-      innerD
+      innerD,
+      allowFloor
     );
     if (!textShape) continue;
     // Label text is its own color zone — tag it TEXT so an engraved label
@@ -1174,6 +1189,57 @@ interface CutoutLabelShape {
   readonly op: 'cut' | 'fuse' | 'carve';
 }
 
+/** Point-in-rounded-rect for a `2·hw × 2·hd` rect with corner radius `r`,
+ *  centered at the origin. */
+function roundedRectContains(lx: number, ly: number, hw: number, hd: number, r: number): boolean {
+  const ax = Math.abs(lx);
+  const ay = Math.abs(ly);
+  if (ax > hw || ay > hd) return false;
+  if (r <= 0) return true;
+  const ex = ax - (hw - r);
+  const ey = ay - (hd - r);
+  if (ex <= 0 || ey <= 0) return true;
+  return ex * ex + ey * ey <= r * r;
+}
+
+/**
+ * Whether a point (in the cutout's local, unrotated frame, origin at its
+ * center) lies inside the actual cavity footprint. Shape-aware so a label near
+ * a bounding-box corner of a circle/polygon/path isn't mistaken for "over the
+ * recess" and engraved at floor depth under solid fill. Degenerate polygons and
+ * paths extrude as their bounding box (see the shape builders), so their
+ * containment tests fall back to the same box.
+ */
+function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean {
+  const hw = cutout.width / 2;
+  const hd = cutout.depth / 2;
+  switch (cutout.shape) {
+    case 'circle':
+      return hw > 0 && hd > 0 && (lx / hw) ** 2 + (ly / hd) ** 2 <= 1;
+    case 'polygon': {
+      const pts = regularPolygonPoints(
+        clampPolygonSides(cutout.sides ?? DEFAULT_POLYGON_SIDES),
+        cutout.width,
+        cutout.depth
+      );
+      if (pts.length < 3) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
+      return pointInPolyline(pts, lx, ly);
+    }
+    case 'slot':
+      return roundedRectContains(lx, ly, hw, hd, slotCornerRadius(cutout.width, cutout.depth));
+    case 'path': {
+      const outline = pathOutline(cutout);
+      if (!outline) return Math.abs(lx) <= hw && Math.abs(ly) <= hd;
+      return pointInPolyline(outline, lx, ly);
+    }
+    case 'mesh':
+      // Mesh imprints are filtered out before the label loop; unreachable.
+      return false;
+    case 'rectangle':
+      return roundedRectContains(lx, ly, hw, hd, Math.min(cutout.cornerRadius, hw, hd));
+  }
+}
+
 /**
  * Z of the surface a cutout label lands on: the recess floor when the placed
  * center sits inside the cutout's rotated footprint (the `center` anchor, or an
@@ -1199,8 +1265,7 @@ function labelSurfaceZ(
   const s = Math.sin(theta);
   const lx = dx * c - dy * s;
   const ly = dx * s + dy * c;
-  const inside = Math.abs(lx) <= cutout.width / 2 && Math.abs(ly) <= cutout.depth / 2;
-  if (!inside) return solidSurfaceZ;
+  if (!labelCenterInFootprint(cutout, lx, ly)) return solidSurfaceZ;
   return solidSurfaceZ - Math.min(cutout.cutDepth, solidSurfaceZ);
 }
 
@@ -1213,14 +1278,35 @@ function labelSurfaceZ(
  * carve keeps the uncarved cavity and silently drops the label (matching
  * {@link buildCutoutLabel}'s silent-skip contract).
  */
+function boundsOverlap(a: Bounds3D, b: Bounds3D): boolean {
+  return (
+    a.xMin <= b.xMax &&
+    a.xMax >= b.xMin &&
+    a.yMin <= b.yMax &&
+    a.yMax >= b.yMin &&
+    a.zMin <= b.zMax &&
+    a.zMax >= b.zMin
+  );
+}
+
 function carveLabelFromCavities(
   text: Shape3D,
   indices: readonly number[] | undefined,
   rawShapes: Shape3D[]
 ): void {
   try {
+    const textBounds = getBounds(text);
     for (const i of indices ?? []) {
+      // Array instances all register under the master's id, but the glyphs
+      // occupy a single world location — skip tools the text can't touch so
+      // spaced instances don't pay (or risk) a pointless boolean. Every
+      // OVERLAPPING tool must be carved, though: an uncarved overlapping
+      // cavity would erase the standing text when it is subtracted.
+      if (!boundsOverlap(textBounds, getBounds(rawShapes[i]))) continue;
       try {
+        // brepjs `cut` never consumes its operands (callers delete inputs
+        // themselves — see lightweightBaseBuilder), so reusing `text` across
+        // iterations is safe.
         const carved = unwrap(cut(rawShapes[i] as ValidSolid, text as ValidSolid));
         if (carved !== rawShapes[i]) {
           rawShapes[i].delete();
@@ -1238,6 +1324,8 @@ function carveLabelFromCavities(
 /**
  * Label text for a cutout: on the bin top beside it (outer anchors) or on the
  * recess floor inside it (`center` anchor, see {@link labelSurfaceZ}).
+ * `allowFloor` gates the floor branch — callers pass false for members of
+ * non-union groups, whose final cavity may not contain the member's footprint.
  *
  * The side picker is interpreted in WORLD coordinates (top = +Y, etc.); text
  * reads left-to-right in world XY regardless of cutout rotation. The cutout
@@ -1263,7 +1351,8 @@ function buildCutoutLabel(
   originX: number,
   originY: number,
   innerW: number,
-  innerD: number
+  innerD: number,
+  allowFloor: boolean
 ): CutoutLabelShape | null {
   const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
   if (!placement) return null;
@@ -1278,7 +1367,9 @@ function buildCutoutLabel(
   // degrades to engrave.
   const mode = style.mode === 'emboss' ? 'emboss' : 'engrave';
 
-  const surfaceZ = labelSurfaceZ(cutout, centerX, centerY, solidSurfaceZ, originX, originY);
+  const surfaceZ = allowFloor
+    ? labelSurfaceZ(cutout, centerX, centerY, solidSurfaceZ, originX, originY)
+    : solidSurfaceZ;
   // A recess consuming the full fill depth leaves no floor to engrave into —
   // the interior clip stops at z=0 to protect the base, so skip the label.
   if (mode === 'engrave' && surfaceZ <= 0) return null;
