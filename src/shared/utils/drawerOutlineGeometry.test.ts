@@ -191,4 +191,24 @@ describe('isFootprintInsideOutline', () => {
       false
     );
   });
+
+  it('scales footprints by the per-axis pitch on a non-square grid (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const lNs: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * UX, y: 0 },
+        { x: 4 * UX, y: 2 * UY },
+        { x: 2 * UX, y: 2 * UY },
+        { x: 2 * UX, y: 4 * UY },
+        { x: 0, y: 4 * UY },
+      ],
+    };
+    // Back-flush in the tall body: y ends exactly at the drawer's back edge
+    // (4 × UY) — using the X pitch on Y would push it out of the outline.
+    expect(isFootprintInsideOutline({ x: 0, y: 2, width: 2, depth: 2 }, lNs, UX, UY)).toBe(true);
+    expect(isFootprintInsideOutline({ x: 2, y: 0, width: 2, depth: 2 }, lNs, UX, UY)).toBe(true);
+    expect(isFootprintInsideOutline({ x: 2, y: 2, width: 1, depth: 1 }, lNs, UX, UY)).toBe(false);
+  });
 });

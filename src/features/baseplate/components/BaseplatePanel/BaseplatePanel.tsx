@@ -340,7 +340,7 @@ export function BaseplatePanel() {
       // Derive entirely from the fresh store read — mixing in the captured
       // gridUnitMm could compute padding against a stale drawer size.
       const drawerWidthMm = cornerShapeState.drawer.width * cornerShapeState.gridUnitMm;
-      const drawerDepthMm = cornerShapeState.drawer.depth * cornerShapeState.gridUnitMm;
+      const drawerDepthMm = cornerShapeState.drawer.depth * effectiveGridUnitMmY(cornerShapeState);
       if (
         cornerShapeParams.syncWithLayout !== false &&
         outline !== undefined &&

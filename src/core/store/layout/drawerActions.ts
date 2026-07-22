@@ -1,4 +1,5 @@
 import type { Drawer, GridUnits, HeightUnits } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
@@ -46,13 +47,15 @@ export function createDrawerActions(setLocal: SetLocal) {
           ((drawer.width as number) !== oldWidth || (drawer.depth as number) !== oldDepth)
         ) {
           const u = state.layout.gridUnitMm as number;
+          const uy = effectiveGridUnitMmY(state.layout) as number;
           const resized = resizeDrawerOutline(
             drawer.outline,
             oldWidth * u,
-            oldDepth * u,
+            oldDepth * uy,
             (drawer.width as number) * u,
-            (drawer.depth as number) * u,
-            u
+            (drawer.depth as number) * uy,
+            u,
+            uy
           );
           if (resized === undefined) {
             delete drawer.outline;
@@ -68,7 +71,12 @@ export function createDrawerActions(setLocal: SetLocal) {
           (drawer.width as number) !== oldWidth || (drawer.depth as number) !== oldDepth;
         if (!planarChanged) return;
         const displaced = new Set(
-          computeDisplacedBins(state.layout.bins, drawer, state.layout.gridUnitMm)
+          computeDisplacedBins(
+            state.layout.bins,
+            drawer,
+            state.layout.gridUnitMm,
+            effectiveGridUnitMmY(state.layout)
+          )
         );
         if (displaced.size > 0) {
           state.layout.bins = state.layout.bins.map((bin) =>

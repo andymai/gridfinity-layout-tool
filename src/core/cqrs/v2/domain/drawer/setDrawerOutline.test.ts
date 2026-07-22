@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
-import { binId } from '@/core/types';
+import { binId, mm } from '@/core/types';
 import type { DrawerOutline } from '@/core/types';
 import { setDrawerOutline } from './setDrawerOutline';
 import { makeLayout, makeBin } from './_testHelpers';
@@ -32,6 +32,51 @@ describe('v2 drawer.setOutline', () => {
     expect(result.value.event.payload.outline).toBeDefined();
     expect(result.value.event.payload.previousOutline).toBeUndefined();
     expect(result.value.event.payload.displacedBinIds).toEqual([binId('bin_a')]);
+  });
+
+  it('validates and displaces with the per-axis pitch on a non-square grid (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const lNs: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 6 * UX, y: 0 },
+        { x: 6 * UX, y: 2 * UY },
+        { x: 4 * UX, y: 2 * UY },
+        { x: 4 * UX, y: 4 * UY },
+        { x: 0, y: 4 * UY },
+      ],
+    };
+    const layout = makeLayout({
+      gridUnitMm: mm(UX),
+      gridUnitMmY: mm(UY),
+      // bin_back is flush against the back edge (y ends at 4 × UY) — the X
+      // pitch on Y would wrongly displace it.
+      bins: [makeBin('bin_back', 0, 3), makeBin('bin_notch', 5, 3)],
+    });
+    const result = setDrawerOutline.handle({ outline: lNs }, { aggregate: layout });
+
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.outline).toBeDefined();
+    expect(result.value.event.payload.displacedBinIds).toEqual([binId('bin_notch')]);
+  });
+
+  it('normalizes a rectangle-equivalent outline on a non-square grid (#2733)', () => {
+    const rect: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 6 * 48, y: 0 },
+        { x: 6 * 48, y: 4 * 42 },
+        { x: 0, y: 4 * 42 },
+      ],
+    };
+    const layout = makeLayout({ gridUnitMm: mm(48), gridUnitMmY: mm(42) });
+    const result = setDrawerOutline.handle({ outline: rect }, { aggregate: layout });
+
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.outline).toBeUndefined();
   });
 
   it('apply() installs the outline and stages displaced bins', () => {

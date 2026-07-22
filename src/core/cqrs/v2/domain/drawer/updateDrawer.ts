@@ -19,7 +19,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
-import { gridUnits, heightUnits } from '@/core/types';
+import { effectiveGridUnitMmY, gridUnits, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from './displacement';
 
@@ -124,13 +124,15 @@ export const updateDrawer = defineCommand({
     let newOutline = drawer.outline;
     if (drawer.outline !== undefined && dimsChanged) {
       const u = layout.gridUnitMm as number;
+      const uy = effectiveGridUnitMmY(layout) as number;
       newOutline = resizeDrawerOutline(
         drawer.outline,
         (drawer.width as number) * u,
-        (drawer.depth as number) * u,
+        (drawer.depth as number) * uy,
         (newWidth as number) * u,
-        (newDepth as number) * u,
-        u
+        (newDepth as number) * uy,
+        u,
+        uy
       );
       changes.outline = newOutline;
     }
@@ -139,7 +141,8 @@ export const updateDrawer = defineCommand({
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
       { width: newWidth, depth: newDepth, outline: newOutline },
-      layout.gridUnitMm
+      layout.gridUnitMm,
+      effectiveGridUnitMmY(layout)
     );
 
     const previous = capturePrevious(drawer, changes);

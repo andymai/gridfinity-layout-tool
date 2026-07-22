@@ -1699,6 +1699,35 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(tiling.pieces.every((p) => p.placementRotationDeg === 0)).toBe(true);
   });
 
+  it('measures seam bands with the per-axis pitch on a non-square grid (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const lNs = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 8 * UX, y: 0 },
+        { x: 8 * UX, y: 4 * UY },
+        { x: 4 * UX, y: 4 * UY },
+        { x: 4 * UX, y: 8 * UY },
+        { x: 0, y: 8 * UY },
+      ],
+    };
+    // Bed fits 4 units on both axes (4 × 48 = 192, 4 × 42 = 168 ≤ 205 < 5 × 42).
+    const tiling = computeBaseplateTiling(
+      shapedParams(lNs, { gridUnitMm: UX, gridUnitMmY: UY }),
+      205
+    );
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    expect(tiling.pieces.map((p) => p.label).sort()).toEqual(['A1', 'A2', 'B1']);
+    // Seams into the body are full: the one-cell band beside A1's right seam
+    // spans y 0..4 × UY — measuring it with the X pitch would cross the notch
+    // boundary and wrongly butt the seam.
+    expect(byLabel.get('A1')?.edges.right).toBe('join');
+    expect(byLabel.get('A1')?.edges.back).toBe('join');
+    expect(byLabel.get('B1')?.edges.left).toBe('join');
+    expect(byLabel.get('A2')?.edges.front).toBe('join');
+  });
+
   it('shaped partial pieces fingerprint apart from rectangles, congruent windows together', () => {
     const parent = shapedParams(CHAMFER_OUTLINE);
     const tiling = computeBaseplateTiling(parent, BED);

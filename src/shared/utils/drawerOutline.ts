@@ -9,6 +9,7 @@
  */
 
 import type { DrawerOutline, Layout, OutlineVertex } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import {
   arcGeometry,
   arcPointAt,
@@ -154,7 +155,9 @@ export function validateOutline(
   outline: DrawerOutline,
   widthMm: number,
   depthMm: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): OutlineValidationError | null {
   const verts = outline.vertices;
   if (verts.length < 3) return err('too_few_vertices', 'outline needs at least 3 vertices');
@@ -192,7 +195,7 @@ export function validateOutline(
   }
   const area = polylineSignedArea(pts);
   if (area <= 0) return err('not_ccw', 'outline must wind counter-clockwise');
-  if (area < gridUnitMm * gridUnitMm) {
+  if (area < gridUnitMm * gridUnitMmY) {
     return err('too_small', 'outline must enclose at least one grid cell');
   }
   return null;
@@ -498,7 +501,9 @@ export function resizeDrawerOutline(
   oldDepthMm: number,
   newWidthMm: number,
   newDepthMm: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): DrawerOutline | undefined {
   const sameW = Math.abs(newWidthMm - oldWidthMm) < OUTLINE_QUANTUM_MM;
   const sameD = Math.abs(newDepthMm - oldDepthMm) < OUTLINE_QUANTUM_MM;
@@ -528,7 +533,9 @@ export function resizeDrawerOutline(
     newDepthMm
   );
   if (isFullRectangle(candidate, newWidthMm, newDepthMm)) return undefined;
-  if (validateOutline(candidate, newWidthMm, newDepthMm, gridUnitMm) !== null) return undefined;
+  if (validateOutline(candidate, newWidthMm, newDepthMm, gridUnitMm, gridUnitMmY) !== null) {
+    return undefined;
+  }
   return candidate;
 }
 
@@ -558,8 +565,9 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
   const outline = (layout.drawer as Layout['drawer'] | undefined)?.outline as unknown;
   if (outline === undefined) return layout;
 
+  const gridUnitMmY = effectiveGridUnitMmY(layout) as number;
   const widthMm = (layout.drawer.width as number) * (layout.gridUnitMm as number);
-  const depthMm = (layout.drawer.depth as number) * (layout.gridUnitMm as number);
+  const depthMm = (layout.drawer.depth as number) * gridUnitMmY;
 
   const drop = (): Layout => {
     const drawer = { ...layout.drawer };
@@ -587,7 +595,7 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
     depthMm
   );
   if (isFullRectangle(candidate, widthMm, depthMm)) return drop();
-  if (validateOutline(candidate, widthMm, depthMm, layout.gridUnitMm) !== null) {
+  if (validateOutline(candidate, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY) !== null) {
     return drop();
   }
 

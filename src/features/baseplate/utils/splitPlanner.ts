@@ -976,8 +976,8 @@ function applyOutlineToTiling(
   const fullSeam = (piece: BaseplatePiece, side: 'left' | 'right' | 'front' | 'back'): boolean => {
     const gx0 = padL + piece.gridOffsetX * u;
     const gx1 = padL + (piece.gridOffsetX + piece.widthUnits) * u;
-    const gy0 = padF + piece.gridOffsetY * u;
-    const gy1 = padF + (piece.gridOffsetY + piece.depthUnits) * u;
+    const gy0 = padF + piece.gridOffsetY * uy;
+    const gy1 = padF + (piece.gridOffsetY + piece.depthUnits) * uy;
     if (side === 'left' || side === 'right') {
       const xB = side === 'left' ? gx0 : gx1;
       return (
@@ -987,8 +987,8 @@ function applyOutlineToTiling(
     }
     const yB = side === 'front' ? gy0 : gy1;
     return (
-      classifyRect(outline, gx0, yB - u, gx1, yB) === 'inside' &&
-      classifyRect(outline, gx0, yB, gx1, yB + u) === 'inside'
+      classifyRect(outline, gx0, yB - uy, gx1, yB) === 'inside' &&
+      classifyRect(outline, gx0, yB, gx1, yB + uy) === 'inside'
     );
   };
 

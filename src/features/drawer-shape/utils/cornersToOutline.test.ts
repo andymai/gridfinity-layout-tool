@@ -97,3 +97,26 @@ describe('cornersToOutline', () => {
     expect(validateOutline(outline, 4 * U, 6 * U, U)).toBeNull();
   });
 });
+
+describe('non-square grids (#2733)', () => {
+  const UX = 48;
+  const UY = 42;
+
+  it('spans the depth axis with the Y pitch', () => {
+    const outline = cornersToOutline(
+      drawer(8, 7),
+      { ...NO_CUTS, tr: { kind: 'chamfer', size: 30 } },
+      UX,
+      UY
+    );
+    expect(outline).not.toBeNull();
+    if (outline === null) return;
+    expect(validateOutline(outline, 8 * UX, 7 * UY, UX, UY)).toBeNull();
+    expect(Math.max(...outline.vertices.map((v) => v.y))).toBe(7 * UY);
+    expect(outlineSignedArea(outline)).toBeCloseTo(8 * UX * 7 * UY - (30 * 30) / 2);
+  });
+
+  it('caps cuts by the true shorter extent', () => {
+    expect(maxCutExtentMm(drawer(8, 7), UX, UY)).toBe(Math.floor((7 * UY) / 2 - 1));
+  });
+});

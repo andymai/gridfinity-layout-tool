@@ -21,7 +21,7 @@ import type {
   LayerId,
 } from '@/core/types';
 import { isFootprintInsideOutline } from './drawerOutlineGeometry';
-import { binId as toBinId, categoryId as toCategoryId } from '@/core/types';
+import { binId as toBinId, categoryId as toCategoryId, effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { isOk } from '@/core/result';
 import {
@@ -61,7 +61,7 @@ export function canPlaceBin(
   // interaction — draw, drag, resize, staging drop, paint, fill, import.
   if (
     drawer.outline !== undefined &&
-    !isFootprintInsideOutline(rect, drawer.outline, layout.gridUnitMm)
+    !isFootprintInsideOutline(rect, drawer.outline, layout.gridUnitMm, effectiveGridUnitMmY(layout))
   ) {
     return { valid: false, reason: 'outside_drawer' };
   }

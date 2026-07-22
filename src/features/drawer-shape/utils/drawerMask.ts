@@ -5,8 +5,8 @@
  * cell of an x.5 drawer), but the underlying mask reuses the half-resolution
  * `CellMask` from the bin designer so `maskToPolygon` can trace the boundary:
  * one drawer cell = a 2×2 block of mask cells (1×2 for a fractional edge
- * cell). Polygon coordinates come back in grid units and scale by
- * `gridUnitMm` into the drawer-local mm the outline model expects.
+ * cell). Polygon coordinates come back in grid units and scale by the
+ * per-axis grid pitch into the drawer-local mm the outline model expects.
  */
 
 import type { Drawer, DrawerOutline, FractionalEdge } from '@/core/types';
@@ -63,10 +63,12 @@ export function buildFullDrawerMask(drawer: Drawer): DrawerMaskGrid {
 export function outlineToDrawerMask(
   outline: DrawerOutline,
   drawer: Drawer,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): DrawerMaskGrid {
   const grid = buildFullDrawerMask(drawer);
-  const outside = getOutsideCellSet(outline, drawer, gridUnitMm, 1);
+  const outside = getOutsideCellSet(outline, drawer, gridUnitMm, 1, gridUnitMmY);
   for (let r = 0; r < grid.rows.length; r++) {
     for (let c = 0; c < grid.cols.length; c++) {
       if (outside.has(`${grid.cols[c].start},${grid.rows[r].start}`)) {
@@ -87,7 +89,9 @@ export type DrawerMaskError = 'empty' | 'disconnected';
  */
 export function drawerMaskToOutline(
   grid: DrawerMaskGrid,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): { outline: DrawerOutline } | { error: DrawerMaskError } {
   // maskToPolygon's real preconditions (0/1 values, non-empty, single
   // 4-connected region) are enforced here; the bin designer's validateMask
@@ -122,10 +126,9 @@ export function drawerMaskToOutline(
   // that IS the hole-filling behavior. Loop points are already in grid units
   // (maskToPolygon applies MASK_CELL_SIZE), so only the mm scale remains.
   const [outer] = maskToPolygon(mask);
-  const scale = gridUnitMm;
   return {
     outline: {
-      vertices: outer.map((p) => ({ x: p.x * scale, y: p.y * scale })),
+      vertices: outer.map((p) => ({ x: p.x * gridUnitMm, y: p.y * gridUnitMmY })),
       authoring: { kind: 'cells' },
     },
   };
