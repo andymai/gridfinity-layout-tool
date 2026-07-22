@@ -43,6 +43,11 @@ minimumReleaseAgeExclude:
   # allow them through before the 7-day window elapses.
   # TODO: remove after 2026-06-22 once both have aged past the window.
   - undici
+  # fast-uri 3.1.4 (2026-07-19) is the first version patched against the
+  # host-confusion-via-backslash-authority flaw (CVE-2026-16221,
+  # GHSA-v2hh-gcrm-f6hx); allow it through before the 7-day window elapses.
+  # TODO: remove after 2026-07-26 once 3.1.4 has aged past the window.
+  - fast-uri
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -67,7 +72,13 @@ overrides:
   '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
-  fast-uri: '^3.1.2'
+  fast-uri: '^3.1.4'
+  # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
+  # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
+  # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF
+  # texture processing, never bundled into the browser). ndarray-pixels pins
+  # sharp ^0.34.0; there is no patched 0.34.x, so force the 0.35 line.
+  sharp: '^0.35.0'
   serialize-javascript: '^7.0.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
