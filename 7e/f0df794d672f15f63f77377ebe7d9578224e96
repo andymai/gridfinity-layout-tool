@@ -1,0 +1,26 @@
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_8e2f2b4a9dbc5f::t_ae47a9de2b6381 124-157
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_8e2f2b4a9dbc5f::t_28f16bdc1e06cc 279-281
+  s_8e2f2b4a9dbc5f::t_72bd2c62b8a98a 272-278,282-291
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_8e2f2b4a9dbc5f::t_de3d72ff02ee09 121-123,130-137
+  s_8e2f2b4a9dbc5f::t_e4f38601518f5c 71
+  s_8e2f2b4a9dbc5f::t_8c08dd9bb87b30 63-70,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "7ef0df794d672f15f63f77377ebe7d9578224e96",
+  "prompts": {},
+  "sessions": {
+    "s_8e2f2b4a9dbc5f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf731dea-0e59-409d-bd2e-36d6c8db311d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
