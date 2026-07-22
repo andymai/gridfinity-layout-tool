@@ -98,7 +98,7 @@ describe('DrawerDimensionsSummary', () => {
     expect(defaultProps.onClearMeasurement).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the half-fit suggestion with accept and dismiss actions', () => {
+  it('renders a half-unit fit suggestion with accept and dismiss actions', () => {
     render(
       <DrawerDimensionsSummary
         {...defaultProps}
@@ -108,18 +108,40 @@ describe('DrawerDimensionsSummary', () => {
           depth: gridUnits(9),
           slackWidthMm: 9,
           slackDepthMm: 2,
+          isHalf: true,
         }}
       />
     );
 
-    expect(screen.getByText('10.5 × 9 units fits tighter')).toBeInTheDocument();
-    expect(screen.getByText('Leaves 9 × 2 mm free. Turns on half-grid mode.')).toBeInTheDocument();
+    expect(screen.getByText('10.5 × 9 units fits your drawer')).toBeInTheDocument();
+    expect(screen.getByText('Leaves 9 × 2 mm free.')).toBeInTheDocument();
+    // Half-unit fits warn that accepting turns half-grid on.
+    expect(screen.getByText('Turns on half-grid mode.')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Use half-units' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fit grid' }));
     expect(defaultProps.onAcceptSuggestion).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss suggestion' }));
     expect(defaultProps.onDismissSuggestion).toHaveBeenCalledTimes(1);
+  });
+
+  it('omits the half-grid note for a whole-unit fit', () => {
+    render(
+      <DrawerDimensionsSummary
+        {...defaultProps}
+        measuredMm={{ width: 450, depth: 380 }}
+        suggestion={{
+          width: gridUnits(10),
+          depth: gridUnits(9),
+          slackWidthMm: 30,
+          slackDepthMm: 2,
+          isHalf: false,
+        }}
+      />
+    );
+
+    expect(screen.getByText('10 × 9 units fits your drawer')).toBeInTheDocument();
+    expect(screen.queryByText('Turns on half-grid mode.')).not.toBeInTheDocument();
   });
 
   it('does not render a suggestion box when there is none', () => {

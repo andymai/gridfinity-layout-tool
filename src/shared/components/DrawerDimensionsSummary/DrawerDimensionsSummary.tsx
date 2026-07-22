@@ -3,7 +3,7 @@ import { Button } from '@/design-system';
 import { RulerIcon, SparklesIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import type { MeasuredDrawerMm } from '@/core/types';
-import type { HalfFitSuggestion } from '@/shared/hooks/useDrawerSettings';
+import type { DrawerFitSuggestion } from '@/shared/hooks/useDrawerSettings';
 import { EditableDimensions } from '../EditableDimensions';
 
 /** Format mm for display: nearest 0.1, no trailing zeros. */
@@ -25,7 +25,7 @@ interface DrawerDimensionsSummaryProps {
   readonly minHeightMm: number;
   readonly maxHeightMm: number;
   readonly onCommit: (widthMm: number, depthMm: number, heightMm?: number) => void;
-  readonly suggestion: HalfFitSuggestion | null | undefined;
+  readonly suggestion: DrawerFitSuggestion | null | undefined;
   readonly onAcceptSuggestion: () => void;
   readonly onDismissSuggestion: () => void;
   readonly onClearMeasurement: () => void;
@@ -156,6 +156,7 @@ export function DrawerDimensionsSummary({
                   freeDepth: fmt(suggestion.slackDepthMm),
                 })}
               </div>
+              {suggestion.isHalf && <div>{t('drawerDims.suggestionHalfNote')}</div>}
             </div>
             <Button
               variant="ghost"

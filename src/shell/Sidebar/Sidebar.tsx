@@ -74,10 +74,10 @@ export function Sidebar() {
     hasFractionalDepth,
     realWorldDimensions,
     measuredMm,
-    halfFitSuggestion,
+    drawerFitSuggestion,
     handleMeasuredCommit,
-    acceptHalfFitSuggestion,
-    dismissHalfFitSuggestion,
+    acceptDrawerFitSuggestion,
+    dismissDrawerFitSuggestion,
     clearMeasurement,
     gridUnitMm,
     gridUnitMmY,
@@ -397,9 +397,9 @@ export function Sidebar() {
                     minHeightMm={CONSTRAINTS.MIN_LAYER_HEIGHT * heightUnitMm}
                     maxHeightMm={CONSTRAINTS.GRID_MAX * heightUnitMm}
                     onCommit={handleMeasuredCommit}
-                    suggestion={halfFitSuggestion}
-                    onAcceptSuggestion={acceptHalfFitSuggestion}
-                    onDismissSuggestion={dismissHalfFitSuggestion}
+                    suggestion={drawerFitSuggestion}
+                    onAcceptSuggestion={acceptDrawerFitSuggestion}
+                    onDismissSuggestion={dismissDrawerFitSuggestion}
                     onClearMeasurement={clearMeasurement}
                   />
 

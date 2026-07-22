@@ -41,12 +41,17 @@ import { useTranslation } from '@/i18n';
  * Return type for useDrawerSettings hook.
  * Provides all drawer-related state and handlers needed by settings panels.
  */
-/** A tighter half-unit fit offered after a measured-mm commit. */
-export interface HalfFitSuggestion {
+/**
+ * A grid fit offered (never auto-applied) after a measured-mm commit. The user
+ * opts in via the suggestion card; the grid never resizes on its own.
+ * `isHalf` fits use a half-unit grid, so accepting also turns half-grid on.
+ */
+export interface DrawerFitSuggestion {
   width: GridUnits;
   depth: GridUnits;
   slackWidthMm: number;
   slackDepthMm: number;
+  isHalf: boolean;
 }
 
 export interface UseDrawerSettingsReturn {
@@ -63,10 +68,10 @@ export interface UseDrawerSettingsReturn {
 
   // Measured physical drawer (mm-first entry)
   measuredMm: MeasuredDrawerMm | undefined;
-  halfFitSuggestion: HalfFitSuggestion | null;
+  drawerFitSuggestion: DrawerFitSuggestion | null;
   handleMeasuredCommit: (widthMm: number, depthMm: number, heightMm?: number) => void;
-  acceptHalfFitSuggestion: () => void;
-  dismissHalfFitSuggestion: () => void;
+  acceptDrawerFitSuggestion: () => void;
+  dismissDrawerFitSuggestion: () => void;
   clearMeasurement: () => void;
 
   // Computed values
@@ -191,10 +196,18 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // switch, undo, stepper edit, canvas drag-resize), so accepting can never
   // apply units derived from a different measurement.
   const [halfFit, setHalfFit] = useState<{
-    suggestion: HalfFitSuggestion;
+    suggestion: DrawerFitSuggestion;
     layoutId: string;
     baseWidth: number;
     baseDepth: number;
+  } | null>(null);
+  // Remembers a dismissed fit so re-committing the SAME measured drawer doesn't
+  // re-nag. Keyed by layout + measured mm; cleared when the measurement is
+  // cleared. A different measurement (or layout) offers the fit again.
+  const [dismissedFit, setDismissedFit] = useState<{
+    layoutId: string;
+    widthMm: number;
+    depthMm: number;
   } | null>(null);
 
   // Layout store selectors
@@ -246,7 +259,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Derived, not effect-cleared: the suggestion only renders while its
   // anchors still hold, so stale state simply stops showing (and is
   // replaced on the next commit).
-  const halfFitSuggestion =
+  const drawerFitSuggestion =
     halfFit !== null &&
     halfFit.layoutId === activeLayoutId &&
     halfFit.baseWidth === (drawerWidth as number) &&
@@ -389,13 +402,14 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     [updateDrawer]
   );
 
-  // Measured-mm commit: fit the largest grid that physically fits (floor,
-  // never round up), persist the measurement, and offer a tighter half-unit
-  // fit instead of silently flipping half-grid mode on.
+  // Measured-mm commit: record the measurement (and height) but LEAVE the grid
+  // alone — resizing it silently surprised users (#2705). Instead, the tightest
+  // physical fit (whole-unit, upgraded to half-units when that fits tighter and
+  // half-grid is off) is offered as an opt-in suggestion the user applies from
+  // the card. Height is a drawer property, not a grid-unit count, so it still
+  // commits directly.
   const handleMeasuredCommit = useCallback(
     (widthMm: number, depthMm: number, heightMm?: number) => {
-      const widthFit = fitAxisUnits(widthMm, gridUnitMm, halfGridMode);
-      const depthFit = fitAxisUnits(depthMm, gridUnitMmY, halfGridMode);
       const measured: MeasuredDrawerMm = {
         width: widthMm,
         depth: depthMm,
@@ -418,63 +432,101 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
       batch(() =>
         updateDrawer({
-          width: gridUnits(widthFit.units),
-          depth: gridUnits(depthFit.units),
           ...(heightUnitsValue !== undefined ? { height: heightUnitsValue } : {}),
           measuredMm: measured,
         })
       );
 
-      let suggestion: HalfFitSuggestion | null = null;
-      if (!halfGridMode) {
-        const widthUpgrade = halfUnitUpgrade(widthMm, gridUnitMm, widthFit.units);
-        const depthUpgrade = halfUnitUpgrade(depthMm, gridUnitMmY, depthFit.units);
-        if (widthUpgrade !== null || depthUpgrade !== null) {
-          suggestion = {
-            width: gridUnits((widthUpgrade ?? widthFit).units),
-            depth: gridUnits((depthUpgrade ?? depthFit).units),
-            slackWidthMm: (widthUpgrade ?? widthFit).slackMm,
-            slackDepthMm: (depthUpgrade ?? depthFit).slackMm,
-          };
-        }
-      }
+      // Tightest fit for this drawer, preferring a tighter half-unit grid when
+      // half-grid is off. Accepting an `isHalf` fit also turns half-grid on.
+      const widthFit = fitAxisUnits(widthMm, gridUnitMm, halfGridMode);
+      const depthFit = fitAxisUnits(depthMm, gridUnitMmY, halfGridMode);
+      const widthUpgrade = halfGridMode
+        ? null
+        : halfUnitUpgrade(widthMm, gridUnitMm, widthFit.units);
+      const depthUpgrade = halfGridMode
+        ? null
+        : halfUnitUpgrade(depthMm, gridUnitMmY, depthFit.units);
+      const isHalf = widthUpgrade !== null || depthUpgrade !== null;
+      const fitWidth = widthUpgrade ?? widthFit;
+      const fitDepth = depthUpgrade ?? depthFit;
+
+      const differsFromGrid =
+        fitWidth.units !== (drawerWidth as number) || fitDepth.units !== (drawerDepth as number);
+      const alreadyDismissed =
+        dismissedFit !== null &&
+        dismissedFit.layoutId === activeLayoutId &&
+        dismissedFit.widthMm === widthMm &&
+        dismissedFit.depthMm === depthMm;
+
+      const suggestion: DrawerFitSuggestion | null =
+        differsFromGrid && !alreadyDismissed
+          ? {
+              width: gridUnits(fitWidth.units),
+              depth: gridUnits(fitDepth.units),
+              slackWidthMm: fitWidth.slackMm,
+              slackDepthMm: fitDepth.slackMm,
+              isHalf,
+            }
+          : null;
+
       setHalfFit(
         suggestion === null
           ? null
           : {
               suggestion,
               layoutId: activeLayoutId,
-              baseWidth: widthFit.units,
-              baseDepth: depthFit.units,
+              baseWidth: drawerWidth,
+              baseDepth: drawerDepth,
             }
       );
 
       trackDrawerMeasuredCommitted({
         slack_width_mm: widthFit.slackMm,
         slack_depth_mm: depthFit.slackMm,
-        half_fit_offered: suggestion !== null,
+        half_fit_offered: suggestion !== null && isHalf,
         has_height: heightMm !== undefined,
       });
     },
-    [gridUnitMm, gridUnitMmY, halfGridMode, heightUnitMm, updateDrawer, activeLayoutId]
+    [
+      gridUnitMm,
+      gridUnitMmY,
+      halfGridMode,
+      heightUnitMm,
+      updateDrawer,
+      activeLayoutId,
+      drawerWidth,
+      drawerDepth,
+      dismissedFit,
+    ]
   );
 
-  const acceptHalfFitSuggestion = useCallback(() => {
-    if (halfFitSuggestion === null) return;
-    setHalfGridMode(true);
-    batch(() => updateDrawer({ width: halfFitSuggestion.width, depth: halfFitSuggestion.depth }));
+  const acceptDrawerFitSuggestion = useCallback(() => {
+    if (drawerFitSuggestion === null) return;
+    if (drawerFitSuggestion.isHalf) setHalfGridMode(true);
+    batch(() =>
+      updateDrawer({ width: drawerFitSuggestion.width, depth: drawerFitSuggestion.depth })
+    );
     setHalfFit(null);
     trackDrawerHalfFitSuggestion('accepted');
-  }, [halfFitSuggestion, setHalfGridMode, updateDrawer]);
+  }, [drawerFitSuggestion, setHalfGridMode, updateDrawer]);
 
-  const dismissHalfFitSuggestion = useCallback(() => {
+  const dismissDrawerFitSuggestion = useCallback(() => {
     setHalfFit(null);
+    if (measuredMm !== undefined) {
+      setDismissedFit({
+        layoutId: activeLayoutId,
+        widthMm: measuredMm.width,
+        depthMm: measuredMm.depth,
+      });
+    }
     trackDrawerHalfFitSuggestion('dismissed');
-  }, []);
+  }, [measuredMm, activeLayoutId]);
 
   const clearMeasurement = useCallback(() => {
     batch(() => updateDrawer({ measuredMm: null }));
     setHalfFit(null);
+    setDismissedFit(null);
     trackDrawerMeasurementCleared();
   }, [updateDrawer]);
 
@@ -585,10 +637,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     // Measured physical drawer
     measuredMm,
-    halfFitSuggestion,
+    drawerFitSuggestion,
     handleMeasuredCommit,
-    acceptHalfFitSuggestion,
-    dismissHalfFitSuggestion,
+    acceptDrawerFitSuggestion,
+    dismissDrawerFitSuggestion,
     clearMeasurement,
 
     // Computed values
