@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.279.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.279.0...gridfinity-layout-tool-v4.279.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* **baseplate:** stop navigation from dropping an unsaved layout's padding ([#2721](https://github.com/andymai/gridfinity-layout-tool/issues/2721)) ([f7b1277](https://github.com/andymai/gridfinity-layout-tool/commit/f7b12777db54b57582f0a52b4d4c60b74d026b39))
+
 ## [4.279.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.278.1...gridfinity-layout-tool-v4.279.0) (2026-07-22)
 
 
