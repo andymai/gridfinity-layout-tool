@@ -1,0 +1,23 @@
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_d42c2d43fd0107::t_fc8530bd869def 197-200
+src/shared/hooks/useLabelPlateCounts.ts
+  s_d42c2d43fd0107::t_5f661f817989e8 102-104
+src/features/bin-designer/hooks/useGeneration.ts
+  s_d42c2d43fd0107::t_61a82cf71d3c12 492-494,496-497,499-502
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "8882d9f49a846114cb20ff32c0cbed0bf1f0332a",
+  "prompts": {},
+  "sessions": {
+    "s_d42c2d43fd0107": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f1eb415-9526-44f4-8e28-474a4ef960b9",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
