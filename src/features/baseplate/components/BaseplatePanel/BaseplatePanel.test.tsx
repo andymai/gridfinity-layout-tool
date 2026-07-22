@@ -24,6 +24,7 @@ let mockLayoutState = {
   layout: {
     drawer: { width: 4, depth: 6 },
     gridUnitMm: 42,
+    gridUnitMmY: undefined as number | undefined,
     magnetAnchor: undefined as 'edge' | 'center' | undefined,
     printBedSize: 256,
     baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
@@ -151,6 +152,7 @@ describe('BaseplatePanel', () => {
       layout: {
         drawer: { width: 4, depth: 6 },
         gridUnitMm: 42,
+        gridUnitMmY: undefined,
         magnetAnchor: undefined,
         printBedSize: 256,
         baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
@@ -662,6 +664,32 @@ describe('BaseplatePanel', () => {
       expect(editBtn).toHaveTextContent(/176\s*×\s*252\s*mm/);
     });
 
+    it('snaps depth by the Y pitch on a non-square grid (#2733)', () => {
+      mockLayoutState.layout.gridUnitMm = 48;
+      mockLayoutState.layout.gridUnitMmY = 42;
+      render(<BaseplatePanel />);
+      fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
+      const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
+      const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
+      // 480 / 48 = exactly 10 units; 168 / 42 = exactly 4 units — snapping
+      // depth by the X pitch would floor 168/48 = 3.5 to 3 and leak 24mm
+      // of remainder into padding.
+      fireEvent.change(widthInput, { target: { value: '480' } });
+      fireEvent.change(depthInput, { target: { value: '168' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseplateWidth: 10,
+          baseplateDepth: 4,
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingFront: 0,
+          paddingBack: 0,
+        })
+      );
+    });
+
     it('exact grid multiple produces zero padding', () => {
       // 420 / 42 = exactly 10 units → no remainder
       render(<BaseplatePanel />);
@@ -1020,6 +1048,7 @@ describe('shaped drawer (outline present)', () => {
       layout: {
         drawer: { width: 4, depth: 6 },
         gridUnitMm: 42,
+        gridUnitMmY: undefined,
         magnetAnchor: undefined,
         printBedSize: 256,
         baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },
@@ -1129,6 +1158,7 @@ describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {
       layout: {
         drawer: { width: 4, depth: 6 },
         gridUnitMm: 42,
+        gridUnitMmY: undefined,
         magnetAnchor: undefined,
         printBedSize: 256,
         baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS },

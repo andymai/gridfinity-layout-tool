@@ -364,7 +364,7 @@ export function BaseplatePanel() {
       const step = halfGridMode ? 0.5 : 1;
 
       const rawWidthUnits = targetWidthMm / gridUnitMm;
-      const rawDepthUnits = targetDepthMm / gridUnitMm;
+      const rawDepthUnits = targetDepthMm / gridUnitMmY;
 
       // Floor so the grid never exceeds the target — remainder becomes positive padding
       const snappedWidth = Math.max(
@@ -377,7 +377,7 @@ export function BaseplatePanel() {
       );
 
       const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
-      const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMm);
+      const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMmY);
 
       const halfPadWidth = Math.floor((remainderWidth / 2) * 100) / 100;
       const halfPadDepth = Math.floor((remainderDepth / 2) * 100) / 100;
@@ -397,7 +397,7 @@ export function BaseplatePanel() {
         paddingBack: mm(halfPadDepth),
       });
     },
-    [gridUnitMm, halfGridMode]
+    [gridUnitMm, gridUnitMmY, halfGridMode]
   );
 
   return (

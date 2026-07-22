@@ -3,6 +3,7 @@ import { canPlaceBin } from './validationPlacement';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Layout } from '@/core/types';
+import { mm } from '@/core/types';
 
 function makeSingleLayerLayout(): Layout {
   return createTestLayout({
@@ -217,8 +218,8 @@ describe('canPlaceBin with a drawer outline', () => {
     const UX = 48;
     const UY = 42;
     const layout = makeSingleLayerLayout();
-    layout.gridUnitMm = UX as Layout['gridUnitMm'];
-    layout.gridUnitMmY = UY as Layout['gridUnitMmY'];
+    layout.gridUnitMm = mm(UX);
+    layout.gridUnitMmY = mm(UY);
     // Same L shape scaled to the true per-axis pitches.
     layout.drawer.outline = {
       vertices: [
