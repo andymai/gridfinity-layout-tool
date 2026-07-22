@@ -107,13 +107,17 @@ describe('magnetic-retention lid geometry', () => {
     // Sum downward-facing triangle area inside the corner-pad window: inboard
     // of the walls and lip (3mm) but within the pads' reach of the corners
     // (16mm), above the base/floor plate and below the rim. In this window
-    // the pads are the only geometry on a default bin, so a flat pad
-    // underside (the pre-#2712 shape, |nz| ≈ 1) is cleanly separable from
-    // the 45° taper (|nz| ≈ 0.707).
-    const downFacingAreas = (mesh: MeshData): { flat: number; sloped: number } => {
+    // the pads are the only geometry on a default bin. A face needs supports
+    // when it is closer to horizontal than the 45° FDM limit: nz below
+    // -cos(45°) ≈ -0.707. The threshold sits at -0.72 so the taper's exact
+    // 45° plane (nz = -0.7071) stays on the printable side while ANY steeper
+    // overhang — the pre-#2712 flat underside (nz ≈ -1) or a partial
+    // transition anywhere in between — counts as a violation, with no
+    // unclassified gap.
+    const downFacingAreas = (mesh: MeshData): { unsupported: number; taper: number } => {
       const bb = boundingBox(mesh.vertices);
-      let flat = 0;
-      let sloped = 0;
+      let unsupported = 0;
+      let taper = 0;
       for (let i = 0; i < mesh.indices.length; i += 3) {
         const a = mesh.indices[i];
         const b = mesh.indices[i + 1];
@@ -137,21 +141,21 @@ describe('magnetic-retention lid geometry', () => {
         // before and would silently blind this check.
         const nz = triangleNormalZ(mesh.vertices, a, b, c);
         const area = triangleArea(mesh.vertices, a, b, c);
-        if (nz < -0.95) flat += area;
-        else if (nz < -0.6 && nz > -0.8) sloped += area;
+        if (nz < -0.72) unsupported += area;
+        else if (nz < -0.65) taper += area;
       }
-      return { flat, sloped };
+      return { unsupported, taper };
     };
 
     const pads = downFacingAreas(magnetic);
-    // No flat downward faces: the taper meets the pad bottom at the tongue
-    // tip, so only sub-mm² tessellation slivers may register.
-    expect(pads.flat).toBeLessThan(2);
+    // No support-requiring downward faces: the taper meets the pad bottom at
+    // the tongue tip, so only sub-mm² tessellation slivers may register.
+    expect(pads.unsupported).toBeLessThan(2);
     // The 45° underside itself must be present in force (4 pads' worth).
-    expect(pads.sloped).toBeGreaterThan(100);
+    expect(pads.taper).toBeGreaterThan(100);
     // Control: the window really isolates the pads — a plain bin has nothing
-    // sloping down there, so the sloped signal above comes from the taper.
-    expect(downFacingAreas(plain).sloped).toBeLessThan(5);
+    // sloping down there, so the taper signal above comes from the pads.
+    expect(downFacingAreas(plain).taper).toBeLessThan(5);
   });
 
   it('leaves the bin footprint unchanged (posts grow inward)', async () => {
