@@ -1,0 +1,19 @@
+src/features/baseplate/hooks/useBaseplateLibraryInit.test.ts
+  s_8e2f2b4a9dbc5f::t_72ab2f0f30a5e2 158-197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "250faa6ae7e71695d42a4ee278091ba1bd03df5b",
+  "prompts": {},
+  "sessions": {
+    "s_8e2f2b4a9dbc5f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf731dea-0e59-409d-bd2e-36d6c8db311d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
