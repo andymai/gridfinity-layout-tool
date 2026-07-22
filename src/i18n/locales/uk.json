@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Глибина",
   "baseplate.gridUnit": "Одиниця сітки",
   "baseplate.gridUnitTooltip": "Ширина однієї клітинки сітки (стандарт: 42мм)",
+  "baseplate.gridUnitY": "Одиниця сітки Y",
+  "baseplate.gridUnitYTooltip": "Глибина однієї комірки сітки в мм уздовж Y. Задайте її відмінною від X, щоб заповнити шухляду, розмір якої не є точним кратним 42mm (напр., 42x22).",
   "baseplate.gridWidth": "Ширина",
   "baseplate.inclPadding": "вкл. відступи",
   "baseplate.increasePadding": "Збільшити {label}",

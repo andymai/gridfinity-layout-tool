@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Diepte",
   "baseplate.gridUnit": "Rastereenheid",
   "baseplate.gridUnitTooltip": "Breedte van één rastervak (standaard: 42mm)",
+  "baseplate.gridUnitY": "Rastereenheid Y",
+  "baseplate.gridUnitYTooltip": "Diepte van één rastercel in mm langs Y. Stel deze anders in dan X om een lade te vullen die geen exact veelvoud van 42mm is (bijv. 42x22).",
   "baseplate.gridWidth": "Breedte",
   "baseplate.inclPadding": "incl. marge",
   "baseplate.increasePadding": "{label} vergroten",

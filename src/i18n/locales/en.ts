@@ -2602,6 +2602,9 @@ const en: Record<string, string> = {
   'baseplate.solidFloorHeightNote':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
+  'baseplate.gridUnitY': 'Grid unit Y',
+  'baseplate.gridUnitYTooltip':
+    'Depth of one grid cell (mm) for a non-square grid. Toggle and edit this in the drawer settings.',
   'baseplate.magnetAnchor': 'Magnet anchor',
   'baseplate.magnetAnchorTooltip':
     'Where magnet holes sit in each cell on grids larger than 42mm. Applies to the baseplate, bins, and lids together so their magnets stay aligned.',

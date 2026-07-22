@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Profundidade",
   "baseplate.gridUnit": "Unidade da grade",
   "baseplate.gridUnitTooltip": "Largura de um quadrado da grade (padrão: 42mm)",
+  "baseplate.gridUnitY": "Unidade de grade Y",
+  "baseplate.gridUnitYTooltip": "Profundidade de uma célula de grade em mm ao longo de Y. Defina diferente de X para preencher uma gaveta que não seja um múltiplo exato de 42mm (ex.: 42x22).",
   "baseplate.gridWidth": "Largura",
   "baseplate.inclPadding": "incl. margem",
   "baseplate.increasePadding": "Aumentar {label}",

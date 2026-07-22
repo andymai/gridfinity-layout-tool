@@ -61,7 +61,7 @@ import {
   CONNECTOR_FIT_OFFSET_STEP,
 } from '@/shared/constants/connectors';
 import type { StoredBaseplateParams } from '@/core/types';
-import { gridUnits, mm } from '@/core/types';
+import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isSeamConnectorStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 
@@ -98,6 +98,7 @@ export function BaseplatePanel() {
     drawerFractionalEdgeX,
     drawerFractionalEdgeY,
     gridUnitMm,
+    gridUnitMmY,
     magnetAnchor,
     printBedSize,
     printBedDepth,
@@ -110,6 +111,7 @@ export function BaseplatePanel() {
       drawerFractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       drawerFractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(state.layout),
       magnetAnchor: state.layout.magnetAnchor ?? 'edge',
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth,
@@ -220,7 +222,9 @@ export function BaseplatePanel() {
   );
 
   const gridWidthMm = effectiveWidth * gridUnitMm;
-  const gridDepthMm = effectiveDepth * gridUnitMm;
+  // Depth uses the non-square Y pitch, so the panel's dimension readout and the
+  // corner-shape detection match the actual plate (equal to X for a square grid).
+  const gridDepthMm = effectiveDepth * gridUnitMmY;
 
   const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
   const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
@@ -833,6 +837,20 @@ export function BaseplatePanel() {
                   className="input w-14 py-0.5 px-1 text-xs text-right"
                 />
               </SettingsRow>
+              {/* Non-square grids get a read-only Y-pitch echo — the toggle and
+                  edit live in the drawer's Physical Units, so the plate stays a
+                  reflection of the layout grid. */}
+              {gridUnitMmY !== gridUnitMm && (
+                <SettingsRow
+                  label={t('baseplate.gridUnitY')}
+                  unit="mm"
+                  tooltip={t('baseplate.gridUnitYTooltip')}
+                >
+                  <span className="px-1 text-xs text-content-secondary tabular-nums">
+                    {gridUnitMmY}
+                  </span>
+                </SettingsRow>
+              )}
               {/* Progressive disclosure: the anchor only diverges above the
                   standard 42mm grid (below that 'edge' and 'center' are identical),
                   so the control stays hidden until then — and its caption reveals

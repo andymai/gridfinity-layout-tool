@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Dybde",
   "baseplate.gridUnit": "Rutenett-enhet",
   "baseplate.gridUnitTooltip": "Bredden på én rutenettcelle (standard: 42mm)",
+  "baseplate.gridUnitY": "Rutenett-enhet Y",
+  "baseplate.gridUnitYTooltip": "Dybden på én rutenettcelle i mm langs Y. Sett den forskjellig fra X for å fylle en skuff som ikke er et eksakt multiplum av 42mm (f.eks. 42x22).",
   "baseplate.gridWidth": "Bredde",
   "baseplate.inclPadding": "inkl. kantluft",
   "baseplate.increasePadding": "Øk {label}",

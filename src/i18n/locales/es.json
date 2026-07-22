@@ -87,6 +87,8 @@
   "baseplate.gridDepth": "Profundidad",
   "baseplate.gridUnit": "Unidad de cuadrícula",
   "baseplate.gridUnitTooltip": "Ancho de un cuadrado de la cuadrícula (estándar: 42mm)",
+  "baseplate.gridUnitY": "Unidad de cuadrícula Y",
+  "baseplate.gridUnitYTooltip": "Profundidad de una celda de la cuadrícula en mm a lo largo de Y. Ajústala distinta de X para llenar un cajón que no sea un múltiplo exacto de 42mm (p. ej. 42x22).",
   "baseplate.gridWidth": "Ancho",
   "baseplate.inclPadding": "incl. margen",
   "baseplate.increasePadding": "Aumentar {label}",
