@@ -24,25 +24,12 @@ minimumReleaseAgeExclude:
   - '@vercel/*'
   - '@protobufjs/*'
   - protobufjs
-  # esbuild 0.28.1 (2026-06-11) is the first version patched against
-  # GHSA-gv7w-rqvm-qjhr and GHSA-g7r4-m6w7-qqqr; allow it (and its native
-  # binary packages) through before the 7-day window elapses.
-  # TODO: remove after 2026-06-18 once 0.28.1 has aged past the window.
-  - esbuild
-  - '@esbuild/*'
-  # dompurify >=3.4.11 patches GHSA-cmwh-pvxp-8882 (permanent ALLOWED_ATTR
-  # pollution via setConfig, incomplete fix of the 3.4.7 hook-pollution patch);
-  # the override (^3.4.11) resolves to the latest 3.x at or above the patch.
-  # Excluded so the patched release can land before its 7-day cooldown elapses.
-  # TODO: remove once the resolved dompurify version has aged past the window
-  # (3.4.11 published 2026-06-17 -> 2026-06-24).
-  - dompurify
-  # undici 7.28.0 / 6.27.0 (2026-06-15) are the first versions patched against
-  # the SOCKS5 TLS-bypass + cross-origin routing (GHSA-vmh5-mc38-953g,
-  # GHSA-hm92-r4w5-c3mj, GHSA-vxpw-j846-p89q) and Set-Cookie injection cluster;
-  # allow them through before the 7-day window elapses.
-  # TODO: remove after 2026-06-22 once both have aged past the window.
-  - undici
+  # fast-uri 3.1.4 (2026-07-19) is the first version patched against the
+  # host-confusion-via-backslash-authority flaw (CVE-2026-16221,
+  # GHSA-v2hh-gcrm-f6hx). Scoped to the exact reviewed release so no later
+  # fast-uri publish can bypass the cooldown via a lockfile regen.
+  # TODO: remove after 2026-07-26 once 3.1.4 has aged past the window.
+  - fast-uri@3.1.4
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -67,7 +54,13 @@ overrides:
   '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
-  fast-uri: '^3.1.2'
+  fast-uri: '^3.1.4'
+  # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
+  # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
+  # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF
+  # texture processing, never bundled into the browser). ndarray-pixels pins
+  # sharp ^0.34.0; there is no patched 0.34.x, so force the 0.35 line.
+  sharp: '^0.35.0'
   serialize-javascript: '^7.0.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
