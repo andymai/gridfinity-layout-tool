@@ -1,0 +1,38 @@
+src/features/generation/worker/generators/binGenerator.scenario.paramDifferential.test.ts
+  s_eb8e9cfedea808::t_53f32badae9d6b 77
+  s_eb8e9cfedea808::t_ae1898df98057b 1-59,61-76,78-105
+  s_eb8e9cfedea808::t_36a71f013d5874 60
+.claude/skills/testing/SKILL.md
+  s_eb8e9cfedea808::t_9018c3ff1c703c 102-103
+  s_eb8e9cfedea808::t_540d9cb11adeb0 99-101
+  s_eb8e9cfedea808::t_382929e31933c3 104-105
+  s_eb8e9cfedea808::t_3200a96db85462 92-98
+src/features/generation/worker/generators/lidClickRailRetention.test.ts
+  s_eb8e9cfedea808::t_05800ce9ef053a 1-93
+src/features/generation/worker/generators/splitConnectorBuilder.ts
+  s_eb8e9cfedea808::t_796355a20c51dc 739
+.claude/skills/geometry-debugging/SKILL.md
+  s_eb8e9cfedea808::t_47b35d2f0910e3 52-65
+.claude/skills/quality-gates/SKILL.md
+  s_eb8e9cfedea808::t_932d93e58ae561 76-83
+src/features/generation/worker/generators/splitWallKeyFit.test.ts
+  s_eb8e9cfedea808::t_861770b9765b4d 1-136
+  s_eb8e9cfedea808::t_8265f31564ea5f 137-139
+  s_eb8e9cfedea808::t_e12ed5fda669c8 140-145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f164f31e042644be89c7c60e1ecd8e9045fcc885",
+  "prompts": {},
+  "sessions": {
+    "s_eb8e9cfedea808": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "331ad5f4-652e-4ccf-a38d-5473e29c4a17",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
