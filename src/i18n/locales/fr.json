@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "réduire la profondeur de l'aimant de maintien",
   "binDesigner.lid.compat.magnetBinTooSmall": "Le bac est trop petit pour des aimants d'angle — utilisez un bac plus grand ou un aimant de plus petit diamètre.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "utiliser un bac plus grand ou un aimant plus petit",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "La hauteur supplémentaire du couvercle éloigne les aimants du bac : réduisez-la, affinez le couvercle ou utilisez un aimant plus profond.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "réduire la hauteur supplémentaire du couvercle",
   "binDesigner.group.lid": "Couvercle",
   "binDesigner.lid.enable": "Activer le couvercle",
   "binDesigner.lid.summaryDisabled": "Désactivé",

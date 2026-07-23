@@ -398,24 +398,6 @@ export function lidWallBottomZ(
 }
 
 /**
- * How far the lid's magnet boss hangs below the cavity ceiling, versus how deep
- * the cavity is. Magnetic retention only works when the boss reaches down far
- * enough to meet a pad the BIN can actually host — i.e. inside the bin, not
- * above its rim.
- *
- * A deep cavity (the `extraHeightMm` knob, or a very thick floor plate) lifts
- * the lid and its bosses with it; past this point the mating plane rises above
- * the bin entirely and the bin would grow gusset pads floating over its own lip.
- * `checkLidCompatibility` turns that into a blocker rather than building it.
- */
-export function magneticLidReachesBin(params: LidGeometrySource, heightUnitMm: number): boolean {
-  const cavityDepth = -lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
-  const bossReach =
-    resolveLidPlateThickness(params) + params.lid.retentionMagnet.depth + LID_MAGNET_SEAT_GAP;
-  return cavityDepth <= bossReach;
-}
-
-/**
  * Vertical gap (mm) between the lid boss's magnet face and the bin pad's, when
  * seated. Keeps the corner posts from bottoming out and lifting the lid off its
  * lip; the magnets pull across it. Mirrored by the worker's `lidConstants`.

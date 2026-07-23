@@ -211,12 +211,8 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
   const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>]> = [
     ['defaults', {}, {}],
     ['thick floor plate (#2761)', { topThicknessMm: 3 }, {}],
-    ['cavity within the boss reach', { extraHeightMm: 0.5 }, {}],
-    [
-      'deeper magnet reaches a deeper cavity',
-      { extraHeightMm: 2, retentionMagnet: { diameter: 8, depth: 4 } },
-      {},
-    ],
+    ['deep cavity — boss lengthens to follow', { extraHeightMm: 12 }, {}],
+    ['thick plate + deep cavity', { topThicknessMm: 2.6, extraHeightMm: 8 }, {}],
     ['deeper magnet', { retentionMagnet: { diameter: 8, depth: 3 } }, {}],
     ['tall bin', {}, { height: 9 }],
     ['non-square grid', {}, { gridUnitMmY: 22 }],
@@ -240,11 +236,27 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     // The two magnet faces meet across exactly one seat gap.
     expect(lidFaceZ - binFaceZ).toBeCloseTo(LID_MAGNET_SEAT_GAP, 9);
     // The bin's pad must have bin to sit in: recessed below the body top, and
-    // above the interior floor so its pocket can't punch through. A pad above
-    // the rim floats over the bin's own lip — the failure `magnetLidCavityTooDeep`
-    // now blocks upstream.
+    // above the interior floor so its pocket can't punch through. Deepening the
+    // cavity must never push it out of that band — the boss lengthens instead.
     expect(binFaceZ).toBeLessThan(dim.totalHeight);
     expect(binFaceZ).toBeGreaterThan(dim.totalHeight - dim.interiorHeight);
+  });
+
+  // The whole point of anchoring the boss to the cavity bottom: the bin's pad
+  // lands in the same place regardless of how deep the lid's cavity is, so the
+  // bin is unaffected by a lid-side knob it can't see.
+  it('places the bin pad identically no matter how deep the lid cavity is', async () => {
+    const { retentionSeatPlanes } = await import('./retentionMagnetGeometry');
+    const { deriveDimensions } = await import('./pipeline/context');
+
+    const at = (lid: Partial<LidConfig>) => {
+      const p = makeParams({ attachment: 'magnetic', ...lid });
+      return retentionSeatPlanes(p, deriveDimensions(p, true).totalHeight).binFaceZ;
+    };
+    const baseline = at({});
+    expect(at({ extraHeightMm: 12 })).toBeCloseTo(baseline, 9);
+    expect(at({ topThicknessMm: 4 })).toBeCloseTo(baseline, 9);
+    expect(at({ topThicknessMm: 3, extraHeightMm: 30 })).toBeCloseTo(baseline, 9);
   });
 
   // The bin pad is placed by `lidRetentionStage`, but the lid solid is lifted
@@ -269,8 +281,11 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     const exportLift =
       dim.totalHeight -
       lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+    const { LID_TOP_THICKNESS_BASE } = await import('./lidConstants');
     const inputs = resolveLidInputs(params);
-    const lidFaceViaExport = -(inputs.topThickness + params.lid.retentionMagnet.depth) + exportLift;
+    const interfaceZ =
+      -(LID_TOP_THICKNESS_BASE + params.lid.retentionMagnet.depth) - inputs.cavityExtraMm;
+    const lidFaceViaExport = interfaceZ + exportLift;
 
     expect(retentionSeatPlanes(params, dim.totalHeight).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
   });

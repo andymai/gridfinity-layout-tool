@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduser dybden på festemagneten",
   "binDesigner.lid.compat.magnetBinTooSmall": "Beholderen er for liten for hjørnemagneter — bruk en større beholder eller mindre magnetdiameter.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "bruk en større beholder eller mindre magnet",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "Den ekstra lokkhøyden løfter magnetene bort fra boksen – reduser den, gjør lokket tynnere eller bruk en dypere magnet.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "reduser ekstra lokkhøyde",
   "binDesigner.group.lid": "Lokk",
   "binDesigner.lid.enable": "Aktiver lokk",
   "binDesigner.lid.summaryDisabled": "Av",

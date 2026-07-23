@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "Rückhaltemagnet-Tiefe verringern",
   "binDesigner.lid.compat.magnetBinTooSmall": "Der Behälter ist zu klein für Eckmagnete — verwende einen größeren Behälter oder einen kleineren Magnetdurchmesser.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "größeren Behälter oder kleineren Magneten verwenden",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "Die zusätzliche Deckelhöhe hebt die Magnete vom Behälter ab – verringere sie, mach den Deckel dünner oder nimm einen tieferen Magneten.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "zusätzliche Deckelhöhe verringern",
   "binDesigner.group.lid": "Deckel",
   "binDesigner.lid.enable": "Deckel aktivieren",
   "binDesigner.lid.summaryDisabled": "Aus",

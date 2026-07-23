@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "minska fästmagnetens djup",
   "binDesigner.lid.compat.magnetBinTooSmall": "Lådan är för liten för hörnmagneter — använd en större låda eller en mindre magnetdiameter.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "använd en större låda eller en mindre magnet",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "Den extra lockhöjden lyfter magneterna från lådan – minska den, gör locket tunnare eller använd en djupare magnet.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "minska extra lockhöjd",
   "binDesigner.group.lid": "Lock",
   "binDesigner.lid.enable": "Aktivera lock",
   "binDesigner.lid.summaryDisabled": "Av",

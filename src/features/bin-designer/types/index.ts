@@ -51,7 +51,6 @@ export {
   resolveLidFootprintClearance,
   resolveLidPlateThickness,
   resolveLidCavityExtraMm,
-  magneticLidReachesBin,
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
   lidAnchorZ,

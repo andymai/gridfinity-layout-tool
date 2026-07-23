@@ -59,6 +59,12 @@ export interface LidInputs {
   readonly fitClearance: number;
   readonly topThickness: number;
   /**
+   * Total cavity depth added below the standard one-grid-unit lid — the
+   * `extraHeightMm` knob plus floor-plate growth. Retention bosses hang from
+   * the cavity BOTTOM, so they lengthen by this to stay at the lip.
+   */
+  readonly cavityExtraMm: number;
+  /**
    * Cavity inner-face inset from the lid's outer perimeter. The wall in
    * the lip-mating zone is `cavityInset - LIP_BIG_TAPER = LID_WALL_THICKNESS`
    * (= 1.85mm); above the lip the chamfer hasn't kicked in yet so the
@@ -252,6 +258,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidCornerR,
     fitClearance,
     topThickness,
+    cavityExtraMm: cavityExtra,
     cavityInset,
     stackableTop: params.lid.stackableTop,
     // Splitting the stack grid off only means anything when there IS a stack

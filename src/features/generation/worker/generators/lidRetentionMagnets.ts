@@ -21,7 +21,7 @@ import { cylinder, unwrap, fuse, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import { LID_COPLANAR_MARGIN } from './lidConstants';
+import { LID_COPLANAR_MARGIN, LID_TOP_THICKNESS_BASE } from './lidConstants';
 import {
   retentionBossRadius,
   retentionMagnetInset,
@@ -43,6 +43,7 @@ export function addLidRetentionMagnets(
     retentionMagnetDiameter,
     retentionMagnetDepth,
     topThickness,
+    cavityExtraMm,
   } = inputs;
 
   const magnetRadius = retentionMagnetDiameter / 2;
@@ -50,15 +51,19 @@ export function addLidRetentionMagnets(
   const inset = retentionMagnetInset(retentionMagnetDiameter);
   const positions = retentionMagnetPositions(cellsX, cellsY, gridUnitMm, gridUnitMmY, inset);
 
-  // The magnet sits directly under the floor plate: its top face is the floor
-  // underside (Z = -topThickness), so the solid floor (>= LID_MAGNET_CEILING
-  // thick) hides it — the top surface stays perfectly smooth, no bumps or
-  // crease circles. The boss hangs BELOW the floor into the mating cavity to
-  // house the rest of the magnet, welding up into the floor by a coplanar
-  // margin. `interfaceZ` (magnet mating face) is what the bin gusset mates with.
-  const magnetTopZ = -topThickness;
-  const interfaceZ = magnetTopZ - retentionMagnetDepth;
-  const bossTopZ = magnetTopZ + LID_COPLANAR_MARGIN; // weld up into the floor
+  // The boss is anchored to the BOTTOM of the cavity, not to the floor plate.
+  // `interfaceZ` (the magnet's mating face, what the bin gusset meets) sits a
+  // fixed distance below the lip line whatever the cavity depth, so a deep lid
+  // grows a longer pillar instead of carrying its magnets up out of the bin's
+  // reach. On a standard lid `cavityExtraMm` is 0 and this is the historical
+  // "tucked under the floor plate" position, unchanged.
+  //
+  // The pocket is still only `retentionMagnetDepth` deep at the tip, so the
+  // rest of the pillar is solid. It prints as a vertical column (the lid
+  // exports floor-down, bosses up), needing no supports.
+  const interfaceZ = -(LID_TOP_THICKNESS_BASE + retentionMagnetDepth) - cavityExtraMm;
+  // Weld up into the floor plate by a coplanar margin so the fuse is solid.
+  const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
   const bossHeight = bossTopZ - interfaceZ;
 
   // 1. Fuse the four bosses onto the floor (welds along the floor plate).

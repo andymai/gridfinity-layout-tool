@@ -24,7 +24,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import type { BinParams, HandleConfig, HandleSide } from '../types';
-import { magneticLidReachesBin, resolveLidCavityExtraMm } from '../types/lid';
+import { resolveLidCavityExtraMm } from '../types/lid';
 
 /** Wall side affected by a per-side issue (e.g. wall cutouts). */
 export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
@@ -52,8 +52,7 @@ export type LidCompatibilityId =
   // Magnetic-retention (#2694) specific:
   | 'magnetsPolygonUnsupported'
   | 'magnetTooDeepForBin'
-  | 'magnetBinTooSmall'
-  | 'magnetLidCavityTooDeep';
+  | 'magnetBinTooSmall';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -335,14 +334,6 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
           issues.push({ id: 'magnetTooDeepForBin', severity: 'blocker' });
         } else if (interiorHeight - depth < MAGNET_POST_MIN_FLOOR) {
           issues.push({ id: 'magnetTooDeepForBin', severity: 'warning' });
-        }
-        // A deep cavity lifts the lid — and its bosses — off the bin. Past the
-        // boss's reach the mating plane clears the bin's rim entirely, so the
-        // bin would grow gusset pads floating above its own lip. Blocker: the
-        // magnets cannot meet, and the geometry is unbuildable rather than
-        // merely marginal.
-        if (!magneticLidReachesBin(params, params.heightUnitMm)) {
-          issues.push({ id: 'magnetLidCavityTooDeep', severity: 'blocker' });
         }
       }
     }

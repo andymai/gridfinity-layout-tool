@@ -1828,9 +1828,6 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.magnetBinTooSmall':
     'The bin is too small to fit corner magnets — use a larger bin or a smaller magnet diameter.',
   'binDesigner.lid.compat.fix.magnetBinTooSmall': 'use a larger bin or a smaller magnet',
-  'binDesigner.lid.compat.magnetLidCavityTooDeep':
-    'The extra lid height lifts the magnets clear of the bin — reduce it, thin the lid, or use a deeper magnet.',
-  'binDesigner.lid.compat.fix.magnetLidCavityTooDeep': 'reduce the extra lid height',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',

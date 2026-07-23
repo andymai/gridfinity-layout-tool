@@ -169,55 +169,6 @@ describe('checkLidCompatibility', () => {
     });
   });
 
-  // A deep cavity lifts the lid and its bosses off the bin; past the boss's
-  // reach the magnets clear the rim and the bin would grow pads floating above
-  // its own lip. Caught by the seat-plane audit (#2768 follow-up).
-  describe('magnetic lid with a cavity too deep to reach the bin', () => {
-    const magnetic = (lid: Partial<BinParams['lid']> = {}): BinParams =>
-      withOverrides({
-        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic', ...lid },
-      });
-    const find = (p: BinParams) =>
-      checkLidCompatibility(p).find((i) => i.id === 'magnetLidCavityTooDeep');
-
-    it('does not fire for a standard magnetic lid', () => {
-      expect(find(magnetic())).toBeUndefined();
-    });
-
-    it('does not fire for a thicker plate, which deepens the boss in lockstep', () => {
-      expect(find(magnetic({ topThicknessMm: 3 }))).toBeUndefined();
-    });
-
-    it('blocks a deep extra-height cavity', () => {
-      expect(find(magnetic({ extraHeightMm: 12 }))?.severity).toBe('blocker');
-    });
-
-    it('is unreachable without magnetic retention', () => {
-      const frictionDeep = withOverrides({
-        lid: {
-          ...DEFAULT_BIN_PARAMS.lid,
-          enabled: true,
-          attachment: 'friction',
-          extraHeightMm: 12,
-        },
-      });
-      expect(find(frictionDeep)).toBeUndefined();
-    });
-
-    it('a deeper magnet extends the reach, unblocking a cavity that was too deep', () => {
-      const depth = 4;
-      expect(find(magnetic({ extraHeightMm: 2.5 }))?.severity).toBe('blocker');
-      expect(
-        find(
-          magnetic({
-            extraHeightMm: 2.5,
-            retentionMagnet: { ...DEFAULT_BIN_PARAMS.lid.retentionMagnet, depth },
-          })
-        )
-      ).toBeUndefined();
-    });
-  });
-
   describe('tall divider pieces', () => {
     it('flags slotted bin with manual height exceeding interior', () => {
       const interior = DEFAULT_BIN_PARAMS.height * DEFAULT_BIN_PARAMS.heightUnitMm - 5; // SOCKET_HEIGHT

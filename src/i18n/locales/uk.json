@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "зменшити глибину утримувального магніту",
   "binDesigner.lid.compat.magnetBinTooSmall": "Контейнер замалий для кутових магнітів — візьміть більший контейнер або менший діаметр магніту.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "взяти більший контейнер або менший магніт",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "Додаткова висота кришки віддаляє магніти від контейнера — зменште її, зробіть кришку тоншою або візьміть глибший магніт.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "зменшити додаткову висоту кришки",
   "binDesigner.group.lid": "Кришка",
   "binDesigner.lid.enable": "Увімкнути кришку",
   "binDesigner.lid.summaryDisabled": "Вимк.",

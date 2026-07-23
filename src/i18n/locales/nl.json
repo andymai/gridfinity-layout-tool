@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "diepte van de retentiemagneet verkleinen",
   "binDesigner.lid.compat.magnetBinTooSmall": "De bak is te klein voor hoekmagneten — gebruik een grotere bak of een kleinere magneetdiameter.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "gebruik een grotere bak of een kleinere magneet",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "De extra dekselhoogte tilt de magneten van het bakje af — verlaag deze, maak het deksel dunner of gebruik een diepere magneet.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "extra dekselhoogte verlagen",
   "binDesigner.group.lid": "Deksel",
   "binDesigner.lid.enable": "Deksel inschakelen",
   "binDesigner.lid.summaryDisabled": "Uit",

@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "riduci la profondità del magnete di ritenzione",
   "binDesigner.lid.compat.magnetBinTooSmall": "Il contenitore è troppo piccolo per i magneti d'angolo — usa un contenitore più grande o un magnete di diametro minore.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "usa un contenitore più grande o un magnete più piccolo",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "L'altezza extra del coperchio allontana i magneti dal contenitore: riducila, assottiglia il coperchio o usa un magnete più profondo.",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "riduci l'altezza extra del coperchio",
   "binDesigner.group.lid": "Coperchio",
   "binDesigner.lid.enable": "Attiva coperchio",
   "binDesigner.lid.summaryDisabled": "Disattivato",

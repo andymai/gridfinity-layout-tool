@@ -2857,8 +2857,6 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "保持マグネットの深さを減らす",
   "binDesigner.lid.compat.magnetBinTooSmall": "ビンが小さすぎてコーナーマグネットが入りません — 大きいビンを使うか、マグネット直径を小さくしてください。",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "大きいビンか小さいマグネットを使う",
-  "binDesigner.lid.compat.magnetLidCavityTooDeep": "フタの追加高さによりマグネットがビンから離れます。高さを減らすか、フタを薄くするか、より深いマグネットを使ってください。",
-  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "フタの追加高さを減らす",
   "binDesigner.group.lid": "蓋",
   "binDesigner.lid.enable": "蓋を有効にする",
   "binDesigner.lid.summaryDisabled": "オフ",
