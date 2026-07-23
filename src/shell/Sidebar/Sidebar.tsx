@@ -4,7 +4,7 @@ import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Collapsible, IconButton, Stepper, Switch } from '@/design-system';
+import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
@@ -12,6 +12,7 @@ import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
+import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -81,7 +82,6 @@ export function Sidebar() {
     clearMeasurement,
     gridUnitMm,
     gridUnitMmY,
-    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -96,9 +96,7 @@ export function Sidebar() {
     handleFractionalEdgeChange,
     handleHalfBinToggle,
     handleRemediate,
-    setGridUnitMm,
-    setGridUnitMmY,
-    handleToggleNonSquareGrid,
+    handleGridUnitChange,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
@@ -462,61 +460,20 @@ export function Sidebar() {
               >
                 <div className="text-xs text-content-secondary space-y-2">
                   <div data-help-target="grid-unit">
-                    {nonSquareGrid ? (
-                      <>
-                        <SettingsRow
-                          label={t('sidebar.gridUnitX')}
-                          htmlFor="gridUnit"
-                          tooltip={t('sidebar.gridUnitXTooltip')}
-                          unit="mm"
-                        >
-                          <DeferredNumberInput
-                            id="gridUnit"
-                            value={gridUnitMm}
-                            onChange={setGridUnitMm}
-                            min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-                            max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                            className="input w-14 py-0.5 px-1 text-xs text-right"
-                          />
-                        </SettingsRow>
-                        <SettingsRow
-                          label={t('sidebar.gridUnitY')}
-                          htmlFor="gridUnitY"
-                          tooltip={t('sidebar.gridUnitYTooltip')}
-                          unit="mm"
-                        >
-                          <DeferredNumberInput
-                            id="gridUnitY"
-                            value={gridUnitMmY}
-                            onChange={setGridUnitMmY}
-                            min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-                            max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                            className="input w-14 py-0.5 px-1 text-xs text-right"
-                          />
-                        </SettingsRow>
-                      </>
-                    ) : (
-                      <SettingsRow
-                        label={t('sidebar.gridUnit')}
-                        htmlFor="gridUnit"
-                        tooltip={t('sidebar.gridUnitTooltip')}
-                        unit="mm"
-                      >
-                        <DeferredNumberInput
-                          id="gridUnit"
-                          value={gridUnitMm}
-                          onChange={setGridUnitMm}
-                          min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-                          max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                          className="input w-14 py-0.5 px-1 text-xs text-right"
-                        />
-                      </SettingsRow>
-                    )}
-                    <Switch
-                      label={t('sidebar.nonSquareGrid')}
-                      checked={nonSquareGrid}
-                      onChange={handleToggleNonSquareGrid}
-                    />
+                    <SettingsRow
+                      label={t('sidebar.gridUnit')}
+                      htmlFor="gridUnit"
+                      tooltip={t('sidebar.gridUnitTooltip')}
+                      unit="mm"
+                    >
+                      <GridUnitInput
+                        id="gridUnit"
+                        x={gridUnitMm}
+                        y={gridUnitMmY}
+                        onChange={handleGridUnitChange}
+                        variant="compact"
+                      />
+                    </SettingsRow>
                   </div>
                   <div data-help-target="height-unit">
                     <SettingsRow
@@ -563,6 +520,7 @@ export function Sidebar() {
                     onClick={resetGridfinityStandard}
                     disabled={
                       gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
+                      gridUnitMmY === gridUnitMm &&
                       heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
                     }
                     className="text-xs py-1.5 px-2 mt-1 text-content-tertiary hover:text-content"

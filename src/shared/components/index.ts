@@ -7,6 +7,8 @@ export { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from './Con
 export { DeferredNumberInput } from './DeferredNumberInput';
 export { DrawerDimensionsSummary } from './DrawerDimensionsSummary';
 export { EditableDimensions } from './EditableDimensions';
+export { GridUnitInput } from './GridUnitInput';
+export { LinkedDimensionInput } from './LinkedDimensionInput';
 export { PrintBedInput } from './PrintBedInput';
 export { ToastContainer } from './Toast';
 export { ShortcutBadge } from './ShortcutBadge';

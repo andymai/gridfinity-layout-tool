@@ -382,14 +382,56 @@ describe('useDrawerSettings', () => {
       expect(result.current.printBedSize).toBe(256);
     });
 
-    it('setGridUnitMm updates grid unit', () => {
+    it('handleGridUnitChange updates grid unit', () => {
       const { result } = renderHook(() => useDrawerSettings());
 
       act(() => {
-        result.current.setGridUnitMm(50);
+        result.current.handleGridUnitChange(50);
       });
 
       expect(result.current.gridUnitMm).toBe(50);
+    });
+
+    it('handleGridUnitChange with a Y pitch stores the non-square grid', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleGridUnitChange(48, 42);
+      });
+
+      expect(result.current.gridUnitMm).toBe(48);
+      expect(result.current.gridUnitMmY).toBe(42);
+    });
+
+    it('resetGridfinityStandard clears a non-square Y pitch', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleGridUnitChange(48, 40);
+      });
+      expect(result.current.gridUnitMmY).toBe(40);
+
+      act(() => {
+        result.current.resetGridfinityStandard();
+      });
+
+      expect(result.current.gridUnitMm).toBe(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      expect(useLayoutStore.getState().layout.gridUnitMmY).toBeUndefined();
+    });
+
+    it('handleGridUnitChange without Y clears back to a square grid', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleGridUnitChange(48, 42);
+      });
+      expect(result.current.gridUnitMmY).toBe(42);
+
+      act(() => {
+        result.current.handleGridUnitChange(48);
+      });
+      expect(result.current.gridUnitMmY).toBe(48);
+      expect(useLayoutStore.getState().layout.gridUnitMmY).toBeUndefined();
     });
 
     it('setHeightUnitMm updates height unit', () => {
@@ -416,7 +458,7 @@ describe('useDrawerSettings', () => {
       const { result } = renderHook(() => useDrawerSettings());
 
       act(() => {
-        result.current.setGridUnitMm(50);
+        result.current.handleGridUnitChange(50);
         result.current.setHeightUnitMm(10);
       });
       expect(result.current.gridUnitMm).toBe(50);
@@ -594,7 +636,7 @@ describe('useDrawerSettings', () => {
       expect(result.current.drawerFitSuggestion).not.toBeNull();
 
       // The fit's unit counts were computed at 42mm; a new pitch invalidates them.
-      act(() => result.current.setGridUnitMm(40));
+      act(() => result.current.handleGridUnitChange(40));
       expect(result.current.drawerFitSuggestion).toBeNull();
     });
   });

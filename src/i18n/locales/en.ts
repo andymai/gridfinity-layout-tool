@@ -270,12 +270,6 @@ const en: Record<string, string> = {
   'sidebar.gridSize': 'Grid Size',
   'sidebar.gridUnit': 'Grid unit',
   'sidebar.gridUnitTooltip': 'Size of one grid unit in mm (standard Gridfinity = 42mm)',
-  'sidebar.gridUnitX': 'Grid unit X',
-  'sidebar.gridUnitXTooltip': 'Width of one grid cell in mm along X (standard Gridfinity = 42mm)',
-  'sidebar.gridUnitY': 'Grid unit Y',
-  'sidebar.gridUnitYTooltip':
-    "Depth of one grid cell in mm along Y. Set different from X to fill a drawer that isn't an exact multiple of 42mm (e.g. 42x22).",
-  'sidebar.nonSquareGrid': 'Non-square grid',
   'sidebar.heightUnit': 'Height unit',
   'sidebar.heightUnitTooltip': 'Height of one vertical unit in mm (standard = 7mm)',
   'sidebar.printBed': 'Print bed',
@@ -2385,13 +2379,6 @@ const en: Record<string, string> = {
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
   'binDesigner.gridUnitTooltip': 'Size of one grid cell in mm (standard Gridfinity = 42mm)',
-  'binDesigner.gridUnitX': 'Grid unit X',
-  'binDesigner.gridUnitXTooltip':
-    'Width of one grid cell in mm along X (standard Gridfinity = 42mm)',
-  'binDesigner.gridUnitY': 'Grid unit Y',
-  'binDesigner.gridUnitYTooltip':
-    "Depth of one grid cell in mm along Y. Set different from X to fill a drawer that isn't an exact multiple of 42mm (e.g. 42x22).",
-  'binDesigner.nonSquareGrid': 'Non-square grid',
   'binDesigner.halfBinMode': 'Half-grid mode',
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
@@ -3215,6 +3202,12 @@ const en: Record<string, string> = {
   'undo.unknownAction': 'Action',
   'undo.undid': '\u21a9 Undid: {action}',
   'undo.redid': '\u21aa Redid: {action}',
+
+  // Grid Unit Input
+  'gridUnitInput.linkAriaLabel': 'Link X and Y grid units',
+  'gridUnitInput.unlinkAriaLabel': 'Unlink X and Y grid units',
+  'gridUnitInput.xAriaLabel': 'Grid unit X',
+  'gridUnitInput.yAriaLabel': 'Grid unit Y',
 
   // Print Bed Input
   'printBedInput.linkAriaLabel': 'Link width and depth',

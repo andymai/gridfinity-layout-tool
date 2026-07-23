@@ -90,8 +90,6 @@ export interface UseDrawerSettingsReturn {
   gridUnitMm: number;
   /** Resolved depth-axis (Y) pitch — equals gridUnitMm for a square grid. */
   gridUnitMmY: number;
-  /** True when the layout has an explicit non-square Y pitch set. */
-  nonSquareGrid: boolean;
   heightUnitMm: number;
   printBedSize: number;
   printBedDepth: number;
@@ -124,11 +122,8 @@ export interface UseDrawerSettingsReturn {
   handleSaveDefaults: () => void;
 
   // Physical unit handlers
-  setGridUnitMm: (value: number) => void;
-  /** Set the depth-axis (Y) pitch, or `null` to clear back to a square grid. */
-  setGridUnitMmY: (value: number | null) => void;
-  /** Toggle non-square mode: enabling seeds Y from X, disabling clears to square. */
-  handleToggleNonSquareGrid: (enabled: boolean) => void;
+  /** Set the grid pitch — `y` undefined means a square grid (clears the Y pitch). */
+  handleGridUnitChange: (x: number, y?: number) => void;
   setHeightUnitMm: (value: number) => void;
   setPrintBedSize: (value: number, depth?: number) => void;
   resetGridfinityStandard: () => void;
@@ -218,7 +213,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     layout,
     gridUnitMm,
     gridUnitMmY,
-    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -233,7 +227,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       layout: state.layout,
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
-      nonSquareGrid: state.layout.gridUnitMmY !== undefined,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
       printBedDepth: state.layout.printBedDepth ?? state.layout.printBedSize,
@@ -599,17 +592,28 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const resetGridfinityStandard = useCallback(() => {
     batch(() => {
       setGridUnitMm(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      // Standard Gridfinity is square — a lingering Y pitch must reset too.
+      setGridUnitMmY(null);
       setHeightUnitMm(CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT);
     });
-  }, [setGridUnitMm, setHeightUnitMm]);
+  }, [setGridUnitMm, setGridUnitMmY, setHeightUnitMm]);
 
-  // Enabling non-square seeds the Y pitch from the current X (so the grid stays
-  // square until Y is edited); disabling clears it back to a square grid.
-  const handleToggleNonSquareGrid = useCallback(
-    (enabled: boolean) => {
-      setGridUnitMmY(enabled ? gridUnitMm : null);
+  // Linked grid-pitch control: y === undefined means a square grid (clears the
+  // stored Y pitch). Each write is guarded so a no-op edit (e.g. re-committing
+  // the linked X input) emits no undo/analytics events; batched so an X+Y edit
+  // is one undo step.
+  const handleGridUnitChange = useCallback(
+    (x: number, y?: number) => {
+      const current = useLayoutStore.getState().layout;
+      const xChanged = x !== (current.gridUnitMm as number);
+      const yChanged = y !== (current.gridUnitMmY as number | undefined);
+      if (!xChanged && !yChanged) return;
+      batch(() => {
+        if (xChanged) setGridUnitMm(x);
+        if (yChanged) setGridUnitMmY(y ?? null);
+      });
     },
-    [setGridUnitMmY, gridUnitMm]
+    [setGridUnitMm, setGridUnitMmY]
   );
 
   // Save current categories as defaults
@@ -661,7 +665,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     // Physical units
     gridUnitMm,
     gridUnitMmY,
-    nonSquareGrid,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -683,9 +686,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     handleHalfBinToggle,
     handleRemediate,
     handleSaveDefaults,
-    setGridUnitMm,
-    setGridUnitMmY,
-    handleToggleNonSquareGrid,
+    handleGridUnitChange,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
