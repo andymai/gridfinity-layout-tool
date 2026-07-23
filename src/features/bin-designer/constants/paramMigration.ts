@@ -37,6 +37,8 @@ import {
   LID_TRAY_DEPTH_MAX_MM,
   LID_TRAY_WALL_MIN_MM,
   LID_TRAY_WALL_MAX_MM,
+  LID_TOP_THICKNESS_MIN_MM,
+  LID_TOP_THICKNESS_MAX_MM,
 } from '../types/lid';
 import type {
   LidClickRails,
@@ -837,6 +839,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         clickRails: rawClickRails,
         clickRailCoverage: rawCoverage,
         extraHeightMm: rawExtraHeight,
+        topThicknessMm: rawTopThickness,
         retentionMagnet: rawRetentionMagnet,
         tray: rawTray,
         ...stored
@@ -856,6 +859,14 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         attachment: migrateAttachment(rawAttachment, clickRails),
         // Clamp the mm cavity boost so a corrupt design can't blow up the lid.
         extraHeightMm: migrateExtraHeightMm(rawExtraHeight),
+        // Pre-#2761 designs have no floor-plate knob — they fall back to the
+        // 0.8mm baseline and so regenerate byte-identically.
+        topThicknessMm: clampNumber(
+          rawTopThickness,
+          LID_TOP_THICKNESS_MIN_MM,
+          LID_TOP_THICKNESS_MAX_MM,
+          DEFAULT_LID_CONFIG.topThicknessMm
+        ),
         // Dedicated magnet + tray configs — clamped so a hand-edited share
         // can't drive runaway pocket/recess geometry.
         retentionMagnet: migrateRetentionMagnet(rawRetentionMagnet),
