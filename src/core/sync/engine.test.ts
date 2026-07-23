@@ -67,7 +67,11 @@ beforeEach(async () => {
   } catch {
     /* first test of the file — DB not yet open */
   }
-  vi.clearAllMocks();
+  // resetAllMocks (not clearAllMocks): it also empties mockImplementationOnce
+  // queues, so a test that primes a hanging fetch and fails before consuming it
+  // can't leak that implementation into the next test as a 30s timeout. The
+  // adapter mocks are recreated below, and fetchMock is re-primed after.
+  vi.resetAllMocks();
   useSyncStatusStore.getState().reset();
   layoutsAdapter = makeMockAdapter();
   designsAdapter = makeMockAdapter();
@@ -362,7 +366,14 @@ describe('push: in-flight serialization', () => {
     // Trigger another change for the same id while the first push is in flight.
     layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 2000 });
 
-    await new Promise((r) => setTimeout(r, 10));
+    // Wait until the first push has actually started (a fixed sleep raced the
+    // drain timer on loaded CI workers), then give the engine time to wrongly
+    // start a second one — it can't, because the first never resolves until we
+    // release it below.
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+    await new Promise((r) => setTimeout(r, 25));
     // Only the first push should be in flight; second is queued.
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
