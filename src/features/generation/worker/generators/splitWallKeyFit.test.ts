@@ -50,9 +50,11 @@ const vol = (s: Shape3D): number => {
 function overlap(a: Shape3D, b: Shape3D): number {
   const i = intersect(a, b);
   if (!isOk(i)) return 0;
-  const v = vol(i.value);
-  i.value.delete();
-  return v;
+  try {
+    return vol(i.value);
+  } finally {
+    i.value.delete();
+  }
 }
 
 /** A large solid covering the mating half-space x > seam, to isolate the tongue's protrusion. */
@@ -107,7 +109,7 @@ describe('split-bin wall key fit + engagement (issue #2321)', () => {
   });
 
   it('engages across the seam with real bearing volume (the lock contract)', () => {
-    const { tongue, fitProtrusion, keyWidth } = buildTongueAndGroove(NOZZLE_BASELINE);
+    const { tongue, groove, fitProtrusion, keyWidth } = buildTongueAndGroove(NOZZLE_BASELINE);
     const half = mateHalfSpace(0);
     try {
       // The tongue must protrude past the seam into the mating piece — that
@@ -122,6 +124,7 @@ describe('split-bin wall key fit + engagement (issue #2321)', () => {
       expect(keyWidth, 'tongue width ≥ 2 perimeters').toBeGreaterThanOrEqual(2 * NOZZLE_BASELINE);
     } finally {
       tongue.delete();
+      groove.delete();
       half.delete();
     }
   });
