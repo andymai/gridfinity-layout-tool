@@ -173,22 +173,29 @@ export default defineConfig([
           alwaysTryTypes: true,
         },
       },
+      // Whole-folder patterns (not `src/core/*`): with subfolder globs, files
+      // sitting directly at a layer root (e.g. src/core/types.ts) belong to no
+      // element and their imports silently escape every policy.
       'boundaries/elements': [
-        { type: 'core', pattern: ['src/core/*'] },
-        { type: 'shared', pattern: ['src/shared/*'] },
-        { type: 'design-system', pattern: ['src/design-system/*'] },
+        { type: 'core', pattern: ['src/core'] },
+        { type: 'shared', pattern: ['src/shared'] },
+        { type: 'design-system', pattern: ['src/design-system'] },
         { type: 'feature', pattern: ['src/features/*'], capture: ['featureName'] },
-        { type: 'shell', pattern: ['src/shell/*'] },
-        { type: 'i18n', pattern: ['src/i18n/*'] },
-        { type: 'test-infra', pattern: ['src/test/*'] },
+        { type: 'shell', pattern: ['src/shell'] },
+        { type: 'i18n', pattern: ['src/i18n'] },
+        { type: 'test-infra', pattern: ['src/test'] },
       ],
-      'boundaries/dependency-nodes': ['import', 'dynamic-import'],
+      // Default dependency-nodes (import, export, require, dynamicImport).
+      // Do not pin this to a list: the pre-v6 value `dynamic-import` was
+      // silently ignored after the rename to `dynamicImport`, which is how
+      // dynamic-import violations escaped the rule for months.
     },
     rules: {
       // Layer rules. Three kinds of constraint coexist:
       //   1. Cross-feature: features cannot import from OTHER features (with
-      //      named exceptions for design-linking -> bin-designer and
-      //      bin-inspector -> design-linking integration layers).
+      //      named exceptions for design-linking -> bin-designer,
+      //      bin-inspector -> design-linking, and
+      //      bin-inspector -> bin-recommender integration layers).
       //   2. `core/` is infrastructure: disallowed from `feature` and `shell`.
       //      (`core/` -> `shared/` stays allowed; several `core/storage/*`
       //      modules consume shared utilities/analytics by design.)
@@ -196,51 +203,70 @@ export default defineConfig([
       //      application-level layer (`feature`, `shell`, `shared`, `core`).
       //
       // This is a STRICTER superset of the bash mirror in
-      // scripts/check-module-boundaries.sh — it also inspects dynamic
-      // imports (see `boundaries/dependency-nodes` above).
+      // scripts/check-module-boundaries.sh — it also inspects exports,
+      // require calls, and dynamic imports (the plugin's default
+      // dependency-nodes; deliberately not pinned in settings above).
       // Remaining edges (shared→feature, feature→shell) are intentionally
       // unrestricted today; tightening them needs a per-violator cleanup pass.
       'boundaries/dependencies': ['error', {
         default: 'allow',
-        rules: [
+        policies: [
           // Features: disallow importing other features (cross-feature coupling)
-          { from: [{ type: 'feature' }], disallow: [{ to: { type: 'feature' } }] },
+          {
+            from: { element: { type: 'feature' } },
+            disallow: [{ to: { element: { type: 'feature' } } }],
+          },
           // Same feature is OK
           {
-            from: [{ type: 'feature' }],
-            allow: [{ to: { type: 'feature', captured: { featureName: '{{ from.captured.featureName }}' } } }],
+            from: { element: { type: 'feature' } },
+            allow: [
+              {
+                to: {
+                  element: {
+                    type: 'feature',
+                    captured: { featureName: '{{ from.captured.featureName }}' },
+                  },
+                },
+              },
+            ],
           },
           // Exception: design-linking -> bin-designer (integration layer)
           {
-            from: [{ type: 'feature', captured: { featureName: 'design-linking' } }],
-            allow: [{ to: { type: 'feature', captured: { featureName: 'bin-designer' } } }],
+            from: { element: { type: 'feature', captured: { featureName: 'design-linking' } } },
+            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'bin-designer' } } } }],
           },
           // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
           {
-            from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
-            allow: [{ to: { type: 'feature', captured: { featureName: 'design-linking' } } }],
+            from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
+            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } } }],
           },
           // Exception: bin-inspector -> bin-recommender (lazy-loaded size suggestion)
           {
-            from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
-            allow: [{ to: { type: 'feature', captured: { featureName: 'bin-recommender' } } }],
+            from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
+            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'bin-recommender' } } } }],
           },
           // `core/` is infrastructure — it must not depend on features or the
           // app shell. (`core/` -> `shared/` is intentionally allowed; many
           // `core/storage/*` modules use shared utilities/analytics.)
-          { from: [{ type: 'core' }], disallow: [{ to: { type: 'feature' } }, { to: { type: 'shell' } }] },
+          {
+            from: { element: { type: 'core' } },
+            disallow: [
+              { to: { element: { type: 'feature' } } },
+              { to: { element: { type: 'shell' } } },
+            ],
+          },
           // `design-system/` is UI primitives — it must not depend on any
           // application-level layer. UI primitives take strings via props;
           // they never read translations themselves, so `i18n` is in the
           // disallow list alongside the app layers.
           {
-            from: [{ type: 'design-system' }],
+            from: { element: { type: 'design-system' } },
             disallow: [
-              { to: { type: 'feature' } },
-              { to: { type: 'shell' } },
-              { to: { type: 'i18n' } },
-              { to: { type: 'shared' } },
-              { to: { type: 'core' } },
+              { to: { element: { type: 'feature' } } },
+              { to: { element: { type: 'shell' } } },
+              { to: { element: { type: 'i18n' } } },
+              { to: { element: { type: 'shared' } } },
+              { to: { element: { type: 'core' } } },
             ],
           },
         ],
