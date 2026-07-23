@@ -1,20 +1,11 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore } from '@/core/store/layout';
-import {
-  useSelectionStore,
-  useInteractionStore,
-  useHalfGridModeStore,
-  useMobileStore,
-} from '@/core/store';
-import { batch } from '@/core/cqrs';
-import { useMutations } from '@/shared/contexts';
-import { useToastStore } from '@/core/store/toast';
-import { getLayerBins } from '@/shared/utils';
+import { useInteractionStore, useMobileStore } from '@/core/store';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
+import { useLayerFillActions } from '@/features/layers/hooks/useLayerFillActions';
 
 /**
  * Tools tab content - bin palette for paint mode and layer fill actions.
@@ -23,85 +14,27 @@ import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
 export function ToolsTab() {
   const t = useTranslation();
   const [rotated, setRotated] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const layout = useLayoutStore((state) => state.layout);
-  const { fillLayer, fillLayerGaps, clearLayer } = useMutations();
-
-  const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
-    useShallow((state) => ({
-      activeLayerId: state.activeLayerId,
-      activeCategoryId: state.activeCategoryId,
-      setSelectedBins: state.setSelectedBins,
-    }))
-  );
-  const { paintSize, togglePaintSize, setPaintSize } = useInteractionStore(
+  const { paintSize, togglePaintSize } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
-      setPaintSize: state.setPaintSize,
     }))
   );
-  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
-  const addToast = useToastStore((state) => state.addToast);
-
-  const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
-  const layerBins = getLayerBins(layout.bins, activeLayerId);
-
-  // Calculate empty cells for Fill Gaps button
-  const totalCells = layout.drawer.width * layout.drawer.depth;
-  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
-  const emptyCells = totalCells - coveredCells;
+  const {
+    activeLayer,
+    layerBins,
+    emptyCells,
+    clearConfirmOpen,
+    setClearConfirmOpen,
+    fillGaps,
+    confirmClear,
+    fillWithSize,
+  } = useLayerFillActions({ onAfterAction: closeMobilePanel });
 
   const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize.depth === d;
-
-  const handleFillGaps = () => {
-    if (!activeLayerId) return;
-    const beforeCount = layerBins.length;
-    batch(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode);
-    });
-    closeMobilePanel();
-    setTimeout(() => {
-      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
-      const added = afterCount - beforeCount;
-      if (added > 0) {
-        addToast(t('toast.fillComplete', { count: added }), 'success');
-      }
-    }, 0);
-  };
-
-  const handleClearLayer = () => {
-    if (!activeLayerId || layerBins.length === 0) return;
-    const count = layerBins.length;
-    batch(() => {
-      clearLayer(activeLayerId);
-      setSelectedBins([]);
-    });
-    addToast(t('toast.clearComplete', { count }), 'success');
-    setShowClearConfirm(false);
-    closeMobilePanel();
-  };
-
-  const handleFill = (width: number, depth: number) => {
-    if (!activeLayerId) return;
-    const beforeCount = layerBins.length;
-    batch(() => {
-      fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
-    });
-    // Exit paint mode after filling
-    setPaintSize(null);
-    closeMobilePanel();
-    setTimeout(() => {
-      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
-      const added = afterCount - beforeCount;
-      if (added > 0) {
-        addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');
-      }
-    }, 0);
-  };
 
   if (!activeLayer) return null;
 
@@ -199,7 +132,7 @@ export function ToolsTab() {
           <Button
             variant="primary"
             fullWidth
-            onClick={() => handleFill(paintSize.width, paintSize.depth)}
+            onClick={() => fillWithSize(paintSize.width, paintSize.depth)}
             className="h-11 justify-center"
           >
             {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
@@ -210,7 +143,7 @@ export function ToolsTab() {
         <Button
           variant="secondary"
           fullWidth
-          onClick={handleFillGaps}
+          onClick={fillGaps}
           disabled={emptyCells === 0}
           className="h-11 justify-center"
           leftIcon={
@@ -233,7 +166,7 @@ export function ToolsTab() {
         <Button
           variant="ghost"
           fullWidth
-          onClick={() => setShowClearConfirm(true)}
+          onClick={() => setClearConfirmOpen(true)}
           disabled={layerBins.length === 0}
           className="h-11 justify-center text-error hover:bg-error/10 hover:text-error"
           leftIcon={
@@ -255,13 +188,13 @@ export function ToolsTab() {
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog
-        isOpen={showClearConfirm}
+        isOpen={clearConfirmOpen}
         title={t('layers.clearLayer.title')}
         message={t('layers.clearLayer.message', { count: layerBins.length })}
         confirmText={t('layers.clearLayer.confirm')}
         destructive
-        onConfirm={handleClearLayer}
-        onCancel={() => setShowClearConfirm(false)}
+        onConfirm={confirmClear}
+        onCancel={() => setClearConfirmOpen(false)}
       />
     </div>
   );

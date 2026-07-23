@@ -1,2 +1,2 @@
-// Barrel export for layers hooks
-// (Currently no hooks exported - useAdvancedLayerMode was removed as unused)
+export { useLayerFillActions } from './useLayerFillActions';
+export type { LayerFillActions } from './useLayerFillActions';
