@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.287.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.286.1...gridfinity-layout-tool-v4.287.0) (2026-07-23)
+
+
+### Features
+
+* **bin-designer:** add kumiko wrapped-lattice wall patterns with mitsukude ([#2772](https://github.com/andymai/gridfinity-layout-tool/issues/2772)) ([193f6bf](https://github.com/andymai/gridfinity-layout-tool/commit/193f6bff4cdfdb634f6eddb8d63f19003f95753c))
+
 ## [4.286.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.286.0...gridfinity-layout-tool-v4.286.1) (2026-07-23)
 
 
