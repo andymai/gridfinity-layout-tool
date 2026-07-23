@@ -736,7 +736,7 @@ function buildPilaster(
  * top/tip; the groove (female, `inflate` = clearance) is the same shape grown by
  * the fit clearance. Extruded along the cut line and centered on the key axis.
  */
-function buildKey(
+export function buildKey(
   axis: 'x' | 'y',
   cutPos: number,
   perimeter: number,
