@@ -77,6 +77,7 @@ export const GRIDFINITY_SPEC = {
  * math must all agree or preview heights drift from exported geometry.
  */
 export const MAGNET_FLOOR = 0.5;
+
 /**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *
