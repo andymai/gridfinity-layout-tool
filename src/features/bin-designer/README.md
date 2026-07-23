@@ -110,9 +110,17 @@ graph TB
   the extra-height cavity boost (`extraHeightMm`, 0–100mm — a taller lid
   encloses items that poke up out of a short bin, e.g. toothpicks; 0 = the
   standard one-grid-unit lid), the stack-grid / magnet / separate-baseplate
-  toggles, and per-side click-rail snaps with a coverage slider. Wall/top
-  thickness and fit clearance are intentionally locked-down constants in
-  `lidConstants.ts` (a single validated set — exposing them invited mis-prints).
+  toggles, per-side click-rail snaps with a coverage slider, and the floor-plate
+  thickness (`topThicknessMm`, 0.8–5mm — a thicker top for a stiffer, less
+  translucent lid on large bins; 0.8 = the historical plate). Wall thickness and
+  fit clearance stay locked-down constants in `lidConstants.ts` (a single
+  validated set — exposing them invited mis-prints); the plate is the exception
+  because it mates with nothing. **Plate thickness is a floor, not a cap, and it
+  consumes cavity depth** — resolve it via `resolveLidPlateThickness` /
+  `resolveLidCavityExtraMm` in `types/lid.ts`, never a local `Math.max`, or the
+  plate will eat the space the bin's lip needs (gotcha 10 in the generation
+  README). A magnetic lid also gets `LID_MAGNETIC_EXTRA_CLEARANCE` (0.15mm/side,
+  XY only) so the magnets aren't fighting a friction fit.
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's
