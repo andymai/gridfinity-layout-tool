@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.286.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.286.0...gridfinity-layout-tool-v4.286.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* **generation:** anchor lid retention magnets to the cavity bottom ([#2770](https://github.com/andymai/gridfinity-layout-tool/issues/2770)) ([47e0a1a](https://github.com/andymai/gridfinity-layout-tool/commit/47e0a1a5de5a1d6f44afd7a61fa7d2babd338354))
+
 ## [4.286.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.2...gridfinity-layout-tool-v4.286.0) (2026-07-23)
 
 
