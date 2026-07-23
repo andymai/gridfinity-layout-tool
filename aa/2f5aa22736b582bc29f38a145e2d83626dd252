@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_59b071634fd176::t_abb769b0f46757 184-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "aa2f5aa22736b582bc29f38a145e2d83626dd252",
+  "prompts": {},
+  "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
