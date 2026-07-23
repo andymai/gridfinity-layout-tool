@@ -1,0 +1,32 @@
+src/features/generation/worker/generators/lidConstants.ts
+  s_c19188729ffa0d::t_28e05876dc6c43 159
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_c19188729ffa0d::t_a255306e628918 656-659
+  s_100d196bea722f::t_cae9d6fa2cef3a 664
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_c19188729ffa0d::t_52b3413bfbe968 84,90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "4d12bc472ec6f5fc64dae4ce3f61f2b12face602",
+  "prompts": {},
+  "sessions": {
+    "s_100d196bea722f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da446227-6be1-4c2b-9ff1-db2f2d211969",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_c19188729ffa0d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c3c56eb1-9611-417d-a282-01144f871ee8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
