@@ -9,7 +9,7 @@
 import { useState, useCallback, useLayoutEffect, useRef, useEffect } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSharing';
-import { migrateParams } from '@/features/bin-designer/constants/defaults';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';

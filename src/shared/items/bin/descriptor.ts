@@ -6,7 +6,8 @@
  * runs the unchanged `migrateParams`, then re-splits.
  */
 import { z } from 'zod';
-import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import type { ItemTypeDescriptor } from '@/shared/items/registry';
 import type { BinStructure, ItemEnvelope } from '@/shared/types/item';
 import { binParamsToItem } from '@/shared/types/itemAdapter';

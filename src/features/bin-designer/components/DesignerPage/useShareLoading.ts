@@ -10,7 +10,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
-import { migrateParams } from '@/features/bin-designer/constants/defaults';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { useTranslation } from '@/i18n';
 
 export function useShareLoading(): boolean {

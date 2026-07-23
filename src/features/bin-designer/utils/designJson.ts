@@ -9,7 +9,7 @@ import type { BinParams } from '../types';
 import type { TFunction } from '@/i18n';
 import { BIN_STYLES } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
-import { migrateParams } from '../constants/defaults';
+import { migrateParams } from '../constants/paramMigration';
 import { sanitizeFileName } from './fileNaming';
 
 /**

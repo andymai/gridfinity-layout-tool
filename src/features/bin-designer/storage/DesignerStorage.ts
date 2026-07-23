@@ -20,7 +20,8 @@ import {
 } from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
-import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
