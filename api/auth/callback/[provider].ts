@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
-import { ErrorCode } from '../../lib/shared.js';
+import { rateLimited, serviceUnavailable, singleParam, ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getClientIP, getRedis } from '../../lib/rateLimit.js';
 import {
@@ -49,11 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const rate = await checkRateLimit(getClientIP(req), 'auth.callback');
   if (!rate.allowed) {
-    res.status(429).json({
-      error: 'Too many sign-in attempts. Try again later.',
-      code: ErrorCode.RATE_LIMITED,
-      retryAfter: rate.retryAfterSeconds,
-    });
+    rateLimited(res, rate.retryAfterSeconds, 'Too many sign-in attempts. Try again later.');
     return;
   }
 
@@ -87,14 +83,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (process.env.VERCEL_ENV === 'production') {
       logger.error('Sign-in failed: Redis unavailable');
       clearOAuthCookies(res);
-      res.status(503).json({
-        error: 'Service temporarily unavailable',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      serviceUnavailable(res);
       return;
     }
     clearOAuthCookies(res);
-    res.status(503).json({ error: 'Redis not configured', code: ErrorCode.SERVICE_UNAVAILABLE });
+    serviceUnavailable(res, 'Redis not configured');
     return;
   }
 
@@ -130,11 +123,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   clearOAuthCookies(res);
   setSessionCookie(res, token);
   res.redirect(302, '/');
-}
-
-function singleParam(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) return value[0];
-  return value;
 }
 
 function safeParse(raw: string | null): UserProfileRecord | null {

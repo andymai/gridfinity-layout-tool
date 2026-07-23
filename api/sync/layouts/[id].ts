@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
-import { ErrorCode } from '../../lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  serverError,
+  singleParam,
+  isValidShareId,
+  ErrorCode,
+} from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getRedis } from '../../lib/rateLimit.js';
 import { requireSession } from '../../lib/session.js';
@@ -41,19 +48,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const action = req.method === 'GET' ? 'sync.read' : 'sync.write';
   const rate = await checkRateLimit(session.userId, action);
   if (!rate.allowed) {
-    res.status(429).json({
-      error: 'Too many requests. Try again later.',
-      code: ErrorCode.RATE_LIMITED,
-      retryAfter: rate.retryAfterSeconds,
-    });
+    rateLimited(res, rate.retryAfterSeconds);
     return;
   }
 
   const redis = getRedis();
   if (!redis) {
-    res
-      .status(503)
-      .json({ error: 'Service temporarily unavailable', code: ErrorCode.SERVICE_UNAVAILABLE });
+    serviceUnavailable(res);
     return;
   }
 
@@ -71,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       method: req.method,
       error: error instanceof Error ? error.message : String(error),
     });
-    res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
+    serverError(res);
   }
 }
 
@@ -246,11 +247,6 @@ function blobPath(userId: string, id: string): string {
   return `users/${userId}/layouts/${id}.json`;
 }
 
-function singleParam(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
-
 /**
  * Layouts the client may sync share three id formats with the existing
  * share feature (UUID, base36 timestamp, 12-char alphanumeric); we accept
@@ -258,8 +254,5 @@ function singleParam(value: string | string[] | undefined): string | undefined {
  * storage and the cloud without renaming.
  */
 function isValidLayoutId(id: string): boolean {
-  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) return true;
-  if (/^[a-z0-9]+-[a-z0-9]{7}$/.test(id)) return true;
-  if (/^[a-zA-Z0-9]{12}$/.test(id)) return true;
-  return false;
+  return isValidShareId(id);
 }

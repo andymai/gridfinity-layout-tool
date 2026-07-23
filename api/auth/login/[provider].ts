@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
-import { ErrorCode } from '../../lib/shared.js';
+import { rateLimited, ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getClientIP } from '../../lib/rateLimit.js';
 import { setOAuthStateCookie, setOAuthVerifierCookie } from '../../lib/cookies.js';
@@ -27,11 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const rate = await checkRateLimit(getClientIP(req), 'auth.start');
   if (!rate.allowed) {
-    res.status(429).json({
-      error: 'Too many sign-in attempts. Try again later.',
-      code: ErrorCode.RATE_LIMITED,
-      retryAfter: rate.retryAfterSeconds,
-    });
+    rateLimited(res, rate.retryAfterSeconds, 'Too many sign-in attempts. Try again later.');
     return;
   }
 

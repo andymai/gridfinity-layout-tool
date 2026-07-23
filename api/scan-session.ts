@@ -2,7 +2,13 @@ import { randomUUID } from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { ErrorCode, getBaseUrl, methodNotAllowed } from './lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  ErrorCode,
+  getBaseUrl,
+  methodNotAllowed,
+} from './lib/shared.js';
 import { scanSessionKey } from './lib/redisKeys.js';
 import { SCAN_SESSION_TTL_SECONDS, type ScanSessionRecord } from './lib/scanSession.js';
 
@@ -21,21 +27,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const rateLimit = await checkRateLimit(getClientIP(req), 'scan.create');
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many scan sessions. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(
+        res,
+        rateLimit.retryAfterSeconds,
+        'Too many scan sessions. Try again later.'
+      );
     }
 
     const redis = getRedis();
     if (!redis) {
       // The handoff needs Redis to relay the outline. Signal the client so it
       // can fall back to manual upload instead of showing a dead QR code.
-      return res.status(503).json({
-        error: 'Scan handoff is unavailable.',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      return serviceUnavailable(res, 'Scan handoff is unavailable.');
     }
 
     const token = randomUUID();

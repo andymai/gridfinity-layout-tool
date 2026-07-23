@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { logger } from '../lib/logger.js';
-import { ErrorCode, methodNotAllowed } from '../lib/shared.js';
+import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from '../lib/shared.js';
 import { scanSessionKey } from '../lib/redisKeys.js';
 import { isValidScanToken, validateScanSvg, type ScanSessionRecord } from '../lib/scanSession.js';
 
@@ -23,9 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const redis = getRedis();
   if (!redis) {
-    return res
-      .status(503)
-      .json({ error: 'Scan handoff is unavailable.', code: ErrorCode.SERVICE_UNAVAILABLE });
+    return serviceUnavailable(res, 'Scan handoff is unavailable.');
   }
 
   const key = scanSessionKey(token);
@@ -34,11 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'POST') {
       const rateLimit = await checkRateLimit(getClientIP(req), 'scan.upload');
       if (!rateLimit.allowed) {
-        return res.status(429).json({
-          error: 'Too many uploads. Try again later.',
-          code: ErrorCode.RATE_LIMITED,
-          retryAfter: rateLimit.retryAfterSeconds,
-        });
+        return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many uploads. Try again later.');
       }
 
       // The session must still exist (not expired / already consumed).
@@ -67,11 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
       const rateLimit = await checkRateLimit(getClientIP(req), 'scan.poll');
       if (!rateLimit.allowed) {
-        return res.status(429).json({
-          error: 'Too many requests.',
-          code: ErrorCode.RATE_LIMITED,
-          retryAfter: rateLimit.retryAfterSeconds,
-        });
+        return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many requests.');
       }
 
       const stored = await redis.get(key);

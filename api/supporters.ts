@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { ErrorCode, methodNotAllowed } from './lib/shared.js';
+import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from './lib/shared.js';
 import { readSupporters } from './lib/supporters.js';
 
 /**
@@ -21,19 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const rateLimit = await checkRateLimit(getClientIP(req), 'supporters.read');
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many requests.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many requests.');
     }
 
     const redis = getRedis();
     if (!redis) {
-      return res.status(503).json({
-        error: 'Supporter list unavailable.',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      return serviceUnavailable(res, 'Supporter list unavailable.');
     }
 
     const payload = await readSupporters(redis);

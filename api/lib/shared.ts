@@ -156,6 +156,35 @@ export function methodNotAllowed(res: VercelResponse, allowed: string): VercelRe
   return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
 }
 
+export function rateLimited(
+  res: VercelResponse,
+  retryAfterSeconds: number | undefined,
+  message = 'Too many requests. Try again later.'
+): VercelResponse {
+  return res.status(429).json({
+    error: message,
+    code: ErrorCode.RATE_LIMITED,
+    retryAfter: retryAfterSeconds,
+  });
+}
+
+export function serviceUnavailable(
+  res: VercelResponse,
+  message = 'Service temporarily unavailable'
+): VercelResponse {
+  return res.status(503).json({ error: message, code: ErrorCode.SERVICE_UNAVAILABLE });
+}
+
+export function serverError(res: VercelResponse): VercelResponse {
+  return res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
+}
+
+/** Collapse Vercel's `string | string[]` query param to its first value. */
+export function singleParam(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 export function getBaseUrl(): string {
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;

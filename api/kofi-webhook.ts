@@ -3,7 +3,7 @@ import type { Redis } from 'ioredis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { ErrorCode, methodNotAllowed } from './lib/shared.js';
+import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from './lib/shared.js';
 import { supportersDonorsKey, supportersMessageKey, supportersTotalsKey } from './lib/redisKeys.js';
 import {
   MESSAGE_DEDUPE_TTL_SECONDS,
@@ -111,10 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const redis = getRedis();
     if (!redis) {
       logger.error('Ko-fi webhook failed: REDIS_URL not configured');
-      return res.status(503).json({
-        error: 'Supporter store unavailable.',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      return serviceUnavailable(res, 'Supporter store unavailable.');
     }
 
     const rateLimit = await checkRateLimit(getClientIP(req), 'kofi.webhook');
@@ -127,16 +124,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // the rejection path, tells the two apart.
       if (!(await isRedisReachable(redis))) {
         logger.error('Ko-fi webhook failed: Redis unreachable');
-        return res.status(503).json({
-          error: 'Supporter store unavailable.',
-          code: ErrorCode.SERVICE_UNAVAILABLE,
-        });
+        return serviceUnavailable(res, 'Supporter store unavailable.');
       }
-      return res.status(429).json({
-        error: 'Too many webhook deliveries.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many webhook deliveries.');
     }
 
     // Dedupe Ko-fi's retries. SET NX returns null when the key already exists.
