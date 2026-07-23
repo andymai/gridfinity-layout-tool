@@ -3,11 +3,14 @@ import { renderHook, act } from '@testing-library/react';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { resetAllStores } from '@/test/testUtils';
 
 describe('usePhysicalUnitsSection', () => {
   beforeEach(() => {
     resetAllStores();
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
   });
 
   it('returns grid and height unit values from layout store', () => {
@@ -25,6 +28,38 @@ describe('usePhysicalUnitsSection', () => {
     });
 
     expect(useLayoutStore.getState().layout.gridUnitMm).toBe(50);
+  });
+
+  it('handleGridUnitChange with a Y pitch stores the designer override', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handleGridUnitChange(42, 40);
+    });
+
+    expect(useLayoutStore.getState().layout.gridUnitMm).toBe(42);
+    expect(useDesignerStore.getState().params.gridUnitMmY).toBe(40);
+  });
+
+  it('handleGridUnitChange without Y clears the override (relinked)', () => {
+    useDesignerStore.getState().setParam('gridUnitMmY', 40);
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handleGridUnitChange(42);
+    });
+
+    expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+  });
+
+  it('handleGridUnitChange clamps the Y pitch', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handleGridUnitChange(42, 999);
+    });
+
+    expect(useDesignerStore.getState().params.gridUnitMmY).toBe(200);
   });
 
   it('handleHeightUnitChange updates layout store', () => {

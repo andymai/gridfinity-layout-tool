@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
+import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { DrawerShapeSection } from '@/features/drawer-shape';
@@ -50,6 +51,7 @@ export function MobileSettingsPanel() {
     clearMeasurement,
     maxGridUnits,
     gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     printBedSize,
     printBedDepth,
@@ -64,7 +66,7 @@ export function MobileSettingsPanel() {
     handleHalfBinToggle,
     handleRemediate,
     handleSaveDefaults,
-    setGridUnitMm,
+    handleGridUnitChange,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
@@ -206,12 +208,11 @@ export function MobileSettingsPanel() {
         <div className="space-y-3">
           <div>
             <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
-              <DeferredNumberInput
-                value={gridUnitMm}
-                onChange={setGridUnitMm}
-                className="input w-20 h-10 text-center"
-                min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-                max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+              <GridUnitInput
+                x={gridUnitMm}
+                y={gridUnitMmY}
+                onChange={handleGridUnitChange}
+                variant="mobile"
               />
             </SettingsRow>
             <p className="text-xs text-content-tertiary mt-1">

@@ -34,27 +34,19 @@ export function usePhysicalUnitsSection() {
     );
   const t = useTranslation();
 
-  const handleGridUnitChange = useCallback((value: number) => {
-    // Only edits the shared X pitch. In non-square mode the designer-local Y
-    // pitch is preserved by `useSyncPhysicalUnits` (it spreads existing params),
-    // so changing X never drags Y — the two fields are independent.
-    useLayoutStore.getState().setGridUnitMm(value);
-  }, []);
-
-  // Y pitch is a concrete per-design value while non-square mode is on. Stored
-  // as-is (even when equal to X) so the field stays independent — `undefined`
-  // is reserved for the square/off state, toggled below.
-  const handleGridUnitYChange = useCallback((value: number) => {
-    const clamped = Math.max(1, Math.min(200, value));
-    useDesignerStore.getState().setParam('gridUnitMmY', clamped);
-  }, []);
-
-  // Toggle non-square mode. Enabling seeds Y from the current X (so the bin
-  // stays square until the user changes Y); disabling clears the override back
-  // to a square grid (geometry byte-identical to before the feature).
-  const handleToggleNonSquare = useCallback((enabled: boolean) => {
-    const x = useLayoutStore.getState().layout.gridUnitMm;
-    useDesignerStore.getState().setParam('gridUnitMmY', enabled ? x : undefined);
+  // Linked grid-pitch control. X edits the shared layout pitch; the Y pitch is
+  // a designer-local override where `undefined` means square (relinked) —
+  // geometry byte-identical to before the non-square feature. Each write is
+  // guarded against no-ops: setParam unconditionally pushes an undo entry and
+  // regenerates, so a pure X edit must not touch the Y param.
+  const handleGridUnitChange = useCallback((x: number, y?: number) => {
+    if (x !== useLayoutStore.getState().layout.gridUnitMm) {
+      useLayoutStore.getState().setGridUnitMm(x);
+    }
+    const nextY = y === undefined ? undefined : Math.max(1, Math.min(200, y));
+    if (nextY !== useDesignerStore.getState().params.gridUnitMmY) {
+      useDesignerStore.getState().setParam('gridUnitMmY', nextY);
+    }
   }, []);
 
   const handleHeightUnitChange = useCallback((value: number) => {
@@ -105,8 +97,6 @@ export function usePhysicalUnitsSection() {
     },
     handlers: {
       handleGridUnitChange,
-      handleGridUnitYChange,
-      handleToggleNonSquare,
       handleHeightUnitChange,
       handlePrintBedChange,
       handleNozzleChange,

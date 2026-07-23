@@ -406,7 +406,7 @@ describe('Sidebar', () => {
     it('renders grid unit input', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Grid unit')).toBeInTheDocument();
+      expect(screen.getByLabelText('Grid unit X')).toBeInTheDocument();
     });
   });
 

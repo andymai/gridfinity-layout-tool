@@ -6,9 +6,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Collapsible, Switch } from '@/design-system';
+import { Collapsible } from '@/design-system';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
@@ -33,58 +34,18 @@ export function PhysicalUnitsSection() {
       summary={meta.summary}
     >
       <div className="space-y-2">
-        {state.nonSquare ? (
-          <>
-            <SettingsRow
-              label={t('binDesigner.gridUnitX')}
-              tooltip={t('binDesigner.gridUnitXTooltip')}
-              unit="mm"
-            >
-              <DeferredNumberInput
-                value={state.gridUnitMm}
-                onChange={handlers.handleGridUnitChange}
-                min={1}
-                max={200}
-                className="input w-14 py-0.5 px-1 text-xs text-right"
-                aria-label={t('binDesigner.gridUnit')}
-              />
-            </SettingsRow>
-            <SettingsRow
-              label={t('binDesigner.gridUnitY')}
-              tooltip={t('binDesigner.gridUnitYTooltip')}
-              unit="mm"
-            >
-              <DeferredNumberInput
-                value={state.gridUnitMmY}
-                onChange={handlers.handleGridUnitYChange}
-                min={1}
-                max={200}
-                className="input w-14 py-0.5 px-1 text-xs text-right"
-                aria-label={t('binDesigner.gridUnitY')}
-              />
-            </SettingsRow>
-          </>
-        ) : (
-          <SettingsRow
-            label={t('binDesigner.gridUnit')}
-            tooltip={t('binDesigner.gridUnitTooltip')}
-            unit="mm"
-          >
-            <DeferredNumberInput
-              value={state.gridUnitMm}
-              onChange={handlers.handleGridUnitChange}
-              min={1}
-              max={200}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-              aria-label={t('binDesigner.gridUnit')}
-            />
-          </SettingsRow>
-        )}
-        <Switch
-          label={t('binDesigner.nonSquareGrid')}
-          checked={state.nonSquare}
-          onChange={handlers.handleToggleNonSquare}
-        />
+        <SettingsRow
+          label={t('binDesigner.gridUnit')}
+          tooltip={t('binDesigner.gridUnitTooltip')}
+          unit="mm"
+        >
+          <GridUnitInput
+            x={state.gridUnitMm}
+            y={state.gridUnitMmY}
+            onChange={handlers.handleGridUnitChange}
+            variant="compact"
+          />
+        </SettingsRow>
         <SettingsRow
           label={t('binDesigner.heightUnit')}
           tooltip={t('binDesigner.heightUnitTooltip')}
