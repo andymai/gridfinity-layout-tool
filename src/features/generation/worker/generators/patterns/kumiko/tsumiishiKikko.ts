@@ -3,8 +3,9 @@
  *
  * Radial ribs from each arm's midpoint toward the cell interior form
  * hexagonal chambers inside the triangular lattice. Base segments
- * (vertex-local, arm pointing +z): ledge (0, s/2) → (q/3, s/2) and brace
- * (q/2, s/4) → (q/3, s/2), replicated six-fold.
+ * (vertex-local, arm pointing +z): a symmetric ledge (−q/3, s/2) → (q/3, s/2)
+ * crossing each arm once (alternate-arm THREE_FOLD — arms are shared between
+ * vertices) and a brace (q/2, s/4) → (q/3, s/2) replicated six-fold.
  *
  * Pure-math module — NO brepjs imports.
  */

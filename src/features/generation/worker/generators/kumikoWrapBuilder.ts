@@ -198,7 +198,13 @@ function clipSegmentToURangePeriodic(
   const pieces: KumikoSegment[] = [];
   for (const shift of [-period, 0, period]) {
     const shifted: KumikoSegment =
-      shift === 0 ? seg : { a: [seg.a[0] + shift, seg.a[1]], b: [seg.b[0] + shift, seg.b[1]] };
+      shift === 0
+        ? seg
+        : {
+            a: [seg.a[0] + shift, seg.a[1]],
+            b: [seg.b[0] + shift, seg.b[1]],
+            ...(seg.width === undefined ? {} : { width: seg.width }),
+          };
     const clipped = clipSegmentToURange(shifted, u0, u1);
     if (clipped) pieces.push(clipped);
   }
@@ -230,7 +236,11 @@ function extendSegment(seg: KumikoSegment, by: number): KumikoSegment {
   if (len < 1e-9) return seg;
   const dx = ((ub - ua) / len) * by;
   const dz = ((zb - za) / len) * by;
-  return { a: [ua - dx, za - dz], b: [ub + dx, zb + dz] };
+  return {
+    a: [ua - dx, za - dz],
+    b: [ub + dx, zb + dz],
+    ...(seg.width === undefined ? {} : { width: seg.width }),
+  };
 }
 
 /** Stroke a segment into a Drawing rectangle in slab-local (a, y) coords. */
