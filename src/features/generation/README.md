@@ -161,6 +161,20 @@ Pattern calculators in `worker/generators/patterns/` use a registry-based archit
 
 Add new patterns by implementing `PatternCalculator` interface and registering in `registry.ts`.
 
+Three calculator strategies exist: `stamp` (repeated shape at staggered centers — honeycomb,
+round, diamond, triangle, slots), `motif` (tiled 2D unit cell — builder-supported seam, nothing
+shipped), and `wrapped-lattice` (kumiko). Wrapped-lattice patterns are authored in unrolled
+perimeter coordinates (`patterns/kumiko/segmentLattice.ts` — pure math, u-periodic triangular
+jigumi + per-vertex fillings) and built by `kumikoWrapBuilder.ts` as one continuous lattice
+around all four walls: flat spans as slab-minus-strut-prism cuts, corner arcs as annular wedges
+minus revolve/helix-swept struts (exact kernels only — Manifold drafts render the phase-aligned
+flat panels with solid corners and the OCCT result replaces them). The lattice column count is
+quantized to an EVEN number so the ±30° diagonals reconnect across the u = 0 seam, and all slab
+clipping is periodicity-aware (`clipSegmentToURangePeriodic`). Kumiko composes with
+cutouts/handles/text/divider junctions through the same clip machinery as stamp patterns
+(`computeWallClipContext` / `computeWallClips` in `wallPatternBuilder.ts`). Polygon (cellMask)
+and slotted bins render solid walls for kumiko in this iteration.
+
 ## Gotchas
 
 1. **Half-cells decompose separately** — 1.5 width = [1.0, 0.5] cells

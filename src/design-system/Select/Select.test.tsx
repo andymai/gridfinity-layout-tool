@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { Select } from './Select';
 
 const options = [
@@ -129,6 +129,35 @@ describe('Select', () => {
       const ref = vi.fn();
       render(<Select ref={ref} options={options} aria-label="Choice" />);
       expect(ref).toHaveBeenCalledWith(expect.any(HTMLSelectElement));
+    });
+  });
+
+  describe('option groups', () => {
+    const grouped = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta', group: 'Greek' },
+      { id: 'c', name: 'Gamma', group: 'Greek' },
+      { id: 'd', name: 'Delta', group: 'Other' },
+    ];
+
+    it('wraps consecutive same-group options in one optgroup', () => {
+      render(<Select options={grouped} aria-label="Choice" />);
+      const greek = screen.getByRole('group', { name: 'Greek' });
+      expect(within(greek).getAllByRole('option')).toHaveLength(2);
+      expect(screen.getByRole('group', { name: 'Other' })).toBeInTheDocument();
+    });
+
+    it('keeps ungrouped options selectable at the top level', () => {
+      render(<Select options={grouped} aria-label="Choice" />);
+      const option = screen.getByRole('option', { name: 'Alpha' });
+      expect(option.closest('optgroup')).toBeNull();
+    });
+
+    it('selects values inside groups', () => {
+      const onValueChange = vi.fn();
+      render(<Select options={grouped} onValueChange={onValueChange} aria-label="Choice" />);
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'c' } });
+      expect(onValueChange).toHaveBeenCalledWith('c');
     });
   });
 });

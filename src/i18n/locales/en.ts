@@ -2259,6 +2259,8 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.diamond': 'Diamond',
   'binDesigner.walls.pattern.triangle': 'Triangle',
   'binDesigner.walls.pattern.slots': 'Slots',
+  'binDesigner.walls.pattern.mitsukude': 'Mitsukude (三つ組手)',
+  'binDesigner.walls.pattern.groupKumiko': 'Kumiko',
   'binDesigner.walls.pattern.scale': 'Pattern scale',
   'binDesigner.walls.pattern.scaleHint': 'Finer holes to the left, bolder to the right',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',

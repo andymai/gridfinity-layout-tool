@@ -20,8 +20,31 @@ export type {
   MotifPath,
   MotifSegment,
   MotifMode,
+  WrappedLatticeCalculator,
 } from './types';
-export { isStampCalculator, isMotifCalculator, shapeDescriptorKey } from './types';
+export {
+  isStampCalculator,
+  isMotifCalculator,
+  isWrappedLatticeCalculator,
+  shapeDescriptorKey,
+} from './types';
+
+// Kumiko wrapped-lattice patterns
+export type {
+  KumikoSegment,
+  KumikoLattice,
+  KumikoBandConfig,
+  KumikoPatternDef,
+} from './kumiko/types';
+export {
+  KUMIKO_STRUT_WIDTH,
+  KUMIKO_BASE_CELL_SIZE,
+  quantizeColumns,
+  clipSegmentToBand,
+  generateKumikoLattice,
+} from './kumiko/segmentLattice';
+export { createKumikoCalculator } from './kumiko/calculator';
+export { createMitsukudeCalculator, MITSUKUDE_DEF } from './kumiko/mitsukude';
 
 // Grid utilities
 export { calculateStaggeredGrid, calculateAlignedGrid } from './gridUtils';

@@ -486,6 +486,7 @@ const PATTERN_VOID_FRACTION: Record<WallPatternType, number> = {
   diamond: 0.5,
   triangle: 0.42,
   slots: 0.48,
+  mitsukude: 0.58,
 };
 
 /**

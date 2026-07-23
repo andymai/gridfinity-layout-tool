@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "Losango",
   "binDesigner.walls.pattern.triangle": "Triângulo",
   "binDesigner.walls.pattern.slots": "Ranhuras",
+  "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",
+  "binDesigner.walls.pattern.groupKumiko": "Kumiko",
   "binDesigner.walls.pattern.scale": "Escala do padrão",
   "binDesigner.walls.pattern.scaleHint": "Furos mais finos à esquerda, maiores à direita",
   "binDesigner.walls.pattern.label": "Padrão de parede",

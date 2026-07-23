@@ -18,7 +18,7 @@ import type {
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
-import { DEFAULT_PATTERN_SCALE } from '../types';
+import { DEFAULT_PATTERN_SCALE, WALL_PATTERN_TYPES } from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
 import { makeUniformLipCells, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
@@ -45,13 +45,7 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
 } as const;
 
 /** Valid wall pattern members — used to coerce crafted/removed values on load. */
-export const VALID_WALL_PATTERNS = new Set<WallPatternType>([
-  'honeycomb',
-  'round',
-  'diamond',
-  'triangle',
-  'slots',
-]);
+export const VALID_WALL_PATTERNS = new Set<WallPatternType>(WALL_PATTERN_TYPES);
 
 /** Default wall pattern configuration: disabled */
 export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {

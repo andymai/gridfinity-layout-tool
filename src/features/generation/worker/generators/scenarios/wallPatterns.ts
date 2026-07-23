@@ -46,7 +46,7 @@ const ALL_SIDES_OFF = {
 } as const;
 
 /** A pattern must remove wall material vs the solid-walled equivalent. */
-function assertRemovesMaterial(patterned: MeshData, solid: MeshData): void {
+export function assertRemovesMaterial(patterned: MeshData, solid: MeshData): void {
   const solidVol = meshVolume(solid);
   const patternedVol = meshVolume(patterned);
   expect(

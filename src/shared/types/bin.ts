@@ -99,6 +99,8 @@ export {
   CHAMFER_SHAPES,
   MAX_ARRAY_INSTANCES,
   DEFAULT_PATTERN_SCALE,
+  KUMIKO_PATTERN_TYPES,
+  isKumikoPattern,
   WALL_TEXT_SIDES,
   WALL_TEXT_ALIGNS,
 } from '@/features/bin-designer/types';

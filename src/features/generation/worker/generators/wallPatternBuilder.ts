@@ -12,6 +12,10 @@
  *   - `wallPatternTypes`     — shared interfaces + cache name constants
  *   - `wallPatternCompound`  — per-wall hex compound construction + caching
  *   - `wallPatternClips`     — cutout/handle/ramp clipping passes
+ *
+ * The clip-set assembly (`computeWallClipContext` / `computeWallClips`) is
+ * shared with `kumikoWrapBuilder` so wrapped-lattice patterns compose with
+ * cutouts/handles/text/divider junctions through the exact same border rules.
  */
 
 import { drawPolysides, drawRoundedRectangle, rotate, unwrap, clone, translate } from 'brepjs';
@@ -39,6 +43,7 @@ import {
   computeDividerJunctionZones,
   computeWallPatternInputs,
 } from './dividerBlendBuilder';
+import type { WallPatternInputs } from './dividerBlendBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import {
@@ -60,6 +65,8 @@ import {
 import { buildClippedWallPattern } from './wallPatternCompound';
 import { computeWallTextLayouts } from './wallTextLayout';
 import type { WallTextLayout } from './wallTextLayout';
+import type { BinParams } from '@/shared/types/bin';
+import type { BinDimensions } from './pipeline/types';
 
 /**
  * Build the extruded 2D element stamped at each pattern center.
@@ -80,48 +87,47 @@ function buildShapeTemplate(descriptor: ShapeDescriptor, cutDepth: number): Shap
   return rotated;
 }
 
+/** Wall identity + clip anchoring info shared by stamp and kumiko callers. */
+export interface WallClipTarget {
+  readonly side: 'front' | 'back' | 'left' | 'right';
+  readonly wallSpan: number;
+  readonly allowClip: boolean;
+}
+
+/** Hoisted, wall-agnostic inputs for per-wall clip assembly. */
+export interface WallClipContext {
+  readonly clipExtrudeDepth: number;
+  readonly clipOvershoot: number;
+  readonly isPolygon: boolean;
+  readonly wallPatternInputs: WallPatternInputs | undefined;
+  readonly handleWallDefForSide: ReadonlyMap<string, HandleWallDef>;
+  readonly wallTextBySide: ReadonlyMap<string, WallTextLayout>;
+  readonly textWallDefForSide: ReadonlyMap<string, HandleWallDef>;
+}
+
+/** Per-wall clip payload + its contribution to the clipped cache key. */
+export interface WallClipSet {
+  readonly clip: CutoutClipParams | null;
+  readonly handleClip: HandleClipParams | null;
+  readonly textClip: HandleClipParams | null;
+  readonly rampClip: RampZoneClipParams | null;
+  /** True when the expanded cutout consumes the whole wall — emit no pattern. */
+  readonly skipWall: boolean;
+  /** Combined cutout/handle/ramp/text cache-key fragment for this wall. */
+  readonly keyPart: string;
+}
+
 /**
- * Build wall pattern shapes for all walls with per-wall caching
- * and optional cutout clipping.
- *
- * Returns shapes to be pushed into patternCutTargets. Each shape
- * is a clone owned by the caller (cache owns the originals).
+ * Compute the wall-agnostic clip inputs once per generation: clip box depth,
+ * handle/text wall defs, and divider traversals. Shared across all walls
+ * (and across the stamp/kumiko builders).
  */
-export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
-  const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
-  const { innerW, innerD, interiorHeight, hasLip, innerOffsetX, innerOffsetY } = dim;
-  const patternCutTargets: Shape3D[] = [];
-
-  const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
-  if (!patternResult) return patternCutTargets;
-
-  // patternResult.calculator is a StampPatternCalculator: getPatternDescriptors
-  // filters motif patterns out of this pipeline (they build via motifBuilder).
-  const { descriptors: wallDescriptors, calculator, patternHeight } = patternResult;
-  const cutDepth = params.wallThickness * 4;
-  const halfDepth = cutDepth / 2;
-  const patternType = calculator.getPatternType();
-  const shapeRadius = calculator.getShapeRadius();
-  // Resolve the stamped shape from the canonical (bin-uniform) fill height so
-  // full-height rect slots size correctly; fillW is unused by the descriptor.
-  const descriptor = calculator.getShapeDescriptor({ fillW: 0, fillH: patternHeight });
-  const descriptorKey = shapeDescriptorKey(descriptor);
-
-  const templateKey = buildCacheKey('v2', patternType, descriptorKey, quantize(cutDepth));
-  const templateStart = perfCollector ? performance.now() : 0;
-  let shapeTemplate = getPatternTemplateCache(templateKey);
-  const templateCacheHit = shapeTemplate !== null;
-  if (!shapeTemplate) {
-    shapeTemplate = buildShapeTemplate(descriptor, cutDepth);
-    setPatternTemplateCache(templateKey, shapeTemplate);
-  }
-  if (perfCollector) {
-    perfCollector.recordWallPatternSubstep(
-      templateCacheHit ? 'template_hit' : 'template_build',
-      performance.now() - templateStart
-    );
-  }
-
+export function computeWallClipContext(
+  params: BinParams,
+  dim: BinDimensions,
+  cutDepth: number
+): WallClipContext {
+  const { innerW, innerD, hasLip } = dim;
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
   // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
@@ -177,185 +183,290 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     wallTextLayouts.length > 0 && !isPolygon ? buildHandleWallDefs(innerW, innerD) : [];
   const textWallDefForSide = new Map(textWallDefs.map((d) => [d.side, d]));
 
-  for (const wall of wallDescriptors) {
-    checkCancelled(signal);
+  return {
+    clipExtrudeDepth,
+    clipOvershoot,
+    isPolygon,
+    wallPatternInputs,
+    handleWallDefForSide,
+    wallTextBySide,
+    textWallDefForSide,
+  };
+}
 
-    // Polygon non-outermost edges: no cutout/handle/ramp lives there, so
-    // emit pure pattern without any clip lookup. Prevents a cardinal-side
-    // cutout/handle config from being projected onto an inner step wall.
-    const cutoutCfg = wall.allowClip && params.walls.enabled ? params.walls[wall.side] : undefined;
-    const wallSpan = wall.wallSpan;
+/**
+ * Assemble the cutout/handle/text/ramp clip set for one wall, plus the
+ * combined cache-key fragment. `shapeRadius` is the pattern element's
+ * bounding radius — junction clip borders expand to at least it so elements
+ * can't bleed into divider walls (#1350).
+ */
+export function computeWallClips(
+  params: BinParams,
+  dim: BinDimensions,
+  clipCtx: WallClipContext,
+  wall: WallClipTarget,
+  shapeRadius: number
+): WallClipSet {
+  const { innerW, innerD, interiorHeight, hasLip } = dim;
+  const { clipExtrudeDepth, clipOvershoot, isPolygon } = clipCtx;
+  const wallSpan = wall.wallSpan;
 
-    let cutWidth = 0;
-    let userCutHeight = 0;
-    let expandedWidth = 0;
-    let expandedHeight = 0;
-    if (cutoutCfg?.enabled) {
-      cutWidth =
-        cutoutCfg.widthMm !== null
-          ? Math.min(cutoutCfg.widthMm, wallSpan)
-          : wallSpan * (cutoutCfg.width / 100);
-      const interiorWallHeight = dim.wallHeight - params.wallThickness;
-      userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
+  // Polygon non-outermost edges: no cutout/handle/ramp lives there, so
+  // emit pure pattern without any clip lookup. Prevents a cardinal-side
+  // cutout/handle config from being projected onto an inner step wall.
+  const cutoutCfg = wall.allowClip && params.walls.enabled ? params.walls[wall.side] : undefined;
 
-      const expanded = getExpandedCutoutDimensions(cutWidth, userCutHeight, CUTOUT_BORDER_WIDTH);
-      expandedWidth = expanded.expandedWidth;
-      expandedHeight = expanded.expandedHeight;
+  let cutWidth = 0;
+  let userCutHeight = 0;
+  let expandedWidth = 0;
+  let expandedHeight = 0;
+  if (cutoutCfg?.enabled) {
+    cutWidth =
+      cutoutCfg.widthMm !== null
+        ? Math.min(cutoutCfg.widthMm, wallSpan)
+        : wallSpan * (cutoutCfg.width / 100);
+    const interiorWallHeight = dim.wallHeight - params.wallThickness;
+    userCutHeight = interiorWallHeight * (cutoutCfg.depth / 100);
 
-      if (expandedWidth >= wallSpan) continue;
-    }
+    const expanded = getExpandedCutoutDimensions(cutWidth, userCutHeight, CUTOUT_BORDER_WIDTH);
+    expandedWidth = expanded.expandedWidth;
+    expandedHeight = expanded.expandedHeight;
+  }
 
-    const c0 = wall.centers[0];
+  const skipWall = cutoutCfg?.enabled === true && expandedWidth >= wallSpan;
 
-    const clip: CutoutClipParams | null = cutoutCfg?.enabled
-      ? {
-          cutoutCfg,
-          cutWidth,
-          userCutHeight,
-          expandedWidth,
-          expandedHeight,
-          clipOvershoot,
-          clipExtrudeDepth,
-          wallHeight: dim.wallHeight,
-          wallSpan,
-          wallShape: params.walls.shape,
-          wallThickness: params.wallThickness,
+  const clip: CutoutClipParams | null = cutoutCfg?.enabled
+    ? {
+        cutoutCfg,
+        cutWidth,
+        userCutHeight,
+        expandedWidth,
+        expandedHeight,
+        clipOvershoot,
+        clipExtrudeDepth,
+        wallHeight: dim.wallHeight,
+        wallSpan,
+        wallShape: params.walls.shape,
+        wallThickness: params.wallThickness,
+      }
+    : null;
+
+  // Handle border clipping
+  let handleClip: HandleClipParams | null = null;
+  const handleWall = clipCtx.handleWallDefForSide.get(wall.side);
+  if (
+    wall.allowClip &&
+    params.handles.enabled &&
+    !dim.isSlotted &&
+    handleWall &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Record<Side, HandleSide> is exhaustive in the type system, but legacy persisted configs may have missing keys
+    params.handles[wall.side]?.enabled &&
+    !(wall.side === 'back' && params.label.enabled)
+  ) {
+    const side = params.handles[wall.side];
+    const sideHeight = side.height ?? params.handles.height;
+    const sideWidth = side.width ?? params.handles.width;
+
+    const { centerZ: handleCenterZ, effectiveHeight: handleEffHeight } = computeHandleHoleGeometry(
+      interiorHeight,
+      sideHeight,
+      params.handles.verticalPosition
+    );
+
+    if (handleEffHeight >= 1) {
+      const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
+      const baseSegments = computeWallHandleSegments(
+        wallSpan,
+        sideWidth,
+        params.wallThickness,
+        handleCutoutCfg
+      );
+      if (baseSegments && baseSegments.length > 0) {
+        // Expand segments with multi-handle offsets
+        const handleWidthMm = wallSpan * (sideWidth / 100);
+        const offsets = computeMultiHandleOffsets(params.handles.count, wallSpan, handleWidthMm);
+        const expandedSegments: HandleSegment[] = [];
+        for (const handleOffset of offsets) {
+          for (const seg of baseSegments) {
+            expandedSegments.push({ offset: seg.offset + handleOffset, width: seg.width });
+          }
         }
-      : null;
-
-    // Handle border clipping
-    let handleClip: HandleClipParams | null = null;
-    const handleWall = handleWallDefForSide.get(wall.side);
-    if (
-      wall.allowClip &&
-      params.handles.enabled &&
-      !dim.isSlotted &&
-      handleWall &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Record<Side, HandleSide> is exhaustive in the type system, but legacy persisted configs may have missing keys
-      params.handles[wall.side]?.enabled &&
-      !(wall.side === 'back' && params.label.enabled)
-    ) {
-      const side = params.handles[wall.side];
-      const sideHeight = side.height ?? params.handles.height;
-      const sideWidth = side.width ?? params.handles.width;
-
-      const { centerZ: handleCenterZ, effectiveHeight: handleEffHeight } =
-        computeHandleHoleGeometry(interiorHeight, sideHeight, params.handles.verticalPosition);
-
-      if (handleEffHeight >= 1) {
-        const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
-        const baseSegments = computeWallHandleSegments(
-          wallSpan,
-          sideWidth,
-          params.wallThickness,
-          handleCutoutCfg
-        );
-        if (baseSegments && baseSegments.length > 0) {
-          // Expand segments with multi-handle offsets
-          const handleWidthMm = wallSpan * (sideWidth / 100);
-          const offsets = computeMultiHandleOffsets(params.handles.count, wallSpan, handleWidthMm);
-          const expandedSegments: HandleSegment[] = [];
-          for (const handleOffset of offsets) {
-            for (const seg of baseSegments) {
-              expandedSegments.push({ offset: seg.offset + handleOffset, width: seg.width });
-            }
-          }
-          if (expandedSegments.length > 0) {
-            handleClip = {
-              segments: expandedSegments,
-              effectiveHeight: handleEffHeight,
-              centerZ: handleCenterZ,
-              clipExtrudeDepth,
-              handleWall,
-            };
-          }
+        if (expandedSegments.length > 0) {
+          handleClip = {
+            segments: expandedSegments,
+            effectiveHeight: handleEffHeight,
+            centerZ: handleCenterZ,
+            clipExtrudeDepth,
+            handleWall,
+          };
         }
       }
     }
+  }
 
-    // Text border clipping (#2695) — clear the pattern behind the fitted
-    // text bbox (buildHandleClipBoxes adds CUTOUT_BORDER_WIDTH around it).
-    let textClip: HandleClipParams | null = null;
-    const textLayout = wall.allowClip ? wallTextBySide.get(wall.side) : undefined;
-    const textWall = textWallDefForSide.get(wall.side);
-    if (textLayout && textWall) {
-      textClip = {
-        segments: [{ offset: textLayout.centerU, width: textLayout.textW }],
-        effectiveHeight: textLayout.textH,
-        centerZ: textLayout.centerZ,
-        clipExtrudeDepth,
-        handleWall: textWall,
-      };
-    }
+  // Text border clipping (#2695) — clear the pattern behind the fitted
+  // text bbox (buildHandleClipBoxes adds CUTOUT_BORDER_WIDTH around it).
+  let textClip: HandleClipParams | null = null;
+  const textLayout = wall.allowClip ? clipCtx.wallTextBySide.get(wall.side) : undefined;
+  const textWall = clipCtx.textWallDefForSide.get(wall.side);
+  if (textLayout && textWall) {
+    textClip = {
+      segments: [{ offset: textLayout.centerU, width: textLayout.textW }],
+      effectiveHeight: textLayout.textH,
+      centerZ: textLayout.centerZ,
+      clipExtrudeDepth,
+      handleWall: textWall,
+    };
+  }
 
-    const cutoutKeyPart = cutoutCfg?.enabled
-      ? buildCacheKey(
-          'clip',
-          params.walls.shape,
-          cutoutCfg.widthMm !== null ? 'mm' : 'pct',
-          cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
-          quantize(cutoutCfg.depth),
-          cutoutCfg.alignment,
-          quantize(cutoutCfg.offset),
-          hasLip,
-          quantize(params.compartments.thickness),
-          quantize(params.wallThickness)
-        )
-      : 'noclip';
+  const cutoutKeyPart = cutoutCfg?.enabled
+    ? buildCacheKey(
+        'clip',
+        params.walls.shape,
+        cutoutCfg.widthMm !== null ? 'mm' : 'pct',
+        cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
+        quantize(cutoutCfg.depth),
+        cutoutCfg.alignment,
+        quantize(cutoutCfg.offset),
+        hasLip,
+        quantize(params.compartments.thickness),
+        quantize(params.wallThickness)
+      )
+    : 'noclip';
 
-    const handleKeyPart = handleClip
-      ? buildCacheKey(
-          'hdl',
-          params.handles.shape,
-          params.handles.count,
-          quantize(handleClip.centerZ),
-          quantize(handleClip.effectiveHeight),
-          handleClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(',')
-        )
-      : 'nohdl';
+  const handleKeyPart = handleClip
+    ? buildCacheKey(
+        'hdl',
+        params.handles.shape,
+        params.handles.count,
+        quantize(handleClip.centerZ),
+        quantize(handleClip.effectiveHeight),
+        handleClip.segments.map((s) => `${quantize(s.offset)}:${quantize(s.width)}`).join(',')
+      )
+    : 'nohdl';
 
-    // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345).
-    // Polygon bins skip both: dividers are filtered out of the feature pipeline
-    // on custom shapes so there's nothing to blend against or block.
-    const rampZones = isPolygon
-      ? []
-      : computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight, wallPatternInputs);
-    const junctionZones = isPolygon
-      ? []
-      : computeDividerJunctionZones(
-          wall.side,
-          params,
-          innerW,
-          innerD,
-          dim.wallHeight,
-          wallPatternInputs
-        );
-    // Deduplicate: junction zones (full height) subsume ramp zones at the same offset
-    const junctionOffsets = new Set(junctionZones.map((z) => quantize(z.offsetAlongWall)));
-    const uniqueRampZones = rampZones.filter(
-      (z) => !junctionOffsets.has(quantize(z.offsetAlongWall))
+  // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345).
+  // Polygon bins skip both: dividers are filtered out of the feature pipeline
+  // on custom shapes so there's nothing to blend against or block.
+  const rampZones = isPolygon
+    ? []
+    : computeRampZones(
+        wall.side,
+        params,
+        innerW,
+        innerD,
+        dim.wallHeight,
+        clipCtx.wallPatternInputs
+      );
+  const junctionZones = isPolygon
+    ? []
+    : computeDividerJunctionZones(
+        wall.side,
+        params,
+        innerW,
+        innerD,
+        dim.wallHeight,
+        clipCtx.wallPatternInputs
+      );
+  // Deduplicate: junction zones (full height) subsume ramp zones at the same offset
+  const junctionOffsets = new Set(junctionZones.map((z) => quantize(z.offsetAlongWall)));
+  const uniqueRampZones = rampZones.filter(
+    (z) => !junctionOffsets.has(quantize(z.offsetAlongWall))
+  );
+  const combinedZones = [...uniqueRampZones, ...junctionZones];
+  // Ensure border is at least shapeRadius so hex prisms can't bleed into divider walls (#1350).
+  const zoneBorder = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
+  const rampClip: RampZoneClipParams | null =
+    combinedZones.length > 0
+      ? {
+          zones: combinedZones,
+          clipExtrudeDepth,
+          wallHeight: dim.wallHeight,
+          border: zoneBorder,
+        }
+      : null;
+
+  const rampKeyPart = rampClip
+    ? buildCacheKey(
+        'ramp',
+        rampClip.zones
+          .map((z) => `${quantize(z.offsetAlongWall)}:${quantize(z.width)}:${quantize(z.height)}`)
+          .join(',')
+      )
+    : 'noramp';
+
+  const textKeyPart = textClip
+    ? buildCacheKey(
+        'txt',
+        quantize(textClip.segments[0].offset),
+        quantize(textClip.segments[0].width),
+        quantize(textClip.centerZ),
+        quantize(textClip.effectiveHeight)
+      )
+    : 'notxt';
+
+  return {
+    clip,
+    handleClip,
+    textClip,
+    rampClip,
+    skipWall,
+    keyPart: buildCacheKey(cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart),
+  };
+}
+
+/**
+ * Build wall pattern shapes for all walls with per-wall caching
+ * and optional cutout clipping.
+ *
+ * Returns shapes to be pushed into patternCutTargets. Each shape
+ * is a clone owned by the caller (cache owns the originals).
+ */
+export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
+  const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
+  const { innerW, innerD, interiorHeight, innerOffsetX, innerOffsetY } = dim;
+  const patternCutTargets: Shape3D[] = [];
+
+  const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
+  if (!patternResult) return patternCutTargets;
+
+  // patternResult.calculator is a StampPatternCalculator: getPatternDescriptors
+  // filters motif/wrapped-lattice patterns out of this pipeline (they build via
+  // motifBuilder / kumikoWrapBuilder).
+  const { descriptors: wallDescriptors, calculator, patternHeight } = patternResult;
+  const cutDepth = params.wallThickness * 4;
+  const halfDepth = cutDepth / 2;
+  const patternType = calculator.getPatternType();
+  const shapeRadius = calculator.getShapeRadius();
+  // Resolve the stamped shape from the canonical (bin-uniform) fill height so
+  // full-height rect slots size correctly; fillW is unused by the descriptor.
+  const descriptor = calculator.getShapeDescriptor({ fillW: 0, fillH: patternHeight });
+  const descriptorKey = shapeDescriptorKey(descriptor);
+
+  const templateKey = buildCacheKey('v2', patternType, descriptorKey, quantize(cutDepth));
+  const templateStart = perfCollector ? performance.now() : 0;
+  let shapeTemplate = getPatternTemplateCache(templateKey);
+  const templateCacheHit = shapeTemplate !== null;
+  if (!shapeTemplate) {
+    shapeTemplate = buildShapeTemplate(descriptor, cutDepth);
+    setPatternTemplateCache(templateKey, shapeTemplate);
+  }
+  if (perfCollector) {
+    perfCollector.recordWallPatternSubstep(
+      templateCacheHit ? 'template_hit' : 'template_build',
+      performance.now() - templateStart
     );
-    const combinedZones = [...uniqueRampZones, ...junctionZones];
-    // Ensure border is at least shapeRadius so hex prisms can't bleed into divider walls (#1350).
-    const zoneBorder = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
-    const rampClip: RampZoneClipParams | null =
-      combinedZones.length > 0
-        ? {
-            zones: combinedZones,
-            clipExtrudeDepth,
-            wallHeight: dim.wallHeight,
-            border: zoneBorder,
-          }
-        : null;
+  }
 
-    const rampKeyPart = rampClip
-      ? buildCacheKey(
-          'ramp',
-          rampClip.zones
-            .map((z) => `${quantize(z.offsetAlongWall)}:${quantize(z.width)}:${quantize(z.height)}`)
-            .join(',')
-        )
-      : 'noramp';
+  const clipCtx = computeWallClipContext(params, dim, cutDepth);
+
+  for (const wall of wallDescriptors) {
+    checkCancelled(signal);
+
+    const clips = computeWallClips(params, dim, clipCtx, wall, shapeRadius);
+    if (clips.skipWall) continue;
+
+    const c0 = wall.centers[0];
 
     // Base-compound key: wall geometry + pattern template only. Cutout/handle/
     // ramp nudges MUST NOT affect this key so the expensive hex compound is
@@ -377,21 +488,9 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       )
     );
 
-    const textKeyPart = textClip
-      ? buildCacheKey(
-          'txt',
-          quantize(textClip.segments[0].offset),
-          quantize(textClip.segments[0].width),
-          quantize(textClip.centerZ),
-          quantize(textClip.effectiveHeight)
-        )
-      : 'notxt';
-
     // Clipped-result key: derived from baseKey so cache entries for different
     // wall geometries can't collide via matching clip params.
-    const clippedKey = compactKey(
-      buildCacheKey('v1', baseKey, cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart)
-    );
+    const clippedKey = compactKey(buildCacheKey('v1', baseKey, clips.keyPart));
 
     const wallStart = perfCollector ? performance.now() : 0;
     let shape = getFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey);
@@ -402,10 +501,10 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         wall,
         halfDepth,
         baseKey,
-        clip,
-        handleClip,
-        rampClip,
-        textClip
+        clips.clip,
+        clips.handleClip,
+        clips.rampClip,
+        clips.textClip
       );
       if (built) {
         setFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey, built);

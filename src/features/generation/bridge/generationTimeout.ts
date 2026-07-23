@@ -11,6 +11,7 @@
  */
 
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
+import { isKumikoPattern } from '@/shared/types/bin';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -40,6 +41,24 @@ export const HEX_FOOTPRINT_BONUS_MS_PER_CELL = 250;
  * base budget already covers normal-sized bins. 16 = a 4×4 grid.
  */
 export const HEX_FOOTPRINT_BONUS_FLOOR_CELLS = 16;
+
+/**
+ * Extra time when a kumiko wrapped-lattice pattern is enabled.
+ *
+ * Kumiko builds cost far more than hex stamps: four corner cutters (partial
+ * revolves + helix sweeps + booleans), a fused strut subtraction per flat
+ * wall, and a heavier final pattern cut. A 1×1×6 mitsukude bin measures
+ * ~60-80s on the single-threaded OCCT pipeline where a honeycomb equivalent
+ * finishes in seconds.
+ */
+export const KUMIKO_PATTERN_BONUS_MS = 60_000;
+
+/**
+ * Per-perimeter-cell bonus for kumiko patterns. Lattice cost scales with the
+ * wall PERIMETER (strut count around the loop), not footprint area, so this
+ * keys off width + depth with no floor — even small bins pay the corner cost.
+ */
+export const KUMIKO_PERIMETER_BONUS_MS_PER_CELL = 7_000;
 
 /**
  * Bonus per 2 height units above the reference height.
@@ -154,6 +173,11 @@ function binRawBudgetMs(params: BinParams): number {
     const cells = Math.ceil(safeWidth) * Math.ceil(safeDepth);
     const chargeableCells = Math.max(0, cells - HEX_FOOTPRINT_BONUS_FLOOR_CELLS);
     timeout += chargeableCells * HEX_FOOTPRINT_BONUS_MS_PER_CELL;
+
+    if (isKumikoPattern(params.wallPattern.pattern)) {
+      timeout += KUMIKO_PATTERN_BONUS_MS;
+      timeout += (Math.ceil(safeWidth) + Math.ceil(safeDepth)) * KUMIKO_PERIMETER_BONUS_MS_PER_CELL;
+    }
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

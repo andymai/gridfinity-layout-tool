@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "Romb",
   "binDesigner.walls.pattern.triangle": "Triangel",
   "binDesigner.walls.pattern.slots": "Springor",
+  "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",
+  "binDesigner.walls.pattern.groupKumiko": "Kumiko",
   "binDesigner.walls.pattern.scale": "Mönsterskala",
   "binDesigner.walls.pattern.scaleHint": "Finare hål till vänster, grövre till höger",
   "binDesigner.walls.pattern.label": "Väggmönster",
