@@ -1,0 +1,132 @@
+src/features/generation/bridge/generationTimeout.ts
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 180-184
+src/features/generation/worker/generators/patterns/kumiko/asanoha.ts
+  s_20d1a5ff5ca196::t_bf67134b2909b3 13,23-24
+  s_20d1a5ff5ca196::t_933e76e9fb8564 1-12,14-20,25-33
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 21
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 22
+src/features/generation/worker/generators/patterns/kumiko/rindo.ts
+  s_20d1a5ff5ca196::t_f310333d0459f1 1-15,17-21,26-31
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 23
+  s_20d1a5ff5ca196::t_0092d72e84f5f6 16,24-25
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 22
+src/features/generation/worker/generators/patterns/kumiko/mikado.ts
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 21
+  s_20d1a5ff5ca196::t_17e93e3cae1394 1-13,15-19,24-38
+  s_20d1a5ff5ca196::t_bf67134b2909b3 14,22-23
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 20
+scripts/i18n-values-allowlist.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 112-113,115,118-119,121
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_20d1a5ff5ca196::t_fe717f50d52383 85-180,204-237,239
+  s_20d1a5ff5ca196::t_43721718b5f7d7 238
+src/i18n/locales/de.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/i18n/locales/fr.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/i18n/locales/ja.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/generation/worker/generators/patterns/kumiko/fillings.test.ts
+  s_20d1a5ff5ca196::t_0e87a31c7c4f7e 10,27-30,32-34,38-47,68,84,87-88,95,99-110,114-115,117,123
+  s_20d1a5ff5ca196::t_3c0b7b8d5560f7 51-63,69-76
+  s_20d1a5ff5ca196::t_495f86130ca315 1-9,11-26,31,35-37,48-50,64-67,77-83,85-86,89-94,96-98,111-113,116,118-122,124-125
+  s_20d1a5ff5ca196::t_ebafdf15994d6a 126
+src/i18n/locales/en.ts
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 2263-2268
+src/i18n/locales/nb.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/i18n/locales/pt-BR.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/generation/worker/generators/patterns/kumiko/tsumiishiKikko.ts
+  s_20d1a5ff5ca196::t_0235defa43d6c4 14,22-30,33
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 21
+  s_20d1a5ff5ca196::t_ec7f23c293b8f2 1-13,15-19,31-32,34-42
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 20
+src/features/generation/worker/generators/__kernel-tests__/kumikoProfile.test.ts
+  s_20d1a5ff5ca196::t_0211366d26833a 21-22,32,55-56
+  s_20d1a5ff5ca196::t_bc0d03a42832d4 57-58
+src/features/bin-designer/types/walls.ts
+  s_20d1a5ff5ca196::t_d754fbda35d830 98-103,114-122
+src/features/generation/worker/generators/patterns/kumiko/calculator.ts
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 21
+src/features/generation/worker/generators/patterns/kumiko/sakura.ts
+  s_20d1a5ff5ca196::t_369ade6e1037e0 1-3,9-14,17-20,24,27-38
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 21
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 22
+  s_20d1a5ff5ca196::t_0092d72e84f5f6 4-8,15-16,23,25-26
+src/i18n/locales/nl.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.test.tsx
+  s_20d1a5ff5ca196::t_7c27b67b956cdd 17-22,43,51-56,65
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_20d1a5ff5ca196::t_a05ca703ac623d 19,67-91,93-98
+src/features/generation/worker/generators/patterns/registry.ts
+  s_20d1a5ff5ca196::t_d754fbda35d830 25-30,70-93
+src/features/generation/worker/generators/patterns/kumiko/fillingUtils.ts
+  s_20d1a5ff5ca196::t_d89679264cd0eb 12,18,30-31,40
+  s_20d1a5ff5ca196::t_bc6dcddcda8e41 1-11,13-17,19-29,32-39,41-47
+  s_20d1a5ff5ca196::t_0ea40f9427ec6f 50,52-54,56
+  s_20d1a5ff5ca196::t_0235defa43d6c4 48-49,51,55
+src/i18n/locales/it.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/bin-designer/utils/printEstimates.ts
+  s_20d1a5ff5ca196::t_d754fbda35d830 490-495
+src/i18n/locales/es.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/i18n/locales/uk.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_25b9844e14dae4 370-386,389
+  s_20d1a5ff5ca196::t_8f6eb44aee0a7d 387-388
+  s_20d1a5ff5ca196::t_c380edaaa73edd 578,588-591,594-630
+  s_20d1a5ff5ca196::t_05697ae3728157 818-829,832,852-853,873,876,878,884-886,895,902,929
+  s_20d1a5ff5ca196::t_018d4db0cf8c5b 333-335,338-339,399,420-441
+  s_20d1a5ff5ca196::t_6f704561add5f7 292-293
+  s_20d1a5ff5ca196::t_b04ff1d3c854f3 579,586-587,592-593,631,633-634
+  s_20d1a5ff5ca196::t_42e2dbb3d85830 300,442,470-543
+  s_20d1a5ff5ca196::t_e991cd58e5f05b 238,242,252-291,294-299
+  s_20d1a5ff5ca196::t_c86f2905398bc4 94-96,138-145,150,152,154,156
+  s_20d1a5ff5ca196::t_fe75a8b440da8f 644,653,666
+  s_20d1a5ff5ca196::t_e5c396d61e9ae7 34-35
+  s_20d1a5ff5ca196::t_d067230aaf2f93 301,443
+src/features/generation/worker/generators/patterns/kumiko/types.ts
+  s_20d1a5ff5ca196::t_9e4abeca86ebfd 20-21,67,69,71-78
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 52-57
+  s_20d1a5ff5ca196::t_d89679264cd0eb 31-37,39
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 58-64
+src/features/generation/bridge/generationTimeout.test.ts
+  s_20d1a5ff5ca196::t_bf8533b176d99c 180-194
+src/i18n/locales/sv.json
+  s_20d1a5ff5ca196::t_16f5f9e5edbb23 1041-1046
+src/features/generation/worker/generators/patterns/kumiko/goma.ts
+  s_20d1a5ff5ca196::t_0235defa43d6c4 8-12,18,37
+  s_20d1a5ff5ca196::t_bf67134b2909b3 28,32
+  s_20d1a5ff5ca196::t_49353e59c2cfd8 1-7,13-17,19-25,29-31,33-36,38-45
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 27
+  s_20d1a5ff5ca196::t_ff8c1e0864733c 26
+src/features/generation/worker/generators/patterns/index.ts
+  s_20d1a5ff5ca196::t_d754fbda35d830 48-53
+  s_20d1a5ff5ca196::t_824ae0e3836e87 54
+src/features/generation/worker/generators/patterns/kumiko/segmentLattice.ts
+  s_20d1a5ff5ca196::t_824ae0e3836e87 18-24
+  s_20d1a5ff5ca196::t_72f31ab5da2deb 148-149
+  s_20d1a5ff5ca196::t_0beab22c4d3fba 35-36,47-48,52,109
+  s_20d1a5ff5ca196::t_bf8533b176d99c 138,140-141
+  s_20d1a5ff5ca196::t_80fc531192698c 139,142-145,147,151,156-163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "47f719093eb114731edb31079871ab9b1f3f0b38",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
