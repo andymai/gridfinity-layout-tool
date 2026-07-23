@@ -1,21 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore, useInteractionStore } from '@/core/store';
-import { useMutations } from '@/shared/contexts';
-import type { HeightUnits, LayerId } from '@/core/types';
+import { useInteractionStore } from '@/core/store';
+import type { LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
-import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { isOk, isErr, getUserMessage } from '@/core/result';
-import { useToastStore } from '@/core/store/toast';
-import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { Button, IconButton, PlusIcon, MinusIcon } from '@/design-system';
-import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
-import { batch } from '@/core/cqrs';
+import { useLayerListController } from '@/features/layers/hooks/useLayerListController';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -23,7 +16,6 @@ import { batch } from '@/core/cqrs';
  */
 export function LayersTab() {
   const t = useTranslation();
-  const [deleteLayerId, setDeleteLayerId] = useState<LayerId | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
   const [renameLayerId, setRenameLayerId] = useState<LayerId | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -41,21 +33,34 @@ export function LayersTab() {
   }, [renameLayerId]);
 
   const layout = useLayoutStore((state) => state.layout);
-  const { addLayer, updateLayer, deleteLayer, reorderLayers } = useMutations();
-  const layers = layout.layers;
   const bins = layout.bins;
   const drawer = layout.drawer;
 
-  const { activeLayerId, setActiveLayer } = useSelectionStore(
-    useShallow((state) => ({
-      activeLayerId: state.activeLayerId,
-      setActiveLayer: state.setActiveLayer,
-    }))
-  );
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  const addToast = useToastStore((state) => state.addToast);
-  const { showErrorToast } = useResultToast();
+  const {
+    layers,
+    displayLayers,
+    activeLayerId,
+    setActiveLayer,
+    totalLayerHeight,
+    canAddLayer,
+    addLayerWithAutoExpand,
+    deleteLayerId,
+    layerToDelete,
+    deletedLayerBinCount,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+    renameLayer,
+    changeLayerHeight,
+    reorderByDisplayIndex,
+  } = useLayerListController({
+    onReorderError: (message) => {
+      setReorderError(message);
+      setTimeout(() => setReorderError(null), 3000);
+    },
+  });
 
   const handleRenameRequest = (id: LayerId) => {
     const layer = layers.find((l) => l.id === id);
@@ -67,17 +72,13 @@ export function LayersTab() {
     if (!renameLayerId) return;
     const trimmed = renameValue.trim();
     if (trimmed) {
-      batch(() => {
-        updateLayer(renameLayerId, { name: trimmed.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
-      });
+      renameLayer(renameLayerId, trimmed);
       announceToScreenReader(t('layers.announce.renamedTo', { name: trimmed }));
     }
     setRenameLayerId(null);
     setRenameValue('');
   };
 
-  const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
-  const displayLayers = getDisplayLayers(layers);
   const hasMultipleLayers = layers.length > 1;
 
   // Coverage calculations
@@ -100,110 +101,9 @@ export function LayersTab() {
         )
       : 0;
 
-  // Display is reversed: index 0 in display = last in array (top layer)
-  const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
-
-  const handleAddLayer = () => {
-    const topLayer = layers[layers.length - 1];
-
-    // Calculate if layer expansion is needed before adding new layer
-    const expansion = calculateLayerAutoExpansion(topLayer, bins, totalLayerHeight, drawer.height);
-
-    if (expansion.wouldExceedCapacity && expansion.smallestExceedingHeight !== undefined) {
-      // Show friendly error explaining the issue and suggesting solutions
-      addToast(
-        t('layers.cannotAddLayerTallBins', {
-          layerName: topLayer.name,
-          binHeight: expansion.smallestExceedingHeight,
-          layerHeight: topLayer.height,
-        }),
-        'error'
-      );
-      return;
-    }
-
-    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
-      // Auto-expand the top layer, then add the new layer (atomic via execute)
-      const newHeight = expansion.newHeight; // Capture for closure
-      batch(() => {
-        const expandResult = updateLayer(topLayer.id, { height: newHeight as HeightUnits });
-        if (isErr(expandResult)) {
-          showErrorToast(expandResult.error);
-          return;
-        }
-        const addResult = addLayer();
-        if (isOk(addResult)) {
-          setActiveLayer(addResult.value);
-        } else if (isErr(addResult)) {
-          showErrorToast(addResult.error);
-        }
-      });
-    } else {
-      // Normal case - no adjustment needed
-      batch(() => {
-        const result = addLayer();
-        if (isOk(result)) {
-          setActiveLayer(result.value);
-        }
-      });
-    }
-  };
-
-  // Selection behavior: select only, don't close panel
-  const handleSelectLayer = (id: LayerId) => {
-    setActiveLayer(id);
-  };
-
-  const handleDeleteLayer = (id: LayerId) => {
-    if (layers.length <= CONSTRAINTS.LAYERS_MIN) return;
-    setDeleteLayerId(id);
-  };
-
-  const confirmDeleteLayer = () => {
-    if (!deleteLayerId) return;
-    batch(() => {
-      const result = deleteLayer(deleteLayerId);
-      if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
-        const remaining = layers.filter((l) => l.id !== deleteLayerId);
-        if (remaining.length > 0) {
-          setActiveLayer(remaining[0].id);
-        }
-      }
-    });
-    setDeleteLayerId(null);
-  };
-
-  const handleHeightChange = (id: LayerId, delta: number) => {
-    const layer = layers.find((l) => l.id === id);
-    if (!layer) return;
-    const newHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + delta);
-    batch(() => {
-      updateLayer(id, { height: newHeight as HeightUnits });
-    });
-  };
-
   const handleMoveLayer = (displayIndex: number, direction: 'up' | 'down') => {
     const targetDisplayIndex = direction === 'up' ? displayIndex - 1 : displayIndex + 1;
-    if (targetDisplayIndex < 0 || targetDisplayIndex >= layers.length) return;
-
-    const fromArrayIndex = displayToArrayIndex(displayIndex);
-    const toArrayIndex = displayToArrayIndex(targetDisplayIndex);
-
-    batch(() => {
-      const result = reorderLayers(fromArrayIndex, toArrayIndex);
-      if (isErr(result)) {
-        setReorderError(getUserMessage(result.error));
-        setTimeout(() => setReorderError(null), 3000);
-      }
-    });
-  };
-
-  const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
-  const binsInLayer = deleteLayerId ? getLayerBins(bins, deleteLayerId).length : 0;
-  const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawer.height;
-
-  const cancelDeleteLayer = () => {
-    setDeleteLayerId(null);
+    reorderByDisplayIndex(displayIndex, targetDisplayIndex);
   };
 
   return (
@@ -273,7 +173,7 @@ export function LayersTab() {
                 variant="ghost"
                 touchTarget={false}
                 className="flex-1 min-w-0 flex-col items-start text-left py-1 px-0 hover:bg-transparent"
-                onClick={() => handleSelectLayer(layer.id)}
+                onClick={() => setActiveLayer(layer.id)}
               >
                 <span
                   className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
@@ -298,7 +198,7 @@ export function LayersTab() {
               <div className="flex items-center gap-1">
                 <IconButton
                   size="lg"
-                  onClick={() => handleHeightChange(layer.id, -1)}
+                  onClick={() => changeLayerHeight(layer.id, -1)}
                   disabled={layer.height <= CONSTRAINTS.MIN_LAYER_HEIGHT}
                   className="w-10 h-10 text-content-tertiary active:bg-surface-hover"
                   aria-label={t('layers.decreaseHeight', { name: layer.name })}
@@ -313,7 +213,7 @@ export function LayersTab() {
                 </span>
                 <IconButton
                   size="lg"
-                  onClick={() => handleHeightChange(layer.id, 1)}
+                  onClick={() => changeLayerHeight(layer.id, 1)}
                   className="w-10 h-10 text-content-tertiary active:bg-surface-hover"
                   aria-label={t('layers.increaseHeight', { name: layer.name })}
                 >
@@ -364,7 +264,7 @@ export function LayersTab() {
                 <IconButton
                   touchTarget={false}
                   variant="dangerGhost"
-                  onClick={() => handleDeleteLayer(layer.id)}
+                  onClick={() => requestDelete(layer.id)}
                   className="w-8 h-8 text-content-tertiary"
                   aria-label={t('mobile.deleteLayer')}
                 >
@@ -415,7 +315,7 @@ export function LayersTab() {
       <Button
         variant="primary"
         fullWidth
-        onClick={handleAddLayer}
+        onClick={addLayerWithAutoExpand}
         disabled={!canAddLayer}
         leftIcon={<PlusIcon />}
       >
@@ -427,12 +327,12 @@ export function LayersTab() {
         title={t('layers.confirmDelete.title')}
         message={t('layers.confirmDelete.message', {
           name: layerToDelete?.name || '',
-          count: binsInLayer,
+          count: deletedLayerBinCount,
         })}
         confirmText={t('common.delete')}
         destructive
-        onConfirm={confirmDeleteLayer}
-        onCancel={cancelDeleteLayer}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
 
       {/* Rename action sheet - portaled to escape BottomSheet's scrollable container */}
