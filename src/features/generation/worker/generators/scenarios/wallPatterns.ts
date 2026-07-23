@@ -15,7 +15,7 @@ import type { MeshData } from '@/features/generation/bridge/types';
 import type { WallPatternType } from '@/shared/types/bin';
 
 /** Enclosed (solid) volume of a triangle mesh via the signed-tetrahedron sum. */
-export function meshVolume({ vertices, indices }: MeshData): number {
+function meshVolume({ vertices, indices }: MeshData): number {
   let v = 0;
   for (let i = 0; i < indices.length; i += 3) {
     const a = (indices[i] ?? 0) * 3;

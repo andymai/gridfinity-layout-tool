@@ -276,11 +276,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {groupOptions(options).map((entry) =>
+          {groupOptions(options).map((entry, runIndex) =>
             entry.group === undefined ? (
               entry.options.map((option) => renderOption(option))
             ) : (
-              <optgroup key={`group:${entry.group}`} label={entry.group}>
+              <optgroup key={`group:${runIndex}:${entry.group}`} label={entry.group}>
                 {entry.options.map((option) => renderOption(option))}
               </optgroup>
             )

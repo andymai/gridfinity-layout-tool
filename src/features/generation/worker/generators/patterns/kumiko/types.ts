@@ -11,6 +11,8 @@
  * Pure-math module — NO brepjs imports.
  */
 
+import type { WallPatternType } from '@/shared/types/bin';
+
 /** A stroked lattice segment in unrolled (u, z) coordinates (mm). */
 export interface KumikoSegment {
   readonly a: readonly [number, number];
@@ -37,8 +39,8 @@ export type KumikoFilling = (
 
 /** Definition of one kumiko pattern: identity + its vertex filling. */
 export interface KumikoPatternDef {
-  /** Pattern type id — must match the WallPatternType member. */
-  readonly id: string;
+  /** Pattern type id — the registry entry this definition backs. */
+  readonly id: WallPatternType;
   /** Filling segments per jigumi vertex; undefined for the bare grid. */
   readonly filling?: KumikoFilling;
   /**
