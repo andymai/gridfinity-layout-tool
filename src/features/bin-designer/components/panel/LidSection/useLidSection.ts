@@ -414,9 +414,14 @@ export function useLidSection() {
         LID_TOP_THICKNESS_MAX_MM,
         Math.max(LID_TOP_THICKNESS_MIN_MM, topThicknessMm)
       );
-      updateLid({
-        topThicknessMm: Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM,
-      });
+      const stepped =
+        Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
+      // 0.2 isn't representable in binary, so the multiply lands on values like
+      // 2.4000000000000004 — harmless for geometry, but it would persist into
+      // shared design JSON and the mm readout. One decimal is exact for a
+      // 0.2mm step. (It never exceeds the max: the top of the range rounds to
+      // exactly 25 x 0.2 === 5, so the server bound stays strict.)
+      updateLid({ topThicknessMm: Math.round(stepped * 10) / 10 });
     },
     [updateLid]
   );

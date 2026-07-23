@@ -114,6 +114,24 @@ describe('LidSection', () => {
       expect(useDesignerStore.getState().params.lid.topThicknessMm).toBeCloseTo(1.8, 6);
     });
 
+    // 0.2 is not representable in binary, so stepping lands on values like
+    // 2.4000000000000004 — which would persist into shared design JSON.
+    it('persists a clean one-decimal value at every step', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      const input = screen.getByRole('spinbutton', {
+        name: 'Lid top plate thickness in millimeters',
+      });
+      for (const typed of ['1.2', '2.4', '3.6', '4.4']) {
+        fireEvent.change(input, { target: { value: typed } });
+        fireEvent.blur(input);
+        const stored = useDesignerStore.getState().params.lid.topThicknessMm;
+        expect(stored).toBe(Number(typed));
+        expect(String(stored)).toBe(typed);
+      }
+    });
+
     it('clamps an over-range thickness to the maximum', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
