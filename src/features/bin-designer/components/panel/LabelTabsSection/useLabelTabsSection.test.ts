@@ -129,11 +129,24 @@ describe('useLabelTabsSection', () => {
   });
 
   describe('tab height', () => {
-    it('heightIsExplicit is false by default and tabHeightMm falls back to wallHeight', () => {
+    it('heightIsExplicit is false by default and tabHeightMm falls back to the interior ceiling', () => {
       const { result } = renderHook(() => useLabelTabsSection());
       expect(result.current.state.heightIsExplicit).toBe(false);
-      // Default bin: 3u tall × 7mm = 21mm minus 5mm socket = 16mm wallHeight.
-      expect(result.current.state.tabHeightMm).toBe(16);
+      // Default bin: 3u tall × 7mm = 21mm minus 5mm socket = 16mm wallHeight,
+      // minus the 0.7mm lip bottom taper — the builder's interiorHeight.
+      expect(result.current.state.tabHeightMm).toBeCloseTo(15.3);
+    });
+
+    it('tabHeightMm reflects the stacking relief in click-in socket mode', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', depth: 14 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      // Interior ceiling 15.3mm sunk by the 0.4mm stacking relief.
+      expect(result.current.state.tabHeightMm).toBeCloseTo(14.9);
     });
 
     it('setTabHeight writes the explicit value', () => {
@@ -157,10 +170,11 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.tabHeightMin).toBe(13);
     });
 
-    it('tabHeightMax never exceeds wallHeight even when depth + 1 would', () => {
-      // 3u tall bin → wallHeight = 16mm. depth = 20mm pushes the depth-derived
-      // floor (21) past the ceiling; max must stay at wallHeight and min must
-      // collapse to it so the stepper can't request a Z the builder rejects.
+    it('tabHeightMax never exceeds the interior ceiling even when depth + 1 would', () => {
+      // 3u lipped bin → interior ceiling = 16 − 0.7 = 15.3mm. depth = 20mm
+      // pushes the depth-derived floor (21) past the ceiling; max must stay
+      // at the ceiling and min must collapse to it so the stepper can't
+      // request a Z the builder rejects.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -168,8 +182,8 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.tabHeightMax).toBe(16);
-      expect(result.current.state.tabHeightMin).toBe(16);
+      expect(result.current.state.tabHeightMax).toBeCloseTo(15.3);
+      expect(result.current.state.tabHeightMin).toBeCloseTo(15.3);
     });
 
     it('setTabDepth clamps explicit height up when depth invalidates it', () => {
@@ -182,19 +196,20 @@ describe('useLabelTabsSection', () => {
       const { result } = renderHook(() => useLabelTabsSection());
 
       // New depth 15 invalidates height 12 (gusset would have zero clearance).
+      // depth + 1 = 16 exceeds the 15.3mm interior ceiling, so the lift caps.
       act(() => {
         result.current.handlers.setTabDepth(15);
       });
 
       expect(useDesignerStore.getState().params.label.depth).toBe(15);
-      expect(useDesignerStore.getState().params.label.height).toBe(16);
+      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(15.3);
     });
 
-    it('setTabDepth caps height clamp at wallHeightMm (no out-of-range writes)', () => {
-      // 3u tall bin → wallHeight = 16mm. Start with depth=10, height=11.
-      // Setting depth to 16 (= wallHeight) would naively clamp height to 17,
-      // which would exceed wallHeightMm and silently make the builder drop
-      // the tab once depth is reduced again. The cap keeps height ≤ 16.
+    it('setTabDepth caps height clamp at the interior ceiling (no out-of-range writes)', () => {
+      // 3u lipped bin → interior ceiling = 15.3mm. Start with depth=10,
+      // height=11. Setting depth to 16 would naively clamp height to 17,
+      // which would exceed the ceiling and silently make the builder drop
+      // the tab once depth is reduced again. The cap keeps height ≤ 15.3.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -208,7 +223,7 @@ describe('useLabelTabsSection', () => {
       });
 
       expect(useDesignerStore.getState().params.label.depth).toBe(16);
-      expect(useDesignerStore.getState().params.label.height).toBe(16);
+      expect(useDesignerStore.getState().params.label.height).toBeCloseTo(15.3);
     });
 
     it('setTabDepth leaves height untouched when height is unset (default-at-top)', () => {
@@ -347,6 +362,45 @@ describe('useLabelTabsSection', () => {
           width: 1,
           depth: 1,
           label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 45, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+    });
+
+    it('tabsWillSilentlyDrop fires when depth reaches the relieved socket shelf', () => {
+      // 3u lipped bin: interior ceiling 15.3mm, click-in socket default
+      // shelf = 14.9mm. depth 15 fits under the ceiling but not under the
+      // relieved shelf — the builder drops the tab, so the UI must warn.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', depth: 15 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+    });
+
+    it('tabsWillSilentlyDrop stays quiet for a socket depth under the relieved shelf', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', depth: 14 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(false);
+    });
+
+    it('tabsWillSilentlyDrop fires for an explicit height inside the lip taper band', () => {
+      // Explicit height 15.8mm sits between the interior ceiling (15.3) and
+      // the raw wall top (16) — the builder rejects it, so the UI must warn
+      // (it previously compared against the raw wall top and stayed silent).
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 10, height: 15.8 },
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());

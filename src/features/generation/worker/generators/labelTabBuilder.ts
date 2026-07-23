@@ -42,6 +42,7 @@ import {
   LABEL_SOCKET_WALL_MM,
   effectiveLabelSocketClearance,
   labelPlateWidthMm,
+  resolveLabelShelfTopMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
@@ -154,13 +155,16 @@ function buildLabelTabsInScope(
   const tabHeight = tabDepth;
 
   // `shelfTopZ` is the Z of the shelf TOP above the cavity floor (mm).
-  // When `params.label.height` is undefined, anchor to the wall top — the
-  // original behavior. When explicitly set, place the shelf at that Z so
-  // the user can drop it down to leave a tuck-under pocket above (#1898).
+  // When `params.label.height` is undefined, anchor to the interior ceiling
+  // (`wallHeight` here is the pipeline's interiorHeight) — sunk by the
+  // stacking relief for click-in sockets on lipped bins, so a seated plate
+  // (plus emboss/print proudness) can't lift a stacked bin's foot. When
+  // explicitly set, place the shelf at that Z so the user can drop it down
+  // to leave a tuck-under pocket above (#1898).
   // The geometry is built in a local frame (shelf top at Z=tabHeight) and
   // then translated up by `shelfTopZ - tabHeight`, so the entire
   // shelf+gusset assembly slides down as a unit.
-  const shelfTopZ = params.label.height ?? wallHeight;
+  const shelfTopZ = resolveLabelShelfTopMm(wallHeight, params.base.stackingLip, params.label);
 
   // Safety: tab must fit within wall height AND between floor and shelfTopZ.
   // `shelfTopZ - tabHeight` is the Z of the gusset bottom; if it's <= 0 the
@@ -973,11 +977,14 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v7`: click-in sockets on lipped bins sink the default shelf by
+        // LABEL_SOCKET_STACK_RELIEF_MM — same params now cut lower geometry,
+        // so older IndexedDB entries must be invalidated.
         // `v6`: #2666 added swappable-label socket mode.
         // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
-        'v6',
+        'v7',
         socketKeyPart,
         dim.shellKey,
         stableSerialize(params.label),

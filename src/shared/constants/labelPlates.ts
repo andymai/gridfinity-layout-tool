@@ -14,6 +14,7 @@
  */
 
 import { scaleClearance } from '@/shared/printSettings/connectorScaling';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * The label standard's grid pitch (mm). Deliberately NOT the app's
@@ -148,6 +149,72 @@ export const LABEL_SOCKET_WALL_MM = 1;
 export const MIN_LABEL_SOCKET_TAB_DEPTH_MM = 14;
 
 /**
+ * Stacking relief for click-in sockets on lipped bins (mm).
+ *
+ * A stacked bin's foot bottom seats only TOLERANCE/2 (0.25mm) above the lip
+ * base plane — the plane the shelf top (and thus the flush-seated plate top)
+ * sits on by default. A monolithic printed shelf lives with that play, but a
+ * clicked-in plate is a tolerance stack on top of it: first-layer squish on
+ * the plate, droop on the printed rib undersides, and up to
+ * `LABEL_PLATE_TEXT_DEPTH_MAX_MM` of embossed two-color text all stand proud
+ * of the nominal plane, so the stacked bin rests on the label instead of the
+ * lip. Sinking the default shelf by the max emboss depth restores the full
+ * stacking play over embossed glyph tops (and adds it under flush plates).
+ *
+ * Applied to the DEFAULT shelf anchor only, and only where it matters:
+ * click-in sockets (slide-channel plates already ride ~0.75mm below the
+ * shelf top) on bins with a stacking lip (no lip = nothing locates on top).
+ * An explicit `label.height` is the user's plane and is never adjusted.
+ */
+export const LABEL_SOCKET_STACK_RELIEF_MM = 0.4;
+
+/** Label-tab config fields the shelf-plane resolvers need (structural
+ * subset of `LabelTabConfig`, kept inline so this shared module doesn't
+ * depend on feature types). */
+export interface LabelShelfConfig {
+  readonly height?: number;
+  readonly mode?: 'text' | 'socket';
+  readonly socketStyle?: LabelSocketStyle;
+}
+
+/**
+ * Highest Z (above the cavity floor) a label shelf top may occupy: the wall
+ * top, less the lip's bottom taper when a stacking lip narrows the interior.
+ * Mirrors the generation pipeline's `interiorHeight` — UI ceilings and
+ * warnings must use this, not the raw wall height, or they overshoot the
+ * builder's guard band and tabs silently vanish.
+ */
+export function labelShelfCeilingMm(wallHeightMm: number, stackingLip: boolean): number {
+  return stackingLip ? wallHeightMm - GRIDFINITY_SPEC.LIP_SMALL_TAPER : wallHeightMm;
+}
+
+/** Default shelf-top Z when `label.height` is unset: the ceiling, sunk by
+ * the stacking relief for click-in sockets on lipped bins. */
+export function defaultLabelShelfTopMm(
+  ceilingMm: number,
+  stackingLip: boolean,
+  label: LabelShelfConfig
+): number {
+  const clickInSocket =
+    (label.mode ?? 'text') === 'socket' && (label.socketStyle ?? 'clickIn') === 'clickIn';
+  return clickInSocket && stackingLip ? ceilingMm - LABEL_SOCKET_STACK_RELIEF_MM : ceilingMm;
+}
+
+/**
+ * The shelf-top Z the geometry builder anchors to: the user's explicit
+ * height when set, otherwise the relieved default. Single source for the
+ * worker, the panel's displayed height, and the ghost preview — three
+ * independent `label.height ?? …` fallbacks is how they drift apart.
+ */
+export function resolveLabelShelfTopMm(
+  ceilingMm: number,
+  stackingLip: boolean,
+  label: LabelShelfConfig
+): number {
+  return label.height ?? defaultLabelShelfTopMm(ceilingMm, stackingLip, label);
+}
+
+/**
  * User-tunable fit offset bounds (mm, signed, added to the TOTAL socket
  * clearance). Range keeps the effective clearance within [0.1, 0.8] at the
  * 0.4mm nozzle baseline. Mirrored in `api/lib/designerValidationConstants.ts`.
@@ -172,13 +239,25 @@ export function effectiveLabelSocketClearance(
 }
 
 /**
+ * Ceiling for plate text/icon depth (mm) — the filament-swap two-color
+ * contract. Also the worst-case emboss proudness above the plate top, which
+ * is why `LABEL_SOCKET_STACK_RELIEF_MM` must be at least this.
+ */
+export const LABEL_PLATE_TEXT_DEPTH_MAX_MM = 0.4;
+
+/**
  * Snap a text depth to a whole multiple of the layer height, clamped to the
- * 1-layer..0.4mm band — the filament-swap two-color contract for plates.
+ * 1-layer..max band.
  */
 export function snapTextDepthToLayers(depthMm: number, layerHeightMm: number): number {
-  if (!Number.isFinite(layerHeightMm) || layerHeightMm <= 0) return Math.min(0.4, depthMm);
+  if (!Number.isFinite(layerHeightMm) || layerHeightMm <= 0) {
+    return Math.min(LABEL_PLATE_TEXT_DEPTH_MAX_MM, depthMm);
+  }
   const snapped = Math.round(depthMm / layerHeightMm) * layerHeightMm;
-  return Math.round(Math.min(0.4, Math.max(layerHeightMm, snapped)) * 100) / 100;
+  return (
+    Math.round(Math.min(LABEL_PLATE_TEXT_DEPTH_MAX_MM, Math.max(layerHeightMm, snapped)) * 100) /
+    100
+  );
 }
 
 /** Outer X span a socket needs for a given plate width (pocket + walls). */

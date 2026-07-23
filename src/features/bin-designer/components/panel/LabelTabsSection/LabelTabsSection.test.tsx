@@ -52,6 +52,26 @@ describe('LabelTabsSection', () => {
     expect(screen.getByRole('button', { name: 'Solid', pressed: false })).toBeInTheDocument();
   });
 
+  it('plate fit offset steps and displays in 0.05 increments', () => {
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        label: { ...s.params.label, enabled: true, mode: 'socket', depth: 14 },
+      },
+    }));
+    render(<LabelTabsSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase Plate fit offset' }));
+    expect(useDesignerStore.getState().params.label.plateFitOffset).toBeCloseTo(0.05);
+    // Regression: the input rendered at 1 decimal, so a 0.05 store value
+    // displayed as "0.1" and the control looked stuck between steps.
+    expect(screen.getByLabelText('Plate fit offset')).toHaveValue(0.05);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase Plate fit offset' }));
+    expect(useDesignerStore.getState().params.label.plateFitOffset).toBeCloseTo(0.1);
+    expect(screen.getByLabelText('Plate fit offset')).toHaveValue(0.1);
+  });
+
   it('exposes aria-pressed on the alignment picker when it is visible', () => {
     // Alignment is hidden at full width; shrink the tab so the picker renders.
     useDesignerStore.setState((s) => ({
