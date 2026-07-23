@@ -1,0 +1,22 @@
+src/shared/components/LinkedDimensionInput/LinkedDimensionInput.tsx
+  s_1d3770a8d9827e::t_1c0feae5027b91 121
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_1d3770a8d9827e::t_64006078a9fdbb 2
+  s_1d3770a8d9827e::t_baafef847fa606 251-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c4cf4136459151c611054d2c56a0cdd15cdf3e2b",
+  "prompts": {},
+  "sessions": {
+    "s_1d3770a8d9827e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8cc9a9a3-033a-438a-9d50-cc674684bed3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
