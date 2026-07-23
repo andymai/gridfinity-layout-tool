@@ -1,0 +1,24 @@
+src/design-system/Select/Select.tsx
+  s_20d1a5ff5ca196::t_3a2fdc48f11b82 279,283
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_20d1a5ff5ca196::t_3a2fdc48f11b82 18
+src/features/generation/worker/generators/patterns/kumiko/types.ts
+  s_20d1a5ff5ca196::t_3a2fdc48f11b82 42-43
+  s_20d1a5ff5ca196::t_ae18e218387552 14-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "3f3906939fffd5e6e772e5155d01d82e57f511d0",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
