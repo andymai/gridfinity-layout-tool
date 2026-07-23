@@ -14,6 +14,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { getAccentHex } from '@/shared/utils/color';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { SplitPieceMeshEntry } from '../../../types';
 
@@ -31,15 +32,6 @@ const EDGE_COLOR = '#000000';
 
 /** Face opacity when xray mode is enabled (matches BinMesh). */
 const XRAY_OPACITY = 0.3;
-
-/** Fallback accent hex (amber-500) when CSS var is unavailable. */
-const FALLBACK_ACCENT = '#f59e0b';
-
-function getAccentHex(): string {
-  if (typeof document === 'undefined') return FALLBACK_ACCENT;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
-  return raw || FALLBACK_ACCENT;
-}
 
 interface PieceMeshProps {
   readonly entry: SplitPieceMeshEntry;

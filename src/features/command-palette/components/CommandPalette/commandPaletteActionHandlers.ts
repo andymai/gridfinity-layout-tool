@@ -11,6 +11,7 @@
  */
 
 import { useMemo } from 'react';
+import { GITHUB_ISSUES_URL } from '@/shared/constants/links';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import {
@@ -206,11 +207,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'send-feedback': () =>
         // noopener,noreferrer prevents reverse-tabnabbing — matches the
         // convention used elsewhere in the codebase for external links.
-        window.open(
-          'https://github.com/andymai/gridfinity-layout-tool/issues',
-          '_blank',
-          'noopener,noreferrer'
-        ),
+        window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer'),
       'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
       'view-supporters': () => dispatchWindowEvent('view-supporters'),
       'open-bin-examples': () => {

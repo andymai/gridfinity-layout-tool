@@ -13,7 +13,7 @@ import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
 import { planPhysicalStacks } from './stackPrint';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
 import {
   TONGUE_PROTRUSION,
   TONGUE_CLEARANCE,
@@ -23,8 +23,6 @@ import {
 } from '@/shared/constants/connectors';
 
 const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
-/** Retaining floor thickness above magnet holes (generation-specific, not in GRIDFINITY_SPEC) */
-const MAGNET_FLOOR = 0.5;
 
 export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;

@@ -1,3 +1,13 @@
+/** Fallback when the CSS var is unavailable (SSR, jsdom, pre-mount reads). */
+export const FALLBACK_ACCENT = '#f59e0b';
+
+/** Read the current accent color from CSS custom properties. */
+export function getAccentHex(): string {
+  if (typeof document === 'undefined') return FALLBACK_ACCENT;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
+  return raw || FALLBACK_ACCENT;
+}
+
 /**
  * Text color options for bin labels based on background luminance.
  */

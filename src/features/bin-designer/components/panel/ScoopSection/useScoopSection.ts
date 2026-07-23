@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { clamp } from '@/shared/utils/math';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -14,9 +15,6 @@ import type { ScoopStyle } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 
 const DEFAULT_MANUAL_RADIUS = 10;
-
-const clamp = (value: number, min: number, max: number): number =>
-  Math.min(max, Math.max(min, value));
 
 export function useScoopSection() {
   const { scoop, updateScoop, params } = useDesignerStore(

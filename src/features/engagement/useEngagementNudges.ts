@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { GITHUB_ISSUES_URL } from '@/shared/constants/links';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -79,7 +80,7 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
           trackEvent('nudge_clicked', { nudge_type: 'feedback_rating' });
           recordNudgeDismissal('feedback_rating');
           window.open(
-            'https://github.com/andymai/gridfinity-layout-tool/issues/new?template=feature_request.md',
+            `${GITHUB_ISSUES_URL}/new?template=feature_request.md`,
             '_blank',
             'noopener,noreferrer'
           );

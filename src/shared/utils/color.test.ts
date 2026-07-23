@@ -88,3 +88,15 @@ describe('getBinPatternColor', () => {
     expect(getBinPatternColor('#000')).toBe('rgba(255, 255, 255, 0.48)');
   });
 });
+
+describe('getAccentHex', () => {
+  it('returns the fallback accent when no document is available', async () => {
+    const { getAccentHex, FALLBACK_ACCENT } = await import('@/shared/utils');
+    if (typeof document === 'undefined') {
+      expect(getAccentHex()).toBe(FALLBACK_ACCENT);
+    } else {
+      document.documentElement.style.removeProperty('--color-accent');
+      expect(getAccentHex()).toBe(FALLBACK_ACCENT);
+    }
+  });
+});

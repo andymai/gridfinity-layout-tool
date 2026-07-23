@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from '@/i18n';
+import { KOFI_URL, GITHUB_REPO_URL } from '@/shared/constants/links';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 export function MobileTitleBar() {
@@ -15,7 +16,7 @@ export function MobileTitleBar() {
       </span>
       <div className="flex items-center gap-3">
         <a
-          href="https://ko-fi.com/andyaragon"
+          href={KOFI_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1 text-xs text-accent hover:underline"
@@ -28,7 +29,7 @@ export function MobileTitleBar() {
           {t('sidebar.tip')}
         </a>
         <a
-          href="https://github.com/andymai/gridfinity-layout-tool"
+          href={GITHUB_REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1 text-xs text-content-tertiary hover:underline"

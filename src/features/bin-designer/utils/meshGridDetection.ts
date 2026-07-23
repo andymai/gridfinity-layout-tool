@@ -12,6 +12,7 @@
  * is meaningfully off-grid (not actually a Gridfinity bin, or scaled).
  */
 import { GRIDFINITY_SPEC } from '@/shared/printSettings';
+import { clamp } from '@/shared/utils/math';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 
 export interface DetectedGrid {
@@ -37,10 +38,6 @@ const MIN_DIM = DESIGNER_CONSTRAINTS.MIN_DIMENSION;
 const MAX_DIM = DESIGNER_CONSTRAINTS.MAX_DIMENSION;
 const MIN_H = 1;
 const MAX_H = DESIGNER_CONSTRAINTS.MAX_HEIGHT;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
 
 /** Snap one footprint axis: outer mm of a W-unit bin is W·gridUnit − TOLERANCE. */
 function snapFootprintAxis(mm: number, gridUnitMm: number): { units: number; deviation: number } {
