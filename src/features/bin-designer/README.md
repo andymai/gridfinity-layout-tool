@@ -171,7 +171,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 
 `shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. The compressed mesh lives in `BinParams.meshAssets` (content shared across duplicates/arrays; store GCs an asset when its last referencing cutout is deleted — see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
 
-### Imported bin designs (STL → design, `stl_bin_import` labs flag)
+### Imported bin designs (STL → design, `stl_bin_import` flag — graduated)
 
 Distinct from mesh imprints: here the uploaded STL **is** the design — a whole
 Gridfinity bin (e.g. downloaded from Printables) saved as an `importedMesh`

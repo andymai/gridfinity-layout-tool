@@ -70,16 +70,8 @@ describe('useCollabMode', () => {
     vi.restoreAllMocks();
   });
 
-  describe('feature flag disabled', () => {
-    it('returns non-collaborative mode when feature is disabled', () => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: false },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
+  describe('graduated feature flag', () => {
+    it('returns non-collaborative mode for a local layout with no share', () => {
       const { result } = renderHook(() => useCollabMode());
 
       expect(result.current).toEqual({
@@ -89,7 +81,7 @@ describe('useCollabMode', () => {
       });
     });
 
-    it('returns non-collaborative even with cloud share when feature is disabled', () => {
+    it('is collaborative with an edit share even when the labs preference is disabled', () => {
       useLabsStore.setState({
         preferences: {
           enabledFeatures: { collaborative_editing: false },
@@ -104,22 +96,12 @@ describe('useCollabMode', () => {
 
       const { result } = renderHook(() => useCollabMode());
 
-      expect(result.current.isCollaborative).toBe(false);
+      expect(result.current.isCollaborative).toBe(true);
       expect(result.current.canEdit).toBe(true);
     });
   });
 
-  describe('feature flag enabled - shared preview mode', () => {
-    beforeEach(() => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-    });
-
+  describe('shared preview mode', () => {
     it('returns collaborative mode when viewing shared layout with edit permission', () => {
       useSharedPreviewStore.setState({
         sharedPreview: {
@@ -185,17 +167,7 @@ describe('useCollabMode', () => {
     });
   });
 
-  describe('feature flag enabled - local cloud share', () => {
-    beforeEach(() => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-    });
-
+  describe('local cloud share', () => {
     it('returns collaborative mode when local layout has edit cloud share', () => {
       useLibraryStore.setState({
         library: createTestLibrary(createCloudShare('edit')),

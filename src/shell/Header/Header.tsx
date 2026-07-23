@@ -4,7 +4,6 @@ import { useLayoutStore, useViewStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
 import { activePress, Button, IconButton } from '@/design-system';
@@ -34,9 +33,9 @@ const BaseplateLibraryModal = lazyWithRetry(() =>
 const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
 );
-// Presence avatars pull the Liveblocks client. Collaboration is opt-in (off by
-// default), so keep it out of the eager Header bundle — load only when a collab
-// session is actually active.
+// Presence avatars pull the Liveblocks client. Most layouts never enter a
+// collab session, so keep it out of the eager Header bundle — load only when
+// a collab session is actually active.
 const PresenceAvatars = lazyWithRetry(() =>
   import('../Collab/PresenceAvatars').then(namedExport('PresenceAvatars'))
 );
@@ -48,7 +47,6 @@ interface HeaderProps {
 export function Header({ saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
-  const isCollabEnabled = useFeatureFlag('collaborative_editing');
   const { isCollaborative } = useCollabMode();
 
   const layout = useLayoutStore((state) => state.layout);
@@ -235,7 +233,6 @@ export function Header({ saveStatus }: HeaderProps) {
           </div>
         )}
 
-        {/* Undo/Redo buttons */}
         <div className="flex items-center">
           <IconButton
             size="sm"
@@ -273,21 +270,17 @@ export function Header({ saveStatus }: HeaderProps) {
               />
             </svg>
           </IconButton>
+          <ShareButton />
         </div>
 
-        {/* Share button and presence avatars (only visible when collaborative_editing flag is enabled) */}
-        {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
-        <ShareButton />
         {/* Only render PresenceAvatars when actually in collab mode (inside RoomProvider) */}
-        {isCollabEnabled && isCollaborative && (
+        {isCollaborative && (
           <Suspense fallback={null}>
             <PresenceAvatars className="ml-2" />
           </Suspense>
         )}
-        {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
-        {/* Divider before external links (only when collab is disabled) */}
-        {!isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
+        <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
         <HeaderSupportLinks />
       </div>

@@ -6,13 +6,15 @@ import {
   downloadLayoutAsFile,
   copyToClipboard,
   exportLayoutJSON,
+  loadLayoutAsync,
 } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useLatestRef } from '@/shared/hooks';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Button, IconButton, XIcon } from '@/design-system';
-import { CloudShareTab } from '../CloudShareTab';
+import type { Layout } from '@/core/types';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -20,31 +22,65 @@ interface ShareModalProps {
   layoutId?: string; // If provided, share this layout; otherwise use active layout
 }
 
-// Wrapper that only mounts the inner component when open
+// Wrapper that only mounts the inner component when open. Keyed by target so
+// switching layouts remounts and drops any previously loaded layout.
 export function ShareModal({ isOpen, onClose, layoutId }: ShareModalProps) {
   if (!isOpen) return null;
-  return <ShareModalContent onClose={onClose} layoutId={layoutId} />;
+  return <ShareModalContent key={layoutId ?? 'active'} onClose={onClose} layoutId={layoutId} />;
 }
 
+// The store only ever holds the active layout; any other target must be
+// read from storage.
 function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutId?: string }) {
   const t = useTranslation();
-  const layout = useLayoutStore((state) => state.layout);
+  const activeLayout = useLayoutStore((state) => state.layout);
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+  const [loadedLayout, setLoadedLayout] = useState<Layout | null>(null);
+  const isTargetActive = !layoutId || layoutId === activeLayoutId;
+  const onCloseRef = useLatestRef(onClose);
+
+  useEffect(() => {
+    if (isTargetActive || !layoutId) return;
+    let cancelled = false;
+    void loadLayoutAsync(layoutId)
+      .then((loaded) => {
+        if (cancelled) return;
+        if (loaded) {
+          setLoadedLayout(loaded);
+        } else {
+          onCloseRef.current();
+        }
+      })
+      .catch(() => {
+        if (!cancelled) onCloseRef.current();
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [layoutId, isTargetActive, onCloseRef]);
+
+  const layout = isTargetActive ? activeLayout : loadedLayout;
+  if (!layout) return <LoadingFallback variant="overlay" label={t('share.loadingShared')} />;
+
+  return <ShareModalBody layout={layout} onClose={onClose} />;
+}
+
+const SHARE_TABS = [
+  { id: 'url', labelKey: 'share.tabs.link' },
+  { id: 'file', labelKey: 'share.tabs.file' },
+  { id: 'json', labelKey: 'share.tabs.json' },
+] as const;
+
+type ShareTabId = (typeof SHARE_TABS)[number]['id'];
+
+function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => void }) {
+  const t = useTranslation();
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
-  const isCollabEnabled = useFeatureFlag('collaborative_editing');
-
-  // Use provided layoutId or fall back to active layout
-  const targetLayoutId = layoutId ?? activeLayoutId;
-
-  // Default to 'url' tab when collaborative editing is enabled (Cloud tab hidden)
-  const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>(
-    isCollabEnabled ? 'url' : 'cloud'
-  );
+  const [activeTab, setActiveTab] = useState<ShareTabId>('url');
 
   // Track tab switches for share funnel analysis
-  const handleTabChange = (tab: 'cloud' | 'url' | 'file' | 'json') => {
+  const handleTabChange = (tab: ShareTabId) => {
     setActiveTab(tab);
     trackEvent('ui.featureUsed', { feature: `share_tab_${tab}` });
   };
@@ -67,7 +103,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose, isCollabEnabled, layout.bins.length]);
+  }, [onClose]);
 
   const handleCopyURL = async () => {
     const success = await copyToClipboard(shareURL);
@@ -137,74 +173,26 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
         {/* Tab selector */}
         <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
-          {/* Cloud tab hidden when collaborative_editing is enabled (uses ShareButton instead) */}
-          {!isCollabEnabled && (
+          {SHARE_TABS.map((tab) => (
             <Button
+              key={tab.id}
               variant="ghost"
               role="tab"
-              aria-selected={activeTab === 'cloud'}
-              onClick={() => handleTabChange('cloud')}
+              aria-selected={activeTab === tab.id}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex-1 hover:bg-transparent ${
-                activeTab === 'cloud'
+                activeTab === tab.id
                   ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
-              {t('share.tabs.cloud')}
+              {t(tab.labelKey)}
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            role="tab"
-            aria-selected={activeTab === 'url'}
-            onClick={() => handleTabChange('url')}
-            className={`flex-1 hover:bg-transparent ${
-              activeTab === 'url'
-                ? 'bg-accent text-on-dark'
-                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-            }`}
-          >
-            {t('share.tabs.link')}
-          </Button>
-          <Button
-            variant="ghost"
-            role="tab"
-            aria-selected={activeTab === 'file'}
-            onClick={() => handleTabChange('file')}
-            className={`flex-1 hover:bg-transparent ${
-              activeTab === 'file'
-                ? 'bg-accent text-on-dark'
-                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-            }`}
-          >
-            {t('share.tabs.file')}
-          </Button>
-          <Button
-            variant="ghost"
-            role="tab"
-            aria-selected={activeTab === 'json'}
-            onClick={() => handleTabChange('json')}
-            className={`flex-1 hover:bg-transparent ${
-              activeTab === 'json'
-                ? 'bg-accent text-on-dark'
-                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-            }`}
-          >
-            {t('share.tabs.json')}
-          </Button>
+          ))}
         </div>
 
         {/* Tab content */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Cloud tab content only shown when flag is OFF */}
-          {!isCollabEnabled && activeTab === 'cloud' && (
-            <CloudShareTab
-              layoutId={targetLayoutId}
-              onClose={onClose}
-              onSwitchToUrlTab={() => handleTabChange('url')}
-            />
-          )}
-
           {activeTab === 'url' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">{t('share.link.description')}</p>
