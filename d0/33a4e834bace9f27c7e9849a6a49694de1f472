@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/lidConstants.ts
+  s_c19188729ffa0d::t_6773977a4cfbd6 157-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "d033a4e834bace9f27c7e9849a6a49694de1f472",
+  "prompts": {},
+  "sessions": {
+    "s_c19188729ffa0d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c3c56eb1-9611-417d-a282-01144f871ee8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
