@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.288.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.1...gridfinity-layout-tool-v4.288.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** align lid enable toggle with other feature toggles ([#2781](https://github.com/andymai/gridfinity-layout-tool/issues/2781)) ([7daf80d](https://github.com/andymai/gridfinity-layout-tool/commit/7daf80d935180d94a32a719ca3000a15ceb5c1db))
+
 ## [4.288.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.0...gridfinity-layout-tool-v4.288.1) (2026-07-23)
 
 
