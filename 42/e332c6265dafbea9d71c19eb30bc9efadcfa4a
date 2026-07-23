@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_7fb0acc95d4428 52
+  s_20d1a5ff5ca196::t_99930334af878a 491,495-499
+  s_20d1a5ff5ca196::t_cd2329b79b9818 622-626,628-629
+src/features/generation/worker/generators/__kernel-tests__/gomaBoundaryProbe.test.ts
+  s_20d1a5ff5ca196::t_e4abf6abc88d70 1-6,8-10,12-20,22-31,36,41,51-57,59
+  s_20d1a5ff5ca196::t_8dcee3307e2e51 7,11,21,32-35,37-40,42-50,58
+  s_20d1a5ff5ca196::t_bba5403b6ab61c 60-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "42e332c6265dafbea9d71c19eb30bc9efadcfa4a",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
