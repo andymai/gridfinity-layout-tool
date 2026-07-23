@@ -1,0 +1,144 @@
+src/i18n/locales/nl.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_20d1a5ff5ca196::t_705ad189812307 18
+  s_20d1a5ff5ca196::t_fc901ab65524c6 49
+src/features/generation/bridge/generationTimeout.ts
+  s_20d1a5ff5ca196::t_cd789f14efc9b9 45-62
+  s_20d1a5ff5ca196::t_69fe67e07f17c5 14
+  s_20d1a5ff5ca196::t_a46568ba25c62d 176-180
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_20d1a5ff5ca196::t_00325fe025e066 108
+  s_20d1a5ff5ca196::t_f71dcc959106df 15-18,46,68-69,90-95,97-106,109-118,120-130,186-229,231-303,305,307-346,348-380,382,385,389-396,398-431,433-457,459,461-469,493,504-507
+src/features/generation/worker/generators/__kernel-tests__/kumikoNubProbe.test.ts
+  s_20d1a5ff5ca196::t_af31edddd122e3 1-52,56-65
+  s_20d1a5ff5ca196::t_35ba1927bbc908 53-55
+src/features/bin-designer/types/walls.ts
+  s_20d1a5ff5ca196::t_fd48d49c23f707 86-98
+  s_20d1a5ff5ca196::t_1e58065e4c8061 99
+src/features/generation/worker/generators/patterns/kumiko/types.ts
+  s_20d1a5ff5ca196::t_cb9c6d0e194f7c 1-68
+src/features/generation/worker/generators/patterns/kumiko/calculator.ts
+  s_20d1a5ff5ca196::t_e200f8e7a3bdea 1-32
+src/i18n/locales/en.ts
+  s_20d1a5ff5ca196::t_0f7ce7d0f260c2 2262-2263
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_20d1a5ff5ca196::t_6b8c4bfed3de1c 1-160,162-172,174-176
+  s_20d1a5ff5ca196::t_986927b907e861 161
+  s_20d1a5ff5ca196::t_90d1041cb262fa 173
+src/i18n/locales/it.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/README.md
+  s_20d1a5ff5ca196::t_960f04fc19e428 164-177
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_809f7ace3581bf 31
+  s_20d1a5ff5ca196::t_e117dda5ad5ac6 536-537,548-549
+  s_20d1a5ff5ca196::t_ea2b06ee4bde61 38,40
+  s_20d1a5ff5ca196::t_dce25002544ade 241-242
+  s_20d1a5ff5ca196::t_ff02ce2aed010e 1-30,32-37,42-128,130-173,196-223,234-240,243-248,252,254,266,279,282-293,295,301-328,331-347,349,353-384,386-392,395,397-535,538-547,550-597
+  s_20d1a5ff5ca196::t_29ec23cabd5dbb 385
+  s_20d1a5ff5ca196::t_112c3b2aa27ced 224-233,249-251,253,267-272,280-281
+  s_20d1a5ff5ca196::t_ded40c90080f77 41
+  s_20d1a5ff5ca196::t_f93a8f90ca7c8d 294,296-300
+  s_20d1a5ff5ca196::t_f8537ff6feb831 174-195
+  s_20d1a5ff5ca196::t_ef2ec1d404c310 39
+  s_20d1a5ff5ca196::t_894480683a144b 393-394,396
+  s_20d1a5ff5ca196::t_2be83c43094e66 348,350-352
+  s_20d1a5ff5ca196::t_3b5da63ffc0de4 273-278
+  s_20d1a5ff5ca196::t_86b9193dcc176a 329-330
+  s_20d1a5ff5ca196::t_7dd72b33fce860 255-265
+  s_20d1a5ff5ca196::t_cb1c435b57d13b 129
+src/i18n/locales/es.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/bridge/generationTimeout.test.ts
+  s_20d1a5ff5ca196::t_c6ce731e7825a5 158-186
+  s_20d1a5ff5ca196::t_95c4aca72c4967 16-17
+  s_20d1a5ff5ca196::t_956b81f67f4e5f 28
+src/i18n/locales/fr.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_20d1a5ff5ca196::t_dfdcd8ad2cf94a 86-87,90-91
+  s_20d1a5ff5ca196::t_cda24d3934af30 22
+src/shared/types/bin.ts
+  s_20d1a5ff5ca196::t_76dee80e25783d 102-103
+src/i18n/locales/pt-BR.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/worker/generators/binGenerator.scenario.kumiko.test.ts
+  s_20d1a5ff5ca196::t_c47610b6bf784c 1-5
+src/features/generation/worker/generators/patterns/types.ts
+  s_20d1a5ff5ca196::t_835ed44051f2e1 65-66
+  s_20d1a5ff5ca196::t_42e36eac2c51a4 21-22
+  s_20d1a5ff5ca196::t_956a1566199127 148-163,175-178
+  s_20d1a5ff5ca196::t_4702ecafd2bcb6 179
+src/i18n/locales/uk.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.test.tsx
+  s_20d1a5ff5ca196::t_274c3367ec3864 16-17
+  s_20d1a5ff5ca196::t_8dfe163797642b 37,44-61
+scripts/i18n-values-allowlist.json
+  s_20d1a5ff5ca196::t_8f8b1bd75a89d5 83,112-113
+src/features/generation/worker/generators/patterns/kumiko/calculator.test.ts
+  s_20d1a5ff5ca196::t_52bdc246453e87 1-35
+src/features/generation/worker/generators/__kernel-tests__/kumikoWrapSpike.test.ts
+  s_20d1a5ff5ca196::t_edfe4713a24233 88,91,95
+  s_20d1a5ff5ca196::t_3e97ca28cb2056 93
+  s_20d1a5ff5ca196::t_ef527ee1968328 114-115
+  s_20d1a5ff5ca196::t_7018ade9dc1f6a 126,133
+  s_20d1a5ff5ca196::t_4fd9fcc9499b9d 159
+  s_20d1a5ff5ca196::t_abfc93120d17eb 102,129,145,152-153
+  s_20d1a5ff5ca196::t_6f2af2bdec36e5 1-87,89-90,92,94,96-101,105,108-110,118-125,127-128,130-132,134-144,146-151,154-158,160-170
+  s_20d1a5ff5ca196::t_1b97b2605d0e4f 103-104,106-107,111-113,116-117
+src/features/generation/worker/generators/patterns/registry.ts
+  s_20d1a5ff5ca196::t_b9be421b9ad3df 60-63
+  s_20d1a5ff5ca196::t_b5deaf82a42edd 24
+src/i18n/locales/de.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/design-system/Select/Select.tsx
+  s_20d1a5ff5ca196::t_05088de3d0e149 279-287
+  s_20d1a5ff5ca196::t_14ae3b8f8b2080 54-62,64-81
+  s_20d1a5ff5ca196::t_e6188c947bac3e 63
+  s_20d1a5ff5ca196::t_99e044b943d479 102-107
+src/design-system/Select/Select.test.tsx
+  s_20d1a5ff5ca196::t_105b43d0655b5f 2
+  s_20d1a5ff5ca196::t_7b4add1a47b725 134-162
+src/i18n/locales/ja.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/worker/generators/patterns/index.ts
+  s_20d1a5ff5ca196::t_5e0d84eccd2fe9 23,25-47
+src/features/bin-designer/utils/printEstimates.ts
+  s_20d1a5ff5ca196::t_839f0f81ed9478 489
+src/features/generation/worker/generators/patterns/kumiko/mitsukude.ts
+  s_20d1a5ff5ca196::t_5a076eb5b3ed66 1-33
+src/features/generation/worker/generators/wallPatternTypes.ts
+  s_20d1a5ff5ca196::t_a396ef69c39a7a 18-22
+src/features/generation/worker/generators/scenarios/index.ts
+  s_20d1a5ff5ca196::t_a36fb2abfcb4d5 82
+  s_20d1a5ff5ca196::t_36403cd544c69d 41
+src/i18n/locales/nb.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/i18n/locales/sv.json
+  s_20d1a5ff5ca196::t_4e72ea1e98bccc 1040-1041
+src/features/generation/worker/generators/patterns/kumiko/segmentLattice.test.ts
+  s_20d1a5ff5ca196::t_190a907a7bcab9 1-138
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_20d1a5ff5ca196::t_cab39933082c29 69-84,90-91,102-107
+  s_20d1a5ff5ca196::t_99e92e72b009fb 148,151
+src/features/generation/worker/generators/patterns/kumiko/segmentLattice.ts
+  s_20d1a5ff5ca196::t_af86065be50e90 1-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f2a1dc2d5bb8308a821f1cee626e125bfb3928f8",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
