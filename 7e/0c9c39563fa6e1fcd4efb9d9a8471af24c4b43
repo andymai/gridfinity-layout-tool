@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_c19188729ffa0d::t_49e273f16d240d 306
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_c19188729ffa0d::t_37081fdca9a455 290-299,303-305
+  s_c19188729ffa0d::t_9d3065f2796781 300-302
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_c19188729ffa0d::t_f7f0a8d72a5568 450,457
+  s_c19188729ffa0d::t_f0b575e927427b 451-456,458
+  s_c19188729ffa0d::t_01ccccfcb6a51a 224
+  s_c19188729ffa0d::t_800324e863f433 238
+src/features/bin-designer/components/panel/WallsSection/WallsSection.test.tsx
+  s_c19188729ffa0d::t_7ca108ad6d9233 2
+  s_c19188729ffa0d::t_474888c1c80b03 80-90
+src/features/bin-designer/store/slices/paramSlice.ts
+  s_c19188729ffa0d::t_89cbb28ce2f7de 613-618
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_c19188729ffa0d::t_970c68dc98f109 27,39
+  s_c19188729ffa0d::t_9377d7b566352f 110,118
+  s_c19188729ffa0d::t_b6432d220839f3 111-117,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "7e0c9c39563fa6e1fcd4efb9d9a8471af24c4b43",
+  "prompts": {},
+  "sessions": {
+    "s_c19188729ffa0d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c3c56eb1-9611-417d-a282-01144f871ee8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
