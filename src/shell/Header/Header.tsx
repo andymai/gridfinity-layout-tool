@@ -233,7 +233,6 @@ export function Header({ saveStatus }: HeaderProps) {
           </div>
         )}
 
-        {/* Undo/Redo buttons */}
         <div className="flex items-center">
           <IconButton
             size="sm"

@@ -6,10 +6,6 @@ import { useTranslation } from '@/i18n';
 import { IconButton } from '@/design-system';
 import { SharePopover } from './SharePopover';
 
-/**
- * Icon-only share button in the header's icon cluster. Opens SharePopover
- * via the sharePopover store; a badge on the icon marks an active share.
- */
 export function ShareButton() {
   const t = useTranslation();
   const isFeatureEnabled = useFeatureFlag('collaborative_editing');

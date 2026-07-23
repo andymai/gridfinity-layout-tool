@@ -101,17 +101,7 @@ describe('useCollabMode', () => {
     });
   });
 
-  describe('feature flag enabled - shared preview mode', () => {
-    beforeEach(() => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-    });
-
+  describe('shared preview mode', () => {
     it('returns collaborative mode when viewing shared layout with edit permission', () => {
       useSharedPreviewStore.setState({
         sharedPreview: {
@@ -177,17 +167,7 @@ describe('useCollabMode', () => {
     });
   });
 
-  describe('feature flag enabled - local cloud share', () => {
-    beforeEach(() => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-    });
-
+  describe('local cloud share', () => {
     it('returns collaborative mode when local layout has edit cloud share', () => {
       useLibraryStore.setState({
         library: createTestLibrary(createCloudShare('edit')),

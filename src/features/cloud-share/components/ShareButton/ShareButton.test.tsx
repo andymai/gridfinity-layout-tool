@@ -36,6 +36,21 @@ vi.mock('@/shared/utils/slug', () => ({
   slugify: (str: string) => str.toLowerCase().replace(/\s+/g, '-'),
 }));
 
+function mockCloudShare(overrides: Partial<ReturnType<typeof useCloudShare>> = {}) {
+  vi.mocked(useCloudShare).mockReturnValue({
+    status: 'idle',
+    existingShare: null,
+    hasActiveShare: false,
+    share: vi.fn(),
+    updatePermission: vi.fn(),
+    copyUrl: vi.fn(),
+    remove: vi.fn(),
+    error: null,
+    reset: vi.fn(),
+    ...overrides,
+  });
+}
+
 describe('ShareButton', () => {
   beforeEach(() => {
     resetAllStores();
@@ -82,17 +97,7 @@ describe('ShareButton', () => {
   });
 
   it('reflects loading state while sharing', () => {
-    vi.mocked(useCloudShare).mockReturnValue({
-      status: 'sharing',
-      hasActiveShare: false,
-      existingShare: null,
-      share: vi.fn(),
-      updatePermission: vi.fn(),
-      copyUrl: vi.fn(),
-      remove: vi.fn(),
-      error: null,
-      reset: vi.fn(),
-    });
+    mockCloudShare({ status: 'sharing' });
 
     render(<ShareButton />);
     const button = screen.getByRole('button');
@@ -101,16 +106,9 @@ describe('ShareButton', () => {
   });
 
   it('shows the manage-share label when a layout has an active share', () => {
-    vi.mocked(useCloudShare).mockReturnValue({
-      status: 'idle',
+    mockCloudShare({
       hasActiveShare: true,
-      existingShare: { id: 'share-123', permission: 'view' },
-      share: vi.fn(),
-      updatePermission: vi.fn(),
-      copyUrl: vi.fn(),
-      remove: vi.fn(),
-      error: null,
-      reset: vi.fn(),
+      existingShare: { id: 'share-123', deleteToken: 'token-123', sharedAt: 0, permission: 'view' },
     });
 
     render(<ShareButton />);

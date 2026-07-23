@@ -53,7 +53,6 @@ vi.mock('@/features/print-export/components/PrintModal', () => ({
     ) : null,
 }));
 
-// Controllable mock for useCollabMode
 let mockIsCollaborative = false;
 
 vi.mock('@/shared/hooks', async (importOriginal) => {
@@ -68,11 +67,8 @@ vi.mock('@/shared/hooks/useCollabMode', () => ({
   useCollabMode: () => ({ isCollaborative: mockIsCollaborative, canEdit: true, shareId: null }),
 }));
 
-// Controllable mock for ShareButton
-let mockShareButtonEnabled = false;
 vi.mock('@/features/cloud-share/components/ShareButton', () => ({
-  ShareButton: () =>
-    mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
+  ShareButton: () => <button data-testid="share-button">Share</button>,
 }));
 
 // Mock PresenceAvatars to avoid Liveblocks context requirements
@@ -92,7 +88,6 @@ describe('Header', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
-    mockShareButtonEnabled = true;
     mockIsCollaborative = false;
   });
 

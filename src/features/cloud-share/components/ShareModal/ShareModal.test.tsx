@@ -382,6 +382,23 @@ describe('ShareModal', () => {
       expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
     });
 
+    it('shows a loading overlay while a non-active layout is loading', async () => {
+      let resolveLoad: (layout: typeof mockLayout | null) => void = () => {};
+      vi.mocked(storage.loadLayoutAsync).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveLoad = resolve;
+          })
+      );
+
+      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="other-layout-456" />);
+
+      expect(screen.getByRole('status', { name: 'Loading shared layout...' })).toBeInTheDocument();
+
+      resolveLoad({ ...mockLayout, name: 'Other Layout' });
+      await screen.findByRole('dialog');
+    });
+
     it('loads a non-active layout from storage and shares its data', async () => {
       const otherLayout = { ...mockLayout, name: 'Other Layout' };
       vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(otherLayout);
@@ -400,6 +417,16 @@ describe('ShareModal', () => {
       vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(null);
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="missing-layout-789" />);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('closes when loading the target layout throws', async () => {
+      vi.mocked(storage.loadLayoutAsync).mockRejectedValueOnce(new Error('indexeddb blocked'));
+
+      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="broken-layout-000" />);
 
       await waitFor(() => {
         expect(mockOnClose).toHaveBeenCalledTimes(1);
