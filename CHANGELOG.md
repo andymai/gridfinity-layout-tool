@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.285.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.1...gridfinity-layout-tool-v4.285.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **lint:** re-arm eslint-plugin-boundaries after silent v7 breakage ([#2750](https://github.com/andymai/gridfinity-layout-tool/issues/2750)) ([353331f](https://github.com/andymai/gridfinity-layout-tool/commit/353331f679df490f9871b6627da5e4b2b6fc3d7d))
+
 ## [4.285.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.0...gridfinity-layout-tool-v4.285.1) (2026-07-23)
 
 
