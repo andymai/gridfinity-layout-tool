@@ -16,6 +16,7 @@ import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
 import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
 import { isErr } from '@/core/result';
+import { stableAssetName } from '@/shared/generation/wasmLoadError';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -34,13 +35,20 @@ export interface WasmLoadResult {
  * `200 text/html` with `index.html` instead of `404`. Emscripten would then try
  * to compile that HTML and abort with an opaque
  * `CompileError: ... doesn't start with '\0asm'`. Validating here turns that into
- * an actionable error that names the URL and the real cause.
+ * an actionable error that names the asset and the real cause.
+ *
+ * The message carries the hash-stripped asset name ({@link stableAssetName}),
+ * not the raw content-hashed URL: this error crosses the worker boundary as a
+ * plain string and feeds error tracking's message-based grouping, so a volatile
+ * per-deploy hash would mint a brand-new issue on every release for one
+ * recurring stale-bundle failure.
  */
 async function fetchWasmBinary(url: string, label: string): Promise<ArrayBuffer> {
   const response = await fetch(url);
+  const asset = stableAssetName(url);
   if (!response.ok) {
     throw new Error(
-      `${label} WASM fetch failed: ${response.status} ${response.statusText} (${url})`
+      `${label} WASM fetch failed: ${response.status} ${response.statusText} (${asset})`
     );
   }
   const buffer = await response.arrayBuffer();
@@ -50,7 +58,7 @@ async function fetchWasmBinary(url: string, label: string): Promise<ArrayBuffer>
   if (!isWasm) {
     const contentType = response.headers.get('content-type') ?? 'unknown';
     throw new Error(
-      `${label} WASM asset returned ${contentType}, not a WebAssembly binary (${url}). ` +
+      `${label} WASM asset returned ${contentType}, not a WebAssembly binary (${asset}). ` +
         `A stale cache or service worker is likely serving a missing asset — hard-reload the page ` +
         `(or clear the service worker) to fetch the current build.`
     );

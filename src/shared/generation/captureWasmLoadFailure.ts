@@ -17,10 +17,17 @@ import { isStaleAssetError } from './wasmLoadError';
 type WasmLoadSurface = 'bin_designer_preview' | 'baseplate_preview';
 
 export function captureWasmLoadFailure(error: unknown, surface: WasmLoadSurface): void {
+  const staleAsset = isStaleAssetError(error);
   captureException(error instanceof Error ? error : new Error(String(error)), {
     surface,
     kernel: getActiveKernel(),
-    stale_asset: isStaleAssetError(error),
+    stale_asset: staleAsset,
+    // Stale-bundle failures self-heal (see handleWasmLoadFailure) and recur on
+    // every deploy. Pin the whole self-healing class to one stable fingerprint
+    // so a per-deploy hashed asset name — in the message or a stack frame — can't
+    // splinter it into a fresh error-tracking issue each release. Genuine (non-
+    // stale) load regressions keep their default per-message grouping.
+    ...(staleAsset ? { $exception_fingerprint: 'wasm-load-stale-asset' } : {}),
   });
 }
 

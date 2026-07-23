@@ -16,7 +16,7 @@ describe('captureWasmLoadFailure', () => {
     recoverStaleBundle.mockClear();
   });
 
-  it('captures with surface, kernel, and a stale_asset=true flag for cache failures', () => {
+  it('captures with surface, kernel, stale_asset=true, and a stable fingerprint for cache failures', () => {
     const err = new Error('Worker failed to initialize: script failed to load');
     captureWasmLoadFailure(err, 'bin_designer_preview');
 
@@ -24,10 +24,12 @@ describe('captureWasmLoadFailure', () => {
       surface: 'bin_designer_preview',
       kernel: 'occt-wasm',
       stale_asset: true,
+      // Collapses every deploy's stale-bundle failure into one issue.
+      $exception_fingerprint: 'wasm-load-stale-asset',
     });
   });
 
-  it('flags genuine (non-stale) load errors with stale_asset=false', () => {
+  it('flags genuine (non-stale) load errors with stale_asset=false and no pinned fingerprint', () => {
     captureWasmLoadFailure(new Error('out of memory'), 'baseplate_preview');
 
     expect(captureException).toHaveBeenCalledWith(expect.any(Error), {

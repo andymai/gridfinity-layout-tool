@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isStaleAssetError } from './wasmLoadError';
+import { isStaleAssetError, stableAssetName } from './wasmLoadError';
 
 describe('isStaleAssetError', () => {
   it('flags the fetchWasmBinary stale-asset message', () => {
@@ -49,5 +49,32 @@ describe('isStaleAssetError', () => {
   it('handles non-Error values without throwing', () => {
     expect(isStaleAssetError('script failed to load')).toBe(true);
     expect(isStaleAssetError(undefined)).toBe(false);
+  });
+});
+
+describe('stableAssetName', () => {
+  it('strips a Vite content hash, keeping the name and extension', () => {
+    expect(stableAssetName('/assets/occt-wasm-DVSq216o.wasm')).toBe('occt-wasm-[hash].wasm');
+  });
+
+  it('strips a hash from a chunk .js name', () => {
+    expect(stableAssetName('/assets/index-A1b2C3d4.js')).toBe('index-[hash].js');
+  });
+
+  it('drops the directory and query string, keeping the hash-stripped basename', () => {
+    expect(stableAssetName('https://example.com/assets/manifold-Zz00Yy11.wasm?v=2')).toBe(
+      'manifold-[hash].wasm'
+    );
+  });
+
+  it('leaves an unhashed name unchanged', () => {
+    expect(stableAssetName('/mocked/occt-wasm.wasm')).toBe('occt-wasm.wasm');
+  });
+
+  it('collapses distinct per-deploy hashes to the same stable label', () => {
+    // The core bug: different hashes must not fingerprint as different issues.
+    expect(stableAssetName('/assets/occt-wasm-DgtMD5nS.wasm')).toBe(
+      stableAssetName('/assets/occt-wasm-BRiVxOM5.wasm')
+    );
   });
 });
