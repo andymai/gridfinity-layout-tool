@@ -4,7 +4,7 @@
  * near the corner axes on a kumiko bin — used to chase the corner-seam nub
  * artifacts seen in preview screenshots.
  */
-import { describe, it } from 'vitest';
+import { describe, it, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -13,8 +13,6 @@ import { clearAllCaches } from '../shapeCache';
 beforeAll(async () => {
   await initBrepjs();
 }, 120_000);
-
-import { beforeAll } from 'vitest';
 
 describe('kumiko nub probe', () => {
   it('reports cavity-protruding vertices near corners', () => {

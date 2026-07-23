@@ -6,6 +6,7 @@ import {
   STYLE_DEFAULT_OMIT_KEYS,
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
+import { WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
@@ -436,6 +437,20 @@ describe('migrateParams', () => {
       wallPattern: { enabled: true, pattern: 'honeycomb' },
     });
     expect(result.wallPattern.enabled).toBe(true);
+    expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should preserve every registered pattern type through migration', () => {
+    for (const pattern of WALL_PATTERN_TYPES) {
+      const result = migrateParams({ wallPattern: { enabled: true, pattern } });
+      expect(result.wallPattern.pattern).toBe(pattern);
+    }
+  });
+
+  it('should coerce unknown persisted pattern values to honeycomb', () => {
+    const result = migrateParams({
+      wallPattern: { enabled: true, pattern: 'not-a-pattern' },
+    } as never);
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
 
