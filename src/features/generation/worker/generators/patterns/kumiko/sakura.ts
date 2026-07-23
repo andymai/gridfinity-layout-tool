@@ -22,8 +22,11 @@ export const SAKURA_DEF: KumikoPatternDef = {
   maxColumns: 32,
   filling: (cellSize, columnPitch) => {
     const reach = (2 * columnPitch) / 3;
+    // Anchored near the vertex so each petal joins the star core with real
+    // material (a farther inner end leaves only a knife-edge contact with the
+    // arms), slim enough that lens-shaped openings remain outboard.
     return replicateRotations(
-      [{ a: [0.3 * reach, 0], b: [0.85 * reach, 0], width: 0.28 * cellSize }],
+      [{ a: [0.1 * reach, 0], b: [0.85 * reach, 0], width: 0.18 * cellSize }],
       SIX_FOLD
     );
   },

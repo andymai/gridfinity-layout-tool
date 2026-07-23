@@ -108,7 +108,7 @@ describe('kumiko vertex fillings', () => {
     const segs = filling(CELL, PITCH);
     expect(segs).toHaveLength(6);
     for (const seg of segs) {
-      expect(seg.width).toBeCloseTo(0.28 * CELL, 9);
+      expect(seg.width).toBeCloseTo(0.18 * CELL, 9);
     }
   });
 
