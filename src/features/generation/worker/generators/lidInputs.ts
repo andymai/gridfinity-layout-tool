@@ -48,10 +48,13 @@ export interface LidInputs {
   readonly lidOuterD: number;
   readonly lidCornerR: number;
   /**
-   * Per-side FOOTPRINT clearance. Equals `LID_FIT_CLEARANCE` except on a
-   * magnetic lid, which gets `LID_MAGNETIC_EXTRA_CLEARANCE` on top so the
-   * magnets aren't fighting a friction fit (#2761). Not the anchor clearance
-   * — `anchorZ`/`wallBottomZ` are deliberately computed from the base value.
+   * Per-side FOOTPRINT clearance. `LID_FIT_CLEARANCE`, plus
+   * `LID_MAGNETIC_EXTRA_CLEARANCE` on a lid that actually gets retention
+   * magnets, so they aren't fighting a friction fit (#2761). NOT every
+   * `attachment: 'magnetic'` config: a lip-less or polygon bin generates no
+   * corner bosses and keeps the base value — see
+   * `resolveLidFootprintClearance`. Not the anchor clearance either;
+   * `anchorZ`/`wallBottomZ` are deliberately computed from the base value.
    */
   readonly fitClearance: number;
   readonly topThickness: number;
