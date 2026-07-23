@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_cefc3890929cef 374-375
+  s_20d1a5ff5ca196::t_1b7334219ba5bc 252-263,274-275,316-318,320
+  s_20d1a5ff5ca196::t_792b571b530fef 440,687-690,705-712,715
+  s_20d1a5ff5ca196::t_8d5e9226bcd1c2 394-397,418,425,447-451,453,460
+  s_20d1a5ff5ca196::t_b997d9fc4d8e82 282-291,301,303,306,319,321-322
+  s_20d1a5ff5ca196::t_c61eba52eefa13 45
+  s_20d1a5ff5ca196::t_aab0f74a4eaf42 293,308-312
+  s_20d1a5ff5ca196::t_7cc915f513df7e 670-671
+  s_20d1a5ff5ca196::t_4000cfc2ae68ef 583-629,631-635,637,650-654,661,679,682-686,691-704,713-714,724,727-736
+  s_20d1a5ff5ca196::t_b9b3cb51515d6c 444-445,457-459,461
+  s_20d1a5ff5ca196::t_d1cd3db7d6f161 462
+src/features/generation/worker/generators/__kernel-tests__/kumikoProfile.test.ts
+  s_20d1a5ff5ca196::t_f2f75a96754553 55-56
+  s_20d1a5ff5ca196::t_8e02bb69adc5c0 49-52
+src/features/generation/worker/generators/kumikoWrapBuilder.cache.test.ts
+  s_20d1a5ff5ca196::t_e6494b08717905 1-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "47d353e3bfff06e80a8bbf7d68bf7a488fd819b7",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
