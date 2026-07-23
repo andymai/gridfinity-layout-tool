@@ -1,0 +1,31 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_59b071634fd176::t_abb769b0f46757 184-189
+package.json
+  s_0d544b8727eb96::t_8500fae52df680 120
+pnpm-lock.yaml
+  s_0d544b8727eb96::t_5ef8498a018a80 73-74,3122-3123,3129,8695
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "17cdfbdc3156c76ef9b8b2ac77e5d7cb0b3dedb7",
+  "prompts": {},
+  "sessions": {
+    "s_0d544b8727eb96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a83d6e58-79a3-46d1-ab8b-79dfbbccdffa",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
