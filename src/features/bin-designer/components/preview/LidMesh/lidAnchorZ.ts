@@ -1,70 +1,24 @@
 /**
- * Main-thread mirror of `lidAnchorZ()` and `lidWallBottomZ()` from
- * `@/features/generation/worker/generators/lidConstants`.
+ * Preview-side lid placement helpers.
  *
- * The worker module isn't importable on the main thread (it pulls in
- * brepjs/WASM), so this file holds a pure-JS copy of the formulas used
- * by `LidMesh.tsx` and `useLidSection.ts` to position and size the lid
- * in the preview. Two contracts:
+ * The anchor formulas are re-exported from `@/features/bin-designer/types/lid`
+ * (main-thread safe — the worker's `lidConstants` pulls in brepjs/WASM and
+ * can't be imported here). They used to be a hand-synced copy; the shared
+ * module removes that drift risk, and the cross-thread agreement test in
+ * `LidMesh.test.tsx` still pins the two entry points together.
  *
- *   1. The formulas MUST match their worker-side counterparts in
- *      `@/features/generation/worker/generators/lidConstants` EXACTLY
- *      — drift produces a misaligned preview vs. exported geometry. The
- *      cross-thread agreement test in `LidMesh.test.tsx` enforces this.
- *   2. This file must contain only constants + pure functions (no React)
- *      so the consuming component file can stay react-refresh friendly.
+ * This file must contain only constants + pure functions (no React) so the
+ * consuming component file stays react-refresh friendly.
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
-/** Extra clearance baked into the anchor calculation
- *  (matches `LID_EXTRA_HEIGHT` in `@/features/generation/worker/generators/lidConstants`). */
-export const LID_EXTRA_HEIGHT = 0.2;
+// The anchor formulas now live in `@/features/bin-designer/types/lid` — a
+// main-thread-safe module both this preview and the worker import, so the two
+// hand-synced copies this file used to hold can't drift. Re-exported here so
+// existing consumers keep their import path.
+export { LID_EXTRA_HEIGHT, lidAnchorZ, lidWallBottomZ } from '@/features/bin-designer/types/lid';
 
-/**
- * Anchor Z in lid-local coords — the Y position where the lid's mating
- * cavity opens up to meet the bin's stacking lip when snapped.
- *
- * MUST MATCH `lidAnchorZ()` in
- * `@/features/generation/worker/generators/lidConstants` EXACTLY. If
- * either copy changes (formula, constants, sign), update both in
- * lockstep — silent drift produces a misaligned preview vs. exported
- * geometry.
- */
-export function lidAnchorZ(
-  heightUnitMm: number,
-  fitClearance: number,
-  extraHeightMm: number = 0
-): number {
-  return (
-    -(heightUnitMm + extraHeightMm) -
-    LID_EXTRA_HEIGHT +
-    GRIDFINITY.LIP_HEIGHT +
-    Math.SQRT2 * fitClearance * 2
-  );
-}
-
-/**
- * Bottom of the lid's mating wall in lid-local Z. Below this Z, the
- * mating wall ends and the click rails take over.
- *
- * MUST MATCH `lidWallBottomZ()` in
- * `@/features/generation/worker/generators/lidConstants` EXACTLY (same
- * cross-thread agreement requirement as `lidAnchorZ`).
- */
-export function lidWallBottomZ(
-  heightUnitMm: number,
-  fitClearance: number,
-  extraHeightMm: number = 0
-): number {
-  return (
-    lidAnchorZ(heightUnitMm, fitClearance, extraHeightMm) -
-    GRIDFINITY.LIP_BIG_TAPER -
-    GRIDFINITY.LIP_VERTICAL_PART
-  );
-}
-
-/** R3F preview offset BinMesh applies to its rendered group. */
 export const PREVIEW_Z_OFFSET = 0.1;
 
 /**

@@ -18,7 +18,13 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { LID_MAGNET_BOSS_WALL, LID_MAGNET_LIP_CLEARANCE } from './lidConstants';
+import {
+  LID_MAGNET_BOSS_WALL,
+  LID_MAGNET_LIP_CLEARANCE,
+  LID_MAGNET_SEAT_GAP,
+  LID_TOP_THICKNESS_BASE,
+} from './lidConstants';
+import { resolveLidInputs } from './lidInputs';
 
 /** Radial material kept around the magnet in its post/boss (mm). */
 export function retentionBossRadius(magnetDiameter: number): number {
@@ -80,4 +86,35 @@ export function usesMagneticLid(params: BinParams): boolean {
     params.base.stackingLip &&
     !isPartialMask(params.cellMask)
   );
+}
+
+/**
+ * The two magnet faces that mate when the lid is seated, in BIN-WORLD Z.
+ *
+ * Same discipline as {@link retentionMagnetPositions} for XY: the bin's pad and
+ * the lid's boss are built by different passes, so both must derive their
+ * mating plane here or the pair drifts apart in Z and the magnets never touch.
+ *
+ * - `lidFaceZ` — the lid boss's downward magnet face. The boss is anchored to
+ *   the cavity BOTTOM, so this stays a fixed distance below the lip line no
+ *   matter how deep the cavity gets (a deep lid grows a longer pillar). Lifted
+ *   by the seating transform (`totalHeight - anchorZ`) that `exportHandler`
+ *   applies to the lid solid.
+ * - `binFaceZ` — the bin pad's upward magnet face, one {@link LID_MAGNET_SEAT_GAP}
+ *   below, so the corner posts can't bottom out and hold the lid off its lip.
+ *
+ * Their separation is `LID_MAGNET_SEAT_GAP` by construction; the scenario suite
+ * asserts it so a change to either side's derivation can't silently close it.
+ */
+export function retentionSeatPlanes(
+  params: BinParams,
+  totalHeight: number
+): { readonly lidFaceZ: number; readonly binFaceZ: number } {
+  const lidInputs = resolveLidInputs(params);
+  const magnetDepth = params.lid.retentionMagnet.depth;
+  // Mirrors `lidRetentionMagnets`: the boss is anchored to the cavity bottom,
+  // so a deeper cavity lengthens the pillar rather than lifting the magnet.
+  const interfaceZ = -(LID_TOP_THICKNESS_BASE + magnetDepth) - lidInputs.cavityExtraMm;
+  const lidFaceZ = interfaceZ + (totalHeight - lidInputs.anchorZ);
+  return { lidFaceZ, binFaceZ: lidFaceZ - LID_MAGNET_SEAT_GAP };
 }

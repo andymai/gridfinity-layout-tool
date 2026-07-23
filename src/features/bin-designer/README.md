@@ -120,7 +120,10 @@ graph TB
   `resolveLidCavityExtraMm` in `types/lid.ts`, never a local `Math.max`, or the
   plate will eat the space the bin's lip needs (gotcha 10 in the generation
   README). A magnetic lid also gets `LID_MAGNETIC_EXTRA_CLEARANCE` (0.15mm/side,
-  XY only) so the magnets aren't fighting a friction fit.
+  XY only) so the magnets aren't fighting a friction fit. Magnetic retention anchors its
+  bosses to the cavity BOTTOM, so a deep cavity lengthens the pillar rather than
+  lifting the magnets out of the bin's reach — the bin's pads land in the same
+  place whatever the lid's depth knobs say.
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's

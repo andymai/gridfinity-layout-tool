@@ -14,13 +14,17 @@
  * All values are in millimeters.
  */
 
-import { LIP_BIG_TAPER, LIP_VERTICAL_PART, LIP_HEIGHT } from './generatorConstants';
+import { LIP_BIG_TAPER } from './generatorConstants';
 import {
   LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
   LID_TOP_THICKNESS_BASE,
   LID_MAGNET_CEILING,
   LID_TRAY_FLOOR,
+  LID_EXTRA_HEIGHT,
+  LID_MAGNET_SEAT_GAP,
+  lidAnchorZ,
+  lidWallBottomZ,
 } from '@/shared/types/bin';
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -35,6 +39,12 @@ export {
   LID_TOP_THICKNESS_BASE,
   LID_MAGNET_CEILING,
   LID_TRAY_FLOOR,
+  // Anchor math + seat gap live in the shared types module so the main thread
+  // (compatibility checks, preview) can use the same formula the worker does.
+  LID_EXTRA_HEIGHT,
+  LID_MAGNET_SEAT_GAP,
+  lidAnchorZ,
+  lidWallBottomZ,
 };
 
 /** Side-wall thickness in the lip-mating zone. Derived: the outer chamfer
@@ -48,53 +58,6 @@ export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BI
  * `resolveLidCavityExtraMm`) — the preview, thumbnail, and export assembly
  * need them too, and a second copy here would drift.
  */
-
-/** Extra clearance baked into the anchor calculation to compensate for
- *  first-layer squish (mm). */
-export const LID_EXTRA_HEIGHT = 0.2;
-
-/**
- * Anchor Z position — where the lid's mating cavity starts opening up to
- * receive the bin's stacking lip when the lid is snapped on.
- *
- *   anchorZ = -(heightUnitMm + extraHeightMm) - extra + LIP_HEIGHT
- *             + sqrt(2)*fitClearance*2
- *
- * The sqrt(2)*2*fitClearance term applies clearance along the diagonal
- * direction at the corner (where two perpendicular shifts compose).
- *
- * `extraHeightMm` (issue #2482) pushes the anchor deeper, lengthening the plain
- * wall above the lip so tall contents poking out of a short bin are enclosed.
- * The lip-mating band and click rails stay pinned relative to the anchor, so
- * the fit is unchanged; only the cavity above it grows. `0` reproduces the
- * standard one-grid-unit lid exactly.
- *
- * @param heightUnitMm Gridfinity height unit (default 7mm — base lid height)
- * @param fitClearance Per-side clearance for the chosen fit
- * @param extraHeightMm Added cavity depth above the default lid (default 0)
- */
-export function lidAnchorZ(
-  heightUnitMm: number,
-  fitClearance: number,
-  extraHeightMm: number = 0
-): number {
-  return (
-    -(heightUnitMm + extraHeightMm) - LID_EXTRA_HEIGHT + LIP_HEIGHT + Math.SQRT2 * fitClearance * 2
-  );
-}
-
-/**
- * Bottom of the mating wall in lid-local Z coords.
- *
- * Below this Z, the lid wall is finished — the click rails take over from here.
- */
-export function lidWallBottomZ(
-  heightUnitMm: number,
-  fitClearance: number,
-  extraHeightMm: number = 0
-): number {
-  return lidAnchorZ(heightUnitMm, fitClearance, extraHeightMm) - LIP_BIG_TAPER - LIP_VERTICAL_PART;
-}
 
 /* ──────────────────────────────────────────────────────────────────────
  * Click rail cross-section dimensions (X = outward from corner-radius
@@ -161,13 +124,6 @@ export const LID_MAGNET_BOSS_WALL = 1.0;
  * magnets sit well inboard of every wall).
  */
 export const LID_MAGNET_LIP_CLEARANCE = 3.5;
-
-/**
- * Vertical gap (mm) left between the lid boss's bottom face and the bin post's
- * top face when the lid is fully seated. Keeps the four corner posts from
- * bottoming out and lifting the lid off its lip; the magnets pull across it.
- */
-export const LID_MAGNET_SEAT_GAP = 0.2;
 
 /** Retaining floor kept below a bin-post magnet pocket (mm). */
 export const LID_MAGNET_POST_FLOOR = 0.6;
