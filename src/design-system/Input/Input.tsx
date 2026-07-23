@@ -62,23 +62,6 @@ const inputVariants = cva(
   }
 );
 
-const iconWrapperVariants = cva(['flex-shrink-0', 'text-content-tertiary'], {
-  variants: {
-    size: {
-      sm: 'w-3.5 h-3.5',
-      md: 'w-4 h-4',
-      lg: 'w-5 h-5',
-    },
-    position: {
-      left: 'ml-2',
-      right: 'mr-2',
-    },
-  },
-  defaultVariants: {
-    size: 'md',
-  },
-});
-
 type InputVariantProps = VariantProps<typeof inputWrapperVariants>;
 
 export interface InputProps
@@ -188,7 +171,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         className={cn(inputWrapperVariants({ size, error, disabled, fullWidth }), wrapperClassName)}
       >
         {leftIcon && (
-          <span className={iconWrapperVariants({ size, position: 'left' })} aria-hidden="true">
+          <span
+            className="ml-2 inline-flex flex-shrink-0 items-center text-content-tertiary"
+            aria-hidden="true"
+          >
             {leftIcon}
           </span>
         )}
