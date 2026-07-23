@@ -31,7 +31,6 @@ import {
   cutAll,
   unwrap,
   clone,
-  compound,
   sketchHelix,
   getKernelCapabilities,
 } from 'brepjs';
@@ -43,6 +42,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext } from './pipeline/types';
+import type { PerfCollector } from './pipeline/perfCollector';
 import type { WallPatternDescriptor } from './wallPatterns';
 import { getSlotFreeWalls, TOP_KEEP_OUT, BOTTOM_SOLID_SKIRT } from './wallPatterns';
 import { getPatternCalculator, isWrappedLatticeCalculator, PATTERN_REGISTRY } from './patterns';
@@ -249,6 +249,18 @@ function strokeSegment(
  * Returns null when the slab has no struts at all — an empty lattice must
  * degrade to solid walls, not cut the whole wall away.
  */
+/**
+ * Build one flat wall slab's cutter: slab box minus strut prisms, placed with
+ * the stamp transform chain.
+ *
+ * The subtraction happens in 3D (OCCT) rather than via Drawing 2D booleans:
+ * lattice struts share vertices, and the resulting exact vertex-on-edge
+ * coincidences reliably break the JS blueprint boolean path
+ * (POINT_NOT_ON_CURVE). OCCT's fuzzy-tolerance booleans absorb them.
+ *
+ * Returns null when the slab has no struts at all — an empty lattice must
+ * degrade to solid walls, not cut the whole wall away.
+ */
 function buildFlatSlabCutter(
   slab: FlatSlab,
   lattice: KumikoLattice,
@@ -259,17 +271,26 @@ function buildFlatSlabCutter(
   perimeter: number
 ): Shape3D | null {
   const w = lattice.strutWidth;
-  const u0 = slab.u0 - SLAB_OVERLAP;
-  const u1 = slab.u1 + SLAB_OVERLAP;
+  const uA = slab.u0 - SLAB_OVERLAP;
+  const uB = slab.u1 + SLAB_OVERLAP;
   const uCenter = (slab.u0 + slab.u1) / 2;
   const zCenter = bandZ0 + bandHeight / 2;
   const halfDepth = cutDepth / 2;
   // Struts pierce the slab in depth so no strut face is coplanar with it.
   const strutDepth = cutDepth + 2;
 
-  const struts: Shape3D[] = [];
+  // Struts partitioned by lattice family: tools within a family are parallel
+  // and disjoint, so each family cut has zero tool-tool intersection work.
+  const families: Shape3D[][] = [[], [], []];
+  const familyOf = (seg: KumikoSegment): number => {
+    const du = seg.b[0] - seg.a[0];
+    const dz = seg.b[1] - seg.a[1];
+    if (Math.abs(du) < AXIS_EPSILON) return 0;
+    return dz > 0 === du > 0 ? 1 : 2;
+  };
+  let strutCount = 0;
   for (const seg of lattice.segments) {
-    for (const clipped of clipSegmentToURangePeriodic(seg, u0 - w, u1 + w, perimeter)) {
+    for (const clipped of clipSegmentToURangePeriodic(seg, uA - w, uB + w, perimeter)) {
       // z is band-local in the lattice; shift to absolute before centering.
       const absolute: KumikoSegment = {
         a: [clipped.a[0], clipped.a[1] + bandZ0],
@@ -277,22 +298,28 @@ function buildFlatSlabCutter(
       };
       const drawing = strokeSegment(extendSegment(absolute, w / 2), w, uCenter, zCenter);
       const prism = sketch(drawing, 'XY').extrude(strutDepth);
-      struts.push(translate(prism, [0, 0, -strutDepth / 2]));
+      families[familyOf(clipped)].push(translate(prism, [0, 0, -strutDepth / 2]));
       prism.delete();
+      strutCount++;
     }
   }
-  if (struts.length === 0) return null;
+  if (strutCount === 0) return null;
 
-  const slabPrism = sketch(drawRoundedRectangle(u1 - u0, bandHeight, 0), 'XY').extrude(cutDepth);
+  const chunkDrawing = drawRoundedRectangle(uB - uA, bandHeight, 0).translate(
+    (uA + uB) / 2 - uCenter,
+    0
+  );
+  const slabPrism = sketch(chunkDrawing, 'XY').extrude(cutDepth);
   let region = translate(slabPrism, [0, 0, -halfDepth]);
   slabPrism.delete();
 
-  // One n-ary boolean: subtracting the strut prisms directly is far cheaper
-  // than fusing ~40 overlapping tools first and cutting the union.
-  const carved = unwrap(cutAll(region, struts));
-  region.delete();
-  for (const s of struts) s.delete();
-  region = carved;
+  for (const family of families) {
+    if (family.length === 0) continue;
+    const carved = unwrap(cutAll(region, family, { trackEvolution: false }));
+    region.delete();
+    for (const s of family) s.delete();
+    region = carved;
+  }
 
   const stood = rotate(region, 90, { axis: [1, 0, 0] });
   region.delete();
@@ -344,7 +371,8 @@ function buildCornerSlabCutter(
   bandHeight: number,
   outerRadius: number,
   wallThickness: number,
-  perimeter: number
+  perimeter: number,
+  perf?: PerfCollector
 ): Shape3D {
   const w = lattice.strutWidth;
   const bandZ1 = bandZ0 + bandHeight;
@@ -363,7 +391,10 @@ function buildCornerSlabCutter(
 
   const wedge = annularWedge(rc0, rc1, bandZ0, bandZ1, Math.PI / 2);
 
-  const struts: Shape3D[] = [];
+  // Same family partition as the flat chunks: verticals, horizontals, rising,
+  // falling — struts within a family are disjoint, so each family cut has no
+  // tool-tool intersection work.
+  const families: Shape3D[][] = [[], [], [], []];
   const pieces: KumikoSegment[] = [];
   for (const seg of lattice.segments) {
     for (const piece of clipSegmentToURangePeriodic(seg, slab.u0 - w, slab.u1 + w, perimeter)) {
@@ -384,14 +415,14 @@ function buildCornerSlabCutter(
       const dPhi = w / outerRadius;
       const phiMid = phiOf((ua + ub) / 2);
       const slab3d = annularWedge(sr0, sr1, Math.min(za, zb), Math.max(za, zb), dPhi);
-      struts.push(toCornerAngle(slab3d, phiMid - dPhi / 2));
+      families[0].push(toCornerAngle(slab3d, phiMid - dPhi / 2));
     } else if (dz < AXIS_EPSILON) {
       // Near-horizontal strut: thin partial revolve across its angular span.
       const zMid = (za + zb) / 2;
       const phiA = phiOf(Math.min(ua, ub));
       const phiB = phiOf(Math.max(ua, ub));
       const slab3d = annularWedge(sr0, sr1, zMid - w / 2, zMid + w / 2, phiB - phiA);
-      struts.push(toCornerAngle(slab3d, phiA));
+      families[1].push(toCornerAngle(slab3d, phiA));
     } else {
       // Diagonal strut: rectangle swept along a helix. Base the helix at the
       // lower endpoint; it winds left-handed when φ decreases as z rises.
@@ -406,17 +437,28 @@ function buildCornerSlabCutter(
         (plane) => drawRoundedRectangle(radialSpan, w, 0).sketchOnPlane(plane),
         { frenet: true }
       );
-      struts.push(toCornerAngle(swept, phiOf(uLow)));
+      families[zb - za > 0 === ub - ua > 0 ? 2 : 3].push(toCornerAngle(swept, phiOf(uLow)));
     }
   }
 
+  const strutsBuiltAt = performance.now();
+
   let cutter = wedge;
-  if (struts.length > 0) {
-    const carved = unwrap(cutAll(cutter, struts));
+  let strutCount = 0;
+  for (const family of families) {
+    if (family.length === 0) continue;
+    strutCount += family.length;
+    const carved = unwrap(cutAll(cutter, family, { trackEvolution: false }));
     cutter.delete();
-    for (const s of struts) s.delete();
+    for (const s of family) s.delete();
     cutter = carved;
   }
+
+  perf?.recordWallPatternSubstep(
+    'kumiko_corner_cut',
+    performance.now() - strutsBuiltAt,
+    strutCount
+  );
 
   const angled = toCornerAngle(cutter, slab.thetaStart);
   const positioned = translate(angled, [slab.cx, slab.cy, 0]);
@@ -538,14 +580,61 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
     buildCacheKey('v1', baseKey, ...wallClips.map((wc) => wc.clips.keyPart))
   );
 
+  // The cutters stay SEPARATE all the way into the final pattern-cut boolean:
+  // handing OCCT one whole-perimeter compound forces it to treat the tool set
+  // as a single operand, defeating its per-tool bounding-box pruning (measured
+  // 2.5× slower on the final cut). Cutter count is deterministic from the
+  // layout, so both caches store one entry per slab index.
+  const activeSlabs = layout.slabs.filter((s) => s.kind === 'flat' || exact);
+  const cacheGetAll = (cacheName: string, key: string): Shape3D[] | null => {
+    const shapes: Shape3D[] = [];
+    for (let i = 0; i < activeSlabs.length; i++) {
+      const hit = getFeatureCache(cacheName, `${key}#${i}`);
+      if (!hit) {
+        for (const s of shapes) s.delete();
+        return null;
+      }
+      shapes.push(hit);
+    }
+    return shapes;
+  };
+  const cacheSetAll = (cacheName: string, key: string, shapes: Shape3D[]): Shape3D[] => {
+    return shapes.map((s, i) => {
+      setFeatureCache(cacheName, `${key}#${i}`, s);
+      return unwrap(clone(s));
+    });
+  };
+
+  // Which walls' clip boxes can reach each slab: a flat sees its own wall's
+  // clips; a corner sees both adjacent walls' (a full-width cutout border can
+  // spill past the wall end into the corner region).
+  const clipSidesFor = (slab: PerimeterSlab, index: number): readonly WallSide[] => {
+    if (slab.kind === 'flat') return [slab.side];
+    const order: readonly WallSide[] = ['front', 'right', 'back', 'left'];
+    const prev = order[Math.floor(index / 2) % 4];
+    const next = order[(Math.floor(index / 2) + 1) % 4];
+    return [prev, next];
+  };
+  const hasClips = (side: WallSide): boolean => {
+    const wc = wallClips.find((w) => w.side === side);
+    return (
+      !!wc &&
+      (wc.clips.clip !== null ||
+        wc.clips.handleClip !== null ||
+        wc.clips.rampClip !== null ||
+        wc.clips.textClip !== null)
+    );
+  };
+  const anyClips = wallSides.some(hasClips);
+
   const buildStart = perfCollector ? performance.now() : 0;
-  let shape = getFeatureCache(KUMIKO_WRAP_CLIPPED_CACHE, clippedKey);
-  const cacheHit = shape !== null;
-  if (!shape) {
-    let base = getFeatureCache(KUMIKO_WRAP_BASE_CACHE, baseKey);
-    if (!base) {
+  let shapes = anyClips ? cacheGetAll(KUMIKO_WRAP_CLIPPED_CACHE, clippedKey) : null;
+  const cacheHit = shapes !== null;
+  if (!shapes) {
+    let baseShapes = cacheGetAll(KUMIKO_WRAP_BASE_CACHE, baseKey);
+    if (!baseShapes) {
       const cutters: Shape3D[] = [];
-      for (const slab of layout.slabs) {
+      for (const slab of activeSlabs) {
         checkCancelled(signal);
         const slabStart = perfCollector ? performance.now() : 0;
         if (slab.kind === 'flat') {
@@ -558,14 +647,18 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
             patternCenterZ,
             layout.perimeter
           );
-          if (cutter) cutters.push(cutter);
+          if (!cutter) {
+            for (const c of cutters) c.delete();
+            return [];
+          }
+          cutters.push(cutter);
           if (perfCollector) {
             perfCollector.recordWallPatternSubstep(
               `kumiko_flat_${slab.side}`,
               performance.now() - slabStart
             );
           }
-        } else if (exact) {
+        } else {
           cutters.push(
             buildCornerSlabCutter(
               slab,
@@ -574,7 +667,8 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
               patternHeight,
               layout.cornerRadius,
               wallThickness,
-              layout.perimeter
+              layout.perimeter,
+              perfCollector
             )
           );
           if (perfCollector) {
@@ -582,32 +676,44 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
           }
         }
       }
-      if (cutters.length === 0) return [];
-      const grouped = cutters.length === 1 ? cutters[0] : compound(cutters);
-      if (cutters.length > 1) for (const c of cutters) c.delete();
-      setFeatureCache(KUMIKO_WRAP_BASE_CACHE, baseKey, grouped);
-      base = unwrap(clone(grouped));
+      baseShapes = cacheSetAll(KUMIKO_WRAP_BASE_CACHE, baseKey, cutters);
     }
 
-    // Clip boxes are positioned in world space per wall, so they apply
-    // directly to the whole-perimeter compound — including the corner
-    // cutters when a cutout border reaches past a wall end.
-    let current: Shape3D | null = base;
-    for (const wc of wallClips) {
-      checkCancelled(signal);
-      if (!current) break;
-      current = applyWallPatternClips(
-        current,
-        wc.descriptor,
-        wc.clips.clip,
-        wc.clips.handleClip,
-        wc.clips.rampClip,
-        wc.clips.textClip
-      );
+    // Route each wall's clip boxes to the cutters they can reach. Clip boxes
+    // are positioned in world space, so applyWallPatternClips works per
+    // cutter; slabs out of a box's reach cost one cheap disjoint-bbox cut.
+    shapes = baseShapes;
+    if (anyClips) {
+      const clipped: Shape3D[] = [];
+      let failed = false;
+      for (let i = 0; i < baseShapes.length; i++) {
+        let current: Shape3D | null = baseShapes[i];
+        for (const side of clipSidesFor(activeSlabs[i], i)) {
+          if (!current || !hasClips(side)) continue;
+          checkCancelled(signal);
+          const wc = wallClips.find((w) => w.side === side);
+          if (!wc) continue;
+          current = applyWallPatternClips(
+            current,
+            wc.descriptor,
+            wc.clips.clip,
+            wc.clips.handleClip,
+            wc.clips.rampClip,
+            wc.clips.textClip
+          );
+        }
+        if (!current) {
+          failed = true;
+          break;
+        }
+        clipped.push(current);
+      }
+      if (failed) {
+        for (const s of clipped) s.delete();
+        return [];
+      }
+      shapes = cacheSetAll(KUMIKO_WRAP_CLIPPED_CACHE, clippedKey, clipped);
     }
-    if (!current) return [];
-    setFeatureCache(KUMIKO_WRAP_CLIPPED_CACHE, clippedKey, current);
-    shape = unwrap(clone(current));
   }
   if (perfCollector) {
     perfCollector.recordWallPatternSubstep(
@@ -615,14 +721,17 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
       performance.now() - buildStart,
       lattice.segments.length
     );
-    perfCollector.setPatternCutToolCount(1);
+    perfCollector.setPatternCutToolCount(shapes.length);
   }
 
-  if (innerOffsetX !== 0 || innerOffsetY !== 0) {
-    const old = shape;
-    shape = translate(old, [innerOffsetX, innerOffsetY, 0]);
-    old.delete();
-  }
-  collectOrigins(shape, FeatureTag.WALL_PATTERN, originToTag);
-  return [shape];
+  return shapes.map((cutter) => {
+    let placed = cutter;
+    if (innerOffsetX !== 0 || innerOffsetY !== 0) {
+      const old = placed;
+      placed = translate(old, [innerOffsetX, innerOffsetY, 0]);
+      old.delete();
+    }
+    collectOrigins(placed, FeatureTag.WALL_PATTERN, originToTag);
+    return placed;
+  });
 }

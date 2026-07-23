@@ -46,7 +46,12 @@ function profile(label: string, width: number, depth: number, height: number): v
 
 describe('kumiko generation profile', () => {
   it('profiles mitsukude bins', () => {
+    if (process.env.KUMIKO_PROFILE_CASE === '4x4x6') {
+      profile('4x4x6', 4, 4, 6);
+      return;
+    }
     profile('1x1x6', 1, 1, 6);
     profile('2x2x3', 2, 2, 3);
-  }, 600_000);
+    profile('4x4x6', 4, 4, 6);
+  }, 900_000);
 });
