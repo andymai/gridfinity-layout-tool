@@ -55,13 +55,6 @@ export function LinkedDimensionInput({
   const isSquare = width === depth;
   const showSingleInput = isSquare && !expanded;
 
-  const handleLinkedChange = useCallback(
-    (value: number) => {
-      onChange(value);
-    },
-    [onChange]
-  );
-
   const handleWidthChange = useCallback(
     (value: number) => {
       onChange(value, depth !== value ? depth : undefined);
@@ -125,7 +118,7 @@ export function LinkedDimensionInput({
         <DeferredNumberInput
           id={id}
           value={width}
-          onChange={handleLinkedChange}
+          onChange={onChange}
           min={min}
           max={max}
           step={step}

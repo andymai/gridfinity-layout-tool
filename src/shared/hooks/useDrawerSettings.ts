@@ -38,10 +38,6 @@ import { isOk, isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
 
 /**
- * Return type for useDrawerSettings hook.
- * Provides all drawer-related state and handlers needed by settings panels.
- */
-/**
  * A grid fit offered (never auto-applied) after a measured-mm commit. The user
  * opts in via the suggestion card; the grid never resizes on its own.
  * `isHalf` fits use a half-unit grid, so accepting also turns half-grid on.
@@ -286,8 +282,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     updateDrawer,
     updateBin,
   } = useMutations();
-
-  // Undo support
 
   // Derive layers/categories from the `layout` already selected in the
   // useShallow above. Prior code opened two additional bare subscriptions

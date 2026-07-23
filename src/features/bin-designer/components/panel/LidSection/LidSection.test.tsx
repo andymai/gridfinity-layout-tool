@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LidSection } from './LidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -245,6 +245,18 @@ describe('LidSection', () => {
       render(<LidSection />);
       fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
       expect(useDesignerStore.getState().params.surfaceText?.lidText).toBeUndefined();
+      expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
+    });
+
+    it('collapses an opened-but-empty toggle when the active design switches', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
+      expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
+
+      act(() => {
+        useDesignerStore.setState({ currentDesignId: 'another-design' });
+      });
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
     });
 
