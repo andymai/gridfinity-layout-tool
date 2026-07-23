@@ -51,13 +51,15 @@ export function getOutsideCellSet(
   outline: DrawerOutline,
   drawer: Pick<Drawer, 'width' | 'depth' | 'fractionalEdgeX' | 'fractionalEdgeY'>,
   gridUnitMm: number,
-  step: 0.5 | 1
+  step: 0.5 | 1,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): ReadonlySet<string> {
   const width = drawer.width as number;
   const depth = drawer.depth as number;
   const fx = drawer.fractionalEdgeX ?? 'end';
   const fy = drawer.fractionalEdgeY ?? 'end';
-  const cacheKey = `${width},${depth},${gridUnitMm},${step},${fx},${fy}`;
+  const cacheKey = `${width},${depth},${gridUnitMm},${gridUnitMmY},${step},${fx},${fy}`;
 
   let byParams = cellSetCache.get(outline);
   if (byParams === undefined) {
@@ -73,9 +75,9 @@ export function getOutsideCellSet(
       const cls = classifyRect(
         outline,
         cx.start * gridUnitMm,
-        cy.start * gridUnitMm,
+        cy.start * gridUnitMmY,
         (cx.start + cx.size) * gridUnitMm,
-        (cy.start + cy.size) * gridUnitMm
+        (cy.start + cy.size) * gridUnitMmY
       );
       if (cls !== 'inside') outside.add(`${cx.start},${cy.start}`);
     }

@@ -21,8 +21,9 @@ hatching, baseplate generation/splitting) derives from it.
   grid from the union of non-staged bin footprints.
 - `utils/drawerMask.ts` — editor grid ↔ outline conversion. The grid maps to
   the bin designer's half-resolution `CellMask` so `maskToPolygon` traces the
-  boundary; the outer loop scales by `gridUnitMm` into outline mm. Enclosed
-  holes are filled (single-loop model); empty/disconnected grids error.
+  boundary; the outer loop scales by the per-axis grid pitch (`gridUnitMm` /
+  `gridUnitMmY`, issue #2733) into outline mm. Enclosed holes are filled
+  (single-loop model); empty/disconnected grids error.
 - `utils/traceBinFootprint.ts` — bins → editor grid (all layers, staging
   excluded).
 

@@ -19,9 +19,14 @@ export const NO_CUTS: CornerCutParams = {
 };
 
 /** Largest chamfer/radius/notch extent (mm) that keeps cuts from meeting. */
-export function maxCutExtentMm(drawer: Drawer, gridUnitMm: number): number {
+export function maxCutExtentMm(
+  drawer: Drawer,
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
+): number {
   const widthMm = (drawer.width as number) * gridUnitMm;
-  const depthMm = (drawer.depth as number) * gridUnitMm;
+  const depthMm = (drawer.depth as number) * gridUnitMmY;
   return Math.floor(Math.min(widthMm, depthMm) / 2 - 1);
 }
 
@@ -33,13 +38,15 @@ export function maxCutExtentMm(drawer: Drawer, gridUnitMm: number): number {
 export function cornersToOutline(
   drawer: Drawer,
   cuts: CornerCutParams,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): DrawerOutline | null {
   if (!hasAnyCut(cuts)) {
     return null;
   }
   const W = (drawer.width as number) * gridUnitMm;
-  const D = (drawer.depth as number) * gridUnitMm;
+  const D = (drawer.depth as number) * gridUnitMmY;
 
   return {
     vertices: cornerCutVertices(W, D, cuts),

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Dialog, Button } from '@/design-system';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
@@ -30,7 +31,12 @@ interface ShapeEditorDialogProps {
 export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
   const t = useTranslation();
   const mutations = useMutations();
-  const { layout } = useLayoutStore(useShallow((s) => ({ layout: s.layout })));
+  const { layout, gridUnitMmY } = useLayoutStore(
+    useShallow((s) => ({
+      layout: s.layout,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
+    }))
+  );
   const addToast = useToastStore((s) => s.addToast);
 
   const [grid, setGrid] = useState<DrawerMaskGrid | null>(null);
@@ -43,7 +49,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
   const seeded = useMemo(() => {
     if (!open) return null;
     return layout.drawer.outline !== undefined
-      ? outlineToDrawerMask(layout.drawer.outline, layout.drawer, layout.gridUnitMm)
+      ? outlineToDrawerMask(layout.drawer.outline, layout.drawer, layout.gridUnitMm, gridUnitMmY)
       : buildFullDrawerMask(layout.drawer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reseed only on open
   }, [open]);
@@ -98,8 +104,11 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
   }, []);
 
   const conversion = useMemo(
-    () => (active === null ? null : drawerMaskToOutline(active, layout.gridUnitMm as number)),
-    [active, layout.gridUnitMm]
+    () =>
+      active === null
+        ? null
+        : drawerMaskToOutline(active, layout.gridUnitMm as number, gridUnitMmY),
+    [active, layout.gridUnitMm, gridUnitMmY]
   );
 
   const handleTrace = useCallback(() => {
@@ -112,7 +121,8 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline: conversion.outline },
-      layout.gridUnitMm
+      layout.gridUnitMm,
+      gridUnitMmY
     ).length;
     const result = mutations.setDrawerOutline(conversion.outline);
     if (!isOk(result)) return;
@@ -131,7 +141,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     setGrid(null);
     usedTraceRef.current = false;
     onClose();
-  }, [conversion, layout, mutations, addToast, t, onClose]);
+  }, [conversion, layout, gridUnitMmY, mutations, addToast, t, onClose]);
 
   const handleClose = useCallback(() => {
     setGrid(null);

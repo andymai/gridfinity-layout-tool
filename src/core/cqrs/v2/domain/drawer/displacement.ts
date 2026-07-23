@@ -13,7 +13,9 @@ import { isFootprintInsideOutline } from '@/shared/utils/drawerOutlineGeometry';
 export function computeDisplacedBins(
   bins: readonly Bin[],
   drawer: Pick<Drawer, 'width' | 'depth' | 'outline'>,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): BinId[] {
   const width = drawer.width as number;
   const depth = drawer.depth as number;
@@ -33,7 +35,8 @@ export function computeDisplacedBins(
         !isFootprintInsideOutline(
           { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth },
           drawer.outline,
-          gridUnitMm
+          gridUnitMm,
+          gridUnitMmY
         )
       );
     })

@@ -84,4 +84,30 @@ describe('getOutsideCellSet', () => {
     // Leading half column at x=0, full columns at 0.5, 1.5, 2.5.
     expect(outsideStart).toEqual(new Set(['1.5,2', '2.5,2', '1.5,3', '2.5,3']));
   });
+
+  describe('non-square grids (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const L_NS: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * UX, y: 0 },
+        { x: 4 * UX, y: 2 * UY },
+        { x: 2 * UX, y: 2 * UY },
+        { x: 2 * UX, y: 4 * UY },
+        { x: 0, y: 4 * UY },
+      ],
+    };
+
+    it('classifies cells with the per-axis pitch', () => {
+      const outside = getOutsideCellSet(L_NS, drawer(4, 4), UX, 1, UY);
+      expect(outside).toEqual(new Set(['2,2', '3,2', '2,3', '3,3']));
+    });
+
+    it('keys the memo cache on the Y pitch', () => {
+      const a = getOutsideCellSet(L_NS, drawer(4, 4), UX, 1, UY);
+      expect(getOutsideCellSet(L_NS, drawer(4, 4), UX, 1, UY)).toBe(a);
+      expect(getOutsideCellSet(L_NS, drawer(4, 4), UX, 1, UX)).not.toBe(a);
+    });
+  });
 });

@@ -3,6 +3,7 @@ import { canPlaceBin } from './validationPlacement';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import type { Layout } from '@/core/types';
+import { mm } from '@/core/types';
 
 function makeSingleLayerLayout(): Layout {
   return createTestLayout({
@@ -211,5 +212,32 @@ describe('canPlaceBin with a drawer outline', () => {
       makeShapedLayout()
     );
     expect(result).toMatchObject({ valid: false, reason: 'exceeds_width' });
+  });
+
+  it('scales the footprint by the per-axis pitch on a non-square grid (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const layout = makeSingleLayerLayout();
+    layout.gridUnitMm = mm(UX);
+    layout.gridUnitMmY = mm(UY);
+    // Same L shape scaled to the true per-axis pitches.
+    layout.drawer.outline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 10 * UX, y: 0 },
+        { x: 10 * UX, y: 4 * UY },
+        { x: 6 * UX, y: 4 * UY },
+        { x: 6 * UX, y: 8 * UY },
+        { x: 0, y: 8 * UY },
+      ],
+    };
+    // Back-flush in the tall body (y ends at 8 × UY) — the X pitch on Y
+    // would push the footprint past the outline.
+    expect(
+      canPlaceBin({ x: 0, y: 6, width: 2, depth: 2, height: 3 }, 'layer1', layout)
+    ).toMatchObject({ valid: true });
+    expect(
+      canPlaceBin({ x: 7, y: 5, width: 1, depth: 1, height: 3 }, 'layer1', layout)
+    ).toMatchObject({ valid: false, reason: 'outside_drawer' });
   });
 });

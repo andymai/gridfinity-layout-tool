@@ -46,4 +46,23 @@ describe('computeDisplacedBins', () => {
     const bins = [makeBin('bin_staged', 5, 3, STAGING_ID)];
     expect(computeDisplacedBins(bins, { ...drawer, outline: L_OUTLINE }, U)).toEqual([]);
   });
+
+  it('measures footprints with the per-axis pitch on a non-square grid (#2733)', () => {
+    const UX = 48;
+    const UY = 42;
+    const lNs: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 6 * UX, y: 0 },
+        { x: 6 * UX, y: 2 * UY },
+        { x: 4 * UX, y: 2 * UY },
+        { x: 4 * UX, y: 4 * UY },
+        { x: 0, y: 4 * UY },
+      ],
+    };
+    // bin_back sits flush against the drawer's back edge (4 × UY) — using the
+    // X pitch on Y would wrongly displace it.
+    const bins = [makeBin('bin_back', 0, 3), makeBin('bin_notch', 5, 3)];
+    expect(computeDisplacedBins(bins, { ...drawer, outline: lNs }, UX, UY)).toEqual(['bin_notch']);
+  });
 });

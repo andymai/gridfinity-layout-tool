@@ -1,4 +1,5 @@
 import type { Bin, GridUnits, Layout, LayerId, CategoryId } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
 import { getBlockedZones } from './collision';
 import { getOutsideCellSet } from './drawerOutlineCells';
@@ -23,7 +24,8 @@ export function createOccupiedCellSet(
       layout.drawer.outline,
       layout.drawer,
       layout.gridUnitMm,
-      step
+      step,
+      effectiveGridUnitMmY(layout)
     );
     for (const key of outside) occupied.add(key);
   }

@@ -249,15 +249,17 @@ export function insideAreaFraction(
 export function isFootprintInsideOutline(
   rect: { readonly x: number; readonly y: number; readonly width: number; readonly depth: number },
   outline: DrawerOutline,
-  gridUnitMm: number
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
 ): boolean {
   return (
     classifyRect(
       outline,
       rect.x * gridUnitMm,
-      rect.y * gridUnitMm,
+      rect.y * gridUnitMmY,
       (rect.x + rect.width) * gridUnitMm,
-      (rect.y + rect.depth) * gridUnitMm
+      (rect.y + rect.depth) * gridUnitMmY
     ) === 'inside'
   );
 }

@@ -177,6 +177,21 @@ describe('validateOutline', () => {
     };
     expect(validateOutline(tiny, 4 * U, 4 * U, U)?.kind).toBe('too_small');
   });
+
+  it('sizes the one-cell minimum by both pitches (#2733)', () => {
+    const cell: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 48, y: 0 },
+        { x: 48, y: 42 },
+        { x: 0, y: 42 },
+      ],
+    };
+    // One true cell (48 × 42 = 2016mm²) passes; the square-pitch rule
+    // (48² = 2304mm²) would wrongly reject it.
+    expect(validateOutline(cell, 4 * 48, 4 * 42, 48, 42)).toBeNull();
+    expect(validateOutline(cell, 4 * 48, 4 * 42, 48)?.kind).toBe('too_small');
+  });
 });
 
 describe('quantize and snap', () => {
@@ -411,6 +426,25 @@ describe('normalizeDrawerOutline', () => {
     expect(normalized).not.toBe(layout);
     const outline = normalized.drawer.outline as DrawerOutline;
     expect(validateOutline(outline, 3 * U, 4 * U, U)).toBeNull();
+  });
+
+  it('measures the depth extent with the Y pitch on a non-square grid (#2733)', () => {
+    const UY = 48;
+    const tall: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 2 * UY },
+        { x: 2 * U, y: 2 * UY },
+        { x: 2 * U, y: 4 * UY },
+        { x: 0, y: 4 * UY },
+      ],
+    };
+    const layout = layoutWith(tall);
+    layout.gridUnitMmY = mm(UY);
+    // The outline legitimately reaches 4 × UY deep; cropping it against the
+    // square extent (4 × U) would mangle the shape.
+    expect(normalizeDrawerOutline(layout)).toBe(layout);
   });
 
   it('drops rectangle-equivalent outlines', () => {

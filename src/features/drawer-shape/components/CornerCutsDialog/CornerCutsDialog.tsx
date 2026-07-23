@@ -9,6 +9,7 @@ import { isOk } from '@/core/result';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import type { CornerCut, CornerCutParams } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { cornersToOutline, maxCutExtentMm, NO_CUTS } from '../../utils/cornersToOutline';
 
 interface CornerCutsDialogProps {
@@ -55,7 +56,12 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
   const t = useTranslation();
   const mutations = useMutations();
   const addToast = useToastStore((s) => s.addToast);
-  const { layout } = useLayoutStore(useShallow((s) => ({ layout: s.layout })));
+  const { layout, gridUnitMmY } = useLayoutStore(
+    useShallow((s) => ({
+      layout: s.layout,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
+    }))
+  );
 
   const existing = layout.drawer.outline;
   const seeded: CornerCutParams =
@@ -66,7 +72,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
   const [confirmReplace, setConfirmReplace] = useState(false);
   const active = cuts ?? seeded;
 
-  const maxMm = maxCutExtentMm(layout.drawer, layout.gridUnitMm);
+  const maxMm = maxCutExtentMm(layout.drawer, layout.gridUnitMm, gridUnitMmY);
   // A shape drawn with another editor — or a corners shape whose annotation
   // was stripped by an older server (params lost) — must confirm before this
   // dialog replaces it; the seeded pickers don't represent it.
@@ -82,16 +88,20 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
   );
 
   const outline = useMemo(
-    () => cornersToOutline(layout.drawer, active, layout.gridUnitMm),
-    [layout.drawer, active, layout.gridUnitMm]
+    () => cornersToOutline(layout.drawer, active, layout.gridUnitMm, gridUnitMmY),
+    [layout.drawer, active, layout.gridUnitMm, gridUnitMmY]
   );
 
   const doApply = useCallback(() => {
     const displaced =
       outline === null
         ? 0
-        : computeDisplacedBins(layout.bins, { ...layout.drawer, outline }, layout.gridUnitMm)
-            .length;
+        : computeDisplacedBins(
+            layout.bins,
+            { ...layout.drawer, outline },
+            layout.gridUnitMm,
+            gridUnitMmY
+          ).length;
     const result = mutations.setDrawerOutline(outline);
     if (!isOk(result)) return;
     trackDrawerShapeApplied({
@@ -105,7 +115,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
     }
     setCuts(null);
     onClose();
-  }, [outline, layout, mutations, addToast, t, onClose]);
+  }, [outline, layout, gridUnitMmY, mutations, addToast, t, onClose]);
 
   const handleApply = useCallback(() => {
     if (replacesForeignShape) {

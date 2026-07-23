@@ -100,6 +100,38 @@ describe('outlineToDrawerMask round-trip', () => {
   });
 });
 
+describe('non-square grids (#2733)', () => {
+  const UX = 48;
+  const UY = 42;
+
+  function notchedGrid() {
+    const grid = buildFullDrawerMask(drawer(8, 7));
+    // Notch out the back-right 2×2 cells.
+    setCell(grid, 6, 5, 0);
+    setCell(grid, 7, 5, 0);
+    setCell(grid, 6, 6, 0);
+    setCell(grid, 7, 6, 0);
+    return grid;
+  }
+
+  it('scales the depth axis by the Y pitch', () => {
+    const result = drawerMaskToOutline(notchedGrid(), UX, UY);
+    expect('outline' in result).toBe(true);
+    if (!('outline' in result)) return;
+    expect(Math.max(...result.outline.vertices.map((v) => v.x))).toBe(8 * UX);
+    expect(Math.max(...result.outline.vertices.map((v) => v.y))).toBe(7 * UY);
+    expect(result.outline.vertices.map((v) => `${v.x},${v.y}`)).toContain(`${6 * UX},${5 * UY}`);
+  });
+
+  it('round-trips through the editor grid at per-axis pitches', () => {
+    const grid = notchedGrid();
+    const result = drawerMaskToOutline(grid, UX, UY);
+    if (!('outline' in result)) throw new Error('expected outline');
+    const back = outlineToDrawerMask(result.outline, drawer(8, 7), UX, UY);
+    expect(Array.from(back.cells)).toEqual(Array.from(grid.cells));
+  });
+});
+
 describe('drawer-scale masks (beyond the bin designer cap)', () => {
   it('converts a 16×16 drawer (32×32 half-cells) correctly', () => {
     const grid = buildFullDrawerMask(drawer(16, 16));

@@ -13,6 +13,7 @@ import * as z from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok, err, layoutInvalidOperation } from '@/core/result';
 import type { BinId, DrawerOutline } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import {
   quantizeOutline,
@@ -74,13 +75,14 @@ export const setDrawerOutline = defineCommand({
   > => {
     const layout = ctx.aggregate;
     const drawer = layout.drawer;
+    const gridUnitMmY = effectiveGridUnitMmY(layout) as number;
     const widthMm = (drawer.width as number) * (layout.gridUnitMm as number);
-    const depthMm = (drawer.depth as number) * (layout.gridUnitMm as number);
+    const depthMm = (drawer.depth as number) * gridUnitMmY;
 
     let outline: DrawerOutline | undefined;
     if (payload.outline !== null) {
       const cleaned = snapOutlineToBounds(quantizeOutline(payload.outline), widthMm, depthMm);
-      const invalid = validateOutline(cleaned, widthMm, depthMm, layout.gridUnitMm);
+      const invalid = validateOutline(cleaned, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY);
       if (invalid !== null) {
         return err(layoutInvalidOperation('setDrawerOutline', invalid.message));
       }
@@ -90,7 +92,8 @@ export const setDrawerOutline = defineCommand({
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
       { width: drawer.width, depth: drawer.depth, outline },
-      layout.gridUnitMm
+      layout.gridUnitMm,
+      gridUnitMmY
     );
 
     return ok({
