@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.284.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.283.0...gridfinity-layout-tool-v4.284.0) (2026-07-23)
+
+
+### Features
+
+* **designer:** gate wall and lid text behind toggles ([#2737](https://github.com/andymai/gridfinity-layout-tool/issues/2737)) ([6cd0b95](https://github.com/andymai/gridfinity-layout-tool/commit/6cd0b95ff2a32f889f62c7d5360f5e79f4cceef0))
+
 ## [4.283.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.3...gridfinity-layout-tool-v4.283.0) (2026-07-23)
 
 
