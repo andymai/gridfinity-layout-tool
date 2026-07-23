@@ -203,8 +203,9 @@ export default defineConfig([
       //      application-level layer (`feature`, `shell`, `shared`, `core`).
       //
       // This is a STRICTER superset of the bash mirror in
-      // scripts/check-module-boundaries.sh — it also inspects dynamic
-      // imports (see `boundaries/dependency-nodes` above).
+      // scripts/check-module-boundaries.sh — it also inspects exports,
+      // require calls, and dynamic imports (the plugin's default
+      // dependency-nodes; deliberately not pinned in settings above).
       // Remaining edges (shared→feature, feature→shell) are intentionally
       // unrestricted today; tightening them needs a per-violator cleanup pass.
       'boundaries/dependencies': ['error', {

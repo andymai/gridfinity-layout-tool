@@ -28,8 +28,9 @@ NC='\033[0m' # No Color
 ALLOWED_CROSS_FEATURE=(
   "design-linking:bin-designer" # Integration layer; imports must use @/features/bin-designer barrel only
   # The next two are dynamic imports today (invisible to this static grep) but
-  # are sanctioned in eslint.config.js — listed here so converting one to a
-  # static import doesn't create a bash-vs-eslint verdict split.
+  # are sanctioned in eslint.config.js — listed here so a future conversion to
+  # a static BARREL import (the only form this allowlist accepts) doesn't
+  # create a bash-vs-eslint verdict split. Deep static imports stay violations.
   "bin-inspector:design-linking" # Lazy-loaded linked design section
   "bin-inspector:bin-recommender" # Lazy-loaded size suggestion
 )
