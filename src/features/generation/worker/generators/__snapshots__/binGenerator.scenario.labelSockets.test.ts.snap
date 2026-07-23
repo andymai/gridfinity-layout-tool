@@ -1,5 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `2272`;
+
 exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `836`;
 
 exports[`label sockets > 1×1 text mode unchanged 1`] = `708`;

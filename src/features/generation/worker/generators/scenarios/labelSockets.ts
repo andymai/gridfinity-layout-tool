@@ -6,9 +6,10 @@
  * width + 0.3mm total clearance, 1.2mm pocket depth, and rib band planes
  * at floor+0.2/+0.6.
  *
- * All socket scenarios disable the stacking lip so the mesh maxZ IS the
+ * Most socket scenarios disable the stacking lip so the mesh maxZ IS the
  * shelf top (plus the COPLANAR_OVERLAP proud lip), making pocket Z-planes
- * derivable without replicating deriveDimensions.
+ * derivable without replicating deriveDimensions. The lipped stacking-relief
+ * scenario instead derives its planes down from the lip peak.
  */
 
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -17,6 +18,7 @@ import {
   LABEL_SOCKET_POCKET_DEPTH_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
+  LABEL_SOCKET_STACK_RELIEF_MM,
   LABEL_SOCKET_WALL_MM,
   effectiveLabelSocketClearance,
   labelPlateWidthMm,
@@ -26,7 +28,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
-import { COPLANAR_OVERLAP } from '../generatorConstants';
+import { COPLANAR_OVERLAP, LIP_HEIGHT, LIP_OVERLAP, LIP_SMALL_TAPER } from '../generatorConstants';
 
 const SOCKET_LABEL = {
   ...DEFAULT_BIN_PARAMS.label,
@@ -227,6 +229,52 @@ export const labelSockets: ScenarioCase[] = [
       }
       if (left < 4 || right < 4) {
         throw new Error(`two-sockets: expected pocket floors both sides (L=${left}, R=${right})`);
+      }
+    },
+  }),
+
+  // Lipped bin: the click-in socket shelf sinks by the stacking relief so a
+  // seated plate (plus emboss/print proudness) can't lift a stacked bin's
+  // foot, which seats only 0.25mm above the lip base plane. Derives the
+  // relieved pocket floor down from the lip peak (mesh maxZ) and proves the
+  // un-relieved plane is empty — i.e. the relief actually moved the shelf.
+  defineScenario('label sockets', '1×1 lipped socket sinks by the stacking relief', {
+    params: {
+      width: 1,
+      depth: 1,
+      height: 5,
+      label: SOCKET_LABEL,
+    },
+    customAssert: (result) => {
+      const { vertices, normals } = result;
+      let maxZ = -Infinity;
+      for (let i = 2; i < vertices.length; i += 3) {
+        if (vertices[i] > maxZ) maxZ = vertices[i];
+      }
+      // maxZ is the lip peak: wallTop + LIP_HEIGHT − LIP_OVERLAP. Walk down
+      // to the interior ceiling, then apply relief + pocket depth.
+      const interiorTopZ = maxZ - (LIP_HEIGHT - LIP_OVERLAP) - LIP_SMALL_TAPER;
+      const relievedFloorZ =
+        interiorTopZ - LABEL_SOCKET_STACK_RELIEF_MM - LABEL_SOCKET_POCKET_DEPTH_MM;
+      const unrelievedFloorZ = interiorTopZ - LABEL_SOCKET_POCKET_DEPTH_MM;
+      let relieved = 0;
+      let unrelieved = 0;
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (normals[i + 2] < 0.9) continue;
+        const z = vertices[i + 2];
+        if (Math.abs(z - relievedFloorZ) < 0.05) relieved++;
+        if (Math.abs(z - unrelievedFloorZ) < 0.05) unrelieved++;
+      }
+      if (relieved < 4) {
+        throw new Error(
+          `lipped-relief: no pocket floor at relieved Z=${relievedFloorZ.toFixed(2)}`
+        );
+      }
+      if (unrelieved > 0) {
+        throw new Error(
+          `lipped-relief: ${unrelieved} up-facing verts at un-relieved floor Z=` +
+            `${unrelievedFloorZ.toFixed(2)} — stacking relief not applied`
+        );
       }
     },
   }),

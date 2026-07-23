@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   LABEL_PLATE_HEIGHT_MM,
+  LABEL_PLATE_TEXT_DEPTH_MAX_MM,
   LABEL_PLATE_THICKNESS_MM,
   LABEL_SOCKET_CLEARANCE_MM,
   LABEL_SOCKET_POCKET_DEPTH_MM,
@@ -8,12 +9,16 @@ import {
   LABEL_SOCKET_RIB_PROTRUSION_MM,
   LABEL_SOCKET_RIB_START_MM,
   LABEL_SOCKET_SHELF_THICKNESS_MM,
+  LABEL_SOCKET_STACK_RELIEF_MM,
   LABEL_PLATE_WIDTHS_U,
+  defaultLabelShelfTopMm,
   effectiveLabelSocketClearance,
   isLabelPlateWidthU,
   labelPlateWidthMm,
+  labelShelfCeilingMm,
   labelSocketOuterWidthMm,
   largestFittingPlateWidthU,
+  resolveLabelShelfTopMm,
 } from './labelPlates';
 
 describe('labelPlates', () => {
@@ -62,6 +67,47 @@ describe('labelPlates', () => {
     it('never goes negative and ignores non-finite offsets', () => {
       expect(effectiveLabelSocketClearance(undefined, -5)).toBe(0);
       expect(effectiveLabelSocketClearance(undefined, Number.NaN)).toBe(0.3);
+    });
+  });
+
+  describe('shelf planes', () => {
+    // A stacked bin's foot bottom seats only 0.25mm above the lip base plane
+    // (= the un-relieved shelf top). The relief must cover the worst-case
+    // emboss proudness or embossed plates lift the stacked bin.
+    it('stacking relief covers the max plate emboss depth', () => {
+      expect(LABEL_SOCKET_STACK_RELIEF_MM).toBeGreaterThanOrEqual(LABEL_PLATE_TEXT_DEPTH_MAX_MM);
+    });
+
+    it('ceiling subtracts the lip bottom taper only when a lip exists', () => {
+      expect(labelShelfCeilingMm(16, true)).toBeCloseTo(15.3);
+      expect(labelShelfCeilingMm(16, false)).toBe(16);
+    });
+
+    it('sinks the default shelf for click-in sockets on lipped bins only', () => {
+      const clickIn = { mode: 'socket' as const };
+      expect(defaultLabelShelfTopMm(15.3, true, clickIn)).toBeCloseTo(
+        15.3 - LABEL_SOCKET_STACK_RELIEF_MM
+      );
+      // Explicit clickIn style behaves like the absent-default.
+      expect(
+        defaultLabelShelfTopMm(15.3, true, { ...clickIn, socketStyle: 'clickIn' })
+      ).toBeCloseTo(15.3 - LABEL_SOCKET_STACK_RELIEF_MM);
+      // No lip → nothing locates on top → no relief.
+      expect(defaultLabelShelfTopMm(16, false, clickIn)).toBe(16);
+      // Slide-channel plates already ride below the lip band → no relief.
+      expect(defaultLabelShelfTopMm(15.3, true, { ...clickIn, socketStyle: 'slideChannel' })).toBe(
+        15.3
+      );
+      // Text mode never shifts.
+      expect(defaultLabelShelfTopMm(15.3, true, {})).toBe(15.3);
+      expect(defaultLabelShelfTopMm(15.3, true, { mode: 'text' })).toBe(15.3);
+    });
+
+    it('resolveLabelShelfTopMm honors an explicit height verbatim', () => {
+      expect(resolveLabelShelfTopMm(15.3, true, { mode: 'socket', height: 12 })).toBe(12);
+      expect(resolveLabelShelfTopMm(15.3, true, { mode: 'socket' })).toBeCloseTo(
+        15.3 - LABEL_SOCKET_STACK_RELIEF_MM
+      );
     });
   });
 

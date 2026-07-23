@@ -14,6 +14,7 @@ import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { labelShelfCeilingMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
@@ -36,6 +37,7 @@ export function GhostLabelTabs() {
     wallThickness,
     style,
     baseStyle,
+    stackingLip,
     compartments,
     label,
     generationStatus,
@@ -50,6 +52,7 @@ export function GhostLabelTabs() {
       wallThickness: s.params.wallThickness,
       style: s.params.style,
       baseStyle: s.params.base.style,
+      stackingLip: s.params.base.stackingLip,
       compartments: s.params.compartments,
       label: s.params.label,
       generationStatus: s.generation.status,
@@ -67,11 +70,13 @@ export function GhostLabelTabs() {
   // Mirrors `binDimensions`.
   const wallHeightMm = baseStyle === 'flat' ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const floorZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
-  // World Z of the shelf TOP. When `label.height` is absent, this matches the
-  // legacy `topZ = totalH` (wall top). With it set, the shelf drops below the
-  // rim — keep the ghost in lockstep with the BREP builder's anchor so the
-  // user sees instant feedback while regeneration is in flight (#1898).
-  const shelfTopWorldZ = floorZ + (label.height ?? wallHeightMm);
+  // World Z of the shelf TOP — the same resolution the BREP builder runs
+  // (interior ceiling under the lip taper, stacking relief for click-in
+  // sockets, explicit `label.height` verbatim), so the ghost lands exactly
+  // where the regenerated mesh will (#1898).
+  const shelfTopWorldZ =
+    floorZ +
+    resolveLabelShelfTopMm(labelShelfCeilingMm(wallHeightMm, stackingLip), stackingLip, label);
 
   const shouldShow =
     label.enabled &&

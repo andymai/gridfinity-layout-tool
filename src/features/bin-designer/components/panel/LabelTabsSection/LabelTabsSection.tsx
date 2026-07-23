@@ -307,6 +307,10 @@ export function LabelTabsSection() {
                   min={LABEL_PLATE_FIT_OFFSET_MIN}
                   max={LABEL_PLATE_FIT_OFFSET_MAX}
                   step={LABEL_PLATE_FIT_OFFSET_STEP}
+                  // Without 2-decimal rendering the default toFixed(1) shows
+                  // every 0.05 step as its 0.1 neighbor — the control looks
+                  // stuck even though the store moves in 0.05 increments.
+                  inputDecimals={2}
                   size="md"
                   aria-label={t('binDesigner.plateFitOffset')}
                 />
