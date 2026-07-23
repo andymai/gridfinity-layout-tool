@@ -659,6 +659,42 @@ describe('useLabelTabsSection', () => {
       expect(after.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
+    it('autoFix keeps socket mode when only the inset is broken (fractional relieved shelf)', () => {
+      // 3u lipped bin in click-in socket mode: relieved default shelf =
+      // 14.9mm, which accepts the 14mm socket depth floor (14 < 14.9). A
+      // huge inset trips the silent-drop warning; auto-fix must zero the
+      // inset and KEEP socket mode — a flat `floor(shelf − 1)` ceiling (13)
+      // wrongly made socket mode look infeasible and demoted it to text
+      // (greptile review on the stacking-relief PR).
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            mode: 'socket',
+            depth: 14,
+            inset: 70,
+          },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const { label } = useDesignerStore.getState().params;
+      expect(label.mode).toBe('socket');
+      expect(label.enabled).toBe(true);
+      expect(label.depth).toBe(14);
+      expect(label.inset).toBe(0);
+
+      const { result: after } = renderHook(() => useLabelTabsSection());
+      expect(after.current.state.tabsWillSilentlyDrop).toBe(false);
+    });
+
     it('autoFix disables the feature when no mode fits the compartments', () => {
       // Five stacked rows: ~7.8mm compartments are below even the 8mm text
       // depth floor — nothing fits, so the fix disables the feature instead

@@ -356,8 +356,10 @@ export function useLabelTabsSection() {
 
     // Height-derived ceiling: tabHeight = tabDepth, must sit strictly below
     // the shelf top (explicit height, or the builder's relieved default).
-    // Use `- 1` so we keep ≥1mm gusset clearance above the floor.
-    const heightCeiling = Math.floor((nextHeight ?? defaultShelfTopMm) - 1);
+    // `ceil(shelf) - 1` is the largest integer depth the builder accepts —
+    // a flat `- 1` margin under a fractional shelf (14.9 → 13) wrongly
+    // excludes the 14mm socket minimum and demotes valid socket configs.
+    const heightCeiling = Math.ceil(nextHeight ?? defaultShelfTopMm) - 1;
     const depthFloor = (mode: LabelTabMode): number =>
       mode === 'socket' ? MIN_LABEL_SOCKET_TAB_DEPTH_MM : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
     const depthCeil = (edges: LabelTabEdges): number =>
