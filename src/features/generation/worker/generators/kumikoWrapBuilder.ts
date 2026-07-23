@@ -49,7 +49,7 @@ import type { WallPatternDescriptor } from './wallPatterns';
 import { getSlotFreeWalls, TOP_KEEP_OUT, BOTTOM_SOLID_SKIRT } from './wallPatterns';
 import { getPatternCalculator, isWrappedLatticeCalculator, PATTERN_REGISTRY } from './patterns';
 import type { KumikoLattice, KumikoSegment, WrappedLatticeCalculator } from './patterns';
-import { BOX_CORNER_RADIUS } from './generatorConstants';
+import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
@@ -488,10 +488,15 @@ function chordBoxStrut(
   zA: number,
   phiB: number,
   zB: number,
-  pw: number,
+  width: number,
   sr0: number,
   sr1: number
 ): Shape3D {
+  // Near-tangent contacts with neighboring struts (goma ribs seat their ends
+  // ON the arm edges) leave knife-edge slivers that fail to sew — export
+  // showed boundary-edge cracks on the corner cylinder. A COPLANAR_OVERLAP
+  // widening turns the tangency into a finite, invisible overlap.
+  const pw = width + 2 * COPLANAR_OVERLAP;
   const rMid = (sr0 + sr1) / 2;
   const A: Vec3Tuple = [rMid * Math.cos(phiA), rMid * Math.sin(phiA), zA];
   const B: Vec3Tuple = [rMid * Math.cos(phiB), rMid * Math.sin(phiB), zB];
@@ -614,9 +619,14 @@ function buildCornerSlabCutter(
     const phiA = phiOf(fua);
     const phiB = phiOf(fub);
     const steps = Math.max(1, Math.ceil(Math.abs(phiB - phiA) / CHORD_MAX_PHI));
+    // Consecutive sub-chords overlap by a parameter margin: sharing their end
+    // planes exactly leaves coplanar tool faces, and the resulting sliver
+    // shows up as boundary-edge cracks on the corner cylinder (goma's long
+    // ribs are the only fillings that split).
+    const tPad = steps > 1 ? 0.02 : 0;
     for (let i = 0; i < steps; i++) {
-      const t0 = i / steps;
-      const t1 = (i + 1) / steps;
+      const t0 = Math.max(0, i / steps - tPad);
+      const t1 = Math.min(1, (i + 1) / steps + tPad);
       families[4].push(
         chordBoxStrut(
           phiA + (phiB - phiA) * t0,
