@@ -1,101 +1,51 @@
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
 import { gridUnits } from '@/core/types';
-import { getLayerBins } from '@/shared/utils';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SizeSelectorPopover } from './SizeSelectorPopover';
+import { useLayerFillActions } from '../../hooks/useLayerFillActions';
 import { batch } from '@/core/cqrs';
 
 export function ActiveLayerPanel() {
   const t = useTranslation();
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const sizeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const layout = useLayoutStore((state) => state.layout);
-  const { fillLayer, fillLayerGaps, clearLayer, addBin } = useMutations();
+  const { addBin } = useMutations();
+  const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
 
-  const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
-    useShallow((state) => ({
-      activeLayerId: state.activeLayerId,
-      activeCategoryId: state.activeCategoryId,
-      setSelectedBins: state.setSelectedBins,
-    }))
-  );
-
-  const { paintSize, togglePaintSize, setPaintSize } = useInteractionStore(
+  const { paintSize, togglePaintSize } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
-      setPaintSize: state.setPaintSize,
     }))
   );
 
-  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
-
   const addToast = useToastStore((state) => state.addToast);
 
-  const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
-  const layerBins = getLayerBins(layout.bins, activeLayerId);
+  const {
+    activeLayer,
+    layerBins,
+    emptyCells,
+    clearConfirmOpen,
+    setClearConfirmOpen,
+    fillGaps,
+    confirmClear,
+    fillWithSize,
+  } = useLayerFillActions();
   const hasBins = layerBins.length > 0;
 
-  // Calculate empty cells for Fill gaps button
-  const totalCells = layout.drawer.width * layout.drawer.depth;
-  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
-  const emptyCells = totalCells - coveredCells;
-
-  const handleFillGaps = () => {
-    if (!activeLayerId) return;
-    const beforeCount = layerBins.length;
-    batch(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode);
-    });
-    setTimeout(() => {
-      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
-      const added = afterCount - beforeCount;
-      if (added > 0) {
-        addToast(t('toast.fillComplete', { count: added }), 'success');
-      }
-    }, 0);
-  };
-
-  const handleClearLayer = () => {
-    if (!activeLayerId || layerBins.length === 0) return;
-    const count = layerBins.length;
-    batch(() => {
-      clearLayer(activeLayerId);
-      setSelectedBins([]);
-    });
-    addToast(t('toast.clearComplete', { count }), 'success');
-    setShowClearConfirm(false);
-  };
-
   const handleFill = () => {
-    if (!activeLayerId || !paintSize) return;
-    const { width, depth } = paintSize;
-    const beforeCount = layerBins.length;
-    batch(() => {
-      fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
-    });
-    // Exit paint mode after filling
-    setPaintSize(null);
-    setTimeout(() => {
-      const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
-      const added = afterCount - beforeCount;
-      if (added > 0) {
-        addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');
-      }
-    }, 0);
+    if (!paintSize) return;
+    fillWithSize(paintSize.width, paintSize.depth);
   };
 
   if (!activeLayer) return null;
@@ -208,7 +158,7 @@ export function ActiveLayerPanel() {
           <Button
             variant="secondary"
             fullWidth
-            onClick={handleFillGaps}
+            onClick={fillGaps}
             disabled={emptyCells === 0}
             className="text-sm h-8 gap-1.5"
             title={
@@ -233,7 +183,7 @@ export function ActiveLayerPanel() {
         <Button
           variant="ghost"
           fullWidth
-          onClick={() => setShowClearConfirm(true)}
+          onClick={() => setClearConfirmOpen(true)}
           disabled={!hasBins}
           className={`text-sm h-8 gap-1.5 ${
             hasBins ? 'text-error hover:bg-error/10 hover:text-error' : ''
@@ -270,13 +220,13 @@ export function ActiveLayerPanel() {
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog
-        isOpen={showClearConfirm}
+        isOpen={clearConfirmOpen}
         title={t('layers.clearLayer.title')}
         message={t('layers.clearLayer.message', { count: layerBins.length })}
         confirmText={t('layers.clearLayer.confirm')}
         destructive
-        onConfirm={handleClearLayer}
-        onCancel={() => setShowClearConfirm(false)}
+        onConfirm={confirmClear}
+        onCancel={() => setClearConfirmOpen(false)}
       />
     </div>
   );
