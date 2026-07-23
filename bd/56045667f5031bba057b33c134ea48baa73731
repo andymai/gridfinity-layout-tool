@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/splitWallKeyFit.test.ts
+  s_eb8e9cfedea808::t_0e1bbf7121428c 112,127
+  s_eb8e9cfedea808::t_45ed95215425b2 53-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "bd56045667f5031bba057b33c134ea48baa73731",
+  "prompts": {},
+  "sessions": {
+    "s_eb8e9cfedea808": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "331ad5f4-652e-4ccf-a38d-5473e29c4a17",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
