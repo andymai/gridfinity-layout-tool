@@ -41,9 +41,11 @@ export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
  * Per-side clearance applied to the lid's OUTER FOOTPRINT — the base value
  * plus the magnetic relief when the design actually gets retention magnets.
  *
- * The predicate mirrors `usesMagneticLid`: a magnetic lid on a lip-less or
- * polygon bin falls back to a plain friction fit (no corner bosses are
- * generated), so it must keep the base clearance or it would rattle.
+ * The predicate mirrors the GEOMETRIC half of `usesMagneticLid` — a magnetic
+ * lid on a lip-less or polygon bin falls back to a plain friction fit (no
+ * corner bosses are generated), so it must keep the base clearance or it would
+ * rattle. It deliberately omits that helper's `lid.enabled` term: a disabled
+ * lid is never generated, so its clearance is never consumed.
  */
 export function resolveLidFootprintClearance(params: BinParams): number {
   const magnetic =

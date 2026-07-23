@@ -6,13 +6,14 @@
  *   1. How it attaches — friction / click rails / magnetic (+ mode controls)
  *   2. Top surface     — flat / stackable / tray (+ its sub-options)
  *   3. Extra height     — deepen the cavity for tall contents
- * Millimetre fine-tuning (magnet size, rail coverage, tray dimensions) lives
- * under a collapsed "Advanced" disclosure so the default view stays scannable.
+ * Millimetre fine-tuning (plate thickness, magnet size, rail coverage, tray
+ * dimensions) lives under a collapsed "Advanced" disclosure so the default
+ * view stays scannable.
  *
  * Wall thickness and fit clearance are intentionally NOT exposed: the
  * click-lock geometry only works with one validated numeric set (see
  * `lidConstants.ts`). The floor plate is the exception — it mates with
- * nothing, so `topThickness` is a user knob (#2761).
+ * nothing, so `topThicknessMm` is a user knob (#2761).
  */
 
 import { useState } from 'react';
