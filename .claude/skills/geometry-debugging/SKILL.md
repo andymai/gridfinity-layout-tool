@@ -49,6 +49,20 @@ description: Validate and debug bin/baseplate geometry changes — failing binGe
 2. For honeycomb/pattern manifold checks and baseplate winding: `pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/honeycombManifoldCheck` (also `__kernel-tests__/diagnoseBaseplateWinding`).
 3. Pre-export sanity checks live in `src/features/generation/export/validation.ts` (`validateMeshData`); multi-shell collapse in `worker/generators/utils/outerShell.ts` (`keepOuterShell`); STL fallback for `STL_EXPORT_FAILED` in `worker/generators/utils/stlMeshFallback.ts`.
 
+### Assert manufacturability, not just validity (fit / insertion / wall skin)
+
+The scenario+export matrix proves geometry is _valid_ — watertight, manifold, NaN-free, correctly sized — and passes on parts that are physically unusable. A connector with sub-nozzle undercut prints near-rectangular and pulls straight out (#2637/#2642); a snap clip 4.8 mm wide at the barbs can't enter a 4.1 mm throat (#2638/#2643); a groove cut flush to a wall face deletes the wall there (#1869); 0.6/0.8 mm-nozzle pads too thin for 3 perimeters split under load (#2543/#2560). Any new connector/joint/retention/pad feature needs its physical contract pinned as its own tests — mostly pure-math on constants + one mesh, kept out of `beforeAll` WASM init where possible:
+
+- **Seat + hold**: piece seats with positive clearance AND captures >0 bearing volume (male∩female overlap along the withdrawal axis) on pull-apart. Template: `connectorKeyFit.test.ts`.
+- **Insertion path, not just end states**: seated-fit and pull-apart both pass while insertion is geometrically impossible — model the quasi-static insertion stroke. Template: `snapClipInsertion.test.ts` (#2643).
+- **Undercut above the FDM swallow budget**: nozzle-radius rounding + first-layer squish + press-fit clearance erase sub-~1 mm undercuts; pin the constant above that budget. Template: `src/shared/constants/connectors.test.ts`.
+- **Outer skin survives the cut**: a groove/cut near an exterior face is inset ≥ wallThickness so `outerSkin = wallThickness − clearance > 0` (#1869; [[feedback-validate-print-geometry-assembly]]).
+- **Coarsest nozzle**: pad/wall thickness ≥ N × `nozzleSizeMm`; re-run fit at 0.6/0.8 mm and key the mesh cache on nozzle (`baseplateMagnets.test.ts`, #2561) or the 0.4 mm result is silently reused.
+
+### Assert a parameter actually changes the output (dead-control class)
+
+A control wired to the UI but not through to geometry passes every scenario — the shape is valid, just frozen. When the shape/export-cache key also omits the param, two values yield byte-identical output and a snapshot even "confirms" it: #2554 (`connectorFitOffset` dropped in `pieceToBaseplateParams` → −0.3 and +0.3 produced identical STLs), #2384 (half-grid == grid), #2554/#2555 generally. For every param that must move geometry, add a differential test: generate at two meaningfully different values, assert the outputs differ on the axis the param moves (triangleCount / bounding box / bearing volume), and assert the two cache keys differ. Prime suspects: field-by-field param reconstruction (`pieceToBaseplateParams`, `withSocketNozzle`) and cache-key builders.
+
 ### Test at half-grid (x.5) dimensions
 
 Any new geometry feature must be exercised at fractional sizes — the recurring crash class is integer assumptions (`Array.from({length: fractional})` truncates while fit-guards use raw values; per-piece param derivation drops `*HalfGrid` fields). Add a `width: 0.5` or `x.5` scenario (pattern: `scenarios/halfSockets.ts`), assert with `assertBoundingBoxMatchesParams` + `assertNoDegenerateTriangles`, and allocate grids via `Math.ceil` while keeping raw fractional values in fit-guards.
