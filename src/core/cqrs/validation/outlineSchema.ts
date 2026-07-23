@@ -13,19 +13,19 @@ const OUTLINE_COORD_MIN = -1;
 const OUTLINE_COORD_MAX = 2600;
 
 const outlineVertexSchema = z.object({
-  x: z.number().finite().gte(OUTLINE_COORD_MIN).lte(OUTLINE_COORD_MAX),
-  y: z.number().finite().gte(OUTLINE_COORD_MIN).lte(OUTLINE_COORD_MAX),
-  bulge: z.number().finite().gte(-1).lte(1).optional(),
+  x: z.number().gte(OUTLINE_COORD_MIN).lte(OUTLINE_COORD_MAX),
+  y: z.number().gte(OUTLINE_COORD_MIN).lte(OUTLINE_COORD_MAX),
+  bulge: z.number().gte(-1).lte(1).optional(),
 });
 
 const cornerCutSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('none') }),
-  z.object({ kind: z.literal('chamfer'), size: z.number().finite().gt(0).lte(500) }),
-  z.object({ kind: z.literal('radius'), r: z.number().finite().gt(0).lte(500) }),
+  z.object({ kind: z.literal('chamfer'), size: z.number().gt(0).lte(500) }),
+  z.object({ kind: z.literal('radius'), r: z.number().gt(0).lte(500) }),
   z.object({
     kind: z.literal('notch'),
-    w: z.number().finite().gt(0).lte(2600),
-    d: z.number().finite().gt(0).lte(2600),
+    w: z.number().gt(0).lte(2600),
+    d: z.number().gt(0).lte(2600),
   }),
 ]);
 
