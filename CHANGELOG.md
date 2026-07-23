@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.288.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.2...gridfinity-layout-tool-v4.288.0) (2026-07-23)
+
+
+### Features
+
+* **bin-designer:** complete the kumiko pattern set — six new wall patterns ([#2777](https://github.com/andymai/gridfinity-layout-tool/issues/2777)) ([027630d](https://github.com/andymai/gridfinity-layout-tool/commit/027630d84b4275bbbe53c59d4fe6e7b08042d1bb))
+
 ## [4.287.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.1...gridfinity-layout-tool-v4.287.2) (2026-07-23)
 
 
