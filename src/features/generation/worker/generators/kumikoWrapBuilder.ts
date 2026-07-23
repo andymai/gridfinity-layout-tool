@@ -193,6 +193,23 @@ function clipSegmentToURangePeriodic(
   return pieces;
 }
 
+/**
+ * True when a clipped piece's centerline lives entirely in the clip margin
+ * outside [u0, u1]. Non-vertical margin pieces are redundant on corners: the
+ * neighboring piece of the same lattice line covers the slab-side footprint
+ * with its own body + square cap, and each margin piece would otherwise
+ * become a near-degenerate helix sweep (measured 5× cost on the seam corner,
+ * which sees every diagonal's wrapped duplicate). Vertical pieces are exempt:
+ * a column exactly on the slab boundary genuinely pokes into the wedge and
+ * revolves cheaply.
+ */
+function isRedundantMarginPiece(piece: KumikoSegment, u0: number, u1: number): boolean {
+  const lo = Math.min(piece.a[0], piece.b[0]);
+  const hi = Math.max(piece.a[0], piece.b[0]);
+  if (hi - lo < AXIS_EPSILON) return false;
+  return hi <= u0 + 1e-6 || lo >= u1 - 1e-6;
+}
+
 /** Extend both segment endpoints along its direction (square end caps). */
 function extendSegment(seg: KumikoSegment, by: number): KumikoSegment {
   const [ua, za] = seg.a;
@@ -331,13 +348,15 @@ function buildCornerSlabCutter(
 ): Shape3D {
   const w = lattice.strutWidth;
   const bandZ1 = bandZ0 + bandHeight;
-  // Cutter radial reach mirrors the flat cutter's ±2·wallThickness overshoot
-  // around the wall; struts extend 1mm further so they always survive the cut.
+  // Tight radial envelope: the band sits below the lip taper (TOP_KEEP_OUT),
+  // so 1mm past each wall face fully pierces it. A wider reach (the flat
+  // cutters' ±2·wt convention) balloons the wedge toward the corner axis and
+  // grows every curved strut face — measured ~2× cost in the final boolean.
   const rIn = Math.max(outerRadius - wallThickness, 0.3);
-  const rc0 = Math.max(rIn - 2 * wallThickness, 0.1);
-  const rc1 = outerRadius + 2 * wallThickness;
-  const sr0 = Math.max(rc0 - 1, 0.05);
-  const sr1 = rc1 + 1;
+  const rc0 = Math.max(rIn - 1, 0.1);
+  const rc1 = outerRadius + 1;
+  const sr0 = Math.max(rc0 - 0.5, 0.05);
+  const sr1 = rc1 + 0.5;
   const rMid = (sr0 + sr1) / 2;
   const radialSpan = sr1 - sr0;
   const phiOf = (u: number): number => (u - slab.u0) / outerRadius;
@@ -347,7 +366,9 @@ function buildCornerSlabCutter(
   const struts: Shape3D[] = [];
   const pieces: KumikoSegment[] = [];
   for (const seg of lattice.segments) {
-    pieces.push(...clipSegmentToURangePeriodic(seg, slab.u0 - w, slab.u1 + w, perimeter));
+    for (const piece of clipSegmentToURangePeriodic(seg, slab.u0 - w, slab.u1 + w, perimeter)) {
+      if (!isRedundantMarginPiece(piece, slab.u0, slab.u1)) pieces.push(piece);
+    }
   }
   for (const clipped of pieces) {
     const capped = extendSegment(clipped, w / 2);
@@ -526,6 +547,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
       const cutters: Shape3D[] = [];
       for (const slab of layout.slabs) {
         checkCancelled(signal);
+        const slabStart = perfCollector ? performance.now() : 0;
         if (slab.kind === 'flat') {
           const cutter = buildFlatSlabCutter(
             slab,
@@ -537,6 +559,12 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
             layout.perimeter
           );
           if (cutter) cutters.push(cutter);
+          if (perfCollector) {
+            perfCollector.recordWallPatternSubstep(
+              `kumiko_flat_${slab.side}`,
+              performance.now() - slabStart
+            );
+          }
         } else if (exact) {
           cutters.push(
             buildCornerSlabCutter(
@@ -549,6 +577,9 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
               layout.perimeter
             )
           );
+          if (perfCollector) {
+            perfCollector.recordWallPatternSubstep('kumiko_corner', performance.now() - slabStart);
+          }
         }
       }
       if (cutters.length === 0) return [];
