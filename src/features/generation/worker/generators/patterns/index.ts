@@ -45,6 +45,13 @@ export {
 } from './kumiko/segmentLattice';
 export { createKumikoCalculator } from './kumiko/calculator';
 export { createMitsukudeCalculator, MITSUKUDE_DEF } from './kumiko/mitsukude';
+export { createGomaCalculator, GOMA_DEF } from './kumiko/goma';
+export { createAsanohaCalculator, ASANOHA_DEF } from './kumiko/asanoha';
+export { createSakuraCalculator, SAKURA_DEF } from './kumiko/sakura';
+export { createRindoCalculator, RINDO_DEF } from './kumiko/rindo';
+export { createMikadoCalculator, MIKADO_DEF } from './kumiko/mikado';
+export { createTsumiishiKikkoCalculator, TSUMIISHI_KIKKO_DEF } from './kumiko/tsumiishiKikko';
+export { replicateRotations, SIX_FOLD } from './kumiko/fillingUtils';
 
 // Grid utilities
 export { calculateStaggeredGrid, calculateAlignedGrid } from './gridUtils';

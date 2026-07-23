@@ -95,6 +95,12 @@ export const WALL_PATTERN_TYPES = [
   'triangle',
   'slots',
   'mitsukude',
+  'goma',
+  'asanoha',
+  'sakura',
+  'rindo',
+  'mikado',
+  'tsumiishi-kikko',
 ] as const;
 
 /** Supported wall pattern types. Extensible via pattern registry. */
@@ -105,7 +111,15 @@ export type WallPatternType = (typeof WALL_PATTERN_TYPES)[number];
  * (continuous lattice around all four walls and corners) rather than the
  * per-wall stamp pipeline. Drives UI grouping and generation-cost budgeting.
  */
-export const KUMIKO_PATTERN_TYPES = ['mitsukude'] as const satisfies readonly WallPatternType[];
+export const KUMIKO_PATTERN_TYPES = [
+  'mitsukude',
+  'goma',
+  'asanoha',
+  'sakura',
+  'rindo',
+  'mikado',
+  'tsumiishi-kikko',
+] as const satisfies readonly WallPatternType[];
 
 /** Whether a pattern type is a kumiko wrapped-lattice pattern. */
 export function isKumikoPattern(pattern: WallPatternType): boolean {

@@ -52,6 +52,11 @@ describe('clipSegmentToBand', () => {
   it('drops degenerate slivers shorter than the epsilon', () => {
     expect(clipSegmentToBand({ a: [-1, 5], b: [0.01, 5] }, 10, 10)).toBeNull();
   });
+
+  it('preserves per-segment width overrides through clipping', () => {
+    const clipped = clipSegmentToBand({ a: [-5, 5], b: [5, 5], width: 2.5 }, 10, 10);
+    expect(clipped?.width).toBe(2.5);
+  });
 });
 
 describe('generateKumikoLattice (mitsukude)', () => {

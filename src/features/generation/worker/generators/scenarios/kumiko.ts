@@ -16,6 +16,7 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
+import type { WallPatternType } from '@/shared/types/bin';
 import { assertRemovesMaterial } from './wallPatterns';
 
 const ALL_SIDES_OFF = {
@@ -63,7 +64,58 @@ function assertCornersWrapped(widthU: number, depthU: number) {
   };
 }
 
+/** Compact per-pattern case: valid geometry + material removed vs solid twin. */
+function kumikoPatternCase(pattern: WallPatternType): ScenarioCase {
+  return defineScenario('kumiko', `${pattern} carves a 1×1×6 bin`, {
+    assert: 'structural',
+    timeout: 180_000,
+    params: {
+      width: 1,
+      depth: 1,
+      height: 6,
+      wallPattern: { enabled: true, pattern, scale: 0.5 },
+      walls: ALL_SIDES_OFF,
+    },
+    compareWith: {
+      params: {
+        width: 1,
+        depth: 1,
+        height: 6,
+        wallPattern: { enabled: false, pattern, scale: 0.5 },
+        walls: ALL_SIDES_OFF,
+      },
+      assert: assertRemovesMaterial,
+    },
+  });
+}
+
 export const kumiko: ScenarioCase[] = [
+  kumikoPatternCase('goma'),
+  defineScenario('kumiko', 'asanoha wraps a 1×1×6 bin including corners', {
+    assert: 'structural',
+    timeout: 180_000,
+    params: {
+      width: 1,
+      depth: 1,
+      height: 6,
+      wallPattern: { enabled: true, pattern: 'asanoha', scale: 0.5 },
+      walls: ALL_SIDES_OFF,
+    },
+    compareWith: {
+      params: {
+        width: 1,
+        depth: 1,
+        height: 6,
+        wallPattern: { enabled: false, pattern: 'asanoha', scale: 0.5 },
+        walls: ALL_SIDES_OFF,
+      },
+      assert: assertCornersWrapped(1, 1),
+    },
+  }),
+  kumikoPatternCase('sakura'),
+  kumikoPatternCase('rindo'),
+  kumikoPatternCase('mikado'),
+  kumikoPatternCase('tsumiishi-kikko'),
   defineScenario('kumiko', 'mitsukude wraps a 1×1×6 bin including corners', {
     assert: 'structural',
     timeout: 180_000,

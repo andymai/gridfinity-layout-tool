@@ -82,6 +82,102 @@ function MitsukudeIcon({ className }: { className?: string }) {
   );
 }
 
+/** SVG icon for goma (star with parallel internal ribs) */
+function GomaIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M8.8 4.5v5.5M15.2 4.5v5.5" />
+    </svg>
+  );
+}
+
+/** SVG icon for asanoha (twelve-armed hemp leaf star) */
+function AsanohaIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" />
+    </svg>
+  );
+}
+
+/** SVG icon for sakura (petals radiating from the star center) */
+function SakuraIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+    >
+      <path d="M12 4l1.8 4L12 12l-1.8-4zM20 12l-4 1.8-4-1.8 4-1.8zM12 20l-1.8-4 1.8-4 1.8 4zM4 12l4-1.8 4 1.8-4 1.8z" />
+    </svg>
+  );
+}
+
+/** SVG icon for rindo (medial-triangle diamonds) */
+function RindoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M12 3L21 19H3zM7.5 11h9M7.5 11L12 19M16.5 11L12 19" />
+    </svg>
+  );
+}
+
+/** SVG icon for mikado (nested imperial triangles with stubs) */
+function MikadoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M12 3L21 19H3zM12 8.5l4.6 8H7.4z" />
+    </svg>
+  );
+}
+
+/** SVG icon for tsumiishi-kikko (hexagonal chambers in the lattice) */
+function TsumiishiKikkoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M12 4l6.9 4v8L12 20l-6.9-4V8zM12 4v4.6M18.9 16l-4-2.3M5.1 16l4-2.3" />
+    </svg>
+  );
+}
+
 /** Pattern option configuration */
 interface PatternOption {
   value: WallPatternType | null;
@@ -103,6 +199,42 @@ const PATTERN_OPTIONS: PatternOption[] = [
     value: 'mitsukude',
     labelKey: 'binDesigner.walls.pattern.mitsukude',
     icon: MitsukudeIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'goma',
+    labelKey: 'binDesigner.walls.pattern.goma',
+    icon: GomaIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'asanoha',
+    labelKey: 'binDesigner.walls.pattern.asanoha',
+    icon: AsanohaIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'sakura',
+    labelKey: 'binDesigner.walls.pattern.sakura',
+    icon: SakuraIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'rindo',
+    labelKey: 'binDesigner.walls.pattern.rindo',
+    icon: RindoIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'mikado',
+    labelKey: 'binDesigner.walls.pattern.mikado',
+    icon: MikadoIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
+  {
+    value: 'tsumiishi-kikko',
+    labelKey: 'binDesigner.walls.pattern.tsumiishiKikko',
+    icon: TsumiishiKikkoIcon,
     groupKey: 'binDesigner.walls.pattern.groupKumiko',
   },
 ];

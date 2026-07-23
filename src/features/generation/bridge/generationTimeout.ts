@@ -177,6 +177,11 @@ function binRawBudgetMs(params: BinParams): number {
     if (isKumikoPattern(params.wallPattern.pattern)) {
       timeout += KUMIKO_PATTERN_BONUS_MS;
       timeout += (Math.ceil(safeWidth) + Math.ceil(safeDepth)) * KUMIKO_PERIMETER_BONUS_MS_PER_CELL;
+      // Filled patterns (everything beyond the bare mitsukude grid) carry
+      // 3-4× the strut count and measure ~7× mitsukude's generation time.
+      if (params.wallPattern.pattern !== 'mitsukude') {
+        timeout += KUMIKO_PATTERN_BONUS_MS;
+      }
     }
   }
 

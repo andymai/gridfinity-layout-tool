@@ -11,12 +11,15 @@ import { describe, it, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { WallPatternType } from '@/shared/types/bin';
 import { clearAllCaches } from '../shapeCache';
 import { PerfCollector } from '../pipeline/perfCollector';
 
 beforeAll(async () => {
   await initBrepjs();
 }, 120_000);
+
+const PATTERN = (process.env.KUMIKO_PROFILE_PATTERN ?? 'mitsukude') as WallPatternType;
 
 function profile(label: string, width: number, depth: number, height: number): void {
   clearAllCaches();
@@ -27,7 +30,7 @@ function profile(label: string, width: number, depth: number, height: number): v
       width,
       depth,
       height,
-      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
+      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: PATTERN },
     }),
     undefined,
     false,
@@ -48,6 +51,10 @@ describe('kumiko generation profile', () => {
   it('profiles mitsukude bins', () => {
     if (process.env.KUMIKO_PROFILE_CASE === '4x4x6') {
       profile('4x4x6', 4, 4, 6);
+      return;
+    }
+    if (process.env.KUMIKO_PROFILE_CASE === '1x1x6') {
+      profile('1x1x6', 1, 1, 6);
       return;
     }
     profile('1x1x6', 1, 1, 6);

@@ -31,6 +31,8 @@ import {
   cutAll,
   unwrap,
   clone,
+  polygon,
+  solid,
   sketchHelix,
   getKernelCapabilities,
 } from 'brepjs';
@@ -47,7 +49,7 @@ import type { WallPatternDescriptor } from './wallPatterns';
 import { getSlotFreeWalls, TOP_KEEP_OUT, BOTTOM_SOLID_SKIRT } from './wallPatterns';
 import { getPatternCalculator, isWrappedLatticeCalculator, PATTERN_REGISTRY } from './patterns';
 import type { KumikoLattice, KumikoSegment, WrappedLatticeCalculator } from './patterns';
-import { BOX_CORNER_RADIUS } from './generatorConstants';
+import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
@@ -89,6 +91,9 @@ interface CornerSlab {
   readonly cy: number;
   /** World angle of the corner's arc start (at u0), radians. */
   readonly thetaStart: number;
+  /** The two walls this corner joins — drives clip-box routing. */
+  readonly prevSide: WallSide;
+  readonly nextSide: WallSide;
 }
 
 type PerimeterSlab = FlatSlab | CornerSlab;
@@ -130,19 +135,25 @@ function computePerimeterLayout(
     });
     u += len;
   };
-  const corner = (cx: number, cy: number, thetaStart: number): void => {
-    slabs.push({ kind: 'corner', u0: u, u1: u + arc, cx, cy, thetaStart });
+  const corner = (
+    cx: number,
+    cy: number,
+    thetaStart: number,
+    prevSide: WallSide,
+    nextSide: WallSide
+  ): void => {
+    slabs.push({ kind: 'corner', u0: u, u1: u + arc, cx, cy, thetaStart, prevSide, nextSide });
     u += arc;
   };
 
   flat('front', flatW, 0, 0, -innerD / 2);
-  corner(outerW / 2 - r, -outerD / 2 + r, -Math.PI / 2);
+  corner(outerW / 2 - r, -outerD / 2 + r, -Math.PI / 2, 'front', 'right');
   flat('right', flatD, 90, innerW / 2, 0);
-  corner(outerW / 2 - r, outerD / 2 - r, 0);
+  corner(outerW / 2 - r, outerD / 2 - r, 0, 'right', 'back');
   flat('back', flatW, 180, 0, innerD / 2);
-  corner(-outerW / 2 + r, outerD / 2 - r, Math.PI / 2);
+  corner(-outerW / 2 + r, outerD / 2 - r, Math.PI / 2, 'back', 'left');
   flat('left', flatD, 270, -innerW / 2, 0);
-  corner(-outerW / 2 + r, -outerD / 2 + r, Math.PI);
+  corner(-outerW / 2 + r, -outerD / 2 + r, Math.PI, 'left', 'front');
 
   return { perimeter: u, slabs, cornerRadius: r };
 }
@@ -168,6 +179,7 @@ function clipSegmentToURange(seg: KumikoSegment, u0: number, u1: number): Kumiko
   return {
     a: [ua + t0 * du, za + t0 * (zb - za)],
     b: [ua + t1 * du, za + t1 * (zb - za)],
+    ...(seg.width === undefined ? {} : { width: seg.width }),
   };
 }
 
@@ -224,10 +236,11 @@ function extendSegment(seg: KumikoSegment, by: number): KumikoSegment {
 /** Stroke a segment into a Drawing rectangle in slab-local (a, y) coords. */
 function strokeSegment(
   seg: KumikoSegment,
-  width: number,
+  defaultWidth: number,
   uCenter: number,
   zCenter: number
 ): Drawing {
+  const width = seg.width ?? defaultWidth;
   const [ua, za] = seg.a;
   const [ub, zb] = seg.b;
   const len = Math.hypot(ub - ua, zb - za);
@@ -235,6 +248,56 @@ function strokeSegment(
   return drawRoundedRectangle(len + width, width, 0)
     .rotate(angleDeg, [0, 0])
     .translate((ua + ub) / 2 - uCenter, (za + zb) / 2 - zCenter);
+}
+
+/** Largest stroke width used by the lattice (grid struts or filling pieces). */
+function maxStrutWidth(lattice: KumikoLattice): number {
+  let max = lattice.strutWidth;
+  for (const seg of lattice.fillingTemplate) {
+    if (seg.width !== undefined && seg.width > max) max = seg.width;
+  }
+  return max;
+}
+
+/** Bounding radius of the filling template around a vertex (mm). */
+function fillingReach(lattice: KumikoLattice): number {
+  let reach = 0;
+  for (const seg of lattice.fillingTemplate) {
+    const half = (seg.width ?? lattice.strutWidth) / 2;
+    for (const [x, z] of [seg.a, seg.b]) {
+      reach = Math.max(reach, Math.hypot(x, z) + half);
+    }
+  }
+  return reach;
+}
+
+/**
+ * Filling pieces for slabs that can't stamp a prefabricated solid (corners):
+ * template segments offset to every vertex whose stamp can reach [u0, u1],
+ * including ±period wrap copies.
+ */
+function fillingPiecesForRange(
+  lattice: KumikoLattice,
+  u0: number,
+  u1: number,
+  period: number
+): KumikoSegment[] {
+  const reach = fillingReach(lattice);
+  const pieces: KumikoSegment[] = [];
+  for (const vertex of lattice.vertices) {
+    for (const shift of [-period, 0, period]) {
+      const u = vertex.u + shift;
+      if (u < u0 - reach || u > u1 + reach) continue;
+      for (const seg of lattice.fillingTemplate) {
+        pieces.push({
+          a: [u + seg.a[0], vertex.z + seg.a[1]],
+          b: [u + seg.b[0], vertex.z + seg.b[1]],
+          ...(seg.width === undefined ? {} : { width: seg.width }),
+        });
+      }
+    }
+  }
+  return pieces;
 }
 
 /**
@@ -268,11 +331,13 @@ function buildFlatSlabCutter(
   bandHeight: number,
   cutDepth: number,
   patternCenterZ: number,
-  perimeter: number
+  perimeter: number,
+  windowA: number,
+  windowB: number
 ): Shape3D | null {
   const w = lattice.strutWidth;
-  const uA = slab.u0 - SLAB_OVERLAP;
-  const uB = slab.u1 + SLAB_OVERLAP;
+  const uA = windowA;
+  const uB = windowB;
   const uCenter = (slab.u0 + slab.u1) / 2;
   const zCenter = bandZ0 + bandHeight / 2;
   const halfDepth = cutDepth / 2;
@@ -303,7 +368,26 @@ function buildFlatSlabCutter(
       strutCount++;
     }
   }
-  if (strutCount === 0) return null;
+  // Filling pieces ride as individual prisms in their own bucket. Prebuilt
+  // per-vertex stamp solids were tried and measured WORSE: neighboring stamps
+  // overlap, and overlapping multi-prism tools cost more in the cutAll than
+  // the extra prism count saves.
+  const fillings: Shape3D[] = [];
+  const maxW = maxStrutWidth(lattice);
+  for (const piece of fillingPiecesForRange(lattice, uA - maxW, uB + maxW, perimeter)) {
+    const pw = piece.width ?? w;
+    const absolute: KumikoSegment = {
+      a: [piece.a[0], piece.a[1] + bandZ0],
+      b: [piece.b[0], piece.b[1] + bandZ0],
+      ...(piece.width === undefined ? {} : { width: piece.width }),
+    };
+    const drawing = strokeSegment(extendSegment(absolute, pw / 2), w, uCenter, zCenter);
+    const prism = sketch(drawing, 'XY').extrude(strutDepth);
+    fillings.push(translate(prism, [0, 0, -strutDepth / 2]));
+    prism.delete();
+  }
+
+  if (strutCount === 0 && fillings.length === 0) return null;
 
   const chunkDrawing = drawRoundedRectangle(uB - uA, bandHeight, 0).translate(
     (uA + uB) / 2 - uCenter,
@@ -313,7 +397,7 @@ function buildFlatSlabCutter(
   let region = translate(slabPrism, [0, 0, -halfDepth]);
   slabPrism.delete();
 
-  for (const family of families) {
+  for (const family of [...families, fillings]) {
     if (family.length === 0) continue;
     const carved = unwrap(cutAll(region, family, { trackEvolution: false }));
     region.delete();
@@ -332,6 +416,30 @@ function buildFlatSlabCutter(
   const positioned = translate(placed, [slab.anchorX, slab.anchorY, patternCenterZ]);
   placed.delete();
   return positioned;
+}
+
+/**
+ * Deterministic u-windows for one flat wall. Filled patterns chunk into
+ * ~3-column windows so each intra-chunk boolean and each final-cut tool stays
+ * small — tool cost in one OCCT op grows super-linearly, so bounded windows
+ * keep dense patterns near-linear. The bare grid stays whole-wall (chunking
+ * measured slower there: seam overlap outweighs the small tool count).
+ */
+function flatWindows(slab: FlatSlab, lattice: KumikoLattice): Array<[number, number]> {
+  const uA = slab.u0 - SLAB_OVERLAP;
+  const uB = slab.u1 + SLAB_OVERLAP;
+  if (lattice.fillingTemplate.length === 0) return [[uA, uB]];
+  const target = 3 * lattice.columnPitch;
+  const chunks = Math.max(1, Math.round((uB - uA) / target));
+  const chunkW = (uB - uA) / chunks;
+  const windows: Array<[number, number]> = [];
+  for (let i = 0; i < chunks; i++) {
+    windows.push([
+      uA + i * chunkW - (i > 0 ? SLAB_OVERLAP : 0),
+      uA + (i + 1) * chunkW + (i < chunks - 1 ? SLAB_OVERLAP : 0),
+    ]);
+  }
+  return windows;
 }
 
 /** Radial rect profile face on the XZ plane: r ∈ [r0, r1], z ∈ [z0, z1]. */
@@ -358,6 +466,85 @@ function toCornerAngle(shape: Shape3D, phiRad: number): Shape3D {
   const rotated = rotate(shape, phiRad * RAD_TO_DEG, { axis: [0, 0, 1] });
   shape.delete();
   return rotated;
+}
+
+/**
+ * Max angular span (radians) a corner strut may cover as a straight chord box
+ * before splitting: keeps the flat-vs-arc sagitta below ~0.15mm at bin corner
+ * radii — under print resolution.
+ */
+const CHORD_MAX_PHI = 0.55;
+
+type Vec3Tuple = [number, number, number];
+
+/**
+ * Straight hexahedral strut along the chord between two corner-surface
+ * points. Short filling pieces use this instead of a helix sweep: the true
+ * helical strut's sagitta over ≤CHORD_MAX_PHI is below print resolution, and
+ * a plain box costs a fraction of a swept helicoid in the wedge boolean.
+ */
+function chordBoxStrut(
+  phiA: number,
+  zA: number,
+  phiB: number,
+  zB: number,
+  width: number,
+  sr0: number,
+  sr1: number
+): Shape3D {
+  // Near-tangent contacts with neighboring struts (goma ribs seat their ends
+  // ON the arm edges) leave knife-edge slivers that fail to sew — export
+  // showed boundary-edge cracks on the corner cylinder. A COPLANAR_OVERLAP
+  // widening turns the tangency into a finite, invisible overlap.
+  const pw = width + 2 * COPLANAR_OVERLAP;
+  const rMid = (sr0 + sr1) / 2;
+  const A: Vec3Tuple = [rMid * Math.cos(phiA), rMid * Math.sin(phiA), zA];
+  const B: Vec3Tuple = [rMid * Math.cos(phiB), rMid * Math.sin(phiB), zB];
+  const d: Vec3Tuple = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
+  const dLen = Math.hypot(d[0], d[1], d[2]);
+  const du: Vec3Tuple = [d[0] / dLen, d[1] / dLen, d[2] / dLen];
+  const phiM = (phiA + phiB) / 2;
+  const radial: Vec3Tuple = [Math.cos(phiM), Math.sin(phiM), 0];
+  // In-surface perpendicular to the chord, then re-orthogonalized radial.
+  const yv: Vec3Tuple = [
+    radial[1] * du[2] - radial[2] * du[1],
+    radial[2] * du[0] - radial[0] * du[2],
+    radial[0] * du[1] - radial[1] * du[0],
+  ];
+  const yLen = Math.hypot(yv[0], yv[1], yv[2]);
+  const yu: Vec3Tuple = [yv[0] / yLen, yv[1] / yLen, yv[2] / yLen];
+  const nu: Vec3Tuple = [
+    du[1] * yu[2] - du[2] * yu[1],
+    du[2] * yu[0] - du[0] * yu[2],
+    du[0] * yu[1] - du[1] * yu[0],
+  ];
+
+  const corners: Vec3Tuple[] = [];
+  for (const base of [A, B]) {
+    for (const t of [-pw / 2, pw / 2]) {
+      for (const r of [sr0 - rMid, sr1 - rMid]) {
+        corners.push([
+          base[0] + yu[0] * t + nu[0] * r,
+          base[1] + yu[1] * t + nu[1] * r,
+          base[2] + yu[2] * t + nu[2] * r,
+        ]);
+      }
+    }
+  }
+  // Index layout: [end][side t][radial r] → 0:A--, 1:A-+, 2:A+-, 3:A++,
+  // 4:B--, 5:B-+, 6:B+-, 7:B++.
+  const quads: number[][] = [
+    [0, 1, 3, 2],
+    [4, 6, 7, 5],
+    [0, 2, 6, 4],
+    [1, 5, 7, 3],
+    [0, 4, 5, 1],
+    [2, 3, 7, 6],
+  ];
+  const faces = quads.map((q) => unwrap(polygon(q.map((i) => corners[i]))));
+  const box = unwrap(solid(faces));
+  for (const f of faces) f.delete();
+  return box;
 }
 
 /**
@@ -394,15 +581,68 @@ function buildCornerSlabCutter(
   // Same family partition as the flat chunks: verticals, horizontals, rising,
   // falling — struts within a family are disjoint, so each family cut has no
   // tool-tool intersection work.
-  const families: Shape3D[][] = [[], [], [], []];
+  const families: Shape3D[][] = [[], [], [], [], []];
+  const maxW = maxStrutWidth(lattice);
   const pieces: KumikoSegment[] = [];
   for (const seg of lattice.segments) {
     for (const piece of clipSegmentToURangePeriodic(seg, slab.u0 - w, slab.u1 + w, perimeter)) {
       if (!isRedundantMarginPiece(piece, slab.u0, slab.u1)) pieces.push(piece);
     }
   }
+  // Filling pieces arrive pre-positioned (absolute u, band-local z); clip each
+  // to the corner's reach and keep the margin-redundancy rule — the adjacent
+  // flat covers shared vertices' pieces. Non-vertical fillings become chord
+  // boxes (split under CHORD_MAX_PHI): dozens of short helix sweeps per
+  // corner measured 4× the whole cutter cost on filled patterns, and the
+  // chord's sagitta at these spans is below print resolution.
+  for (const filling of fillingPiecesForRange(lattice, slab.u0 - maxW, slab.u1 + maxW, perimeter)) {
+    const clipped = clipSegmentToURange(filling, slab.u0 - maxW, slab.u1 + maxW);
+    if (!clipped || isRedundantMarginPiece(clipped, slab.u0, slab.u1)) continue;
+    const pw = clipped.width ?? w;
+    const capped = extendSegment(clipped, pw / 2);
+    const [fua, fza] = capped.a;
+    const [fub, fzb] = capped.b;
+    if (Math.abs(fub - fua) < AXIS_EPSILON) {
+      // Vertical fillings revolve exactly and cheaply, like grid columns.
+      const dPhi = pw / outerRadius;
+      const phiMid = phiOf((fua + fub) / 2);
+      const slab3d = annularWedge(
+        sr0,
+        sr1,
+        Math.min(fza, fzb) + bandZ0,
+        Math.max(fza, fzb) + bandZ0,
+        dPhi
+      );
+      families[0].push(toCornerAngle(slab3d, phiMid - dPhi / 2));
+      continue;
+    }
+    const phiA = phiOf(fua);
+    const phiB = phiOf(fub);
+    const steps = Math.max(1, Math.ceil(Math.abs(phiB - phiA) / CHORD_MAX_PHI));
+    // Consecutive sub-chords overlap by a parameter margin: sharing their end
+    // planes exactly leaves coplanar tool faces, and the resulting sliver
+    // shows up as boundary-edge cracks on the corner cylinder (goma's long
+    // ribs are the only fillings that split).
+    const tPad = steps > 1 ? 0.02 : 0;
+    for (let i = 0; i < steps; i++) {
+      const t0 = Math.max(0, i / steps - tPad);
+      const t1 = Math.min(1, (i + 1) / steps + tPad);
+      families[4].push(
+        chordBoxStrut(
+          phiA + (phiB - phiA) * t0,
+          fza + (fzb - fza) * t0 + bandZ0,
+          phiA + (phiB - phiA) * t1,
+          fza + (fzb - fza) * t1 + bandZ0,
+          pw,
+          sr0,
+          sr1
+        )
+      );
+    }
+  }
   for (const clipped of pieces) {
-    const capped = extendSegment(clipped, w / 2);
+    const pw = clipped.width ?? w;
+    const capped = extendSegment(clipped, pw / 2);
     const [ua, zaRel] = capped.a;
     const [ub, zbRel] = capped.b;
     const za = zaRel + bandZ0;
@@ -412,7 +652,7 @@ function buildCornerSlabCutter(
 
     if (du < AXIS_EPSILON) {
       // Vertical strut: small-angle revolve so both faces are radial planes.
-      const dPhi = w / outerRadius;
+      const dPhi = pw / outerRadius;
       const phiMid = phiOf((ua + ub) / 2);
       const slab3d = annularWedge(sr0, sr1, Math.min(za, zb), Math.max(za, zb), dPhi);
       families[0].push(toCornerAngle(slab3d, phiMid - dPhi / 2));
@@ -421,7 +661,7 @@ function buildCornerSlabCutter(
       const zMid = (za + zb) / 2;
       const phiA = phiOf(Math.min(ua, ub));
       const phiB = phiOf(Math.max(ua, ub));
-      const slab3d = annularWedge(sr0, sr1, zMid - w / 2, zMid + w / 2, phiB - phiA);
+      const slab3d = annularWedge(sr0, sr1, zMid - pw / 2, zMid + pw / 2, phiB - phiA);
       families[1].push(toCornerAngle(slab3d, phiA));
     } else {
       // Diagonal strut: rectangle swept along a helix. Base the helix at the
@@ -434,7 +674,7 @@ function buildCornerSlabCutter(
       const pitch = (height * 2 * Math.PI) / Math.abs(dPhi);
       const spine = sketchHelix(pitch, height, rMid, [0, 0, zLow], [0, 0, 1], dPhi < 0);
       const swept = spine.sweepSketch(
-        (plane) => drawRoundedRectangle(radialSpan, w, 0).sketchOnPlane(plane),
+        (plane) => drawRoundedRectangle(radialSpan, pw, 0).sketchOnPlane(plane),
         { frenet: true }
       );
       families[zb - za > 0 === ub - ua > 0 ? 2 : 3].push(toCornerAngle(swept, phiOf(uLow)));
@@ -586,9 +826,21 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   // 2.5× slower on the final cut). Cutter count is deterministic from the
   // layout, so both caches store one entry per slab index.
   const activeSlabs = layout.slabs.filter((s) => s.kind === 'flat' || exact);
+  // One planned cutter per flat window / corner — the plan is deterministic
+  // from layout + lattice, so cache entries index it directly.
+  const plan: Array<{ slab: PerimeterSlab; windowA: number; windowB: number }> = [];
+  for (const slab of activeSlabs) {
+    if (slab.kind === 'flat') {
+      for (const [wa, wb] of flatWindows(slab, lattice)) {
+        plan.push({ slab, windowA: wa, windowB: wb });
+      }
+    } else {
+      plan.push({ slab, windowA: slab.u0, windowB: slab.u1 });
+    }
+  }
   const cacheGetAll = (cacheName: string, key: string): Shape3D[] | null => {
     const shapes: Shape3D[] = [];
-    for (let i = 0; i < activeSlabs.length; i++) {
+    for (let i = 0; i < plan.length; i++) {
       const hit = getFeatureCache(cacheName, `${key}#${i}`);
       if (!hit) {
         for (const s of shapes) s.delete();
@@ -608,13 +860,8 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   // Which walls' clip boxes can reach each slab: a flat sees its own wall's
   // clips; a corner sees both adjacent walls' (a full-width cutout border can
   // spill past the wall end into the corner region).
-  const clipSidesFor = (slab: PerimeterSlab, index: number): readonly WallSide[] => {
-    if (slab.kind === 'flat') return [slab.side];
-    const order: readonly WallSide[] = ['front', 'right', 'back', 'left'];
-    const prev = order[Math.floor(index / 2) % 4];
-    const next = order[(Math.floor(index / 2) + 1) % 4];
-    return [prev, next];
-  };
+  const clipSidesFor = (slab: PerimeterSlab): readonly WallSide[] =>
+    slab.kind === 'flat' ? [slab.side] : [slab.prevSide, slab.nextSide];
   const hasClips = (side: WallSide): boolean => {
     const wc = wallClips.find((w) => w.side === side);
     return (
@@ -634,18 +881,20 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
     let baseShapes = cacheGetAll(KUMIKO_WRAP_BASE_CACHE, baseKey);
     if (!baseShapes) {
       const cutters: Shape3D[] = [];
-      for (const slab of activeSlabs) {
+      for (const entry of plan) {
         checkCancelled(signal);
         const slabStart = perfCollector ? performance.now() : 0;
-        if (slab.kind === 'flat') {
+        if (entry.slab.kind === 'flat') {
           const cutter = buildFlatSlabCutter(
-            slab,
+            entry.slab,
             lattice,
             bandZ0,
             patternHeight,
             cutDepth,
             patternCenterZ,
-            layout.perimeter
+            layout.perimeter,
+            entry.windowA,
+            entry.windowB
           );
           if (!cutter) {
             for (const c of cutters) c.delete();
@@ -654,14 +903,14 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
           cutters.push(cutter);
           if (perfCollector) {
             perfCollector.recordWallPatternSubstep(
-              `kumiko_flat_${slab.side}`,
+              `kumiko_flat_${entry.slab.side}`,
               performance.now() - slabStart
             );
           }
         } else {
           cutters.push(
             buildCornerSlabCutter(
-              slab,
+              entry.slab,
               lattice,
               bandZ0,
               patternHeight,
@@ -688,7 +937,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
       let failed = false;
       for (let i = 0; i < baseShapes.length; i++) {
         let current: Shape3D | null = baseShapes[i];
-        for (const side of clipSidesFor(activeSlabs[i], i)) {
+        for (const side of clipSidesFor(plan[i].slab)) {
           if (!current || !hasClips(side)) continue;
           checkCancelled(signal);
           const wc = wallClips.find((w) => w.side === side);

@@ -15,7 +15,13 @@
  * Pure-math module — NO brepjs imports.
  */
 
-import type { KumikoBandConfig, KumikoLattice, KumikoPatternDef, KumikoSegment } from './types';
+import type {
+  KumikoBandConfig,
+  KumikoLattice,
+  KumikoPatternDef,
+  KumikoSegment,
+  KumikoVertex,
+} from './types';
 
 /** √3 — the triangular lattice's aspect constant. */
 const SQRT3 = Math.sqrt(3);
@@ -26,8 +32,8 @@ export const KUMIKO_STRUT_WIDTH = 1.2;
 /** Neutral triangle edge length (mm) before the scale factor is applied. */
 export const KUMIKO_BASE_CELL_SIZE = 9;
 
-/** Column-count ceiling so a fine scale on a huge bin can't explode the 2D boolean. */
-const MAX_COLUMNS = 120;
+/** Default column-count ceiling so a fine scale on a huge bin can't explode the booleans. */
+export const MAX_COLUMNS = 120;
 
 /** Segments shorter than this after clipping are dropped as degenerate (mm). */
 const MIN_SEGMENT_LENGTH = 0.05;
@@ -38,11 +44,12 @@ const MIN_SEGMENT_LENGTH = 0.05;
  */
 export function quantizeColumns(
   perimeter: number,
-  targetCellSize: number
+  targetCellSize: number,
+  maxColumns: number = MAX_COLUMNS
 ): { columns: number; columnPitch: number; cellSize: number } {
   const targetPitch = (targetCellSize * SQRT3) / 2;
   const raw = 2 * Math.round(perimeter / (2 * targetPitch));
-  const columns = Math.min(MAX_COLUMNS, Math.max(4, raw));
+  const columns = Math.min(maxColumns, Math.max(4, raw));
   const columnPitch = perimeter / columns;
   const cellSize = (2 * columnPitch) / SQRT3;
   return { columns, columnPitch, cellSize };
@@ -83,7 +90,7 @@ export function clipSegmentToBand(
   const a: readonly [number, number] = [u1 + t0 * du, z1 + t0 * dz];
   const b: readonly [number, number] = [u1 + t1 * du, z1 + t1 * dz];
   if (Math.hypot(b[0] - a[0], b[1] - a[1]) < MIN_SEGMENT_LENGTH) return null;
-  return { a, b };
+  return { a, b, ...(seg.width === undefined ? {} : { width: seg.width }) };
 }
 
 /**
@@ -99,7 +106,7 @@ export function generateKumikoLattice(
   targetCellSize: number
 ): KumikoLattice {
   const { perimeter: P, bandHeight: H } = band;
-  const { columns, columnPitch, cellSize } = quantizeColumns(P, targetCellSize);
+  const { columns, columnPitch, cellSize } = quantizeColumns(P, targetCellSize, def.maxColumns);
   const segments: KumikoSegment[] = [];
   const push = (seg: KumikoSegment): void => {
     const clipped = clipSegmentToBand(seg, P, H);
@@ -128,23 +135,30 @@ export function generateKumikoLattice(
     push({ a: [0, c], b: [P, c - P * slope] });
   }
 
-  // Per-vertex fillings. Columns are duplicated one period past each side of
-  // the u = 0 seam so fillings that straddle it contribute their wrapped
-  // pieces; clipping to [0, P] keeps exactly one copy of every piece.
-  if (def.filling) {
-    for (let k = -2; k < columns + 2; k++) {
+  // Jigumi vertices for the filling: one column per vertical strut
+  // (u ∈ [0, P) — builders handle the wrap with ±P shifts), rows within one
+  // cell of the band so edge fillings still reach in. The template stays
+  // vertex-local; builders offset copies per vertex.
+  const fillingTemplate = def.filling ? def.filling(cellSize, columnPitch) : [];
+  const vertices: KumikoVertex[] = [];
+  if (fillingTemplate.length > 0) {
+    for (let k = 0; k < columns; k++) {
       const u = k * columnPitch;
-      const stagger = (((k % 2) + 2) % 2) * (cellSize / 2);
-      const rowMin = Math.floor((0 - cellSize - stagger) / cellSize);
-      const rowMax = Math.ceil((H + cellSize - stagger) / cellSize);
+      const stagger = (k % 2) * (cellSize / 2);
+      const rowMin = Math.ceil((-cellSize - stagger) / cellSize);
+      const rowMax = Math.floor((H + cellSize - stagger) / cellSize);
       for (let i = rowMin; i <= rowMax; i++) {
-        const z = i * cellSize + stagger;
-        for (const seg of def.filling({ u, z }, cellSize, columnPitch)) {
-          push(seg);
-        }
+        vertices.push({ u, z: i * cellSize + stagger });
       }
     }
   }
 
-  return { segments, strutWidth: KUMIKO_STRUT_WIDTH, columnPitch, cellSize };
+  return {
+    segments,
+    fillingTemplate,
+    vertices,
+    strutWidth: KUMIKO_STRUT_WIDTH,
+    columnPitch,
+    cellSize,
+  };
 }
