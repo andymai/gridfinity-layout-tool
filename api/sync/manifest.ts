@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../lib/method.js';
-import { ErrorCode } from '../lib/shared.js';
+import { rateLimited, serviceUnavailable, serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 import { checkRateLimit, getRedis } from '../lib/rateLimit.js';
 import { requireSession } from '../lib/session.js';
@@ -29,19 +29,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const rate = await checkRateLimit(session.userId, 'sync.read');
   if (!rate.allowed) {
-    res.status(429).json({
-      error: 'Too many requests. Try again later.',
-      code: ErrorCode.RATE_LIMITED,
-      retryAfter: rate.retryAfterSeconds,
-    });
+    rateLimited(res, rate.retryAfterSeconds);
     return;
   }
 
   const redis = getRedis();
   if (!redis) {
-    res
-      .status(503)
-      .json({ error: 'Service temporarily unavailable', code: ErrorCode.SERVICE_UNAVAILABLE });
+    serviceUnavailable(res);
     return;
   }
 
@@ -66,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userId: session.userId,
       error: error instanceof Error ? error.message : String(error),
     });
-    res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
+    serverError(res);
   }
 }
 

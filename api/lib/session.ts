@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
 import { getRedis } from './rateLimit.js';
-import { ErrorCode } from './shared.js';
+import { ErrorCode, serviceUnavailable } from './shared.js';
 import { logger } from './logger.js';
 import { sessionKey, userSessionsKey } from './redisKeys.js';
 import { readSessionCookie } from './cookies.js';
@@ -182,10 +182,7 @@ export async function requireSession(
   if (!redis) {
     if (process.env.VERCEL_ENV === 'production') {
       logger.error('Session check failed: Redis unavailable');
-      res.status(503).json({
-        error: 'Service temporarily unavailable',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      serviceUnavailable(res);
       return null;
     }
     res.status(401).json({ error: 'Not signed in', code: ErrorCode.UNAUTHORIZED });

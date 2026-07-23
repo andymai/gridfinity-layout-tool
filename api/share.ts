@@ -14,6 +14,8 @@ import {
   getBaseUrl,
   shareHashKey,
   type ShareData,
+  rateLimited,
+  serviceUnavailable,
 } from './lib/shared.js';
 
 /**
@@ -37,11 +39,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rateLimit = await checkRateLimit(clientIP, 'create');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many shares created. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(
+        res,
+        rateLimit.retryAfterSeconds,
+        'Too many shares created. Try again later.'
+      );
     }
 
     // Parse and validate request body
@@ -121,10 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const redis = getRedis();
     if (!redis && process.env.VERCEL_ENV === 'production') {
       logger.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
-      return res.status(503).json({
-        error: 'Service temporarily unavailable. Please try again.',
-        code: ErrorCode.SERVICE_UNAVAILABLE,
-      });
+      return serviceUnavailable(res, 'Service temporarily unavailable. Please try again.');
     }
 
     const deleteToken = generateDeleteToken();

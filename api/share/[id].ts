@@ -16,6 +16,7 @@ import {
   shareLastAccessedKey,
   SHARE_LAST_ACCESSED_TTL_SECONDS,
   type ShareData,
+  rateLimited,
 } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -54,11 +55,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
     const rateLimit = await checkRateLimit(clientIP, 'view');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many requests. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds);
     }
 
     // Check if blob exists
@@ -134,11 +131,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     const rateLimit = await checkRateLimit(clientIP, 'update');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many updates. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many updates. Try again later.');
     }
 
     const body = (req.body ?? {}) as Record<string, unknown>;
@@ -307,11 +300,11 @@ async function handleDelete(
     const rateLimit = await checkRateLimit(clientIP, 'delete');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many delete attempts. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(
+        res,
+        rateLimit.retryAfterSeconds,
+        'Too many delete attempts. Try again later.'
+      );
     }
 
     // Get delete token from header or body

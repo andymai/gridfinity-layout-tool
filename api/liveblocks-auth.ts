@@ -2,7 +2,7 @@ import { Liveblocks } from '@liveblocks/node';
 import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { ErrorCode, isValidShareId, methodNotAllowed } from './lib/shared.js';
+import { rateLimited, ErrorCode, isValidShareId, methodNotAllowed } from './lib/shared.js';
 import { logger } from './lib/logger.js';
 import type { ShareData } from './lib/shared.js';
 
@@ -94,11 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rateLimit = await checkRateLimit(clientIP, 'view');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many requests. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds);
     }
 
     // Parse request body

@@ -2,7 +2,13 @@ import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
-import { isValidShareId, ErrorCode, methodNotAllowed, shareReportKey } from '../lib/shared.js';
+import {
+  rateLimited,
+  isValidShareId,
+  ErrorCode,
+  methodNotAllowed,
+  shareReportKey,
+} from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 
 /**
@@ -35,11 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rateLimit = await checkRateLimit(clientIP, 'report');
 
     if (!rateLimit.allowed) {
-      return res.status(429).json({
-        error: 'Too many reports. Try again later.',
-        code: ErrorCode.RATE_LIMITED,
-        retryAfter: rateLimit.retryAfterSeconds,
-      });
+      return rateLimited(res, rateLimit.retryAfterSeconds, 'Too many reports. Try again later.');
     }
 
     const { reason } = (req.body ?? {}) as Record<string, unknown>;
