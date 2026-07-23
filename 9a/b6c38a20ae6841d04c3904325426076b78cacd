@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_59b071634fd176::t_249b3676ea35af 250-262
+  s_59b071634fd176::t_0199dcb13e52e7 16,20-26
+  s_59b071634fd176::t_72da8f1941b2ec 124
+  s_59b071634fd176::t_a96e8bce657cdf 74-123,125-223
+src/features/generation/worker/generators/__kernel-tests__/helixHandedness.test.ts
+  s_59b071634fd176::t_da538db47a4864 1-2,4,18-19,21-26,28-31,42-45,50-56,58-61,68-69
+  s_59b071634fd176::t_8f21359f9016ca 3,5-17
+  s_59b071634fd176::t_6c043eb14441ad 20,27,32,35-40,57
+  s_59b071634fd176::t_40a3c331c8fccc 33-34,41,46-49
+  s_59b071634fd176::t_78f0cc25cbb931 62-67
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_59b071634fd176::t_4b967ffa5d15f2 723
+  s_59b071634fd176::t_a5273389f959ca 718
+  s_59b071634fd176::t_7aac6de6fe0de6 13-15
+  s_59b071634fd176::t_337ef6983cc79e 677-680,687,692-702,712
+  s_59b071634fd176::t_a861f2bde5920a 703-711,713-717,719-722
+src/features/generation/README.md
+  s_59b071634fd176::t_23e6af828217ea 170-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "9ab6c38a20ae6841d04c3904325426076b78cacd",
+  "prompts": {},
+  "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": null
+    }
+  }
+}
