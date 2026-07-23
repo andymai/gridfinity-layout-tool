@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.287.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.1...gridfinity-layout-tool-v4.287.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **generation:** stop stale-bundle WASM 404s spawning a new issue per deploy ([#2776](https://github.com/andymai/gridfinity-layout-tool/issues/2776)) ([b791704](https://github.com/andymai/gridfinity-layout-tool/commit/b791704ef119e2e84e758156a9eeadcb1553e504))
+
 ## [4.287.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.0...gridfinity-layout-tool-v4.287.1) (2026-07-23)
 
 
