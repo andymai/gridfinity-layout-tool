@@ -28,3 +28,23 @@ export function isStaleAssetError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return STALE_ASSET_SIGNATURES.some((sig) => message.includes(sig));
 }
+
+/**
+ * Reduce a bundler-hashed asset URL to a deploy-stable label.
+ *
+ * Vite emits content-hashed asset names (e.g. `occt-wasm-DVSq216o.wasm`) whose
+ * hash rotates on every build. Embedding the raw URL in a thrown error message
+ * makes error tracking's message-based grouping mint a brand-new issue on each
+ * deploy for what is really one recurring stale-bundle 404. Collapsing the URL
+ * to its hash-stripped basename (`occt-wasm-[hash].wasm`) keeps the useful
+ * "which asset" context while grouping every deploy's failure into one issue.
+ *
+ * The hash segment is the last `-`/`.`-delimited run of ≥8 word chars before
+ * the extension (Vite's default `[name]-[hash][ext]`); an unhashed name is
+ * returned unchanged.
+ */
+export function stableAssetName(url: string): string {
+  const path = url.split(/[?#]/)[0] ?? url;
+  const basename = path.slice(path.lastIndexOf('/') + 1) || path;
+  return basename.replace(/([-.])[A-Za-z0-9_]{8,}(\.[A-Za-z0-9]+)$/, '$1[hash]$2');
+}

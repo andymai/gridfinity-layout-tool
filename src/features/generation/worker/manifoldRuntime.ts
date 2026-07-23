@@ -18,6 +18,8 @@
 
 import type { ManifoldToplevel } from 'manifold-3d';
 
+import { stableAssetName } from '@/shared/generation/wasmLoadError';
+
 let modulePromise: Promise<ManifoldToplevel> | null = null;
 let loadedModule: ManifoldToplevel | null = null;
 
@@ -29,9 +31,14 @@ async function instantiate(): Promise<ManifoldToplevel> {
 
   const url = manifoldWasmUrlMod.default;
   const response = await fetch(url);
+  // Hash-stripped name (not the raw content-hashed URL): this error crosses the
+  // worker boundary as a string into error tracking's message-based grouping,
+  // so a per-deploy hash would fingerprint one recurring failure as a fresh
+  // issue every release.
+  const asset = stableAssetName(url);
   if (!response.ok) {
     throw new Error(
-      `Manifold WASM fetch failed: ${response.status} ${response.statusText} (${url})`
+      `Manifold WASM fetch failed: ${response.status} ${response.statusText} (${asset})`
     );
   }
   const wasmBinary = await response.arrayBuffer();
@@ -41,7 +48,7 @@ async function instantiate(): Promise<ManifoldToplevel> {
   if (!isWasm) {
     const contentType = response.headers.get('content-type') ?? 'unknown';
     throw new Error(
-      `Manifold WASM asset returned ${contentType}, not a WebAssembly binary (${url}). ` +
+      `Manifold WASM asset returned ${contentType}, not a WebAssembly binary (${asset}). ` +
         `A stale cache or service worker is likely serving a missing asset — hard-reload the page ` +
         `(or clear the service worker) to fetch the current build.`
     );
