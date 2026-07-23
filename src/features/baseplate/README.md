@@ -28,7 +28,7 @@ graph TB
 - `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging. The unstacked split ZIP holds **one file per physical drawer slot**, named by grid label (`baseplate_A1.stl`, …), so importing the whole ZIP into a slicer drops in every piece with nothing to duplicate by hand. Identical shapes are still generated once (`groupPiecesByFingerprint`) and the single mesh buffer is reused for each slot — dedup is a generation optimization, not a user-visible artifact. When stack printing is on, bakes real stacked geometry per physical stack instead (see Stack printing)
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `components/BaseplateSelector.tsx` — header identity: the active design's name (click to rename) + a button opening the library. **No Save / Save As / New** — see "Design management" below
-- `hooks/useBaseplateInit.ts` — guarantees an active design exists
+- `hooks/useBaseplateLibraryInit.ts` — guarantees an active design exists
 - `hooks/useBaseplateAutoSave.ts` — debounced write-back to the active library design; also the source of the header's save status. After the mesh settles it captures a preview thumbnail (`utils/thumbnail.ts`) into the library entry — on every edit, plus a one-time backfill when an opened design has none yet
 - `utils/thumbnail.ts` — captures the live `BaseplatePreview` canvas at a canonical steep-isometric angle and downscales to a WebP data URL for the library cards. `BaseplatePreview` registers its renderer/scene/camera here (`setPreviewContext`) and needs `preserveDrawingBuffer` on its `<Canvas>` so the framebuffer stays readable
 - `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section
@@ -69,13 +69,13 @@ tabs doesn't mean relearning how designs are named, saved, and switched:
 /baseplate  Baseplate 1    [Baseplates]  [Export]  ✓ Saved
 ```
 
-`useBaseplateInit` guarantees an active design and `useBaseplateAutoSave` keeps
+`useBaseplateLibraryInit` guarantees an active design and `useBaseplateAutoSave` keeps
 it current, so there is nothing for a Save button to do. New and duplicate live
 in `BaseplateLibraryModal`, matching where the designer keeps them
 (`DesignListDialog`). There is **no unsaved-draft state** — if you find yourself
 adding one back, you're re-introducing the Save / Save As / New cluster with it.
 
-**`useBaseplateInit` deliberately diverges from `useDesignerInit`**: it creates a
+**`useBaseplateLibraryInit` deliberately diverges from `useDesignerInit`**: it creates a
 design _from the layout's current params_ rather than adopting the most recently
 used one. A `SavedDesign` is standalone, but `baseplateParams` live on the
 `Layout` (`core/types.ts`) — adopting another design would silently overwrite

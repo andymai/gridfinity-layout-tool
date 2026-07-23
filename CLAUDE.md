@@ -22,17 +22,20 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 
 ```
 src/
-├── core/           # Infrastructure: api/, constants.ts, labs/, result/, storage/, store/, types.ts
-├── features/       # Vertical slices (each has README.md): bin-designer, bin-inspector,
-│                   # categories, cloud-share, command-palette, design-linking, generation,
-│                   # grid-editor, inspiration-gallery, labs, layers, layout-library,
-│                   # name-suggestions, onboarding, print-export, staging
+├── core/           # Infrastructure: api/, constants.ts, cqrs/, labs/, result/, storage/,
+│                   # store/, sync/, types.ts
+├── features/       # Vertical slices (each has README.md): baseplate, bin-designer,
+│                   # bin-inspector, bin-recommender, categories, cloud-share,
+│                   # command-palette, design-linking, drawer-shape, engagement,
+│                   # generation, grid-editor, inspiration-gallery, labs, layers,
+│                   # layout-library, onboarding, print-export, scan-capture,
+│                   # snapshots, staging, supporters
 ├── shared/         # Cross-cutting: analytics/, components/, constants/, contexts/,
 │                   # generation/, hooks/, printSettings/, types/, utils/
 ├── shell/          # App shell: Header/, Sidebar/, Collab/, Mobile/, Modals/,
 │                   # Tablet/, layouts/, styles/
 ├── design-system/  # UI primitives: Button, Checkbox, Dialog, Input, Select, etc.
-└── i18n/           # Localization (en, de, es, fr, nb, nl, pt-BR)
+└── i18n/           # Localization (en, de, es, fr, it, ja, nb, nl, pt-BR, sv, uk)
 ```
 
 ## Core Architecture
@@ -41,13 +44,11 @@ src/
 
 | Store                | Purpose                                                                          |
 | -------------------- | -------------------------------------------------------------------------------- |
-| `layout.ts`          | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
+| `layout/`            | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
 | `library.ts`         | Multi-layout library, `activeLayoutId`, thumbnails                               |
 | `settings.ts`        | User preferences (localStorage: `gridfinity-settings-v1`)                        |
-| `history.ts`         | Undo/redo (max 100). Automatic via CQRS undo capture middleware                  |
 | `selection.ts`       | Selected bins, active layer/category                                             |
 | `interaction.ts`     | Current interaction, drop targets, layer view mode                               |
-| `ui.ts`              | Panel visibility, sidebar state, UI toggles                                      |
 | `view.ts`            | 3D preview camera, isometric snap                                                |
 | `toast.ts`           | Toast notification queue                                                         |
 | `labs.ts`            | Experimental feature flags                                                       |
@@ -55,6 +56,11 @@ src/
 | `mobile.ts`          | Mobile-specific UI state                                                         |
 | `layoutAnalytics.ts` | Layout statistics tracking                                                       |
 | `sharedPreview.ts`   | Shared preview/embed state                                                       |
+| `sharePopover.ts`    | Share popover open/anchor state                                                  |
+| `sharedWithMe.ts`    | Layouts shared with the signed-in user                                           |
+| `snapshots.ts`       | Layout snapshot list state                                                       |
+
+Undo/redo (max 100) lives in `src/core/cqrs/undo/historyStore.ts`, captured automatically by the CQRS undo middleware.
 
 ### Data Model (`src/core/types.ts`)
 
@@ -105,16 +111,16 @@ See `src/core/cqrs/README.md` for architecture details, adding new commands/even
 
 ## Key Constants (`src/core/constants.ts`)
 
-| Constraint        | Value        |
-| ----------------- | ------------ |
-| Grid size         | 0.5-50 units |
-| Layers            | 1-10         |
-| Categories        | 1-20         |
-| Layouts           | 100 max      |
-| Undo states       | 100          |
-| Grid unit         | 42mm         |
-| Height unit       | 7mm          |
-| Print bed default | 256mm        |
+| Constraint        | Value                    |
+| ----------------- | ------------------------ |
+| Grid size         | 0.5-50 units             |
+| Layers            | 1-10                     |
+| Categories        | 1-20                     |
+| Layouts           | 500 max (warning at 450) |
+| Undo states       | 100                      |
+| Grid unit         | 42mm                     |
+| Height unit       | 7mm                      |
+| Print bed default | 256mm                    |
 
 **Breakpoints:** MD: 768px (mobile/tablet), LG: 900px (tablet/desktop)
 
@@ -125,23 +131,26 @@ const t = useTranslation();
 t('toast.binsDeleted', { count: 5 }); // Interpolation with {variable}
 ```
 
-Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, nb, nl, pt-BR.
+Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, it, ja, nb, nl, pt-BR, sv, uk.
 
 ## API (`api/`)
 
-| Endpoint                    | Purpose                         |
-| --------------------------- | ------------------------------- |
-| `share.ts`                  | POST: Create share              |
-| `share/[id].ts`             | GET/PUT/DELETE share            |
-| `liveblocks-auth.ts`        | Liveblocks auth token endpoint  |
-| `ml-telemetry.ts`           | ML usage telemetry              |
-| `kofi-webhook.ts`           | POST: Ko-fi payment → supporter |
-| `supporters.ts`             | GET: public supporter list      |
-| `report/[id].ts`            | Report shared layout            |
-| `lib/rateLimit.ts`          | 100/min (CRUD), 10/hr (report)  |
-| `lib/validation.ts`         | 500KB max, 2500 bins max        |
-| `lib/contentFilter.ts`      | Content moderation              |
-| `lib/designerValidation.ts` | Bin designer input validation   |
+| Endpoint                                      | Purpose                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| `share.ts`                                    | POST: Create share                                                       |
+| `share/[id].ts`                               | GET/PUT/DELETE share                                                     |
+| `liveblocks-auth.ts`                          | Liveblocks auth token endpoint                                           |
+| `ml-telemetry.ts`                             | ML usage telemetry                                                       |
+| `kofi-webhook.ts`                             | POST: Ko-fi payment → supporter                                          |
+| `supporters.ts`                               | GET: public supporter list                                               |
+| `report/[id].ts`                              | Report shared layout                                                     |
+| `scan-session.ts` + `scan-session/[token].ts` | Phone-scan handoff sessions                                              |
+| `auth/`                                       | OAuth sign-in (login/callback/me/logout, Arctic providers)               |
+| `sync/`                                       | Per-user cloud sync (layouts/designs/baseplates/manifest/export/account) |
+| `lib/rateLimit.ts`                            | 100/min (CRUD), 10/hr (report)                                           |
+| `lib/validation.ts`                           | 500KB max, 2500 bins max                                                 |
+| `lib/contentFilter.ts`                        | Content moderation                                                       |
+| `lib/designerValidation.ts`                   | Bin designer input validation                                            |
 
 ## Testing
 

@@ -5,7 +5,7 @@
  * the shared library design — keeping the library entry (the source of truth)
  * in sync with the materialized copy.
  *
- * `useBaseplateInit` guarantees an active design exists, so there is no
+ * `useBaseplateLibraryInit` guarantees an active design exists, so there is no
  * unsaved-draft branch here: if `activeBaseplateId` is momentarily null we are
  * mid-init and simply skip until it lands.
  *
@@ -234,7 +234,7 @@ export function useBaseplateAutoSave(): SaveStatus {
       return;
     }
 
-    // Mid-init: useBaseplateInit is about to point the layout at a design.
+    // Mid-init: useBaseplateLibraryInit is about to point the layout at a design.
     if (!activeBaseplateId || !params) {
       return;
     }

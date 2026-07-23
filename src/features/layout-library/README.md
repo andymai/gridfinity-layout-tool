@@ -51,6 +51,6 @@ deleteLayout(id) → remove from IndexedDB + library
 ## Gotchas
 
 1. **Can't delete last layout** - minimum 1 required
-2. **Max 100 layouts** - warning at 80
+2. **Max 500 layouts** - warning at 450
 3. **Switching saves current first** - prevents data loss
 4. **useLayoutSwitcher** lives at `@/hooks/useLayoutSwitcher`
