@@ -17,7 +17,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { withKernel, getBounds, describe as describeSolid } from 'brepjs';
 import { clearAllCaches, getLastSolid } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { migrateParams } from '@/features/bin-designer/constants/defaults';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { initOcctWasmKernel, loadGenerateBin } from './dualKernelInit';
 import type { GenerateBinFn } from './dualKernelInit';
 import { CORE_PARITY_CASES } from './testCases';

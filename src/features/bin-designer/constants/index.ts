@@ -9,7 +9,5 @@ export {
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
-  migrateParams,
-  extractStyleDefaults,
-  STYLE_DEFAULT_OMIT_KEYS,
 } from './defaults';
+export { migrateParams, extractStyleDefaults, STYLE_DEFAULT_OMIT_KEYS } from './paramMigration';
