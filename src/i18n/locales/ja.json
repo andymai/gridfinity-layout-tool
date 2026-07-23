@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "ひし形",
   "binDesigner.walls.pattern.triangle": "三角形",
   "binDesigner.walls.pattern.slots": "スリット",
+  "binDesigner.walls.pattern.mitsukude": "三つ組手",
+  "binDesigner.walls.pattern.groupKumiko": "組子",
   "binDesigner.walls.pattern.scale": "パターンの大きさ",
   "binDesigner.walls.pattern.scaleHint": "左ほど細かく、右ほど大きく",
   "binDesigner.walls.pattern.label": "壁パターン",

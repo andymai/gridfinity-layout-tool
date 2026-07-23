@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "Raute",
   "binDesigner.walls.pattern.triangle": "Dreieck",
   "binDesigner.walls.pattern.slots": "Schlitze",
+  "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",
+  "binDesigner.walls.pattern.groupKumiko": "Kumiko",
   "binDesigner.walls.pattern.scale": "Mustergröße",
   "binDesigner.walls.pattern.scaleHint": "Feinere Löcher links, gröbere rechts",
   "binDesigner.walls.pattern.label": "Wandmuster",

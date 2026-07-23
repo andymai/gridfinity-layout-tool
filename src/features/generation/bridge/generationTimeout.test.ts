@@ -13,6 +13,8 @@ import {
   HEX_FOOTPRINT_BONUS_MS_PER_CELL,
   HEX_FOOTPRINT_BONUS_FLOOR_CELLS,
   HEIGHT_BONUS_MS,
+  KUMIKO_PATTERN_BONUS_MS,
+  KUMIKO_PERIMETER_BONUS_MS_PER_CELL,
   MAX_TIMEOUT_MS,
   EXPORT_TIMEOUT_MULTIPLIER,
   EXPORT_MAX_TIMEOUT_MS,
@@ -23,6 +25,7 @@ import {
 } from './generationTimeout';
 
 const HEX_ON = { enabled: true, pattern: 'honeycomb' } as const;
+const KUMIKO_ON = { enabled: true, pattern: 'mitsukude' } as const;
 
 function params(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -150,6 +153,35 @@ describe('computeGenerationTimeoutMs', () => {
     // A large plain bin tessellates fast — footprint cost is hex-driven.
     const t = computeGenerationTimeoutMs(params({ width: 12, depth: 12, height: 3 }));
     expect(t).toBe(BASE_TIMEOUT_MS);
+  });
+
+  it('adds the kumiko bonus plus a perimeter term for wrapped-lattice patterns', () => {
+    const t = computeGenerationTimeoutMs(
+      params({ width: 1, depth: 1, height: 3, wallPattern: KUMIKO_ON })
+    );
+    expect(t).toBe(
+      BASE_TIMEOUT_MS +
+        HEX_PATTERN_BONUS_MS +
+        KUMIKO_PATTERN_BONUS_MS +
+        2 * KUMIKO_PERIMETER_BONUS_MS_PER_CELL
+    );
+  });
+
+  it('scales the kumiko perimeter term with width + depth, rounding up', () => {
+    const small = computeGenerationTimeoutMs(
+      params({ width: 1, depth: 1, height: 3, wallPattern: KUMIKO_ON })
+    );
+    const wider = computeGenerationTimeoutMs(
+      params({ width: 2.5, depth: 1, height: 3, wallPattern: KUMIKO_ON })
+    );
+    expect(wider - small).toBe(2 * KUMIKO_PERIMETER_BONUS_MS_PER_CELL);
+  });
+
+  it('does not grant kumiko bonuses to stamp patterns', () => {
+    const hex = computeGenerationTimeoutMs(
+      params({ width: 1, depth: 1, height: 3, wallPattern: HEX_ON })
+    );
+    expect(hex).toBe(BASE_TIMEOUT_MS + HEX_PATTERN_BONUS_MS);
   });
 
   it('caps at the maximum timeout', () => {

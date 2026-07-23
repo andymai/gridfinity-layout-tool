@@ -18,6 +18,8 @@
  * this layer WASM-free is what lets the calculators run in plain unit tests.
  */
 
+import type { KumikoBandConfig, KumikoLattice } from './kumiko/types';
+
 /** Center position of a single pattern element (stamp strategy). */
 export interface PatternCenter {
   readonly x: number;
@@ -60,8 +62,8 @@ export interface RectShape {
 /** 2D shape stamped at each element center (stamp strategy). */
 export type ShapeDescriptor = PolygonShape | RectShape;
 
-/** Strategy discriminant for the two pattern construction paths. */
-export type PatternStrategyKind = 'stamp' | 'motif';
+/** Strategy discriminant for the pattern construction paths. */
+export type PatternStrategyKind = 'stamp' | 'motif' | 'wrapped-lattice';
 
 /** One segment of a motif outline, in cell-local coordinates (mm). */
 export type MotifSegment =
@@ -143,8 +145,22 @@ export interface MotifPatternCalculator extends BasePatternCalculator {
   getMotifCell(config: PatternGridConfig): MotifCell;
 }
 
-/** A wall pattern calculator — one of the two strategies. */
-export type PatternCalculator = StampPatternCalculator | MotifPatternCalculator;
+/**
+ * Wrapped-lattice calculator (kumiko): stroked segments authored in unrolled
+ * perimeter coordinates, wrapping continuously around all four walls and the
+ * rounded corners. Built by `kumikoWrapBuilder`, not the stamp pipeline.
+ */
+export interface WrappedLatticeCalculator extends BasePatternCalculator {
+  readonly strategy: 'wrapped-lattice';
+  /** Resolve the full lattice for a perimeter band. */
+  getLattice(band: KumikoBandConfig): KumikoLattice;
+  /** Open-area fraction of the band at this scale (for print estimates). */
+  getVoidFraction(): number;
+}
+
+/** A wall pattern calculator — one of the strategies. */
+export type PatternCalculator =
+  StampPatternCalculator | MotifPatternCalculator | WrappedLatticeCalculator;
 
 /** Narrow a calculator to the stamp strategy. */
 export function isStampCalculator(c: PatternCalculator): c is StampPatternCalculator {
@@ -154,6 +170,11 @@ export function isStampCalculator(c: PatternCalculator): c is StampPatternCalcul
 /** Narrow a calculator to the motif strategy. */
 export function isMotifCalculator(c: PatternCalculator): c is MotifPatternCalculator {
   return c.strategy === 'motif';
+}
+
+/** Narrow a calculator to the wrapped-lattice (kumiko) strategy. */
+export function isWrappedLatticeCalculator(c: PatternCalculator): c is WrappedLatticeCalculator {
+  return c.strategy === 'wrapped-lattice';
 }
 
 /** Stable cache-key fragment for a stamped shape descriptor. */

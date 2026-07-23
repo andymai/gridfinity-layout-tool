@@ -15,7 +15,7 @@ import type { MeshData } from '@/features/generation/bridge/types';
 import type { WallPatternType } from '@/shared/types/bin';
 
 /** Enclosed (solid) volume of a triangle mesh via the signed-tetrahedron sum. */
-function meshVolume({ vertices, indices }: MeshData): number {
+export function meshVolume({ vertices, indices }: MeshData): number {
   let v = 0;
   for (let i = 0; i < indices.length; i += 3) {
     const a = (indices[i] ?? 0) * 3;
@@ -46,7 +46,7 @@ const ALL_SIDES_OFF = {
 } as const;
 
 /** A pattern must remove wall material vs the solid-walled equivalent. */
-function assertRemovesMaterial(patterned: MeshData, solid: MeshData): void {
+export function assertRemovesMaterial(patterned: MeshData, solid: MeshData): void {
   const solidVol = meshVolume(solid);
   const patternedVol = meshVolume(patterned);
   expect(

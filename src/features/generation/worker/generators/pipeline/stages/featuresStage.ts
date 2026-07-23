@@ -19,6 +19,7 @@ import { buildCutoutCuts } from '../../featureBuilder';
 import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
+import { buildKumikoWallPatterns } from '../../kumikoWrapBuilder';
 
 export const featuresStage: PipelineStage = {
   name: 'features',
@@ -82,8 +83,12 @@ export const featuresStage: PipelineStage = {
     // step walls get pure pattern.
     const wallPatternEnabled = params.wallPattern.enabled;
     if (wallPatternEnabled) {
+      // Stamp patterns and kumiko wrapped-lattice patterns are mutually
+      // exclusive per pattern type; each builder no-ops for the other's types.
       const patternShapes = buildWallPatterns(ctx);
       targets.patternCutTargets.push(...patternShapes);
+      const kumikoShapes = buildKumikoWallPatterns(ctx);
+      targets.patternCutTargets.push(...kumikoShapes);
     }
 
     return {

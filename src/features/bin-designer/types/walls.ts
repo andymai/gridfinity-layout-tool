@@ -83,7 +83,20 @@ export type OverhangHighlightSide = 'left' | 'right' | 'front' | 'back' | 'feet'
 // Wall Pattern Types
 
 /** Supported wall pattern types. Extensible via pattern registry. */
-export type WallPatternType = 'honeycomb' | 'round' | 'diamond' | 'triangle' | 'slots';
+export type WallPatternType =
+  'honeycomb' | 'round' | 'diamond' | 'triangle' | 'slots' | 'mitsukude';
+
+/**
+ * Kumiko wrapped-lattice pattern types — built by the perimeter-wrap pipeline
+ * (continuous lattice around all four walls and corners) rather than the
+ * per-wall stamp pipeline. Drives UI grouping and generation-cost budgeting.
+ */
+export const KUMIKO_PATTERN_TYPES = ['mitsukude'] as const satisfies readonly WallPatternType[];
+
+/** Whether a pattern type is a kumiko wrapped-lattice pattern. */
+export function isKumikoPattern(pattern: WallPatternType): boolean {
+  return (KUMIKO_PATTERN_TYPES as readonly WallPatternType[]).includes(pattern);
+}
 
 /** Neutral pattern scale — reproduces each pattern's legacy element size. */
 export const DEFAULT_PATTERN_SCALE = 0.5;

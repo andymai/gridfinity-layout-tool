@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "Rombo",
   "binDesigner.walls.pattern.triangle": "Triangolo",
   "binDesigner.walls.pattern.slots": "Fessure",
+  "binDesigner.walls.pattern.mitsukude": "Mitsukude (三つ組手)",
+  "binDesigner.walls.pattern.groupKumiko": "Kumiko",
   "binDesigner.walls.pattern.scale": "Scala del motivo",
   "binDesigner.walls.pattern.scaleHint": "Fori più fini a sinistra, più grandi a destra",
   "binDesigner.walls.pattern.label": "Motivo pareti",

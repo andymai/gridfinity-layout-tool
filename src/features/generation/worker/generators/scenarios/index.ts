@@ -38,6 +38,7 @@ import { pathfinderOps } from './pathfinderOps';
 import { lightweight } from './lightweight';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
+import { kumiko } from './kumiko';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -78,4 +79,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...lightweight,
   ...labelSockets,
   ...wallPatterns,
+  ...kumiko,
 ];

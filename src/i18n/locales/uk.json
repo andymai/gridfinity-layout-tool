@@ -1037,6 +1037,8 @@
   "binDesigner.walls.pattern.diamond": "Ромб",
   "binDesigner.walls.pattern.triangle": "Трикутник",
   "binDesigner.walls.pattern.slots": "Прорізи",
+  "binDesigner.walls.pattern.mitsukude": "Міцукуде (三つ組手)",
+  "binDesigner.walls.pattern.groupKumiko": "Куміко",
   "binDesigner.walls.pattern.scale": "Масштаб візерунка",
   "binDesigner.walls.pattern.scaleHint": "Дрібніші отвори ліворуч, більші праворуч",
   "binDesigner.walls.pattern.label": "Візерунок стінки",

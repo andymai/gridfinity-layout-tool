@@ -15,6 +15,11 @@ export const WALL_PATTERN_BASE_CACHE = 'wallPatternBase';
 /** Cache name for the post-clip per-wall compound (varies with cutout/handle/ramp params). */
 export const WALL_PATTERN_CLIPPED_CACHE = 'wallPatternClipped';
 
+/** Cache name for the uncut whole-perimeter kumiko wrap compound. */
+export const KUMIKO_WRAP_BASE_CACHE = 'kumikoWrapBase';
+/** Cache name for the post-clip kumiko wrap compound (varies with clip params). */
+export const KUMIKO_WRAP_CLIPPED_CACHE = 'kumikoWrapClipped';
+
 /** Pre-computed cutout clipping parameters passed to applyWallPatternClips. */
 export interface CutoutClipParams {
   readonly cutoutCfg: {

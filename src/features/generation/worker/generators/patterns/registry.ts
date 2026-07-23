@@ -21,6 +21,7 @@ import { createRoundCalculator } from './roundPattern';
 import { createDiamondCalculator } from './diamondPattern';
 import { createTriangleCalculator } from './trianglePattern';
 import { createSlotCalculator } from './slotPattern';
+import { createMitsukudeCalculator } from './kumiko/mitsukude';
 
 /**
  * Registry entry for a pattern type.
@@ -55,6 +56,10 @@ export const PATTERN_REGISTRY: Record<WallPatternType, PatternRegistryEntry> = {
   slots: {
     createCalculator: createSlotCalculator,
     displayName: 'Slots',
+  },
+  mitsukude: {
+    createCalculator: createMitsukudeCalculator,
+    displayName: 'Mitsukude',
   },
 };
 

@@ -51,6 +51,34 @@ const selectVariants = cva(
 
 type SelectVariantProps = Omit<VariantProps<typeof selectVariants>, 'hasStartAdornment' | 'error'>;
 
+interface OptionGroup {
+  group: string | undefined;
+  options: SelectOption[];
+}
+
+/** Bucket consecutive same-group options so grouped runs share one optgroup. */
+function groupOptions(options: SelectOption[]): OptionGroup[] {
+  const entries: OptionGroup[] = [];
+  for (const option of options) {
+    const last = entries.at(-1);
+    if (last && last.group === option.group) {
+      last.options.push(option);
+    } else {
+      entries.push({ group: option.group, options: [option] });
+    }
+  }
+  return entries;
+}
+
+function renderOption(option: SelectOption): React.ReactElement {
+  return (
+    <option key={option.id} value={option.id} disabled={option.disabled}>
+      {option.name}
+      {option.suffix ? ` ${option.suffix}` : ''}
+    </option>
+  );
+}
+
 export interface SelectOption {
   /**
    * Unique value for this option.
@@ -71,6 +99,12 @@ export interface SelectOption {
    * Whether this option is disabled.
    */
   disabled?: boolean;
+
+  /**
+   * Optional group label. Consecutive options sharing a group render inside
+   * one `<optgroup>`; ungrouped options render at the top level.
+   */
+  group?: string;
 }
 
 export interface SelectProps
@@ -242,12 +276,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option key={option.id} value={option.id} disabled={option.disabled}>
-              {option.name}
-              {option.suffix ? ` ${option.suffix}` : ''}
-            </option>
-          ))}
+          {groupOptions(options).map((entry) =>
+            entry.group === undefined ? (
+              entry.options.map((option) => renderOption(option))
+            ) : (
+              <optgroup key={`group:${entry.group}`} label={entry.group}>
+                {entry.options.map((option) => renderOption(option))}
+              </optgroup>
+            )
+          )}
         </select>
 
         {/* Chevron indicator */}

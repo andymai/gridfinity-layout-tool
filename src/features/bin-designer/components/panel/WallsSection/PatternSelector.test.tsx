@@ -13,6 +13,8 @@ vi.mock('@/i18n', () => ({
       'binDesigner.walls.pattern.diamond': 'Diamond',
       'binDesigner.walls.pattern.triangle': 'Triangle',
       'binDesigner.walls.pattern.slots': 'Slots',
+      'binDesigner.walls.pattern.mitsukude': 'Mitsukude (三つ組手)',
+      'binDesigner.walls.pattern.groupKumiko': 'Kumiko',
     };
     return translations[key] ?? key;
   },
@@ -32,13 +34,31 @@ describe('PatternSelector', () => {
     const select = screen.getByRole('combobox');
     const options = select.querySelectorAll('option');
 
-    expect(options).toHaveLength(6);
+    expect(options).toHaveLength(7);
     expect(options[0]).toHaveTextContent('Solid walls');
     expect(options[1]).toHaveTextContent('Honeycomb');
     expect(options[2]).toHaveTextContent('Round');
     expect(options[3]).toHaveTextContent('Diamond');
     expect(options[4]).toHaveTextContent('Triangle');
     expect(options[5]).toHaveTextContent('Slots');
+    expect(options[6]).toHaveTextContent('Mitsukude (三つ組手)');
+  });
+
+  it('groups kumiko patterns under a Kumiko optgroup', () => {
+    render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
+
+    const select = screen.getByRole('combobox');
+    const group = select.querySelector('optgroup');
+    expect(group).toHaveAttribute('label', 'Kumiko');
+    expect(group?.querySelectorAll('option')).toHaveLength(1);
+  });
+
+  it('selects mitsukude from the kumiko group', () => {
+    const onChange = vi.fn();
+    render(<PatternSelector selectedPattern={null} onChange={onChange} />);
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'mitsukude' } });
+    expect(onChange).toHaveBeenCalledWith('mitsukude');
   });
 
   it('shows "none" as selected when pattern is null', () => {

@@ -66,11 +66,29 @@ function SlotsIcon({ className }: { className?: string }) {
   );
 }
 
+/** SVG icon for the kumiko triangular lattice (mitsukude three-way joint) */
+function MitsukudeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
+      <path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9" />
+    </svg>
+  );
+}
+
 /** Pattern option configuration */
 interface PatternOption {
   value: WallPatternType | null;
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** i18n key for the optgroup this pattern belongs to. */
+  groupKey?: string;
 }
 
 /** Available pattern options with icons */
@@ -81,6 +99,12 @@ const PATTERN_OPTIONS: PatternOption[] = [
   { value: 'diamond', labelKey: 'binDesigner.walls.pattern.diamond', icon: DiamondIcon },
   { value: 'triangle', labelKey: 'binDesigner.walls.pattern.triangle', icon: TriangleIcon },
   { value: 'slots', labelKey: 'binDesigner.walls.pattern.slots', icon: SlotsIcon },
+  {
+    value: 'mitsukude',
+    labelKey: 'binDesigner.walls.pattern.mitsukude',
+    icon: MitsukudeIcon,
+    groupKey: 'binDesigner.walls.pattern.groupKumiko',
+  },
 ];
 
 interface PatternSelectorProps {
@@ -121,9 +145,10 @@ export function PatternSelector({
         value={selectedPattern ?? 'none'}
         onChange={handleChange}
         disabled={disabled}
-        options={PATTERN_OPTIONS.map(({ value, labelKey }) => ({
+        options={PATTERN_OPTIONS.map(({ value, labelKey, groupKey }) => ({
           id: value ?? 'none',
           name: t(labelKey),
+          group: groupKey ? t(groupKey) : undefined,
         }))}
         leftIcon={<SelectedIcon className="w-4 h-4 text-content-primary" />}
         fullWidth
