@@ -14,8 +14,19 @@
  * it mates with nothing, so thickening it can only add stiffness.
  */
 
-import type { BinParams } from './index';
-import { isPartialMask } from '@/shared/utils/cellMask';
+import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+
+/**
+ * The slice of a design the lid resolvers below read. Declared structurally
+ * rather than importing `BinParams` from the folder barrel: the barrel
+ * re-exports this module, so that import would form a `lid -> index -> lid`
+ * cycle. `BinParams` satisfies this shape, so callers pass params straight in.
+ */
+export interface LidGeometrySource {
+  readonly lid: LidConfig;
+  readonly base: { readonly stackingLip: boolean; readonly magnetDepth: number };
+  readonly cellMask?: CellMask;
+}
 
 /**
  * Per-side clearance in mm between the lid's mating profile and the bin's
@@ -47,7 +58,7 @@ export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
  * rattle. It deliberately omits that helper's `lid.enabled` term: a disabled
  * lid is never generated, so its clearance is never consumed.
  */
-export function resolveLidFootprintClearance(params: BinParams): number {
+export function resolveLidFootprintClearance(params: LidGeometrySource): number {
   const magnetic =
     params.lid.attachment === 'magnetic' &&
     params.base.stackingLip &&
@@ -177,7 +188,7 @@ export interface LidTrayConfig {
  * The single source of truth: the worker, the preview, the thumbnail, and the
  * export assembly all size and position the lid from this.
  */
-export function resolveLidPlateThickness(params: BinParams): number {
+export function resolveLidPlateThickness(params: LidGeometrySource): number {
   const { lid, base } = params;
   const magnetNeed =
     lid.magnetHoles && lid.stackableTop ? base.magnetDepth + LID_MAGNET_CEILING : 0;
@@ -198,7 +209,7 @@ export function resolveLidPlateThickness(params: BinParams): number {
  * Deepening the anchor in lockstep keeps the plate-to-anchor gap constant, so
  * the lid just gets taller (exactly what `extraHeightMm` already does).
  */
-export function resolveLidCavityExtraMm(params: BinParams): number {
+export function resolveLidCavityExtraMm(params: LidGeometrySource): number {
   return params.lid.extraHeightMm + (resolveLidPlateThickness(params) - LID_TOP_THICKNESS_BASE);
 }
 
