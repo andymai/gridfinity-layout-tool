@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.283.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.3...gridfinity-layout-tool-v4.283.0) (2026-07-23)
+
+
+### Features
+
+* **settings:** replace the non-square grid switch with a linked X/Y control ([#2736](https://github.com/andymai/gridfinity-layout-tool/issues/2736)) ([f34058f](https://github.com/andymai/gridfinity-layout-tool/commit/f34058f1a5f5cb8c3c2da72db83245f4c00f3053))
+
 ## [4.282.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.2...gridfinity-layout-tool-v4.282.3) (2026-07-23)
 
 
