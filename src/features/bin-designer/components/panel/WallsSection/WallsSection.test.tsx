@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WallsSection } from './WallsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -48,20 +48,60 @@ describe('WallsSection', () => {
   });
 
   describe('wall text (#2695)', () => {
-    it('renders one input per wall', () => {
+    it('hides the inputs until the toggle is switched on', () => {
       render(<WallsSection />);
       expect(screen.getByText('Wall text')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       for (const side of ['Front', 'Back', 'Left', 'Right']) {
         expect(screen.getByRole('textbox', { name: `${side} wall text` })).toBeInTheDocument();
       }
     });
 
+    it('opens expanded when the design already has wall text', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, surfaceText: { walls: { front: 'Cables' } } },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      expect(screen.getByRole('textbox', { name: 'Front wall text' })).toBeInTheDocument();
+    });
+
     it('commits a wall string on blur', () => {
       render(<WallsSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
       const input = screen.getByRole('textbox', { name: 'Front wall text' });
       fireEvent.change(input, { target: { value: 'Cables' } });
       fireEvent.blur(input);
       expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toBe('Cables');
+    });
+
+    it('collapses an opened-but-empty toggle when the active design switches', () => {
+      render(<WallsSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
+      expect(screen.getByRole('textbox', { name: 'Front wall text' })).toBeInTheDocument();
+
+      act(() => {
+        useDesignerStore.setState({ currentDesignId: 'another-design' });
+      });
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
+    });
+
+    it('clears all wall text and collapses when toggled off', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          surfaceText: { walls: { front: 'Cables', left: 'USB' }, wallAlign: 'top' },
+        },
+        ui: { ...DEFAULT_UI_STATE },
+      });
+      render(<WallsSection />);
+      // Auto-opened because text exists; toggling off clears every wall.
+      fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
+      expect(useDesignerStore.getState().params.surfaceText?.walls).toBeUndefined();
+      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBeUndefined();
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
     });
 
     it('shows mode + alignment pickers only when text is present', () => {

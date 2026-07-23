@@ -247,6 +247,62 @@ describe('DesignerStore - lid actions', () => {
       setWallText('front', '');
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
+
+    it('clearWallText removes every wall and the alignment in one history entry', () => {
+      const { setWallText, setWallTextAlign, clearWallText, undo } = useDesignerStore.getState();
+      setWallText('front', 'Cables');
+      setWallText('left', 'Chargers');
+      setWallTextAlign('top');
+
+      clearWallText();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+
+      // A single undo restores all walls and the alignment together.
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText?.walls).toEqual({
+        front: 'Cables',
+        left: 'Chargers',
+      });
+      expect(useDesignerStore.getState().params.surfaceText?.wallAlign).toBe('top');
+    });
+
+    it('clearWallText keeps lid text and shared style intact', () => {
+      const { setWallText, setLidText, setSurfaceTextStyle, clearWallText } =
+        useDesignerStore.getState();
+      setWallText('front', 'Cables');
+      setLidText('Lid');
+      setSurfaceTextStyle({ mode: 'emboss' });
+
+      clearWallText();
+      const { surfaceText } = useDesignerStore.getState().params;
+      expect(surfaceText?.walls).toBeUndefined();
+      expect(surfaceText?.lidText).toBe('Lid');
+      expect(surfaceText?.style).toEqual({ mode: 'emboss' });
+    });
+
+    it('clearWallText is a no-op when no wall text exists', () => {
+      const { clearWallText, undo } = useDesignerStore.getState();
+      clearWallText();
+      // Nothing pushed, so undo falls through to the empty baseline.
+      undo();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
+
+    it('clearWallText drops a dangling wallAlign even with no wall strings', () => {
+      const { setWallText, setWallTextAlign, clearWallText } = useDesignerStore.getState();
+      // Reach the walls-less-but-aligned state a programmatic/legacy caller can
+      // produce: set an alignment, then clear the only wall string.
+      setWallText('front', 'Cables');
+      setWallTextAlign('top');
+      setWallText('front', '');
+      // setWallText already dropped wallAlign with the last wall, so re-inject a
+      // dangling alignment directly to exercise the guard.
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, surfaceText: { wallAlign: 'top' } },
+      }));
+      clearWallText();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
   });
 
   describe('compatibility checks', () => {

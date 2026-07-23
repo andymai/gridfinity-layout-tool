@@ -15,6 +15,7 @@ import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
 import { HandleSection } from '../HandleSection';
+import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 
 /** Mode options for the wall-text picker, in the shared textMode order. */
@@ -62,18 +63,16 @@ export function WallsSection() {
           </div>
         )}
       </div>
-      {/* ── Wall text (#2695) — auto-fit surface text on the outer walls.
-          Sits next to the pattern selector because the pattern is cleared
-          behind the text; per-wall gates (slots) apply in the worker. */}
-      <div className="space-y-2">
-        <span className="block text-xs font-medium text-content-secondary">
-          {t('binDesigner.walls.text.heading')}
-        </span>
-        {state.wallTextDisabledReason ? (
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
-            {state.wallTextDisabledReason}
-          </p>
-        ) : (
+      {/* ── Wall text (#2695) — auto-fit surface text on the outer walls,
+          gated behind a toggle like the sibling cutout/handle sections.
+          The pattern is cleared behind the text; per-wall gates (slots)
+          apply in the worker. */}
+      <FeatureToggle
+        label={t('binDesigner.walls.text.heading')}
+        checked={state.isWallTextOpen}
+        onChange={handlers.toggleWallText}
+        disabledReason={state.wallTextDisabledReason}
+        primaryControls={
           <>
             <div className="grid grid-cols-2 gap-2">
               {WALL_TEXT_SIDES.map((side, index) => (
@@ -130,8 +129,8 @@ export function WallsSection() {
               </>
             )}
           </>
-        )}
-      </div>
+        }
+      />
       <WallCutoutsSection />
       <HandleSection />
     </div>

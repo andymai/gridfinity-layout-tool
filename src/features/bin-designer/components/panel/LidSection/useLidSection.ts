@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -221,6 +221,7 @@ export function useLidSection() {
     setParam,
     setLidText,
     setSurfaceTextStyle,
+    currentDesignId,
   } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
@@ -234,6 +235,7 @@ export function useLidSection() {
       setParam: s.setParam,
       setLidText: s.setLidText,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
+      currentDesignId: s.currentDesignId,
     }))
   );
 
@@ -440,6 +442,30 @@ export function useLidSection() {
     [params.surfaceText, setSurfaceTextStyle]
   );
 
+  // Lid text is gated behind a toggle like wall text and the sibling feature
+  // sections. Open state is UI-only, derived as `local || hasText` so a loaded
+  // design with saved lid text opens expanded and survives design switches.
+  const hasLidText = lidText.trim() !== '';
+  const [lidTextOpen, setLidTextOpen] = useState(false);
+  // Reset the local open flag on design switch so an opened-but-empty toggle
+  // doesn't carry to the next design (the hook isn't remounted). React's
+  // "adjust state during render" pattern — no effect. `local || hasText` still
+  // auto-opens a design that ships with saved lid text.
+  const [lidTextDesignId, setLidTextDesignId] = useState(currentDesignId);
+  if (lidTextDesignId !== currentDesignId) {
+    setLidTextDesignId(currentDesignId);
+    setLidTextOpen(false);
+  }
+  const isLidTextOpen = lidTextOpen || hasLidText;
+  const toggleLidText = useCallback(() => {
+    if (isLidTextOpen) {
+      setLidText('');
+      setLidTextOpen(false);
+    } else {
+      setLidTextOpen(true);
+    }
+  }, [isLidTextOpen, setLidText]);
+
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
   // readout matches the generated geometry. Floor thickness is dynamic
   // (grows when magnets need a deeper pocket) so we mirror
@@ -637,6 +663,7 @@ export function useLidSection() {
       textMode,
       textDisabledReason,
       textOnTrayFloor: topSurface === 'tray',
+      isLidTextOpen,
     },
     handlers: {
       toggleEnabled,
@@ -654,6 +681,7 @@ export function useLidSection() {
       fixIssue,
       commitLidText,
       setTextMode,
+      toggleLidText,
     },
     t,
   };

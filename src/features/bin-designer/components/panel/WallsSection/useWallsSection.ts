@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
@@ -21,8 +21,10 @@ export function useWallsSection() {
     setParam,
     updateWallPattern,
     setWallText,
+    clearWallText,
     setWallTextAlign,
     setSurfaceTextStyle,
+    currentDesignId,
   } = useDesignerStore(
     useShallow((s) => ({
       wallThickness: s.params.wallThickness,
@@ -31,8 +33,10 @@ export function useWallsSection() {
       setParam: s.setParam,
       updateWallPattern: s.updateWallPattern,
       setWallText: s.setWallText,
+      clearWallText: s.clearWallText,
       setWallTextAlign: s.setWallTextAlign,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
+      currentDesignId: s.currentDesignId,
     }))
   );
   const t = useTranslation();
@@ -98,6 +102,33 @@ export function useWallsSection() {
       ? t('binDesigner.walls.text.disabledSolid')
       : undefined;
 
+  // Wall-text is gated behind a toggle (matching the sibling cutout/handle
+  // sections). The open state is UI-only — deriving it as `local || hasText`
+  // means a loaded design with saved wall text opens expanded without a
+  // migration, and stays in sync when the active design switches (no remount).
+  const [wallTextOpen, setWallTextOpen] = useState(false);
+  // Reset the local open flag when the active design changes so an opened-but-
+  // empty toggle on one design doesn't carry into the next (the panel hook
+  // isn't remounted on design switch). React's "adjust state during render"
+  // pattern — no effect. `local || hasText` still auto-opens a design that
+  // ships with saved wall text.
+  const [wallTextDesignId, setWallTextDesignId] = useState(currentDesignId);
+  if (wallTextDesignId !== currentDesignId) {
+    setWallTextDesignId(currentDesignId);
+    setWallTextOpen(false);
+  }
+  const isWallTextOpen = wallTextOpen || hasAnyWallText;
+  const toggleWallText = useCallback(() => {
+    if (isWallTextOpen) {
+      // Off clears every wall (and align) so the geometry matches the toggle —
+      // same semantics as the other FeatureToggle-gated sections.
+      clearWallText();
+      setWallTextOpen(false);
+    } else {
+      setWallTextOpen(true);
+    }
+  }, [isWallTextOpen, clearWallText]);
+
   // Adapter matching the deferred-commit input's (id, value) signature; the
   // id slot carries the wall side index into WALL_TEXT_SIDES.
   const commitWallTextAt = useCallback(
@@ -127,6 +158,7 @@ export function useWallsSection() {
       wallTextMode,
       hasAnyWallText,
       wallTextDisabledReason,
+      isWallTextOpen,
     },
     handlers: {
       handleChange,
@@ -135,6 +167,7 @@ export function useWallsSection() {
       commitWallTextAt,
       setWallTextAlign,
       setTextMode,
+      toggleWallText,
     },
     t,
   };
