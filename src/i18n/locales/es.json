@@ -2857,6 +2857,8 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reducir la profundidad del imán de retención",
   "binDesigner.lid.compat.magnetBinTooSmall": "La caja es demasiado pequeña para imanes en las esquinas — usa una caja más grande o un imán de menor diámetro.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "usar una caja más grande o un imán más pequeño",
+  "binDesigner.lid.compat.magnetLidCavityTooDeep": "La altura extra de la tapa aleja los imanes de la caja: redúcela, adelgaza la tapa o usa un imán más profundo.",
+  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "reducir la altura extra de la tapa",
   "binDesigner.group.lid": "Tapa",
   "binDesigner.lid.enable": "Activar tapa",
   "binDesigner.lid.summaryDisabled": "Desactivada",

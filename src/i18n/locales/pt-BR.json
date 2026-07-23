@@ -2857,6 +2857,8 @@
   "binDesigner.lid.compat.fix.magnetTooDeepForBin": "reduzir a profundidade do ímã de retenção",
   "binDesigner.lid.compat.magnetBinTooSmall": "O compartimento é pequeno demais para ímãs de canto — use um compartimento maior ou um ímã de menor diâmetro.",
   "binDesigner.lid.compat.fix.magnetBinTooSmall": "use um compartimento maior ou um ímã menor",
+  "binDesigner.lid.compat.magnetLidCavityTooDeep": "A altura extra da tampa afasta os ímãs da caixa — reduza-a, afine a tampa ou use um ímã mais profundo.",
+  "binDesigner.lid.compat.fix.magnetLidCavityTooDeep": "reduzir a altura extra da tampa",
   "binDesigner.group.lid": "Tampa",
   "binDesigner.lid.enable": "Ativar tampa",
   "binDesigner.lid.summaryDisabled": "Desligada",

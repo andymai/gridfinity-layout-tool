@@ -36,14 +36,13 @@ import { checkCancelled } from '../../utils/abort';
 import {
   LID_COPLANAR_MARGIN,
   LID_MAGNET_POST_FLOOR,
-  LID_MAGNET_SEAT_GAP,
   LID_MIN_CORNER_RADIUS,
 } from '../../lidConstants';
-import { resolveLidInputs } from '../../lidInputs';
 import {
   retentionBossRadius,
   retentionMagnetInset,
   retentionMagnetPositions,
+  retentionSeatPlanes,
   usesMagneticLid,
 } from '../../retentionMagnetGeometry';
 
@@ -81,15 +80,10 @@ export const lidRetentionStage: PipelineStage = {
       inset
     );
 
-    // Derive the lid magnet's mating face from the SAME resolved lid inputs the
-    // lid builder uses, so the two never drift: it sits at lid-local
-    // -(topThickness + depth) (the magnet tucked under the lid floor). Map that
-    // to world via the seating transform (lid-local Z + (totalHeight - anchorZ),
-    // matching `exportHandler`'s lid lift); the bin magnet's upward face sits one
-    // seat gap below so the magnets mate.
-    const lidInputs = resolveLidInputs(params);
-    const lidFaceWorldZ = -(lidInputs.topThickness + depth) + (dim.totalHeight - lidInputs.anchorZ);
-    const magnetTopZ = lidFaceWorldZ - LID_MAGNET_SEAT_GAP;
+    // Both magnet faces come from the shared seat-plane helper so the bin pad
+    // and the lid boss can't drift apart in Z (the XY equivalent of
+    // `retentionMagnetPositions`).
+    const { binFaceZ: magnetTopZ } = retentionSeatPlanes(params, dim.totalHeight);
 
     // Cap the pocket at what the recessed pad can hold while keeping POST_FLOOR
     // of pad below the magnet. `availableForPocket` is guaranteed positive when

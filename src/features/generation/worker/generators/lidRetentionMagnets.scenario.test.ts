@@ -203,6 +203,79 @@ describe('magnetic-retention lid geometry', () => {
   });
 });
 
+// The bin's gusset pad and the lid's boss are built by different passes, so
+// nothing about either mesh reveals whether their magnets actually meet. The
+// gap between them is the whole retention mechanism: too small and the posts
+// bottom out and hold the lid off its lip, too large and the magnets go weak.
+describe('magnet seat gap survives every knob that moves the lid in Z', () => {
+  const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>]> = [
+    ['defaults', {}, {}],
+    ['thick floor plate (#2761)', { topThicknessMm: 3 }, {}],
+    ['cavity within the boss reach', { extraHeightMm: 0.5 }, {}],
+    [
+      'deeper magnet reaches a deeper cavity',
+      { extraHeightMm: 2, retentionMagnet: { diameter: 8, depth: 4 } },
+      {},
+    ],
+    ['deeper magnet', { retentionMagnet: { diameter: 8, depth: 3 } }, {}],
+    ['tall bin', {}, { height: 9 }],
+    ['non-square grid', {}, { gridUnitMmY: 22 }],
+  ];
+
+  it.each(CASES)('%s', async (_label, lid, extra) => {
+    const { retentionSeatPlanes } = await import('./retentionMagnetGeometry');
+    const { LID_MAGNET_SEAT_GAP } = await import('./lidConstants');
+    const { deriveDimensions } = await import('./pipeline/context');
+    const { checkLidCompatibility, hasLidBlocker } = await import('@/shared/types/bin');
+
+    const params = makeParams({ attachment: 'magnetic', ...lid }, extra);
+    const dim = deriveDimensions(params, true);
+    const { lidFaceZ, binFaceZ } = retentionSeatPlanes(params, dim.totalHeight);
+
+    // Every case here is a buildable config, so `checkLidCompatibility` must
+    // agree — otherwise the assertions below are describing geometry the app
+    // refuses to generate.
+    expect(hasLidBlocker(checkLidCompatibility(params))).toBe(false);
+
+    // The two magnet faces meet across exactly one seat gap.
+    expect(lidFaceZ - binFaceZ).toBeCloseTo(LID_MAGNET_SEAT_GAP, 9);
+    // The bin's pad must have bin to sit in: recessed below the body top, and
+    // above the interior floor so its pocket can't punch through. A pad above
+    // the rim floats over the bin's own lip — the failure `magnetLidCavityTooDeep`
+    // now blocks upstream.
+    expect(binFaceZ).toBeLessThan(dim.totalHeight);
+    expect(binFaceZ).toBeGreaterThan(dim.totalHeight - dim.interiorHeight);
+  });
+
+  // The bin pad is placed by `lidRetentionStage`, but the lid solid is lifted
+  // into the assembly by `exportHandler`. Those are separate expressions of the
+  // same seating transform; if they diverge the pads land at the wrong height
+  // and no mesh-validity assertion notices.
+  it("matches the export assembly's own lid lift", async () => {
+    const { retentionSeatPlanes } = await import('./retentionMagnetGeometry');
+    const { lidAnchorZ } = await import('./lidConstants');
+    const { resolveLidInputs } = await import('./lidBuilder');
+    const { deriveDimensions } = await import('./pipeline/context');
+    const { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } = await import('@/shared/types/bin');
+
+    const params = makeParams(
+      { attachment: 'magnetic', topThicknessMm: 2.4, extraHeightMm: 5 },
+      { height: 8 }
+    );
+    const dim = deriveDimensions(params, true);
+
+    // Reproduce exportHandler's lift, then place the lid's magnet face through
+    // it independently of retentionSeatPlanes.
+    const exportLift =
+      dim.totalHeight -
+      lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+    const inputs = resolveLidInputs(params);
+    const lidFaceViaExport = -(inputs.topThickness + params.lid.retentionMagnet.depth) + exportLift;
+
+    expect(retentionSeatPlanes(params, dim.totalHeight).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
+  });
+});
+
 describe('tray-top lid geometry', () => {
   it('produces a valid mesh for a tray-top lid', async () => {
     const { generateLid } = await import('./lidOrchestrator');

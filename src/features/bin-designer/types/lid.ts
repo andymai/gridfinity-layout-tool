@@ -15,6 +15,7 @@
  */
 
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * The slice of a design the lid resolvers below read. Declared structurally
@@ -349,3 +350,74 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
     wallMm: LID_TRAY_WALL_DEFAULT_MM,
   },
 } as const;
+
+/**
+ * Extra clearance baked into the anchor calculation to compensate for
+ * first-layer squish (mm).
+ */
+export const LID_EXTRA_HEIGHT = 0.2;
+
+/**
+ * Anchor Z in lid-local coords — where the lid's mating cavity opens up to
+ * receive the bin's stacking lip when the lid is snapped on.
+ *
+ * Lives here rather than in the worker's `lidConstants` so the main thread can
+ * use it too: the worker module pulls in brepjs/WASM and isn't importable from
+ * the UI. Both the worker and the preview mirror re-export this, so there is
+ * one formula rather than the two hand-synced copies this replaces.
+ *
+ * @param heightUnitMm Gridfinity height unit (default 7mm — base lid height)
+ * @param fitClearance Per-side clearance for the chosen fit
+ * @param extraCavityMm Added cavity depth — `resolveLidCavityExtraMm`, which
+ *   folds in both the `extraHeightMm` knob and floor-plate growth (#2761)
+ */
+export function lidAnchorZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraCavityMm: number = 0
+): number {
+  return (
+    -(heightUnitMm + extraCavityMm) -
+    LID_EXTRA_HEIGHT +
+    GRIDFINITY_SPEC.LIP_HEIGHT +
+    Math.SQRT2 * fitClearance * 2
+  );
+}
+
+/** Bottom of the mating wall in lid-local Z — below this the click rails take over. */
+export function lidWallBottomZ(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraCavityMm: number = 0
+): number {
+  return (
+    lidAnchorZ(heightUnitMm, fitClearance, extraCavityMm) -
+    GRIDFINITY_SPEC.LIP_BIG_TAPER -
+    GRIDFINITY_SPEC.LIP_VERTICAL_PART
+  );
+}
+
+/**
+ * How far the lid's magnet boss hangs below the cavity ceiling, versus how deep
+ * the cavity is. Magnetic retention only works when the boss reaches down far
+ * enough to meet a pad the BIN can actually host — i.e. inside the bin, not
+ * above its rim.
+ *
+ * A deep cavity (the `extraHeightMm` knob, or a very thick floor plate) lifts
+ * the lid and its bosses with it; past this point the mating plane rises above
+ * the bin entirely and the bin would grow gusset pads floating over its own lip.
+ * `checkLidCompatibility` turns that into a blocker rather than building it.
+ */
+export function magneticLidReachesBin(params: LidGeometrySource, heightUnitMm: number): boolean {
+  const cavityDepth = -lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
+  const bossReach =
+    resolveLidPlateThickness(params) + params.lid.retentionMagnet.depth + LID_MAGNET_SEAT_GAP;
+  return cavityDepth <= bossReach;
+}
+
+/**
+ * Vertical gap (mm) between the lid boss's magnet face and the bin pad's, when
+ * seated. Keeps the corner posts from bottoming out and lifting the lid off its
+ * lip; the magnets pull across it. Mirrored by the worker's `lidConstants`.
+ */
+export const LID_MAGNET_SEAT_GAP = 0.2;
