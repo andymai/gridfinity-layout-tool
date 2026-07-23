@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.286.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.2...gridfinity-layout-tool-v4.286.0) (2026-07-23)
+
+
+### Features
+
+* **bin-designer:** adjustable lid thickness and magnetic fit relief ([#2768](https://github.com/andymai/gridfinity-layout-tool/issues/2768)) ([5376863](https://github.com/andymai/gridfinity-layout-tool/commit/53768634207e2abbc86fbc655cc329b0e13734db))
+
 ## [4.285.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.1...gridfinity-layout-tool-v4.285.2) (2026-07-23)
 
 
