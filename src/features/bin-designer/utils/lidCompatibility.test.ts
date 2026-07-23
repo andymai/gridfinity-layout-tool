@@ -653,15 +653,15 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
     expect(checkLidCompatibility(params).some((i) => i.id === 'magnetBinTooSmall')).toBe(false);
   });
 
-  it('blocks a 1x1 bin whose corner pads would merge (large magnet)', () => {
-    // Half-width 21mm; a 15mm magnet needs half-extent >= 3.5 + 15 + 2*1.5 =
-    // 21.5mm for the gusset pads not to merge at the centre, so it's blocked.
+  it('allows a 1x1 bin with the max magnet now that the posts are slimmer', () => {
+    // Half-width 21mm; with the 1.0mm boss wall the gusset pads need only
+    // 3.5 + 15 + 2*1.0 = 20.5mm half-extent, so a full 1-unit bin clears even
+    // the largest magnet (it was blocked at the old 1.5mm wall).
     const params = magnetic(
       { width: 1, depth: 1 },
       { retentionMagnet: { diameter: 15, depth: 2 } }
     );
-    const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetBinTooSmall');
-    expect(issue?.severity).toBe('blocker');
+    expect(checkLidCompatibility(params).some((i) => i.id === 'magnetBinTooSmall')).toBe(false);
   });
 
   it('blocks when the retention magnet is deeper than the bin interior', () => {
