@@ -1,128 +1,43 @@
-import { useState, useMemo } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore, useMobileStore } from '@/core/store';
-import { useMutations } from '@/shared/contexts';
-import { useToastStore } from '@/core/store/toast';
+import { useSelectionStore } from '@/core/store/selection';
+import { useMobileStore } from '@/core/store';
 import type { CategoryId } from '@/core/types';
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
+import { CONSTRAINTS, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { isOk } from '@/core/result';
 import { Button, IconButton, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { batch } from '@/core/cqrs';
+import { useCategoryManager } from '@/features/categories/hooks/useCategoryManager';
 
 /**
  * Mobile-optimized categories panel with large touch targets.
  */
 export function MobileCategoriesPanel() {
   const t = useTranslation();
-  const [editingId, setEditingId] = useState<CategoryId | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: CategoryId; name: string } | null>(null);
-
-  const { categories, bins } = useLayoutStore(
-    useShallow((state) => ({
-      categories: state.layout.categories,
-      bins: state.layout.bins,
-    }))
-  );
-  const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
-
-  const { activeCategoryId, setActiveCategory, selectedBinIds } = useSelectionStore(
-    useShallow((state) => ({
-      activeCategoryId: state.activeCategoryId,
-      setActiveCategory: state.setActiveCategory,
-      selectedBinIds: state.selectedBinIds,
-    }))
-  );
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
 
-  const addToast = useToastStore((state) => state.addToast);
-
-  // Calculate bin counts per category
-  const binCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const bin of bins) {
-      counts.set(bin.category, (counts.get(bin.category) || 0) + 1);
-    }
-    return counts;
-  }, [bins]);
-
-  const handleSelectCategory = (id: CategoryId, name: string) => {
-    // Always set active category for new bins
-    setActiveCategory(id);
-
-    // If bins are selected, update their categories
-    if (selectedBinIds.length > 0) {
-      batch(() => {
-        for (const binId of selectedBinIds) {
-          updateBin(binId, { category: id });
-        }
-      });
-      const binCount = selectedBinIds.length;
-      addToast(t('toast.categoryChanged', { count: binCount, name }), 'success');
-    }
-
-    closeMobilePanel();
-  };
-
-  const handleAddCategory = () => {
-    batch(() => {
-      const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
-      if (isOk(result)) {
-        setActiveCategory(result.value);
-        setEditingId(result.value);
-      }
-    });
-  };
+  const {
+    categories,
+    binCounts,
+    activeCategoryId,
+    canAddCategory,
+    editingId,
+    setEditingId,
+    selectCategory,
+    addCategory,
+    updateCategoryField,
+    deleteConfirm,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useCategoryManager({ onAfterSelect: closeMobilePanel });
 
   const handleUpdateColor = (id: CategoryId, color: string) => {
-    batch(() => {
-      updateCategory(id, { color });
-    });
+    updateCategoryField(id, 'color', color);
   };
 
   const handleUpdateName = (id: CategoryId, name: string) => {
-    batch(() => {
-      updateCategory(id, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
-    });
+    updateCategoryField(id, 'name', name);
   };
-
-  const handleDelete = (id: CategoryId, name: string) => {
-    const binCount = binCounts.get(id) || 0;
-
-    // Show helpful message if category is in use
-    if (binCount > 0) {
-      addToast(t('categories.deleteInUse', { count: binCount, name }), 'error');
-      return;
-    }
-
-    // Show message if it's the last category
-    if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast(t('categories.cannotDeleteLast'), 'error');
-      return;
-    }
-
-    setDeleteConfirm({ id, name });
-  };
-
-  const confirmDelete = () => {
-    if (!deleteConfirm) return;
-    const { id } = deleteConfirm;
-    batch(() => {
-      deleteCategory(id);
-      // Access fresh state to avoid stale closure issues
-      const currentCategories = useLayoutStore.getState().layout.categories;
-      const currentActiveCategoryId = useSelectionStore.getState().activeCategoryId;
-      if (currentActiveCategoryId === id && currentCategories.length > 0) {
-        setActiveCategory(currentCategories[0].id);
-      }
-    });
-    setEditingId(null);
-    setDeleteConfirm(null);
-  };
-
-  const canAddCategory = categories.length < CONSTRAINTS.CATEGORIES_MAX;
 
   return (
     <div className="pb-4">
@@ -186,7 +101,7 @@ export function MobileCategoriesPanel() {
                     <Button
                       variant={canDelete ? 'danger' : 'secondary'}
                       fullWidth
-                      onClick={() => handleDelete(category.id, category.name)}
+                      onClick={() => requestDelete(category.id, category.name)}
                       className={`flex-1 ${canDelete ? '' : 'opacity-50'}`}
                     >
                       {t('common.delete')}
@@ -207,7 +122,7 @@ export function MobileCategoriesPanel() {
                   variant="ghost"
                   fullWidth
                   className="p-4 flex items-center gap-3 justify-start rounded-none hover:bg-transparent"
-                  onClick={() => handleSelectCategory(category.id, category.name)}
+                  onClick={() => selectCategory(category.id, category.name)}
                   aria-label={
                     selectedBinIds.length > 0
                       ? t('mobile.categories.applyToSelected', {
@@ -263,7 +178,7 @@ export function MobileCategoriesPanel() {
       <Button
         variant="primary"
         fullWidth
-        onClick={handleAddCategory}
+        onClick={addCategory}
         disabled={!canAddCategory}
         className="mt-4"
         leftIcon={<PlusIcon />}
@@ -278,7 +193,7 @@ export function MobileCategoriesPanel() {
         confirmText={t('categories.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDelete}
-        onCancel={() => setDeleteConfirm(null)}
+        onCancel={cancelDelete}
       />
     </div>
   );

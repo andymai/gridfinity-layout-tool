@@ -1,19 +1,14 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
-import { useMutations } from '@/shared/contexts';
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
+import { CONSTRAINTS, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
-import { isOk, isErr } from '@/core/result';
-import { useResultToast } from '@/shared/hooks';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
-import { categoryId as toCategoryId } from '@/core/types';
-import type { CategoryId } from '@/core/types';
-import { batch } from '@/core/cqrs';
+import { useCategoryManager } from '../../hooks/useCategoryManager';
 import { Button, Collapsible, IconButton, PlusIcon, XIcon } from '@/design-system';
 
 interface ColorPaletteGridProps {
@@ -56,44 +51,40 @@ function ColorPaletteGrid({ selectedColor, onColorSelect, t }: ColorPaletteGridP
 
 export function CategoriesPanel() {
   const t = useTranslation();
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [colorPickerId, setColorPickerId] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
   const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const editingRef = useRef<HTMLDivElement>(null);
 
-  const { categories, bins } = useLayoutStore(
+  const { categories } = useLayoutStore(
     useShallow((state) => ({
       categories: state.layout.categories,
-      bins: state.layout.bins,
     }))
   );
-  const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
-
-  const { activeCategoryId, setActiveCategory, selectedBinIds } = useSelectionStore(
-    useShallow((state) => ({
-      activeCategoryId: state.activeCategoryId,
-      setActiveCategory: state.setActiveCategory,
-      selectedBinIds: state.selectedBinIds,
-    }))
-  );
-
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
   const setHighlightedCategoryId = useViewStore((state) => state.setHighlightedCategoryId);
-
   const saveCategoriesAsDefaults = useSettingsStore((state) => state.saveCategoriesAsDefaults);
   const addToast = useToastStore((state) => state.addToast);
-  const { showErrorToast } = useResultToast();
 
-  // Calculate bin counts per category
-  const binCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const bin of bins) {
-      counts.set(bin.category, (counts.get(bin.category) || 0) + 1);
-    }
-    return counts;
-  }, [bins]);
+  const {
+    binCounts,
+    activeCategoryId,
+    canAddCategory,
+    editingId,
+    setEditingId,
+    selectCategory,
+    addCategory,
+    updateCategoryField,
+    deleteConfirm,
+    requestDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useCategoryManager({
+    onSelectionApplied: (firstBin, categoryName, count) => {
+      mlTracking.trackCategory(firstBin, categoryName, count);
+    },
+  });
 
   // Cleanup: Clear highlighted category when panel unmounts (e.g., sidebar collapses)
   useEffect(() => {
@@ -140,98 +131,7 @@ export function CategoriesPanel() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [editingId, colorPickerId]);
-
-  // Handle category selection: applies to selected bins if any, always sets active category
-  const handleCategorySelect = (rawCategoryId: string, categoryName: string) => {
-    const catId: CategoryId = toCategoryId(rawCategoryId);
-    // Always set active category for new bins
-    setActiveCategory(catId);
-
-    // If bins are selected, update their categories
-    if (selectedBinIds.length > 0) {
-      const binsToUpdate = selectedBinIds
-        .map((id) => bins.find((b) => b.id === id))
-        .filter((bin): bin is (typeof bins)[number] => !!bin && bin.category !== catId);
-      if (binsToUpdate.length === 0) return;
-
-      const binCount = binsToUpdate.length;
-      batch(() => {
-        for (const bin of binsToUpdate) {
-          if (isErr(updateBin(bin.id, { category: catId }))) break;
-        }
-      });
-
-      mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
-      addToast(t('toast.categoryChanged', { count: binCount, name: categoryName }), 'success');
-    }
-  };
-
-  const handleAddCategory = () => {
-    batch(() => {
-      const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
-      if (isOk(result)) {
-        setActiveCategory(result.value);
-        setEditingId(result.value);
-      }
-    });
-  };
-
-  const handleUpdateCategory = (id: string, field: 'name' | 'color', value: string) => {
-    const updates = {
-      [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
-    };
-    const result = batch(() => updateCategory(toCategoryId(id), updates));
-    if (isErr(result)) {
-      showErrorToast(result.error);
-    }
-  };
-
-  const handleDeleteCategory = (id: string, name: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const binCount = binCounts.get(id) || 0;
-
-    // Show helpful message if category is in use
-    if (binCount > 0) {
-      addToast(
-        `${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`,
-        'error'
-      );
-      return;
-    }
-
-    // Show message if it's the last category
-    if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast(t('categories.cannotDeleteLast'), 'error');
-      return;
-    }
-
-    setDeleteConfirm({ id, name });
-  };
-
-  const confirmDeleteCategory = () => {
-    if (!deleteConfirm) return;
-    const { id } = deleteConfirm;
-    const result = batch(() => {
-      const deleteResult = deleteCategory(toCategoryId(id));
-      if (isOk(deleteResult)) {
-        // Access fresh state to avoid stale closure issues
-        const currentCategories = useLayoutStore.getState().layout.categories;
-        const currentActiveCategoryId = useSelectionStore.getState().activeCategoryId;
-        if (currentActiveCategoryId === id && currentCategories.length > 0) {
-          setActiveCategory(currentCategories[0].id);
-        }
-      }
-      return deleteResult;
-    });
-    if (isErr(result)) {
-      showErrorToast(result.error);
-    }
-    setEditingId(null);
-    setDeleteConfirm(null);
-  };
-
-  const canAddCategory = categories.length < CONSTRAINTS.CATEGORIES_MAX;
+  }, [editingId, colorPickerId, setEditingId]);
 
   const handleSaveCategoriesAsDefaults = () => {
     saveCategoriesAsDefaults(categories);
@@ -262,7 +162,7 @@ export function CategoriesPanel() {
       <IconButton
         size="sm"
         touchTarget={false}
-        onClick={handleAddCategory}
+        onClick={addCategory}
         disabled={!canAddCategory}
         className="w-7 h-7"
         title={t('categories.addCategory')}
@@ -289,7 +189,7 @@ export function CategoriesPanel() {
               <div
                 key={category.id}
                 className={`group relative flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
-                onClick={() => handleCategorySelect(category.id, category.name)}
+                onClick={() => selectCategory(category.id, category.name)}
                 onMouseEnter={() => {
                   setHoveredCategoryId(category.id);
                   setHighlightedCategoryId(category.id);
@@ -310,7 +210,7 @@ export function CategoriesPanel() {
                     <input
                       type="text"
                       value={category.name}
-                      onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
+                      onChange={(e) => updateCategoryField(category.id, 'name', e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                       className="input w-full py-1 px-2 text-sm"
                       // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
@@ -319,7 +219,7 @@ export function CategoriesPanel() {
                     />
                     <ColorPaletteGrid
                       selectedColor={category.color}
-                      onColorSelect={(color) => handleUpdateCategory(category.id, 'color', color)}
+                      onColorSelect={(color) => updateCategoryField(category.id, 'color', color)}
                       t={t}
                     />
                     {/* Footer row: hint + delete link */}
@@ -328,7 +228,10 @@ export function CategoriesPanel() {
                       {canDelete && (
                         <Button
                           variant="ghost"
-                          onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            requestDelete(category.id, category.name);
+                          }}
                           className="text-content-tertiary hover:text-error px-0 py-0 hover:bg-transparent"
                           aria-label={t('categories.deleteCategory')}
                         >
@@ -383,7 +286,7 @@ export function CategoriesPanel() {
                         <ColorPaletteGrid
                           selectedColor={category.color}
                           onColorSelect={(color) => {
-                            handleUpdateCategory(category.id, 'color', color);
+                            updateCategoryField(category.id, 'color', color);
                             setColorPickerId(null);
                           }}
                           t={t}
@@ -396,7 +299,7 @@ export function CategoriesPanel() {
                       className="flex-1 min-w-0 text-left justify-start px-0 py-0 hover:bg-transparent"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleCategorySelect(category.id, category.name);
+                        selectCategory(category.id, category.name);
                       }}
                       onDoubleClick={(e) => {
                         e.stopPropagation();
@@ -455,7 +358,10 @@ export function CategoriesPanel() {
                         variant="dangerGhost"
                         size="sm"
                         touchTarget={false}
-                        onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestDelete(category.id, category.name);
+                        }}
                         className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 text-content-tertiary flex-shrink-0"
                         title={t('categories.deleteCategory')}
                         aria-label={t('categories.deleteCategoryAria', { name: category.name })}
@@ -488,8 +394,8 @@ export function CategoriesPanel() {
         message={t('categories.confirmDelete.message', { name: deleteConfirm?.name || '' })}
         confirmText={t('categories.confirmDelete.confirm')}
         destructive
-        onConfirm={confirmDeleteCategory}
-        onCancel={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
       />
 
       <ConfirmDialog
