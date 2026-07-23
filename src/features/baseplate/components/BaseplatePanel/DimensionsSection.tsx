@@ -1,0 +1,462 @@
+/**
+ * Section 1 of the baseplate panel: sync toggle, grid steppers, fractional
+ * edges, editable mm summary, and the padding schematic with its margin
+ * fill / detach controls.
+ */
+
+import { useCallback } from 'react';
+import { useLayoutStore } from '@/core/store/layout';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
+import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS, MARGIN_MIN_DETACH_MM } from '@/core/constants';
+import { Checkbox } from '@/design-system/Checkbox/Checkbox';
+import { RulerIcon } from '@/design-system/Icon';
+import { useTranslation } from '@/i18n';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { CheckboxRow, SegmentedControl } from '@/design-system';
+import { EditableDimensions } from '@/shared/components/EditableDimensions';
+import { PaddingSchematic } from './PaddingSchematic';
+import { GridDimensionStepper } from './GridDimensionStepper';
+import { resolveOverTileStatus } from '../../utils/overTileStatus';
+import { PADDING_MAX } from '../PaddingStepper';
+import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
+import { isSeamConnectorStyle } from '@/shared/types/bin';
+import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { padOutline } from '@/shared/utils/padOutline';
+import {
+  updateBaseplateParam as updateParam,
+  updateBaseplateParams as updateParams,
+  useBaseplatePanelDerived,
+} from './panelState';
+
+/** How the drawer-fit padding margin is filled. */
+type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
+
+/** How the sub-21mm leftover after half-grid packing is rendered. */
+type LeftoverMode = 'grid' | 'solid';
+
+export function DimensionsSection() {
+  const t = useTranslation();
+  const {
+    baseplateParams,
+    drawerOutline,
+    drawerFractionalEdgeX,
+    drawerFractionalEdgeY,
+    gridUnitMm,
+    gridUnitMmY,
+    synced,
+    effectiveWidth,
+    effectiveDepth,
+    totalWidthMm,
+    totalDepthMm,
+    hasPadding,
+    outlineActive,
+    cornerShaped,
+    freeformShaped,
+  } = useBaseplatePanelDerived();
+  const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
+
+  const handleSyncToggle = useCallback((checked: boolean) => {
+    const layoutState = useLayoutStore.getState().layout;
+    const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    if (checked) {
+      useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: true });
+    } else {
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        syncWithLayout: false,
+        baseplateWidth: layoutState.drawer.width,
+        baseplateDepth: layoutState.drawer.depth,
+        fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
+        fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
+      });
+    }
+  }, []);
+
+  const handleFractionalEdgeChange = useCallback(
+    (axis: 'x' | 'y', edge: 'start' | 'end') => {
+      if (baseplateParams.syncWithLayout !== false) {
+        useLayoutStore
+          .getState()
+          .updateDrawer(axis === 'x' ? { fractionalEdgeX: edge } : { fractionalEdgeY: edge });
+      } else {
+        updateParam(axis === 'x' ? 'fractionalEdgeX' : 'fractionalEdgeY', edge);
+      }
+    },
+    [baseplateParams.syncWithLayout]
+  );
+
+  const overTileStatus = resolveOverTileStatus(baseplateParams);
+  // Derive the toggle from the STORED flags, not a canOverTile-clamped mode, so
+  // the user can still turn fill OFF when padding temporarily shrinks below the
+  // tile threshold — disabling the whole switch there would strand an enabled
+  // flag that silently re-applies once padding grows again.
+  const fillOn = baseplateParams.overTile === true;
+  const halfGridOn = fillOn && baseplateParams.overTileHalfGrid === true;
+  const setMarginFillMode = useCallback((mode: MarginFillMode) => {
+    updateParams({
+      overTile: mode !== 'solid',
+      overTileHalfGrid: mode === 'halfGrid' ? true : undefined,
+    });
+  }, []);
+  const leftoverMode: LeftoverMode =
+    halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
+  const setLeftoverMode = useCallback((mode: LeftoverMode) => {
+    // Store undefined (not false) for the default Grid so identical geometry
+    // keeps one serialized/cache identity — matches overTileHalfGrid above.
+    updateParam('overTileHalfGridSolidLeftover', mode === 'solid' ? true : undefined);
+  }, []);
+
+  // Mirror buildFullParams: the shape composes only while the padding stays
+  // valid. Padding large enough to fold the loop (a collapsed notch/slot) makes
+  // the resolver drop it, so the panel must say the padding is ignored rather
+  // than present it as applied.
+  const shapedPaddingComposes =
+    !freeformShaped ||
+    // freeformShaped implies an active outline; the explicit check re-narrows
+    // what the extracted hook boundary hides from the compiler.
+    drawerOutline === undefined ||
+    padOutline(drawerOutline, {
+      left: baseplateParams.paddingLeft,
+      right: baseplateParams.paddingRight,
+      front: baseplateParams.paddingFront,
+      back: baseplateParams.paddingBack,
+    }) !== null;
+  const canDetach =
+    baseplateParams.paddingLeft >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingRight >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingFront >= MARGIN_MIN_DETACH_MM ||
+    baseplateParams.paddingBack >= MARGIN_MIN_DETACH_MM;
+  const detachStored = baseplateParams.detachMargins === true;
+  const marginConnectorStored = baseplateParams.detachMarginConnector === true;
+  // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
+  // seams would need a separate clip part, so they stay friction-fit (#2414).
+  // `undefined` is the stored default for dovetail, so it counts.
+  const marginConnectorStyleOk = isSeamConnectorStyle(baseplateParams.connectorStyle);
+
+  const hasFractionalWidth = effectiveWidth % 1 !== 0;
+  const hasFractionalDepth = effectiveDepth % 1 !== 0;
+  const fractionalEdgeX = synced
+    ? drawerFractionalEdgeX
+    : (baseplateParams.fractionalEdgeX ?? 'end');
+  const fractionalEdgeY = synced
+    ? drawerFractionalEdgeY
+    : (baseplateParams.fractionalEdgeY ?? 'end');
+
+  const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
+  const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
+
+  /**
+   * When the user enters target mm dimensions:
+   * 1. Snap down to the largest valid grid size that fits (half-unit or whole-unit)
+   * 2. Distribute remaining mm evenly as padding (left=right, front=back)
+   * 3. Auto-uncheck "Sync with layout"
+   *
+   * Exception: a synced corner-cut shaped plate keeps sync AND its shape —
+   * the grid is fixed by the layout, so the whole remainder becomes padding
+   * (the basket workflow: measure, type dims, rounded shape persists).
+   */
+  const handleDimensionCommit = useCallback(
+    (targetWidthMm: number, targetDepthMm: number) => {
+      const cornerShapeState = useLayoutStore.getState().layout;
+      const cornerShapeParams = cornerShapeState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const outline = cornerShapeState.drawer.outline;
+      const cuts = outline?.authoring?.kind === 'corners' ? outline.authoring.corners : undefined;
+      // Derive entirely from the fresh store read — mixing in the captured
+      // gridUnitMm could compute padding against a stale drawer size.
+      const drawerWidthMm = cornerShapeState.drawer.width * cornerShapeState.gridUnitMm;
+      const drawerDepthMm = cornerShapeState.drawer.depth * effectiveGridUnitMmY(cornerShapeState);
+      if (
+        cornerShapeParams.syncWithLayout !== false &&
+        outline !== undefined &&
+        cuts !== undefined &&
+        cornerCutsMatchVertices(outline.vertices, drawerWidthMm, drawerDepthMm, cuts)
+      ) {
+        const halfPad = (targetMm: number, gridMm: number): number =>
+          Math.min(PADDING_MAX, Math.max(0, Math.floor(((targetMm - gridMm) / 2) * 100) / 100));
+        const padW = halfPad(targetWidthMm, drawerWidthMm);
+        const padD = halfPad(targetDepthMm, drawerDepthMm);
+        useLayoutStore.getState().setBaseplateParams({
+          ...cornerShapeParams,
+          paddingLeft: mm(padW),
+          paddingRight: mm(padW),
+          paddingFront: mm(padD),
+          paddingBack: mm(padD),
+        });
+        return;
+      }
+
+      const step = halfGridMode ? 0.5 : 1;
+
+      const rawWidthUnits = targetWidthMm / gridUnitMm;
+      const rawDepthUnits = targetDepthMm / gridUnitMmY;
+
+      // Floor so the grid never exceeds the target — remainder becomes positive padding
+      const snappedWidth = Math.max(
+        CONSTRAINTS.GRID_MIN,
+        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawWidthUnits / step) * step)
+      );
+      const snappedDepth = Math.max(
+        CONSTRAINTS.GRID_MIN,
+        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawDepthUnits / step) * step)
+      );
+
+      const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
+      const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMmY);
+
+      const halfPadWidth = Math.floor((remainderWidth / 2) * 100) / 100;
+      const halfPadDepth = Math.floor((remainderDepth / 2) * 100) / 100;
+
+      const layoutState = useLayoutStore.getState().layout;
+      const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        syncWithLayout: false,
+        baseplateWidth: gridUnits(snappedWidth),
+        baseplateDepth: gridUnits(snappedDepth),
+        fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
+        fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
+        paddingLeft: mm(halfPadWidth),
+        paddingRight: mm(halfPadWidth),
+        paddingFront: mm(halfPadDepth),
+        paddingBack: mm(halfPadDepth),
+      });
+    },
+    [gridUnitMm, gridUnitMmY, halfGridMode]
+  );
+
+  return (
+    <StickyGroupHeader title={t('baseplate.sectionDimensions')}>
+      <div className="space-y-3 px-4 py-3">
+        <Checkbox
+          checked={synced}
+          onChange={handleSyncToggle}
+          label={t('baseplate.syncWithLayout')}
+        />
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+          <GridDimensionStepper
+            label={t('baseplate.gridWidth')}
+            value={effectiveWidth}
+            onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
+            halfGridMode={halfGridMode}
+            disabled={synced}
+          />
+          <GridDimensionStepper
+            label={t('baseplate.gridDepth')}
+            value={effectiveDepth}
+            onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
+            halfGridMode={halfGridMode}
+            disabled={synced}
+          />
+        </div>
+        {/* Fractional edge position — shown when the effective dimensions are half-unit */}
+        {(hasFractionalWidth || hasFractionalDepth) && (
+          <div className="space-y-1.5">
+            <div className="text-content-tertiary text-[10px] mb-1">
+              {t('sidebar.halfUnitEdgePosition')}
+            </div>
+            {hasFractionalWidth && (
+              <FractionalEdgeToggle
+                axis="x"
+                label={t('common.width')}
+                value={fractionalEdgeX}
+                onChange={handleFractionalEdgeChange}
+                startTitle={t('sidebar.halfBinLeft')}
+                startLabel={t('sidebar.left')}
+                endTitle={t('sidebar.halfBinRight')}
+                endLabel={t('sidebar.right')}
+              />
+            )}
+            {hasFractionalDepth && (
+              <FractionalEdgeToggle
+                axis="y"
+                label={t('common.depth')}
+                value={fractionalEdgeY}
+                onChange={handleFractionalEdgeChange}
+                startTitle={t('sidebar.halfBinBottom')}
+                startLabel={t('sidebar.bottom')}
+                endTitle={t('sidebar.halfBinTop')}
+                endLabel={t('sidebar.top')}
+              />
+            )}
+          </div>
+        )}
+
+        {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
+            When padding > 0, show a trailing 'incl. padding' note so users see the total
+            is grid + padding, not grid alone. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
+          <div className="flex items-center gap-1">
+            <RulerIcon size="xs" className="flex-shrink-0" />
+            <EditableDimensions
+              widthMm={totalWidthMm}
+              depthMm={totalDepthMm}
+              minMm={minMm}
+              maxMm={maxMm}
+              onCommit={handleDimensionCommit}
+              aria-label={t('baseplate.editDimensions')}
+              widthLabel={t('baseplate.editDimensionsWidth')}
+              depthLabel={t('baseplate.editDimensionsDepth')}
+              variant="secondary"
+            />
+          </div>
+          {hasPadding && (
+            <span className="text-[11px] italic text-content-tertiary">
+              {t('baseplate.inclPadding')}
+            </span>
+          )}
+        </div>
+
+        {/* Padding — spatial schematic. Padding composes with every shape,
+            so the controls stay live; a notice explains the shaped case. */}
+        <div className="space-y-2 border-t border-stroke-subtle pt-3">
+          <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+            {t('baseplate.padding')}
+          </div>
+          {cornerShaped && (
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('baseplate.cornerShapedPaddingNotice')}
+            </p>
+          )}
+          {freeformShaped && (
+            <p
+              className={
+                shapedPaddingComposes
+                  ? 'text-[11px] leading-relaxed text-content-tertiary'
+                  : 'text-[11px] leading-relaxed text-status-warning'
+              }
+            >
+              {t(
+                shapedPaddingComposes
+                  ? 'baseplate.shapedPaddingNotice'
+                  : 'baseplate.shapedPaddingTooLarge'
+              )}
+            </p>
+          )}
+          <PaddingSchematic
+            baseplateParams={baseplateParams}
+            updateParam={updateParam}
+            updateParams={updateParams}
+          />
+          {hasPadding && (
+            <div className="border-t border-stroke-subtle pt-3">
+              <FeatureToggle
+                label={t('baseplate.overTile')}
+                checked={fillOn}
+                onChange={() => setMarginFillMode(fillOn ? 'solid' : 'tile')}
+                disabledReason={
+                  !fillOn && !overTileStatus.canOverTile
+                    ? t('baseplate.overTileTooSmall')
+                    : undefined
+                }
+                primaryControls={
+                  <div className="space-y-1.5">
+                    {overTileStatus.canOverTile ? (
+                      <>
+                        <CheckboxRow
+                          label={t('baseplate.preferHalfGrid')}
+                          checked={halfGridOn}
+                          onChange={(checked) => setMarginFillMode(checked ? 'halfGrid' : 'tile')}
+                          indent
+                        />
+                        {halfGridOn && (
+                          <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
+                            <span className="text-xs text-content-secondary">
+                              {t('baseplate.leftoverLabel')}
+                            </span>
+                            <SegmentedControl
+                              aria-label={t('baseplate.leftoverLabel')}
+                              size="sm"
+                              options={[
+                                { value: 'grid', label: t('baseplate.leftoverGrid') },
+                                { value: 'solid', label: t('baseplate.leftoverSolid') },
+                              ]}
+                              value={leftoverMode}
+                              onChange={setLeftoverMode}
+                            />
+                          </div>
+                        )}
+                        <div className="space-y-1 text-[11px] leading-relaxed">
+                          <p className="text-content-tertiary">
+                            {t(
+                              halfGridOn
+                                ? leftoverMode === 'solid'
+                                  ? 'baseplate.halfGridHintSolid'
+                                  : 'baseplate.halfGridHint'
+                                : 'baseplate.overTileHint'
+                            )}
+                          </p>
+                          {overTileStatus.tiled.length > 0 && (
+                            <p className="text-content-secondary">
+                              {t('baseplate.overTileFills', {
+                                sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
+                              })}
+                            </p>
+                          )}
+                          {overTileStatus.tooSmall.length > 0 && (
+                            <p className="text-content-tertiary">
+                              {t('baseplate.overTileKeptSolid', {
+                                sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      // Fill is on but no edge can fit a tile right now — keep the
+                      // toggle enabled (so it can be turned off) and explain why.
+                      <p className="text-[11px] leading-relaxed text-content-tertiary">
+                        {t('baseplate.overTileTooSmall')}
+                      </p>
+                    )}
+                  </div>
+                }
+              />
+            </div>
+          )}
+          {/* Detached rails have no outline awareness (buildFullParams
+                forces detachMargins off whenever an outline is active), so
+                hide the control for every shaped plate, not just corner
+                cuts. */}
+          {hasPadding && !outlineActive && (
+            <div className="border-t border-stroke-subtle pt-3">
+              <FeatureToggle
+                label={t('baseplate.detachMargins')}
+                checked={detachStored}
+                onChange={() => updateParam('detachMargins', !detachStored)}
+                disabledReason={
+                  !detachStored && !canDetach ? t('baseplate.detachMarginsTooSmall') : undefined
+                }
+                primaryControls={
+                  // On but nothing meets the threshold → no rails are emitted,
+                  // so say so rather than imply they will.
+                  !canDetach ? (
+                    <p className="text-[11px] leading-relaxed text-content-tertiary">
+                      {t('baseplate.detachMarginsTooSmall')}
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      <CheckboxRow
+                        label={t('baseplate.detachMarginConnector')}
+                        checked={marginConnectorStored && marginConnectorStyleOk}
+                        onChange={(checked) => updateParam('detachMarginConnector', checked)}
+                        disabled={!marginConnectorStyleOk}
+                        indent
+                      />
+                      <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                        {marginConnectorStyleOk
+                          ? t('baseplate.detachMarginConnectorHint')
+                          : t('baseplate.detachMarginConnectorStyle')}
+                      </p>
+                    </div>
+                  )
+                }
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </StickyGroupHeader>
+  );
+}
