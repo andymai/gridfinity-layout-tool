@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/patterns/kumiko/tsumiishiKikko.ts
+  s_20d1a5ff5ca196::t_058efec184203a 6-8
+src/features/generation/worker/generators/patterns/kumiko/fillings.test.ts
+  s_20d1a5ff5ca196::t_5d214f1a65aad3 111
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_058efec184203a 201-207,239-243
+src/features/generation/worker/generators/patterns/kumiko/sakura.ts
+  s_20d1a5ff5ca196::t_b1c760db83e6a0 25-27,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "137f1508137f1f2b727742038946d5085cdb3726",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
