@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_20d1a5ff5ca196::t_0dad287bf07c50 369-371
+  s_20d1a5ff5ca196::t_ca69f60aa2f749 196-210
+  s_20d1a5ff5ca196::t_fcc0658f293b4f 351-354,356-359
+  s_20d1a5ff5ca196::t_72a217895cbd0f 550,562-567,580-582
+  s_20d1a5ff5ca196::t_94868e63d20d91 211-212
+src/features/generation/worker/generators/__kernel-tests__/kumikoProfile.test.ts
+  s_20d1a5ff5ca196::t_66dafa58cc1fa0 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "23760072462f23f1f542ec767e623ca15018e5f5",
+  "prompts": {},
+  "sessions": {
+    "s_20d1a5ff5ca196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ef41360-284d-40d0-9857-fde176bc1c29",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
