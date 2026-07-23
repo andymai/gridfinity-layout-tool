@@ -81,13 +81,13 @@ const MAGNET_POST_MIN_FLOOR = 0.6;
 
 /**
  * Local mirrors of the worker's `LID_MAGNET_LIP_CLEARANCE` (3.5) and
- * `LID_MAGNET_BOSS_WALL` (1.5), used to reject bins too small to place the four
+ * `LID_MAGNET_BOSS_WALL` (1.0), used to reject bins too small to place the four
  * corner magnets. Duplicated as literals to avoid importing worker-side
  * geometry constants across the feature boundary — keep in sync by hand with
  * `retentionMagnetGeometry.ts` / `lidConstants.ts`.
  */
 const MAGNET_LIP_CLEARANCE = 3.5;
-const MAGNET_BOSS_WALL = 1.5;
+const MAGNET_BOSS_WALL = 1.0;
 
 /**
  * Interior wall height available for handle holes (mm). Mirrors the

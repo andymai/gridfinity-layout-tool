@@ -156,7 +156,7 @@ export const LID_COPLANAR_MARGIN = 0.1;
 
 /** Radial plastic kept around a retention magnet inside its post/boss (mm).
  *  1.0mm (2–3 perimeters at a 0.4mm nozzle) keeps the corner post slim: because
- *  the magnet inset is `LIP_CLEARANCE + bossRadius`, a thinner wall pulls the
+ *  the magnet inset is `LID_MAGNET_LIP_CLEARANCE + bossRadius`, a thinner wall pulls the
  *  post's cavity-facing edge inboard (~1mm per 0.5mm of wall) while the boss's
  *  lip-side edge and the magnet mating stay put. */
 export const LID_MAGNET_BOSS_WALL = 1.0;
