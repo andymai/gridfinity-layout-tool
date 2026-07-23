@@ -7,11 +7,15 @@
  * and its mating profile uses the bin's existing LIP_* constants so fit
  * tracks the lip spec automatically.
  *
- * Wall thickness, top thickness, and fit clearance are intentionally
- * NOT user-configurable: the click-lock geometry is a single validated
- * set of numbers, and exposing those knobs invited mis-prints. See
- * `lidConstants.ts` for the live values.
+ * Wall thickness and fit clearance are intentionally NOT user-configurable:
+ * the click-lock geometry is a single validated set of numbers, and exposing
+ * those knobs invited mis-prints. See `lidConstants.ts` for the live values.
+ * The floor plate is the one exception ({@link LidConfig.topThicknessMm}) —
+ * it mates with nothing, so thickening it can only add stiffness.
  */
+
+import type { BinParams } from './index';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /**
  * Per-side clearance in mm between the lid's mating profile and the bin's
@@ -19,17 +23,63 @@
  */
 export const LID_FIT_CLEARANCE = 0.25;
 
+/**
+ * Additional per-side footprint clearance (mm) given to a magnetic lid
+ * (issue #2761). Magnets supply all the retention, so the mating shell only
+ * needs to locate the lid — any residual friction fights the magnets and makes
+ * the lid feel like it has to be pressed and prised rather than snapped.
+ *
+ * Applies to the XY footprint ONLY. It deliberately does NOT feed
+ * {@link lidAnchorZ}: that would raise the seated plane by
+ * `2·√2·0.15 ≈ 0.42mm` and eat the `LID_MAGNET_SEAT_GAP` (0.2mm) the corner
+ * posts rely on. Use {@link resolveLidFootprintClearance} for footprint work
+ * and the bare {@link LID_FIT_CLEARANCE} for anchor/Z work.
+ */
+export const LID_MAGNETIC_EXTRA_CLEARANCE = 0.15;
+
+/**
+ * Per-side clearance applied to the lid's OUTER FOOTPRINT — the base value
+ * plus the magnetic relief when the design actually gets retention magnets.
+ *
+ * The predicate mirrors `usesMagneticLid`: a magnetic lid on a lip-less or
+ * polygon bin falls back to a plain friction fit (no corner bosses are
+ * generated), so it must keep the base clearance or it would rattle.
+ */
+export function resolveLidFootprintClearance(params: BinParams): number {
+  const magnetic =
+    params.lid.attachment === 'magnetic' &&
+    params.base.stackingLip &&
+    !isPartialMask(params.cellMask);
+  return magnetic ? LID_FIT_CLEARANCE + LID_MAGNETIC_EXTRA_CLEARANCE : LID_FIT_CLEARANCE;
+}
+
 /** Lid outer corner radius (mm) BEFORE clearance subtraction. Lid-specific —
  *  do NOT use the bin's `BOX_CORNER_RADIUS` (3.75mm), which would shrink
  *  the wall and shift rails. */
 export const LID_CORNER_RADIUS = 4;
 
-/** Floor plate thickness (mm) when no magnet pockets are needed. */
+/** Floor plate thickness (mm) when no magnet pockets are needed. Also the
+ *  minimum and default for {@link LidConfig.topThicknessMm}. */
 export const LID_TOP_THICKNESS_BASE = 0.8;
+
+/**
+ * Bounds for {@link LidConfig.topThicknessMm}. The floor at 0.8mm is four
+ * layers at 0.2mm — enough to bridge, but thin enough to read as flimsy and
+ * translucent on a large lid (issue #2761). The ceiling keeps a 6×4 lid from
+ * turning into an hour of solid infill; the step lands on common layer
+ * heights so the plate comes out at a whole number of layers.
+ */
+export const LID_TOP_THICKNESS_MIN_MM = LID_TOP_THICKNESS_BASE;
+export const LID_TOP_THICKNESS_MAX_MM = 5;
+export const LID_TOP_THICKNESS_STEP_MM = 0.2;
 
 /** Minimum solid material above a magnet pocket (mm) so it can't punch
  *  through to the cavity face. */
 export const LID_MAGNET_CEILING = 0.6;
+
+/** Minimum solid floor kept below a tray recess (mm) so the recess can't
+ *  break through into the mating cavity. */
+export const LID_TRAY_FLOOR = 0.8;
 
 /** Minimum rail length (mm) below which the worker drops the rail. */
 export const LID_MIN_RAIL_LENGTH = 4;
@@ -117,6 +167,39 @@ export interface LidTrayConfig {
   readonly wallMm: number;
 }
 
+/**
+ * Effective floor-plate thickness (mm) — the largest of the four competing
+ * demands. A FLOOR, never a cap, so no combination of settings can punch a
+ * magnet pocket into the cavity or break through a tray recess.
+ *
+ * The single source of truth: the worker, the preview, the thumbnail, and the
+ * export assembly all size and position the lid from this.
+ */
+export function resolveLidPlateThickness(params: BinParams): number {
+  const { lid, base } = params;
+  const magnetNeed =
+    lid.magnetHoles && lid.stackableTop ? base.magnetDepth + LID_MAGNET_CEILING : 0;
+  const trayNeed = lid.tray.enabled && !lid.stackableTop ? lid.tray.depthMm + LID_TRAY_FLOOR : 0;
+  return Math.max(LID_TOP_THICKNESS_BASE, lid.topThicknessMm, magnetNeed, trayNeed);
+}
+
+/**
+ * Total cavity depth (mm) added below the standard one-grid-unit lid — the
+ * `extraHeightMm` knob PLUS however much the floor plate grew past its 0.8mm
+ * baseline. Feeds `lidAnchorZ`/`lidWallBottomZ` everywhere.
+ *
+ * Why the plate growth belongs here: the floor is built downward from the top
+ * face (`Z ∈ [-plateThickness, 0]`), so every millimetre of extra plate eats a
+ * millimetre of the cavity the bin's stacking lip has to enter. Past
+ * `|anchorZ|` (~2.09mm) the plate fills the lip's space outright and the lid
+ * can no longer seat — a 5mm plate leaves a solid block with a 0.79mm skirt.
+ * Deepening the anchor in lockstep keeps the plate-to-anchor gap constant, so
+ * the lid just gets taller (exactly what `extraHeightMm` already does).
+ */
+export function resolveLidCavityExtraMm(params: BinParams): number {
+  return params.lid.extraHeightMm + (resolveLidPlateThickness(params) - LID_TOP_THICKNESS_BASE);
+}
+
 /** Wall sides that can carry a click rail. Same axis convention as the bin. */
 export type LidRailSide = 'front' | 'back' | 'left' | 'right';
 export const LID_RAIL_SIDES: readonly LidRailSide[] = ['front', 'back', 'left', 'right'] as const;
@@ -200,6 +283,15 @@ export interface LidConfig {
    */
   readonly extraHeightMm: number;
   /**
+   * Floor plate thickness (mm) — the solid slab between the lid's top face
+   * and its mating cavity (issue #2761). A FLOOR, not a cap: magnet pockets
+   * and a tray recess still raise the plate above this when they need more
+   * material (see {@link resolveLidPlateThickness}). Nothing mates with this
+   * surface, so
+   * raising it only trades filament for stiffness and opacity.
+   */
+  readonly topThicknessMm: number;
+  /**
    * Dedicated retention-magnet dimensions used only when
    * {@link attachment} === `'magnetic'`. Independent of the bin's `base`
    * magnet so the lid and feet can take different discs.
@@ -232,6 +324,8 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
   extraHeightMm: 0,
+  // Baseline, so every pre-#2761 design regenerates byte-identically.
+  topThicknessMm: LID_TOP_THICKNESS_BASE,
   retentionMagnet: {
     diameter: LID_MAGNET_DIAMETER_DEFAULT_MM,
     depth: LID_MAGNET_DEPTH_DEFAULT_MM,

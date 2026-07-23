@@ -38,7 +38,7 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
   const pitch = { x: gridUnitMm, y: gridUnitMmY };
 
   // Capping at `topThickness - ceiling` is defensive in case `topThickness`
-  // was bumped up by `lidTopThickness` for an oversize magnet — guarantees
+  // was bumped up by `resolveLidPlateThickness` for an oversize magnet — guarantees
   // we never poke through the cavity face. Floor top gets a small coplanar
   // margin so the cut bites cleanly through the entry face.
   const cappedDepth = Math.max(0.4, Math.min(magnetDepth, topThickness - LID_MAGNET_CEILING));

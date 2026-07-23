@@ -14,15 +14,15 @@ import type {
   TextMode,
 } from '@/shared/types/bin';
 import type { MagnetAnchor } from '@/core/types';
-import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
-import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import {
-  LID_FIT_CLEARANCE,
-  LID_CORNER_RADIUS,
-  lidAnchorZ,
-  lidWallBottomZ,
-  lidTopThickness,
-} from './lidConstants';
+  checkLidCompatibility,
+  computeDisabledRails,
+  resolveLidFootprintClearance,
+  resolveLidPlateThickness,
+  resolveLidCavityExtraMm,
+} from '@/shared/types/bin';
+import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
 /**
@@ -47,6 +47,12 @@ export interface LidInputs {
   readonly lidOuterW: number;
   readonly lidOuterD: number;
   readonly lidCornerR: number;
+  /**
+   * Per-side FOOTPRINT clearance. Equals `LID_FIT_CLEARANCE` except on a
+   * magnetic lid, which gets `LID_MAGNETIC_EXTRA_CLEARANCE` on top so the
+   * magnets aren't fighting a friction fit (#2761). Not the anchor clearance
+   * — `anchorZ`/`wallBottomZ` are deliberately computed from the base value.
+   */
   readonly fitClearance: number;
   readonly topThickness: number;
   /**
@@ -161,8 +167,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const { gridUnitMm, heightUnitMm } = params;
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
-  // Single locked-down clearance — see comment on LID_FIT_CLEARANCE.
-  const fitClearance = LID_FIT_CLEARANCE;
+  // Footprint clearance: the locked-down base, plus the magnetic relief when
+  // the design gets retention magnets (#2761). XY only — `anchorZ`/
+  // `wallBottomZ` below stay on the base value so the magnet seat gap holds.
+  const fitClearance = resolveLidFootprintClearance(params);
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -202,13 +210,12 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     };
   }
 
-  // Floor plate grows when stack-magnet pockets need depth+ceiling OR a tray
-  // recess needs depth+floor below it — whichever is larger.
-  const topThickness = lidTopThickness(
-    params.lid.magnetHoles,
-    params.base.magnetDepth,
-    trayEnabled ? params.lid.tray.depthMm : 0
-  );
+  // Floor plate takes the largest of: the user's knob, a stack-magnet pocket's
+  // depth+ceiling, and a tray recess's depth+floor.
+  const topThickness = resolveLidPlateThickness(params);
+  // Every millimetre of plate past the 0.8mm baseline is a millimetre stolen
+  // from the cavity the lip enters, so it deepens the anchor in lockstep.
+  const cavityExtra = resolveLidCavityExtraMm(params);
 
   // Overhang grows the bin's outer body + stacking lip outward (and shifts it
   // when the two opposite sides differ). The lid wraps that expanded body, so
@@ -288,8 +295,13 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     clickRailCoverage: params.lid.clickRailCoverage / 100,
     // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall
     // contents poking out of a short bin are enclosed; 0 = standard lid.
-    anchorZ: lidAnchorZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
-    wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance, params.lid.extraHeightMm),
+    // Base clearance, NOT `fitClearance` — the magnetic relief is XY-only, and
+    // feeding it here would lift the seated plane ~0.42mm into the corner
+    // magnets' seat gap. `cavityExtra` (not just `extraHeightMm`) keeps the
+    // plate from eating the lip's space; every non-worker `lidAnchorZ` caller
+    // resolves the same pair so preview/thumbnail/export can't drift.
+    anchorZ: lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
+    wallBottomZ: lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
     cellMask,
     text,
     outerOffsetX,

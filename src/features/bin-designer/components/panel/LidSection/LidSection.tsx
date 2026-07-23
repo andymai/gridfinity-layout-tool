@@ -9,9 +9,10 @@
  * Millimetre fine-tuning (magnet size, rail coverage, tray dimensions) lives
  * under a collapsed "Advanced" disclosure so the default view stays scannable.
  *
- * Wall thickness, top thickness, and fit clearance are intentionally NOT
- * exposed: the click-lock geometry only works with one validated numeric set
- * (see `lidConstants.ts`).
+ * Wall thickness and fit clearance are intentionally NOT exposed: the
+ * click-lock geometry only works with one validated numeric set (see
+ * `lidConstants.ts`). The floor plate is the exception — it mates with
+ * nothing, so `topThickness` is a user knob (#2761).
  */
 
 import { useState } from 'react';
@@ -168,13 +169,12 @@ export function LidSection() {
   const { state, handlers, t } = useLidSection();
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  // Which fine-tuning knobs the Advanced disclosure holds depends on the
-  // current mode. When none apply (e.g. friction + flat) the disclosure is
-  // omitted entirely rather than shown empty.
+  // Which mode-specific knobs the Advanced disclosure holds depends on the
+  // current mode; the floor-plate thickness applies to every lid, so the
+  // disclosure is always present now and never renders empty.
   const showMagnetAdvanced = state.attachment === 'magnetic';
   const showCoverageAdvanced = state.attachment === 'clickRails' && state.anyRail;
   const showTrayAdvanced = state.topSurface === 'tray';
-  const hasAdvanced = showMagnetAdvanced || showCoverageAdvanced || showTrayAdvanced;
 
   return (
     <div className="space-y-4">
@@ -244,12 +244,21 @@ export function LidSection() {
             {state.attachment === 'friction' && <Hint>{t('binDesigner.lid.frictionHint')}</Hint>}
 
             {state.attachment === 'magnetic' && (
-              <Hint>
-                {t('binDesigner.lid.retentionMagnetHint', {
-                  diameter: state.retentionMagnetDiameter.toFixed(1),
-                  depth: state.retentionMagnetDepth.toFixed(1),
-                })}
-              </Hint>
+              <>
+                <Hint>
+                  {t('binDesigner.lid.retentionMagnetHint', {
+                    diameter: state.retentionMagnetDiameter.toFixed(1),
+                    depth: state.retentionMagnetDepth.toFixed(1),
+                  })}
+                </Hint>
+                {state.hasMagneticRelief && (
+                  <Hint>
+                    {t('binDesigner.lid.magneticClearanceHint', {
+                      clearance: state.magneticClearanceMm.toFixed(2),
+                    })}
+                  </Hint>
+                )}
+              </>
             )}
 
             {state.attachment === 'clickRails' && (
@@ -367,103 +376,126 @@ export function LidSection() {
           </div>
 
           {/* ── Advanced (millimetre fine-tuning) ────────────────────── */}
-          {hasAdvanced && (
-            <Collapsible
-              title={t('binDesigner.lid.advanced')}
-              size="sm"
-              expanded={advancedOpen}
-              onExpandedChange={setAdvancedOpen}
-            >
-              <div className="space-y-3 pt-2">
-                {showMagnetAdvanced && (
-                  <div className="space-y-2">
-                    <StepperField
-                      label={t('binDesigner.lid.retentionMagnetDiameter')}
-                      unit="mm"
-                      value={state.retentionMagnetDiameter}
-                      onChange={handlers.setRetentionMagnetDiameter}
-                      onStep={(delta) =>
-                        handlers.setRetentionMagnetDiameter(
-                          state.retentionMagnetDiameter + delta * state.retentionMagnetStep
-                        )
-                      }
-                      min={state.retentionMagnetDiameterMin}
-                      max={state.retentionMagnetDiameterMax}
-                      step={state.retentionMagnetStep}
-                      size="md"
-                      aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
-                      commitMode="deferred"
-                    />
-                    <StepperField
-                      label={t('binDesigner.lid.retentionMagnetDepth')}
-                      unit="mm"
-                      value={state.retentionMagnetDepth}
-                      onChange={handlers.setRetentionMagnetDepth}
-                      onStep={(delta) =>
-                        handlers.setRetentionMagnetDepth(
-                          state.retentionMagnetDepth + delta * state.retentionMagnetStep
-                        )
-                      }
-                      min={state.retentionMagnetDepthMin}
-                      max={state.retentionMagnetDepthMax}
-                      step={state.retentionMagnetStep}
-                      size="md"
-                      aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
-                      commitMode="deferred"
-                    />
-                  </div>
-                )}
-
-                {showCoverageAdvanced && (
-                  <div className="space-y-1">
-                    <SnappingSlider
-                      label={t('binDesigner.lid.clickRailCoverage')}
-                      value={state.clickRailCoverage}
-                      onChange={handlers.setClickRailCoverage}
-                      options={state.railCoverageOptions}
-                      unit="%"
-                    />
-                    <Readout>{state.railsReadout}</Readout>
-                  </div>
-                )}
-
-                {showTrayAdvanced && (
-                  <div className="space-y-2">
-                    <StepperField
-                      label={t('binDesigner.lid.trayDepth')}
-                      unit="mm"
-                      value={state.tray.depthMm}
-                      onChange={handlers.setTrayDepth}
-                      onStep={(delta) =>
-                        handlers.setTrayDepth(state.tray.depthMm + delta * state.trayStep)
-                      }
-                      min={state.trayDepthMin}
-                      max={state.trayDepthMax}
-                      step={state.trayStep}
-                      size="md"
-                      aria-label={t('binDesigner.lid.trayDepthAria')}
-                      commitMode="deferred"
-                    />
-                    <StepperField
-                      label={t('binDesigner.lid.trayWall')}
-                      unit="mm"
-                      value={state.tray.wallMm}
-                      onChange={handlers.setTrayWall}
-                      onStep={(delta) =>
-                        handlers.setTrayWall(state.tray.wallMm + delta * state.trayStep)
-                      }
-                      min={state.trayWallMin}
-                      max={state.trayWallMax}
-                      step={state.trayStep}
-                      size="md"
-                      aria-label={t('binDesigner.lid.trayWallAria')}
-                      commitMode="deferred"
-                    />
-                  </div>
-                )}
+          <Collapsible
+            title={t('binDesigner.lid.advanced')}
+            size="sm"
+            expanded={advancedOpen}
+            onExpandedChange={setAdvancedOpen}
+          >
+            <div className="space-y-3 pt-2">
+              <div className="space-y-1">
+                <StepperField
+                  label={t('binDesigner.lid.topThickness')}
+                  unit="mm"
+                  value={state.topThicknessMm}
+                  onChange={handlers.setTopThickness}
+                  onStep={(delta) =>
+                    handlers.setTopThickness(state.topThicknessMm + delta * state.topThicknessStep)
+                  }
+                  min={state.topThicknessMin}
+                  max={state.topThicknessMax}
+                  step={state.topThicknessStep}
+                  size="md"
+                  aria-label={t('binDesigner.lid.topThicknessAria')}
+                  commitMode="deferred"
+                />
+                <Hint>
+                  {state.topThicknessEffective > state.topThicknessMm
+                    ? t('binDesigner.lid.topThicknessRaisedHint', {
+                        thickness: state.topThicknessEffective.toFixed(1),
+                      })
+                    : t('binDesigner.lid.topThicknessHint')}
+                </Hint>
               </div>
-            </Collapsible>
-          )}
+
+              {showMagnetAdvanced && (
+                <div className="space-y-2">
+                  <StepperField
+                    label={t('binDesigner.lid.retentionMagnetDiameter')}
+                    unit="mm"
+                    value={state.retentionMagnetDiameter}
+                    onChange={handlers.setRetentionMagnetDiameter}
+                    onStep={(delta) =>
+                      handlers.setRetentionMagnetDiameter(
+                        state.retentionMagnetDiameter + delta * state.retentionMagnetStep
+                      )
+                    }
+                    min={state.retentionMagnetDiameterMin}
+                    max={state.retentionMagnetDiameterMax}
+                    step={state.retentionMagnetStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
+                    commitMode="deferred"
+                  />
+                  <StepperField
+                    label={t('binDesigner.lid.retentionMagnetDepth')}
+                    unit="mm"
+                    value={state.retentionMagnetDepth}
+                    onChange={handlers.setRetentionMagnetDepth}
+                    onStep={(delta) =>
+                      handlers.setRetentionMagnetDepth(
+                        state.retentionMagnetDepth + delta * state.retentionMagnetStep
+                      )
+                    }
+                    min={state.retentionMagnetDepthMin}
+                    max={state.retentionMagnetDepthMax}
+                    step={state.retentionMagnetStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
+                    commitMode="deferred"
+                  />
+                </div>
+              )}
+
+              {showCoverageAdvanced && (
+                <div className="space-y-1">
+                  <SnappingSlider
+                    label={t('binDesigner.lid.clickRailCoverage')}
+                    value={state.clickRailCoverage}
+                    onChange={handlers.setClickRailCoverage}
+                    options={state.railCoverageOptions}
+                    unit="%"
+                  />
+                  <Readout>{state.railsReadout}</Readout>
+                </div>
+              )}
+
+              {showTrayAdvanced && (
+                <div className="space-y-2">
+                  <StepperField
+                    label={t('binDesigner.lid.trayDepth')}
+                    unit="mm"
+                    value={state.tray.depthMm}
+                    onChange={handlers.setTrayDepth}
+                    onStep={(delta) =>
+                      handlers.setTrayDepth(state.tray.depthMm + delta * state.trayStep)
+                    }
+                    min={state.trayDepthMin}
+                    max={state.trayDepthMax}
+                    step={state.trayStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.trayDepthAria')}
+                    commitMode="deferred"
+                  />
+                  <StepperField
+                    label={t('binDesigner.lid.trayWall')}
+                    unit="mm"
+                    value={state.tray.wallMm}
+                    onChange={handlers.setTrayWall}
+                    onStep={(delta) =>
+                      handlers.setTrayWall(state.tray.wallMm + delta * state.trayStep)
+                    }
+                    min={state.trayWallMin}
+                    max={state.trayWallMax}
+                    step={state.trayStep}
+                    size="md"
+                    aria-label={t('binDesigner.lid.trayWallAria')}
+                    commitMode="deferred"
+                  />
+                </div>
+              )}
+            </div>
+          </Collapsible>
         </>
       )}
     </div>

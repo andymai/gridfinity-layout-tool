@@ -63,6 +63,62 @@ describe('resolveLidInputs', () => {
     expect(inputs.topThickness).toBeCloseTo(3.1, 4);
   });
 
+  it('raises the plate to the user thickness knob', () => {
+    const inputs = resolveLidInputs(makeParams({ topThicknessMm: 1.8 }));
+    expect(inputs.topThickness).toBeCloseTo(1.8, 4);
+  });
+
+  // The knob is a floor, never a cap: a magnet pocket that needs more material
+  // than the user asked for still wins, so it can't break into the cavity.
+  it('keeps the deeper magnet requirement when it exceeds the user thickness', () => {
+    const inputs = resolveLidInputs(
+      makeParams(
+        { enabled: true, stackableTop: true, magnetHoles: true, topThicknessMm: 1.2 },
+        { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } }
+      )
+    );
+    expect(inputs.topThickness).toBeCloseTo(3.1, 4);
+  });
+
+  it('keeps the tray floor requirement when it exceeds the user thickness', () => {
+    const inputs = resolveLidInputs(
+      makeParams({
+        enabled: true,
+        stackableTop: false,
+        tray: { enabled: true, depthMm: 4, wallMm: 2 },
+        topThicknessMm: 1.2,
+      })
+    );
+    expect(inputs.topThickness).toBeCloseTo(4.8, 4);
+  });
+
+  it('gives a magnetic lid extra footprint clearance without moving the seated plane', () => {
+    const friction = resolveLidInputs(
+      makeParams({ enabled: true, attachment: 'friction' }, { width: 6, depth: 4 })
+    );
+    const magnetic = resolveLidInputs(
+      makeParams({ enabled: true, attachment: 'magnetic' }, { width: 6, depth: 4 })
+    );
+    // 0.15mm per side on both axes so the magnets aren't fighting friction…
+    expect(friction.lidOuterW - magnetic.lidOuterW).toBeCloseTo(0.3, 6);
+    expect(friction.lidOuterD - magnetic.lidOuterD).toBeCloseTo(0.3, 6);
+    // …but the anchor stays put, or the relief would eat LID_MAGNET_SEAT_GAP
+    // and the corner posts would hold the lid off its lip.
+    expect(magnetic.anchorZ).toBeCloseTo(friction.anchorZ, 9);
+    expect(magnetic.wallBottomZ).toBeCloseTo(friction.wallBottomZ, 9);
+  });
+
+  it('withholds the magnetic relief when the bin has no stacking lip to mate with', () => {
+    const noLip = resolveLidInputs(
+      makeParams(
+        { enabled: true, attachment: 'magnetic' },
+        { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }
+      )
+    );
+    expect(noLip.fitClearance).toBeCloseTo(0.25, 4);
+    expect(noLip.retentionMagnets).toBe(false);
+  });
+
   it('skips magnet pockets when stackableTop is off, even if persisted flag is true', () => {
     // Magnets only do something when there's a stack grid above; gate at
     // resolve time so the worker never cuts useless pockets.

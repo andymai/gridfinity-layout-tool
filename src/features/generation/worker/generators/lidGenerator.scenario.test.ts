@@ -105,6 +105,77 @@ describe('lid generation and export scenarios', () => {
     expect(bb.maxZ - bb.minZ).toBeGreaterThan(4); // at least lip-height tall
   });
 
+  it('a magnetic lid prints 0.3mm smaller per axis than a friction one (#2761)', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const dims = { width: 6, depth: 4, height: 6 } as const;
+    const friction = generateLid(makeParams({ enabled: true, attachment: 'friction' }, dims));
+    const magnetic = generateLid(makeParams({ enabled: true, attachment: 'magnetic' }, dims));
+    expect(friction).not.toBeNull();
+    expect(magnetic).not.toBeNull();
+    assertStructurallyValid(magnetic!, '6x4 magnetic lid');
+
+    const f = boundingBox(friction!.vertices);
+    const m = boundingBox(magnetic!.vertices);
+    expect(f.maxX - f.minX - (m.maxX - m.minX)).toBeCloseTo(0.3, 3);
+    expect(f.maxY - f.minY - (m.maxY - m.minY)).toBeCloseTo(0.3, 3);
+    // The seated plane must not move — the relief is XY-only so the corner
+    // magnets keep their LID_MAGNET_SEAT_GAP. Bosses hang below the friction
+    // lid's floor, so compare the TOP face rather than the full Z extent.
+    expect(m.maxZ).toBeCloseTo(f.maxZ, 3);
+  });
+
+  it('a thicker floor plate deepens the lid without touching the fit (#2761)', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const dims = { width: 6, depth: 4, height: 6 } as const;
+    const thin = generateLid(makeParams({ topThicknessMm: 0.8 }, dims));
+    const thick = generateLid(makeParams({ topThicknessMm: 2.4 }, dims));
+    expect(thin).not.toBeNull();
+    expect(thick).not.toBeNull();
+    assertStructurallyValid(thick!, '6x4 lid with 2.4mm plate');
+
+    const a = boundingBox(thin!.vertices);
+    const b = boundingBox(thick!.vertices);
+    // 1.6mm of extra plate makes the lid 1.6mm deeper overall: the top face
+    // stays at Z=0 and the mating shell shifts down to keep the cavity.
+    expect(b.maxZ - b.minZ - (a.maxZ - a.minZ)).toBeCloseTo(1.6, 3);
+    expect(b.maxZ).toBeCloseTo(a.maxZ, 6);
+    // Footprint is untouched — thickness is a Z-only knob.
+    expect(b.maxX - b.minX).toBeCloseTo(a.maxX - a.minX, 6);
+  });
+
+  // The plate is built downward from the top face (Z ∈ [-plate, 0]) while the
+  // bin's lip enters the cavity from below and tops out at `anchorZ`. If the
+  // plate ever reaches past the anchor it fills the lip's space and the lid
+  // cannot seat — a solid block that `assertStructurallyValid` happily accepts,
+  // which is how the magnet-pocket and tray paths shipped broken (#2761).
+  describe('floor plate never intrudes into the lip cavity (#2761)', () => {
+    const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>]> = [
+      ['baseline', {}, {}],
+      ['thick plate', { topThicknessMm: 2.4 }, {}],
+      ['max plate', { topThicknessMm: 5 }, {}],
+      ['extra height + thick plate', { topThicknessMm: 3, extraHeightMm: 10 }, {}],
+      [
+        'stack magnet pockets',
+        { stackableTop: true, magnetHoles: true },
+        { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } },
+      ],
+      ['tray recess', { tray: { enabled: true, depthMm: 4, wallMm: 2 } }, {}],
+      ['magnetic retention', { attachment: 'magnetic', topThicknessMm: 2 }, {}],
+    ];
+
+    it.each(CASES)('%s', async (label, lid, extra) => {
+      const { resolveLidInputs } = await import('./lidBuilder');
+      const inputs = resolveLidInputs(makeParams(lid, { width: 4, depth: 3, height: 5, ...extra }));
+      // The plate underside must clear the anchor plane with room to spare —
+      // 1.293mm on a stock lid, plus whatever `extraHeightMm` deepened the
+      // cavity. The anchor moves in lockstep with the plate, so that margin
+      // holds no matter how thick the plate gets.
+      const extraHeightMm = lid.extraHeightMm ?? 0;
+      expect(-inputs.topThickness).toBeGreaterThan(inputs.anchorZ);
+      expect(-inputs.topThickness - inputs.anchorZ).toBeCloseTo(1.293 + extraHeightMm, 3);
+    });
+  });
+
   it('lid XY footprint is approximately the bin outer footprint', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({}, { width: 2, depth: 2, height: 3 });
@@ -240,11 +311,13 @@ describe('lid generation and export scenarios', () => {
 
   it('magnet holes add cuts (mesh changes meaningfully)', async () => {
     const { generateLid } = await import('./lidOrchestrator');
+    // Pockets only exist atop a stack grid, so both sides need `stackableTop`
+    // — without it `magnetHoles` is gated off and the two lids are identical.
     const without = generateLid(
-      makeParams({ magnetHoles: false }, { width: 2, depth: 2, height: 3 })
+      makeParams({ stackableTop: true, magnetHoles: false }, { width: 2, depth: 2, height: 3 })
     );
     const withMagnets = generateLid(
-      makeParams({ magnetHoles: true }, { width: 2, depth: 2, height: 3 })
+      makeParams({ stackableTop: true, magnetHoles: true }, { width: 2, depth: 2, height: 3 })
     );
     expect(without).not.toBeNull();
     expect(withMagnets).not.toBeNull();

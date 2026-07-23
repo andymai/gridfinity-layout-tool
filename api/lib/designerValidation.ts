@@ -238,6 +238,12 @@ function validateLid(lid: unknown): string | null {
   ) {
     return 'lid.extraHeightMm must be 0-100';
   }
+  if (
+    lid.topThicknessMm !== undefined &&
+    (!isNumber(lid.topThicknessMm) || !inRange(lid.topThicknessMm, 0.8, 5))
+  ) {
+    return 'lid.topThicknessMm must be 0.8-5';
+  }
   if (lid.retentionMagnet !== undefined) {
     const m = lid.retentionMagnet;
     if (!isObject(m)) return 'lid.retentionMagnet must be an object';

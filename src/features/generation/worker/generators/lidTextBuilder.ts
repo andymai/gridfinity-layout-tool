@@ -55,7 +55,7 @@ export function applyLidText(
   const availD = inputs.lidOuterD - 2 * inset - 2 * cornerR;
 
   // Plate below the text surface: the full floor on a plain top, the shelled
-  // remainder under a tray recess (`lidTopThickness` guarantees ≥ LID_TRAY_FLOOR).
+  // remainder under a tray recess (`resolveLidPlateThickness` guarantees ≥ LID_TRAY_FLOOR).
   const topZ = tray ? -inputs.tray.depthMm : 0;
   const hostThickness = tray ? inputs.topThickness - inputs.tray.depthMm : inputs.topThickness;
 

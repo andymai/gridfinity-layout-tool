@@ -9,9 +9,14 @@ import {
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
   LID_FIT_CLEARANCE,
-  LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
-  LID_TOP_THICKNESS_BASE,
+  LID_TOP_THICKNESS_MIN_MM,
+  LID_TOP_THICKNESS_MAX_MM,
+  LID_TOP_THICKNESS_STEP_MM,
+  LID_MAGNETIC_EXTRA_CLEARANCE,
+  resolveLidFootprintClearance,
+  resolveLidPlateThickness,
+  resolveLidCavityExtraMm,
   LID_MAGNET_DIAMETER_MIN_MM,
   LID_MAGNET_DIAMETER_MAX_MM,
   LID_MAGNET_DEPTH_MIN_MM,
@@ -401,6 +406,21 @@ export function useLidSection() {
     [updateLid]
   );
 
+  const setTopThickness = useCallback(
+    (topThicknessMm: number) => {
+      // Clamp defensively; the stepper bounds input but keyboard entry can't be
+      // trusted. Rounding to the step keeps the plate a whole number of layers.
+      const clamped = Math.min(
+        LID_TOP_THICKNESS_MAX_MM,
+        Math.max(LID_TOP_THICKNESS_MIN_MM, topThicknessMm)
+      );
+      updateLid({
+        topThicknessMm: Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM,
+      });
+    },
+    [updateLid]
+  );
+
   const toggleClickRailSide = useCallback(
     (side: LidRailSide) => {
       updateLid({
@@ -466,39 +486,30 @@ export function useLidSection() {
     }
   }, [isLidTextOpen, setLidText]);
 
-  // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
-  // readout matches the generated geometry. Floor thickness is dynamic
-  // (grows when magnets need a deeper pocket) so we mirror
-  // `lidTopThickness` here without importing the worker-side helper.
+  // Readout mirrors `lidBuilder.resolveLidInputs` so the panel matches the
+  // generated geometry. Plate thickness and cavity depth come from the shared
+  // resolvers rather than a local copy of the same arithmetic.
   const lidDimensions = useMemo(() => {
-    const fitClearance = LID_FIT_CLEARANCE;
+    // Footprint uses the mode-aware clearance so the readout shrinks by
+    // 0.3mm when the user switches to magnetic retention (#2761); the
+    // anchor math below stays on the base value, as in `resolveLidInputs`.
+    const fitClearance = resolveLidFootprintClearance(params);
     // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
     const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
     const lidOuterW = params.width * params.gridUnitMm - 2 * fitClearance;
     const lidOuterD = params.depth * gridUnitMmY - 2 * fitClearance;
-    // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate.
-    // Floor plate auto-grows for magnets — keep the readout in sync so
-    // users see why the lid is taller when they enable magnets.
-    // extraHeightMm deepens the cavity (issue #2482), so the readout height
-    // grows with it — mirrors `resolveLidInputs`/`lidWallBottomZ`.
-    const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance, lid.extraHeightMm);
-    const effectiveMagnets = lid.magnetHoles && lid.stackableTop;
-    const topThickness = effectiveMagnets
-      ? Math.max(LID_TOP_THICKNESS_BASE, base.magnetDepth + LID_MAGNET_CEILING)
-      : LID_TOP_THICKNESS_BASE;
+    // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate. Both
+    // grow with the cavity knobs, so the readout shows the user why the lid
+    // gets taller when they add height, magnets, a tray, or plate thickness.
+    const wallBottomZ = lidWallBottomZ(
+      params.heightUnitMm,
+      LID_FIT_CLEARANCE,
+      resolveLidCavityExtraMm(params)
+    );
+    const topThickness = resolveLidPlateThickness(params);
     const lidH = Math.abs(wallBottomZ) + topThickness;
-    return { width: lidOuterW, depth: lidOuterD, height: lidH };
-  }, [
-    lid.magnetHoles,
-    lid.stackableTop,
-    lid.extraHeightMm,
-    base.magnetDepth,
-    params.width,
-    params.depth,
-    params.gridUnitMm,
-    params.gridUnitMmY,
-    params.heightUnitMm,
-  ]);
+    return { width: lidOuterW, depth: lidOuterD, height: lidH, topThickness };
+  }, [params]);
 
   // Lid height shifts in sub-mm steps when magnets toggle on; 1-decimal
   // precision keeps that feedback visible (matches w/d).
@@ -650,6 +661,20 @@ export function useLidSection() {
       extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
       extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
+      // Floor-plate thickness knob (#2761). `topThicknessEffective` reflects
+      // what the worker will actually build — magnet pockets and a tray recess
+      // can raise the plate above the user's value.
+      topThicknessMm: lid.topThicknessMm,
+      topThicknessEffective: lidDimensions.topThickness,
+      topThicknessMin: LID_TOP_THICKNESS_MIN_MM,
+      topThicknessMax: LID_TOP_THICKNESS_MAX_MM,
+      topThicknessStep: LID_TOP_THICKNESS_STEP_MM,
+      // Magnetic lids get extra footprint clearance so the magnets aren't
+      // fighting a friction fit; surfaced as a hint next to the mode. Derived
+      // from the resolver rather than re-testing the predicate, so the hint
+      // can't claim a relief the geometry didn't actually apply.
+      magneticClearanceMm: LID_MAGNETIC_EXTRA_CLEARANCE,
+      hasMagneticRelief: resolveLidFootprintClearance(params) > LID_FIT_CLEARANCE,
       disabledReason,
       disabledRails,
       railCoverageOptions,
@@ -674,6 +699,7 @@ export function useLidSection() {
       toggleClickRailSide,
       setClickRailCoverage,
       setExtraHeight,
+      setTopThickness,
       setRetentionMagnetDiameter,
       setRetentionMagnetDepth,
       setTrayDepth,

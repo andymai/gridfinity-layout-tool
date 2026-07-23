@@ -101,6 +101,68 @@ describe('LidSection', () => {
     });
   });
 
+  describe('lid thickness (#2761)', () => {
+    it('commits a typed thickness to lid.topThicknessMm', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      const input = screen.getByRole('spinbutton', {
+        name: 'Lid top plate thickness in millimeters',
+      });
+      fireEvent.change(input, { target: { value: '1.8' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.lid.topThicknessMm).toBeCloseTo(1.8, 6);
+    });
+
+    it('clamps an over-range thickness to the maximum', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      const input = screen.getByRole('spinbutton', {
+        name: 'Lid top plate thickness in millimeters',
+      });
+      fireEvent.change(input, { target: { value: '99' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(5);
+    });
+
+    // The knob is a floor; a 2.5mm magnet pocket needs 3.1mm of plate. The
+    // hint has to report what the worker will actually build, not the input.
+    it('reports the raised plate when a magnet pocket needs more material', () => {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          stackableTop: true,
+          magnetHoles: true,
+          topThicknessMm: 1.2,
+        },
+        base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      expect(screen.getByText(/Top is 3\.1mm here/)).toBeInTheDocument();
+    });
+  });
+
+  describe('magnetic fit relief (#2761)', () => {
+    it('explains the extra clearance in magnetic mode', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'magnetic' },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/0\.15mm smaller per side/)).toBeInTheDocument();
+    });
+
+    it('omits the explanation when the relief is not applied', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, attachment: 'friction' },
+      });
+      render(<LidSection />);
+      expect(screen.queryByText(/smaller per side/)).not.toBeInTheDocument();
+    });
+  });
+
   describe('top surface picker', () => {
     it('selecting Stackable turns on stackableTop', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });

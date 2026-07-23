@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
+import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import type { BinParams } from './index';
 import {
   DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
+  LID_MAGNETIC_EXTRA_CLEARANCE,
+  LID_TOP_THICKNESS_BASE,
+  LID_TOP_THICKNESS_MIN_MM,
+  LID_TOP_THICKNESS_MAX_MM,
+  LID_TOP_THICKNESS_STEP_MM,
+  resolveLidFootprintClearance,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
@@ -42,14 +50,77 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.extraHeightMm).toBe(0);
   });
 
-  // wallThickness, topThickness, fit are intentionally NOT on LidConfig —
-  // they're locked-down constants in `lidConstants.ts`. The type-level
-  // test below ensures they aren't reintroduced silently.
-  it('does not expose wall/top/fit knobs (validated values live in lidConstants)', () => {
+  it('starts the floor plate at the baseline so pre-#2761 designs regenerate unchanged', () => {
+    expect(DEFAULT_LID_CONFIG.topThicknessMm).toBe(LID_TOP_THICKNESS_BASE);
+  });
+
+  // wallThickness, fit, and the LEGACY `topThickness` are intentionally NOT on
+  // LidConfig — they're locked-down constants in `lidConstants.ts`. The
+  // millimetre floor-plate knob is `topThicknessMm` (#2761); the legacy name
+  // must stay absent so `migrateParams` keeps stripping it.
+  it('does not expose wall/fit knobs or the legacy topThickness field', () => {
     const cfg: LidConfig = DEFAULT_LID_CONFIG;
     expect('wallThickness' in cfg).toBe(false);
     expect('topThickness' in cfg).toBe(false);
     expect('fit' in cfg).toBe(false);
+  });
+});
+
+describe('LID_TOP_THICKNESS bounds', () => {
+  it('floors at the baseline plate thickness so the knob can only add material', () => {
+    expect(LID_TOP_THICKNESS_MIN_MM).toBe(LID_TOP_THICKNESS_BASE);
+    expect(LID_TOP_THICKNESS_MAX_MM).toBeGreaterThan(LID_TOP_THICKNESS_MIN_MM);
+  });
+
+  it('steps in increments that divide evenly into common layer heights', () => {
+    expect(LID_TOP_THICKNESS_STEP_MM).toBeCloseTo(0.2, 6);
+  });
+});
+
+describe('resolveLidFootprintClearance', () => {
+  const params = (lid: Partial<BinParams['lid']>, rest: Partial<BinParams> = {}): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    ...rest,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
+  });
+
+  it('returns the base clearance for friction and click-rail lids', () => {
+    expect(resolveLidFootprintClearance(params({ attachment: 'friction' }))).toBe(
+      LID_FIT_CLEARANCE
+    );
+    expect(resolveLidFootprintClearance(params({ attachment: 'clickRails' }))).toBe(
+      LID_FIT_CLEARANCE
+    );
+  });
+
+  it('adds the magnetic relief when the design actually gets retention magnets', () => {
+    expect(resolveLidFootprintClearance(params({ attachment: 'magnetic' }))).toBeCloseTo(
+      LID_FIT_CLEARANCE + LID_MAGNETIC_EXTRA_CLEARANCE,
+      6
+    );
+  });
+
+  // A magnetic lid without a lip, or on a polygon footprint, generates NO
+  // corner bosses (`usesMagneticLid` rejects both) — it falls back to a plain
+  // friction fit, so the relief would leave it rattling.
+  it('withholds the relief when magnetic retention cannot actually be built', () => {
+    const noLip = params(
+      { attachment: 'magnetic' },
+      { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } }
+    );
+    expect(resolveLidFootprintClearance(noLip)).toBe(LID_FIT_CLEARANCE);
+
+    const polygon = params(
+      { attachment: 'magnetic' },
+      { cellMask: { cols: 2, rows: 2, cells: [true, true, true, false] } }
+    );
+    expect(resolveLidFootprintClearance(polygon)).toBe(LID_FIT_CLEARANCE);
+  });
+
+  it('shrinks a 6×4 magnetic lid by 0.3mm per axis versus a friction one', () => {
+    const frictionW = 6 * 42 - 2 * resolveLidFootprintClearance(params({ attachment: 'friction' }));
+    const magneticW = 6 * 42 - 2 * resolveLidFootprintClearance(params({ attachment: 'magnetic' }));
+    expect(frictionW - magneticW).toBeCloseTo(0.3, 6);
   });
 });
 
