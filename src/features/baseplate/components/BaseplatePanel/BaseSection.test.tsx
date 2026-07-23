@@ -5,14 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string, params?: Record<string, unknown>) => {
-    if (params) {
-      return Object.entries(params).reduce((str, [k, v]) => str.replace(`{${k}}`, String(v)), key);
-    }
-    return key;
-  },
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('BaseSection', () => {
   beforeEach(() => {
