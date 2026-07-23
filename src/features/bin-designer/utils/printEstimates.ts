@@ -534,7 +534,7 @@ function computeWallPatternReduction(
 
   // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0).
   const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
-  const base = PATTERN_VOID_FRACTION[params.wallPattern.pattern] ?? 0.5;
+  const base = PATTERN_VOID_FRACTION[params.wallPattern.pattern];
   const coverageFraction = Math.min(0.95, Math.max(0, base * (0.85 + 0.3 * scale)));
   const coverage = wallFaceArea * coverageFraction;
 

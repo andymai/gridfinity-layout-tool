@@ -20,11 +20,12 @@ beforeEach(() => {
   cacheDelete.mockClear();
   unregister.mockClear();
 
-  // Preserve the real Location shape (href/origin/...) and override only reload,
-  // so code reading other fields still works.
+  // Location's fields are prototype accessors, so a spread copies none of them —
+  // stub exactly the fields test subjects read (reload, plus href/origin for
+  // incidental readers).
   Object.defineProperty(window, 'location', {
     configurable: true,
-    value: { ...realLocation, href: realLocation.href, origin: realLocation.origin, reload },
+    value: { href: realLocation.href, origin: realLocation.origin, reload },
   });
 
   vi.stubGlobal('caches', {

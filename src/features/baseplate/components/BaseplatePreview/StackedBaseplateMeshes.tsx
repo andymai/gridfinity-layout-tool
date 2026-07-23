@@ -213,7 +213,7 @@ export function StackedBaseplateMeshes({
         </lineSegments>
       )}
       {meshResult.towerLayouts.map((layout, idx) => {
-        const entry = plan[idx];
+        const entry = plan.at(idx);
         if (!entry) return null;
         const label = `×${entry.copies}`;
         return (

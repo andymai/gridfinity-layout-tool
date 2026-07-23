@@ -173,7 +173,7 @@ export function planLabelPlateExport(
     const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] = spanning
       ? linkedBins.map((b) => ({
           widthU: planned[0].widthU,
-          text: (b.label ?? '').trim() || design.name,
+          text: b.label.trim() || design.name,
         }))
       : linkedBins.flatMap(() =>
           planned.map((p) => ({

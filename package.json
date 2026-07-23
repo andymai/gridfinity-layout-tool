@@ -94,6 +94,7 @@
         "!dist/assets/de-*.js",
         "!dist/assets/es-*.js",
         "!dist/assets/fr-*.js",
+        "!dist/assets/it-*.js",
         "!dist/assets/ja-*.js",
         "!dist/assets/nb-*.js",
         "!dist/assets/nl-*.js",
