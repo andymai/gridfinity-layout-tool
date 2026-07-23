@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/retentionMagnetPadMerge.test.ts
+  s_eb8e9cfedea808::t_c78f23e30bfd82 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "4803b561d8d4b859f8bffaf6f7b9a94f22d46d17",
+  "prompts": {},
+  "sessions": {
+    "s_eb8e9cfedea808": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "331ad5f4-652e-4ccf-a38d-5473e29c4a17",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
