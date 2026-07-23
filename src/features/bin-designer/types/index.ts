@@ -1227,6 +1227,8 @@ export interface DesignerState {
   // Surface text actions (lid top + outer walls)
   setLidText: (text: string) => void;
   setWallText: (side: WallTextSide, text: string) => void;
+  /** Remove text from every wall in one history entry (drops `wallAlign` too). */
+  clearWallText: () => void;
   setWallTextAlign: (align: WallTextVerticalAlign) => void;
   setSurfaceTextStyle: (overrides: TextStyleOverride | null) => void;
 

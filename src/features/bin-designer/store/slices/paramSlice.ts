@@ -608,6 +608,20 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
+    clearWallText: () => {
+      const { params } = get();
+      // No-op guard: nothing to clear keeps undo/regeneration quiet.
+      if (params.surfaceText?.walls === undefined) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        // Drop `walls` AND `wallAlign` (meaningless without wall text); keep any
+        // other surface-text keys (lid text, shared style) intact.
+        const { walls: _walls, wallAlign: _align, ...rest } = state.params.surfaceText ?? {};
+        state.params.surfaceText = Object.keys(rest).length > 0 ? rest : undefined;
+      });
+    },
+
     setWallTextAlign: (align: WallTextVerticalAlign) => {
       const { params } = get();
       // 'center' is the implicit default — stored as an absent field.

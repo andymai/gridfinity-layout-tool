@@ -208,20 +208,44 @@ describe('LidSection', () => {
   });
 
   describe('lid text (#2695)', () => {
-    it('renders the text input when the lid is enabled', () => {
+    it('reveals the text input only after the toggle is switched on', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
       expect(screen.getByText('Lid text')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
+      expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
+    });
+
+    it('opens expanded when the design already has lid text', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
       expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
     });
 
     it('commits the typed text to surfaceText.lidText on blur', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
       const input = screen.getByRole('textbox', { name: 'Lid text' });
       fireEvent.change(input, { target: { value: 'Cables' } });
       fireEvent.blur(input);
       expect(useDesignerStore.getState().params.surfaceText?.lidText).toBe('Cables');
+    });
+
+    it('clears lid text and collapses when toggled off', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Lid text' }));
+      expect(useDesignerStore.getState().params.surfaceText?.lidText).toBeUndefined();
+      expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
     });
 
     it('shows the mode picker only when text is present', () => {

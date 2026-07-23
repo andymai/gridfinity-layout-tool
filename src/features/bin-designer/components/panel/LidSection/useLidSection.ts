@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -440,6 +440,21 @@ export function useLidSection() {
     [params.surfaceText, setSurfaceTextStyle]
   );
 
+  // Lid text is gated behind a toggle like wall text and the sibling feature
+  // sections. Open state is UI-only, derived as `local || hasText` so a loaded
+  // design with saved lid text opens expanded and survives design switches.
+  const hasLidText = lidText.trim() !== '';
+  const [lidTextOpen, setLidTextOpen] = useState(false);
+  const isLidTextOpen = lidTextOpen || hasLidText;
+  const toggleLidText = useCallback(() => {
+    if (isLidTextOpen) {
+      setLidText('');
+      setLidTextOpen(false);
+    } else {
+      setLidTextOpen(true);
+    }
+  }, [isLidTextOpen, setLidText]);
+
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
   // readout matches the generated geometry. Floor thickness is dynamic
   // (grows when magnets need a deeper pocket) so we mirror
@@ -637,6 +652,7 @@ export function useLidSection() {
       textMode,
       textDisabledReason,
       textOnTrayFloor: topSurface === 'tray',
+      isLidTextOpen,
     },
     handlers: {
       toggleEnabled,
@@ -654,6 +670,7 @@ export function useLidSection() {
       fixIssue,
       commitLidText,
       setTextMode,
+      toggleLidText,
     },
     t,
   };
