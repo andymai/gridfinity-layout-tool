@@ -91,7 +91,27 @@ function kumikoPatternCase(pattern: WallPatternType): ScenarioCase {
 
 export const kumiko: ScenarioCase[] = [
   kumikoPatternCase('goma'),
-  kumikoPatternCase('asanoha'),
+  defineScenario('kumiko', 'asanoha wraps a 1×1×6 bin including corners', {
+    assert: 'structural',
+    timeout: 180_000,
+    params: {
+      width: 1,
+      depth: 1,
+      height: 6,
+      wallPattern: { enabled: true, pattern: 'asanoha', scale: 0.5 },
+      walls: ALL_SIDES_OFF,
+    },
+    compareWith: {
+      params: {
+        width: 1,
+        depth: 1,
+        height: 6,
+        wallPattern: { enabled: false, pattern: 'asanoha', scale: 0.5 },
+        walls: ALL_SIDES_OFF,
+      },
+      assert: assertCornersWrapped(1, 1),
+    },
+  }),
   kumikoPatternCase('sakura'),
   kumikoPatternCase('rindo'),
   kumikoPatternCase('mikado'),

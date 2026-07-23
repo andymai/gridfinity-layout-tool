@@ -11,6 +11,7 @@ import { describe, it, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { WallPatternType } from '@/shared/types/bin';
 import { clearAllCaches } from '../shapeCache';
 import { PerfCollector } from '../pipeline/perfCollector';
 
@@ -18,7 +19,7 @@ beforeAll(async () => {
   await initBrepjs();
 }, 120_000);
 
-const PATTERN = (process.env.KUMIKO_PROFILE_PATTERN ?? 'mitsukude') as 'mitsukude';
+const PATTERN = (process.env.KUMIKO_PROFILE_PATTERN ?? 'mitsukude') as WallPatternType;
 
 function profile(label: string, width: number, depth: number, height: number): void {
   clearAllCaches();

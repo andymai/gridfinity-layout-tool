@@ -90,7 +90,7 @@ export function clipSegmentToBand(
   const a: readonly [number, number] = [u1 + t0 * du, z1 + t0 * dz];
   const b: readonly [number, number] = [u1 + t1 * du, z1 + t1 * dz];
   if (Math.hypot(b[0] - a[0], b[1] - a[1]) < MIN_SEGMENT_LENGTH) return null;
-  return { a, b };
+  return { a, b, ...(seg.width === undefined ? {} : { width: seg.width }) };
 }
 
 /**

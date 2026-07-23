@@ -179,6 +179,7 @@ function clipSegmentToURange(seg: KumikoSegment, u0: number, u1: number): Kumiko
   return {
     a: [ua + t0 * du, za + t0 * (zb - za)],
     b: [ua + t1 * du, za + t1 * (zb - za)],
+    ...(seg.width === undefined ? {} : { width: seg.width }),
   };
 }
 
