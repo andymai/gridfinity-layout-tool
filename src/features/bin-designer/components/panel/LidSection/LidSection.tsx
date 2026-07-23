@@ -181,19 +181,12 @@ export function LidSection() {
     <div className="space-y-4">
       {/* Master enable. Disabled (with a reason) when the bin has no stacking
           lip or a blocker-severity feature conflict is unresolved. */}
-      <div>
-        <Switch
-          label={t('binDesigner.lid.enable')}
-          checked={state.enabled}
-          onChange={handlers.toggleEnabled}
-          disabled={!!state.disabledReason}
-        />
-        {state.disabledReason && (
-          <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
-            {state.disabledReason}
-          </p>
-        )}
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.lid.enable')}
+        checked={state.enabled}
+        onChange={handlers.toggleEnabled}
+        disabledReason={state.disabledReason}
+      />
 
       {state.enabled && (
         <>
