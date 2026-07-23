@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { migrateWalls } from './paramMigration';
+import {
+  migrateWalls,
+  migrateParams,
+  extractStyleDefaults,
+  STYLE_DEFAULT_OMIT_KEYS,
+} from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
-import { migrateParams, extractStyleDefaults, STYLE_DEFAULT_OMIT_KEYS } from './paramMigration';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
