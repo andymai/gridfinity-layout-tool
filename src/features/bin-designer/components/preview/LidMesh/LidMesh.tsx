@@ -24,7 +24,7 @@ import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { binLipTopWorldZ, lidAnchorZ } from './lidAnchorZ';
 
@@ -66,11 +66,16 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, lid, extraWallHeightMm } = s.params;
+      const { height, heightUnitMm, base, extraWallHeightMm } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip, extraWallHeightMm);
-      // extraHeightMm deepens the cavity, raising the lid floor above the lip
-      // so tall contents are enclosed; 0 = standard lid (issue #2482).
-      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, lid.extraHeightMm);
+      // The cavity deepens for the extraHeightMm knob (#2482) AND for any
+      // floor plate thicker than the baseline (#2761); both raise the lid
+      // floor above the lip. Resolved centrally so this matches the worker.
+      const anchorZ = lidAnchorZ(
+        heightUnitMm,
+        LID_FIT_CLEARANCE,
+        resolveLidCavityExtraMm(s.params)
+      );
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it

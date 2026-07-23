@@ -20,6 +20,7 @@ import {
   LID_FIT_CLEARANCE,
   LID_TOP_THICKNESS_BASE,
   LID_MAGNET_CEILING,
+  LID_TRAY_FLOOR,
 } from '@/shared/types/bin';
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -28,7 +29,13 @@ import {
  * here so worker callers keep their existing import path.
  * ──────────────────────────────────────────────────────────────────────── */
 
-export { LID_CORNER_RADIUS, LID_FIT_CLEARANCE, LID_TOP_THICKNESS_BASE, LID_MAGNET_CEILING };
+export {
+  LID_CORNER_RADIUS,
+  LID_FIT_CLEARANCE,
+  LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_CEILING,
+  LID_TRAY_FLOOR,
+};
 
 /** Side-wall thickness in the lip-mating zone. Derived: the outer chamfer
  *  steps inward by `LIP_BIG_TAPER` and the inner cavity face sits at
@@ -36,26 +43,11 @@ export { LID_CORNER_RADIUS, LID_FIT_CLEARANCE, LID_TOP_THICKNESS_BASE, LID_MAGNE
  *  `(LID_CORNER_RADIUS - LID_FIT_CLEARANCE) - LIP_BIG_TAPER = 1.85mm`. */
 export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BIG_TAPER;
 
-/** Minimum solid floor kept below a tray recess (mm) so the recess can't
- *  break through into the mating cavity. */
-export const LID_TRAY_FLOOR = 0.8;
-
-/**
- * Floor plate thickness. Grows for two independent reasons:
- *  - stack-magnet pockets (`magnetHoles`) need `magnetDepth + ceiling`;
- *  - a tray recess needs `trayDepth + floor` of plate below its bottom.
- * Takes the larger requirement; falls back to the baseline when neither
- * applies. `trayDepth` is 0 when there's no tray.
+/* Floor-plate thickness and the cavity depth it consumes are resolved from
+ * BinParams in `@/shared/types/bin` (`resolveLidPlateThickness` /
+ * `resolveLidCavityExtraMm`) — the preview, thumbnail, and export assembly
+ * need them too, and a second copy here would drift.
  */
-export function lidTopThickness(
-  magnetHoles: boolean,
-  magnetDepth: number,
-  trayDepth: number = 0
-): number {
-  const magnetNeed = magnetHoles ? magnetDepth + LID_MAGNET_CEILING : 0;
-  const trayNeed = trayDepth > 0 ? trayDepth + LID_TRAY_FLOOR : 0;
-  return Math.max(LID_TOP_THICKNESS_BASE, magnetNeed, trayNeed);
-}
 
 /** Extra clearance baked into the anchor calculation to compensate for
  *  first-layer squish (mm). */

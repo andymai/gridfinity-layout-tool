@@ -151,6 +151,22 @@ describe('checkLidCompatibility', () => {
         checkLidCompatibility(withLid(3, 40)).find((i) => i.id === 'tallLidShortBin')
       ).toBeUndefined();
     });
+
+    // A thick floor plate deepens the cavity just like extraHeightMm does
+    // (#2761), so it lengthens the same lever arm and counts toward the
+    // threshold — 6mm of extra height alone would not trip it.
+    it('counts a thick floor plate toward the leverage threshold', () => {
+      const params = withOverrides({
+        height: 1,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, extraHeightMm: 6, topThicknessMm: 5 },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'tallLidShortBin')?.severity).toBe(
+        'warning'
+      );
+      expect(
+        checkLidCompatibility(withLid(1, 6)).find((i) => i.id === 'tallLidShortBin')
+      ).toBeUndefined();
+    });
   });
 
   describe('tall divider pieces', () => {

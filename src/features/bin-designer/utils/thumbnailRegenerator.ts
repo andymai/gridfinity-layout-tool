@@ -12,7 +12,7 @@
 import type { WebGLRenderer, BufferGeometry, MeshStandardMaterial } from 'three';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
-import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
 import {
@@ -103,7 +103,7 @@ export async function regenerateThumbnail(
             params.heightUnitMm,
             params.base.stackingLip,
             params.extraWallHeightMm
-          ) - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, params.lid.extraHeightMm)
+          ) - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params))
         : null;
     if (lidMesh && lidGroupZ !== null && lidMesh.vertices.length > 0) {
       lidGeometry = new THREE.BufferGeometry();

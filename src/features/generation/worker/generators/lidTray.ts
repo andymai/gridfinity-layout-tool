@@ -7,7 +7,7 @@
  * enforces that, so this builder trusts `inputs.tray.enabled`.
  *
  * The recess is the lid outline inset by the rim wall, cut downward from the
- * top face (Z=0) by the tray depth. `lidTopThickness` grows the floor plate so
+ * top face (Z=0) by the tray depth. `resolveLidPlateThickness` grows the plate so
  * the recess never breaks through into the mating cavity below.
  */
 

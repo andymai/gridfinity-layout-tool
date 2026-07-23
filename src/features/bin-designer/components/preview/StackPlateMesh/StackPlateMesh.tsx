@@ -17,7 +17,7 @@ import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { binLipTopWorldZ, lidAnchorZ } from '../LidMesh/lidAnchorZ';
 
@@ -52,12 +52,16 @@ export function StackPlateMesh({
 
   const { stackPlateMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, lid, extraWallHeightMm } = s.params;
+      const { height, heightUnitMm, base, extraWallHeightMm } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip, extraWallHeightMm);
-      // Match the lid's mated frame including the extra-height cavity (issue
-      // #2482) so the glue-on plate rides on the taller lid's floor, not the
-      // default-height one — mirrors LidMesh and the export lift.
-      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, lid.extraHeightMm);
+      // Match the lid's mated frame including every source of cavity depth
+      // (extra height #2482, thicker floor plate #2761) so the glue-on plate
+      // rides on the taller lid's floor — mirrors LidMesh and the export lift.
+      const anchorZ = lidAnchorZ(
+        heightUnitMm,
+        LID_FIT_CLEARANCE,
+        resolveLidCavityExtraMm(s.params)
+      );
       return {
         stackPlateMesh: s.generation.mesh?.stackPlateMesh ?? null,
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it

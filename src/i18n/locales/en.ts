@@ -1757,6 +1757,14 @@ const en: Record<string, string> = {
   'binDesigner.lid.extraHeightAria': 'Extra lid height in millimeters',
   'binDesigner.lid.extraHeightHint':
     'Raises the lid so contents that stick out of a short bin (e.g. toothpicks) are enclosed. 0 = standard lid.',
+  'binDesigner.lid.topThickness': 'Lid thickness',
+  'binDesigner.lid.topThicknessAria': 'Lid top plate thickness in millimeters',
+  'binDesigner.lid.topThicknessHint':
+    'Thickness of the lid’s flat top. Raise it for a stiffer, more opaque lid on large bins.',
+  'binDesigner.lid.topThicknessRaisedHint':
+    'Top is {thickness}mm here — magnet pockets or the tray recess need the extra material.',
+  'binDesigner.lid.magneticClearanceHint':
+    'Magnetic lids are made {clearance}mm smaller per side so the magnets pull them shut instead of fighting a friction fit.',
   'binDesigner.lid.clickRailCoverage': 'Rail coverage',
   'binDesigner.lid.clickRailCoverage.50': 'Compact rails — saves the most filament',
   'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails — balanced grip and savings',

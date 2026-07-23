@@ -888,6 +888,7 @@ describe('migrateParams', () => {
       clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
       extraHeightMm: 25,
+      topThicknessMm: 2,
       retentionMagnet: { diameter: 8, depth: 3 },
       tray: { enabled: true, depthMm: 5, wallMm: 3 },
     };
@@ -945,6 +946,30 @@ describe('migrateParams', () => {
     expect(migrateParams({ lid: { extraHeightMm: -50 } as any }).lid.extraHeightMm).toBe(0);
     // Non-numeric / corrupt values fall back to the default.
     expect(migrateParams({ lid: { extraHeightMm: 'tall' } as any }).lid.extraHeightMm).toBe(0);
+  });
+
+  it('defaults topThicknessMm to the 0.8mm baseline for legacy lid configs', () => {
+    const result = migrateParams({
+      lid: { enabled: true, stackableTop: true } as any,
+    });
+    expect(result.lid.topThicknessMm).toBe(0.8);
+  });
+
+  // A legacy design carries a `topThickness` field that the migration strips.
+  // It must NOT be read as the new `topThicknessMm` knob — the two never
+  // meant the same thing, and 1.2 would silently thicken every old lid.
+  it('does not adopt the stripped legacy topThickness as the new knob', () => {
+    const result = migrateParams({
+      lid: { enabled: true, topThickness: 1.2, wallThickness: 1.2, fit: 'standard' } as any,
+    });
+    expect(result.lid.topThicknessMm).toBe(0.8);
+    expect('topThickness' in result.lid).toBe(false);
+  });
+
+  it('clamps an out-of-range topThicknessMm into the valid range', () => {
+    expect(migrateParams({ lid: { topThicknessMm: 99 } as any }).lid.topThicknessMm).toBe(5);
+    expect(migrateParams({ lid: { topThicknessMm: 0.1 } as any }).lid.topThicknessMm).toBe(0.8);
+    expect(migrateParams({ lid: { topThicknessMm: 'thick' } as any }).lid.topThicknessMm).toBe(0.8);
   });
 
   it('backfills clickRails (object) for legacy lid configs missing the field', () => {

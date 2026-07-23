@@ -30,7 +30,7 @@ import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
+import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/shared/types/bin';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { runExport, reportProgress, classifyExportError } from './workerContext';
 
@@ -259,7 +259,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
         const lidZ =
           totalHeight -
-          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, params.lid.extraHeightMm);
+          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
         let lidSolid = hasLid ? buildLid(params) : null;
         // Separate baseplate (glue-on) rides on top of the lid floor in the
         // assembly, at the same lift as the lid. buildStackPlate returns null
