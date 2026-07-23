@@ -14,28 +14,7 @@ import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
-
-// Square sizes (matching desktop ActiveLayerPanel)
-const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
-
-// Rectangle sizes (width × depth where width < depth)
-const RECTANGLE_SIZES = [
-  { w: 1, d: 2 },
-  { w: 1, d: 3 },
-  { w: 1, d: 4 },
-  { w: 1, d: 5 },
-  { w: 1, d: 6 },
-  { w: 2, d: 3 },
-  { w: 2, d: 4 },
-  { w: 2, d: 5 },
-  { w: 2, d: 6 },
-  { w: 3, d: 4 },
-  { w: 3, d: 5 },
-  { w: 3, d: 6 },
-  { w: 4, d: 5 },
-  { w: 4, d: 6 },
-  { w: 5, d: 6 },
-];
+import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
 
 /**
  * Tools tab content - bin palette for paint mode and layer fill actions.

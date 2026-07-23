@@ -14,7 +14,8 @@ import { useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import { getAccentHex } from '@/shared/utils/color';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
@@ -32,18 +33,6 @@ import {
   SNAP_CLIP,
   snapClipLevels,
 } from '@/shared/constants/connectors';
-
-/** Retaining floor above magnet holes — mirrors MAGNET_FLOOR in the generator. */
-const MAGNET_FLOOR = 0.5;
-
-/** Distinct accent so the locking mechanism reads against the plate filament. */
-const FALLBACK_ACCENT = '#f59e0b';
-
-function getAccentHex(): string {
-  if (typeof document === 'undefined') return FALLBACK_ACCENT;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
-  return raw || FALLBACK_ACCENT;
-}
 
 /** Build the dogbone key profile (two mirrored puzzle lobes) centered on the
  *  origin, long axis along X — matching the worker's `buildDovetailKey`. */

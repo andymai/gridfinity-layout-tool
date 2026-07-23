@@ -70,6 +70,14 @@ export const GRIDFINITY_SPEC = {
   // Fillets (used for BREP generation)
   TOP_FILLET: 0, // mm — original spec has no fillet at stacking lip peak
 } as const;
+
+/**
+ * Thin floor under each magnet hole that retains the magnet (mm).
+ * Canonical value — the worker generators and the baseplate preview/print-guide
+ * math must all agree or preview heights drift from exported geometry.
+ */
+export const MAGNET_FLOOR = 0.5;
+
 /**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *

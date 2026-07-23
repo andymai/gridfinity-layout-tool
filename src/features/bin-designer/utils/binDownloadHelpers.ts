@@ -7,6 +7,7 @@
  */
 
 import { isErr, getUserMessage } from '@/core/result';
+import { GITHUB_ISSUES_URL } from '@/shared/constants/links';
 import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
 import { captureException } from '@/shared/analytics/posthog';
 import {
@@ -143,7 +144,7 @@ export function buildReportIssueUrl(
     ),
     '```',
   ].join('\n');
-  const url = new URL('https://github.com/andymai/gridfinity-layout-tool/issues/new');
+  const url = new URL(`${GITHUB_ISSUES_URL}/new`);
   url.searchParams.set('title', title);
   url.searchParams.set('body', body);
   url.searchParams.set('labels', 'bin-export-failure');

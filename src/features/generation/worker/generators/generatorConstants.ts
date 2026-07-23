@@ -8,6 +8,9 @@
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { OVER_TILE_MIN_MARGIN_MM, SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
+import { MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+
+export { MAGNET_FLOOR };
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
@@ -28,9 +31,6 @@ export const LIP_OVERLAP = GRIDFINITY.LIP_OVERLAP;
 
 /** Corner radius for baseplate outer perimeter (same as socket corner radius) */
 export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
-
-/** Thin floor under each magnet hole — retains the magnet (mm) */
-export const MAGNET_FLOOR = 0.5;
 
 /**
  * Height of solid floor left under the baseplate sockets, in mm — the single

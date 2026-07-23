@@ -1,4 +1,5 @@
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { GITHUB_RELEASES_URL, KOFI_URL } from '@/shared/constants/links';
 import { useTranslation } from '@/i18n';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 
@@ -10,7 +11,7 @@ export function AttributionFooter() {
       <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
         {t('sidebar.appName')}
         <a
-          href="https://github.com/andymai/gridfinity-layout-tool/releases"
+          href={GITHUB_RELEASES_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] font-normal text-content-disabled hover:text-content-tertiary hover:underline"
@@ -39,7 +40,7 @@ export function AttributionFooter() {
       </a>{' '}
       ·{' '}
       <a
-        href="https://ko-fi.com/andyaragon"
+        href={KOFI_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="text-accent hover:underline"

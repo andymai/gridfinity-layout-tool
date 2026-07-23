@@ -24,20 +24,11 @@ import {
 import { useMeshGeometry } from './useMeshGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
+import { getAccentHex } from '@/shared/utils/color';
 import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageStore';
-
-/** Fallback accent hex (amber-500) when CSS var is unavailable. */
-const FALLBACK_ACCENT = '#f59e0b';
 
 /** Face opacity when xray mode is enabled (matches BaseplateMesh). */
 const XRAY_OPACITY = 0.3;
-
-/** Read the current accent color from CSS custom properties. */
-function getAccentHex(): string {
-  if (typeof document === 'undefined') return FALLBACK_ACCENT;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
-  return raw || FALLBACK_ACCENT;
-}
 
 interface PieceMeshProps {
   readonly entry: PieceMeshEntry;

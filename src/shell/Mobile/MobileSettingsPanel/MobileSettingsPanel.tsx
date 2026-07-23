@@ -1,4 +1,5 @@
 import { useCallback, useState, Suspense } from 'react';
+import { GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '@/shared/constants/links';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
@@ -351,7 +352,7 @@ export function MobileSettingsPanel() {
             {t('sidebar.appName')}
           </span>
           <a
-            href={`https://github.com/andymai/gridfinity-layout-tool/releases/tag/v${__APP_VERSION__}`}
+            href={`${GITHUB_RELEASES_URL}/tag/v${__APP_VERSION__}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] text-content-disabled hover:text-content-tertiary hover:underline"
@@ -400,7 +401,7 @@ export function MobileSettingsPanel() {
           </a>
           <span>·</span>
           <a
-            href="https://github.com/andymai/gridfinity-layout-tool"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-content-tertiary"

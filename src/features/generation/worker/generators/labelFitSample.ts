@@ -22,18 +22,8 @@
  * ready-to-slice STL/STEP.
  */
 
-import {
-  draw,
-  fuse,
-  compound,
-  mesh,
-  exportSTEP,
-  translate,
-  unwrap,
-  withScope,
-  clone,
-} from 'brepjs';
-import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
+import { fuse, compound, mesh, exportSTEP, translate, unwrap, withScope, clone } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import {
   LABEL_PLATE_HEIGHT_MM,
   LABEL_SOCKET_SHELF_THICKNESS_MM,
@@ -44,6 +34,7 @@ import {
 import type { TextStyleDefaults } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
+import { roundedRect } from './couponHelpers';
 import { buildTextSolid } from './textBuilder';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { cutLabelSocket } from './labelTabBuilder';
@@ -86,23 +77,6 @@ const PLATE_TEXT_DEFAULTS: TextStyleDefaults = {
 function formatOffset(v: number): string {
   const s = v.toFixed(2);
   return v >= 0 ? `+${s}` : s;
-}
-
-function roundedRect(cx: number, cy: number, w: number, h: number, r: number): Drawing {
-  const x0 = cx - w / 2;
-  const x1 = cx + w / 2;
-  const y0 = cy - h / 2;
-  const y1 = cy + h / 2;
-  return draw([cx, y0])
-    .lineTo([x1, y0])
-    .customCorner(r)
-    .lineTo([x1, y1])
-    .customCorner(r)
-    .lineTo([x0, y1])
-    .customCorner(r)
-    .lineTo([x0, y0])
-    .customCorner(r)
-    .close();
 }
 
 /**

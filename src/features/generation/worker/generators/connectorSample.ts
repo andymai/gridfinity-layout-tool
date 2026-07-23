@@ -25,7 +25,6 @@
  */
 
 import {
-  draw,
   fuse,
   cut,
   cutAll,
@@ -37,10 +36,11 @@ import {
   withScope,
   clone,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
+import { formatOffset, roundedRect } from './couponHelpers';
 import {
   SOCKET_HEIGHT,
   MAGNET_FLOOR,
@@ -106,29 +106,6 @@ const ROW_PITCH = CELL_Y + ROW_GAP;
 /** Map (wall, boundary) → XY point for a seam running along X (protrude on Y). */
 function ptY(wall: number, bp: number): [number, number] {
   return [bp, wall];
-}
-
-/** Signed fit-offset label, e.g. "+0.05", "-0.10", "0.00". */
-function formatOffset(v: number): string {
-  const s = v.toFixed(2);
-  return v > 0 ? `+${s}` : s;
-}
-
-function roundedRect(cx: number, cy: number, w: number, h: number, r: number): Drawing {
-  const x0 = cx - w / 2;
-  const x1 = cx + w / 2;
-  const y0 = cy - h / 2;
-  const y1 = cy + h / 2;
-  return draw([cx, y0])
-    .lineTo([x1, y0])
-    .customCorner(r)
-    .lineTo([x1, y1])
-    .customCorner(r)
-    .lineTo([x0, y1])
-    .customCorner(r)
-    .lineTo([x0, y0])
-    .customCorner(r)
-    .close();
 }
 
 type CouponFeature =

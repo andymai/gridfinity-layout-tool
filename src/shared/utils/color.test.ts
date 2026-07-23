@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { getContrastColor, getBinPatternColor } from '@/shared/utils';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import {
+  getContrastColor,
+  getBinPatternColor,
+  getAccentHex,
+  FALLBACK_ACCENT,
+} from '@/shared/utils';
 
 describe('getContrastColor', () => {
   describe('light backgrounds should return dark text', () => {
@@ -86,5 +91,28 @@ describe('getBinPatternColor', () => {
   it('handles 3-char hex colors', () => {
     expect(getBinPatternColor('#fff')).toBe('rgba(0, 0, 0, 0.42)');
     expect(getBinPatternColor('#000')).toBe('rgba(255, 255, 255, 0.48)');
+  });
+});
+
+describe('getAccentHex', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns the fallback when no document exists (node/worker)', () => {
+    expect(typeof document).toBe('undefined');
+    expect(getAccentHex()).toBe(FALLBACK_ACCENT);
+  });
+
+  it('reads and trims --color-accent from the document root', () => {
+    vi.stubGlobal('document', { documentElement: {} });
+    vi.stubGlobal('getComputedStyle', () => ({ getPropertyValue: () => '  #123456  ' }));
+    expect(getAccentHex()).toBe('#123456');
+  });
+
+  it('returns the fallback when the CSS var is unset', () => {
+    vi.stubGlobal('document', { documentElement: {} });
+    vi.stubGlobal('getComputedStyle', () => ({ getPropertyValue: () => '' }));
+    expect(getAccentHex()).toBe(FALLBACK_ACCENT);
   });
 });
