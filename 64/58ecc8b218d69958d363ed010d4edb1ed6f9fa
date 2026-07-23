@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__kernel-tests__/helixHandedness.test.ts
+  s_59b071634fd176::t_50ca4521b86a3b 3-4,6,10,14-15,17,25-31,49,54,57-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6458ecc8b218d69958d363ed010d4edb1ed6f9fa",
+  "prompts": {},
+  "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
