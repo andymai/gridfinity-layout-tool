@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.285.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.285.0...gridfinity-layout-tool-v4.285.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* **design-system:** center Input left icon vertically ([#2746](https://github.com/andymai/gridfinity-layout-tool/issues/2746)) ([2a3ffd2](https://github.com/andymai/gridfinity-layout-tool/commit/2a3ffd24b321313123f5aede56c35f3c8ec7715f))
+
 ## [4.285.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.284.0...gridfinity-layout-tool-v4.285.0) (2026-07-23)
 
 
