@@ -487,6 +487,12 @@ const PATTERN_VOID_FRACTION: Record<WallPatternType, number> = {
   triangle: 0.42,
   slots: 0.48,
   mitsukude: 0.58,
+  goma: 0.45,
+  asanoha: 0.3,
+  sakura: 0.4,
+  rindo: 0.45,
+  mikado: 0.42,
+  'tsumiishi-kikko': 0.45,
 };
 
 /**

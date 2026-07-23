@@ -18,7 +18,7 @@ export function createKumikoCalculator(
   def: KumikoPatternDef,
   scale: number
 ): WrappedLatticeCalculator {
-  const targetCellSize = KUMIKO_BASE_CELL_SIZE * scaleFactor(scale);
+  const targetCellSize = (def.baseCellSize ?? KUMIKO_BASE_CELL_SIZE) * scaleFactor(scale);
   return {
     strategy: 'wrapped-lattice',
     getPatternType: () => def.id,

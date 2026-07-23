@@ -22,6 +22,12 @@ import { createDiamondCalculator } from './diamondPattern';
 import { createTriangleCalculator } from './trianglePattern';
 import { createSlotCalculator } from './slotPattern';
 import { createMitsukudeCalculator } from './kumiko/mitsukude';
+import { createGomaCalculator } from './kumiko/goma';
+import { createAsanohaCalculator } from './kumiko/asanoha';
+import { createSakuraCalculator } from './kumiko/sakura';
+import { createRindoCalculator } from './kumiko/rindo';
+import { createMikadoCalculator } from './kumiko/mikado';
+import { createTsumiishiKikkoCalculator } from './kumiko/tsumiishiKikko';
 
 /**
  * Registry entry for a pattern type.
@@ -60,6 +66,30 @@ export const PATTERN_REGISTRY: Record<WallPatternType, PatternRegistryEntry> = {
   mitsukude: {
     createCalculator: createMitsukudeCalculator,
     displayName: 'Mitsukude',
+  },
+  goma: {
+    createCalculator: createGomaCalculator,
+    displayName: 'Goma',
+  },
+  asanoha: {
+    createCalculator: createAsanohaCalculator,
+    displayName: 'Asanoha',
+  },
+  sakura: {
+    createCalculator: createSakuraCalculator,
+    displayName: 'Sakura',
+  },
+  rindo: {
+    createCalculator: createRindoCalculator,
+    displayName: 'Rindo',
+  },
+  mikado: {
+    createCalculator: createMikadoCalculator,
+    displayName: 'Mikado',
+  },
+  'tsumiishi-kikko': {
+    createCalculator: createTsumiishiKikkoCalculator,
+    displayName: 'Tsumiishi-Kikko',
   },
 };
 

@@ -177,6 +177,21 @@ describe('computeGenerationTimeoutMs', () => {
     expect(wider - small).toBe(2 * KUMIKO_PERIMETER_BONUS_MS_PER_CELL);
   });
 
+  it('doubles the kumiko pattern bonus for filled patterns', () => {
+    const filled = computeGenerationTimeoutMs(
+      params({
+        width: 1,
+        depth: 1,
+        height: 3,
+        wallPattern: { enabled: true, pattern: 'asanoha' },
+      })
+    );
+    const bare = computeGenerationTimeoutMs(
+      params({ width: 1, depth: 1, height: 3, wallPattern: KUMIKO_ON })
+    );
+    expect(filled - bare).toBe(KUMIKO_PATTERN_BONUS_MS);
+  });
+
   it('does not grant kumiko bonuses to stamp patterns', () => {
     const hex = computeGenerationTimeoutMs(
       params({ width: 1, depth: 1, height: 3, wallPattern: HEX_ON })
