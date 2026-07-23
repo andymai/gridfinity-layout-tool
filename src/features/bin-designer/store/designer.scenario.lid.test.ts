@@ -287,6 +287,22 @@ describe('DesignerStore - lid actions', () => {
       undo();
       expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
     });
+
+    it('clearWallText drops a dangling wallAlign even with no wall strings', () => {
+      const { setWallText, setWallTextAlign, clearWallText } = useDesignerStore.getState();
+      // Reach the walls-less-but-aligned state a programmatic/legacy caller can
+      // produce: set an alignment, then clear the only wall string.
+      setWallText('front', 'Cables');
+      setWallTextAlign('top');
+      setWallText('front', '');
+      // setWallText already dropped wallAlign with the last wall, so re-inject a
+      // dangling alignment directly to exercise the guard.
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, surfaceText: { wallAlign: 'top' } },
+      }));
+      clearWallText();
+      expect(useDesignerStore.getState().params.surfaceText).toBeUndefined();
+    });
   });
 
   describe('compatibility checks', () => {

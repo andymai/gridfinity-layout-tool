@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WallsSection } from './WallsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -75,6 +75,17 @@ describe('WallsSection', () => {
       fireEvent.change(input, { target: { value: 'Cables' } });
       fireEvent.blur(input);
       expect(useDesignerStore.getState().params.surfaceText?.walls?.front).toBe('Cables');
+    });
+
+    it('collapses an opened-but-empty toggle when the active design switches', () => {
+      render(<WallsSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Wall text' }));
+      expect(screen.getByRole('textbox', { name: 'Front wall text' })).toBeInTheDocument();
+
+      act(() => {
+        useDesignerStore.setState({ currentDesignId: 'another-design' });
+      });
+      expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
     });
 
     it('clears all wall text and collapses when toggled off', () => {

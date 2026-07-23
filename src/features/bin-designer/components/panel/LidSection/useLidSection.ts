@@ -221,6 +221,7 @@ export function useLidSection() {
     setParam,
     setLidText,
     setSurfaceTextStyle,
+    currentDesignId,
   } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
@@ -234,6 +235,7 @@ export function useLidSection() {
       setParam: s.setParam,
       setLidText: s.setLidText,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
+      currentDesignId: s.currentDesignId,
     }))
   );
 
@@ -445,6 +447,15 @@ export function useLidSection() {
   // design with saved lid text opens expanded and survives design switches.
   const hasLidText = lidText.trim() !== '';
   const [lidTextOpen, setLidTextOpen] = useState(false);
+  // Reset the local open flag on design switch so an opened-but-empty toggle
+  // doesn't carry to the next design (the hook isn't remounted). React's
+  // "adjust state during render" pattern — no effect. `local || hasText` still
+  // auto-opens a design that ships with saved lid text.
+  const [lidTextDesignId, setLidTextDesignId] = useState(currentDesignId);
+  if (lidTextDesignId !== currentDesignId) {
+    setLidTextDesignId(currentDesignId);
+    setLidTextOpen(false);
+  }
   const isLidTextOpen = lidTextOpen || hasLidText;
   const toggleLidText = useCallback(() => {
     if (isLidTextOpen) {

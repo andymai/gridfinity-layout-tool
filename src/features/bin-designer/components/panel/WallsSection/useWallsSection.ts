@@ -24,6 +24,7 @@ export function useWallsSection() {
     clearWallText,
     setWallTextAlign,
     setSurfaceTextStyle,
+    currentDesignId,
   } = useDesignerStore(
     useShallow((s) => ({
       wallThickness: s.params.wallThickness,
@@ -35,6 +36,7 @@ export function useWallsSection() {
       clearWallText: s.clearWallText,
       setWallTextAlign: s.setWallTextAlign,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
+      currentDesignId: s.currentDesignId,
     }))
   );
   const t = useTranslation();
@@ -105,6 +107,16 @@ export function useWallsSection() {
   // means a loaded design with saved wall text opens expanded without a
   // migration, and stays in sync when the active design switches (no remount).
   const [wallTextOpen, setWallTextOpen] = useState(false);
+  // Reset the local open flag when the active design changes so an opened-but-
+  // empty toggle on one design doesn't carry into the next (the panel hook
+  // isn't remounted on design switch). React's "adjust state during render"
+  // pattern — no effect. `local || hasText` still auto-opens a design that
+  // ships with saved wall text.
+  const [wallTextDesignId, setWallTextDesignId] = useState(currentDesignId);
+  if (wallTextDesignId !== currentDesignId) {
+    setWallTextDesignId(currentDesignId);
+    setWallTextOpen(false);
+  }
   const isWallTextOpen = wallTextOpen || hasAnyWallText;
   const toggleWallText = useCallback(() => {
     if (isWallTextOpen) {

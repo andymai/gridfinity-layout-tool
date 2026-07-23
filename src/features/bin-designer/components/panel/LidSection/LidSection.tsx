@@ -303,7 +303,7 @@ export function LidSection() {
           </section>
 
           {/* ── Lid text (#2695) — gated behind a toggle to match wall text. */}
-          <section>
+          <section className="space-y-2">
             <FeatureToggle
               label={t('binDesigner.lid.section.text')}
               checked={state.isLidTextOpen}

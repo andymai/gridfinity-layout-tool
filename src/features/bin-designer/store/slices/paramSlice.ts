@@ -610,8 +610,12 @@ export function createParamSlice(set: Set, get: Get) {
 
     clearWallText: () => {
       const { params } = get();
-      // No-op guard: nothing to clear keeps undo/regeneration quiet.
-      if (params.surfaceText?.walls === undefined) return;
+      // No-op guard: nothing to clear keeps undo/regeneration quiet. Checks
+      // `wallAlign` too — a programmatic/legacy state can hold an alignment
+      // without any wall strings, and clearing must still drop it.
+      if (params.surfaceText?.walls === undefined && params.surfaceText?.wallAlign === undefined) {
+        return;
+      }
 
       set((state) => {
         pushHistoryEntry(state);
