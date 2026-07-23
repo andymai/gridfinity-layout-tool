@@ -10,7 +10,7 @@
  *   /baseplate  Baseplate 1    [Baseplates]  [Export]  ✓ Saved
  *
  * There is no Save / Save As / New here because there is nothing to save:
- * `useBaseplateInit` guarantees an active design and `useBaseplateAutoSave`
+ * `useBaseplateLibraryInit` guarantees an active design and `useBaseplateAutoSave`
  * keeps it current. New and duplicate live in the library modal, matching where
  * the designer puts them (`DesignListDialog`).
  */

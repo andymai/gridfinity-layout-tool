@@ -19,8 +19,9 @@ Engagement-gated nudge system for feedback and Ko-fi support.
 
 ## Files
 
-| File                     | Purpose                                                   |
-| ------------------------ | --------------------------------------------------------- |
-| `engagementTracker.ts`   | Engagement scoring, cooldown management, localStorage I/O |
-| `useEngagementNudges.ts` | React hook mounted in App.tsx — checks gate every 60s     |
-| `index.ts`               | Public API                                                |
+| File                     | Purpose                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `engagementTracker.ts`   | Engagement scoring, cooldown management, localStorage I/O                    |
+| `useEngagementNudges.ts` | React hook mounted in App.tsx — checks gate every 60s                        |
+| `useLayoutPromotion.ts`  | One-time toast nudging engaged single-layout users to create a second layout |
+| `index.ts`               | Public API                                                                   |
