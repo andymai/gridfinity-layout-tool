@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.285.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.284.0...gridfinity-layout-tool-v4.285.0) (2026-07-23)
+
+
+### Features
+
+* **labs:** graduate collab, STL import, and bin size suggestions ([#2742](https://github.com/andymai/gridfinity-layout-tool/issues/2742)) ([ad99bf6](https://github.com/andymai/gridfinity-layout-tool/commit/ad99bf61bc2fc169416dcf2742181de477436c7a))
+
 ## [4.284.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.283.0...gridfinity-layout-tool-v4.284.0) (2026-07-23)
 
 
