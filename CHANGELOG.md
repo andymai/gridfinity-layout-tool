@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.287.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.0...gridfinity-layout-tool-v4.287.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** sink click-in label sockets below the stacking plane ([#2774](https://github.com/andymai/gridfinity-layout-tool/issues/2774)) ([9ee8c85](https://github.com/andymai/gridfinity-layout-tool/commit/9ee8c85f638b76b2b668e4eb99a33682ea5a46ed))
+
 ## [4.287.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.286.1...gridfinity-layout-tool-v4.287.0) (2026-07-23)
 
 
