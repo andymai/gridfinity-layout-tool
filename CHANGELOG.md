@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.282.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.2...gridfinity-layout-tool-v4.282.3) (2026-07-23)
+
+
+### Bug Fixes
+
+* **layout:** scale custom drawer shapes by the Y grid pitch on non-square grids ([#2734](https://github.com/andymai/gridfinity-layout-tool/issues/2734)) ([fd453cb](https://github.com/andymai/gridfinity-layout-tool/commit/fd453cb9982d455cd511f4ade8d85415855a23cc))
+
 ## [4.282.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.282.1...gridfinity-layout-tool-v4.282.2) (2026-07-22)
 
 
