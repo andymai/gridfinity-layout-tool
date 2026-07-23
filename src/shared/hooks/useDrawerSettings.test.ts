@@ -403,6 +403,22 @@ describe('useDrawerSettings', () => {
       expect(result.current.gridUnitMmY).toBe(42);
     });
 
+    it('resetGridfinityStandard clears a non-square Y pitch', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.handleGridUnitChange(48, 40);
+      });
+      expect(result.current.gridUnitMmY).toBe(40);
+
+      act(() => {
+        result.current.resetGridfinityStandard();
+      });
+
+      expect(result.current.gridUnitMm).toBe(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      expect(useLayoutStore.getState().layout.gridUnitMmY).toBeUndefined();
+    });
+
     it('handleGridUnitChange without Y clears back to a square grid', () => {
       const { result } = renderHook(() => useDrawerSettings());
 

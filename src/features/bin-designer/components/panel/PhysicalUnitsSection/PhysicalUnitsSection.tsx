@@ -13,7 +13,11 @@ import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
-import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
+import {
+  DESIGNER_GRID_UNIT_MM_MIN,
+  DESIGNER_GRID_UNIT_MM_MAX,
+  usePhysicalUnitsSection,
+} from './usePhysicalUnitsSection';
 
 export function PhysicalUnitsSection() {
   const { state, handlers, meta, t } = usePhysicalUnitsSection();
@@ -44,6 +48,8 @@ export function PhysicalUnitsSection() {
             y={state.gridUnitMmY}
             onChange={handlers.handleGridUnitChange}
             variant="compact"
+            min={DESIGNER_GRID_UNIT_MM_MIN}
+            max={DESIGNER_GRID_UNIT_MM_MAX}
           />
         </SettingsRow>
         <SettingsRow

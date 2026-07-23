@@ -284,6 +284,7 @@ export function MobileSettingsPanel() {
             onClick={resetGridfinityStandard}
             disabled={
               gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
+              gridUnitMmY === gridUnitMm &&
               heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
             }
             className="text-sm py-2 px-3 rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover border border-stroke-subtle disabled:cursor-not-allowed disabled:hover:text-content-secondary disabled:hover:bg-transparent"

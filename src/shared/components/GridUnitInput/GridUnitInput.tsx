@@ -13,6 +13,10 @@ export interface GridUnitInputProps {
   id?: string;
   /** 'compact' = sidebar/designer panels, 'mobile' = mobile panel */
   variant?: 'compact' | 'mobile';
+  /** Input range; defaults to the layout authoring range (20-60mm). The bin
+   * designer overrides with the wider storage-layer range. */
+  min?: number;
+  max?: number;
 }
 
 /**
@@ -20,7 +24,15 @@ export interface GridUnitInputProps {
  * + chain icon while square, X × Y when unlinked). Replaces the former
  * "Non-square grid" switch UI.
  */
-export function GridUnitInput({ x, y, onChange, id, variant = 'compact' }: GridUnitInputProps) {
+export function GridUnitInput({
+  x,
+  y,
+  onChange,
+  id,
+  variant = 'compact',
+  min = CONSTRAINTS.GRID_UNIT_MM_MIN,
+  max = CONSTRAINTS.GRID_UNIT_MM_MAX,
+}: GridUnitInputProps) {
   const t = useTranslation();
   return (
     <LinkedDimensionInput
@@ -29,8 +41,8 @@ export function GridUnitInput({ x, y, onChange, id, variant = 'compact' }: GridU
       onChange={onChange}
       id={id}
       variant={variant}
-      min={CONSTRAINTS.GRID_UNIT_MM_MIN}
-      max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+      min={min}
+      max={max}
       step={1}
       widthAriaLabel={t('gridUnitInput.xAriaLabel')}
       depthAriaLabel={t('gridUnitInput.yAriaLabel')}

@@ -8,6 +8,11 @@ import { clamp } from '@/shared/utils/validation';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 
+// The designer accepts the storage-layer grid pitch range (coreActions clamps
+// to 1-200), deliberately wider than the sidebar's 20-60 authoring range.
+export const DESIGNER_GRID_UNIT_MM_MIN = 1;
+export const DESIGNER_GRID_UNIT_MM_MAX = 200;
+
 export function usePhysicalUnitsSection() {
   const { gridUnitMm, heightUnitMm } = useLayoutStore(
     useShallow((s) => ({
@@ -43,7 +48,8 @@ export function usePhysicalUnitsSection() {
     if (x !== useLayoutStore.getState().layout.gridUnitMm) {
       useLayoutStore.getState().setGridUnitMm(x);
     }
-    const nextY = y === undefined ? undefined : Math.max(1, Math.min(200, y));
+    const nextY =
+      y === undefined ? undefined : clamp(y, DESIGNER_GRID_UNIT_MM_MIN, DESIGNER_GRID_UNIT_MM_MAX);
     if (nextY !== useDesignerStore.getState().params.gridUnitMmY) {
       useDesignerStore.getState().setParam('gridUnitMmY', nextY);
     }

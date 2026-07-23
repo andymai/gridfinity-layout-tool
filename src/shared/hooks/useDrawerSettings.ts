@@ -592,17 +592,25 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const resetGridfinityStandard = useCallback(() => {
     batch(() => {
       setGridUnitMm(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      // Standard Gridfinity is square — a lingering Y pitch must reset too.
+      setGridUnitMmY(null);
       setHeightUnitMm(CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT);
     });
-  }, [setGridUnitMm, setHeightUnitMm]);
+  }, [setGridUnitMm, setGridUnitMmY, setHeightUnitMm]);
 
   // Linked grid-pitch control: y === undefined means a square grid (clears the
-  // stored Y pitch). Batched so an X+Y edit is one undo step.
+  // stored Y pitch). Each write is guarded so a no-op edit (e.g. re-committing
+  // the linked X input) emits no undo/analytics events; batched so an X+Y edit
+  // is one undo step.
   const handleGridUnitChange = useCallback(
     (x: number, y?: number) => {
+      const current = useLayoutStore.getState().layout;
+      const xChanged = x !== (current.gridUnitMm as number);
+      const yChanged = y !== (current.gridUnitMmY as number | undefined);
+      if (!xChanged && !yChanged) return;
       batch(() => {
-        setGridUnitMm(x);
-        setGridUnitMmY(y ?? null);
+        if (xChanged) setGridUnitMm(x);
+        if (yChanged) setGridUnitMmY(y ?? null);
       });
     },
     [setGridUnitMm, setGridUnitMmY]

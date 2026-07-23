@@ -520,6 +520,7 @@ export function Sidebar() {
                     onClick={resetGridfinityStandard}
                     disabled={
                       gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
+                      gridUnitMmY === gridUnitMm &&
                       heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
                     }
                     className="text-xs py-1.5 px-2 mt-1 text-content-tertiary hover:text-content"
