@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.288.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.0...gridfinity-layout-tool-v4.288.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* **generation:** carry per-segment widths through every clip path, retune sakura ([#2780](https://github.com/andymai/gridfinity-layout-tool/issues/2780)) ([9954b82](https://github.com/andymai/gridfinity-layout-tool/commit/9954b826398ef06fbc0fd740eaab947dfbcc97f8))
+
 ## [4.288.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.287.2...gridfinity-layout-tool-v4.288.0) (2026-07-23)
 
 
