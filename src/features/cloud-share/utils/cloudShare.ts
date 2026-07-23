@@ -1,6 +1,6 @@
 /**
  * Shared utilities for cloud sharing functionality.
- * Used by both CloudShareTab and MobileCloudSharePanel.
+ * Used by MobileCloudSharePanel.
  */
 
 import type { Layout } from '@/core/types';

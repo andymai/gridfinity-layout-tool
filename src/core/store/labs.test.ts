@@ -150,7 +150,7 @@ describe('Labs Store', () => {
   });
 
   describe('feature toggling', () => {
-    const featureId: FeatureId = 'collaborative_editing';
+    const featureId: FeatureId = 'show_generation_perf';
 
     it('toggles feature from disabled to enabled', () => {
       const store = useLabsStore.getState();
@@ -201,13 +201,13 @@ describe('Labs Store', () => {
 
       expect(store.getEnabledCount()).toBe(0);
 
-      store.enableFeature('collaborative_editing');
+      store.enableFeature('show_generation_perf');
       expect(useLabsStore.getState().getEnabledCount()).toBe(1);
 
       store.enableFeature('brepkit_kernel');
       expect(useLabsStore.getState().getEnabledCount()).toBe(2);
 
-      store.disableFeature('collaborative_editing');
+      store.disableFeature('show_generation_perf');
       expect(useLabsStore.getState().getEnabledCount()).toBe(1);
     });
   });
@@ -267,15 +267,12 @@ describe('Labs Store', () => {
   });
 
   describe('graduated feature handling', () => {
-    it('would return true for graduated features', () => {
-      // This tests the logic - currently no graduated features exist
-      // When a feature graduates, isFeatureEnabled should always return true
+    it('returns true for graduated features regardless of the stored preference', () => {
       const store = useLabsStore.getState();
 
-      // Test that the function handles the graduated case correctly
-      // by checking that experimental features follow user preference
-      expect(store.isFeatureEnabled('collaborative_editing')).toBe(false);
-      store.enableFeature('collaborative_editing');
+      expect(store.isFeatureEnabled('collaborative_editing')).toBe(true);
+
+      store.disableFeature('collaborative_editing');
       expect(useLabsStore.getState().isFeatureEnabled('collaborative_editing')).toBe(true);
     });
   });

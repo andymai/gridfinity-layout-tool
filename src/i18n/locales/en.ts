@@ -625,30 +625,13 @@ const en: Record<string, string> = {
 
   // Cloud Share
   'share.title': 'Share Layout',
-  'share.tabs.cloud': 'Cloud',
   'share.tabs.link': 'Link',
   'share.tabs.file': 'File',
   'share.tabs.json': 'JSON',
-  'share.cloud.description': 'Share via a short link. Others can view your layout online.',
-  'share.cloud.publish': 'Publish',
   'share.cloud.publishing': 'Publishing...',
   'share.cloud.updating': 'Updating...',
-  'share.cloud.unpublish': 'Unpublish',
-  'share.cloud.snapshotNote':
-    "Note: Cloud shares are snapshots. Changes you make locally won't affect the shared version.",
-  'share.cloud.deleteConfirm':
-    'Are you sure you want to delete this share? The link will stop working.',
-  'share.cloud.permissionNote':
-    'Changing permission will update who can access your shared layout.',
-  'share.cloud.published': 'Published!',
-  'share.cloud.shareLink': 'Share link:',
-  'share.cloud.copyLink': 'Copy link',
-  'share.cloud.linkCopied': 'Link copied!',
-  'share.cloud.permissions': 'Permissions',
   'share.cloud.viewOnly': 'View only',
   'share.cloud.canEdit': 'Can edit',
-  'share.cloud.lastUpdated': 'Last updated: {date}',
-  'share.cloud.permissionsLabel': 'Permissions',
   'share.link.description': 'The layout is encoded in the URL. No server needed.',
   'share.link.urlEncoded': 'URL-encoded (may be long)',
   'share.link.longUrlNote':
@@ -660,7 +643,6 @@ const en: Record<string, string> = {
   'share.json.description': 'Copy raw JSON to clipboard.',
   'share.json.copy': 'Copy JSON',
   'share.json.copied': 'JSON copied!',
-  'share.button.shared': 'Shared',
   'share.button.shareLayout': 'Share layout',
   'share.button.manageShare': 'Manage shared layout',
   'share.banner.saveToMyLayouts': 'Save to My Layouts',
@@ -674,7 +656,6 @@ const en: Record<string, string> = {
   'share.copyLink': 'Copy Link',
   'share.failedToShare': 'Failed to share',
   'share.sharedSuccessfully': 'Shared successfully!',
-  'share.failedToShareLayout': 'Failed to share layout',
   'share.loadingShared': 'Loading shared layout...',
   'share.anyoneWithLinkCan': 'Anyone with link can',
   'share.anyoneWithLinkCanEdit': 'Anyone with link can edit',
@@ -690,8 +671,6 @@ const en: Record<string, string> = {
   'share.toast.linkDeletedCollabEnded': 'Share link deleted. Collaboration ended.',
   'share.layoutFilename': '{name}.json',
   'share.layoutSummary': '{grid} grid · {bins} bins · {layers} layers',
-  'share.shareAnother': 'Share another',
-  'share.useShareLinkInstead': 'Use share link instead',
 
   // Layout Library
   'layouts.newLayout': 'New layout',

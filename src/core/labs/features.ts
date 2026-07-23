@@ -35,13 +35,11 @@ export const FEATURE_FLAGS = [
     name: 'Collaborative Editing',
     description:
       "Work on layouts together in real-time. Share a link and see each other's cursors as you design.",
-    status: 'experimental',
+    status: 'graduated',
     risk: 'medium',
-    warning:
-      'Real-time sync may occasionally have small delays when multiple people edit the same area.',
     addedAt: '2026-01',
+    graduatedAt: '2026-07',
     requiresRefresh: false,
-    comingSoon: false,
   },
   {
     id: 'baseplate_generator',
@@ -160,12 +158,11 @@ export const FEATURE_FLAGS = [
     id: 'stl_bin_import',
     name: 'Import STL as Bin',
     description:
-      'Import a downloaded Gridfinity bin STL as a design in your library — footprint auto-detected, linkable to layout bins, re-exportable as STL or 3MF.',
-    status: 'experimental',
+      'Import a downloaded Gridfinity bin STL as a design in your library — footprint auto-detected, linkable to layout bins, re-exportable as STL or 3MF. Imported bins are view-only (no compartments or cutouts), stay on this device, and cannot export STEP.',
+    status: 'graduated',
     risk: 'medium',
-    warning:
-      'Early feature. Imported bins are view-only (no compartments or cutouts), stay on this device (no cloud sync), and cannot export STEP.',
     addedAt: '2026-07',
+    graduatedAt: '2026-07',
     requiresRefresh: false,
   },
   {
@@ -173,9 +170,10 @@ export const FEATURE_FLAGS = [
     name: 'Suggested Bin Sizes',
     description:
       'When you label a bin, suggest the size other people most often use for that label. One tap applies it — nothing changes unless you accept.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'low',
     addedAt: '2026-07',
+    graduatedAt: '2026-07',
     requiresRefresh: false,
   },
   {

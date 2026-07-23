@@ -1,18 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
-import { useLayoutStore, useLibraryStore, useLabsStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-// Mock CloudShareTab since it's a complex component
-vi.mock('@/features/cloud-share/components/CloudShareTab', () => ({
-  CloudShareTab: ({ onSwitchToUrlTab }: { onSwitchToUrlTab: () => void }) => (
-    <div data-testid="cloud-share-tab">
-      <button onClick={onSwitchToUrlTab}>Switch to URL</button>
-    </div>
-  ),
-}));
 
 // Mock storage utilities
 vi.mock('@/core/storage', () => ({
@@ -22,6 +14,7 @@ vi.mock('@/core/storage', () => ({
   exportLayoutJSON: vi.fn(() => '{"version":"1.0","name":"Test"}'),
   getSharedLayoutFromURL: vi.fn(() => null),
   getCloudShareIdFromURL: vi.fn(() => null),
+  loadLayoutAsync: vi.fn(() => Promise.resolve(null)),
 }));
 
 // Mock telemetry — ui.* analytics are direct trackEvent() calls
@@ -78,15 +71,6 @@ describe('ShareModal', () => {
         entries: [],
       },
     });
-
-    // Ensure collaborative_editing is disabled (Cloud tab visible in ShareModal)
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: { collaborative_editing: false },
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
   });
 
   describe('rendering', () => {
@@ -107,16 +91,15 @@ describe('ShareModal', () => {
 
     it('displays all tab buttons', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      expect(screen.getByRole('tab', { name: 'Cloud' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Link' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'File' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'JSON' })).toBeInTheDocument();
     });
 
-    it('shows Cloud tab by default', () => {
+    it('shows Link tab by default', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      expect(screen.getByRole('tab', { name: 'Cloud' })).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByTestId('cloud-share-tab')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Link' })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByText(/The layout is encoded in the URL/)).toBeInTheDocument();
     });
 
     it('has close button', () => {
@@ -126,15 +109,6 @@ describe('ShareModal', () => {
   });
 
   describe('tab navigation', () => {
-    it('switches to Link tab', () => {
-      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-
-      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
-
-      expect(screen.getByRole('tab', { name: 'Link' })).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByText(/The layout is encoded in the URL/)).toBeInTheDocument();
-    });
-
     it('switches to File tab', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
@@ -153,11 +127,11 @@ describe('ShareModal', () => {
       expect(screen.getByText(/Copy raw JSON to clipboard/)).toBeInTheDocument();
     });
 
-    it('switches from Cloud to URL via callback', () => {
+    it('switches back to Link tab', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      // Click the switch button in the mocked CloudShareTab
-      fireEvent.click(screen.getByText('Switch to URL'));
+      fireEvent.click(screen.getByRole('tab', { name: 'File' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
 
       expect(screen.getByRole('tab', { name: 'Link' })).toHaveAttribute('aria-selected', 'true');
     });
@@ -166,7 +140,6 @@ describe('ShareModal', () => {
   describe('Link tab', () => {
     beforeEach(() => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
     });
 
     it('displays shareable URL', () => {
@@ -206,7 +179,6 @@ describe('ShareModal', () => {
     });
 
     it('shows URL length warning', () => {
-      // Note: beforeEach already renders and switches to Link tab
       expect(screen.getByText(/Very large layouts may create long URLs/)).toBeInTheDocument();
     });
   });
@@ -291,7 +263,6 @@ describe('ShareModal', () => {
       useInteractionStore.setState({ announceToScreenReader: announceSpy });
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
       fireEvent.click(screen.getByText('Copy'));
 
       await waitFor(() => {
@@ -392,24 +363,47 @@ describe('ShareModal', () => {
       expect(tablist).toBeInTheDocument();
 
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(4);
+      expect(tabs).toHaveLength(3);
     });
   });
 
   describe('layoutId prop', () => {
-    it('uses provided layoutId', () => {
-      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="custom-layout-123" />);
-
-      // The modal should render with the custom layout ID
-      // The CloudShareTab receives this ID
-      expect(screen.getByTestId('cloud-share-tab')).toBeInTheDocument();
-    });
-
-    it('falls back to active layout when no layoutId provided', () => {
+    it('uses the active layout without hitting storage when no layoutId provided', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      // Without layoutId, it uses activeLayoutId from library store
-      expect(screen.getByTestId('cloud-share-tab')).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
+    });
+
+    it('uses the active layout without hitting storage when layoutId is the active layout', () => {
+      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="layout-123" />);
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
+    });
+
+    it('loads a non-active layout from storage and shares its data', async () => {
+      const otherLayout = { ...mockLayout, name: 'Other Layout' };
+      vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(otherLayout);
+
+      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="other-layout-456" />);
+
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(storage.loadLayoutAsync).toHaveBeenCalledWith('other-layout-456');
+
+      fireEvent.click(screen.getByRole('tab', { name: 'File' }));
+      expect(screen.getByText('Other Layout.json')).toBeInTheDocument();
+    });
+
+    it('closes when the target layout cannot be loaded', async () => {
+      vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(null);
+
+      render(<ShareModal isOpen={true} onClose={mockOnClose} layoutId="missing-layout-789" />);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -418,7 +412,6 @@ describe('ShareModal', () => {
       vi.mocked(storage.copyToClipboard).mockResolvedValueOnce(false);
 
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
       fireEvent.click(screen.getByText('Copy'));
 
       // Wait for the async copy operation to complete
@@ -441,7 +434,7 @@ describe('ShareModal', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
       mockTrackEvent.mockClear();
 
-      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'File' }));
 
       expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
     });
@@ -456,17 +449,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
       expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
 
-      fireEvent.click(screen.getByRole('tab', { name: 'Cloud' }));
-      expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
-    });
-
-    it('dispatches ui.featureUsed when CloudShareTab triggers URL switch', () => {
-      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      mockTrackEvent.mockClear();
-
-      // Click the switch button in the mocked CloudShareTab
-      fireEvent.click(screen.getByText('Switch to URL'));
-
+      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
       expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
     });
   });

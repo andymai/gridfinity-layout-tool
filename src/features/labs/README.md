@@ -25,7 +25,7 @@ graph TB
 - **FeatureCard** - Individual feature toggle card
 - **FeatureStatusBadge** - Status indicator (early access/beta/shipped)
 - **GraduatedSection** - Collapsible "Now for everyone" section for shipped features
-- **EngineSelector** - Segmented control over the mutually-exclusive 3D-engine kernel flags (`brepkit_kernel`, `occt_wasm_kernel`); writes both flags to enforce exclusivity, replaces `FeatureCard` UI for those two
+- **EngineSelector** - Segmented control over the 3D-engine kernel flag (`brepkit_kernel`); replaces `FeatureCard` UI for it
 
 ## Current Flags
 
@@ -33,18 +33,24 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 
 | Flag                    | Status (`enum`) | Purpose                                                                   |
 | ----------------------- | --------------- | ------------------------------------------------------------------------- |
+| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine (BrepKit) — driven by `EngineSelector`     |
+| `show_generation_perf`  | `experimental`  | Per-stage generation timing overlay in the bin designer                   |
+| `item_kinds`            | `experimental`  | Non-bin items (tool racks) that sit on a baseplate                        |
+| `drawer_shapes`         | `graduated`     | Non-rectangular drawer shapes (L-shapes, notches, cut corners)            |
 | `bin_designer`          | `graduated`     | Custom bin designer                                                       |
 | `baseplate_generator`   | `graduated`     | Custom baseplate generator                                                |
 | `handle_holes`          | `graduated`     | Finger-grip cutouts on bin walls                                          |
-| `collaborative_editing` | `experimental`  | Real-time Liveblocks collab                                               |
-| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine (BrepKit) — driven by `EngineSelector`     |
-| `occt_wasm_kernel`      | `experimental`  | Updated OCCT 3D engine — driven by `EngineSelector`                       |
 | `multi_color_export`    | `graduated`     | Multi-color 3MF export (now gated per-design via `featureColors.enabled`) |
-| `cloud_sync`            | `experimental`  | Sign-in sync of layouts/designs across devices                            |
+| `cloud_sync`            | `graduated`     | Sign-in sync of layouts/designs across devices                            |
 | `embedded_text`         | `graduated`     | Engraved text on label tabs and beside cutouts                            |
-| `bin_recommender`       | `experimental`  | Suggested bin size from the label, in the bin inspector                   |
+| `manifold_preview`      | `graduated`     | Draft 3D preview with a faster engine while editing                       |
+| `scan_with_phone`       | `graduated`     | Phone-scan a tool outline into a cutout                                   |
+| `collaborative_editing` | `graduated`     | Real-time Liveblocks collab                                               |
+| `stl_bin_import`        | `graduated`     | Import a Gridfinity bin STL as a view-only design                         |
+| `bin_recommender`       | `graduated`     | Suggested bin size from the label, in the bin inspector                   |
+| `layout_overhang`       | `graduated`     | Edge bins extend into the drawer-fit margin                               |
 
-The two kernel flags are mutually exclusive: priority order in `BridgeManager`/`WorkerPoolManager` is `brepkit > occt-wasm > default`. `EngineSelector` enforces this in the UI; downstream consumers also assume it via the priority chain.
+Kernel selection priority in `BridgeManager`/`WorkerPoolManager` is `brepkit > default (occt-wasm)`; `EngineSelector` drives the flag in the UI.
 
 ## Usage
 

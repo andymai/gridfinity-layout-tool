@@ -5,7 +5,8 @@ Persistent cloud sharing via Vercel Blob with permission control.
 ```mermaid
 graph TB
     subgraph Components
-        SM[ShareModal] --> CST[CloudShareTab]
+        SB[ShareButton] --> SP[SharePopover]
+        SM[ShareModal]
         SLI[SharedLayoutImporter]
         SLB[SharedLayoutBanner]
     end
@@ -18,15 +19,14 @@ graph TB
         UOSS[useOwnedShareSync] -->|5s debounce| PUT
         UCAS[useCloudShareAutoSync] -->|1s debounce| PUT
     end
-    CST --> POST & PUT
+    SP --> POST & PUT
     SLI -->|/l/shareId| GET
 ```
 
 ## Key Files
 
-- `components/ShareModal.tsx` — main share dialog
-- `components/CloudShareTab.tsx` — cloud sharing controls
-- `components/ShareButton.tsx` — header share button (collaborative_editing flag)
+- `components/ShareButton/` — icon-only header share button + `SharePopover` cloud sharing controls
+- `components/ShareModal.tsx` — link/file/JSON share dialog (opened per-layout from the layout manager; loads non-active layouts from storage)
 - `components/SharedLayoutImporter.tsx` — import from `/l/shareId` URL
 - `components/SharedLayoutBanner.tsx` — banner for shared layouts
 - `hooks/useCloudShare.ts` — share CRUD operations
@@ -36,10 +36,10 @@ graph TB
 
 ## Permission Model
 
-| Permission | Access                                     |
-| ---------- | ------------------------------------------ |
-| `view`     | Read-only, anyone with link                |
-| `edit`     | Collaborative editing (requires Labs flag) |
+| Permission | Access                      |
+| ---------- | --------------------------- |
+| `view`     | Read-only, anyone with link |
+| `edit`     | Collaborative editing       |
 
 Delete token: random secret, hashed server-side, required for mutations.
 

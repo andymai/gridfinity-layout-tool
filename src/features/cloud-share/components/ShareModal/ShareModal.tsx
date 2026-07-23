@@ -6,13 +6,13 @@ import {
   downloadLayoutAsFile,
   copyToClipboard,
   exportLayoutJSON,
+  loadLayoutAsync,
 } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Button, IconButton, XIcon } from '@/design-system';
-import { CloudShareTab } from '../CloudShareTab';
+import type { Layout } from '@/core/types';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -26,25 +26,45 @@ export function ShareModal({ isOpen, onClose, layoutId }: ShareModalProps) {
   return <ShareModalContent onClose={onClose} layoutId={layoutId} />;
 }
 
+// Resolves the target layout: the active layout comes from the store; any
+// other layout is loaded from storage so the URL/file/JSON reflect the
+// layout the user actually picked, not whichever one is active.
 function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutId?: string }) {
-  const t = useTranslation();
-  const layout = useLayoutStore((state) => state.layout);
+  const activeLayout = useLayoutStore((state) => state.layout);
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
+  const [loadedLayout, setLoadedLayout] = useState<Layout | null>(null);
+  const isTargetActive = !layoutId || layoutId === activeLayoutId;
+
+  useEffect(() => {
+    if (isTargetActive || !layoutId) return;
+    let cancelled = false;
+    void loadLayoutAsync(layoutId).then((loaded) => {
+      if (cancelled) return;
+      if (loaded) {
+        setLoadedLayout(loaded);
+      } else {
+        onClose();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [layoutId, isTargetActive, onClose]);
+
+  const layout = isTargetActive ? activeLayout : loadedLayout;
+  if (!layout) return null;
+
+  return <ShareModalBody layout={layout} onClose={onClose} />;
+}
+
+function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => void }) {
+  const t = useTranslation();
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
-  // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
-  const isCollabEnabled = useFeatureFlag('collaborative_editing');
-
-  // Use provided layoutId or fall back to active layout
-  const targetLayoutId = layoutId ?? activeLayoutId;
-
-  // Default to 'url' tab when collaborative editing is enabled (Cloud tab hidden)
-  const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>(
-    isCollabEnabled ? 'url' : 'cloud'
-  );
+  const [activeTab, setActiveTab] = useState<'url' | 'file' | 'json'>('url');
 
   // Track tab switches for share funnel analysis
-  const handleTabChange = (tab: 'cloud' | 'url' | 'file' | 'json') => {
+  const handleTabChange = (tab: 'url' | 'file' | 'json') => {
     setActiveTab(tab);
     trackEvent('ui.featureUsed', { feature: `share_tab_${tab}` });
   };
@@ -67,7 +87,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose, isCollabEnabled, layout.bins.length]);
+  }, [onClose]);
 
   const handleCopyURL = async () => {
     const success = await copyToClipboard(shareURL);
@@ -137,22 +157,6 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
         {/* Tab selector */}
         <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
-          {/* Cloud tab hidden when collaborative_editing is enabled (uses ShareButton instead) */}
-          {!isCollabEnabled && (
-            <Button
-              variant="ghost"
-              role="tab"
-              aria-selected={activeTab === 'cloud'}
-              onClick={() => handleTabChange('cloud')}
-              className={`flex-1 hover:bg-transparent ${
-                activeTab === 'cloud'
-                  ? 'bg-accent text-on-dark'
-                  : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-              }`}
-            >
-              {t('share.tabs.cloud')}
-            </Button>
-          )}
           <Button
             variant="ghost"
             role="tab"
@@ -196,15 +200,6 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
         {/* Tab content */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Cloud tab content only shown when flag is OFF */}
-          {!isCollabEnabled && activeTab === 'cloud' && (
-            <CloudShareTab
-              layoutId={targetLayoutId}
-              onClose={onClose}
-              onSwitchToUrlTab={() => handleTabChange('url')}
-            />
-          )}
-
           {activeTab === 'url' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">{t('share.link.description')}</p>

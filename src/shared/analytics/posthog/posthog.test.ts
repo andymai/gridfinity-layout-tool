@@ -1039,14 +1039,14 @@ describe('computeLabsMetrics', () => {
     useLabsStore.setState({
       preferences: {
         enabledFeatures: {
-          collaborative_editing: true,
+          show_generation_perf: true,
         },
         dismissedFeatures: [],
       },
     });
 
     const metrics = computeLabsMetrics();
-    expect(metrics.labs_enabled_features).toContain('collaborative_editing');
+    expect(metrics.labs_enabled_features).toContain('show_generation_perf');
     expect(metrics.labs_enabled_count).toBe(1);
   });
 
@@ -1054,7 +1054,22 @@ describe('computeLabsMetrics', () => {
     useLabsStore.setState({
       preferences: {
         enabledFeatures: {
-          collaborative_editing: false,
+          show_generation_perf: false,
+        },
+        dismissedFeatures: [],
+      },
+    });
+
+    const metrics = computeLabsMetrics();
+    expect(metrics.labs_enabled_features).not.toContain('show_generation_perf');
+    expect(metrics.labs_enabled_count).toBe(0);
+  });
+
+  it('excludes graduated features even when the old preference is still set', () => {
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: {
+          collaborative_editing: true,
         },
         dismissedFeatures: [],
       },

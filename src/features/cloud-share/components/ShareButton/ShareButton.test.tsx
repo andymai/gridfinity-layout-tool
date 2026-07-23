@@ -41,34 +41,33 @@ describe('ShareButton', () => {
     resetAllStores();
     vi.clearAllMocks();
 
-    useLabsStore.getState().enableFeature('collaborative_editing');
     useLayoutStore.setState({
       layout: { name: 'Test Layout', bins: [], layers: [], categories: [] },
     });
   });
 
-  it('renders share button when feature is enabled', () => {
+  it('renders the share icon button', () => {
     render(<ShareButton />);
-    expect(screen.getByRole('button', { name: /common.share/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'share.button.shareLayout' })).toBeInTheDocument();
   });
 
-  it('does not render when feature is disabled', () => {
+  it('renders even when the labs preference is disabled (collaborative_editing is graduated)', () => {
     useLabsStore.getState().disableFeature('collaborative_editing');
 
-    const { container } = render(<ShareButton />);
-    expect(container.firstChild).toBeNull();
+    render(<ShareButton />);
+    expect(screen.getByRole('button', { name: 'share.button.shareLayout' })).toBeInTheDocument();
   });
 
   it('opens the popover via the store when clicked', () => {
     render(<ShareButton />);
-    fireEvent.click(screen.getByRole('button', { name: /common.share/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'share.button.shareLayout' }));
     expect(useSharePopoverStore.getState().isOpen).toBe(true);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('toggles the popover closed on a second click', () => {
     render(<ShareButton />);
-    const button = screen.getByRole('button', { name: /common.share/i });
+    const button = screen.getByRole('button', { name: 'share.button.shareLayout' });
     fireEvent.click(button);
     fireEvent.click(button);
     expect(useSharePopoverStore.getState().isOpen).toBe(false);
@@ -96,10 +95,12 @@ describe('ShareButton', () => {
     });
 
     render(<ShareButton />);
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-busy', 'true');
   });
 
-  it('shows the shared label when a layout has an active share', () => {
+  it('shows the manage-share label when a layout has an active share', () => {
     vi.mocked(useCloudShare).mockReturnValue({
       status: 'idle',
       hasActiveShare: true,
@@ -113,10 +114,10 @@ describe('ShareButton', () => {
     });
 
     render(<ShareButton />);
-    expect(screen.getByText('share.button.shared')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'share.button.manageShare' })).toBeInTheDocument();
   });
 
-  it('shows the shared label when viewing someone else’s shared layout', () => {
+  it('shows the manage-share label when viewing someone else’s shared layout', () => {
     useSharedPreviewStore.setState({
       sharedPreview: {
         layout: { name: 'Shared', bins: [], layers: [], categories: [] },
@@ -128,6 +129,6 @@ describe('ShareButton', () => {
     });
 
     render(<ShareButton />);
-    expect(screen.getByText('share.button.shared')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'share.button.manageShare' })).toBeInTheDocument();
   });
 });
