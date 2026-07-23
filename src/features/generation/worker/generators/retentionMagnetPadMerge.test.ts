@@ -19,8 +19,8 @@
  * would merge. Pure math, no kernel.
  */
 import { describe, it, expect } from 'vitest';
-import { checkLidCompatibility } from '@/features/bin-designer/utils/lidCompatibility';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { checkLidCompatibility } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import {
   retentionMagnetPositions,
