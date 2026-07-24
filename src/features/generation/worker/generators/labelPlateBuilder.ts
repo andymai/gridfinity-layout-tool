@@ -84,10 +84,15 @@ const TEXT_MARGIN = 1.6;
 export const TEXT_BAND_MM = LABEL_PLATE_HEIGHT_MM - 2 * TEXT_MARGIN;
 /**
  * Width ceiling for an icon (mm) and its gap to the text. Side-view fasteners
- * are ~1.5-1.9x wider than tall, so filling the band unchecked would spend a
+ * are ~1.5-1.9x wider than tall, so an uncapped fit to the band would spend a
  * third of a 1U plate's text run on the silhouette.
+ *
+ * 11.5 is where a bolt — the widest silhouette that still reaches band height
+ * — stops being width-bound, at a cost of ~9% of the text run. Raising it
+ * further only grows the wider outliers (nail, wood screw) while shrinking
+ * every label's text.
  */
-export const ICON_MAX_WIDTH_MM = 9.5;
+export const ICON_MAX_WIDTH_MM = 11.5;
 const ICON_TEXT_GAP = 1.2;
 
 /**
