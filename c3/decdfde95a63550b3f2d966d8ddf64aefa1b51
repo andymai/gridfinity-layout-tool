@@ -1,0 +1,65 @@
+src/features/bin-designer/components/DesignerPage/DesignerQuickstartCard.test.tsx
+  s_cb5bea35176d66::t_c0a44397a23ed7 1-31
+src/features/bin-designer/hooks/usePlannerBridge.test.ts
+  s_cb5bea35176d66::t_fd1d2ea1fcb1af 1-62
+src/i18n/locales/pt-BR.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/features/bin-designer/hooks/useDesignerFirstRun.test.ts
+  s_cb5bea35176d66::t_15539e354f3412 1-62
+src/i18n/locales/nl.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/nb.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/sv.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/ja.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/features/bin-designer/components/DesignerPage/DesignerQuickstartCard.tsx
+  s_cb5bea35176d66::t_265c0605a0a1b2 1-104
+src/i18n/locales/fr.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/uk.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/en.ts
+  s_cb5bea35176d66::t_19bfc25d4a6eec 2245-2253
+src/features/bin-designer/hooks/useDesignerFirstRun.ts
+  s_cb5bea35176d66::t_74417311d1868b 1-118
+src/i18n/locales/de.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/i18n/locales/es.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/features/bin-designer/hooks/useExport.ts
+  s_cb5bea35176d66::t_1bbc6d9edded9f 419
+  s_cb5bea35176d66::t_56ee5180defc5d 564-573
+  s_cb5bea35176d66::t_024f46ca1e2d7e 119
+  s_cb5bea35176d66::t_b552c37b312b88 400
+  s_cb5bea35176d66::t_35625f0493e929 58
+  s_cb5bea35176d66::t_c10d261d26f5e4 545
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_cb5bea35176d66::t_00e4987b523785 24,27,29
+  s_cb5bea35176d66::t_004347397d0070 120-122
+  s_cb5bea35176d66::t_ad885b07a1a693 86-95,97
+  s_cb5bea35176d66::t_048d5730d0e5e8 123-124
+src/i18n/locales/it.json
+  s_cb5bea35176d66::t_2c05100e83d4c1 788-789,815-819
+src/features/bin-designer/README.md
+  s_cb5bea35176d66::t_4ee9dce0670e2b 29-32
+src/features/bin-designer/hooks/usePlannerBridge.ts
+  s_cb5bea35176d66::t_79f42b01a2a9dd 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c3decdfde95a63550b3f2d966d8ddf64aefa1b51",
+  "prompts": {},
+  "sessions": {
+    "s_cb5bea35176d66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe07013f-0ffc-49c4-b5fb-828c6d185a1b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
