@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.288.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.2...gridfinity-layout-tool-v4.288.3) (2026-07-24)
+
+
+### Bug Fixes
+
+* **generation:** restore falling kumiko diagonals at bin corners ([#2785](https://github.com/andymai/gridfinity-layout-tool/issues/2785)) ([14ba236](https://github.com/andymai/gridfinity-layout-tool/commit/14ba236aa49684cd1b85a43e5b4a8575a5e667aa))
+
 ## [4.288.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.1...gridfinity-layout-tool-v4.288.2) (2026-07-23)
 
 
