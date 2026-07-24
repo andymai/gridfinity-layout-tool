@@ -17,6 +17,13 @@ describe('PreviewSkeleton', () => {
     expect(screen.getByText('Initializing engine...')).toBeInTheDocument();
   });
 
+  it('reassures that edits are queued while the engine loads', () => {
+    render(<PreviewSkeleton wasmStatus="loading" generationStatus="idle" />);
+    expect(
+      screen.getByText('Your changes will apply once the 3D engine finishes loading.')
+    ).toBeInTheDocument();
+  });
+
   it('shows WASM error message', () => {
     render(<PreviewSkeleton wasmStatus="error" generationStatus="idle" />);
     expect(screen.getByText('Engine failed to load')).toBeInTheDocument();

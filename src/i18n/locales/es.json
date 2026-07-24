@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Bandeja",
   "binDesigner.lid.topSurface.flatHint": "Una parte superior cerrada y lisa. Nada se apila encima ni se apoya dentro.",
   "binDesigner.lid.frictionHint": "Se sujeta al borde solo por fricción, sin rieles ni imanes. Lo más fácil de imprimir y quitar.",
-  "binDesigner.lid.advanced": "Avanzado"
+  "binDesigner.lid.advanced": "Avanzado",
+  "binDesigner.preview.changesPendingEngine": "Tus cambios se aplicarán cuando el motor 3D termine de cargar.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Esos compartimentos serían demasiado pequeños para imprimir. Prueba con menos filas o columnas, o una caja más grande."
 }

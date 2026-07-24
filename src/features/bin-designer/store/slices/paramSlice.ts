@@ -24,6 +24,7 @@ import type {
   TextStyleOverride,
   WallTextSide,
   WallTextVerticalAlign,
+  SetCompartmentGridResult,
 } from '../../types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -312,7 +313,7 @@ export function createParamSlice(set: Set, get: Get) {
     },
 
     // Compartment actions
-    setCompartmentGrid: (cols: number, rows: number): number => {
+    setCompartmentGrid: (cols: number, rows: number): SetCompartmentGridResult => {
       const { params } = get();
       const result = validateCompartmentSizes(
         params.width,
@@ -324,7 +325,10 @@ export function createParamSlice(set: Set, get: Get) {
         params.gridUnitMm,
         params.gridUnitMmY
       );
-      if (isErr(result)) return 0;
+      // Report the rejection reason instead of a silent no-op: a bare `0`
+      // return was indistinguishable from a successful no-drop change, so the
+      // UI couldn't tell the grid had been refused (infeasible cells). (#2799)
+      if (isErr(result)) return { ok: false, reason: result.error.message };
 
       // Best-effort carry of labels by position; the rest are counted so the
       // UI can warn instead of dropping them silently (#2337).
@@ -353,7 +357,7 @@ export function createParamSlice(set: Set, get: Get) {
           ...(hasCarried ? { compartmentTexts: carried.texts } : {}),
         };
       });
-      return carried.droppedCount;
+      return { ok: true, droppedLabels: carried.droppedCount };
     },
 
     mergeCells: (cellIndices: readonly number[]) => {

@@ -24,6 +24,16 @@ export interface LidMeshDataState {
 /** Current status of the generation engine */
 export type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 
+/**
+ * Outcome of `setCompartmentGrid`. A rejected grid (cells too small to print)
+ * is reported explicitly so callers can surface a reason instead of silently
+ * no-op'ing — `droppedLabels: 0` on a successful change would otherwise be
+ * indistinguishable from a rejection.
+ */
+export type SetCompartmentGridResult =
+  | { readonly ok: true; readonly droppedLabels: number }
+  | { readonly ok: false; readonly reason: string };
+
 /** WASM/Worker initialization status */
 export type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
 

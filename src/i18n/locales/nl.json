@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Dienblad",
   "binDesigner.lid.topSurface.flatHint": "Een eenvoudige gesloten bovenkant. Er stapelt niets op en er ligt niets in.",
   "binDesigner.lid.frictionHint": "Grijpt de rand alleen door wrijving, zonder rails of magneten. Het makkelijkst om te printen en eraf te halen.",
-  "binDesigner.lid.advanced": "Geavanceerd"
+  "binDesigner.lid.advanced": "Geavanceerd",
+  "binDesigner.preview.changesPendingEngine": "Je wijzigingen worden toegepast zodra de 3D-engine klaar is met laden.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Die vakken zouden te klein zijn om te printen. Probeer minder rijen of kolommen, of een grotere bak."
 }

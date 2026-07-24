@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { TouchHint } from './previewCanvasOverlays';
+import { TouchHint, EngineLoadingIndicator } from './previewCanvasOverlays';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 
@@ -31,5 +31,14 @@ describe('TouchHint', () => {
 
     expect(screen.queryByRole('button', { name: /dismiss/i })).toBeNull();
     expect(useSettingsStore.getState().settings.dismissedHints).toContain('designer-touch');
+  });
+});
+
+describe('EngineLoadingIndicator', () => {
+  it('tells the user their queued edits will apply once the engine loads', () => {
+    render(<EngineLoadingIndicator />);
+    expect(
+      screen.getByText('Your changes will apply once the 3D engine finishes loading.')
+    ).toBeInTheDocument();
   });
 });

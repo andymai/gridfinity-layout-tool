@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Brett",
   "binDesigner.lid.topSurface.flatHint": "En enkel lukket overside. Ingenting stables oppå og ingenting hviler i den.",
   "binDesigner.lid.frictionHint": "Holder på kanten kun ved friksjon, uten skinner eller magneter. Enklest å skrive ut og ta av.",
-  "binDesigner.lid.advanced": "Avansert"
+  "binDesigner.lid.advanced": "Avansert",
+  "binDesigner.preview.changesPendingEngine": "Endringene dine tas i bruk når 3D-motoren er ferdig innlastet.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Disse rommene ville blitt for små til å skrive ut. Prøv færre rader eller kolonner, eller en større beholder."
 }

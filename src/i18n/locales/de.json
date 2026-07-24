@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Ablagefach",
   "binDesigner.lid.topSurface.flatHint": "Eine einfache geschlossene Oberseite. Nichts wird darauf gestapelt und nichts liegt darin.",
   "binDesigner.lid.frictionHint": "Hält allein durch Reibung an der Kante, ohne Schienen oder Magnete. Am einfachsten zu drucken und abzunehmen.",
-  "binDesigner.lid.advanced": "Erweitert"
+  "binDesigner.lid.advanced": "Erweitert",
+  "binDesigner.preview.changesPendingEngine": "Deine Änderungen werden übernommen, sobald die 3D-Engine geladen ist.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Diese Fächer wären zu klein zum Drucken. Versuche weniger Zeilen oder Spalten oder einen größeren Behälter."
 }

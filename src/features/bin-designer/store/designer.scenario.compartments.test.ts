@@ -451,12 +451,15 @@ describe('DesignerStore - compartment actions', () => {
       const beforeHistory = useDesignerStore.getState().history.past.length;
 
       // 8x8 grid on a 1-unit bin would create cells < 5mm
-      setCompartmentGrid(8, 8);
+      const result = setCompartmentGrid(8, 8);
 
       const after = useDesignerStore.getState();
       // Should be no-op: cells unchanged, no history entry added
       expect(after.params.compartments.cells).toEqual(beforeCells);
       expect(after.history.past.length).toBe(beforeHistory);
+      // ...and the rejection is reported so the UI can explain it (#2799).
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBeTruthy();
     });
 
     it('setCompartmentGrid accepts valid grid', () => {
@@ -763,10 +766,11 @@ describe('DesignerStore - compartment actions', () => {
       setCompartmentText(3, 'WASHERS'); // (col1,row1)
 
       // Growing to 3x3 keeps both anchors in-bounds → nothing dropped.
-      const dropped = useDesignerStore.getState().setCompartmentGrid(3, 3);
+      const result = useDesignerStore.getState().setCompartmentGrid(3, 3);
 
       const { params } = useDesignerStore.getState();
-      expect(dropped).toBe(0);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.droppedLabels).toBe(0);
       expect(params.compartments.compartmentTexts?.[0]).toBe('SCREWS'); // (col0,row0) → id 0
       expect(params.compartments.compartmentTexts?.[4]).toBe('WASHERS'); // (col1,row1) → id 4
     });
@@ -777,10 +781,11 @@ describe('DesignerStore - compartment actions', () => {
       setCompartmentText(0, 'KEEP'); // (col0,row0)
       setCompartmentText(2, 'LOSE'); // (col2,row0) — falls outside a 2-col grid
 
-      const dropped = useDesignerStore.getState().setCompartmentGrid(2, 1);
+      const result = useDesignerStore.getState().setCompartmentGrid(2, 1);
 
       const { params } = useDesignerStore.getState();
-      expect(dropped).toBe(1);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.droppedLabels).toBe(1);
       expect(params.compartments.compartmentTexts?.[0]).toBe('KEEP');
       expect(params.compartments.compartmentTexts ?? []).not.toContain('LOSE');
     });

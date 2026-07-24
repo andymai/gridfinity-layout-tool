@@ -43,6 +43,9 @@ export function PreviewSkeleton({
         ? t('binDesigner.preview.generationHelpTextWithError', { error: errorMessage })
         : t('binDesigner.preview.generationHelpText');
     }
+    // While the engine loads, edits can't regenerate yet — reassure the user
+    // their changes are queued rather than ignored (#2799).
+    if (wasmStatus === 'loading') return t('binDesigner.preview.changesPendingEngine');
     return null;
   };
 

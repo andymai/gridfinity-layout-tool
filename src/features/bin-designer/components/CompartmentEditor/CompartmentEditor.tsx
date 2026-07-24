@@ -333,10 +333,22 @@ export function CompartmentEditor() {
   // warning (#2337) is shown consistently and the selection is reset once.
   const applyGrid = useCallback(
     (newCols: number, newRows: number) => {
-      const droppedLabels = setCompartmentGrid(newCols, newRows);
-      if (droppedLabels > 0) {
+      const result = setCompartmentGrid(newCols, newRows);
+      if (!result.ok) {
+        // The grid was refused (cells would be too small to print). Say so
+        // instead of leaving the stepper unchanged with no explanation (#2799).
         addToast({
-          message: t('binDesigner.compartmentEditor.labelsCleared', { count: droppedLabels }),
+          message: t('binDesigner.compartmentEditor.gridTooSmall'),
+          type: 'error',
+          duration: 4000,
+        });
+        return;
+      }
+      if (result.droppedLabels > 0) {
+        addToast({
+          message: t('binDesigner.compartmentEditor.labelsCleared', {
+            count: result.droppedLabels,
+          }),
           type: 'info',
           duration: 4000,
         });

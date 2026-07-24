@@ -38,6 +38,7 @@ import type {
   GenerationResult,
   WasmStatus,
   SplitPieceMeshEntry,
+  SetCompartmentGridResult,
 } from './generation';
 import type { PerfSnapshot } from '@/shared/types/generation';
 import type {
@@ -126,9 +127,12 @@ export interface DesignerState {
   updateEnvelope: (partial: Partial<ItemEnvelope>) => void;
 
   // Compartment actions
-  /** Regenerate a uniform grid. Carries labels by position where they fit and
-   *  returns the count of labels that couldn't be preserved (#2337). */
-  setCompartmentGrid: (cols: number, rows: number) => number;
+  /** Regenerate a uniform grid. Carries labels by position where they fit.
+   *  Returns `{ ok: true, droppedLabels }` with the count of labels that
+   *  couldn't be preserved (#2337), or `{ ok: false, reason }` when the grid
+   *  would make cells too small to print — callers surface the reason instead
+   *  of silently no-op'ing. */
+  setCompartmentGrid: (cols: number, rows: number) => SetCompartmentGridResult;
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;

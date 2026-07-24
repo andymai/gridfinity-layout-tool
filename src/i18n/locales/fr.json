@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Plateau",
   "binDesigner.lid.topSurface.flatHint": "Une face supérieure fermée et lisse. Rien ne s’empile dessus et rien ne s’y pose.",
   "binDesigner.lid.frictionHint": "Tient sur le rebord par simple friction, sans rails ni aimants. Le plus simple à imprimer et à retirer.",
-  "binDesigner.lid.advanced": "Avancé"
+  "binDesigner.lid.advanced": "Avancé",
+  "binDesigner.preview.changesPendingEngine": "Vos modifications seront appliquées une fois le moteur 3D chargé.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Ces compartiments seraient trop petits à imprimer. Essayez moins de lignes ou de colonnes, ou un bac plus grand."
 }

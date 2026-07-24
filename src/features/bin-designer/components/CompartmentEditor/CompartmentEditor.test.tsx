@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
+import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import {
@@ -94,7 +95,7 @@ describe('CompartmentEditor', () => {
   });
 
   it('typing a min width in the advanced sizer snaps the column count', () => {
-    const setCompartmentGrid = vi.fn();
+    const setCompartmentGrid = vi.fn(() => ({ ok: true, droppedLabels: 0 }));
     useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
     render(<CompartmentEditor />);
     fireEvent.click(screen.getByRole('button', { name: /set by size/i }));
@@ -125,8 +126,25 @@ describe('CompartmentEditor', () => {
     expect(screen.queryByLabelText('Depth')).toBeNull();
   });
 
+  it('warns instead of silently ignoring a rejected grid (#2799)', () => {
+    // When setCompartmentGrid rejects (cells would be too small to print), the
+    // stepper value stays put — so without a toast the "+" appears to do
+    // nothing. Verify the component surfaces the rejection.
+    const setCompartmentGrid = vi.fn(() => ({ ok: false as const, reason: 'too small' }));
+    useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
+    render(<CompartmentEditor />);
+    const cols = screen.getByRole('spinbutton', { name: /columns/i });
+    fireEvent.change(cols, { target: { value: '8' } });
+    fireEvent.blur(cols);
+
+    expect(setCompartmentGrid).toHaveBeenCalled();
+    expect(useToastStore.getState().toasts.some((toast) => /too small/i.test(toast.message))).toBe(
+      true
+    );
+  });
+
   it('updates columns when the grid stepper changes', () => {
-    const setCompartmentGrid = vi.fn();
+    const setCompartmentGrid = vi.fn(() => ({ ok: true, droppedLabels: 0 }));
     useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
     render(<CompartmentEditor />);
     const cols = screen.getByRole('spinbutton', { name: /columns/i });

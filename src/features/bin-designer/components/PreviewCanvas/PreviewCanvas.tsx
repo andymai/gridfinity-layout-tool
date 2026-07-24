@@ -63,7 +63,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
 import { CameraRig } from '@/shared/components/preview/CameraRig';
-import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
+import { TouchHint, GeneratingIndicator, EngineLoadingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
@@ -534,8 +534,12 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
             </Canvas>
           </WebGLErrorBoundary>
 
-          {/* Nostalgic loading indicator (bottom center) */}
-          {showOverlay && <GeneratingIndicator />}
+          {/* Loading indicator (bottom center). While the exact engine is still
+              initializing, a draft can be on screen; say edits are queued rather
+              than run the playful "generating" spinner, which wrongly implies the
+              current edit is being processed (#2799). */}
+          {showOverlay &&
+            (wasmStatus === 'loading' ? <EngineLoadingIndicator /> : <GeneratingIndicator />)}
 
           {/* Lid explode slider — only when the bin has a lid configured AND
               its stacking lip is on (lid won't render/export without lip). */}

@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "トレイ",
   "binDesigner.lid.topSurface.flatHint": "シンプルな閉じた天面です。上に積み重ねたり物を置いたりはできません。",
   "binDesigner.lid.frictionHint": "レールや磁石を使わず、摩擦だけでリップに固定します。印刷と取り外しが最も簡単です。",
-  "binDesigner.lid.advanced": "詳細設定"
+  "binDesigner.lid.advanced": "詳細設定",
+  "binDesigner.preview.changesPendingEngine": "3Dエンジンの読み込みが完了すると、変更が適用されます。",
+  "binDesigner.compartmentEditor.gridTooSmall": "その仕切りは小さすぎて印刷できません。行または列を減らすか、より大きなビンをお試しください。"
 }

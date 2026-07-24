@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Bricka",
   "binDesigner.lid.topSurface.flatHint": "En enkel sluten ovansida. Inget staplas på den och inget vilar i den.",
   "binDesigner.lid.frictionHint": "Håller mot kanten enbart med friktion, utan skenor eller magneter. Enklast att skriva ut och ta av.",
-  "binDesigner.lid.advanced": "Avancerat"
+  "binDesigner.lid.advanced": "Avancerat",
+  "binDesigner.preview.changesPendingEngine": "Dina ändringar tillämpas när 3D-motorn har laddats klart.",
+  "binDesigner.compartmentEditor.gridTooSmall": "De facken skulle bli för små för att skriva ut. Prova färre rader eller kolumner, eller en större låda."
 }

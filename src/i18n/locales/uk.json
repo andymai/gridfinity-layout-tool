@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Лоток",
   "binDesigner.lid.topSurface.flatHint": "Проста закрита верхня поверхня. На неї нічого не ставиться й нічого не кладеться.",
   "binDesigner.lid.frictionHint": "Тримається на кромці лише за рахунок тертя, без напрямних чи магнітів. Найлегше друкувати та знімати.",
-  "binDesigner.lid.advanced": "Додатково"
+  "binDesigner.lid.advanced": "Додатково",
+  "binDesigner.preview.changesPendingEngine": "Ваші зміни застосуються, щойно завантажиться 3D-рушій.",
+  "binDesigner.compartmentEditor.gridTooSmall": "Ці відсіки були б надто малими для друку. Спробуйте менше рядків чи стовпців або більший контейнер."
 }

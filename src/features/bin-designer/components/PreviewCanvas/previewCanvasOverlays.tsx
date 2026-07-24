@@ -68,6 +68,50 @@ export function TouchHint() {
   );
 }
 
+/**
+ * Engine-loading indicator shown when a draft mesh is on screen but the exact
+ * WASM engine is still initializing. Edits made in this window can't regenerate
+ * yet (the bridge isn't ready), so instead of the playful "generating" spinner
+ * — which wrongly implies work is happening for the current edit — this states
+ * plainly that changes are queued and will apply once the engine loads (#2799).
+ */
+export function EngineLoadingIndicator() {
+  const t = useTranslation();
+  return (
+    <div
+      className="absolute inset-x-0 bottom-4 flex justify-center px-4"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex max-w-[320px] items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 text-xs shadow-lg backdrop-blur-sm">
+        <svg
+          className="h-4 w-4 shrink-0 text-accent animate-spin motion-reduce:animate-none"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-20"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+          />
+          <path
+            className="opacity-80"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+        <span className="text-content-secondary">
+          {t('binDesigner.preview.changesPendingEngine')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /** Number of nostalgic loading messages (SimCity/Maxis-inspired) available in i18n */
 const LOADING_MESSAGE_COUNT = 12;
 

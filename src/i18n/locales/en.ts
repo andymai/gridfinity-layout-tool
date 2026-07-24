@@ -3324,6 +3324,8 @@ const en: Record<string, string> = {
   'binDesigner.preview.generationHelpText':
     'Mesh generation encountered an error. Try adjusting parameters or retry.',
   'binDesigner.preview.generationHelpTextWithError': '{error}. Try adjusting parameters or retry.',
+  'binDesigner.preview.changesPendingEngine':
+    'Your changes will apply once the 3D engine finishes loading.',
 
   // Compartment editor status hints
   'binDesigner.compartmentEditor.releaseToMerge': 'Release to merge {count} cells',
@@ -3338,6 +3340,8 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.compartmentAriaNumber': 'Compartment {n}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
   'binDesigner.compartmentEditor.labelsCleared': 'Cleared {count} compartment label(s)',
+  'binDesigner.compartmentEditor.gridTooSmall':
+    'Those compartments would be too small to print. Try fewer rows or columns, or a larger bin.',
   'binDesigner.compartmentEditor.modeLabel': 'Compartment edit mode',
   'binDesigner.compartmentEditor.modeDividers': 'Edit dividers',
   'binDesigner.compartmentEditor.modeLabels': 'Add labels',
