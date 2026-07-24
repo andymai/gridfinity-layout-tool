@@ -72,7 +72,8 @@ export function GhostLabelTabs() {
   const floorZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
   // World Z of the shelf TOP — the same resolution the BREP builder runs
   // (interior ceiling under the lip taper, stacking relief for click-in
-  // sockets, explicit `label.height` verbatim), so the ghost lands exactly
+  // sockets, an explicit `label.height` capped at that plane), so the ghost
+  // lands exactly
   // where the regenerated mesh will (#1898).
   const shelfTopWorldZ =
     floorZ +

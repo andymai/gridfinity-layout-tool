@@ -57,6 +57,13 @@ export const LABEL_PLATE_THICKNESS_MM = 1.2;
 export const LABEL_PLATE_CORNER_RADIUS_MM = 0.5;
 
 /**
+ * Ceiling for plate text/icon depth (mm) — the filament-swap two-color
+ * contract. Also the worst-case emboss proudness above the plate top, which
+ * is why `LABEL_SOCKET_STACK_RELIEF_MM` must account for it.
+ */
+export const LABEL_PLATE_TEXT_DEPTH_MAX_MM = 0.4;
+
+/**
  * Plate perimeter latch groove (the negative the socket ribs click into):
  * inset depth per side (`latchX`), band height (`latchZ`), and start height
  * above the plate bottom. Full-footprint bottom (0.2) and top (0.4) flanges
@@ -79,13 +86,61 @@ export const LABEL_PLATE_V1_CAVITY_WIDTH_MM = 2;
 export const LABEL_PLATE_V1_CAVITY_TOP_MM = 0.8;
 
 /**
+ * Minimum plate material kept above a v1 channel cavity (mm). The roof
+ * bridges the 2mm-wide cavity unsupported, so a single 0.2mm layer sags into
+ * it and prints as a torn surface; two layers hold.
+ */
+export const LABEL_PLATE_V1_ROOF_MIN_MM = 0.4;
+
+/** Plate material left above the v1 cavity once the text is cut (mm). */
+export function labelPlateV1RoofMm(textMode: 'emboss' | 'deboss', textDepthMm: number): number {
+  const cutDepth = textMode === 'deboss' ? Math.max(0, textDepthMm) : 0;
+  return LABEL_PLATE_THICKNESS_MM - LABEL_PLATE_V1_CAVITY_TOP_MM - cutDepth;
+}
+
+/**
+ * Whether a text-carrying plate can also keep the v1 channels. The channels
+ * hollow the plate below `LABEL_PLATE_V1_CAVITY_TOP_MM` with the middle one at
+ * x=0, dead under the text, so a debossed glyph deeper than the leftover roof
+ * breaks clean through. Text wins that collision: every socket this app cuts
+ * is v2, so the channels only buy legacy third-party compatibility.
+ *
+ * At the pinned 1.2/0.8 geometry the roof is 0.4mm and `snapTextDepthToLayers`
+ * floors a deboss at one layer, so in practice EVERY debossed plate loses the
+ * channels; the arithmetic is kept general so a future plate thickness or
+ * cavity depth re-decides it on its own.
+ */
+export function labelPlateV1ChannelsFitText(
+  textMode: 'emboss' | 'deboss',
+  textDepthMm: number
+): boolean {
+  // The untouched roof (1.2 − 0.8) lands a float ULP under the 0.4mm minimum,
+  // so an exact compare would strip the channels off every embossed plate.
+  return labelPlateV1RoofMm(textMode, textDepthMm) >= LABEL_PLATE_V1_ROOF_MIN_MM - 1e-9;
+}
+
+/**
  * Socket pocket = plate + this TOTAL clearance in X and Y (`socket_offset`
  * in the standard) — total, not per-side.
  */
 export const LABEL_SOCKET_CLEARANCE_MM = 0.3;
 
-/** Pocket depth equals the plate thickness — the plate sits flush. */
+/** Spec pocket depth: the plate thickness, so the plate sits flush. */
 export const LABEL_SOCKET_POCKET_DEPTH_MM = LABEL_PLATE_THICKNESS_MM;
+
+/**
+ * Extra depth cut into CLICK-IN pockets beyond the spec's flush fit (mm).
+ * Flush leaves zero Z play, so any print excess (over-extrusion, an
+ * elephant's foot on the bottom flange, a plate stopped on the ribs instead
+ * of clicked past them) stands proud of the shelf. Retention is untouched —
+ * the rib band is floor-relative, so the latch engagement moves down with the
+ * floor. Slide-channel pockets keep the spec depth: their lip clamps the plate
+ * against the floor, and slop there would only let it rattle.
+ */
+export const LABEL_SOCKET_CLICK_POCKET_RELIEF_MM = 0.2;
+
+export const LABEL_SOCKET_CLICK_POCKET_DEPTH_MM =
+  LABEL_SOCKET_POCKET_DEPTH_MM + LABEL_SOCKET_CLICK_POCKET_RELIEF_MM;
 
 /**
  * Retention ribs on the two LONG pocket walls (full X span): protrusion into
@@ -130,11 +185,13 @@ export const LABEL_SOCKET_DETENT_DEPTH_MM = 0.8;
 export const LABEL_SOCKET_FLOOR_MM = 0.8;
 
 /** Shelf plate thickness in socket mode: pocket depth + solid floor. */
-export const LABEL_SOCKET_SHELF_THICKNESS_MM = LABEL_SOCKET_POCKET_DEPTH_MM + LABEL_SOCKET_FLOOR_MM;
+export const LABEL_SOCKET_SHELF_THICKNESS_MM =
+  LABEL_SOCKET_CLICK_POCKET_DEPTH_MM + LABEL_SOCKET_FLOOR_MM;
 
-/** Slide-channel shelves additionally host the z-clearance + lip band. */
+/** Slide-channel shelves host the spec-depth pocket + z-clearance + lip band. */
 export const LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM =
-  LABEL_SOCKET_SHELF_THICKNESS_MM +
+  LABEL_SOCKET_POCKET_DEPTH_MM +
+  LABEL_SOCKET_FLOOR_MM +
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM +
   LABEL_SOCKET_LIP_THICKNESS_MM;
 
@@ -151,22 +208,24 @@ export const MIN_LABEL_SOCKET_TAB_DEPTH_MM = 14;
 /**
  * Stacking relief for click-in sockets on lipped bins (mm).
  *
- * A stacked bin's foot bottom seats only TOLERANCE/2 (0.25mm) above the lip
- * base plane — the plane the shelf top (and thus the flush-seated plate top)
- * sits on by default. A monolithic printed shelf lives with that play, but a
- * clicked-in plate is a tolerance stack on top of it: first-layer squish on
- * the plate, droop on the printed rib undersides, and up to
- * `LABEL_PLATE_TEXT_DEPTH_MAX_MM` of embossed two-color text all stand proud
- * of the nominal plane, so the stacked bin rests on the label instead of the
- * lip. Sinking the default shelf by the max emboss depth restores the full
- * stacking play over embossed glyph tops (and adds it under flush plates).
+ * A stacked bin's foot bottom seats TOLERANCE/2 (0.25mm) above the interior
+ * ceiling — the plane the shelf top otherwise occupies — so anything standing
+ * proud of the shelf lifts the bin above. The relief covers both failures
+ * happening at once: a plate perched on the retention ribs instead of clicked
+ * home (`RIB_START + RIB_HEIGHT` above the pocket floor, partly absorbed by
+ * the deepened click-in pocket) AND carrying max-depth embossed text. The
+ * 0.25mm seat gap is then pure margin over that worst case.
  *
- * Applied to the DEFAULT shelf anchor only, and only where it matters:
- * click-in sockets (slide-channel plates already ride ~0.75mm below the
- * shelf top) on bins with a stacking lip (no lip = nothing locates on top).
- * An explicit `label.height` is the user's plane and is never adjusted.
+ * Applied only where it matters: click-in sockets (slide-channel plates ride
+ * under a retaining lip, already below the shelf top) on bins with a stacking
+ * lip (no lip = nothing locates on top).
  */
-export const LABEL_SOCKET_STACK_RELIEF_MM = 0.4;
+export const LABEL_SOCKET_STACK_RELIEF_MM =
+  LABEL_SOCKET_RIB_START_MM +
+  LABEL_SOCKET_RIB_HEIGHT_MM +
+  LABEL_PLATE_THICKNESS_MM -
+  LABEL_SOCKET_CLICK_POCKET_DEPTH_MM +
+  LABEL_PLATE_TEXT_DEPTH_MAX_MM;
 
 /** Label-tab config fields the shelf-plane resolvers need (structural
  * subset of `LabelTabConfig`, kept inline so this shared module doesn't
@@ -201,17 +260,23 @@ export function defaultLabelShelfTopMm(
 }
 
 /**
- * The shelf-top Z the geometry builder anchors to: the user's explicit
- * height when set, otherwise the relieved default. Single source for the
+ * The shelf-top Z the geometry builder anchors to. Single source for the
  * worker, the panel's displayed height, and the ghost preview — three
  * independent `label.height ?? …` fallbacks is how they drift apart.
+ *
+ * Where the stacking relief applies an explicit height is capped at the
+ * relieved plane: the height control positions the shelf, it is not a licence
+ * to park a plate where the next bin up has to sit.
  */
 export function resolveLabelShelfTopMm(
   ceilingMm: number,
   stackingLip: boolean,
   label: LabelShelfConfig
 ): number {
-  return label.height ?? defaultLabelShelfTopMm(ceilingMm, stackingLip, label);
+  const defaultTop = defaultLabelShelfTopMm(ceilingMm, stackingLip, label);
+  if (label.height === undefined) return defaultTop;
+  const reliefApplies = defaultTop < ceilingMm;
+  return reliefApplies ? Math.min(label.height, defaultTop) : label.height;
 }
 
 /**
@@ -237,13 +302,6 @@ export function effectiveLabelSocketClearance(
   const offset = Number.isFinite(plateFitOffset) ? (plateFitOffset as number) : 0;
   return Math.max(0, scaled + offset);
 }
-
-/**
- * Ceiling for plate text/icon depth (mm) — the filament-swap two-color
- * contract. Also the worst-case emboss proudness above the plate top, which
- * is why `LABEL_SOCKET_STACK_RELIEF_MM` must be at least this.
- */
-export const LABEL_PLATE_TEXT_DEPTH_MAX_MM = 0.4;
 
 /**
  * Snap a text depth to a whole multiple of the layer height, clamped to the

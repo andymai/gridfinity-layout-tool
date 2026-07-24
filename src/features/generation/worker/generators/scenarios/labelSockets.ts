@@ -3,8 +3,8 @@
  *
  * The custom asserts verify the cut pocket against the pinned interchange
  * spec (`@/shared/constants/labelPlates`) from the actual mesh — plate
- * width + 0.3mm total clearance, 1.2mm pocket depth, and rib band planes
- * at floor+0.2/+0.6.
+ * width + 0.3mm total clearance, the click-in pocket depth (plate thickness
+ * plus the seating relief), and rib band planes at floor+0.2/+0.6.
  *
  * Most socket scenarios disable the stacking lip so the mesh maxZ IS the
  * shelf top (plus the COPLANAR_OVERLAP proud lip), making pocket Z-planes
@@ -15,7 +15,7 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   LABEL_PLATE_HEIGHT_MM,
-  LABEL_SOCKET_POCKET_DEPTH_MM,
+  LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
   LABEL_SOCKET_RIB_HEIGHT_MM,
   LABEL_SOCKET_RIB_START_MM,
   LABEL_SOCKET_STACK_RELIEF_MM,
@@ -49,7 +49,8 @@ interface PocketExpectation {
  * Verify the socket pocket cut into a back-anchored, center-aligned tab.
  * Derives every expected plane from params + the pinned spec, then checks
  * the mesh has vertices on them:
- *  - pocket floor at (shelf top − 1.2mm), X-extent = ±(plate + clearance)/2
+ *  - pocket floor at (shelf top − click pocket depth), X-extent =
+ *    ±(plate + clearance)/2
  *  - horizontal rib band planes at floor+0.2 and floor+0.6 (protrusion
  *    depth and per-wall coverage are not measured here)
  */
@@ -76,7 +77,7 @@ function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpe
     if (vertices[i] > maxZ) maxZ = vertices[i];
   }
   const shelfTopZ = maxZ - COPLANAR_OVERLAP;
-  const floorZ = shelfTopZ - LABEL_SOCKET_POCKET_DEPTH_MM;
+  const floorZ = shelfTopZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
   // Collect pocket-floor vertices: Z on the floor plane, Y inside the
   // pocket, AND face normal pointing up — gusset hypotenuse / shelf side
@@ -128,6 +129,42 @@ function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpe
   if (Math.abs(floorMinX + pocketW / 2) > 0.1 || Math.abs(floorMaxX - pocketW / 2) > 0.1) {
     throw new Error(
       `${exp.label}: pocket not centered (X ${floorMinX.toFixed(2)}..${floorMaxX.toFixed(2)})`
+    );
+  }
+}
+
+/**
+ * Assert the click-in pocket floor sits on the relieved plane and that the
+ * un-relieved plane is empty. Derives both down from the lip peak (mesh maxZ)
+ * rather than replicating deriveDimensions.
+ */
+function assertRelievedPocketFloor(result: MeshData, label: string): void {
+  const { vertices, normals } = result;
+  let maxZ = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    if (vertices[i] > maxZ) maxZ = vertices[i];
+  }
+  // maxZ is the lip peak: wallTop + LIP_HEIGHT − LIP_OVERLAP. Walk down to the
+  // interior ceiling, then apply relief + pocket depth.
+  const interiorTopZ = maxZ - (LIP_HEIGHT - LIP_OVERLAP) - LIP_SMALL_TAPER;
+  const relievedFloorZ =
+    interiorTopZ - LABEL_SOCKET_STACK_RELIEF_MM - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+  const unrelievedFloorZ = interiorTopZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+  let relieved = 0;
+  let unrelieved = 0;
+  for (let i = 0; i < vertices.length; i += 3) {
+    if (normals[i + 2] < 0.9) continue;
+    const z = vertices[i + 2];
+    if (Math.abs(z - relievedFloorZ) < 0.05) relieved++;
+    if (Math.abs(z - unrelievedFloorZ) < 0.05) unrelieved++;
+  }
+  if (relieved < 4) {
+    throw new Error(`${label}: no pocket floor at relieved Z=${relievedFloorZ.toFixed(2)}`);
+  }
+  if (unrelieved > 0) {
+    throw new Error(
+      `${label}: ${unrelieved} up-facing verts at un-relieved floor Z=` +
+        `${unrelievedFloorZ.toFixed(2)} — stacking relief not applied`
     );
   }
 }
@@ -218,7 +255,7 @@ export const labelSockets: ScenarioCase[] = [
       for (let i = 2; i < vertices.length; i += 3) {
         if (vertices[i] > maxZ) maxZ = vertices[i];
       }
-      const floorZ = maxZ - COPLANAR_OVERLAP - LABEL_SOCKET_POCKET_DEPTH_MM;
+      const floorZ = maxZ - COPLANAR_OVERLAP - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
       let left = 0;
       let right = 0;
       for (let i = 0; i < vertices.length; i += 3) {
@@ -245,38 +282,21 @@ export const labelSockets: ScenarioCase[] = [
       height: 5,
       label: SOCKET_LABEL,
     },
-    customAssert: (result) => {
-      const { vertices, normals } = result;
-      let maxZ = -Infinity;
-      for (let i = 2; i < vertices.length; i += 3) {
-        if (vertices[i] > maxZ) maxZ = vertices[i];
-      }
-      // maxZ is the lip peak: wallTop + LIP_HEIGHT − LIP_OVERLAP. Walk down
-      // to the interior ceiling, then apply relief + pocket depth.
-      const interiorTopZ = maxZ - (LIP_HEIGHT - LIP_OVERLAP) - LIP_SMALL_TAPER;
-      const relievedFloorZ =
-        interiorTopZ - LABEL_SOCKET_STACK_RELIEF_MM - LABEL_SOCKET_POCKET_DEPTH_MM;
-      const unrelievedFloorZ = interiorTopZ - LABEL_SOCKET_POCKET_DEPTH_MM;
-      let relieved = 0;
-      let unrelieved = 0;
-      for (let i = 0; i < vertices.length; i += 3) {
-        if (normals[i + 2] < 0.9) continue;
-        const z = vertices[i + 2];
-        if (Math.abs(z - relievedFloorZ) < 0.05) relieved++;
-        if (Math.abs(z - unrelievedFloorZ) < 0.05) unrelieved++;
-      }
-      if (relieved < 4) {
-        throw new Error(
-          `lipped-relief: no pocket floor at relieved Z=${relievedFloorZ.toFixed(2)}`
-        );
-      }
-      if (unrelieved > 0) {
-        throw new Error(
-          `lipped-relief: ${unrelieved} up-facing verts at un-relieved floor Z=` +
-            `${unrelievedFloorZ.toFixed(2)} — stacking relief not applied`
-        );
-      }
+    customAssert: (result) => assertRelievedPocketFloor(result, 'lipped-relief'),
+  }),
+
+  // Shortest bin that can host a socket. The relief eats tab-height budget, so
+  // the 14mm depth floor clears the 14.5mm relieved shelf by only 0.5mm — grow
+  // the relief again and `buildLabelTabs` starts returning null here, which the
+  // taller scenarios above would not notice.
+  defineScenario('label sockets', '3u lipped socket at the tightest height budget', {
+    params: {
+      width: 1,
+      depth: 1,
+      height: 3,
+      label: SOCKET_LABEL,
     },
+    customAssert: (result) => assertRelievedPocketFloor(result, '3u-tightest'),
   }),
 
   // Half-grid 0.5U bin: nothing fits, even spanning — tabs degrade to plain

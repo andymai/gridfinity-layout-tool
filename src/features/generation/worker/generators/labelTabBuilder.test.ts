@@ -330,7 +330,7 @@ describe('slide-channel socket style (#2666 follow-up)', () => {
     // the slide mouth cuts one extreme fully open (exactly 1). Asserting the
     // click count too guards against probing a vacuously-empty location.
     const wallHeight = 35;
-    // Inside the click pocket band (top 1.2) AND the slide cavity band
+    // Inside the click pocket band AND the slide cavity band
     // (0.6–1.95 below the shelf top).
     const cavityMidZ = wallHeight - 1.0;
     // Exact point-in-triangle occupancy on each Y-extreme's edge plane at

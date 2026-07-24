@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { fitFontSize, resolveEffectiveFont, clearTextMetricsMemo } from './textBuilder';
+import {
+  fitFontSize,
+  measureInkExtents,
+  resolveEffectiveFont,
+  clearTextMetricsMemo,
+} from './textBuilder';
+import type { InkExtents } from './textBuilder';
 import { loadFont, textMetrics } from 'brepjs';
 import { isErr, isOk } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -91,6 +97,69 @@ describe('fitFontSize', () => {
     const after = fitFontSize('BOLTS', 'atkinson', 30, 10, 3, 20);
     expect(after.fits).toBe(before.fits);
     expect(after.fontSize).toBeCloseTo(before.fontSize, 6);
+  });
+});
+
+describe('inkBox vertical fit', () => {
+  const PLATE_BAND_MM = 7.8;
+
+  function inkOf(text: string, fontSize: number): InkExtents {
+    const ink = measureInkExtents(text, fontSize, 'atkinson');
+    if (!ink) throw new Error(`no ink extents for "${text}" at size ${fontSize}`);
+    return ink;
+  }
+
+  it('measures the glyphs drawn, not the font-wide ascender..descender band', () => {
+    // textMetrics().height is a font constant — identical for an all-caps run
+    // and one full of descenders. The ink box has to distinguish them.
+    const caps = inkOf('KABEL', 10);
+    const descenders = inkOf('gjpqy', 10);
+
+    const lineBox = textMetrics('KABEL', { fontSize: 10, fontFamily: 'atkinson' });
+    expect(isOk(lineBox)).toBe(true);
+    if (!isOk(lineBox)) return;
+
+    expect(caps.minY).toBeCloseTo(0, 2);
+    expect(caps.maxY - caps.minY).toBeLessThan(lineBox.value.height);
+    expect(descenders.minY).toBeLessThan(0);
+    expect(descenders.maxY - descenders.minY).toBeGreaterThan(caps.maxY - caps.minY);
+  });
+
+  it('fills the band an all-caps run only half-used under lineBox', () => {
+    // Width deliberately generous, so the fit is purely the band the line box
+    // reserved for ascenders/descenders "KABEL" never draws.
+    const lineFit = fitFontSize('KABEL', 'atkinson', 100, PLATE_BAND_MM, 3, 20);
+    const inkFit = fitFontSize('KABEL', 'atkinson', 100, PLATE_BAND_MM, 3, 20, 'inkBox');
+    expect(lineFit.fits).toBe(true);
+    expect(inkFit.fits).toBe(true);
+    expect(inkFit.fontSize).toBeGreaterThan(lineFit.fontSize * 1.5);
+
+    const ink = inkOf('KABEL', inkFit.fontSize);
+    expect(ink.maxY - ink.minY).toBeCloseTo(PLATE_BAND_MM, 2);
+  });
+
+  it('still lets width bind at real plate proportions', () => {
+    // A 1U plate's 32.8mm text run is the narrower budget for a 5-glyph
+    // string, so the ink fit grows the glyphs without overflowing sideways.
+    const inkFit = fitFontSize('KABEL', 'atkinson', 32.8, PLATE_BAND_MM, 3, 20, 'inkBox');
+    const lineFit = fitFontSize('KABEL', 'atkinson', 32.8, PLATE_BAND_MM, 3, 20);
+    expect(inkFit.fontSize).toBeGreaterThan(lineFit.fontSize * 1.5);
+    const width = textMetrics('KABEL', { fontSize: inkFit.fontSize, fontFamily: 'atkinson' });
+    expect(isOk(width)).toBe(true);
+    if (isOk(width)) expect(width.value.width).toBeLessThanOrEqual(32.8 + 1e-6);
+  });
+
+  it('never overflows the band it was given', () => {
+    for (const text of ['KABEL', 'gjpqy', 'M4 x 12', 'Ø8']) {
+      const fit = fitFontSize(text, 'atkinson', 32.8, PLATE_BAND_MM, 3, 20, 'inkBox');
+      if (!fit.fits) continue;
+      const ink = inkOf(text, fit.fontSize);
+      expect(ink.maxY - ink.minY).toBeLessThanOrEqual(PLATE_BAND_MM + 1e-6);
+    }
+  });
+
+  it('returns null extents for an unloaded font', () => {
+    expect(measureInkExtents('A', 10, 'not-a-font' as 'atkinson')).toBeNull();
   });
 });
 

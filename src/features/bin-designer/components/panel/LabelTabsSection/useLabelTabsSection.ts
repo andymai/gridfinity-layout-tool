@@ -12,6 +12,7 @@ import {
   effectiveLabelSocketClearance,
   isLabelPlateIconId,
   labelShelfCeilingMm,
+  resolveLabelShelfTopMm,
 } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
@@ -65,8 +66,15 @@ export function useLabelTabsSection() {
   // sinks click-in socket shelves by the stacking relief — every ceiling,
   // clamp, and silent-drop check below must use these, not `wallHeightMm`,
   // or the UI permits heights the builder rejects.
-  const shelfCeilingMm = labelShelfCeilingMm(wallHeightMm, params.base.stackingLip);
-  const defaultShelfTopMm = defaultLabelShelfTopMm(shelfCeilingMm, params.base.stackingLip, label);
+  const stackingLip = params.base.stackingLip;
+  const shelfCeilingMm = useMemo(
+    () => labelShelfCeilingMm(wallHeightMm, stackingLip),
+    [wallHeightMm, stackingLip]
+  );
+  const defaultShelfTopMm = useMemo(
+    () => defaultLabelShelfTopMm(shelfCeilingMm, stackingLip, label),
+    [shelfCeilingMm, stackingLip, label]
+  );
 
   // Dimensional constraint: cavity too shallow for a label tab. Gated on the
   // physical wall height (mm), not the height unit count, so tall bins with a
@@ -92,20 +100,19 @@ export function useLabelTabsSection() {
       // Height (when explicitly set) must stay above `depth` so the gusset
       // has at least 1mm of clearance above the floor. If raising depth
       // would invalidate the current height, lift height in lockstep — and
-      // cap at `shelfCeilingMm` so we never write a value above the stepper's
-      // own ceiling. Without the cap, pushing depth up to the ceiling on a
-      // short bin would store height = depth + 1 > ceiling; subsequently
+      // cap at the stepper's own ceiling. Without the cap, pushing depth up on
+      // a short bin would store height = depth + 1 > ceiling; subsequently
       // lowering depth wouldn't re-trigger the clamp (`currentHeight <= depth`
       // is false), and the now-out-of-range height would silently make the
       // builder drop the tab.
       const currentHeight = label.height;
       if (currentHeight !== undefined && currentHeight <= depth) {
-        updateLabel({ depth, height: Math.min(depth + 1, shelfCeilingMm) });
+        updateLabel({ depth, height: Math.min(depth + 1, defaultShelfTopMm) });
       } else {
         updateLabel({ depth });
       }
     },
-    [label.height, updateLabel, shelfCeilingMm]
+    [label.height, updateLabel, defaultShelfTopMm]
   );
 
   const setTabEdges = useCallback(
@@ -126,13 +133,13 @@ export function useLabelTabsSection() {
         updateLabel({
           mode,
           depth,
-          ...(liftHeight ? { height: Math.min(depth + 1, shelfCeilingMm) } : {}),
+          ...(liftHeight ? { height: Math.min(depth + 1, defaultShelfTopMm) } : {}),
         });
       } else {
         updateLabel({ mode });
       }
     },
-    [label.depth, label.height, updateLabel, shelfCeilingMm]
+    [label.depth, label.height, updateLabel, defaultShelfTopMm]
   );
 
   const setPlateFitOffset = useCallback(
@@ -220,20 +227,23 @@ export function useLabelTabsSection() {
     return Math.round(((availableWidth * widthPercent) / 100) * 10) / 10;
   }, [params, compartments.cols, compartments.thickness, label.width, label.mode]);
 
-  // Resolved tab height for display: explicit value when set, otherwise the
-  // builder's default anchor (interior ceiling, relieved in socket mode).
-  const tabHeightMm = label.height ?? defaultShelfTopMm;
+  // The plane the builder actually anchors to, cap included.
+  const tabHeightMm = useMemo(
+    () => resolveLabelShelfTopMm(shelfCeilingMm, stackingLip, label),
+    [shelfCeilingMm, stackingLip, label]
+  );
   // Did the user explicitly set height? Controls whether the W×D×H summary
   // shows the third dimension. Keeps unaltered designs visually unchanged.
   const heightIsExplicit = label.height !== undefined;
 
   // Dynamic min/max for the tab-height stepper. The geometry layer
   // requires `height > depth` for a non-degenerate gusset (floor = depth + 1)
-  // and `height <= shelfCeilingMm` (the builder's interiorHeight guard).
-  // When the depth-derived floor exceeds the ceiling (a deep tab in a
-  // short bin), the only valid value is the ceiling; collapse min onto max
-  // so the stepper can't request a Z the builder would reject.
-  const tabHeightMax = shelfCeilingMm;
+  // and `height <= shelfCeilingMm` (the builder's interiorHeight guard) —
+  // relieved to `defaultShelfTopMm` in click-in socket mode, where the
+  // builder caps anyway and a higher offer would just read back lower.
+  // When the depth-derived floor exceeds that ceiling (a deep tab in a short
+  // bin), collapse min onto max so the stepper can't request a rejected Z.
+  const tabHeightMax = defaultShelfTopMm;
   const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
 
   // Dynamic max for the tab-depth stepper. Geometry's bridge guard rejects
@@ -319,21 +329,20 @@ export function useLabelTabsSection() {
     ) {
       return true;
     }
-    // Height guards, mirroring the builder exactly: the shelf top (explicit
-    // or the relieved default) must clear the interior ceiling, and the tab
-    // envelope (height = depth) must fit strictly below the shelf top.
+    // Height guards, mirroring the builder exactly: the resolved shelf top
+    // must clear the interior ceiling, and the tab envelope (height = depth)
+    // must fit strictly below the shelf top.
     if (depth <= 0) return true;
-    if (depth >= (label.height ?? defaultShelfTopMm)) return true;
-    if (label.height !== undefined && label.height > shelfCeilingMm) return true;
+    if (depth >= tabHeightMm) return true;
+    if (tabHeightMm > shelfCeilingMm) return true;
     return false;
   }, [
     label.depth,
     label.inset,
-    label.height,
     edgesValue,
     innerD,
     compartmentDepths,
-    defaultShelfTopMm,
+    tabHeightMm,
     shelfCeilingMm,
   ]);
 
@@ -355,11 +364,14 @@ export function useLabelTabsSection() {
     const currentMode = label.mode ?? 'text';
 
     // Height-derived ceiling: tabHeight = tabDepth, must sit strictly below
-    // the shelf top (explicit height, or the builder's relieved default).
+    // the shelf top the builder will actually use — an explicit height, but
+    // capped like `resolveLabelShelfTopMm` does, or the fix works from a plane
+    // the geometry never reaches and repairs nothing.
     // `ceil(shelf) - 1` is the largest integer depth the builder accepts —
-    // a flat `- 1` margin under a fractional shelf (14.9 → 13) wrongly
+    // a flat `- 1` margin under a fractional shelf (14.5 → 13) wrongly
     // excludes the 14mm socket minimum and demotes valid socket configs.
-    const heightCeiling = Math.ceil(nextHeight ?? defaultShelfTopMm) - 1;
+    const resolvedShelfTop = Math.min(nextHeight ?? defaultShelfTopMm, defaultShelfTopMm);
+    const heightCeiling = Math.ceil(resolvedShelfTop) - 1;
     const depthFloor = (mode: LabelTabMode): number =>
       mode === 'socket' ? MIN_LABEL_SOCKET_TAB_DEPTH_MM : DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
     const depthCeil = (edges: LabelTabEdges): number =>
@@ -391,15 +403,17 @@ export function useLabelTabsSection() {
       nextEnabled = false;
     }
 
-    // Keep height valid given the (possibly new) depth.
+    // Keep height valid given the (possibly new) depth, inside the band the
+    // stepper offers: (depth, capped shelf top]. The 1mm gusset preference
+    // collapses onto the ceiling rather than failing, mirroring `tabHeightMin`
+    // — insisting on depth + 1 disables tabs the builder would have generated.
     if (nextHeight !== undefined) {
-      const minHeight = nextDepth + 1;
-      const maxHeight = shelfCeilingMm;
-      if (minHeight > maxHeight) {
-        // Bin is too short for any valid (depth, height) pair → disable feature.
+      const maxHeight = defaultShelfTopMm;
+      if (maxHeight <= nextDepth) {
+        // No shelf plane clears the depth → disable the feature.
         nextEnabled = false;
       } else {
-        nextHeight = Math.min(maxHeight, Math.max(minHeight, nextHeight));
+        nextHeight = Math.min(maxHeight, Math.max(Math.min(nextDepth + 1, maxHeight), nextHeight));
       }
     } else if (nextDepth >= defaultShelfTopMm) {
       // No explicit height, but the implicit default shelf top won't fit
@@ -425,7 +439,6 @@ export function useLabelTabsSection() {
     innerD,
     tabDepthMax,
     defaultShelfTopMm,
-    shelfCeilingMm,
     updateLabel,
   ]);
 
