@@ -35,6 +35,8 @@ export type {
 } from './events';
 export type { BinExportProperties } from './binExportEvents';
 export { trackBinExportSucceeded, trackBinExportFailure } from './binExportEvents';
+export type { ToolSurface, ToolConvertedProperties } from './conversionEvents';
+export { trackToolActivated, trackToolConverted } from './conversionEvents';
 export {
   getDeviceType,
   trackLayoutSnapshot,

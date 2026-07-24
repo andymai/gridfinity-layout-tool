@@ -6,6 +6,7 @@
  */
 
 import { trackEvent } from './trackEvent';
+import { trackToolConverted } from './conversionEvents';
 
 /**
  * Properties shared by bin export success and failure events.
@@ -48,6 +49,7 @@ export function trackBinExportSucceeded(props: BinExportProperties): void {
       has_lid: props.has_lid,
       needs_split: props.needs_split,
     });
+    trackToolConverted('designer', { format: props.format, split: props.needs_split });
   } catch {
     // Analytics should never break the app
   }

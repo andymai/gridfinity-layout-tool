@@ -16,6 +16,7 @@ import { capture } from './init';
 import { computeLayoutMetrics, computeLabsMetrics } from './metrics';
 import { getDeviceType, trackEvent } from './trackEvent';
 import { markFeatureUsed, updatePersonProperties } from './eventsPerson';
+import { trackToolActivated } from './conversionEvents';
 
 export type AnalyticsTrigger = 'export_json' | 'export_url' | 'export_tsv' | 'session_engaged';
 
@@ -127,6 +128,7 @@ export function trackBinCreated(props: BinCreatedProperties): void {
         : {}),
       from_template_id: props.from_template_id ?? null,
     });
+    trackToolActivated('layout', props.method);
     checkEngagementMilestones();
   } catch {
     // Fail silently

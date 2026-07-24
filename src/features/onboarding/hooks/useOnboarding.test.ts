@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useOnboarding, resetOnboarding, syncOnboardingFlags } from './useOnboarding';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
@@ -9,6 +9,8 @@ import { createDefaultLayout } from '@/core/constants';
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
+
+import { trackEvent } from '@/shared/analytics/posthog';
 
 /** Set localStorage flags and sync the module-level cache */
 function setFlags(flags: Record<string, string>) {
@@ -49,71 +51,7 @@ describe('useOnboarding', () => {
     resetOnboarding();
     // Reset stores to default state
     initStoresAsNewUser();
-  });
-
-  describe('shouldShowWelcome', () => {
-    it('shows welcome for brand-new user (1 layout, 0 bins)', () => {
-      const { result } = renderHook(() => useOnboarding());
-      expect(result.current.shouldShowWelcome).toBe(true);
-    });
-
-    it('does not show welcome after markWelcomeComplete', () => {
-      const { result } = renderHook(() => useOnboarding());
-      act(() => result.current.markWelcomeComplete('template'));
-      expect(result.current.shouldShowWelcome).toBe(false);
-    });
-
-    it('does not show welcome if localStorage flag is already set', () => {
-      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
-      const { result } = renderHook(() => useOnboarding());
-      expect(result.current.shouldShowWelcome).toBe(false);
-    });
-
-    it('does not show welcome if user has bins', () => {
-      initStoresWithBins(1);
-      const { result } = renderHook(() => useOnboarding());
-      expect(result.current.shouldShowWelcome).toBe(false);
-    });
-
-    describe('deep-link routes', () => {
-      const originalLocation = window.location;
-
-      afterEach(() => {
-        Object.defineProperty(window, 'location', {
-          value: originalLocation,
-          writable: true,
-        });
-      });
-
-      function setPathname(path: string) {
-        // Spreading the Location class instance is intentional here — the
-        // test only reads enumerable string properties on the result, never
-        // calls prototype methods (assign/replace/reload).
-        Object.defineProperty(window, 'location', {
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          value: { ...originalLocation, pathname: path },
-          writable: true,
-        });
-      }
-
-      it('does not show welcome on /designer route', () => {
-        setPathname('/designer');
-        const { result } = renderHook(() => useOnboarding());
-        expect(result.current.shouldShowWelcome).toBe(false);
-      });
-
-      it('does not show welcome on /baseplate route', () => {
-        setPathname('/baseplate');
-        const { result } = renderHook(() => useOnboarding());
-        expect(result.current.shouldShowWelcome).toBe(false);
-      });
-
-      it('auto-marks welcome seen for deep-link users to prevent later popup', () => {
-        setPathname('/designer');
-        renderHook(() => useOnboarding());
-        expect(localStorage.getItem('gridfinity-onboarding-welcome-seen')).toBe('true');
-      });
-    });
+    vi.mocked(trackEvent).mockClear();
   });
 
   describe('shouldShowDrawTutorial', () => {
@@ -144,19 +82,19 @@ describe('useOnboarding', () => {
   });
 
   describe('shouldPulseGallery', () => {
-    it('pulses for returning low-engagement user (welcome seen, 0 bins)', () => {
-      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
+    it('pulses for low-engagement user past the draw tutorial (0 bins)', () => {
+      setFlags({ 'gridfinity-onboarding-draw-tutorial-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
     });
 
-    it('does not pulse for brand-new user (welcome not seen)', () => {
+    it('does not pulse for brand-new user (draw tutorial not seen)', () => {
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(false);
     });
 
     it('dismisses pulse on gallery open', () => {
-      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
+      setFlags({ 'gridfinity-onboarding-draw-tutorial-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
 
@@ -166,7 +104,7 @@ describe('useOnboarding', () => {
 
     it('does not pulse if dismissed flag is set', () => {
       setFlags({
-        'gridfinity-onboarding-welcome-seen': 'true',
+        'gridfinity-onboarding-draw-tutorial-seen': 'true',
         'gridfinity-onboarding-sidebar-pulse-dismissed': 'true',
       });
       const { result } = renderHook(() => useOnboarding());
@@ -195,10 +133,24 @@ describe('useOnboarding', () => {
 
       expect(result.current.shouldShowDrawTutorial).toBe(false);
       expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBe('true');
+      expect(trackEvent).toHaveBeenCalledWith('onboarding_draw_tutorial_completed', {
+        method: 'first_bin',
+      });
+    });
+
+    it('sets the flag without a completion event for users who arrive with bins', () => {
+      initStoresWithBins(2);
+      renderHook(() => useOnboarding());
+
+      expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBe('true');
+      expect(trackEvent).not.toHaveBeenCalledWith(
+        'onboarding_draw_tutorial_completed',
+        expect.anything()
+      );
     });
 
     it('auto-dismisses gallery pulse when engagement threshold is reached', () => {
-      setFlags({ 'gridfinity-onboarding-welcome-seen': 'true' });
+      setFlags({ 'gridfinity-onboarding-draw-tutorial-seen': 'true' });
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldPulseGallery).toBe(true);
 
@@ -223,40 +175,17 @@ describe('useOnboarding', () => {
     });
   });
 
-  describe('cross-instance state sharing', () => {
-    it('persists choseBlankCanvas to localStorage so other hook instances see it', () => {
-      const { result } = renderHook(() => useOnboarding());
-      act(() => result.current.markWelcomeComplete('blank'));
-
-      // A second hook instance should read from localStorage
-      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBe('true');
-    });
-
-    it('shares choseBlankCanvas flag via localStorage', () => {
-      setFlags({
-        'gridfinity-onboarding-welcome-seen': 'true',
-        'gridfinity-onboarding-chose-blank': 'true',
-      });
-      // Verify the flag is readable from localStorage
-      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBe('true');
-    });
-  });
-
   describe('resetOnboarding', () => {
     it('clears all onboarding flags', () => {
       setFlags({
-        'gridfinity-onboarding-welcome-seen': 'true',
         'gridfinity-onboarding-draw-tutorial-seen': 'true',
         'gridfinity-onboarding-sidebar-pulse-dismissed': 'true',
-        'gridfinity-onboarding-chose-blank': 'true',
       });
 
       resetOnboarding();
 
-      expect(localStorage.getItem('gridfinity-onboarding-welcome-seen')).toBeNull();
       expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBeNull();
       expect(localStorage.getItem('gridfinity-onboarding-sidebar-pulse-dismissed')).toBeNull();
-      expect(localStorage.getItem('gridfinity-onboarding-chose-blank')).toBeNull();
     });
   });
 });

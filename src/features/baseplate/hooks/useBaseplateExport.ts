@@ -16,6 +16,7 @@ import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import { useToastStore } from '@/core/store/toast';
+import { trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { useTranslation } from '@/i18n';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -127,6 +128,12 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           );
           triggerDownload(zip, `${baseNameNoExt}.zip`);
         }
+
+        trackToolConverted('baseplate', {
+          format,
+          split: pieces.length > 1,
+          piece_count: pieces.length,
+        });
 
         if (splitStats) {
           // The unstacked ZIP holds one file per slot (full set), so report the

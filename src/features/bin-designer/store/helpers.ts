@@ -15,6 +15,7 @@ import { evictIfNeeded } from './meshCacheManager';
 import { isFractional } from '@/core/constants';
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 
 /**
  * Resolve the parameters a fresh bin starts from.
@@ -113,6 +114,7 @@ export function pushHistoryEntry(
     // Clear cached mesh for the previous params; new params need a fresh result
     pendingMeshCache = null;
   }
+  trackToolActivated('designer', 'param_edit');
 }
 
 /**

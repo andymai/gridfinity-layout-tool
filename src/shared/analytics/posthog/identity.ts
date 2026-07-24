@@ -27,7 +27,10 @@ export function loadAnalyticsData(): AnalyticsData {
   try {
     const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
     if (raw) {
-      analyticsCache = JSON.parse(raw) as AnalyticsData;
+      // Stored data may predate newer fields (e.g. milestones) — backfill
+      // them so consumers can index into them without shape checks
+      const parsed = JSON.parse(raw) as Partial<AnalyticsData>;
+      analyticsCache = { ...createEmptyAnalyticsData(), ...parsed };
       return analyticsCache;
     }
   } catch {

@@ -82,9 +82,6 @@ const SharedLayoutBanner = lazyWithRetry(() =>
 const LabsDrawer = lazyWithRetry(() =>
   import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
 );
-const WelcomeModal = lazyWithRetry(() =>
-  import('@/shell/Modals/WelcomeModal').then(namedExport('WelcomeModal'))
-);
 const DesignerPage = lazyWithRetry(() =>
   import('@/features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
@@ -193,7 +190,7 @@ export default function App() {
   }, [isDesignerRoute, isBaseplateRoute, isSupportersRoute, t]);
   const { isMobile, isTablet } = useResponsive();
 
-  const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
+  const { shouldShowDrawTutorial } = useOnboarding();
 
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
@@ -584,11 +581,6 @@ export default function App() {
       {isLabsDrawerOpen && (
         <Suspense fallback={null}>
           <LabsDrawer />
-        </Suspense>
-      )}
-      {shouldShowWelcome && (
-        <Suspense fallback={null}>
-          <WelcomeModal isOpen onClose={markWelcomeComplete} />
         </Suspense>
       )}
       {isHelpOpen && (

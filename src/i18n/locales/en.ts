@@ -1515,17 +1515,9 @@ const en: Record<string, string> = {
   'gallery.yourSize': '(yours: {size})',
 
   // Onboarding
-  'onboarding.welcome.title': 'Plan it before you print it',
-  'onboarding.welcome.subtitle': 'Layout your bins, then print with confidence',
-  'onboarding.welcome.startBlank': 'Start with an empty drawer',
-  'onboarding.welcome.showcaseHeading': 'See what others have built',
-  'onboarding.welcome.showcaseAction': 'Click any to start from it',
-  'onboarding.welcome.desktopNudge':
-    'This tool works best on desktop. Visit on a larger screen for the full experience.',
-  'onboarding.welcome.startDesigning': 'Start designing',
   'onboarding.drawTutorial.hint': 'Drag to draw your first bin',
   'settings.resetOnboarding': 'Reset onboarding',
-  'toast.onboardingReset': 'Onboarding reset — reload to see the welcome screen',
+  'toast.onboardingReset': 'Onboarding reset — reload to see the tutorial',
 
   // Tool Switcher
   'toolSwitcher.layout': 'Layout',
