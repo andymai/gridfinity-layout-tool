@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.292.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.291.0...gridfinity-layout-tool-v4.292.0) (2026-07-24)
+
+
+### Features
+
+* **baseplate:** first-run orientation card and post-export planner bridge ([#2796](https://github.com/andymai/gridfinity-layout-tool/issues/2796)) ([ac79186](https://github.com/andymai/gridfinity-layout-tool/commit/ac79186e8cd610730d953eda7257fd76c6300fb4))
+
 ## [4.291.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.290.0...gridfinity-layout-tool-v4.291.0) (2026-07-24)
 
 
