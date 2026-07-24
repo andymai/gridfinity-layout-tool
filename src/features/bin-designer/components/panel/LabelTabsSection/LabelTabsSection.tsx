@@ -69,8 +69,10 @@ export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();
   const [labelsOpen, setLabelsOpen] = useState(false);
 
+  // tabHeightMm is a resolved plane, not the typed value — round it like
+  // tabWidthMm so a fractional shelf can't print its full float expansion.
   const dimensionsReadout = `${state.tabWidthMm} × ${state.label.depth}${
-    state.heightIsExplicit ? ` × ${state.tabHeightMm}` : ''
+    state.heightIsExplicit ? ` × ${Math.round(state.tabHeightMm * 10) / 10}` : ''
   } mm`;
 
   // Bulk list goes in `primaryControls`, not a Customize child: the Customize

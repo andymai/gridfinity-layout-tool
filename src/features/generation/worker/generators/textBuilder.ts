@@ -64,21 +64,105 @@ export function measureText(text: string, fontSize: number, fontFamily: TextFont
   const key = `${fontFamily}|${fontSize}|${text}`;
   const cached = metricsMemo.get(key);
   if (cached) return cached;
-  const result = textMetrics(text, { fontSize, fontFamily });
-  // Simple bounded eviction: drop the oldest entry once at capacity. Insertion
-  // order is preserved by Map, so the first key is the oldest.
-  if (metricsMemo.size >= METRICS_MEMO_MAX) {
-    const oldest = metricsMemo.keys().next().value;
-    if (oldest !== undefined) metricsMemo.delete(oldest);
+  return memoSet(metricsMemo, key, textMetrics(text, { fontSize, fontFamily }));
+}
+
+/** Bounded insert: drop the oldest entry once at capacity. Map preserves
+ *  insertion order, so the first key is the oldest. */
+function memoSet<T>(memo: Map<string, T>, key: string, value: T): T {
+  if (memo.size >= METRICS_MEMO_MAX) {
+    const oldest = memo.keys().next().value;
+    if (oldest !== undefined) memo.delete(oldest);
   }
-  metricsMemo.set(key, result);
-  return result;
+  memo.set(key, value);
+  return value;
+}
+
+/**
+ * Which vertical box auto-fit sizes the text against.
+ *
+ * `lineBox` (`textMetrics().height`) is the font's ascender..descender band —
+ * CONSTANT for a given font and size whatever the string, so a run of mixed
+ * strings sharing one host keeps a common baseline and a stable size. It is
+ * also only ~54% inked by an all-caps run (Atkinson: 6.69 of 12.4mm at size
+ * 10), which renders such a string at roughly half the height the host holds.
+ *
+ * `inkBox` measures the glyphs actually drawn. Use it where the band IS the
+ * legible area and the text is the point of the part (label plates).
+ */
+export type VerticalFit = 'lineBox' | 'inkBox';
+
+/** Glyph ink extents in the sketch frame (+Y up, baseline at 0). */
+export interface InkExtents {
+  readonly minY: number;
+  readonly maxY: number;
+}
+
+const inkMemo = new Map<string, InkExtents | null>();
+
+/**
+ * Ink extents at `FIT_REFERENCE_SIZE`. opentype path coordinates are linear in
+ * font size (so one measurement scales to any size) and its +Y points DOWN,
+ * hence the negation into the sketch frame. Bezier control points are folded
+ * in, so the box can only over-state the ink — a fit built on it never
+ * overflows its host.
+ */
+function inkExtentsAtReference(text: string, fontFamily: TextFontFamily): InkExtents | null {
+  const key = `${fontFamily}|${text}`;
+  const cached = inkMemo.get(key);
+  if (cached !== undefined) return cached;
+
+  const font = getFont(fontFamily);
+  let lo = Infinity;
+  let hi = -Infinity;
+  const track = (y: number): void => {
+    if (y < lo) lo = y;
+    if (y > hi) hi = y;
+  };
+  for (const cmd of font?.getPath(text, 0, 0, FIT_REFERENCE_SIZE).commands ?? []) {
+    if (cmd.type === 'Z') continue;
+    track(cmd.y);
+    if (cmd.type === 'Q' || cmd.type === 'C') track(cmd.y1);
+    if (cmd.type === 'C') track(cmd.y2);
+  }
+
+  return memoSet(inkMemo, key, lo <= hi ? { minY: -hi, maxY: -lo } : null);
+}
+
+/** Memoized glyph ink extents at an arbitrary size. `null` when the font isn't
+ *  loaded or the string renders no outlines (all whitespace, missing glyphs). */
+export function measureInkExtents(
+  text: string,
+  fontSize: number,
+  fontFamily: TextFontFamily
+): InkExtents | null {
+  const ref = inkExtentsAtReference(text, fontFamily);
+  if (!ref) return null;
+  const scale = fontSize / FIT_REFERENCE_SIZE;
+  return { minY: ref.minY * scale, maxY: ref.maxY * scale };
 }
 
 /** Drop all memoized text metrics. Call when the font registry changes (font
- *  (re)load, kernel switch) — `textMetrics` results depend on the loaded font. */
+ *  (re)load, kernel switch) — measurements depend on the loaded font. */
 export function clearTextMetricsMemo(): void {
   metricsMemo.clear();
+  inkMemo.clear();
+}
+
+/** The box auto-fit measures against: glyph advance width, paired with the
+ *  vertical extent `fit` selects. `null` when either measurement is
+ *  unavailable (font not loaded, no glyph outlines). */
+function measureFitBox(
+  text: string,
+  fontSize: number,
+  fontFamily: TextFontFamily,
+  fit: VerticalFit
+): { readonly width: number; readonly height: number } | null {
+  const metrics = measureText(text, fontSize, fontFamily);
+  if (!isOk(metrics)) return null;
+  if (fit === 'lineBox') return { width: metrics.value.width, height: metrics.value.height };
+  const ink = measureInkExtents(text, fontSize, fontFamily);
+  return ink ? { width: metrics.value.width, height: ink.maxY - ink.minY } : null;
 }
 
 /**
@@ -101,36 +185,35 @@ export function fitFontSize(
   availW: number,
   availD: number,
   min: number,
-  max: number
+  max: number,
+  verticalFit: VerticalFit = 'lineBox'
 ): FitResult {
   if (!text || availW <= 0 || availD <= 0 || min <= 0 || max < min) {
     return { fontSize: 0, fits: false };
   }
-  const ref = measureText(text, FIT_REFERENCE_SIZE, fontFamily);
-  if (!isOk(ref) || ref.value.width <= 0 || ref.value.height <= 0) {
+  const ref = measureFitBox(text, FIT_REFERENCE_SIZE, fontFamily, verticalFit);
+  if (!ref || ref.width <= 0 || ref.height <= 0) {
     // Degenerate measurement (missing glyphs, all-whitespace) — avoid dividing
     // by zero and defer to the search, which has its own min-overflow guard.
-    return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
+    return fitFontSizeBisect(text, fontFamily, availW, availD, min, max, verticalFit);
   }
   // width(s) = ref.width · s / FIT_REFERENCE_SIZE → solve each axis for its
   // limiting size, take the smaller, then clamp to [min, max].
-  const sizeForW = (availW * FIT_REFERENCE_SIZE) / ref.value.width;
-  const sizeForH = (availD * FIT_REFERENCE_SIZE) / ref.value.height;
+  const sizeForW = (availW * FIT_REFERENCE_SIZE) / ref.width;
+  const sizeForH = (availD * FIT_REFERENCE_SIZE) / ref.height;
   const size = Math.min(max, Math.max(min, Math.min(sizeForW, sizeForH)));
 
-  const check = measureText(text, size, fontFamily);
-  const fits =
-    isOk(check) &&
-    check.value.width <= availW + FIT_EPSILON &&
-    check.value.height <= availD + FIT_EPSILON;
-  if (fits) return { fontSize: size, fits: true };
+  const check = measureFitBox(text, size, fontFamily, verticalFit);
+  if (check && check.width <= availW + FIT_EPSILON && check.height <= availD + FIT_EPSILON) {
+    return { fontSize: size, fits: true };
+  }
   // The linear pick didn't verify as fitting. With exactly-linear metrics this
   // only happens when `size` was clamped to `min` and `min` itself overflows.
   // Defer to the search either way: it returns fits:false for that clamp case
   // (matching the old behavior) and, were metrics ever non-linear, would still
   // find a smaller fitting size instead of dropping the text. Costs nothing on
   // the common path (the early return above).
-  return fitFontSizeBisect(text, fontFamily, availW, availD, min, max);
+  return fitFontSizeBisect(text, fontFamily, availW, availD, min, max, verticalFit);
 }
 
 /**
@@ -145,10 +228,11 @@ function fitFontSizeBisect(
   availW: number,
   availD: number,
   min: number,
-  max: number
+  max: number,
+  verticalFit: VerticalFit
 ): FitResult {
-  const minMetrics = measureText(text, min, fontFamily);
-  if (!isOk(minMetrics) || minMetrics.value.width > availW || minMetrics.value.height > availD) {
+  const minBox = measureFitBox(text, min, fontFamily, verticalFit);
+  if (!minBox || minBox.width > availW || minBox.height > availD) {
     return { fontSize: 0, fits: false };
   }
   let lo = min;
@@ -156,9 +240,9 @@ function fitFontSizeBisect(
   let best = min;
   for (let i = 0; i < 14; i++) {
     const mid = (lo + hi) / 2;
-    const m = measureText(text, mid, fontFamily);
-    if (!isOk(m)) break;
-    if (m.value.width <= availW && m.value.height <= availD) {
+    const box = measureFitBox(text, mid, fontFamily, verticalFit);
+    if (!box) break;
+    if (box.width <= availW && box.height <= availD) {
       best = mid;
       lo = mid;
     } else {
@@ -221,6 +305,9 @@ export interface BuildTextSolidOptions {
    * the 2D editor preview. Auto-fit still measures the unrotated glyph run.
    */
   readonly angleDeg?: number;
+  /** Which vertical box auto-fit sizes and centers against. Defaults to
+   *  `lineBox` — see {@link VerticalFit}. */
+  readonly verticalFit?: VerticalFit;
 }
 
 /** Lift sketches above the host top face so booleans don't touch coincident
@@ -258,13 +345,15 @@ export function buildTextSolid(
 
   const availW = options.availW - 2 * options.margin;
   const availD = options.availD - 2 * options.margin;
+  const verticalFit = options.verticalFit ?? 'lineBox';
   const fit = fitFontSize(
     trimmed,
     fontFamily,
     availW,
     availD,
     options.minFontSize,
-    options.maxFontSize
+    options.maxFontSize,
+    verticalFit
   );
   if (!fit.fits) return null;
 
@@ -317,8 +406,14 @@ export function buildTextSolid(
 
   // textMetrics: width is total advance; vertical bbox spans descender..ascender.
   // Visual centroid in the sketch frame = (width/2, (ascender + descender)/2).
+  // The centroid must track the same box the fit used, or the glyphs sit
+  // off-center by the slack the other box leaves.
   const visualCenterX = metrics.value.width / 2;
-  const visualCenterY = (metrics.value.ascender + metrics.value.descender) / 2;
+  const inkExtents =
+    verticalFit === 'inkBox' ? measureInkExtents(trimmed, fontSize, fontFamily) : null;
+  const visualCenterY = inkExtents
+    ? (inkExtents.minY + inkExtents.maxY) / 2
+    : (metrics.value.ascender + metrics.value.descender) / 2;
 
   const angle = options.angleDeg ?? 0;
   let solid: Shape3D;

@@ -40,6 +40,7 @@ import {
   LABEL_PLATE_V1_CHANNEL_XS_MM,
   LABEL_PLATE_V1_MOUTH_HEIGHT_MM,
   LABEL_PLATE_V1_MOUTH_WIDTH_MM,
+  labelPlateV1ChannelsFitText,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
@@ -180,7 +181,16 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
     // doubles as a lead-in for the tabs). The mouth spans the full plate
     // depth and flares at the outline; the cavity ends at the latch inset
     // and flares there, opening into the perimeter latch groove.
-    if (opts.v1Channels && spec.widthU === 1) {
+    const hasText = spec.text.trim().length > 0;
+    const hasMarkings = hasText || spec.icon !== undefined;
+    // A blank plate always keeps the channels; a marked one only when the
+    // markings can't breach the cavity roof (`labelPlateV1ChannelsFitText`).
+    const withV1Channels =
+      opts.v1Channels &&
+      spec.widthU === 1 &&
+      (!hasMarkings || labelPlateV1ChannelsFitText(opts.textMode, opts.textDepthMm));
+
+    if (withV1Channels) {
       const flareR = LABEL_PLATE_CORNER_RADIUS_MM;
       const earY = h / 2 + COPLANAR_MARGIN;
       const cutters = LABEL_PLATE_V1_CHANNEL_XS_MM.flatMap((cx) => {
@@ -213,7 +223,6 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
     // left margin, centered when the plate carries no text. Best-effort like
     // the text — a failed icon boolean ships the plate without it, and the
     // text only shifts right when the icon actually landed.
-    const hasText = spec.text.trim().length > 0;
     let iconApplied = false;
     if (spec.icon !== undefined) {
       try {
@@ -262,6 +271,10 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
         margin: 0,
         minFontSize: opts.textDefaults.minFontSize,
         maxFontSize: opts.textDefaults.maxFontSize,
+        // The band between the latch flanges IS the readable area, and each
+        // plate carries one string, so fill it with glyph ink rather than the
+        // font's ascender..descender band (~54% inked for an all-caps run).
+        verticalFit: 'inkBox',
       });
       if (result) {
         try {

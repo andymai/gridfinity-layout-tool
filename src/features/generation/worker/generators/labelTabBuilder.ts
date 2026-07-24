@@ -28,6 +28,7 @@ import {
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
   LABEL_PLATE_HEIGHT_MM,
+  LABEL_SOCKET_CLICK_POCKET_DEPTH_MM,
   LABEL_SOCKET_DETENT_DEPTH_MM,
   LABEL_SOCKET_DETENT_HEIGHT_MM,
   LABEL_SOCKET_LIP_OVERHANG_MM,
@@ -785,7 +786,7 @@ export function cutLabelSocket(
     );
   }
 
-  const floorZ = ctx.topZ - LABEL_SOCKET_POCKET_DEPTH_MM;
+  const floorZ = ctx.topZ - LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
   const pocketCutter = scope.register(
     translate(
@@ -794,7 +795,7 @@ export function cutLabelSocket(
           drawRoundedRectangle(pocketW, pocketD, LABEL_PLATE_CORNER_RADIUS_MM),
           'XY',
           floorZ
-        ).extrude(LABEL_SOCKET_POCKET_DEPTH_MM + COPLANAR_MARGIN)
+        ).extrude(LABEL_SOCKET_CLICK_POCKET_DEPTH_MM + COPLANAR_MARGIN)
       ),
       [ctx.centerX, ctx.centerY, 0]
     )
@@ -977,6 +978,8 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v8`: click-in pockets deepened by LABEL_SOCKET_CLICK_POCKET_RELIEF_MM
+        // and the stacking relief grew — same params, lower geometry again.
         // `v7`: click-in sockets on lipped bins sink the default shelf by
         // LABEL_SOCKET_STACK_RELIEF_MM — same params now cut lower geometry,
         // so older IndexedDB entries must be invalidated.
@@ -984,7 +987,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
-        'v7',
+        'v8',
         socketKeyPart,
         dim.shellKey,
         stableSerialize(params.label),

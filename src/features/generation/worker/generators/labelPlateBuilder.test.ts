@@ -22,6 +22,24 @@ const OPTS: LabelPlateBuildOptions = {
   v1Channels: true,
 };
 
+function volOf(solid: ReturnType<typeof buildLabelPlate>): number {
+  const r = measureVolume(solid);
+  if (!isOk(r)) throw new Error('measureVolume failed');
+  return r.value;
+}
+
+/** Material the v1 channels remove from a 1U plate: 0 when they were dropped. */
+function channelVolumeRemoved(text: string, opts: LabelPlateBuildOptions): number {
+  const withChannels = buildLabelPlate({ widthU: 1, text }, opts);
+  const without = buildLabelPlate({ widthU: 1, text }, { ...opts, v1Channels: false });
+  try {
+    return volOf(without) - volOf(withChannels);
+  } finally {
+    withChannels.delete();
+    without.delete();
+  }
+}
+
 function volumeAndBBox(spec: Parameters<typeof buildLabelPlate>[0]) {
   const solid = buildLabelPlate(spec, OPTS);
   try {
@@ -55,25 +73,13 @@ describe('labelPlateBuilder', () => {
   });
 
   it('flares the v1 channel ends with the standard r0.5 lead-in', () => {
-    const withChannels = buildLabelPlate({ widthU: 1, text: '' }, OPTS);
-    const without = buildLabelPlate({ widthU: 1, text: '' }, { ...OPTS, v1Channels: false });
-    try {
-      const volOf = (s: typeof withChannels): number => {
-        const r = measureVolume(s);
-        if (!isOk(r)) throw new Error('measureVolume failed');
-        return r.value;
-      };
-      const removed = volOf(without) - volOf(withChannels);
-      // Sharp T-channels remove exactly 3 × (1.0·0.2·11 + 2.0·0.6·10.6)
-      // = 44.76mm³; the four r0.5 end flares per layer add
-      // 3 × 4 × (1−π/4)·0.5² × (0.2 + 0.6) ≈ 0.52mm³ on top. A sharp-cornered
-      // regression lands at 44.76 and fails the lower bound.
-      expect(removed).toBeGreaterThan(45.1);
-      expect(removed).toBeLessThan(45.45);
-    } finally {
-      withChannels.delete();
-      without.delete();
-    }
+    // Sharp T-channels remove exactly 3 × (1.0·0.2·11 + 2.0·0.6·10.6)
+    // = 44.76mm³; the four r0.5 end flares per layer add
+    // 3 × 4 × (1−π/4)·0.5² × (0.2 + 0.6) ≈ 0.52mm³ on top. A sharp-cornered
+    // regression lands at 44.76 and fails the lower bound.
+    const removed = channelVolumeRemoved('', OPTS);
+    expect(removed).toBeGreaterThan(45.1);
+    expect(removed).toBeLessThan(45.45);
   });
 
   it('builds 2U and 3U plates without v1 channels', () => {
@@ -87,6 +93,69 @@ describe('labelPlateBuilder', () => {
     const { bbox } = volumeAndBBox({ widthU: 1, text: 'SCREWS' });
     expect(bbox.maxX - bbox.minX).toBeCloseTo(labelPlateWidthMm(1), 1);
     expect(bbox.maxZ - bbox.minZ).toBeCloseTo(LABEL_PLATE_THICKNESS_MM, 1);
+  });
+
+  // The middle channel runs through x=0, right under the text, and the roof
+  // over its cavity is 0.4mm. A default-depth engraving cut its floor exactly
+  // onto that roof, leaving a zero-thickness membrane that printed as an open
+  // hole through the middle of the label.
+  it('drops the v1 channels from a debossed plate rather than punching through', () => {
+    expect(channelVolumeRemoved('SCREWS', OPTS)).toBeCloseTo(0, 3);
+  });
+
+  it('keeps the v1 channels on an embossed plate, which only adds material', () => {
+    expect(channelVolumeRemoved('SCREWS', { ...OPTS, textMode: 'emboss' })).toBeGreaterThan(45);
+  });
+
+  // An icon-only plate centers its silhouette at x=0 — the same spot as the
+  // middle v1 channel — so it punches through exactly like the text did.
+  it('drops the v1 channels for a debossed icon with no text', () => {
+    const withFlag = buildLabelPlate({ widthU: 1, text: '', icon: 'bolt' }, OPTS);
+    const without = buildLabelPlate(
+      { widthU: 1, text: '', icon: 'bolt' },
+      { ...OPTS, v1Channels: false }
+    );
+    try {
+      expect(volOf(withFlag)).toBeCloseTo(volOf(without), 3);
+    } finally {
+      withFlag.delete();
+      without.delete();
+    }
+  });
+
+  // 2U/3U never carry channels, so the drop rule must not perturb them.
+  it('leaves wider plates identical regardless of the v1 flag', () => {
+    for (const widthU of [2, 3] as const) {
+      const withFlag = buildLabelPlate({ widthU, text: 'SCREWS' }, OPTS);
+      const without = buildLabelPlate({ widthU, text: 'SCREWS' }, { ...OPTS, v1Channels: false });
+      try {
+        expect(volOf(withFlag)).toBeCloseTo(volOf(without), 3);
+      } finally {
+        withFlag.delete();
+        without.delete();
+      }
+    }
+  });
+
+  // Guards the verticalFit: 'inkBox' opt-in at the plate level — under the
+  // font's line box an all-caps run inks only ~54% of the 7.8mm band.
+  it('sizes embossed glyphs to fill the plate text band', () => {
+    const solid = buildLabelPlate({ widthU: 1, text: 'Kabel' }, { ...OPTS, textMode: 'emboss' });
+    try {
+      const m = mesh(solid, { tolerance: 0.05, angularTolerance: 10 });
+      const v = new Float32Array(m.vertices);
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 0; i < v.length; i += 3) {
+        if (v[i + 2] <= LABEL_PLATE_THICKNESS_MM + 1e-3) continue;
+        if (v[i + 1] < minY) minY = v[i + 1];
+        if (v[i + 1] > maxY) maxY = v[i + 1];
+      }
+      expect(maxY - minY).toBeGreaterThan(6);
+      expect((minY + maxY) / 2).toBeCloseTo(0, 1);
+    } finally {
+      solid.delete();
+    }
   });
 
   it('raises embossed text above the plate top', () => {
