@@ -2242,6 +2242,15 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.quickstart.precision':
     'Smart guides — snap to grid, rulers, and other cutouts',
   'binDesigner.cutoutEditor.quickstart.dismiss': 'Got it',
+  'binDesigner.quickstart.title': 'Design a custom bin',
+  'binDesigner.quickstart.livePreview':
+    'Every change updates the 3D preview instantly — start with the size',
+  'binDesigner.quickstart.features':
+    'Add compartments, label tabs, scoops, lids, and cutouts from the panel',
+  'binDesigner.quickstart.export': 'Export a print-ready STL or 3MF when it looks right',
+  'binDesigner.quickstart.dismiss': 'Got it',
+  'binDesigner.plannerBridge.message': 'Bin exported! Organizing a whole drawer?',
+  'binDesigner.plannerBridge.action': 'Open the layout editor',
   'binDesigner.cutoutDesktopOnly':
     'The cutout editor is available on desktop. Please switch to a wider screen to use this feature.',
   'binDesigner.walls.pattern.label': 'Wall pattern',

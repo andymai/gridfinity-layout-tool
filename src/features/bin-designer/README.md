@@ -26,6 +26,10 @@ graph TB
 ## Key Files
 
 - `components/DesignerPage.tsx` — main UI entry point
+- `components/DesignerPage/DesignerQuickstartCard.tsx` — one-time orientation card for first-visit
+  /designer landers (desktop/tablet only). Dismissed by "Got it", Escape, or the first edit;
+  state in `hooks/useDesignerFirstRun.ts`. `hooks/usePlannerBridge.ts` shows the one-time
+  post-export toast pointing at the layout editor.
 - `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
 - `components/PreviewCanvas.tsx` — 3D preview with Three.js (renders bin + optional lid + explode slider)
 - `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts. Properties live in
