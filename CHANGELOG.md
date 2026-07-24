@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.290.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.289.0...gridfinity-layout-tool-v4.290.0) (2026-07-24)
+
+
+### Features
+
+* **analytics:** per-surface conversion funnel events, remove dead welcome modal ([#2792](https://github.com/andymai/gridfinity-layout-tool/issues/2792)) ([53486c9](https://github.com/andymai/gridfinity-layout-tool/commit/53486c90786e0038020236929768d243ec1046f6))
+
 ## [4.289.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.4...gridfinity-layout-tool-v4.289.0) (2026-07-24)
 
 
