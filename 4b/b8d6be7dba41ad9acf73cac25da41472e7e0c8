@@ -1,0 +1,49 @@
+src/shared/components/ExportDialog/MobileHandoffBanner.test.tsx
+  s_cb5bea35176d66::t_5d0f013372b33e 51
+  s_cb5bea35176d66::t_a07b31aceb4170 1-50,52-58
+src/i18n/locales/it.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/shared/components/ExportDialog/ExportDialog.tsx
+  s_cb5bea35176d66::t_ee894486a441c3 16
+  s_cb5bea35176d66::t_8b2054e7bfb29f 384-385
+src/i18n/locales/nb.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/shared/components/ExportDialog/MobileHandoffBanner.tsx
+  s_cb5bea35176d66::t_c45fb00d90ab2f 1-53
+  s_cb5bea35176d66::t_ca3e44382addbf 54-56
+  s_cb5bea35176d66::t_43fc39be2e9463 57
+src/i18n/locales/fr.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/nl.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/uk.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/ja.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/sv.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/es.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/en.ts
+  s_cb5bea35176d66::t_64b1c5cd6048f4 158-159
+src/i18n/locales/de.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+src/i18n/locales/pt-BR.json
+  s_cb5bea35176d66::t_b0864f15a081ea 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "4bb8d6be7dba41ad9acf73cac25da41472e7e0c8",
+  "prompts": {},
+  "sessions": {
+    "s_cb5bea35176d66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe07013f-0ffc-49c4-b5fb-828c6d185a1b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
