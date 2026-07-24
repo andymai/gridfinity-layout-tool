@@ -12,20 +12,30 @@ describe('DiamondPatternCalculator', () => {
     expect(calc.getPatternType()).toBe('diamond');
   });
 
-  it('uses an aligned (non-staggered) grid — rows share the same x positions', () => {
-    const calc = new DiamondPatternCalculator(2);
+  it('packs a staggered checkerboard lattice with uniform edge webs', () => {
+    const web = 0.8;
+    const calc = new DiamondPatternCalculator(2, web);
     const centers = calc.calculateCenters({ fillW: 40, fillH: 40 });
     expect(centers.length).toBeGreaterThan(0);
-    const xsAtY0 = centers.filter((c) => Math.abs(c.y) < 1e-6).map((c) => c.x);
-    const ys = [...new Set(centers.map((c) => Math.round(c.y * 1000)))];
-    // Every row reuses the same column x-set (no half-column stagger).
-    for (const yKey of ys) {
-      const xsAtRow = centers
+
+    const colSpacing = 2 * 2 + web * Math.SQRT2;
+    const rows = [...new Set(centers.map((c) => Math.round(c.y * 1000)))].sort((a, b) => a - b);
+    expect(rows.length).toBeGreaterThan(2);
+    for (let i = 1; i < rows.length; i++) {
+      expect((rows[i] - rows[i - 1]) / 1000).toBeCloseTo(colSpacing / 2, 2);
+    }
+
+    // Adjacent rows are offset half a column; diagonal neighbors' parallel
+    // 45° edges then sit exactly one web thickness apart.
+    const xs = (yKey: number): number[] =>
+      centers
         .filter((c) => Math.round(c.y * 1000) === yKey)
         .map((c) => c.x)
         .sort((a, b) => a - b);
-      expect(xsAtRow).toEqual([...xsAtY0].sort((a, b) => a - b));
-    }
+    const [row0, row1] = [xs(rows[0]), xs(rows[1])];
+    expect(Math.abs(row1[0] - row0[0]) % colSpacing).toBeCloseTo(colSpacing / 2, 6);
+    const edgeGap = (colSpacing - 2 * 2) / Math.SQRT2;
+    expect(edgeGap).toBeCloseTo(web, 6);
   });
 });
 

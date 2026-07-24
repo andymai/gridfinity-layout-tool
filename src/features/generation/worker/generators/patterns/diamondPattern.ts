@@ -1,8 +1,9 @@
 /**
- * Diamond-lattice (argyle) pattern calculator.
+ * Diamond-lattice pattern calculator.
  *
- * Axis-aligned grid of squares rotated 45°, reading as a diamond lattice. The
- * aligned (non-staggered) grid gives the clean argyle look. Pure math module —
+ * Squares rotated 45° packed on a checkerboard lattice (odd rows offset half a
+ * column), so the openings tile the wall and the remaining material forms
+ * uniform diagonal webs — the classic diamond-mesh grille. Pure math module —
  * no brepjs imports.
  */
 
@@ -12,7 +13,7 @@ import type {
   ShapeDescriptor,
   StampPatternCalculator,
 } from './types';
-import { calculateAlignedGrid } from './gridUtils';
+import { calculateStaggeredGrid } from './gridUtils';
 import { PATTERN_WEB_THICKNESS, resolveElementRadius } from './patternScale';
 
 export class DiamondPatternCalculator implements StampPatternCalculator {
@@ -30,11 +31,13 @@ export class DiamondPatternCalculator implements StampPatternCalculator {
   calculateCenters(config: PatternGridConfig): PatternCenter[] {
     const { fillW, fillH } = config;
     const R = this.radius;
-    // Diamond (square rotated 45°) spans 2R vertex-to-vertex on both axes.
-    const spacing = 2 * R + this.webThickness;
+    // Checkerboard packing: diagonal neighbors sit at (c/2, c/2), so their
+    // parallel 45° edges are (c − 2R)/√2 apart. c = 2R + web·√2 makes that
+    // gap exactly the web thickness.
+    const colSpacing = 2 * R + this.webThickness * Math.SQRT2;
     const maxX = fillW / 2 - R;
     const maxY = fillH / 2 - R;
-    return calculateAlignedGrid({ maxX, maxY, colSpacing: spacing, rowSpacing: spacing });
+    return calculateStaggeredGrid({ maxX, maxY, colSpacing, rowSpacing: colSpacing / 2 });
   }
 
   getShapeDescriptor(): ShapeDescriptor {

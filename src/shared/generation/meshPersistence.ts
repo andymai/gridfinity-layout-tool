@@ -38,7 +38,7 @@ const META_STORE = 'binMeshMeta';
  * Preview always uses the occt-wasm exact kernel at `forExport=false`, so the
  * kernel and quality are folded into this constant rather than the per-entry key.
  */
-const MESH_CACHE_VERSION = 'v3-brepjs18.116.1';
+const MESH_CACHE_VERSION = 'v4-diamond-lattice';
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
 let maxCacheBytes = 64 * 1024 * 1024;
