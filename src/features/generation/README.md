@@ -167,8 +167,11 @@ shipped), and `wrapped-lattice` (kumiko). Wrapped-lattice patterns are authored 
 perimeter coordinates (`patterns/kumiko/segmentLattice.ts` — pure math, u-periodic triangular
 jigumi + per-vertex fillings) and built by `kumikoWrapBuilder.ts` as one continuous lattice
 around all four walls: flat spans as slab-minus-strut-prism cuts, corner arcs as annular wedges
-minus revolve/helix-swept struts (exact kernels only — Manifold drafts render the phase-aligned
-flat panels with solid corners and the OCCT result replaces them). The lattice column count is
+minus strut solids — vertical/horizontal revolves, rising diagonals as helix sweeps, falling
+diagonals as chord-box chains, because occt-wasm's `makeHelixWire` has no handedness input and
+a left-handed helix is unreachable (see `__kernel-tests__/helixHandedness.test.ts`). Exact
+kernels only — Manifold drafts render the phase-aligned flat panels with solid corners and the
+OCCT result replaces them. The lattice column count is
 quantized to an EVEN number so the ±30° diagonals reconnect across the u = 0 seam, and all slab
 clipping is periodicity-aware (`clipSegmentToURangePeriodic`). Kumiko composes with
 cutouts/handles/text/divider junctions through the same clip machinery as stamp patterns

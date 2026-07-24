@@ -10,8 +10,9 @@
  *     the wall, placed with the stamp-pattern transform chain.
  *   - Corner arcs (exact kernels only): annular wedge minus strut solids —
  *     vertical struts as small-angle revolves, near-horizontal struts as thin
- *     partial revolves, diagonal struts swept along a helix (a straight line
- *     in unrolled space IS a helix on the corner cylinder).
+ *     partial revolves, rising diagonals swept along a helix (a straight
+ *     line in unrolled space IS a helix on the corner cylinder), falling
+ *     diagonals as chord-box chains (see the falling-diagonal branch).
  *
  * Mesh kernels (Manifold drafts) can't sweep along a helix, so the corner
  * cutters are skipped there: drafts show the phase-aligned flat panels with
@@ -673,21 +674,53 @@ function buildCornerSlabCutter(
       const phiB = phiOf(Math.max(ua, ub));
       const slab3d = annularWedge(sr0, sr1, zMid - pw / 2, zMid + pw / 2, phiB - phiA);
       families[1].push(toCornerAngle(slab3d, phiA));
-    } else {
-      // Diagonal strut: rectangle swept along a helix. Base the helix at the
-      // lower endpoint; it winds left-handed when φ decreases as z rises.
+    } else if (zb - za > 0 === ub - ua > 0) {
+      // Rising diagonal (φ and z increase together): rectangle swept along a
+      // right-handed helix — the exact strut surface, and the construction
+      // whose contacts with rib fillings are proven to sew in exports.
       const lowFirst = za <= zb;
       const [uLow, zLow] = lowFirst ? [ua, za] : [ub, zb];
       const [uHigh, zHigh] = lowFirst ? [ub, zb] : [ua, za];
       const dPhi = phiOf(uHigh) - phiOf(uLow);
       const height = zHigh - zLow;
       const pitch = (height * 2 * Math.PI) / Math.abs(dPhi);
-      const spine = sketchHelix(pitch, height, rMid, [0, 0, zLow], [0, 0, 1], dPhi < 0);
+      const spine = sketchHelix(pitch, height, rMid, [0, 0, zLow], [0, 0, 1], false);
       const swept = spine.sweepSketch(
         (plane) => drawRoundedRectangle(radialSpan, pw, 0).sketchOnPlane(plane),
         { frenet: true }
       );
-      families[zb - za > 0 === ub - ua > 0 ? 2 : 3].push(toCornerAngle(swept, phiOf(uLow)));
+      families[2].push(toCornerAngle(swept, phiOf(uLow)));
+    } else {
+      // Falling diagonal (φ decreases as z rises): needs a LEFT-handed helix,
+      // but occt-wasm's makeHelixWire has no handedness input (the brepjs
+      // left-handed flag is silently dropped — both flags produce the same
+      // right-handed sweep), so the sweep landed in the mirrored angular span
+      // and the wedge cut swallowed the true strut location (clipped pattern
+      // + holes on every corner). brepjs `mirror` on a helical sweep yields
+      // an empty solid, so instead approximate with straight chord boxes
+      // split under CHORD_MAX_PHI (same construction as non-vertical
+      // fillings; sagitta below print resolution).
+      const phiA = phiOf(ua);
+      const phiB = phiOf(ub);
+      const steps = Math.max(1, Math.ceil(Math.abs(phiB - phiA) / CHORD_MAX_PHI));
+      // Sub-chords overlap by a parameter margin — exactly-shared end planes
+      // leave coplanar tool faces that crack the corner cylinder in exports.
+      const tPad = steps > 1 ? 0.02 : 0;
+      for (let i = 0; i < steps; i++) {
+        const t0 = Math.max(0, i / steps - tPad);
+        const t1 = Math.min(1, (i + 1) / steps + tPad);
+        families[3].push(
+          chordBoxStrut(
+            phiA + (phiB - phiA) * t0,
+            za + (zb - za) * t0,
+            phiA + (phiB - phiA) * t1,
+            za + (zb - za) * t1,
+            pw,
+            sr0,
+            sr1
+          )
+        );
+      }
     }
   }
 
