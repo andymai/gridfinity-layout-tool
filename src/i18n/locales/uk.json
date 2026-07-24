@@ -27,6 +27,7 @@
   "auth.providerGithub": "GitHub",
   "auth.providerGoogle": "Google",
   "auth.signIn": "Увійти",
+  "export.mobileHandoff.message": "Друкуєте з комп'ютера? Увійдіть — ваша робота синхронізується з обліковим записом. Відкрийте цей сайт на десктопі, щоб завершити.",
   "auth.signInWithGithub": "Увійти через GitHub",
   "auth.signInWithGoogle": "Увійти через Google",
   "auth.signOut": "Вийти",
