@@ -21,9 +21,12 @@ import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailC
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
+import { useDesignerFirstRun } from '@/features/bin-designer/hooks/useDesignerFirstRun';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useEffect } from 'react';
 import { DesignerHeader } from './DesignerHeader';
+import { DesignerQuickstartCard } from './DesignerQuickstartCard';
 import { DesignerMainContent } from './DesignerMainContent';
 import { MobileTitleBar } from './MobileTitleBar';
 import { ShareLoadingBanner } from './ShareLoadingBanner';
@@ -80,8 +83,18 @@ export function DesignerPage() {
   const shareLoading = useShareLoading();
   const fractionalEdge = useFractionalEdgeMismatch();
 
+  const { shouldShowQuickstart, markQuickstartSeen } = useDesignerFirstRun();
+  const hasEdited = useDesignerStore((s) => s.history.past.length > 0);
+
+  // First edit is proof the user doesn't need orientation anymore
+  useEffect(() => {
+    if (shouldShowQuickstart && hasEdited) {
+      markQuickstartSeen('first_edit');
+    }
+  }, [shouldShowQuickstart, hasEdited, markQuickstartSeen]);
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-surface">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-surface">
       {/* Mobile title bar */}
       {!isDesktop && <MobileTitleBar />}
 
@@ -103,6 +116,11 @@ export function DesignerPage() {
         isLandscape={isLandscape}
         cutoutEditorOpen={cutoutEditorOpen}
       />
+
+      {/* First-run orientation card (desktop/tablet — mobile has no room for it) */}
+      {shouldShowQuickstart && !isMobile && (
+        <DesignerQuickstartCard onDismiss={markQuickstartSeen} />
+      )}
 
       {/* Modals */}
       <ExportDialog />

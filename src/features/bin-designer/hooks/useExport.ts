@@ -55,6 +55,7 @@ import {
   captureException,
 } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
+import { usePlannerBridge } from './usePlannerBridge';
 
 interface UseExportReturn {
   /** Whether a main bin or split export is currently in progress */
@@ -115,6 +116,7 @@ interface QueuedExport {
 
 export function useExport(): UseExportReturn {
   const t = useTranslation();
+  const offerPlannerBridge = usePlannerBridge();
   const { params, mesh } = useDesignerStore(
     useShallow((state) => ({
       params: state.params,
@@ -395,6 +397,7 @@ export function useExport(): UseExportReturn {
             false
           )
         );
+        offerPlannerBridge();
         return true;
       } catch (err) {
         handleExportError(
@@ -413,7 +416,7 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, engineReady, buildExportTelemetry, handleExportError]
+    [params, engineReady, buildExportTelemetry, handleExportError, offerPlannerBridge]
   );
 
   /**
@@ -539,6 +542,7 @@ export function useExport(): UseExportReturn {
             true
           )
         );
+        offerPlannerBridge();
         return true;
       } catch (err) {
         handleExportError(
@@ -557,7 +561,16 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, maxGrid, hasDividers, hasLid, engineReady, buildExportTelemetry, handleExportError]
+    [
+      params,
+      maxGrid,
+      hasDividers,
+      hasLid,
+      engineReady,
+      buildExportTelemetry,
+      handleExportError,
+      offerPlannerBridge,
+    ]
   );
 
   // Wire refs so the queued-export effect (and Retry callbacks) can find the
