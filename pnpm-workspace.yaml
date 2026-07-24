@@ -30,6 +30,11 @@ minimumReleaseAgeExclude:
   # fast-uri publish can bypass the cooldown via a lockfile regen.
   # TODO: remove after 2026-07-26 once 3.1.4 has aged past the window.
   - fast-uri@3.1.4
+  # tar 7.5.21 (2026-07-21) is the first version patched against the
+  # uncatchable stack-overflow DoS via crafted long-path archives
+  # (GHSA-r292-9mhp-454m). Scoped to the exact reviewed release.
+  # TODO: remove after 2026-07-28 once 7.5.21 has aged past the window.
+  - tar@7.5.21
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -78,5 +83,6 @@ overrides:
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
   'brace-expansion@<1.1.16': '^1.1.16'
+  'tar@<7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
