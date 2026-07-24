@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_59b071634fd176::t_d5e12de775e2c2 118-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b78c15e6170b3d69f09ab22c910f9354c1af02a0",
+  "prompts": {},
+  "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
