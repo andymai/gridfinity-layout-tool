@@ -46,8 +46,10 @@ async function canvasToPngBytes(canvas: HTMLCanvasElement): Promise<ArrayBuffer 
     });
     if (blob) return blob.arrayBuffer();
   }
-  // Fallback: decode the data URL manually when toBlob is unavailable.
-  if (typeof canvas.toDataURL === 'function') {
+  // Fallback: decode the data URL manually when toBlob is unavailable. Guarded
+  // so a missing `atob` (some headless/polyfilled canvases) still returns null
+  // per this module's contract rather than throwing.
+  if (typeof canvas.toDataURL === 'function' && typeof atob === 'function') {
     const dataUrl = canvas.toDataURL('image/png');
     const comma = dataUrl.indexOf(',');
     if (comma === -1 || !dataUrl.startsWith('data:image/png')) return null;
