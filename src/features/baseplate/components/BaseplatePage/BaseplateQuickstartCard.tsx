@@ -1,29 +1,29 @@
 /**
- * One-time orientation card for first-visit /designer landers.
+ * One-time orientation card for first-visit /baseplate landers.
  * Content composition over the shared QuickstartCard shell; flag state and
- * auto-dismiss-on-edit live in useDesignerFirstRun / DesignerPage.
+ * auto-dismiss-on-edit live in useBaseplateFirstRun.
  */
 
 import { QuickstartCard } from '@/shared/components/QuickstartCard';
 import { useTranslation } from '@/i18n';
 
-interface DesignerQuickstartCardProps {
+interface BaseplateQuickstartCardProps {
   readonly onDismiss: (method: 'got_it' | 'escape') => void;
 }
 
-export function DesignerQuickstartCard({ onDismiss }: DesignerQuickstartCardProps) {
+export function BaseplateQuickstartCard({ onDismiss }: BaseplateQuickstartCardProps) {
   const t = useTranslation();
 
   return (
     <QuickstartCard
-      titleId="designer-quickstart-title"
-      title={t('binDesigner.quickstart.title')}
+      titleId="baseplate-quickstart-title"
+      title={t('baseplate.quickstart.title')}
       rows={[
-        { icon: <SlidersIcon />, text: t('binDesigner.quickstart.livePreview') },
-        { icon: <CompartmentsIcon />, text: t('binDesigner.quickstart.features') },
-        { icon: <DownloadIcon />, text: t('binDesigner.quickstart.export') },
+        { icon: <RulerIcon />, text: t('baseplate.quickstart.dimensions') },
+        { icon: <SplitIcon />, text: t('baseplate.quickstart.split') },
+        { icon: <DownloadIcon />, text: t('baseplate.quickstart.export') },
       ]}
-      dismissLabel={t('binDesigner.quickstart.dismiss')}
+      dismissLabel={t('baseplate.quickstart.dismiss')}
       onDismiss={onDismiss}
     />
   );
@@ -31,21 +31,20 @@ export function DesignerQuickstartCard({ onDismiss }: DesignerQuickstartCardProp
 
 // ── Inline SVG icons (20×20) ──────────────────────────────────────────────────
 
-function SlidersIcon() {
+function RulerIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 6h14M3 14h14" strokeLinecap="round" />
-      <circle cx="8" cy="6" r="2" fill="currentColor" />
-      <circle cx="13" cy="14" r="2" fill="currentColor" />
+      <rect x="2" y="7" width="16" height="6" rx="1" />
+      <path d="M5.5 7v2.5M8.5 7v2.5M11.5 7v2.5M14.5 7v2.5" strokeLinecap="round" />
     </svg>
   );
 }
 
-function CompartmentsIcon() {
+function SplitIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
       <rect x="2" y="4" width="16" height="12" rx="1.5" />
-      <path d="M10 4v12M2 10h8" />
+      <path d="M10 4v3.5M10 12.5V16M10 7.5a1.75 1.75 0 1 0 0 5" />
     </svg>
   );
 }

@@ -2671,6 +2671,15 @@ const en: Record<string, string> = {
   'baseplate.errorRetryHint':
     'Try refreshing the page. If the problem persists, try a different browser.',
   'baseplate.exportNotReady': 'Generation engine not ready. Please wait and try again.',
+  'baseplate.quickstart.title': 'Generate a drawer baseplate',
+  'baseplate.quickstart.dimensions':
+    'The plate is generated from your drawer size — set width and depth to match',
+  'baseplate.quickstart.split':
+    'Plates larger than your print bed split into pieces with connectors automatically',
+  'baseplate.quickstart.export': 'Export STL, STEP, or 3MF when it fits',
+  'baseplate.quickstart.dismiss': 'Got it',
+  'baseplate.plannerBridge.message': 'Baseplate exported! Organizing the whole drawer?',
+  'baseplate.plannerBridge.action': 'Open the layout editor',
   'baseplate.resetView': 'Reset view',
   'baseplate.frontView': 'Front',
   'baseplate.sideView': 'Side',

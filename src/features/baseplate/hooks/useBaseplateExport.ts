@@ -22,6 +22,7 @@ import { useTranslation } from '@/i18n';
 import type { ExportFileFormat } from '@/shared/types/bin';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildBaseplateExportPieces } from '../utils/buildBaseplateExportPieces';
+import { useBaseplatePlannerBridge } from './useBaseplatePlannerBridge';
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -35,6 +36,7 @@ interface UseBaseplateExportReturn {
 
 export function useBaseplateExport(): UseBaseplateExportReturn {
   const t = useTranslation();
+  const offerPlannerBridge = useBaseplatePlannerBridge();
 
   const {
     drawerWidth,
@@ -134,6 +136,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           split: pieces.length > 1,
           piece_count: pieces.length,
         });
+        offerPlannerBridge();
 
         if (splitStats) {
           // The unstacked ZIP holds one file per slot (full set), so report the
@@ -181,6 +184,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       printBedDepth,
       exportFileNameConfig,
       setExportProgress,
+      offerPlannerBridge,
     ]
   );
 
