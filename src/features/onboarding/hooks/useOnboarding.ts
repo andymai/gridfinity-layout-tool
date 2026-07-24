@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useLayoutStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog';
 
@@ -126,6 +126,7 @@ export function useOnboarding(): UseOnboardingReturn {
   const flags = useSyncExternalStore(subscribe, getSnapshot);
 
   const binCount = useLayoutStore((state) => state.layout.bins.length);
+  const prevBinCountRef = useRef<number | null>(null);
 
   // Skip onboarding in dev mode (covers local dev and E2E tests against dev server).
   // Exclude Vitest so unit tests can still verify onboarding logic.
@@ -153,11 +154,18 @@ export function useOnboarding(): UseOnboardingReturn {
     }
   }, [binCount, flags.pulseDismissed, flags.drawTutorialSeen]);
 
-  // Auto-dismiss draw tutorial when first bin is created
+  // Auto-dismiss draw tutorial when first bin is created. The completion
+  // event is only sent on an observed empty→non-empty transition — a user
+  // who arrives with bins already present (existing layout, new browser)
+  // never saw the tutorial, so only the flag is set for them.
   useEffect(() => {
+    const prev = prevBinCountRef.current;
+    prevBinCountRef.current = binCount;
     if (!flags.drawTutorialSeen && binCount > 0) {
       setFlag(DRAW_TUTORIAL_SEEN_KEY, 'true');
-      trackEvent('onboarding_draw_tutorial_completed', { method: 'first_bin' });
+      if (prev === 0) {
+        trackEvent('onboarding_draw_tutorial_completed', { method: 'first_bin' });
+      }
     }
   }, [binCount, flags.drawTutorialSeen]);
 

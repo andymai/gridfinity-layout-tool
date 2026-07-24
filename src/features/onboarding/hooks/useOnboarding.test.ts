@@ -10,6 +10,8 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
+import { trackEvent } from '@/shared/analytics/posthog';
+
 /** Set localStorage flags and sync the module-level cache */
 function setFlags(flags: Record<string, string>) {
   for (const [key, value] of Object.entries(flags)) {
@@ -49,6 +51,7 @@ describe('useOnboarding', () => {
     resetOnboarding();
     // Reset stores to default state
     initStoresAsNewUser();
+    vi.mocked(trackEvent).mockClear();
   });
 
   describe('shouldShowDrawTutorial', () => {
@@ -130,6 +133,20 @@ describe('useOnboarding', () => {
 
       expect(result.current.shouldShowDrawTutorial).toBe(false);
       expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBe('true');
+      expect(trackEvent).toHaveBeenCalledWith('onboarding_draw_tutorial_completed', {
+        method: 'first_bin',
+      });
+    });
+
+    it('sets the flag without a completion event for users who arrive with bins', () => {
+      initStoresWithBins(2);
+      renderHook(() => useOnboarding());
+
+      expect(localStorage.getItem('gridfinity-onboarding-draw-tutorial-seen')).toBe('true');
+      expect(trackEvent).not.toHaveBeenCalledWith(
+        'onboarding_draw_tutorial_completed',
+        expect.anything()
+      );
     });
 
     it('auto-dismisses gallery pulse when engagement threshold is reached', () => {

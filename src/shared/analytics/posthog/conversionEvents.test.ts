@@ -45,6 +45,18 @@ describe('trackToolActivated', () => {
     expect(trackEventMock).toHaveBeenCalledTimes(3);
   });
 
+  it('recovers from stored analytics data that predates the milestones field', () => {
+    localStorage.setItem(
+      ANALYTICS_STORAGE_KEY,
+      JSON.stringify({ userId: 'u1', firstSeen: '2025-01-01', featureFlags: {} })
+    );
+
+    trackToolActivated('layout', 'draw');
+    trackToolActivated('layout', 'draw');
+
+    expect(trackEventMock).toHaveBeenCalledTimes(1);
+  });
+
   it('persists the activation guard in analytics storage', () => {
     trackToolActivated('baseplate', 'params_changed');
 
