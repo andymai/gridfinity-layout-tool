@@ -1,0 +1,29 @@
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_0d544b8727eb96::t_36c0c41d70708e 89-91,93,96
+src/features/bin-designer/hooks/useDesignerFirstRun.ts
+  s_cb5bea35176d66::t_4cb96736cf88bf 96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b86f4f3f5db9056fbdb31276e143a248cd534a26",
+  "prompts": {},
+  "sessions": {
+    "s_0d544b8727eb96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a83d6e58-79a3-46d1-ab8b-79dfbbccdffa",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cb5bea35176d66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe07013f-0ffc-49c4-b5fb-828c6d185a1b",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
