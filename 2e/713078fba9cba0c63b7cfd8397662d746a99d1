@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_bfc2c84479beb7::t_ef9bae562c695e 87,89-93,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "2e713078fba9cba0c63b7cfd8397662d746a99d1",
+  "prompts": {},
+  "sessions": {
+    "s_bfc2c84479beb7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b3d16fad-ab52-4525-8913-e0a975656c98",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
