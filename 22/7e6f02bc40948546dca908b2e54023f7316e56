@@ -1,0 +1,22 @@
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_59b071634fd176::t_166794d5a67ffc 215
+  s_59b071634fd176::t_6c239a443d6bf9 128-133,147
+src/features/generation/worker/generators/__kernel-tests__/helixHandedness.test.ts
+  s_59b071634fd176::t_d816dd616a1e53 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "227e6f02bc40948546dca908b2e54023f7316e56",
+  "prompts": {},
+  "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
