@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.0...gridfinity-layout-tool-v4.293.1) (2026-07-24)
+
+
+### Bug Fixes
+
+* **deps:** bump transitive tar to 7.5.21 for GHSA-r292-9mhp-454m ([#2800](https://github.com/andymai/gridfinity-layout-tool/issues/2800)) ([4abb1e0](https://github.com/andymai/gridfinity-layout-tool/commit/4abb1e01ce2cac5e57aaf15a86a8ae8a4fee0ffc))
+
 ## [4.293.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.292.0...gridfinity-layout-tool-v4.293.0) (2026-07-24)
 
 
