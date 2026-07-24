@@ -17,7 +17,7 @@ import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { isOk, getUserMessage } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { trackEvent } from '@/shared/analytics/posthog';
+import { trackEvent, trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
@@ -454,6 +454,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         const zip = packageFilesAsZip(binaryFiles, textFiles);
         triggerDownload(zip, `${zipBaseName}.zip`);
         trackEvent('ui.layoutExported', { format: 'zip', fileFormat: format });
+        trackToolConverted('layout', { format, piece_count: binaryFiles.length });
 
         // Report what actually made it into the archive.
         const addToast = useToastStore.getState().addToast;

@@ -15,10 +15,12 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 
 export function updateBaseplateParams(patch: Partial<StoredBaseplateParams>): void {
   const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
   useLayoutStore.getState().setBaseplateParams({ ...current, ...patch });
+  trackToolActivated('baseplate', 'params_changed');
 }
 
 export function updateBaseplateParam<K extends keyof StoredBaseplateParams>(
