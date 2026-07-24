@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.289.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.4...gridfinity-layout-tool-v4.289.0) (2026-07-24)
+
+
+### Features
+
+* **baseplate:** add labeled assembly-map PNG to split export ZIPs ([#2788](https://github.com/andymai/gridfinity-layout-tool/issues/2788)) ([d164c75](https://github.com/andymai/gridfinity-layout-tool/commit/d164c75d373d04dc136cb6decb6aa92faba14d2d))
+
 ## [4.288.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.3...gridfinity-layout-tool-v4.288.4) (2026-07-24)
 
 
