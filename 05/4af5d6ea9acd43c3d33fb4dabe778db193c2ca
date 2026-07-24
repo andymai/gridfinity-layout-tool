@@ -1,0 +1,30 @@
+pnpm-workspace.yaml
+  s_130abc96404f83::t_a1d3e6a6ff385f 33-37
+  s_e836c6d34a440b::t_38a383c31e95a9 86
+pnpm-lock.yaml
+  s_130abc96404f83::t_3734a1b9fefdca 35,5333-5334,7226,11022
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "054af5d6ea9acd43c3d33fb4dabe778db193c2ca",
+  "prompts": {},
+  "sessions": {
+    "s_130abc96404f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d75343a2-7ef3-47c0-937d-c6a222e240d2",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e836c6d34a440b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1bf2182-4702-46ff-847f-ece0d3d743de",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
