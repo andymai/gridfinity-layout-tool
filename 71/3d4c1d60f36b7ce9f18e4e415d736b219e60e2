@@ -1,0 +1,84 @@
+src/features/baseplate/hooks/useBaseplateFirstRun.ts
+  s_cb5bea35176d66::t_b23e8bd45c323f 1-136
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_cb5bea35176d66::t_84a67b87492270 68
+  s_cb5bea35176d66::t_f99f13d3a89b24 24-25
+  s_cb5bea35176d66::t_9da7296e4cec41 249-253
+src/i18n/locales/uk.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/features/baseplate/hooks/useBaseplatePlannerBridge.test.ts
+  s_cb5bea35176d66::t_95a93aeaeb45d5 1-61
+src/features/baseplate/README.md
+  s_cb5bea35176d66::t_eb0eeee745efc9 25-28
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_cb5bea35176d66::t_ecbaf3a39d5852 19
+  s_202a8ff04e6b44::t_24786a890d9fdc 25
+src/i18n/locales/nb.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_cb5bea35176d66::t_29a6414c0a157c 39
+  s_cb5bea35176d66::t_0445ae69252dd3 25
+  s_cb5bea35176d66::t_7bd1eb53560a1d 139
+  s_cb5bea35176d66::t_c2ef5a421e4ffa 187
+src/i18n/locales/de.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/i18n/locales/pt-BR.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/features/baseplate/hooks/useBaseplateFirstRun.test.ts
+  s_cb5bea35176d66::t_d66f8b2321c64a 1-76
+src/i18n/locales/it.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/i18n/locales/sv.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/i18n/locales/nl.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/shared/hooks/useBaseplateRouting.ts
+  s_cb5bea35176d66::t_e6a680c1cb8b46 68-78,86
+src/i18n/locales/ja.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/i18n/locales/fr.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/features/baseplate/hooks/useBaseplatePlannerBridge.ts
+  s_cb5bea35176d66::t_4eed2de5fee238 1-35
+src/i18n/locales/en.ts
+  s_cb5bea35176d66::t_5feb2d2740cc75 2674-2682
+src/shared/components/QuickstartCard/QuickstartCard.test.tsx
+  s_cb5bea35176d66::t_97dde317e85c0f 1-58
+src/features/baseplate/components/BaseplatePage/BaseplateQuickstartCard.test.tsx
+  s_cb5bea35176d66::t_e2a3eae6bad3b5 1-22
+  s_cb5bea35176d66::t_7f918ba2099ac8 23-24
+src/i18n/locales/es.json
+  s_cb5bea35176d66::t_9d4411f84743a9 83-89
+src/shared/components/QuickstartCard/QuickstartCard.tsx
+  s_cb5bea35176d66::t_3c0186e410bda7 1-81
+src/features/bin-designer/components/DesignerPage/DesignerQuickstartCard.tsx
+  s_cb5bea35176d66::t_e630e594891d34 3-4,7,18-28
+src/shared/components/QuickstartCard/index.ts
+  s_cb5bea35176d66::t_4785225cd40346 1-2
+src/features/baseplate/components/BaseplatePage/BaseplateQuickstartCard.tsx
+  s_cb5bea35176d66::t_4bec8f64fefebf 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "713d4c1d60f36b7ce9f18e4e415d736b219e60e2",
+  "prompts": {},
+  "sessions": {
+    "s_202a8ff04e6b44": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d1609e4c-f0d1-4c1b-8a6d-e3aa7fb88337",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cb5bea35176d66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe07013f-0ffc-49c4-b5fb-828c6d185a1b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
