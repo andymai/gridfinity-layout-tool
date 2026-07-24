@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.1...gridfinity-layout-tool-v4.293.2) (2026-07-24)
+
+
+### Bug Fixes
+
+* **designer:** stop label plates lifting stacked bins and printing holes ([#2802](https://github.com/andymai/gridfinity-layout-tool/issues/2802)) ([6eca10e](https://github.com/andymai/gridfinity-layout-tool/commit/6eca10efbe16ae5540ed85480b31ed8f2fc96298))
+
 ## [4.293.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.0...gridfinity-layout-tool-v4.293.1) (2026-07-24)
 
 
