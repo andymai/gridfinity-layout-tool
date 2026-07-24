@@ -43,19 +43,28 @@ function buildZipBlob(files: Record<string, Uint8Array>): Blob {
  * @param baseName - Base filename for individual files inside the ZIP
  * @param extension - File extension including dot (e.g. ".stl", ".step")
  * @param extraFiles - Optional text files to include (e.g. print guide)
+ * @param extraBinaryFiles - Optional binary files at explicit paths (e.g. an
+ *   assembly-map PNG). Caller owns these paths' uniqueness.
  * @returns ZIP blob ready for download
  */
 export function packagePiecesAsZip(
   pieces: readonly ExportPiece[],
   baseName: string,
   extension: string,
-  extraFiles?: readonly ZipTextFile[]
+  extraFiles?: readonly ZipTextFile[],
+  extraBinaryFiles?: readonly ZipBinaryFile[]
 ): Blob {
   const files: Record<string, Uint8Array> = {};
 
   for (const piece of pieces) {
     const fileName = `${baseName}_${piece.label}${extension}`;
     files[fileName] = new Uint8Array(piece.data);
+  }
+
+  if (extraBinaryFiles) {
+    for (const file of extraBinaryFiles) {
+      files[file.path] = new Uint8Array(file.data);
+    }
   }
 
   appendTextFiles(files, extraFiles);

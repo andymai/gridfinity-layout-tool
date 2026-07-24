@@ -86,7 +86,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
       try {
         const printSettings = useSettingsStore.getState().settings.printSettings;
-        const { pieces, guideText, baseNameNoExt, extension, splitStats } =
+        const { pieces, guideText, assemblyImage, baseNameNoExt, extension, splitStats } =
           await buildBaseplateExportPieces(bridge, workerPoolManager.get(), {
             baseplateParams,
             drawerWidth,
@@ -122,7 +122,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces,
             baseNameNoExt,
             extension,
-            guideText ? [{ name: 'print-guide.txt', content: guideText }] : undefined
+            guideText ? [{ name: 'print-guide.txt', content: guideText }] : undefined,
+            assemblyImage ? [{ path: 'assembly-map.png', data: assemblyImage }] : undefined
           );
           triggerDownload(zip, `${baseNameNoExt}.zip`);
         }

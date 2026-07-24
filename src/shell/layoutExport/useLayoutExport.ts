@@ -425,6 +425,9 @@ export function useLayoutExport(): UseLayoutExportReturn {
                 data: p.data,
               }))
             : []),
+          ...(bp?.assemblyImage
+            ? [{ path: 'baseplate/assembly-map.png', data: bp.assemblyImage }]
+            : []),
         ];
 
         const manifest = buildLayoutManifest({
@@ -435,6 +438,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
             ? {
                 pieceCount: bp.pieces.length,
                 guidePath: bp.guideText ? 'baseplate/print-guide.txt' : undefined,
+                imagePath: bp.assemblyImage ? 'baseplate/assembly-map.png' : undefined,
               }
             : null,
           labels: manifestLabels.length > 0 ? manifestLabels : null,
