@@ -483,7 +483,7 @@ function computeScoopVolume(
 const PATTERN_VOID_FRACTION: Record<WallPatternType, number> = {
   honeycomb: 0.907,
   round: 0.62,
-  diamond: 0.5,
+  diamond: 0.72,
   triangle: 0.42,
   slots: 0.48,
   mitsukude: 0.58,
