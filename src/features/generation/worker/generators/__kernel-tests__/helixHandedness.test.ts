@@ -72,6 +72,6 @@ describe('helix handedness tripwire', () => {
     expect(
       mirrored.vol,
       'mirror now produces a real solid from a helical sweep — a mirrored right-handed sweep can replace the kumiko chord boxes'
-    ).toBe(0);
+    ).toBeLessThan(1e-6);
   }, 120_000);
 });

@@ -125,8 +125,12 @@ function pointTriangleDistance(
   ]);
 }
 
-/** Min distance from a point to any triangle of an indexed mesh. */
-function distanceToMesh(mesh: MeshData, p: readonly number[]): number {
+/**
+ * Min distance from a point to any triangle of an indexed mesh, with an
+ * early exit once a triangle within `closeEnough` is found — callers only
+ * need "is the surface within threshold", not the exact minimum.
+ */
+function distanceToMesh(mesh: MeshData, p: readonly number[], closeEnough: number): number {
   const { vertices, indices } = mesh;
   let min = Infinity;
   for (let t = 0; t < indices.length; t += 3) {
@@ -140,6 +144,7 @@ function distanceToMesh(mesh: MeshData, p: readonly number[]): number {
       [vertices[ic], vertices[ic + 1], vertices[ic + 2]]
     );
     if (d < min) min = d;
+    if (min <= closeEnough) return min;
   }
   return min;
 }
@@ -207,7 +212,7 @@ function assertCornerDiagonalsPresent(mesh: MeshData, params: BinParams): void {
           if (z < 1.5 || z > bandHeight - 1.5) continue;
           const theta = corner.theta0 + (u - corner.u0) / r;
           const p = [corner.cx + r * Math.cos(theta), corner.cy + r * Math.sin(theta), bandZ0 + z];
-          const d = distanceToMesh(mesh, p);
+          const d = distanceToMesh(mesh, p, 0.4);
           if (d > 0.4) {
             const family = dz / du > 0 ? 'rising' : 'falling';
             missing.push(
