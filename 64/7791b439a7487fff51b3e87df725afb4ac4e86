@@ -1,0 +1,27 @@
+src/shared/generation/meshPersistence.ts
+  s_1acdce32a59cb3::t_ff78cc88cfadf3 41
+src/features/generation/worker/generators/patterns/diamondPattern.test.ts
+  s_1acdce32a59cb3::t_cc59d7901c0ed7 25
+  s_1acdce32a59cb3::t_2d62e6e4297d5c 15-17,20-24,26-31,35-38
+src/features/generation/worker/generators/patterns/diamondPattern.ts
+  s_1acdce32a59cb3::t_1fb68bc129b84a 34-37,40
+  s_1acdce32a59cb3::t_04a7556c90ceb6 2,4-6,16
+src/features/bin-designer/utils/printEstimates.ts
+  s_1acdce32a59cb3::t_486c3e237bd8d1 486
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "647791b439a7487fff51b3e87df725afb4ac4e86",
+  "prompts": {},
+  "sessions": {
+    "s_1acdce32a59cb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e405d591-5c27-4392-adad-8c966bb20b1b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
