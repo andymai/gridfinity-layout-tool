@@ -86,12 +86,14 @@ export function DesignerPage() {
   const { shouldShowQuickstart, markQuickstartSeen } = useDesignerFirstRun();
   const hasEdited = useDesignerStore((s) => s.history.past.length > 0);
 
-  // First edit is proof the user doesn't need orientation anymore
+  // First edit is proof the user doesn't need orientation anymore. Mobile
+  // never renders the card, so edits there must not consume the flag or
+  // emit a dismissal for UI that was never shown.
   useEffect(() => {
-    if (shouldShowQuickstart && hasEdited) {
+    if (shouldShowQuickstart && hasEdited && !isMobile) {
       markQuickstartSeen('first_edit');
     }
-  }, [shouldShowQuickstart, hasEdited, markQuickstartSeen]);
+  }, [shouldShowQuickstart, hasEdited, isMobile, markQuickstartSeen]);
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-surface">

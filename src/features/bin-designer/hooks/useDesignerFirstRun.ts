@@ -93,7 +93,7 @@ export function useDesignerFirstRun(): UseDesignerFirstRunReturn {
   const isDev = import.meta.env.DEV && !import.meta.env.VITEST;
 
   const shouldShowQuickstart = !isDev && !flags.quickstartSeen;
-  const shouldOfferPlannerBridge = !flags.plannerBridgeSeen;
+  const shouldOfferPlannerBridge = !isDev && !flags.plannerBridgeSeen;
 
   const markQuickstartSeen = useCallback(
     (method: QuickstartDismissMethod) => {
