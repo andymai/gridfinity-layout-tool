@@ -27,6 +27,7 @@
   "auth.providerGithub": "GitHub",
   "auth.providerGoogle": "Google",
   "auth.signIn": "Se connecter",
+  "export.mobileHandoff.message": "Vous imprimez depuis votre ordinateur ? Connectez-vous et votre travail se synchronise avec votre compte — ouvrez ce site sur desktop pour terminer.",
   "auth.signInWithGithub": "Se connecter avec GitHub",
   "auth.signInWithGoogle": "Se connecter avec Google",
   "auth.signOut": "Se déconnecter",

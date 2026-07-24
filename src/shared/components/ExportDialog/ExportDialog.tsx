@@ -13,6 +13,7 @@ import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
 import type { ExportFileFormat, ExportFileNameConfig, FileNameStyle } from '@/shared/types/bin';
+import { MobileHandoffBanner } from './MobileHandoffBanner';
 
 /** Ordered format options for the selector */
 const FORMAT_OPTIONS: readonly ExportFileFormat[] = ['3mf', 'stl', 'step'] as const;
@@ -380,6 +381,8 @@ export function ExportDialog({
             {noMeshWarning && !canExport && (
               <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
             )}
+
+            <MobileHandoffBanner />
           </div>
         )}
       </Dialog.Body>

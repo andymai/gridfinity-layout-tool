@@ -27,6 +27,7 @@
   "auth.providerGithub": "GitHub",
   "auth.providerGoogle": "Google",
   "auth.signIn": "Logg inn",
+  "export.mobileHandoff.message": "Skriver du ut fra datamaskinen? Logg inn, så synkroniseres arbeidet ditt med kontoen din – åpne siden på desktop for å fullføre.",
   "auth.signInWithGithub": "Logg inn med GitHub",
   "auth.signInWithGoogle": "Logg inn med Google",
   "auth.signOut": "Logg ut",

@@ -155,6 +155,8 @@ const en: Record<string, string> = {
 
   // Sign-in / user menu (multi-device sync)
   'auth.signIn': 'Sign in',
+  'export.mobileHandoff.message':
+    'Printing from your computer? Sign in and your work syncs to your account — open this site on desktop to finish.',
   'auth.signInWithGoogle': 'Sign in with Google',
   'auth.signInWithGithub': 'Sign in with GitHub',
   'auth.signOut': 'Sign out',
