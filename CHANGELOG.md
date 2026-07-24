@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.292.0...gridfinity-layout-tool-v4.293.0) (2026-07-24)
+
+
+### Features
+
+* **export:** mobile continue-on-desktop handoff via account sync ([#2797](https://github.com/andymai/gridfinity-layout-tool/issues/2797)) ([848ba05](https://github.com/andymai/gridfinity-layout-tool/commit/848ba051c1af59c44f9831b8f6287c7b4a501607))
+
 ## [4.292.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.291.0...gridfinity-layout-tool-v4.292.0) (2026-07-24)
 
 
