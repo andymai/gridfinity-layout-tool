@@ -115,7 +115,11 @@ function pointTriangleDistance(
     const t = (d4 - d3) / (d4 - d3 + (d5 - d6));
     return dist([b[0] + (c[0] - b[0]) * t, b[1] + (c[1] - b[1]) * t, b[2] + (c[2] - b[2]) * t]);
   }
-  const denom = 1 / (va + vb + vc);
+  const sum = va + vb + vc;
+  // Degenerate (zero-area) triangle: barycentric weights are undefined, so
+  // fall back to the nearest vertex instead of dividing by ~0.
+  if (Math.abs(sum) < 1e-12) return Math.min(dist(a), dist(b), dist(c));
+  const denom = 1 / sum;
   const v = vb * denom;
   const w = vc * denom;
   return dist([
