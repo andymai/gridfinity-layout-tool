@@ -61,6 +61,20 @@ describe('buildLayoutManifest', () => {
     expect(text).toContain('See baseplate/print-guide.txt');
   });
 
+  it('references the assembly-map image when present', () => {
+    const text = buildLayoutManifest(
+      base({
+        baseplate: {
+          pieceCount: 4,
+          guidePath: 'baseplate/print-guide.txt',
+          imagePath: 'baseplate/assembly-map.png',
+        },
+      })
+    );
+    expect(text).toContain('See baseplate/assembly-map.png');
+    expect(text).toContain('labeled top-view');
+  });
+
   it('renders a skipped section only when something was skipped', () => {
     expect(buildLayoutManifest(base())).not.toContain('─── Skipped ───');
     const withSkips = buildLayoutManifest(

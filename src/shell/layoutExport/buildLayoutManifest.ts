@@ -54,8 +54,13 @@ export interface LayoutManifestInput {
   /** The per-file format inside the ZIP. */
   readonly format: ExportFileFormat;
   readonly bins: readonly ManifestBinEntry[];
-  /** Present when a baseplate is included; guidePath is set when it ships a guide. */
-  readonly baseplate?: { readonly pieceCount: number; readonly guidePath?: string } | null;
+  /** Present when a baseplate is included; guidePath is set when it ships a guide,
+   *  imagePath when it ships a top-view assembly-map PNG. */
+  readonly baseplate?: {
+    readonly pieceCount: number;
+    readonly guidePath?: string;
+    readonly imagePath?: string;
+  } | null;
   /** Present when socket-mode designs shipped swappable label plates. */
   readonly labels?: readonly ManifestLabelGroup[] | null;
   readonly skipped: ManifestSkipped;
@@ -125,6 +130,9 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     );
     if (baseplate.guidePath) {
       lines.push(`  See ${baseplate.guidePath} for the assembly map and per-piece details.`);
+    }
+    if (baseplate.imagePath) {
+      lines.push(`  See ${baseplate.imagePath} for a labeled top-view of where each piece goes.`);
     }
     lines.push('');
   }

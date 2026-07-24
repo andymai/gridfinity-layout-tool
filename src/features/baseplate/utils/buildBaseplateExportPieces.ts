@@ -2,8 +2,9 @@
  * Pure builder for baseplate export pieces.
  *
  * Produces the export buffers + print guide for a baseplate WITHOUT touching the
- * baseplate-page store or the DOM, so it can run both from the baseplate page
- * (`useBaseplateExport`) and from the whole-layout batch export. Tiling, stacking
+ * baseplate-page store or the live 3D preview, so it can run both from the
+ * baseplate page (`useBaseplateExport`) and from the whole-layout batch export.
+ * Tiling, stacking
  * towers, detached margin rails, dovetail/snap-clip connector keys, fingerprint
  * dedup and the cross-session export cache are all handled here; the caller owns
  * packaging (single download vs ZIP) and progress reset.
@@ -37,6 +38,7 @@ import {
 import { assignGroupNames } from './pieceNaming';
 import { countConnectorKeys } from './connectorKeys';
 import { generatePrintGuide, generateStackPrintNote, generateMarginGuide } from './printGuide';
+import { generateAssemblyMapImage } from './assemblyImage';
 import { generateBaseplateFileName, toNamingParams } from './fileNaming';
 
 /** Print settings the builder needs (subset of the global PrintSettings). */
@@ -81,6 +83,12 @@ export interface BaseplateExportPieces {
   readonly pieces: ExportPiece[];
   /** Print guide text; empty when a single file downloads directly (no guide). */
   readonly guideText: string;
+  /**
+   * Top-view assembly-map PNG bytes for the split path — a visual companion to
+   * the guide's ASCII grid map. Absent when the plate isn't split or a canvas
+   * encoder is unavailable (callers ship the text guide alone).
+   */
+  readonly assemblyImage?: ArrayBuffer;
   readonly baseNameNoExt: string;
   readonly extension: string;
   /** Present only for the split path, so callers can word a dedup/split toast. */
@@ -389,9 +397,14 @@ export async function buildBaseplateExportPieces(
       copies: stackEnabled ? copies : 1,
     });
 
+    // Visual assembly reference alongside the ASCII map. Failure to render
+    // (no canvas encoder) degrades to the text guide rather than aborting.
+    const assemblyImage = (await generateAssemblyMapImage(tiling).catch(() => null)) ?? undefined;
+
     return {
       pieces,
       guideText,
+      assemblyImage,
       baseNameNoExt,
       extension,
       splitStats: { uniqueCount, totalPieces, stackEnabled },

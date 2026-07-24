@@ -77,6 +77,25 @@ describe('packagePiecesAsZip', () => {
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe('application/zip');
   });
+
+  it('includes extra binary files at their explicit paths (e.g. assembly map)', async () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    const entries = await unzip(
+      packagePiecesAsZip(
+        [{ data: new ArrayBuffer(8), label: 'A1' }],
+        'test',
+        '.stl',
+        [{ name: 'print-guide.txt', content: 'guide' }],
+        [{ path: 'assembly-map.png', data: png.buffer }]
+      )
+    );
+    expect(Object.keys(entries).sort()).toEqual([
+      'assembly-map.png',
+      'print-guide.txt',
+      'test_A1.stl',
+    ]);
+    expect(Array.from(entries['assembly-map.png'])).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
 });
 
 describe('packageFilesAsZip', () => {
