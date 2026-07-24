@@ -18,7 +18,13 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { mesh } from 'brepjs';
 import { FeatureTag } from './featureTags';
-import { buildLabelPlate, exportLabelPlates } from './labelPlateBuilder';
+import {
+  ICON_MAX_WIDTH_MM,
+  TEXT_BAND_MM,
+  buildLabelPlate,
+  exportLabelPlates,
+} from './labelPlateBuilder';
+import { measureIconBox } from './labelPlateIcons';
 import type { LabelPlateBuildOptions } from './labelPlateBuilder';
 
 beforeAll(async () => {
@@ -78,6 +84,25 @@ describe('labelPlateIcons', () => {
     },
     TEST_TIMEOUT_MS
   );
+
+  // Icons are fitted by their own silhouette bounds, not the shared +/-5 design
+  // frame: the side-view fasteners only ink 52-68% of that frame vertically, so
+  // a frame-relative box rendered a bolt at ~2/3 the visual weight of a washer
+  // and left both dwarfed by the (now ink-fitted) text.
+  it('fits every icon to the readable band or the width cap', () => {
+    for (const icon of LABEL_PLATE_ICONS) {
+      const box = measureIconBox(icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
+      expect(box, icon).not.toBeNull();
+      if (!box) continue;
+      expect(box.heightMm, icon).toBeLessThanOrEqual(TEXT_BAND_MM + 1e-6);
+      expect(box.widthMm, icon).toBeLessThanOrEqual(ICON_MAX_WIDTH_MM + 1e-6);
+      // Every icon is as large as the box allows — one axis is always at its
+      // limit, so none can render at an arbitrary fraction of the band.
+      const fillsBand = Math.abs(box.heightMm - TEXT_BAND_MM) < 1e-6;
+      const widthCapped = Math.abs(box.widthMm - ICON_MAX_WIDTH_MM) < 1e-6;
+      expect(fillsBand || widthCapped, icon).toBe(true);
+    }
+  });
 
   it(
     'tags icon faces TEXT so paint_color colors them with the text',

@@ -1,9 +1,10 @@
 /**
  * Hardware icon silhouettes for swappable label plates (#2666 follow-up,
  * gflabel-style). Each icon is a filled 2D drawing in a local frame spanning
- * ±5 units (fasteners point right, face-on parts are origin-centered), scaled
- * to the plate's icon box and embossed/debossed exactly like plate text —
- * the caller fuses/cuts the returned solid and tags it for paint_color.
+ * ±5 units (fasteners point right, face-on parts are origin-centered), fitted
+ * to the plate's readable band by its own silhouette bounds and
+ * embossed/debossed exactly like plate text — the caller fuses/cuts the
+ * returned solid and tags it for paint_color.
  */
 
 import {
@@ -19,9 +20,6 @@ import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
-
-/** Local frame half-extent every icon is designed in. */
-const FRAME_HALF = 5;
 
 /** Hex-head bolt, side view: head, shaft, chamfered tip. */
 function boltDrawing(): Drawing {
@@ -100,10 +98,49 @@ const ICON_DRAWINGS: ReadonlyMap<LabelPlateIconId, () => Drawing> = new Map([
   ['nail', nailDrawing],
 ]);
 
+export interface IconBox {
+  readonly widthMm: number;
+  readonly heightMm: number;
+}
+
+/**
+ * Rendered size of an icon fitted to `heightMm`, width-capped at `maxWidthMm`.
+ *
+ * Sized from the silhouette's own bounding box, NOT the ±5 design frame: the
+ * side-view fasteners only ink 52–68% of that frame vertically (a wood screw
+ * spans ±2.6) while a washer fills it, so a shared frame-relative box rendered
+ * them at wildly different visual weights. Returns null for an unknown id.
+ */
+export function measureIconBox(
+  icon: LabelPlateIconId,
+  heightMm: number,
+  maxWidthMm: number
+): IconBox | null {
+  const drawIcon = isLabelPlateIconId(icon) ? ICON_DRAWINGS.get(icon) : undefined;
+  if (!drawIcon) return null;
+  const fit = fitIcon(drawIcon(), heightMm, maxWidthMm);
+  return fit && { widthMm: fit.width * fit.scale, heightMm: fit.height * fit.scale };
+}
+
+interface IconFit {
+  readonly scale: number;
+  readonly width: number;
+  readonly height: number;
+  readonly center: readonly [number, number];
+}
+
+function fitIcon(raw: Drawing, heightMm: number, maxWidthMm: number): IconFit | null {
+  const { width, height, center } = raw.boundingBox;
+  if (!(width > 0) || !(height > 0)) return null;
+  return { scale: Math.min(heightMm / height, maxWidthMm / width), width, height, center };
+}
+
 export interface IconSolidOptions {
   readonly icon: LabelPlateIconId;
-  /** Icon box edge length in mm (the icon spans this in both axes). */
-  readonly sizeMm: number;
+  /** Target silhouette height in mm; width follows the icon's own aspect. */
+  readonly heightMm: number;
+  /** Width ceiling in mm — a wide fastener shrinks rather than crowd the text. */
+  readonly maxWidthMm: number;
   /** Icon center on the plate (mm). */
   readonly centerX: number;
   readonly centerY: number;
@@ -124,10 +161,16 @@ export function buildIconSolid(
 ): { solid: Shape3D; op: 'fuse' | 'cut' } | null {
   const drawIcon = isLabelPlateIconId(options.icon) ? ICON_DRAWINGS.get(options.icon) : undefined;
   if (!drawIcon) return null;
-  const drawing = translateDrawing(
-    scaleDrawing(drawIcon(), options.sizeMm / (2 * FRAME_HALF), [0, 0]),
-    [options.centerX, options.centerY]
-  );
+  const raw = drawIcon();
+  const fit = fitIcon(raw, options.heightMm, options.maxWidthMm);
+  if (!fit) return null;
+  // Scale about the silhouette's own centroid, then place it — the design
+  // frames are not all symmetric, so scaling about the origin would drift.
+  const [cx, cy] = fit.center;
+  const drawing = translateDrawing(scaleDrawing(raw, fit.scale, [cx, cy]), [
+    options.centerX - cx,
+    options.centerY - cy,
+  ]);
   const sketchZ =
     options.mode === 'emboss'
       ? options.topZ - TEXT_BOOLEAN_EPSILON

@@ -50,7 +50,7 @@ import { COPLANAR_MARGIN } from './generatorConstants';
 import { FeatureTag } from './featureTags';
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
-import { buildIconSolid } from './labelPlateIcons';
+import { buildIconSolid, measureIconBox } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
 
 /** One plate to build: standard width + the text it carries (may be empty). */
@@ -80,8 +80,14 @@ export interface LabelPlateBuildOptions {
 const PLATE_GAP = 4;
 /** Keep text clear of the latch flanges. */
 const TEXT_MARGIN = 1.6;
-/** Hardware icon box edge (mm) and its gap to the text. */
-const ICON_SIZE = 6.5;
+/** Readable band between the latch flanges — what both text and icon fill. */
+export const TEXT_BAND_MM = LABEL_PLATE_HEIGHT_MM - 2 * TEXT_MARGIN;
+/**
+ * Width ceiling for an icon (mm) and its gap to the text. Side-view fasteners
+ * are ~1.5-1.9x wider than tall, so filling the band unchecked would spend a
+ * third of a 1U plate's text run on the silhouette.
+ */
+export const ICON_MAX_WIDTH_MM = 9.5;
 const ICON_TEXT_GAP = 1.2;
 
 /**
@@ -219,23 +225,30 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       solid = scope.register(unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[])));
     }
 
-    // Hardware icon beside the text (#2666 follow-up): a square box at the
-    // left margin, centered when the plate carries no text. Best-effort like
-    // the text — a failed icon boolean ships the plate without it, and the
-    // text only shifts right when the icon actually landed.
+    // Hardware icon beside the text (#2666 follow-up): band-height, its width
+    // set by its own aspect, at the left margin — centered when the plate
+    // carries no text. Best-effort like the text: a failed icon boolean ships
+    // the plate without it, and the text only shifts right by the width the
+    // icon actually took.
     let iconApplied = false;
+    let iconWidth = 0;
     if (spec.icon !== undefined) {
       try {
-        const icon = buildIconSolid({
-          icon: spec.icon,
-          sizeMm: ICON_SIZE,
-          centerX: hasText ? -w / 2 + TEXT_MARGIN + ICON_SIZE / 2 : 0,
-          centerY: 0,
-          topZ: t,
-          depthMm: opts.textDepthMm,
-          mode: opts.textMode,
-        });
-        if (icon) {
+        const box = measureIconBox(spec.icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
+        const icon = box
+          ? buildIconSolid({
+              icon: spec.icon,
+              heightMm: TEXT_BAND_MM,
+              maxWidthMm: ICON_MAX_WIDTH_MM,
+              centerX: hasText ? -w / 2 + TEXT_MARGIN + box.widthMm / 2 : 0,
+              centerY: 0,
+              topZ: t,
+              depthMm: opts.textDepthMm,
+              mode: opts.textMode,
+            })
+          : null;
+        if (icon && box) {
+          iconWidth = box.widthMm;
           scope.register(icon.solid);
           // Icons take the text color in paint_color mapping — they are
           // markings, same as glyphs.
@@ -254,7 +267,7 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
     // be relabeled with a marker or reprinted later).
     if (hasText) {
       const textLeft = iconApplied
-        ? -w / 2 + TEXT_MARGIN + ICON_SIZE + ICON_TEXT_GAP
+        ? -w / 2 + TEXT_MARGIN + iconWidth + ICON_TEXT_GAP
         : -w / 2 + TEXT_MARGIN;
       const textRight = w / 2 - TEXT_MARGIN;
       const result = buildTextSolid(scope, {
@@ -262,7 +275,7 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
         fontFamily: opts.textDefaults.font,
         mode: opts.textMode === 'emboss' ? 'emboss' : 'engrave',
         availW: textRight - textLeft,
-        availD: h - 2 * TEXT_MARGIN,
+        availD: TEXT_BAND_MM,
         centerX: (textLeft + textRight) / 2,
         centerY: 0,
         topZ: t,
