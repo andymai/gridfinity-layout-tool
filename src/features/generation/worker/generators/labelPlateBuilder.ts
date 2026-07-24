@@ -225,10 +225,11 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       solid = scope.register(unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[])));
     }
 
-    // Hardware icon beside the text (#2666 follow-up): a square box at the
-    // left margin, centered when the plate carries no text. Best-effort like
-    // the text — a failed icon boolean ships the plate without it, and the
-    // text only shifts right when the icon actually landed.
+    // Hardware icon beside the text (#2666 follow-up): band-height, its width
+    // set by its own aspect, at the left margin — centered when the plate
+    // carries no text. Best-effort like the text: a failed icon boolean ships
+    // the plate without it, and the text only shifts right by the width the
+    // icon actually took.
     let iconApplied = false;
     let iconWidth = 0;
     if (spec.icon !== undefined) {
