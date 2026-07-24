@@ -1,0 +1,75 @@
+src/i18n/locales/ja.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_cb5bea35176d66::t_d10ba8e4ae4868 19
+  s_cb5bea35176d66::t_d4a988c39f1cdf 132-137
+src/shared/analytics/posthog/conversionEvents.ts
+  s_cb5bea35176d66::t_e5d5aaa8cbb38a 1-49
+src/App.tsx
+  s_cb5bea35176d66::t_9f2725bb066aa4 193
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_cb5bea35176d66::t_108e05e41ba8bc 18,23
+src/i18n/locales/it.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/i18n/locales/pt-BR.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/features/baseplate/components/BaseplatePanel/panelState.test.ts
+  s_cb5bea35176d66::t_341020ba96f728 1-52
+src/i18n/locales/uk.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/shared/analytics/posthog/index.ts
+  s_cb5bea35176d66::t_7156dc75f47f98 38-39
+src/i18n/locales/en.ts
+  s_cb5bea35176d66::t_c243af65a79f01 1520
+src/features/onboarding/hooks/useOnboarding.ts
+  s_cb5bea35176d66::t_b03088daf1254e 2,10,82,118,137-138,140
+  s_cb5bea35176d66::t_f08e31e2828504 141-143
+  s_cb5bea35176d66::t_618b48df71876c 147,154
+src/shared/analytics/posthog/binExportEvents.ts
+  s_cb5bea35176d66::t_a5adb22e1bd641 9
+  s_cb5bea35176d66::t_6a6fcaa85867d4 52
+src/i18n/locales/nb.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/features/onboarding/hooks/useOnboarding.test.ts
+  s_cb5bea35176d66::t_44c65de6dfbc19 1,82-83,88,94,104,136
+src/features/onboarding/README.md
+  s_cb5bea35176d66::t_0f4dede58b4cf8 11,24,26-29
+src/i18n/locales/nl.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/features/bin-designer/store/helpers.ts
+  s_cb5bea35176d66::t_194c0cacbd5986 18
+  s_cb5bea35176d66::t_10ff2e232154d9 117
+src/i18n/locales/sv.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/shared/analytics/posthog/conversionEvents.test.ts
+  s_cb5bea35176d66::t_5f31903220c51b 14,18-19
+  s_cb5bea35176d66::t_7b1d8ee656f994 1-13,15-17,20-87
+src/i18n/locales/de.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/i18n/locales/es.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+src/shell/layoutExport/useLayoutExport.ts
+  s_cb5bea35176d66::t_b5b3b77e8c672f 20
+  s_cb5bea35176d66::t_f4c02152d28d70 457
+src/shared/analytics/posthog/eventsCore.ts
+  s_cb5bea35176d66::t_47b940da0aea87 19
+  s_cb5bea35176d66::t_0547e6a54d42ad 131
+src/i18n/locales/fr.json
+  s_cb5bea35176d66::t_d34666b9aa3d26 2565
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "160187fd81fc736ae34302b0893cb186f9e8e2f9",
+  "prompts": {},
+  "sessions": {
+    "s_cb5bea35176d66": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe07013f-0ffc-49c4-b5fb-828c6d185a1b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
