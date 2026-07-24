@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.2...gridfinity-layout-tool-v4.293.3) (2026-07-24)
+
+
+### Bug Fixes
+
+* **designer:** size plate hardware icons to their own silhouette ([#2804](https://github.com/andymai/gridfinity-layout-tool/issues/2804)) ([ba32852](https://github.com/andymai/gridfinity-layout-tool/commit/ba328529e6e5d6798c6688deeade8977c31c7383))
+
 ## [4.293.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.1...gridfinity-layout-tool-v4.293.2) (2026-07-24)
 
 
