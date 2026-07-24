@@ -22,6 +22,10 @@ graph TB
 ## Key Files
 
 - `components/BaseplatePage.tsx` — responsive layout shell (desktop side-by-side, mobile stacked)
+- `components/BaseplatePage/BaseplateQuickstartCard.tsx` — one-time first-run orientation card
+  (desktop/tablet only) over the shared `QuickstartCard` shell; flags + edit auto-dismiss in
+  `hooks/useBaseplateFirstRun.ts`, one-time post-export planner toast in
+  `hooks/useBaseplatePlannerBridge.ts`
 - `components/BaseplatePanel.tsx` — parameter controls: grid size, padding, magnets, split mini-map
 - `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
 - `hooks/useBaseplateGeneration.ts` — two-phase lifecycle: synchronous direct-mesh preview (sub-100ms) + async BREP swap once WASM bridge ready, epoch-based stale detection

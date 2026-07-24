@@ -21,6 +21,8 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 
 import { Button } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { useBaseplateFirstRun } from '../../hooks/useBaseplateFirstRun';
+import { BaseplateQuickstartCard } from './BaseplateQuickstartCard';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -63,6 +65,7 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
 export function BaseplatePage() {
   const t = useTranslation();
   const { isDesktop, isLandscape, isMobile, isTablet } = useResponsive();
+  const { shouldShowQuickstart, markQuickstartSeen } = useBaseplateFirstRun();
 
   const {
     drawerWidth,
@@ -243,7 +246,11 @@ export function BaseplatePage() {
   const panel = <BaseplatePanel />;
 
   return (
-    <div className="flex h-screen flex-col bg-surface">
+    <div className="relative flex h-screen flex-col bg-surface">
+      {/* First-run orientation card (desktop/tablet — mobile has no room for it) */}
+      {shouldShowQuickstart && !isMobile && (
+        <BaseplateQuickstartCard onDismiss={markQuickstartSeen} />
+      )}
       {/* Header */}
       <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
         <div className="flex items-center gap-3 min-w-0">
