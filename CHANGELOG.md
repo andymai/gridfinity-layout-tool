@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.288.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.3...gridfinity-layout-tool-v4.288.4) (2026-07-24)
+
+
+### Bug Fixes
+
+* **generation:** pack diamond wall pattern as a tight staggered lattice ([#2789](https://github.com/andymai/gridfinity-layout-tool/issues/2789)) ([d8eb8e5](https://github.com/andymai/gridfinity-layout-tool/commit/d8eb8e5a39c67afe4a06484cbcc806d96a37f0f1))
+
 ## [4.288.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.288.2...gridfinity-layout-tool-v4.288.3) (2026-07-24)
 
 
