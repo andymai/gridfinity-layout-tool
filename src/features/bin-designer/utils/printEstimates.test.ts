@@ -400,6 +400,26 @@ describe('printEstimates', () => {
       expect(quarterFeet).toBeLessThan(fullFoot);
     });
 
+    it('a custom footprint only counts the feet it actually grows', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const full =
+        estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
+      // An L: three of the four cells filled, so three feet carry windows.
+      const masked = {
+        ...base,
+        cellMask: {
+          cols: 4,
+          rows: 4,
+          cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+        },
+      };
+      const partial =
+        estimatePrint(masked).volumeMm3 - estimatePrint({ ...masked, floorPattern }).volumeMm3;
+      expect(partial).toBeGreaterThan(0);
+      expect(partial).toBeCloseTo(full * 0.75, 0);
+    });
+
     it('drainage holes are inert on the bases the worker never patterns', () => {
       const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
       for (const overrides of [

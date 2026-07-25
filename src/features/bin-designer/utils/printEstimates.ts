@@ -35,7 +35,7 @@ import {
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
-import { isPartialMask } from '@/shared/utils/cellMask';
+import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
 import { stampPatternOpenArea } from '@/shared/generation/wallPatternMetrics';
 export interface PrintEstimate {
@@ -663,6 +663,14 @@ function computeFloorPatternReduction(
   // fits disproportionately fewer elements.
   const cellUnits = params.base.halfSockets ? 0.5 : 1;
   const windowsPerCell = params.base.halfSockets ? 4 : 1;
+  // A custom footprint only grows feet on its filled cells, so only those carry
+  // windows. Scaling by the filled fraction tracks that without re-deriving the
+  // socket builder's per-cell decomposition here — and it cancels the fact that
+  // `baseVolume` counts the full bounding rectangle, leaving the reduction
+  // proportional to the cells that actually exist.
+  const filledFraction = isPartialMask(params.cellMask)
+    ? countFilled(params.cellMask) / (params.cellMask.cols * params.cellMask.rows)
+    : 1;
   const totalOpenArea = isFlat
     ? openArea(
         outerW - 2 * wallThickness - 2 * FLOOR_PATTERN_BORDER,
@@ -670,6 +678,7 @@ function computeFloorPatternReduction(
       )
     : params.width *
       params.depth *
+      filledFraction *
       windowsPerCell *
       openArea(
         floorWindowSpan(cellUnits, params.gridUnitMm, params.wallThickness),
