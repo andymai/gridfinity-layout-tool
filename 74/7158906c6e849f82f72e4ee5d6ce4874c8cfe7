@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_6bf5af221a7bb1::t_bf500f87e27c43 46-48,52-58,60,67-69
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.test.tsx
+  s_6bf5af221a7bb1::t_cfde2dff979d8f 141-150,152,154-168
+  s_6bf5af221a7bb1::t_f9495d47684b7a 151,153
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_6bf5af221a7bb1::t_b279f93fdced64 292-296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "747158906c6e849f82f72e4ee5d6ce4874c8cfe7",
+  "prompts": {},
+  "sessions": {
+    "s_6bf5af221a7bb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b555e792-0c5a-41ed-9e00-12c4bbe97b9c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
