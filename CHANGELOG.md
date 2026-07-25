@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.298.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.297.0...gridfinity-layout-tool-v4.298.0) (2026-07-25)
+
+
+### Features
+
+* **bin-inspector:** concept + related-term semantic matching for labels ([#2823](https://github.com/andymai/gridfinity-layout-tool/issues/2823)) ([fcf55ed](https://github.com/andymai/gridfinity-layout-tool/commit/fcf55edcc6e148f901eedbf40ef7633817e21a3d))
+
 ## [4.297.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.296.0...gridfinity-layout-tool-v4.297.0) (2026-07-25)
 
 
