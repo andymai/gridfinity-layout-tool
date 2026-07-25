@@ -9,7 +9,9 @@ describe('loadLabelSuggesterModel', () => {
 
     const model = await first;
     expect(model.schemaVersion).toBe(1);
-    // The committed placeholder is inert until a trained model replaces it.
-    expect(model.sampleCount).toBe(0);
+    // A valid model regardless of whether it's the inert placeholder or trained.
+    expect(model.sampleCount).toBeGreaterThanOrEqual(0);
+    expect(typeof model.popularity).toBe('object');
+    expect(typeof model.cooccur).toBe('object');
   });
 });
