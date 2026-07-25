@@ -201,11 +201,14 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   if (!floorPatternApplies(params, dim)) return null;
 
   const inset = floorWindowInset(params.wallThickness);
+  const border = FLOOR_PATTERN_BORDER;
+  // Inflated once, not per window: a magnet base contributes four keep-outs per
+  // cell, so re-inflating inside `addWindow` would be O(windows x keep-outs)
+  // allocations for a result that never varies by window.
   const worldKeepOuts = [
     ...attachmentKeepOuts(params, dim),
     ...standingFeatureKeepOuts(params, dim),
-  ];
-  const border = FLOOR_PATTERN_BORDER;
+  ].map((k) => inflate(k, border));
 
   const windows: FloorPatternWindow[] = [];
   const addWindow = (cx: number, cy: number, spanX: number, spanY: number): void => {
@@ -215,13 +218,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
       y: cy,
       patternSpan: spanX,
       patternDepth: spanY,
-      keepOuts: localKeepOuts(
-        worldKeepOuts.map((k) => inflate(k, border)),
-        cx,
-        cy,
-        spanX / 2,
-        spanY / 2
-      ),
+      keepOuts: localKeepOuts(worldKeepOuts, cx, cy, spanX / 2, spanY / 2),
     });
   };
 
