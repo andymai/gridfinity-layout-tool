@@ -322,6 +322,34 @@ describe('printEstimates', () => {
       );
     });
 
+    it('does not subtract divider pattern volume where the worker never patterns', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      // A polygon footprint drops dividers from the feature pipeline entirely,
+      // so the estimate must not claim the saving.
+      const mask = {
+        cols: 6,
+        rows: 6,
+        cells: Array.from({ length: 36 }, (_, i) => i < 30),
+      };
+      const off = estimatePrint({
+        ...base,
+        cellMask: mask,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: false },
+      });
+      const on = estimatePrint({
+        ...base,
+        cellMask: mask,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+      });
+      expect(on.volumeMm3).toBe(off.volumeMm3);
+    });
+
     it('patterning the dividers is inert without dividers to pattern', () => {
       const base: BinParams = { ...DEFAULT_BIN_PARAMS, height: 6 };
       const off = estimatePrint({

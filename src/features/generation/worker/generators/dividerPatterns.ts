@@ -33,6 +33,13 @@ import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPat
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import type { BinDimensions } from './pipeline/types';
 
+/**
+ * Below this (mm) a divider is treated as parallel to a keep-out box edge.
+ * Sized well above trig dust (~1e-15 at bin scale) and far below any real
+ * divider extent, so it can only ever catch the degenerate case.
+ */
+const PARALLEL_EPSILON = 1e-9;
+
 /** A rectangle in a divider's local (u, z) frame that must stay solid. */
 export interface DividerKeepOut {
   readonly uMin: number;
@@ -114,7 +121,12 @@ function projectFootprint(
     [dy, box.yMax - y0],
   ];
   for (const [p, q] of edges) {
-    if (p === 0) {
+    // Epsilon, not `p === 0`: every divider is axis-aligned in practice, and
+    // `Math.cos(90°)` is 6.1e-17 rather than 0, so the parallel branch would
+    // never be taken. Dividing by that dust turns a coincident box edge (a
+    // scoop footprint starts exactly ON the compartment boundary, i.e. on the
+    // divider line) into a garbage finite ratio that truncates the keep-out.
+    if (Math.abs(p) < PARALLEL_EPSILON) {
       if (q < 0) return null;
       continue;
     }

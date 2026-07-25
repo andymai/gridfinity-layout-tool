@@ -115,6 +115,21 @@ describe('planDividerPatterns', () => {
     }
   });
 
+  it('anchors a coincident keep-out to the divider end, not part-way along it', () => {
+    // A scoop box's x edge lands exactly ON the column divider it abuts, which
+    // is the degenerate input for the centerline clip. The keep-out must still
+    // start at the divider's front end.
+    const params = makeParams({
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+    });
+    const result = plan(params);
+    const target = result?.targets[0];
+    expect(target?.rotateZ).toBe(90);
+    const ramp = target?.keepOuts.find((k) => k.zMin <= 0);
+    expect(ramp?.uMin).toBeLessThanOrEqual(-(target?.wallLen ?? 0) / 2);
+  });
+
   it('blocks the pattern under a scoop ramp, near the floor only', () => {
     const params = makeParams({
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },

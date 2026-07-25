@@ -255,16 +255,20 @@ describe('computeGenerationTimeoutMs', () => {
     expect(on - off).toBe(4 * DIVIDER_PATTERN_MS_PER_SEGMENT);
   });
 
-  it('charges kumiko divider panels far more than stamp panels', () => {
+  it('charges kumiko divider panels at the kumiko rate, stamp panels at the stamp rate', () => {
     const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 };
-    const stamp = computeGenerationTimeoutMs(
-      params({ wallPattern: { ...HEX_ON, dividers: true }, compartments })
-    );
-    const stampOff = computeGenerationTimeoutMs(
-      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
-    );
-    expect(stamp - stampOff).toBe(DIVIDER_PATTERN_MS_PER_SEGMENT);
-    expect(KUMIKO_DIVIDER_MS_PER_SEGMENT).toBeGreaterThan(DIVIDER_PATTERN_MS_PER_SEGMENT);
+    const delta = (pattern: typeof HEX_ON | typeof KUMIKO_ON): number =>
+      computeGenerationTimeoutMs(
+        params({ wallPattern: { ...pattern, dividers: true }, compartments })
+      ) -
+      computeGenerationTimeoutMs(
+        params({ wallPattern: { ...pattern, dividers: false }, compartments })
+      );
+
+    // One divider segment, so each delta is exactly one segment's charge —
+    // which pins that the isKumikoPattern branch picks the right constant.
+    expect(delta(HEX_ON)).toBe(DIVIDER_PATTERN_MS_PER_SEGMENT);
+    expect(delta(KUMIKO_ON)).toBe(KUMIKO_DIVIDER_MS_PER_SEGMENT);
   });
 
   it('grants no divider bonus for configs the worker never patterns', () => {

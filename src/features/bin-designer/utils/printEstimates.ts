@@ -35,6 +35,7 @@ import {
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { isPartialMask } from '@/shared/utils/cellMask';
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -589,8 +590,14 @@ function dividerPatternReduction(
   innerD: number,
   coverageFraction: number
 ): number {
+  // Mirrors the worker's `dividerPatternsApply` gate — subtracting for a bin
+  // the generator never patterns would make the estimate disagree with the
+  // geometry it is describing.
   if (params.wallPattern.dividers !== true) return 0;
   if (params.style !== 'standard') return 0;
+  if (params.base.solid) return 0;
+  if (isPartialMask(params.cellMask)) return 0;
+  if (params.compartments.thickness <= 0) return 0;
 
   const dividerHeight = effectiveDividerHeight(params);
 
