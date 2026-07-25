@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.3...gridfinity-layout-tool-v4.293.4) (2026-07-25)
+
+
+### Bug Fixes
+
+* **designer:** raise the plate icon width cap to 11.5mm ([#2806](https://github.com/andymai/gridfinity-layout-tool/issues/2806)) ([f7f0953](https://github.com/andymai/gridfinity-layout-tool/commit/f7f0953ce0cf169311d1ef06e4e8047896f7566a))
+
 ## [4.293.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.2...gridfinity-layout-tool-v4.293.3) (2026-07-24)
 
 
