@@ -97,6 +97,14 @@ describe('getLabelSuggestions', () => {
     const results = getLabelSuggestions('s', ctx(target), { limit: 3 });
     expect(results.length).toBeLessThanOrEqual(3);
   });
+
+  it('never returns a suggestion longer than maxLength', () => {
+    const target = makeBin({ label: 'scr' });
+    const results = getLabelSuggestions('scr', ctx(target), { maxLength: 5 });
+    expect(results.every((r) => r.value.length <= 5)).toBe(true);
+    // "Screwdriver" (11 chars) must be excluded even though it matches.
+    expect(results.some((r) => r.value === 'Screwdriver')).toBe(false);
+  });
 });
 
 describe('computeGhost', () => {
@@ -122,5 +130,13 @@ describe('computeGhost', () => {
 
   it('returns null when the top suggestion is weak', () => {
     expect(computeGhost('zzz', [])).toBeNull();
+  });
+
+  it('slices the completion at the literal caret offset', () => {
+    const suggestions = [{ value: 'M5 screws', reason: 'nextInSet' as const, score: 2 }];
+    expect(computeGhost('M5 ', suggestions)?.completion).toBe('screws');
+    expect(computeGhost('M5', suggestions)?.completion).toBe(' screws');
+    // Leading whitespace the value doesn't start with yields no ghost (safe).
+    expect(computeGhost('  M5', suggestions)).toBeNull();
   });
 });

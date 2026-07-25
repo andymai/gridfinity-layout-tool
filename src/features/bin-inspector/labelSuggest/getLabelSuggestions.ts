@@ -57,9 +57,12 @@ interface TextMatch {
 export function getLabelSuggestions(
   rawQuery: string,
   ctx: SuggestionContext,
-  options: { limit?: number } = {}
+  options: { limit?: number; maxLength?: number } = {}
 ): LabelSuggestion[] {
   const limit = options.limit ?? DEFAULT_LIMIT;
+  // Never surface a suggestion the field can't hold verbatim — otherwise the
+  // committed label (clamped downstream) diverges from what the user picked.
+  const maxLength = options.maxLength ?? Number.POSITIVE_INFINITY;
   const query = rawQuery.trim().toLowerCase();
   const currentLabel = ctx.target.label.trim().toLowerCase();
   const others = ctx.bins.filter((b) => b.id !== ctx.target.id);
@@ -125,6 +128,7 @@ export function getLabelSuggestions(
 
   const results: LabelSuggestion[] = [];
   for (const cand of candidates.values()) {
+    if (cand.value.length > maxLength) continue;
     const key = cand.value.toLowerCase();
     const reuse = counts.get(key)?.count ?? 0;
     const isNeighbor = neighborKeys.has(key);
@@ -185,7 +189,9 @@ export function computeGhost(
   if (suggestions.length === 0) return null;
   const top = suggestions[0];
   if (top.score < GHOST_MIN_SCORE) return null;
-  if (!top.value.toLowerCase().startsWith(currentText.trim().toLowerCase())) return null;
+  // Match against the literal field text (not trimmed) so the completion is
+  // sliced at the true caret offset — trimming here would misalign the ghost.
+  if (!top.value.toLowerCase().startsWith(currentText.toLowerCase())) return null;
   const completion = top.value.slice(currentText.length);
   if (!completion) return null;
   return { value: top.value, completion };

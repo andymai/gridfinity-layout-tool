@@ -117,6 +117,15 @@ describe('Combobox', () => {
     expect(input).toHaveValue('scr');
   });
 
+  it('opens a closed empty field on ArrowDown when openOnFocus is off', () => {
+    render(<Harness openOnFocus={false} />);
+    const input = screen.getByRole('combobox', { name: 'Label' });
+    fireEvent.focus(input);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
   it('clamps typed input to maxLength', () => {
     render(<Harness />);
     const input = screen.getByRole('combobox', { name: 'Label' });

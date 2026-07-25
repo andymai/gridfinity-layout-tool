@@ -32,7 +32,7 @@ const REASON_KEY: Record<SuggestionReason, string> = {
  */
 export function BinLabelField({ bin, bins, onChange, variant }: BinLabelFieldProps) {
   const t = useTranslation();
-  const { suggestions, ghost } = useLabelSuggestions(bin, bins);
+  const { suggestions, ghost } = useLabelSuggestions(bin, bins, CONSTRAINTS.LABEL_MAX_LENGTH);
   const enableInlineGhost = variant === 'desktop';
 
   const options = useMemo<ComboboxOption[]>(
@@ -47,13 +47,17 @@ export function BinLabelField({ bin, bins, onChange, variant }: BinLabelFieldPro
     [suggestions, t]
   );
 
-  const handleCommit = (value: string, meta: { viaGhost: boolean }) => {
-    const accepted = suggestions.find((s) => s.value === value);
-    const rank = suggestions.findIndex((s) => s.value === value);
+  const handleCommit = (value: string, meta: { viaGhost: boolean; option?: ComboboxOption }) => {
+    // The ghost accepts suggestions[0]; a dropdown pick reports its own option.
+    // Match on the source suggestion (unclamped) so telemetry stays accurate
+    // even if the field length-clamps the committed value.
+    const accepted = meta.viaGhost
+      ? suggestions[0]
+      : suggestions.find((s) => s.value === meta.option?.value);
     const label = processLabel(value);
     trackEvent('label_suggestion_accepted', {
       reason: accepted?.reason ?? null,
-      rank,
+      rank: accepted ? suggestions.indexOf(accepted) : -1,
       via_ghost: meta.viaGhost,
       had_query: bin.label.trim().length > 0,
       label_hash: label.hash,

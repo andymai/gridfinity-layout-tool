@@ -101,11 +101,15 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  // Set when the user explicitly opens a closed, empty field with ArrowDown, so
+  // the list can open even when `openOnFocus` is off and nothing is typed.
+  const [manualOpen, setManualOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const hasOptions = options.length > 0;
-  const open = focused && !dismissed && hasOptions && (openOnFocus || value.trim().length > 0);
+  const open =
+    focused && !dismissed && hasOptions && (openOnFocus || manualOpen || value.trim().length > 0);
   const activeGhost =
     enableInlineGhost && ghost && focused && ghost.completion.length > 0 ? ghost : null;
 
@@ -141,6 +145,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
       onChange(clamped);
       onCommit?.(clamped, { viaGhost, option });
       setDismissed(true);
+      setManualOpen(false);
       setActiveIndex(0);
     },
     [clampValue, onChange, onCommit]
@@ -170,6 +175,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
       if (e.key === 'ArrowDown' && hasOptions) {
         e.preventDefault();
         setDismissed(false);
+        setManualOpen(true);
       }
       return;
     }
@@ -228,7 +234,10 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
           setFocused(true);
           setDismissed(false);
         }}
-        onBlur={() => setFocused(false)}
+        onBlur={() => {
+          setFocused(false);
+          setManualOpen(false);
+        }}
         onKeyDown={handleKeyDown}
         className={cn(
           'relative w-full flex-1 bg-transparent text-content outline-none',
