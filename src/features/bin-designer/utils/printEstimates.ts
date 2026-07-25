@@ -138,7 +138,7 @@ function computeBinVolume(params: BinParams): number {
 
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
-    volume += computeDividerVolume(params, outerW, outerD, totalH, wallThickness, bottomH);
+    volume += computeDividerVolume(params, outerW, outerD, wallThickness);
   }
 
   // Label tabs (shelf + support structure)
@@ -170,25 +170,42 @@ function computeBinVolume(params: BinParams): number {
   return Math.max(0, volume);
 }
 /**
+ * Height an interior divider actually reaches, in mm.
+ *
+ * Mirrors the generator: dividers rise from the cavity floor to the interior
+ * ceiling (the stacking lip's bottom taper eats into it), capped by the
+ * user's `dividerHeight`. Shared by the volume and the pattern-reduction terms
+ * so shortening the dividers moves both together.
+ */
+function effectiveDividerHeight(params: BinParams): number {
+  const totalH = params.height * params.heightUnitMm;
+  const isFlat = params.base.style === 'flat';
+  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const interiorHeight = computeInteriorHeight(
+    wallHeight,
+    params.base.stackingLip,
+    GRIDFINITY.LIP_SMALL_TAPER
+  );
+  return resolveCompartmentDividerHeight(params.compartments.dividerHeight, interiorHeight);
+}
+
+/**
  * Volume of all divider walls inside the cavity.
  */
 function computeDividerVolume(
   params: BinParams,
   outerW: number,
   outerD: number,
-  totalH: number,
-  wallThickness: number,
-  bottomH: number
+  wallThickness: number
 ): number {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const dividerH = totalH - bottomH;
   const { cols, rows, thickness } = params.compartments;
 
   if (cols <= 1 && rows <= 1) return 0;
 
   // Volume = total wall length × thickness × height
-  return totalDividerLength(params, innerW, innerD) * thickness * dividerH;
+  return totalDividerLength(params, innerW, innerD) * thickness * effectiveDividerHeight(params);
 }
 
 /** Summed length of every interior divider wall segment (mm). */
@@ -575,18 +592,7 @@ function dividerPatternReduction(
   if (params.wallPattern.dividers !== true) return 0;
   if (params.style !== 'standard') return 0;
 
-  const totalH = params.height * params.heightUnitMm;
-  const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const interiorHeight = computeInteriorHeight(
-    wallHeight,
-    params.base.stackingLip,
-    GRIDFINITY.LIP_SMALL_TAPER
-  );
-  const dividerHeight = resolveCompartmentDividerHeight(
-    params.compartments.dividerHeight,
-    interiorHeight
-  );
+  const dividerHeight = effectiveDividerHeight(params);
 
   // Mirrors wallPatterns.ts (cross-feature import not allowed).
   const TOP_KEEP_OUT = 1.5;

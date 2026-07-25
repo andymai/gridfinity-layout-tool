@@ -281,6 +281,22 @@ describe('printEstimates', () => {
       expect(honeycomb.volumeMm3).toBe(standard.volumeMm3);
     });
 
+    it('shortening the dividers reduces the estimate', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      const full = estimatePrint(base);
+      const short = estimatePrint({
+        ...base,
+        compartments: { ...base.compartments, dividerHeight: 10 },
+      });
+      expect(short.volumeMm3).toBeLessThan(full.volumeMm3);
+    });
+
     it('patterning the dividers removes more material still', () => {
       const base: BinParams = {
         ...DEFAULT_BIN_PARAMS,
