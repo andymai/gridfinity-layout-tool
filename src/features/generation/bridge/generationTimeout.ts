@@ -12,6 +12,7 @@
 
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import { isKumikoPattern } from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -148,11 +149,20 @@ export const EXPORT_TIMEOUT_MULTIPLIER = 6;
 export const EXPORT_MAX_TIMEOUT_MS = 1_200_000;
 
 /**
- * Count the cell boundaries that carry a divider wall — an upper bound on the
- * pattern panels the worker will build, since contiguous same-pair boundaries
- * merge into one segment.
+ * Count the cell boundaries that carry a patterned divider wall — an upper
+ * bound on the pattern panels the worker will build, since contiguous same-pair
+ * boundaries merge into one segment.
+ *
+ * Mirrors the worker's `dividerPatternsApply` gate so the budget doesn't grant
+ * time for panels that can never be built: slotted bins print their dividers as
+ * separate pieces, solid bins have no cavity, polygon footprints drop dividers
+ * from the feature pipeline, and a zero-thickness grid has no walls at all.
  */
 function countDividerSegments(params: BinParams): number {
+  if (params.style !== 'standard') return 0;
+  if (params.base.solid) return 0;
+  if (isPartialMask(params.cellMask)) return 0;
+  if (params.compartments.thickness <= 0) return 0;
   const { cols, rows, cells } = params.compartments;
   if (cols <= 1 && rows <= 1) return 0;
   let count = 0;

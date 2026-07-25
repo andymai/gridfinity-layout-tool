@@ -100,7 +100,9 @@ export function useWallsSection() {
   const dividersAvailableReason = useMemo(() => {
     if (params.style !== 'standard') return t('binDesigner.walls.pattern.dividers.notStandard');
     if (isPartialMask(params.cellMask)) return t('binDesigner.walls.pattern.dividers.notPolygon');
-    if (getCompartmentCount(params.compartments) <= 1)
+    // Zero thickness means compartment IDs with no wall between them — nothing
+    // to pattern, and the worker gate rejects it too.
+    if (getCompartmentCount(params.compartments) <= 1 || params.compartments.thickness <= 0)
       return t('binDesigner.walls.pattern.dividers.noDividers');
     return undefined;
   }, [params.style, params.cellMask, params.compartments, t]);

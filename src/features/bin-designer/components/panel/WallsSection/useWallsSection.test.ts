@@ -151,6 +151,19 @@ describe('useWallsSection', () => {
       );
     });
 
+    it('treats a zero-thickness grid as having no dividers', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0 },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBe(
+        'Add compartments to pattern their dividers'
+      );
+    });
+
     it('explains that removable dividers stay solid', () => {
       useDesignerStore.setState({
         params: {

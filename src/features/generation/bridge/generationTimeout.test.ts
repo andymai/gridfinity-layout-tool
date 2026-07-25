@@ -267,6 +267,25 @@ describe('computeGenerationTimeoutMs', () => {
     expect(KUMIKO_DIVIDER_MS_PER_SEGMENT).toBeGreaterThan(DIVIDER_PATTERN_MS_PER_SEGMENT);
   });
 
+  it('grants no divider bonus for configs the worker never patterns', () => {
+    const compartments = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+    const baseline = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
+    );
+    const inapplicable: Array<Partial<BinParams>> = [
+      { style: 'slotted', compartments },
+      { base: { ...DEFAULT_BIN_PARAMS.base, solid: true }, compartments },
+      { compartments: { ...compartments, thickness: 0 } },
+    ];
+    for (const overrides of inapplicable) {
+      expect(
+        computeGenerationTimeoutMs(
+          params({ wallPattern: { ...HEX_ON, dividers: true }, ...overrides })
+        )
+      ).toBe(baseline);
+    }
+  });
+
   it('grants no divider bonus without dividers to pattern', () => {
     const withOption = computeGenerationTimeoutMs(
       params({ wallPattern: { ...HEX_ON, dividers: true } })

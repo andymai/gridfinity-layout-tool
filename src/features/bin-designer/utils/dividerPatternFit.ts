@@ -81,6 +81,11 @@ export function assessDividerPatternFit(params: BinParams): DividerPatternFit {
   if (params.style !== 'standard') return 'unavailable';
   if (params.base.solid) return 'unavailable';
   if (isPartialMask(params.cellMask)) return 'unavailable';
+  // A zero-thickness grid has compartment IDs but no divider walls. Unreachable
+  // through the UI, but `migrateParams` spreads a persisted `compartments`
+  // object without clamping, so a crafted payload can carry it — and the worker
+  // gate (`dividerPatternsApply`) rejects it.
+  if (params.compartments.thickness <= 0) return 'unavailable';
 
   const { innerW, innerD, wallHeight } = binDimensions(params);
   if (innerW <= 0 || innerD <= 0) return 'unavailable';

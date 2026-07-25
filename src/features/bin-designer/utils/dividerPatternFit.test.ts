@@ -46,6 +46,16 @@ describe('assessDividerPatternFit', () => {
     ).toBe('unavailable');
   });
 
+  it('is unavailable when the grid has no wall thickness', () => {
+    expect(
+      assessDividerPatternFit(
+        makeParams({
+          compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 0 },
+        })
+      )
+    ).toBe('unavailable');
+  });
+
   it('reports none when the dividers are too short for a band', () => {
     expect(
       assessDividerPatternFit(
