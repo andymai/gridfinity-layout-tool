@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.297.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.296.0...gridfinity-layout-tool-v4.297.0) (2026-07-25)
+
+
+### Features
+
+* **bin-inspector:** smart on-device label autocomplete ([#2821](https://github.com/andymai/gridfinity-layout-tool/issues/2821)) ([60264c8](https://github.com/andymai/gridfinity-layout-tool/commit/60264c80bc1378b96f7ccfbfcddb91fe58b34104))
+
 ## [4.296.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.295.1...gridfinity-layout-tool-v4.296.0) (2026-07-25)
 
 
