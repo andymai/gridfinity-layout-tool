@@ -14,10 +14,27 @@ graph TB
 
 - `components/Inspector/SingleBinInspector.tsx` — single bin edit panel
 - `components/Inspector/MultiBinInspector.tsx` — multi-select summary
+- `components/Inspector/BinLabelField.tsx` — smart label combobox (see below)
 - `components/Inspector/CustomPropertiesEditor.tsx` — custom key-value property editor
+- `labelSuggest/` — pure, on-device ranking engine for label suggestions
+- `hooks/useLabelSuggestions.ts` — memoized adapter feeding the engine from the active layout
 - `components/Inspector/SplitWarning.tsx` — print bed size warning indicator
 - `components/Inspector/EmptyState.tsx` — no selection state
 - `hooks/useBinInspector.ts` — selection resolution and bin data. Also exposes `applySuggestedSize` (single-`updateBin` resize for one-step undo) and `canApplySuggestedSize` (fit check), both built on a shared `resolveSuggestedRect` so the size-suggestion gate can't disagree with the actual mutation.
+
+## Label autocomplete
+
+`BinLabelField` replaces the plain label input with a predictive combobox
+(design-system `Combobox`). Suggestions come from `labelSuggest/getLabelSuggestions`,
+a pure function of the current layout — fully on-device, no network. It blends five
+signals: numeric **sequence** continuation (`M3`/`M4` → `M5`), reuse of an existing
+label, co-occurrence with **edge-adjacent or same-category** neighbors, vocabulary
+**domain** affinity, and text match (prefix / substring / cross-language alias /
+typo-tolerant fuzzy). The top prediction is offered as inline **ghost text**
+(Tab/→ to accept) on desktop; ghost is disabled on touch. Each row carries a muted
+reason tag. Accepts fire a hashed `label_suggestion_accepted` PostHog event (no raw
+text) for future model training. Ordering weights + the ghost confidence floor live
+in `labelSuggest/getLabelSuggestions.ts`.
 
 ## Size suggestion (Labs)
 

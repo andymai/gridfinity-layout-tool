@@ -7,5 +7,6 @@ export {
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,
+  getDisplayTerm,
 } from './normalize';
 export type { LabelData } from './normalize';

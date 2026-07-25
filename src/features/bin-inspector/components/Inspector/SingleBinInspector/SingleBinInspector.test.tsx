@@ -50,6 +50,7 @@ describe('SingleBinInspector', () => {
     printBedSize: 256,
     categories: [mockCategory, { id: 'sky', name: 'Sky', color: '#38bdf8' }],
     layers: [mockLayer, { id: 'layer2', name: 'Layer 2', height: 6 }],
+    bins: [mockBin],
   };
 
   const createMockInspector = (

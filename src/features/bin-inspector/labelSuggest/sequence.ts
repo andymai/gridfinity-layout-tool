@@ -1,0 +1,95 @@
+export interface SequencePrediction {
+  /** Predicted next label in the series (e.g. "M6 screws"). */
+  value: string;
+  /** Number of distinct terms that supported the series. */
+  support: number;
+}
+
+// A Private-Use-Area char that cannot occur in user labels, so a template
+// never collides with real text (e.g. the literal space in "M3 screws").
+// Kept out of the NUL range so git treats this file as text, not binary.
+const PLACEHOLDER = '\uE000';
+
+/**
+ * Detect numeric series among existing labels and predict the next entry.
+ *
+ * Every integer run inside each label becomes a candidate template (the run
+ * replaced by a placeholder, the rest kept literal). Labels sharing a template
+ * with ≥2 distinct numbers form a series; the next value is the largest number
+ * plus the series' most common positive step. Zero-padding is preserved when
+ * every source number shares the same padded width.
+ *
+ * Examples: "M3 screws"/"M4 screws" → "M5 screws"; "Drawer 1"/"Drawer 2" →
+ * "Drawer 3"; "Bay 01"/"Bay 02" → "Bay 03".
+ */
+export function detectSequenceSuggestions(labels: readonly string[]): SequencePrediction[] {
+  const existing = new Set(labels.map((l) => l.trim().toLowerCase()).filter(Boolean));
+
+  interface Group {
+    template: string;
+    nums: number[];
+    widths: Set<number>;
+    padded: boolean;
+  }
+  const groups = new Map<string, Group>();
+
+  for (const raw of labels) {
+    const label = raw.trim();
+    if (!label) continue;
+    for (const match of label.matchAll(/\d+/g)) {
+      const numStr = match[0];
+      const idx = match.index;
+      const value = Number.parseInt(numStr, 10);
+      if (!Number.isFinite(value)) continue;
+      const template = label.slice(0, idx) + PLACEHOLDER + label.slice(idx + numStr.length);
+      let group = groups.get(template);
+      if (!group) {
+        group = { template, nums: [], widths: new Set(), padded: false };
+        groups.set(template, group);
+      }
+      group.nums.push(value);
+      group.widths.add(numStr.length);
+      if (numStr.length > 1 && numStr.startsWith('0')) group.padded = true;
+    }
+  }
+
+  const predictions: SequencePrediction[] = [];
+  const seen = new Set<string>();
+
+  for (const group of groups.values()) {
+    const unique = Array.from(new Set(group.nums)).sort((a, b) => a - b);
+    if (unique.length < 2) continue;
+    const step = commonStep(unique);
+    if (step <= 0) continue;
+
+    const next = unique[unique.length - 1] + step;
+    const width = group.padded && group.widths.size === 1 ? [...group.widths][0] : 0;
+    const numText = width > 0 ? String(next).padStart(width, '0') : String(next);
+    const value = group.template.replace(PLACEHOLDER, numText).trim();
+
+    const key = value.toLowerCase();
+    if (!value || existing.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    predictions.push({ value, support: unique.length });
+  }
+
+  return predictions.sort((a, b) => b.support - a.support);
+}
+
+/** Most frequent positive gap between consecutive sorted numbers (default 1). */
+function commonStep(sorted: number[]): number {
+  const diffs = new Map<number, number>();
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = sorted[i] - sorted[i - 1];
+    if (diff > 0) diffs.set(diff, (diffs.get(diff) ?? 0) + 1);
+  }
+  let best = 1;
+  let bestCount = 0;
+  for (const [diff, count] of diffs) {
+    if (count > bestCount) {
+      best = diff;
+      bestCount = count;
+    }
+  }
+  return best;
+}

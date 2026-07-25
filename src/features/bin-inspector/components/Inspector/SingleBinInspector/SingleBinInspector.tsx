@@ -9,6 +9,7 @@ import { getBinLocationContext } from '@/shared/utils/binLocation';
 import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
+import { BinLabelField } from '../BinLabelField';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
@@ -78,7 +79,6 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const stepSize = halfGridMode ? 0.5 : 1;
 
   // Sizing for mobile vs desktop
-  const inputHeight = isMobile ? 'h-12' : '';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
 
   // Height meta: unit equivalent + mm limits, shown as one consolidated line.
@@ -322,15 +322,11 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Label */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>{t('common.label')}</label>
-          <input
-            type="text"
-            value={bin.label}
-            onChange={(e) =>
-              updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))
-            }
-            className={`input w-full ${inputHeight}`}
-            placeholder={t('inspector.labelPlaceholder')}
-            aria-label={t('inspector.binLabel')}
+          <BinLabelField
+            bin={bin}
+            bins={layout.bins}
+            onChange={(value) => updateField('label', value)}
+            variant={variant}
           />
           {binRecommenderEnabled && (
             <Suspense fallback={null}>

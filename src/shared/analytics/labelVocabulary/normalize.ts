@@ -236,3 +236,14 @@ export function isKnownTerm(term: string): boolean {
 export function getTermDomain(term: string): LabelDomain | null {
   return TERM_DOMAINS[term] ?? null;
 }
+
+/**
+ * Human-readable display form of a canonical term for UI suggestions.
+ * Uses the first (English) alias — the natural word rather than the snake_case
+ * key — with its first letter capitalized. Falls back to the de-underscored key.
+ */
+export function getDisplayTerm(canonical: string): string {
+  const aliases = isKnownTerm(canonical) ? VOCABULARY[canonical] : [];
+  const base = aliases.length > 0 ? aliases[0] : canonical.replace(/_/g, ' ');
+  return base.charAt(0).toUpperCase() + base.slice(1);
+}
