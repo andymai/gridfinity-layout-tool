@@ -34,6 +34,47 @@ export function hasNoNaNOrInfinity(arr: Float32Array): boolean {
   return true;
 }
 
+// ─── Enclosed volume ─────────────────────────────────────────────────────────
+
+/**
+ * Enclosed volume (mm³) of a triangle mesh, via the signed-tetrahedron sum.
+ *
+ * The measure of choice for "did this feature remove material?": occt-wasm
+ * tessellation is not bit-reproducible across CPUs, so triangle counts drift
+ * where removed volume does not.
+ *
+ * Throws on an out-of-range index rather than treating the missing coordinate
+ * as 0 — a corrupted index buffer would otherwise still sum to a plausible
+ * finite volume and quietly pass the very assertions built on top of this.
+ */
+export function meshVolume({ vertices, indices }: MeshData): number {
+  let volume = 0;
+  const at = (index: number, axis: number): number => {
+    const i = index * 3 + axis;
+    const value = vertices[i];
+    if (value === undefined) {
+      throw new Error(`meshVolume: vertex index ${index} is out of range`);
+    }
+    return value;
+  };
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i] ?? 0;
+    const b = indices[i + 1] ?? 0;
+    const c = indices[i + 2] ?? 0;
+    const ax = at(a, 0);
+    const ay = at(a, 1);
+    const az = at(a, 2);
+    const bx = at(b, 0);
+    const by = at(b, 1);
+    const bz = at(b, 2);
+    const cx = at(c, 0);
+    const cy = at(c, 1);
+    const cz = at(c, 2);
+    volume += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
+  }
+  return Math.abs(volume) / 6;
+}
+
 // ─── Bounding box ────────────────────────────────────────────────────────────
 
 export interface BoundingBox {

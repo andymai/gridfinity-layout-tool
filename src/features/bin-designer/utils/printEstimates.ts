@@ -656,7 +656,13 @@ function computeFloorPatternReduction(
   const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
   // A flat base has no feet to thread the holes through, so the whole cavity
-  // floor is one window; a socket bin gets one window per foot.
+  // floor is one window; a socket bin gets one window per foot — and
+  // `halfSockets` quarters every foot, so each cell carries four much smaller
+  // windows rather than one big one. Assuming full-cell windows there would
+  // over-report the open area several times over, since a window that small
+  // fits disproportionately fewer elements.
+  const cellUnits = params.base.halfSockets ? 0.5 : 1;
+  const windowsPerCell = params.base.halfSockets ? 4 : 1;
   const totalOpenArea = isFlat
     ? openArea(
         outerW - 2 * wallThickness - 2 * FLOOR_PATTERN_BORDER,
@@ -664,9 +670,10 @@ function computeFloorPatternReduction(
       )
     : params.width *
       params.depth *
+      windowsPerCell *
       openArea(
-        floorWindowSpan(1, params.gridUnitMm, params.wallThickness),
-        floorWindowSpan(1, gridUnitMmY, params.wallThickness)
+        floorWindowSpan(cellUnits, params.gridUnitMm, params.wallThickness),
+        floorWindowSpan(cellUnits, gridUnitMmY, params.wallThickness)
       );
   if (totalOpenArea <= 0) return 0;
 

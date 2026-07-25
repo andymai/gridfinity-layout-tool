@@ -64,6 +64,9 @@ export function stampPatternOpenArea(
   const elementArea =
     shape.kind === 'polygon'
       ? 0.5 * shape.sides * shape.radius ** 2 * Math.sin((2 * Math.PI) / shape.sides)
-      : shape.width * shape.height;
-  return count * elementArea;
+      : // Rounded corners: four quarter-circles replace four square corners, so
+        // the rectangle loses (4 - pi) * r². Slots always carry a non-zero
+        // radius, so dropping this term would over-report every slot.
+        shape.width * shape.height - (4 - Math.PI) * shape.cornerRadius ** 2;
+  return count * Math.max(0, elementArea);
 }

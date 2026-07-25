@@ -388,6 +388,18 @@ describe('printEstimates', () => {
       expect(flatSaving).toBeLessThan(socketSaving);
     });
 
+    it('half sockets quarter each foot, so the holes remove less', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const fullFoot =
+        estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
+      const halved = { ...base, base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true } };
+      const quarterFeet =
+        estimatePrint(halved).volumeMm3 - estimatePrint({ ...halved, floorPattern }).volumeMm3;
+      expect(quarterFeet).toBeGreaterThan(0);
+      expect(quarterFeet).toBeLessThan(fullFoot);
+    });
+
     it('drainage holes are inert on the bases the worker never patterns', () => {
       const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
       for (const overrides of [
