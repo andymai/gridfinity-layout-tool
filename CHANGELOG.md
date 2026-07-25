@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.293.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.4...gridfinity-layout-tool-v4.293.5) (2026-07-25)
+
+
+### Bug Fixes
+
+* **inspector:** stop height hints stretching the clearance cell ([#2808](https://github.com/andymai/gridfinity-layout-tool/issues/2808)) ([9582e85](https://github.com/andymai/gridfinity-layout-tool/commit/9582e85416ee57e6af0470fd6747f25bab2da9fd))
+
 ## [4.293.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.3...gridfinity-layout-tool-v4.293.4) (2026-07-25)
 
 
