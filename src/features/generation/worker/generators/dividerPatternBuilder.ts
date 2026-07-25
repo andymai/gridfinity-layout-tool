@@ -107,6 +107,15 @@ function placePanel(panel: Shape3D, target: DividerPatternTarget, bandCenterZ: n
   return positioned;
 }
 
+/** Best-effort dispose; swallow double-free / corrupt-handle errors. */
+function disposeQuiet(s: Shape3D): void {
+  try {
+    s.delete();
+  } catch {
+    /* already cleaned */
+  }
+}
+
 /** Keep-out cutter boxes in the local panel frame. Caller owns the results. */
 function buildKeepOutBoxes(
   keepOuts: readonly DividerKeepOut[],
@@ -136,9 +145,20 @@ function applyKeepOutCuts(
 ): Shape3D | null {
   const boxes = buildKeepOutBoxes(keepOuts, bandCenterZ, depth);
   if (boxes.length === 0) return panel;
-  const tool = fuseAllOrNull(boxes);
+
+  // `unwrap(fuseAll(...))` throws on degenerate input, so the fuse has to sit
+  // inside the guard — otherwise the boxes leak their WASM handles on exactly
+  // the path where the worker can least afford it (same reason
+  // `wallPatternClips.applyWallPatternClips` wraps its own fuse).
+  let tool: Shape3D | null;
+  try {
+    tool = fuseAllOrNull(boxes);
+  } catch {
+    for (const b of boxes) disposeQuiet(b);
+    return panel;
+  }
   if (!tool) {
-    for (const b of boxes) b.delete();
+    for (const b of boxes) disposeQuiet(b);
     return panel;
   }
   try {
@@ -150,20 +170,12 @@ function applyKeepOutCuts(
     // panel is still valid geometry, just less conservatively cleared.
     return panel;
   } finally {
+    // fuseAllOrNull hands back boxes[0] itself when there is only one, so the
+    // tool dispose below already covers that case.
     if (boxes.length > 1) {
-      for (const b of boxes) {
-        try {
-          b.delete();
-        } catch {
-          /* already cleaned */
-        }
-      }
+      for (const b of boxes) disposeQuiet(b);
     }
-    try {
-      tool.delete();
-    } catch {
-      /* already cleaned */
-    }
+    disposeQuiet(tool);
   }
 }
 
@@ -241,18 +253,17 @@ function buildKumikoPanel(
   }
   if (parts.length === 0) return null;
   if (parts.length === 1) return parts[0];
-  const fused = fuseAllOrNull(parts);
-  // Dispose the window pieces whether or not the fuse produced a shape — on
-  // failure they are unreachable, and leaking WASM handles on the error path
-  // is what wedges the worker heap.
-  for (const p of parts) {
-    try {
-      p.delete();
-    } catch {
-      /* already cleaned */
-    }
+  // The fuse itself can throw on degenerate input, so it sits inside the
+  // guard: the window pieces are disposed whether it returns, returns null,
+  // or throws. Leaking WASM handles on the error path is what wedges the
+  // worker heap.
+  try {
+    return fuseAllOrNull(parts);
+  } catch {
+    return null;
+  } finally {
+    for (const p of parts) disposeQuiet(p);
   }
-  return fused;
 }
 
 /** Cache-key fragment describing a divider's local panel geometry. */
