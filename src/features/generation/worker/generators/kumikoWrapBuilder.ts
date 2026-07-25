@@ -71,7 +71,7 @@ const RAD_TO_DEG = 180 / Math.PI;
 
 type WallSide = 'front' | 'right' | 'back' | 'left';
 
-interface FlatSlab {
+export interface FlatSlab {
   readonly kind: 'flat';
   readonly side: WallSide;
   readonly u0: number;
@@ -157,6 +157,27 @@ function computePerimeterLayout(
   corner(-outerW / 2 + r, -outerD / 2 + r, Math.PI, 'left', 'front');
 
   return { perimeter: u, slabs, cornerRadius: r };
+}
+
+/**
+ * Perimeter the wrapped lattice is quantized against for this bin, or null
+ * when the footprint is too small to carry a corner arc.
+ *
+ * Divider panels (#2811) resolve their lattice against this SAME perimeter so
+ * their triangles come out the exact size the outer walls resolved to —
+ * `quantizeColumns` depends only on perimeter and target cell size, so only
+ * the band height differs between a wall and a divider.
+ */
+export function resolveKumikoPerimeter(
+  innerW: number,
+  innerD: number,
+  wallThickness: number
+): number | null {
+  const outerW = innerW + 2 * wallThickness;
+  const outerD = innerD + 2 * wallThickness;
+  const cornerRadius = Math.min(BOX_CORNER_RADIUS, Math.min(outerW, outerD) / 2 - 0.1);
+  if (cornerRadius <= 0.2) return null;
+  return computePerimeterLayout(outerW, outerD, innerW, innerD, cornerRadius).perimeter;
 }
 
 /** Clip a segment's centerline to a u interval; null when fully outside. */
@@ -335,7 +356,7 @@ function fillingPiecesForRange(
  * Returns null when the slab has no struts at all — an empty lattice must
  * degrade to solid walls, not cut the whole wall away.
  */
-function buildFlatSlabCutter(
+export function buildFlatSlabCutter(
   slab: FlatSlab,
   lattice: KumikoLattice,
   bandZ0: number,
@@ -436,7 +457,7 @@ function buildFlatSlabCutter(
  * keep dense patterns near-linear. The bare grid stays whole-wall (chunking
  * measured slower there: seam overlap outweighs the small tool count).
  */
-function flatWindows(slab: FlatSlab, lattice: KumikoLattice): Array<[number, number]> {
+export function flatWindows(slab: FlatSlab, lattice: KumikoLattice): Array<[number, number]> {
   const uA = slab.u0 - SLAB_OVERLAP;
   const uB = slab.u1 + SLAB_OVERLAP;
   if (lattice.fillingTemplate.length === 0) return [[uA, uB]];
@@ -776,7 +797,7 @@ function clipDescriptorFor(
 }
 
 /** Resolve the wrapped-lattice calculator for the current params, if any. */
-function resolveKumikoCalculator(params: BinParams): WrappedLatticeCalculator | null {
+export function resolveKumikoCalculator(params: BinParams): WrappedLatticeCalculator | null {
   const wallPattern = params.wallPattern as typeof params.wallPattern | undefined;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- runtime guard for old saved data
   if (!wallPattern?.enabled || wallPattern.pattern === undefined) return null;

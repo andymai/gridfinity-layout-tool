@@ -40,6 +40,11 @@ graph TB
   replaces sliders, and hardware-size presets surface as quick-pick chips.
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
+- `components/panel/WallsSection/` — wall thickness, pattern picker + scale, wall text, and the
+  "Pattern divider walls" opt-in (`wallPattern.dividers`, #2811) that carries the same pattern and
+  scale through the compartment dividers. Its availability/too-small copy comes from
+  `utils/dividerPatternFit.ts`, a deliberately conservative params-only mirror of the worker's
+  `dividerPatterns.ts` — it judges the band and each divider's span, never the feature keep-outs
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit

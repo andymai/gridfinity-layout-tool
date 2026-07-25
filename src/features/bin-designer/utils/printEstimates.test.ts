@@ -281,6 +281,88 @@ describe('printEstimates', () => {
       expect(honeycomb.volumeMm3).toBe(standard.volumeMm3);
     });
 
+    it('shortening the dividers reduces the estimate', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      const full = estimatePrint(base);
+      const short = estimatePrint({
+        ...base,
+        compartments: { ...base.compartments, dividerHeight: 10 },
+      });
+      expect(short.volumeMm3).toBeLessThan(full.volumeMm3);
+    });
+
+    it('patterning the dividers removes more material still', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      const wallsOnly = estimatePrint({
+        ...base,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: false },
+      });
+      const withDividers = estimatePrint({
+        ...base,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+      });
+      expect(withDividers.volumeMm3).toBeLessThan(wallsOnly.volumeMm3);
+      // The dividers are a small share of the bin, so the extra saving must be
+      // meaningful but nowhere near the outer walls' contribution.
+      const solid = estimatePrint(base);
+      expect(wallsOnly.volumeMm3 - withDividers.volumeMm3).toBeLessThan(
+        solid.volumeMm3 - wallsOnly.volumeMm3
+      );
+    });
+
+    it('does not subtract divider pattern volume where the worker never patterns', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      // A polygon footprint drops dividers from the feature pipeline entirely,
+      // so the estimate must not claim the saving.
+      const mask = {
+        cols: 6,
+        rows: 6,
+        cells: Array.from({ length: 36 }, (_, i) => i < 30),
+      };
+      const off = estimatePrint({
+        ...base,
+        cellMask: mask,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: false },
+      });
+      const on = estimatePrint({
+        ...base,
+        cellMask: mask,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+      });
+      expect(on.volumeMm3).toBe(off.volumeMm3);
+    });
+
+    it('patterning the dividers is inert without dividers to pattern', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, height: 6 };
+      const off = estimatePrint({
+        ...base,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: false },
+      });
+      const on = estimatePrint({
+        ...base,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+      });
+      expect(on.volumeMm3).toBe(off.volumeMm3);
+    });
+
     it('honeycomb walls skip slotted walls correctly', () => {
       const baseParams: BinParams = {
         ...DEFAULT_BIN_PARAMS,

@@ -34,6 +34,8 @@ import {
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { isPartialMask } from '@/shared/utils/cellMask';
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -137,7 +139,7 @@ function computeBinVolume(params: BinParams): number {
 
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
-    volume += computeDividerVolume(params, outerW, outerD, totalH, wallThickness, bottomH);
+    volume += computeDividerVolume(params, outerW, outerD, wallThickness);
   }
 
   // Label tabs (shelf + support structure)
@@ -169,28 +171,52 @@ function computeBinVolume(params: BinParams): number {
   return Math.max(0, volume);
 }
 /**
+ * Height an interior divider actually reaches, in mm.
+ *
+ * Mirrors the generator: dividers rise from the cavity floor to the interior
+ * ceiling (the stacking lip's bottom taper eats into it), capped by the
+ * user's `dividerHeight`. Shared by the volume and the pattern-reduction terms
+ * so shortening the dividers moves both together.
+ */
+function effectiveDividerHeight(params: BinParams): number {
+  const totalH = params.height * params.heightUnitMm;
+  const isFlat = params.base.style === 'flat';
+  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const interiorHeight = computeInteriorHeight(
+    wallHeight,
+    params.base.stackingLip,
+    GRIDFINITY.LIP_SMALL_TAPER
+  );
+  return resolveCompartmentDividerHeight(params.compartments.dividerHeight, interiorHeight);
+}
+
+/**
  * Volume of all divider walls inside the cavity.
  */
 function computeDividerVolume(
   params: BinParams,
   outerW: number,
   outerD: number,
-  totalH: number,
-  wallThickness: number,
-  bottomH: number
+  wallThickness: number
 ): number {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const dividerH = totalH - bottomH;
-  const { cols, rows, thickness, cells } = params.compartments;
+  const { cols, rows, thickness } = params.compartments;
 
   if (cols <= 1 && rows <= 1) return 0;
 
+  // Volume = total wall length × thickness × height
+  return totalDividerLength(params, innerW, innerD) * thickness * effectiveDividerHeight(params);
+}
+
+/** Summed length of every interior divider wall segment (mm). */
+function totalDividerLength(params: BinParams, innerW: number, innerD: number): number {
+  const { cols, rows, cells } = params.compartments;
+  if (cols <= 1 && rows <= 1) return 0;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
   let totalLength = 0;
 
-  // Count vertical wall segment lengths
   for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
     for (let row = 0; row < rows; row++) {
       const leftId = cells[row * cols + (colBoundary - 1)];
@@ -201,7 +227,6 @@ function computeDividerVolume(
     }
   }
 
-  // Count horizontal wall segment lengths
   for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
     for (let col = 0; col < cols; col++) {
       const topId = cells[(rowBoundary - 1) * cols + col];
@@ -212,8 +237,7 @@ function computeDividerVolume(
     }
   }
 
-  // Volume = total wall length × thickness × height
-  return totalLength * thickness * dividerH;
+  return totalLength;
 }
 /** Builder constant: max unsupported shelf span between bracket gussets. */
 const BRACKET_GUSSET_SPACING_MM = 10;
@@ -548,7 +572,45 @@ function computeWallPatternReduction(
   // Material removed per unit area = wall thickness (prisms cut through wall)
   const cutDepth = wallThickness;
 
-  return coverage * cutDepth;
+  return coverage * cutDepth + dividerPatternReduction(params, innerW, innerD, coverageFraction);
+}
+
+/**
+ * Extra material removed when the pattern is carried through the compartment
+ * dividers (#2811).
+ *
+ * Same open-area model as the outer walls, applied to the divider face area
+ * and cut through the divider's own thickness. The band is re-fitted to the
+ * divider height, matching `planDividerPatterns` — a shortened divider offers
+ * proportionally less to perforate.
+ */
+function dividerPatternReduction(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  coverageFraction: number
+): number {
+  // Mirrors the worker's `dividerPatternsApply` gate — subtracting for a bin
+  // the generator never patterns would make the estimate disagree with the
+  // geometry it is describing.
+  if (params.wallPattern.dividers !== true) return 0;
+  if (params.style !== 'standard') return 0;
+  if (params.base.solid) return 0;
+  if (isPartialMask(params.cellMask)) return 0;
+  if (params.compartments.thickness <= 0) return 0;
+
+  const dividerHeight = effectiveDividerHeight(params);
+
+  // Mirrors wallPatterns.ts (cross-feature import not allowed).
+  const TOP_KEEP_OUT = 1.5;
+  const BOTTOM_SOLID_SKIRT = 1.5;
+  const bandHeight = dividerHeight - TOP_KEEP_OUT - (params.wallThickness + BOTTOM_SOLID_SKIRT);
+  if (bandHeight <= 0) return 0;
+
+  const length = totalDividerLength(params, innerW, innerD);
+  if (length <= 0) return 0;
+
+  return length * bandHeight * coverageFraction * params.compartments.thickness;
 }
 export interface WallPatternSavings {
   readonly savingsPercent: number;

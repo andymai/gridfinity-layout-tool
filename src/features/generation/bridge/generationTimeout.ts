@@ -12,6 +12,7 @@
 
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import { isKumikoPattern } from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -59,6 +60,21 @@ export const KUMIKO_PATTERN_BONUS_MS = 60_000;
  * keys off width + depth with no floor — even small bins pay the corner cost.
  */
 export const KUMIKO_PERIMETER_BONUS_MS_PER_CELL = 7_000;
+
+/**
+ * Extra time per patterned compartment divider (#2811).
+ *
+ * Each divider adds its own pattern panel — a stamp compound or, for kumiko, a
+ * full lattice subtraction — and every panel becomes another tool in the final
+ * pattern cut, whose cost grows super-linearly with tool count. A 4x4 grid
+ * carries six divider segments, so without a per-divider term a dense
+ * multi-compartment bin can exhaust the flat pattern budget mid-generation and
+ * hard-reset the worker.
+ */
+export const DIVIDER_PATTERN_MS_PER_SEGMENT = 6_000;
+
+/** Kumiko divider panels cost far more than a stamp compound (see above). */
+export const KUMIKO_DIVIDER_MS_PER_SEGMENT = 20_000;
 
 /**
  * Bonus per 2 height units above the reference height.
@@ -132,6 +148,37 @@ export const EXPORT_TIMEOUT_MULTIPLIER = 6;
  */
 export const EXPORT_MAX_TIMEOUT_MS = 1_200_000;
 
+/**
+ * Count the cell boundaries that carry a patterned divider wall — an upper
+ * bound on the pattern panels the worker will build, since contiguous same-pair
+ * boundaries merge into one segment.
+ *
+ * Mirrors the worker's `dividerPatternsApply` gate so the budget doesn't grant
+ * time for panels that can never be built: slotted bins print their dividers as
+ * separate pieces, solid bins have no cavity, polygon footprints drop dividers
+ * from the feature pipeline, and a zero-thickness grid has no walls at all.
+ */
+function countDividerSegments(params: BinParams): number {
+  if (params.style !== 'standard') return 0;
+  if (params.base.solid) return 0;
+  if (isPartialMask(params.cellMask)) return 0;
+  if (params.compartments.thickness <= 0) return 0;
+  const { cols, rows, cells } = params.compartments;
+  if (cols <= 1 && rows <= 1) return 0;
+  let count = 0;
+  for (let col = 1; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      if (cells[row * cols + (col - 1)] !== cells[row * cols + col]) count++;
+    }
+  }
+  for (let row = 1; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (cells[(row - 1) * cols + col] !== cells[row * cols + col]) count++;
+    }
+  }
+  return count;
+}
+
 function hasAnyActiveCutoutSide(params: BinParams): boolean {
   const { walls } = params;
   if (!walls.enabled) return false;
@@ -182,6 +229,15 @@ function binRawBudgetMs(params: BinParams): number {
       if (params.wallPattern.pattern !== 'mitsukude') {
         timeout += KUMIKO_PATTERN_BONUS_MS;
       }
+    }
+
+    if (params.wallPattern.dividers === true) {
+      const segments = countDividerSegments(params);
+      timeout +=
+        segments *
+        (isKumikoPattern(params.wallPattern.pattern)
+          ? KUMIKO_DIVIDER_MS_PER_SEGMENT
+          : DIVIDER_PATTERN_MS_PER_SEGMENT);
     }
   }
 

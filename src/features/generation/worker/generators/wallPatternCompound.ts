@@ -32,7 +32,7 @@ import { applyWallPatternClips } from './wallPatternClips';
  * Creates one transformCopy per hex center, then groups them with compound()
  * (O(n) topology grouping, not O(n²) fuseAll). Returns null if no elements.
  */
-function buildWallPatternCompound(
+export function buildWallPatternCompound(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number

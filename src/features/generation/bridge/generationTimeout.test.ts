@@ -15,6 +15,8 @@ import {
   HEIGHT_BONUS_MS,
   KUMIKO_PATTERN_BONUS_MS,
   KUMIKO_PERIMETER_BONUS_MS_PER_CELL,
+  DIVIDER_PATTERN_MS_PER_SEGMENT,
+  KUMIKO_DIVIDER_MS_PER_SEGMENT,
   MAX_TIMEOUT_MS,
   EXPORT_TIMEOUT_MULTIPLIER,
   EXPORT_MAX_TIMEOUT_MS,
@@ -239,6 +241,63 @@ describe('computeGenerationTimeoutMs', () => {
       expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
       expect(t).toBeLessThanOrEqual(MAX_TIMEOUT_MS);
     }
+  });
+
+  it('grants a per-segment bonus when the pattern is carried through dividers', () => {
+    const compartments = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+    const off = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
+    );
+    const on = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true }, compartments })
+    );
+    // A 2x2 grid has 4 differing cell boundaries.
+    expect(on - off).toBe(4 * DIVIDER_PATTERN_MS_PER_SEGMENT);
+  });
+
+  it('charges kumiko divider panels at the kumiko rate, stamp panels at the stamp rate', () => {
+    const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 };
+    const delta = (pattern: typeof HEX_ON | typeof KUMIKO_ON): number =>
+      computeGenerationTimeoutMs(
+        params({ wallPattern: { ...pattern, dividers: true }, compartments })
+      ) -
+      computeGenerationTimeoutMs(
+        params({ wallPattern: { ...pattern, dividers: false }, compartments })
+      );
+
+    // One divider segment, so each delta is exactly one segment's charge —
+    // which pins that the isKumikoPattern branch picks the right constant.
+    expect(delta(HEX_ON)).toBe(DIVIDER_PATTERN_MS_PER_SEGMENT);
+    expect(delta(KUMIKO_ON)).toBe(KUMIKO_DIVIDER_MS_PER_SEGMENT);
+  });
+
+  it('grants no divider bonus for configs the worker never patterns', () => {
+    const compartments = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+    const baseline = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
+    );
+    const inapplicable: Array<Partial<BinParams>> = [
+      { style: 'slotted', compartments },
+      { base: { ...DEFAULT_BIN_PARAMS.base, solid: true }, compartments },
+      { compartments: { ...compartments, thickness: 0 } },
+    ];
+    for (const overrides of inapplicable) {
+      expect(
+        computeGenerationTimeoutMs(
+          params({ wallPattern: { ...HEX_ON, dividers: true }, ...overrides })
+        )
+      ).toBe(baseline);
+    }
+  });
+
+  it('grants no divider bonus without dividers to pattern', () => {
+    const withOption = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true } })
+    );
+    const without = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false } })
+    );
+    expect(withOption).toBe(without);
   });
 });
 

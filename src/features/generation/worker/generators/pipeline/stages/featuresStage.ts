@@ -20,6 +20,7 @@ import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
 import { buildKumikoWallPatterns } from '../../kumikoWrapBuilder';
+import { buildDividerPatterns } from '../../dividerPatternBuilder';
 
 export const featuresStage: PipelineStage = {
   name: 'features',
@@ -89,6 +90,9 @@ export const featuresStage: PipelineStage = {
       targets.patternCutTargets.push(...patternShapes);
       const kumikoShapes = buildKumikoWallPatterns(ctx);
       targets.patternCutTargets.push(...kumikoShapes);
+      // Divider walls (#2811) carry the same pattern when opted in. Both
+      // pipelines are handled inside, so this is one call for either type.
+      targets.patternCutTargets.push(...buildDividerPatterns(ctx));
     }
 
     return {

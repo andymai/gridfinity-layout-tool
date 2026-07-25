@@ -73,7 +73,7 @@ import type { BinDimensions } from './pipeline/types';
  *   polygon → regular prism (optionally z-rotated, e.g. diamond at 45°)
  *   rect    → rounded-rectangle prism (vertical slots)
  */
-function buildShapeTemplate(descriptor: ShapeDescriptor, cutDepth: number): Shape3D {
+export function buildShapeTemplate(descriptor: ShapeDescriptor, cutDepth: number): Shape3D {
   if (descriptor.kind === 'rect') {
     return sketch(
       drawRoundedRectangle(descriptor.width, descriptor.height, descriptor.cornerRadius),

@@ -7,7 +7,7 @@
  * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
-import { SliderInput, SegmentedControl } from '@/design-system';
+import { SliderInput, SegmentedControl, Checkbox } from '@/design-system';
 import type { TextMode } from '@/features/bin-designer/types';
 import { WALL_TEXT_SIDES, WALL_TEXT_ALIGNS } from '@/features/bin-designer/types';
 import { SnappingSlider } from '../../controls/SnappingSlider';
@@ -49,18 +49,36 @@ export function WallsSection() {
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
         )}
         {state.patternEnabled && !state.patternDisabled && (
-          <div className="mt-3">
-            <SliderInput
-              label={t('binDesigner.walls.pattern.scale')}
-              value={state.patternScalePercent}
-              onChange={handlers.handleScaleChange}
-              min={0}
-              max={100}
-              step={5}
-              unit="%"
-              info={t('binDesigner.walls.pattern.scaleHint')}
-            />
-          </div>
+          <>
+            <div className="mt-3">
+              <SliderInput
+                label={t('binDesigner.walls.pattern.scale')}
+                value={state.patternScalePercent}
+                onChange={handlers.handleScaleChange}
+                min={0}
+                max={100}
+                step={5}
+                unit="%"
+                info={t('binDesigner.walls.pattern.scaleHint')}
+              />
+            </div>
+            {/* ── Divider walls (#2811) — the same pattern and scale carried
+                through the compartment dividers, so a patterned bin doesn't
+                read as hollow walls around solid dividers. */}
+            <div className="mt-3 border-t border-stroke-subtle/50 pt-2">
+              <Checkbox
+                checked={state.dividersEnabled}
+                onChange={handlers.handleDividersChange}
+                disabled={state.dividersAvailableReason !== undefined}
+                label={t('binDesigner.walls.pattern.dividers')}
+              />
+              <p className="ml-6 mt-1 text-[11px] leading-relaxed text-content-tertiary">
+                {state.dividersAvailableReason ??
+                  state.dividersNote ??
+                  t('binDesigner.walls.pattern.dividersHint')}
+              </p>
+            </div>
+          </>
         )}
       </div>
       {/* ── Wall text (#2695) — auto-fit surface text on the outer walls,
