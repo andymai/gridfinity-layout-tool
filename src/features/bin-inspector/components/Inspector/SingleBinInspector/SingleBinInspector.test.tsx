@@ -126,10 +126,24 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      // 4u * 7mm = 28mm in the editable field; the meta line shows the unit
-      // equivalent and mm limits (max 12u * 7mm = 84mm).
+      // 4u * 7mm = 28mm in the editable field, "= 4u" directly beneath it.
       expect(screen.getByDisplayValue('28')).toBeInTheDocument();
-      expect(screen.getByText(/= 4u.*Max 84mm/)).toBeInTheDocument();
+      expect(screen.getByText('= 4u')).toBeInTheDocument();
+    });
+
+    it('renders the height limit hints outside the Height/Clearance grid', () => {
+      const inspector = createMockInspector();
+      const { container } = render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      // min 3u * 7mm = 21mm, max 12u * 7mm = 84mm on one full-width line.
+      const limits = screen.getByText(/Min 21mm: layer height · Max 84mm: remaining space/);
+      expect(limits).toBeInTheDocument();
+
+      // Keeping these out of the grid is what stops the Clearance cell from
+      // being stretched by Height's wrapped hint text.
+      const grid = container.querySelector('.grid-cols-2');
+      expect(grid).toBeInTheDocument();
+      expect(grid).not.toContainElement(limits);
     });
 
     it('renders clearance control in mm when maxClearance > 0', () => {
