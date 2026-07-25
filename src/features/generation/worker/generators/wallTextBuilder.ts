@@ -19,8 +19,8 @@
  * of the two is active per generation.
  */
 
-import { rotate, translate, withScope, clone, unwrap } from 'brepjs';
-import type { Shape3D, DisposalScope } from 'brepjs';
+import { rotate, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import type { PipelineContext } from './pipeline/types';
@@ -80,6 +80,7 @@ function buildOneWallText(
     margin: layout.margin,
     minFontSize: layout.minFontSize,
     maxFontSize: layout.maxFontSize,
+    verticalFit: layout.verticalFit,
     ...(layout.fontSizeOverride !== undefined ? { fontSizeOverride: layout.fontSizeOverride } : {}),
   });
   if (!result) return null;
@@ -100,12 +101,18 @@ function buildWallTextShapes(ctx: PipelineContext, wantFuse: boolean): readonly 
   if (layouts.length === 0) return null;
 
   return withScope((scope: DisposalScope) => {
-    const shapes: Shape3D[] = [];
-    for (const layout of layouts) {
-      const shape = buildOneWallText(scope, layout, params, dim.innerW, dim.innerD);
-      if (shape) shapes.push(unwrap(clone(shape)));
-    }
-    return shapes.length > 0 ? shapes : null;
+    const shapes = layouts
+      .map((layout) => buildOneWallText(scope, layout, params, dim.innerW, dim.innerD))
+      .filter((shape) => shape !== null);
+    if (shapes.length === 0) return null;
+
+    // The feature pipeline applies only the FIRST shape a builder returns and
+    // disposes the rest, so one solid per wall would engrave just one of them.
+    // The per-wall solids are disjoint, so fusing them is equivalent to applying
+    // each in turn.
+    const combined =
+      shapes.length === 1 ? shapes[0] : scope.register(unwrap(fuseAll(shapes as ValidSolid[])));
+    return [unwrap(clone(combined))];
   });
 }
 
@@ -126,7 +133,9 @@ function wallTextCacheKey(ctx: PipelineContext): string {
   // hit-rate: text edits are rare relative to their build cost.
   return compactKey(
     buildCacheKey(
-      'v1',
+      // `v2`: wall text sizes against glyph ink, so the same params now cut
+      // larger glyphs at a different placement.
+      'v2',
       dim.shellKey,
       stableSerialize(params.surfaceText ?? {}),
       stableSerialize(params.textDefaults),

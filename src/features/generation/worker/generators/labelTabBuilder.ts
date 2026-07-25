@@ -50,7 +50,13 @@ import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, fitTextToHost } from './textBuilder';
+import type { VerticalFit } from './textBuilder';
+
+/** Tab text fills its shelf band rather than the font's line box. Shared by the
+ *  group size pass and the per-tab build — measuring different boxes would
+ *  silently stop the uniform cap from applying. */
+const TAB_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
 
 type TabAnchor = 'back' | 'front';
 
@@ -80,6 +86,33 @@ interface TabBuildDimensions {
   readonly shelfT: number;
   /** Non-null in swappable-label socket mode (#2666). */
   readonly socket: SocketBuildInfo | null;
+}
+
+/**
+ * One tab's placement, with no geometry built yet — which is what lets the
+ * group's text fit see every tab's real `tabWidth`.
+ *
+ * `text` is resolved here rather than at build time so it always comes from the
+ * same compartment set the slot was planned against: the bin-spanning fallback
+ * plans against a synthetic 1x1 grid whose `cellId` does not index the real
+ * `compartmentTexts`.
+ */
+interface TabSlot {
+  readonly cellId: number;
+  readonly text: string;
+  readonly tabWidth: number;
+  readonly tabXStart: number;
+  readonly positionY: number;
+  readonly touchesLeft: boolean;
+  readonly touchesRight: boolean;
+}
+
+/** One row/anchor's planned slots plus the inputs its geometry needs. */
+interface PlannedTabRow {
+  readonly params: BinParams;
+  readonly anchor: TabAnchor;
+  readonly dims: TabBuildDimensions;
+  readonly slots: readonly TabSlot[];
 }
 
 /**
@@ -231,48 +264,56 @@ function buildLabelTabsInScope(
   };
 
   const edges = params.label.edges ?? 'back';
-  const includeBack = edges === 'back' || edges === 'both';
-  const includeFront = edges === 'front' || edges === 'both';
+  const anchors: TabAnchor[] = [];
+  if (edges === 'back' || edges === 'both') anchors.push('back');
+  if (edges === 'front' || edges === 'both') anchors.push('front');
 
-  const allTabs: Shape3D[] = [];
+  // Bin-spanning fallback: model the whole interior as one synthetic 1×1
+  // compartment and reuse the regular tab assembly. The spanning tab anchors to
+  // the outer wall(s) only — interior divider rows can't host it — and spans
+  // wall to wall (compartment 0 covers every column).
+  const isSpanning = spanningWidthU !== null;
+  const rowParams: BinParams = isSpanning
+    ? {
+        ...params,
+        compartments: { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
+      }
+    : params;
+  const rowDims: TabBuildDimensions = isSpanning ? { ...dims, cellW: innerW, cellD: innerD } : dims;
+  const rowCount = isSpanning ? 1 : rows;
 
-  if (spanningWidthU !== null) {
-    // Bin-spanning fallback: model the whole interior as one synthetic 1×1
-    // compartment and reuse the regular tab assembly. The spanning tab
-    // anchors to the outer wall(s) only — interior divider rows can't host
-    // it — and spans wall to wall (compartment 0 covers every column).
-    const spanningParams: BinParams = {
-      ...params,
-      compartments: {
-        cols: 1,
-        rows: 1,
-        thickness: params.compartments.thickness,
-        cells: [0],
-      },
-    };
-    const spanDims: TabBuildDimensions = { ...dims, cellW: innerW, cellD: innerD };
+  let collidingFrontIds: Set<number>;
+  if (edges !== 'both') {
+    collidingFrontIds = new Set();
+  } else if (isSpanning) {
     const inset = params.label.inset ?? 0;
-    const spanColliding =
-      edges === 'both' && 2 * tabDepth + 2 * inset > innerD ? new Set([0]) : new Set<number>();
-    if (includeBack) {
-      allTabs.push(...buildTabsAtRow(scope, spanningParams, 0, 'back', spanDims, spanColliding));
-    }
-    if (includeFront) {
-      allTabs.push(...buildTabsAtRow(scope, spanningParams, 0, 'front', spanDims, spanColliding));
-    }
+    collidingFrontIds = 2 * tabDepth + 2 * inset > innerD ? new Set([0]) : new Set();
   } else {
-    const collidingFrontIds =
-      edges === 'both' ? findCollidingFrontCompartments(params, dims) : new Set<number>();
+    collidingFrontIds = findCollidingFrontCompartments(params, dims);
+  }
 
-    for (let row = 0; row < rows; row++) {
-      if (includeBack) {
-        allTabs.push(...buildTabsAtRow(scope, params, row, 'back', dims, collidingFrontIds));
-      }
-      if (includeFront) {
-        allTabs.push(...buildTabsAtRow(scope, params, row, 'front', dims, collidingFrontIds));
-      }
+  const plannedRows: PlannedTabRow[] = [];
+  for (let row = 0; row < rowCount; row++) {
+    for (const anchor of anchors) {
+      plannedRows.push({
+        params: rowParams,
+        anchor,
+        dims: rowDims,
+        slots: planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
+      });
     }
   }
+
+  // Resolved per row/anchor group, not per bin: those tabs are what a viewer
+  // sees side by side, and a bin-wide size would let one narrow compartment
+  // somewhere else govern every label on the design.
+  const allTabs = plannedRows.flatMap((planned) =>
+    buildTabsAtRow(
+      scope,
+      planned,
+      socket ? undefined : resolveUniformTabTextSize(params, planned.slots, tabDepth)
+    )
+  );
 
   if (allTabs.length === 0) return null;
   const assembled =
@@ -369,36 +410,28 @@ function findCollidingFrontCompartments(params: BinParams, dims: TabBuildDimensi
 }
 
 /**
- * Build all label tabs anchored to one row's edge (back or front).
+ * Resolve which compartments host a tab anchored to one row's edge (back or
+ * front) and where each one sits. Pure — no geometry, no scope — so the whole
+ * bin's tabs can be planned before any are built (see
+ * `resolveUniformTabTextSize`).
  *
- * Iterates the row's columns, groups consecutive same-compartment cells that
- * share an edge at this row, and emits one tab per group. This produces a
- * single tab spanning merged columns rather than separate per-column tabs
- * with incorrect divider deductions.
- *
- * The output is a list of scope-registered tab solids (not fused). The caller
- * fuses across rows + anchors.
+ * Groups consecutive same-compartment cells that share an edge at this row and
+ * emits one slot per group, so merged columns get a single spanning tab rather
+ * than per-column tabs with incorrect divider deductions.
  */
-function buildTabsAtRow(
-  scope: DisposalScope,
+function planTabsAtRow(
   params: BinParams,
   row: number,
   anchor: TabAnchor,
   dims: TabBuildDimensions,
   collidingFrontIds: Set<number>
-): Shape3D[] {
+): TabSlot[] {
   const { cols, rows, thickness, cells } = params.compartments;
   const widthPercent = params.label.width;
   const alignment = params.label.alignment;
   const inset = params.label.inset ?? 0;
-  const { innerW, innerD, cellW, cellD, tabHeight, tabDepth, shelfTopZ, shelfT, socket } = dims;
-  const wt = shelfT;
-  const gt = thickness;
+  const { innerW, innerD, cellW, cellD, tabDepth, socket } = dims;
 
-  // depthSign tracks which direction the tab body extends from the anchor:
-  //   back  → -Y (tab body extends toward the front of the bin)
-  //   front → +Y (tab body extends toward the back of the bin)
-  // Used to mirror shelf, gusset, fillet, text, and inset geometry.
   const depthSign: 1 | -1 = anchor === 'back' ? -1 : 1;
 
   // Row-edge detection differs by anchor:
@@ -409,7 +442,7 @@ function buildTabsAtRow(
   const hasTiltedAnchorWall =
     anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
 
-  const result: Shape3D[] = [];
+  const slots: TabSlot[] = [];
   let col = 0;
 
   while (col < cols) {
@@ -522,6 +555,83 @@ function buildTabsAtRow(
     const fullWidth = tabWidth >= availableWidth - 0.01;
     const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
     const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
+
+    slots.push({
+      cellId,
+      text: params.compartments.compartmentTexts?.[cellId] ?? '',
+      tabWidth,
+      tabXStart,
+      positionY,
+      touchesLeft,
+      touchesRight,
+    });
+    col = groupEnd;
+  }
+
+  return slots;
+}
+
+/**
+ * One text size for a group of tabs: the smallest size that still fits any
+ * text-bearing slot in it. Callers pass one row/anchor group at a time.
+ *
+ * Under `inkBox` the fitted size depends on the string — mostly on advance
+ * width, and on ink height for runs that reach below the baseline — so fitting
+ * each tab independently renders a row of visibly mismatched labels. Sizing the
+ * group to its worst case trades absolute size for a consistent row.
+ *
+ * Only tabs that actually render text count: a blank slot and a run that
+ * overflows even at `minFontSize` both fail the fit, and neither may drag down
+ * the tabs that do render. `undefined` when that leaves nothing constraining the
+ * size — callers then fall back to per-tab auto-fit.
+ */
+export function resolveUniformTabTextSize(
+  params: BinParams,
+  slots: readonly Pick<TabSlot, 'text' | 'tabWidth'>[],
+  tabDepth: number
+): number | undefined {
+  const style = { ...params.textDefaults, ...params.label.textStyle };
+
+  let smallest = Number.POSITIVE_INFINITY;
+  for (const slot of slots) {
+    const fit = fitTextToHost({
+      text: slot.text,
+      fontFamily: style.font,
+      mode: style.mode,
+      availW: slot.tabWidth,
+      availD: tabDepth,
+      margin: style.margin,
+      minFontSize: style.minFontSize,
+      maxFontSize: style.maxFontSize,
+      verticalFit: TAB_TEXT_VERTICAL_FIT,
+    });
+    if (fit.fits) smallest = Math.min(smallest, fit.fontSize);
+  }
+
+  return Number.isFinite(smallest) ? smallest : undefined;
+}
+
+function buildTabsAtRow(
+  scope: DisposalScope,
+  plan: PlannedTabRow,
+  uniformTextSize: number | undefined
+): Shape3D[] {
+  const { params, anchor, dims, slots } = plan;
+  const { thickness } = params.compartments;
+  const alignment = params.label.alignment;
+  const { tabHeight, tabDepth, shelfTopZ, shelfT, socket } = dims;
+  const wt = shelfT;
+  const gt = thickness;
+  // depthSign tracks which direction the tab body extends from the anchor:
+  //   back  → -Y (tab body extends toward the front of the bin)
+  //   front → +Y (tab body extends toward the back of the bin)
+  // Used to mirror shelf, gusset, fillet, text, and inset geometry.
+  const depthSign: 1 | -1 = anchor === 'back' ? -1 : 1;
+
+  const result: Shape3D[] = [];
+
+  for (const slot of slots) {
+    const { cellId, tabWidth, tabXStart, positionY, touchesLeft, touchesRight } = slot;
 
     // -- Shelf: flat plate with rounded corners on the body-front end of
     // free sides. The shelf body extends along depthSign (negative Y for
@@ -649,7 +759,7 @@ function buildTabsAtRow(
       // travels with the tab through the world translation below. centerY is
       // half-way along the shelf body (depthSign-aware).
       tabSolid = applyTabText(scope, tabSolid, {
-        text: params.compartments.compartmentTexts?.[cellId] ?? '',
+        text: slot.text,
         textDefaults: params.textDefaults,
         labelTextStyle: params.label.textStyle,
         tabWidth,
@@ -657,6 +767,7 @@ function buildTabsAtRow(
         tabHeight,
         shelfThickness: wt,
         centerYSign: depthSign,
+        uniformTextSize,
       });
     }
 
@@ -665,8 +776,6 @@ function buildTabsAtRow(
     tabSolid = scope.register(translate(tabSolid, [tabXStart, positionY, shelfTopZ - tabHeight]));
 
     result.push(tabSolid);
-
-    col = groupEnd;
   }
 
   return result;
@@ -922,9 +1031,17 @@ function applyTabText(
     tabHeight: number;
     shelfThickness: number;
     centerYSign: 1 | -1;
+    uniformTextSize: number | undefined;
   }
 ): Shape3D {
   const style = { ...ctx.textDefaults, ...ctx.labelTextStyle };
+  // Both caps ride through `fontSizeOverride`, applied as
+  // min(auto-fit, max(minFontSize, override)) — so neither cap can grow the text
+  // past what this tab holds, and both stay above the legibility floor.
+  const caps = [ctx.uniformTextSize, ctx.labelTextStyle?.fontSizeOverride].filter(
+    (cap) => cap !== undefined
+  );
+  const fontSizeOverride = caps.length > 0 ? Math.min(...caps) : undefined;
   const result = buildTextSolid(scope, {
     text: ctx.text,
     fontFamily: style.font,
@@ -939,7 +1056,8 @@ function applyTabText(
     margin: style.margin,
     minFontSize: style.minFontSize,
     maxFontSize: style.maxFontSize,
-    fontSizeOverride: ctx.labelTextStyle?.fontSizeOverride,
+    verticalFit: TAB_TEXT_VERTICAL_FIT,
+    fontSizeOverride,
   });
   if (!result) return tabSolid;
 
@@ -978,6 +1096,8 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v10`: tab text sizes against glyph ink and shares one size per
+        // row/anchor group, so the same params now cut larger, uniform glyphs.
         // `v8`: click-in pockets deepened by LABEL_SOCKET_CLICK_POCKET_RELIEF_MM
         // and the stacking relief grew — same params, lower geometry again.
         // `v7`: click-in sockets on lipped bins sink the default shelf by
@@ -987,7 +1107,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
-        'v8',
+        'v10',
         socketKeyPart,
         dim.shellKey,
         stableSerialize(params.label),

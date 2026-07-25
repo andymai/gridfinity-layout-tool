@@ -49,7 +49,8 @@ import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 import { COPLANAR_MARGIN } from './generatorConstants';
 import { FeatureTag } from './featureTags';
 import { sketch } from './meshUtils';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, fitTextToHost } from './textBuilder';
+import type { VerticalFit } from './textBuilder';
 import { buildIconSolid, measureIconBox } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -82,6 +83,11 @@ const PLATE_GAP = 4;
 const TEXT_MARGIN = 1.6;
 /** Readable band between the latch flanges — what both text and icon fill. */
 export const TEXT_BAND_MM = LABEL_PLATE_HEIGHT_MM - 2 * TEXT_MARGIN;
+
+/** The band between the latch flanges IS the readable area, so fill it with
+ *  glyph ink rather than the font's ascender..descender band (~54% inked for an
+ *  all-caps run). */
+const PLATE_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
 /**
  * Width ceiling for an icon (mm) and its gap to the text. Side-view fasteners
  * are ~1.5-1.9x wider than tall, so an uncapped fit to the band would spend a
@@ -149,11 +155,58 @@ function roundedRect(w: number, h: number, r: number): Drawing {
     .close();
 }
 
+/** `deboss` is the plate spelling of an engraved cut. */
+function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' {
+  return opts.textMode === 'emboss' ? 'emboss' : 'engrave';
+}
+
+/**
+ * One text size for a set of plates, measured on the vertical axis only: the
+ * smallest size at which any plate's glyph ink still fits the shared band.
+ *
+ * Only the band is common to the set — plate widths are 36/78/120mm, so folding
+ * width in would shrink a 3U plate's text to whatever a 1U plate could hold.
+ * Each plate's own width budget still caps it inside `buildTextSolid`, which
+ * applies this as `min(auto-fit, override)`; a plate whose run cannot fit its
+ * width renders blank rather than dragging the others down.
+ *
+ * `undefined` when no plate carries text, leaving per-plate auto-fit.
+ */
+function resolveUniformPlateTextSize(
+  specs: readonly LabelPlateSpec[],
+  opts: LabelPlateBuildOptions
+): number | undefined {
+  let smallest = Number.POSITIVE_INFINITY;
+  for (const spec of specs) {
+    if (!spec.text.trim()) continue;
+    const fit = fitTextToHost({
+      text: spec.text,
+      fontFamily: opts.textDefaults.font,
+      mode: plateTextMode(opts),
+      availW: Number.POSITIVE_INFINITY,
+      availD: TEXT_BAND_MM,
+      margin: 0,
+      minFontSize: opts.textDefaults.minFontSize,
+      maxFontSize: opts.textDefaults.maxFontSize,
+      verticalFit: PLATE_TEXT_VERTICAL_FIT,
+    });
+    if (fit.fits) smallest = Math.min(smallest, fit.fontSize);
+  }
+  return Number.isFinite(smallest) ? smallest : undefined;
+}
+
 /**
  * Build one plate as a single watertight solid, centered at the origin,
  * bottom on Z=0.
+ *
+ * `uniformTextSize` caps the auto-fit so a set of plates built together shares
+ * one size; omit it for a standalone plate.
  */
-export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptions): Shape3D {
+export function buildLabelPlate(
+  spec: LabelPlateSpec,
+  opts: LabelPlateBuildOptions,
+  uniformTextSize?: number
+): Shape3D {
   return withScope((scope: DisposalScope): Shape3D => {
     const w = labelPlateWidthMm(spec.widthU);
     const h = LABEL_PLATE_HEIGHT_MM;
@@ -278,7 +331,7 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
       const result = buildTextSolid(scope, {
         text: spec.text,
         fontFamily: opts.textDefaults.font,
-        mode: opts.textMode === 'emboss' ? 'emboss' : 'engrave',
+        mode: plateTextMode(opts),
         availW: textRight - textLeft,
         availD: TEXT_BAND_MM,
         centerX: (textLeft + textRight) / 2,
@@ -289,10 +342,8 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
         margin: 0,
         minFontSize: opts.textDefaults.minFontSize,
         maxFontSize: opts.textDefaults.maxFontSize,
-        // The band between the latch flanges IS the readable area, and each
-        // plate carries one string, so fill it with glyph ink rather than the
-        // font's ascender..descender band (~54% inked for an all-caps run).
-        verticalFit: 'inkBox',
+        verticalFit: PLATE_TEXT_VERTICAL_FIT,
+        fontSizeOverride: uniformTextSize,
       });
       if (result) {
         try {
@@ -320,6 +371,9 @@ export function buildLabelPlate(spec: LabelPlateSpec, opts: LabelPlateBuildOptio
 /**
  * Build every plate, laid out bottom-on-bed in rows along Y with a gap —
  * ready to slice as one file. Returns non-fused separate solids.
+ *
+ * Every plate in the set shares one text size, so a bin's plates read as a set
+ * rather than each filling its own band.
  */
 export function buildLabelPlates(
   specs: readonly LabelPlateSpec[],
@@ -327,8 +381,9 @@ export function buildLabelPlates(
 ): Shape3D[] {
   const pitch = LABEL_PLATE_HEIGHT_MM + PLATE_GAP;
   const totalY = specs.length * pitch - PLATE_GAP;
+  const uniformTextSize = resolveUniformPlateTextSize(specs, opts);
   return specs.map((spec, i) => {
-    const plate = buildLabelPlate(spec, opts);
+    const plate = buildLabelPlate(spec, opts, uniformTextSize);
     const [x, y] = spec.position ?? [0, -totalY / 2 + LABEL_PLATE_HEIGHT_MM / 2 + i * pitch];
     const placed = translate(plate, [x, y, 0]);
     plate.delete();

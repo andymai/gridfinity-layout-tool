@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Bandeja",
   "binDesigner.lid.topSurface.flatHint": "Una parte superior cerrada y lisa. Nada se apila encima ni se apoya dentro.",
   "binDesigner.lid.frictionHint": "Se sujeta al borde solo por fricción, sin rieles ni imanes. Lo más fácil de imprimir y quitar.",
-  "binDesigner.lid.advanced": "Avanzado"
+  "binDesigner.lid.advanced": "Avanzado",
+  "binDesigner.textSizeMax": "Tamaño máx. de etiqueta",
+  "binDesigner.textSizeCapHint": "Las pestañas de una fila comparten tamaño, así que una etiqueta más larga reduce las demás."
 }

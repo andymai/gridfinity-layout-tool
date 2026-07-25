@@ -11,7 +11,10 @@
  * natural XY) keyed by the inputs that shape it — text, font, mode, fit size,
  * and extrusion depth — independent of where it's later placed. Placement (the
  * XY centering and the Z lift onto the host face) is a cheap per-call translate,
- * so editing one label is a cache hit for every other compartment's text.
+ * so editing one label leaves the others' glyph solids reusable. Note the fit
+ * size is part of the key: where a group shares one size (label tabs per row,
+ * label plates per set) editing any member can move that size and re-key every
+ * sibling, so a row rebuilds together rather than one tab at a time.
  *
  * Ownership mirrors the shape caches (see shapeCache.ts): entries are JS-cache-
  * owned clones that are NEVER registered in a DisposalScope (a scope-registered

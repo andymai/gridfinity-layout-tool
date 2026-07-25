@@ -40,6 +40,31 @@ function channelVolumeRemoved(text: string, opts: LabelPlateBuildOptions): numbe
   }
 }
 
+/**
+ * Y band each plate's RAISED glyphs occupy — everything above the plate top
+ * face. Emboss mode only; the proxy for rendered text size and centering.
+ */
+function raisedGlyphBands(
+  pieces: readonly ReturnType<typeof buildLabelPlate>[]
+): { minY: number; maxY: number }[] {
+  return pieces.map((p) => {
+    const m = mesh(p, { tolerance: 0.05, angularTolerance: 10 });
+    const v = new Float32Array(m.vertices);
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < v.length; i += 3) {
+      if (v[i + 2] <= LABEL_PLATE_THICKNESS_MM + 1e-3) continue;
+      if (v[i + 1] < minY) minY = v[i + 1];
+      if (v[i + 1] > maxY) maxY = v[i + 1];
+    }
+    return { minY, maxY };
+  });
+}
+
+function raisedGlyphHeights(pieces: readonly ReturnType<typeof buildLabelPlate>[]): number[] {
+  return raisedGlyphBands(pieces).map(({ minY, maxY }) => maxY - minY);
+}
+
 function volumeAndBBox(spec: Parameters<typeof buildLabelPlate>[0]) {
   const solid = buildLabelPlate(spec, OPTS);
   try {
@@ -142,15 +167,7 @@ describe('labelPlateBuilder', () => {
   it('sizes embossed glyphs to fill the plate text band', () => {
     const solid = buildLabelPlate({ widthU: 1, text: 'Kabel' }, { ...OPTS, textMode: 'emboss' });
     try {
-      const m = mesh(solid, { tolerance: 0.05, angularTolerance: 10 });
-      const v = new Float32Array(m.vertices);
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (let i = 0; i < v.length; i += 3) {
-        if (v[i + 2] <= LABEL_PLATE_THICKNESS_MM + 1e-3) continue;
-        if (v[i + 1] < minY) minY = v[i + 1];
-        if (v[i + 1] > maxY) maxY = v[i + 1];
-      }
+      const [{ minY, maxY }] = raisedGlyphBands([solid]);
       expect(maxY - minY).toBeGreaterThan(6);
       expect((minY + maxY) / 2).toBeCloseTo(0, 1);
     } finally {
@@ -187,6 +204,51 @@ describe('labelPlateBuilder', () => {
       expect((boxes[1].minX + boxes[1].maxX) / 2).toBeCloseTo(50, 1);
     } finally {
       for (const p of pieces) p.delete();
+    }
+  });
+
+  it('sizes every plate in a set to one shared text size', () => {
+    // "gjpqy" inks taller per em than "KABEL", so it fits smaller in the shared
+    // band — sized per-plate the two runs differ; as a set they must match.
+    const embossed = { ...OPTS, textMode: 'emboss' as const };
+    const alone = buildLabelPlates([{ widthU: 1, text: 'KABEL' }], embossed);
+    const set = buildLabelPlates(
+      [
+        { widthU: 1, text: 'KABEL' },
+        { widthU: 1, text: 'gjpqy' },
+      ],
+      embossed
+    );
+    try {
+      const [kabelAlone] = raisedGlyphHeights(alone);
+      const [kabelInSet] = raisedGlyphHeights(set);
+      // The neighbour's taller ink shrinks the shared size, so KABEL's cap height
+      // in the set is strictly below what it reaches on its own.
+      expect(kabelInSet).toBeLessThan(kabelAlone * 0.95);
+    } finally {
+      for (const p of [...alone, ...set]) p.delete();
+    }
+  });
+
+  it('does not let a narrow plate shrink a wider one', () => {
+    // Plate widths are 36/78/120mm but the text band is shared, so the uniform
+    // pass measures the band only. A long run that is width-bound on 1U must not
+    // govern a 3U plate that has over three times the room.
+    const embossed = { ...OPTS, textMode: 'emboss' as const };
+    const wideAlone = buildLabelPlates([{ widthU: 3, text: 'M3' }], embossed);
+    const wideBesideNarrow = buildLabelPlates(
+      [
+        { widthU: 3, text: 'M3' },
+        { widthU: 1, text: 'WASHERS 8MM' },
+      ],
+      embossed
+    );
+    try {
+      const [alone] = raisedGlyphHeights(wideAlone);
+      const [beside] = raisedGlyphHeights(wideBesideNarrow);
+      expect(beside).toBeCloseTo(alone, 1);
+    } finally {
+      for (const p of [...wideAlone, ...wideBesideNarrow]) p.delete();
     }
   });
 

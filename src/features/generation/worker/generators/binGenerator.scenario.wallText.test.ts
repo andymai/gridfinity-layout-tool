@@ -15,8 +15,9 @@ import { resolve } from 'path';
 import { loadFont, isErr } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import type { BoundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, WallTextSide } from '@/shared/types/bin';
 import { canBinUseDirectMesh } from './binDirectMesh';
 import { WALL_TEXT_MAX_EMBOSS } from './wallTextLayout';
 
@@ -92,6 +93,54 @@ describe('wall surface text scenarios', () => {
       makeParams({ walls: { front: 'A', back: 'B', left: 'C', right: 'D' } })
     );
     assertStructurallyValid(result, 'four-wall text');
+  });
+
+  it('engraves EVERY requested wall, not just the first', () => {
+    // The feature pipeline applies only the first shape a builder returns, so
+    // `wallTextBuilder` has to fuse its per-wall solids. Structural validity
+    // can't see the difference — cut material can. The bin is square and every
+    // wall carries the same string, so each wall contributes equally.
+    const generateBin = getGenerateBin();
+    const plain = generateBin(makeParams(undefined)).triangleCount;
+    const oneWall = generateBin(makeParams({ walls: { front: 'ABC' } })).triangleCount - plain;
+    const allWalls =
+      generateBin(makeParams({ walls: { front: 'ABC', back: 'ABC', left: 'ABC', right: 'ABC' } }))
+        .triangleCount - plain;
+
+    expect(oneWall).toBeGreaterThan(0);
+    expect(allWalls).toBeGreaterThan(oneWall * 3.5);
+  });
+
+  it('stays manifold with all four walls embossed or pierced', () => {
+    // The per-wall solids are fused before the body boolean, so four walls put
+    // four disjoint glyph compounds through one fuse/cut — and coplanar and
+    // T-junction fuses are this pipeline's known source of non-manifold output.
+    const generateBin = getGenerateBin();
+    const walls = { front: 'ABC', back: 'ABC', left: 'ABC', right: 'ABC' };
+    for (const mode of ['emboss', 'through-cut'] as const) {
+      const result = generateBin(makeParams({ walls, style: { mode } }));
+      assertStructurallyValid(result, `four-wall ${mode} text`);
+    }
+  });
+
+  it('embosses every wall outward, one side at a time', () => {
+    // Requested alone, a side must push its OWN face outward — a builder that
+    // applies only the first of its per-wall solids still passes every
+    // all-four-walls check above.
+    const generateBin = getGenerateBin();
+    const plain = boundingBox(generateBin(makeParams(undefined)).vertices);
+    const outwardRelief: Record<WallTextSide, (box: BoundingBox) => number> = {
+      front: (box) => plain.minY - box.minY,
+      back: (box) => box.maxY - plain.maxY,
+      left: (box) => plain.minX - box.minX,
+      right: (box) => box.maxX - plain.maxX,
+    };
+    for (const [side, relief] of Object.entries(outwardRelief)) {
+      const box = boundingBox(
+        generateBin(makeParams({ walls: { [side]: 'ABC' }, style: { mode: 'emboss' } })).vertices
+      );
+      expect(relief(box), side).toBeGreaterThan(0.3);
+    }
   });
 
   it('clears the honeycomb pattern behind the text', () => {

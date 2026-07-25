@@ -57,10 +57,11 @@ export interface FeatureBuilder {
   /** Deterministic cache key for this feature's current parameters. */
   cacheKey(ctx: PipelineContext): string;
   /**
-   * Build the feature geometry.
+   * Build the feature geometry, or null if the current parameters need none.
    *
-   * Returns an array of shapes (single-shape builders return [shape]),
-   * or null if no geometry is needed for the current parameters.
+   * Only the FIRST shape is applied — the runner disposes the rest. A builder
+   * whose feature spans several pieces (per-wall glyph solids, say) must fuse
+   * them into one before returning, or the extras are silently dropped.
    */
   build(ctx: PipelineContext): readonly Shape3D[] | null;
 }

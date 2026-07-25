@@ -656,6 +656,7 @@ export function LabelTabsSection() {
                   onChange={handlers.setTextSize}
                   min={state.textDefaults.minFontSize}
                   max={state.textDefaults.maxFontSize}
+                  explainShared
                 />
               </div>
             </Collapsible>

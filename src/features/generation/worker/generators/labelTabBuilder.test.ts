@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { loadFont } from 'brepjs';
-import { isErr } from '@/core/result';
+import { loadFont, measureVolume } from 'brepjs';
+import { isErr, isOk } from '@/core/result';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -411,5 +411,116 @@ describe('slide-channel socket style (#2666 follow-up)', () => {
       vol(click as NonNullable<typeof click>),
       6
     );
+  });
+});
+
+describe('resolveUniformTabTextSize', () => {
+  const TAB_DEPTH = 6;
+  const LABEL_PARAMS = {
+    ...DEFAULT_BIN_PARAMS,
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+  };
+
+  const sizeForSlots = async (
+    slots: readonly { text: string; tabWidth: number }[]
+  ): Promise<number | undefined> => {
+    const { resolveUniformTabTextSize } = await import('./labelTabBuilder');
+    return resolveUniformTabTextSize(LABEL_PARAMS, slots, TAB_DEPTH);
+  };
+
+  /** Uniform size for a row of equally wide (30mm) tabs carrying `texts`. */
+  const size = (...texts: string[]): Promise<number | undefined> =>
+    sizeForSlots(texts.map((text) => ({ text, tabWidth: 30 })));
+
+  /** As `size`, asserting the row resolved to a real size. */
+  const fitted = async (...texts: string[]): Promise<number> => {
+    const resolved = await size(...texts);
+    if (resolved === undefined) throw new Error(`expected [${texts.join('|')}] to fit`);
+    return resolved;
+  };
+
+  /**
+   * Built-tab volume for one grid as a function of the per-cell strings.
+   * Differencing two calls that differ in a single string isolates what that
+   * tab's text alone engraves, at whatever size the build actually chose.
+   */
+  const tabVolumeFor = async (grid: {
+    cols: number;
+    rows: number;
+    cells: number[];
+  }): Promise<(compartmentTexts: string[]) => number> => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    return (compartmentTexts) => {
+      const solid = buildLabelTabs(
+        {
+          ...LABEL_PARAMS,
+          compartments: { ...LABEL_PARAMS.compartments, ...grid, compartmentTexts },
+        },
+        80,
+        80,
+        35,
+        1.2
+      );
+      if (!solid) throw new Error('expected tabs');
+      const volume = measureVolume(solid);
+      if (!isOk(volume)) throw new Error('measureVolume failed');
+      return volume.value;
+    };
+  };
+
+  it('collapses a mismatched row to the smallest fitting size', async () => {
+    // "gjpqy" inks 0.907em against "KABEL"'s 0.669em, so it fits ~26% smaller
+    // in the same band. Sized independently the two tabs visibly disagree.
+    expect(await fitted('KABEL', 'gjpqy')).toBeLessThan(await fitted('KABEL', 'KABEL'));
+    expect(await fitted('KABEL', 'gjpqy')).toBeCloseTo(await fitted('gjpqy', 'gjpqy'), 6);
+  });
+
+  it('ignores blank slots and returns undefined when nothing carries text', async () => {
+    expect(await fitted('KABEL', '   ')).toBeCloseTo(await fitted('KABEL'), 6);
+    expect(await size('', '  ')).toBeUndefined();
+    expect(await size()).toBeUndefined();
+  });
+
+  it('excludes tabs whose text cannot fit at all', async () => {
+    // A tab that renders no text must not pin the bin: this run overflows even
+    // at minFontSize, so the size comes from "KABEL" alone.
+    expect(await fitted('KABEL', 'WRENCHES SOCKETS AND DRIVERS')).toBeCloseTo(
+      await fitted('KABEL'),
+      6
+    );
+  });
+
+  it('is driven by the narrowest tab, not just the text', async () => {
+    const narrowed = await sizeForSlots([
+      { text: 'KABEL', tabWidth: 30 },
+      { text: 'KABEL', tabWidth: 12 },
+    ]);
+    if (narrowed === undefined) throw new Error('expected the narrow tab to fit');
+    expect(narrowed).toBeLessThan(await fitted('KABEL', 'KABEL'));
+  });
+
+  it('is what the built geometry actually uses', async () => {
+    const tabVolume = await tabVolumeFor({ cols: 2, rows: 1, cells: [0, 1] });
+
+    // A neighbour carrying a descender shrinks the shared size, so the first tab
+    // removes strictly less material than it does alone. Sized per-tab these two
+    // deltas are equal by construction, which is what makes this fail if the
+    // uniform pass is not wired into the build.
+    const alone = tabVolume(['', '']) - tabVolume(['KABEL', '']);
+    const withNeighbour = tabVolume(['', 'gjpqy']) - tabVolume(['KABEL', 'gjpqy']);
+    expect(withNeighbour).toBeLessThan(alone * 0.9);
+  });
+
+  it('is scoped per row, so one row cannot shrink another', async () => {
+    // 2x2 grid: cells 0,1 on the front row and 2,3 on the back row. Every cell
+    // gets its own tab, so each row is an independent sizing group.
+    const tabVolume = await tabVolumeFor({ cols: 2, rows: 2, cells: [0, 1, 2, 3] });
+
+    // Same isolation as above, but the descender now sits in the OTHER row. Cell
+    // 0 must be unaffected by it — under bin-wide scoping both deltas would
+    // shrink together and this would fail.
+    const alone = tabVolume(['', '', '', '']) - tabVolume(['KABEL', '', '', '']);
+    const otherRow = tabVolume(['', '', '', 'gjpqy']) - tabVolume(['KABEL', '', '', 'gjpqy']);
+    expect(otherRow).toBeCloseTo(alone, 3);
   });
 });

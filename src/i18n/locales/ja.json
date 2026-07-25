@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "トレイ",
   "binDesigner.lid.topSurface.flatHint": "シンプルな閉じた天面です。上に積み重ねたり物を置いたりはできません。",
   "binDesigner.lid.frictionHint": "レールや磁石を使わず、摩擦だけでリップに固定します。印刷と取り外しが最も簡単です。",
-  "binDesigner.lid.advanced": "詳細設定"
+  "binDesigner.lid.advanced": "詳細設定",
+  "binDesigner.textSizeMax": "ラベルの最大サイズ",
+  "binDesigner.textSizeCapHint": "同じ列のタブはサイズを共有するため、長いラベルがあると他が小さくなります。"
 }

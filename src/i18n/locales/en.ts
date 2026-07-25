@@ -1705,6 +1705,8 @@ const en: Record<string, string> = {
   'binDesigner.textFont.allerta-stencil': 'Allerta Stencil',
   'binDesigner.textDepth': 'Text depth',
   'binDesigner.textSize': 'Label size',
+  'binDesigner.textSizeMax': 'Max label size',
+  'binDesigner.textSizeCapHint': 'Tabs in a row share a size, so a longer label shrinks the rest.',
   'binDesigner.textSizeAuto': 'Auto',
   'binDesigner.cutoutEngraveLabel': 'Engrave label',
   'binDesigner.cutoutEngraveLabelPlaceholder': 'e.g. M4×20',
