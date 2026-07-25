@@ -8,6 +8,7 @@ import {
   type LabelDomain,
 } from '@/shared/analytics/labelVocabulary';
 import { detectSequenceSuggestions } from './sequence';
+import { isModelUsable, modelScore, type LabelSuggesterModel } from './model';
 import type {
   LabelGhost,
   LabelSuggestion,
@@ -73,7 +74,7 @@ interface ScoredSuggestion extends LabelSuggestion {
 export function getLabelSuggestions(
   rawQuery: string,
   ctx: SuggestionContext,
-  options: { limit?: number; maxLength?: number } = {}
+  options: { limit?: number; maxLength?: number; model?: LabelSuggesterModel | null } = {}
 ): LabelSuggestion[] {
   const limit = options.limit ?? DEFAULT_LIMIT;
   // Never surface a suggestion the field can't hold verbatim — otherwise the
@@ -95,7 +96,9 @@ export function getLabelSuggestions(
   }
 
   // Neighbor labels: edge-adjacent on the same layer, or in the same category.
+  const model = isModelUsable(options.model) ? options.model : null;
   const neighborKeys = new Set<string>();
+  const neighborHashes: string[] = [];
   const domainTally = new Map<LabelDomain, number>();
   for (const b of others) {
     const value = b.label.trim();
@@ -105,8 +108,9 @@ export function getLabelSuggestions(
       b.category === ctx.target.category;
     if (!isNeighbor) continue;
     neighborKeys.add(value.toLowerCase());
-    const domain = processLabel(value).domain;
-    if (domain) domainTally.set(domain, (domainTally.get(domain) ?? 0) + 1);
+    const label = processLabel(value);
+    if (model) neighborHashes.push(label.hash);
+    if (label.domain) domainTally.set(label.domain, (domainTally.get(label.domain) ?? 0) + 1);
   }
   const dominantDomain = pickDominant(domainTally);
 
@@ -169,12 +173,18 @@ export function getLabelSuggestions(
       if (semantic) text = { score: SEMANTIC_SCORE, kind: 'semantic' };
     }
 
-    // While typing, only surface candidates that relate to the typed text.
+    // While typing, only surface candidates that relate to the typed text —
+    // the learned prior refines ranking, it never bypasses text relevance.
     if (query && text.score <= 0) continue;
 
+    // Learned cross-user prior (popularity + neighbor co-occurrence), or 0 when
+    // no trained model is loaded.
+    const learned = model ? modelScore(model, processLabel(cand.value).hash, neighborHashes) : 0;
+
     // Pre-type: drop bare catalog terms with no contextual pull, else focusing
-    // the field floods the list with generic vocabulary entries.
-    const hasContext = isSequence || isNeighbor || reuse > 0 || domainMatch;
+    // the field floods the list with generic vocabulary entries. A strong
+    // learned prior counts as context.
+    const hasContext = isSequence || isNeighbor || reuse > 0 || domainMatch || learned > 0;
     if (!query && cand.isCatalog && !hasContext) continue;
 
     let score = 0;
@@ -184,6 +194,7 @@ export function getLabelSuggestions(
     if (domainMatch) score += WEIGHTS.domain;
     if (cand.isCatalog) score += WEIGHTS.catalog;
     score += text.score * WEIGHTS.text;
+    score += learned;
     if (score <= 0) continue;
 
     const reason = pickReason({
