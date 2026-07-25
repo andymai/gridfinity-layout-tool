@@ -1,0 +1,185 @@
+src/shared/constraints/features.ts
+  s_6bf5af221a7bb1::t_5f81d9345ec110 9
+  s_6bf5af221a7bb1::t_29019fb81d9f49 122-136
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_6bf5af221a7bb1::t_0fa04cfdb33512 84,160-163,165
+src/i18n/locales/pt-BR.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_6bf5af221a7bb1::t_3175bbbc3c0288 22-49
+src/features/bin-designer/store/slices/paramSlice.ts
+  s_6bf5af221a7bb1::t_47e6c808aedd20 256-266
+  s_6bf5af221a7bb1::t_084a71ab63c353 17,37
+src/features/generation/bridge/generationTimeout.ts
+  s_6bf5af221a7bb1::t_ae49db3e2735a4 269-280
+  s_6bf5af221a7bb1::t_e5518e8953cb31 79-93
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_6bf5af221a7bb1::t_4174b9dd781e63 2,6-9,255-260,268-270,274-277,287-288,291,295,297
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_6bf5af221a7bb1::t_7ebd6cff89b043 386-388
+src/features/generation/worker/generators/scenarios/floorPatterns.ts
+  s_6bf5af221a7bb1::t_7918139d993838 87-90,92-95,242
+  s_6bf5af221a7bb1::t_b962976daa5bf1 1-86,91,96-241,243,258-260
+  s_6bf5af221a7bb1::t_9194108e524f60 244-257
+src/features/bin-designer/constants/defaults.ts
+  s_6bf5af221a7bb1::t_7ba2b8fab5c463 22-27,68
+  s_6bf5af221a7bb1::t_af73de911e9c26 18,64-66,218
+  s_6bf5af221a7bb1::t_5f81d9345ec110 67
+src/i18n/locales/sv.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/bin-designer/utils/printEstimates.ts
+  s_6bf5af221a7bb1::t_628d12581dc751 634,636,652-655,661-664,667-669
+  s_6bf5af221a7bb1::t_60f8a1afe9efde 163,676
+  s_6bf5af221a7bb1::t_1de1b3c3d64b68 39-40
+  s_6bf5af221a7bb1::t_bb6d6911dae918 645-647,649-651,658-659,670,672
+  s_6bf5af221a7bb1::t_798cb8e0938d50 620-622,632,637-641,644,678-679
+  s_6bf5af221a7bb1::t_99c363901c204b 162,164
+  s_6bf5af221a7bb1::t_517d0c57820984 623-631,633,635,642-643,648,656-657,660,665-666,671,673-675,677
+src/i18n/locales/fr.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/bin-designer/types/index.ts
+  s_6bf5af221a7bb1::t_914edc8c91d458 138
+src/shared/generation/floorPatternMetrics.ts
+  s_6bf5af221a7bb1::t_067b595be89e7f 1-17
+  s_6bf5af221a7bb1::t_a6bfe0d0bd6566 18
+  s_6bf5af221a7bb1::t_2263804d0e4884 19
+src/i18n/locales/ja.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/shared/generation/wallPatternMetrics.ts
+  s_6bf5af221a7bb1::t_e6265f9f8dbcda 10-13
+  s_6bf5af221a7bb1::t_fcd11e0f0c3069 35-69
+src/features/generation/README.md
+  s_6bf5af221a7bb1::t_2376ce7f4c9371 65-67,101
+  s_6bf5af221a7bb1::t_8f9bcecad335db 204
+  s_6bf5af221a7bb1::t_753f8a81cc344d 205
+src/features/bin-designer/utils/floorPatternFit.ts
+  s_6bf5af221a7bb1::t_8fc70397c18b4d 1-72
+src/shared/constraints/types.ts
+  s_6bf5af221a7bb1::t_b12db93325d9ed 16
+src/features/bin-designer/constants/index.ts
+  s_6bf5af221a7bb1::t_c4ffcf6c2845f2 9
+src/i18n/locales/en.ts
+  s_6bf5af221a7bb1::t_0dd1b9018c0217 1918-1921,2403-2408
+src/features/bin-designer/README.md
+  s_6bf5af221a7bb1::t_823cab569cc298 51-58
+src/features/generation/worker/generators/scenarios/index.ts
+  s_6bf5af221a7bb1::t_80916f5cd15c65 43,86
+src/features/generation/worker/generators/dividerPatternBuilder.ts
+  s_6bf5af221a7bb1::t_2401c8761cb19b 33
+  s_6bf5af221a7bb1::t_f421440f8ea594 327-332,334-340,345-346,348-354
+src/i18n/locales/uk.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/i18n/locales/it.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/bin-designer/types/floor.ts
+  s_6bf5af221a7bb1::t_d8ee8c2a8ed3cf 39-51
+  s_6bf5af221a7bb1::t_12f23a72d54d14 2-38
+  s_6bf5af221a7bb1::t_7492c225e157b9 1
+src/features/generation/worker/generators/floorPatterns.ts
+  s_6bf5af221a7bb1::t_aff712571b55c1 25
+  s_6bf5af221a7bb1::t_2263804d0e4884 33-34
+  s_6bf5af221a7bb1::t_f0e49833a83a41 1-24,26-32,35-138,143-205,207-257
+  s_6bf5af221a7bb1::t_c68a4b4c0637ec 139-142
+  s_6bf5af221a7bb1::t_aab8481f3022c0 206
+src/features/generation/worker/generators/floorPatternBuilder.ts
+  s_6bf5af221a7bb1::t_5b106a83582b6a 1-83
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_6bf5af221a7bb1::t_e917eb824652b0 2-3,14-15
+  s_6bf5af221a7bb1::t_bdbc2c9fadaf38 96-131
+src/i18n/locales/nl.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/generation/worker/generators/estimateBin.ts
+  s_6bf5af221a7bb1::t_dae25c050e74a0 47
+src/features/bin-designer/utils/floorPatternFit.test.ts
+  s_6bf5af221a7bb1::t_6ab3e4e4b3dc53 1-26,28-29,33-40,43-46,48-59,61-74
+  s_6bf5af221a7bb1::t_7918139d993838 27,30-32,41-42,47,60
+src/features/generation/bridge/generationTimeout.test.ts
+  s_6bf5af221a7bb1::t_3a79dcd970afca 20-21,313-339
+  s_6bf5af221a7bb1::t_9cc2b63636a67e 340
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_6bf5af221a7bb1::t_936f456d526c6a 24
+  s_6bf5af221a7bb1::t_0d5fa568884d56 82-87
+  s_6bf5af221a7bb1::t_6c092da2478bc0 110-116
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_6bf5af221a7bb1::t_39a007a5f83531 366-373,377-403
+  s_6bf5af221a7bb1::t_8c9f60627008fa 374-376
+src/shared/constraints/rules.ts
+  s_6bf5af221a7bb1::t_3c84d52bb82762 154,162-179
+  s_6bf5af221a7bb1::t_7dd5e54fb88b9a 180
+src/features/generation/worker/generators/floorPatternWindow.ts
+  s_6bf5af221a7bb1::t_8e21245aa2c18e 40,42
+  s_6bf5af221a7bb1::t_9798dee1d0d1c1 1-39,43
+  s_6bf5af221a7bb1::t_1de1b3c3d64b68 41
+src/i18n/locales/de.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/features/bin-designer/types/designerState.ts
+  s_6bf5af221a7bb1::t_3591e6419f368d 34
+  s_6bf5af221a7bb1::t_47e6c808aedd20 167
+src/features/generation/worker/generators/pipeline/types.ts
+  s_6bf5af221a7bb1::t_2a36511cb7b84d 125-135
+  s_6bf5af221a7bb1::t_89a263093c505c 124
+src/features/bin-designer/types/binParams.ts
+  s_6bf5af221a7bb1::t_3491ee50069872 10
+  s_6bf5af221a7bb1::t_fdcc3d595ce053 79-85
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_6bf5af221a7bb1::t_467f4045ea544e 103-144
+  s_6bf5af221a7bb1::t_2c23daac8047b3 22,26
+  s_6bf5af221a7bb1::t_96fe02e607e7ed 167-175,177-178
+  s_6bf5af221a7bb1::t_125ec7f1db5e97 1,7-18,176,189-192
+src/features/generation/worker/generators/socketBuilder.ts
+  s_6bf5af221a7bb1::t_0d3c1f02fd2dec 175-214
+  s_6bf5af221a7bb1::t_33c0cd469ce2f4 451,458-472
+  s_6bf5af221a7bb1::t_414ce9b5b5a688 174
+src/features/generation/worker/generators/binGenerator.scenario.floorPatterns.test.ts
+  s_6bf5af221a7bb1::t_80916f5cd15c65 1-5
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_6bf5af221a7bb1::t_2c27c2a3009fbb 9,482-517
+  s_6bf5af221a7bb1::t_3e06e2b06c0424 518
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_6bf5af221a7bb1::t_3175bbbc3c0288 281-363
+src/features/generation/worker/generators/pipeline/context.ts
+  s_6bf5af221a7bb1::t_0ddf9f0d0f0fd5 229
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_6bf5af221a7bb1::t_f6bbec8f43806f 169-170,173-182,224-229
+  s_6bf5af221a7bb1::t_8db66174a9ebd0 82-118
+  s_6bf5af221a7bb1::t_2f06dda44b4193 119-121
+  s_6bf5af221a7bb1::t_22f34cdf3220e9 168
+  s_6bf5af221a7bb1::t_9c129e2664cfd4 230-232
+  s_6bf5af221a7bb1::t_fa1dad99c28397 122,141-142,233
+src/shared/types/bin.ts
+  s_6bf5af221a7bb1::t_3591e6419f368d 107
+  s_6bf5af221a7bb1::t_6a84e9107c1830 46-47,106
+src/features/generation/worker/generators/floorPatterns.test.ts
+  s_6bf5af221a7bb1::t_558c27228821f9 1-121,124,126-127,129-131,143-155
+  s_6bf5af221a7bb1::t_00fb558b681b65 122-123,125,128,132-142
+src/features/bin-designer/constants/paramMigration.ts
+  s_6bf5af221a7bb1::t_de4399d9131d22 746-764
+  s_6bf5af221a7bb1::t_d569671be05ba5 17,77-78,852
+src/shared/README.md
+  s_6bf5af221a7bb1::t_cee26184bfeea3 29
+  s_6bf5af221a7bb1::t_68fcd55c5fe1ba 19-28
+src/i18n/locales/es.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+src/i18n/locales/nb.json
+  s_6bf5af221a7bb1::t_a825a26b3430b3 2903-2909
+api/lib/designerValidation.ts
+  s_6bf5af221a7bb1::t_3d286b365e9b2b 126
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.floorPatterns.test.ts.snap
+  s_6bf5af221a7bb1::t_9bbe8c94af03f3 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "fd477f7630e1f3d9bda1195f33eff2daee33851f",
+  "prompts": {},
+  "sessions": {
+    "s_6bf5af221a7bb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b555e792-0c5a-41ed-9e00-12c4bbe97b9c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
