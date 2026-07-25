@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "I contenitori pieni non hanno scomparti da dividere",
   "binDesigner.walls.pattern.dividers.piecesNote": "Il motivo compare sui divisori esportati; l’anteprima li mostra pieni",
   "binDesigner.walls.pattern.dividers.noDividers": "Aggiungi scomparti per applicare il motivo ai loro divisori",
+  "binDesigner.walls.pattern.dividers.noSlots": "Attiva le scanalature per applicare il motivo ai divisori",
   "binDesigner.walls.pattern.dividers.tooSmall": "I divisori sono troppo piccoli per questo motivo",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Alcuni divisori sono troppo piccoli e resteranno pieni",
   "binDesigner.walls.text.heading": "Testo sulla parete",

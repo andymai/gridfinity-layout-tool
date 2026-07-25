@@ -212,7 +212,7 @@ describe('useWallsSection', () => {
       });
       const { result } = renderHook(() => useWallsSection());
       expect(result.current.state.dividersAvailableReason).toBe(
-        'Add compartments to pattern their dividers'
+        'Enable divider slots to pattern the divider pieces'
       );
     });
 

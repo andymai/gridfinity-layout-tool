@@ -107,11 +107,13 @@ export function useWallsSection() {
     // Slotted bins pattern their removable pieces instead of in-bin walls, so
     // the gate is "are there any slots" rather than "are there compartments".
     if (params.style === 'slotted') {
+      // Slotted bins have no compartments, so the compartment copy would be
+      // nonsense — point at the slots that actually produce the pieces.
       if (params.dividerPieces.thickness <= 0)
-        return t('binDesigner.walls.pattern.dividers.noDividers');
+        return t('binDesigner.walls.pattern.dividers.noSlots');
       return params.slotConfig.x.enabled || params.slotConfig.y.enabled
         ? undefined
-        : t('binDesigner.walls.pattern.dividers.noDividers');
+        : t('binDesigner.walls.pattern.dividers.noSlots');
     }
     // Zero thickness means compartment IDs with no wall between them — nothing
     // to pattern, and the worker gate rejects it too.

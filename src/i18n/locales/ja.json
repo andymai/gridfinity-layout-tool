@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "ソリッドビンには仕切る区画がありません",
   "binDesigner.walls.pattern.dividers.piecesNote": "パターンは書き出した仕切りに現れます。プレビューでは無垢のまま表示されます",
   "binDesigner.walls.pattern.dividers.noDividers": "仕切りにパターンを適用するには区画を追加してください",
+  "binDesigner.walls.pattern.dividers.noSlots": "仕切りにパターンを適用するには仕切りスロットを有効にしてください",
   "binDesigner.walls.pattern.dividers.tooSmall": "仕切り壁がこのパターンには小さすぎます",
   "binDesigner.walls.pattern.dividers.someTooSmall": "一部の仕切り壁は小さすぎるため無垢のままになります",
   "binDesigner.walls.text.heading": "壁面テキスト",

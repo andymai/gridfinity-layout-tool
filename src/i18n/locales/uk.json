@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Суцільні контейнери не мають відсіків для поділу",
   "binDesigner.walls.pattern.dividers.piecesNote": "Візерунок з’явиться на експортованих перегородках — у попередньому перегляді вони суцільні",
   "binDesigner.walls.pattern.dividers.noDividers": "Додайте відсіки, щоб нанести візерунок на їхні перегородки",
+  "binDesigner.walls.pattern.dividers.noSlots": "Увімкніть пази перегородок, щоб нанести на них візерунок",
   "binDesigner.walls.pattern.dividers.tooSmall": "Перегородки замалі для цього візерунка",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Деякі перегородки замалі й залишаться суцільними",
   "binDesigner.walls.text.heading": "Текст на стінці",

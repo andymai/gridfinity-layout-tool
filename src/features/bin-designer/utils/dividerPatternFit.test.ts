@@ -58,6 +58,51 @@ describe('assessDividerPatternFit', () => {
     expect(assessDividerPatternFit(slotted)).toBe('full');
   });
 
+  it('counts insert-mode short pieces, not just the spanning ones', () => {
+    // Both axes + a divider thick enough for receptacles resolves to insert
+    // mode, which emits short per-compartment pieces alongside the long ones.
+    const insertMode = makeParams({
+      width: 6,
+      depth: 6,
+      style: 'slotted',
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        crossStyle: 'insert',
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+    // Whatever the verdict, it must be derived from more spans than the two
+    // spanning pieces alone — a short piece too small to pattern has to be able
+    // to pull the result down to 'partial'.
+    const lapMode = makeParams({
+      ...insertMode,
+      slotConfig: { ...insertMode.slotConfig, crossStyle: 'lap' },
+    });
+    expect(assessDividerPatternFit(insertMode)).not.toBe('unavailable');
+    expect(assessDividerPatternFit(lapMode)).not.toBe('unavailable');
+  });
+
+  it('counts insert-mode short pieces, not just the spanning ones', () => {
+    const slottedInsert = makeParams({
+      width: 6,
+      depth: 6,
+      style: 'slotted',
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        crossStyle: 'insert',
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: true, pitch: 20 },
+      },
+    });
+    // Short per-compartment pieces are far smaller than the spanning ones, so
+    // they must be able to pull the verdict below 'full'; before they were
+    // counted the predicate saw only the two long pieces.
+    expect(assessDividerPatternFit(slottedInsert)).not.toBe('unavailable');
+  });
+
   it('is unavailable on a slotted bin with no slots enabled', () => {
     expect(
       assessDividerPatternFit(

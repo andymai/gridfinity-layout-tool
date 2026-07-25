@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Los contenedores macizos no tienen compartimentos que dividir",
   "binDesigner.walls.pattern.dividers.piecesNote": "El patrón aparece en los separadores exportados; la vista previa los muestra macizos",
   "binDesigner.walls.pattern.dividers.noDividers": "Añade compartimentos para aplicar el patrón a sus separadores",
+  "binDesigner.walls.pattern.dividers.noSlots": "Activa las ranuras para aplicar el patrón a los separadores",
   "binDesigner.walls.pattern.dividers.tooSmall": "Los separadores son demasiado pequeños para este patrón",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Algunos separadores son demasiado pequeños y quedarán macizos",
   "binDesigner.walls.text.heading": "Texto en la pared",

@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Caixas maciças não têm compartimentos para dividir",
   "binDesigner.walls.pattern.dividers.piecesNote": "O padrão aparece nas divisórias exportadas; a pré-visualização as mostra maciças",
   "binDesigner.walls.pattern.dividers.noDividers": "Adicione compartimentos para aplicar o padrão às divisórias",
+  "binDesigner.walls.pattern.dividers.noSlots": "Ative as ranhuras para aplicar o padrão às divisórias",
   "binDesigner.walls.pattern.dividers.tooSmall": "As divisórias são pequenas demais para este padrão",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Algumas divisórias são pequenas demais e ficarão maciças",
   "binDesigner.walls.text.heading": "Texto na parede",

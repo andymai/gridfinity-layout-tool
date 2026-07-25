@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Massive Behälter haben keine Fächer zum Unterteilen",
   "binDesigner.walls.pattern.dividers.piecesNote": "Das Muster erscheint auf den exportierten Trennwänden – in der Vorschau bleiben sie massiv",
   "binDesigner.walls.pattern.dividers.noDividers": "Füge Fächer hinzu, um deren Trennwände zu mustern",
+  "binDesigner.walls.pattern.dividers.noSlots": "Aktiviere Trennwand-Schlitze, um die Trennwände zu mustern",
   "binDesigner.walls.pattern.dividers.tooSmall": "Die Trennwände sind für dieses Muster zu klein",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Einige Trennwände sind zu klein und bleiben massiv",
   "binDesigner.walls.text.heading": "Wandtext",

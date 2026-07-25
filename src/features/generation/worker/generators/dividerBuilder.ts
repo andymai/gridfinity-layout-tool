@@ -289,7 +289,10 @@ export function buildUniqueDividerPieces(
           pattern(buildDividerPiece(lengths.interior, thickness, dividerHeight), {
             length: lengths.interior,
             // Both ends slide into a face receptacle rather than a wall slot.
-            tabEngagement: grooveDepth,
+            // Must be the ENGAGEMENT, not the groove depth — `lengths.interior`
+            // is `span + 2 * tabEngagement(grooveDepth, ...)`, so using the raw
+            // depth would hold more clear than the tab actually occupies.
+            tabEngagement: tabEngagement(grooveDepth, clearance),
           }),
           `${axisLabel(shortAxis)}-compartment`
         );
@@ -298,9 +301,10 @@ export function buildUniqueDividerPieces(
         addPiece(
           pattern(buildDividerPiece(lengths.edge, thickness, dividerHeight), {
             length: lengths.edge,
-            // One end seats in a wall slot, the other in a receptacle; hold the
-            // deeper of the two at both ends rather than tracking handedness.
-            tabEngagement: Math.max(grooveDepth, tabDepth),
+            // One end seats in a wall slot, the other in a receptacle, and
+            // `calculateShortDividerLengths` builds this piece with the SHALLOWER
+            // of the two at both ends — so mirror that rather than the deeper one.
+            tabEngagement: Math.min(tabDepth, tabEngagement(grooveDepth, clearance)),
           }),
           `${axisLabel(shortAxis)}-compartment-edge`
         );

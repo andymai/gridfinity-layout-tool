@@ -22,8 +22,13 @@ import { binDimensions } from './binDimensions';
 import {
   calculateDividerHeight,
   calculateDividerLength,
+  calculateShortDividerLengths,
+  calculateShortDividerSpans,
+  calculateSlotPositions,
   getEffectiveSlotDimensions,
+  getReceptacleDepth,
   resolveCompartmentDividerHeight,
+  resolveCrossDividerMode,
   tabEngagement,
 } from '@/shared/utils/slotMath';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
@@ -171,23 +176,73 @@ function resolveSlottedBand(
     dividerPieces.thickness,
     dividerPieces.clearance
   );
-  const tab = tabEngagement(slotDepth, dividerPieces.clearance);
+  const clearance = dividerPieces.clearance;
+  const tab = tabEngagement(slotDepth, clearance);
   const height = calculateDividerHeight(dividerPieces, wallHeight, params.base.stackingLip);
+  const usable = (length: number, endTab: number): number => length - 2 * (endTab + border);
 
   const spans: number[] = [];
   if (slotConfig.x.enabled) {
-    spans.push(
-      calculateDividerLength(innerW, slotDepth, dividerPieces.clearance) - 2 * (tab + border)
-    );
+    spans.push(usable(calculateDividerLength(innerW, slotDepth, clearance), tab));
   }
   if (slotConfig.y.enabled) {
-    spans.push(
-      calculateDividerLength(innerD, slotDepth, dividerPieces.clearance) - 2 * (tab + border)
-    );
+    spans.push(usable(calculateDividerLength(innerD, slotDepth, clearance), tab));
   }
+  spans.push(...insertModeShortSpans(params, innerW, innerD, slotDepth, tab, usable));
 
   return {
     bandHeight: height - TOP_KEEP_OUT - BOTTOM_SOLID_SKIRT,
     spans,
   };
+}
+
+/**
+ * Patternable spans of the SHORT per-compartment pieces that insert mode emits
+ * alongside the spanning ones.
+ *
+ * They are far smaller than a spanning piece, so omitting them would let the
+ * panel report `full` while those pieces came out solid. Mirrors the piece plan
+ * in `dividerBuilder`, using the same shared helpers it builds the lengths with.
+ */
+function insertModeShortSpans(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  slotDepth: number,
+  wallTab: number,
+  usable: (length: number, endTab: number) => number
+): number[] {
+  const { slotConfig, dividerPieces } = params;
+  if (!slotConfig.x.enabled || !slotConfig.y.enabled) return [];
+  const { style, longAxis } = resolveCrossDividerMode(slotConfig, dividerPieces.thickness);
+  if (style !== 'insert') return [];
+
+  const lipTaper = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+  const edgeInset = params.base.stackingLip ? Math.max(0, lipTaper - params.wallThickness) : 0;
+  const longPositions = calculateSlotPositions(
+    longAxis === 'y' ? innerW : innerD,
+    longAxis === 'y' ? slotConfig.y.pitch : slotConfig.x.pitch,
+    edgeInset
+  );
+  if (longPositions.length === 0) return [];
+
+  const clearance = dividerPieces.clearance;
+  const grooveDepth = getReceptacleDepth(dividerPieces.thickness);
+  const shortSpanDim = longAxis === 'y' ? innerW : innerD;
+  const lengths = calculateShortDividerLengths(
+    calculateShortDividerSpans(longPositions, shortSpanDim, dividerPieces.thickness),
+    slotDepth,
+    grooveDepth,
+    clearance
+  );
+
+  const receptacleTab = tabEngagement(grooveDepth, clearance);
+  const out: number[] = [];
+  if (lengths.interior !== null && lengths.interior > 0) {
+    out.push(usable(lengths.interior, receptacleTab));
+  }
+  if (lengths.edge !== null && lengths.edge > 0) {
+    out.push(usable(lengths.edge, Math.min(wallTab, receptacleTab)));
+  }
+  return out;
 }

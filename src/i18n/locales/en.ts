@@ -2284,6 +2284,8 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.dividers.piecesNote':
     'The pattern appears on the exported divider pieces — the preview shows them solid',
   'binDesigner.walls.pattern.dividers.noDividers': 'Add compartments to pattern their dividers',
+  'binDesigner.walls.pattern.dividers.noSlots':
+    'Enable divider slots to pattern the divider pieces',
   'binDesigner.walls.pattern.dividers.tooSmall': 'Dividers are too small for this pattern',
   'binDesigner.walls.pattern.dividers.someTooSmall':
     'Some dividers are too small and will stay solid',

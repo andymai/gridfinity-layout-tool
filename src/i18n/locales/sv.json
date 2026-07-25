@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Massiva lådor har inga fack att dela upp",
   "binDesigner.walls.pattern.dividers.piecesNote": "Mönstret syns på de exporterade mellanväggarna – förhandsvisningen visar dem massiva",
   "binDesigner.walls.pattern.dividers.noDividers": "Lägg till fack för att ge deras mellanväggar mönster",
+  "binDesigner.walls.pattern.dividers.noSlots": "Aktivera mellanväggsspår för att ge mellanväggarna mönster",
   "binDesigner.walls.pattern.dividers.tooSmall": "Mellanväggarna är för små för det här mönstret",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Vissa mellanväggar är för små och förblir massiva",
   "binDesigner.walls.text.heading": "Väggtext",

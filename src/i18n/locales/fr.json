@@ -1071,6 +1071,7 @@
   "binDesigner.walls.pattern.dividers.notSolid": "Les bacs pleins n’ont aucun compartiment à diviser",
   "binDesigner.walls.pattern.dividers.piecesNote": "Le motif apparaît sur les cloisons exportées — l’aperçu les affiche pleines",
   "binDesigner.walls.pattern.dividers.noDividers": "Ajoutez des compartiments pour appliquer le motif à leurs cloisons",
+  "binDesigner.walls.pattern.dividers.noSlots": "Activez les rainures pour appliquer le motif aux cloisons",
   "binDesigner.walls.pattern.dividers.tooSmall": "Les cloisons sont trop petites pour ce motif",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Certaines cloisons sont trop petites et resteront pleines",
   "binDesigner.walls.text.heading": "Texte mural",
