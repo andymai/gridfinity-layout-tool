@@ -29,10 +29,14 @@ import {
   resolveCrossDividerMode,
   resolvePartialStyle,
   SNAP_SCORE_WIDTH,
+  tabEngagement,
 } from '@/shared/utils/slotMath';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { getEffectiveSlotDimensions } from './slotBuilder';
+import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
+import type { PieceGeometry } from './dividerPiecePatternBuilder';
+import type { PieceObstruction } from './dividerPiecePatterns';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
 
 // Re-export shared math so existing imports from generation internals still work
@@ -222,10 +226,29 @@ export function buildUniqueDividerPieces(
     const length = calculateDividerLength(innerDim, slotDepth, clearance);
     return buildDividerPiece(length, thickness, dividerHeight);
   };
+  const fullLength = (axis: 'x' | 'y'): number =>
+    calculateDividerLength(axis === 'x' ? innerW : innerD, slotDepth, clearance);
+
+  // Wall pattern on removable pieces (#2811). Null when the option is off, so
+  // every `pattern(...)` below is a pass-through in the default case.
+  const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
+  const tabDepth = tabEngagement(slotDepth, clearance);
+  const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
+    positions.map((offset) => ({ offset, width }));
+  const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D =>
+    patternCtx ? cutPiecePattern(piece, patternCtx, geometry) : piece;
 
   if (!bothAxes) {
-    if (slotConfig.x.enabled) addPiece(buildFullPiece('x'), axisLabel('x'));
-    if (slotConfig.y.enabled) addPiece(buildFullPiece('y'), axisLabel('y'));
+    if (slotConfig.x.enabled)
+      addPiece(
+        pattern(buildFullPiece('x'), { length: fullLength('x'), tabEngagement: tabDepth }),
+        axisLabel('x')
+      );
+    if (slotConfig.y.enabled)
+      addPiece(
+        pattern(buildFullPiece('y'), { length: fullLength('y'), tabEngagement: tabDepth }),
+        axisLabel('y')
+      );
     return pieces;
   }
 
@@ -249,6 +272,11 @@ export function buildUniqueDividerPieces(
       dividerHeight,
       thickness
     );
+    longPiece = pattern(longPiece, {
+      length: fullLength(longAxis),
+      tabEngagement: tabDepth,
+      grooves: columns(groovePositions, slotWidth),
+    });
     addPiece(longPiece, axisLabel(longAxis));
 
     // Short pieces only exist where there are rows to seat them —
@@ -258,13 +286,26 @@ export function buildUniqueDividerPieces(
       const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
       if (lengths.interior !== null && lengths.interior > 0) {
         addPiece(
-          buildDividerPiece(lengths.interior, thickness, dividerHeight),
+          pattern(buildDividerPiece(lengths.interior, thickness, dividerHeight), {
+            length: lengths.interior,
+            // Both ends slide into a face receptacle rather than a wall slot.
+            // Must be the ENGAGEMENT, not the groove depth — `lengths.interior`
+            // is `span + 2 * tabEngagement(grooveDepth, ...)`, so using the raw
+            // depth would hold more clear than the tab actually occupies.
+            tabEngagement: tabEngagement(grooveDepth, clearance),
+          }),
           `${axisLabel(shortAxis)}-compartment`
         );
       }
       if (lengths.edge !== null && lengths.edge > 0) {
         addPiece(
-          buildDividerPiece(lengths.edge, thickness, dividerHeight),
+          pattern(buildDividerPiece(lengths.edge, thickness, dividerHeight), {
+            length: lengths.edge,
+            // One end seats in a wall slot, the other in a receptacle, and
+            // `calculateShortDividerLengths` builds this piece with the SHALLOWER
+            // of the two at both ends — so mirror that rather than the deeper one.
+            tabEngagement: Math.min(tabDepth, tabEngagement(grooveDepth, clearance)),
+          }),
           `${axisLabel(shortAxis)}-compartment-edge`
         );
       }
@@ -307,9 +348,13 @@ export function buildUniqueDividerPieces(
         clearance
       );
       for (const seg of segments) {
-        const piece = notch(
-          buildDividerPiece(seg.length, thickness, dividerHeight),
-          seg.notchOffsets
+        const piece = pattern(
+          notch(buildDividerPiece(seg.length, thickness, dividerHeight), seg.notchOffsets),
+          {
+            length: seg.length,
+            tabEngagement: tabDepth,
+            notches: columns(seg.notchOffsets, slotWidth),
+          }
         );
         const label = seg.labelSuffix ? `${axisLabel(axis)}-${seg.labelSuffix}` : axisLabel(axis);
         addPiece(piece, label);
@@ -318,16 +363,24 @@ export function buildUniqueDividerPieces(
     }
 
     let piece = notch(buildFullPiece(axis), crossings);
+    const snapPositions =
+      partialStyle === 'snappable' ? calculateLapSnapPositions(crossings, slotWidth) : [];
     if (partialStyle === 'snappable') {
       piece = cutFaceGrooves(
         piece,
-        calculateLapSnapPositions(crossings, slotWidth),
+        snapPositions,
         SNAP_SCORE_WIDTH,
         getSnapScoreDepth(thickness),
         dividerHeight,
         thickness
       );
     }
+    piece = pattern(piece, {
+      length: fullLength(axis),
+      tabEngagement: tabDepth,
+      notches: columns(crossings, slotWidth),
+      grooves: columns(snapPositions, SNAP_SCORE_WIDTH),
+    });
     addPiece(piece, axisLabel(axis));
   }
 
@@ -362,6 +415,12 @@ export function buildAuthoredDividerPieces(
   const segments = deriveWallSegments(grid, innerW, innerD);
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
 
+  const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
+  // Authored pieces shorten their length at abutting ends rather than carrying
+  // a tab there, so holding the full tab depth at both ends is conservative —
+  // a little extra solid margin, never a perforated tab.
+  const tabDepth = tabEngagement(slotDepth, clearance);
+
   const pieces: LabeledDividerPiece[] = [];
   let yOffset = 0;
   for (const spec of specs) {
@@ -374,6 +433,13 @@ export function buildAuthoredDividerPieces(
       thickness,
       spec.fromTop
     );
+    if (patternCtx) {
+      shape = cutPiecePattern(shape, patternCtx, {
+        length: spec.length,
+        tabEngagement: tabDepth,
+        notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
+      });
+    }
     if (yOffset > 0) {
       const translated = translate(shape, [0, yOffset, 0]);
       shape.delete();

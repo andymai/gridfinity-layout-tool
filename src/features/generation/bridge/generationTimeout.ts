@@ -159,9 +159,19 @@ export const EXPORT_MAX_TIMEOUT_MS = 1_200_000;
  * from the feature pipeline, and a zero-thickness grid has no walls at all.
  */
 function countDividerSegments(params: BinParams): number {
-  if (params.style !== 'standard') return 0;
-  if (params.base.solid) return 0;
+  if (params.base.solid || params.style === 'solid') return 0;
   if (isPartialMask(params.cellMask)) return 0;
+
+  // Slotted bins pattern their removable pieces instead. The piece count is
+  // small and fixed by topology (one or two spanning pieces, plus at most two
+  // short variants in insert mode), so charge a flat handful rather than
+  // re-deriving the whole piece plan here.
+  if (params.style === 'slotted') {
+    if (params.dividerPieces.thickness <= 0) return 0;
+    const axes = (params.slotConfig.x.enabled ? 1 : 0) + (params.slotConfig.y.enabled ? 1 : 0);
+    return axes === 0 ? 0 : axes + 2;
+  }
+
   if (params.compartments.thickness <= 0) return 0;
   const { cols, rows, cells } = params.compartments;
   if (cols <= 1 && rows <= 1) return 0;

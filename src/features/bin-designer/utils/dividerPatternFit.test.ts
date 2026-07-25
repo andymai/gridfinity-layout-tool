@@ -39,10 +39,64 @@ describe('assessDividerPatternFit', () => {
     ).toBe('unavailable');
   });
 
-  it('is unavailable on slotted and solid bins', () => {
-    expect(assessDividerPatternFit(makeParams({ style: 'slotted' }))).toBe('unavailable');
+  it('is unavailable on solid bins', () => {
     expect(
       assessDividerPatternFit(makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, solid: true } }))
+    ).toBe('unavailable');
+    expect(assessDividerPatternFit(makeParams({ style: 'solid' }))).toBe('unavailable');
+  });
+
+  it('assesses a slotted bin against its removable pieces', () => {
+    const slotted = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+    });
+    expect(assessDividerPatternFit(slotted)).toBe('full');
+  });
+
+  it('counts insert-mode short pieces, not just the spanning ones', () => {
+    const slotted = (crossStyle: 'insert' | 'lap', pitch: number): BinParams =>
+      makeParams({
+        width: 6,
+        depth: 6,
+        style: 'slotted',
+        // Thick enough for face receptacles, which is what lets 'insert' resolve.
+        dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          crossStyle,
+          x: { enabled: true, pitch },
+          y: { enabled: true, pitch },
+        },
+      });
+
+    // Insert mode emits short per-compartment pieces; at this pitch they are
+    // too small to carry an element while the spanning pieces easily are. Lap
+    // mode produces no short pieces at all, so the same bin comes out full —
+    // the contrast is what proves the short spans are actually being counted.
+    expect(assessDividerPatternFit(slotted('insert', 20))).toBe('partial');
+    expect(assessDividerPatternFit(slotted('lap', 20))).toBe('full');
+
+    // Widen the compartments and the short pieces fit too.
+    expect(assessDividerPatternFit(slotted('insert', 40))).toBe('full');
+  });
+
+  it('is unavailable on a slotted bin with no slots enabled', () => {
+    expect(
+      assessDividerPatternFit(
+        makeParams({
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: false, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+        })
+      )
     ).toBe('unavailable');
   });
 

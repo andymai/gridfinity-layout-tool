@@ -277,9 +277,9 @@ describe('computeGenerationTimeoutMs', () => {
       params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
     );
     const inapplicable: Array<Partial<BinParams>> = [
-      { style: 'slotted', compartments },
       { base: { ...DEFAULT_BIN_PARAMS.base, solid: true }, compartments },
       { compartments: { ...compartments, thickness: 0 } },
+      { style: 'solid', compartments },
     ];
     for (const overrides of inapplicable) {
       expect(
@@ -288,6 +288,24 @@ describe('computeGenerationTimeoutMs', () => {
         )
       ).toBe(baseline);
     }
+  });
+
+  it('charges a slotted bin for its removable piece panels', () => {
+    const slotted: Partial<BinParams> = {
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+    };
+    const on = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true }, ...slotted })
+    );
+    const off = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, ...slotted })
+    );
+    expect(on).toBeGreaterThan(off);
   });
 
   it('grants no divider bonus without dividers to pattern', () => {

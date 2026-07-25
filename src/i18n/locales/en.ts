@@ -2279,11 +2279,13 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.dividers': 'Pattern divider walls',
   'binDesigner.walls.pattern.dividersHint':
     'Compartment dividers use the same pattern and scale as the outer walls',
-  'binDesigner.walls.pattern.dividers.notStandard':
-    'Removable dividers print as separate pieces and stay solid',
   'binDesigner.walls.pattern.dividers.notPolygon': 'Not available on custom shapes',
   'binDesigner.walls.pattern.dividers.notSolid': 'Solid bins have no compartments to divide',
+  'binDesigner.walls.pattern.dividers.piecesNote':
+    'The pattern appears on the exported divider pieces — the preview shows them solid',
   'binDesigner.walls.pattern.dividers.noDividers': 'Add compartments to pattern their dividers',
+  'binDesigner.walls.pattern.dividers.noSlots':
+    'Enable divider slots to pattern the divider pieces',
   'binDesigner.walls.pattern.dividers.tooSmall': 'Dividers are too small for this pattern',
   'binDesigner.walls.pattern.dividers.someTooSmall':
     'Some dividers are too small and will stay solid',

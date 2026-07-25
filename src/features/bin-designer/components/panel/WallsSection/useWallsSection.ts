@@ -103,22 +103,44 @@ export function useWallsSection() {
     // slotted copy and be told its dividers print as separate pieces.
     if (params.style === 'solid' || params.base.solid)
       return t('binDesigner.walls.pattern.dividers.notSolid');
-    if (params.style !== 'standard') return t('binDesigner.walls.pattern.dividers.notStandard');
     if (isPartialMask(params.cellMask)) return t('binDesigner.walls.pattern.dividers.notPolygon');
+    // Slotted bins pattern their removable pieces instead of in-bin walls, so
+    // the gate is "are there any slots" rather than "are there compartments".
+    if (params.style === 'slotted') {
+      // Slotted bins have no compartments, so the compartment copy would be
+      // nonsense — point at the slots that actually produce the pieces.
+      if (params.dividerPieces.thickness <= 0)
+        return t('binDesigner.walls.pattern.dividers.noSlots');
+      return params.slotConfig.x.enabled || params.slotConfig.y.enabled
+        ? undefined
+        : t('binDesigner.walls.pattern.dividers.noSlots');
+    }
     // Zero thickness means compartment IDs with no wall between them — nothing
     // to pattern, and the worker gate rejects it too.
     if (getCompartmentCount(params.compartments) <= 1 || params.compartments.thickness <= 0)
       return t('binDesigner.walls.pattern.dividers.noDividers');
     return undefined;
-  }, [params.style, params.base.solid, params.cellMask, params.compartments, t]);
+  }, [
+    params.style,
+    params.base.solid,
+    params.cellMask,
+    params.compartments,
+    params.dividerPieces.thickness,
+    params.slotConfig.x.enabled,
+    params.slotConfig.y.enabled,
+    t,
+  ]);
 
   const dividersFit = useMemo(() => assessDividerPatternFit(params), [params]);
   const dividersNote = useMemo(() => {
     if (dividersAvailableReason !== undefined) return undefined;
     if (dividersFit === 'none') return t('binDesigner.walls.pattern.dividers.tooSmall');
     if (dividersFit === 'partial') return t('binDesigner.walls.pattern.dividers.someTooSmall');
+    // The removable-piece ghosts in the preview are plain boxes with no CSG, so
+    // they can't show the perforation — say where it does show up.
+    if (params.style === 'slotted') return t('binDesigner.walls.pattern.dividers.piecesNote');
     return undefined;
-  }, [dividersAvailableReason, dividersFit, t]);
+  }, [dividersAvailableReason, dividersFit, params.style, t]);
 
   // ── Wall surface text (#2695) ─────────────────────────────────────────
   // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
