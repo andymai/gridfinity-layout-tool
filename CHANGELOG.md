@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.295.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.295.0...gridfinity-layout-tool-v4.295.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* **analytics:** suppress Firefox-for-iOS __firefox__ error noise ([#2812](https://github.com/andymai/gridfinity-layout-tool/issues/2812)) ([f07eb91](https://github.com/andymai/gridfinity-layout-tool/commit/f07eb91f4838e04f9acb39b7c647394838991b58))
+
 ## [4.295.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.294.0...gridfinity-layout-tool-v4.295.0) (2026-07-25)
 
 
