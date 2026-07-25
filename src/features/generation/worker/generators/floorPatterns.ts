@@ -58,10 +58,16 @@ export interface FloorPatternPlan {
  *
  * Solid bins have no floor distinct from the body, and the lightweight base
  * already replaces the slab + feet with shelled cups whose floor is open.
+ *
+ * `style === 'solid'` is checked alongside `dim.solid` (which only reflects
+ * `base.solid`) because the two are kept in lockstep by an IMPLICATION_RULE at
+ * runtime, not by `migrateParams` — so a crafted or hand-edited design can
+ * carry one without the other, and this must refuse the same bins the
+ * constraint engine and the timeout budget do.
  */
 export function floorPatternApplies(params: BinParams, dim: BinDimensions): boolean {
   if (params.floorPattern?.enabled !== true) return false;
-  if (dim.solid || dim.lightweight) return false;
+  if (dim.solid || params.style === 'solid' || dim.lightweight) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
 

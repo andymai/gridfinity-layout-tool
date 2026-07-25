@@ -38,6 +38,14 @@ describe('floorPatternApplies', () => {
     expect(floorPatternApplies(solid, deriveDimensions(solid, false))).toBe(false);
   });
 
+  it("rejects a solid STYLE even when base.solid didn't come along", () => {
+    // The two are tied by a runtime constraint rule, not by migration, so a
+    // hand-edited design can carry the style without the base flag.
+    const crafted = makeParams({ style: 'solid' });
+    expect(crafted.base.solid).toBe(false);
+    expect(floorPatternApplies(crafted, deriveDimensions(crafted, false))).toBe(false);
+  });
+
   it('rejects a lightweight base (already open, no slab to perforate)', () => {
     const lite = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } });
     expect(floorPatternApplies(lite, deriveDimensions(lite, false))).toBe(false);

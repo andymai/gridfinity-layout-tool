@@ -425,6 +425,9 @@ describe('printEstimates', () => {
       for (const overrides of [
         { base: { ...DEFAULT_BIN_PARAMS.base, solid: true } },
         { base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
+        // Solid STYLE without `base.solid` — a runtime constraint rule ties the
+        // two, but migration doesn't, so a crafted design can carry just one.
+        { style: 'solid' as const },
       ]) {
         const base: BinParams = { ...DEFAULT_BIN_PARAMS, height: 4, ...overrides };
         expect(estimatePrint({ ...base, floorPattern }).volumeMm3).toBe(
