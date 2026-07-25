@@ -2905,5 +2905,11 @@
   "binDesigner.lid.frictionHint": "Se sujeta al borde solo por fricción, sin rieles ni imanes. Lo más fácil de imprimir y quitar.",
   "binDesigner.lid.advanced": "Avanzado",
   "binDesigner.textSizeMax": "Tamaño máx. de etiqueta",
-  "binDesigner.textSizeCapHint": "Las pestañas de una fila comparten tamaño, así que una etiqueta más larga reduce las demás."
+  "binDesigner.textSizeCapHint": "Las pestañas de una fila comparten tamaño, así que una etiqueta más larga reduce las demás.",
+  "binDesigner.base.floorPattern": "Orificios de drenaje",
+  "binDesigner.base.floorPattern.shape": "Forma del orificio",
+  "binDesigner.base.floorPattern.hint": "Perfora el suelo y los pies que hay debajo, para que el agua y el polvo caigan directamente",
+  "binDesigner.base.floorPattern.tooSmall": "Estos orificios son demasiado grandes para esta base: prueba una escala más fina",
+  "binDesigner.floorPatternDisablesLightweight": "No se pueden combinar los orificios de drenaje con un suelo ligero",
+  "binDesigner.lightweightDisablesFloorPattern": "Un suelo ligero ya está abierto: no hay losa que perforar"
 }

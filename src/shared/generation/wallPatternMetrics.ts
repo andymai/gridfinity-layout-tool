@@ -7,7 +7,10 @@
  * single import rather than a cross-feature boundary violation.
  */
 
-import { getPatternCalculator } from '@/features/generation/worker/generators/patterns';
+import {
+  getPatternCalculator,
+  isStampCalculator,
+} from '@/features/generation/worker/generators/patterns';
 import type { WallPatternType } from '@/shared/types/bin';
 
 /** Element sizing needed to predict whether a pattern fits a given surface. */
@@ -28,4 +31,42 @@ export function wallPatternElementMetrics(
     minPatternHeight: calculator.getMinPatternHeight(),
     shapeRadius: calculator.getShapeRadius(),
   };
+}
+
+/**
+ * Open area (mm²) a stamp pattern actually removes from a `fillW × fillH` box.
+ *
+ * Exact rather than fractional: it places the real element centres and sums
+ * their areas. That matters on a SMALL box — a bin floor's per-foot window is
+ * only ~33mm across, and a fraction-of-area model over-reports it by ~3x
+ * because it ignores the margin the calculator leaves at every edge. Over a
+ * long wall band the same margin is noise, which is why the wall estimate can
+ * still use a fraction.
+ *
+ * Returns 0 for wrapped-lattice (kumiko) patterns, which have no stamped
+ * element to count and never tile a bounded box.
+ */
+export function stampPatternOpenArea(
+  pattern: WallPatternType,
+  binHeightUnits: number,
+  scale: number,
+  fillW: number,
+  fillH: number
+): number {
+  if (fillW <= 0 || fillH <= 0) return 0;
+  const calculator = getPatternCalculator(pattern, binHeightUnits, scale);
+  if (!isStampCalculator(calculator)) return 0;
+
+  const count = calculator.calculateCenters({ fillW, fillH }).length;
+  if (count === 0) return 0;
+
+  const shape = calculator.getShapeDescriptor({ fillW, fillH });
+  const elementArea =
+    shape.kind === 'polygon'
+      ? 0.5 * shape.sides * shape.radius ** 2 * Math.sin((2 * Math.PI) / shape.sides)
+      : // Rounded corners: four quarter-circles replace four square corners, so
+        // the rectangle loses (4 - pi) * r². Slots always carry a non-zero
+        // radius, so dropping this term would over-report every slot.
+        shape.width * shape.height - (4 - Math.PI) * shape.cornerRadius ** 2;
+  return count * Math.max(0, elementArea);
 }

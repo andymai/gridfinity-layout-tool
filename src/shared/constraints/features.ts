@@ -6,6 +6,7 @@
  * This is the foundation for the constraint engine's resolution logic.
  */
 
+import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
 import type { FeatureKey, FeatureManifest } from './types';
 
 /**
@@ -116,6 +117,21 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     label: 'Wall Patterns',
     isEnabled: (p) => p.wallPattern.enabled,
     apply: (p, enabled) => ({ wallPattern: { ...p.wallPattern, enabled } }),
+  },
+
+  floorPattern: {
+    key: 'floorPattern',
+    label: 'Floor Pattern',
+    isEnabled: (p) => p.floorPattern?.enabled === true,
+    apply: (p, enabled) => ({
+      floorPattern: {
+        // A design saved before the feature has no config to spread; the
+        // pattern/scale defaults are re-derived by `migrateParams`, so an
+        // omitted member here would be an invalid partial.
+        ...(p.floorPattern ?? DEFAULT_FLOOR_PATTERN_CONFIG),
+        enabled,
+      },
+    }),
   },
 
   inserts: {

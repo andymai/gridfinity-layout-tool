@@ -1,5 +1,6 @@
 /**
- * Base section: Magnet holes, screw holes, stacking lip, flat bottom.
+ * Base section: Magnet holes, screw holes, stacking lip, flat bottom, floor
+ * pattern.
  *
  * Uses smart defaults with "Customize" inline expansion for magnet/screw
  * radius and depth parameters that most users won't need to change.
@@ -10,6 +11,8 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
+import { PatternSelector } from '../WallsSection/PatternSelector';
+import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
@@ -89,6 +92,42 @@ export function BaseSection() {
         checked={state.hasLightweight}
         onChange={handlers.toggleLightweight}
         disabledReason={handlers.lightweightDisabledReason}
+      />
+
+      {/* ── Floor pattern (#2816) — drainage / ventilation. The holes pass
+          through the floor slab AND the feet, staying inside each foot's flat
+          underside so the baseplate-mating taper is never cut. */}
+      <FeatureToggle
+        label={t('binDesigner.base.floorPattern')}
+        checked={state.floorPatternEnabled}
+        onChange={handlers.toggleFloorPattern}
+        disabledReason={handlers.floorPatternDisabledReason}
+        primaryControls={
+          <>
+            <PatternSelector
+              id="floor-pattern-selector"
+              labelKey="binDesigner.base.floorPattern.shape"
+              patterns={FLOOR_PATTERN_TYPES}
+              selectedPattern={state.floorPatternType}
+              onChange={handlers.setFloorPatternType}
+            />
+            <SliderInput
+              label={t('binDesigner.walls.pattern.scale')}
+              value={state.floorPatternScalePercent}
+              onChange={handlers.setFloorPatternScale}
+              min={0}
+              max={100}
+              step={5}
+              unit="%"
+              info={t('binDesigner.walls.pattern.scaleHint')}
+            />
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {state.floorPatternDoesNotFit
+                ? t('binDesigner.base.floorPattern.tooSmall')
+                : t('binDesigner.base.floorPattern.hint')}
+            </p>
+          </>
+        }
       />
     </div>
   );

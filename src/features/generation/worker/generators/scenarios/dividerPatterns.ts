@@ -9,30 +9,10 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import { meshVolume } from '../__kernel-tests__/meshAssertions';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { CompartmentConfig } from '@/shared/types/bin';
-
-/** Enclosed volume of a triangle mesh via the signed-tetrahedron sum. */
-function meshVolume({ vertices, indices }: MeshData): number {
-  let v = 0;
-  for (let i = 0; i < indices.length; i += 3) {
-    const a = (indices[i] ?? 0) * 3;
-    const b = (indices[i + 1] ?? 0) * 3;
-    const c = (indices[i + 2] ?? 0) * 3;
-    const ax = vertices[a] ?? 0,
-      ay = vertices[a + 1] ?? 0,
-      az = vertices[a + 2] ?? 0;
-    const bx = vertices[b] ?? 0,
-      by = vertices[b + 1] ?? 0,
-      bz = vertices[b + 2] ?? 0;
-    const cx = vertices[c] ?? 0,
-      cy = vertices[c + 1] ?? 0,
-      cz = vertices[c + 2] ?? 0;
-    v += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
-  }
-  return Math.abs(v) / 6;
-}
 
 /**
  * Assert the divider option actually perforated the dividers.

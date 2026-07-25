@@ -363,6 +363,79 @@ describe('printEstimates', () => {
       expect(on.volumeMm3).toBe(off.volumeMm3);
     });
 
+    it('drainage holes remove material from the floor and the feet', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const off = estimatePrint(base);
+      const on = estimatePrint({
+        ...base,
+        floorPattern: { enabled: true, pattern: 'round' as const, scale: 0.5 },
+      });
+      expect(on.volumeMm3).toBeLessThan(off.volumeMm3);
+      // The holes only reach the base, so the saving can never exceed the base
+      // component — a raw prism-volume term blew past that by ~4x.
+      expect(off.volumeMm3 - on.volumeMm3).toBeLessThan(off.volumeMm3 * 0.4);
+    });
+
+    it('drainage holes save less on a flat base (no feet to perforate)', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const socketSaving =
+        estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
+      const flat = { ...base, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const } };
+      const flatSaving =
+        estimatePrint(flat).volumeMm3 - estimatePrint({ ...flat, floorPattern }).volumeMm3;
+      expect(flatSaving).toBeGreaterThan(0);
+      expect(flatSaving).toBeLessThan(socketSaving);
+    });
+
+    it('half sockets quarter each foot, so the holes remove less', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const fullFoot =
+        estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
+      const halved = { ...base, base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true } };
+      const quarterFeet =
+        estimatePrint(halved).volumeMm3 - estimatePrint({ ...halved, floorPattern }).volumeMm3;
+      expect(quarterFeet).toBeGreaterThan(0);
+      expect(quarterFeet).toBeLessThan(fullFoot);
+    });
+
+    it('a custom footprint only counts the feet it actually grows', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, height: 4 };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      const full =
+        estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
+      // An L: three of the four cells filled, so three feet carry windows.
+      const masked = {
+        ...base,
+        cellMask: {
+          cols: 4,
+          rows: 4,
+          cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+        },
+      };
+      const partial =
+        estimatePrint(masked).volumeMm3 - estimatePrint({ ...masked, floorPattern }).volumeMm3;
+      expect(partial).toBeGreaterThan(0);
+      expect(partial).toBeCloseTo(full * 0.75, 0);
+    });
+
+    it('drainage holes are inert on the bases the worker never patterns', () => {
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      for (const overrides of [
+        { base: { ...DEFAULT_BIN_PARAMS.base, solid: true } },
+        { base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
+        // Solid STYLE without `base.solid` — a runtime constraint rule ties the
+        // two, but migration doesn't, so a crafted design can carry just one.
+        { style: 'solid' as const },
+      ]) {
+        const base: BinParams = { ...DEFAULT_BIN_PARAMS, height: 4, ...overrides };
+        expect(estimatePrint({ ...base, floorPattern }).volumeMm3).toBe(
+          estimatePrint(base).volumeMm3
+        );
+      }
+    });
+
     it('honeycomb walls skip slotted walls correctly', () => {
       const baseParams: BinParams = {
         ...DEFAULT_BIN_PARAMS,

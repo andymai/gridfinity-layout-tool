@@ -77,6 +77,21 @@ export const DIVIDER_PATTERN_MS_PER_SEGMENT = 6_000;
 export const KUMIKO_DIVIDER_MS_PER_SEGMENT = 20_000;
 
 /**
+ * Extra time when the floor pattern is enabled (#2816).
+ *
+ * The floor cut is one pattern panel per socket cell, and each panel becomes a
+ * tool in BOTH the body's pattern cut and a second cut against the base socket
+ * — the only feature that booleans the socket at all.
+ */
+export const FLOOR_PATTERN_BONUS_MS = 15_000;
+
+/**
+ * Per-cell bonus for the floor pattern. One window per foot, so the cost tracks
+ * footprint area directly with no floor — even a 1x1 bin pays for its panel.
+ */
+export const FLOOR_PATTERN_MS_PER_CELL = 2_000;
+
+/**
  * Bonus per 2 height units above the reference height.
  *
  * Applied **unconditionally** (not gated on the hex pattern) because tessellation
@@ -249,6 +264,18 @@ function binRawBudgetMs(params: BinParams): number {
           ? KUMIKO_DIVIDER_MS_PER_SEGMENT
           : DIVIDER_PATTERN_MS_PER_SEGMENT);
     }
+  }
+
+  // Mirrors the worker's `floorPatternApplies` gate — a solid or lightweight
+  // base never builds a floor panel, so it shouldn't be granted time for one.
+  if (
+    params.floorPattern?.enabled === true &&
+    !params.base.solid &&
+    params.style !== 'solid' &&
+    !params.base.lightweight
+  ) {
+    timeout += FLOOR_PATTERN_BONUS_MS;
+    timeout += Math.ceil(safeWidth) * Math.ceil(safeDepth) * FLOOR_PATTERN_MS_PER_CELL;
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

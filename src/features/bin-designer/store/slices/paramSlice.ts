@@ -14,6 +14,7 @@ import type {
   WallCutout,
   WallSide,
   WallPatternConfig,
+  FloorPatternConfig,
   CutoutConfig,
   Insert,
   HandleConfig,
@@ -33,7 +34,7 @@ import {
   type LipColorConfig,
   type TopAccentConfig,
 } from '../../types/featureColors';
-import { DEFAULT_BIN_PARAMS } from '../../constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_FLOOR_PATTERN_CONFIG } from '../../constants';
 import { isErr } from '@/core/result';
 import {
   carryCompartmentTextsByPosition,
@@ -249,6 +250,17 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.wallPattern = { ...state.params.wallPattern, ...partial };
+      });
+    },
+
+    updateFloorPattern: (partial: Partial<FloorPatternConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.floorPattern = {
+          ...DEFAULT_FLOOR_PATTERN_CONFIG,
+          ...state.params.floorPattern,
+          ...partial,
+        };
       });
     },
 

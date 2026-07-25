@@ -2905,5 +2905,11 @@
   "binDesigner.lid.frictionHint": "レールや磁石を使わず、摩擦だけでリップに固定します。印刷と取り外しが最も簡単です。",
   "binDesigner.lid.advanced": "詳細設定",
   "binDesigner.textSizeMax": "ラベルの最大サイズ",
-  "binDesigner.textSizeCapHint": "同じ列のタブはサイズを共有するため、長いラベルがあると他が小さくなります。"
+  "binDesigner.textSizeCapHint": "同じ列のタブはサイズを共有するため、長いラベルがあると他が小さくなります。",
+  "binDesigner.base.floorPattern": "水抜き穴",
+  "binDesigner.base.floorPattern.shape": "穴の形状",
+  "binDesigner.base.floorPattern.hint": "底面とその下の脚を貫通させ、水やほこりをそのまま落とします",
+  "binDesigner.base.floorPattern.tooSmall": "この底面には穴が大きすぎます。スケールを細かくしてください",
+  "binDesigner.floorPatternDisablesLightweight": "水抜き穴と軽量フロアは併用できません",
+  "binDesigner.lightweightDisablesFloorPattern": "軽量フロアはすでに開いており、貫通させる底板がありません"
 }

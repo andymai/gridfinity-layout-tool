@@ -6,7 +6,7 @@ import {
   STYLE_DEFAULT_OMIT_KEYS,
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
-import { WALL_PATTERN_TYPES } from '../types';
+import { FLOOR_PATTERN_TYPES, WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
@@ -477,6 +477,43 @@ describe('migrateParams', () => {
     const result = migrateParams({});
     expect(result.wallPattern.enabled).toBe(false);
     expect(result.wallPattern.pattern).toBe('honeycomb');
+  });
+
+  it('should backfill a disabled floorPattern on designs saved before the feature', () => {
+    const result = migrateParams({});
+    expect(result.floorPattern).toEqual({ enabled: false, pattern: 'round', scale: 0.5 });
+  });
+
+  it('should preserve every registered floor pattern type through migration', () => {
+    for (const pattern of FLOOR_PATTERN_TYPES) {
+      const result = migrateParams({ floorPattern: { enabled: true, pattern } });
+      expect(result.floorPattern?.pattern).toBe(pattern);
+      expect(result.floorPattern?.enabled).toBe(true);
+    }
+  });
+
+  it('should coerce a floor pattern the floor cannot tile back to the default', () => {
+    // Kumiko lattices are valid wall patterns but only exist wrapped around the
+    // perimeter, so a crafted payload naming one must not reach the geometry.
+    const result = migrateParams({
+      floorPattern: { enabled: true, pattern: 'mitsukude' },
+    } as never);
+    expect(result.floorPattern?.pattern).toBe('round');
+  });
+
+  it('should clamp a crafted floorPattern scale into [0, 1]', () => {
+    expect(
+      migrateParams({ floorPattern: { enabled: true, pattern: 'round', scale: 42 } }).floorPattern
+        ?.scale
+    ).toBe(1);
+    expect(
+      migrateParams({ floorPattern: { enabled: true, pattern: 'round', scale: -3 } }).floorPattern
+        ?.scale
+    ).toBe(0);
+    expect(
+      migrateParams({ floorPattern: { enabled: true, pattern: 'round', scale: NaN } }).floorPattern
+        ?.scale
+    ).toBe(0.5);
   });
 
   it('should not share wallPattern reference with DEFAULT_WALL_PATTERN_CONFIG', () => {

@@ -1,8 +1,12 @@
 /**
- * Pattern selector for wall patterns.
+ * Pattern selector for wall and floor patterns.
  *
  * Dropdown select with visual preview icons for each pattern type.
  * Patterns are mutually exclusive — only one can be active at a time.
+ *
+ * `patterns` narrows the offered set: the floor picker (#2816) passes the stamp
+ * types, since the kumiko lattices only exist as a band wrapped around the
+ * walls and have no meaning on a floor.
  */
 
 import { Select } from '@/design-system';
@@ -248,6 +252,12 @@ interface PatternSelectorProps {
   disabled?: boolean;
   /** Reason why the selector is disabled */
   disabledReason?: string;
+  /** Restrict the offered patterns. Defaults to every wall pattern. */
+  patterns?: readonly WallPatternType[];
+  /** DOM id, so two selectors can coexist on one panel. */
+  id?: string;
+  /** i18n key for the field label. */
+  labelKey?: string;
 }
 
 export function PatternSelector({
@@ -255,11 +265,16 @@ export function PatternSelector({
   onChange,
   disabled = false,
   disabledReason,
+  patterns,
+  id = 'pattern-selector',
+  labelKey = 'binDesigner.walls.pattern.label',
 }: PatternSelectorProps) {
   const t = useTranslation();
 
-  const selectedOption =
-    PATTERN_OPTIONS.find((o) => o.value === selectedPattern) ?? PATTERN_OPTIONS[0];
+  const options = patterns
+    ? PATTERN_OPTIONS.filter((o) => o.value === null || patterns.includes(o.value))
+    : PATTERN_OPTIONS;
+  const selectedOption = options.find((o) => o.value === selectedPattern) ?? options[0];
   const SelectedIcon = selectedOption.icon;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -269,17 +284,21 @@ export function PatternSelector({
 
   return (
     <div className={disabled ? 'opacity-50' : ''}>
-      <label htmlFor="pattern-selector" className="text-xs text-content-secondary mb-2 block">
-        {t('binDesigner.walls.pattern.label')}
+      <label htmlFor={id} className="text-xs text-content-secondary mb-2 block">
+        {t(labelKey)}
       </label>
       <Select
-        id="pattern-selector"
-        value={selectedPattern ?? 'none'}
+        id={id}
+        // Bound to the RESOLVED option, not the raw prop: when `patterns`
+        // narrows the set, a value outside it (a crafted or pre-migration
+        // design) has no matching <option> and renders blank. `selectedOption`
+        // already falls back to the "none" entry.
+        value={selectedOption.value ?? 'none'}
         onChange={handleChange}
         disabled={disabled}
-        options={PATTERN_OPTIONS.map(({ value, labelKey, groupKey }) => ({
+        options={options.map(({ value, labelKey: optionLabelKey, groupKey }) => ({
           id: value ?? 'none',
-          name: t(labelKey),
+          name: t(optionLabelKey),
           group: groupKey ? t(groupKey) : undefined,
         }))}
         leftIcon={<SelectedIcon className="w-4 h-4 text-content-primary" />}

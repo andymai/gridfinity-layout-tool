@@ -2905,5 +2905,11 @@
   "binDesigner.lid.frictionHint": "Tient sur le rebord par simple friction, sans rails ni aimants. Le plus simple à imprimer et à retirer.",
   "binDesigner.lid.advanced": "Avancé",
   "binDesigner.textSizeMax": "Taille max. d’étiquette",
-  "binDesigner.textSizeCapHint": "Les languettes d’une rangée partagent une taille : une étiquette plus longue réduit les autres."
+  "binDesigner.textSizeCapHint": "Les languettes d’une rangée partagent une taille : une étiquette plus longue réduit les autres.",
+  "binDesigner.base.floorPattern": "Trous de drainage",
+  "binDesigner.base.floorPattern.shape": "Forme des trous",
+  "binDesigner.base.floorPattern.hint": "Perfore le fond et les pieds situés en dessous, pour que l’eau et la poussière tombent directement",
+  "binDesigner.base.floorPattern.tooSmall": "Ces trous sont trop grands pour cette base — essayez une échelle plus fine",
+  "binDesigner.floorPatternDisablesLightweight": "Impossible de combiner des trous de drainage avec un fond allégé",
+  "binDesigner.lightweightDisablesFloorPattern": "Un fond allégé est déjà ouvert — il n’y a pas de dalle à perforer"
 }

@@ -48,6 +48,14 @@ graph TB
   On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),
   and the panel notes that the pattern only shows on the exported pieces — `GhostDividerPieces`
   renders merged boxes with no CSG and cannot subtract the holes
+- `components/panel/BaseSection/` — magnet/screw/lip/flat/half-socket/lightweight toggles plus the
+  "Drainage holes" floor pattern (`floorPattern`, #2816), which perforates the floor slab AND the
+  feet under it. Reuses `WallsSection`'s `PatternSelector` narrowed to `FLOOR_PATTERN_TYPES` — the
+  kumiko lattices are perimeter-wrapped and have no meaning on a floor. Its too-small copy comes
+  from `utils/floorPatternFit.ts`, which IMPORTS the window rule from
+  `@/shared/generation/floorPatternMetrics` rather than mirroring it: that rule is what keeps holes
+  off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
+  refuses to pattern
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit

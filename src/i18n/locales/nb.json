@@ -2905,5 +2905,11 @@
   "binDesigner.lid.frictionHint": "Holder på kanten kun ved friksjon, uten skinner eller magneter. Enklest å skrive ut og ta av.",
   "binDesigner.lid.advanced": "Avansert",
   "binDesigner.textSizeMax": "Maks etikettstørrelse",
-  "binDesigner.textSizeCapHint": "Fliker i en rad deler størrelse, så en lengre etikett krymper de andre."
+  "binDesigner.textSizeCapHint": "Fliker i en rad deler størrelse, så en lengre etikett krymper de andre.",
+  "binDesigner.base.floorPattern": "Dreneringshull",
+  "binDesigner.base.floorPattern.shape": "Hullform",
+  "binDesigner.base.floorPattern.hint": "Perforerer bunnen og føttene under, slik at vann og støv faller rett gjennom",
+  "binDesigner.base.floorPattern.tooSmall": "Disse hullene er for store for denne bunnen – prøv en finere skala",
+  "binDesigner.floorPatternDisablesLightweight": "Kan ikke kombinere dreneringshull med et lettvektsgulv",
+  "binDesigner.lightweightDisablesFloorPattern": "Et lettvektsgulv er allerede åpent – det finnes ingen plate å perforere"
 }
