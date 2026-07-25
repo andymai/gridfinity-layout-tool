@@ -15,7 +15,11 @@ export interface LabelSuggestion {
   value: string;
   /** Dominant signal behind the suggestion. */
   reason: SuggestionReason;
-  /** Combined score; higher sorts first. */
+  /**
+   * Combined score. Orders suggestions only *within* a tier: literal (letter)
+   * matches always sort ahead of meaning-only ones regardless of score, so a
+   * higher score does not by itself mean an earlier position in the result.
+   */
   score: number;
   /** For `usedBefore`: how many other bins already carry this label. */
   count?: number;
