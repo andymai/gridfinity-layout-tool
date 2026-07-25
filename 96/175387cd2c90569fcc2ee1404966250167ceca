@@ -1,0 +1,29 @@
+src/features/bin-designer/utils/printEstimates.ts
+  s_6bf5af221a7bb1::t_0300d573dd3d86 659-665,673,675-676
+src/features/generation/worker/generators/scenarios/dividerPatterns.ts
+  s_6bf5af221a7bb1::t_13b153fef71f55 12
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_6bf5af221a7bb1::t_c7a25bf0f7b7a0 37-77
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_6bf5af221a7bb1::t_c1ea85f22ea452 391-402
+src/features/generation/worker/generators/scenarios/floorPatterns.ts
+  s_6bf5af221a7bb1::t_13b153fef71f55 12
+src/shared/generation/wallPatternMetrics.ts
+  s_6bf5af221a7bb1::t_0300d573dd3d86 67-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "96175387cd2c90569fcc2ee1404966250167ceca",
+  "prompts": {},
+  "sessions": {
+    "s_6bf5af221a7bb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b555e792-0c5a-41ed-9e00-12c4bbe97b9c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
