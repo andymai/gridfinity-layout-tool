@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.298.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.298.0...gridfinity-layout-tool-v4.298.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* **bin-inspector:** rank literal label matches above meaning-only ones ([#2825](https://github.com/andymai/gridfinity-layout-tool/issues/2825)) ([517c576](https://github.com/andymai/gridfinity-layout-tool/commit/517c57683bccc03d8f696c7ee09801907a9716b3))
+
 ## [4.298.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.297.0...gridfinity-layout-tool-v4.298.0) (2026-07-25)
 
 
