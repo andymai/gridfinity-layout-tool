@@ -1069,6 +1069,7 @@
   "binDesigner.walls.pattern.dividersHint": "Перегородки відсіків використовують той самий візерунок і масштаб, що й зовнішні стінки",
   "binDesigner.walls.pattern.dividers.notStandard": "Знімні перегородки друкуються окремими деталями й залишаються суцільними",
   "binDesigner.walls.pattern.dividers.notPolygon": "Недоступно для власних форм",
+  "binDesigner.walls.pattern.dividers.notSolid": "Суцільні контейнери не мають відсіків для поділу",
   "binDesigner.walls.pattern.dividers.noDividers": "Додайте відсіки, щоб нанести візерунок на їхні перегородки",
   "binDesigner.walls.pattern.dividers.tooSmall": "Перегородки замалі для цього візерунка",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Деякі перегородки замалі й залишаться суцільними",

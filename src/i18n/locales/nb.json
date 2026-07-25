@@ -1069,6 +1069,7 @@
   "binDesigner.walls.pattern.dividersHint": "Skilleveggene bruker samme mønster og skala som ytterveggene",
   "binDesigner.walls.pattern.dividers.notStandard": "Avtakbare skillevegger skrives ut som egne deler og forblir massive",
   "binDesigner.walls.pattern.dividers.notPolygon": "Ikke tilgjengelig for egendefinerte former",
+  "binDesigner.walls.pattern.dividers.notSolid": "Massive beholdere har ingen rom å dele opp",
   "binDesigner.walls.pattern.dividers.noDividers": "Legg til rom for å gi skilleveggene mønster",
   "binDesigner.walls.pattern.dividers.tooSmall": "Skilleveggene er for små for dette mønsteret",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Noen skillevegger er for små og forblir massive",

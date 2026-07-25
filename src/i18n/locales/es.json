@@ -1069,6 +1069,7 @@
   "binDesigner.walls.pattern.dividersHint": "Los separadores de compartimentos usan el mismo patrón y escala que las paredes exteriores",
   "binDesigner.walls.pattern.dividers.notStandard": "Los separadores extraíbles se imprimen como piezas aparte y quedan macizos",
   "binDesigner.walls.pattern.dividers.notPolygon": "No disponible en formas personalizadas",
+  "binDesigner.walls.pattern.dividers.notSolid": "Los contenedores macizos no tienen compartimentos que dividir",
   "binDesigner.walls.pattern.dividers.noDividers": "Añade compartimentos para aplicar el patrón a sus separadores",
   "binDesigner.walls.pattern.dividers.tooSmall": "Los separadores son demasiado pequeños para este patrón",
   "binDesigner.walls.pattern.dividers.someTooSmall": "Algunos separadores son demasiado pequeños y quedarán macizos",

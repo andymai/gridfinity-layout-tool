@@ -164,6 +164,20 @@ describe('useWallsSection', () => {
       );
     });
 
+    it('gives solid bins their own explanation, not the slotted one', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          style: 'solid',
+          base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBe(
+        'Solid bins have no compartments to divide'
+      );
+    });
+
     it('explains that removable dividers stay solid', () => {
       useDesignerStore.setState({
         params: {

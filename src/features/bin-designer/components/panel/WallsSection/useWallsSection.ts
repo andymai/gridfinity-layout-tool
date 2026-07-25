@@ -98,6 +98,11 @@ export function useWallsSection() {
   );
 
   const dividersAvailableReason = useMemo(() => {
+    // Solid first: `base.solid` and `style === 'solid'` are kept in lockstep by
+    // IMPLICATION_RULES, so a solid bin would otherwise fall through to the
+    // slotted copy and be told its dividers print as separate pieces.
+    if (params.style === 'solid' || params.base.solid)
+      return t('binDesigner.walls.pattern.dividers.notSolid');
     if (params.style !== 'standard') return t('binDesigner.walls.pattern.dividers.notStandard');
     if (isPartialMask(params.cellMask)) return t('binDesigner.walls.pattern.dividers.notPolygon');
     // Zero thickness means compartment IDs with no wall between them — nothing
@@ -105,7 +110,7 @@ export function useWallsSection() {
     if (getCompartmentCount(params.compartments) <= 1 || params.compartments.thickness <= 0)
       return t('binDesigner.walls.pattern.dividers.noDividers');
     return undefined;
-  }, [params.style, params.cellMask, params.compartments, t]);
+  }, [params.style, params.base.solid, params.cellMask, params.compartments, t]);
 
   const dividersFit = useMemo(() => assessDividerPatternFit(params), [params]);
   const dividersNote = useMemo(() => {
