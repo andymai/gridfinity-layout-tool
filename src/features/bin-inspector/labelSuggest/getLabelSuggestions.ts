@@ -47,10 +47,18 @@ interface Candidate {
   canonical: string | null;
 }
 
-type TextKind = 'prefix' | 'substring' | 'alias' | 'fuzzy' | 'none';
+type TextKind = 'prefix' | 'substring' | 'alias' | 'fuzzy' | 'semantic' | 'none';
 interface TextMatch {
   score: number;
   kind: TextKind;
+}
+
+// Kinds that reflect a real letter match (vs. meaning-only 'semantic' / 'none').
+// Literal matches always outrank meaning-only ones while typing.
+const LITERAL_KINDS = new Set<TextKind>(['prefix', 'substring', 'alias', 'fuzzy']);
+
+interface ScoredSuggestion extends LabelSuggestion {
+  literal: boolean;
 }
 
 /**
@@ -142,7 +150,7 @@ export function getLabelSuggestions(
   const conceptDom = query ? conceptDomain(query) : null;
   const relatedSet = new Set(query ? relatedTermsForQuery(query) : []);
 
-  const results: LabelSuggestion[] = [];
+  const scored: ScoredSuggestion[] = [];
   for (const cand of candidates.values()) {
     if (cand.value.length > maxLength) continue;
     const key = cand.value.toLowerCase();
@@ -158,7 +166,7 @@ export function getLabelSuggestions(
       const semantic =
         (conceptDom !== null && cand.domain === conceptDom) ||
         (cand.canonical !== null && relatedSet.has(cand.canonical));
-      if (semantic) text = { score: SEMANTIC_SCORE, kind: 'alias' };
+      if (semantic) text = { score: SEMANTIC_SCORE, kind: 'semantic' };
     }
 
     // While typing, only surface candidates that relate to the typed text.
@@ -186,21 +194,31 @@ export function getLabelSuggestions(
       isCatalog: cand.isCatalog,
       kind: text.kind,
     });
-    results.push({
+    scored.push({
       value: cand.value,
       reason,
       score,
       count: reason === 'usedBefore' ? reuse : undefined,
       domain: cand.domain,
+      literal: LITERAL_KINDS.has(text.kind),
     });
   }
 
-  results.sort((a, b) => {
+  scored.sort((a, b) => {
+    // A literal letter match always ranks above a meaning-only match, so typing
+    // never surfaces an unrelated-looking word above what the letters match.
+    if (a.literal !== b.literal) return a.literal ? -1 : 1;
     if (b.score !== a.score) return b.score - a.score;
     if (a.value.length !== b.value.length) return a.value.length - b.value.length;
     return a.value.localeCompare(b.value);
   });
-  return results.slice(0, limit);
+  return scored.slice(0, limit).map((s) => ({
+    value: s.value,
+    reason: s.reason,
+    score: s.score,
+    count: s.count,
+    domain: s.domain,
+  }));
 }
 
 /**
@@ -233,7 +251,8 @@ function pickReason(x: {
   if (x.isSequence) return 'nextInSet';
   if (x.isNeighbor) return 'matchesNeighbors';
   if (x.reuse > 0) return 'usedBefore';
-  if (x.domainMatch || x.kind === 'alias' || x.kind === 'fuzzy') return 'similar';
+  if (x.domainMatch || x.kind === 'alias' || x.kind === 'fuzzy' || x.kind === 'semantic')
+    return 'similar';
   return 'catalog';
 }
 

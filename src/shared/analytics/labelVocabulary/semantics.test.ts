@@ -13,6 +13,12 @@ describe('conceptDomain', () => {
     expect(conceptDomain('herramientas')).toBe('tools');
   });
 
+  it('recognizes both spaced and unspaced 3D-printing concepts', () => {
+    expect(conceptDomain('3d printing')).toBe('printing_3d');
+    expect(conceptDomain('3dprinting')).toBe('printing_3d');
+    expect(conceptDomain('3d print')).toBe('printing_3d');
+  });
+
   it('returns null for a specific item or unknown word', () => {
     expect(conceptDomain('screw')).toBeNull();
     expect(conceptDomain('banana')).toBeNull();

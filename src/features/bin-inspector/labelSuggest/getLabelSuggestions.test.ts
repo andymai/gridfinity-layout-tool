@@ -120,6 +120,17 @@ describe('getLabelSuggestions', () => {
     expect(results[0]?.value).toBe(getDisplayTerm('screwdriver'));
   });
 
+  it('ranks a literal match above a higher-scoring meaning-only match', () => {
+    // Neighbor "Bolt" shares an edge and is semantically related to screw, so it
+    // accrues neighbor + semantic score — but it doesn't match the typed letters.
+    const target = makeBin({ x: 0, category: 'c1', label: 'screw' });
+    const neighbor = makeBin({ x: 1, category: 'c1', label: 'Bolt' });
+    const results = getLabelSuggestions('screw', ctx(target, neighbor));
+    expect(results[0]?.value).toBe(getDisplayTerm('screwdriver'));
+    const boltIndex = results.findIndex((r) => r.value === 'Bolt');
+    expect(boltIndex).toBeGreaterThan(0);
+  });
+
   it('never returns a suggestion longer than maxLength', () => {
     const target = makeBin({ label: 'scr' });
     const results = getLabelSuggestions('scr', ctx(target), { maxLength: 5 });
