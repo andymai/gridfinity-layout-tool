@@ -191,75 +191,84 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         </div>
 
         {/* Height and Clearance - compact inline controls */}
-        <div
-          className={`grid gap-3 ${constraints.maxClearance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}
-        >
-          {/* Height control — entered in mm, stored as free fractional units */}
-          <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              {t('common.heightMm')}
-            </label>
-            <Stepper
-              value={bin.height * layout.heightUnitMm}
-              onChange={(mmValue) =>
-                updateField('height', mmToHeightUnits(mm(mmValue), layout.heightUnitMm))
-              }
-              onStep={(delta) => updateField('height', roundHeightUnits(bin.height + delta))}
-              min={constraints.minHeight * layout.heightUnitMm}
-              max={constraints.maxHeight * layout.heightUnitMm}
-              step={layout.heightUnitMm}
-              inputDecimals={2}
-              size={isMobile ? 'lg' : 'md'}
-              aria-label={t('inspector.single.heightAria')}
-            />
-            <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
-              <div>{`${heightEquiv} · ${minHeightHint} · ${maxHeightHint}`}</div>
-              <div>
-                {t('inspector.printedAndStackHint', {
-                  printed: heightMmAt(bin.height, STACK_LIP_MM),
-                  pitch: heightMmAt(bin.height),
-                })}
-              </div>
-              {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
-                <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
-              )}
-            </div>
-          </div>
-
-          {/* Clearance control */}
-          {constraints.maxClearance > 0 && (
+        <div className="space-y-1.5">
+          <div
+            className={`grid gap-3 ${constraints.maxClearance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}
+          >
+            {/* Height control — entered in mm, stored as free fractional units */}
             <div>
-              <label
-                className={`block ${labelSize} text-content-tertiary`}
-                title={t('inspector.clearanceTooltip')}
-              >
-                {t('inspector.clearanceMmLabel')}
+              <label className={`block ${labelSize} text-content-tertiary`}>
+                {t('common.heightMm')}
               </label>
               <Stepper
-                value={(bin.clearanceHeight || 0) * layout.heightUnitMm}
+                value={bin.height * layout.heightUnitMm}
                 onChange={(mmValue) =>
-                  updateField('clearanceHeight', mmToHeightUnits(mm(mmValue), layout.heightUnitMm))
+                  updateField('height', mmToHeightUnits(mm(mmValue), layout.heightUnitMm))
                 }
-                onStep={(delta) =>
-                  updateField(
-                    'clearanceHeight',
-                    roundHeightUnits((bin.clearanceHeight || 0) + delta)
-                  )
-                }
-                min={0}
-                max={constraints.maxClearance * layout.heightUnitMm}
+                onStep={(delta) => updateField('height', roundHeightUnits(bin.height + delta))}
+                min={constraints.minHeight * layout.heightUnitMm}
+                max={constraints.maxHeight * layout.heightUnitMm}
                 step={layout.heightUnitMm}
                 inputDecimals={2}
                 size={isMobile ? 'lg' : 'md'}
-                aria-label={t('inspector.single.clearanceAria')}
+                aria-label={t('inspector.single.heightAria')}
               />
-              <div className="text-center mt-1 text-[10px] text-content-disabled">
-                {t('inspector.heightUnitsEquiv', {
-                  units: formatHeightUnits(bin.clearanceHeight || 0),
-                })}
-              </div>
+              <div className="mt-1 text-[10px] text-content-disabled">{heightEquiv}</div>
             </div>
-          )}
+
+            {/* Clearance control */}
+            {constraints.maxClearance > 0 && (
+              <div>
+                <label
+                  className={`block ${labelSize} text-content-tertiary`}
+                  title={t('inspector.clearanceTooltip')}
+                >
+                  {t('inspector.clearanceMmLabel')}
+                </label>
+                <Stepper
+                  value={(bin.clearanceHeight || 0) * layout.heightUnitMm}
+                  onChange={(mmValue) =>
+                    updateField(
+                      'clearanceHeight',
+                      mmToHeightUnits(mm(mmValue), layout.heightUnitMm)
+                    )
+                  }
+                  onStep={(delta) =>
+                    updateField(
+                      'clearanceHeight',
+                      roundHeightUnits((bin.clearanceHeight || 0) + delta)
+                    )
+                  }
+                  min={0}
+                  max={constraints.maxClearance * layout.heightUnitMm}
+                  step={layout.heightUnitMm}
+                  inputDecimals={2}
+                  size={isMobile ? 'lg' : 'md'}
+                  aria-label={t('inspector.single.clearanceAria')}
+                />
+                <div className="mt-1 text-[10px] text-content-disabled">
+                  {t('inspector.heightUnitsEquiv', {
+                    units: formatHeightUnits(bin.clearanceHeight || 0),
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Outside the grid: inside the narrow Height column these lines wrap far
+              enough to stretch the row and strand the Clearance cell. */}
+          <div className="space-y-0.5 text-[10px] text-content-disabled">
+            <div>{`${minHeightHint} · ${maxHeightHint}`}</div>
+            <div>
+              {t('inspector.printedAndStackHint', {
+                printed: heightMmAt(bin.height, STACK_LIP_MM),
+                pitch: heightMmAt(bin.height),
+              })}
+            </div>
+            {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (
+              <div className="text-warning">{t('inspector.nonStandardStackWarning')}</div>
+            )}
+          </div>
         </div>
 
         {/* Split warning with print bed visualization */}
