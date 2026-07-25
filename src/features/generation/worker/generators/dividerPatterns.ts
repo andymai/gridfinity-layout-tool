@@ -48,8 +48,19 @@ export interface DividerKeepOut {
   readonly zMax: number;
 }
 
+/**
+ * The minimum a panel builder needs: how much span it may fill and where it
+ * must stay solid. Shared with the removable-piece path (`dividerPiecePatterns`),
+ * which has the same 2D problem in a different print frame.
+ */
+export interface PatternPanelSpec {
+  /** Span the pattern may occupy, centred on the panel. */
+  readonly patternSpan: number;
+  readonly keepOuts: readonly DividerKeepOut[];
+}
+
 /** One patternable divider: placement, usable span, and its keep-outs. */
-export interface DividerPatternTarget {
+export interface DividerPatternTarget extends PatternPanelSpec {
   /** Centerline midpoint in bin-centered mm. */
   readonly x: number;
   readonly y: number;
@@ -57,9 +68,6 @@ export interface DividerPatternTarget {
   readonly rotateZ: number;
   /** True length along the (possibly tilted) wall. */
   readonly wallLen: number;
-  /** Span the pattern may occupy, after a solid margin at each junction. */
-  readonly patternSpan: number;
-  readonly keepOuts: readonly DividerKeepOut[];
 }
 
 /** Resolved divider-pattern layout for a bin. */

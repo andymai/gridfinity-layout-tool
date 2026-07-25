@@ -39,10 +39,37 @@ describe('assessDividerPatternFit', () => {
     ).toBe('unavailable');
   });
 
-  it('is unavailable on slotted and solid bins', () => {
-    expect(assessDividerPatternFit(makeParams({ style: 'slotted' }))).toBe('unavailable');
+  it('is unavailable on solid bins', () => {
     expect(
       assessDividerPatternFit(makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, solid: true } }))
+    ).toBe('unavailable');
+    expect(assessDividerPatternFit(makeParams({ style: 'solid' }))).toBe('unavailable');
+  });
+
+  it('assesses a slotted bin against its removable pieces', () => {
+    const slotted = makeParams({
+      style: 'slotted',
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+    });
+    expect(assessDividerPatternFit(slotted)).toBe('full');
+  });
+
+  it('is unavailable on a slotted bin with no slots enabled', () => {
+    expect(
+      assessDividerPatternFit(
+        makeParams({
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: false, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+        })
+      )
     ).toBe('unavailable');
   });
 

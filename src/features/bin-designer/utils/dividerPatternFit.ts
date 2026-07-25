@@ -19,7 +19,13 @@
 import type { BinParams } from '@/features/bin-designer/types';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { binDimensions } from './binDimensions';
-import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import {
+  calculateDividerHeight,
+  calculateDividerLength,
+  getEffectiveSlotDimensions,
+  resolveCompartmentDividerHeight,
+  tabEngagement,
+} from '@/shared/utils/slotMath';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -78,20 +84,54 @@ function dividerSpans(params: BinParams, innerW: number, innerD: number): number
 export function assessDividerPatternFit(params: BinParams): DividerPatternFit {
   const { wallPattern } = params;
   if (!wallPattern.enabled || wallPattern.dividers !== true) return 'unavailable';
-  if (params.style !== 'standard') return 'unavailable';
-  if (params.base.solid) return 'unavailable';
+  if (params.base.solid || params.style === 'solid') return 'unavailable';
   if (isPartialMask(params.cellMask)) return 'unavailable';
-  // A zero-thickness grid has compartment IDs but no divider walls. Unreachable
-  // through the UI, but `migrateParams` spreads a persisted `compartments`
-  // object without clamping, so a crafted payload can carry it — and the worker
-  // gate (`dividerPatternsApply`) rejects it.
-  if (params.compartments.thickness <= 0) return 'unavailable';
 
   const { innerW, innerD, wallHeight } = binDimensions(params);
   if (innerW <= 0 || innerD <= 0) return 'unavailable';
 
+  const { minPatternHeight, shapeRadius } = wallPatternElementMetrics(
+    wallPattern.pattern,
+    params.height,
+    wallPattern.scale ?? DEFAULT_PATTERN_SCALE
+  );
+  const border = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
+  // One element plus its two junction margins — the least a divider can carry.
+  const minSpan = 2 * border + 2 * shapeRadius;
+
+  const resolved =
+    params.style === 'slotted'
+      ? resolveSlottedBand(params, innerW, innerD, wallHeight, border)
+      : resolveIntegratedBand(params, innerW, innerD, wallHeight, border);
+  if (!resolved) return 'unavailable';
+  if (resolved.bandHeight < minPatternHeight) return 'none';
+
+  const fitted = resolved.spans.filter((span) => span >= minSpan).length;
+  if (fitted === 0) return 'none';
+  return fitted < resolved.spans.length ? 'partial' : 'full';
+}
+
+interface ResolvedBand {
+  readonly bandHeight: number;
+  /** Patternable span of each divider, after end margins. */
+  readonly spans: number[];
+}
+
+/** Band and spans for integrated compartment dividers. */
+function resolveIntegratedBand(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  border: number
+): ResolvedBand | null {
+  // A zero-thickness grid has compartment IDs but no divider walls. Unreachable
+  // through the UI, but `migrateParams` spreads a persisted `compartments`
+  // object without clamping, so a crafted payload can carry it — and the worker
+  // gate (`dividerPatternsApply`) rejects it.
+  if (params.compartments.thickness <= 0) return null;
   const spans = dividerSpans(params, innerW, innerD);
-  if (spans.length === 0) return 'unavailable';
+  if (spans.length === 0) return null;
 
   const interiorHeight = computeInteriorHeight(
     wallHeight,
@@ -102,18 +142,52 @@ export function assessDividerPatternFit(params: BinParams): DividerPatternFit {
     params.compartments.dividerHeight,
     interiorHeight
   );
-  const bandHeight = dividerHeight - TOP_KEEP_OUT - (params.wallThickness + BOTTOM_SOLID_SKIRT);
+  return {
+    bandHeight: dividerHeight - TOP_KEEP_OUT - (params.wallThickness + BOTTOM_SOLID_SKIRT),
+    spans: spans.map((span) => span - 2 * border),
+  };
+}
 
-  const { minPatternHeight, shapeRadius } = wallPatternElementMetrics(
-    wallPattern.pattern,
-    params.height,
-    wallPattern.scale ?? DEFAULT_PATTERN_SCALE
+/**
+ * Band and spans for a slotted bin's REMOVABLE pieces.
+ *
+ * A removable piece is free-standing, so there is no floor slab to clear —
+ * only the solid rim at each edge (mirrors `dividerPiecePatterns`). Spans are
+ * the printed length minus the tab engagement buried in each wall slot.
+ */
+function resolveSlottedBand(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  border: number
+): ResolvedBand | null {
+  const { slotConfig, dividerPieces } = params;
+  if (dividerPieces.thickness <= 0) return null;
+  if (!slotConfig.x.enabled && !slotConfig.y.enabled) return null;
+
+  const { slotDepth } = getEffectiveSlotDimensions(
+    params.wallThickness,
+    dividerPieces.thickness,
+    dividerPieces.clearance
   );
-  if (bandHeight < minPatternHeight) return 'none';
+  const tab = tabEngagement(slotDepth, dividerPieces.clearance);
+  const height = calculateDividerHeight(dividerPieces, wallHeight, params.base.stackingLip);
 
-  const border = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
-  const minSpan = 2 * border + 2 * shapeRadius;
-  const fitted = spans.filter((span) => span >= minSpan).length;
-  if (fitted === 0) return 'none';
-  return fitted < spans.length ? 'partial' : 'full';
+  const spans: number[] = [];
+  if (slotConfig.x.enabled) {
+    spans.push(
+      calculateDividerLength(innerW, slotDepth, dividerPieces.clearance) - 2 * (tab + border)
+    );
+  }
+  if (slotConfig.y.enabled) {
+    spans.push(
+      calculateDividerLength(innerD, slotDepth, dividerPieces.clearance) - 2 * (tab + border)
+    );
+  }
+
+  return {
+    bandHeight: height - TOP_KEEP_OUT - BOTTOM_SOLID_SKIRT,
+    spans,
+  };
 }

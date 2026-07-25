@@ -44,7 +44,10 @@ graph TB
   "Pattern divider walls" opt-in (`wallPattern.dividers`, #2811) that carries the same pattern and
   scale through the compartment dividers. Its availability/too-small copy comes from
   `utils/dividerPatternFit.ts`, a deliberately conservative params-only mirror of the worker's
-  `dividerPatterns.ts` — it judges the band and each divider's span, never the feature keep-outs
+  `dividerPatterns.ts` — it judges the band and each divider's span, never the feature keep-outs.
+  On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),
+  and the panel notes that the pattern only shows on the exported pieces — `GhostDividerPieces`
+  renders merged boxes with no CSG and cannot subtract the holes
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit

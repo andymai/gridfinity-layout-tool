@@ -30,6 +30,7 @@ import {
   shapeDescriptorKey,
 } from './patterns';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
+import type { BinParams } from '@/shared/types/bin';
 import { buildCacheKey, compactKey, quantize } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
 import { getFeatureCache, setFeatureCache } from './shapeCache';
@@ -44,7 +45,7 @@ import {
 import type { FlatSlab } from './kumikoWrapBuilder';
 import { fuseAllOrNull } from './utils/shapeOps';
 import { planDividerPatterns } from './dividerPatterns';
-import type { DividerKeepOut, DividerPatternTarget } from './dividerPatterns';
+import type { DividerKeepOut, DividerPatternTarget, PatternPanelSpec } from './dividerPatterns';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 
@@ -182,7 +183,7 @@ function applyKeepOutCuts(
 /** Build one stamp-pattern panel in the divider's local frame. */
 function buildStampPanel(
   calculator: StampPatternCalculator,
-  target: DividerPatternTarget,
+  target: PatternPanelSpec,
   bandZ0: number,
   bandHeight: number,
   cutDepth: number
@@ -212,7 +213,7 @@ function buildStampPanel(
 function buildKumikoPanel(
   latticePerimeter: number,
   lattice: Parameters<typeof buildFlatSlabCutter>[1],
-  target: DividerPatternTarget,
+  target: PatternPanelSpec,
   bandZ0: number,
   bandHeight: number,
   cutDepth: number
@@ -271,7 +272,7 @@ function panelKey(
   patternType: string,
   variantKey: string,
   scale: number,
-  target: DividerPatternTarget,
+  target: PatternPanelSpec,
   bandZ0: number,
   bandHeight: number,
   cutDepth: number
@@ -298,6 +299,103 @@ function panelKey(
 }
 
 /**
+ * Builds cached local-frame panels for one bin's pattern.
+ *
+ * Shared by the integrated dividers and the removable slotted pieces: both
+ * need the same 2D panel and differ only in the rigid transform that places
+ * it, so the caching, keep-out handling and kumiko/stamp dispatch live here
+ * once rather than in each caller.
+ */
+export interface PanelFactory {
+  /** Shortest band that fits one element row. */
+  readonly minPatternHeight: number;
+  /** Solid margin callers should hold around obstructions. */
+  readonly border: number;
+  /**
+   * Build an owned local panel for this spec, or null when nothing fits.
+   * The panel spans `patternSpan` in X, the band in Z (0 = band centre), and
+   * `cutDepth` in Y.
+   */
+  build(
+    spec: PatternPanelSpec,
+    bandZ0: number,
+    bandHeight: number,
+    cutDepth: number
+  ): Shape3D | null;
+}
+
+/**
+ * Resolve the panel factory for a bin's wall pattern, or null when no pattern
+ * pipeline applies. `innerW`/`innerD` only feed the kumiko perimeter, which
+ * fixes the lattice metrics so divider triangles match the outer walls.
+ */
+export function resolvePanelFactory(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): PanelFactory | null {
+  const wallPattern = params.wallPattern;
+  if (!(wallPattern.pattern in PATTERN_REGISTRY)) return null;
+  const scale = wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const calculator = getPatternCalculator(wallPattern.pattern, params.height, scale);
+  const stamp = isStampCalculator(calculator) ? calculator : null;
+  const kumiko = stamp ? null : resolveKumikoCalculator(params);
+  if (!stamp && !kumiko) return null;
+
+  const latticePerimeter = kumiko
+    ? resolveKumikoPerimeter(innerW, innerD, params.wallThickness)
+    : 0;
+  if (kumiko && latticePerimeter === null) return null;
+
+  const patternType = calculator.getPatternType();
+  // Lattices depend only on band height (the perimeter is fixed), so a bin
+  // whose pieces share a height resolves one lattice for all of them.
+  const latticeByBand = new Map<number, Parameters<typeof buildFlatSlabCutter>[1]>();
+
+  return {
+    minPatternHeight: calculator.getMinPatternHeight(),
+    border: Math.max(CUTOUT_BORDER_WIDTH, calculator.getShapeRadius()),
+
+    build(spec, bandZ0, bandHeight, cutDepth) {
+      let lattice: Parameters<typeof buildFlatSlabCutter>[1] | null = null;
+      if (kumiko) {
+        const cached = latticeByBand.get(bandHeight);
+        lattice = cached ?? kumiko.getLattice({ perimeter: latticePerimeter ?? 0, bandHeight });
+        if (!cached) latticeByBand.set(bandHeight, lattice);
+        if (lattice.segments.length === 0) return null;
+      }
+
+      const variantKey = stamp
+        ? shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: bandHeight }))
+        : buildCacheKey(
+            'kumiko',
+            quantize(latticePerimeter ?? 0),
+            quantize(lattice?.columnPitch ?? 0),
+            quantize(lattice?.strutWidth ?? 0)
+          );
+      const key = panelKey(patternType, variantKey, scale, spec, bandZ0, bandHeight, cutDepth);
+
+      const cachedPanel = getFeatureCache(DIVIDER_PATTERN_CACHE, key);
+      if (cachedPanel) return cachedPanel;
+
+      let built = stamp
+        ? buildStampPanel(stamp, spec, bandZ0, bandHeight, cutDepth)
+        : lattice
+          ? buildKumikoPanel(latticePerimeter ?? 0, lattice, spec, bandZ0, bandHeight, cutDepth)
+          : null;
+      // Stamp panels already exclude blocked elements by construction; only
+      // the continuous kumiko lattice needs the boxes cut out of it.
+      if (built && kumiko) {
+        built = applyKeepOutCuts(built, spec.keepOuts, bandZ0 + bandHeight / 2, cutDepth + 2);
+      }
+      if (!built) return null;
+      setFeatureCache(DIVIDER_PATTERN_CACHE, key, built);
+      return unwrap(clone(built));
+    },
+  };
+}
+
+/**
  * Build the divider pattern cut targets for a bin.
  *
  * Returns [] whenever the feature is off, unavailable for this bin, or no
@@ -307,81 +405,22 @@ function panelKey(
 export function buildDividerPatterns(ctx: PipelineContext): Shape3D[] {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
 
-  const wallPattern = params.wallPattern;
-  if (!(wallPattern.pattern in PATTERN_REGISTRY)) return [];
-  const scale = wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
-  const calculator = getPatternCalculator(wallPattern.pattern, params.height, scale);
-  const stamp = isStampCalculator(calculator) ? calculator : null;
-  const kumiko = stamp ? null : resolveKumikoCalculator(params);
-  if (!stamp && !kumiko) return [];
+  const factory = resolvePanelFactory(params, dim.innerW, dim.innerD);
+  if (!factory) return [];
 
-  const border = Math.max(CUTOUT_BORDER_WIDTH, calculator.getShapeRadius());
-  const plan = planDividerPatterns(params, dim, border);
+  const plan = planDividerPatterns(params, dim, factory.border);
   if (!plan) return [];
-  if (plan.bandHeight < calculator.getMinPatternHeight()) return [];
+  if (plan.bandHeight < factory.minPatternHeight) return [];
 
   const cutDepth = plan.thickness + 2 * DIVIDER_CUT_OVERSHOOT;
   const bandCenterZ = plan.bandZ0 + plan.bandHeight / 2;
-  const patternType = calculator.getPatternType();
-
-  // Kumiko dividers inherit the outer walls' lattice metrics; only the band
-  // height is re-fitted to the divider (see resolveKumikoPerimeter).
-  let lattice: Parameters<typeof buildFlatSlabCutter>[1] | null = null;
-  let latticePerimeter = 0;
-  if (kumiko) {
-    const perimeter = resolveKumikoPerimeter(dim.innerW, dim.innerD, params.wallThickness);
-    if (perimeter === null) return [];
-    latticePerimeter = perimeter;
-    lattice = kumiko.getLattice({ perimeter, bandHeight: plan.bandHeight });
-    if (lattice.segments.length === 0) return [];
-  }
-
-  const variantKey = stamp
-    ? shapeDescriptorKey(stamp.getShapeDescriptor({ fillW: 0, fillH: plan.bandHeight }))
-    : buildCacheKey(
-        'kumiko',
-        quantize(latticePerimeter),
-        quantize(lattice?.columnPitch ?? 0),
-        quantize(lattice?.strutWidth ?? 0)
-      );
 
   const start = perfCollector ? performance.now() : 0;
   const shapes: Shape3D[] = [];
   for (const target of plan.targets) {
     checkCancelled(signal);
-    const key = panelKey(
-      patternType,
-      variantKey,
-      scale,
-      target,
-      plan.bandZ0,
-      plan.bandHeight,
-      cutDepth
-    );
-
-    let panel = getFeatureCache(DIVIDER_PATTERN_CACHE, key);
-    if (!panel) {
-      let built = stamp
-        ? buildStampPanel(stamp, target, plan.bandZ0, plan.bandHeight, cutDepth)
-        : lattice
-          ? buildKumikoPanel(
-              latticePerimeter,
-              lattice,
-              target,
-              plan.bandZ0,
-              plan.bandHeight,
-              cutDepth
-            )
-          : null;
-      // Stamp panels already exclude blocked elements by construction; only
-      // the continuous kumiko lattice needs the boxes cut out of it.
-      if (built && kumiko) {
-        built = applyKeepOutCuts(built, target.keepOuts, bandCenterZ, cutDepth + 2);
-      }
-      if (!built) continue;
-      setFeatureCache(DIVIDER_PATTERN_CACHE, key, built);
-      panel = unwrap(clone(built));
-    }
+    const panel = factory.build(target, plan.bandZ0, plan.bandHeight, cutDepth);
+    if (!panel) continue;
 
     let placed = placePanel(panel, target, bandCenterZ);
     if (dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0) {

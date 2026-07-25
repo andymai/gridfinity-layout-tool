@@ -178,11 +178,12 @@ describe('useWallsSection', () => {
       );
     });
 
-    it('explains that removable dividers stay solid', () => {
+    it('offers the option on slotted bins and says where the pattern shows up', () => {
       useDesignerStore.setState({
         params: {
           ...PATTERNED_2X2,
           style: 'slotted',
+          wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
           slotConfig: {
             ...DEFAULT_BIN_PARAMS.slotConfig,
             x: { enabled: true, pitch: 20 },
@@ -191,8 +192,27 @@ describe('useWallsSection', () => {
         },
       });
       const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBeUndefined();
+      expect(result.current.state.dividersNote).toBe(
+        'The pattern appears on the exported divider pieces — the preview shows them solid'
+      );
+    });
+
+    it('has nothing to pattern on a slotted bin with no slots', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: false, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
       expect(result.current.state.dividersAvailableReason).toBe(
-        'Removable dividers print as separate pieces and stay solid'
+        'Add compartments to pattern their dividers'
       );
     });
 
