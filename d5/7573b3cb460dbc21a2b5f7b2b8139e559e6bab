@@ -1,0 +1,19 @@
+src/features/bin-designer/utils/dividerPatternFit.test.ts
+  s_135873c941d805::t_14603543ca1d26 62-75,77-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d57573b3cb460dbc21a2b5f7b2b8139e559e6bab",
+  "prompts": {},
+  "sessions": {
+    "s_135873c941d805": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "64f4212a-609f-45e5-9bec-5b0885996ab7",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
