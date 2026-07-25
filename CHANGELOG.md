@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.294.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.5...gridfinity-layout-tool-v4.294.0) (2026-07-25)
+
+
+### Features
+
+* **generation:** size wall, lid and tab text to the glyph ink box ([#2810](https://github.com/andymai/gridfinity-layout-tool/issues/2810)) ([3968d0f](https://github.com/andymai/gridfinity-layout-tool/commit/3968d0f25d88c3abb5fec7fba8fc807f2cc251cf))
+
 ## [4.293.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.4...gridfinity-layout-tool-v4.293.5) (2026-07-25)
 
 
