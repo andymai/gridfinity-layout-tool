@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Vassoio",
   "binDesigner.lid.topSurface.flatHint": "Una superficie superiore chiusa e liscia. Non ci si impila né si appoggia nulla sopra.",
   "binDesigner.lid.frictionHint": "Si aggancia al bordo solo per attrito, senza guide né magneti. Il più facile da stampare e togliere.",
-  "binDesigner.lid.advanced": "Avanzate"
+  "binDesigner.lid.advanced": "Avanzate",
+  "binDesigner.textSizeMax": "Dimensione max etichetta",
+  "binDesigner.textSizeCapHint": "Le linguette di una fila condividono la dimensione, quindi un’etichetta più lunga riduce le altre."
 }

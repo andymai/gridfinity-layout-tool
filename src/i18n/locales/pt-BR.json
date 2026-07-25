@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Bandeja",
   "binDesigner.lid.topSurface.flatHint": "Uma parte superior fechada e lisa. Nada se empilha nem se apoia nela.",
   "binDesigner.lid.frictionHint": "Prende na borda apenas por atrito, sem trilhos nem ímãs. O mais fácil de imprimir e remover.",
-  "binDesigner.lid.advanced": "Avançado"
+  "binDesigner.lid.advanced": "Avançado",
+  "binDesigner.textSizeMax": "Tamanho máx. da etiqueta",
+  "binDesigner.textSizeCapHint": "As abas de uma fileira compartilham o tamanho, então uma etiqueta mais longa reduz as demais."
 }

@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Ablagefach",
   "binDesigner.lid.topSurface.flatHint": "Eine einfache geschlossene Oberseite. Nichts wird darauf gestapelt und nichts liegt darin.",
   "binDesigner.lid.frictionHint": "Hält allein durch Reibung an der Kante, ohne Schienen oder Magnete. Am einfachsten zu drucken und abzunehmen.",
-  "binDesigner.lid.advanced": "Erweitert"
+  "binDesigner.lid.advanced": "Erweitert",
+  "binDesigner.textSizeMax": "Max. Beschriftungsgröße",
+  "binDesigner.textSizeCapHint": "Tabs einer Reihe teilen eine Größe – eine längere Beschriftung verkleinert die übrigen."
 }

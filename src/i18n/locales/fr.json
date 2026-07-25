@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Plateau",
   "binDesigner.lid.topSurface.flatHint": "Une face supérieure fermée et lisse. Rien ne s’empile dessus et rien ne s’y pose.",
   "binDesigner.lid.frictionHint": "Tient sur le rebord par simple friction, sans rails ni aimants. Le plus simple à imprimer et à retirer.",
-  "binDesigner.lid.advanced": "Avancé"
+  "binDesigner.lid.advanced": "Avancé",
+  "binDesigner.textSizeMax": "Taille max. d’étiquette",
+  "binDesigner.textSizeCapHint": "Les languettes d’une rangée partagent une taille : une étiquette plus longue réduit les autres."
 }

@@ -37,7 +37,11 @@ import {
   BOTTOM_SOLID_SKIRT,
   CUTOUT_BORDER_WIDTH,
 } from './wallPatterns';
-import { fitFontSize, measureText, resolveEffectiveFont } from './textBuilder';
+import { fitFontSize, measureInkExtents, measureText, resolveEffectiveFont } from './textBuilder';
+import type { VerticalFit } from './textBuilder';
+
+/** Wall text fills its band rather than the font's line box. */
+const WALL_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
 
 /** Solid material kept behind an engraved wall glyph (mm). */
 export const WALL_TEXT_ENGRAVE_FLOOR = 0.4;
@@ -78,6 +82,12 @@ export interface WallTextLayout {
   readonly minFontSize: number;
   readonly maxFontSize: number;
   readonly fontSizeOverride?: number;
+  /**
+   * The box this layout was fitted against. `wallTextBuilder` must pass it
+   * straight through — measuring a different box there renders a different size
+   * than the rect and the pattern clip were chosen for.
+   */
+  readonly verticalFit: VerticalFit;
   /** Chosen clear-rect dims fed to `buildTextSolid` (margins not yet subtracted). */
   readonly availW: number;
   readonly availD: number;
@@ -260,7 +270,8 @@ export function computeWallTextLayouts(params: BinParams, dim: WallTextDims): Wa
           availW - 2 * style.margin,
           availD - 2 * style.margin,
           style.minFontSize,
-          style.maxFontSize
+          style.maxFontSize,
+          WALL_TEXT_VERTICAL_FIT
         );
         return fit.fits ? { rect, availW, availD, fontSize: fit.fontSize } : null;
       })
@@ -287,7 +298,12 @@ export function computeWallTextLayouts(params: BinParams, dim: WallTextDims): Wa
     const metrics = measureText(text, fontSize, font);
     if (!isOk(metrics)) continue;
     const textW = metrics.value.width;
-    const textH = metrics.value.ascender - metrics.value.descender;
+    // Ink extents, matching the box the fit measured — the line box at this size
+    // overruns the band, so using it would push the alignment off the rect and
+    // stretch the pattern clip into the lip taper.
+    const ink = measureInkExtents(text, fontSize, font);
+    if (!ink) continue;
+    const textH = ink.maxY - ink.minY;
 
     // Vertical alignment INSIDE the chosen rect; horizontal always centered.
     const centerZ =
@@ -307,6 +323,7 @@ export function computeWallTextLayouts(params: BinParams, dim: WallTextDims): Wa
       minFontSize: style.minFontSize,
       maxFontSize: style.maxFontSize,
       ...(style.fontSizeOverride !== undefined ? { fontSizeOverride: style.fontSizeOverride } : {}),
+      verticalFit: WALL_TEXT_VERTICAL_FIT,
       availW: chosen.availW,
       availD: chosen.availD,
       centerU: (chosen.rect.minU + chosen.rect.maxU) / 2,

@@ -25,6 +25,7 @@ import {
   WALL_TEXT_ENGRAVE_FLOOR,
   type WallTextDims,
 } from './wallTextLayout';
+import { fitFontSize, measureInkExtents, resolveEffectiveFont } from './textBuilder';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -79,6 +80,31 @@ describe('computeWallTextLayouts', () => {
     expect(l.centerZ).toBeCloseTo(bandMid, 5);
     expect(l.textW).toBeGreaterThan(0);
     expect(l.textH).toBeGreaterThan(0);
+  });
+
+  it('sizes against glyph ink and reports a textH that fits the planned rect', () => {
+    const l = computeWallTextLayouts(makeParams({ front: 'Cables' }), DIMS)[0];
+    const font = resolveEffectiveFont(l.font, l.mode);
+
+    // textH drives both the vertical alignment and the wall-pattern clear rect,
+    // so it must never exceed the rect the fit was planned in. Derived from the
+    // line box it would overrun the band by up to 1.85x and reach the lip taper.
+    expect(l.textH).toBeLessThanOrEqual(l.availD);
+
+    // inkBox is what makes that possible: the same rect under lineBox sizing
+    // inks far less than the band it was given.
+    const lineFit = fitFontSize(
+      l.text,
+      font,
+      l.availW - 2 * l.margin,
+      l.availD - 2 * l.margin,
+      l.minFontSize,
+      l.maxFontSize,
+      'lineBox'
+    );
+    const lineInk = measureInkExtents(l.text, lineFit.fontSize, font);
+    if (!lineInk) throw new Error('expected ink extents for the lineBox baseline');
+    expect(l.textH).toBeGreaterThan((lineInk.maxY - lineInk.minY) * 1.3);
   });
 
   it('top/bottom alignment shifts the text within the band', () => {

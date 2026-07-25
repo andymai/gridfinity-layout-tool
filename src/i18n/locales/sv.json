@@ -2889,5 +2889,7 @@
   "binDesigner.lid.topSurface.tray": "Bricka",
   "binDesigner.lid.topSurface.flatHint": "En enkel sluten ovansida. Inget staplas på den och inget vilar i den.",
   "binDesigner.lid.frictionHint": "Håller mot kanten enbart med friktion, utan skenor eller magneter. Enklast att skriva ut och ta av.",
-  "binDesigner.lid.advanced": "Avancerat"
+  "binDesigner.lid.advanced": "Avancerat",
+  "binDesigner.textSizeMax": "Max etikettstorlek",
+  "binDesigner.textSizeCapHint": "Flikar i en rad delar storlek, så en längre etikett krymper de övriga."
 }

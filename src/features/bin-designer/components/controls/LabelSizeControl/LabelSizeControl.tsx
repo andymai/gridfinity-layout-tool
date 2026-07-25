@@ -5,6 +5,12 @@
  * auto-fit, and toggling into manual mode seeds the override at `max` (the
  * largest size the band allows) rather than an arbitrary default. The slider is
  * only shown while an explicit size is set.
+ *
+ * The value is a CEILING, not a target — generation applies it as
+ * `min(auto-fit, max(minFontSize, override))`, so a label that cannot fit at
+ * this size still renders smaller, and label tabs additionally share one size
+ * across each row. Titled and hinted accordingly so the number on screen is not
+ * read as the printed size.
  */
 
 import { Button, SliderInput, cn } from '@/design-system';
@@ -23,6 +29,12 @@ interface LabelSizeControlProps {
   readonly className?: string;
   /** Typography for the row label, which differs between call sites. */
   readonly labelClassName?: string;
+  /**
+   * Explain that labels can render below the set size. Off by default: only
+   * label tabs share a size across siblings, so only there does one label shrink
+   * because another needed to fit.
+   */
+  readonly explainShared?: boolean;
 }
 
 export function LabelSizeControl({
@@ -32,7 +44,8 @@ export function LabelSizeControl({
   max,
   disabled,
   className,
-  labelClassName = 'text-[10px] text-text-muted',
+  labelClassName = 'text-[10px] text-content-tertiary',
+  explainShared = false,
 }: LabelSizeControlProps) {
   const t = useTranslation();
   const isAuto = value === undefined;
@@ -40,7 +53,9 @@ export function LabelSizeControl({
   return (
     <div className={cn('space-y-1', className)}>
       <div className="flex items-center justify-between">
-        <span className={labelClassName}>{t('binDesigner.textSize')}</span>
+        <span className={labelClassName}>
+          {isAuto ? t('binDesigner.textSize') : t('binDesigner.textSizeMax')}
+        </span>
         <Button
           type="button"
           variant="ghost"
@@ -54,7 +69,7 @@ export function LabelSizeControl({
       </div>
       {value !== undefined && (
         <SliderInput
-          label={t('binDesigner.textSize')}
+          label={t('binDesigner.textSizeMax')}
           value={value}
           onChange={onChange}
           min={min}
@@ -62,6 +77,7 @@ export function LabelSizeControl({
           step={0.5}
           unit="mm"
           disabled={disabled}
+          info={explainShared ? t('binDesigner.textSizeCapHint') : undefined}
         />
       )}
     </div>

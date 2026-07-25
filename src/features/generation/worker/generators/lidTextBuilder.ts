@@ -82,6 +82,7 @@ export function applyLidText(
     margin: text.margin,
     minFontSize: text.minFontSize,
     maxFontSize: text.maxFontSize,
+    verticalFit: 'inkBox',
     ...(text.fontSizeOverride !== undefined ? { fontSizeOverride: text.fontSizeOverride } : {}),
   });
   if (!result) return body;

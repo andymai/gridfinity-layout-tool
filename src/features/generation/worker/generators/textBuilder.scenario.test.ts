@@ -46,6 +46,38 @@ const BASE = {
   maxFontSize: 20,
 };
 
+/**
+ * Tessellated XY bbox of a built text solid. `clone(...)` lifts the shape out of
+ * the disposal scope so `mesh()` still works after the scope frees its scratch
+ * handles.
+ */
+function textBbox(opts: Parameters<typeof buildTextSolid>[1]): {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+} {
+  const solid = withScope((scope): Shape3D | null => {
+    const r = buildTextSolid(scope, opts);
+    return r ? unwrap(clone(r.solid)) : null;
+  });
+  if (!solid) throw new Error(`expected a text solid for "${opts.text}"`);
+  const t = mesh(solid, { tolerance: 0.5, angularTolerance: 15 });
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < t.vertices.length; i += 3) {
+    const x = t.vertices[i];
+    const y = t.vertices[i + 1];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return { minX, maxX, minY, maxY };
+}
+
 describe('buildTextSolid (engrave)', () => {
   it('returns a non-null solid for a simple ASCII string', () => {
     const r = withScope((scope) => buildTextSolid(scope, BASE));
@@ -100,25 +132,8 @@ describe('buildTextSolid (engrave)', () => {
 describe('buildTextSolid (fontSizeOverride)', () => {
   /** XY footprint (width × height of the tessellated bbox) of a built solid. */
   function footprint(opts: Parameters<typeof buildTextSolid>[1]): { w: number; h: number } {
-    const solid = withScope((scope): Shape3D | null => {
-      const r = buildTextSolid(scope, opts);
-      return r ? unwrap(clone(r.solid)) : null;
-    });
-    expect(solid).not.toBeNull();
-    const t = mesh(solid!, { tolerance: 0.5, angularTolerance: 15 });
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    for (let i = 0; i < t.vertices.length; i += 3) {
-      const x = t.vertices[i];
-      const y = t.vertices[i + 1];
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
-    return { w: maxX - minX, h: maxY - minY };
+    const b = textBbox(opts);
+    return { w: b.maxX - b.minX, h: b.maxY - b.minY };
   }
 
   it('caps the label below the auto-fit size when an override is set', () => {
@@ -146,6 +161,38 @@ describe('buildTextSolid (fontSizeOverride)', () => {
     const belowFloor = footprint({ ...BASE, fontSizeOverride: 1 });
     expect(belowFloor.w).toBeCloseTo(atFloor.w, 1);
     expect(belowFloor.h).toBeCloseTo(atFloor.h, 1);
+  });
+});
+
+describe('buildTextSolid (verticalFit centering)', () => {
+  /** Y midpoint of the tessellated glyph bbox. */
+  function centerOfY(opts: Parameters<typeof buildTextSolid>[1]): number {
+    const b = textBbox(opts);
+    return (b.minY + b.maxY) / 2;
+  }
+
+  // A pinned size isolates centering from sizing.
+  const FIXED = { ...BASE, fontSizeOverride: 6, availD: 30, availW: 60 };
+
+  it('centers glyph ink on centerY under inkBox, and the line box under lineBox', () => {
+    const ink = centerOfY({ ...FIXED, text: 'Ag', verticalFit: 'inkBox' });
+    const line = centerOfY({ ...FIXED, text: 'Ag', verticalFit: 'lineBox' });
+    // inkBox straddles centerY with the glyphs actually drawn; lineBox centers
+    // the ascender..descender band instead, so the ink lands off-center.
+    expect(ink).toBeCloseTo(FIXED.centerY, 0);
+    expect(Math.abs(line - FIXED.centerY)).toBeGreaterThan(0.4);
+  });
+
+  it('under lineBox, placement ignores which glyphs are drawn', () => {
+    // The line box is a per-font constant, so an ascender-only run and a
+    // descender run land identically — the behaviour inkBox exists to replace.
+    const caps = centerOfY({ ...FIXED, text: 'AB', verticalFit: 'lineBox' });
+    const desc = centerOfY({ ...FIXED, text: 'gy', verticalFit: 'lineBox' });
+    expect(Math.abs(caps - desc)).toBeGreaterThan(1);
+
+    const capsInk = centerOfY({ ...FIXED, text: 'AB', verticalFit: 'inkBox' });
+    const descInk = centerOfY({ ...FIXED, text: 'gy', verticalFit: 'inkBox' });
+    expect(capsInk).toBeCloseTo(descInk, 0);
   });
 });
 

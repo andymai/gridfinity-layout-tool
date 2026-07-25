@@ -906,6 +906,39 @@ describe('lid generation and export scenarios', () => {
       expect(delta).toBeLessThan(0.5);
     });
 
+    // Guards the verticalFit: 'inkBox' opt-in at the lid level. The lid band is
+    // far larger than the text, so both boxes fit at maxFontSize and the SIZE is
+    // identical — what inkBox changes here is the centering, which lineBox
+    // derives from a per-font constant and so applies identically to every
+    // string. Under lineBox these two runs land at different heights; under
+    // inkBox both center their own ink on the lid.
+    it('centers embossed glyph ink on the lid whatever the glyphs are', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const plainTop = boundingBox(
+        (generateLid(makeParams({}, BASE)) as NonNullable<ReturnType<typeof generateLid>>).vertices
+      ).maxZ;
+
+      const inkCenterY = (text: string): number => {
+        const lid = generateLid(
+          makeParams({}, { ...BASE, surfaceText: { lidText: text, style: { mode: 'emboss' } } })
+        );
+        if (!lid) throw new Error(`expected a lid for "${text}"`);
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < lid.vertices.length; i += 3) {
+          // Raised glyphs only — everything at or below the plain top is lid body.
+          if (lid.vertices[i + 2] <= plainTop + 1e-3) continue;
+          const y = lid.vertices[i + 1];
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+        if (minY > maxY) throw new Error(`no raised glyphs for "${text}"`);
+        return (minY + maxY) / 2;
+      };
+
+      expect(inkCenterY('AB')).toBeCloseTo(inkCenterY('gy'), 1);
+    });
+
     it('through-cut text produces a valid pierced mesh (stencil auto-swap)', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const plain = generateLid(makeParams({}, BASE));

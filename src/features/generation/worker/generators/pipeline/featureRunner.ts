@@ -94,8 +94,8 @@ export function runFeatureBuilders(
         // Cache owns original, caller gets a clone
         setFeatureCache(builder.name, key, built[0]);
         shape = unwrap(clone(built[0]));
-        // Dispose any extra shapes to avoid WASM handle leaks.
-        // Current builders always return single shapes; this is defensive.
+        // Only built[0] is applied — a builder producing several pieces MUST fuse
+        // them itself. The extras are disposed so they can't leak WASM handles.
         for (let i = 1; i < built.length; i++) built[i].delete();
       }
     }

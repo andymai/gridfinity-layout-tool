@@ -87,8 +87,15 @@ function memoSet<T>(memo: Map<string, T>, key: string, value: T): T {
  * also only ~54% inked by an all-caps run (Atkinson: 6.69 of 12.4mm at size
  * 10), which renders such a string at roughly half the height the host holds.
  *
- * `inkBox` measures the glyphs actually drawn. Use it where the band IS the
- * legible area and the text is the point of the part (label plates).
+ * `inkBox` measures the glyphs actually drawn, so a run fills its host — at the
+ * cost of a size that varies per string, which leaves sibling runs sharing a
+ * host mismatched unless the caller resolves one size across them. Label tabs
+ * and label plates both do; wall and lid text carry one run each. Used wherever
+ * the band IS the legible area: label plates, label tabs, wall and lid text.
+ *
+ * Callers that plan a rect from the fit must take their vertical extent from
+ * {@link measureInkExtents}, not `textMetrics` — at an `inkBox` size the line
+ * box overruns the band it was fitted to. See `wallTextLayout`.
  */
 export type VerticalFit = 'lineBox' | 'inkBox';
 
@@ -327,6 +334,38 @@ export function resolveEffectiveFont(font: TextFontFamily, mode: TextMode): Text
 }
 
 /**
+ * The auto-fit {@link buildTextSolid} runs internally, exposed for callers that
+ * must know the size BEFORE building — a group sharing one size has to fit every
+ * member up front. Sharing this entry point keeps the margin budget and the
+ * stencil swap identical on both paths, so a pre-resolved size is exactly the
+ * size the build would have picked.
+ */
+export function fitTextToHost(
+  options: Pick<
+    BuildTextSolidOptions,
+    | 'text'
+    | 'fontFamily'
+    | 'mode'
+    | 'availW'
+    | 'availD'
+    | 'margin'
+    | 'minFontSize'
+    | 'maxFontSize'
+    | 'verticalFit'
+  >
+): FitResult {
+  return fitFontSize(
+    options.text.trim(),
+    resolveEffectiveFont(options.fontFamily, options.mode),
+    options.availW - 2 * options.margin,
+    options.availD - 2 * options.margin,
+    options.minFontSize,
+    options.maxFontSize,
+    options.verticalFit ?? 'lineBox'
+  );
+}
+
+/**
  * Build a text solid placed in the host's local frame and ready for the
  * caller to apply via the returned `op` (`cut` or `fuse`).
  *
@@ -343,18 +382,8 @@ export function buildTextSolid(
   const fontFamily = resolveEffectiveFont(options.fontFamily, options.mode);
   if (!getFont(fontFamily)) return null;
 
-  const availW = options.availW - 2 * options.margin;
-  const availD = options.availD - 2 * options.margin;
   const verticalFit = options.verticalFit ?? 'lineBox';
-  const fit = fitFontSize(
-    trimmed,
-    fontFamily,
-    availW,
-    availD,
-    options.minFontSize,
-    options.maxFontSize,
-    verticalFit
-  );
+  const fit = fitTextToHost(options);
   if (!fit.fits) return null;
 
   // An explicit size caps (never grows) the auto-fit result, then is floored at
