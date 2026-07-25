@@ -59,48 +59,30 @@ describe('assessDividerPatternFit', () => {
   });
 
   it('counts insert-mode short pieces, not just the spanning ones', () => {
-    // Both axes + a divider thick enough for receptacles resolves to insert
-    // mode, which emits short per-compartment pieces alongside the long ones.
-    const insertMode = makeParams({
-      width: 6,
-      depth: 6,
-      style: 'slotted',
-      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
-      slotConfig: {
-        ...DEFAULT_BIN_PARAMS.slotConfig,
-        crossStyle: 'insert',
-        x: { enabled: true, pitch: 20 },
-        y: { enabled: true, pitch: 20 },
-      },
-    });
-    // Whatever the verdict, it must be derived from more spans than the two
-    // spanning pieces alone — a short piece too small to pattern has to be able
-    // to pull the result down to 'partial'.
-    const lapMode = makeParams({
-      ...insertMode,
-      slotConfig: { ...insertMode.slotConfig, crossStyle: 'lap' },
-    });
-    expect(assessDividerPatternFit(insertMode)).not.toBe('unavailable');
-    expect(assessDividerPatternFit(lapMode)).not.toBe('unavailable');
-  });
+    const slotted = (crossStyle: 'insert' | 'lap', pitch: number): BinParams =>
+      makeParams({
+        width: 6,
+        depth: 6,
+        style: 'slotted',
+        // Thick enough for face receptacles, which is what lets 'insert' resolve.
+        dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          crossStyle,
+          x: { enabled: true, pitch },
+          y: { enabled: true, pitch },
+        },
+      });
 
-  it('counts insert-mode short pieces, not just the spanning ones', () => {
-    const slottedInsert = makeParams({
-      width: 6,
-      depth: 6,
-      style: 'slotted',
-      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, thickness: 2.4 },
-      slotConfig: {
-        ...DEFAULT_BIN_PARAMS.slotConfig,
-        crossStyle: 'insert',
-        x: { enabled: true, pitch: 20 },
-        y: { enabled: true, pitch: 20 },
-      },
-    });
-    // Short per-compartment pieces are far smaller than the spanning ones, so
-    // they must be able to pull the verdict below 'full'; before they were
-    // counted the predicate saw only the two long pieces.
-    expect(assessDividerPatternFit(slottedInsert)).not.toBe('unavailable');
+    // Insert mode emits short per-compartment pieces; at this pitch they are
+    // too small to carry an element while the spanning pieces easily are. Lap
+    // mode produces no short pieces at all, so the same bin comes out full —
+    // the contrast is what proves the short spans are actually being counted.
+    expect(assessDividerPatternFit(slotted('insert', 20))).toBe('partial');
+    expect(assessDividerPatternFit(slotted('lap', 20))).toBe('full');
+
+    // Widen the compartments and the short pieces fit too.
+    expect(assessDividerPatternFit(slotted('insert', 40))).toBe('full');
   });
 
   it('is unavailable on a slotted bin with no slots enabled', () => {
