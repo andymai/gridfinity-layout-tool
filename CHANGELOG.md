@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.295.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.294.0...gridfinity-layout-tool-v4.295.0) (2026-07-25)
+
+
+### Features
+
+* **generation:** carry the wall pattern through compartment dividers ([#2814](https://github.com/andymai/gridfinity-layout-tool/issues/2814)) ([b73d067](https://github.com/andymai/gridfinity-layout-tool/commit/b73d067f55b7381f30e39d927c202467ee69cabe))
+
 ## [4.294.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.293.5...gridfinity-layout-tool-v4.294.0) (2026-07-25)
 
 
