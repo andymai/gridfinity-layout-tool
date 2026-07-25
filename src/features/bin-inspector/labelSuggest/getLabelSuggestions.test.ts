@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getDisplayTerm } from '@/shared/analytics/labelVocabulary';
 import { computeGhost, getLabelSuggestions } from './getLabelSuggestions';
 import type { SuggestionBin, SuggestionContext } from './types';
 
@@ -96,6 +97,27 @@ describe('getLabelSuggestions', () => {
     const target = makeBin({ label: 's' });
     const results = getLabelSuggestions('s', ctx(target), { limit: 3 });
     expect(results.length).toBeLessThanOrEqual(3);
+  });
+
+  it('expands a typed concept word to its whole domain (similar)', () => {
+    const results = getLabelSuggestions('fasteners', ctx(makeBin({ label: 'fasteners' })));
+    const values = results.map((r) => r.value);
+    for (const term of ['screw', 'bolt', 'nut']) {
+      expect(values).toContain(getDisplayTerm(term));
+    }
+    const screw = results.find((r) => r.value === getDisplayTerm('screw'));
+    expect(screw?.reason).toBe('similar');
+  });
+
+  it('surfaces related items for a typed term (similar)', () => {
+    // "screwd" resolves to the "screw" canonical, whose related items include
+    // bolt/nut/washer — none of which share the typed letters.
+    const results = getLabelSuggestions('screwd', ctx(makeBin({ label: 'screwd' })));
+    const bolt = results.find((r) => r.value === getDisplayTerm('bolt'));
+    expect(bolt).toBeDefined();
+    expect(bolt?.reason).toBe('similar');
+    // The literal prefix match still wins the top slot.
+    expect(results[0]?.value).toBe(getDisplayTerm('screwdriver'));
   });
 
   it('never returns a suggestion longer than maxLength', () => {

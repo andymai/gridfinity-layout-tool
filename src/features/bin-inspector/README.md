@@ -30,7 +30,10 @@ a pure function of the current layout — fully on-device, no network. It blends
 signals: numeric **sequence** continuation (`M3`/`M4` → `M5`), reuse of an existing
 label, co-occurrence with **edge-adjacent or same-category** neighbors, vocabulary
 **domain** affinity, and text match (prefix / substring / cross-language alias /
-typo-tolerant fuzzy). The top prediction is offered as inline **ghost text**
+typo-tolerant fuzzy). Meaning-based matches come from `labelVocabulary/semantics.ts`:
+typing an umbrella word (`fasteners`, `werkzeug`) expands to that whole domain, and a
+term expands to related items (`screwdriver` → screw/bolt) — both surfaced with the
+`similar` reason even when no letters line up. The top prediction is offered as inline **ghost text**
 (Tab/→ to accept) on desktop; ghost is disabled on touch. Each row carries a muted
 reason tag. Accepts fire a hashed `label_suggestion_accepted` PostHog event (no raw
 text) for future model training. Ordering weights + the ghost confidence floor live

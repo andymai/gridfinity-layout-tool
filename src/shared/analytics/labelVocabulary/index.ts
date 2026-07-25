@@ -10,3 +10,5 @@ export {
   getDisplayTerm,
 } from './normalize';
 export type { LabelData } from './normalize';
+
+export { conceptDomain, relatedTerms, relatedTermsForQuery, termsInDomain } from './semantics';

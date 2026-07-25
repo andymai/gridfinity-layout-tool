@@ -3,6 +3,8 @@ import {
   getCanonicalTerms,
   getDisplayTerm,
   getTermDomain,
+  conceptDomain,
+  relatedTermsForQuery,
   type LabelDomain,
 } from '@/shared/analytics/labelVocabulary';
 import { detectSequenceSuggestions } from './sequence';
@@ -32,11 +34,17 @@ const WEIGHTS = {
   text: 1.0,
 } as const;
 
+// Text-equivalent score for a candidate that matches only by meaning (concept
+// expansion or related-terms graph) rather than by letters. Below a prefix (1.0)
+// or substring (0.6) match so literal matches still rank first.
+const SEMANTIC_SCORE = 0.5;
+
 interface Candidate {
   value: string;
   isCatalog: boolean;
   isSequence: boolean;
   domain: LabelDomain | null;
+  canonical: string | null;
 }
 
 type TextKind = 'prefix' | 'substring' | 'alias' | 'fuzzy' | 'none';
@@ -110,12 +118,14 @@ export function getLabelSuggestions(
       if (meta.isCatalog) existing.isCatalog = true;
       if (meta.isSequence) existing.isSequence = true;
       if (meta.domain && !existing.domain) existing.domain = meta.domain;
+      if (meta.canonical && !existing.canonical) existing.canonical = meta.canonical;
     } else {
       candidates.set(key, {
         value,
         isCatalog: meta.isCatalog ?? false,
         isSequence: meta.isSequence ?? false,
         domain: meta.domain ?? null,
+        canonical: meta.canonical ?? null,
       });
     }
   };
@@ -124,7 +134,13 @@ export function getLabelSuggestions(
     add(pred.value, { isSequence: true, domain: processLabel(pred.value).domain });
   for (const { value } of counts.values()) add(value, {});
   for (const term of getCanonicalTerms())
-    add(getDisplayTerm(term), { isCatalog: true, domain: getTermDomain(term) });
+    add(getDisplayTerm(term), { isCatalog: true, domain: getTermDomain(term), canonical: term });
+
+  // Semantic expansion of a typed concept word ("fasteners" → the fasteners
+  // domain) or a term's related items ("screwdriver" → screw/bolt). Empty until
+  // the user types — pre-type prediction already leans on neighbor domains.
+  const conceptDom = query ? conceptDomain(query) : null;
+  const relatedSet = new Set(query ? relatedTermsForQuery(query) : []);
 
   const results: LabelSuggestion[] = [];
   for (const cand of candidates.values()) {
@@ -134,7 +150,16 @@ export function getLabelSuggestions(
     const isNeighbor = neighborKeys.has(key);
     const isSequence = cand.isSequence || sequenceKeys.has(key);
     const domainMatch = !!cand.domain && cand.domain === dominantDomain;
-    const text = query ? textScore(cand.value, query) : { score: 0, kind: 'none' as TextKind };
+    let text = query ? textScore(cand.value, query) : { score: 0, kind: 'none' as TextKind };
+
+    // Meaning-based match when letters don't line up: a concept word expands to
+    // its domain's terms; a term expands to its related items. Reason → similar.
+    if (query && text.score <= 0) {
+      const semantic =
+        (conceptDom !== null && cand.domain === conceptDom) ||
+        (cand.canonical !== null && relatedSet.has(cand.canonical));
+      if (semantic) text = { score: SEMANTIC_SCORE, kind: 'alias' };
+    }
 
     // While typing, only surface candidates that relate to the typed text.
     if (query && text.score <= 0) continue;
