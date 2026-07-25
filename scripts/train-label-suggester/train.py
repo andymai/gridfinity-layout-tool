@@ -32,11 +32,13 @@ import redis
 SCHEMA_VERSION = 1
 SCAN_PAGE_SIZE = 500
 
-# Bounds keep the committed JSON small and the client lookups cheap.
-POP_TOP_K = 2000
+# Bounds keep the committed JSON small (it counts toward the "Total JS" size-limit
+# budget) and the client lookups cheap. The tail past these ranks carries almost
+# no signal — popularity there is ~0.004 (×W_POPULARITY ≈ negligible).
+POP_TOP_K = 1000
 MIN_LABEL_SAMPLES = 5
-COOCCUR_TOP_KEYS = 2000
-COOCCUR_TOP_NEIGHBORS = 12
+COOCCUR_TOP_KEYS = 1000
+COOCCUR_TOP_NEIGHBORS = 8
 MIN_COOCCUR_SAMPLES = 5
 
 
