@@ -114,4 +114,83 @@ describe('useWallsSection', () => {
     expect(result.current.state.pattern).toBe('honeycomb');
     expect(result.current.state.patternEnabled).toBe(true);
   });
+
+  describe('divider walls', () => {
+    const PATTERNED_2X2 = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 3,
+      height: 6,
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+    };
+
+    it('starts off and writes the opt-in to the store', () => {
+      useDesignerStore.setState({ params: PATTERNED_2X2 });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersEnabled).toBe(false);
+
+      act(() => {
+        result.current.handlers.handleDividersChange(true);
+      });
+
+      expect(useDesignerStore.getState().params.wallPattern.dividers).toBe(true);
+      expect(useDesignerStore.getState().params.wallPattern.pattern).toBe('honeycomb');
+    });
+
+    it('explains why a single-compartment bin has nothing to pattern', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBe(
+        'Add compartments to pattern their dividers'
+      );
+    });
+
+    it('explains that removable dividers stay solid', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: true, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBe(
+        'Removable dividers print as separate pieces and stay solid'
+      );
+    });
+
+    it('notes when the dividers are too small to carry the pattern', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          height: 1,
+          wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersNote).toBe('Dividers are too small for this pattern');
+    });
+
+    it('has no note when every divider fits', () => {
+      useDesignerStore.setState({
+        params: {
+          ...PATTERNED_2X2,
+          wallPattern: { enabled: true, pattern: 'honeycomb' as const, dividers: true },
+        },
+      });
+      const { result } = renderHook(() => useWallsSection());
+      expect(result.current.state.dividersAvailableReason).toBeUndefined();
+      expect(result.current.state.dividersNote).toBeUndefined();
+    });
+  });
 });

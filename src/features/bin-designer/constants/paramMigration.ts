@@ -703,6 +703,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     enabled: false,
     pattern: 'honeycomb',
     scale: DEFAULT_PATTERN_SCALE,
+    dividers: false,
   };
   if (params.wallPattern !== undefined) {
     wallPatternConfig = { ...wallPatternConfig, ...params.wallPattern };
@@ -718,6 +719,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
               : false,
         pattern: 'honeycomb',
         scale: DEFAULT_PATTERN_SCALE,
+        dividers: false,
       };
     }
   }
@@ -734,6 +736,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         typeof rawScale === 'number' && Number.isFinite(rawScale)
           ? Math.min(1, Math.max(0, rawScale))
           : DEFAULT_PATTERN_SCALE,
+      dividers: wallPatternConfig.dividers === true,
     };
   }
 

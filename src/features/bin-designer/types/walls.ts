@@ -139,4 +139,11 @@ export interface WallPatternConfig {
    * backfills it and the geometry layer defaults + clamps untrusted values.
    */
   readonly scale?: number;
+  /**
+   * Carry the same pattern (and scale) through the compartment divider walls,
+   * not just the outer walls. Optional for back-compat with saved designs;
+   * migration backfills it and the geometry layer treats anything but `true`
+   * as off.
+   */
+  readonly dividers?: boolean;
 }

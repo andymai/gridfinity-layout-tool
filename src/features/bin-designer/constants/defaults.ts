@@ -52,6 +52,7 @@ export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
   scale: DEFAULT_PATTERN_SCALE,
+  dividers: false,
 } as const;
 
 /** Default position fields shared by all wall cutouts */

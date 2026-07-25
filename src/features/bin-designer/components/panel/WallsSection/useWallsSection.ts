@@ -11,6 +11,8 @@ import type {
 } from '@/features/bin-designer/types';
 import { DEFAULT_PATTERN_SCALE, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { assessDividerPatternFit } from '@/features/bin-designer/utils/dividerPatternFit';
+import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export function useWallsSection() {
@@ -87,6 +89,30 @@ export function useWallsSection() {
     return undefined;
   }, [someWallsSlotted, patternStatus.available, t]);
 
+  // ── Divider walls (#2811) ─────────────────────────────────────────────────
+  // The same pattern and scale carried through the compartment dividers, so a
+  // patterned bin doesn't read as hollow walls around solid dividers.
+  const handleDividersChange = useCallback(
+    (dividers: boolean) => updateWallPattern({ dividers }),
+    [updateWallPattern]
+  );
+
+  const dividersAvailableReason = useMemo(() => {
+    if (params.style !== 'standard') return t('binDesigner.walls.pattern.dividers.notStandard');
+    if (isPartialMask(params.cellMask)) return t('binDesigner.walls.pattern.dividers.notPolygon');
+    if (getCompartmentCount(params.compartments) <= 1)
+      return t('binDesigner.walls.pattern.dividers.noDividers');
+    return undefined;
+  }, [params.style, params.cellMask, params.compartments, t]);
+
+  const dividersFit = useMemo(() => assessDividerPatternFit(params), [params]);
+  const dividersNote = useMemo(() => {
+    if (dividersAvailableReason !== undefined) return undefined;
+    if (dividersFit === 'none') return t('binDesigner.walls.pattern.dividers.tooSmall');
+    if (dividersFit === 'partial') return t('binDesigner.walls.pattern.dividers.someTooSmall');
+    return undefined;
+  }, [dividersAvailableReason, dividersFit, t]);
+
   // ── Wall surface text (#2695) ─────────────────────────────────────────
   // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
   // bins skip wall text entirely.
@@ -153,6 +179,9 @@ export function useWallsSection() {
       patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
+      dividersEnabled: wallPattern.dividers === true,
+      dividersAvailableReason,
+      dividersNote,
       wallTexts,
       wallTextAlign,
       wallTextMode,
@@ -164,6 +193,7 @@ export function useWallsSection() {
       handleChange,
       handlePatternChange,
       handleScaleChange,
+      handleDividersChange,
       commitWallTextAt,
       setWallTextAlign,
       setTextMode,

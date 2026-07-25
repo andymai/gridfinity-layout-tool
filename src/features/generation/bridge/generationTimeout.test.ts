@@ -15,6 +15,8 @@ import {
   HEIGHT_BONUS_MS,
   KUMIKO_PATTERN_BONUS_MS,
   KUMIKO_PERIMETER_BONUS_MS_PER_CELL,
+  DIVIDER_PATTERN_MS_PER_SEGMENT,
+  KUMIKO_DIVIDER_MS_PER_SEGMENT,
   MAX_TIMEOUT_MS,
   EXPORT_TIMEOUT_MULTIPLIER,
   EXPORT_MAX_TIMEOUT_MS,
@@ -239,6 +241,40 @@ describe('computeGenerationTimeoutMs', () => {
       expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
       expect(t).toBeLessThanOrEqual(MAX_TIMEOUT_MS);
     }
+  });
+
+  it('grants a per-segment bonus when the pattern is carried through dividers', () => {
+    const compartments = { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 };
+    const off = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
+    );
+    const on = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true }, compartments })
+    );
+    // A 2x2 grid has 4 differing cell boundaries.
+    expect(on - off).toBe(4 * DIVIDER_PATTERN_MS_PER_SEGMENT);
+  });
+
+  it('charges kumiko divider panels far more than stamp panels', () => {
+    const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 };
+    const stamp = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true }, compartments })
+    );
+    const stampOff = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false }, compartments })
+    );
+    expect(stamp - stampOff).toBe(DIVIDER_PATTERN_MS_PER_SEGMENT);
+    expect(KUMIKO_DIVIDER_MS_PER_SEGMENT).toBeGreaterThan(DIVIDER_PATTERN_MS_PER_SEGMENT);
+  });
+
+  it('grants no divider bonus without dividers to pattern', () => {
+    const withOption = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: true } })
+    );
+    const without = computeGenerationTimeoutMs(
+      params({ wallPattern: { ...HEX_ON, dividers: false } })
+    );
+    expect(withOption).toBe(without);
   });
 });
 

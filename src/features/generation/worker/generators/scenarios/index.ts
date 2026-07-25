@@ -39,6 +39,7 @@ import { lightweight } from './lightweight';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
 import { kumiko } from './kumiko';
+import { dividerPatterns } from './dividerPatterns';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -80,4 +81,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...labelSockets,
   ...wallPatterns,
   ...kumiko,
+  ...dividerPatterns,
 ];

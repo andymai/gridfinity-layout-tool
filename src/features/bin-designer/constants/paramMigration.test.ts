@@ -440,6 +440,25 @@ describe('migrateParams', () => {
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
 
+  it('should backfill wallPattern.dividers to false on designs that predate it', () => {
+    const result = migrateParams({ wallPattern: { enabled: true, pattern: 'honeycomb' } });
+    expect(result.wallPattern.dividers).toBe(false);
+  });
+
+  it('should coerce a non-boolean wallPattern.dividers to false', () => {
+    const result = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', dividers: 'yes' },
+    });
+    expect(result.wallPattern.dividers).toBe(false);
+  });
+
+  it('should preserve wallPattern.dividers when opted in', () => {
+    const result = migrateParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb', dividers: true },
+    });
+    expect(result.wallPattern.dividers).toBe(true);
+  });
+
   it('should preserve every registered pattern type through migration', () => {
     for (const pattern of WALL_PATTERN_TYPES) {
       const result = migrateParams({ wallPattern: { enabled: true, pattern } });
