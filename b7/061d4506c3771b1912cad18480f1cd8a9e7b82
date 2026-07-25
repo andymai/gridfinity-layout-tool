@@ -1,0 +1,198 @@
+src/i18n/locales/de.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/features/generation/worker/generators/textSolidCache.ts
+  s_99d37f4fdc733e::t_8c1f90e2b61905 14-17
+src/i18n/locales/uk.json
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_99d37f4fdc733e::t_9ce34c407f186b 659
+src/i18n/locales/es.json
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+src/i18n/locales/nb.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/features/generation/worker/generators/wallTextBuilder.ts
+  s_99d37f4fdc733e::t_4c457ab8298e26 83
+  s_99d37f4fdc733e::t_2742b3661596bf 136-138
+  s_99d37f4fdc733e::t_50cef562a20097 107-109,113-115
+  s_99d37f4fdc733e::t_076e1023b73404 104-106,110-112
+  s_99d37f4fdc733e::t_1643ea2ffa0082 22-23
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_99d37f4fdc733e::t_3511cac9269c86 114-115,118-126,130-131,139-141,143-145
+  s_99d37f4fdc733e::t_719a2776cc3535 18,20
+  s_99d37f4fdc733e::t_29574e0788ec03 127-129,132-138,142
+  s_99d37f4fdc733e::t_9aa4c826e308f8 116-117
+  s_99d37f4fdc733e::t_3097322676ac67 98-113
+src/i18n/locales/ja.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/features/generation/README.md
+  s_99d37f4fdc733e::t_702adcde88275e 45
+  s_99d37f4fdc733e::t_fbd397c5d52c99 46
+  s_99d37f4fdc733e::t_18b07062e784fd 187
+  s_99d37f4fdc733e::t_489cefc4643d62 44
+src/features/generation/worker/generators/textBuilder.scenario.test.ts
+  s_99d37f4fdc733e::t_c294ff87467db5 167-169,172-173,175-179,182,184-198
+  s_99d37f4fdc733e::t_95bab741429e5d 174
+  s_99d37f4fdc733e::t_653c4f758dfa6d 49-80
+  s_99d37f4fdc733e::t_f7640e3d73e4ca 170-171
+  s_99d37f4fdc733e::t_c821db634386af 135-136
+  s_99d37f4fdc733e::t_bad7809db5b5b8 180-181,183
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_99d37f4fdc733e::t_cade724c378e51 909-941
+src/i18n/locales/it.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/features/generation/worker/generators/pipeline/featureRunner.ts
+  s_99d37f4fdc733e::t_8fa7d04aeae604 98
+  s_99d37f4fdc733e::t_3d62f7a25d8d36 97
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_99d37f4fdc733e::t_5f58be863a01ed 89
+  s_99d37f4fdc733e::t_0d31cfe9cf6f40 158-162,179,185
+  s_99d37f4fdc733e::t_0e10cfc50124ed 164-165,167-171,173,186
+  s_99d37f4fdc733e::t_88f6b70cd3b23a 346
+  s_99d37f4fdc733e::t_ba68bc31cb7036 166,172,174-178,180-184,187-197,201-203,205-209
+  s_99d37f4fdc733e::t_76ad24492abd1f 384
+  s_99d37f4fdc733e::t_d78f28112e2d1b 52-53
+  s_99d37f4fdc733e::t_05ced984015d40 334
+  s_99d37f4fdc733e::t_73ba18d51198fc 374-376,386
+  s_99d37f4fdc733e::t_5335283c93c787 345
+  s_99d37f4fdc733e::t_f754927004c2e6 86-88,90
+  s_99d37f4fdc733e::t_6c938428e16b18 163
+src/features/generation/worker/generators/pipeline/featureBuilder.ts
+  s_99d37f4fdc733e::t_ab9c9214aed5bb 60,62-64
+src/features/generation/worker/generators/wallTextLayout.test.ts
+  s_99d37f4fdc733e::t_93fb80b788716a 28
+  s_99d37f4fdc733e::t_26c623c30a62f5 85-109
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_99d37f4fdc733e::t_f377f08f65d397 595
+  s_99d37f4fdc733e::t_7d0b379def4e6e 588,591,596,608
+  s_99d37f4fdc733e::t_3bbc0832c5e0a5 770
+  s_99d37f4fdc733e::t_ccfb5378be7911 1034
+  s_99d37f4fdc733e::t_b6957c94056b96 307-313,315-316
+  s_99d37f4fdc733e::t_fea939579bac8b 94-98,102
+  s_99d37f4fdc733e::t_58cb344042621b 584
+  s_99d37f4fdc733e::t_45ef40774c34ba 267-288,290,292-293,295-303
+  s_99d37f4fdc733e::t_25e8e8de06dee6 92-93
+  s_99d37f4fdc733e::t_489cefc4643d62 314
+  s_99d37f4fdc733e::t_bda87863a89427 578-579,590
+  s_99d37f4fdc733e::t_0561f8fe0c41fb 597-605,607
+  s_99d37f4fdc733e::t_a329cb294ba179 616,619
+  s_99d37f4fdc733e::t_044703b4edd03e 621
+  s_99d37f4fdc733e::t_98e8e7ebf270b5 633
+  s_99d37f4fdc733e::t_e1ef039190ee1b 1042
+  s_99d37f4fdc733e::t_54dec78222b09c 1060
+  s_99d37f4fdc733e::t_bb89886a405339 1110
+  s_99d37f4fdc733e::t_c8cfc005688632 606,1059
+  s_99d37f4fdc733e::t_0033c238e03e15 53
+  s_99d37f4fdc733e::t_9c48e1f03e8abd 583,585-586
+  s_99d37f4fdc733e::t_3e1480c87113df 413-416,418-420
+  s_99d37f4fdc733e::t_76e74ec6988a1a 422,428,433,445
+  s_99d37f4fdc733e::t_283d9aed3ace3f 91,574,577,582,587,589,592-594,609-613
+  s_99d37f4fdc733e::t_1c102a0677eb8d 762
+  s_99d37f4fdc733e::t_9a5b2bc57101e9 559-567
+  s_99d37f4fdc733e::t_3b816997ba5c51 568-573,614-615,617-618,620,622-632,634-635
+  s_99d37f4fdc733e::t_7c92400fd67f6f 1038-1040
+  s_99d37f4fdc733e::t_a0e44c6ef4b86a 57
+  s_99d37f4fdc733e::t_c032e585a8b206 54-56,58-59
+  s_99d37f4fdc733e::t_0389e0a9f86c7d 1041,1043-1044
+  s_99d37f4fdc733e::t_9b796f5b809832 99-101,103-109,112-114,116-117
+  s_99d37f4fdc733e::t_cd9c74eaf8f658 575-576,580-581
+  s_99d37f4fdc733e::t_5b248bc03dab9b 1099-1100
+  s_99d37f4fdc733e::t_64c5d77ddc2579 110-111,115
+  s_99d37f4fdc733e::t_4c4f4b1e33a428 317
+src/i18n/locales/pt-BR.json
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_99d37f4fdc733e::t_e997fa4da7ea39 503,505-508
+  s_99d37f4fdc733e::t_0de7456763dfeb 513-516,518,522-525
+  s_99d37f4fdc733e::t_0584a5899798dd 517,519-521
+  s_99d37f4fdc733e::t_74c22cad1802f5 424-426,428,431-441,474-475,479,485-490,494-499,509-511
+  s_99d37f4fdc733e::t_3e963b6709f9e4 8-9
+  s_99d37f4fdc733e::t_a392180f9c4b60 442-470
+  s_99d37f4fdc733e::t_ab5584448bf5af 416-418,423,427,430,476-478,483,492,500-501,504,512,526
+  s_99d37f4fdc733e::t_18aa617695c30a 419-420,422,429,471-473,480-482,484,491,493
+  s_99d37f4fdc733e::t_dbb533d8c31381 502
+  s_99d37f4fdc733e::t_fe7dc2319487ad 421
+src/features/generation/worker/generators/textBuilder.ts
+  s_99d37f4fdc733e::t_fed6f65ecf1487 92-94
+  s_99d37f4fdc733e::t_429b1aca907594 91,95-98
+  s_99d37f4fdc733e::t_9f4ae719de32b5 337,342-367
+  s_99d37f4fdc733e::t_fe6a41a131b7e4 90
+  s_99d37f4fdc733e::t_dca7a20133ad2a 338-341
+  s_99d37f4fdc733e::t_898dc2436ba601 386
+  s_4be9cbc078e9c4::t_d9ec1724cb62c9 336
+src/features/generation/worker/generators/labelPlateBuilder.test.ts
+  s_99d37f4fdc733e::t_07717e59d15ab1 44-45,47-49,60,62-65
+  s_99d37f4fdc733e::t_80f709f018d169 43,46,50-59,61,66-67
+  s_99d37f4fdc733e::t_1f61876e08031f 170
+  s_99d37f4fdc733e::t_9c4a950c955b1f 223-224
+  s_99d37f4fdc733e::t_fba4f0aa5ac4ff 211-212
+  s_99d37f4fdc733e::t_844f7b44ad576e 233-254
+  s_99d37f4fdc733e::t_775346442b4dc2 210,213-222,225-232
+src/i18n/locales/fr.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/i18n/locales/sv.json
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+src/i18n/locales/en.ts
+  s_99d37f4fdc733e::t_2272a79a302012 1708
+  s_99d37f4fdc733e::t_13d1d1c6afe429 1709
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.test.tsx
+  s_99d37f4fdc733e::t_f9205d3681049d 53-54,62-75
+  s_99d37f4fdc733e::t_4ea685589277c3 47-52,55-61,76
+src/i18n/locales/nl.json
+  s_99d37f4fdc733e::t_3818b0a0f26cfb 2892-2893
+  s_99d37f4fdc733e::t_ce75d8859c80a5 2894
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_99d37f4fdc733e::t_282b88b5ecb526 85
+src/features/bin-designer/components/controls/LabelSizeControl/LabelSizeControl.tsx
+  s_99d37f4fdc733e::t_3538f30374b0a1 32-37
+  s_99d37f4fdc733e::t_8caea6cbf52d71 56-58
+  s_99d37f4fdc733e::t_411727a2736b15 8-13
+  s_99d37f4fdc733e::t_3761c2d37e4b88 47-48
+  s_99d37f4fdc733e::t_3a23fb25f9cea4 72
+  s_99d37f4fdc733e::t_ec2e492cca7ff6 80
+src/shared/generation/meshPersistence.ts
+  s_99d37f4fdc733e::t_212ab55255e1cd 41
+src/features/generation/worker/generators/wallTextLayout.ts
+  s_99d37f4fdc733e::t_2fac26367afe86 301-303
+  s_99d37f4fdc733e::t_7debad3615502b 273
+  s_99d37f4fdc733e::t_1e2eaf5fba91f4 304-306
+  s_99d37f4fdc733e::t_dd4bd765e8dfe7 87-88
+  s_99d37f4fdc733e::t_17c0e7744c5dde 274
+  s_99d37f4fdc733e::t_31862c2b7802ff 40
+  s_99d37f4fdc733e::t_b5db2d676163b0 85-86,89-90
+  s_99d37f4fdc733e::t_723b49e12da258 41-42,44
+  s_99d37f4fdc733e::t_7c25b94d6d9cd0 326
+  s_99d37f4fdc733e::t_4360907a3bd2de 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b7061d4506c3771b1912cad18480f1cd8a9e7b82",
+  "prompts": {},
+  "sessions": {
+    "s_4be9cbc078e9c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fb0e4ea1-d098-48cf-921d-3ac9562102ef",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_99d37f4fdc733e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "33c63dc1-751d-48c7-a9a9-69c3049f47c7",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
