@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.299.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.298.1...gridfinity-layout-tool-v4.299.0) (2026-07-25)
+
+
+### Features
+
+* **generation:** drainage and ventilation holes through the bin floor ([#2820](https://github.com/andymai/gridfinity-layout-tool/issues/2820)) ([d42f6b3](https://github.com/andymai/gridfinity-layout-tool/commit/d42f6b3fd9900dbdf5db6a2a7fb9c43d62e23f86))
+
 ## [4.298.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.298.0...gridfinity-layout-tool-v4.298.1) (2026-07-25)
 
 
