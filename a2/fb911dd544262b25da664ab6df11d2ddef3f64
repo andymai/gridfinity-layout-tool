@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/floorPatterns.ts
+  s_6bf5af221a7bb1::t_66c3636dece7fa 204-207,211,221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a2fb911dd544262b25da664ab6df11d2ddef3f64",
+  "prompts": {},
+  "sessions": {
+    "s_6bf5af221a7bb1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b555e792-0c5a-41ed-9e00-12c4bbe97b9c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
