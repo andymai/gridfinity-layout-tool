@@ -96,11 +96,6 @@ function cutDeferredSolid(ctx: PipelineContext): {
   if (!deferredSolid || deferredCutTargets.length === 0) {
     return { solid: deferredSolid, key: ctx.deferredSolidKey };
   }
-  // The socket's mesh cache is keyed on the SOCKET's own geometry, which says
-  // nothing about the pattern carved into it — and the carve also depends on
-  // divider/scoop keep-outs that key can't see. Drop it so a carved socket
-  // always re-tessellates, mirroring how `featuresKey` disables the body's
-  // resume cache for pattern cuts.
   try {
     const { shape, telemetry } = unwrap(
       cutAllBisect(
@@ -114,9 +109,16 @@ function cutDeferredSolid(ctx: PipelineContext): {
     );
     recordIfRecovered('pattern_cut', telemetry);
     if (shape !== deferredSolid) deferredSolid.delete();
+    // The socket's mesh cache is keyed on the SOCKET's own geometry, which says
+    // nothing about the pattern carved into it — and the carve also depends on
+    // divider/scoop keep-outs that key can't see. Drop it so a CARVED socket
+    // always re-tessellates, mirroring how `featuresKey` disables the body's
+    // resume cache for pattern cuts.
     return { solid: shape, key: null };
   } catch {
-    return { solid: deferredSolid, key: null };
+    // The cut produced no shape, so this is the original socket untouched — its
+    // key still describes it, and dropping it would only cost a re-tessellation.
+    return { solid: deferredSolid, key: ctx.deferredSolidKey };
   }
 }
 
