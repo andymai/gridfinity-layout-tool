@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.296.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.295.1...gridfinity-layout-tool-v4.296.0) (2026-07-25)
+
+
+### Features
+
+* **generation:** pattern removable divider pieces on slotted bins ([#2818](https://github.com/andymai/gridfinity-layout-tool/issues/2818)) ([186535b](https://github.com/andymai/gridfinity-layout-tool/commit/186535be4d8bce7e4102a0971938dfcc9d73f7ea))
+
 ## [4.295.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.295.0...gridfinity-layout-tool-v4.295.1) (2026-07-25)
 
 
