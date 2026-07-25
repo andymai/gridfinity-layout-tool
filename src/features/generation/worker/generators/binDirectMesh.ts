@@ -383,6 +383,9 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.inserts.length > 0) return false;
   if (params.cutouts.length > 0) return false;
   if (params.wallPattern.enabled) return false;
+  // Floor pattern (#2816) perforates the cavity floor — visible straight down
+  // the open top — and the feet the draft draws solid.
+  if (params.floorPattern?.enabled === true) return false;
   if (params.lid.enabled) return false;
   // Wall surface text (#2695) engraves/embosses the camera-visible outer
   // walls; the procedural emitters don't render glyphs.

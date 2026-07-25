@@ -122,6 +122,18 @@ export interface PipelineContext {
   /** Pattern cut targets — applied in a separate boolean pass after cutTargets */
   readonly patternCutTargets: readonly Shape3D[];
   /**
+   * Cut targets that must ALSO be applied to {@link deferredSolid} (#2816).
+   *
+   * Every other feature cuts the body only, which is safe because the socket
+   * meets it at a hidden interface. The floor pattern is the exception: its
+   * holes have to leave the bin, so the same tools carve the base socket too.
+   * Applying them to both keeps the preview (which meshes the two separately)
+   * and the export (which fuses them) showing the same model. The shapes here
+   * are the SAME references that appear in {@link patternCutTargets} — the
+   * boolean stage owns them and disposes them once.
+   */
+  readonly deferredCutTargets: readonly Shape3D[];
+  /**
    * Composite geometry-identity key for the feature targets this run, set by
    * the features stage. Combined with `dimensions.shellKey` + `forExport` it
    * keys the post-boolean body cache, so a metadata-only edit (no geometry

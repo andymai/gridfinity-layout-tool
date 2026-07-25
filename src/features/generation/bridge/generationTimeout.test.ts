@@ -17,6 +17,8 @@ import {
   KUMIKO_PERIMETER_BONUS_MS_PER_CELL,
   DIVIDER_PATTERN_MS_PER_SEGMENT,
   KUMIKO_DIVIDER_MS_PER_SEGMENT,
+  FLOOR_PATTERN_BONUS_MS,
+  FLOOR_PATTERN_MS_PER_CELL,
   MAX_TIMEOUT_MS,
   EXPORT_TIMEOUT_MULTIPLIER,
   EXPORT_MAX_TIMEOUT_MS,
@@ -306,6 +308,34 @@ describe('computeGenerationTimeoutMs', () => {
       params({ wallPattern: { ...HEX_ON, dividers: false }, ...slotted })
     );
     expect(on).toBeGreaterThan(off);
+  });
+
+  it('grants a flat plus per-cell bonus for the floor pattern', () => {
+    const off = computeGenerationTimeoutMs(params({ width: 2, depth: 3, height: 3 }));
+    const on = computeGenerationTimeoutMs(
+      params({
+        width: 2,
+        depth: 3,
+        height: 3,
+        floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
+      })
+    );
+    expect(on - off).toBe(FLOOR_PATTERN_BONUS_MS + 6 * FLOOR_PATTERN_MS_PER_CELL);
+  });
+
+  it('grants no floor-pattern bonus for bases the worker never patterns', () => {
+    const baseline = computeGenerationTimeoutMs(params({ height: 3 }));
+    const floorPattern = { enabled: true, pattern: 'round', scale: 0.5 } as const;
+    const inapplicable: Array<Partial<BinParams>> = [
+      { base: { ...DEFAULT_BIN_PARAMS.base, solid: true } },
+      { base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
+      { style: 'solid' },
+    ];
+    for (const overrides of inapplicable) {
+      expect(computeGenerationTimeoutMs(params({ height: 3, floorPattern, ...overrides }))).toBe(
+        baseline
+      );
+    }
   });
 
   it('grants no divider bonus without dividers to pattern', () => {

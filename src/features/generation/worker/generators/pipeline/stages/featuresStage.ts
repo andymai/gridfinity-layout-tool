@@ -21,6 +21,7 @@ import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
 import { buildKumikoWallPatterns } from '../../kumikoWrapBuilder';
 import { buildDividerPatterns } from '../../dividerPatternBuilder';
+import { buildFloorPattern } from '../../floorPatternBuilder';
 
 export const featuresStage: PipelineStage = {
   name: 'features',
@@ -78,6 +79,12 @@ export const featuresStage: PipelineStage = {
 
     const targets = runFeatureBuilders(builders, ctx);
 
+    // Floor pattern (#2816): drainage/ventilation holes through the floor slab
+    // AND the base socket, so they're handed to the boolean stage twice — once
+    // for the body, once for the deferred socket.
+    const floorPatternShapes = buildFloorPattern(ctx);
+    targets.patternCutTargets.push(...floorPatternShapes);
+
     // Wall patterns: special case with per-wall caching + cutout clipping.
     // Polygon bins enumerate outer polygon edges (see wallPatterns.ts) and
     // only bind clipping to the outermost edge per cardinal — non-outermost
@@ -100,10 +107,13 @@ export const featuresStage: PipelineStage = {
       fuseTargets: targets.fuseTargets,
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
-      // Wall-pattern cuts aren't keyed through feature builders, so their
-      // geometry isn't in `featuresKey` — disable the resume cache rather than
-      // risk a stale body when only the pattern changes.
-      featuresKey: wallPatternEnabled ? null : targets.featuresKey,
+      deferredCutTargets: floorPatternShapes,
+      // Pattern cuts aren't keyed through feature builders, so their geometry
+      // isn't in `featuresKey` — disable the resume cache rather than risk a
+      // stale body when only the pattern changes. For the floor pattern a
+      // resume hit would be worse than stale: the cached body would come back
+      // with holes while the freshly built socket flowed through uncut.
+      featuresKey: wallPatternEnabled || floorPatternShapes.length > 0 ? null : targets.featuresKey,
     };
   },
 };

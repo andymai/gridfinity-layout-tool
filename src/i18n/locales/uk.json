@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Тримається на кромці лише за рахунок тертя, без напрямних чи магнітів. Найлегше друкувати та знімати.",
   "binDesigner.lid.advanced": "Додатково",
   "binDesigner.textSizeMax": "Макс. розмір підпису",
-  "binDesigner.textSizeCapHint": "Вкладки в одному рядку мають спільний розмір, тож довший підпис зменшує решту."
+  "binDesigner.textSizeCapHint": "Вкладки в одному рядку мають спільний розмір, тож довший підпис зменшує решту.",
+  "binDesigner.base.floorPattern": "Дренажні отвори",
+  "binDesigner.base.floorPattern.shape": "Форма отвору",
+  "binDesigner.base.floorPattern.hint": "Перфорує дно та ніжки під ним, щоб вода й пил падали наскрізь",
+  "binDesigner.base.floorPattern.tooSmall": "Ці отвори завеликі для цієї основи — спробуйте дрібніший масштаб",
+  "binDesigner.floorPatternDisablesLightweight": "Не можна поєднати дренажні отвори з полегшеним дном",
+  "binDesigner.lightweightDisablesFloorPattern": "Полегшене дно вже відкрите — немає плити, яку можна перфорувати"
 }

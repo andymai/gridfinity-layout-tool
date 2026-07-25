@@ -43,6 +43,8 @@ export type {
   PathPoint,
   WallPatternConfig,
   WallPatternType,
+  FloorPatternConfig,
+  FloorPatternType,
   SplitConnectorConfig,
   WallConnectorStyle,
   HandleConfig,
@@ -101,6 +103,8 @@ export {
   DEFAULT_PATTERN_SCALE,
   KUMIKO_PATTERN_TYPES,
   isKumikoPattern,
+  FLOOR_PATTERN_TYPES,
+  DEFAULT_FLOOR_PATTERN_CONFIG,
   WALL_TEXT_SIDES,
   WALL_TEXT_ALIGNS,
 } from '@/features/bin-designer/types';

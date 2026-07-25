@@ -226,6 +226,7 @@ export function createInitialContext(
     fuseTargets: [],
     cutTargets: [],
     patternCutTargets: [],
+    deferredCutTargets: [],
     featuresKey: null,
     mesh: null,
     coarseMesh: null,

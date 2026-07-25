@@ -151,11 +151,31 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
       'label',
       'scoop',
       'wallPattern',
+      'floorPattern',
       'inserts',
       'wallCutouts',
       'handles',
     ],
     reason: 'binDesigner.solidDisablesCavity',
+  },
+
+  // ── Floor pattern (#2816) ────────────────────────────────────────────────
+  // The lightweight base replaces the solid floor + feet with shelled cups and
+  // already opens the body floor into them, so there is no slab left to
+  // perforate and no foot underside for the holes to exit through.
+  {
+    description: 'Lightweight floor disables the floor pattern (no slab to perforate)',
+    source: 'base.lightweight',
+    when: (p) => p.base.lightweight,
+    disables: ['floorPattern'],
+    reason: 'binDesigner.lightweightDisablesFloorPattern',
+  },
+  {
+    description: 'Floor pattern incompatible with lightweight floor',
+    source: 'floorPattern',
+    when: (p) => p.floorPattern?.enabled === true,
+    disables: ['base.lightweight'],
+    reason: 'binDesigner.floorPatternDisablesLightweight',
   },
 
   // ── Dynamic: wall pattern disabled when all walls are slotted ────────────

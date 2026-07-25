@@ -14,6 +14,7 @@ import type {
   HandleConfig,
   SlotConfig,
   WallPatternConfig,
+  FloorPatternConfig,
   Cutout,
   HandleCutoutShape,
   WallCutout,
@@ -73,6 +74,8 @@ import {
   DEFAULT_FEATURE_COLOR_CONFIG,
   DISABLED_WALL_CUTOUT,
   VALID_WALL_PATTERNS,
+  VALID_FLOOR_PATTERNS,
+  DEFAULT_FLOOR_PATTERN_CONFIG,
   VALID_HANDLE_SHAPES,
 } from './defaults';
 
@@ -740,6 +743,25 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     };
   }
 
+  // Floor pattern (#2816) — absent on every design saved before the feature.
+  // Same coercion contract as the wall pattern: unknown members fall back to
+  // the default and a crafted scale is clamped into [0, 1].
+  const floorPatternConfig: FloorPatternConfig = (() => {
+    const raw: Partial<FloorPatternConfig> = params.floorPattern ?? {};
+    const rawScale = raw.scale;
+    return {
+      enabled: raw.enabled === true,
+      pattern:
+        raw.pattern !== undefined && VALID_FLOOR_PATTERNS.has(raw.pattern)
+          ? raw.pattern
+          : DEFAULT_FLOOR_PATTERN_CONFIG.pattern,
+      scale:
+        typeof rawScale === 'number' && Number.isFinite(rawScale)
+          ? Math.min(1, Math.max(0, rawScale))
+          : DEFAULT_PATTERN_SCALE,
+    };
+  })();
+
   // Migrate cutoutConfig and handle legacy per-cutout topOffset
   const cutoutConfig: CutoutConfig = {
     ...DEFAULT_CUTOUT_CONFIG,
@@ -827,6 +849,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       : { meshAssets: undefined }),
     cutoutConfig,
     wallPattern: wallPatternConfig,
+    floorPattern: floorPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors, wallHeightMm),
     lid: (() => {
       // Strip locked-down legacy fields (`fit`, `wallThickness`,

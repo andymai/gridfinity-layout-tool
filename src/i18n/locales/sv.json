@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Håller mot kanten enbart med friktion, utan skenor eller magneter. Enklast att skriva ut och ta av.",
   "binDesigner.lid.advanced": "Avancerat",
   "binDesigner.textSizeMax": "Max etikettstorlek",
-  "binDesigner.textSizeCapHint": "Flikar i en rad delar storlek, så en längre etikett krymper de övriga."
+  "binDesigner.textSizeCapHint": "Flikar i en rad delar storlek, så en längre etikett krymper de övriga.",
+  "binDesigner.base.floorPattern": "Dräneringshål",
+  "binDesigner.base.floorPattern.shape": "Hålform",
+  "binDesigner.base.floorPattern.hint": "Perforerar botten och fötterna under, så att vatten och damm faller rakt igenom",
+  "binDesigner.base.floorPattern.tooSmall": "De här hålen är för stora för den här botten – prova en finare skala",
+  "binDesigner.floorPatternDisablesLightweight": "Det går inte att kombinera dräneringshål med ett lättviktsgolv",
+  "binDesigner.lightweightDisablesFloorPattern": "Ett lättviktsgolv är redan öppet – det finns ingen platta att perforera"
 }

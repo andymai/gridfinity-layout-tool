@@ -1,16 +1,29 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
+import type { FloorPatternType, WallPatternType } from '@/features/bin-designer/types';
+import {
+  DEFAULT_FLOOR_PATTERN_CONFIG,
+  DEFAULT_PATTERN_SCALE,
+  FLOOR_PATTERN_TYPES,
+} from '@/features/bin-designer/types';
+import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
+
+/** Narrow a picker selection to the subset the floor supports. */
+function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternType {
+  return (FLOOR_PATTERN_TYPES as readonly WallPatternType[]).includes(pattern);
+}
 
 export function useBaseSection() {
   const t = useTranslation();
-  const { params, updateBase, setParams } = useDesignerStore(
+  const { params, updateBase, updateFloorPattern, setParams } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
       updateBase: s.updateBase,
+      updateFloorPattern: s.updateFloorPattern,
       setParams: s.setParams,
     }))
   );
@@ -87,6 +100,48 @@ export function useBaseSection() {
     setParams(resolved);
   }, [params, isFlat, setParams]);
 
+  // ── Floor pattern (#2816) ────────────────────────────────────────────────
+  // Drainage / ventilation holes through the floor slab and the feet below it.
+  const floorPattern = params.floorPattern ?? DEFAULT_FLOOR_PATTERN_CONFIG;
+  const floorPatternStatus = getFeatureStatus(params, 'floorPattern');
+  const floorPatternDisabledReason = floorPatternStatus.reason
+    ? t(floorPatternStatus.reason)
+    : undefined;
+
+  const toggleFloorPattern = useCallback(() => {
+    if (!floorPattern.enabled && !floorPatternStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'floorPattern',
+      enabled: !floorPattern.enabled,
+    });
+    setParams(resolved);
+  }, [params, floorPattern.enabled, floorPatternStatus.available, setParams]);
+
+  const setFloorPatternType = useCallback(
+    (pattern: WallPatternType | null) => {
+      // The picker's "none" entry is the off switch, so it has to route through
+      // the constraint engine like the toggle rather than just clearing the type.
+      if (pattern === null) {
+        const { params: resolved } = resolveConstraints(params, {
+          feature: 'floorPattern',
+          enabled: false,
+        });
+        setParams(resolved);
+        return;
+      }
+      if (!isFloorPatternType(pattern)) return;
+      updateFloorPattern({ pattern, enabled: true });
+    },
+    [params, setParams, updateFloorPattern]
+  );
+
+  const setFloorPatternScale = useCallback(
+    (percent: number) => updateFloorPattern({ scale: percent / 100 }),
+    [updateFloorPattern]
+  );
+
+  const floorPatternFit = useMemo(() => assessFloorPatternFit(params), [params]);
+
   const setMagnetDiameter = useCallback(
     (diameter: number) => {
       updateBase({ magnetDiameter: diameter });
@@ -109,7 +164,18 @@ export function useBaseSection() {
   );
 
   return {
-    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets, hasLightweight: base.lightweight },
+    state: {
+      base,
+      hasMagnet,
+      hasScrew,
+      isFlat,
+      hasHalfSockets,
+      hasLightweight: base.lightweight,
+      floorPatternEnabled: floorPattern.enabled,
+      floorPatternType: floorPattern.pattern,
+      floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),
+      floorPatternDoesNotFit: floorPattern.enabled && floorPatternFit === 'none',
+    },
     handlers: {
       toggleMagnet,
       toggleScrew,
@@ -120,6 +186,10 @@ export function useBaseSection() {
       setMagnetDiameter,
       setMagnetHeight,
       setScrewDiameter,
+      toggleFloorPattern,
+      setFloorPatternType,
+      setFloorPatternScale,
+      floorPatternDisabledReason,
       magnetDisabledReason,
       screwDisabledReason,
       flatDisabledReason,

@@ -31,6 +31,7 @@ import type {
   OverhangHighlightSide,
   WallPatternConfig,
 } from './walls';
+import type { FloorPatternConfig } from './floor';
 import type { BinParams, Insert } from './binParams';
 import type {
   GenerationState,
@@ -163,6 +164,7 @@ export interface DesignerState {
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;
+  updateFloorPattern: (partial: Partial<FloorPatternConfig>) => void;
 
   // Cutout configuration actions
   updateCutoutConfig: (partial: Partial<CutoutConfig>) => void;

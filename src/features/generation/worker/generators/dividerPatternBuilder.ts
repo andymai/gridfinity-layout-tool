@@ -30,7 +30,7 @@ import {
   shapeDescriptorKey,
 } from './patterns';
 import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, WallPatternType } from '@/shared/types/bin';
 import { buildCacheKey, compactKey, quantize } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
 import { getFeatureCache, setFeatureCache } from './shapeCache';
@@ -324,20 +324,34 @@ export interface PanelFactory {
   ): Shape3D | null;
 }
 
+/** Which pattern a factory should build. Defaults to the bin's wall pattern. */
+export interface PanelPatternSource {
+  readonly pattern: WallPatternType;
+  readonly scale: number;
+}
+
 /**
- * Resolve the panel factory for a bin's wall pattern, or null when no pattern
- * pipeline applies. `innerW`/`innerD` only feed the kumiko perimeter, which
- * fixes the lattice metrics so divider triangles match the outer walls.
+ * Resolve the panel factory for a pattern, or null when no pattern pipeline
+ * applies. `innerW`/`innerD` only feed the kumiko perimeter, which fixes the
+ * lattice metrics so divider triangles match the outer walls.
+ *
+ * `source` selects the pattern; it defaults to the bin's wall pattern, and the
+ * floor pattern (#2816) passes its own. Panel cache keys already carry the
+ * pattern type and scale, so two sources can't collide.
  */
 export function resolvePanelFactory(
   params: BinParams,
   innerW: number,
-  innerD: number
+  innerD: number,
+  source?: PanelPatternSource
 ): PanelFactory | null {
-  const wallPattern = params.wallPattern;
-  if (!(wallPattern.pattern in PATTERN_REGISTRY)) return null;
-  const scale = wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
-  const calculator = getPatternCalculator(wallPattern.pattern, params.height, scale);
+  const resolved: PanelPatternSource = source ?? {
+    pattern: params.wallPattern.pattern,
+    scale: params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE,
+  };
+  if (!(resolved.pattern in PATTERN_REGISTRY)) return null;
+  const scale = resolved.scale;
+  const calculator = getPatternCalculator(resolved.pattern, params.height, scale);
   const stamp = isStampCalculator(calculator) ? calculator : null;
   const kumiko = stamp ? null : resolveKumikoCalculator(params);
   if (!stamp && !kumiko) return null;

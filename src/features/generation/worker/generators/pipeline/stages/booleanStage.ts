@@ -79,6 +79,47 @@ function applyCutPass(
   return shape;
 }
 
+/**
+ * Carve the deferred base socket with the tools that must pass through it (the
+ * floor pattern's drainage holes — #2816).
+ *
+ * Runs before the body pass so the tools are still alive; the body pass owns
+ * them and disposes them at the end. A failure here degrades to an uncarved
+ * socket — the holes then stop at the socket's top face instead of draining —
+ * rather than failing the whole generation.
+ */
+function cutDeferredSolid(ctx: PipelineContext): {
+  solid: Shape3D | null;
+  key: string | null;
+} {
+  const { deferredSolid, deferredCutTargets, signal, forExport } = ctx;
+  if (!deferredSolid || deferredCutTargets.length === 0) {
+    return { solid: deferredSolid, key: ctx.deferredSolidKey };
+  }
+  // The socket's mesh cache is keyed on the SOCKET's own geometry, which says
+  // nothing about the pattern carved into it — and the carve also depends on
+  // divider/scoop keep-outs that key can't see. Drop it so a carved socket
+  // always re-tessellates, mirroring how `featuresKey` disables the body's
+  // resume cache for pattern cuts.
+  try {
+    const { shape, telemetry } = unwrap(
+      cutAllBisect(
+        deferredSolid as ValidSolid,
+        [...deferredCutTargets] as ValidSolid[],
+        {
+          simplify: forExport,
+          signal,
+        } as BooleanOpts
+      )
+    );
+    recordIfRecovered('pattern_cut', telemetry);
+    if (shape !== deferredSolid) deferredSolid.delete();
+    return { solid: shape, key: null };
+  } catch {
+    return { solid: deferredSolid, key: null };
+  }
+}
+
 export const booleanStage: PipelineStage = {
   name: 'boolean',
   progressValue: 0.6,
@@ -96,6 +137,8 @@ export const booleanStage: PipelineStage = {
     const originalSolid = bin;
 
     checkCancelled(signal);
+
+    const deferred = cutDeferredSolid(ctx);
 
     const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];
 
@@ -122,11 +165,21 @@ export const booleanStage: PipelineStage = {
       if (cached) {
         // The cached body already has features fused/cut in and carries their
         // face-origin tags (preserved by the metadata clone). Drop the shell
-        // and the now-unused feature tools; the freshly built deferredSolid
-        // (socket) flows through unchanged.
+        // and the now-unused feature tools; the freshly built socket flows
+        // through as-is (a floor-patterned bin can't reach here — it disables
+        // the resume key — but the carve above is still honoured if it did).
         originalSolid.delete();
         for (const t of allTargets) t.delete();
-        return { ...ctx, solid: cached, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
+        return {
+          ...ctx,
+          solid: cached,
+          deferredSolid: deferred.solid,
+          deferredSolidKey: deferred.key,
+          fuseTargets: [],
+          cutTargets: [],
+          patternCutTargets: [],
+          deferredCutTargets: [],
+        };
       }
     }
 
@@ -168,6 +221,15 @@ export const booleanStage: PipelineStage = {
       bin = translate(bin, [0, 0, 0]);
     }
 
-    return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
+    return {
+      ...ctx,
+      solid: bin,
+      deferredSolid: deferred.solid,
+      deferredSolidKey: deferred.key,
+      fuseTargets: [],
+      cutTargets: [],
+      patternCutTargets: [],
+      deferredCutTargets: [],
+    };
   },
 };

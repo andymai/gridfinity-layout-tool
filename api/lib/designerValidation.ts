@@ -123,6 +123,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'cutouts',
   'cutoutConfig',
   'wallPattern',
+  'floorPattern',
   'splitConnectors',
   'featureColors',
   'lid',

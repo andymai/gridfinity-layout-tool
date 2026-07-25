@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Hält allein durch Reibung an der Kante, ohne Schienen oder Magnete. Am einfachsten zu drucken und abzunehmen.",
   "binDesigner.lid.advanced": "Erweitert",
   "binDesigner.textSizeMax": "Max. Beschriftungsgröße",
-  "binDesigner.textSizeCapHint": "Tabs einer Reihe teilen eine Größe – eine längere Beschriftung verkleinert die übrigen."
+  "binDesigner.textSizeCapHint": "Tabs einer Reihe teilen eine Größe – eine längere Beschriftung verkleinert die übrigen.",
+  "binDesigner.base.floorPattern": "Ablauflöcher",
+  "binDesigner.base.floorPattern.shape": "Lochform",
+  "binDesigner.base.floorPattern.hint": "Durchbricht den Boden und die Füße darunter, sodass Wasser und Staub direkt hindurchfallen",
+  "binDesigner.base.floorPattern.tooSmall": "Diese Löcher sind zu groß für diesen Boden – versuche eine feinere Skalierung",
+  "binDesigner.floorPatternDisablesLightweight": "Ablauflöcher lassen sich nicht mit einem Leichtbauboden kombinieren",
+  "binDesigner.lightweightDisablesFloorPattern": "Ein Leichtbauboden ist bereits offen – es gibt keine Platte zum Durchbrechen"
 }

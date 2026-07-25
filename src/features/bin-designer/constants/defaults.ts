@@ -15,10 +15,16 @@ import type {
   DividerPieceConfig,
   WallPatternConfig,
   WallPatternType,
+  FloorPatternType,
   CutoutConfig,
   SplitConnectorConfig,
 } from '../types';
-import { DEFAULT_PATTERN_SCALE, WALL_PATTERN_TYPES } from '../types';
+import {
+  DEFAULT_FLOOR_PATTERN_CONFIG,
+  DEFAULT_PATTERN_SCALE,
+  FLOOR_PATTERN_TYPES,
+  WALL_PATTERN_TYPES,
+} from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
 import { makeUniformLipCells, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
@@ -54,6 +60,11 @@ export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   scale: DEFAULT_PATTERN_SCALE,
   dividers: false,
 } as const;
+
+/** Valid floor pattern members — used to coerce crafted/removed values on load. */
+export const VALID_FLOOR_PATTERNS = new Set<FloorPatternType>(FLOOR_PATTERN_TYPES);
+
+export { DEFAULT_FLOOR_PATTERN_CONFIG } from '../types';
 
 /** Default position fields shared by all wall cutouts */
 const DEFAULT_CUTOUT_POSITION = {
@@ -204,6 +215,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   cutouts: [],
   cutoutConfig: DEFAULT_CUTOUT_CONFIG,
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
+  floorPattern: DEFAULT_FLOOR_PATTERN_CONFIG,
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
   lid: DEFAULT_LID_CONFIG,
   textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,

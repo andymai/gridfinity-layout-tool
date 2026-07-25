@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Grijpt de rand alleen door wrijving, zonder rails of magneten. Het makkelijkst om te printen en eraf te halen.",
   "binDesigner.lid.advanced": "Geavanceerd",
   "binDesigner.textSizeMax": "Max. labelgrootte",
-  "binDesigner.textSizeCapHint": "Tabs in een rij delen één grootte, dus een langer label verkleint de rest."
+  "binDesigner.textSizeCapHint": "Tabs in een rij delen één grootte, dus een langer label verkleint de rest.",
+  "binDesigner.base.floorPattern": "Afvoergaten",
+  "binDesigner.base.floorPattern.shape": "Gatvorm",
+  "binDesigner.base.floorPattern.hint": "Perforeert de bodem en de voetjes eronder, zodat water en stof er recht doorheen vallen",
+  "binDesigner.base.floorPattern.tooSmall": "Deze gaten zijn te groot voor deze bodem – probeer een fijnere schaal",
+  "binDesigner.floorPatternDisablesLightweight": "Afvoergaten kunnen niet worden gecombineerd met een lichtgewicht bodem",
+  "binDesigner.lightweightDisablesFloorPattern": "Een lichtgewicht bodem is al open – er is geen plaat om te perforeren"
 }

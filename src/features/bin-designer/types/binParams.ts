@@ -7,6 +7,7 @@ import type { CompartmentConfig, ScoopConfig } from './compartments';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig } from './handles';
 import type { WallConfig, WallPatternConfig, OverhangConfig } from './walls';
+import type { FloorPatternConfig } from './floor';
 import type { SplitConnectorConfig } from './splitConnector';
 import type { FeatureColorConfig } from './featureColors';
 import type { SurfaceTextConfig, TextStyleDefaults } from './text';
@@ -75,6 +76,13 @@ export interface BinParams {
    */
   readonly meshAssets?: Record<string, MeshAsset>;
   readonly wallPattern: WallPatternConfig;
+  /**
+   * Drainage / ventilation perforation of the bin floor (#2816). The cut passes
+   * through the floor slab AND the base socket under it, so holes drain instead
+   * of ending in a blind pocket. Omitted on designs saved before the feature
+   * existed; `migrateParams` backfills a disabled config.
+   */
+  readonly floorPattern?: FloorPatternConfig;
   /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
   readonly splitConnectors?: SplitConnectorConfig;
   /** Per-feature filament color assignment for multi-color 3MF export. */

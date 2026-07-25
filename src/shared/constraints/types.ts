@@ -13,6 +13,7 @@ export type FeatureKey =
   | 'scoop'
   | 'label'
   | 'wallPattern'
+  | 'floorPattern'
   | 'inserts'
   | 'cutouts'
   | 'slotConfig'

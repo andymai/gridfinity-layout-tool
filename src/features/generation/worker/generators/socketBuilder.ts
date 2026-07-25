@@ -172,6 +172,47 @@ export function forEachSocketCell(
   );
 }
 /**
+ * The socket cells this bin actually grows a foot on — {@link forEachSocketCell}
+ * with the cell-mask filter applied.
+ *
+ * Shared with the floor pattern (#2816), whose holes must exit through a foot's
+ * flat underside rather than its baseplate-mating taper; it therefore needs the
+ * same cell list the socket is built from, not a re-derivation of it.
+ */
+export function filledSocketCells(
+  gridW: number,
+  gridD: number,
+  mask: CellMask | undefined,
+  gridUnitMm: GridUnitInput,
+  globalHalfSockets: boolean,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
+): CellInfo[] {
+  const usingMask = isPartialMask(mask);
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const totalW_mm = gridW * unitX;
+  const totalD_mm = gridD * unitY;
+
+  const cells: CellInfo[] = [];
+  forEachSocketCell(
+    gridW,
+    gridD,
+    mask,
+    gridUnitMm,
+    globalHalfSockets,
+    (cell) => {
+      if (usingMask) {
+        const leftUnit = (cell.centerX + totalW_mm / 2 - (cell.widthUnits * unitX) / 2) / unitX;
+        const bottomUnit = (cell.centerY + totalD_mm / 2 - (cell.depthUnits * unitY) / 2) / unitY;
+        if (!isRegionFilled(mask, leftUnit, bottomUnit, cell.widthUnits, cell.depthUnits)) return;
+      }
+      cells.push(cell);
+    },
+    fractionalEdge
+  );
+  return cells;
+}
+
+/**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
  * The socket is a frustum-like solid whose cross-section shrinks with depth,
@@ -407,30 +448,28 @@ export function buildBaseSocket(
     // Build and position each cell socket
     const cellSockets: Shape3D[] = [];
 
-    forEachSocketCell(
+    for (const cell of filledSocketCells(
       gridW,
       gridD,
       cellMask,
       gridUnitMm,
       halfSockets,
-      (cell) => {
-        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-        const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
-        const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
-        // Clone a cached cell-socket template (simplified for preview, full for
-        // export) instead of re-lofting every cell. The clone is registered so
-        // scope disposes it; `translate` returns the positioned socket.
-        // NOTE: cellSockets (the translated results) are NOT scope-registered
-        // because fuseAll may return one of its inputs when given a single
-        // element. They're deleted manually.
-        const cellSocket = translate(
-          scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)),
-          [cell.centerX, cell.centerY, 0]
-        );
-        cellSockets.push(cellSocket);
-      },
       fractionalEdge
-    );
+    )) {
+      const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
+      const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
+      // Clone a cached cell-socket template (simplified for preview, full for
+      // export) instead of re-lofting every cell. The clone is registered so
+      // scope disposes it; `translate` returns the positioned socket.
+      // NOTE: cellSockets (the translated results) are NOT scope-registered
+      // because fuseAll may return one of its inputs when given a single
+      // element. They're deleted manually.
+      const cellSocket = translate(
+        scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)),
+        [cell.centerX, cell.centerY, 0]
+      );
+      cellSockets.push(cellSocket);
+    }
 
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');

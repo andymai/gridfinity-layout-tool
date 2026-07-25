@@ -81,7 +81,7 @@ export interface DividerPatternPlan {
 }
 
 /** A world-space axis-aligned keep-out volume contributed by a feature. */
-interface WorldKeepOut {
+export interface WorldKeepOut {
   readonly xMin: number;
   readonly xMax: number;
   readonly yMin: number;
@@ -157,8 +157,12 @@ function projectFootprint(
  * Mirrors `scoopRampBuilder`: one ramp per compartment, spanning the
  * compartment's full width at its front edge, reaching `lipOffset + run` back
  * from that edge and rising to the profile height.
+ *
+ * Coordinates are in the INTERIOR frame (centred on the cavity), so a caller
+ * working in bin coordinates must add `innerOffsetX/Y`. Shared with the floor
+ * pattern (#2816), whose holes must not undercut a ramp's foot either.
  */
-function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!params.scoop.enabled) return [];
   const { innerW, innerD, wallHeight, hasLip } = dim;
   const { cols, rows, cells } = params.compartments;

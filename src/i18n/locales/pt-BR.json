@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Prende na borda apenas por atrito, sem trilhos nem ímãs. O mais fácil de imprimir e remover.",
   "binDesigner.lid.advanced": "Avançado",
   "binDesigner.textSizeMax": "Tamanho máx. da etiqueta",
-  "binDesigner.textSizeCapHint": "As abas de uma fileira compartilham o tamanho, então uma etiqueta mais longa reduz as demais."
+  "binDesigner.textSizeCapHint": "As abas de uma fileira compartilham o tamanho, então uma etiqueta mais longa reduz as demais.",
+  "binDesigner.base.floorPattern": "Furos de drenagem",
+  "binDesigner.base.floorPattern.shape": "Formato do furo",
+  "binDesigner.base.floorPattern.hint": "Perfura o fundo e os pés abaixo dele, para que água e poeira caiam direto",
+  "binDesigner.base.floorPattern.tooSmall": "Esses furos são grandes demais para esta base — tente uma escala mais fina",
+  "binDesigner.floorPatternDisablesLightweight": "Não é possível combinar furos de drenagem com um fundo leve",
+  "binDesigner.lightweightDisablesFloorPattern": "Um fundo leve já é aberto — não há laje para perfurar"
 }

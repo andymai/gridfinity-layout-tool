@@ -1915,6 +1915,10 @@ const en: Record<string, string> = {
   'binDesigner.lightweightDisablesInserts': 'Floor inserts would cut through a lightweight floor',
   'binDesigner.insertsDisableLightweight': 'Cannot combine floor inserts with a lightweight floor',
   'binDesigner.attachmentDisablesFlatFloor': 'Attachment holes require sockets',
+  'binDesigner.lightweightDisablesFloorPattern':
+    'A lightweight floor is already open — there is no slab to perforate',
+  'binDesigner.floorPatternDisablesLightweight':
+    'Cannot combine drainage holes with a lightweight floor',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',
   'binDesigner.group.shape': 'Shape',
@@ -2396,6 +2400,12 @@ const en: Record<string, string> = {
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
   'binDesigner.lightweight': 'Lightweight floor',
+  'binDesigner.base.floorPattern': 'Drainage holes',
+  'binDesigner.base.floorPattern.shape': 'Hole shape',
+  'binDesigner.base.floorPattern.hint':
+    'Perforates the floor and the feet below it, so water and dust fall straight through',
+  'binDesigner.base.floorPattern.tooSmall':
+    'These holes are too large for this base — try a finer scale',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.heightUnitTooltip': 'Size of one height unit in mm (standard Gridfinity = 7mm)',
   'binDesigner.extraWallHeight': 'Extra wall height',

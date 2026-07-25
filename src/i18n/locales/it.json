@@ -2900,5 +2900,11 @@
   "binDesigner.lid.frictionHint": "Si aggancia al bordo solo per attrito, senza guide né magneti. Il più facile da stampare e togliere.",
   "binDesigner.lid.advanced": "Avanzate",
   "binDesigner.textSizeMax": "Dimensione max etichetta",
-  "binDesigner.textSizeCapHint": "Le linguette di una fila condividono la dimensione, quindi un’etichetta più lunga riduce le altre."
+  "binDesigner.textSizeCapHint": "Le linguette di una fila condividono la dimensione, quindi un’etichetta più lunga riduce le altre.",
+  "binDesigner.base.floorPattern": "Fori di drenaggio",
+  "binDesigner.base.floorPattern.shape": "Forma del foro",
+  "binDesigner.base.floorPattern.hint": "Perfora il fondo e i piedini sottostanti, così acqua e polvere cadono direttamente",
+  "binDesigner.base.floorPattern.tooSmall": "Questi fori sono troppo grandi per questa base: prova una scala più fine",
+  "binDesigner.floorPatternDisablesLightweight": "Non è possibile combinare i fori di drenaggio con un fondo alleggerito",
+  "binDesigner.lightweightDisablesFloorPattern": "Un fondo alleggerito è già aperto: non c’è alcuna lastra da perforare"
 }

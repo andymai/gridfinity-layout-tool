@@ -36,6 +36,8 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
+import { stampPatternOpenArea } from '@/shared/generation/wallPatternMetrics';
 export interface PrintEstimate {
   /** Estimated material volume in mm³ */
   readonly volumeMm3: number;
@@ -156,6 +158,9 @@ function computeBinVolume(params: BinParams): number {
   if (params.wallPattern.enabled) {
     volume -= computeWallPatternReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
+
+  // Floor pattern (#2816): drainage holes remove floor slab AND foot material.
+  volume -= computeFloorPatternReduction(params, wallThickness, shell.base);
 
   // Exterior-wall collar (issue #2500): a walled ring raised above the nominal
   // body — perimeter wall material only, no floor/interior. Ring cross-section
@@ -612,6 +617,66 @@ function dividerPatternReduction(
 
   return length * bandHeight * coverageFraction * params.compartments.thickness;
 }
+/**
+ * Volume removed by the floor pattern (#2816).
+ *
+ * Expressed as a SHARE of the shell's base component rather than as a raw
+ * `area x depth` prism, because the two numbers are not in the same units:
+ * `standardBinSolidComponents.base` is calibrated to filament actually extruded
+ * (~2202mm³ per 42mm cell), while the solid geometry it stands for is several
+ * times that — a foot is a solid loft the slicer fills with infill. Subtracting
+ * true prism volume from a filament-calibrated total over-reported the saving by
+ * roughly 4x, enough to zero out a short bin's estimate. The holes remove the
+ * base straight through, so the share of its plan area they take is the share of
+ * its material they take.
+ *
+ * Open area is measured from the real element placement rather than a
+ * fraction-of-area model: a per-foot window is only ~33mm across, and over a box
+ * that small the margin the calculator leaves at every edge is most of the box.
+ *
+ * Mirrors the worker's `floorPatternApplies` gate so the estimate can't claim a
+ * saving the generator never makes.
+ */
+function computeFloorPatternReduction(
+  params: BinParams,
+  wallThickness: number,
+  baseVolume: number
+): number {
+  const floorPattern = params.floorPattern;
+  if (floorPattern?.enabled !== true) return 0;
+  if (params.base.solid || params.base.lightweight) return 0;
+  if (params.width <= 0 || params.depth <= 0) return 0;
+
+  const isFlat = params.base.style === 'flat';
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
+  const scale = floorPattern.scale ?? DEFAULT_PATTERN_SCALE;
+  const openArea = (w: number, h: number): number =>
+    stampPatternOpenArea(floorPattern.pattern, params.height, scale, w, h);
+
+  const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
+  // A flat base has no feet to thread the holes through, so the whole cavity
+  // floor is one window; a socket bin gets one window per foot.
+  const totalOpenArea = isFlat
+    ? openArea(
+        outerW - 2 * wallThickness - 2 * FLOOR_PATTERN_BORDER,
+        outerD - 2 * wallThickness - 2 * FLOOR_PATTERN_BORDER
+      )
+    : params.width *
+      params.depth *
+      openArea(
+        floorWindowSpan(1, params.gridUnitMm, params.wallThickness),
+        floorWindowSpan(1, gridUnitMmY, params.wallThickness)
+      );
+  if (totalOpenArea <= 0) return 0;
+
+  const planArea = params.width * params.depth * params.gridUnitMm * gridUnitMmY;
+  // A flat bin's "base" is floor slab only, so the holes reach through a
+  // proportionally smaller share of what the shell model booked for it.
+  const depthShare = isFlat ? wallThickness / (wallThickness + GRIDFINITY.SOCKET_HEIGHT) : 1;
+  return baseVolume * Math.min(1, totalOpenArea / planArea) * depthShare;
+}
+
 export interface WallPatternSavings {
   readonly savingsPercent: number;
   readonly patternEstimate: PrintEstimate;

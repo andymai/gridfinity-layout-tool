@@ -44,6 +44,7 @@ export function estimateBinGeneration(params: BinParams): number | null {
     // as a miss (overestimating only makes a draft more likely).
     const featuresHit =
       !params.wallPattern.enabled &&
+      params.floorPattern?.enabled !== true &&
       BIN_FEATURE_BUILDERS.every(
         (b) => !b.shouldBuild(ctx) || hasFeatureCache(b.name, b.cacheKey(ctx))
       );
