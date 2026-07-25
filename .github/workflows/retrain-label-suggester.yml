@@ -1,0 +1,81 @@
+name: Retrain Label Suggester
+
+# Regenerates src/features/bin-inspector/labelSuggest/labelSuggester.model.json
+# from production telemetry and opens a PR — only when the telemetry keyspace has
+# grown materially since the committed model. Never auto-merges: each model is a
+# reviewable artifact. Requires a REDIS_URL repo secret (prod Redis, read-only).
+
+on:
+  schedule:
+    - cron: '0 6 1 * *' # 06:00 UTC on the 1st of each month
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Retrain even if the growth threshold is not met
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: retrain-label-suggester
+  cancel-in-progress: false
+
+jobs:
+  retrain:
+    # Never run on forks of this repo.
+    if: github.repository == 'andymai/gridfinity-layout-tool'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Retrain if telemetry grew enough
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          # Manual dispatch with force=true retrains unconditionally; the monthly
+          # schedule only retrains on ≥20% keyspace growth.
+          MIN_GROWTH_PCT: ${{ github.event.inputs.force == 'true' && '0' || '20' }}
+        run: |
+          if [ -z "$REDIS_URL" ]; then
+            echo "::error::REDIS_URL secret is not set. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet 'redis>=5.0.0' 'click>=8.1.0'
+          .venv/bin/python scripts/train-label-suggester/train.py \
+            --redis-url "$REDIS_URL" \
+            --out src/features/bin-inspector/labelSuggest/labelSuggester.model.json \
+            --min-growth-pct "$MIN_GROWTH_PCT"
+          rm -rf .venv
+
+      - name: Open a PR if the model changed
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          MODEL=src/features/bin-inspector/labelSuggest/labelSuggester.model.json
+          if git diff --quiet -- "$MODEL"; then
+            echo "No material telemetry growth — model unchanged. No PR opened."
+            exit 0
+          fi
+          STAMP="$(date -u +%Y-%m-%d)"
+          BRANCH="chore/retrain-label-suggester-$(date -u +%Y%m%d%H%M)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add "$MODEL"
+          git commit -m "chore(bin-inspector): retrain label-suggester model ($STAMP)"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore(bin-inspector): retrain label-suggester model ($STAMP)" \
+            --body "Automated retrain — telemetry grew past the threshold since the committed model. Review the popularity / co-occurrence diff and the size check, then merge if sane. **Not auto-merged by design.**"

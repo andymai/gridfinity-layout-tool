@@ -119,6 +119,20 @@ def build_cooccur(
     return cooccur
 
 
+def existing_keyspace_counts(out_path: str) -> tuple[int | None, int | None]:
+    """Baseline (labelKeyCount, cooccurKeyCount) from the committed model, if any.
+
+    Used by the growth gate to decide whether a retrain is worth a PR. Absent
+    counts (an older or placeholder model) → treat as "always retrain".
+    """
+    try:
+        with open(out_path) as f:
+            existing = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None, None
+    return existing.get("labelKeyCount"), existing.get("cooccurKeyCount")
+
+
 def dominant_vocab_version(client: redis.Redis) -> str:
     versions = client.hgetall("ml:meta:vocab_versions")
     if not versions:
@@ -145,11 +159,20 @@ def dominant_vocab_version(client: redis.Redis) -> str:
     show_default=True,
     help="Minimum row total before a co-occurrence row is kept.",
 )
+@click.option(
+    "--min-growth-pct",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help="Skip the retrain unless the label OR co-occurrence keyspace has grown at "
+    "least this percent since the committed model. 0 always retrains.",
+)
 @click.option("--out", type=click.Path(dir_okay=False), required=True, help="Output JSON path.")
 def main(
     redis_url: str,
     min_label_samples: int,
     min_cooccur_samples: int,
+    min_growth_pct: float,
     out: str,
 ) -> None:
     client = redis.Redis.from_url(redis_url)
@@ -164,6 +187,34 @@ def main(
     cooccur_raw = fetch_hash_map(client, "ml:cooccur:")
     click.echo(f"  {len(cooccur_raw)} co-occurrence keys")
 
+    label_key_count = len(label_raw)
+    cooccur_key_count = len(cooccur_raw)
+
+    # Growth gate: skip the retrain (and the PR it would open) unless telemetry
+    # has grown materially since the committed model. Co-occurrence is the
+    # freshness driver (90-day TTL); popularity accrues all-time.
+    if min_growth_pct > 0:
+        base_labels, base_cooccur = existing_keyspace_counts(out)
+        if base_labels and base_cooccur:
+            growth = (
+                max(
+                    (label_key_count - base_labels) / base_labels,
+                    (cooccur_key_count - base_cooccur) / base_cooccur,
+                )
+                * 100
+            )
+            if growth < min_growth_pct:
+                click.echo(
+                    f"\nKeyspace grew {growth:.1f}% "
+                    f"(labels {base_labels}→{label_key_count}, "
+                    f"cooccur {base_cooccur}→{cooccur_key_count}) — below "
+                    f"--min-growth-pct {min_growth_pct}. Not retraining."
+                )
+                return
+            click.echo(f"Keyspace grew {growth:.1f}% — retraining.")
+        else:
+            click.echo("Committed model has no baseline counts — retraining.")
+
     popularity, sample_count = build_popularity(label_raw, min_label_samples, POP_TOP_K)
     cooccur = build_cooccur(
         cooccur_raw, min_cooccur_samples, COOCCUR_TOP_KEYS, COOCCUR_TOP_NEIGHBORS
@@ -174,6 +225,9 @@ def main(
         "vocabVersion": dominant_vocab_version(client),
         "trainedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "sampleCount": sample_count,
+        # Full keyspace sizes (pre-trim) — the growth gate's baseline for next run.
+        "labelKeyCount": label_key_count,
+        "cooccurKeyCount": cooccur_key_count,
         "popularity": popularity,
         "cooccur": cooccur,
     }
