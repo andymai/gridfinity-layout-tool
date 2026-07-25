@@ -60,6 +60,10 @@ export type { InputProps } from './Input';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
+// Combobox (text input + ranked suggestion dropdown + inline ghost completion)
+export { Combobox } from './Combobox';
+export type { ComboboxProps, ComboboxOption, ComboboxGhost } from './Combobox';
+
 // Switch
 export { Switch } from './Switch';
 export type { SwitchProps } from './Switch';
