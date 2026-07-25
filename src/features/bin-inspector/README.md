@@ -39,6 +39,18 @@ reason tag. Accepts fire a hashed `label_suggestion_accepted` PostHog event (no 
 text) for future model training. Ordering weights + the ghost confidence floor live
 in `labelSuggest/getLabelSuggestions.ts`.
 
+### Trained prior (optional)
+
+`labelSuggest/model.ts` blends a learned, hash-keyed prior on top of the heuristics:
+global **popularity** and neighbor **co-occurrence** (`modelScore`). It's built from
+aggregate telemetry by `scripts/train-label-suggester/train.py` and committed as
+`labelSuggest/labelSuggester.model.json` (lazy-loaded via `loadModel.ts` /
+`useLabelSuggesterModel`). Because only one-way label hashes are stored, the client
+looks up hashes it computes itself (candidate text + the current bin's neighbors) — it
+never reverses one. The committed placeholder has `sampleCount: 0` and is **inert**;
+run the trainer against prod Redis to activate it. The prior is deliberately gentle —
+it nudges ranking but never outranks a literal text match.
+
 ## Size suggestion (Labs)
 
 `SingleBinInspector` renders the `bin-recommender` `BinSizeSuggestion` under the label field, gated on the `bin_recommender` Labs flag (the lazy chunk isn't fetched when off). It wires `onApply={applySuggestedSize}` and `canFit={canApplySuggestedSize}`.

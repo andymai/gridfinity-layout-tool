@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { getDisplayTerm } from '@/shared/analytics/labelVocabulary';
+import { getDisplayTerm, processLabel } from '@/shared/analytics/labelVocabulary';
 import { computeGhost, getLabelSuggestions } from './getLabelSuggestions';
+import { EMPTY_MODEL, type LabelSuggesterModel } from './model';
 import type { SuggestionBin, SuggestionContext } from './types';
 
 let counter = 0;
@@ -129,6 +130,39 @@ describe('getLabelSuggestions', () => {
     expect(results[0]?.value).toBe(getDisplayTerm('screwdriver'));
     const boltIndex = results.findIndex((r) => r.value === 'Bolt');
     expect(boltIndex).toBeGreaterThan(0);
+  });
+
+  it('surfaces a model-popular catalog term before typing', () => {
+    const screw = getDisplayTerm('screw');
+    const model: LabelSuggesterModel = {
+      ...EMPTY_MODEL,
+      sampleCount: 100,
+      popularity: { [processLabel(screw).hash]: 1.0 },
+      cooccur: {},
+    };
+    // Empty field, no in-layout context: only the model can surface a catalog term.
+    const results = getLabelSuggestions('', ctx(makeBin({ label: '' })), { model });
+    expect(results.some((r) => r.value === screw)).toBe(true);
+  });
+
+  it('surfaces a label the model says co-occurs with a neighbor', () => {
+    const bolt = getDisplayTerm('bolt');
+    const neighborHash = processLabel('Widget').hash;
+    const model: LabelSuggesterModel = {
+      ...EMPTY_MODEL,
+      sampleCount: 100,
+      popularity: {},
+      cooccur: { [neighborHash]: { [processLabel(bolt).hash]: 1.0 } },
+    };
+    const target = makeBin({ x: 0, category: 'c1', label: '' });
+    const neighbor = makeBin({ x: 1, category: 'c1', label: 'Widget' });
+    const results = getLabelSuggestions('', ctx(target, neighbor), { model });
+    expect(results.some((r) => r.value === bolt)).toBe(true);
+  });
+
+  it('ignores a model with no training data (inert)', () => {
+    const results = getLabelSuggestions('', ctx(makeBin({ label: '' })), { model: EMPTY_MODEL });
+    expect(results).toEqual([]);
   });
 
   it('never returns a suggestion longer than maxLength', () => {
