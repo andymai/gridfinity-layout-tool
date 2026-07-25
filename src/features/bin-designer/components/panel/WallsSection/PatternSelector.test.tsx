@@ -138,4 +138,32 @@ describe('PatternSelector', () => {
 
     expect(screen.queryByText('All walls have slots')).not.toBeInTheDocument();
   });
+
+  it('offers only the narrowed set when `patterns` is given', () => {
+    render(
+      <PatternSelector
+        selectedPattern="round"
+        onChange={() => {}}
+        patterns={['round', 'honeycomb']}
+      />
+    );
+
+    // Order follows the canonical option list, not the order given here.
+    const options = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(options).toEqual(['Solid walls', 'Honeycomb', 'Round']);
+  });
+
+  it('falls back to the none entry when the value is outside the narrowed set', () => {
+    // A kumiko pattern is a valid WallPatternType but not offered on a floor;
+    // binding the select to the raw prop would render a blank selection.
+    render(
+      <PatternSelector
+        selectedPattern="mitsukude"
+        onChange={() => {}}
+        patterns={['round', 'honeycomb']}
+      />
+    );
+
+    expect(screen.getByRole('combobox')).toHaveValue('none');
+  });
 });

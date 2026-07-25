@@ -43,24 +43,30 @@ export function hasNoNaNOrInfinity(arr: Float32Array): boolean {
  * tessellation is not bit-reproducible across CPUs, so triangle counts drift
  * where removed volume does not.
  *
- * Throws on an out-of-range index rather than treating the missing coordinate
- * as 0 — a corrupted index buffer would otherwise still sum to a plausible
- * finite volume and quietly pass the very assertions built on top of this.
+ * Throws on a ragged index buffer or an out-of-range vertex rather than reading
+ * the missing value as 0 — a corrupted mesh would otherwise still sum to a
+ * plausible finite volume and quietly pass the assertions built on top of this.
  */
 export function meshVolume({ vertices, indices }: MeshData): number {
   let volume = 0;
+  const vertexIndex = (i: number): number => {
+    const value = indices[i];
+    if (value === undefined) {
+      throw new Error(`meshVolume: index buffer length ${indices.length} is not a multiple of 3`);
+    }
+    return value;
+  };
   const at = (index: number, axis: number): number => {
-    const i = index * 3 + axis;
-    const value = vertices[i];
+    const value = vertices[index * 3 + axis];
     if (value === undefined) {
       throw new Error(`meshVolume: vertex index ${index} is out of range`);
     }
     return value;
   };
   for (let i = 0; i < indices.length; i += 3) {
-    const a = indices[i] ?? 0;
-    const b = indices[i + 1] ?? 0;
-    const c = indices[i + 2] ?? 0;
+    const a = vertexIndex(i);
+    const b = vertexIndex(i + 1);
+    const c = vertexIndex(i + 2);
     const ax = at(a, 0);
     const ay = at(a, 1);
     const az = at(a, 2);

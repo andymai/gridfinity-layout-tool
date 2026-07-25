@@ -289,7 +289,11 @@ export function PatternSelector({
       </label>
       <Select
         id={id}
-        value={selectedPattern ?? 'none'}
+        // Bound to the RESOLVED option, not the raw prop: when `patterns`
+        // narrows the set, a value outside it (a crafted or pre-migration
+        // design) has no matching <option> and renders blank. `selectedOption`
+        // already falls back to the "none" entry.
+        value={selectedOption.value ?? 'none'}
         onChange={handleChange}
         disabled={disabled}
         options={options.map(({ value, labelKey: optionLabelKey, groupKey }) => ({
