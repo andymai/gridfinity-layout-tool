@@ -34,6 +34,11 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   /^Script error\.?$/,
   // Extension content-script DOM observers (very common, never actionable)
   /ResizeObserver loop (limit exceeded|completed with undelivered notifications)/i,
+  // Firefox-for-iOS injects a `__firefox__` global and Reader-mode content
+  // script into the page; when that injected code throws (e.g. "Can't find
+  // variable: __firefox__" or "window.__firefox__.reader" is undefined) our
+  // handlers catch it. No app code is involved. Match every variant/fingerprint.
+  /__firefox__/,
 ];
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [

@@ -19,6 +19,9 @@ describe('shouldIgnoreError — message patterns', () => {
     'Script error',
     'ResizeObserver loop limit exceeded',
     'ResizeObserver loop completed with undelivered notifications.',
+    // Firefox-for-iOS injected `__firefox__` global / Reader-mode noise
+    "ReferenceError: Can't find variable: __firefox__",
+    "TypeError: undefined is not an object (evaluating 'window.__firefox__.reader')",
   ])('ignores %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(true);
   });
