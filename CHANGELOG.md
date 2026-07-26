@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.302.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.301.0...gridfinity-layout-tool-v4.302.0) (2026-07-26)
+
+
+### Features
+
+* **bin-inspector:** localize catalog label suggestions to the user's language ([#2836](https://github.com/andymai/gridfinity-layout-tool/issues/2836)) ([ad78f1c](https://github.com/andymai/gridfinity-layout-tool/commit/ad78f1c9a855d77062bb3a9f8c27444f97cf3b09))
+
+
+### Bug Fixes
+
+* **build:** separate ML model weights from the app JS budget ([#2837](https://github.com/andymai/gridfinity-layout-tool/issues/2837)) ([d20518d](https://github.com/andymai/gridfinity-layout-tool/commit/d20518d5e89a1ee5001eb5f78795b198301406ee))
+
 ## [4.301.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.300.0...gridfinity-layout-tool-v4.301.0) (2026-07-26)
 
 
