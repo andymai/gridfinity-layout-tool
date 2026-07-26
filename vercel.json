@@ -177,6 +177,16 @@
       ]
     },
     {
+      "source": "/zh-CN/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "zh-CN" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/fr/:path((?!api/).*)",
       "headers": [
         { "key": "Content-Language", "value": "fr" },
@@ -324,7 +334,7 @@
       "destination": "/:slug/index.html"
     },
     {
-      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk|pl)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk|pl|zh-CN)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
       "destination": "/:locale/:slug/index.html"
     },
     { "source": "/designer", "destination": "/" },

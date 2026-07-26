@@ -37,7 +37,19 @@ const SITE_URL = 'https://gridfinitylayouttool.com';
 const MAX_TITLE_LEN = 55;
 const MAX_DESCRIPTION_LEN = 155;
 
-const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk', 'pl'] as const;
+const SUPPORTED_LOCALES = [
+  'en',
+  'de',
+  'fr',
+  'es',
+  'pt-BR',
+  'nl',
+  'sv',
+  'nb',
+  'uk',
+  'pl',
+  'zh-CN',
+] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
 
@@ -52,6 +64,7 @@ const LOCALE_LABELS: Record<Locale, { lang: string; openTool: string; siteName: 
   nb: { lang: 'nb', openTool: 'Åpne verktøy', siteName: 'Gridfinity Layout Tool' },
   uk: { lang: 'uk', openTool: 'Відкрити інструмент', siteName: 'Gridfinity Layout Tool' },
   pl: { lang: 'pl', openTool: 'Otwórz narzędzie', siteName: 'Gridfinity Layout Tool' },
+  'zh-CN': { lang: 'zh-CN', openTool: '打开工具', siteName: 'Gridfinity Layout Tool' },
 };
 
 const FAQ_HEADING: Record<Locale, string> = {
@@ -65,6 +78,7 @@ const FAQ_HEADING: Record<Locale, string> = {
   nb: 'Ofte stilte spørsmål',
   uk: 'Часті запитання',
   pl: 'Najczęściej zadawane pytania',
+  'zh-CN': '常见问题',
 };
 
 const FOOTER_COPY: Record<Locale, string> = {
@@ -78,6 +92,7 @@ const FOOTER_COPY: Record<Locale, string> = {
   nb: 'Gratis å bruke.',
   uk: 'Безкоштовно у використанні.',
   pl: 'Darmowe w użyciu.',
+  'zh-CN': '免费使用。',
 };
 
 const OG_LOCALE: Record<Locale, string> = {
@@ -91,6 +106,7 @@ const OG_LOCALE: Record<Locale, string> = {
   nb: 'nb_NO',
   uk: 'uk_UA',
   pl: 'pl_PL',
+  'zh-CN': 'zh_CN',
 };
 
 const NATIVE_LANGUAGE: Record<Locale, string> = {
@@ -104,6 +120,7 @@ const NATIVE_LANGUAGE: Record<Locale, string> = {
   nb: 'Norsk',
   uk: 'Українська',
   pl: 'Polski',
+  'zh-CN': '简体中文',
 };
 
 const LANGUAGE_LABEL: Record<Locale, string> = {
@@ -117,6 +134,7 @@ const LANGUAGE_LABEL: Record<Locale, string> = {
   nb: 'Språk',
   uk: 'Мова',
   pl: 'Język',
+  'zh-CN': '语言',
 };
 
 const FOOTER_LINKS: Record<
@@ -275,6 +293,20 @@ const FOOTER_LINKS: Record<
     software: 'Porównanie oprogramowania',
     privacy: 'Prywatność',
     terms: 'Regulamin',
+  },
+  'zh-CN': {
+    generator: 'Gridfinity 生成器',
+    whatIs: '什么是 Gridfinity？',
+    bin: '收纳盒生成器',
+    baseplate: '底板生成器',
+    sizes: '尺寸参考',
+    guide: '规划指南',
+    toolDrawer: '工具抽屉',
+    kitchen: '厨房抽屉',
+    calculator: '计算器',
+    software: '软件对比',
+    privacy: '隐私',
+    terms: '条款',
   },
 };
 
