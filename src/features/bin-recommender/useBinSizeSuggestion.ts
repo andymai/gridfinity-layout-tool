@@ -1,24 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize, type DrawerDims } from './recommender';
 import type { BinRecommenderModel, BinSize, BinSizePrediction } from './types';
-
-// The model is ~600KB, so it is dynamically imported and only fetched once the
-// Labs flag is on. The promise is module-level so multiple mounts share one load.
-let modelPromise: Promise<BinRecommenderModel> | null = null;
-function loadModel(): Promise<BinRecommenderModel> {
-  if (!modelPromise) {
-    modelPromise = import('./model.json')
-      .then((m) => m.default as unknown as BinRecommenderModel)
-      .catch((err: unknown) => {
-        // Don't cache a rejected promise — a transient chunk-fetch failure
-        // would otherwise disable suggestions for the rest of the session.
-        modelPromise = null;
-        throw err;
-      });
-  }
-  return modelPromise;
-}
 
 /**
  * Suggest a bin size for a typed label, or `null` when there is nothing worth
@@ -37,12 +21,12 @@ export function useBinSizeSuggestion(
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    loadModel()
+    loadBinRecommenderModel()
       .then((m) => {
         if (!cancelled) setModel(m);
       })
       .catch(() => {
-        // A missing/broken model chunk just means no suggestions — stay silent.
+        // A missing/broken model asset just means no suggestions — stay silent.
       });
     return () => {
       cancelled = true;

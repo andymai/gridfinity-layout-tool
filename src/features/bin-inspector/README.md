@@ -44,8 +44,13 @@ in `labelSuggest/getLabelSuggestions.ts`.
 `labelSuggest/model.ts` blends a learned, hash-keyed prior on top of the heuristics:
 global **popularity** and neighbor **co-occurrence** (`modelScore`). It's built from
 aggregate telemetry by `scripts/train-label-suggester/train.py` and committed as
-`labelSuggest/labelSuggester.model.json` (lazy-loaded via `loadModel.ts` /
-`useLabelSuggesterModel`). Because only one-way label hashes are stored, the client
+`labelSuggest/labelSuggester.model.json`. The weights ship as a **fetched asset**,
+not a JS chunk: `loadModel.ts` imports the file with `?url` (so Vite still resolves
+and content-hashes it at build time) and fetches it on demand via
+`useLabelSuggesterModel`. It is deliberately not precached — the service worker
+runtime-caches it on first use. Keep the committed JSON pretty-printed so retrain
+diffs stay reviewable; `scripts/vite-plugin-minify-json-assets.ts` compacts it on
+emit. Because only one-way label hashes are stored, the client
 looks up hashes it computes itself (candidate text + the current bin's neighbors) — it
 never reverses one. The committed placeholder has `sampleCount: 0` and is **inert**;
 run the trainer against prod Redis to activate it. The prior is deliberately gentle —
