@@ -1,0 +1,21 @@
+scripts/vite-plugin-version.ts
+  s_3f2bfe31d23929::t_c1c5ec0a90b7b1 25-39,43
+scripts/vite-plugin-version.test.ts
+  s_3f2bfe31d23929::t_7042aea4331314 1-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ea6d7ba12d87922cb235fe6b5f0e96340428f187",
+  "prompts": {},
+  "sessions": {
+    "s_3f2bfe31d23929": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "520d1560-bb26-4cc2-8413-6ad880f171cd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
