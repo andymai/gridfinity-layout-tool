@@ -333,6 +333,7 @@ function BinComponent({
           bin={bin}
           drawer={drawer}
           cellSize={cellSize}
+          cellSizeY={cellSizeY}
           gap={gap}
           color={bgColor}
           patternStyle={categoryPattern}

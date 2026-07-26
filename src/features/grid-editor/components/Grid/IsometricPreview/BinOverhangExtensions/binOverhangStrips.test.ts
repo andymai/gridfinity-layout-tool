@@ -131,3 +131,33 @@ describe('buildBinOverhangStrips — explicit per-placement overhang', () => {
     expect(strips).toEqual([]);
   });
 });
+
+describe('buildBinOverhangStrips — non-square grid', () => {
+  // On a 42×21 grid, the same mm of overhang is a different fraction of a cell
+  // on each axis. Dividing depth by the X pitch would render it at half extent.
+  it('scales the depth axis by the Y pitch, not the X pitch', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ overhang: { enabled: true, left: 0, right: 0, front: 0, back: 21 } }),
+      DW,
+      DD,
+      undefined,
+      GRID,
+      21
+    );
+    expect(strips).toHaveLength(1);
+    // 21mm at a 21mm Y pitch is a full grid unit, not the half unit that the
+    // 42mm X pitch would have produced.
+    expect(strips[0].size[1]).toBeCloseTo(1 + 0.02, 6); // + OVERLAP
+  });
+
+  it('treats an omitted Y pitch as square', () => {
+    const square = buildBinOverhangStrips(
+      bin({ overhang: { enabled: true, left: 0, right: 0, front: 0, back: 21 } }),
+      DW,
+      DD,
+      undefined,
+      GRID
+    );
+    expect(square[0].size[1]).toBeCloseTo(0.5 + 0.02, 6);
+  });
+});

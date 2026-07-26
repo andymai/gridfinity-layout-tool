@@ -12,7 +12,8 @@
  *
  * All axes are in the preview's grid-unit scene space: X/Y match the bin
  * positions, and Z/height are height-units already scaled into that space by
- * `heightToGridScale`. Padding is converted mm → grid units via `gridUnitMm`.
+ * `heightToGridScale`. Overhang is converted mm → grid units per axis, via
+ * `gridUnitMm` across and `gridUnitMmY` in depth.
  */
 
 import { binOverhangSides } from '@/shared/utils/drawerMargin';
@@ -66,9 +67,11 @@ export function buildBinOverhangStrips(
   drawerWidth: number,
   drawerDepth: number,
   baseplate: StoredBaseplateParams | undefined,
-  gridUnitMm: number
+  gridUnitMm: number,
+  /** Y-axis cell pitch (mm). Defaults to `gridUnitMm` for a square grid. */
+  gridUnitMmY: number = gridUnitMm
 ): OverhangStrip[] {
-  if (gridUnitMm <= 0) return [];
+  if (gridUnitMm <= 0 || gridUnitMmY <= 0) return [];
   const sides = binOverhangSides(
     {
       x: bin.x,
@@ -81,10 +84,13 @@ export function buildBinOverhangStrips(
     { width: drawerWidth, depth: drawerDepth },
     baseplate
   );
+  // Scene space is grid units on both axes, so each axis divides by its own
+  // pitch: on a 42×21 grid the same mm of depth overhang is twice the fraction
+  // of a cell that it would be across the width.
   const left = sides.left / gridUnitMm;
   const right = sides.right / gridUnitMm;
-  const front = sides.front / gridUnitMm;
-  const back = sides.back / gridUnitMm;
+  const front = sides.front / gridUnitMmY;
+  const back = sides.back / gridUnitMmY;
   if (left + right + front + back <= 0) return [];
 
   const { x, y, width, depth, z, height } = bin;

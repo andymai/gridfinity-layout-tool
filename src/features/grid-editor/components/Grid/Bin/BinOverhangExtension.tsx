@@ -20,6 +20,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { binOverhangSides } from '@/shared/utils/drawerMargin';
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, Drawer } from '@/core/types';
 import type { CategoryPatternStyle } from './categoryPatterns';
 
@@ -27,6 +28,8 @@ interface BinOverhangExtensionProps {
   bin: Bin;
   drawer: Drawer;
   cellSize: number;
+  /** Row height in px. Differs from `cellSize` only on a non-square grid. */
+  cellSizeY: number;
   gap: number;
   /** The bin's category color — the extension paints the same so it reads as one bin. */
   color: string;
@@ -44,25 +47,30 @@ export function BinOverhangExtension({
   bin,
   drawer,
   cellSize,
+  cellSizeY,
   gap,
   color,
   patternStyle,
   showSocketEdge,
   socketEdgeColor,
 }: BinOverhangExtensionProps) {
-  const { baseplate, gridUnitMm } = useLayoutStore(
+  const { baseplate, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
 
   const sides = binOverhangSides(bin, drawer, baseplate);
   if (sides.left + sides.right + sides.front + sides.back <= 0) return null;
 
-  // One grid unit spans `cellSize + gap` px; overhang is a fraction of a unit.
-  const pxPerUnit = cellSize + gap;
-  const toPx = (mm: number): number => (mm / gridUnitMm) * pxPerUnit;
+  // One grid unit spans `cellSize + gap` px across and `cellSizeY + gap` down;
+  // overhang is a fraction of a unit. The two axes need separate conversions —
+  // on a non-square grid (e.g. 42×21) a depth overhang in mm is a different
+  // fraction of its cell than the same mm across the width.
+  const toPxX = (mm: number): number => (mm / gridUnitMm) * (cellSize + gap);
+  const toPxY = (mm: number): number => (mm / gridUnitMmY) * (cellSizeY + gap);
 
   return (
     <>
@@ -71,10 +79,10 @@ export function BinOverhangExtension({
         className="pointer-events-none absolute rounded-sm"
         style={{
           // Screen orientation: back (+Y) is up, front (-Y) is down.
-          left: -toPx(sides.left),
-          right: -toPx(sides.right),
-          top: -toPx(sides.back),
-          bottom: -toPx(sides.front),
+          left: -toPxX(sides.left),
+          right: -toPxX(sides.right),
+          top: -toPxY(sides.back),
+          bottom: -toPxY(sides.front),
           backgroundColor: color,
           ...(patternStyle ?? {}),
           zIndex: -1,

@@ -115,6 +115,11 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       lines.push(`    Design:    ${b.designName}`);
       lines.push(`    Size:      ${b.widthUnits} × ${b.depthUnits} × ${b.heightUnits} units`);
       lines.push(`    Quantity:  ${b.quantity}`);
+      // Extended variants of one design differ only by overhang, so the file
+      // name alone can't say which goes where. This is that mapping.
+      if (b.atX !== undefined && b.atY !== undefined) {
+        lines.push(`    Position:  grid (${b.atX}, ${b.atY}) — extended to fit`);
+      }
       if (b.companions && b.companions.length > 0) {
         lines.push(`    Includes:  ${b.companions.join(', ')}`);
       }

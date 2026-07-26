@@ -133,4 +133,20 @@ describe('buildLayoutManifest', () => {
     expect(buildLayoutManifest(base())).not.toContain('Label plates');
     expect(buildLayoutManifest(base({ labels: null }))).not.toContain('Label plates');
   });
+
+  // Three columns on one design differ only by overhang, so the file name alone
+  // can't say which goes where; the manifest is the mapping.
+  it('states the grid position of an extended variant', () => {
+    const text = buildLayoutManifest(
+      base({
+        bins: [{ ...base().bins[0], path: 'bins/box_pos2p5-0.stl', atX: 2.5, atY: 0 }],
+      })
+    );
+    expect(text).toContain('Position:  grid (2.5, 0) \u2014 extended to fit');
+  });
+
+  it('omits the position line for a plain (non-extended) bin', () => {
+    expect(buildLayoutManifest(base())).not.toContain('Position:');
+  });
+
 });

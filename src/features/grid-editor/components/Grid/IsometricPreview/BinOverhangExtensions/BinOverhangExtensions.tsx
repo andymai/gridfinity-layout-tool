@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { buildBinOverhangStrips } from './binOverhangStrips';
 import type { OverhangStrip } from './binOverhangStrips';
@@ -27,11 +28,16 @@ interface ColoredStrip extends OverhangStrip {
   readonly opacity: number;
 }
 
-export function BinOverhangExtensions({ bins, drawerWidth, drawerDepth }: BinOverhangExtensionsProps) {
-  const { baseplate, gridUnitMm } = useLayoutStore(
+export function BinOverhangExtensions({
+  bins,
+  drawerWidth,
+  drawerDepth,
+}: BinOverhangExtensionsProps) {
+  const { baseplate, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
 
@@ -52,10 +58,11 @@ export function BinOverhangExtensions({ bins, drawerWidth, drawerDepth }: BinOve
         drawerWidth,
         drawerDepth,
         baseplate,
-        gridUnitMm
+        gridUnitMm,
+        gridUnitMmY
       ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }))
     );
-  }, [baseplate, gridUnitMm, bins, drawerWidth, drawerDepth]);
+  }, [baseplate, gridUnitMm, gridUnitMmY, bins, drawerWidth, drawerDepth]);
 
   if (strips.length === 0) return null;
 

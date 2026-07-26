@@ -36,17 +36,18 @@ function bin(overrides: Partial<Bin> = {}): Bin {
   return createTestBin({ x: 0, y: 0, width: 1, depth: 1, ...overrides });
 }
 
-function renderExt(b: Bin, extra: { showSocketEdge?: boolean } = {}) {
+function renderExt(b: Bin, extra: { showSocketEdge?: boolean; cellSizeY?: number } = {}) {
   // cellSize 32 + gap 2 = 34 px/unit; 21mm = half a unit = 17px.
   return render(
     <BinOverhangExtension
       bin={b}
       drawer={DRAWER}
       cellSize={32}
+      cellSizeY={extra.cellSizeY ?? 32}
       gap={2}
       color="#abc"
       socketEdgeColor="#123"
-      {...extra}
+      showSocketEdge={extra.showSocketEdge}
     />
   );
 }
@@ -137,5 +138,29 @@ describe('BinOverhangExtension', () => {
       expect(divs).toHaveLength(2);
       expect((divs[1] as HTMLElement).style.border).toBe('1px dashed rgb(17, 34, 51)');
     });
+  });
+});
+
+describe('BinOverhangExtension — non-square grid', () => {
+  beforeEach(() => {
+    resetAllStores();
+  });
+
+  // The depth axis has its own pitch and its own row height; converting it with
+  // the width's numbers renders a depth overhang at the wrong extent.
+  it('scales the depth axis by the Y pitch and row height', () => {
+    const layout = createDefaultLayout();
+    useLayoutStore.setState({
+      layout: { ...layout, gridUnitMm: 42, gridUnitMmY: 21 },
+    });
+    const { container } = renderExt(
+      bin({ overhang: { enabled: true, left: 21, right: 0, front: 0, back: 21 } }),
+      { cellSizeY: 16 }
+    );
+    const ext = container.firstChild as HTMLElement;
+    // Width: 21mm of a 42mm pitch over a 34px unit = half a unit.
+    expect(parseFloat(ext.style.left)).toBeCloseTo(-(21 / 42) * 34, 6);
+    // Depth: 21mm of a 21mm pitch over an 18px row = a whole unit, not half.
+    expect(parseFloat(ext.style.top)).toBeCloseTo(-(21 / 21) * 18, 6);
   });
 });
