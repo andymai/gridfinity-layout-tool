@@ -16,7 +16,8 @@
  *   boolean  booleanStage   apply the cuts/fuses  ← Manifold mesh-CSG targets this
  *   merge    translate + tessellate + meshEdges    ← Manifold also re-meshes here
  */
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
+import { writeReport } from './reportTable';
 import { describe, it, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
@@ -28,7 +29,7 @@ import type { CutoutArrayConfig } from '@/features/bin-designer/types';
 
 beforeAll(async () => {
   await initBrepjs();
-  writeFileSync(process.env['PERF_OUT'] ?? '/tmp/perfbench/results.txt', '');
+  writeReport(process.env['PERF_OUT'] ?? '/tmp/perfbench/results.txt', '');
 }, 60_000);
 
 const SAMPLES = 5; // first sample discarded (hot-CPU/JIT warm-up); median of rest
