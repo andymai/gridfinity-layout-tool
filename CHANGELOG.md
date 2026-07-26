@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.303.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.2...gridfinity-layout-tool-v4.303.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Polish (pl) locale ([#2840](https://github.com/andymai/gridfinity-layout-tool/issues/2840)) ([315263a](https://github.com/andymai/gridfinity-layout-tool/commit/315263ab8aae99c5c20c2c479345f41d95cd85aa))
+
 ## [4.302.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.1...gridfinity-layout-tool-v4.302.2) (2026-07-26)
 
 
