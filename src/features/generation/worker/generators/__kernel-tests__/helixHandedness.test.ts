@@ -8,11 +8,11 @@
  *     left-handed flag is a NO-OP — both flags produce the identical
  *     right-handed sweep. This is why kumikoWrapBuilder approximates corner
  *     FALLING diagonals with chord boxes instead of helix sweeps.
- *   - brepjs `mirror` on a helical sweep yields an EMPTY solid (volume 0),
- *     so mirroring a right-handed sweep is not a viable left-handed
- *     substitute either.
- * A failure here means the upstream gap is fixed: retire the chord-box
- * approximation in kumikoWrapBuilder's falling-diagonal branch.
+ *   - brepjs `mirror` on a helical sweep USED to yield an empty solid. As of
+ *     brepjs 18.119.2 it yields a real one, so mirroring a right-handed sweep
+ *     IS now a viable left-handed substitute — see the second case.
+ * A failure here means the remaining upstream gap is fixed: retire the
+ * chord-box approximation in kumikoWrapBuilder's falling-diagonal branch.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { sketchHelix, drawRoundedRectangle, mesh, mirror, measureVolume, unwrap } from 'brepjs';
@@ -37,7 +37,7 @@ function sweepAndMeasure(lefthand: boolean, mirrored = false): SweepFootprint {
     frenet: true,
   });
   if (mirrored) {
-    const m2 = mirror(swept, [0, 1, 0], [0, 0, 0]);
+    const m2 = mirror(swept, { normal: [0, 1, 0], at: [0, 0, 0] });
     swept.delete();
     swept = m2;
   }
@@ -67,11 +67,19 @@ describe('helix handedness tripwire', () => {
     expect(left.vol).toBeCloseTo(right.vol, 3);
   }, 120_000);
 
-  it('mirror on a helical sweep is still empty (else it becomes a viable left-handed substitute)', () => {
+  // This tripwire FIRED. It asserted mirror yields an empty solid; on
+  // brepjs 18.119.2 it yields a real one (~11.66mm³ for this fixture), so a
+  // mirrored right-handed sweep is now a viable left-handed substitute. The
+  // assertion is inverted to record that, and still catches a regression if
+  // mirror goes back to producing nothing.
+  // TODO: retire the chord-box approximation in kumikoWrapBuilder's
+  // falling-diagonal branch, now that this substitute exists. Needs visual
+  // verification of the corner diagonals before/after.
+  it('mirror on a helical sweep produces a real solid (left-handed substitute is viable)', () => {
     const mirrored = sweepAndMeasure(false, true);
     expect(
       mirrored.vol,
-      'mirror now produces a real solid from a helical sweep — a mirrored right-handed sweep can replace the kumiko chord boxes'
-    ).toBeLessThan(1e-6);
+      'mirror stopped producing a solid from a helical sweep — the left-handed substitute regressed'
+    ).toBeGreaterThan(1e-6);
   }, 120_000);
 });
