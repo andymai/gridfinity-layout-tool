@@ -36,7 +36,7 @@ const LOCALIZED_SLUGS = [
   'gridfinity-baseplate-generator',
   'gridfinity-sizes',
 ];
-const LOCALES = ['de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk'];
+const LOCALES = ['de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk', 'pl', 'zh-CN', 'cs', 'ko'];
 
 const ROUTE = new RegExp(`^/(${SLUGS.join('|')})/?$`);
 const LOCALIZED_ROUTE = new RegExp(`^/(${LOCALES.join('|')})/(${LOCALIZED_SLUGS.join('|')})/?$`);

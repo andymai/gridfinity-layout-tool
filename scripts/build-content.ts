@@ -50,6 +50,7 @@ const SUPPORTED_LOCALES = [
   'pl',
   'zh-CN',
   'cs',
+  'ko',
 ] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
@@ -67,6 +68,7 @@ const LOCALE_LABELS: Record<Locale, { lang: string; openTool: string; siteName: 
   pl: { lang: 'pl', openTool: 'Otwórz narzędzie', siteName: 'Gridfinity Layout Tool' },
   'zh-CN': { lang: 'zh-CN', openTool: '打开工具', siteName: 'Gridfinity Layout Tool' },
   cs: { lang: 'cs', openTool: 'Otevřít nástroj', siteName: 'Gridfinity Layout Tool' },
+  ko: { lang: 'ko', openTool: '도구 열기', siteName: 'Gridfinity Layout Tool' },
 };
 
 const FAQ_HEADING: Record<Locale, string> = {
@@ -82,6 +84,7 @@ const FAQ_HEADING: Record<Locale, string> = {
   pl: 'Najczęściej zadawane pytania',
   'zh-CN': '常见问题',
   cs: 'Často kladené otázky',
+  ko: '자주 묻는 질문',
 };
 
 const FOOTER_COPY: Record<Locale, string> = {
@@ -97,6 +100,7 @@ const FOOTER_COPY: Record<Locale, string> = {
   pl: 'Darmowe w użyciu.',
   'zh-CN': '免费使用。',
   cs: 'Zdarma k použití.',
+  ko: '무료로 사용할 수 있어요.',
 };
 
 const OG_LOCALE: Record<Locale, string> = {
@@ -112,6 +116,7 @@ const OG_LOCALE: Record<Locale, string> = {
   pl: 'pl_PL',
   'zh-CN': 'zh_CN',
   cs: 'cs_CZ',
+  ko: 'ko_KR',
 };
 
 const NATIVE_LANGUAGE: Record<Locale, string> = {
@@ -127,6 +132,7 @@ const NATIVE_LANGUAGE: Record<Locale, string> = {
   pl: 'Polski',
   'zh-CN': '简体中文',
   cs: 'Čeština',
+  ko: '한국어',
 };
 
 const LANGUAGE_LABEL: Record<Locale, string> = {
@@ -142,6 +148,7 @@ const LANGUAGE_LABEL: Record<Locale, string> = {
   pl: 'Język',
   'zh-CN': '语言',
   cs: 'Jazyk',
+  ko: '언어',
 };
 
 const FOOTER_LINKS: Record<
@@ -328,6 +335,20 @@ const FOOTER_LINKS: Record<
     software: 'Porovnání softwaru',
     privacy: 'Soukromí',
     terms: 'Podmínky',
+  },
+  ko: {
+    generator: 'Gridfinity 생성기',
+    whatIs: 'Gridfinity란?',
+    bin: '수납통 생성기',
+    baseplate: '베이스플레이트 생성기',
+    sizes: '사이즈 참고 자료',
+    guide: '플래닝 가이드',
+    toolDrawer: '공구 서랍',
+    kitchen: '주방 서랍',
+    calculator: '계산기',
+    software: '소프트웨어 비교',
+    privacy: '개인정보처리방침',
+    terms: '이용약관',
   },
 };
 
@@ -689,11 +710,11 @@ ${breadcrumbsHtml}${content}${faqsHtml}
   <footer class="content-page">
     <div class="content-footer">
       <div class="content-footer__links">
-        <a href="/gridfinity-generator">${escapeHtml(FOOTER_LINKS[locale].generator)}</a>
+        <a href="${localizedPath('gridfinity-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].generator)}</a>
         <a href="${localizedPath('what-is-gridfinity', locale)}">${escapeHtml(FOOTER_LINKS[locale].whatIs)}</a>
-        <a href="/gridfinity-bin-generator">${escapeHtml(FOOTER_LINKS[locale].bin)}</a>
-        <a href="/gridfinity-baseplate-generator">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
-        <a href="/gridfinity-sizes">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
+        <a href="${localizedPath('gridfinity-bin-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].bin)}</a>
+        <a href="${localizedPath('gridfinity-baseplate-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
+        <a href="${localizedPath('gridfinity-sizes', locale)}">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
         <a href="${localizedPath('guide', locale)}">${escapeHtml(FOOTER_LINKS[locale].guide)}</a>
         <a href="/gridfinity-tool-drawer">${escapeHtml(FOOTER_LINKS[locale].toolDrawer)}</a>
         <a href="/gridfinity-kitchen-drawer">${escapeHtml(FOOTER_LINKS[locale].kitchen)}</a>
@@ -952,7 +973,7 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-07-16';
+const CONTENT_LASTMOD = '2026-07-26';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
 // English-only, no locale variants.
