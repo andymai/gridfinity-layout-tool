@@ -1,0 +1,128 @@
+src/shared/hooks/index.ts
+  s_180f27a5f871f2::t_6b1aef41e2a544 27
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_180f27a5f871f2::t_15f53e8424da42 156-160
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 39
+src/core/cqrs/v2/domain/bin/expandToFit.ts
+  s_180f27a5f871f2::t_16e5276a98907e 1-87,91-111
+  s_180f27a5f871f2::t_584b08b7d79f53 88-90
+src/core/cqrs/commandDescriptions.ts
+  s_180f27a5f871f2::t_68344bbc13446a 19
+src/core/cqrs/events/binEvents.ts
+  s_180f27a5f871f2::t_96ee45a3fde36c 108
+  s_180f27a5f871f2::t_d45dc530e14674 69-89
+  s_180f27a5f871f2::t_7e67041fc31845 9
+src/core/cqrs/versioning/eventVersions.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 21
+src/i18n/locales/en.ts
+  s_180f27a5f871f2::t_6f03c37f2b5388 1158,1370-1374
+  s_180f27a5f871f2::t_31004c98418ad3 1375-1376,1387,2926,3189
+src/i18n/locales/cs.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/core/cqrs/v2/domain/bin/expandToFit.test.ts
+  s_180f27a5f871f2::t_f667a592cd0d56 1-188
+src/core/cqrs/index.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 53,104
+src/core/cqrs/projection/replay.ts
+  s_180f27a5f871f2::t_68344bbc13446a 72-80
+src/core/cqrs/events/index.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 15
+src/shared/contexts/MutationsContext.tsx
+  s_180f27a5f871f2::t_9bf5326dc06a7d 83-84
+src/i18n/locales/de.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/i18n/locales/it.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/features/command-palette/commands.ts
+  s_180f27a5f871f2::t_7666aacd8f1713 208-213
+src/shell/Mobile/BinContextMenu/BinContextMenu.test.tsx
+  s_180f27a5f871f2::t_154a19c9006ed0 35
+  s_180f27a5f871f2::t_61668610f3dda2 5,100-111
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.test.tsx
+  s_180f27a5f871f2::t_76f9500a990de1 1-2,6,20,59-77
+src/core/cqrs/validation/schemas.ts
+  s_180f27a5f871f2::t_68344bbc13446a 151-155,310
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_180f27a5f871f2::t_90885117b63e4d 11,68,138-139
+  s_180f27a5f871f2::t_73364cba807970 237-253
+  s_180f27a5f871f2::t_d3704da68dc0fa 140-142
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
+  s_180f27a5f871f2::t_18ba20a3f8b8b5 169-185
+  s_180f27a5f871f2::t_742552f9862359 23
+  s_180f27a5f871f2::t_c1b145a5f76064 69
+  s_180f27a5f871f2::t_82b90ad014ed99 33
+  s_180f27a5f871f2::t_4e0733caa3ffc5 5-7
+src/i18n/locales/zh-CN.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/core/cqrs/commands/binCommands.ts
+  s_180f27a5f871f2::t_28565e03ee68bf 74
+  s_180f27a5f871f2::t_b7769b0db2d55e 58-62
+src/i18n/locales/pl.json
+  s_180f27a5f871f2::t_890022c512b523 971,1168-1172,1180,2498,2675
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_180f27a5f871f2::t_37be4b0469664f 29
+  s_180f27a5f871f2::t_322be4f49e4f90 105
+  s_180f27a5f871f2::t_9faf332f31c567 583
+src/i18n/locales/sv.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/i18n/locales/uk.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/i18n/locales/fr.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/i18n/locales/ko.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/core/cqrs/validation/schemas.test.ts
+  s_180f27a5f871f2::t_68344bbc13446a 23,47,49
+src/i18n/locales/nb.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2609,2611,2722
+  s_180f27a5f871f2::t_2556219b65cbc0 2610
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  s_180f27a5f871f2::t_73364cba807970 55,67-72,269-283
+  s_180f27a5f871f2::t_90885117b63e4d 12
+  s_180f27a5f871f2::t_5e4917b17c5d16 284-285
+src/core/cqrs/v2/registry.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 23,79,121
+src/core/cqrs/versioning/migrations.test.ts
+  s_180f27a5f871f2::t_154a19c9006ed0 173
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_180f27a5f871f2::t_7666aacd8f1713 35,134,279-280,504-505
+src/shared/hooks/useExpandToFit.test.ts
+  s_180f27a5f871f2::t_8a6f70942016af 76
+  s_180f27a5f871f2::t_f197fa52a67f1a 1-75,77-128
+src/i18n/locales/ja.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.test.tsx
+  s_180f27a5f871f2::t_494e1354e27957 52,124-127
+  s_180f27a5f871f2::t_a725d11488a75c 128-129
+src/i18n/locales/es.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/core/cqrs/commands/index.ts
+  s_180f27a5f871f2::t_50f89fc097aca4 23
+src/i18n/locales/pt-BR.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+src/features/command-palette/components/CommandPalette/commandPaletteContextBoosts.ts
+  s_180f27a5f871f2::t_7666aacd8f1713 47
+src/shared/hooks/useExpandToFit.ts
+  s_180f27a5f871f2::t_0d0db2882c6d59 11
+  s_180f27a5f871f2::t_f0fd6b45e357a5 1-10,12-21,23-26,34-46,57,67,82,84
+  s_180f27a5f871f2::t_143863abbd0c04 22,27-33,47-56,58-66,68-81,83
+src/i18n/locales/nl.json
+  s_180f27a5f871f2::t_890022c512b523 1248,1992,2235,2607-2611,2722
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5e485b5ac9fd5248ac0ffc947b1191550be03941",
+  "prompts": {},
+  "sessions": {
+    "s_180f27a5f871f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3bdcfdd-1c2c-4765-b91c-fcbfc5693c53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
