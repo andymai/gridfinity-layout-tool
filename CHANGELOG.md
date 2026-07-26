@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.304.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.303.0...gridfinity-layout-tool-v4.304.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Simplified Chinese (zh-CN) locale ([#2846](https://github.com/andymai/gridfinity-layout-tool/issues/2846)) ([37ce071](https://github.com/andymai/gridfinity-layout-tool/commit/37ce0719917ad6ec0a4e0ad3f193227b384bc905))
+
 ## [4.303.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.2...gridfinity-layout-tool-v4.303.0) (2026-07-26)
 
 
