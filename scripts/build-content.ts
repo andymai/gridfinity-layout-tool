@@ -710,11 +710,11 @@ ${breadcrumbsHtml}${content}${faqsHtml}
   <footer class="content-page">
     <div class="content-footer">
       <div class="content-footer__links">
-        <a href="/gridfinity-generator">${escapeHtml(FOOTER_LINKS[locale].generator)}</a>
+        <a href="${localizedPath('gridfinity-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].generator)}</a>
         <a href="${localizedPath('what-is-gridfinity', locale)}">${escapeHtml(FOOTER_LINKS[locale].whatIs)}</a>
-        <a href="/gridfinity-bin-generator">${escapeHtml(FOOTER_LINKS[locale].bin)}</a>
-        <a href="/gridfinity-baseplate-generator">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
-        <a href="/gridfinity-sizes">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
+        <a href="${localizedPath('gridfinity-bin-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].bin)}</a>
+        <a href="${localizedPath('gridfinity-baseplate-generator', locale)}">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
+        <a href="${localizedPath('gridfinity-sizes', locale)}">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
         <a href="${localizedPath('guide', locale)}">${escapeHtml(FOOTER_LINKS[locale].guide)}</a>
         <a href="/gridfinity-tool-drawer">${escapeHtml(FOOTER_LINKS[locale].toolDrawer)}</a>
         <a href="/gridfinity-kitchen-drawer">${escapeHtml(FOOTER_LINKS[locale].kitchen)}</a>
@@ -973,7 +973,7 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-07-16';
+const CONTENT_LASTMOD = '2026-07-26';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
 // English-only, no locale variants.
