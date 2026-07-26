@@ -297,8 +297,6 @@ export default defineConfig({
               priority: 90,
               test: /[\\/]node_modules[\\/](?:three[\\/]|@react-three[\\/]|three-stdlib[\\/]|troika-[^\\/]+[\\/]|bidi-js[\\/]|webgl-sdf-generator[\\/]|maath[\\/]|meshline[\\/]|camera-controls[\\/]|stats\.js[\\/]|stats-gl[\\/]|suspend-react[\\/]|its-fine[\\/]|react-use-measure[\\/]|tunnel-rat[\\/]|@use-gesture[\\/]|potpack[\\/])/,
             },
-            // Liveblocks — only loaded when collaborative editing is active (Labs).
-            { name: 'liveblocks', priority: 80, test: /[\\/]node_modules[\\/]@liveblocks[\\/]/ },
             // Committed ML weights, pinned to stable `ml-model-*` names so the
             // size-limit budget tracks them by an intentional rule rather than by
             // whatever the source JSON happens to be called. Deliberately one
@@ -314,6 +312,8 @@ export default defineConfig({
               priority: 85,
               test: /[\\/]src[\\/]features[\\/]bin-inspector[\\/]labelSuggest[\\/]labelSuggester\.model\.json$/,
             },
+            // Liveblocks — only loaded when collaborative editing is active (Labs).
+            { name: 'liveblocks', priority: 80, test: /[\\/]node_modules[\\/]@liveblocks[\\/]/ },
           ],
         },
         // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
