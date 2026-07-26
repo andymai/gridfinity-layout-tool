@@ -37,14 +37,30 @@ is inert and the autocomplete runs on heuristics alone.
 
 - `--min-label-samples` (default 5): floor before a label enters `popularity`.
 - `--min-cooccur-samples` (default 5): floor before a co-occurrence row is kept.
+- `--min-growth-pct` (default 0): skip the retrain unless the label OR co-occurrence
+  keyspace has grown at least this percent since the committed model (compared via
+  the `labelKeyCount`/`cooccurKeyCount` metadata the previous run stored). 0 always
+  retrains. The automated workflow passes 20.
 - Bounds (`POP_TOP_K`, `COOCCUR_TOP_KEYS`, `COOCCUR_TOP_NEIGHBORS`) cap the file
-  size; raise them in `train.py` if the model is too sparse.
+  size; the committed model must stay under the `Total JS` size-limit budget, so
+  raise them only with a local `pnpm run build && pnpm run size:check`.
 - Blend weights live client-side in `src/features/bin-inspector/labelSuggest/model.ts`
   (`W_POPULARITY`, `W_COOCCUR`) — deliberately gentle so the prior never overrides
   a literal text match.
 
-## Retrain when
+## Automated retraining
 
-- The co-occurrence / label keyspaces have grown materially (≥ ~20%).
-- The vocabulary version bumps (hashes are text-based and unaffected, but it's a
-  good cadence signal).
+`.github/workflows/retrain-label-suggester.yml` runs this monthly (06:00 UTC on the
+1st) and on manual dispatch. It retrains **only when telemetry grew ≥20%** since the
+committed model (`--min-growth-pct 20`; manual dispatch with `force: true` overrides),
+then opens a PR with the new `model.json`. It is **never auto-merged** — each model is
+reviewed like any other change (the PR's size check + a glance at the diff).
+
+**Required once:** add a `REDIS_URL` repo secret (Settings → Secrets and variables →
+Actions) with the production Redis URL — e.g. from `vercel env pull`. It's only exposed
+to scheduled / dispatch runs on the default branch, never fork PRs. Rotate it here if
+the Redis credential changes.
+
+Cadence rationale: co-occurrence carries a ~90-day TTL (rolling window) while popularity
+persists all-time, so co-occurrence freshness — not popularity — drives the cadence. A
+vocabulary-version bump is also a good moment to `workflow_dispatch --force`.

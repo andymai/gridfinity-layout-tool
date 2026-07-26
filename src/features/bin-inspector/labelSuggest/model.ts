@@ -13,6 +13,9 @@ export interface LabelSuggesterModel {
   vocabVersion: string;
   trainedAt: string;
   sampleCount: number;
+  /** Full pre-trim keyspace sizes — training metadata (growth-gate baseline). */
+  labelKeyCount?: number;
+  cooccurKeyCount?: number;
   /** label hash → global popularity (0..1). */
   popularity: Record<string, number>;
   /** label hash → { co-occurring neighbor hash → P(this | neighbor), 0..1 }. */
