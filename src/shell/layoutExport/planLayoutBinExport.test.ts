@@ -200,6 +200,48 @@ describe('planLayoutBinExport', () => {
       });
     });
 
+    // Identical extended bins share one mesh, so one file covers several spots.
+    // The manifest has to carry all of them, sorted, or it misreports placement.
+    it('records every position of a shared extended variant, sorted', () => {
+      const bins = [
+        linkedBin('d1', { x: 0, y: 2, width: 1, depth: 1, extendToMargin: true }),
+        linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }),
+        linkedBin('d1', { x: 0, y: 1, width: 1, depth: 1, extendToMargin: true }),
+      ] as Bin[];
+      const plan = planLayoutBinExport(
+        bins,
+        [{ id: designId('d1'), design: box() }],
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        baseplate({ paddingLeft: 3 })
+      );
+
+      expect(plan.manifestBins).toHaveLength(1);
+      expect(plan.manifestBins[0].quantity).toBe(3);
+      expect(plan.manifestBins[0].atPositions).toEqual([
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+      ]);
+      // Name anchors on the sorted first position, not the encounter order.
+      expect(plan.manifestBins[0].path).toContain('_pos0-0');
+    });
+
+    it('leaves atPositions off a plain (non-extended) entry', () => {
+      const plan = planLayoutBinExport(
+        [linkedBin('d1', { x: 1, y: 1, width: 1, depth: 1 })] as Bin[],
+        [{ id: designId('d1'), design: box() }],
+        'stl',
+        CONFIG,
+        DEFAULT_PRINT_SETTINGS,
+        DRAWER,
+        baseplate({ paddingLeft: 3 })
+      );
+      expect(plan.manifestBins[0].atPositions).toBeUndefined();
+    });
+
     it('dedupes two identically-extended bins into one group', () => {
       const bins = [
         linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }),

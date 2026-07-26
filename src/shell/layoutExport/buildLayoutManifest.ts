@@ -22,13 +22,17 @@ export interface ManifestBinEntry {
   /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
   readonly companions?: readonly string[];
   /**
-   * Grid position this variant was generated for, present only when the entry
-   * is an extended variant. Several bins on one design can resolve to different
+   * Every grid position this entry's mesh is placed at, present only for an
+   * extended variant. Several bins on one design can resolve to different
    * overhangs, so the file name alone can't say which goes where — this is the
    * readable mapping from part to place in the drawer.
+   *
+   * A list, not a single coordinate: entries are grouped by (design, resolved
+   * overhang), so identical extended bins share one file and one file can
+   * legitimately serve several positions. Sorted; the first element doubles as
+   * the deterministic naming anchor.
    */
-  readonly atX?: number;
-  readonly atY?: number;
+  readonly atPositions?: readonly { readonly x: number; readonly y: number }[];
 }
 
 export interface ManifestSkipped {
@@ -79,6 +83,24 @@ function plural(count: number, word: string): string {
   return count === 1 ? word : `${word}s`;
 }
 
+/** Cap on listed positions — beyond this the list stops being readable, and the
+ *  remainder is stated rather than silently dropped. */
+const MAX_LISTED_POSITIONS = 6;
+
+/**
+ * `Position:  grid (2.5, 0)` for a single placement, `Positions: grid (0, 0),
+ * (2.5, 0), (5, 0)` for several. Singular vs plural matters here: one file can
+ * serve many positions, and a singular label would read as "this part goes at
+ * exactly one spot".
+ */
+function positionLabel(positions: readonly { readonly x: number; readonly y: number }[]): string {
+  const shown = positions.slice(0, MAX_LISTED_POSITIONS);
+  const coords = shown.map((p, i) => (i === 0 ? `grid (${p.x}, ${p.y})` : `(${p.x}, ${p.y})`));
+  const hidden = positions.length - shown.length;
+  if (hidden > 0) coords.push(`+${hidden} more`);
+  return positions.length === 1 ? `Position:  ${coords[0]}` : `Positions: ${coords.join(', ')}`;
+}
+
 function formatTime(minutes: number): string {
   const rounded = Math.round(minutes);
   if (rounded < 60) return `${rounded}m`;
@@ -117,8 +139,8 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       lines.push(`    Quantity:  ${b.quantity}`);
       // Extended variants of one design differ only by overhang, so the file
       // name alone can't say which goes where. This is that mapping.
-      if (b.atX !== undefined && b.atY !== undefined) {
-        lines.push(`    Position:  grid (${b.atX}, ${b.atY}) — extended to fit`);
+      if (b.atPositions && b.atPositions.length > 0) {
+        lines.push(`    ${positionLabel(b.atPositions)} — extended to fit`);
       }
       if (b.companions && b.companions.length > 0) {
         lines.push(`    Includes:  ${b.companions.join(', ')}`);

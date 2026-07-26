@@ -116,10 +116,13 @@ interface BinExportGroup {
   readonly params: BinParams;
   readonly extended: boolean;
   quantity: number;
-  /** Lowest (x, y) among the bins in this group — the deterministic
-   *  representative used to name an extended variant. */
-  anchorX: number;
-  anchorY: number;
+  /**
+   * Every grid position this group's mesh is placed at. A group is keyed by
+   * (design, resolved overhang), so identical extended bins share one file and
+   * one file legitimately serves several positions. Sorted so the first entry is
+   * a deterministic naming anchor regardless of bin iteration order.
+   */
+  positions: { x: number; y: number }[];
 }
 
 export function planLayoutBinExport(
@@ -184,10 +187,7 @@ export function planLayoutBinExport(
     const existing = groups.get(key);
     if (existing) {
       existing.quantity++;
-      if (b.x < existing.anchorX || (b.x === existing.anchorX && b.y < existing.anchorY)) {
-        existing.anchorX = b.x;
-        existing.anchorY = b.y;
-      }
+      existing.positions.push({ x: b.x, y: b.y });
       continue;
     }
     const group: BinExportGroup = {
@@ -195,11 +195,16 @@ export function planLayoutBinExport(
       params,
       extended: overhang !== null,
       quantity: 1,
-      anchorX: b.x,
-      anchorY: b.y,
+      positions: [{ x: b.x, y: b.y }],
     };
     groups.set(key, group);
     usable.push(group);
+  }
+
+  // Sort so the naming anchor (and the manifest listing) don't depend on the
+  // order bins happen to appear in the layout.
+  for (const g of groups.values()) {
+    g.positions.sort((a, b) => a.x - b.x || a.y - b.y);
   }
 
   // Group linked bins on imported-mesh designs by design id (no overhang or
@@ -236,7 +241,7 @@ export function planLayoutBinExport(
         u.design.exportFileNameConfig ?? fileNameConfig,
         u.design.name
       );
-      return u.extended ? withPositionSuffix(name, u.anchorX, u.anchorY) : name;
+      return u.extended ? withPositionSuffix(name, u.positions[0].x, u.positions[0].y) : name;
     }),
     ...meshUsable.map(
       (m) => `${importedMeshDescriptor.exportFileName(m.envelope, m.structure)}.${format}`
@@ -277,7 +282,7 @@ export function planLayoutBinExport(
       filamentGrams: est.gramsFilament,
       printTimeMinutes: est.printTimeMinutes,
       companions: companions[i],
-      ...(u.extended ? { atX: u.anchorX, atY: u.anchorY } : {}),
+      ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });
 
