@@ -1,0 +1,19 @@
+src/core/cqrs/validation/schemas.test.ts
+  s_54d839532c63e7::t_85736a6adb1a52 220-243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "498ed436a5cf50eb7ca54cc556471e226d18eab2",
+  "prompts": {},
+  "sessions": {
+    "s_54d839532c63e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27118bff-b75b-45c4-940c-5f0d6484003a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
