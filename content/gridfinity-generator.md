@@ -79,7 +79,7 @@ faqs:
   - q: Will bins from the generator fit my existing Gridfinity baseplates?
     a: Yes. The generator follows the standard Gridfinity 42mm grid and the standard socket profile, so bins fit any official or community-made Gridfinity baseplate. The same applies in reverse — baseplates from the generator accept any standard Gridfinity bin.
   - q: Can the Gridfinity Generator make baseplates with magnet holes?
-    a: Yes. The baseplate generator can add 6mm by 2mm magnet holes at each grid intersection. The holes are off by default — turn them on to include them, then glue magnets into the holes for hold or leave the holes empty for a friction fit.
+    a: Yes. The baseplate generator can add 6mm by 2mm magnet holes at each grid intersection. The holes are off by default — turn them on to include them, then glue magnets into the holes for a stronger hold, or leave them empty for a friction fit.
   - q: Are there size limits in the Gridfinity Generator?
     a: Bins can be up to 16 by 16 grid units (672mm by 672mm) and 20 height units (140mm) tall. Baseplates can be larger and are automatically split into pieces that fit your printer bed when needed.
   - q: Does the Gridfinity Generator support half-bin sizes?
