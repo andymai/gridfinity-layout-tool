@@ -35,7 +35,7 @@ src/
 ├── shell/          # App shell: Header/, Sidebar/, Collab/, Mobile/, Modals/,
 │                   # Tablet/, layouts/, styles/
 ├── design-system/  # UI primitives: Button, Checkbox, Dialog, Input, Select, etc.
-└── i18n/           # Localization (en, de, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs)
+└── i18n/           # Localization (en, de, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs, ko)
 ```
 
 ## Core Architecture
@@ -131,7 +131,7 @@ const t = useTranslation();
 t('toast.binsDeleted', { count: 5 }); // Interpolation with {variable}
 ```
 
-Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs.
+Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs, ko.
 
 ## API (`api/`)
 
