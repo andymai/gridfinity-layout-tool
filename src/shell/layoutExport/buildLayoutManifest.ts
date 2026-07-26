@@ -21,6 +21,14 @@ export interface ManifestBinEntry {
   readonly printTimeMinutes: number;
   /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
   readonly companions?: readonly string[];
+  /**
+   * Grid position this variant was generated for, present only when the entry
+   * is an extended variant. Several bins on one design can resolve to different
+   * overhangs, so the file name alone can't say which goes where — this is the
+   * readable mapping from part to place in the drawer.
+   */
+  readonly atX?: number;
+  readonly atY?: number;
 }
 
 export interface ManifestSkipped {

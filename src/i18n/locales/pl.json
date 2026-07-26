@@ -369,6 +369,8 @@
   "inspector.extendToMargin": "Rozszerz na margines szuflady",
   "inspector.extendToMargin.hint": "Wypełnia margines dopasowania płyty bazowej na każdej krawędzi szuflady, której dotyka.",
   "inspector.extendToMargin.needsLink": "Powiąż projekt, aby rozszerzyć na margines.",
+  "inspector.expandedFootprint": "Powiększony obszar",
+  "inspector.expandedFootprint.sides": "{left} lewo · {right} prawo · {front} przód · {back} tył",
   "inspector.maxPropertiesReached": "Osiągnięto maksymalną liczbę właściwości ({max})",
   "inspector.moreCount": "+{count} więcej",
   "inspector.newPropertyName": "Nazwa nowej właściwości",

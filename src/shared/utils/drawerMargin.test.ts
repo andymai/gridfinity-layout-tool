@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { binMarginSides, binCanExtendToMargin, resolveBinMarginOverhang } from './drawerMargin';
+import {
+  binMarginSides,
+  binCanExtendToMargin,
+  resolveBinMarginOverhang,
+  resolveBinOverhang,
+  binOverhangSides,
+} from './drawerMargin';
 import { gridUnits } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 
@@ -141,5 +147,67 @@ describe('resolveBinMarginOverhang', () => {
   it('uses flat feet for a solid (non-over-tiled) margin', () => {
     const solid = baseplate({ paddingLeft: 3, overTile: false });
     expect(resolveBinMarginOverhang(bin(0, 1, 1, 1, true), DRAWER, solid)?.feet).toBe(false);
+  });
+});
+
+describe('resolveBinOverhang', () => {
+  const bp = baseplate({ paddingLeft: 3, overTile: true });
+  const explicit = { enabled: true, left: 7, right: 14, front: 0, back: 0 };
+
+  it('falls through to null so the caller keeps the design overhang', () => {
+    expect(resolveBinOverhang(bin(1, 1, 1, 1, false), DRAWER, bp)).toBeNull();
+  });
+
+  it('still derives the drawer margin when the bin carries no explicit overhang', () => {
+    expect(resolveBinOverhang(bin(0, 0, 1, 1, true), DRAWER, bp)?.left).toBe(3);
+  });
+
+  it('serves an interior bin on a drawer with no padding at all', () => {
+    const b = { ...bin(2, 1, 1, 1, false), overhang: explicit };
+    expect(resolveBinOverhang(b, DRAWER, baseplate())).toEqual(explicit);
+  });
+
+  it('replaces (does not add to) a margin overhang on the same bin', () => {
+    const b = { ...bin(0, 0, 1, 1, true), overhang: explicit };
+    expect(resolveBinOverhang(b, DRAWER, bp)).toEqual(explicit);
+  });
+
+  it('ignores a disabled or all-zero explicit overhang', () => {
+    const disabled = { ...bin(1, 1, 1, 1, false), overhang: { ...explicit, enabled: false } };
+    const zero = {
+      ...bin(1, 1, 1, 1, false),
+      overhang: { enabled: true, left: 0, right: 0, front: 0, back: 0 },
+    };
+    expect(resolveBinOverhang(disabled, DRAWER, bp)).toBeNull();
+    expect(resolveBinOverhang(zero, DRAWER, bp)).toBeNull();
+  });
+
+  it('falls back to the margin when the explicit overhang is disabled', () => {
+    const b = { ...bin(0, 0, 1, 1, true), overhang: { ...explicit, enabled: false } };
+    expect(resolveBinOverhang(b, DRAWER, bp)?.left).toBe(3);
+  });
+});
+
+describe('binOverhangSides', () => {
+  it('is all-zero when nothing resolves', () => {
+    expect(binOverhangSides(bin(1, 1, 1, 1, false), DRAWER, baseplate())).toEqual({
+      left: 0,
+      right: 0,
+      front: 0,
+      back: 0,
+    });
+  });
+
+  it('clamps a negative authored side to zero rather than shrinking the body', () => {
+    const b = {
+      ...bin(1, 1, 1, 1, false),
+      overhang: { enabled: true, left: -5, right: 14, front: 0, back: 0 },
+    };
+    expect(binOverhangSides(b, DRAWER, baseplate())).toEqual({
+      left: 0,
+      right: 14,
+      front: 0,
+      back: 0,
+    });
   });
 });

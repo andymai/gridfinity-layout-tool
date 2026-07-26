@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "Utvid inn i skuffemargen",
   "inspector.extendToMargin.hint": "Fyller bunnplatens skufftilpasningsmarg på hver skuffkant den berører.",
   "inspector.extendToMargin.needsLink": "Koble til et design for å utvide inn i margen.",
+  "inspector.expandedFootprint": "Utvidet fotavtrykk",
+  "inspector.expandedFootprint.sides": "{left} venstre · {right} høyre · {front} foran · {back} bak",
   "inspector.maxHeightHint": "Maks {max}mm: {reason}",
   "inspector.maxPropertiesReached": "Maksimalt {max} egenskaper nådd",
   "inspector.minHeightHint": "Min. {min}mm: {reason}",

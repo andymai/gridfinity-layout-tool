@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "Estendi nel margine del cassetto",
   "inspector.extendToMargin.hint": "Riempie il margine di adattamento della baseplate su ogni bordo del cassetto che tocca.",
   "inspector.extendToMargin.needsLink": "Collega un design per estenderlo nel margine.",
+  "inspector.expandedFootprint": "Impronta estesa",
+  "inspector.expandedFootprint.sides": "{left} sinistra · {right} destra · {front} davanti · {back} dietro",
   "inspector.maxHeightHint": "Massimo {max}mm: {reason}",
   "inspector.maxPropertiesReached": "Raggiunto il massimo di {max} proprietà",
   "inspector.minHeightHint": "Minimo {min}mm: {reason}",

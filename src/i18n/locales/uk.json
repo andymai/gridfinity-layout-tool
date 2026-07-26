@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "Розширити в поле шухляди",
   "inspector.extendToMargin.hint": "Заповнює поле підгонки базової плити на кожному краю шухляди, якого торкається.",
   "inspector.extendToMargin.needsLink": "Прив’яжіть дизайн, щоб розширити в поле.",
+  "inspector.expandedFootprint": "Розширена площа",
+  "inspector.expandedFootprint.sides": "{left} ліво · {right} право · {front} спереду · {back} позаду",
   "inspector.maxHeightHint": "Макс. {max}мм: {reason}",
   "inspector.maxPropertiesReached": "Досягнуто максимуму {max} властивостей",
   "inspector.minHeightHint": "Мін. {min}мм: {reason}",

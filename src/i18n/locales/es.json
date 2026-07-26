@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "Extender hasta el margen del cajón",
   "inspector.extendToMargin.hint": "Rellena el margen de ajuste de la base en cada borde del cajón que toca.",
   "inspector.extendToMargin.needsLink": "Vincula un diseño para extender hasta el margen.",
+  "inspector.expandedFootprint": "Huella ampliada",
+  "inspector.expandedFootprint.sides": "{left} izquierda · {right} derecha · {front} frente · {back} atrás",
   "inspector.maxHeightHint": "Máx {max}mm: {reason}",
   "inspector.maxPropertiesReached": "Máximo {max} propiedades alcanzado",
   "inspector.minHeightHint": "Mín {min}mm: {reason}",

@@ -9,6 +9,7 @@
 import type { Mutations } from '@/shared/contexts/MutationsContext';
 import type {
   Bin,
+  BinUpdates,
   BinId,
   LayerId,
   CategoryId,
@@ -51,7 +52,7 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return extractResult(result);
     },
 
-    updateBin(id: BinId, updates: Partial<Bin>): Result<void, LayoutError> {
+    updateBin(id: BinId, updates: BinUpdates): Result<void, LayoutError> {
       const result = bus.dispatch(createCommand('bin.update', { id, updates }));
       return extractResult(result);
     },

@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "延伸至抽屉留边",
   "inspector.extendToMargin.hint": "在它接触到的每条抽屉边缘上，填满底板的抽屉贴合留边。",
   "inspector.extendToMargin.needsLink": "关联一个设计后才能延伸至留边。",
+  "inspector.expandedFootprint": "扩展后的外形",
+  "inspector.expandedFootprint.sides": "{left} 左 · {right} 右 · {front} 前 · {back} 后",
   "inspector.maxHeightHint": "最大 {max}mm：{reason}",
   "inspector.maxPropertiesReached": "已达到 {max} 个属性上限",
   "inspector.minHeightHint": "最小 {min}mm：{reason}",

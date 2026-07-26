@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "Étendre dans la marge du tiroir",
   "inspector.extendToMargin.hint": "Comble la marge d'ajustement de la platine de base sur chaque bord du tiroir touché.",
   "inspector.extendToMargin.needsLink": "Liez un modèle pour étendre dans la marge.",
+  "inspector.expandedFootprint": "Emprise étendue",
+  "inspector.expandedFootprint.sides": "{left} gauche · {right} droite · {front} avant · {back} arrière",
   "inspector.maxHeightHint": "Max {max}mm : {reason}",
   "inspector.maxPropertiesReached": "Maximum {max} propriétés atteint",
   "inspector.minHeightHint": "Min {min}mm : {reason}",

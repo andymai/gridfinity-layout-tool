@@ -89,6 +89,17 @@ const binPartialSchema = z
     customProperties: z.record(z.string(), z.string()),
     linkedDesignId: z.string(),
     extendToMargin: z.boolean(),
+    // `null` clears the field (see `BinUpdates`); the shape mirrors OverhangConfig.
+    overhang: z
+      .object({
+        enabled: z.boolean().optional(),
+        left: z.number().min(0),
+        right: z.number().min(0),
+        front: z.number().min(0),
+        back: z.number().min(0),
+        feet: z.boolean().optional(),
+      })
+      .nullable(),
     id: binIdSchema,
   })
   .partial();

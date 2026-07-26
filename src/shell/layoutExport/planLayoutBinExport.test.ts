@@ -170,7 +170,7 @@ describe('planLayoutBinExport', () => {
   describe('extend into drawer margin', () => {
     const box = () => design('d1', 'Box', { width: 1, depth: 1, height: 6 });
 
-    it('splits an extended bin into its own group with an _extended file name and overhang', () => {
+    it('splits an extended bin into its own group with a position-suffixed name and overhang', () => {
       const bins = [
         linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }), // abuts left → extends
         linkedBin('d1', { x: 0, y: 2, width: 1, depth: 1 }), // plain sibling
@@ -186,9 +186,9 @@ describe('planLayoutBinExport', () => {
       );
 
       expect(plan.exportable).toHaveLength(2);
-      const ext = plan.exportable.find((e) => e.path.includes('_extended'));
-      const plain = plan.exportable.find((e) => !e.path.includes('_extended'));
-      expect(ext).toBeDefined();
+      const ext = plan.exportable.find((e) => e.path.includes('_pos'));
+      const plain = plan.exportable.find((e) => !e.path.includes('_pos'));
+      expect(ext?.path).toContain('_pos0-0');
       expect(plain).toBeDefined();
       expect(ext?.params.overhang).toEqual({
         enabled: true,
