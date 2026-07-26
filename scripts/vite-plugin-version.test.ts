@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { Plugin } from 'vite';
 import { versionPlugin } from './vite-plugin-version';
 
@@ -21,7 +21,18 @@ function defines(plugin: Plugin): Defines {
   return config.define;
 }
 
-describe('versionPlugin', () => {
+// The plugin deliberately tolerates a missing git (tarball builds, minimal
+// images), so the suite that depends on a real checkout has to tolerate it too.
+const HAS_GIT = ((): boolean => {
+  try {
+    execFileSync('git', ['rev-parse', '--git-dir'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
+describe.skipIf(!HAS_GIT)('versionPlugin in a git checkout', () => {
   it('derives __BUILD_TIME__ from the commit, not the wall clock', () => {
     const commitIso = new Date(
       execFileSync('git', ['log', '-1', '--format=%cI'], { encoding: 'utf-8' }).trim()
@@ -44,5 +55,29 @@ describe('versionPlugin', () => {
 
     expect(d.__GIT_SHA__).toBe(JSON.stringify(sha));
     expect(d.__APP_VERSION__).toMatch(/^"\d+\.\d+\.\d+"$/);
+  });
+});
+
+describe('versionPlugin without git', () => {
+  afterEach(() => {
+    vi.doUnmock('node:child_process');
+    vi.resetModules();
+  });
+
+  it('still builds, falling back to the wall clock and an unknown sha', async () => {
+    vi.resetModules();
+    vi.doMock('node:child_process', () => ({
+      execFileSync: () => {
+        throw new Error('git: command not found');
+      },
+    }));
+
+    const { versionPlugin: plugin } = await import('./vite-plugin-version');
+    const d = defines(plugin());
+
+    expect(d.__GIT_SHA__).toBe(JSON.stringify('unknown'));
+    expect(d.__APP_VERSION__).toMatch(/^"\d+\.\d+\.\d+"$/);
+    // A real ISO instant, just not a reproducible one — the documented tradeoff.
+    expect(Number.isNaN(Date.parse(JSON.parse(d.__BUILD_TIME__) as string))).toBe(false);
   });
 });
