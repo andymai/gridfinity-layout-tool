@@ -15,8 +15,8 @@ vi.mock('@/shared/components/ContextMenu', () => ({
 
 vi.mock('@/shared/contexts', () => ({
   useMutations: () => ({
-    deleteBins: vi.fn(),
-    moveBinsToStaging: vi.fn(),
+    deleteBin: vi.fn(),
+    updateBin: vi.fn(),
     expandBinsToFit: vi.fn(),
   }),
 }));

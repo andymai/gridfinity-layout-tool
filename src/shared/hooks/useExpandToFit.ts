@@ -68,7 +68,7 @@ export function useExpandToFit() {
       const reason =
         result.error.code === 'LAYOUT_INVALID_OPERATION' ? result.error.reason : undefined;
       const key =
-        reason !== undefined && reason in BLOCKED_MESSAGE_KEY
+        reason !== undefined && Object.hasOwn(BLOCKED_MESSAGE_KEY, reason)
           ? BLOCKED_MESSAGE_KEY[reason as ExpandBlockedReason]
           : 'toast.expandToFitRagged';
       addToast({ message: t(key), type: 'info', duration: 3000 });

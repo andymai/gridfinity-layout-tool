@@ -72,10 +72,11 @@ interface AxisPlan {
 }
 
 /**
- * Largest legal socket origin (a multiple of `STEP`, in units) whose footprint
- * of `wUnits` fits inside `[startMm, endMm]`, chosen to minimise the larger of
- * the two overhangs so the feet sit as centrally under the body as the grid
- * allows. Returns null when no legal origin fits.
+ * Legal socket origin (a multiple of `STEP`, in units) whose footprint of
+ * `wUnits` fits inside `[startMm, endMm]`, snapped to whichever step sits
+ * closest to the slice centre and clamped into range — so the feet end up as
+ * centrally under the body as the grid allows, minimising the larger of the
+ * two overhangs. Returns null when no legal origin fits.
  */
 function centredOrigin(
   startMm: number,
