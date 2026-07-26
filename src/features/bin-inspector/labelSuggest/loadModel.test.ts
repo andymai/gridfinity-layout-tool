@@ -57,14 +57,22 @@ describe('loadLabelSuggesterModel', () => {
     await expect(loadLabelSuggesterModel()).resolves.toMatchObject({ sampleCount: 0 });
   });
 
-  it('rejects a malformed payload rather than trusting it', async () => {
+  it('falls back to EMPTY_MODEL on a malformed payload rather than trusting it', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ schemaVersion: 1 })));
     const { loadLabelSuggesterModel } = await freshLoader();
 
     await expect(loadLabelSuggesterModel()).resolves.toMatchObject({ sampleCount: 0 });
   });
 
-  it('rejects a payload from an unsupported schema version', async () => {
+  it('falls back to EMPTY_MODEL when the maps are arrays, not records', async () => {
+    const arrayMaps = { ...TRAINED, popularity: [], cooccur: [] };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(arrayMaps)));
+    const { loadLabelSuggesterModel } = await freshLoader();
+
+    await expect(loadLabelSuggesterModel()).resolves.toMatchObject({ sampleCount: 0 });
+  });
+
+  it('falls back to EMPTY_MODEL on an unsupported schema version', async () => {
     const future = { ...TRAINED, schemaVersion: MODEL_SCHEMA_VERSION + 1 };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(future)));
     const { loadLabelSuggesterModel } = await freshLoader();

@@ -8,16 +8,18 @@ import modelUrl from './labelSuggester.model.json?url';
 
 let modelPromise: Promise<LabelSuggesterModel> | null = null;
 
+/** Arrays are objects, and an array would silently miss every key lookup. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /** Shallow shape check — the payload is a build asset we emit, not user input. */
 function isLabelSuggesterModel(value: unknown): value is LabelSuggesterModel {
-  if (typeof value !== 'object' || value === null) return false;
-  const m = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
   return (
-    m.schemaVersion === MODEL_SCHEMA_VERSION &&
-    typeof m.popularity === 'object' &&
-    m.popularity !== null &&
-    typeof m.cooccur === 'object' &&
-    m.cooccur !== null
+    value.schemaVersion === MODEL_SCHEMA_VERSION &&
+    isRecord(value.popularity) &&
+    isRecord(value.cooccur)
   );
 }
 

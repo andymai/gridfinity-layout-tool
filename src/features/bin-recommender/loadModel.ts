@@ -8,19 +8,20 @@ import modelUrl from './model.json?url';
 
 let modelPromise: Promise<BinRecommenderModel> | null = null;
 
+/** Arrays are objects, and an array would silently miss every key lookup. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 // Structural only: `recommendBinSize` already rejects an unsupported
 // schemaVersion, so duplicating that check here would fork the supported range.
 function isBinRecommenderModel(value: unknown): value is BinRecommenderModel {
-  if (typeof value !== 'object' || value === null) return false;
-  const m = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
   return (
-    typeof m.schemaVersion === 'number' &&
-    typeof m.byLabelHash === 'object' &&
-    m.byLabelHash !== null &&
-    typeof m.byEmbedBucket === 'object' &&
-    m.byEmbedBucket !== null &&
-    typeof m.byDrawer === 'object' &&
-    m.byDrawer !== null
+    typeof value.schemaVersion === 'number' &&
+    isRecord(value.byLabelHash) &&
+    isRecord(value.byEmbedBucket) &&
+    isRecord(value.byDrawer)
   );
 }
 

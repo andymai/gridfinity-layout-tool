@@ -56,6 +56,14 @@ describe('loadBinRecommenderModel', () => {
     await expect(loadBinRecommenderModel()).rejects.toThrow(/malformed/);
   });
 
+  it('rejects lookup tables that are arrays, not records', async () => {
+    const arrayTables = { ...MODEL, byLabelHash: [], byEmbedBucket: [], byDrawer: [] };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(arrayTables)));
+    const { loadBinRecommenderModel } = await freshLoader();
+
+    await expect(loadBinRecommenderModel()).rejects.toThrow(/malformed/);
+  });
+
   it('does not cache a rejection — a transient failure can retry', async () => {
     const fetchMock = vi
       .fn()

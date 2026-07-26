@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { BinSizePrediction } from './types';
@@ -61,6 +61,25 @@ describe('useBinSizeSuggestion', () => {
     const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
     await waitFor(() => expect(result.current).not.toBeNull());
     expect(result.current?.size).toEqual({ width: 2, depth: 2, height: 3 });
+  });
+
+  it('recovers when connectivity returns after a failed model fetch', async () => {
+    flag.mockReturnValue(true);
+    reco.mockReturnValue(pred({}));
+    load.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(MODEL);
+
+    const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    // Flush the rejection handler and the resulting state change so the
+    // reconnect listener is attached before the event fires.
+    await act(async () => {});
+    expect(result.current).toBeNull();
+
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it('suppresses the drawer-prior tier', async () => {

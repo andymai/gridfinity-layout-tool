@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize, type DrawerDims } from './recommender';
 import type { BinRecommenderModel, BinSize, BinSizePrediction } from './types';
@@ -17,21 +18,29 @@ export function useBinSizeSuggestion(
 ): BinSizePrediction | null {
   const enabled = useFeatureFlag('bin_recommender');
   const [model, setModel] = useState<BinRecommenderModel | null>(null);
+  const [failed, setFailed] = useState(false);
+  // The asset is fetched on demand, not precached, so a first request made
+  // offline fails. Without this the effect never runs again and suggestions stay
+  // dark for the rest of the session.
+  const attempt = useRetryOnReconnect(failed);
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
     loadBinRecommenderModel()
       .then((m) => {
-        if (!cancelled) setModel(m);
+        if (cancelled) return;
+        setModel(m);
+        setFailed(false);
       })
       .catch(() => {
         // A missing/broken model asset just means no suggestions — stay silent.
+        if (!cancelled) setFailed(true);
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, attempt]);
 
   const trimmed = label.trim();
   const { width: dw, depth: dd, height: dh } = drawer;
