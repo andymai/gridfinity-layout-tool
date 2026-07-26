@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.310.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.0...gridfinity-layout-tool-v4.310.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **content:** correct max bin size, compartment grid, and magnet default ([#2863](https://github.com/andymai/gridfinity-layout-tool/issues/2863)) ([d487a88](https://github.com/andymai/gridfinity-layout-tool/commit/d487a8804fdb3655f2e12229ae6b01d7d549e815))
+
 ## [4.310.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.309.0...gridfinity-layout-tool-v4.310.0) (2026-07-26)
 
 
