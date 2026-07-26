@@ -319,6 +319,15 @@ export function useLocale() {
 }
 
 /**
+ * Current locale code, degrading to 'en' when there's no provider (mirrors
+ * `useTranslation`) — safe for components rendered outside a LocaleProvider,
+ * e.g. in isolation tests.
+ */
+export function useCurrentLocale(): Locale {
+  return useContext(LocaleContext)?.locale ?? 'en';
+}
+
+/**
  * Hook to access locale-aware formatting functions.
  * Uses the app's current locale for consistent formatting.
  *

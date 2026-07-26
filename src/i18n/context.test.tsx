@@ -9,6 +9,7 @@ import {
   LocaleProvider,
   useTranslation,
   useLocale,
+  useCurrentLocale,
   useFormatting,
   getStaticTranslation,
   _setLoadedEn,
@@ -162,6 +163,21 @@ describe('useLocale outside provider', () => {
     expect(() => {
       renderHook(() => useLocale());
     }).toThrow('useLocale must be used within a LocaleProvider');
+  });
+});
+
+describe('useCurrentLocale', () => {
+  it('returns the provider locale', () => {
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <LocaleProvider initialLocale="de">{children}</LocaleProvider>
+    );
+    const { result } = renderHook(() => useCurrentLocale(), { wrapper });
+    expect(result.current).toBe('de');
+  });
+
+  it('degrades to "en" outside a provider instead of throwing', () => {
+    const { result } = renderHook(() => useCurrentLocale());
+    expect(result.current).toBe('en');
   });
 });
 

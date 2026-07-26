@@ -108,6 +108,7 @@ vi.mock('@/i18n', async () => {
       setLocale: vi.fn(),
       isLoading: false,
     }),
+    useCurrentLocale: () => 'en' as const,
     useFormatting: () => ({
       formatDate: (date: Date | string | number, options?: Intl.DateTimeFormatOptions) => {
         const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
