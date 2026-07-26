@@ -1,0 +1,51 @@
+src/features/bin-recommender/README.md
+  s_3f2bfe31d23929::t_6e117c6df927f0 54-56
+  s_3f2bfe31d23929::t_438d288960c221 23
+  s_3f2bfe31d23929::t_85ce6ec6c51496 7
+src/features/bin-recommender/loadModel.ts
+  s_3f2bfe31d23929::t_a803a987e257f7 1-49
+src/features/bin-recommender/useBinSizeSuggestion.ts
+  s_3f2bfe31d23929::t_9ca87c7b6c70c0 24,29
+  s_3f2bfe31d23929::t_d54879c75370c3 3
+src/features/bin-inspector/README.md
+  s_3f2bfe31d23929::t_7957690f3dd752 47-53
+package.json
+  s_3f2bfe31d23929::t_88e2677dd06e0d 103,109-110
+src/features/bin-recommender/useBinSizeSuggestion.test.ts
+  s_3f2bfe31d23929::t_4f353840e4b2e8 55
+  s_3f2bfe31d23929::t_9ac07b3338f589 8,12,18-29
+  s_3f2bfe31d23929::t_883124ea3a2303 45-46
+scripts/vite-plugin-minify-json-assets.ts
+  s_3f2bfe31d23929::t_1ebf62951f2735 1-10,17-38
+  s_3f2bfe31d23929::t_7bf22a39c5d889 11-16
+src/features/bin-inspector/labelSuggest/committedModel.test.ts
+  s_3f2bfe31d23929::t_0fa49a6bf1355e 1-41
+vite.config.ts
+  s_3f2bfe31d23929::t_5385d1cd72b30c 52
+  s_3f2bfe31d23929::t_492be2810685be 11
+  s_3f2bfe31d23929::t_b081d9a3b1aae6 200-218
+  s_3f2bfe31d23929::t_469e44eb7b6cb4 199
+src/features/bin-inspector/labelSuggest/loadModel.ts
+  s_3f2bfe31d23929::t_5c8712dd4f868a 1-7,11-23,25-27,31-39
+src/features/bin-inspector/labelSuggest/loadModel.test.ts
+  s_3f2bfe31d23929::t_4475985382d1bd 19
+  s_3f2bfe31d23929::t_2d4f6ba3962a5d 1-2,5-18,20-22,25-36,39-85
+  s_3f2bfe31d23929::t_639b1e919c3e63 3
+  s_3f2bfe31d23929::t_36bd680890e01b 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "55f7197ec6a3ca744bbe628d2298da300e4935b2",
+  "prompts": {},
+  "sessions": {
+    "s_3f2bfe31d23929": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "520d1560-bb26-4cc2-8413-6ad880f171cd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
