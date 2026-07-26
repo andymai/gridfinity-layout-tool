@@ -203,6 +203,9 @@ export default defineConfig({
             // emits a new hash and therefore a new URL. Deliberately NOT
             // precached (json is absent from globPatterns): most users never
             // open a feature that needs them, so they are cached on first use.
+            // Same-origin only without an explicit origin check: workbox's
+            // RegExpRoute ignores a cross-origin URL unless the pattern matches
+            // from index 0, which this one cannot. Same as the .wasm rule.
             urlPattern: /\/assets\/.*\.json$/,
             handler: 'CacheFirst',
             options: {

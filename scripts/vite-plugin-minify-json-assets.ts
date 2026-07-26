@@ -21,7 +21,10 @@ export function minifyJsonAssets(): Plugin {
     apply: 'build',
     generateBundle(_options, bundle) {
       for (const file of Object.values(bundle)) {
-        if (file.type !== 'asset' || !file.fileName.endsWith('.json')) continue;
+        // Scoped to assets/ so this can't reach root-level emitted JSON such as
+        // version.json, which the PWA smoke gate owns.
+        if (file.type !== 'asset') continue;
+        if (!file.fileName.startsWith('assets/') || !file.fileName.endsWith('.json')) continue;
 
         const source = typeof file.source === 'string' ? file.source : Buffer.from(file.source);
         const text = typeof source === 'string' ? source : source.toString('utf8');
