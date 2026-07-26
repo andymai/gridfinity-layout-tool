@@ -22,10 +22,15 @@ export function useLabelSuggestions(
   bin: Bin,
   bins: readonly Bin[],
   maxLength?: number,
-  model?: LabelSuggesterModel | null
+  model?: LabelSuggesterModel | null,
+  locale?: string
 ): LabelSuggestionsResult {
   return useMemo(() => {
-    const suggestions = getLabelSuggestions(bin.label, { target: bin, bins }, { maxLength, model });
+    const suggestions = getLabelSuggestions(
+      bin.label,
+      { target: bin, bins },
+      { maxLength, model, locale }
+    );
     return { suggestions, ghost: computeGhost(bin.label, suggestions) };
-  }, [bin, bins, maxLength, model]);
+  }, [bin, bins, maxLength, model, locale]);
 }

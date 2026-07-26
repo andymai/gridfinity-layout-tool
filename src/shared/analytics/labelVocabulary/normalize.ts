@@ -1,5 +1,6 @@
 import { computeEmbeddingBucket } from '../labelEmbedding';
 import { VOCABULARY, TERM_DOMAINS } from './vocabulary';
+import { CATALOG_DISPLAY } from './catalogDisplay';
 import type { LabelDomain } from './vocabulary';
 
 /**
@@ -238,11 +239,17 @@ export function getTermDomain(term: string): LabelDomain | null {
 }
 
 /**
- * Human-readable display form of a canonical term for UI suggestions.
- * Uses the first (English) alias — the natural word rather than the snake_case
- * key — with its first letter capitalized. Falls back to the de-underscored key.
+ * Human-readable display form of a canonical term for UI suggestions, localized
+ * to `locale` when a translation exists (falling back to English, then to the
+ * first alias). This is the text a catalog suggestion both shows and inserts.
  */
-export function getDisplayTerm(canonical: string): string {
+export function getDisplayTerm(canonical: string, locale?: string): string {
+  if (Object.hasOwn(CATALOG_DISPLAY, canonical)) {
+    const display = CATALOG_DISPLAY[canonical];
+    if (locale && Object.hasOwn(display, locale)) return display[locale];
+    if (Object.hasOwn(display, 'en')) return display.en;
+  }
+  // Fallback for terms not in the display map: first alias, first letter cased.
   const aliases = isKnownTerm(canonical) ? VOCABULARY[canonical] : [];
   const base = aliases.length > 0 ? aliases[0] : canonical.replace(/_/g, ' ');
   return base.charAt(0).toUpperCase() + base.slice(1);

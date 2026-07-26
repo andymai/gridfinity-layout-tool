@@ -165,6 +165,15 @@ describe('getLabelSuggestions', () => {
     expect(results).toEqual([]);
   });
 
+  it('localizes catalog suggestions to the given locale', () => {
+    // "schraub" prefix-matches the German catalog term for screw ("Schraube"),
+    // which only surfaces when catalog display is localized to de.
+    const results = getLabelSuggestions('schraub', ctx(makeBin({ label: 'schraub' })), {
+      locale: 'de',
+    });
+    expect(results.map((r) => r.value)).toContain('Schraube');
+  });
+
   it('never returns a suggestion longer than maxLength', () => {
     const target = makeBin({ label: 'scr' });
     const results = getLabelSuggestions('scr', ctx(target), { maxLength: 5 });

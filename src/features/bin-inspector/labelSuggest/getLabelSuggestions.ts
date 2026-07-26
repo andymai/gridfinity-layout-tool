@@ -74,7 +74,12 @@ interface ScoredSuggestion extends LabelSuggestion {
 export function getLabelSuggestions(
   rawQuery: string,
   ctx: SuggestionContext,
-  options: { limit?: number; maxLength?: number; model?: LabelSuggesterModel | null } = {}
+  options: {
+    limit?: number;
+    maxLength?: number;
+    model?: LabelSuggesterModel | null;
+    locale?: string;
+  } = {}
 ): LabelSuggestion[] {
   const limit = options.limit ?? DEFAULT_LIMIT;
   // Never surface a suggestion the field can't hold verbatim — otherwise the
@@ -146,7 +151,11 @@ export function getLabelSuggestions(
     add(pred.value, { isSequence: true, domain: processLabel(pred.value).domain });
   for (const { value } of counts.values()) add(value, {});
   for (const term of getCanonicalTerms())
-    add(getDisplayTerm(term), { isCatalog: true, domain: getTermDomain(term), canonical: term });
+    add(getDisplayTerm(term, options.locale), {
+      isCatalog: true,
+      domain: getTermDomain(term),
+      canonical: term,
+    });
 
   // Semantic expansion of a typed concept word ("fasteners" → the fasteners
   // domain) or a term's related items ("screwdriver" → screw/bolt). Empty until

@@ -3,7 +3,7 @@ import { Combobox, type ComboboxOption } from '@/design-system';
 import { CONSTRAINTS } from '@/core/constants';
 import { processLabel } from '@/shared/analytics/labelVocabulary';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useCurrentLocale } from '@/i18n';
 import type { Bin } from '@/core/types';
 import { useLabelSuggestions } from '@/features/bin-inspector/hooks/useLabelSuggestions';
 import { useLabelSuggesterModel } from '@/features/bin-inspector/hooks/useLabelSuggesterModel';
@@ -33,12 +33,14 @@ const REASON_KEY: Record<SuggestionReason, string> = {
  */
 export function BinLabelField({ bin, bins, onChange, variant }: BinLabelFieldProps) {
   const t = useTranslation();
+  const locale = useCurrentLocale();
   const model = useLabelSuggesterModel();
   const { suggestions, ghost } = useLabelSuggestions(
     bin,
     bins,
     CONSTRAINTS.LABEL_MAX_LENGTH,
-    model
+    model,
+    locale
   );
   const enableInlineGhost = variant === 'desktop';
 

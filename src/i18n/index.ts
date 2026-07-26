@@ -18,6 +18,7 @@ export {
   LocaleProvider,
   useTranslation,
   useLocale,
+  useCurrentLocale,
   useFormatting,
   getStaticTranslation,
 } from './context';

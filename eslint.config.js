@@ -397,6 +397,7 @@ export default defineConfig([
     files: [
       'src/shared/analytics/labelVocabulary.ts', // pre-split (1670 LOC, pure data)
       'src/shared/analytics/labelVocabulary/vocabulary.ts', // post-split equivalent
+      'src/shared/analytics/labelVocabulary/catalogDisplay.ts', // pure per-locale display data
       'src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts',
       'src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx',
       'src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx',
