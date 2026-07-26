@@ -197,7 +197,10 @@ describe('kofi-webhook', () => {
   });
 
   it('never writes the email or amount into the donor record', async () => {
-    await handle(payload({ amount: '5.00' }));
+    // Pin the timestamp: without it the record's joinedAt defaults to now, and an
+    // ISO string like "…:X5.001Z" can coincidentally contain "5.00" (seconds
+    // ending in 5, ms starting 00), flaking the substring assertion below.
+    await handle(payload({ amount: '5.00', timestamp: '2026-07-01T13:04:30Z' }));
     const written = JSON.stringify(mocks.hset.mock.calls[0]);
     expect(written).not.toContain('jo@example.com');
     expect(written).not.toContain('5.00');
