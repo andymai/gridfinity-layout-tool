@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.306.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.0...gridfinity-layout-tool-v4.306.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **generation:** repair rotted __kernel-tests__ diagnostics ([#2851](https://github.com/andymai/gridfinity-layout-tool/issues/2851)) ([b79957f](https://github.com/andymai/gridfinity-layout-tool/commit/b79957fa00c09994827a34a4fcd1dbb46fa14a8b))
+
 ## [4.306.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.305.0...gridfinity-layout-tool-v4.306.0) (2026-07-26)
 
 
