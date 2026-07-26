@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.311.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.1...gridfinity-layout-tool-v4.311.0) (2026-07-26)
+
+
+### Features
+
+* **layout:** per-placement bin overhang ([#2867](https://github.com/andymai/gridfinity-layout-tool/issues/2867)) ([0c34156](https://github.com/andymai/gridfinity-layout-tool/commit/0c341561f1c87da482174a22f437235c1bdcc15f))
+
 ## [4.310.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.0...gridfinity-layout-tool-v4.310.1) (2026-07-26)
 
 
