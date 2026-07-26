@@ -1,0 +1,23 @@
+src/shared/hooks/useExpandToFit.ts
+  s_180f27a5f871f2::t_01f0834866e932 71
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.test.tsx
+  s_180f27a5f871f2::t_445836515d0cec 18-19
+src/shared/utils/expandToFit.ts
+  s_180f27a5f871f2::t_6c39d415e88ced 75-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "22ebb324a36d6a98fbcc299b3f141f61e3235377",
+  "prompts": {},
+  "sessions": {
+    "s_180f27a5f871f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3bdcfdd-1c2c-4765-b91c-fcbfc5693c53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
