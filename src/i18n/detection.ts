@@ -82,6 +82,10 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   // Czech
   cs: 'cs',
   'cs-CZ': 'cs',
+
+  // Korean
+  ko: 'ko',
+  'ko-KR': 'ko',
 };
 
 /**
