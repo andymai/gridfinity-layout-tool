@@ -8,6 +8,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
+import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -48,6 +49,7 @@ export default defineConfig({
     versionPlugin(),
     contentRoutesPlugin(),
     mediapipeAssetsPlugin(),
+    minifyJsonAssets(),
     VitePWA({
       // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
       // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
@@ -195,6 +197,29 @@ export default defineConfig({
             },
           },
           {
+            // Committed ML model weights, fetched on demand rather than bundled.
+            // Same reasoning as the .wasm rule: content-hashed and immutable, so
+            // CacheFirst can never strand a user on stale weights — a retrain
+            // emits a new hash and therefore a new URL. Deliberately NOT
+            // precached (json is absent from globPatterns): most users never
+            // open a feature that needs them, so they are cached on first use.
+            // Same-origin only without an explicit origin check: workbox's
+            // RegExpRoute ignores a cross-origin URL unless the pattern matches
+            // from index 0, which this one cannot. Same as the .wasm rule.
+            urlPattern: /\/assets\/.*\.json$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ml-models',
+              expiration: {
+                maxEntries: 6,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
@@ -296,21 +321,6 @@ export default defineConfig({
               name: 'three-render',
               priority: 90,
               test: /[\\/]node_modules[\\/](?:three[\\/]|@react-three[\\/]|three-stdlib[\\/]|troika-[^\\/]+[\\/]|bidi-js[\\/]|webgl-sdf-generator[\\/]|maath[\\/]|meshline[\\/]|camera-controls[\\/]|stats\.js[\\/]|stats-gl[\\/]|suspend-react[\\/]|its-fine[\\/]|react-use-measure[\\/]|tunnel-rat[\\/]|@use-gesture[\\/]|potpack[\\/])/,
-            },
-            // Committed ML weights, pinned to stable `ml-model-*` names so the
-            // size-limit budget tracks them by an intentional rule rather than by
-            // whatever the source JSON happens to be called. Deliberately one
-            // group EACH: merging them would make loading either feature pull
-            // both models' weights.
-            {
-              name: 'ml-model-recommender',
-              priority: 85,
-              test: /[\\/]src[\\/]features[\\/]bin-recommender[\\/]model\.json$/,
-            },
-            {
-              name: 'ml-model-label-suggester',
-              priority: 85,
-              test: /[\\/]src[\\/]features[\\/]bin-inspector[\\/]labelSuggest[\\/]labelSuggester\.model\.json$/,
             },
             // Liveblocks — only loaded when collaborative editing is active (Labs).
             { name: 'liveblocks', priority: 80, test: /[\\/]node_modules[\\/]@liveblocks[\\/]/ },

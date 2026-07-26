@@ -100,15 +100,14 @@
         "!dist/assets/nl-*.js",
         "!dist/assets/pt-BR-*.js",
         "!dist/assets/sv-*.js",
-        "!dist/assets/uk-*.js",
-        "!dist/assets/ml-model-*.js"
+        "!dist/assets/uk-*.js"
       ],
       "gzip": true,
       "limit": "1850 kB"
     },
     {
-      "name": "ML model weights (gzip)",
-      "path": "dist/assets/ml-model-*.js",
+      "name": "Fetched JSON assets (gzip)",
+      "path": "dist/assets/*.json",
       "gzip": true,
       "limit": "115 kB"
     }

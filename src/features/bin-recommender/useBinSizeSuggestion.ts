@@ -1,24 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
+import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize, type DrawerDims } from './recommender';
 import type { BinRecommenderModel, BinSize, BinSizePrediction } from './types';
-
-// The model is ~600KB, so it is dynamically imported and only fetched once the
-// Labs flag is on. The promise is module-level so multiple mounts share one load.
-let modelPromise: Promise<BinRecommenderModel> | null = null;
-function loadModel(): Promise<BinRecommenderModel> {
-  if (!modelPromise) {
-    modelPromise = import('./model.json')
-      .then((m) => m.default as unknown as BinRecommenderModel)
-      .catch((err: unknown) => {
-        // Don't cache a rejected promise — a transient chunk-fetch failure
-        // would otherwise disable suggestions for the rest of the session.
-        modelPromise = null;
-        throw err;
-      });
-  }
-  return modelPromise;
-}
 
 /**
  * Suggest a bin size for a typed label, or `null` when there is nothing worth
@@ -33,21 +18,29 @@ export function useBinSizeSuggestion(
 ): BinSizePrediction | null {
   const enabled = useFeatureFlag('bin_recommender');
   const [model, setModel] = useState<BinRecommenderModel | null>(null);
+  const [failed, setFailed] = useState(false);
+  // The asset is fetched on demand, not precached, so a first request made
+  // offline fails. Without this the effect never runs again and suggestions stay
+  // dark for the rest of the session.
+  const attempt = useRetryOnReconnect(failed);
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    loadModel()
+    loadBinRecommenderModel()
       .then((m) => {
-        if (!cancelled) setModel(m);
+        if (cancelled) return;
+        setModel(m);
+        setFailed(false);
       })
       .catch(() => {
-        // A missing/broken model chunk just means no suggestions — stay silent.
+        // A missing/broken model asset just means no suggestions — stay silent.
+        if (!cancelled) setFailed(true);
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, attempt]);
 
   const trimmed = label.trim();
   const { width: dw, depth: dd, height: dh } = drawer;

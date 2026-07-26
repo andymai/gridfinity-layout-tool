@@ -1,30 +1,32 @@
 // @vitest-environment jsdom
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { BinSizePrediction } from './types';
 
 vi.mock('@/shared/hooks/useFeatureFlag', () => ({ useFeatureFlag: vi.fn() }));
-vi.mock('./model.json', () => ({
-  default: {
-    schemaVersion: 1,
-    vocabVersion: 'v1',
-    source: 'label_hash_high',
-    trainedAt: '',
-    sampleCount: 0,
-    byLabelHash: {},
-    byEmbedBucket: {},
-    byDrawer: {},
-  },
-}));
+vi.mock('./loadModel', () => ({ loadBinRecommenderModel: vi.fn() }));
 vi.mock('./recommender', () => ({ recommendBinSize: vi.fn() }));
 
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { loadBinRecommenderModel } from './loadModel';
 import { recommendBinSize } from './recommender';
 import { useBinSizeSuggestion } from './useBinSizeSuggestion';
 
 const flag = vi.mocked(useFeatureFlag);
 const reco = vi.mocked(recommendBinSize);
+const load = vi.mocked(loadBinRecommenderModel);
+
+const MODEL = {
+  schemaVersion: 1,
+  vocabVersion: 'v1',
+  source: 'label_hash_high',
+  trainedAt: '',
+  sampleCount: 0,
+  byLabelHash: {},
+  byEmbedBucket: {},
+  byDrawer: {},
+} as const;
 
 const drawer = { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) };
 const current = { width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) };
@@ -40,6 +42,8 @@ describe('useBinSizeSuggestion', () => {
   beforeEach(() => {
     flag.mockReset();
     reco.mockReset();
+    load.mockReset();
+    load.mockResolvedValue(MODEL);
   });
 
   it('returns null when the flag is off (and never loads the model)', () => {
@@ -48,6 +52,7 @@ describe('useBinSizeSuggestion', () => {
     const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
     expect(result.current).toBeNull();
     expect(reco).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
   });
 
   it('returns a label-tier prediction that differs from the current size', async () => {
@@ -56,6 +61,25 @@ describe('useBinSizeSuggestion', () => {
     const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
     await waitFor(() => expect(result.current).not.toBeNull());
     expect(result.current?.size).toEqual({ width: 2, depth: 2, height: 3 });
+  });
+
+  it('recovers when connectivity returns after a failed model fetch', async () => {
+    flag.mockReturnValue(true);
+    reco.mockReturnValue(pred({}));
+    load.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(MODEL);
+
+    const { result } = renderHook(() => useBinSizeSuggestion('screws', drawer, current));
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    // Flush the rejection handler and the resulting state change so the
+    // reconnect listener is attached before the event fires.
+    await act(async () => {});
+    expect(result.current).toBeNull();
+
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it('suppresses the drawer-prior tier', async () => {
