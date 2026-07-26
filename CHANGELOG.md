@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.309.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.308.0...gridfinity-layout-tool-v4.309.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Czech (cs) SEO landing pages ([#2859](https://github.com/andymai/gridfinity-layout-tool/issues/2859)) ([f8bbf2f](https://github.com/andymai/gridfinity-layout-tool/commit/f8bbf2f0d81182a591a47e3189d77e2333019112))
+
 ## [4.308.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.307.0...gridfinity-layout-tool-v4.308.0) (2026-07-26)
 
 
