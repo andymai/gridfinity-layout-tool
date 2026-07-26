@@ -32,7 +32,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(12);
+    expect(SUPPORTED_LOCALES).toHaveLength(13);
   });
 
   it('has required properties for each locale', () => {
@@ -123,6 +123,11 @@ describe('detectBrowserLocale', () => {
     it('detects Polish', () => {
       vi.stubGlobal('navigator', { languages: ['pl'], language: 'pl' });
       expect(detectBrowserLocale()).toBe('pl');
+    });
+
+    it('detects Simplified Chinese', () => {
+      vi.stubGlobal('navigator', { languages: ['zh-CN'], language: 'zh-CN' });
+      expect(detectBrowserLocale()).toBe('zh-CN');
     });
   });
 
@@ -231,29 +236,44 @@ describe('detectBrowserLocale', () => {
       vi.stubGlobal('navigator', { languages: ['pl-PL'], language: 'pl-PL' });
       expect(detectBrowserLocale()).toBe('pl');
     });
+
+    it('maps zh (generic Chinese) to zh-CN', () => {
+      vi.stubGlobal('navigator', { languages: ['zh'], language: 'zh' });
+      expect(detectBrowserLocale()).toBe('zh-CN');
+    });
+
+    it('maps zh-Hans to zh-CN', () => {
+      vi.stubGlobal('navigator', { languages: ['zh-Hans'], language: 'zh-Hans' });
+      expect(detectBrowserLocale()).toBe('zh-CN');
+    });
+
+    it('maps zh-TW (Traditional) to zh-CN via base fallback', () => {
+      vi.stubGlobal('navigator', { languages: ['zh-TW'], language: 'zh-TW' });
+      expect(detectBrowserLocale()).toBe('zh-CN');
+    });
   });
 
   describe('language preference order', () => {
     it('uses first matching language from preferences', () => {
       vi.stubGlobal('navigator', {
-        languages: ['zh', 'de', 'en'], // Chinese not supported, German is
-        language: 'zh',
+        languages: ['th', 'de', 'en'], // Thai not supported, German is
+        language: 'th',
       });
       expect(detectBrowserLocale()).toBe('de');
     });
 
     it('skips unsupported languages', () => {
       vi.stubGlobal('navigator', {
-        languages: ['zh', 'ko', 'es'], // Chinese, Korean not supported
-        language: 'zh',
+        languages: ['th', 'ar', 'es'], // Thai, Arabic not supported
+        language: 'th',
       });
       expect(detectBrowserLocale()).toBe('es');
     });
 
     it('falls back to en for unsupported languages', () => {
       vi.stubGlobal('navigator', {
-        languages: ['zh', 'ko', 'th'], // None supported
-        language: 'zh',
+        languages: ['th', 'ar', 'hi'], // None supported
+        language: 'th',
       });
       expect(detectBrowserLocale()).toBe('en');
     });
