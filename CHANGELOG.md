@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.307.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.1...gridfinity-layout-tool-v4.307.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Polish (pl) SEO landing pages ([#2855](https://github.com/andymai/gridfinity-layout-tool/issues/2855)) ([6ec8fc3](https://github.com/andymai/gridfinity-layout-tool/commit/6ec8fc32b0289cd81141352b886de97d2ea1fe06))
+
 ## [4.306.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.0...gridfinity-layout-tool-v4.306.1) (2026-07-26)
 
 
