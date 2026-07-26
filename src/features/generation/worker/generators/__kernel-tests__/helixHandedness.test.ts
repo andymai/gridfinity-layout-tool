@@ -1,18 +1,24 @@
 // @vitest-environment node
 /**
- * Tripwire for occt-wasm's helix handedness gaps (run with the other
- * __kernel-tests__ diagnostics on every brepjs/occt-wasm bump).
+ * occt-wasm helix handedness, for kumikoWrapBuilder's corner FALLING diagonals
+ * (run with the other __kernel-tests__ diagnostics on every brepjs bump).
  *
- * Pinned CURRENT behavior (the assertions below fail when upstream fixes it):
- *   - makeHelixWire has no handedness input, so brepjs's sketchHelix
- *     left-handed flag is a NO-OP — both flags produce the identical
- *     right-handed sweep. This is why kumikoWrapBuilder approximates corner
- *     FALLING diagonals with chord boxes instead of helix sweeps.
- *   - brepjs `mirror` on a helical sweep USED to yield an empty solid. As of
- *     brepjs 18.119.2 it yields a real one, so mirroring a right-handed sweep
- *     IS now a viable left-handed substitute — see the second case.
- * A failure here means the remaining upstream gap is fixed: retire the
- * chord-box approximation in kumikoWrapBuilder's falling-diagonal branch.
+ * The two cases here fail for OPPOSITE reasons — read the one that broke:
+ *
+ *   1. Tripwire. `makeHelixWire` takes no handedness input, so sketchHelix's
+ *      left-handed flag is a NO-OP: both flags give the same right-handed
+ *      sweep. A FAILURE means upstream gained handedness.
+ *
+ *   2. Regression guard. `mirror` on a helical sweep used to yield an empty
+ *      solid; as of brepjs 18.119.2 it yields a true reflection, so a mirrored
+ *      right-handed sweep is a viable left-handed substitute. This one should
+ *      keep PASSING — a failure means that capability regressed.
+ *
+ * Either outcome bears on the same decision: the chord-box approximation in
+ * kumikoWrapBuilder's falling-diagonal branch exists because BOTH routes to a
+ * left-handed sweep were unavailable. Route 2 has since opened, so the
+ * approximation is already retirable (see the TODO on that case); case 1
+ * turning green would make it doubly so.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { sketchHelix, drawRoundedRectangle, mesh, mirror, measureVolume, unwrap } from 'brepjs';
