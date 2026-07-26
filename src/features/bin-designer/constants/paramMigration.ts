@@ -34,6 +34,8 @@ import {
   LID_MAGNET_DIAMETER_MAX_MM,
   LID_MAGNET_DEPTH_MIN_MM,
   LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_EDGE_COUNT_MIN,
+  LID_MAGNET_EDGE_COUNT_MAX,
   LID_TRAY_DEPTH_MIN_MM,
   LID_TRAY_DEPTH_MAX_MM,
   LID_TRAY_WALL_MIN_MM,
@@ -294,6 +296,17 @@ function migrateRetentionMagnet(raw: unknown): LidMagnetConfig {
       LID_MAGNET_DEPTH_MIN_MM,
       LID_MAGNET_DEPTH_MAX_MM,
       DEFAULT_LID_CONFIG.retentionMagnet.depth
+    ),
+    // Whole number of edge magnets per long edge (#2844). Legacy-absent →
+    // default (0, the four-corner lid); out-of-range hand edits get clamped and
+    // rounded so the worker never receives a fractional or oversized count.
+    edgeMagnets: Math.round(
+      clampNumber(
+        obj.edgeMagnets,
+        LID_MAGNET_EDGE_COUNT_MIN,
+        LID_MAGNET_EDGE_COUNT_MAX,
+        DEFAULT_LID_CONFIG.retentionMagnet.edgeMagnets
+      )
     ),
   };
 }

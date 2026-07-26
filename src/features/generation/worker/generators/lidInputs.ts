@@ -92,6 +92,8 @@ export interface LidInputs {
   readonly retentionMagnets: boolean;
   readonly retentionMagnetDiameter: number;
   readonly retentionMagnetDepth: number;
+  /** Extra magnets per long edge (#2844); 0 = the classic four-corner lid. */
+  readonly retentionMagnetEdgeMagnets: number;
   /**
    * Resolved tray recess. `enabled` is already gated on `!stackableTop` here,
    * so the builder can trust it directly. Dimensions are pre-clamped upstream.
@@ -276,6 +278,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     retentionMagnets,
     retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
     retentionMagnetDepth: params.lid.retentionMagnet.depth,
+    retentionMagnetEdgeMagnets: params.lid.retentionMagnet.edgeMagnets,
     tray: {
       enabled: trayEnabled,
       depthMm: params.lid.tray.depthMm,

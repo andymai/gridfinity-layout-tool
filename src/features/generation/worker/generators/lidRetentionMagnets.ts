@@ -42,6 +42,7 @@ export function addLidRetentionMagnets(
     gridUnitMmY,
     retentionMagnetDiameter,
     retentionMagnetDepth,
+    retentionMagnetEdgeMagnets,
     topThickness,
     cavityExtraMm,
   } = inputs;
@@ -49,7 +50,17 @@ export function addLidRetentionMagnets(
   const magnetRadius = retentionMagnetDiameter / 2;
   const bossRadius = retentionBossRadius(retentionMagnetDiameter);
   const inset = retentionMagnetInset(retentionMagnetDiameter);
-  const positions = retentionMagnetPositions(cellsX, cellsY, gridUnitMm, gridUnitMmY, inset);
+  // Same placement as the bin pads (edge magnets included), so every lid boss
+  // lands coaxial with its mating bin post.
+  const positions = retentionMagnetPositions(
+    cellsX,
+    cellsY,
+    gridUnitMm,
+    gridUnitMmY,
+    inset,
+    retentionMagnetEdgeMagnets,
+    bossRadius
+  );
 
   // The boss is anchored to the BOTTOM of the cavity, not to the floor plate.
   // `interfaceZ` (the magnet's mating face, what the bin gusset meets) sits a
@@ -68,7 +79,7 @@ export function addLidRetentionMagnets(
 
   // 1. Fuse the four bosses onto the floor (welds along the floor plate).
   let result = body;
-  for (const [px, py] of positions) {
+  for (const { x: px, y: py } of positions) {
     const boss = scope.register(
       cylinder(bossRadius, bossHeight, { at: [px, py, interfaceZ], axis: [0, 0, 1] })
     );
@@ -85,7 +96,7 @@ export function addLidRetentionMagnets(
   const cutterZ = interfaceZ - LID_COPLANAR_MARGIN;
   const cutterHeight = retentionMagnetDepth + LID_COPLANAR_MARGIN;
   const cutters: Shape3D[] = [];
-  for (const [px, py] of positions) {
+  for (const { x: px, y: py } of positions) {
     // Place the cutter directly at the magnet position — avoids a `translate`
     // that would leave the pre-translation cylinder as an unreleased WASM handle.
     cutters.push(

@@ -254,6 +254,15 @@ function validateLid(lid: unknown): string | null {
     if (isNumber(m.depth) && !inRange(m.depth, 1, 6)) {
       return 'lid.retentionMagnet.depth must be 1-6';
     }
+    // Edge-magnet count (#2844). Feeds the worker's placement loop, so cap it
+    // server-side — a crafted share can't smuggle in a huge count that spawns
+    // thousands of boss/pocket booleans. Mirrors LID_MAGNET_EDGE_COUNT_*.
+    if (
+      m.edgeMagnets !== undefined &&
+      (!isNumber(m.edgeMagnets) || !inRange(m.edgeMagnets, 0, 3))
+    ) {
+      return 'lid.retentionMagnet.edgeMagnets must be 0-3';
+    }
   }
   if (lid.tray !== undefined) {
     const tr = lid.tray;

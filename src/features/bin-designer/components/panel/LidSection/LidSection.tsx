@@ -438,6 +438,25 @@ export function LidSection() {
                     aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
                     commitMode="deferred"
                   />
+                  <div className="space-y-1">
+                    <StepperField
+                      label={t('binDesigner.lid.retentionEdgeMagnets')}
+                      value={state.retentionMagnetEdgeMagnets}
+                      onChange={handlers.setRetentionMagnetEdgeMagnets}
+                      onStep={(delta) =>
+                        handlers.setRetentionMagnetEdgeMagnets(
+                          state.retentionMagnetEdgeMagnets + delta * state.retentionMagnetEdgeStep
+                        )
+                      }
+                      min={state.retentionMagnetEdgeMin}
+                      max={state.retentionMagnetEdgeMax}
+                      step={state.retentionMagnetEdgeStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.retentionEdgeMagnetsAria')}
+                      commitMode="deferred"
+                    />
+                    <Hint>{t('binDesigner.lid.retentionEdgeMagnetsHint')}</Hint>
+                  </div>
                 </div>
               )}
 

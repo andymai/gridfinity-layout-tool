@@ -158,6 +158,71 @@ describe('magnetic-retention lid geometry', () => {
     expect(downFacingAreas(plain).taper).toBeLessThan(5);
   });
 
+  it('produces a valid lid mesh with edge retention magnets (#2844)', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const result = generateLid(
+      makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 3 } },
+        { width: 6, depth: 4, height: 5 }
+      )
+    );
+    expect(result).not.toBeNull();
+    assertStructurallyValid(result!, '6x4 magnetic lid with edge magnets');
+  });
+
+  it('edge magnets add valid bin pads with no new unsupported overhang (#2844)', async () => {
+    const generateBin = getGenerateBin();
+    // A large footprint (6x4 = 24 cells) so edge magnets get placed, and tall
+    // enough that the pad taper floats above the floor rather than clamping to it.
+    const base = { width: 6, depth: 4, height: 5 };
+    const noEdge = generateBin(
+      makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 0 } },
+        base
+      )
+    );
+    const withEdge = generateBin(
+      makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 2 } },
+        base
+      )
+    );
+    assertStructurallyValid(withEdge, '6x4 bin with edge retention magnets');
+    // The extra mid-edge pads and pockets add geometry over the four-corner lid.
+    expect(withEdge.triangleCount).toBeGreaterThan(noEdge.triangleCount);
+
+    // Sum downward-facing area in the interior top band (above the floor/base,
+    // below the rim). The only geometry sloping down there is the retention
+    // pads; the corner pads are present in BOTH meshes, so the delta isolates
+    // the edge pads. A face needs supports when steeper than 45° (nz < -0.72);
+    // the taper band [-0.72, -0.65] catches the pads' exact 45° underside.
+    const downFacing = (mesh: MeshData): { unsupported: number; taper: number } => {
+      const bb = boundingBox(mesh.vertices);
+      let unsupported = 0;
+      let taper = 0;
+      for (let i = 0; i < mesh.indices.length; i += 3) {
+        const a = mesh.indices[i];
+        const b = mesh.indices[i + 1];
+        const c = mesh.indices[i + 2];
+        const cz =
+          (mesh.vertices[a * 3 + 2] + mesh.vertices[b * 3 + 2] + mesh.vertices[c * 3 + 2]) / 3;
+        if (cz < 8 || cz > bb.maxZ - 0.5) continue;
+        const nz = triangleNormalZ(mesh.vertices, a, b, c);
+        const area = triangleArea(mesh.vertices, a, b, c);
+        if (nz < -0.72) unsupported += area;
+        else if (nz < -0.65) taper += area;
+      }
+      return { unsupported, taper };
+    };
+
+    const d0 = downFacing(noEdge);
+    const d1 = downFacing(withEdge);
+    // The edge pads contribute a real amount of 45° underside...
+    expect(d1.taper).toBeGreaterThan(d0.taper + 20);
+    // ...but no new support-requiring (steeper-than-45°) overhang.
+    expect(d1.unsupported).toBeLessThan(d0.unsupported + 2);
+  });
+
   it('leaves the bin footprint unchanged (posts grow inward)', async () => {
     const generateBin = getGenerateBin();
     const base = { width: 2, depth: 2, height: 3 };
@@ -192,7 +257,7 @@ describe('magnetic-retention lid geometry', () => {
     // the lid, so the bin must not cut a too-deep pocket through its floor.
     const blocked = generateBin(
       makeParams(
-        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 6 } },
+        { attachment: 'magnetic', retentionMagnet: { diameter: 6, depth: 6, edgeMagnets: 0 } },
         { width: 2, depth: 2, height: 1 }
       )
     );
@@ -213,7 +278,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     ['thick floor plate (#2761)', { topThicknessMm: 3 }, {}],
     ['deep cavity — boss lengthens to follow', { extraHeightMm: 12 }, {}],
     ['thick plate + deep cavity', { topThicknessMm: 2.6, extraHeightMm: 8 }, {}],
-    ['deeper magnet', { retentionMagnet: { diameter: 8, depth: 3 } }, {}],
+    ['deeper magnet', { retentionMagnet: { diameter: 8, depth: 3, edgeMagnets: 0 } }, {}],
     ['tall bin', {}, { height: 9 }],
     ['non-square grid', {}, { gridUnitMmY: 22 }],
   ];

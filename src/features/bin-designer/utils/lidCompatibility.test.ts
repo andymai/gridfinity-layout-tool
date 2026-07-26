@@ -659,7 +659,7 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
   it('blocks when the bin is too small to fit corner magnets', () => {
     // A 0.5-unit-wide bin (half-width 10.5mm) can't hold the 6mm magnet's
     // corner pads (need >= 5 + diameter = 11mm half-extent).
-    const params = magnetic({ width: 0.5 }, { retentionMagnet: { diameter: 6, depth: 2 } });
+    const params = magnetic({ width: 0.5 }, { retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 0 } });
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetBinTooSmall');
     expect(issue?.severity).toBe('blocker');
   });
@@ -675,13 +675,13 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
     // the largest magnet (it was blocked at the old 1.5mm wall).
     const params = magnetic(
       { width: 1, depth: 1 },
-      { retentionMagnet: { diameter: 15, depth: 2 } }
+      { retentionMagnet: { diameter: 15, depth: 2, edgeMagnets: 0 } }
     );
     expect(checkLidCompatibility(params).some((i) => i.id === 'magnetBinTooSmall')).toBe(false);
   });
 
   it('blocks when the retention magnet is deeper than the bin interior', () => {
-    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 6 } });
+    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 6, edgeMagnets: 0 } });
     const issues = checkLidCompatibility(params);
     const issue = issues.find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('blocker');
@@ -689,7 +689,7 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
 
   it('warns when the retaining floor under the magnet gets marginal', () => {
     // 1U bin interior ≈ 2mm; a 1.5mm magnet leaves only ~0.5mm floor (< 0.6mm).
-    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 1.5 } });
+    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 1.5, edgeMagnets: 0 } });
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('warning');
   });
