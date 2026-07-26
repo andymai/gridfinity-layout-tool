@@ -74,6 +74,7 @@ const OG_LOCALE_MAP: Record<Locale, string> = {
   ja: 'ja_JP',
   pl: 'pl_PL',
   'zh-CN': 'zh_CN',
+  cs: 'cs_CZ',
 };
 
 /** Translation function signature */
@@ -164,6 +165,7 @@ const localeLoaders: Record<Locale, () => Promise<{ default: Translations }>> = 
   ja: () => import('./locales/ja.json'),
   pl: () => import('./locales/pl.json'),
   'zh-CN': () => import('./locales/zh-CN.json'),
+  cs: () => import('./locales/cs.json'),
 };
 
 interface LocaleProviderProps {

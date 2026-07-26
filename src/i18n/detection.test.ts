@@ -32,7 +32,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(13);
+    expect(SUPPORTED_LOCALES).toHaveLength(14);
   });
 
   it('has required properties for each locale', () => {
@@ -128,6 +128,11 @@ describe('detectBrowserLocale', () => {
     it('detects Simplified Chinese', () => {
       vi.stubGlobal('navigator', { languages: ['zh-CN'], language: 'zh-CN' });
       expect(detectBrowserLocale()).toBe('zh-CN');
+    });
+
+    it('detects Czech', () => {
+      vi.stubGlobal('navigator', { languages: ['cs'], language: 'cs' });
+      expect(detectBrowserLocale()).toBe('cs');
     });
   });
 
@@ -250,6 +255,11 @@ describe('detectBrowserLocale', () => {
     it('maps zh-TW (Traditional) to zh-CN via base fallback', () => {
       vi.stubGlobal('navigator', { languages: ['zh-TW'], language: 'zh-TW' });
       expect(detectBrowserLocale()).toBe('zh-CN');
+    });
+
+    it('maps cs-CZ to cs', () => {
+      vi.stubGlobal('navigator', { languages: ['cs-CZ'], language: 'cs-CZ' });
+      expect(detectBrowserLocale()).toBe('cs');
     });
   });
 
