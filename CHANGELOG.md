@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.305.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.304.0...gridfinity-layout-tool-v4.305.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Czech (cs) locale ([#2848](https://github.com/andymai/gridfinity-layout-tool/issues/2848)) ([7accc33](https://github.com/andymai/gridfinity-layout-tool/commit/7accc3342663182d6237a8e07d4eec84ccd3547d))
+
 ## [4.304.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.303.0...gridfinity-layout-tool-v4.304.0) (2026-07-26)
 
 
