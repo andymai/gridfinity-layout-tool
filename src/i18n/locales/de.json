@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "In den Schubladenrand ausdehnen",
   "inspector.extendToMargin.hint": "Füllt den Passrand der Grundplatte an jeder berührten Schubladenkante.",
   "inspector.extendToMargin.needsLink": "Verknüpfe ein Design, um in den Rand auszudehnen.",
+  "inspector.expandedFootprint": "Erweiterte Grundfläche",
+  "inspector.expandedFootprint.sides": "{left} links · {right} rechts · {front} vorne · {back} hinten",
   "inspector.maxHeightHint": "Max. {max}mm: {reason}",
   "inspector.maxPropertiesReached": "Maximum {max} Eigenschaften erreicht",
   "inspector.minHeightHint": "Min. {min}mm: {reason}",

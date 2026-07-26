@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "서랍 여백까지 확장",
   "inspector.extendToMargin.hint": "닿는 모든 서랍 가장자리에서 베이스플레이트의 서랍 맞춤 여백을 채웁니다.",
   "inspector.extendToMargin.needsLink": "여백까지 확장하려면 디자인을 연결하세요.",
+  "inspector.expandedFootprint": "확장된 외형",
+  "inspector.expandedFootprint.sides": "{left} 왼쪽 · {right} 오른쪽 · {front} 앞 · {back} 뒤",
   "inspector.maxHeightHint": "최대 {max}mm: {reason}",
   "inspector.maxPropertiesReached": "최대 {max}개 속성에 도달함",
   "inspector.minHeightHint": "최소 {min}mm: {reason}",

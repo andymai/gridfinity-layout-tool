@@ -12,6 +12,7 @@ import { SplitWarning } from '../SplitWarning';
 import { BinLabelField } from '../BinLabelField';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { ExtendToMarginToggle } from '../ExtendToMarginToggle';
+import { ExpandedFootprint } from '../ExpandedFootprint';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -363,6 +364,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Extend into drawer margin (Labs) — only when the bin abuts a padded edge */}
         <ExtendToMarginToggle bin={bin} drawer={layout.drawer} baseplate={layout.baseplateParams} />
+
+        {/* Explicit per-placement overhang, when the bin carries one */}
+        <ExpandedFootprint bin={bin} layout={layout} />
 
         {/* Notes */}
         <div>

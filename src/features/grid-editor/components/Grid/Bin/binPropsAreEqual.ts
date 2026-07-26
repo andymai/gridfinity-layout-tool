@@ -49,6 +49,27 @@ export function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): bool
     return false;
   }
 
+  // Overhang — compared per side rather than by reference, so a store update
+  // that rebuilds the object with identical values doesn't force a repaint.
+  // `enabled` and `feet` are normalized to the same defaults the renderer
+  // applies (absent `enabled` reads as on, absent `feet` as off), so a value
+  // that differs only by `undefined`-vs-default isn't treated as a change.
+  const prevOh = prevBin.overhang;
+  const nextOh = nextBin.overhang;
+  if (prevOh !== nextOh) {
+    if (!prevOh || !nextOh) return false;
+    if (
+      prevOh.left !== nextOh.left ||
+      prevOh.right !== nextOh.right ||
+      prevOh.front !== nextOh.front ||
+      prevOh.back !== nextOh.back ||
+      (prevOh.enabled ?? true) !== (nextOh.enabled ?? true) ||
+      (prevOh.feet ?? false) !== (nextOh.feet ?? false)
+    ) {
+      return false;
+    }
+  }
+
   // Custom properties - shallow object comparison
   const prevCustom = prevBin.customProperties;
   const nextCustom = nextBin.customProperties;

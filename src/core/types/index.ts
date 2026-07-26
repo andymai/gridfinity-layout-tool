@@ -29,6 +29,7 @@ export {
 } from '@gridfinity/branded-types';
 
 export * from './layout';
+export * from './overhang';
 export * from './baseplate';
 export * from './drawerOutline';
 export * from './interaction';

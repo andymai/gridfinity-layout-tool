@@ -133,4 +133,56 @@ describe('buildLayoutManifest', () => {
     expect(buildLayoutManifest(base())).not.toContain('Label plates');
     expect(buildLayoutManifest(base({ labels: null }))).not.toContain('Label plates');
   });
+
+  // Three columns on one design differ only by overhang, so the file name alone
+  // can't say which goes where; the manifest is the mapping.
+  it('states the grid position of a single-placement extended variant', () => {
+    const text = buildLayoutManifest(
+      base({
+        bins: [
+          {
+            ...base().bins[0],
+            path: 'bins/box_pos2p5-0.stl',
+            quantity: 1,
+            atPositions: [{ x: 2.5, y: 0 }],
+          },
+        ],
+      })
+    );
+    expect(text).toContain('Position:  grid (2.5, 0) \u2014 extended to fit');
+  });
+
+  // One file legitimately serves several positions when identical bins share a
+  // design AND an overhang; a singular label would misread as a single spot.
+  it('lists every position when one variant covers several placements', () => {
+    const text = buildLayoutManifest(
+      base({
+        bins: [
+          {
+            ...base().bins[0],
+            quantity: 3,
+            atPositions: [
+              { x: 0, y: 0 },
+              { x: 2.5, y: 0 },
+              { x: 5, y: 0 },
+            ],
+          },
+        ],
+      })
+    );
+    expect(text).toContain('Positions: grid (0, 0), (2.5, 0), (5, 0) \u2014 extended to fit');
+  });
+
+  it('states the remainder rather than silently truncating a long list', () => {
+    const many = Array.from({ length: 9 }, (_, i) => ({ x: i, y: 0 }));
+    const text = buildLayoutManifest(
+      base({ bins: [{ ...base().bins[0], quantity: 9, atPositions: many }] })
+    );
+    expect(text).toContain('+3 more');
+  });
+
+  it('omits the position line for a plain (non-extended) bin', () => {
+    expect(buildLayoutManifest(base())).not.toContain('Position:');
+  });
+
 });

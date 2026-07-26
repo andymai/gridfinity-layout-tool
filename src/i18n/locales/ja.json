@@ -1775,6 +1775,8 @@
   "inspector.extendToMargin": "ドロワーの余白まで拡張",
   "inspector.extendToMargin.hint": "ベースプレートのドロワー調整余白を、接するすべてのドロワー端で埋めます。",
   "inspector.extendToMargin.needsLink": "デザインをリンクすると余白まで拡張できます。",
+  "inspector.expandedFootprint": "拡張後の外形",
+  "inspector.expandedFootprint.sides": "{left} 左 · {right} 右 · {front} 前 · {back} 後",
   "inspector.maxHeightHint": "最大{max}mm：{reason}",
   "inspector.maxPropertiesReached": "最大{max}個のプロパティに達しました",
   "inspector.minHeightHint": "最小{min}mm：{reason}",

@@ -7,13 +7,21 @@
  * (no bridge, no IndexedDB) so the orchestration hook stays a thin shell.
  */
 
-import type { Bin, DesignId, Drawer, MagnetAnchor, StoredBaseplateParams } from '@/core/types';
+import type {
+  Bin,
+  DesignId,
+  Drawer,
+  MagnetAnchor,
+  OverhangConfig,
+  StoredBaseplateParams,
+} from '@/core/types';
 import type { SavedDesign, BinParams } from '@/features/bin-designer';
 import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
-import { resolveBinMarginOverhang } from '@/shared/utils/drawerMargin';
+import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
+import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
@@ -72,19 +80,35 @@ function binCompanions(params: BinParams): string[] {
 }
 
 /** Stable identity for a resolved overhang so bins with identical extension
- *  dedupe together; empty for a non-extended bin. */
-function overhangKey(overhang: BinParams['overhang'] | null): string {
-  if (!overhang) return '';
-  return `${overhang.left},${overhang.right},${overhang.front},${overhang.back},${overhang.feet ?? false}`;
+ *  dedupe together; `'0'` for a non-extended bin. */
+function overhangKey(overhang: OverhangConfig | null): string {
+  return resolvedOverhangKey(resolveOverhang(overhang ?? undefined));
 }
 
-/** Insert an `_extended` marker before the extension so a drawer-margin variant
- *  reads distinctly from the plain design in the ZIP. */
-function withExtendedSuffix(name: string): string {
+/** Grid coordinate as a filename-safe token: `2.5` → `2p5` (a literal dot would
+ *  read as a file extension). */
+function posToken(value: number): string {
+  return String(value).replace('.', 'p');
+}
+
+/**
+ * Mark an extended variant with the grid position it was generated for.
+ *
+ * Several bins sharing one design can resolve to different overhangs — three
+ * equal columns across a span that isn't a whole number of grid units produce
+ * three distinct meshes. Naming them from position makes each file traceable to
+ * a spot in the layout; the alternative (`dedupeFileNames` appending `-2`, `-3`)
+ * distinguishes them only by the order the planner happened to encounter them,
+ * which tells the user nothing about which one to print where.
+ *
+ * `_pos` rather than bare coordinates because generated names already carry a
+ * `WxDxH` token, so an `x`-prefixed suffix would read as another dimension.
+ */
+function withPositionSuffix(name: string, x: number, y: number): string {
   const dot = name.lastIndexOf('.');
   const base = dot === -1 ? name : name.slice(0, dot);
   const ext = dot === -1 ? '' : name.slice(dot);
-  return `${base}_extended${ext}`;
+  return `${base}_pos${posToken(x)}-${posToken(y)}${ext}`;
 }
 
 interface BinExportGroup {
@@ -92,6 +116,13 @@ interface BinExportGroup {
   readonly params: BinParams;
   readonly extended: boolean;
   quantity: number;
+  /**
+   * Every grid position this group's mesh is placed at. A group is keyed by
+   * (design, resolved overhang), so identical extended bins share one file and
+   * one file legitimately serves several positions. Sorted so the first entry is
+   * a deterministic naming anchor regardless of bin iteration order.
+   */
+  positions: { x: number; y: number }[];
 }
 
 export function planLayoutBinExport(
@@ -136,8 +167,8 @@ export function planLayoutBinExport(
     designById.set(id, design);
   }
 
-  // Group linked bins by (design, resolved overhang). A bin that extends into
-  // the drawer margin resolves its overhang live and forms its own group;
+  // Group linked bins by (design, resolved overhang). A bin that carries an
+  // explicit overhang or extends into the drawer margin forms its own group;
   // identical bins (extended or not) still share one mesh. The overhang
   // REPLACES the design's own overhang for that instance.
   const groups = new Map<string, BinExportGroup>();
@@ -146,7 +177,7 @@ export function planLayoutBinExport(
     if (b.linkedDesignId === undefined) continue;
     const design = designById.get(b.linkedDesignId);
     if (!design?.params) continue; // missing/non-bin already tallied above
-    const overhang = resolveBinMarginOverhang(b, drawer, baseplate);
+    const overhang = resolveBinOverhang(b, drawer, baseplate);
     // Inject the layout's magnet anchor (source of truth), overriding any value
     // saved on the design, so exported bins mate with the baseplate's magnets.
     const params: BinParams = overhang
@@ -156,11 +187,24 @@ export function planLayoutBinExport(
     const existing = groups.get(key);
     if (existing) {
       existing.quantity++;
+      existing.positions.push({ x: b.x, y: b.y });
       continue;
     }
-    const group: BinExportGroup = { design, params, extended: overhang !== null, quantity: 1 };
+    const group: BinExportGroup = {
+      design,
+      params,
+      extended: overhang !== null,
+      quantity: 1,
+      positions: [{ x: b.x, y: b.y }],
+    };
     groups.set(key, group);
     usable.push(group);
+  }
+
+  // Sort so the naming anchor (and the manifest listing) don't depend on the
+  // order bins happen to appear in the layout.
+  for (const g of groups.values()) {
+    g.positions.sort((a, b) => a.x - b.x || a.y - b.y);
   }
 
   // Group linked bins on imported-mesh designs by design id (no overhang or
@@ -197,7 +241,7 @@ export function planLayoutBinExport(
         u.design.exportFileNameConfig ?? fileNameConfig,
         u.design.name
       );
-      return u.extended ? withExtendedSuffix(name) : name;
+      return u.extended ? withPositionSuffix(name, u.positions[0].x, u.positions[0].y) : name;
     }),
     ...meshUsable.map(
       (m) => `${importedMeshDescriptor.exportFileName(m.envelope, m.structure)}.${format}`
@@ -238,6 +282,7 @@ export function planLayoutBinExport(
       filamentGrams: est.gramsFilament,
       printTimeMinutes: est.printTimeMinutes,
       companions: companions[i],
+      ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });
 

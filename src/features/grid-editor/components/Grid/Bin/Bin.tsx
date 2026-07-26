@@ -11,7 +11,7 @@ import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
 import { calculateBinText } from './calculateBinText';
 import { BinBadge } from './BinBadge';
-import { BinMarginExtension } from './BinMarginExtension';
+import { BinOverhangExtension } from './BinOverhangExtension';
 import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
@@ -326,16 +326,19 @@ function BinComponent({
         isGhost ? undefined : bin.label !== '' ? `${dimensionsText} - ${bin.label}` : undefined
       }
     >
-      {/* Drawer-margin extension (Labs) — drawn behind the bin's own fill so
-          only the margin slice shows; never affects the interactive box. */}
+      {/* Overhang extension — drawn behind the bin's own fill so only the
+          extended slice shows; never affects the interactive box. */}
       {!isGhost && (
-        <BinMarginExtension
+        <BinOverhangExtension
           bin={bin}
           drawer={drawer}
           cellSize={cellSize}
+          cellSizeY={cellSizeY}
           gap={gap}
           color={bgColor}
           patternStyle={categoryPattern}
+          showSocketEdge={isSelected || isHovered}
+          socketEdgeColor={textColors.secondary}
         />
       )}
 

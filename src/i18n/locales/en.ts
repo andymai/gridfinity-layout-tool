@@ -446,6 +446,8 @@ const en: Record<string, string> = {
   'inspector.extendToMargin.hint':
     "Fills the baseplate's drawer-fit margin on every drawer edge it touches.",
   'inspector.extendToMargin.needsLink': 'Link a design to extend into the margin.',
+  'inspector.expandedFootprint': 'Expanded footprint',
+  'inspector.expandedFootprint.sides': '{left} left · {right} right · {front} front · {back} back',
   'inspector.maxPropertiesReached': 'Maximum {max} properties reached',
   'inspector.moreCount': '+{count} more',
   'inspector.newPropertyName': 'New property name',

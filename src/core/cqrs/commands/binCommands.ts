@@ -6,12 +6,12 @@
  */
 
 import type { BaseCommand } from '../types';
-import type { Bin, BinId, LayerId, CategoryId } from '@/core/types';
+import type { Bin, BinId, BinUpdates, LayerId, CategoryId } from '@/core/types';
 export type AddBinCommand = BaseCommand<'bin.add', Omit<Bin, 'id'>>;
 
 export type UpdateBinCommand = BaseCommand<
   'bin.update',
-  { readonly id: BinId; readonly updates: Partial<Bin> }
+  { readonly id: BinId; readonly updates: BinUpdates }
 >;
 
 export type DeleteBinCommand = BaseCommand<'bin.delete', { readonly id: BinId }>;
