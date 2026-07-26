@@ -33,6 +33,7 @@ const CONTENT_LOCALES = new Set<Locale>([
   'uk',
   'pl',
   'zh-CN',
+  'cs',
 ]);
 
 /**

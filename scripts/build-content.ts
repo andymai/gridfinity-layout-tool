@@ -49,6 +49,7 @@ const SUPPORTED_LOCALES = [
   'uk',
   'pl',
   'zh-CN',
+  'cs',
 ] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
@@ -65,6 +66,7 @@ const LOCALE_LABELS: Record<Locale, { lang: string; openTool: string; siteName: 
   uk: { lang: 'uk', openTool: 'Відкрити інструмент', siteName: 'Gridfinity Layout Tool' },
   pl: { lang: 'pl', openTool: 'Otwórz narzędzie', siteName: 'Gridfinity Layout Tool' },
   'zh-CN': { lang: 'zh-CN', openTool: '打开工具', siteName: 'Gridfinity Layout Tool' },
+  cs: { lang: 'cs', openTool: 'Otevřít nástroj', siteName: 'Gridfinity Layout Tool' },
 };
 
 const FAQ_HEADING: Record<Locale, string> = {
@@ -79,6 +81,7 @@ const FAQ_HEADING: Record<Locale, string> = {
   uk: 'Часті запитання',
   pl: 'Najczęściej zadawane pytania',
   'zh-CN': '常见问题',
+  cs: 'Často kladené otázky',
 };
 
 const FOOTER_COPY: Record<Locale, string> = {
@@ -93,6 +96,7 @@ const FOOTER_COPY: Record<Locale, string> = {
   uk: 'Безкоштовно у використанні.',
   pl: 'Darmowe w użyciu.',
   'zh-CN': '免费使用。',
+  cs: 'Zdarma k použití.',
 };
 
 const OG_LOCALE: Record<Locale, string> = {
@@ -107,6 +111,7 @@ const OG_LOCALE: Record<Locale, string> = {
   uk: 'uk_UA',
   pl: 'pl_PL',
   'zh-CN': 'zh_CN',
+  cs: 'cs_CZ',
 };
 
 const NATIVE_LANGUAGE: Record<Locale, string> = {
@@ -121,6 +126,7 @@ const NATIVE_LANGUAGE: Record<Locale, string> = {
   uk: 'Українська',
   pl: 'Polski',
   'zh-CN': '简体中文',
+  cs: 'Čeština',
 };
 
 const LANGUAGE_LABEL: Record<Locale, string> = {
@@ -135,6 +141,7 @@ const LANGUAGE_LABEL: Record<Locale, string> = {
   uk: 'Мова',
   pl: 'Język',
   'zh-CN': '语言',
+  cs: 'Jazyk',
 };
 
 const FOOTER_LINKS: Record<
@@ -307,6 +314,20 @@ const FOOTER_LINKS: Record<
     software: '软件对比',
     privacy: '隐私',
     terms: '条款',
+  },
+  cs: {
+    generator: 'Generátor Gridfinity',
+    whatIs: 'Co je Gridfinity?',
+    bin: 'Generátor Binů',
+    baseplate: 'Generátor základních desek',
+    sizes: 'Přehled velikostí',
+    guide: 'Průvodce plánováním',
+    toolDrawer: 'Nářaďové zásuvky',
+    kitchen: 'Kuchyňské zásuvky',
+    calculator: 'Kalkulačka',
+    software: 'Porovnání softwaru',
+    privacy: 'Soukromí',
+    terms: 'Podmínky',
   },
 };
 
