@@ -32,7 +32,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(11);
+    expect(SUPPORTED_LOCALES).toHaveLength(12);
   });
 
   it('has required properties for each locale', () => {
@@ -118,6 +118,11 @@ describe('detectBrowserLocale', () => {
     it('detects Japanese', () => {
       vi.stubGlobal('navigator', { languages: ['ja'], language: 'ja' });
       expect(detectBrowserLocale()).toBe('ja');
+    });
+
+    it('detects Polish', () => {
+      vi.stubGlobal('navigator', { languages: ['pl'], language: 'pl' });
+      expect(detectBrowserLocale()).toBe('pl');
     });
   });
 
@@ -220,6 +225,11 @@ describe('detectBrowserLocale', () => {
     it('maps ja-JP to ja', () => {
       vi.stubGlobal('navigator', { languages: ['ja-JP'], language: 'ja-JP' });
       expect(detectBrowserLocale()).toBe('ja');
+    });
+
+    it('maps pl-PL to pl', () => {
+      vi.stubGlobal('navigator', { languages: ['pl-PL'], language: 'pl-PL' });
+      expect(detectBrowserLocale()).toBe('pl');
     });
   });
 

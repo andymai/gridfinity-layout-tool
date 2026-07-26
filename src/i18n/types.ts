@@ -7,7 +7,8 @@
  */
 
 /** Supported locale codes */
-export type Locale = 'en' | 'de' | 'nl' | 'es' | 'pt-BR' | 'fr' | 'it' | 'nb' | 'uk' | 'sv' | 'ja';
+export type Locale =
+  'en' | 'de' | 'nl' | 'es' | 'pt-BR' | 'fr' | 'it' | 'nb' | 'uk' | 'sv' | 'ja' | 'pl';
 
 /** Locale metadata for UI display */
 export interface LocaleInfo {
@@ -32,6 +33,7 @@ export const SUPPORTED_LOCALES: readonly LocaleInfo[] = [
   { code: 'uk', nativeName: 'Українська', englishName: 'Ukrainian' },
   { code: 'sv', nativeName: 'Svenska', englishName: 'Swedish' },
   { code: 'ja', nativeName: '日本語', englishName: 'Japanese' },
+  { code: 'pl', nativeName: 'Polski', englishName: 'Polish' },
 ] as const;
 
 /** Flat key-value map of translations */

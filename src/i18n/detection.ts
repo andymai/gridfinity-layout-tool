@@ -68,6 +68,10 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   // Japanese
   ja: 'ja',
   'ja-JP': 'ja',
+
+  // Polish
+  pl: 'pl',
+  'pl-PL': 'pl',
 };
 
 /**
