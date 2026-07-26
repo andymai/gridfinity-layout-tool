@@ -22,10 +22,25 @@ function readVersionInfo(): VersionInfo {
     // ignore
   }
 
+  // The commit's timestamp, NOT the wall clock. `__BUILD_TIME__` is inlined into
+  // smokeBoot, so a per-build value gave that chunk a fresh hash every time —
+  // and Rolldown propagates a changed hash to every chunk that references it,
+  // which churned ~24% of the bundle between byte-identical builds. Users then
+  // re-download unchanged code on every deploy. Same commit now means the same
+  // output. The value still identifies the deployed build for the smoke gate.
+  let buildTime: string | null = null;
+  try {
+    buildTime = new Date(
+      execFileSync('git', ['log', '-1', '--format=%cI'], { encoding: 'utf-8' }).trim()
+    ).toISOString();
+  } catch {
+    // ignore
+  }
+
   return {
     version: pkg.version,
     gitSha,
-    buildTime: new Date().toISOString(),
+    buildTime: buildTime ?? new Date().toISOString(),
   };
 }
 
