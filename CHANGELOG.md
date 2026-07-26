@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.302.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.1...gridfinity-layout-tool-v4.302.2) (2026-07-26)
+
+
+### Performance
+
+* **build:** make chunk hashes reproducible across builds ([#2842](https://github.com/andymai/gridfinity-layout-tool/issues/2842)) ([2525a63](https://github.com/andymai/gridfinity-layout-tool/commit/2525a63e8788065ccc4d967d83685098f8d28242))
+
 ## [4.302.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.0...gridfinity-layout-tool-v4.302.1) (2026-07-26)
 
 
