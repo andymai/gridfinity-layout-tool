@@ -78,6 +78,10 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   'zh-CN': 'zh-CN',
   'zh-Hans': 'zh-CN',
   'zh-SG': 'zh-CN', // Singapore Simplified Chinese
+
+  // Czech
+  cs: 'cs',
+  'cs-CZ': 'cs',
 };
 
 /**

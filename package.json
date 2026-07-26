@@ -91,16 +91,20 @@
       "name": "Total JS (gzip, one locale)",
       "path": [
         "dist/assets/*.js",
+        "!dist/assets/cs-*.js",
         "!dist/assets/de-*.js",
         "!dist/assets/es-*.js",
         "!dist/assets/fr-*.js",
         "!dist/assets/it-*.js",
         "!dist/assets/ja-*.js",
+        "!dist/assets/ko-*.js",
         "!dist/assets/nb-*.js",
         "!dist/assets/nl-*.js",
+        "!dist/assets/pl-*.js",
         "!dist/assets/pt-BR-*.js",
         "!dist/assets/sv-*.js",
-        "!dist/assets/uk-*.js"
+        "!dist/assets/uk-*.js",
+        "!dist/assets/zh-CN-*.js"
       ],
       "gzip": true,
       "limit": "1850 kB"
