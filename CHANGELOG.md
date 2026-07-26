@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.308.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.307.0...gridfinity-layout-tool-v4.308.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Simplified Chinese (zh-CN) SEO landing pages ([#2857](https://github.com/andymai/gridfinity-layout-tool/issues/2857)) ([c9f282d](https://github.com/andymai/gridfinity-layout-tool/commit/c9f282daee33b62548a713f37871eeee670f66e3))
+
 ## [4.307.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.1...gridfinity-layout-tool-v4.307.0) (2026-07-26)
 
 
