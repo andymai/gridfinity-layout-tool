@@ -1,0 +1,20 @@
+src/features/bin-recommender/loadModel.test.ts
+  s_3f2bfe31d23929::t_fb09f728a243af 1-78
+  s_3f2bfe31d23929::t_77d3424f9a67f3 79-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "aca2c81483dc3604eccaa4c8bae42248fc260553",
+  "prompts": {},
+  "sessions": {
+    "s_3f2bfe31d23929": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "520d1560-bb26-4cc2-8413-6ad880f171cd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
