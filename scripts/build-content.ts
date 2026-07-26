@@ -37,7 +37,7 @@ const SITE_URL = 'https://gridfinitylayouttool.com';
 const MAX_TITLE_LEN = 55;
 const MAX_DESCRIPTION_LEN = 155;
 
-const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk'] as const;
+const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk', 'pl'] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
 
@@ -51,6 +51,7 @@ const LOCALE_LABELS: Record<Locale, { lang: string; openTool: string; siteName: 
   sv: { lang: 'sv', openTool: 'Öppna verktyget', siteName: 'Gridfinity Layout Tool' },
   nb: { lang: 'nb', openTool: 'Åpne verktøy', siteName: 'Gridfinity Layout Tool' },
   uk: { lang: 'uk', openTool: 'Відкрити інструмент', siteName: 'Gridfinity Layout Tool' },
+  pl: { lang: 'pl', openTool: 'Otwórz narzędzie', siteName: 'Gridfinity Layout Tool' },
 };
 
 const FAQ_HEADING: Record<Locale, string> = {
@@ -63,6 +64,7 @@ const FAQ_HEADING: Record<Locale, string> = {
   sv: 'Vanliga frågor',
   nb: 'Ofte stilte spørsmål',
   uk: 'Часті запитання',
+  pl: 'Najczęściej zadawane pytania',
 };
 
 const FOOTER_COPY: Record<Locale, string> = {
@@ -75,6 +77,7 @@ const FOOTER_COPY: Record<Locale, string> = {
   sv: 'Gratis att använda.',
   nb: 'Gratis å bruke.',
   uk: 'Безкоштовно у використанні.',
+  pl: 'Darmowe w użyciu.',
 };
 
 const OG_LOCALE: Record<Locale, string> = {
@@ -87,6 +90,7 @@ const OG_LOCALE: Record<Locale, string> = {
   sv: 'sv_SE',
   nb: 'nb_NO',
   uk: 'uk_UA',
+  pl: 'pl_PL',
 };
 
 const NATIVE_LANGUAGE: Record<Locale, string> = {
@@ -99,6 +103,7 @@ const NATIVE_LANGUAGE: Record<Locale, string> = {
   sv: 'Svenska',
   nb: 'Norsk',
   uk: 'Українська',
+  pl: 'Polski',
 };
 
 const LANGUAGE_LABEL: Record<Locale, string> = {
@@ -111,6 +116,7 @@ const LANGUAGE_LABEL: Record<Locale, string> = {
   sv: 'Språk',
   nb: 'Språk',
   uk: 'Мова',
+  pl: 'Język',
 };
 
 const FOOTER_LINKS: Record<
@@ -255,6 +261,20 @@ const FOOTER_LINKS: Record<
     software: 'Порівняння програм',
     privacy: 'Конфіденційність',
     terms: 'Умови',
+  },
+  pl: {
+    generator: 'Generator Gridfinity',
+    whatIs: 'Czym jest Gridfinity?',
+    bin: 'Generator Binów',
+    baseplate: 'Generator płyt bazowych',
+    sizes: 'Zestawienie rozmiarów',
+    guide: 'Przewodnik po planowaniu',
+    toolDrawer: 'Szuflady narzędziowe',
+    kitchen: 'Szuflady kuchenne',
+    calculator: 'Kalkulator',
+    software: 'Porównanie oprogramowania',
+    privacy: 'Prywatność',
+    terms: 'Regulamin',
   },
 };
 
