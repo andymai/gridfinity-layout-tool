@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.302.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.302.0...gridfinity-layout-tool-v4.302.1) (2026-07-26)
+
+
+### Performance
+
+* **build:** serve ML model weights as fetched assets, not JS chunks ([#2839](https://github.com/andymai/gridfinity-layout-tool/issues/2839)) ([6aae33a](https://github.com/andymai/gridfinity-layout-tool/commit/6aae33a7026d6be08a2b78320eca37ae72bb35af))
+
 ## [4.302.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.301.0...gridfinity-layout-tool-v4.302.0) (2026-07-26)
 
 
