@@ -75,11 +75,27 @@ describe('helix handedness tripwire', () => {
   // TODO: retire the chord-box approximation in kumikoWrapBuilder's
   // falling-diagonal branch, now that this substitute exists. Needs visual
   // verification of the corner diagonals before/after.
-  it('mirror on a helical sweep produces a real solid (left-handed substitute is viable)', () => {
+  it('mirror on a helical sweep produces a true reflection (left-handed substitute is viable)', () => {
+    const right = sweepAndMeasure(false);
     const mirrored = sweepAndMeasure(false, true);
+
+    // A non-empty result is not enough to justify retiring the workaround — a
+    // degenerate sliver would clear that bar. Reflection through the y=0 plane
+    // preserves volume and negates phi = atan2(y, x), so the angular footprint
+    // must come back inverted end-for-end. The ~1 rad sweep never approaches
+    // the ±pi branch cut, so phiMin/phiMax stay comparable.
+    //
+    // The footprint is asymmetric ([-0.211, +1.211] rad right-handed), which is
+    // what makes this discriminating: an unmirrored or wrongly-oriented solid
+    // misses by ~1 rad against a 5e-4 tolerance.
     expect(
       mirrored.vol,
-      'mirror stopped producing a solid from a helical sweep — the left-handed substitute regressed'
-    ).toBeGreaterThan(1e-6);
+      'mirror stopped reproducing the sweep volume — the left-handed substitute regressed'
+    ).toBeCloseTo(right.vol, 3);
+    expect(
+      mirrored.phiMin,
+      'mirrored footprint is not the reflection of the right-handed one'
+    ).toBeCloseTo(-right.phiMax, 3);
+    expect(mirrored.phiMax).toBeCloseTo(-right.phiMin, 3);
   }, 120_000);
 });
