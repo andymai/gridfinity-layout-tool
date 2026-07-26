@@ -20,6 +20,7 @@ describe('COMMAND_SCHEMAS', () => {
     'bin.moveFromStaging',
     'bin.fillLayer',
     'bin.fillGaps',
+    'bin.expandToFit',
     'bin.clearLayer',
     'layer.add',
     'layer.update',
@@ -43,9 +44,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 38 schemas', () => {
+  it('has exactly 39 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(38);
+    expect(registeredCount).toBe(39);
   });
 });
 

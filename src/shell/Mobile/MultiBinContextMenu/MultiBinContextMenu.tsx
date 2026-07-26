@@ -9,6 +9,7 @@ import {
   ContextMenuDivider,
 } from '@/shared/components/ContextMenu';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
+import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinsByIds } from '@/shared/utils/entity';
@@ -51,6 +52,7 @@ export function MultiBinContextMenu({
   const { deleteBin, updateBin } = useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
   const addToast = useToastStore((state) => state.addToast);
+  const { expandBins } = useExpandToFit();
   const [showLayerPicker, setShowLayerPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
@@ -62,6 +64,12 @@ export function MultiBinContextMenu({
   // Only show layer picker if there are bins that can be moved to a layer
   // (staging bins can be moved to grid)
   const canMoveToLayer = stagingBins.length > 0;
+  const canExpandToFit = gridBins.length > 0;
+
+  const handleExpandToFit = () => {
+    expandBins(gridBins.map((b) => b.id));
+    onClose();
+  };
 
   const handleDeleteAll = () => {
     // Track deletion BEFORE executing (need bin data)
@@ -256,6 +264,23 @@ export function MultiBinContextMenu({
               </div>
             )}
           </div>
+        )}
+
+        {canExpandToFit && (
+          <ContextMenuItem
+            icon={
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 5v14M20 5v14M9 12h6M11 9l-2 3 2 3M13 9l2 3-2 3"
+                />
+              </svg>
+            }
+            label={t('mobile.binMenu.expandToFit')}
+            onClick={handleExpandToFit}
+          />
         )}
 
         <ContextMenuDivider />

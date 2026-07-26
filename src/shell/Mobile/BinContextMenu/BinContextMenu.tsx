@@ -8,7 +8,7 @@ import {
   useToastStore,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
-import { useResponsive } from '@/shared/hooks';
+import { useResponsive, useExpandToFit } from '@/shared/hooks';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
 import { validateBinRotation, getBinLocationContext } from '@/shared/utils/binLocation';
 import { calcMaxGridUnits } from '@/core/constants';
@@ -65,6 +65,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const rightPanelCollapsed = useViewStore((state) => state.rightPanelCollapsed);
   const toggleRightPanel = useViewStore((state) => state.toggleRightPanel);
   const addToast = useToastStore((state) => state.addToast);
+  const { expandBins } = useExpandToFit();
 
   const { isDesktop } = useResponsive();
 
@@ -131,6 +132,11 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
     }
 
+    onClose();
+  };
+
+  const handleExpandToFit = () => {
+    expandBins([bin.id]);
     onClose();
   };
 
@@ -225,6 +231,23 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
             }
             label={t('mobile.binMenu.rotate')}
             onClick={handleRotate}
+          />
+        )}
+
+        {!isInStash && (
+          <ContextMenuItem
+            icon={
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 5v14M20 5v14M9 12h6M11 9l-2 3 2 3M13 9l2 3-2 3"
+                />
+              </svg>
+            }
+            label={t('mobile.binMenu.expandToFit')}
+            onClick={handleExpandToFit}
           />
         )}
 

@@ -148,6 +148,11 @@ const binFillGapsSchema = z.object({
   halfGridMode: z.boolean().optional(),
 });
 
+/** bin.expandToFit */
+const binExpandToFitSchema = z.object({
+  ids: z.array(binIdSchema).min(1),
+});
+
 /** bin.clearLayer */
 const binClearLayerSchema = z.object({ layerId: layerIdSchema });
 /** layer.add: empty payload */
@@ -302,6 +307,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'bin.moveFromStaging': binMoveFromStagingSchema,
   'bin.fillLayer': binFillLayerSchema,
   'bin.fillGaps': binFillGapsSchema,
+  'bin.expandToFit': binExpandToFitSchema,
   'bin.clearLayer': binClearLayerSchema,
 
   // Layer commands (4)

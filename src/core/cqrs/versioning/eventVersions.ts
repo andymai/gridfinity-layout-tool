@@ -18,6 +18,7 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'bin.movedToStaging': 1,
   'bin.movedFromStaging': 1,
   'bin.layerFilled': 1,
+  'bin.expandedToFit': 1,
   'bin.layerCleared': 1,
 
   // Layer events

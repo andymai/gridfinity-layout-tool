@@ -1155,6 +1155,7 @@ const en: Record<string, string> = {
   'mobile.settings': 'Settings',
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
+  'mobile.binMenu.expandToFit': 'Expand to Fit',
   'mobile.binMenu.toStash': 'To Stash',
   'mobile.binMenu.moveToGrid': 'Move to Grid',
   'mobile.tools.instructions': 'Select a size, then tap or drag on grid to place bins.',
@@ -1366,6 +1367,13 @@ const en: Record<string, string> = {
   'toast.alignSkipped': 'Aligned {aligned}/{total} bins ({skipped} skipped due to overlap)',
   'toast.rotateAllComplete': 'Rotated {rotated} bin(s)',
   'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
+  'toast.expandToFitComplete': 'Expanded {count} bin(s) to fit',
+  'toast.expandToFitNoSlack': 'Nothing to fill — the selection already meets its neighbours',
+  'toast.expandToFitRagged': 'Select bins forming a row, a column, or a full grid on one layer',
+  'toast.expandToFitTooMuchSlack':
+    'Too much empty space — each bin would need to overhang more than 21mm. Use larger bins, or select more of them.',
+  'toast.expandToFitNoGridAlignment':
+    'The space cannot be divided onto the grid — try adjusting the drawer padding',
   'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
   'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',
   'toast.moveToLayerPartial':
@@ -1376,6 +1384,7 @@ const en: Record<string, string> = {
   'selectionToolbar.setCategory': 'Set category: {name}',
   'selectionToolbar.rotateAll': 'Rotate all selected bins',
   'selectionToolbar.matchHeight': 'Match height to tallest',
+  'selectionToolbar.expandToFit': 'Expand selected bins to fit',
   'selectionToolbar.moveToLayer': 'Move to layer',
   'selectionToolbar.moveToStash': 'Move to stash',
   'selectionToolbar.deleteAll': 'Delete selected bins',
@@ -2914,6 +2923,7 @@ const en: Record<string, string> = {
   'commandPalette.alignBottom': 'Align Bottom',
   'commandPalette.rotateAll': 'Rotate All Selected',
   'commandPalette.matchHeight': 'Match Height to Tallest',
+  'commandPalette.expandToFit': 'Expand to Fit',
 
   // Layer commands
   'commandPalette.addLayer': 'Add Layer',
@@ -3176,6 +3186,7 @@ const en: Record<string, string> = {
   'undo.binMovedFromStaging': 'Moved bin from stash',
   'undo.layerFilled': 'Filled layer',
   'undo.gapsFilled': 'Filled gaps',
+  'undo.binsExpanded': 'Expanded bins',
   'undo.layerCleared': 'Cleared layer',
   'undo.layerAdded': 'Added layer',
   'undo.layerUpdated': 'Updated layer',

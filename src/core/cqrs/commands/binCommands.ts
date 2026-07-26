@@ -55,6 +55,11 @@ export type FillLayerGapsCommand = BaseCommand<
   }
 >;
 
+export type ExpandBinsToFitCommand = BaseCommand<
+  'bin.expandToFit',
+  { readonly ids: ReadonlyArray<BinId> }
+>;
+
 export type ClearLayerCommand = BaseCommand<'bin.clearLayer', { readonly layerId: LayerId }>;
 export type BinCommand =
   | AddBinCommand
@@ -66,4 +71,5 @@ export type BinCommand =
   | MoveBinFromStagingCommand
   | FillLayerCommand
   | FillLayerGapsCommand
+  | ExpandBinsToFitCommand
   | ClearLayerCommand;

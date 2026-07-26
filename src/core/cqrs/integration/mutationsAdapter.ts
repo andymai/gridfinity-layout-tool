@@ -153,6 +153,11 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return 0;
     },
 
+    expandBinsToFit(ids: BinId[]): Result<number, LayoutError> {
+      const result = bus.dispatch(createCommand('bin.expandToFit', { ids }));
+      return extractResult(result);
+    },
+
     clearLayer(layerId: LayerId): number {
       const result = bus.dispatch(createCommand('bin.clearLayer', { layerId }));
       if (isOk(result)) return result.value.value as number;

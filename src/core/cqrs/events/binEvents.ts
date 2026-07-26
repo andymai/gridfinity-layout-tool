@@ -6,7 +6,7 @@
  */
 
 import type { BaseDomainEvent } from '../types';
-import type { Bin, BinId, LayerId } from '@/core/types';
+import type { Bin, BinId, GridUnits, LayerId, OverhangConfig } from '@/core/types';
 
 export type BinAddedEvent = BaseDomainEvent<'bin.added', { readonly bin: Bin }>;
 
@@ -66,6 +66,27 @@ export type LayerFilledEvent = BaseDomainEvent<
   }
 >;
 
+// Placements are absolute, not deltas, so replaying the event is idempotent.
+// `previous` mirrors `bin.updated` so the change reads in both directions;
+// a bin with no prior overhang simply omits the field.
+export type BinsExpandedToFitEvent = BaseDomainEvent<
+  'bin.expandedToFit',
+  {
+    readonly placements: ReadonlyArray<{
+      readonly id: BinId;
+      readonly x: GridUnits;
+      readonly y: GridUnits;
+      readonly overhang: OverhangConfig;
+    }>;
+    readonly previous: ReadonlyArray<{
+      readonly id: BinId;
+      readonly x: GridUnits;
+      readonly y: GridUnits;
+      readonly overhang?: OverhangConfig;
+    }>;
+  }
+>;
+
 export type LayerClearedEvent = BaseDomainEvent<
   'bin.layerCleared',
   {
@@ -84,4 +105,5 @@ export type BinEvent =
   | BinMovedToStagingEvent
   | BinMovedFromStagingEvent
   | LayerFilledEvent
+  | BinsExpandedToFitEvent
   | LayerClearedEvent;

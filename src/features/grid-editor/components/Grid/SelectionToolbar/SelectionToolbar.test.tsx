@@ -49,6 +49,7 @@ const defaultProps = {
   onSetCategory: vi.fn(),
   onRotateAll: vi.fn(),
   onMatchHeight: vi.fn(),
+  onExpandToFit: vi.fn(),
   onMoveToLayer: vi.fn(),
   onMoveToStash: vi.fn(),
   onDeleteAll: vi.fn(),
@@ -118,6 +119,12 @@ describe('SelectionToolbar', () => {
     render(<SelectionToolbar {...defaultProps} />);
     fireEvent.click(screen.getByLabelText('selectionToolbar.matchHeight'));
     expect(defaultProps.onMatchHeight).toHaveBeenCalled();
+  });
+
+  it('calls onExpandToFit when expand button clicked', () => {
+    render(<SelectionToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByLabelText('selectionToolbar.expandToFit'));
+    expect(defaultProps.onExpandToFit).toHaveBeenCalled();
   });
 
   it('renders layer select with other layers', () => {
