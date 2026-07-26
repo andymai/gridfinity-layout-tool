@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.300.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.299.0...gridfinity-layout-tool-v4.300.0) (2026-07-25)
+
+
+### Features
+
+* **bin-inspector:** train and activate the label-suggester model ([#2830](https://github.com/andymai/gridfinity-layout-tool/issues/2830)) ([8c5fff0](https://github.com/andymai/gridfinity-layout-tool/commit/8c5fff0c634a554fcb7a67bb1e28a38bc6ddba7a))
+* **bin-inspector:** trained popularity + co-occurrence prior for labels ([#2828](https://github.com/andymai/gridfinity-layout-tool/issues/2828)) ([4c05a18](https://github.com/andymai/gridfinity-layout-tool/commit/4c05a18582a9435073d6015edb90973854b5a7b9))
+
 ## [4.299.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.298.1...gridfinity-layout-tool-v4.299.0) (2026-07-25)
 
 
