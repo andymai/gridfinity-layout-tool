@@ -61,7 +61,7 @@ faqs:
   - q: Kann ich speichern und später weitermachen?
     a: Ja. Designs werden automatisch im Browser gespeichert. Vergib einen Namen und sie bleiben sitzungsübergreifend erhalten.
   - q: Wie groß können Bins sein?
-    a: Bis zu 8×8 Rastereinheiten (336 mm × 336 mm). Für größere Flächen plane mehrere Bins gemeinsam im Layout-Planer.
+    a: Bis zu 16×16 Rastereinheiten (672 mm × 672 mm). Für größere Flächen plane mehrere Bins gemeinsam im Layout-Planer.
   - q: Wo bekomme ich Grundplatten her?
     a: Nutze den Grundplatten-Generator, um eine passende Grundplatte für deine Schublade zu erstellen — mit optionalen Magnetlöchern und Randabstand. Export als STL, STEP oder 3MF.
 navCta:
@@ -86,7 +86,7 @@ Ein parametrischer Bin-Generator, der in deinem Browser läuft. Maße einstellen
 
 ## Funktionen
 
-**Kompartimente.** Teile einen Bin in ein Raster aus Abschnitten auf, bis zu 8×8. Trennwände werden automatisch erzeugt. Entnehmbare Trennstege lassen sich als separate Dateien exportieren, wenn du später umkonfigurieren willst, ohne neu zu drucken.
+**Kompartimente.** Teile einen Bin in ein Raster aus Abschnitten auf, bis zu 12×12. Trennwände werden automatisch erzeugt. Entnehmbare Trennstege lassen sich als separate Dateien exportieren, wenn du später umkonfigurieren willst, ohne neu zu drucken.
 
 **Schaufelrampen und Wandaussparungen.** Schaufelrampen erleichtern den Zugriff auf Kleinteile am Boden. Wandaussparungen — U-förmige Kerben an jeder Seite — erlauben seitliches Herausziehen.
 

@@ -52,7 +52,7 @@ softwareApplication:
     - Parametric baseplate generator with magnet hole grid
     - STL, STEP, and 3MF export
     - Six base attachment styles (standard, magnet, screw, magnet+screw, weighted, flat)
-    - Configurable compartments up to 8 by 8
+    - Configurable compartments up to 12 by 12
     - Per-side wall cutouts (U-shape, scoop, funnel)
     - Label tabs with bracket or solid support
     - Honeycomb wall patterns
@@ -79,9 +79,9 @@ faqs:
   - q: Will bins from the generator fit my existing Gridfinity baseplates?
     a: Yes. The generator follows the standard Gridfinity 42mm grid and the standard socket profile, so bins fit any official or community-made Gridfinity baseplate. The same applies in reverse — baseplates from the generator accept any standard Gridfinity bin.
   - q: Can the Gridfinity Generator make baseplates with magnet holes?
-    a: Yes. The baseplate generator places 6mm by 2mm magnet holes at each grid intersection by default. You can toggle them off if you do not want magnets, or keep them and skip the magnets while printing.
+    a: Yes. The baseplate generator can add 6mm by 2mm magnet holes at each grid intersection. The holes are off by default — turn them on to include them, then glue magnets into the holes for a stronger hold, or leave them empty for a friction fit.
   - q: Are there size limits in the Gridfinity Generator?
-    a: Bins can be up to 8 by 8 grid units (336mm by 336mm) and 20 height units (140mm) tall. Baseplates can be larger and are automatically split into pieces that fit your printer bed when needed.
+    a: Bins can be up to 16 by 16 grid units (672mm by 672mm) and 20 height units (140mm) tall. Baseplates can be larger and are automatically split into pieces that fit your printer bed when needed.
   - q: Does the Gridfinity Generator support half-bin sizes?
     a: Yes. Enable half-bin mode for 0.5 unit precision, which lets you make bins like 1.5 by 2.5 to fit awkward drawer gaps. Half-bin support extends through the layout planner so half-size bins place cleanly next to full-size ones.
   - q: Can I customize the bin floor and walls?
@@ -142,7 +142,7 @@ You can also use the generator's [layout planner](/) to lay bins out on a basepl
 
 ### Dimensions
 
-Width, depth, and height. Width and depth go from 0.5 to 8 grid units (21mm to 336mm). Height goes from 2 to 20 height units (14mm to 140mm). One height unit equals 7mm, which is the standard Gridfinity unit defined by Zack Freedman's original spec.
+Width, depth, and height. Width and depth go from 0.5 to 16 grid units (21mm to 672mm). Height goes from 2 to 20 height units (14mm to 140mm). One height unit equals 7mm, which is the standard Gridfinity unit defined by Zack Freedman's original spec.
 
 ### Base Attachment Styles
 
@@ -157,7 +157,7 @@ Six options for how the bin sits on a baseplate:
 
 ### Compartments
 
-Split the interior into a grid of up to 8 by 8 compartments. The generator builds the dividers automatically and adjusts wall thickness for the size you've chosen. Dividers can also be exported as separate removable pieces — useful when you want to reconfigure a bin without reprinting it.
+Split the interior into a grid of up to 12 by 12 compartments. The generator builds the dividers automatically and adjusts wall thickness for the size you've chosen. Dividers can also be exported as separate removable pieces — useful when you want to reconfigure a bin without reprinting it.
 
 ### Wall Features
 
@@ -191,7 +191,7 @@ Width and depth in grid units. The generator scales seamlessly from 1 by 1 up to
 
 ### Magnet Holes
 
-Standard Gridfinity uses 6mm by 2mm round magnets at each grid intersection. The baseplate generator places them by default; you can disable them entirely if you don't want magnets. Magnets keep bins from sliding when the drawer opens or closes, which matters if you're carrying the drawer or running a tool truck.
+Standard Gridfinity uses 6mm by 2mm round magnets at each grid intersection. The baseplate generator leaves them off by default; enable them if you want magnets. Magnets keep bins from sliding when the drawer opens or closes, which matters if you're carrying the drawer or running a tool truck.
 
 ### Edge Padding
 

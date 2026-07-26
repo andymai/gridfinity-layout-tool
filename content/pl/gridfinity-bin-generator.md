@@ -61,7 +61,7 @@ faqs:
   - q: Czy mogę zapisać projekt i wrócić do niego później?
     a: Tak. Projekty zapisują się automatycznie w przeglądarce. Nadaj projektowi nazwę, a przetrwa między sesjami.
   - q: Jak duże mogą być Biny?
-    a: Do 8×8 jednostek siatki (336 mm × 336 mm). W przypadku większych przestrzeni użyj planera układu, by zestawić kilka Binów razem.
+    a: Do 16×16 jednostek siatki (672 mm × 672 mm). W przypadku większych przestrzeni użyj planera układu, by zestawić kilka Binów razem.
   - q: Skąd wziąć płyty bazowe?
     a: Użyj generatora płyt bazowych, by stworzyć płytę dopasowaną do szuflady, z opcjonalnymi otworami na magnesy i marginesem krawędziowym. Wyeksportuj jako STL, STEP lub 3MF.
 navCta:
@@ -86,7 +86,7 @@ Parametryczny generator Binów, który działa w przeglądarce. Ustaw wymiary, d
 
 ## Funkcje
 
-**Przegródki.** Podziel Bin na siatkę sekcji, do 8×8. Ścianki działowe generują się automatycznie. Wyjmowane ścianki działowe możesz wyeksportować jako osobne pliki, jeśli chcesz zmieniać układ bez przedrukowywania.
+**Przegródki.** Podziel Bin na siatkę sekcji, do 12×12. Ścianki działowe generują się automatycznie. Wyjmowane ścianki działowe możesz wyeksportować jako osobne pliki, jeśli chcesz zmieniać układ bez przedrukowywania.
 
 **Rampy zgarniające i wycięcia w ściankach.** Rampy zgarniające ułatwiają sięganie po drobne części na dnie. Wycięcia w ściankach — nacięcia w kształcie litery U na dowolnej stronie — pozwalają wysuwać rzeczy bokiem.
 

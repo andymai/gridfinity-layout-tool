@@ -61,7 +61,7 @@ faqs:
   - q: Puis-je sauvegarder et reprendre plus tard ?
     a: Oui. Les designs sont sauvegardés automatiquement dans votre navigateur. Nommez un design et il persiste entre les sessions.
   - q: Quelle taille maximale pour un bin ?
-    a: Jusqu’à 8×8 unités de grille (336 mm × 336 mm). Pour plus grand, utilisez le planificateur de layout pour disposer plusieurs bins ensemble.
+    a: Jusqu’à 16×16 unités de grille (672 mm × 672 mm). Pour plus grand, utilisez le planificateur de layout pour disposer plusieurs bins ensemble.
   - q: Où trouver les plaques de base ?
     a: Utilisez le générateur de plaques pour créer une plaque dimensionnée à votre tiroir, avec trous d’aimants et marges optionnels. Export en STL, STEP ou 3MF.
 navCta:
@@ -86,7 +86,7 @@ Un générateur paramétrique de bins qui tourne dans votre navigateur. Réglez 
 
 ## Fonctionnalités
 
-**Compartiments.** Divisez un bin en grille de sections, jusqu’à 8×8. Les murs de séparation se génèrent automatiquement. Vous pouvez exporter des séparateurs amovibles en fichiers séparés pour reconfigurer sans réimprimer.
+**Compartiments.** Divisez un bin en grille de sections, jusqu’à 12×12. Les murs de séparation se génèrent automatiquement. Vous pouvez exporter des séparateurs amovibles en fichiers séparés pour reconfigurer sans réimprimer.
 
 **Rampes et découpes murales.** Les rampes facilitent l’accès aux petites pièces au fond. Les découpes murales — encoches en U sur n’importe quel côté — permettent de sortir les objets sur le côté.
 
