@@ -60,6 +60,7 @@ graph TB
 | `validation.ts`           | Type guards (`isValidBin`), `canPlaceBin()`, `validateImport()`                               |
 | `bins.ts`                 | Bin filtering: `getGridBins()`, `getStagingBins()`, `getLayerBins()`, `splitBinsByLocation()` |
 | `fill.ts`                 | Auto-fill algorithms: `fillAllWithSize()`, `fillGaps()`                                       |
+| `expandToFit.ts`          | `resolveExpandToFit()` — positions + overhangs that tile a span with no gaps                  |
 | `compression.ts`          | LZ-string compression for layout storage                                                      |
 | `color.ts`                | `getContrastColor()`, `getBinTextColors()` for bin rendering                                  |
 | `uuid.ts`                 | Layout ID generation and validation                                                           |
