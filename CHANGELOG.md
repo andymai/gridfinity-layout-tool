@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.301.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.300.0...gridfinity-layout-tool-v4.301.0) (2026-07-26)
+
+
+### Features
+
+* **ci:** scheduled growth-gated retrain for the label-suggester model ([#2832](https://github.com/andymai/gridfinity-layout-tool/issues/2832)) ([7b2b644](https://github.com/andymai/gridfinity-layout-tool/commit/7b2b6440ebb863f2a6d5738caee195a2e720fdb8))
+
 ## [4.300.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.299.0...gridfinity-layout-tool-v4.300.0) (2026-07-25)
 
 
