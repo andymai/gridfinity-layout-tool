@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.310.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.309.0...gridfinity-layout-tool-v4.310.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Korean (ko) SEO landing pages ([#2861](https://github.com/andymai/gridfinity-layout-tool/issues/2861)) ([11e72e9](https://github.com/andymai/gridfinity-layout-tool/commit/11e72e9883cfde7254b05a70cecc26cdf3f11002))
+
 ## [4.309.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.308.0...gridfinity-layout-tool-v4.309.0) (2026-07-26)
 
 
