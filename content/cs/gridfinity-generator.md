@@ -52,7 +52,7 @@ softwareApplication:
     - Parametrický generátor základních desek s mřížkou otvorů na magnety
     - Export STL, STEP a 3MF
     - Šest stylů uchycení podstavy (standardní, magnet, šroub, magnet+šroub, zatížený, plochý)
-    - Konfigurovatelné přihrádky až 8 na 8
+    - Konfigurovatelné přihrádky až 12 na 12
     - Výřezy ve stěnách pro každou stranu (tvar U, shrnovací, trychtýř)
     - Držáky štítků s konzolovou nebo plnou podporou
     - Voštinové vzory stěn
@@ -79,9 +79,9 @@ faqs:
   - q: Budou Biny z generátoru pasovat na moje stávající základní desky Gridfinity?
     a: Ano. Generátor dodržuje standardní mřížku Gridfinity 42 mm a standardní profil patice, takže Biny pasují na jakoukoli oficiální nebo komunitní základní desku Gridfinity. Platí to i naopak — základní desky z generátoru přijmou libovolný standardní Bin Gridfinity.
   - q: Umí generátor Gridfinity vytvořit základní desky s otvory na magnety?
-    a: Ano. Generátor základních desek ve výchozím nastavení umisťuje otvory na magnety 6 mm × 2 mm na každý průsečík mřížky. Můžeš je vypnout, pokud magnety nechceš, nebo je nechat a magnety při tisku prostě vynechat.
+    a: Ano. Generátor základních desek může přidat otvory na magnety 6 mm × 2 mm na každý průsečík mřížky. Ve výchozím nastavení jsou vypnuté — zapni je, pokud chceš magnety, nebo je nechej a magnety při tisku prostě vynech.
   - q: Má generátor Gridfinity limity velikosti?
-    a: Biny mohou mít až 8 na 8 jednotek mřížky (336 mm na 336 mm) a 20 jednotek výšky (140 mm). Základní desky mohou být větší a v případě potřeby se automaticky dělí na části, které se vejdou na podložku tvé tiskárny.
+    a: Biny mohou mít až 16 na 16 jednotek mřížky (672 mm na 672 mm) a 20 jednotek výšky (140 mm). Základní desky mohou být větší a v případě potřeby se automaticky dělí na části, které se vejdou na podložku tvé tiskárny.
   - q: Podporuje generátor Gridfinity poloviční velikosti Binů?
     a: Ano. Zapni režim půl-Binu pro přesnost 0,5 jednotky — umožní vytvořit Biny jako 1,5 na 2,5, aby vyplnily nepohodlné mezery v zásuvce. Podpora půl-Binu sahá až do plánovače rozvržení, takže poloviční Biny se čistě skládají vedle celých.
   - q: Můžu si přizpůsobit dno a stěny Binu?
@@ -140,7 +140,7 @@ Můžeš také použít [plánovač rozvržení](/) generátoru, rozložit Biny 
 
 ### Rozměry
 
-Šířka, hloubka a výška. Šířka a hloubka jsou od 0,5 do 8 jednotek mřížky (21 mm až 336 mm). Výška od 2 do 20 jednotek výšky (14 mm až 140 mm). Jedna jednotka výšky je 7 mm — standardní jednotka Gridfinity z původní specifikace Zacka Freedmana.
+Šířka, hloubka a výška. Šířka a hloubka jsou od 0,5 do 16 jednotek mřížky (21 mm až 672 mm). Výška od 2 do 20 jednotek výšky (14 mm až 140 mm). Jedna jednotka výšky je 7 mm — standardní jednotka Gridfinity z původní specifikace Zacka Freedmana.
 
 ### Styly uchycení podstavy
 
@@ -155,7 +155,7 @@ Můžeš také použít [plánovač rozvržení](/) generátoru, rozložit Biny 
 
 ### Přihrádky
 
-Rozděl vnitřek na mřížku až 8 na 8 přihrádek. Generátor sám staví příčky a přizpůsobuje jejich tloušťku zvolené velikosti. Příčky lze také vyexportovat jako samostatné vyjímatelné díly — užitečné, když chceš změnit uspořádání Binu bez jeho přetiskování.
+Rozděl vnitřek na mřížku až 12 na 12 přihrádek. Generátor sám staví příčky a přizpůsobuje jejich tloušťku zvolené velikosti. Příčky lze také vyexportovat jako samostatné vyjímatelné díly — užitečné, když chceš změnit uspořádání Binu bez jeho přetiskování.
 
 ### Funkce stěn
 
@@ -189,7 +189,7 @@ Pro tvary, které nesedí na žádnou předvolbu, umožňuje editor výřezů kr
 
 ### Otvory na magnety
 
-Standardní Gridfinity používá kulaté magnety 6 mm × 2 mm na každém průsečíku mřížky. Generátor základních desek je umisťuje ve výchozím nastavení; můžeš je zcela vypnout, pokud magnety nechceš. Magnety brání posouvání Binů při otevírání a zavírání zásuvky, což má význam, když zásuvku nosíš nebo vozíš vozík s nářadím.
+Standardní Gridfinity používá kulaté magnety 6 mm × 2 mm na každém průsečíku mřížky. Generátor základních desek je ve výchozím nastavení nechává vypnuté; zapni je, pokud chceš magnety. Magnety brání posouvání Binů při otevírání a zavírání zásuvky, což má význam, když zásuvku nosíš nebo vozíš vozík s nářadím.
 
 ### Okrajová výplň
 

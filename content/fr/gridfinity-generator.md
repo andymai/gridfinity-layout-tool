@@ -52,7 +52,7 @@ softwareApplication:
     - Générateur paramétrique de plaques avec grille de trous d’aimants
     - Export STL, STEP et 3MF
     - Six styles de base (standard, aimant, vis, aimant+vis, lestée, plate)
-    - Compartiments configurables jusqu’à 8 × 8
+    - Compartiments configurables jusqu’à 12 × 12
     - Découpes murales par côté (U, rampe, entonnoir)
     - Étiquettes avec support en équerre ou plein
     - Motifs muraux nid d’abeille
@@ -79,9 +79,9 @@ faqs:
   - q: Les bins du générateur s’adapteront-ils à mes plaques Gridfinity existantes ?
     a: Oui. Le générateur suit la grille standard de 42 mm et le profil de socket standard, donc les bins s’adaptent à toute plaque Gridfinity officielle ou communautaire. L’inverse marche aussi — les plaques du générateur accueillent tout bin Gridfinity standard.
   - q: Le générateur Gridfinity peut-il créer des plaques avec trous d’aimants ?
-    a: Oui. Le générateur de plaques place par défaut des trous de 6 mm × 2 mm à chaque intersection. Vous pouvez les désactiver si vous ne voulez pas d’aimants, ou les garder et simplement ne pas mettre d’aimants lors de l’impression.
+    a: Oui. Le générateur de plaques peut ajouter des trous de 6 mm × 2 mm à chaque intersection. Ils sont désactivés par défaut — activez-les si vous voulez des aimants, ou gardez-les et ne mettez simplement pas d’aimants lors de l’impression.
   - q: Y a-t-il des limites de taille dans le générateur Gridfinity ?
-    a: Les bins vont jusqu’à 8 × 8 unités de grille (336 mm × 336 mm) et 20 unités de hauteur (140 mm). Les plaques peuvent être plus grandes et sont divisées automatiquement en pièces qui rentrent sur votre plateau au besoin.
+    a: Les bins vont jusqu’à 16 × 16 unités de grille (672 mm × 672 mm) et 20 unités de hauteur (140 mm). Les plaques peuvent être plus grandes et sont divisées automatiquement en pièces qui rentrent sur votre plateau au besoin.
   - q: Le générateur Gridfinity gère-t-il les demi-bins ?
     a: Oui. Activez le mode demi-bin pour une précision 0,5 unité — vous pouvez créer des bins de 1,5 × 2,5 pour des écarts atypiques. Le support demi-bin va jusqu’au planificateur de layout pour que les demi-bins s’alignent proprement aux bins entiers.
   - q: Puis-je personnaliser le fond et les parois des bins ?
@@ -140,7 +140,7 @@ Vous pouvez aussi utiliser le [planificateur de layout](/) pour disposer les bin
 
 ### Dimensions
 
-Largeur, profondeur, hauteur. Largeur et profondeur de 0,5 à 8 unités de grille (21 mm à 336 mm). Hauteur de 2 à 20 unités (14 mm à 140 mm). Une unité de hauteur fait 7 mm — l’unité Gridfinity standard de la spec originale de Zack Freedman.
+Largeur, profondeur, hauteur. Largeur et profondeur de 0,5 à 16 unités de grille (21 mm à 672 mm). Hauteur de 2 à 20 unités (14 mm à 140 mm). Une unité de hauteur fait 7 mm — l’unité Gridfinity standard de la spec originale de Zack Freedman.
 
 ### Styles de base
 
@@ -155,7 +155,7 @@ Six options pour la fixation du bin à la plaque :
 
 ### Compartiments
 
-Divisez l’intérieur en une grille pouvant aller jusqu’à 8 × 8 compartiments. Le générateur construit les séparateurs automatiquement et ajuste l’épaisseur des parois à la taille choisie. Les séparateurs peuvent aussi être exportés comme pièces amovibles — pratique pour reconfigurer sans réimprimer.
+Divisez l’intérieur en une grille pouvant aller jusqu’à 12 × 12 compartiments. Le générateur construit les séparateurs automatiquement et ajuste l’épaisseur des parois à la taille choisie. Les séparateurs peuvent aussi être exportés comme pièces amovibles — pratique pour reconfigurer sans réimprimer.
 
 ### Fonctionnalités murales
 
@@ -189,7 +189,7 @@ Largeur et profondeur en unités de grille. Le générateur passe sans souci de 
 
 ### Trous d’aimants
 
-Gridfinity standard utilise des aimants ronds de 6 mm × 2 mm à chaque intersection. Le générateur les place par défaut ; vous pouvez tout désactiver si vous ne voulez pas d’aimants. Les aimants empêchent les bins de glisser quand le tiroir s’ouvre ou se ferme — important si vous portez le tiroir ou utilisez un servante d’atelier.
+Gridfinity standard utilise des aimants ronds de 6 mm × 2 mm à chaque intersection. Le générateur les laisse désactivés par défaut ; activez-les si vous voulez des aimants. Les aimants empêchent les bins de glisser quand le tiroir s’ouvre ou se ferme — important si vous portez le tiroir ou utilisez un servante d’atelier.
 
 ### Marges
 

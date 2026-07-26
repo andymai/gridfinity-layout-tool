@@ -61,7 +61,7 @@ faqs:
   - q: Kan jeg lagre og fortsette senere?
     a: Ja. Design lagres automatisk i nettleseren. Gi designet et navn så ligger det igjen mellom økter.
   - q: Hvor store kan bins være?
-    a: Opp til 8×8 rutenettsenheter (336 mm × 336 mm). For større flater kombinerer du flere bins i layout-planleggeren.
+    a: Opp til 16×16 rutenettsenheter (672 mm × 672 mm). For større flater kombinerer du flere bins i layout-planleggeren.
   - q: Hvor får jeg grunnplater?
     a: Bruk grunnplate-generatoren til å lage en grunnplate tilpasset skuffen din, med valgfri magnethull og kantmargin. Eksporter som STL, STEP eller 3MF.
 navCta:
@@ -86,7 +86,7 @@ En parametrisk bin-generator som kjører i nettleseren din. Sett mål, legg til 
 
 ## Funksjoner
 
-**Rom.** Del en bin i et rutenett av seksjoner, opptil 8×8. Skillevegger genereres automatisk. Du kan eksportere avtakbare skillevegger som separate filer for å rekonfigurere uten å skrive ut på nytt.
+**Rom.** Del en bin i et rutenett av seksjoner, opptil 12×12. Skillevegger genereres automatisk. Du kan eksportere avtakbare skillevegger som separate filer for å rekonfigurere uten å skrive ut på nytt.
 
 **Skraper og utsparinger.** Skraper gjør det lettere å nå smådeler i bunnen. Utsparinger — U-formede hakk på enhver side — lar deg dra ting ut på siden.
 

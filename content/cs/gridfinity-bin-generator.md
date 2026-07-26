@@ -61,7 +61,7 @@ faqs:
   - q: Můžu si uložit projekt a vrátit se k němu později?
     a: Ano. Návrhy se automaticky ukládají v prohlížeči. Pojmenuj návrh a přetrvá mezi sezeními.
   - q: Jak velké mohou Biny být?
-    a: Až 8×8 jednotek mřížky (336 mm × 336 mm). Pro větší prostory použij plánovač rozvržení a poskládej několik Binů dohromady.
+    a: Až 16×16 jednotek mřížky (672 mm × 672 mm). Pro větší prostory použij plánovač rozvržení a poskládej několik Binů dohromady.
   - q: Kde vezmu základní desky?
     a: Použij generátor základních desek a vytvoř desku v rozměru své zásuvky, s volitelnými otvory na magnety a okrajovou výplní. Vyexportuj jako STL, STEP nebo 3MF.
 navCta:
@@ -86,7 +86,7 @@ Parametrický generátor Binů, který běží v prohlížeči. Nastav rozměry,
 
 ## Funkce
 
-**Přihrádky.** Rozděl Bin na mřížku sekcí, až 8×8. Příčky se generují automaticky. Vyjímatelné příčky můžeš vyexportovat jako samostatné soubory, pokud chceš měnit uspořádání bez přetiskování.
+**Přihrádky.** Rozděl Bin na mřížku sekcí, až 12×12. Příčky se generují automaticky. Vyjímatelné příčky můžeš vyexportovat jako samostatné soubory, pokud chceš měnit uspořádání bez přetiskování.
 
 **Shrnovací rampy a výřezy ve stěnách.** Shrnovací rampy usnadňují sáhnutí po drobných dílech na dně. Výřezy ve stěnách — zářezy ve tvaru U na libovolné straně — umožňují vysouvat věci bokem.
 

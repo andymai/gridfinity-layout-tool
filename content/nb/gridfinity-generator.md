@@ -52,7 +52,7 @@ softwareApplication:
     - Parametrisk grunnplate-generator med magnethullrutenett
     - Eksport til STL, STEP og 3MF
     - Seks bunnstiler (standard, magnet, skrue, magnet+skrue, vektet, flat)
-    - Konfigurerbare rom opptil 8 × 8
+    - Konfigurerbare rom opptil 12 × 12
     - Utsparinger per side (U-form, skrape, trakt)
     - Etiketter med konsoll- eller solid støtte
     - Honningmønster på vegger
@@ -79,9 +79,9 @@ faqs:
   - q: Passer bins fra generatoren til mine eksisterende Gridfinity-grunnplater?
     a: Ja. Generatoren følger Gridfinitys standardrutenett på 42 mm og standard-sokkelprofilen, så bins passer på enhver offisiell eller community-laget Gridfinity-grunnplate. Det samme gjelder motsatt — grunnplater fra generatoren tar imot enhver standard Gridfinity-bin.
   - q: Kan Gridfinity-generatoren lage grunnplater med magnethull?
-    a: Ja. Grunnplate-generatoren plasserer 6 mm × 2 mm magnethull ved hver rutenettskryss som standard. Du kan slå dem av hvis du ikke vil ha magneter, eller beholde dem og bare la være å sette i magneter ved utskrift.
+    a: Ja. Grunnplate-generatoren kan legge til 6 mm × 2 mm magnethull ved hver rutenettskryss. De er av som standard — slå dem på hvis du vil ha magneter, eller behold dem og bare la være å sette i magneter ved utskrift.
   - q: Finnes det størrelsesgrenser i Gridfinity-generatoren?
-    a: Bins kan være opp til 8 × 8 rutenettsenheter (336 mm × 336 mm) og 20 høydeenheter (140 mm) høye. Grunnplater kan være større og deles automatisk i biter som passer på skriverbordet når det trengs.
+    a: Bins kan være opp til 16 × 16 rutenettsenheter (672 mm × 672 mm) og 20 høydeenheter (140 mm) høye. Grunnplater kan være større og deles automatisk i biter som passer på skriverbordet når det trengs.
   - q: Støtter Gridfinity-generatoren halv-bin-størrelser?
     a: Ja. Aktiver halv-bin-modus for 0,5-enhetspresisjon — det lar deg lage bins som 1,5 × 2,5 for vanskelige skuffemellomrom. Halv-bin-støtten strekker seg gjennom layout-planleggeren slik at halve bins legges rent ved siden av hele.
   - q: Kan jeg tilpasse bin-bunnen og veggene?
@@ -140,7 +140,7 @@ Du kan også bruke [layout-planleggeren](/) til å legge ut bins på en grunnpla
 
 ### Mål
 
-Bredde, dybde og høyde. Bredde og dybde går fra 0,5 til 8 rutenettsenheter (21 mm til 336 mm). Høyde fra 2 til 20 høydeenheter (14 mm til 140 mm). Én høydeenhet tilsvarer 7 mm — Gridfinitys standardenhet fra Zack Freedmans opprinnelige spesifikasjon.
+Bredde, dybde og høyde. Bredde og dybde går fra 0,5 til 16 rutenettsenheter (21 mm til 672 mm). Høyde fra 2 til 20 høydeenheter (14 mm til 140 mm). Én høydeenhet tilsvarer 7 mm — Gridfinitys standardenhet fra Zack Freedmans opprinnelige spesifikasjon.
 
 ### Bunnstiler
 
@@ -155,7 +155,7 @@ Seks alternativer for hvordan bin sitter på en grunnplate:
 
 ### Rom
 
-Del innsiden i et rutenett på opptil 8 × 8 rom. Generatoren bygger skilleveggene automatisk og justerer veggtykkelse etter valgt størrelse. Skillevegger kan også eksporteres som avtakbare separate deler — nyttig for å rekonfigurere uten å skrive ut på nytt.
+Del innsiden i et rutenett på opptil 12 × 12 rom. Generatoren bygger skilleveggene automatisk og justerer veggtykkelse etter valgt størrelse. Skillevegger kan også eksporteres som avtakbare separate deler — nyttig for å rekonfigurere uten å skrive ut på nytt.
 
 ### Veggfunksjoner
 
@@ -189,7 +189,7 @@ Bredde og dybde i rutenettsenheter. Generatoren skalerer sømløst fra 1 × 1 op
 
 ### Magnethull
 
-Standard Gridfinity bruker runde 6 mm × 2 mm magneter ved hvert rutenettskryss. Grunnplate-generatoren plasserer dem som standard; du kan slå dem helt av hvis du ikke vil ha magneter. Magneter hindrer bins fra å skli når skuffen åpnes eller lukkes, noe som har betydning hvis du bærer skuffen eller bruker en verktøyvogn.
+Standard Gridfinity bruker runde 6 mm × 2 mm magneter ved hvert rutenettskryss. Grunnplate-generatoren lar dem være av som standard; slå dem på hvis du vil ha magneter. Magneter hindrer bins fra å skli når skuffen åpnes eller lukkes, noe som har betydning hvis du bærer skuffen eller bruker en verktøyvogn.
 
 ### Kantmargin
 

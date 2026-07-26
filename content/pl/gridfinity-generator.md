@@ -52,7 +52,7 @@ softwareApplication:
     - Parametryczny generator płyt bazowych z siatką otworów na magnesy
     - Eksport STL, STEP i 3MF
     - Sześć stylów mocowania podstawy (standardowy, magnes, śruba, magnes+śruba, obciążony, płaski)
-    - Konfigurowalne przegródki do 8 na 8
+    - Konfigurowalne przegródki do 12 na 12
     - Wycięcia w ściankach dla każdej strony (kształt U, zgarniak, lejek)
     - Zakładki na etykiety z podporą wspornikową lub pełną
     - Wzory ścian typu plaster miodu
@@ -79,9 +79,9 @@ faqs:
   - q: Czy Biny z generatora będą pasować do moich istniejących płyt bazowych Gridfinity?
     a: Tak. Generator trzyma się standardowej siatki Gridfinity 42 mm i standardowego profilu gniazda, więc Biny pasują do każdej oficjalnej lub stworzonej przez społeczność płyty bazowej Gridfinity. Działa to też w drugą stronę — płyty bazowe z generatora przyjmują każdy standardowy Bin Gridfinity.
   - q: Czy generator Gridfinity potrafi tworzyć płyty bazowe z otworami na magnesy?
-    a: Tak. Generator płyt bazowych domyślnie umieszcza otwory na magnesy 6 mm × 2 mm na każdym skrzyżowaniu siatki. Możesz je wyłączyć, jeśli nie chcesz magnesów, albo zostawić i po prostu pominąć magnesy podczas druku.
+    a: Tak. Generator płyt bazowych może dodać otwory na magnesy 6 mm × 2 mm na każdym skrzyżowaniu siatki. Są domyślnie wyłączone — włącz je, jeśli chcesz magnesów, albo zostaw i po prostu pomiń magnesy podczas druku.
   - q: Czy w generatorze Gridfinity są ograniczenia rozmiaru?
-    a: Biny mogą mieć do 8 na 8 jednostek siatki (336 mm na 336 mm) i 20 jednostek wysokości (140 mm). Płyty bazowe mogą być większe i w razie potrzeby są automatycznie dzielone na części pasujące do stołu twojej drukarki.
+    a: Biny mogą mieć do 16 na 16 jednostek siatki (672 mm na 672 mm) i 20 jednostek wysokości (140 mm). Płyty bazowe mogą być większe i w razie potrzeby są automatycznie dzielone na części pasujące do stołu twojej drukarki.
   - q: Czy generator Gridfinity obsługuje połówkowe rozmiary Binów?
     a: Tak. Włącz tryb pół-Bina dla precyzji 0,5 jednostki — pozwala tworzyć Biny takie jak 1,5 na 2,5, by wypełnić niewygodne luki w szufladzie. Obsługa pół-Bina sięga aż do planera układu, więc połówkowe Biny układają się czysto obok pełnych.
   - q: Czy mogę dostosować dno i ścianki Bina?
@@ -140,7 +140,7 @@ Możesz też użyć [planera układu](/) generatora, by rozłożyć Biny na pły
 
 ### Wymiary
 
-Szerokość, głębokość i wysokość. Szerokość i głębokość mieszczą się od 0,5 do 8 jednostek siatki (21 mm do 336 mm). Wysokość od 2 do 20 jednostek wysokości (14 mm do 140 mm). Jedna jednostka wysokości to 7 mm — standardowa jednostka Gridfinity z pierwotnej specyfikacji Zacka Freedmana.
+Szerokość, głębokość i wysokość. Szerokość i głębokość mieszczą się od 0,5 do 16 jednostek siatki (21 mm do 672 mm). Wysokość od 2 do 20 jednostek wysokości (14 mm do 140 mm). Jedna jednostka wysokości to 7 mm — standardowa jednostka Gridfinity z pierwotnej specyfikacji Zacka Freedmana.
 
 ### Style mocowania podstawy
 
@@ -155,7 +155,7 @@ Sześć opcji tego, jak Bin siedzi na płycie bazowej:
 
 ### Przegródki
 
-Podziel wnętrze na siatkę do 8 na 8 przegródek. Generator sam buduje ścianki działowe i dostosowuje ich grubość do wybranego rozmiaru. Ścianki działowe można też wyeksportować jako osobne, wyjmowane elementy — przydatne, gdy chcesz zmienić układ Bina bez przedrukowywania go.
+Podziel wnętrze na siatkę do 12 na 12 przegródek. Generator sam buduje ścianki działowe i dostosowuje ich grubość do wybranego rozmiaru. Ścianki działowe można też wyeksportować jako osobne, wyjmowane elementy — przydatne, gdy chcesz zmienić układ Bina bez przedrukowywania go.
 
 ### Funkcje ścianek
 
@@ -189,7 +189,7 @@ Szerokość i głębokość w jednostkach siatki. Generator skaluje się płynni
 
 ### Otwory na magnesy
 
-Standardowe Gridfinity używa okrągłych magnesów 6 mm × 2 mm na każdym skrzyżowaniu siatki. Generator płyt bazowych umieszcza je domyślnie; możesz je całkowicie wyłączyć, jeśli nie chcesz magnesów. Magnesy zapobiegają ślizganiu się Binów przy otwieraniu i zamykaniu szuflady, co ma znaczenie, gdy nosisz szufladę albo prowadzisz wózek narzędziowy.
+Standardowe Gridfinity używa okrągłych magnesów 6 mm × 2 mm na każdym skrzyżowaniu siatki. Generator płyt bazowych domyślnie zostawia je wyłączone; włącz je, jeśli chcesz magnesów. Magnesy zapobiegają ślizganiu się Binów przy otwieraniu i zamykaniu szuflady, co ma znaczenie, gdy nosisz szufladę albo prowadzisz wózek narzędziowy.
 
 ### Margines krawędziowy
 

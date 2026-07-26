@@ -52,7 +52,7 @@ softwareApplication:
     - Generador paramétrico de placas con cuadrícula de orificios para imanes
     - Exportación a STL, STEP y 3MF
     - Seis estilos de base (estándar, imán, tornillo, imán+tornillo, lastrada, plana)
-    - Compartimentos configurables hasta 8 × 8
+    - Compartimentos configurables hasta 12 × 12
     - Recortes en pared por lado (forma de U, rampa, embudo)
     - Etiquetas con soporte en escuadra o macizo
     - Patrones de pared tipo panal
@@ -79,9 +79,9 @@ faqs:
   - q: ¿Los bins del generador encajarán con mis placas Gridfinity existentes?
     a: Sí. El generador sigue la cuadrícula estándar de 42 mm y el perfil de socket estándar, por lo que los bins encajan en cualquier placa Gridfinity oficial o de la comunidad. Lo mismo al revés — las placas del generador admiten cualquier bin Gridfinity estándar.
   - q: ¿El Generador Gridfinity puede crear placas con orificios para imanes?
-    a: Sí. El generador de placas coloca por defecto orificios de 6 mm × 2 mm en cada intersección. Puedes desactivarlos si no quieres imanes, o dejarlos y no poner imanes al imprimir.
+    a: Sí. El generador de placas puede añadir orificios de 6 mm × 2 mm en cada intersección. Están desactivados por defecto — actívalos si quieres imanes, o déjalos y no pongas imanes al imprimir.
   - q: ¿Hay límites de tamaño en el Generador Gridfinity?
-    a: Los bins llegan hasta 8 × 8 unidades de cuadrícula (336 mm × 336 mm) y 20 unidades de altura (140 mm). Las placas pueden ser mayores y se dividen automáticamente en piezas que entran en tu cama si hace falta.
+    a: Los bins llegan hasta 16 × 16 unidades de cuadrícula (672 mm × 672 mm) y 20 unidades de altura (140 mm). Las placas pueden ser mayores y se dividen automáticamente en piezas que entran en tu cama si hace falta.
   - q: ¿El Generador Gridfinity admite tamaños de medio bin?
     a: Sí. Activa el modo medio-bin para precisión de 0,5 unidad — permite bins como 1,5 × 2,5 para huecos atípicos en cajones. El soporte de medio bin llega hasta el planificador de layout para que los medio-bins se alineen con los enteros.
   - q: ¿Puedo personalizar el suelo y las paredes del bin?
@@ -140,7 +140,7 @@ También puedes usar el [planificador de layout](/) para colocar bins en una pla
 
 ### Dimensiones
 
-Ancho, profundidad y altura. Ancho y profundidad de 0,5 a 8 unidades de cuadrícula (21 mm a 336 mm). Altura de 2 a 20 unidades (14 mm a 140 mm). Una unidad de altura equivale a 7 mm — la unidad Gridfinity estándar del spec original de Zack Freedman.
+Ancho, profundidad y altura. Ancho y profundidad de 0,5 a 16 unidades de cuadrícula (21 mm a 672 mm). Altura de 2 a 20 unidades (14 mm a 140 mm). Una unidad de altura equivale a 7 mm — la unidad Gridfinity estándar del spec original de Zack Freedman.
 
 ### Estilos de base
 
@@ -155,7 +155,7 @@ Seis opciones de cómo se asienta el bin en la placa:
 
 ### Compartimentos
 
-Divide el interior en una cuadrícula de hasta 8 × 8 compartimentos. El generador crea los separadores automáticamente y ajusta el grosor de pared al tamaño elegido. Los separadores también pueden exportarse como piezas extraíbles — útil para reconfigurar sin reimprimir.
+Divide el interior en una cuadrícula de hasta 12 × 12 compartimentos. El generador crea los separadores automáticamente y ajusta el grosor de pared al tamaño elegido. Los separadores también pueden exportarse como piezas extraíbles — útil para reconfigurar sin reimprimir.
 
 ### Funciones de pared
 
@@ -189,7 +189,7 @@ Ancho y profundidad en unidades de cuadrícula. El generador escala desde 1 × 1
 
 ### Orificios para imanes
 
-Gridfinity estándar usa imanes redondos de 6 mm × 2 mm en cada intersección. El generador de placas los coloca por defecto; puedes desactivarlos del todo si no quieres imanes. Los imanes evitan que los bins se deslicen al abrir o cerrar el cajón — importante si lo llevas o usas un carro de herramientas.
+Gridfinity estándar usa imanes redondos de 6 mm × 2 mm en cada intersección. El generador de placas los deja desactivados por defecto; actívalos si quieres imanes. Los imanes evitan que los bins se deslicen al abrir o cerrar el cajón — importante si lo llevas o usas un carro de herramientas.
 
 ### Margen
 

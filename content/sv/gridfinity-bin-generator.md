@@ -61,7 +61,7 @@ faqs:
   - q: Kan jag spara och fortsätta senare?
     a: Ja. Designerna sparas automatiskt i din webbläsare. Namnge en design så finns den kvar mellan sessioner.
   - q: Hur stora kan bins vara?
-    a: Upp till 8×8 rutnätsenheter (336 mm × 336 mm). För större ytor kombinerar du flera bins i layout-planeraren.
+    a: Upp till 16×16 rutnätsenheter (672 mm × 672 mm). För större ytor kombinerar du flera bins i layout-planeraren.
   - q: Var får jag bottenplattor?
     a: Använd bottenplatta-generatorn för en bottenplatta skräddarsydd efter din låda, med magnethål och kantmarginal som tillval. Exportera som STL, STEP eller 3MF.
 navCta:
@@ -86,7 +86,7 @@ En parametrisk bin-generator som körs i din webbläsare. Ställ in mått, lägg
 
 ## Funktioner
 
-**Fack.** Dela en bin i ett rutnät av sektioner, upp till 8×8. Avdelarväggar genereras automatiskt. Du kan exportera löstagbara avdelare som separata filer för att konfigurera om utan att skriva ut på nytt.
+**Fack.** Dela en bin i ett rutnät av sektioner, upp till 12×12. Avdelarväggar genereras automatiskt. Du kan exportera löstagbara avdelare som separata filer för att konfigurera om utan att skriva ut på nytt.
 
 **Skopor och urtag.** Skopor gör det enklare att nå smådelar i botten. Urtag — U-formade skåror på valfri sida — låter dig dra ut saker åt sidan.
 
