@@ -100,10 +100,17 @@
         "!dist/assets/nl-*.js",
         "!dist/assets/pt-BR-*.js",
         "!dist/assets/sv-*.js",
-        "!dist/assets/uk-*.js"
+        "!dist/assets/uk-*.js",
+        "!dist/assets/ml-model-*.js"
       ],
       "gzip": true,
-      "limit": "1900 kB"
+      "limit": "1850 kB"
+    },
+    {
+      "name": "ML model weights (gzip)",
+      "path": "dist/assets/ml-model-*.js",
+      "gzip": true,
+      "limit": "115 kB"
     }
   ],
   "dependencies": {
