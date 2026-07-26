@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.306.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.305.0...gridfinity-layout-tool-v4.306.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Korean (ko) locale ([#2850](https://github.com/andymai/gridfinity-layout-tool/issues/2850)) ([41b1368](https://github.com/andymai/gridfinity-layout-tool/commit/41b1368c7a507cee36f7617dc004f1d289710ed1))
+
 ## [4.305.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.304.0...gridfinity-layout-tool-v4.305.0) (2026-07-26)
 
 
