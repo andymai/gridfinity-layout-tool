@@ -195,6 +195,21 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   on `rectangle` / `circle` / `polygon` / `slot`. The editor exposes tolerance +
   chamfer as 0.2mm steppers that still accept off-grid fractional typing.
 
+- **Full-width label tabs (#2897)**: `label.span` swaps per-compartment tabs for one
+  shelf per ROW. A row only gets one where a divider runs the full inner width behind it
+  (`rowHasFullWidthWall`) — a shelf needs something to hang from. Captions live in
+  `label.rowTexts`, NOT beside `compartments.compartmentTexts`: every array on
+  `compartments` is compartment-indexed and gets dropped by `setCompartmentGrid` /
+  renumbered by `normalizeIdsWithRemap`, whereas row captions are row-indexed and must
+  survive both. Entries past the current row count are ignored, not trimmed.
+  `planSpanningTabAtRow` runs against the REAL compartment config — never a synthetic
+  grid — because the tilt guard reads `dividerOverrides` off whatever config it is handed
+  and would silently pass on a fabricated one. Anything that changes which rows host a tab
+  must go through `spanningTabEligible` — the single gate covering full-width wall, tilt,
+  region depth and the both-edges collision. The worker, `GhostLabelTabs` (preview) and
+  `planLabelPlateExport` (socket sheets) all call it; sharing only the wall check let the
+  export ship plates for rows the worker rejected, i.e. plates with no socket to click
+  into. `featureColors.hasTabText` reads `label.rowTexts` in span mode for the same reason.
 - **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
   assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
   silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel

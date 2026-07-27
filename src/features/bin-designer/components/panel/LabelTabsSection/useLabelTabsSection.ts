@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/core/store';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
+import { rowHasFullWidthWall } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 import {
   MIN_LABEL_SOCKET_TAB_DEPTH_MM,
@@ -34,6 +35,7 @@ export function useLabelTabsSection() {
     textDefaults,
     updateLabel,
     setCompartmentText,
+    setLabelRowText,
     setCompartmentPlateWidth,
     setCompartmentPlateIcon,
     setTextDefaults,
@@ -46,6 +48,7 @@ export function useLabelTabsSection() {
       textDefaults: s.params.textDefaults,
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
+      setLabelRowText: s.setLabelRowText,
       setCompartmentPlateWidth: s.setCompartmentPlateWidth,
       setCompartmentPlateIcon: s.setCompartmentPlateIcon,
       setTextDefaults: s.setTextDefaults,
@@ -113,6 +116,13 @@ export function useLabelTabsSection() {
       }
     },
     [label.height, updateLabel, defaultShelfTopMm]
+  );
+
+  const toggleSpan = useCallback(
+    (span: boolean) => {
+      updateLabel({ span });
+    },
+    [updateLabel]
   );
 
   const setTabEdges = useCallback(
@@ -528,6 +538,31 @@ export function useLabelTabsSection() {
     });
   }, [compartments, t]);
 
+  // In span mode the tabs are per row, so the text list follows: one field per
+  // row that actually hosts a spanning tab. Rows whose compartments merge
+  // across the boundary get no tab, so offering a caption there would be a
+  // field that renders nothing.
+  const rowTextRows = useMemo(() => {
+    if (label.span !== true) return [];
+    const edges = label.edges ?? 'back';
+    const texts = label.rowTexts ?? [];
+    const rows = [];
+    for (let row = 0; row < compartments.rows; row++) {
+      const hosts =
+        ((edges === 'back' || edges === 'both') &&
+          rowHasFullWidthWall(compartments, row, 'back')) ||
+        ((edges === 'front' || edges === 'both') &&
+          rowHasFullWidthWall(compartments, row, 'front'));
+      if (!hosts) continue;
+      rows.push({
+        row,
+        label: t('binDesigner.rowNumberLabel', { n: row + 1 }),
+        value: texts[row] ?? '',
+      });
+    }
+    return rows;
+  }, [label.span, label.edges, label.rowTexts, compartments, t]);
+
   return {
     state: {
       label,
@@ -543,6 +578,7 @@ export function useLabelTabsSection() {
       tabInsetMax,
       tabsWillSilentlyDrop,
       compartmentTextRows,
+      rowTextRows,
       isSocketMode,
       socketUnavailable,
       socketSpanningWidthU: socketPlan.spanningWidthU,
@@ -550,6 +586,8 @@ export function useLabelTabsSection() {
     },
     handlers: {
       toggleLabelTabs,
+      toggleSpan,
+      setLabelRowText,
       setTabSupport,
       setTabDepth,
       setTabWidth,

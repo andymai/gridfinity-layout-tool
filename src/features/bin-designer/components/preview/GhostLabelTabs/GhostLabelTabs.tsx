@@ -17,6 +17,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { labelShelfCeilingMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import {
   compartmentHasTiltedBackWall,
+  spanningTabEligible,
   compartmentHasTiltedFrontWall,
   getCompartmentBounds,
 } from '@/features/bin-designer/utils/compartments';
@@ -138,6 +139,44 @@ export function GhostLabelTabs() {
     // Build per-row tab quads for one anchor (back or front). Mirrors the
     // worker-side grouping in `labelTabBuilder.ts` — both must stay in sync
     // so the ghost overlay matches the eventual BREP output.
+    // Full-width mode (#2897): one shelf per row, outer wall to outer wall.
+    const buildSpanningRow = (row: number, anchor: 'back' | 'front') => {
+      const depthSign = anchor === 'back' ? -1 : 1;
+      if (
+        !spanningTabEligible(compartments, row, anchor, {
+          tabDepth,
+          inset,
+          cellD,
+          bothEdges: edges === 'both',
+        })
+      ) {
+        return;
+      }
+
+      const availableLeft = -innerW / 2;
+      const availableRight = innerW / 2;
+      const tabWidth = ((availableRight - availableLeft) * widthPercent) / 100;
+      if (tabWidth <= 0) return;
+
+      let tabXStart: number;
+      if (alignment === 'left') {
+        tabXStart = availableLeft;
+      } else if (alignment === 'right') {
+        tabXStart = availableRight - tabWidth;
+      } else {
+        tabXStart = (availableLeft + availableRight) / 2 - tabWidth / 2;
+      }
+
+      const anchorY =
+        anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+      const centerY = anchorY + depthSign * inset + depthSign * (tabDepth / 2);
+
+      const matrix = new THREE.Matrix4();
+      matrix.makeScale(tabWidth, tabDepth, 1);
+      matrix.setPosition(tabXStart + tabWidth / 2, centerY, 0);
+      matrices.push(matrix);
+    };
+
     const buildAnchorRow = (row: number, anchor: 'back' | 'front') => {
       const depthSign = anchor === 'back' ? -1 : 1;
       const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
@@ -240,9 +279,10 @@ export function GhostLabelTabs() {
       }
     };
 
+    const buildRow = label.span === true ? buildSpanningRow : buildAnchorRow;
     for (let row = 0; row < rows; row++) {
-      if (includeBack) buildAnchorRow(row, 'back');
-      if (includeFront) buildAnchorRow(row, 'front');
+      if (includeBack) buildRow(row, 'back');
+      if (includeFront) buildRow(row, 'front');
     }
 
     if (matrices.length === 0) return null;
@@ -300,6 +340,7 @@ export function GhostLabelTabs() {
     label.alignment,
     label.edges,
     label.inset,
+    label.span,
   ]);
 
   const material = useMemo(() => {

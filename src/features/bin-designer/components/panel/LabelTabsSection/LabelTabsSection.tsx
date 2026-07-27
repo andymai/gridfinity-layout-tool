@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { CheckboxRow } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import {
@@ -78,8 +79,27 @@ export function LabelTabsSection() {
   // area is clipped at a fixed max-height/overflow-hidden, so a long list (up to
   // 144 rows) would be cut off. As a primary control it flows full-height under
   // the panel's own scrollbar.
+  const spanning = state.label.span === true;
+  const textRows = spanning
+    ? state.rowTextRows.map((r) => ({
+        key: `row-${r.row}`,
+        index: r.row,
+        label: r.label,
+        value: r.value,
+        ariaLabel: t('binDesigner.rowEngravedTextAriaLabel', { n: r.row + 1 }),
+        onCommit: handlers.setLabelRowText,
+      }))
+    : state.compartmentTextRows.map((r) => ({
+        key: `cell-${r.id}`,
+        index: r.id,
+        label: r.label,
+        value: r.value,
+        ariaLabel: t('binDesigner.tabEngravedTextAriaLabel', { n: r.displayNumber }),
+        onCommit: handlers.setCompartmentText,
+      }));
+
   const compartmentLabels =
-    state.compartmentTextRows.length > 0 ? (
+    textRows.length > 0 ? (
       <div>
         <Button
           type="button"
@@ -90,8 +110,8 @@ export function LabelTabsSection() {
           className="flex w-full items-center justify-between gap-2 rounded-md border border-stroke-subtle bg-surface px-2.5 py-2 text-xs font-medium text-content hover:bg-surface-hover"
         >
           <span className="flex items-center gap-2">
-            {t('binDesigner.compartmentLabelsList')}
-            <Badge>{state.compartmentTextRows.length}</Badge>
+            {spanning ? t('binDesigner.rowLabelsList') : t('binDesigner.compartmentLabelsList')}
+            <Badge>{textRows.length}</Badge>
           </span>
           <ChevronDownIcon
             size="xs"
@@ -103,17 +123,17 @@ export function LabelTabsSection() {
         </Button>
         {labelsOpen && (
           <ul className="mt-3 flex flex-col gap-1.5">
-            {state.compartmentTextRows.map((row) => (
-              <li key={row.id} className="flex items-center gap-2">
+            {textRows.map((row) => (
+              <li key={row.key} className="flex items-center gap-2">
                 <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
                   {row.label}
                 </span>
                 <CompartmentTextInput
                   committedValue={row.value}
-                  compartmentId={row.id}
-                  onCommit={handlers.setCompartmentText}
+                  compartmentId={row.index}
+                  onCommit={row.onCommit}
                   placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                  ariaLabel={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
+                  ariaLabel={row.ariaLabel}
                 />
               </li>
             ))}
@@ -130,6 +150,20 @@ export function LabelTabsSection() {
       disabledReason={meta.disabledReason}
       primaryControls={
         <>
+          {/* One shelf per row instead of one per compartment (#2897) — the
+              narrow-compartment case where per-compartment tabs are unreadable. */}
+          <div>
+            <CheckboxRow
+              label={t('binDesigner.tabSpanFullWidth')}
+              checked={spanning}
+              onChange={handlers.toggleSpan}
+              indent
+            />
+            <p className="mt-0.5 pl-7 text-[11px] leading-snug text-content-tertiary">
+              {t('binDesigner.tabSpanFullWidthHint')}
+            </p>
+          </div>
+
           {/* Label style — printed-in text vs a click-in socket for
               separately printed swappable label plates (#2666). */}
           <div>

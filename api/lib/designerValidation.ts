@@ -416,6 +416,9 @@ function validateSurfaceText(value: unknown): string | null {
   return null;
 }
 
+/** Mirrors the client `TEXT_MAX_LENGTH`, as `compartmentTexts` does numerically. */
+const LABEL_TEXT_MAX_LENGTH = 50;
+
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -465,6 +468,29 @@ function validateLabel(label: unknown): string | null {
     // Optional field (#1898); absent = back-edge anchor (legacy).
     if (label.edges !== undefined && !['back', 'front', 'both'].includes(label.edges as string)) {
       return 'label.edges must be "back", "front", or "both"';
+    }
+    // Optional field (#2897); absent = per-compartment tabs (legacy).
+    if (label.span !== undefined && !isBoolean(label.span)) {
+      return 'label.span must be boolean';
+    }
+    // Row captions for full-width tabs. Bounded like `compartmentTexts` so a
+    // direct HTTP POST can't smuggle an unbounded array past the UI.
+    if (label.rowTexts !== undefined) {
+      if (!Array.isArray(label.rowTexts)) {
+        return 'label.rowTexts must be an array';
+      }
+      if (label.rowTexts.length > CONSTRAINTS.MAX_COMPARTMENT_GRID) {
+        return `label.rowTexts length must not exceed ${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+      }
+      for (let i = 0; i < label.rowTexts.length; i++) {
+        const t = label.rowTexts[i] as unknown;
+        if (!isString(t)) {
+          return `label.rowTexts[${i}] must be a string`;
+        }
+        if (t.length > LABEL_TEXT_MAX_LENGTH) {
+          return `label.rowTexts[${i}] must not exceed ${LABEL_TEXT_MAX_LENGTH} characters`;
+        }
+      }
     }
     // Optional field (#1898); absent = 0 (tab abuts anchor wall).
     if (label.inset !== undefined) {

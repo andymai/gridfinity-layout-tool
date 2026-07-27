@@ -134,6 +134,8 @@ export interface DesignerState {
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
+  /** Caption for a full-width label tab, keyed by the row hosting it (#2897). */
+  setLabelRowText: (row: number, text: string) => void;
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set a compartment's swappable-plate hardware icon (null = none). */
   setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
