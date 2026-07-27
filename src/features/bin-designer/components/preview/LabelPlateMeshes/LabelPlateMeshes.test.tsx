@@ -16,7 +16,6 @@ function plate(over: Partial<LabelPlateMeshData> = {}): LabelPlateMeshData {
     vertices: new Float32Array([0, 0, 0]),
     normals: new Float32Array([0, 0, 1]),
     indices: new Uint32Array([0]),
-    edgeVertices: new Float32Array(0),
     triangleCount: 1,
     seatX: 10,
     seatY: -20,
