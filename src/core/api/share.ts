@@ -145,7 +145,8 @@ function validateFetchShareResponse(
           typeof (entry as Record<string, unknown>).id === 'string' &&
           typeof (entry as Record<string, unknown>).name === 'string' &&
           typeof (entry as Record<string, unknown>).params === 'object' &&
-          (entry as Record<string, unknown>).params !== null
+          (entry as Record<string, unknown>).params !== null &&
+          !Array.isArray((entry as Record<string, unknown>).params)
       )
     : undefined;
 

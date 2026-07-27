@@ -7,7 +7,7 @@ import {
   validateSharedDesigns,
   isSharedDesignsError,
 } from '../lib/validation.js';
-import { filterLayoutContent } from '../lib/contentFilter.js';
+import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
 import {
   isValidShareId,
@@ -259,6 +259,14 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       return res.status(400).json({
         error: designsResult.error.message,
         code: designsResult.error.code,
+      });
+    }
+
+    const designContent = filterSharedDesignsContent(designsResult.designs);
+    if (!designContent.passed) {
+      return res.status(400).json({
+        error: `Content blocked: ${designContent.reason}`,
+        code: ErrorCode.CONTENT_BLOCKED,
       });
     }
 

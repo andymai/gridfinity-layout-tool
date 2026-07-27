@@ -244,7 +244,7 @@ export async function restoreEmbeddedDesigns(
 function djb2(str: string): string {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
   }
   return (hash >>> 0).toString(16);
 }
@@ -287,7 +287,9 @@ export async function restoreSharedDesigns(
 
   const idMap = new Map<string, DesignId>();
   for (const design of designs) {
-    if (!design.params || typeof design.params !== 'object') continue;
+    if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
+      continue;
+    }
     const params = design.params as BinParams;
 
     const result = await saveDesign({

@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   isSharedDesignsError: vi.fn(),
   validateDesignerShare: vi.fn(),
   filterLayoutContent: vi.fn(),
+  filterSharedDesignsContent: vi.fn(),
 }));
 
 vi.mock('./lib/rateLimit.js', () => ({
@@ -53,6 +54,7 @@ vi.mock('./lib/designerValidation.js', () => ({
 
 vi.mock('./lib/contentFilter.js', () => ({
   filterLayoutContent: mocks.filterLayoutContent,
+  filterSharedDesignsContent: mocks.filterSharedDesignsContent,
 }));
 
 function createResponse() {
@@ -102,6 +104,7 @@ describe('share (create)', () => {
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'My Drawer' } });
     mocks.isValidationError.mockReturnValue(false);
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
+    mocks.filterSharedDesignsContent.mockReturnValue({ passed: true });
     mocks.validateDesignerShare.mockReturnValue({ valid: true, payload: { params: {} } });
     mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs: [] });
     mocks.isSharedDesignsError.mockReturnValue(false);
@@ -229,6 +232,23 @@ describe('share (create)', () => {
     expect(res._status).toBe(201);
     const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as Record<string, unknown>;
     expect(written).not.toHaveProperty('linkedDesigns');
+  });
+
+  it('400s with CONTENT_BLOCKED when a design name fails moderation', async () => {
+    mocks.validateSharedDesigns.mockReturnValue({
+      valid: true,
+      designs: [{ id: 'design_1', name: 'bad', params: {} }],
+    });
+    mocks.filterSharedDesignsContent.mockReturnValue({
+      passed: false,
+      reason: 'Design name: nope',
+    });
+
+    const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+    expect(res._status).toBe(400);
+    expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+    expect(mocks.put).not.toHaveBeenCalled();
   });
 
   it('400s when the linked designs fail validation, without writing a blob', async () => {

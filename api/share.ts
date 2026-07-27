@@ -10,7 +10,7 @@ import {
   type SharedDesignShape,
 } from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
-import { filterLayoutContent } from './lib/contentFilter.js';
+import { filterLayoutContent, filterSharedDesignsContent } from './lib/contentFilter.js';
 import {
   isValidShareId,
   hashToken,
@@ -128,6 +128,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       sharedDesigns = designsResult.designs;
+
+      // Design names and engraved text are user-authored and shown to the
+      // recipient, so they get the same moderation the layout does.
+      const designContent = filterSharedDesignsContent(sharedDesigns);
+      if (!designContent.passed) {
+        return res.status(400).json({
+          error: `Content blocked: ${designContent.reason}`,
+          code: 'CONTENT_BLOCKED',
+        });
+      }
     }
 
     // Use client-provided layoutId as the share ID
