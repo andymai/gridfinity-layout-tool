@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.322.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.0...gridfinity-layout-tool-v4.322.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **bin-designer:** ship a label plate for every socket, not every compartment ([#2914](https://github.com/andymai/gridfinity-layout-tool/issues/2914)) ([028bb94](https://github.com/andymai/gridfinity-layout-tool/commit/028bb94b8150e5be3420de552e60b8a28e1729d4))
+
 ## [4.322.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.321.0...gridfinity-layout-tool-v4.322.0) (2026-07-27)
 
 
