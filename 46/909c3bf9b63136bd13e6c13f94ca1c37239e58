@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.test.ts
+  s_c029b4d0133f83::t_559b779a967f3d 217-279
+src/features/bin-designer/README.md
+  s_c029b4d0133f83::t_7e38b038c09031 204-206
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_c029b4d0133f83::t_cea6f5574a736e 109-112,129-131,133-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "46909c3bf9b63136bd13e6c13f94ca1c37239e58",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
