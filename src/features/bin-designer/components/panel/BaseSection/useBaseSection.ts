@@ -40,6 +40,7 @@ export function useBaseSection() {
   const flatStatus = getFeatureStatus(params, 'base.flat');
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
   const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
+  const spacerStatus = getFeatureStatus(params, 'base.spacer');
 
   const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
   const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
@@ -50,6 +51,7 @@ export function useBaseSection() {
   const lightweightDisabledReason = lightweightStatus.reason
     ? t(lightweightStatus.reason)
     : undefined;
+  const spacerDisabledReason = spacerStatus.reason ? t(spacerStatus.reason) : undefined;
 
   const toggleMagnet = useCallback(() => {
     // Only block enabling — allow disabling so users can recover from invalid states
@@ -82,6 +84,15 @@ export function useBaseSection() {
     });
     setParams(resolved);
   }, [params, base.lightweight, lightweightStatus.available, setParams]);
+
+  const toggleSpacer = useCallback(() => {
+    if (!base.spacer && !spacerStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.spacer',
+      enabled: !base.spacer,
+    });
+    setParams(resolved);
+  }, [params, base.spacer, spacerStatus.available, setParams]);
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
@@ -171,6 +182,7 @@ export function useBaseSection() {
       isFlat,
       hasHalfSockets,
       hasLightweight: base.lightweight,
+      isSpacer: base.spacer,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
       floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),
@@ -195,6 +207,8 @@ export function useBaseSection() {
       flatDisabledReason,
       halfSocketsDisabledReason,
       lightweightDisabledReason,
+      toggleSpacer,
+      spacerDisabledReason,
     },
   };
 }

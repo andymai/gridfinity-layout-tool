@@ -69,7 +69,7 @@ export function useSplitOptionsSection() {
   // so the worker force-disables it for lite bins. Surface that in the UI and
   // block the toggle so it doesn't look enabled-but-ignored. Wall connectors
   // live in the solid walls and stay available.
-  const alignmentUnavailable = base.lightweight && base.style !== 'flat';
+  const alignmentUnavailable = (base.lightweight || base.spacer) && base.style !== 'flat';
 
   const toggleEnabled = useCallback(() => {
     if (alignmentUnavailable) return;

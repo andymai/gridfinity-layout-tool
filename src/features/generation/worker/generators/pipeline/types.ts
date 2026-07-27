@@ -50,8 +50,20 @@ export interface BinDimensions {
    * exposed on the interior. Forced false for flat bins (no socket to shell).
    * Magnet/screw pads are retained as solid islands when `withMagnet`/
    * `withScrew` are set. See `lightweightBaseBuilder`.
+   *
+   * Implied by {@link isSpacer}: a floorless riser's shelled feet ARE its
+   * structure, so it always takes this build path.
    */
   readonly lightweight: boolean;
+  /**
+   * True for a spacer/riser (#2869): a floorless frame that lifts a bin so
+   * mismatched bin heights line up. Feet and stacking lip are untouched — only
+   * the floor is gone — so every height and stacking rule a normal bin follows
+   * carries over unchanged. The feet become foot-shaped tubes (`'through'` in
+   * `lightweightBaseBuilder`) tied together by the inter-cell webbing.
+   * Forced false for flat bins (nothing to shell through).
+   */
+  readonly isSpacer: boolean;
   readonly solid: boolean;
   readonly isSlotted: boolean;
   readonly hasLip: boolean;

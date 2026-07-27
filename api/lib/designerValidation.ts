@@ -163,7 +163,7 @@ export type DesignerValidationResult =
  * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
  * numeric `magnetDepth` (0.5–10), numeric `screwDiameter` (1–10), and boolean `stackingLip`.
  *
- * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`).
+ * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`, and the optional `spacer`).
  * @returns A string describing the first validation error encountered, or `null` if `base` is valid.
  */
 function validateBase(base: unknown): string | null {
@@ -181,6 +181,11 @@ function validateBase(base: unknown): string | null {
     return 'base.screwDiameter must be 1-10';
   }
   if (!isBoolean(base.stackingLip)) return 'base.stackingLip must be boolean';
+  // Spacer changes the shell (a floorless riser), so a shared payload has to
+  // declare it honestly rather than smuggle a truthy non-boolean past the client.
+  if (base.spacer !== undefined && !isBoolean(base.spacer)) {
+    return 'base.spacer must be boolean';
+  }
   return null;
 }
 

@@ -174,6 +174,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     solid: false,
     halfSockets: false,
     lightweight: false,
+    spacer: false,
   },
   style: 'standard',
   compartments: {

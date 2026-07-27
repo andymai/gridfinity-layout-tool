@@ -648,6 +648,7 @@ function computeFloorPatternReduction(
   // a runtime IMPLICATION_RULE, not by `migrateParams`, so a crafted design can
   // carry one without the other.
   if (params.base.solid || params.style === 'solid' || params.base.lightweight) return 0;
+  if (params.base.spacer) return 0;
   if (params.width <= 0 || params.depth <= 0) return 0;
 
   const isFlat = params.base.style === 'flat';

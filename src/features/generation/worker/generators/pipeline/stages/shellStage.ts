@@ -18,7 +18,7 @@ import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet, baseSocketShapeKey } from '../../socketBuilder';
 import { buildLightweightBase } from '../../lightweightBaseBuilder';
-import type { LightweightBase } from '../../lightweightBaseBuilder';
+import type { LightweightBase, LightweightOpenDirection } from '../../lightweightBaseBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { maskHasHoles } from '../../maskPolygon';
@@ -34,6 +34,20 @@ import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
+
+/**
+ * Which way the lite cups open.
+ *
+ * A spacer (#2869) opens BOTH ends, so each foot becomes a tube and the cell is a
+ * clean through-hole; it never carries magnets or screws (`deriveDimensions`
+ * suppresses them — a pad inside a through-hole would be free-standing). Solid
+ * bins open downward, since their body keeps its floor; everything else opens up
+ * into the cavity.
+ */
+function cupOpenDirection(dim: PipelineContext['dimensions']): LightweightOpenDirection {
+  if (dim.isSpacer) return 'through';
+  return dim.solid ? 'down' : 'up';
+}
 
 export const shellStage: PipelineStage = {
   name: 'base',
@@ -82,7 +96,7 @@ export const shellStage: PipelineStage = {
         params.base.magnetDiameter / 2,
         params.base.magnetDepth,
         params.base.screwDiameter / 2,
-        dim.solid ? 'down' : 'up',
+        cupOpenDirection(dim),
         true, // full 5-section foot profile, matching buildBaseSocket here
         dim.halfSockets,
         pitch,

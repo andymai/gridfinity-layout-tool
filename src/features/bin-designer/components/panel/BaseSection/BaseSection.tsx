@@ -94,6 +94,22 @@ export function BaseSection() {
         disabledReason={handlers.lightweightDisabledReason}
       />
 
+      {/* ── Spacer / riser (#2869) — a floorless frame that lifts a bin so bins
+          of different heights finish flush. Height counts in the stack exactly
+          like a bin of the same height, so a 2u spacer under a 2u bin reaches
+          the top of a 4u one. */}
+      <FeatureToggle
+        label={t('binDesigner.spacer')}
+        checked={state.isSpacer}
+        onChange={handlers.toggleSpacer}
+        disabledReason={handlers.spacerDisabledReason}
+        primaryControls={
+          <p className="text-[11px] leading-relaxed text-content-tertiary">
+            {t('binDesigner.spacerHint')}
+          </p>
+        }
+      />
+
       {/* ── Floor pattern (#2816) — drainage / ventilation. The holes pass
           through the floor slab AND the feet, staying inside each foot's flat
           underside so the baseplate-mating taper is never cut. */}
