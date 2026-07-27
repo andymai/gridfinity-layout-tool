@@ -1,0 +1,34 @@
+src/features/generation/worker/handlers/generateHandler.ts
+  s_c029b4d0133f83::t_74ec2af81b45c0 49,89
+src/features/generation/bridge/bridgeGeneration.ts
+  s_c029b4d0133f83::t_e0a52ea0207ae1 88-89,118
+src/features/generation/bridge/GenerationBridge.ts
+  s_c029b4d0133f83::t_e0a52ea0207ae1 232-237,241-246
+src/features/bin-designer/hooks/useGeneration.ts
+  s_c029b4d0133f83::t_74ec2af81b45c0 271-272
+src/features/generation/bridge/types.ts
+  s_c029b4d0133f83::t_e0a52ea0207ae1 135-141
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_c029b4d0133f83::t_ce10cef7b3e6de 171,177-198
+  s_c029b4d0133f83::t_0e6365c2fb7f61 199-200
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_c029b4d0133f83::t_43c17935fa5468 145-152
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_c029b4d0133f83::t_74ec2af81b45c0 16,90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ebfbdb0a5a8b4eb5c0b818c2f158a61d49f79a11",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
