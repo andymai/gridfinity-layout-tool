@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.316.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.1...gridfinity-layout-tool-v4.316.2) (2026-07-27)
+
+
+### Performance
+
+* **ci:** give the generators group 6 shards now that it is CPU-bound ([#2884](https://github.com/andymai/gridfinity-layout-tool/issues/2884)) ([e2e468d](https://github.com/andymai/gridfinity-layout-tool/commit/e2e468d13173aa08fa98722b97d705a38a1e4b5a))
+
 ## [4.316.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.0...gridfinity-layout-tool-v4.316.1) (2026-07-27)
 
 
