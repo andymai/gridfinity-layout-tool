@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_c029b4d0133f83::t_9de40b484c2a2a 15,19,100-102,104
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_c029b4d0133f83::t_467a99166d30d1 171-173
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_c029b4d0133f83::t_b680a7bf732a10 102-114,162
+src/features/bin-designer/hooks/useGeneration.ts
+  s_c029b4d0133f83::t_b680a7bf732a10 292-293
+src/features/generation/worker/handlers/workerContext.ts
+  s_c029b4d0133f83::t_9de40b484c2a2a 301
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "e384559e4bcf90f48a81342102114711e06c723d",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
