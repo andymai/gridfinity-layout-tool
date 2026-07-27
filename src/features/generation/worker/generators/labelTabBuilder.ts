@@ -22,13 +22,14 @@ import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generato
 import type {
   BinParams,
   LabelTabAlignment,
+  LabelTabFit,
   TextStyleDefaults,
   TextStyleOverride,
 } from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
-  getCompartmentBounds,
+  compartmentTabEligible,
   rowHasFullWidthWall,
   spanRegionDepth,
 } from '@/shared/types/bin';
@@ -264,12 +265,13 @@ function planLabelTabLayout(
     } else if (params.label.span === true) {
       // Spanning slots are keyed by row and all share the bin-wide pocket, so
       // the per-compartment plan doesn't apply — reuse the full-width plate.
-      const widthU = planLabelSockets(
-        { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
-        innerW,
-        clearanceMm
-      ).compartments[0]?.plateWidthU;
-      if (widthU !== null && widthU !== undefined) {
+      const widthU =
+        planLabelSockets(
+          { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
+          innerW,
+          clearanceMm
+        ).compartments[0]?.plateWidthU ?? null;
+      if (widthU !== null) {
         for (let row = 0; row < params.compartments.rows; row++) {
           plateByCompartment.set(row, widthU);
         }
@@ -323,16 +325,6 @@ function planLabelTabLayout(
   const rowDims: TabBuildDimensions = isSpanning ? { ...dims, cellW: innerW, cellD: innerD } : dims;
   const rowCount = isSpanning ? 1 : rows;
 
-  let collidingFrontIds: Set<number>;
-  if (edges !== 'both') {
-    collidingFrontIds = new Set();
-  } else if (isSpanning) {
-    const inset = params.label.inset ?? 0;
-    collidingFrontIds = 2 * tabDepth + 2 * inset > innerD ? new Set([0]) : new Set();
-  } else {
-    collidingFrontIds = findCollidingFrontCompartments(params, dims);
-  }
-
   // Full-width mode (#2897) plans one shelf per row against the real config —
   // never the socket fallback's synthetic grid, whose missing divider overrides
   // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
@@ -348,7 +340,7 @@ function planLabelTabLayout(
         dims: rowDims,
         slots: spanMode
           ? planSpanningTabAtRow(params, row, anchor, dims)
-          : planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
+          : planTabsAtRow(rowParams, row, anchor, rowDims, edges === 'both'),
       });
     }
   }
@@ -536,48 +528,6 @@ function clipToOuterFootprint(
 }
 
 /**
- * For `edges='both'`: identify compartment IDs where the back + front tabs
- * would collide (2·depth + 2·inset > compartmentDepth) so we can silently
- * drop the front tab. The UI surfaces the same condition as an inline
- * warning so the user isn't confused by missing geometry (#1898).
- */
-function findCollidingFrontCompartments(params: BinParams, dims: TabBuildDimensions): Set<number> {
-  const { cols, rows, cells } = params.compartments;
-  const tabDepth = params.label.depth;
-  const inset = params.label.inset ?? 0;
-  const colliding = new Set<number>();
-  const visited = new Set<number>();
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const cellId = cells[row * cols + col];
-      if (visited.has(cellId)) continue;
-      visited.add(cellId);
-
-      const bounds = getCompartmentBounds(params.compartments, cellId);
-      if (!bounds) continue;
-
-      // Rectangular constraint: any cell at (minRow-1, minCol..maxCol)
-      // differing from cellId means the compartment has a front edge there.
-      // Same logic, mirrored, for the back edge.
-      const hasFrontAnchor =
-        bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
-      const hasBackAnchor =
-        bounds.maxRow === rows - 1 || cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
-
-      if (!hasBackAnchor || !hasFrontAnchor) continue;
-
-      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * dims.cellD;
-      if (2 * tabDepth + 2 * inset > compartmentDepth) {
-        colliding.add(cellId);
-      }
-    }
-  }
-
-  return colliding;
-}
-
-/**
  * Resolve which compartments host a tab anchored to one row's edge (back or
  * front) and where each one sits. Pure — no geometry, no scope — so the whole
  * bin's tabs can be planned before any are built (see
@@ -592,7 +542,7 @@ function planTabsAtRow(
   row: number,
   anchor: TabAnchor,
   dims: TabBuildDimensions,
-  collidingFrontIds: Set<number>
+  bothEdges: boolean
 ): TabSlot[] {
   const { cols, rows, thickness, cells } = params.compartments;
   const widthPercent = params.label.width;
@@ -607,8 +557,7 @@ function planTabsAtRow(
   //   front → has-edge when row is first OR cell in front (-row) differs
   const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
   const neighborRowOffset = anchor === 'back' ? 1 : -1;
-  const hasTiltedAnchorWall =
-    anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  const fit: LabelTabFit = { tabDepth, inset, cellD, bothEdges };
 
   const slots: TabSlot[] = [];
   let col = 0;
@@ -625,35 +574,14 @@ function planTabsAtRow(
       continue;
     }
 
-    // Skip tabs whose anchor wall is a tilted divider — the shelf and gusset
-    // geometry assumes an axis-aligned anchor wall. The compartment text
-    // input still persists in storage; only the rendering is suppressed.
-    if (hasTiltedAnchorWall(params.compartments, cellId)) {
+    // Tilted anchor wall, a body deeper than the compartment, or a front tab
+    // colliding with its back partner under `edges='both'` — the shared
+    // predicate answers all three, and the plate planner and ghost overlay
+    // gate on the same one so none of the three can drift (#2910). Compartment
+    // text still persists in storage; only the geometry is suppressed.
+    if (!compartmentTabEligible(params.compartments, cellId, anchor, fit)) {
       col++;
       continue;
-    }
-
-    // For `edges='both'`, drop the front tab in compartments where the
-    // back+front pair would collide (#1898 collision rule). The back tab
-    // is unaffected.
-    if (anchor === 'front' && collidingFrontIds.has(cellId)) {
-      col++;
-      continue;
-    }
-
-    // Per-compartment depth+inset guard. The tab body uses `tabDepth + inset`
-    // mm of compartment depth; if that exceeds the compartment's available
-    // depth the body would extend past the opposite wall (and fuse into it).
-    // The UI clamps the stepper, but a cloud-share payload can still smuggle
-    // in an invalid combo — silently drop to match the existing bridge guard.
-    // (Copilot review on #1904.)
-    const cellBounds = getCompartmentBounds(params.compartments, cellId);
-    if (cellBounds) {
-      const compartmentDepth = (cellBounds.maxRow - cellBounds.minRow + 1) * cellD;
-      if (tabDepth + inset > compartmentDepth) {
-        col++;
-        continue;
-      }
     }
 
     // Find extent of consecutive same-compId columns with edges at this row

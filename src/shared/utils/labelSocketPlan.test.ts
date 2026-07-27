@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { planLabelSockets, planLabelPlates } from './labelSocketPlan';
-import type { CompartmentConfig } from '@/shared/types/bin';
+import type { CompartmentConfig, LabelTabConfig } from '@/shared/types/bin';
 
 const CLEARANCE = 0.3;
 
@@ -11,6 +11,40 @@ function grid(
   extra?: Partial<CompartmentConfig>
 ): CompartmentConfig {
   return { cols, rows, thickness: 1.2, cells, ...extra };
+}
+
+function label(extra?: Partial<LabelTabConfig>): LabelTabConfig {
+  return {
+    enabled: true,
+    mode: 'socket',
+    support: 'bracket',
+    depth: 12,
+    width: 100,
+    alignment: 'center',
+    ...extra,
+  };
+}
+
+/** Deep enough that a back+front pair never collides in these fixtures. */
+const INNER_D = 100;
+
+function plates(
+  compartments: CompartmentConfig,
+  innerWmm: number,
+  extra?: {
+    label?: Partial<LabelTabConfig>;
+    innerDmm?: number;
+    fallbackText?: string;
+  }
+): ReturnType<typeof planLabelPlates> {
+  return planLabelPlates({
+    compartments,
+    label: label(extra?.label),
+    innerWmm,
+    innerDmm: extra?.innerDmm ?? INNER_D,
+    clearanceMm: CLEARANCE,
+    fallbackText: extra?.fallbackText ?? '',
+  });
 }
 
 describe('planLabelSockets', () => {
@@ -90,62 +124,149 @@ describe('planLabelSockets', () => {
 
 describe('planLabelPlates', () => {
   it('emits one plate per socketed compartment carrying its text', () => {
-    const plates = planLabelPlates(
-      grid(2, 1, [0, 1], { compartmentTexts: ['SCREWS', '  BOLTS '] }),
-      123.1,
-      CLEARANCE,
-      'FALLBACK'
+    expect(plates(grid(2, 1, [0, 1], { compartmentTexts: ['SCREWS', '  BOLTS '] }), 123.1)).toEqual(
+      [
+        { scope: 'compartment', compartmentId: 0, anchor: 'back', widthU: 1, text: 'SCREWS' },
+        { scope: 'compartment', compartmentId: 1, anchor: 'back', widthU: 1, text: 'BOLTS' },
+      ]
     );
-    expect(plates).toEqual([
-      { compartmentId: 0, widthU: 1, text: 'SCREWS' },
-      { compartmentId: 1, widthU: 1, text: 'BOLTS' },
-    ]);
   });
 
   it('skips compartments whose tab hosts no socket', () => {
     // 4 columns on a 3U bin: outer columns (~29mm) fit nothing; a merged
     // middle pair (~60mm) fits 1U.
-    const plates = planLabelPlates(
-      grid(4, 1, [0, 1, 1, 2], { compartmentTexts: ['A', 'B', 'C'] }),
-      123.1,
-      CLEARANCE,
-      ''
-    );
-    expect(plates).toEqual([{ compartmentId: 1, widthU: 1, text: 'B' }]);
+    expect(plates(grid(4, 1, [0, 1, 1, 2], { compartmentTexts: ['A', 'B', 'C'] }), 123.1)).toEqual([
+      { scope: 'compartment', compartmentId: 1, anchor: 'back', widthU: 1, text: 'B' },
+    ]);
   });
 
   it('carries valid per-compartment icons and drops unknown ids', () => {
-    const plates = planLabelPlates(
-      grid(2, 1, [0, 1], {
-        compartmentTexts: ['A', 'B'],
-        labelIcons: ['bolt', 'not-a-real-icon'],
-      }),
-      123.1,
-      CLEARANCE,
-      ''
-    );
-    expect(plates).toEqual([
-      { compartmentId: 0, widthU: 1, text: 'A', icon: 'bolt' },
-      { compartmentId: 1, widthU: 1, text: 'B' },
+    expect(
+      plates(
+        grid(2, 1, [0, 1], {
+          compartmentTexts: ['A', 'B'],
+          labelIcons: ['bolt', 'not-a-real-icon'],
+        }),
+        123.1
+      )
+    ).toEqual([
+      {
+        scope: 'compartment',
+        compartmentId: 0,
+        anchor: 'back',
+        widthU: 1,
+        text: 'A',
+        icon: 'bolt',
+      },
+      { scope: 'compartment', compartmentId: 1, anchor: 'back', widthU: 1, text: 'B' },
     ]);
   });
 
   it('emits a single fallback-text plate for the spanning socket', () => {
-    const plates = planLabelPlates(
-      grid(4, 1, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }),
-      81.1,
-      CLEARANCE,
-      ' Hardware '
-    );
-    expect(plates).toEqual([{ compartmentId: null, widthU: 2, text: 'Hardware' }]);
+    expect(
+      plates(grid(4, 1, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }), 81.1, {
+        fallbackText: ' Hardware ',
+      })
+    ).toEqual([{ scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' }]);
   });
 
   it('emits no plates when nothing fits', () => {
-    expect(planLabelPlates(grid(1, 1, [0]), 18.35, CLEARANCE, 'X')).toEqual([]);
+    expect(plates(grid(1, 1, [0]), 18.35, { fallbackText: 'X' })).toEqual([]);
   });
 
   it('produces blank plates for compartments without text', () => {
-    const plates = planLabelPlates(grid(1, 1, [0]), 39.1, CLEARANCE, '');
-    expect(plates).toEqual([{ compartmentId: 0, widthU: 1, text: '' }]);
+    expect(plates(grid(1, 1, [0]), 39.1)).toEqual([
+      { scope: 'compartment', compartmentId: 0, anchor: 'back', widthU: 1, text: '' },
+    ]);
+  });
+
+  it('anchors the plate to the front wall for edges=front', () => {
+    expect(
+      plates(grid(1, 1, [0], { compartmentTexts: ['A'] }), 39.1, { label: { edges: 'front' } })
+    ).toEqual([{ scope: 'compartment', compartmentId: 0, anchor: 'front', widthU: 1, text: 'A' }]);
+  });
+
+  // #2910: each compartment hosts a socket per edge, so it needs a plate per
+  // edge. Shipping one plate for two sockets left users a sheet half short.
+  it('emits a plate per edge for edges=both', () => {
+    expect(
+      plates(grid(2, 1, [0, 1], { compartmentTexts: ['A', 'B'] }), 123.1, {
+        label: { edges: 'both' },
+      })
+    ).toEqual([
+      { scope: 'compartment', compartmentId: 0, anchor: 'back', widthU: 1, text: 'A' },
+      { scope: 'compartment', compartmentId: 0, anchor: 'front', widthU: 1, text: 'A' },
+      { scope: 'compartment', compartmentId: 1, anchor: 'back', widthU: 1, text: 'B' },
+      { scope: 'compartment', compartmentId: 1, anchor: 'front', widthU: 1, text: 'B' },
+    ]);
+  });
+
+  it('drops the front plate where the back+front pair would collide', () => {
+    // 2·depth + 2·inset = 24mm against a 20mm compartment: the worker drops
+    // the front tab, so no plate may ship for it.
+    expect(
+      plates(grid(1, 1, [0], { compartmentTexts: ['A'] }), 39.1, {
+        label: { edges: 'both' },
+        innerDmm: 20,
+      })
+    ).toEqual([{ scope: 'compartment', compartmentId: 0, anchor: 'back', widthU: 1, text: 'A' }]);
+  });
+
+  it('drops both plates when the tab body is deeper than the compartment', () => {
+    expect(plates(grid(1, 1, [0]), 39.1, { label: { edges: 'both' }, innerDmm: 10 })).toEqual([]);
+  });
+
+  it('counts each edge separately for the bin-spanning socket', () => {
+    expect(
+      plates(grid(4, 1, [0, 1, 2, 3]), 81.1, {
+        label: { edges: 'both' },
+        fallbackText: 'Hardware',
+      })
+    ).toEqual([
+      { scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' },
+      { scope: 'bin', anchor: 'front', widthU: 2, text: 'Hardware' },
+    ]);
+  });
+
+  it('drops the spanning front plate when the pair would collide across the bin', () => {
+    expect(
+      plates(grid(4, 1, [0, 1, 2, 3]), 81.1, {
+        label: { edges: 'both' },
+        innerDmm: 20,
+        fallbackText: 'Hardware',
+      })
+    ).toEqual([{ scope: 'bin', anchor: 'back', widthU: 2, text: 'Hardware' }]);
+  });
+
+  describe('full-width mode', () => {
+    it('emits one bin-wide plate per row, captioned from rowTexts', () => {
+      expect(
+        plates(grid(2, 2, [0, 1, 2, 3], { compartmentTexts: ['A', 'B', 'C', 'D'] }), 123.1, {
+          label: { span: true, rowTexts: ['FRONT ROW', ' BACK ROW '] },
+        })
+      ).toEqual([
+        { scope: 'row', row: 0, anchor: 'back', widthU: 3, text: 'FRONT ROW' },
+        { scope: 'row', row: 1, anchor: 'back', widthU: 3, text: 'BACK ROW' },
+      ]);
+    });
+
+    it('emits a plate per edge for edges=both', () => {
+      expect(
+        plates(grid(2, 1, [0, 1]), 123.1, {
+          label: { span: true, edges: 'both', rowTexts: ['ONLY'] },
+        })
+      ).toEqual([
+        { scope: 'row', row: 0, anchor: 'back', widthU: 3, text: 'ONLY' },
+        { scope: 'row', row: 0, anchor: 'front', widthU: 3, text: 'ONLY' },
+      ]);
+    });
+
+    it('skips rows whose compartments merge across the boundary', () => {
+      // Column 0 runs straight through row 0 into row 1, so row 0's back edge
+      // has no full-width wall to hang a shelf from.
+      expect(
+        plates(grid(2, 2, [0, 1, 0, 2]), 123.1, { label: { span: true, rowTexts: ['X', 'Y'] } })
+      ).toEqual([{ scope: 'row', row: 1, anchor: 'back', widthU: 3, text: 'Y' }]);
+    });
   });
 });

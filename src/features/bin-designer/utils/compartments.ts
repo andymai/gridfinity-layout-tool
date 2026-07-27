@@ -520,8 +520,8 @@ export function spanRegionDepth(
   return (Math.abs(row - far) + 1) * cellD;
 }
 
-/** Inputs a spanning tab's eligibility depends on, beyond the grid itself. */
-export interface SpanningTabFit {
+/** Inputs a label tab's eligibility depends on, beyond the grid itself. */
+export interface LabelTabFit {
   /** `label.depth` — how far the shelf body protrudes from its wall. */
   readonly tabDepth: number;
   /** `label.inset` — extra inward offset from the anchor wall. */
@@ -530,6 +530,47 @@ export interface SpanningTabFit {
   readonly cellD: number;
   /** True when `label.edges === 'both'`, which can make a front tab collide. */
   readonly bothEdges: boolean;
+}
+
+/**
+ * Whether a per-compartment label tab can actually exist at `compartmentId`'s
+ * given edge — the counterpart of {@link spanningTabEligible} for the default
+ * (non-full-width) layout.
+ *
+ * Compartments are enforced rectangles, so every one has both a front and a
+ * back anchor edge; what varies is whether the shelf fits and whether the wall
+ * it hangs from is axis-aligned.
+ *
+ * The single source of truth for that question, shared by the worker that cuts
+ * the socket, the ghost overlay that previews it and the plate planner that
+ * ships a plate for it. Issue #2910 was the plate planner answering it
+ * independently — and never asking about `edges` at all, so a design with a tab
+ * on both edges shipped half the plates it needed.
+ */
+export function compartmentTabEligible(
+  config: CompartmentConfig,
+  compartmentId: number,
+  anchor: TabAnchorSide,
+  fit: LabelTabFit
+): boolean {
+  const bounds = getCompartmentBounds(config, compartmentId);
+  if (!bounds) return false;
+
+  // A tilted anchor wall breaks the axis-aligned wall the shelf and gusset
+  // geometry assume.
+  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  if (hasTilt(config, compartmentId)) return false;
+
+  // The body would punch through the compartment's opposite wall.
+  const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * fit.cellD;
+  if (fit.tabDepth + fit.inset > compartmentDepth) return false;
+
+  // With tabs on both edges, the front one is dropped where the pair would meet.
+  if (fit.bothEdges && anchor === 'front' && 2 * fit.tabDepth + 2 * fit.inset > compartmentDepth) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -545,7 +586,7 @@ export function spanningTabEligible(
   config: CompartmentConfig,
   row: number,
   anchor: TabAnchorSide,
-  fit: SpanningTabFit
+  fit: LabelTabFit
 ): boolean {
   // Nothing to hang the shelf from.
   if (!rowHasFullWidthWall(config, row, anchor)) return false;
