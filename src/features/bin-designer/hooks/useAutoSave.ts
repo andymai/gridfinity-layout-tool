@@ -91,6 +91,54 @@ export function useAutoSave(): void {
   // Abort token for the current pending save (new object per effect run)
   const abortTokenRef = useRef<{ current: boolean }>({ current: false });
 
+  // The write itself plus the bookkeeping every consumer downstream depends on
+  // (registry entry for the planner palette, `design-saved` for linked bins).
+  // Deliberately un-abortable: once we've decided to persist, dropping the
+  // registry/event half would leave the layout pointing at a stale design.
+  const persist = useCallback(
+    async (
+      paramsToSave: BinParams,
+      configToSave: ExportFileNameConfig,
+      designId: string,
+      thumbnail: string | null | undefined
+    ): Promise<boolean> => {
+      const result = await updateDesignParams(
+        toDesignId(designId),
+        paramsToSave,
+        thumbnail,
+        configToSave
+      );
+      if (!isOk(result)) return false;
+
+      lastSavedParams.current = paramsToSave;
+      lastSavedConfig.current = configToSave;
+      // Track active design for session restoration
+      setActiveDesignId(result.value.id);
+      // Sync lightweight ref to registry for Layout Planner
+      upsertRegistryEntry({
+        id: result.value.id,
+        name: result.value.name,
+        width: paramsToSave.width,
+        depth: paramsToSave.depth,
+        height: paramsToSave.height,
+        ...registryEdgeFields(paramsToSave),
+        updatedAt: result.value.updatedAt,
+      });
+      // Notify design-linking to auto-sync linked bins
+      emitSyncEvent({
+        type: 'design-saved',
+        designId: result.value.id,
+        dimensions: {
+          width: paramsToSave.width,
+          depth: paramsToSave.depth,
+          height: paramsToSave.height,
+        },
+      });
+      return true;
+    },
+    []
+  );
+
   const performSave = useCallback(
     async (
       paramsToSave: BinParams,
@@ -119,44 +167,10 @@ export function useAutoSave(): void {
         heightUnitMm: paramsToSave.heightUnitMm,
       });
 
-      const result = await updateDesignParams(
-        toDesignId(designId),
-        paramsToSave,
-        thumbnail,
-        configToSave
-      );
-      if (abortToken.current) return; // Superseded by newer save
-      if (isOk(result)) {
-        lastSavedParams.current = paramsToSave;
-        lastSavedConfig.current = configToSave;
-        setSaveStatus('saved');
-        // Track active design for session restoration
-        setActiveDesignId(result.value.id);
-        // Sync lightweight ref to registry for Layout Planner
-        upsertRegistryEntry({
-          id: result.value.id,
-          name: result.value.name,
-          width: paramsToSave.width,
-          depth: paramsToSave.depth,
-          height: paramsToSave.height,
-          ...registryEdgeFields(paramsToSave),
-          updatedAt: result.value.updatedAt,
-        });
-        // Notify design-linking to auto-sync linked bins
-        emitSyncEvent({
-          type: 'design-saved',
-          designId: result.value.id,
-          dimensions: {
-            width: paramsToSave.width,
-            depth: paramsToSave.depth,
-            height: paramsToSave.height,
-          },
-        });
-      } else {
-        setSaveStatus('error');
-      }
+      const saved = await persist(paramsToSave, configToSave, designId, thumbnail);
+      setSaveStatus(saved ? 'saved' : 'error');
     },
-    [setSaveStatus]
+    [setSaveStatus, persist]
   );
 
   useEffect(() => {
@@ -211,4 +225,25 @@ export function useAutoSave(): void {
       }
     };
   }, [params, exportFileNameConfig, currentDesignId, performSave]);
+
+  // Leaving the designer (route change) unmounts this hook, which aborts both
+  // the debounce and any save still waiting on generation — a window of up to
+  // ~6s in which the user's last edits were silently dropped while the
+  // in-memory store kept showing them (#2895). Flush straight to storage
+  // instead. No thumbnail: the canvas is already gone, and passing `undefined`
+  // keeps the stored one until useBackgroundThumbnailRegen refreshes it.
+  useEffect(() => {
+    return () => {
+      const state = useDesignerStore.getState();
+      const id = state.currentDesignId;
+      if (!id) return;
+      if (
+        lastSavedParams.current === state.params &&
+        lastSavedConfig.current === state.exportFileNameConfig
+      ) {
+        return;
+      }
+      void persist(state.params, state.exportFileNameConfig, id, undefined);
+    };
+  }, [persist]);
 }

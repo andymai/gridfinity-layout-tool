@@ -4,7 +4,9 @@ import { useAutoSave } from './useAutoSave';
 import { useDesignerStore } from '../store/designer';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
+import { onSyncEvent } from '@/shared/events/syncEventBus';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { loadRegistry } from '../store/customBinRegistry';
 import type { SavedDesign } from '../types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
@@ -264,5 +266,121 @@ describe('useAutoSave', () => {
     await advanceThroughSave();
 
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+  });
+
+  // Leaving the designer unmounts the hook. Both the debounce and the
+  // generation wait used to be aborted, so the last edits never reached
+  // IndexedDB while the in-memory store kept showing them (#2895).
+  describe('flush on unmount', () => {
+    it('persists a pending edit when unmounted inside the debounce window', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+        'existing-id',
+        expect.objectContaining({ width: 4 }),
+        undefined, // thumbnail untouched — the canvas is already gone
+        expect.objectContaining({ style: 'descriptive', customName: '' })
+      );
+    });
+
+    it('persists an edit whose save was still waiting on generation', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({
+        currentDesignId: 'existing-id',
+        generation: { status: 'generating', mesh: null, progress: 0, epoch: 0 },
+      });
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 6);
+      });
+
+      // Debounce elapses; the save is parked in waitForGenerationComplete.
+      await act(async () => {
+        vi.advanceTimersByTime(1100);
+      });
+      expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+        'existing-id',
+        expect.objectContaining({ width: 6 }),
+        undefined,
+        expect.anything()
+      );
+    });
+
+    it('updates the registry and notifies linked bins when flushing', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+      const onDesignSaved = vi.fn();
+      const unsubscribe = onSyncEvent('design-saved', onDesignSaved);
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(loadRegistry()).toContainEqual(expect.objectContaining({ id: 'existing-id' }));
+      expect(onDesignSaved).toHaveBeenCalledWith(
+        expect.objectContaining({ designId: 'existing-id' })
+      );
+      unsubscribe();
+    });
+
+    it('does not write when nothing changed since the last save', async () => {
+      mockUpdateDesignParams();
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+      await advanceThroughSave();
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+    });
+
+    it('does not write for an unsaved design', async () => {
+      mockUpdateDesignParams();
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+    });
   });
 });
