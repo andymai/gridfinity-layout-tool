@@ -93,7 +93,7 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
         type="button"
         variant="secondary"
         size="sm"
-        className="w-9 shrink-0 justify-center px-0"
+        className="h-7 w-9 shrink-0 justify-center px-0"
         aria-label={t('binDesigner.plateIconAriaValue', {
           n: compartmentNumber,
           icon: currentName,
