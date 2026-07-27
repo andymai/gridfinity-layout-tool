@@ -1,94 +1,77 @@
 // @vitest-environment node
 /**
- * Kernel tests for plate hardware icons (#2666 follow-up): every icon in the
- * catalog must build into a valid plate solid in both text modes, stay inside
- * the plate footprint, and carry TEXT-tagged faces for paint_color mapping.
+ * Silhouette-level checks for plate hardware icons — every icon in the catalog,
+ * without the expensive plate boolean. The per-icon emboss/deboss sweep against
+ * a real plate lives in `labelPlateIcons.plate.test.ts` so CI can shard the two
+ * apart as the catalog grows.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume } from 'brepjs';
 import { isOk } from '@/core/result';
-import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/features/bin-designer/types/text';
-import {
-  LABEL_PLATE_ICONS,
-  LABEL_PLATE_HEIGHT_MM,
-  LABEL_PLATE_THICKNESS_MM,
-  labelPlateWidthMm,
-} from '@/shared/constants/labelPlates';
+import { LABEL_ICON_PATHS } from '@/shared/constants/labelIconPaths';
+import { LABEL_PLATE_ICONS } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { boundingBox } from './__kernel-tests__/meshAssertions';
-import { mesh } from 'brepjs';
-import { FeatureTag } from './featureTags';
-import {
-  ICON_MAX_WIDTH_MM,
-  TEXT_BAND_MM,
-  buildLabelPlate,
-  exportLabelPlates,
-} from './labelPlateBuilder';
-import { measureIconBox } from './labelPlateIcons';
-import type { LabelPlateBuildOptions } from './labelPlateBuilder';
+import { ICON_MAX_WIDTH_MM, TEXT_BAND_MM } from './labelPlateBuilder';
+import { buildIconSolid, measureIconBox } from './labelPlateIcons';
+import { drawingFromSvgPath } from './svgDrawing';
+import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
 
 beforeAll(async () => {
   await initBrepjs();
 }, 30000);
 
-const OPTS: LabelPlateBuildOptions = {
-  textMode: 'emboss',
-  textDepthMm: 0.4,
-  textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
-  v1Channels: false,
+const DEPTH_MM = 0.4;
+/** Extruded height of an emboss solid, epsilon included. */
+const SOLID_HEIGHT_MM = DEPTH_MM + TEXT_BOOLEAN_EPSILON;
+
+/** Volume of the icon solid the plate builder actually fuses. */
+const solidVolume = (icon: LabelPlateIconId): number => {
+  const built = buildIconSolid({
+    icon,
+    heightMm: TEXT_BAND_MM,
+    maxWidthMm: ICON_MAX_WIDTH_MM,
+    centerX: 0,
+    centerY: 0,
+    topZ: 0,
+    depthMm: DEPTH_MM,
+    mode: 'emboss',
+  });
+  if (!built) throw new Error(`buildIconSolid returned null for ${icon}`);
+  try {
+    const r = measureVolume(built.solid);
+    if (!isOk(r)) throw new Error('measureVolume failed');
+    return r.value;
+  } finally {
+    built.solid.delete();
+  }
 };
 
-const vol = (s: Parameters<typeof measureVolume>[0]): number => {
-  const r = measureVolume(s);
-  if (!isOk(r)) throw new Error('measureVolume failed');
-  return r.value;
-};
+describe('labelPlateIcons catalog', () => {
+  it('has path data for every id in the allowlist', () => {
+    expect(Object.keys(LABEL_ICON_PATHS).sort()).toEqual([...LABEL_PLATE_ICONS].sort());
+  });
 
-describe('labelPlateIcons', () => {
-  const TEST_TIMEOUT_MS = 120_000;
+  it('imports every outline into a non-degenerate drawing', () => {
+    for (const icon of LABEL_PLATE_ICONS) {
+      const drawing = drawingFromSvgPath(LABEL_ICON_PATHS[icon].outline);
+      expect(drawing, icon).not.toBeNull();
+      const { width, height } = drawing?.boundingBox ?? { width: 0, height: 0 };
+      expect(width, icon).toBeGreaterThan(0);
+      expect(height, icon).toBeGreaterThan(0);
+    }
+  });
 
-  it(
-    'builds every icon in both modes without leaving the plate footprint',
-    () => {
-      const blank = buildLabelPlate({ widthU: 1, text: '' }, OPTS);
-      const blankVol = vol(blank);
-      blank.delete();
+  it('builds a positive-volume solid for every icon', () => {
+    for (const icon of LABEL_PLATE_ICONS) {
+      expect(solidVolume(icon), icon).toBeGreaterThan(0);
+    }
+  });
 
-      for (const icon of LABEL_PLATE_ICONS) {
-        for (const textMode of ['emboss', 'deboss'] as const) {
-          const plate = buildLabelPlate({ widthU: 1, text: '', icon }, { ...OPTS, textMode });
-          try {
-            const v = vol(plate);
-            // The icon must actually land: raised silhouette adds volume,
-            // recessed removes it. A silent fallback to a plain plate
-            // (failed boolean) would equal blankVol and fail both bounds.
-            if (textMode === 'emboss') {
-              expect(v, `${icon} ${textMode}`).toBeGreaterThan(blankVol + 0.5);
-            } else {
-              expect(v, `${icon} ${textMode}`).toBeLessThan(blankVol - 0.5);
-            }
-            const m = mesh(plate, { tolerance: 0.05, angularTolerance: 10 });
-            const bbox = boundingBox(new Float32Array(m.vertices));
-            expect(bbox.maxX - bbox.minX, icon).toBeCloseTo(labelPlateWidthMm(1), 1);
-            expect(bbox.maxY - bbox.minY, icon).toBeCloseTo(LABEL_PLATE_HEIGHT_MM, 1);
-            const expectedTop =
-              textMode === 'emboss'
-                ? LABEL_PLATE_THICKNESS_MM + OPTS.textDepthMm
-                : LABEL_PLATE_THICKNESS_MM;
-            expect(bbox.maxZ, `${icon} ${textMode}`).toBeCloseTo(expectedTop, 1);
-          } finally {
-            plate.delete();
-          }
-        }
-      }
-    },
-    TEST_TIMEOUT_MS
-  );
-
-  // Icons are fitted by their own silhouette bounds, not the shared +/-5 design
-  // frame: the side-view fasteners only ink 52-68% of that frame vertically, so
-  // a frame-relative box rendered a bolt at ~2/3 the visual weight of a washer
-  // and left both dwarfed by the (now ink-fitted) text.
+  // Icons are fitted by their own silhouette bounds, not a shared design
+  // frame: the side-view fasteners only ink 52-68% of a +/-5 frame vertically,
+  // so a frame-relative box rendered a bolt at ~2/3 the visual weight of a
+  // washer and left both dwarfed by the (ink-fitted) text.
   it('fits every icon to the readable band or the width cap', () => {
     for (const icon of LABEL_PLATE_ICONS) {
       const box = measureIconBox(icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
@@ -103,33 +86,61 @@ describe('labelPlateIcons', () => {
       expect(fillsBand || widthCapped, icon).toBe(true);
     }
   });
+});
 
-  it(
-    'tags icon faces TEXT so paint_color colors them with the text',
-    async () => {
-      const { faceGroups } = await exportLabelPlates(
-        [{ widthU: 1, text: '', icon: 'nut' }],
-        OPTS,
-        'stl'
-      );
-      const textIndexCount = (faceGroups ?? [])
-        .filter((g) => g.tag === FeatureTag.TEXT)
-        .reduce((sum, g) => sum + g.count, 0);
-      expect(textIndexCount).toBeGreaterThan(0);
-    },
-    TEST_TIMEOUT_MS
-  );
+describe('SVG conversion fidelity', () => {
+  // Locks the six originally hand-authored brepjs draw() chains against the
+  // sizes they rendered at before the SVG port. A silhouette that drifts here
+  // is a changed physical print, not a refactor.
+  const RENDERED_BOX_MM: Record<string, readonly [number, number]> = {
+    bolt: [11.470588, 7.8],
+    screw: [11.5, 7.36],
+    woodScrew: [11.5, 5.98],
+    nut: [6.754998, 7.8],
+    washer: [7.8, 7.8],
+    nail: [11.5, 6.9],
+  };
 
-  it(
-    'renders icon and text side by side on a wide plate',
-    async () => {
-      const { data } = await exportLabelPlates(
-        [{ widthU: 2, text: 'M3×12', icon: 'bolt' }],
-        OPTS,
-        'stl'
-      );
-      expect(data.byteLength).toBeGreaterThan(1000);
-    },
-    TEST_TIMEOUT_MS
-  );
+  it('renders the ported icons at their pre-port sizes', () => {
+    for (const [icon, [w, h]] of Object.entries(RENDERED_BOX_MM)) {
+      const box = measureIconBox(icon as LabelPlateIconId, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
+      expect(box, icon).not.toBeNull();
+      expect(box?.widthMm, `${icon} width`).toBeCloseTo(w, 5);
+      expect(box?.heightMm, `${icon} height`).toBeCloseTo(h, 5);
+    }
+  });
+
+  it('imports arcs as exact circles rather than polylines', () => {
+    // The washer is a plain disc scaled to the band, so its outer boundary is
+    // analytic: a faceted approximation would fall short well outside this
+    // tolerance. Radius 5 fits to a 7.8mm band, i.e. scale 0.78.
+    const outerRadius = 5 * 0.78;
+    const boreRadius = 2.6 * 0.78;
+    expect(solidVolume('washer')).toBeCloseTo(
+      Math.PI * (outerRadius ** 2 - boreRadius ** 2) * SOLID_HEIGHT_MM,
+      6
+    );
+  });
+
+  // A bore that fails to cut leaves the bounding box untouched and still adds
+  // volume to the plate, so it passes every existing assertion. Only the
+  // solid's own volume catches it — this is how the washer shipped as a disc.
+  it('cuts real bores in the holed icons', () => {
+    const scale = 0.78;
+    const hexArea = 1.5 * Math.sqrt(3) * (5 * scale) ** 2;
+    expect(solidVolume('nut')).toBeCloseTo(
+      (hexArea - Math.PI * (2.4 * scale) ** 2) * SOLID_HEIGHT_MM,
+      6
+    );
+
+    // Guard the specific regression: an uncut washer would measure the full
+    // disc, ~37% more material.
+    const uncutDisc = Math.PI * (5 * scale) ** 2 * SOLID_HEIGHT_MM;
+    expect(solidVolume('washer')).toBeLessThan(uncutDisc * 0.95);
+  });
+
+  it('returns null rather than throwing on unparseable path data', () => {
+    expect(drawingFromSvgPath('')).toBeNull();
+    expect(drawingFromSvgPath('not a path')).toBeNull();
+  });
 });
