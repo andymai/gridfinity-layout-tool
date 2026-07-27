@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.317.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.2...gridfinity-layout-tool-v4.317.0) (2026-07-27)
+
+
+### Features
+
+* **generation:** source label plate icons from SVG paths ([#2886](https://github.com/andymai/gridfinity-layout-tool/issues/2886)) ([31f6e63](https://github.com/andymai/gridfinity-layout-tool/commit/31f6e63b65bea73c2a357a6f54f388255a9441bc))
+
 ## [4.316.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.1...gridfinity-layout-tool-v4.316.2) (2026-07-27)
 
 
