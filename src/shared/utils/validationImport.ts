@@ -16,6 +16,7 @@ import {
   binId as toBinId,
   layerId as toLayerId,
   categoryId as toCategoryId,
+  designId as toDesignId,
   mm,
   gridUnits,
   heightUnits,
@@ -181,6 +182,7 @@ export function validateImport(data: unknown): ImportValidationResult {
       label: bin.label || '',
       notes: bin.notes || '',
       customProperties: bin.customProperties,
+      linkedDesignId: bin.linkedDesignId ? toDesignId(bin.linkedDesignId) : undefined,
     });
 
     // Validate custom properties if present

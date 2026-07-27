@@ -64,6 +64,8 @@ export {
   importLayoutJSON,
   importLayoutResult,
   restoreEmbeddedDesigns,
+  restoreSharedDesigns,
+  collectLinkedDesigns,
   exportPrintListTSV,
   type PrintListTSVMeta,
 } from './ShareService';

@@ -209,6 +209,67 @@ function checkText(text: string): ContentFilterResult {
 }
 
 /**
+ * Object keys whose *string* values are user-authored prose rendered to the
+ * recipient — engraved surface text, cutout labels. Keyed rather than scanning
+ * every string so enum values, hex colours, font names and ids don't get run
+ * through the blocklist.
+ */
+const TEXT_BEARING_KEYS = new Set(['text', 'label', 'name']);
+
+/** Bounds the walk over attacker-supplied params (depth and total strings). */
+const MAX_PARAM_DEPTH = 8;
+const MAX_TEXT_FIELDS = 500;
+
+/** Collect user-authored strings nested anywhere inside a design's params. */
+function collectDesignText(value: unknown, out: string[], depth = 0): void {
+  if (depth > MAX_PARAM_DEPTH || out.length >= MAX_TEXT_FIELDS) return;
+
+  if (Array.isArray(value)) {
+    for (const entry of value) collectDesignText(entry, out, depth + 1);
+    return;
+  }
+  if (typeof value !== 'object' || value === null) return;
+
+  for (const [key, nested] of Object.entries(value)) {
+    if (out.length >= MAX_TEXT_FIELDS) return;
+    if (typeof nested === 'string') {
+      if (TEXT_BEARING_KEYS.has(key)) out.push(nested);
+    } else {
+      collectDesignText(nested, out, depth + 1);
+    }
+  }
+}
+
+/**
+ * Check the bin designs travelling with a shared layout.
+ *
+ * Design names and the text engraved into their geometry are user-authored and
+ * shown to whoever opens the link, so they need the same moderation the layout
+ * itself gets — otherwise `linkedDesigns` is a way around it.
+ */
+export function filterSharedDesignsContent(
+  designs: ReadonlyArray<{ name: string; params: unknown }>
+): ContentFilterResult {
+  for (const design of designs) {
+    const nameResult = checkText(design.name);
+    if (!nameResult.passed) {
+      return { passed: false, reason: `Design name: ${nameResult.reason}` };
+    }
+
+    const texts: string[] = [];
+    collectDesignText(design.params, texts);
+    for (const text of texts) {
+      const result = checkText(text);
+      if (!result.passed) {
+        return { passed: false, reason: `Design "${design.name}" text: ${result.reason}` };
+      }
+    }
+  }
+
+  return { passed: true };
+}
+
+/**
  * Increment report count for a share.
  * If threshold exceeded, content should be reviewed/removed.
  */

@@ -10,6 +10,7 @@ import {
 } from '@/shared/utils/validation';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { isOk, isErr } from '@/core/result';
+import { designId } from '@/core/types';
 import { createTestLayout as baseCreateTestLayout, createTestBin } from '@/test/testUtils';
 
 const createTestLayout = () =>
@@ -872,5 +873,48 @@ describe('isValidBin type guard', () => {
       height: 3,
     };
     expect(isValidBin(bin)).toBe(false);
+  });
+});
+
+// Both import paths rebuild bins field-by-field, so a new Bin field has to be
+// added here explicitly or it is silently dropped. Losing linkedDesignId left
+// restoreEmbeddedDesigns remapping an id that was already gone (#2894).
+describe('linkedDesignId round-trip', () => {
+  const DESIGN_ID = 'design_1730000000000_ab12cd';
+  const layoutWithLinkedBin = () => {
+    const layout = createTestLayout();
+    layout.bins = [createTestBin({ linkedDesignId: designId(DESIGN_ID) })];
+    return layout;
+  };
+
+  it('validateImport preserves a bin linkedDesignId', () => {
+    const layout = layoutWithLinkedBin();
+
+    const result = validateImport(layout);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].linkedDesignId).toBe(DESIGN_ID);
+    }
+  });
+
+  it('validateImport leaves it undefined for an unlinked bin', () => {
+    const layout = createTestLayout();
+    layout.bins = [createTestBin()];
+    const result = validateImport(layout);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.layout.bins[0].linkedDesignId).toBeUndefined();
+  });
+
+  it('salvageImport preserves a bin linkedDesignId', () => {
+    const result = salvageImport(layoutWithLinkedBin());
+
+    expect(result.layout?.bins[0].linkedDesignId).toBe(DESIGN_ID);
+  });
+
+  it('isValidBin rejects a non-string linkedDesignId', () => {
+    expect(isValidBin({ ...createTestBin(), linkedDesignId: 42 })).toBe(false);
+    expect(isValidBin({ ...createTestBin(), linkedDesignId: 'design_1' })).toBe(true);
   });
 });

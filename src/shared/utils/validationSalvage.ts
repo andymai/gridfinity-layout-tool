@@ -18,6 +18,7 @@ import {
   binId as toBinId,
   layerId as toLayerId,
   categoryId as toCategoryId,
+  designId as toDesignId,
   mm,
   gridUnits,
   heightUnits,
@@ -115,6 +116,7 @@ export function salvageImport(data: unknown): SalvageResult {
       label: bin.label || '',
       notes: bin.notes || '',
       customProperties: bin.customProperties,
+      linkedDesignId: bin.linkedDesignId ? toDesignId(bin.linkedDesignId) : undefined,
     };
 
     // Staging bins pass through

@@ -49,9 +49,19 @@ Delete token: random secret, hashed server-side, required for mutations.
 2. **Shares are permanent** - no expiration, only explicit delete
 3. **Staging bins never sync** - filtered from fingerprint
 4. **Owner can't see own share in "Shared with me"**
+5. **Bin designs travel with the layout** - `bin.linkedDesignId` names a design in the
+   _sharer's_ IndexedDB, so the payload carries a sibling `linkedDesigns` array and the
+   recipient materializes local copies (`restoreSharedDesigns`). Any new `Bin` field must be
+   added explicitly to the server sanitizer (`api/lib/validation.ts`) AND both client import
+   paths (`validationImport.ts`, `validationSalvage.ts`) — all three rebuild bins
+   field-by-field and silently drop anything unlisted.
+6. **Restored design ids are derived, not generated** - hashed from (share id, source design
+   id) so re-opening a link updates the same records instead of duplicating them on
+   every visit.
 
 ## Limits
 
-- Size: 500KB max
+- Size: 500KB max (layout), 512KB max (linked designs, budgeted separately)
 - Bins: 2500 max
+- Linked designs: 250 max
 - Rate: 100/min (create, update, view, delete)

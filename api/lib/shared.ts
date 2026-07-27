@@ -148,6 +148,12 @@ export const SHARE_LAST_ACCESSED_TTL_SECONDS = 365 * 24 * 60 * 60;
  */
 export interface ShareData {
   layout: unknown;
+  /**
+   * Bin designs referenced by the layout's `bin.linkedDesignId`s. Stored
+   * alongside rather than inside the layout so the client-side `Layout` type
+   * stays free of share-only fields. Absent on pre-#2894 shares.
+   */
+  linkedDesigns?: unknown;
   metadata: ShareMetadata;
 }
 
