@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.314.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.313.0...gridfinity-layout-tool-v4.314.0) (2026-07-27)
+
+
+### Features
+
+* **baseplate:** key the detached margin seam so rails lock on like the pieces do ([#2876](https://github.com/andymai/gridfinity-layout-tool/issues/2876)) ([c7d7a7b](https://github.com/andymai/gridfinity-layout-tool/commit/c7d7a7b156aa2fdf77f090642f9369ab70241508))
+
 ## [4.313.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.1...gridfinity-layout-tool-v4.313.0) (2026-07-27)
 
 
