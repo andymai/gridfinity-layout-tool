@@ -88,6 +88,39 @@ describe('useBaseSection', () => {
     expect(result.current.state.hasLightweight).toBe(true);
   });
 
+  it('toggleSpacer flips the boolean and clears the magnet it cannot hold', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    expect(result.current.state.isSpacer).toBe(false);
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    const base = useDesignerStore.getState().params.base;
+    expect(base.spacer).toBe(true);
+    // A floorless riser has nowhere for the magnet pad to stand.
+    expect(base.style).toBe('standard');
+    // ...but it keeps the lip, or nothing would seat on top of it.
+    expect(base.stackingLip).toBe(true);
+  });
+
+  it('spacer is greyed out with a reason when a scoop is present', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.spacerDisabledReason).toBeTruthy();
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+    expect(useDesignerStore.getState().params.base.spacer).toBe(false);
+  });
+
   it('lightweight coexists with magnet style (allow-all, no constraint clearing)', () => {
     const { result } = renderHook(() => useBaseSection());
 

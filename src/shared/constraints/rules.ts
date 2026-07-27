@@ -141,6 +141,91 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.handles.unavailableSlotted',
   },
 
+  // ── Base: spacer (#2869) ─────────────────────────────────────────────────
+  // A spacer is a floorless riser: the floor is punched through every cell so
+  // only the shelled feet and the webbing between them remain. Nothing that
+  // needs a floor to sit on, cut into, or perforate can come along.
+  {
+    description: 'Spacer disables every floor-dependent feature',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: [
+      'compartments',
+      'label',
+      'scoop',
+      'floorPattern',
+      'inserts',
+      'cutouts',
+      'slotConfig',
+      'style.slotted',
+      'style.solid',
+    ],
+    reason: 'binDesigner.spacerDisablesInterior',
+  },
+  {
+    description: 'Spacer disables attachment hardware (no floor for a magnet pad)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.magnet', 'base.screw'],
+    reason: 'binDesigner.spacerDisablesAttachment',
+  },
+  {
+    description: 'Spacer disables the flat base (nothing to shell through) and lite (implied)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.flat', 'base.lightweight'],
+    reason: 'binDesigner.spacerDisablesBase',
+  },
+  {
+    description: 'Interior features incompatible with a spacer',
+    source: 'compartments',
+    when: (p) => p.compartments.cols > 1 || p.compartments.rows > 1,
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+  {
+    description: 'Scoop incompatible with a spacer',
+    source: 'scoop',
+    when: (p) => p.scoop.enabled,
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+  {
+    description: 'Label tabs incompatible with a spacer',
+    source: 'label',
+    when: (p) => p.label.enabled,
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+  {
+    description: 'Floor pattern incompatible with a spacer (no slab to perforate)',
+    source: 'floorPattern',
+    when: (p) => p.floorPattern?.enabled === true,
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+  {
+    description: 'Flat base incompatible with a spacer (no socket to shell through)',
+    source: 'base.flat',
+    when: (p) => p.base.style === 'flat',
+    disables: ['base.spacer'],
+    reason: 'binDesigner.flatFloorDisablesSpacer',
+  },
+  {
+    description: 'Slotted style incompatible with a spacer',
+    source: 'style.slotted',
+    when: (p) => p.style === 'slotted',
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+  {
+    description: 'Solid style incompatible with a spacer',
+    source: 'style.solid',
+    when: (p) => p.style === 'solid',
+    disables: ['base.spacer'],
+    reason: 'binDesigner.interiorDisablesSpacer',
+  },
+
   // ── Style: solid ─────────────────────────────────────────────────────────
   {
     description: 'Solid style disables cavity features',

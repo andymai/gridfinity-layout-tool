@@ -296,6 +296,76 @@ describe('resolveConstraints — style constraints', () => {
 // Constraint Resolution: Dynamic Constraints
 // =============================================================================
 
+describe('resolveConstraints — spacer (issue #2869)', () => {
+  it('enabling a spacer clears every floor-dependent feature at once', () => {
+    const params = makeParams({
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 3, rows: 2 },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+    });
+
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.spacer',
+      enabled: true,
+    });
+
+    expect(resolved.base.spacer).toBe(true);
+    expect(resolved.compartments.cols).toBe(1);
+    expect(resolved.compartments.rows).toBe(1);
+    expect(resolved.scoop.enabled).toBe(false);
+    expect(resolved.label.enabled).toBe(false);
+    // No floor for a magnet pad to stand on.
+    expect(resolved.base.style).toBe('standard');
+  });
+
+  it('keeps the feet and the stacking lip — the riser has to seat and be seated on', () => {
+    const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true } });
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.spacer',
+      enabled: true,
+    });
+    expect(resolved.base.stackingLip).toBe(true);
+    expect(resolved.base.style).not.toBe('flat');
+  });
+
+  it('a flat base blocks the spacer (nothing to open through)', () => {
+    const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } });
+    const status = getFeatureStatus(params, 'base.spacer');
+    expect(status.available).toBe(false);
+    expect(status.reason).toBe('binDesigner.flatFloorDisablesSpacer');
+  });
+
+  it('interior features block the spacer', () => {
+    for (const overrides of [
+      { compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1 } },
+      { scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
+      { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } },
+      { style: 'solid' as const },
+      { style: 'slotted' as const },
+    ]) {
+      const status = getFeatureStatus(makeParams(overrides), 'base.spacer');
+      expect(status.available, JSON.stringify(overrides)).toBe(false);
+    }
+  });
+
+  it('a spacer blocks the lightweight toggle it already implies', () => {
+    const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } });
+    expect(getFeatureStatus(params, 'base.lightweight').available).toBe(false);
+    expect(getFeatureStatus(params, 'base.magnet').available).toBe(false);
+    expect(getFeatureStatus(params, 'floorPattern').available).toBe(false);
+  });
+
+  it('turning the spacer back off is not blocked by what it disabled', () => {
+    const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } });
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.spacer',
+      enabled: false,
+    });
+    expect(resolved.base.spacer).toBe(false);
+  });
+});
+
 describe('resolveConstraints — dynamic constraints', () => {
   it('wall pattern disabled when all walls slotted', () => {
     const params = makeParams({

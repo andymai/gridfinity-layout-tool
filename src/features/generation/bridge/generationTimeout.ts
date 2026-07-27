@@ -272,7 +272,8 @@ function binRawBudgetMs(params: BinParams): number {
     params.floorPattern?.enabled === true &&
     !params.base.solid &&
     params.style !== 'solid' &&
-    !params.base.lightweight
+    !params.base.lightweight &&
+    !params.base.spacer
   ) {
     timeout += FLOOR_PATTERN_BONUS_MS;
     timeout += Math.ceil(safeWidth) * Math.ceil(safeDepth) * FLOOR_PATTERN_MS_PER_CELL;

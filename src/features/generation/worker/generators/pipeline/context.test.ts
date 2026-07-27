@@ -194,6 +194,51 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.interiorHeight).toBeCloseTo(15.3);
   });
 
+  describe('spacer flag in dimensions (issue #2869)', () => {
+    const spacerParams = (overrides?: Partial<BinParams['base']>): BinParams =>
+      createTestParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true, ...overrides } });
+
+    it('implies the shelled-base path, since the feet become the structure', () => {
+      const dim = createInitialContext(spacerParams()).dimensions;
+      expect(dim.isSpacer).toBe(true);
+      expect(dim.lightweight).toBe(true);
+    });
+
+    it('keeps the nominal wall height, so the riser stacks predictably', () => {
+      const plain = createInitialContext(createTestParams()).dimensions;
+      const spacer = createInitialContext(spacerParams()).dimensions;
+      expect(spacer.wallHeight).toBe(plain.wallHeight);
+      expect(spacer.totalHeight).toBe(plain.totalHeight);
+      expect(spacer.outerW).toBe(plain.outerW);
+      expect(spacer.outerD).toBe(plain.outerD);
+    });
+
+    it('suppresses attachment hardware — a pad in a through-hole would float', () => {
+      const dim = createInitialContext(spacerParams({ style: 'magnet_and_screw' })).dimensions;
+      expect(dim.withMagnet).toBe(false);
+      expect(dim.withScrew).toBe(false);
+    });
+
+    it('is inert on a flat base, which has no socket to open through', () => {
+      const dim = createInitialContext(spacerParams({ style: 'flat' })).dimensions;
+      expect(dim.isSpacer).toBe(false);
+      expect(dim.lightweight).toBe(false);
+    });
+
+    it('never shares a cached shell with the lite bin it resembles', () => {
+      const spacer = createInitialContext(spacerParams()).dimensions.shellKey;
+      const lite = createInitialContext(
+        createTestParams({ base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } })
+      ).dimensions.shellKey;
+      expect(spacer).not.toBe(lite);
+    });
+
+    it('leaves a plain bin out of the spacer cache bucket', () => {
+      const before = createInitialContext(createTestParams()).dimensions.shellKey;
+      expect(before).not.toContain('spacer');
+    });
+  });
+
   describe('halfSockets flag in dimensions', () => {
     it('stays off for an unset user toggle on a 1u-aligned L preset mask', () => {
       // 3×3 L-shape at 1u resolution — no half-bin detail.

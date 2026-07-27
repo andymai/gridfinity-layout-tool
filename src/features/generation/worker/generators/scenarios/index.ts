@@ -36,6 +36,7 @@ import { regressions } from './regressions';
 import { solidCutoutMatrix } from './solidCutoutMatrix';
 import { pathfinderOps } from './pathfinderOps';
 import { lightweight } from './lightweight';
+import { spacer } from './spacer';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
 import { kumiko } from './kumiko';
@@ -84,4 +85,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...kumiko,
   ...dividerPatterns,
   ...floorPatterns,
+  ...spacer,
 ];

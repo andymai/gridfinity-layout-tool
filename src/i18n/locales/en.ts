@@ -1939,6 +1939,11 @@ const en: Record<string, string> = {
     'A lightweight floor is already open — there is no slab to perforate',
   'binDesigner.floorPatternDisablesLightweight':
     'Cannot combine drainage holes with a lightweight floor',
+  'binDesigner.spacerDisablesInterior': 'A spacer has no floor to hold interior features',
+  'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
+  'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
+  'binDesigner.interiorDisablesSpacer': 'Cannot combine a spacer with interior features',
+  'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',
   'binDesigner.group.shape': 'Shape',
@@ -2420,6 +2425,9 @@ const en: Record<string, string> = {
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
   'binDesigner.lightweight': 'Lightweight floor',
+  'binDesigner.spacer': 'Spacer (no floor)',
+  'binDesigner.spacerHint':
+    'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
   'binDesigner.base.floorPattern': 'Drainage holes',
   'binDesigner.base.floorPattern.shape': 'Hole shape',
   'binDesigner.base.floorPattern.hint':

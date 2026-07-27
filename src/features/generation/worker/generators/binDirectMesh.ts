@@ -367,7 +367,9 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // Explicit ALLOWLIST so a future base style defaults to fallback, not to a
   // silently-wrong draft.
   if (!DIRECT_MESH_BASE_STYLES.has(base.style)) return false;
-  if (base.solid || base.lightweight) return false;
+  // A spacer punches the floor through every cell — the procedural draft models a
+  // solid floor, so drafting it would show a bin that isn't there.
+  if (base.solid || base.lightweight || base.spacer) return false;
 
   // Body style: slotted/solid change the walls and floor.
   if (params.style !== 'standard') return false;
