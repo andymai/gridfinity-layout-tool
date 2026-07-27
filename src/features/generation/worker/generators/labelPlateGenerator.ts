@@ -63,20 +63,23 @@ export function generateLabelPlates(
 
   const shown = seats.slice(0, MAX_PREVIEW_LABEL_PLATES);
 
-  // One text size across the set, matching how the printed sheet sizes them —
-  // otherwise the preview would show sizes the exported plates don't have.
-  const specs: LabelPlateSpec[] = shown.map((seat) => ({
+  const specOf = (seat: (typeof seats)[number]): LabelPlateSpec => ({
     widthU: seat.plateWidthU,
     text: seat.text,
     ...(seat.icon !== undefined ? { icon: seat.icon } : {}),
-  }));
+  });
+  const specs = shown.map(specOf);
   const opts = {
     textMode: params.textDefaults.mode === 'emboss' ? ('emboss' as const) : ('deboss' as const),
     textDepthMm: params.textDefaults.depth,
     textDefaults: params.textDefaults,
     v1Channels: true,
   };
-  const uniformTextSize = resolveUniformPlateTextSize(specs, opts);
+  // Sized against EVERY planned plate, not just the ones shown: the exported
+  // sheet sizes its text across the whole set, so capping the input here would
+  // render the preview larger than the plates that actually print whenever a
+  // longer caption sits past the ceiling.
+  const uniformTextSize = resolveUniformPlateTextSize(seats.map(specOf), opts);
 
   // Plates are small and flat; their only curved detail is the corner radius
   // and glyph outlines, so the fine tier costs little and reads cleanly.

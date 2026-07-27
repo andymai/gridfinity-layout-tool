@@ -283,7 +283,15 @@ export function useGeneration(): void {
         // Persist the exact preview mesh so reopening this design next session
         // paints instantly (pre-draft) instead of re-paying the cold start.
         // Fire-and-forget; refreshes LRU freshness even when the entry exists.
-        savePersistedBinMesh(binMeshCacheKey(genParams), result.mesh);
+        //
+        // Label plates are stripped first: this store is keyed by
+        // `binMeshCacheKey` and shared with the layout planner's linked-design
+        // meshes, which never render plates. Persisting them would bloat every
+        // entry the layout later reads back — the designer rebuilds them cheaply
+        // on the next generation.
+        const { labelPlates: _plates, ...persistable } = result.mesh;
+        void _plates;
+        savePersistedBinMesh(binMeshCacheKey(genParams), persistable);
 
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer

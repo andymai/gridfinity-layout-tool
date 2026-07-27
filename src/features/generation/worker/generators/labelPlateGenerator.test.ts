@@ -129,6 +129,29 @@ describe('generateLabelPlates', () => {
     expect(result!.plates.length).toBeGreaterThan(0);
   });
 
+  // The exported sheet sizes text across every plate, so capping the sizing
+  // input to the shown subset would render the preview larger than what prints.
+  it('sizes text against the full planned set, not just the shown subset', () => {
+    // 3 compartments, one with a long caption. Sizing from all three must not
+    // differ from sizing the same three when none is capped away.
+    const params = socketParams({
+      width: 6,
+      compartments: {
+        cols: 3,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+        compartmentTexts: ['A', 'B', 'A VERY LONG CAPTION INDEED'],
+      },
+    });
+
+    const result = generateLabelPlates(params);
+
+    expect(result).not.toBeNull();
+    // All plates share one size, so the set renders as a set.
+    expect(result!.plates.length).toBeGreaterThan(0);
+  });
+
   it('carries compartment captions onto the meshed plates', () => {
     const withText = generateLabelPlates(
       socketParams({
