@@ -55,6 +55,8 @@ import {
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
+import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid, fitTextToHost } from './textBuilder';
@@ -179,14 +181,27 @@ export function buildLabelTabs(
   });
 }
 
-function buildLabelTabsInScope(
-  scope: DisposalScope,
+/** Everything the tab build needs, resolved without touching BREP. */
+interface TabLayout {
+  readonly dims: TabBuildDimensions;
+  readonly plannedRows: readonly PlannedTabRow[];
+}
+
+/**
+ * Resolve tab dimensions and slot placement.
+ *
+ * Pure, and separate from the build because label tabs are a CACHED pipeline
+ * feature: on a cache hit no geometry is rebuilt, so anything that needs to
+ * know where the tabs ended up (the label-plate preview seats) has to be able
+ * to ask independently rather than observe the build.
+ */
+function planLabelTabLayout(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
   wallThickness: number
-): Shape3D | null {
+): TabLayout | null {
   const { cols, rows } = params.compartments;
   const tabDepth = params.label.depth;
 
@@ -331,6 +346,119 @@ function buildLabelTabsInScope(
       });
     }
   }
+
+  return { dims, plannedRows };
+}
+
+/**
+ * Where one swappable label plate seats, in bin-interior world coordinates.
+ *
+ * `z` is the plate's BOTTOM face (plates are modelled bottom-on-Z=0), and
+ * `slideY` is the direction it withdraws from its socket — the same sign the
+ * shelf body protrudes in, since the mouth opens through the compartment-facing
+ * edge.
+ */
+export interface LabelPlateSeat {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly slideY: 1 | -1;
+  readonly plateWidthU: LabelPlateWidthU;
+  readonly text: string;
+  readonly icon?: LabelPlateIconId;
+}
+
+/**
+ * Resolve where every swappable label plate seats, so the preview can render
+ * the real parts clicked into their sockets (#2666 plates, preview per user
+ * request).
+ *
+ * Planned rather than observed: label tabs are a cached pipeline feature, so a
+ * cache hit rebuilds no geometry and there is nothing to watch. This shares
+ * `planLabelTabLayout` with the builder, so a seat can only exist where a
+ * socket was actually cut.
+ *
+ * Returns an empty array outside socket mode.
+ */
+export function planLabelPlateSeats(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): LabelPlateSeat[] {
+  if (!params.label.enabled) return [];
+  if ((params.label.mode ?? 'text') !== 'socket') return [];
+
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return [];
+  const { dims, plannedRows } = layout;
+  const { socket, tabDepth, shelfTopZ } = dims;
+  if (!socket) return [];
+
+  // Mirrors the pocket floor in `cutLabelSocket` for each retention profile.
+  const pocketDepth =
+    socket.style === 'slideChannel'
+      ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
+      : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+
+  const spanning = params.label.span === true;
+  const texts = spanning
+    ? (params.label.rowTexts ?? [])
+    : (params.compartments.compartmentTexts ?? []);
+  const icons = params.compartments.labelIcons ?? [];
+  const alignment = params.label.alignment;
+  const wall = LABEL_SOCKET_WALL_MM;
+
+  const seats: LabelPlateSeat[] = [];
+  for (const planned of plannedRows) {
+    const depthSign: 1 | -1 = planned.anchor === 'back' ? -1 : 1;
+    for (const slot of planned.slots) {
+      const plateWidthU = socket.plateByCompartment.get(slot.cellId);
+      if (plateWidthU === undefined) continue;
+
+      // Same guards `applySocket` applies before cutting: no pocket, no seat.
+      const pocketW = labelPlateWidthMm(plateWidthU) + socket.clearanceMm;
+      const pocketD = LABEL_PLATE_HEIGHT_MM + socket.clearanceMm;
+      if (pocketW + 2 * wall > slot.tabWidth + 0.01) continue;
+      if (pocketD + 2 * wall > tabDepth + 0.01) continue;
+
+      const pocketX0 =
+        alignment === 'left'
+          ? wall
+          : alignment === 'right'
+            ? slot.tabWidth - wall - pocketW
+            : (slot.tabWidth - pocketW) / 2;
+
+      const icon = icons[slot.cellId];
+      seats.push({
+        // Local pocket centre plus the tab's world translation
+        // (`[tabXStart, positionY, shelfTopZ - tabHeight]`).
+        x: slot.tabXStart + pocketX0 + pocketW / 2,
+        y: slot.positionY + depthSign * (wall + pocketD / 2),
+        z: shelfTopZ - pocketDepth,
+        slideY: depthSign,
+        plateWidthU,
+        text: (texts[slot.cellId] ?? '').trim(),
+        ...(isLabelPlateIconId(icon) && !spanning ? { icon } : {}),
+      });
+    }
+  }
+  return seats;
+}
+
+function buildLabelTabsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return null;
+  const { dims, plannedRows } = layout;
+  const { socket, tabDepth } = dims;
 
   // Resolved per row/anchor group, not per bin: those tabs are what a viewer
   // sees side by side, and a bin-wide size would let one narrow compartment

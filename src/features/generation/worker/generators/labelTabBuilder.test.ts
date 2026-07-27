@@ -623,3 +623,147 @@ describe('buildLabelTabs — span full width', () => {
     }
   });
 });
+
+// Seats for the swappable-label plate preview. Planned rather than observed:
+// label tabs are a cached pipeline feature, so a cache hit rebuilds nothing.
+describe('planLabelPlateSeats', () => {
+  const socketParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const, depth: 14 },
+    ...over,
+  });
+
+  it('returns nothing when labels are disabled', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: false, mode: 'socket' as const },
+    });
+
+    expect(planLabelPlateSeats(params, 120, 80, 35, 1.2)).toEqual([]);
+  });
+
+  // Text-mode tabs engrave directly; there is no pocket and so no plate.
+  it('returns nothing in text mode', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'text' as const },
+    });
+
+    expect(planLabelPlateSeats(params, 120, 80, 35, 1.2)).toEqual([]);
+  });
+
+  it('seats one plate per socket', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const seats = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+
+    expect(seats.length).toBeGreaterThan(0);
+    for (const seat of seats) {
+      expect(Number.isFinite(seat.x)).toBe(true);
+      expect(Number.isFinite(seat.y)).toBe(true);
+      expect(Number.isFinite(seat.z)).toBe(true);
+      expect(seat.plateWidthU).toBeGreaterThan(0);
+    }
+  });
+
+  // Back-anchored tabs protrude toward -Y, so their plates withdraw that way.
+  it('reports the withdrawal direction of a back-anchored socket', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const seats = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+
+    expect(seats.every((s) => s.slideY === -1)).toBe(true);
+  });
+
+  it('seats a plate on each edge under edges: both', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const backOnly = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+    const both = planLabelPlateSeats(
+      socketParams({
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket' as const,
+          depth: 14,
+          edges: 'both' as const,
+        },
+      }),
+      120,
+      80,
+      35,
+      1.2
+    );
+
+    expect(both.length).toBe(backOnly.length * 2);
+    expect(both.some((s) => s.slideY === 1)).toBe(true);
+    expect(both.some((s) => s.slideY === -1)).toBe(true);
+  });
+
+  it('carries the compartment caption onto its plate', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      compartments: {
+        cols: 3,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+        compartmentTexts: ['M3', 'M4', 'M5'],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 120, 80, 35, 1.2);
+
+    expect(seats.map((s) => s.text).sort()).toEqual(['M3', 'M4', 'M5']);
+  });
+
+  // Span mode labels rows, so captions come from `label.rowTexts` (#2897).
+  it('reads row captions in span mode', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      compartments: {
+        cols: 3,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+        compartmentTexts: ['ignored', 'ignored', 'ignored'],
+      },
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        mode: 'socket' as const,
+        depth: 14,
+        span: true,
+        rowTexts: ['FASTENERS'],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 120, 80, 35, 1.2);
+
+    expect(seats).toHaveLength(1);
+    expect(seats[0].text).toBe('FASTENERS');
+  });
+
+  // Every seat must correspond to a socket the builder actually cut.
+  it('seats nothing when no compartment can host a plate', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    // 12 columns across an 80mm interior leaves ~6mm per tab — far under a 1U plate.
+    const params = socketParams({
+      compartments: {
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 80, 80, 35, 1.2);
+
+    // Either no seats, or the bin-spanning fallback's single seat — never a
+    // seat for a compartment too narrow to hold a plate.
+    expect(seats.length).toBeLessThanOrEqual(1);
+  });
+});
