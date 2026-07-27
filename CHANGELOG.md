@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.312.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.311.0...gridfinity-layout-tool-v4.312.0) (2026-07-27)
+
+
+### Features
+
+* **layout:** expand bins to fit the space around them ([#2871](https://github.com/andymai/gridfinity-layout-tool/issues/2871)) ([24ed520](https://github.com/andymai/gridfinity-layout-tool/commit/24ed520b2059d2d71645323c6d9b57f42da4413a))
+
 ## [4.311.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.1...gridfinity-layout-tool-v4.311.0) (2026-07-26)
 
 
