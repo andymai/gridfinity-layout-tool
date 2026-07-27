@@ -49,7 +49,11 @@ export function computeConnectorPositions(
   // All-edge slots (#2866): padding-free exterior edges carry a female slot too.
   // `padding` gates that per side, exactly as in `buildConnectors`.
   allEdgeSlots: boolean = false,
-  padding: SidePaddingMm = { left: 0, right: 0, front: 0, back: 0 }
+  padding: SidePaddingMm = { left: 0, right: 0, front: 0, back: 0 },
+  // Both-female styles (dovetail key / snap clip): the exact build puts a female
+  // half on BOTH sides of every seam, so no marker is male whatever the invert
+  // convention would otherwise say.
+  femaleSeams: boolean = false
 ): ConnectorPos[] {
   const positions: ConnectorPos[] = [];
   const zCenter = totalHeight / 2;
@@ -107,11 +111,10 @@ export function computeConnectorPositions(
   for (const { side, boundaries, position, nx, ny, isMale } of edgeDefs) {
     if (boundaries.length === 0) continue;
     if (!edgeCarriesSlot(edges[side], allEdgeSlots, padding[side])) continue;
-    // All-edge slots only engage for the both-female styles, whose exact build
-    // emits no tongue on ANY seam — join edges included. So once the option is on,
-    // every marker is female; the invert convention only applies to the integral
-    // styles that actually have a male half.
-    const male = !allEdgeSlots && edges[side] === 'join' && isMale;
+    // The invert convention only applies to the integral styles that actually
+    // have a male half; a both-female seam is female on both sides. Exterior
+    // slots are female by construction (the option is both-female only).
+    const male = !femaleSeams && edges[side] === 'join' && isMale;
     for (const bp of boundaries) {
       const { cx, cy } = position(bp);
       positions.push({ cx, cy, cz: zCenter, nx, ny, isMale: male });

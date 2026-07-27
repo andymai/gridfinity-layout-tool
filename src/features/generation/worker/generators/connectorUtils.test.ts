@@ -193,19 +193,24 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
     expect(asJoin.some((p) => p.isMale)).toBe(true);
   });
 
-  it('all-edge slots mark JOIN edges female too, whatever invert says (#2866)', () => {
-    // The option only engages for the both-female styles, whose exact build emits
-    // no tongue on ANY seam — so an inverted plate, where right/back would be male
-    // by convention, must still draft every marker female.
+  it('a both-female style drafts every marker female, whatever invert says', () => {
+    // dovetailKey/snapClip put a female half on BOTH sides of every seam, so an
+    // inverted plate — where right/back would be male by convention — must still
+    // draft every marker female, with or without all-edge slots.
     const allJoin = { left: 'join', right: 'join', front: 'join', back: 'join' } as const;
     const args = [2, 2, 42, 10, 2 * 42, 2 * 42, 0, 0, allJoin, true, 'end', 'end'] as const;
 
-    const slotted = computeConnectorPositions(...args, 42, true);
+    // All-edge slots always ride along with a both-female style, which is what
+    // actually suppresses the male half — `baseplateDirectMesh` passes both.
+    const slotted = computeConnectorPositions(...args, 42, true, undefined, true);
     expect(slotted.length).toBeGreaterThan(0);
     expect(slotted.some((p) => p.isMale)).toBe(false);
 
-    // Without the option the same plate keeps its male half, so the assertion
-    // above isn't vacuous.
+    // ...and equally without the option, since the style is what decides.
+    const seatedOnly = computeConnectorPositions(...args, 42, false, undefined, true);
+    expect(seatedOnly.some((p) => p.isMale)).toBe(false);
+
+    // An integral style keeps its male half, so the assertions above aren't vacuous.
     expect(computeConnectorPositions(...args).some((p) => p.isMale)).toBe(true);
   });
 
