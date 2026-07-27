@@ -285,6 +285,61 @@ describe('GenerationBridge', () => {
     });
   });
 
+  // Label plates are opt-in per request, but the dedup cache is keyed on params.
+  // Without the flag in the key, a no-plates result (layout planner, thumbnail
+  // regeneration) would satisfy a later designer request and the plates would
+  // vanish purely on call order.
+  describe('label plate opt-in', () => {
+    async function generateAndRespond(withPlates: boolean) {
+      const promise = withPlates
+        ? bridge.generateImmediate(DEFAULT_BIN_PARAMS, undefined, true)
+        : bridge.generateImmediate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(10);
+      const messages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      );
+      const last = messages[messages.length - 1] as {
+        payload: { requestId: string; withLabelPlates?: boolean };
+      };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: last.payload.requestId,
+        vertices: new Float32Array([1, 2, 3]),
+        normals: new Float32Array([0, 0, 1]),
+        indices: new Uint32Array([0]),
+        triangleCount: 1,
+        timingMs: 1,
+      });
+      await promise;
+      return { sent: last.payload, count: messages.length };
+    }
+
+    it('defaults to off and forwards the flag when opted in', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const off = await generateAndRespond(false);
+      expect(off.sent.withLabelPlates).toBe(false);
+
+      const on = await generateAndRespond(true);
+      expect(on.sent.withLabelPlates).toBe(true);
+    });
+
+    it('does not serve a plate request from a no-plate cache entry', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const first = await generateAndRespond(false);
+      // Same params, now wanting plates — must reach the worker, not the cache.
+      const second = await generateAndRespond(true);
+
+      expect(second.count).toBeGreaterThan(first.count);
+      expect(second.sent.withLabelPlates).toBe(true);
+    });
+  });
+
   describe('generation timeout recovery', () => {
     /** Drive a generation that never responds until its timeout fires. */
     async function timeOutAGeneration(): Promise<MockWorker> {

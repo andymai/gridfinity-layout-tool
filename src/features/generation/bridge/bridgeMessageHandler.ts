@@ -219,6 +219,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               lidMesh,
               stackPlateMesh,
               connectorKeyMesh,
+              labelPlates: response.labelPlates,
             },
             timingMs: response.timingMs,
             perfSnapshot: response.perfSnapshot,

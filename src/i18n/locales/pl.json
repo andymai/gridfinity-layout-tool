@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Etykiety wierszy",
   "binDesigner.rowNumberLabel": "Wiersz {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Tekst etykiety dla wiersza {n}",
+  "binDesigner.labelPlatesOmitted": "Podgląd {shown} z {total} tabliczek etykiet",
   "binDesigner.tabSpanFullWidth": "Na całą szerokość",
   "binDesigner.tabSpanFullWidthHint": "Jedna etykieta na wiersz zamiast jednej na przegrodę.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Etykiety na całą szerokość używają tekstów wierszy — edytuj je w sekcji Zakładka etykiety.",

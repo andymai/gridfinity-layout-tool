@@ -240,6 +240,20 @@ export function LabelTabsSection() {
                   <span>{t('binDesigner.plateSpanningNote')}</span>
                 </p>
               )}
+              {/* The preview tessellates a bounded number of plates so a large
+                  grid can't stall the editing loop — say so rather than let a
+                  partial set look like the whole design. */}
+              {state.omittedPlateCount > 0 && (
+                <p className="flex items-start gap-1 text-xs text-content-tertiary">
+                  <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                  <span>
+                    {t('binDesigner.labelPlatesOmitted', {
+                      shown: state.shownPlateCount,
+                      total: state.shownPlateCount + state.omittedPlateCount,
+                    })}
+                  </span>
+                </p>
+              )}
               {state.plateWidthRows.length > 0 && (
                 <div>
                   <span className="mb-1 block text-xs font-medium text-content-secondary">

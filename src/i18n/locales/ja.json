@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "行ラベル",
   "binDesigner.rowNumberLabel": "行 {n}",
   "binDesigner.rowEngravedTextAriaLabel": "行 {n} のラベルテキスト",
+  "binDesigner.labelPlatesOmitted": "{total} 枚中 {shown} 枚のラベルプレートをプレビュー中",
   "binDesigner.tabSpanFullWidth": "全幅に広げる",
   "binDesigner.tabSpanFullWidthHint": "コンパートメントごとではなく行ごとに1つのラベル。",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "全幅ラベルは行テキストを使用します。ラベルタブセクションで編集してください。",

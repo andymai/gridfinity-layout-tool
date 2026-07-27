@@ -195,6 +195,14 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   on `rectangle` / `circle` / `polygon` / `slot`. The editor exposes tolerance +
   chamfer as 0.2mm steppers that still accept off-grid fractional typing.
 
+- **Label plate preview**: socket-mode plates render as REAL geometry, meshed by
+  `labelPlateGenerator` and carried on the generation result beside `lidMesh`. Seats come
+  from `planLabelPlateSeats`, which shares `planLabelTabLayout` with the tab builder —
+  planned, not observed, because label tabs are a CACHED pipeline feature and a cache hit
+  rebuilds nothing for a collector to watch. Each plate is meshed once in plate-local
+  coords and drawn twice (seated + reference row) via `platePoses`. Capped at
+  `MAX_PREVIEW_LABEL_PLATES`; the remainder is surfaced in the label panel rather than
+  silently truncated. Preview only — export packs its own bed-sized sheet.
 - **Full-width label tabs (#2897)**: `label.span` swaps per-compartment tabs for one
   shelf per ROW. A row only gets one where a divider runs the full inner width behind it
   (`rowHasFullWidthWall`) — a shelf needs something to hang from. Captions live in

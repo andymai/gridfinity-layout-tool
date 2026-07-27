@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Etiquetas de fila",
   "binDesigner.rowNumberLabel": "Fila {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Texto de etiqueta para la fila {n}",
+  "binDesigner.labelPlatesOmitted": "Vista previa de {shown} de {total} placas de etiqueta",
   "binDesigner.tabSpanFullWidth": "Ancho completo",
   "binDesigner.tabSpanFullWidthHint": "Una etiqueta por fila en lugar de una por compartimento.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Las etiquetas de ancho completo usan textos de fila: edítalos en la sección Pestaña de etiqueta.",

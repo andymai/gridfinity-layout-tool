@@ -172,7 +172,7 @@ function plateTextMode(opts: LabelPlateBuildOptions): 'emboss' | 'engrave' {
  *
  * `undefined` when no plate carries text, leaving per-plate auto-fit.
  */
-function resolveUniformPlateTextSize(
+export function resolveUniformPlateTextSize(
   specs: readonly LabelPlateSpec[],
   opts: LabelPlateBuildOptions
 ): number | undefined {

@@ -14,6 +14,8 @@ import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
+import { generateLabelPlates } from '../generators/labelPlateGenerator';
+import type { BinParams } from '@/shared/types/bin';
 import { isAbortError } from '../generators/utils/abort';
 import { prepareMeshImprints } from '../generators/meshImprint';
 import { runGeneration, runWarm, reportProgress, getActiveRequestId } from './workerContext';
@@ -44,7 +46,7 @@ export function handleWarm(message: WarmMessage): void {
 }
 
 export async function handleGenerate(message: GenerateMessage): Promise<void> {
-  const { params, requestId } = message.payload;
+  const { params, requestId, withLabelPlates: wantPlates = false } = message.payload;
   await prepareImprintsSafe(params);
   runGeneration(
     (signal, perf): MeshData => {
@@ -84,12 +86,31 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
 
         console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
       }
-      return result;
+      return wantPlates ? withLabelPlates(result, params, signal) : result;
     },
     requestId,
     'BinGen',
     false
   );
+}
+
+/**
+ * Attach swappable label-plate preview meshes.
+ *
+ * Same secondary-feature contract as the lid: plates are a preview nicety, so a
+ * build failure degrades to the bin without them, but a cancellation still
+ * aborts the whole request.
+ */
+function withLabelPlates(result: MeshData, params: BinParams, signal?: AbortSignal): MeshData {
+  try {
+    const labelPlates = generateLabelPlates(params, signal);
+    return labelPlates ? { ...result, labelPlates } : result;
+  } catch (e) {
+    if (isAbortError(e)) throw e;
+
+    console.warn('[BinGen] Label plate preview failed; skipping plates:', e);
+    return result;
+  }
 }
 
 export function handleGenerateBaseplate(message: GenerateBaseplateMessage): void {

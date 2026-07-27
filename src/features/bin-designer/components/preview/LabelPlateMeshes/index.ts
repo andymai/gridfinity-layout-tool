@@ -1,0 +1,1 @@
+export { LabelPlateMeshes } from './LabelPlateMeshes';

@@ -85,13 +85,20 @@ export function generateBin(
   ctx: BridgeGenerationContext,
   params: BinParams,
   onProgress: ProgressCallback | undefined,
-  debounce: boolean
+  debounce: boolean,
+  withLabelPlates = false
 ): Promise<GenerationResult> {
   if (ctx.isDestroyed) {
     return Promise.reject(new Error('Bridge has been destroyed'));
   }
 
-  const fingerprint = paramsFingerprint(params);
+  // The flag is part of the identity, not just the request: the same params
+  // requested without plates (layout planner, thumbnail regeneration) produce a
+  // result that does NOT satisfy a later designer request. Sharing one entry
+  // would make plates appear or vanish purely on call order.
+  const fingerprint = withLabelPlates
+    ? `${paramsFingerprint(params)}|plates`
+    : paramsFingerprint(params);
   if (ctx.binCache.fingerprint === fingerprint && ctx.binCache.result) {
     return Promise.resolve(ctx.binCache.result);
   }
@@ -114,7 +121,7 @@ export function generateBin(
       ctx.binCache.pendingFingerprint = fingerprint;
       sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params), {
         type: 'GENERATE',
-        payload: { params, requestId },
+        payload: { params, requestId, withLabelPlates },
       });
     };
 

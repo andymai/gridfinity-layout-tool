@@ -229,13 +229,21 @@ export class GenerationBridge {
   }
 
   /** Generate bin mesh — debounced. */
-  generate(params: BinParams, onProgress?: ProgressCallback): Promise<GenerationResult> {
-    return generateBinImpl(this, params, onProgress, true);
+  generate(
+    params: BinParams,
+    onProgress?: ProgressCallback,
+    withLabelPlates = false
+  ): Promise<GenerationResult> {
+    return generateBinImpl(this, params, onProgress, true, withLabelPlates);
   }
 
   /** Generate immediately without debounce — for initial generation or user-triggered regeneration. */
-  generateImmediate(params: BinParams, onProgress?: ProgressCallback): Promise<GenerationResult> {
-    return generateBinImpl(this, params, onProgress, false);
+  generateImmediate(
+    params: BinParams,
+    onProgress?: ProgressCallback,
+    withLabelPlates = false
+  ): Promise<GenerationResult> {
+    return generateBinImpl(this, params, onProgress, false, withLabelPlates);
   }
 
   /**

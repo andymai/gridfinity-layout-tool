@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Radetiketter",
   "binDesigner.rowNumberLabel": "Rad {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Etikettext för rad {n}",
+  "binDesigner.labelPlatesOmitted": "Förhandsvisar {shown} av {total} etikettbrickor",
   "binDesigner.tabSpanFullWidth": "Full bredd",
   "binDesigner.tabSpanFullWidthHint": "En etikett per rad i stället för en per fack.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Etiketter i full bredd använder radtexter — redigera dem i avsnittet Etikettflik.",
