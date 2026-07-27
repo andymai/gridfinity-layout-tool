@@ -1,0 +1,65 @@
+src/features/bin-designer/utils/compartments.test.ts
+  s_88fb7e4cb490e1::t_8c9bc7ca2c9e6f 3
+  s_88fb7e4cb490e1::t_340d8ce4f7c9fe 1650-1717
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_88fb7e4cb490e1::t_6348554ddd63af 16-17
+  s_88fb7e4cb490e1::t_e8bcd803918127 162-167,169-170,173-183
+src/shared/types/bin.ts
+  s_88fb7e4cb490e1::t_6758fa94a9ef23 132,139
+src/shared/utils/labelSocketPlan.ts
+  s_88fb7e4cb490e1::t_dd4b804f57653d 171-172,180
+  s_88fb7e4cb490e1::t_96521a71718143 58-60,68-70,72-108,110-119,121-131,133-139,147-164,167-170,173-177,179,183-186
+  s_88fb7e4cb490e1::t_491608387bfe60 140-146
+  s_88fb7e4cb490e1::t_3636a2dae6be8d 14-17,19-24
+  s_88fb7e4cb490e1::t_8c2de9e0d1580f 18
+src/features/bin-designer/utils/compartments.ts
+  s_88fb7e4cb490e1::t_12e76c0e121820 523-524,535-573
+  s_88fb7e4cb490e1::t_3e012f5df2374f 589
+  s_88fb7e4cb490e1::t_1278ef380a21ee 574-575
+src/shared/hooks/useLabelPlateCounts.ts
+  s_88fb7e4cb490e1::t_0e8a622d639d7f 55-60,62-63
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_88fb7e4cb490e1::t_6874ffb8299bf9 343
+  s_88fb7e4cb490e1::t_de0bf720fd66b9 545
+  s_88fb7e4cb490e1::t_3e3a2fab17b016 25
+  s_88fb7e4cb490e1::t_7fb83b52c5a7c4 32
+  s_88fb7e4cb490e1::t_261ec39dc41676 268-274
+  s_88fb7e4cb490e1::t_4d57bb1e5a32d9 560
+  s_88fb7e4cb490e1::t_2415fb6bad5827 577-582
+src/features/bin-designer/hooks/useLabelPlateExport.test.ts
+  s_88fb7e4cb490e1::t_8cdaa3d23beda8 57-92
+src/shell/layoutExport/planLabelPlateExport.test.ts
+  s_88fb7e4cb490e1::t_e24c07315a5c20 117-124,132-151,159-165
+  s_88fb7e4cb490e1::t_2c950f0726c95f 125-131,152-158
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_88fb7e4cb490e1::t_6f0ffaba54eeaa 117
+  s_88fb7e4cb490e1::t_bfd45b3052e8cb 161-163
+  s_88fb7e4cb490e1::t_6ba7530836635f 107
+  s_88fb7e4cb490e1::t_39b054537d3506 19
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_88fb7e4cb490e1::t_8cc3320f6973b7 98-118
+  s_88fb7e4cb490e1::t_644d705f5bc482 20,46,62,122
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_88fb7e4cb490e1::t_2d7add9c455dd2 68,72-79
+src/shared/utils/labelSocketPlan.test.ts
+  s_88fb7e4cb490e1::t_2c950f0726c95f 127-131,153-160
+  s_88fb7e4cb490e1::t_333c8ccac86b9a 138-140,144-152,161,166-170,174,178-270
+  s_88fb7e4cb490e1::t_9550ec0527f242 3,16-48
+  s_88fb7e4cb490e1::t_ec6c2d70223c8e 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "329f849bcc85abfbe5ce4ef6fcbf0eda78fe609e",
+  "prompts": {},
+  "sessions": {
+    "s_88fb7e4cb490e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f93772b3-00a9-4d4e-a15c-24ba1d845be0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
