@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.316.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.315.0...gridfinity-layout-tool-v4.316.0) (2026-07-27)
+
+
+### Features
+
+* **baseplate:** cut key slots on all edges so split pieces are standard tiles ([#2875](https://github.com/andymai/gridfinity-layout-tool/issues/2875)) ([61badac](https://github.com/andymai/gridfinity-layout-tool/commit/61badac10dbb87f77facaa3a4c63fa9a0fd560cf))
+
 ## [4.315.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.314.0...gridfinity-layout-tool-v4.315.0) (2026-07-27)
 
 
