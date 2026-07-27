@@ -87,7 +87,7 @@ graph TB
 - `worker/generators/shapeCache.ts` — LRU caches for BREP solids. Includes a per-cell-size **cell-socket template** cache: a uniform socket grid lofts one cell once and clones it per position (intrinsic-keyed, placement-invariant), turning a cold build from N lofts into 1 loft + (N−1) clones — the bin-side mirror of the baseplate `pocketTemplateCache`
 - `worker/generators/socketMeshCache.ts` — LRU cache for the deferred socket's tessellated mesh (triangles + edge lines), keyed by socket geometry identity + tolerance; reused across edits that don't change the base
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
-- `worker/generators/scenarios/` — test scenario data by category
+- `worker/generators/scenarios/` — test scenario data by category. Each module is run TWICE, by one `binGenerator.scenario.<domain>.test.ts` (generation) and one `binGenerator.export.<domain>.test.ts` (export integrity, via `__kernel-tests__/exportIntegrityRunner.ts`). **The one-file-per-domain split is a CI requirement, not tidiness**: Vitest parallelizes across files but never within one, and `--shard` divides by file path, so a whole-catalog file pins a single worker and its duration becomes the floor for the entire CI run — the export matrix in that form cost 14 minutes and set the critical path on its own. `binGenerator.scenarioCoverage.test.ts` enforces that both files exist for every module
 - `export/stlExporter.ts` — STL file export
 - `export/threemfExporter.ts` — 3MF file export (see [3MF multi-color compatibility](#3mf-multi-color-compatibility) for the slicer interop notes)
 - `export/validation.ts` — shared mesh data validation

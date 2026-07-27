@@ -97,7 +97,7 @@ export interface MeshTopologyStats {
  * independently, so a closed solid still has coincident-but-distinct vertices
  * along every shared edge. Quantizing to 1e-4 mm collapses those so a genuinely
  * closed surface reports zero boundary edges. Mirrors the `analyze()` topology
- * pass in binGenerator.scenario.export-integrity.test.ts, which asserts the same
+ * pass in the binGenerator.export.<domain>.test.ts matrix, which asserts the same
  * invariant over every exported scenario.
  */
 export function meshTopologyStats({ vertices, indices }: MeshData): MeshTopologyStats {
