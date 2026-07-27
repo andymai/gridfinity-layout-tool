@@ -181,6 +181,11 @@ function validateBase(base: unknown): string | null {
     return 'base.screwDiameter must be 1-10';
   }
   if (!isBoolean(base.stackingLip)) return 'base.stackingLip must be boolean';
+  // Spacer changes the shell (a floorless riser), so a shared payload has to
+  // declare it honestly rather than smuggle a truthy non-boolean past the client.
+  if (base.spacer !== undefined && !isBoolean(base.spacer)) {
+    return 'base.spacer must be boolean';
+  }
   return null;
 }
 

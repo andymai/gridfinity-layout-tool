@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Une entretoise n'a pas de fond pour recevoir des aménagements",
   "binDesigner.spacerDisablesAttachment": "Une entretoise n'a pas de fond pour recevoir un aimant ou une vis",
   "binDesigner.spacerDisablesBase": "L'entretoise ouvre déjà la base de part en part",
-  "binDesigner.interiorDisablesSpacer": "Impossible de combiner une entretoise avec des aménagements intérieurs",
   "binDesigner.flatFloorDisablesSpacer": "Une entretoise a besoin de pieds à traverser",
   "binDesigner.solidDisablesCavity": "Non disponible pour les bacs pleins",
   "binDesigner.solidInteriorSummary": "Intérieur plein",

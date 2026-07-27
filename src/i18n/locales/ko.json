@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "스페이서에는 내부 구조를 받칠 바닥이 없습니다",
   "binDesigner.spacerDisablesAttachment": "스페이서에는 자석이나 나사를 받칠 바닥이 없습니다",
   "binDesigner.spacerDisablesBase": "스페이서는 이미 베이스를 관통시킵니다",
-  "binDesigner.interiorDisablesSpacer": "스페이서는 내부 구조와 함께 사용할 수 없습니다",
   "binDesigner.flatFloorDisablesSpacer": "스페이서에는 관통할 발이 필요합니다",
   "binDesigner.solidDisablesCavity": "솔리드 수납통에는 사용할 수 없습니다",
   "binDesigner.solidInteriorSummary": "솔리드 내부",

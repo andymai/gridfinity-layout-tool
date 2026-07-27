@@ -336,7 +336,9 @@ describe('resolveConstraints — spacer (issue #2869)', () => {
     expect(status.reason).toBe('binDesigner.flatFloorDisablesSpacer');
   });
 
-  it('interior features block the spacer', () => {
+  it('stays reachable from a fully-designed bin — it is a mode switch', () => {
+    // One-way from the interior features (the `style.solid` precedent): greying
+    // the toggle out would leave the user hand-clearing each one first.
     for (const overrides of [
       { compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1 } },
       { scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } },
@@ -344,8 +346,15 @@ describe('resolveConstraints — spacer (issue #2869)', () => {
       { style: 'solid' as const },
       { style: 'slotted' as const },
     ]) {
-      const status = getFeatureStatus(makeParams(overrides), 'base.spacer');
-      expect(status.available, JSON.stringify(overrides)).toBe(false);
+      const params = makeParams(overrides);
+      expect(getFeatureStatus(params, 'base.spacer').available, JSON.stringify(overrides)).toBe(
+        true
+      );
+      const { params: resolved } = resolveConstraints(params, {
+        feature: 'base.spacer',
+        enabled: true,
+      });
+      expect(resolved.base.spacer, JSON.stringify(overrides)).toBe(true);
     }
   });
 

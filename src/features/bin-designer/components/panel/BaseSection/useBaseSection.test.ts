@@ -108,9 +108,25 @@ describe('useBaseSection', () => {
     expect(base.stackingLip).toBe(true);
   });
 
-  it('spacer is greyed out with a reason when a scoop is present', () => {
+  it('spacer stays selectable with a scoop present and clears it', () => {
+    // A spacer is a mode switch, so it must be reachable from a designed bin.
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.spacerDisabledReason).toBeUndefined();
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+    expect(useDesignerStore.getState().params.base.spacer).toBe(true);
+    expect(useDesignerStore.getState().params.scoop.enabled).toBe(false);
+  });
+
+  it('spacer is greyed out with a reason on a flat base', () => {
+    // The one genuine block: no feet for the spacer to open through.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
     });
     const { result } = renderHook(() => useBaseSection());
     expect(result.current.handlers.spacerDisabledReason).toBeTruthy();

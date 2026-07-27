@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "En avstandsdel har ingen bunn å holde innmat i",
   "binDesigner.spacerDisablesAttachment": "En avstandsdel har ingen bunn å holde magnet eller skrue i",
   "binDesigner.spacerDisablesBase": "Avstandsdelen åpner allerede basen helt gjennom",
-  "binDesigner.interiorDisablesSpacer": "Kan ikke kombinere en avstandsdel med innmat",
   "binDesigner.flatFloorDisablesSpacer": "En avstandsdel trenger føtter å åpne gjennom",
   "binDesigner.solidDisablesCavity": "Ikke tilgjengelig for solide beholdere",
   "binDesigner.solidInteriorSummary": "Solid innside",

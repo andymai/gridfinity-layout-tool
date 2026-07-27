@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "垫高件没有底板来承载内部结构",
   "binDesigner.spacerDisablesAttachment": "垫高件没有底板来固定磁铁或螺钉",
   "binDesigner.spacerDisablesBase": "垫高件已经把底座完全打通",
-  "binDesigner.interiorDisablesSpacer": "垫高件不能与内部结构同时使用",
   "binDesigner.flatFloorDisablesSpacer": "垫高件需要可打通的底脚",
   "binDesigner.solidDisablesCavity": "实心收纳盒不可用",
   "binDesigner.solidInteriorSummary": "实心内部",

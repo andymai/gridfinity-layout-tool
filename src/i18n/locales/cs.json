@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Rozpěrka nemá podlahu, která by nesla vnitřní prvky",
   "binDesigner.spacerDisablesAttachment": "Rozpěrka nemá podlahu pro magnet ani šroub",
   "binDesigner.spacerDisablesBase": "Rozpěrka už otevírá základnu naskrz",
-  "binDesigner.interiorDisablesSpacer": "Rozpěrku nelze kombinovat s vnitřními prvky",
   "binDesigner.flatFloorDisablesSpacer": "Rozpěrka potřebuje nožky, kterými se otevře",
   "binDesigner.solidDisablesCavity": "Není dostupné pro plné biny",
   "binDesigner.solidInteriorSummary": "Plný vnitřek",

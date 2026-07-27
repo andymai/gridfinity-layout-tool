@@ -1942,7 +1942,6 @@ const en: Record<string, string> = {
   'binDesigner.spacerDisablesInterior': 'A spacer has no floor to hold interior features',
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
   'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
-  'binDesigner.interiorDisablesSpacer': 'Cannot combine a spacer with interior features',
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',

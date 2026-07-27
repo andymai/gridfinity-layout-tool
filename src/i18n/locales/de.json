@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Ein Abstandshalter hat keinen Boden für Innenausbau",
   "binDesigner.spacerDisablesAttachment": "Ein Abstandshalter hat keinen Boden für Magnet oder Schraube",
   "binDesigner.spacerDisablesBase": "Der Abstandshalter öffnet die Basis schon vollständig",
-  "binDesigner.interiorDisablesSpacer": "Abstandshalter lässt sich nicht mit Innenausbau kombinieren",
   "binDesigner.flatFloorDisablesSpacer": "Ein Abstandshalter braucht Füße, durch die er öffnet",
   "binDesigner.solidDisablesCavity": "Nicht verfügbar für massive Behälter",
   "binDesigner.solidInteriorSummary": "Massiver Innenraum",

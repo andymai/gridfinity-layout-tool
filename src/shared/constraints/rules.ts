@@ -176,54 +176,18 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['base.flat', 'base.lightweight'],
     reason: 'binDesigner.spacerDisablesBase',
   },
+  // Deliberately ONE-WAY from the interior features: a spacer is a mode switch, so
+  // it must stay reachable from a fully-designed bin and clear the incompatible
+  // set on the way in (the `style.solid` precedent). A reverse rule would grey the
+  // toggle out and leave the user hand-clearing compartments, scoop and label
+  // first. Only the flat base blocks it, and that is genuinely mutual — a plate
+  // with no feet has nothing for the spacer to open through.
   {
-    description: 'Interior features incompatible with a spacer',
-    source: 'compartments',
-    when: (p) => p.compartments.cols > 1 || p.compartments.rows > 1,
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
-  },
-  {
-    description: 'Scoop incompatible with a spacer',
-    source: 'scoop',
-    when: (p) => p.scoop.enabled,
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
-  },
-  {
-    description: 'Label tabs incompatible with a spacer',
-    source: 'label',
-    when: (p) => p.label.enabled,
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
-  },
-  {
-    description: 'Floor pattern incompatible with a spacer (no slab to perforate)',
-    source: 'floorPattern',
-    when: (p) => p.floorPattern?.enabled === true,
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
-  },
-  {
-    description: 'Flat base incompatible with a spacer (no socket to shell through)',
+    description: 'Flat base incompatible with a spacer (no feet to open through)',
     source: 'base.flat',
     when: (p) => p.base.style === 'flat',
     disables: ['base.spacer'],
     reason: 'binDesigner.flatFloorDisablesSpacer',
-  },
-  {
-    description: 'Slotted style incompatible with a spacer',
-    source: 'style.slotted',
-    when: (p) => p.style === 'slotted',
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
-  },
-  {
-    description: 'Solid style incompatible with a spacer',
-    source: 'style.solid',
-    when: (p) => p.style === 'solid',
-    disables: ['base.spacer'],
-    reason: 'binDesigner.interiorDisablesSpacer',
   },
 
   // ── Style: solid ─────────────────────────────────────────────────────────

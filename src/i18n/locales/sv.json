@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "En distans har inget golv för inredningsdelar",
   "binDesigner.spacerDisablesAttachment": "En distans har inget golv för magnet eller skruv",
   "binDesigner.spacerDisablesBase": "Distansen öppnar redan basen rakt igenom",
-  "binDesigner.interiorDisablesSpacer": "Går inte att kombinera en distans med inredningsdelar",
   "binDesigner.flatFloorDisablesSpacer": "En distans behöver fötter att öppna genom",
   "binDesigner.solidDisablesCavity": "Inte tillgängligt för massiva fack",
   "binDesigner.solidInteriorSummary": "Massiv interiör",

@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "スペーサーには内部パーツを受ける床がありません",
   "binDesigner.spacerDisablesAttachment": "スペーサーにはマグネットやネジを受ける床がありません",
   "binDesigner.spacerDisablesBase": "スペーサーはすでにベースを貫通させています",
-  "binDesigner.interiorDisablesSpacer": "スペーサーと内部パーツは併用できません",
   "binDesigner.flatFloorDisablesSpacer": "スペーサーには貫通させる脚が必要です",
   "binDesigner.solidDisablesCavity": "無垢ビンでは利用できません",
   "binDesigner.solidInteriorSummary": "無垢内部",

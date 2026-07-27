@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "У проставці немає дна для внутрішніх елементів",
   "binDesigner.spacerDisablesAttachment": "У проставці немає дна для магніту чи гвинта",
   "binDesigner.spacerDisablesBase": "Проставка вже відкриває основу наскрізь",
-  "binDesigner.interiorDisablesSpacer": "Не можна поєднати проставку з внутрішніми елементами",
   "binDesigner.flatFloorDisablesSpacer": "Проставці потрібні ніжки, крізь які вона відкривається",
   "binDesigner.solidDisablesCavity": "Недоступно для суцільних бінів",
   "binDesigner.solidInteriorSummary": "Суцільний інтер’єр",

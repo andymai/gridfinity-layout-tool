@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Un distanziale non ha fondo per gli elementi interni",
   "binDesigner.spacerDisablesAttachment": "Un distanziale non ha fondo per un magnete o una vite",
   "binDesigner.spacerDisablesBase": "Il distanziale apre già la base da parte a parte",
-  "binDesigner.interiorDisablesSpacer": "Non si può combinare un distanziale con elementi interni",
   "binDesigner.flatFloorDisablesSpacer": "Un distanziale ha bisogno di piedini da attraversare",
   "binDesigner.solidDisablesCavity": "Non disponibile per i bin pieni",
   "binDesigner.solidInteriorSummary": "Interno pieno",

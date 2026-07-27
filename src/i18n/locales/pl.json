@@ -1654,7 +1654,6 @@
   "binDesigner.spacerDisablesInterior": "Przekładka nie ma podłogi dla elementów wnętrza",
   "binDesigner.spacerDisablesAttachment": "Przekładka nie ma podłogi dla magnesu ani wkrętu",
   "binDesigner.spacerDisablesBase": "Przekładka już otwiera podstawę na wylot",
-  "binDesigner.interiorDisablesSpacer": "Nie można połączyć przekładki z elementami wnętrza",
   "binDesigner.flatFloorDisablesSpacer": "Przekładka potrzebuje stopek, przez które się otwiera",
   "binDesigner.solidDisablesCavity": "Niedostępne dla pełnych binów",
   "binDesigner.stylesMutuallyExclusive": "Aktywny może być tylko jeden styl bina",

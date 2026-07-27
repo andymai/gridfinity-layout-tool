@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Un separador no tiene suelo para alojar elementos interiores",
   "binDesigner.spacerDisablesAttachment": "Un separador no tiene suelo para alojar un imán o tornillo",
   "binDesigner.spacerDisablesBase": "El separador ya abre la base de lado a lado",
-  "binDesigner.interiorDisablesSpacer": "No se puede combinar un separador con elementos interiores",
   "binDesigner.flatFloorDisablesSpacer": "Un separador necesita pies por los que abrirse",
   "binDesigner.solidDisablesCavity": "No disponible para contenedores sólidos",
   "binDesigner.solidInteriorSummary": "Interior sólido",

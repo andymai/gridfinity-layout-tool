@@ -925,7 +925,6 @@
   "binDesigner.spacerDisablesInterior": "Een afstandhouder heeft geen bodem voor interieurelementen",
   "binDesigner.spacerDisablesAttachment": "Een afstandhouder heeft geen bodem voor een magneet of schroef",
   "binDesigner.spacerDisablesBase": "De afstandhouder opent de basis al helemaal",
-  "binDesigner.interiorDisablesSpacer": "Een afstandhouder kan niet samen met interieurelementen",
   "binDesigner.flatFloorDisablesSpacer": "Een afstandhouder heeft voetjes nodig om door te openen",
   "binDesigner.solidDisablesCavity": "Niet beschikbaar voor massieve bakken",
   "binDesigner.solidInteriorSummary": "Massief interieur",
