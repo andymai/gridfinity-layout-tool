@@ -954,7 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Vrut do dřeva",
   "binDesigner.plateIcon.zipTie": "Stahovací páska",
   "binDesigner.plateIconAria": "Ikona destičky pro přihrádku {n}",
-  "binDesigner.plateIconAriaValue": "Ikona štítku pro přihrádku {n}: {icon}",
+  "binDesigner.plateIconAriaValue": "Ikona destičky pro přihrádku {n}: {icon}",
   "binDesigner.plateSpanningNote": "Přihrádky jsou příliš úzké pro jednotlivé destičky — místo toho se použije jedna patice přes celý bin.",
   "binDesigner.plateWidth": "Šířka destičky",
   "binDesigner.plateWidthAria": "Šířka destičky pro přihrádku {n}",

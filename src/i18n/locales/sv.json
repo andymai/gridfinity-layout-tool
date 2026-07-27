@@ -954,7 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Träskruv",
   "binDesigner.plateIcon.zipTie": "Buntband",
   "binDesigner.plateIconAria": "Plattikon för fack {n}",
-  "binDesigner.plateIconAriaValue": "Skyltsymbol för fack {n}: {icon}",
+  "binDesigner.plateIconAriaValue": "Plattikon för fack {n}: {icon}",
   "binDesigner.plateSpanningNote": "Facken är för smala för egna plattor — ett enda fäste över hela lådans bredd används i stället.",
   "binDesigner.plateWidth": "Plattbredd",
   "binDesigner.plateWidthAria": "Plattbredd för fack {n}",

@@ -954,7 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "목재 나사",
   "binDesigner.plateIcon.zipTie": "케이블 타이",
   "binDesigner.plateIconAria": "{n}번 칸의 플레이트 아이콘",
-  "binDesigner.plateIconAriaValue": "칸 {n}의 플레이트 아이콘: {icon}",
+  "binDesigner.plateIconAriaValue": "{n}번 칸의 플레이트 아이콘: {icon}",
   "binDesigner.plateSpanningNote": "칸이 개별 플레이트에는 너무 좁아 — 수납통 너비의 소켓 하나를 대신 사용합니다.",
   "binDesigner.plateWidth": "플레이트 너비",
   "binDesigner.plateWidthAria": "{n}번 칸의 플레이트 너비",
