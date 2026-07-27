@@ -65,6 +65,17 @@ src/features/grid-editor/components/Grid/Bin/categoryPatterns.test.ts
 src/shared/utils/color.ts
   s_504cfd08bbb576::t_7eba78f3fc2211 34-42
   s_504cfd08bbb576::t_318da49f63c18e 33
+src/shared/types/bin.ts
+  s_0882e0636efa4f::t_ece5c0fe3ae25c 191,199
+src/features/baseplate/utils/splitPlanner.ts
+  s_0882e0636efa4f::t_9978dbcdf45958 583
+  s_0882e0636efa4f::t_bbb58d4b0583d5 635-644,646,652-661,663
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_0882e0636efa4f::t_5e53cdbd416d31 481-482,488-490
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_0882e0636efa4f::t_b33902f3a21b9e 1429,1433-1446,1454-1457,1463-1465
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_0882e0636efa4f::t_364710febccfd0 218-225,230-231,236-237
 ---
 {
   "schema_version": "authorship/3.0.0",
@@ -72,6 +83,14 @@ src/shared/utils/color.ts
   "base_commit_sha": "a94f318e31156830bcfe815cc5bc1e130638d029",
   "prompts": {},
   "sessions": {
+    "s_0882e0636efa4f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38c6b68c-7cd4-4b60-bc46-c2d8d97e02ee",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
     "s_504cfd08bbb576": {
       "agent_id": {
         "tool": "claude",

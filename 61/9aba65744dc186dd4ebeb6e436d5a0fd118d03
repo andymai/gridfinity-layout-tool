@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_0882e0636efa4f::t_b2286aadd323b8 404,410
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_0882e0636efa4f::t_206703a9631f46 8-9
+  s_0882e0636efa4f::t_ba3117e4e70b4a 74,86-88,90-94,96-117,126-129
+  s_0882e0636efa4f::t_a45a992192b6ec 215-217,226-229,232-235,238-242,252-263,266-282,284-286
+  s_0882e0636efa4f::t_ceccb0cc26cbe9 145-148,150-159
+  s_0882e0636efa4f::t_0e0eb0976b8418 130
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_0882e0636efa4f::t_202796f5427b59 144-145,147,155,158-159,161-171,173
+src/shared/types/bin.ts
+  s_0882e0636efa4f::t_82232cd21caac7 189-190,193-195,197-199,201,202-203
+src/features/baseplate/utils/splitPlanner.ts
+  s_0882e0636efa4f::t_692df6d36e47a8 554-555
+  s_0882e0636efa4f::t_7aa3973323318f 584,596,600-601,603-611
+  s_0882e0636efa4f::t_d18baf71cf36ec 702,707-718,724-735
+  s_0882e0636efa4f::t_b43af29937f3e9 627-630,645,662
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_0882e0636efa4f::t_d081e3a3bc5f2b 1428,1430,1447-1453,1458-1462
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "619aba65744dc186dd4ebeb6e436d5a0fd118d03",
+  "prompts": {},
+  "sessions": {
+    "s_0882e0636efa4f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38c6b68c-7cd4-4b60-bc46-c2d8d97e02ee",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
