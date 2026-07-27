@@ -50,6 +50,18 @@ Anything the SVG path grammar supports works, including arcs and Béziers. Arcs
 stay **analytic** rather than being flattened to line segments — a full circle
 extrudes to π·r²·h to double precision — so curves print smooth.
 
+Two exceptions worth knowing, both discovered the hard way:
+
+- **No zero-length segments.** Repeating the current point (a `L` to where the
+  pen already is) is invisible in a browser but fails the kernel outright with
+  `makeLineEdge: construction failed`.
+- **Arcs that meet a straight edge tangentially can collapse.** The horseshoe
+  magnet's outer arc runs into its leg edges at a tangent; built as a true arc
+  the wire loses roughly half its enclosed area while keeping the correct
+  bounding box. That icon uses a polyline arch instead. If a curved boundary
+  runs tangent into a line, check the area, and fall back to a polyline if it
+  is wrong.
+
 ### The frame doesn't matter
 
 Author in a 24×24 viewBox, a ±5 box, or whatever your tool emits. Each
