@@ -20,6 +20,7 @@ import { CornerRadiusControl } from './CornerRadiusControl';
 import { ConnectorSampleButton } from './ConnectorSampleButton';
 import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
+import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { maxCornerRadiusMm } from '../../utils/buildFullParams';
 import { Stepper } from '@/design-system/Stepper';
 import {
@@ -131,8 +132,9 @@ export function BaseSection() {
                       />
                     )}
                   {/* Both-female styles only: an integral tongue on an exterior
-                      edge would protrude past the drawer-facing wall (#2866). */}
-                  {(style === 'dovetailKey' || style === 'snapClip') && (
+                      edge would protrude past the drawer-facing wall (#2866).
+                      Same predicate the geometry uses, so the gate can't drift. */}
+                  {isSeatedConnectorStyle(style) && (
                     <div className="space-y-1">
                       <Checkbox
                         checked={baseplateParams.connectorSlotsAllEdges === true}

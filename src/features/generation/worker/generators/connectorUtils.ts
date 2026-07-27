@@ -106,9 +106,11 @@ export function computeConnectorPositions(
   for (const { side, boundaries, position, nx, ny, isMale } of edgeDefs) {
     if (boundaries.length === 0) continue;
     if (!edgeCarriesSlot(edges[side], allEdgeSlots, padding[side])) continue;
-    // An all-edge slot on an exterior edge is always female — the option only
-    // engages for the both-female styles, so there is no tongue to draw there.
-    const male = edges[side] === 'join' && isMale;
+    // All-edge slots only engage for the both-female styles, whose exact build
+    // emits no tongue on ANY seam — join edges included. So once the option is on,
+    // every marker is female; the invert convention only applies to the integral
+    // styles that actually have a male half.
+    const male = !allEdgeSlots && edges[side] === 'join' && isMale;
     for (const bp of boundaries) {
       const { cx, cy } = position(bp);
       positions.push({ cx, cy, cz: zCenter, nx, ny, isMale: male });

@@ -193,6 +193,22 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
     expect(asJoin.some((p) => p.isMale)).toBe(true);
   });
 
+  it('all-edge slots mark JOIN edges female too, whatever invert says (#2866)', () => {
+    // The option only engages for the both-female styles, whose exact build emits
+    // no tongue on ANY seam — so an inverted plate, where right/back would be male
+    // by convention, must still draft every marker female.
+    const allJoin = { left: 'join', right: 'join', front: 'join', back: 'join' } as const;
+    const args = [2, 2, 42, 10, 2 * 42, 2 * 42, 0, 0, allJoin, true, 'end', 'end'] as const;
+
+    const slotted = computeConnectorPositions(...args, 42, true);
+    expect(slotted.length).toBeGreaterThan(0);
+    expect(slotted.some((p) => p.isMale)).toBe(false);
+
+    // Without the option the same plate keeps its male half, so the assertion
+    // above isn't vacuous.
+    expect(computeConnectorPositions(...args).some((p) => p.isMale)).toBe(true);
+  });
+
   it('all-edge slots skip a padded exterior edge (#2866)', () => {
     const PAD = 5;
     const marked = computeConnectorPositions(
