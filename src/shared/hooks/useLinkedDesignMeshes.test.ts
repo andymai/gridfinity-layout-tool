@@ -168,10 +168,34 @@ describe('useLinkedDesignMeshes', () => {
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)?.mesh).toBe(mesh);
+      expect(result.current.get(D1)?.mesh).toEqual(mesh);
     });
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key', mesh);
     expect(mockRelease).toHaveBeenCalledTimes(1);
+  });
+
+  // Label plates are a bin-designer affordance and aren't requested here, but
+  // the bridge's params cache is shared across callers, so one can alias in.
+  // Baking plate buffers into every cross-session cache entry would inflate it
+  // for geometry the layout never renders.
+  it('strips label plates before persisting a generated mesh', async () => {
+    const mesh = { ...makeMesh(), labelPlates: { plates: [], omittedCount: 0 } };
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
+    mockAcquire.mockResolvedValue({
+      generateImmediate: vi.fn(async () => ({ mesh })),
+    } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(D1)).toBeDefined();
+    });
+
+    const persisted = mockSavePersistedBinMesh.mock.calls[0][1] as Record<string, unknown>;
+    expect(persisted).not.toHaveProperty('labelPlates');
+    expect(result.current.get(D1)?.mesh).not.toHaveProperty('labelPlates');
   });
 
   it('decodes imported STL designs on the main thread, centered on XY', async () => {

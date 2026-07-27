@@ -268,7 +268,8 @@ export function useGeneration(): void {
       }
 
       try {
-        const result = await bridge.generate(genParams, () => {});
+        // Only the designer preview renders label plates (#2666 preview).
+        const result = await bridge.generate(genParams, () => {}, true);
 
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;

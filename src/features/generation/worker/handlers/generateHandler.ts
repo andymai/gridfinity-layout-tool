@@ -46,7 +46,7 @@ export function handleWarm(message: WarmMessage): void {
 }
 
 export async function handleGenerate(message: GenerateMessage): Promise<void> {
-  const { params, requestId } = message.payload;
+  const { params, requestId, withLabelPlates: wantPlates = false } = message.payload;
   await prepareImprintsSafe(params);
   runGeneration(
     (signal, perf): MeshData => {
@@ -86,7 +86,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
 
         console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
       }
-      return withLabelPlates(result, params, signal);
+      return wantPlates ? withLabelPlates(result, params, signal) : result;
     },
     requestId,
     'BinGen',

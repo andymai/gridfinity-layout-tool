@@ -13,6 +13,7 @@
  */
 
 import { mesh, meshEdges, getKernelCapabilities } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { LabelPlatesMeshData, LabelPlateMeshData } from '../../bridge/types';
 import { toIndexedMeshData, creaseEdges } from './utils';
@@ -86,7 +87,7 @@ export function generateLabelPlates(
   for (let i = 0; i < shown.length; i++) {
     checkCancelled(signal);
     const seat = shown[i];
-    let solid;
+    let solid: Shape3D;
     try {
       solid = buildLabelPlate(specs[i], opts, uniformTextSize);
     } catch {

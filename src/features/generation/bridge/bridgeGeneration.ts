@@ -85,7 +85,8 @@ export function generateBin(
   ctx: BridgeGenerationContext,
   params: BinParams,
   onProgress: ProgressCallback | undefined,
-  debounce: boolean
+  debounce: boolean,
+  withLabelPlates = false
 ): Promise<GenerationResult> {
   if (ctx.isDestroyed) {
     return Promise.reject(new Error('Bridge has been destroyed'));
@@ -114,7 +115,7 @@ export function generateBin(
       ctx.binCache.pendingFingerprint = fingerprint;
       sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params), {
         type: 'GENERATE',
-        payload: { params, requestId },
+        payload: { params, requestId, withLabelPlates },
       });
     };
 

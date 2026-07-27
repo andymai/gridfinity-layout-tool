@@ -132,6 +132,13 @@ export interface CleanupMessage {
 export interface GeneratePayload {
   readonly params: BinParams;
   readonly requestId: string;
+  /**
+   * Opt in to swappable label-plate preview meshes. Off by default because
+   * `GENERATE` also serves the layout planner's linked-design meshes and
+   * background thumbnail regeneration, neither of which renders plates — and
+   * the former persists whatever it receives into the cross-session mesh cache.
+   */
+  readonly withLabelPlates?: boolean;
 }
 
 export interface GenerateBaseplateMessage {

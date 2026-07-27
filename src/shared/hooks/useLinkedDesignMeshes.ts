@@ -142,8 +142,14 @@ async function resolveDesignMesh(
   try {
     const result = await bridge.generateImmediate(genParams);
     if (result.mesh.vertices.length === 0) return null;
-    savePersistedBinMesh(persistKey, result.mesh);
-    return { sig, mesh: result.mesh, width: params.width, depth: params.depth };
+    // Label plates are a bin-designer preview affordance and are not requested
+    // here, but the bridge's params cache is shared across callers — so a
+    // designer result could alias in. Strip them rather than bake plate buffers
+    // into every cross-session cache entry.
+    const { labelPlates: _plates, ...mesh } = result.mesh;
+    void _plates;
+    savePersistedBinMesh(persistKey, mesh);
+    return { sig, mesh, width: params.width, depth: params.depth };
   } finally {
     bridgeManager.release();
   }
