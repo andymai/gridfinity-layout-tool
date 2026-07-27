@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_c029b4d0133f83::t_9d37f767d749ba 396
+  s_c029b4d0133f83::t_739d1384ed5aeb 58-59,351-395,397-445
+  s_c029b4d0133f83::t_59337fcc158655 184-198,204,350,446-459
+  s_c029b4d0133f83::t_9ebaff6149dc71 460-462
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_c029b4d0133f83::t_9d37f767d749ba 626-769
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "0bef2011b7a32d7c1b62aaa605fcfefd8025d24b",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
