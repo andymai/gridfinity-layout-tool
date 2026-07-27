@@ -90,6 +90,10 @@ export function useAutoSave(): void {
   const lastDesignId = useRef<string | null>(null);
   // Abort token for the current pending save (new object per effect run)
   const abortTokenRef = useRef<{ current: boolean }>({ current: false });
+  // What a save currently past its abort checks is writing. `lastSaved*` only
+  // updates once the write resolves, so without this the unmount flush would
+  // re-issue an identical write for a save already in flight.
+  const inFlight = useRef<{ params: BinParams; config: ExportFileNameConfig } | null>(null);
 
   // The write itself plus the bookkeeping every consumer downstream depends on
   // (registry entry for the planner palette, `design-saved` for linked bins).
@@ -102,12 +106,24 @@ export function useAutoSave(): void {
       designId: string,
       thumbnail: string | null | undefined
     ): Promise<boolean> => {
-      const result = await updateDesignParams(
-        toDesignId(designId),
-        paramsToSave,
-        thumbnail,
-        configToSave
-      );
+      inFlight.current = { params: paramsToSave, config: configToSave };
+      let result;
+      try {
+        result = await updateDesignParams(
+          toDesignId(designId),
+          paramsToSave,
+          thumbnail,
+          configToSave
+        );
+      } finally {
+        // Only clear if a newer persist hasn't already claimed the slot.
+        if (
+          inFlight.current?.params === paramsToSave &&
+          inFlight.current?.config === configToSave
+        ) {
+          inFlight.current = null;
+        }
+      }
       if (!isOk(result)) return false;
 
       lastSavedParams.current = paramsToSave;
@@ -240,6 +256,14 @@ export function useAutoSave(): void {
       if (
         lastSavedParams.current === state.params &&
         lastSavedConfig.current === state.exportFileNameConfig
+      ) {
+        return;
+      }
+      // A save already writing exactly this will land on its own; an in-flight
+      // save for older params still needs the flush.
+      if (
+        inFlight.current?.params === state.params &&
+        inFlight.current?.config === state.exportFileNameConfig
       ) {
         return;
       }

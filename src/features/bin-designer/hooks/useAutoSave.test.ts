@@ -349,6 +349,71 @@ describe('useAutoSave', () => {
       unsubscribe();
     });
 
+    it('does not duplicate a write for the save already in flight', async () => {
+      let resolveWrite: ((value: unknown) => void) | null = null;
+      vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(
+        new Promise((resolve) => {
+          resolveWrite = resolve;
+        })
+      );
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+
+      // Let the save reach updateDesignParams, where it now blocks.
+      await advanceThroughSave();
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+      expect(resolveWrite).not.toBeNull();
+    });
+
+    // The in-flight save carries older params, so the newer edit still needs
+    // flushing rather than being swallowed by the dedupe above.
+    it('still flushes when the in-flight save is for older params', async () => {
+      let resolveWrite: ((value: unknown) => void) | null = null;
+      vi.mocked(DesignerStorage.updateDesignParams).mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveWrite = resolve;
+        })
+      );
+      useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
+      const { unmount } = renderHook(() => useAutoSave());
+
+      act(() => {
+        useDesignerStore.getState().setParam('width', 4);
+      });
+      await advanceThroughSave();
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+
+      mockUpdateDesignParams();
+      act(() => {
+        useDesignerStore.getState().setParam('width', 9);
+      });
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(2);
+      expect(DesignerStorage.updateDesignParams).toHaveBeenLastCalledWith(
+        'existing-id',
+        expect.objectContaining({ width: 9 }),
+        undefined,
+        expect.anything()
+      );
+      expect(resolveWrite).not.toBeNull();
+    });
+
     it('does not write when nothing changed since the last save', async () => {
       mockUpdateDesignParams();
       useDesignerStore.setState({ currentDesignId: 'existing-id' });
