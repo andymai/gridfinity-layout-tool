@@ -1,0 +1,94 @@
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_b71dadf490462d::t_fc04c7e434b3da 1-86,88-273
+  s_b71dadf490462d::t_04d7c72852e8f2 87
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_b71dadf490462d::t_4b352668f46977 100
+src/features/generation/worker/generators/binGenerator.scenarioCoverage.test.ts
+  s_b71dadf490462d::t_4cfcebbaf35472 5,7-9,12-19,26,55-70
+src/features/generation/worker/generators/binGenerator.export.baseStyles.test.ts
+  s_b71dadf490462d::t_1bec02e2df0ea5 1-5
+src/features/generation/worker/generators/binGenerator.export.binStyles.test.ts
+  s_b71dadf490462d::t_12556e0ef98df1 1-5
+src/features/generation/worker/generators/binGenerator.export.combinedFeatures.test.ts
+  s_b71dadf490462d::t_e34c9b847c1bf7 1-5
+src/features/generation/worker/generators/binGenerator.export.compartments.test.ts
+  s_b71dadf490462d::t_3a0fc030accab3 1-5
+src/features/generation/worker/generators/binGenerator.export.customShape.test.ts
+  s_b71dadf490462d::t_7c60dc27e6f083 1-5
+src/features/generation/worker/generators/binGenerator.export.cutoutOffset.test.ts
+  s_b71dadf490462d::t_aa050c0a901253 1-5
+src/features/generation/worker/generators/binGenerator.export.dimensions.test.ts
+  s_b71dadf490462d::t_6ea77da71f5a80 1-5
+src/features/generation/worker/generators/binGenerator.export.dividerPatterns.test.ts
+  s_b71dadf490462d::t_06e7c03245002c 1-5
+src/features/generation/worker/generators/binGenerator.export.edgeCases.test.ts
+  s_b71dadf490462d::t_ec7a069f0b5adc 1-5
+src/features/generation/worker/generators/binGenerator.export.exportAndLarge.test.ts
+  s_b71dadf490462d::t_05e7a340f3408c 1-5
+src/features/generation/worker/generators/binGenerator.export.floorPatterns.test.ts
+  s_b71dadf490462d::t_d01413757787f3 1-5
+src/features/generation/worker/generators/binGenerator.export.groupedScoop.test.ts
+  s_b71dadf490462d::t_c7ff3539ed06b9 1-5
+src/features/generation/worker/generators/binGenerator.export.halfSockets.test.ts
+  s_b71dadf490462d::t_a88cb1d0573c0a 1-5
+src/features/generation/worker/generators/binGenerator.export.handles.test.ts
+  s_b71dadf490462d::t_ebfe9281ca77ef 1-5
+src/features/generation/worker/generators/binGenerator.export.heights.test.ts
+  s_b71dadf490462d::t_4727653e46e463 1-5
+src/features/generation/worker/generators/binGenerator.export.honeycombJunction.test.ts
+  s_b71dadf490462d::t_70a1d2774deeec 1-5
+src/features/generation/worker/generators/binGenerator.export.inserts.test.ts
+  s_b71dadf490462d::t_8c9eedc296fd35 1-5
+src/features/generation/worker/generators/binGenerator.export.integration.test.ts
+  s_b71dadf490462d::t_fb3848962f55f0 1-5
+src/features/generation/worker/generators/binGenerator.export.kumiko.test.ts
+  s_b71dadf490462d::t_7da3b72de269d4 1-5
+src/features/generation/worker/generators/binGenerator.export.labelSockets.test.ts
+  s_b71dadf490462d::t_3d43424046e418 1-5
+src/features/generation/worker/generators/binGenerator.export.labelTabs.test.ts
+  s_b71dadf490462d::t_fa927bad44b3e1 1-5
+src/features/generation/worker/generators/binGenerator.export.lightweight.test.ts
+  s_b71dadf490462d::t_ea43ab82a65218 1-5
+src/features/generation/worker/generators/binGenerator.export.lipWall.test.ts
+  s_b71dadf490462d::t_1d7870c91f59b5 1-5
+src/features/generation/worker/generators/binGenerator.export.pathfinderOps.test.ts
+  s_b71dadf490462d::t_1cf0cb657cf1ca 1-5
+src/features/generation/worker/generators/binGenerator.export.permutationMatrix.test.ts
+  s_b71dadf490462d::t_0772ae7ca0f530 1-5
+src/features/generation/worker/generators/binGenerator.export.regressions.test.ts
+  s_b71dadf490462d::t_3ee9affe7b581d 1-5
+src/features/generation/worker/generators/binGenerator.export.scoops.test.ts
+  s_b71dadf490462d::t_8511d5d3aef3ca 1-5
+src/features/generation/worker/generators/binGenerator.export.slotted.test.ts
+  s_b71dadf490462d::t_579a9f6d3db90b 1-5
+src/features/generation/worker/generators/binGenerator.export.solidCutoutMatrix.test.ts
+  s_b71dadf490462d::t_6eae86e81e52d2 1-5
+src/features/generation/worker/generators/binGenerator.export.solidCutouts.test.ts
+  s_b71dadf490462d::t_f58dfcba459afe 1-5
+src/features/generation/worker/generators/binGenerator.export.solidMode.test.ts
+  s_b71dadf490462d::t_390b4ed20a5998 1-5
+src/features/generation/worker/generators/binGenerator.export.spacer.test.ts
+  s_b71dadf490462d::t_224b7573d5a168 1-5
+src/features/generation/worker/generators/binGenerator.export.wallCutouts.test.ts
+  s_b71dadf490462d::t_372aa0dc6530d4 1-5
+src/features/generation/worker/generators/binGenerator.export.wallPatterns.test.ts
+  s_b71dadf490462d::t_3567652a93a9d4 1-5
+src/features/generation/worker/generators/binGenerator.export.wallThickness.test.ts
+  s_b71dadf490462d::t_fafac876be5a00 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "619399aa93315dab1ba07feaa02392ebfe882e87",
+  "prompts": {},
+  "sessions": {
+    "s_b71dadf490462d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d63aa6a-1dd4-4ad7-9510-5f605c1e034c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
