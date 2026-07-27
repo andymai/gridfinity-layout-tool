@@ -194,13 +194,13 @@ describe('keyed margin seams (issue #2866)', () => {
       expect(Math.abs(j.xMm)).toBeCloseTo(halfW, 6);
       // A left/right rail seam runs along Y, so the key spans X.
       expect(j.axis).toBe('x');
-      // On an interior cell boundary of the mating wall, never a corner.
-      const fromFront = j.yMm + (tiling.totalDepthUnits * params.gridUnitMm) / 2;
-      expect(
-        Math.abs(fromFront - Math.round(fromFront / params.gridUnitMm) * params.gridUnitMm)
-      ).toBeLessThan(1e-6);
+      // On an interior cell boundary of the mating wall, never a corner. The rail
+      // runs along Y, so measure with the DEPTH pitch.
+      const gy = params.gridUnitMmY ?? params.gridUnitMm;
+      const fromFront = j.yMm + (tiling.totalDepthUnits * gy) / 2;
+      expect(Math.abs(fromFront - Math.round(fromFront / gy) * gy)).toBeLessThan(1e-6);
       expect(fromFront).toBeGreaterThan(0);
-      expect(fromFront).toBeLessThan(tiling.totalDepthUnits * params.gridUnitMm);
+      expect(fromFront).toBeLessThan(tiling.totalDepthUnits * gy);
     }
   });
 
@@ -213,8 +213,10 @@ describe('keyed margin seams (issue #2866)', () => {
   });
 
   it('keys an unsplit plate whose margins detach', () => {
-    // No split seams at all, so every key comes from the body↔rail seams.
-    const params = detached({ width: 4, depth: 4 });
+    // No split seams at all, so every key comes from the body↔rail seams — and the
+    // rail seam is gated independently of split-piece connectors (#2414), so
+    // `connectorNubs: false` must still produce them.
+    const params = detached({ width: 4, depth: 4, connectorNubs: false });
     const tiling = computeBaseplateTiling(params, 256);
     expect(tiling.isSplit).toBe(false);
     expect(countConnectorKeys(tiling, params)).toBe(marginJunctions(params).length);

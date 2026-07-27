@@ -1,12 +1,14 @@
 /**
- * Seated-connector accounting + placement for split baseplates.
+ * Seated-connector accounting + placement for baseplates.
  *
  * The dovetail-key and snap-clip styles both make every join edge female and
  * ship a separate part seated at each seam junction (a hammered-in key, or a
  * top-inserted snap clip). Under `dovetailKey` a detached margin's body↔rail seam
- * is female on both sides too, so it seats the same key (#2866). This module is
- * the single source of truth for WHERE those parts go (and therefore HOW MANY), so
- * the export count, the print guide, and the 3D preview never disagree.
+ * is female on both sides too, so it seats the same key (#2866) — which is why this
+ * is not split-only: a rail exists whether or not the plate was split, so an
+ * UNSPLIT plate can need keys. This module is the single source of truth for WHERE
+ * those parts go (and therefore HOW MANY), so the export count, the print guide,
+ * and the 3D preview never disagree.
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
