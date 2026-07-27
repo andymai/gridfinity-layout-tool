@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS, minHeightUnits } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
 import { isFractional } from '@/core/constants';
 import { useTranslation } from '@/i18n';
@@ -15,6 +15,7 @@ export function useDimensionsSection() {
     fractionalEdgeX,
     fractionalEdgeY,
     baseHalfSockets,
+    baseSpacer,
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
@@ -31,6 +32,7 @@ export function useDimensionsSection() {
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
+      baseSpacer: s.params.base.spacer,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
@@ -46,6 +48,8 @@ export function useDimensionsSection() {
   // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
   const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
+  // A spacer is floorless, so it may go down to 1u (#2915).
+  const minHeight = minHeightUnits(baseSpacer);
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);
@@ -72,13 +76,10 @@ export function useDimensionsSection() {
   const handleHeightStep = useCallback(
     (delta: number) => {
       const next = height + delta * DESIGNER_CONSTRAINTS.HEIGHT_STEP;
-      const clamped = Math.min(
-        DESIGNER_CONSTRAINTS.MAX_HEIGHT,
-        Math.max(DESIGNER_CONSTRAINTS.MIN_HEIGHT, next)
-      );
+      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_HEIGHT, Math.max(minHeight, next));
       setParam('height', clamped);
     },
-    [height, setParam]
+    [height, minHeight, setParam]
   );
 
   const handleExtraWallHeightStep = useCallback(
@@ -140,6 +141,7 @@ export function useDimensionsSection() {
       dimensionStep,
       minWidth,
       minDepth,
+      minHeight,
       fractionalEdgeX,
       fractionalEdgeY,
       // Half-sockets mode decomposes every cell into uniform 0.5u feet, so there

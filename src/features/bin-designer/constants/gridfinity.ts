@@ -22,6 +22,10 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_DIMENSION: 16, // grid units (expanded: standard Gridfinity supports large bins)
   DIMENSION_STEP: 0.5, // grid units
   MIN_HEIGHT: 2, // height units (1U = base only, 2U minimum for usable cavity)
+  // A spacer is floorless, so the "usable cavity" rationale behind MIN_HEIGHT
+  // doesn't apply — 1u is what lets a stack be shimmed from odd to even total
+  // height and back (#2915).
+  MIN_SPACER_HEIGHT: 1, // height units
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
   // Compartment grid
@@ -135,6 +139,18 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_HANDLE_COUNT: 1,
   MAX_HANDLE_COUNT: 3,
 } as const;
+
+/**
+ * Lowest height (in height units) a bin may be built at.
+ *
+ * The single source of truth for that floor: the stepper bound, the client
+ * validator and the spacer toggle's clamp all read it, so none can let through
+ * a height another rejects. Mirrored server-side in
+ * `api/lib/designerValidation.ts` (which cannot import from `src/`).
+ */
+export function minHeightUnits(isSpacer: boolean): number {
+  return isSpacer ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+}
 
 /**
  * Valid wall thickness options — multiples of common FDM nozzle sizes (0.4, 0.6, 0.8mm).

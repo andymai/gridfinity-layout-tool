@@ -11,6 +11,7 @@ import {
   FLOOR_PATTERN_TYPES,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
+import { minHeightUnits } from '@/features/bin-designer/constants';
 
 /** Narrow a picker selection to the subset the floor supports. */
 function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternType {
@@ -87,11 +88,14 @@ export function useBaseSection() {
 
   const toggleSpacer = useCallback(() => {
     if (!base.spacer && !spacerStatus.available) return;
-    const { params: resolved } = resolveConstraints(params, {
-      feature: 'base.spacer',
-      enabled: !base.spacer,
-    });
-    setParams(resolved);
+    const enabled = !base.spacer;
+    const { params: resolved } = resolveConstraints(params, { feature: 'base.spacer', enabled });
+    // Only a spacer may stand 1u tall (#2915), so leaving spacer mode has to
+    // lift the height back to the normal floor rather than strand the bin
+    // under it — the numeric bound is outside what the constraint engine,
+    // which only enables and disables features, can express.
+    const minHeight = minHeightUnits(enabled);
+    setParams(resolved.height < minHeight ? { ...resolved, height: minHeight } : resolved);
   }, [params, base.spacer, spacerStatus.available, setParams]);
 
   const toggleHalfSockets = useCallback(() => {

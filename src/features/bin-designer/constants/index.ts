@@ -3,6 +3,7 @@ export {
   STYLE_WALL_THICKNESS,
   DESIGNER_CONSTRAINTS,
   WALL_THICKNESS_OPTIONS,
+  minHeightUnits,
 } from './gridfinity';
 export {
   DEFAULT_BIN_PARAMS,

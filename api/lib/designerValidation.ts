@@ -929,13 +929,15 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
       `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`
     );
   }
-  if (
-    !isNumber(params.height) ||
-    !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)
-  ) {
+  // Mirrors `minHeightUnits` in `src/features/bin-designer/constants/gridfinity.ts`.
+  const minHeight =
+    isObject(params.base) && params.base.spacer === true
+      ? CONSTRAINTS.MIN_SPACER_HEIGHT
+      : CONSTRAINTS.MIN_HEIGHT;
+  if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(
       'INVALID_PARAMS',
-      `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`
+      `height must be ${minHeight}-${CONSTRAINTS.MAX_HEIGHT}`
     );
   }
 

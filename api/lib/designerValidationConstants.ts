@@ -10,6 +10,9 @@ export const CONSTRAINTS = {
   MIN_DIMENSION: 0.5,
   MAX_DIMENSION: 16,
   MIN_HEIGHT: 2,
+  // A spacer is floorless, so the usable-cavity rationale behind MIN_HEIGHT
+  // doesn't apply to it (#2915).
+  MIN_SPACER_HEIGHT: 1,
   MAX_HEIGHT: 20,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,

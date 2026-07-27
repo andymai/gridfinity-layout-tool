@@ -7,7 +7,12 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
-import { DESIGNER_CONSTRAINTS, GRIDFINITY, WALL_THICKNESS_OPTIONS } from '../constants';
+import {
+  DESIGNER_CONSTRAINTS,
+  GRIDFINITY,
+  WALL_THICKNESS_OPTIONS,
+  minHeightUnits,
+} from '../constants';
 import { binDimensions } from './binDimensions';
 import { HEIGHT_UNIT_STEP } from '@/core/types';
 
@@ -37,7 +42,8 @@ export interface DesignerValidationError {
  * Returns the params if valid, or an error describing the first violation.
  */
 export function validateBinParams(params: BinParams): Result<BinParams, DesignerValidationError> {
-  const { MIN_DIMENSION, MAX_DIMENSION, MIN_HEIGHT, MAX_HEIGHT } = DESIGNER_CONSTRAINTS;
+  const { MIN_DIMENSION, MAX_DIMENSION, MAX_HEIGHT } = DESIGNER_CONSTRAINTS;
+  const MIN_HEIGHT = minHeightUnits(params.base.spacer);
 
   // Dimension range checks
   if (params.width < MIN_DIMENSION || params.width > MAX_DIMENSION) {

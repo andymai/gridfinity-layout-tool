@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBaseSection } from './useBaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 
 describe('useBaseSection', () => {
   beforeEach(() => {
@@ -121,6 +121,44 @@ describe('useBaseSection', () => {
     });
     expect(useDesignerStore.getState().params.base.spacer).toBe(true);
     expect(useDesignerStore.getState().params.scoop.enabled).toBe(false);
+  });
+
+  // #2915: only a spacer may stand 1u tall, so leaving the mode has to lift the
+  // height back to the normal floor instead of stranding the bin under it.
+  it('leaving spacer mode lifts a 1u height back to the bin minimum', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    const params = useDesignerStore.getState().params;
+    expect(params.base.spacer).toBe(false);
+    expect(params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
+  });
+
+  it('leaving spacer mode leaves a height already above the floor alone', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    expect(useDesignerStore.getState().params.height).toBe(6);
   });
 
   it('spacer is greyed out with a reason on a flat base', () => {
