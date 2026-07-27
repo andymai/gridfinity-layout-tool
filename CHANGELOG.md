@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.320.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.2...gridfinity-layout-tool-v4.320.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** align, distribute and batch-edit cutouts ([#2907](https://github.com/andymai/gridfinity-layout-tool/issues/2907)) ([a07ff80](https://github.com/andymai/gridfinity-layout-tool/commit/a07ff80c38e6a8d7c285f2fbfe4b74ea4a1aa852))
+
 ## [4.319.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.1...gridfinity-layout-tool-v4.319.2) (2026-07-27)
 
 
