@@ -130,17 +130,29 @@ export function buildIconSolid(
     ? options.depthMm + TEXT_BOOLEAN_EPSILON
     : -(options.depthMm + TEXT_BOOLEAN_EPSILON);
 
+  // Only the returned solid outlives this function — the caller registers it in
+  // its disposal scope. Every intermediate is native WASM memory that nothing
+  // else will reclaim, so each cutter and each superseded solid is deleted here,
+  // including on the failure paths.
   let solid = sketch(place(outline), 'XY', sketchZ).extrude(extrusion) as ValidSolid;
   for (const hole of def.holes ?? []) {
     const holeDrawing = drawingFromSvgPath(hole);
-    if (!holeDrawing) return null;
+    if (!holeDrawing) {
+      solid.delete();
+      return null;
+    }
     // Overshoot both ends so the bore is a clean through-cut rather than a
     // pocket left by coincident faces.
     const cutter = sketch(place(holeDrawing), 'XY', sketchZ - extrusion).extrude(
       extrusion * 3
     ) as ValidSolid;
     const result = cut(solid, cutter);
-    if (!isOk(result)) return null;
+    cutter.delete();
+    if (!isOk(result)) {
+      solid.delete();
+      return null;
+    }
+    if (result.value !== solid) solid.delete();
     solid = result.value;
   }
   return { solid, op: emboss ? 'fuse' : 'cut' };
