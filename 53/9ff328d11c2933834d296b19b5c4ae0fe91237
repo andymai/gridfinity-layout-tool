@@ -1,0 +1,32 @@
+src/shared/types/bin.ts
+  s_c029b4d0133f83::t_41690915169992 136,138
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_c029b4d0133f83::t_ddc8d1620dfa9b 329,589
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_c029b4d0133f83::t_1d84ee0a7d5321 20,145-153
+src/features/bin-designer/utils/compartments.test.ts
+  s_c029b4d0133f83::t_f531496923c7f0 5,1645-1708
+  s_c029b4d0133f83::t_1e81b6faba3877 1709
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_c029b4d0133f83::t_1d84ee0a7d5321 18,189-197,201
+src/features/bin-designer/utils/compartments.ts
+  s_c029b4d0133f83::t_41690915169992 523-572
+src/features/bin-designer/README.md
+  s_c029b4d0133f83::t_d2429e6864caee 208-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "539ff328d11c2933834d296b19b5c4ae0fe91237",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
