@@ -93,4 +93,34 @@ export interface LabelTabConfig {
    * label tabs. When omitted, `BinParams.textDefaults` apply unchanged.
    */
   readonly textStyle?: TextStyleOverride;
+  /**
+   * Treat the label as one full-width shelf per row rather than one per
+   * compartment (#2897) — the narrow-compartment case (charging cables) where
+   * per-compartment tabs are too small to read.
+   *
+   * Absent = false, the historical per-compartment behavior.
+   *
+   * A row only receives a spanning tab where a wall actually runs the full
+   * inner width behind it; a shelf needs something to hang from, so rows whose
+   * compartments merge across the boundary are skipped exactly as they are
+   * today. Text comes from {@link rowTexts}, not `compartmentTexts`.
+   */
+  readonly span?: boolean;
+  /**
+   * Captions for spanning tabs, indexed by the ROW whose edge hosts the tab.
+   * Only consulted when {@link span} is true.
+   *
+   * Deliberately lives here rather than beside `compartments.compartmentTexts`:
+   * every array on `compartments` is COMPARTMENT-indexed, so they are dropped
+   * by `setCompartmentGrid` and renumbered by `normalizeIdsWithRemap`. This one
+   * is row-indexed and must survive both untouched — putting it there would
+   * have made it silently ride along in that reducer's `...keep` spread and
+   * carry stale captions across a grid reset.
+   *
+   * Entries past the current row count are ignored, not trimmed, so shrinking
+   * and re-growing the grid restores what was typed.
+   *
+   * Mutable element type mirrors the sibling text arrays (Immer `Draft`).
+   */
+  readonly rowTexts?: string[];
 }

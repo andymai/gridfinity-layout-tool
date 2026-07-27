@@ -1740,6 +1740,13 @@ const en: Record<string, string> = {
     "Slots aren't supported on angled dividers — coming in v2.",
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.compartmentLabelsList': 'Compartment labels',
+  'binDesigner.rowLabelsList': 'Row labels',
+  'binDesigner.rowNumberLabel': 'Row {n}',
+  'binDesigner.rowEngravedTextAriaLabel': 'Label text for row {n}',
+  'binDesigner.tabSpanFullWidth': 'Span full width',
+  'binDesigner.tabSpanFullWidthHint': 'One label per row instead of one per compartment.',
+  'binDesigner.compartmentEditor.labelsSpanDisabled':
+    'Full-width labels use row captions — edit them in the Label tab section.',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',
   'binDesigner.textMode.emboss': 'Emboss',

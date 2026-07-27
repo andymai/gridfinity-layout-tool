@@ -468,6 +468,58 @@ export function compartmentHasTiltedEdge(
   return false;
 }
 
+/** Which wall of a row a label tab hangs from. */
+export type TabAnchorSide = 'back' | 'front';
+
+/**
+ * True when a divider wall runs the FULL inner width at `row`'s anchor edge
+ * (or that edge is the bin's own outer wall).
+ *
+ * Full-width label tabs (#2897) hang off that wall, so a boundary where any
+ * column's compartment continues straight through has nothing to carry the
+ * shelf across its whole length. Shared by the worker, the ghost overlay and
+ * the label-plate export so the three can't disagree about which rows get a
+ * tab.
+ */
+export function rowHasFullWidthWall(
+  config: CompartmentConfig,
+  row: number,
+  anchor: TabAnchorSide
+): boolean {
+  const { cols, rows, cells } = config;
+  if (anchor === 'back' ? row === rows - 1 : row === 0) return true;
+  const neighborRow = anchor === 'back' ? row + 1 : row - 1;
+  for (let col = 0; col < cols; col++) {
+    if (cells[row * cols + col] === cells[neighborRow * cols + col]) return false;
+  }
+  return true;
+}
+
+/**
+ * Depth (mm) of the open region a spanning tab's body protrudes into: from
+ * `row`'s anchor wall to the next full-width wall in the opposite direction.
+ *
+ * That — not the compartment the tab happens to start in — is what the body
+ * has to fit inside, because a spanning tab crosses every column.
+ */
+export function spanRegionDepth(
+  config: CompartmentConfig,
+  row: number,
+  anchor: TabAnchorSide,
+  cellD: number
+): number {
+  const step = anchor === 'back' ? -1 : 1;
+  let far = row;
+  while (
+    far + step >= 0 &&
+    far + step < config.rows &&
+    !rowHasFullWidthWall(config, far + step, anchor)
+  ) {
+    far += step;
+  }
+  return (Math.abs(row - far) + 1) * cellD;
+}
+
 /**
  * True when the compartment's BACK wall is a tilted divider. Used by label
  * tabs which attach to the back wall and can't currently render on a tilt.

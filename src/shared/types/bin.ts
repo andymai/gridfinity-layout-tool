@@ -131,7 +131,10 @@ export {
   compartmentHasTiltedFrontWall,
   getCompartmentBounds,
   rectStraddlesTiltedDivider,
+  rowHasFullWidthWall,
+  spanRegionDepth,
 } from '@/features/bin-designer/utils/compartments';
+export type { TabAnchorSide } from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,
   LidCompatibilityId,

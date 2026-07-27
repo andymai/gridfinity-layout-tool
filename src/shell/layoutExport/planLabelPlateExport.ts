@@ -13,8 +13,9 @@
  * from compartment texts.
  */
 
-import type { Bin } from '@/core/types';
-import type { FeatureColorConfig, TextStyleDefaults } from '@/shared/types/bin';
+import type { Bin, DesignId } from '@/core/types';
+import type { FeatureColorConfig, TabAnchorSide, TextStyleDefaults } from '@/shared/types/bin';
+import { rowHasFullWidthWall } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLayoutBinExport's deep imports).
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
@@ -150,6 +151,9 @@ export function planLabelPlateExport(
   const groups: LabelPlateDesignGroup[] = [];
   let totalPlates = 0;
 
+  // Row plates resolved for full-width designs, keyed by design id.
+  const spanPlates = new Map<DesignId, { widthU: LabelPlateWidthU; text: string }[]>();
+
   for (const [id, design] of designById) {
     const params = design?.params;
     if (!design || !params) continue;
@@ -167,21 +171,50 @@ export function planLabelPlateExport(
     );
     if (planned.length === 0) continue;
 
+    // Full-width mode (#2897): one bin-wide plate per row that actually hosts a
+    // spanning tab, captioned from `label.rowTexts`. The per-compartment plan
+    // above doesn't describe this layout, so it's replaced rather than expanded.
+    if (params.label.span === true) {
+      const spanWidthU = planLabelPlates(
+        { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
+        binDimensions(params).innerW,
+        clearanceMm,
+        ''
+      )[0]?.widthU;
+      if (spanWidthU !== undefined) {
+        const edges = params.label.edges ?? 'back';
+        const anchors: TabAnchorSide[] = [];
+        if (edges === 'back' || edges === 'both') anchors.push('back');
+        if (edges === 'front' || edges === 'both') anchors.push('front');
+        const rowPlates: { widthU: LabelPlateWidthU; text: string }[] = [];
+        for (let row = 0; row < params.compartments.rows; row++) {
+          for (const anchor of anchors) {
+            if (!rowHasFullWidthWall(params.compartments, row, anchor)) continue;
+            rowPlates.push({ widthU: spanWidthU, text: params.label.rowTexts?.[row] ?? '' });
+          }
+        }
+        spanPlates.set(id, rowPlates);
+      }
+    }
+
     // Expand to physical plates: per-compartment plates repeat per placed
     // bin; a spanning plate instead takes each bin's own label text.
     const spanning = planned.length === 1 && planned[0].compartmentId === null;
-    const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] = spanning
-      ? linkedBins.map((b) => ({
-          widthU: planned[0].widthU,
-          text: b.label.trim() || design.name,
-        }))
-      : linkedBins.flatMap(() =>
-          planned.map((p) => ({
-            widthU: p.widthU,
-            text: p.text,
-            ...(p.icon !== undefined ? { icon: p.icon } : {}),
+    const spanRows = spanPlates.get(id);
+    const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] = spanRows
+      ? linkedBins.flatMap(() => spanRows)
+      : spanning
+        ? linkedBins.map((b) => ({
+            widthU: planned[0].widthU,
+            text: b.label.trim() || design.name,
           }))
-        );
+        : linkedBins.flatMap(() =>
+            planned.map((p) => ({
+              widthU: p.widthU,
+              text: p.text,
+              ...(p.icon !== undefined ? { icon: p.icon } : {}),
+            }))
+          );
 
     // Bed-fit guard: a plate wider than the usable bed (e.g. a 3U plate on
     // a small printer) cannot ship on any sheet — skip it and surface the

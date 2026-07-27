@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
+  rowHasFullWidthWall,
+  spanRegionDepth,
   createUniformGrid,
   createSingleCell,
   getCellId,
@@ -1560,6 +1562,82 @@ describe('compartments', () => {
         dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
       };
       expect(compartmentHasTiltedFrontWall(config, 0)).toBe(false);
+    });
+  });
+});
+
+// Full-width label tabs (#2897) hang off a wall that must run the whole inner
+// width; these two predicates decide which rows get a tab and how deep the
+// region in front of it is. Shared by the worker, ghost overlay and plate export.
+describe('full-width label tab geometry', () => {
+  const grid = (cols: number, rows: number, cells: number[]): CompartmentConfig => ({
+    cols,
+    rows,
+    thickness: 1.2,
+    cells,
+  });
+
+  describe('rowHasFullWidthWall', () => {
+    it('treats the bin’s own outer wall as full width', () => {
+      const g = grid(3, 2, [0, 1, 2, 3, 4, 5]);
+
+      expect(rowHasFullWidthWall(g, 1, 'back')).toBe(true);
+      expect(rowHasFullWidthWall(g, 0, 'front')).toBe(true);
+    });
+
+    it('is true when every column changes compartment across the boundary', () => {
+      expect(rowHasFullWidthWall(grid(3, 2, [0, 1, 2, 3, 4, 5]), 0, 'back')).toBe(true);
+    });
+
+    // One compartment running through the boundary leaves a gap with no wall,
+    // so a spanning shelf would have nothing to hang from there.
+    it('is false when any column continues through the boundary', () => {
+      // Column 1 is a single compartment (id 1) spanning both rows.
+      expect(rowHasFullWidthWall(grid(3, 2, [0, 1, 2, 3, 1, 5]), 0, 'back')).toBe(false);
+    });
+
+    it('is false when the whole row merges with the next', () => {
+      expect(rowHasFullWidthWall(grid(2, 2, [0, 1, 0, 1]), 0, 'back')).toBe(false);
+    });
+
+    it('reads the opposite boundary for a front anchor', () => {
+      const g = grid(2, 3, [0, 1, 2, 3, 4, 5]);
+
+      expect(rowHasFullWidthWall(g, 1, 'front')).toBe(true);
+      expect(rowHasFullWidthWall(grid(2, 3, [0, 1, 0, 3, 4, 5]), 1, 'front')).toBe(false);
+    });
+  });
+
+  describe('spanRegionDepth', () => {
+    it('is one row deep when walls bound both sides', () => {
+      expect(spanRegionDepth(grid(2, 3, [0, 1, 2, 3, 4, 5]), 2, 'back', 10)).toBe(10);
+    });
+
+    // The body of a spanning tab crosses every column, so the region it
+    // protrudes into runs to the next FULL-width wall, not the nearest divider.
+    it('extends across rows that merge through the boundary', () => {
+      // Column 0 merges rows 0-1 (id 0), so the region in front of row 1's
+      // back wall is two rows deep.
+      const g = grid(2, 3, [0, 1, 0, 3, 4, 5]);
+
+      expect(spanRegionDepth(g, 1, 'back', 10)).toBe(20);
+    });
+
+    it('measures backward for a front anchor', () => {
+      // Column 1 merges rows 0-1, so no full-width wall sits between them.
+      const g = grid(2, 3, [0, 1, 2, 1, 4, 5]);
+
+      // Row 0's front wall is the bin's outer wall; the region behind it runs
+      // through the merged boundary to the row 1/2 wall — two rows deep.
+      expect(spanRegionDepth(g, 0, 'front', 10)).toBe(20);
+      // Row 2 is bounded by full-width walls on both sides.
+      expect(spanRegionDepth(g, 2, 'front', 10)).toBe(10);
+    });
+
+    it('stops at the bin edge', () => {
+      const g = grid(1, 3, [0, 0, 0]);
+
+      expect(spanRegionDepth(g, 2, 'back', 7)).toBe(21);
     });
   });
 });

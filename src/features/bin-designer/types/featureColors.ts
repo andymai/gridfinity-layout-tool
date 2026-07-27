@@ -355,7 +355,13 @@ export interface ActiveZonesParams {
     readonly stackingLip: boolean;
     readonly solid?: boolean;
   };
-  readonly label: { readonly enabled: boolean; readonly mode?: 'text' | 'socket' };
+  readonly label: {
+    readonly enabled: boolean;
+    readonly mode?: 'text' | 'socket';
+    /** Full-width tabs read `rowTexts` instead of `compartmentTexts` (#2897). */
+    readonly span?: boolean;
+    readonly rowTexts?: readonly string[];
+  };
   readonly scoop: { readonly enabled: boolean };
   readonly lid: { readonly enabled: boolean };
   readonly compartments: {
@@ -426,10 +432,13 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Socket-mode tabs carry a plate pocket, not engraved text — texts may
   // persist in the config (they label grid cells and feed future plates)
   // but produce no text geometry, so the zone must not reach the exporter.
+  // Span mode reads `label.rowTexts`, not `compartmentTexts` (#2897) — missing
+  // it here would drop the text colour zone from a spanning design's export.
+  const tabTexts = p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts;
   const hasTabText =
     p.label.enabled &&
     (p.label.mode ?? 'text') !== 'socket' &&
-    (p.compartments.compartmentTexts ?? []).some((t) => t.trim().length > 0);
+    (tabTexts ?? []).some((t) => t.trim().length > 0);
   const hasCutoutText = (p.cutouts ?? []).some(
     (c) => c.engraveLabel === true && c.label.trim().length > 0
   );

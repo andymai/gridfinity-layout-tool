@@ -19,11 +19,18 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
-import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
+import type {
+  BinParams,
+  LabelTabAlignment,
+  TextStyleDefaults,
+  TextStyleOverride,
+} from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
   getCompartmentBounds,
+  rowHasFullWidthWall,
+  spanRegionDepth,
 } from '@/shared/types/bin';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
@@ -233,6 +240,19 @@ function buildLabelTabsInScope(
     const plateByCompartment = new Map<number, LabelPlateWidthU>();
     if (spanningWidthU !== null) {
       plateByCompartment.set(0, spanningWidthU);
+    } else if (params.label.span === true) {
+      // Spanning slots are keyed by row and all share the bin-wide pocket, so
+      // the per-compartment plan doesn't apply — reuse the full-width plate.
+      const widthU = planLabelSockets(
+        { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
+        innerW,
+        clearanceMm
+      ).compartments[0]?.plateWidthU;
+      if (widthU !== null && widthU !== undefined) {
+        for (let row = 0; row < params.compartments.rows; row++) {
+          plateByCompartment.set(row, widthU);
+        }
+      }
     } else {
       for (const p of plan.compartments) {
         if (p.plateWidthU !== null) plateByCompartment.set(p.compartmentId, p.plateWidthU);
@@ -292,6 +312,24 @@ function buildLabelTabsInScope(
     collidingFrontIds = findCollidingFrontCompartments(params, dims);
   }
 
+  // Full-width mode (#2897) plans one shelf per row against the real config —
+  // never the socket fallback's synthetic grid, whose missing divider overrides
+  // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
+  // socket fallback is already one full-width tab.
+  const spanMode = params.label.span === true && !isSpanning;
+  const collidingFrontRows = new Set<number>();
+  if (spanMode && edges === 'both') {
+    const inset = params.label.inset ?? 0;
+    for (let row = 0; row < rows; row++) {
+      if (
+        2 * tabDepth + 2 * inset >
+        spanRegionDepth(params.compartments, row, 'front', dims.cellD)
+      ) {
+        collidingFrontRows.add(row);
+      }
+    }
+  }
+
   const plannedRows: PlannedTabRow[] = [];
   for (let row = 0; row < rowCount; row++) {
     for (const anchor of anchors) {
@@ -299,7 +337,9 @@ function buildLabelTabsInScope(
         params: rowParams,
         anchor,
         dims: rowDims,
-        slots: planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
+        slots: spanMode
+          ? planSpanningTabAtRow(params, row, anchor, dims, collidingFrontRows)
+          : planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
       });
     }
   }
@@ -522,53 +562,129 @@ function planTabsAtRow(
 
     const availableLeft = groupLeft + leftDeduction;
     const availableRight = groupRight - rightDeduction;
-    const availableWidth = availableRight - availableLeft;
-
-    // Compute tab width from percentage of available group width. Socket
-    // mode ignores the percentage and always spans the full group — the
-    // pocket needs the room, and `alignment` instead positions the socket
-    // within the tab (below).
-    const tabWidth = socket ? availableWidth : (availableWidth * widthPercent) / 100;
-    if (tabWidth <= 0) {
-      col = groupEnd;
-      continue;
-    }
-
-    // Compute X offset based on alignment within the group
-    let tabXStart: number;
-    if (socket || alignment === 'left') {
-      tabXStart = availableLeft;
-    } else if (alignment === 'right') {
-      tabXStart = availableRight - tabWidth;
-    } else {
-      const availableCenter = (availableLeft + availableRight) / 2;
-      tabXStart = availableCenter - tabWidth / 2;
-    }
 
     // Y position of the anchor wall (front face of back wall, or back face
     // of front wall — i.e., the interior surface). Inset slides the tab
     // inward along the body direction (depthSign).
     const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
-    const positionY = anchorY + depthSign * inset;
 
-    // -- Determine which ends touch a wall --
-    const fullWidth = tabWidth >= availableWidth - 0.01;
-    const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
-    const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
-
-    slots.push({
+    const slot = fitTabInSpan({
       cellId,
       text: params.compartments.compartmentTexts?.[cellId] ?? '',
-      tabWidth,
-      tabXStart,
-      positionY,
-      touchesLeft,
-      touchesRight,
+      availableLeft,
+      availableRight,
+      hasLeftWall,
+      hasRightWall,
+      positionY: anchorY + depthSign * inset,
+      widthPercent,
+      alignment,
+      socket: socket !== null,
     });
+    if (slot) slots.push(slot);
     col = groupEnd;
   }
 
   return slots;
+}
+
+/**
+ * Plan the single full-width tab at one row's anchor wall (#2897).
+ *
+ * Deliberately runs against the REAL compartment config rather than a synthetic
+ * one-column grid: the tilt and depth guards below read `dividerOverrides` and
+ * real bounds, and would silently pass on a fabricated config.
+ */
+function planSpanningTabAtRow(
+  params: BinParams,
+  row: number,
+  anchor: TabAnchor,
+  dims: TabBuildDimensions,
+  collidingFrontRows: Set<number>
+): TabSlot[] {
+  const { cols, cells } = params.compartments;
+  const { innerW, innerD, cellD, tabDepth } = dims;
+  const inset = params.label.inset ?? 0;
+
+  if (!rowHasFullWidthWall(params.compartments, row, anchor)) return [];
+  if (anchor === 'front' && collidingFrontRows.has(row)) return [];
+
+  // A tilted divider anywhere along this boundary breaks the axis-aligned
+  // anchor-wall assumption the shelf and gusset geometry depends on.
+  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  for (let col = 0; col < cols; col++) {
+    if (hasTilt(params.compartments, cells[row * cols + col])) return [];
+  }
+
+  // The body would otherwise punch through the wall bounding the far side.
+  if (tabDepth + inset > spanRegionDepth(params.compartments, row, anchor, cellD)) return [];
+
+  const depthSign = anchor === 'back' ? -1 : 1;
+  const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+
+  // Spanning tabs run outer wall to outer wall. Column dividers pass beneath
+  // rather than bounding the span, so they take no thickness deduction.
+  const slot = fitTabInSpan({
+    cellId: row,
+    text: params.label.rowTexts?.[row] ?? '',
+    availableLeft: -innerW / 2,
+    availableRight: innerW / 2,
+    hasLeftWall: true,
+    hasRightWall: true,
+    positionY: anchorY + depthSign * inset,
+    widthPercent: params.label.width,
+    alignment: params.label.alignment,
+    socket: dims.socket !== null,
+  });
+  return slot ? [slot] : [];
+}
+
+/**
+ * Resolve a tab's width and X placement inside an available span.
+ *
+ * Shared by the per-compartment planner and the full-width spanning planner so
+ * the two can never drift on width percentage, socket override, alignment or
+ * wall-contact rules. Returns null when the span leaves no room for a tab.
+ */
+function fitTabInSpan(args: {
+  readonly cellId: number;
+  readonly text: string;
+  readonly availableLeft: number;
+  readonly availableRight: number;
+  readonly hasLeftWall: boolean;
+  readonly hasRightWall: boolean;
+  readonly positionY: number;
+  readonly widthPercent: number;
+  readonly alignment: LabelTabAlignment;
+  readonly socket: boolean;
+}): TabSlot | null {
+  const { availableLeft, availableRight, alignment, socket } = args;
+  const availableWidth = availableRight - availableLeft;
+
+  // Socket mode ignores the width percentage and always spans the full
+  // available width — the pocket needs the room, and `alignment` instead
+  // positions the socket within the tab.
+  const tabWidth = socket ? availableWidth : (availableWidth * args.widthPercent) / 100;
+  if (tabWidth <= 0) return null;
+
+  let tabXStart: number;
+  if (socket || alignment === 'left') {
+    tabXStart = availableLeft;
+  } else if (alignment === 'right') {
+    tabXStart = availableRight - tabWidth;
+  } else {
+    tabXStart = (availableLeft + availableRight) / 2 - tabWidth / 2;
+  }
+
+  const fullWidth = tabWidth >= availableWidth - 0.01;
+  return {
+    cellId: args.cellId,
+    text: args.text,
+    tabWidth,
+    tabXStart,
+    positionY: args.positionY,
+    touchesLeft: (fullWidth || alignment === 'left') && args.hasLeftWall,
+    touchesRight: (fullWidth || alignment === 'right') && args.hasRightWall,
+  };
 }
 
 /**

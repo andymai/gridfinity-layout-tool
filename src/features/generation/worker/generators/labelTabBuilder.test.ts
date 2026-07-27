@@ -524,3 +524,102 @@ describe('resolveUniformTabTextSize', () => {
     expect(otherRow).toBeCloseTo(alone, 3);
   });
 });
+
+// Full-width labels (#2897): one shelf per row rather than one per compartment.
+describe('buildLabelTabs — span full width', () => {
+  const spanParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true },
+    ...over,
+  });
+
+  it('builds a spanning shelf for a divided bin', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const result = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(result).not.toBeNull();
+  });
+
+  // A spanning shelf crosses every column, so it must be wider than the
+  // per-compartment tabs the same grid produces.
+  it('produces more material than per-compartment tabs on the same grid', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const spanned = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+    const perCompartment = buildLabelTabs(
+      spanParams({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: false },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+
+    expect(spanned).not.toBeNull();
+    expect(perCompartment).not.toBeNull();
+    const spannedVolume = measureVolume(spanned!);
+    const perCompartmentVolume = measureVolume(perCompartment!);
+    expect(isOk(spannedVolume)).toBe(true);
+    expect(isOk(perCompartmentVolume)).toBe(true);
+    if (isOk(spannedVolume) && isOk(perCompartmentVolume)) {
+      expect(spannedVolume.value).toBeGreaterThan(perCompartmentVolume.value);
+    }
+  });
+
+  // Rows that merge across the boundary have no wall to hang a full-width
+  // shelf from, so only the outer back wall hosts one.
+  it('skips a row whose compartments merge through the boundary', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    // Column 1 spans both rows (id 1), so the row 0/1 boundary has no wall.
+    const merged = buildLabelTabs(
+      spanParams({
+        compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 1, 5] },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+    const fullyDivided = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(merged).not.toBeNull();
+    const mergedVolume = measureVolume(merged!);
+    const dividedVolume = measureVolume(fullyDivided!);
+    if (isOk(mergedVolume) && isOk(dividedVolume)) {
+      // One spanning tab instead of two.
+      expect(mergedVolume.value).toBeLessThan(dividedVolume.value);
+    }
+  });
+
+  it('engraves the row caption rather than compartment text', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const withRowText = buildLabelTabs(
+      spanParams({
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          span: true,
+          rowTexts: ['CABLES', 'ADAPTERS'],
+        },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+    const blank = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(withRowText).not.toBeNull();
+    const engraved = measureVolume(withRowText!);
+    const plain = measureVolume(blank!);
+    if (isOk(engraved) && isOk(plain)) {
+      // Engraving removes material from the shelf face.
+      expect(engraved.value).toBeLessThan(plain.value);
+    }
+  });
+});
