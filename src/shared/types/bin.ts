@@ -133,8 +133,9 @@ export {
   rectStraddlesTiltedDivider,
   rowHasFullWidthWall,
   spanRegionDepth,
+  spanningTabEligible,
 } from '@/features/bin-designer/utils/compartments';
-export type { TabAnchorSide } from '@/features/bin-designer/utils/compartments';
+export type { TabAnchorSide, SpanningTabFit } from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,
   LidCompatibilityId,

@@ -317,18 +317,6 @@ function buildLabelTabsInScope(
   // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
   // socket fallback is already one full-width tab.
   const spanMode = params.label.span === true && !isSpanning;
-  const collidingFrontRows = new Set<number>();
-  if (spanMode && edges === 'both') {
-    const inset = params.label.inset ?? 0;
-    for (let row = 0; row < rows; row++) {
-      if (
-        2 * tabDepth + 2 * inset >
-        spanRegionDepth(params.compartments, row, 'front', dims.cellD)
-      ) {
-        collidingFrontRows.add(row);
-      }
-    }
-  }
 
   const plannedRows: PlannedTabRow[] = [];
   for (let row = 0; row < rowCount; row++) {
@@ -338,7 +326,7 @@ function buildLabelTabsInScope(
         anchor,
         dims: rowDims,
         slots: spanMode
-          ? planSpanningTabAtRow(params, row, anchor, dims, collidingFrontRows)
+          ? planSpanningTabAtRow(params, row, anchor, dims)
           : planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
       });
     }
@@ -598,15 +586,13 @@ function planSpanningTabAtRow(
   params: BinParams,
   row: number,
   anchor: TabAnchor,
-  dims: TabBuildDimensions,
-  collidingFrontRows: Set<number>
+  dims: TabBuildDimensions
 ): TabSlot[] {
   const { cols, cells } = params.compartments;
   const { innerW, innerD, cellD, tabDepth } = dims;
   const inset = params.label.inset ?? 0;
 
   if (!rowHasFullWidthWall(params.compartments, row, anchor)) return [];
-  if (anchor === 'front' && collidingFrontRows.has(row)) return [];
 
   // A tilted divider anywhere along this boundary breaks the axis-aligned
   // anchor-wall assumption the shelf and gusset geometry depends on.

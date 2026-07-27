@@ -520,6 +520,56 @@ export function spanRegionDepth(
   return (Math.abs(row - far) + 1) * cellD;
 }
 
+/** Inputs a spanning tab's eligibility depends on, beyond the grid itself. */
+export interface SpanningTabFit {
+  /** `label.depth` — how far the shelf body protrudes from its wall. */
+  readonly tabDepth: number;
+  /** `label.inset` — extra inward offset from the anchor wall. */
+  readonly inset: number;
+  /** Interior depth of one grid row (mm). */
+  readonly cellD: number;
+  /** True when `label.edges === 'both'`, which can make a front tab collide. */
+  readonly bothEdges: boolean;
+}
+
+/**
+ * Whether a full-width label tab (#2897) can actually exist at `row`'s anchor
+ * wall.
+ *
+ * The single source of truth for that question. The worker builds the shelf,
+ * the ghost overlay previews it and the label-plate export ships a plate for
+ * it — if any of the three answered differently, the user would get a preview
+ * that doesn't match the mesh, or a printed plate with no socket to click into.
+ */
+export function spanningTabEligible(
+  config: CompartmentConfig,
+  row: number,
+  anchor: TabAnchorSide,
+  fit: SpanningTabFit
+): boolean {
+  // Nothing to hang the shelf from.
+  if (!rowHasFullWidthWall(config, row, anchor)) return false;
+
+  // A tilt anywhere along the boundary breaks the axis-aligned anchor wall the
+  // shelf and gusset geometry assume.
+  const { cols, cells } = config;
+  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  for (let col = 0; col < cols; col++) {
+    if (hasTilt(config, cells[row * cols + col])) return false;
+  }
+
+  // The body would punch through the wall bounding the far side.
+  const regionDepth = spanRegionDepth(config, row, anchor, fit.cellD);
+  if (fit.tabDepth + fit.inset > regionDepth) return false;
+
+  // With tabs on both edges, the front one is dropped where the pair would meet.
+  if (fit.bothEdges && anchor === 'front' && 2 * fit.tabDepth + 2 * fit.inset > regionDepth) {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * True when the compartment's BACK wall is a tilted divider. Used by label
  * tabs which attach to the back wall and can't currently render on a tilt.

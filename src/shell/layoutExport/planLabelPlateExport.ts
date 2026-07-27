@@ -15,7 +15,7 @@
 
 import type { Bin, DesignId } from '@/core/types';
 import type { FeatureColorConfig, TabAnchorSide, TextStyleDefaults } from '@/shared/types/bin';
-import { rowHasFullWidthWall } from '@/shared/types/bin';
+import { spanningTabEligible } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLayoutBinExport's deep imports).
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
@@ -186,10 +186,19 @@ export function planLabelPlateExport(
         const anchors: TabAnchorSide[] = [];
         if (edges === 'back' || edges === 'both') anchors.push('back');
         if (edges === 'front' || edges === 'both') anchors.push('front');
+        // Eligibility must match the worker exactly: a row rejected there for a
+        // tilted wall, depth overrun or front/back collision has no socket, so
+        // shipping a plate for it would print a part that fits nowhere.
+        const fit = {
+          tabDepth: params.label.depth,
+          inset: params.label.inset ?? 0,
+          cellD: binDimensions(params).innerD / params.compartments.rows,
+          bothEdges: edges === 'both',
+        };
         const rowPlates: { widthU: LabelPlateWidthU; text: string }[] = [];
         for (let row = 0; row < params.compartments.rows; row++) {
           for (const anchor of anchors) {
-            if (!rowHasFullWidthWall(params.compartments, row, anchor)) continue;
+            if (!spanningTabEligible(params.compartments, row, anchor, fit)) continue;
             rowPlates.push({ widthU: spanWidthU, text: params.label.rowTexts?.[row] ?? '' });
           }
         }

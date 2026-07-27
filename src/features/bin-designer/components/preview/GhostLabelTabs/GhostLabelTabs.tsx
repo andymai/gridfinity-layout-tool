@@ -17,8 +17,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { labelShelfCeilingMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import {
   compartmentHasTiltedBackWall,
-  rowHasFullWidthWall,
-  spanRegionDepth,
+  spanningTabEligible,
   compartmentHasTiltedFrontWall,
   getCompartmentBounds,
 } from '@/features/bin-designer/utils/compartments';
@@ -143,17 +142,16 @@ export function GhostLabelTabs() {
     // Full-width mode (#2897): one shelf per row, outer wall to outer wall.
     const buildSpanningRow = (row: number, anchor: 'back' | 'front') => {
       const depthSign = anchor === 'back' ? -1 : 1;
-      if (!rowHasFullWidthWall(compartments, row, anchor)) return;
-
-      const hasTiltedAnchorWall =
-        anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
-      for (let col = 0; col < cols; col++) {
-        if (hasTiltedAnchorWall(compartments, cells[row * cols + col])) return;
+      if (
+        !spanningTabEligible(compartments, row, anchor, {
+          tabDepth,
+          inset,
+          cellD,
+          bothEdges: edges === 'both',
+        })
+      ) {
+        return;
       }
-
-      const regionDepth = spanRegionDepth(compartments, row, anchor, cellD);
-      if (tabDepth + inset > regionDepth) return;
-      if (edges === 'both' && anchor === 'front' && 2 * tabDepth + 2 * inset > regionDepth) return;
 
       const availableLeft = -innerW / 2;
       const availableRight = innerW / 2;

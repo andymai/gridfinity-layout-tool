@@ -205,8 +205,11 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   `planSpanningTabAtRow` runs against the REAL compartment config — never a synthetic
   grid — because the tilt guard reads `dividerOverrides` off whatever config it is handed
   and would silently pass on a fabricated one. Anything that changes which rows host a tab
-  must be mirrored in `GhostLabelTabs` (preview), `planLabelPlateExport` (socket sheets)
-  and `featureColors.hasTabText` (colour zone), all of which read the same predicate.
+  must go through `spanningTabEligible` — the single gate covering full-width wall, tilt,
+  region depth and the both-edges collision. The worker, `GhostLabelTabs` (preview) and
+  `planLabelPlateExport` (socket sheets) all call it; sharing only the wall check let the
+  export ship plates for rows the worker rejected, i.e. plates with no socket to click
+  into. `featureColors.hasTabText` reads `label.rowTexts` in span mode for the same reason.
 - **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
   assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
   silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel
