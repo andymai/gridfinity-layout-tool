@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.315.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.314.0...gridfinity-layout-tool-v4.315.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** add a spacer mode so bins of different heights finish flush ([#2878](https://github.com/andymai/gridfinity-layout-tool/issues/2878)) ([4c2fc3b](https://github.com/andymai/gridfinity-layout-tool/commit/4c2fc3b499d8658caf92093de32bd0e384e69c76))
+
 ## [4.314.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.313.0...gridfinity-layout-tool-v4.314.0) (2026-07-27)
 
 
