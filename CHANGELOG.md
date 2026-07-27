@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.319.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.0...gridfinity-layout-tool-v4.319.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **bin-designer:** persist pending design edits when leaving the designer ([#2903](https://github.com/andymai/gridfinity-layout-tool/issues/2903)) ([c4aeb66](https://github.com/andymai/gridfinity-layout-tool/commit/c4aeb66a760b668cbdeb09d51c9cc983ac494ce8))
+
 ## [4.319.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.318.0...gridfinity-layout-tool-v4.319.0) (2026-07-27)
 
 
