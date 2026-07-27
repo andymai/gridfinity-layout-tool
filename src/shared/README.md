@@ -16,17 +16,17 @@ graph TB
 
 ## Subdirectories
 
-| Directory        | Purpose                                                                                                                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `components/`    | Domain-agnostic UI primitives (no feature coupling)                                                                                                                                                 |
-| `contexts/`      | React contexts for mutations and collaborative presence                                                                                                                                             |
-| `hooks/`         | Custom hooks for auto-save, responsiveness, grid math, PWA                                                                                                                                          |
-| `utils/`         | Pure functions — collision detection, validation, bin filtering, compression                                                                                                                        |
-| `analytics/`     | ML telemetry pipeline and PostHog product metrics                                                                                                                                                   |
-| `printSettings/` | Print time/filament estimation constants and scaling                                                                                                                                                |
-| `types/`         | Re-exports `BinParams` types from `bin-designer` to avoid circular deps                                                                                                                             |
-| `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`                                                                                                                                   |
-| `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use |
+| Directory        | Purpose                                                                                                                                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/`    | Domain-agnostic UI primitives (no feature coupling)                                                                                                                                                      |
+| `contexts/`      | React contexts for mutations and collaborative presence                                                                                                                                                  |
+| `hooks/`         | Custom hooks for auto-save, responsiveness, grid math, PWA                                                                                                                                               |
+| `utils/`         | Pure functions — collision detection, validation, bin filtering, compression                                                                                                                             |
+| `analytics/`     | ML telemetry pipeline and PostHog product metrics                                                                                                                                                        |
+| `printSettings/` | Print time/filament estimation constants and scaling                                                                                                                                                     |
+| `types/`         | Re-exports `BinParams` types from `bin-designer` to avoid circular deps                                                                                                                                  |
+| `constants/`     | Re-exports `DEFAULT_BIN_PARAMS`, `GRIDFINITY` from `bin-designer`; owns label plate geometry (`labelPlates`) and the label icon SVG catalog (`labelIconPaths`) so the worker and the UI share one source |
+| `generation/`    | Re-exports `GenerationBridge`, the direct-mesh drafts, and the brepjs-free pattern metrics (wall element sizes + `stampPatternOpenArea`, and the floor pattern's window rule) for cross-feature use      |
 
 ## Key Components (`components/`)
 
