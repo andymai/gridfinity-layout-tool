@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.318.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.317.0...gridfinity-layout-tool-v4.318.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** add 26 label plate icons across fasteners and tooling ([#2890](https://github.com/andymai/gridfinity-layout-tool/issues/2890)) ([952a35f](https://github.com/andymai/gridfinity-layout-tool/commit/952a35fc0f05cd656475e60124932d7a95455ec0))
+
 ## [4.317.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.2...gridfinity-layout-tool-v4.317.0) (2026-07-27)
 
 
