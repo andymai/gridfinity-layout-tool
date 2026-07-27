@@ -22,6 +22,8 @@ const mocks = vi.hoisted(() => ({
   redisSet: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
+  validateSharedDesigns: vi.fn(),
+  isSharedDesignsError: vi.fn(),
   validateDesignerShare: vi.fn(),
   filterLayoutContent: vi.fn(),
 }));
@@ -41,6 +43,8 @@ vi.mock('@vercel/blob', () => ({
 vi.mock('./lib/validation.js', () => ({
   validateShareLayout: mocks.validateShareLayout,
   isValidationError: mocks.isValidationError,
+  validateSharedDesigns: mocks.validateSharedDesigns,
+  isSharedDesignsError: mocks.isSharedDesignsError,
 }));
 
 vi.mock('./lib/designerValidation.js', () => ({
@@ -99,6 +103,8 @@ describe('share (create)', () => {
     mocks.isValidationError.mockReturnValue(false);
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
     mocks.validateDesignerShare.mockReturnValue({ valid: true, payload: { params: {} } });
+    mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs: [] });
+    mocks.isSharedDesignsError.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -202,6 +208,40 @@ describe('share (create)', () => {
     mocks.head.mockRejectedValue(new Error('also down'));
     const res = await handle(layoutBody());
     expect(res._status).toBe(500);
+  });
+
+  // A layout share whose designs stay behind arrives as bins pointing at
+  // designs that only exist in the sharer's browser (#2894).
+  it('stores the validated linked designs alongside the layout', async () => {
+    const designs = [{ id: 'design_1', name: 'Socket Tray', params: { width: 3 } }];
+    mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs });
+
+    const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+    expect(res._status).toBe(201);
+    const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as Record<string, unknown>;
+    expect(written.linkedDesigns).toEqual(designs);
+  });
+
+  it('omits the key entirely when the layout has no linked designs', async () => {
+    const res = await handle(layoutBody());
+
+    expect(res._status).toBe(201);
+    const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as Record<string, unknown>;
+    expect(written).not.toHaveProperty('linkedDesigns');
+  });
+
+  it('400s when the linked designs fail validation, without writing a blob', async () => {
+    mocks.validateSharedDesigns.mockReturnValue({
+      valid: false,
+      error: { code: 'SIZE_LIMIT', message: 'Linked designs exceed maximum size of 512KB' },
+    });
+    mocks.isSharedDesignsError.mockReturnValue(true);
+
+    const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
+
+    expect(res._status).toBe(400);
+    expect(mocks.put).not.toHaveBeenCalled();
   });
 
   it('rolls the blob back when the Redis hash write fails after put', async () => {

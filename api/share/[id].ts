@@ -1,7 +1,12 @@
 import { put, del, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
-import { validateShareLayout, isValidationError } from '../lib/validation.js';
+import {
+  validateShareLayout,
+  isValidationError,
+  validateSharedDesigns,
+  isSharedDesignsError,
+} from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -102,6 +107,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
     // Return layout with public metadata (exclude sensitive fields)
     return res.status(200).json({
       layout: shareData.layout,
+      linkedDesigns: shareData.linkedDesigns,
       metadata: {
         createdAt: shareData.metadata.createdAt,
         lastUpdatedAt: shareData.metadata.lastUpdatedAt,
@@ -135,7 +141,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const { layout, permission, deleteToken } = body;
+    const { layout, permission, deleteToken, linkedDesigns } = body;
 
     if (!deleteToken || typeof deleteToken !== 'string') {
       return res.status(401).json({
@@ -248,10 +254,19 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       });
     }
 
+    const designsResult = validateSharedDesigns(linkedDesigns);
+    if (isSharedDesignsError(designsResult)) {
+      return res.status(400).json({
+        error: designsResult.error.message,
+        code: designsResult.error.code,
+      });
+    }
+
     // Update share data (preserve original deleteTokenHash and createdAt;
     // drop legacy lastAccessedAt — see note above).
     const updatedData: ShareData = {
       layout: validationResult.layout,
+      ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
       metadata: {
         ...metadataWithoutAccess,
         permission: newPermission,
