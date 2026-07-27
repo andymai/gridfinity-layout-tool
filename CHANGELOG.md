@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.319.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.1...gridfinity-layout-tool-v4.319.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* **cloud-share:** carry linked bin designs through share links ([#2904](https://github.com/andymai/gridfinity-layout-tool/issues/2904)) ([00c505f](https://github.com/andymai/gridfinity-layout-tool/commit/00c505f6aed325e725ec3115824ab360283d03ae))
+
 ## [4.319.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.0...gridfinity-layout-tool-v4.319.1) (2026-07-27)
 
 
