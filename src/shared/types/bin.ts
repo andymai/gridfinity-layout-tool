@@ -228,6 +228,31 @@ export function hasAllEdgeSlots(params: ResolvedBaseplateParams): boolean {
 }
 
 /**
+ * Whether all-edge slots actually add anything to THIS piece: it needs at least
+ * one padding-free exterior edge. An interior piece (every edge a join seam), or
+ * one whose exterior edges all carry drawer-fit padding, is byte-identical with
+ * the option on or off — so the mesh cache must fold the flag out for it rather
+ * than mint a second entry for the same geometry.
+ *
+ * Deliberately NOT used by `computePieceFingerprint`: the fingerprint has to pick
+ * one keying scheme for the whole plate, or a fully-slotted interior piece and a
+ * fully-slotted edge piece would be keyed differently and never dedupe — which is
+ * the merge the option exists to enable.
+ */
+export function cutsExtraEdgeSlots(params: ResolvedBaseplateParams): boolean {
+  const { edges } = params;
+  if (!edges || !hasAllEdgeSlots(params)) return false;
+  const added = (kind: BaseplateEdgeKind, paddingMm: number): boolean =>
+    kind !== 'join' && edgeCarriesSlot(kind, true, paddingMm);
+  return (
+    added(edges.left, params.paddingLeft) ||
+    added(edges.right, params.paddingRight) ||
+    added(edges.front, params.paddingFront) ||
+    added(edges.back, params.paddingBack)
+  );
+}
+
+/**
  * Whether an edge of a split piece carries a female seam slot, given the
  * piece's padding on that side. `join` edges always do; `exterior` edges only
  * under {@link hasAllEdgeSlots}, and only when that side is padding-free — a
