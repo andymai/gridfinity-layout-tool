@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Etichette di riga",
   "binDesigner.rowNumberLabel": "Riga {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Testo etichetta per la riga {n}",
+  "binDesigner.labelPlatesOmitted": "Anteprima di {shown} su {total} targhette",
   "binDesigner.tabSpanFullWidth": "Larghezza piena",
   "binDesigner.tabSpanFullWidthHint": "Un’etichetta per riga invece di una per scomparto.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Le etichette a larghezza piena usano i testi di riga: modificali nella sezione Linguetta etichetta.",

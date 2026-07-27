@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Підписи рядків",
   "binDesigner.rowNumberLabel": "Рядок {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Текст підпису для рядка {n}",
+  "binDesigner.labelPlatesOmitted": "Попередній перегляд {shown} з {total} табличок",
   "binDesigner.tabSpanFullWidth": "На всю ширину",
   "binDesigner.tabSpanFullWidthHint": "Один підпис на рядок замість одного на відділення.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Підписи на всю ширину використовують тексти рядків — редагуйте їх у розділі Вкладка підпису.",

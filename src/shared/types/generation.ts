@@ -11,6 +11,8 @@ export type {
   CoarseLODData,
   LidMeshData,
   StackPlateMeshData,
+  LabelPlatesMeshData,
+  LabelPlateMeshData,
   WorkerCacheStats,
   PerfSnapshot,
   PerfStageEntry,

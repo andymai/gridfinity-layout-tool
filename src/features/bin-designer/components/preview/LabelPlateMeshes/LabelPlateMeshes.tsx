@@ -1,0 +1,104 @@
+/**
+ * Renders a socket-mode bin's swappable label plates in the 3D preview.
+ *
+ * Each plate is drawn twice from one mesh:
+ *   - **Seated** in its socket, sliding out along the shelf's own protrusion
+ *     direction as the explode slider opens — the same control that lifts the
+ *     lid, so one slider separates every companion part.
+ *   - **In a reference row** beside the bin at `REFERENCE_GAP`, matching where
+ *     `GhostDividerPieces` parks its reference divider so a bin with both puts
+ *     its loose parts in one place. The row is static: it is an exhibit of what
+ *     gets printed, not part of the assembly.
+ *
+ * The worker meshes plates in plate-local coordinates (centred on the origin,
+ * bottom on Z=0) and reports each seated pose, so both draws reuse one geometry.
+ */
+
+import { useMemo } from 'react';
+import * as THREE from 'three';
+import { useShallow } from 'zustand/react/shallow';
+import { useDesignerStore } from '@/features/bin-designer/store';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
+import type { LabelPlateMeshData } from '@/shared/types/generation';
+import { referenceRowPoses, seatedPose } from './platePoses';
+import type { Pose } from './platePoses';
+
+/** Stable empty reference so an absent set doesn't churn memo identities. */
+const EMPTY_PLATES: readonly LabelPlateMeshData[] = [];
+
+interface LabelPlateMeshesProps {
+  readonly color: string;
+  /** Shared explode offset; 0 = fully assembled. */
+  readonly lidOffsetMm: number;
+  readonly wireframe?: boolean;
+}
+
+function PlateInstance({
+  plate,
+  position,
+  material,
+}: {
+  plate: LabelPlateMeshData;
+  position: Pose;
+  material: THREE.Material;
+}) {
+  const { geometry } = useMeshGeometry({
+    vertices: plate.vertices,
+    normals: plate.normals,
+    indices: plate.indices,
+    edgeVertices: null,
+    faceGroups: undefined,
+  });
+
+  if (!geometry) return null;
+  return <mesh geometry={geometry} material={material} position={position} renderOrder={2} />;
+}
+
+export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: LabelPlateMeshesProps) {
+  const { labelPlates, depth, gridUnitMm, gridUnitMmY } = useDesignerStore(
+    useShallow((s) => ({
+      labelPlates: s.generation.mesh?.labelPlates ?? null,
+      depth: s.params.depth,
+      gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
+    }))
+  );
+
+  const material = useMemo(
+    () => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.05, wireframe }),
+    [color, wireframe]
+  );
+
+  const plates = useMemo(() => labelPlates?.plates ?? EMPTY_PLATES, [labelPlates]);
+
+  // Reference row: laid out along X beside the bin, parked beyond its back
+  // face so it reads as a set sitting next to the part it belongs to.
+  const rowPositions = useMemo(
+    () => referenceRowPoses(plates, depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE),
+    [plates, depth, gridUnitMm, gridUnitMmY]
+  );
+
+  if (plates.length === 0) return null;
+
+  return (
+    <group>
+      {plates.map((plate, i) => (
+        <PlateInstance
+          key={`seated-${i}`}
+          plate={plate}
+          position={seatedPose(plate, lidOffsetMm)}
+          material={material}
+        />
+      ))}
+      {plates.map((plate, i) => (
+        <PlateInstance
+          key={`row-${i}`}
+          plate={plate}
+          position={rowPositions[i]}
+          material={material}
+        />
+      ))}
+    </group>
+  );
+}

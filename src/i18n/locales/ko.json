@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "행 라벨",
   "binDesigner.rowNumberLabel": "행 {n}",
   "binDesigner.rowEngravedTextAriaLabel": "행 {n}의 라벨 텍스트",
+  "binDesigner.labelPlatesOmitted": "라벨 플레이트 {total}개 중 {shown}개 미리보기",
   "binDesigner.tabSpanFullWidth": "전체 너비로 확장",
   "binDesigner.tabSpanFullWidthHint": "칸마다가 아니라 행마다 라벨 하나.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "전체 너비 라벨은 행 텍스트를 사용합니다. 라벨 탭 섹션에서 편집하세요.",

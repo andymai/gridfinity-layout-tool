@@ -1743,6 +1743,7 @@ const en: Record<string, string> = {
   'binDesigner.rowLabelsList': 'Row labels',
   'binDesigner.rowNumberLabel': 'Row {n}',
   'binDesigner.rowEngravedTextAriaLabel': 'Label text for row {n}',
+  'binDesigner.labelPlatesOmitted': 'Previewing {shown} of {total} label plates',
   'binDesigner.tabSpanFullWidth': 'Span full width',
   'binDesigner.tabSpanFullWidthHint': 'One label per row instead of one per compartment.',
   'binDesigner.compartmentEditor.labelsSpanDisabled':

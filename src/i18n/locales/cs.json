@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Popisky řádků",
   "binDesigner.rowNumberLabel": "Řádek {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Text popisku pro řádek {n}",
+  "binDesigner.labelPlatesOmitted": "Náhled {shown} z {total} štítků",
   "binDesigner.tabSpanFullWidth": "Přes celou šířku",
   "binDesigner.tabSpanFullWidthHint": "Jeden popisek na řádek místo jednoho na přihrádku.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Popisky přes celou šířku používají texty řádků — upravte je v sekci Popisková lišta.",

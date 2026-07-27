@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Rij-etiketten",
   "binDesigner.rowNumberLabel": "Rij {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Etikettekst voor rij {n}",
+  "binDesigner.labelPlatesOmitted": "Voorbeeld van {shown} van {total} etiketplaatjes",
   "binDesigner.tabSpanFullWidth": "Volledige breedte",
   "binDesigner.tabSpanFullWidthHint": "Eén etiket per rij in plaats van één per vak.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Etiketten over de volledige breedte gebruiken rijteksten — bewerk ze in het gedeelte Etiketlip.",

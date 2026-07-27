@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Zeilenbeschriftungen",
   "binDesigner.rowNumberLabel": "Zeile {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Beschriftungstext für Zeile {n}",
+  "binDesigner.labelPlatesOmitted": "Vorschau von {shown} von {total} Etikettenplättchen",
   "binDesigner.tabSpanFullWidth": "Über volle Breite",
   "binDesigner.tabSpanFullWidthHint": "Eine Beschriftung pro Zeile statt pro Fach.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Beschriftungen über die volle Breite nutzen Zeilentexte — bearbeite sie im Abschnitt Beschriftungslasche.",

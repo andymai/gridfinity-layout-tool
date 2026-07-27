@@ -390,6 +390,7 @@
   "binDesigner.rowLabelsList": "Rótulos de linha",
   "binDesigner.rowNumberLabel": "Linha {n}",
   "binDesigner.rowEngravedTextAriaLabel": "Texto do rótulo para a linha {n}",
+  "binDesigner.labelPlatesOmitted": "Visualizando {shown} de {total} placas de rótulo",
   "binDesigner.tabSpanFullWidth": "Largura total",
   "binDesigner.tabSpanFullWidthHint": "Um rótulo por linha em vez de um por compartimento.",
   "binDesigner.compartmentEditor.labelsSpanDisabled": "Rótulos de largura total usam textos de linha — edite-os na seção Aba de rótulo.",

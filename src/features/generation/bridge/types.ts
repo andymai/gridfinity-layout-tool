@@ -797,7 +797,12 @@ export interface LabelPlateMeshData {
 
 /** A bin's label plates plus however many exceeded the preview ceiling. */
 export interface LabelPlatesMeshData {
-  readonly plates: readonly LabelPlateMeshData[];
+  /**
+   * Mutable element type (not `readonly LabelPlateMeshData[]`) because this
+   * lands in the designer store, whose Immer drafts reject readonly arrays —
+   * same reason `compartments.cells` is `number[]`.
+   */
+  readonly plates: LabelPlateMeshData[];
   /** Plates beyond `MAX_PREVIEW_LABEL_PLATES`; 0 when the set is complete. */
   readonly omittedCount: number;
 }

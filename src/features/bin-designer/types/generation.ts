@@ -3,6 +3,7 @@ import type {
   CoarseLODData,
   PerfSnapshot,
   StackPlateMeshData,
+  LabelPlatesMeshData,
 } from '@/shared/types/generation';
 import type { BinParams } from './binParams';
 
@@ -45,6 +46,8 @@ export interface GenerationResult {
    *  only when the lid uses `separateStackPlate`. No face groups, so the shared
    *  readonly shape is ingested directly. */
   readonly stackPlateMesh?: StackPlateMeshData;
+  /** Swappable label plates with their seated poses (socket mode, preview only). */
+  readonly labelPlates?: LabelPlatesMeshData;
 }
 
 /** Generation state tracked in the store */
