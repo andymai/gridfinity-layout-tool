@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.321.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.320.0...gridfinity-layout-tool-v4.321.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** span label tabs across the full bin width ([#2909](https://github.com/andymai/gridfinity-layout-tool/issues/2909)) ([b604262](https://github.com/andymai/gridfinity-layout-tool/commit/b60426271e080069495bd695cd8efa027a686d80))
+
 ## [4.320.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.2...gridfinity-layout-tool-v4.320.0) (2026-07-27)
 
 
