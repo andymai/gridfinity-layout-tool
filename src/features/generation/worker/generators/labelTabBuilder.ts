@@ -185,6 +185,12 @@ export function buildLabelTabs(
 interface TabLayout {
   readonly dims: TabBuildDimensions;
   readonly plannedRows: readonly PlannedTabRow[];
+  /**
+   * True when the socket plan degraded to one bin-spanning tab, which is
+   * planned against a SYNTHETIC 1x1 grid. Slot `cellId`s then index that
+   * grid, not the real compartments — see the note on {@link TabSlot}.
+   */
+  readonly spanningFallback: boolean;
 }
 
 /**
@@ -347,7 +353,7 @@ function planLabelTabLayout(
     }
   }
 
-  return { dims, plannedRows };
+  return { dims, plannedRows, spanningFallback: isSpanning };
 }
 
 /**
@@ -392,7 +398,7 @@ export function planLabelPlateSeats(
 
   const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
   if (!layout) return [];
-  const { dims, plannedRows } = layout;
+  const { dims, plannedRows, spanningFallback } = layout;
   const { socket, tabDepth, shelfTopZ } = dims;
   if (!socket) return [];
 
@@ -402,11 +408,17 @@ export function planLabelPlateSeats(
       ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
       : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
 
+  // The bin-spanning fallback plans against a synthetic 1x1 grid, so its slot
+  // `cellId` indexes that grid rather than the real compartments — reading
+  // per-compartment metadata by it would engrave compartment 0's caption and
+  // icon onto a plate that represents the whole bin.
   const spanning = params.label.span === true;
-  const texts = spanning
-    ? (params.label.rowTexts ?? [])
-    : (params.compartments.compartmentTexts ?? []);
-  const icons = params.compartments.labelIcons ?? [];
+  const texts = spanningFallback
+    ? []
+    : spanning
+      ? (params.label.rowTexts ?? [])
+      : (params.compartments.compartmentTexts ?? []);
+  const icons = spanningFallback ? [] : (params.compartments.labelIcons ?? []);
   const alignment = params.label.alignment;
   const wall = LABEL_SOCKET_WALL_MM;
 

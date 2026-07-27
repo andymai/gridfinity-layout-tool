@@ -747,6 +747,32 @@ describe('planLabelPlateSeats', () => {
     expect(seats[0].text).toBe('FASTENERS');
   });
 
+  // The bin-spanning fallback plans against a synthetic 1x1 grid, so its slot
+  // cellId indexes THAT grid — reading compartment metadata by it would engrave
+  // compartment 0's caption onto a plate representing the whole bin.
+  it('does not inherit compartment 0 metadata in the bin-spanning fallback', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    // 12 narrow columns: no compartment can host a plate, so the socket plan
+    // degrades to one bin-spanning tab.
+    const params = socketParams({
+      compartments: {
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+        compartmentTexts: ['LEAK', ...Array.from({ length: 11 }, () => '')],
+        labelIcons: ['screw', ...Array.from({ length: 11 }, () => null)],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 80, 80, 35, 1.2);
+
+    for (const seat of seats) {
+      expect(seat.text).toBe('');
+      expect(seat.icon).toBeUndefined();
+    }
+  });
+
   // Every seat must correspond to a socket the builder actually cut.
   it('seats nothing when no compartment can host a plate', async () => {
     const { planLabelPlateSeats } = await import('./labelTabBuilder');
