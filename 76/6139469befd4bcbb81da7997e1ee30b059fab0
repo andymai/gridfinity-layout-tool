@@ -1,0 +1,54 @@
+src/i18n/locales/es.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/sv.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/de.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/uk.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/nl.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/fr.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/it.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/pt-BR.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_69a3c1ffa47316::t_fe6a161437ba80 263
+src/i18n/locales/ja.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/pl.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/en.ts
+  s_69a3c1ffa47316::t_fe6a161437ba80 1657
+src/features/bin-designer/components/panel/LabelIconPicker/LabelIconPicker.test.tsx
+  s_69a3c1ffa47316::t_422010b6b44392 9,13-14,16-17,21-24,26-35,38,40-42
+src/i18n/locales/nb.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/cs.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/zh-CN.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/i18n/locales/ko.json
+  s_69a3c1ffa47316::t_fe6a161437ba80 957
+src/features/bin-designer/components/panel/LabelIconPicker/LabelIconPicker.tsx
+  s_69a3c1ffa47316::t_c293cd13f35b1e 13-34
+  s_69a3c1ffa47316::t_28c87ac639937f 45,59-60,96-100,103,106,115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "766139469befd4bcbb81da7997e1ee30b059fab0",
+  "prompts": {},
+  "sessions": {
+    "s_69a3c1ffa47316": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d1b78618-d19b-4af1-b047-9fba8a4a49f3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
