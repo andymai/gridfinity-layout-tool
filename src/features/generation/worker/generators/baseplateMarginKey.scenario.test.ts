@@ -83,7 +83,13 @@ function frontRail(over: Partial<MarginPiece> = {}): MarginPiece {
   };
 }
 
-/** Fuse a list of solids, consuming them; returns null for an empty list. */
+/**
+ * Fuse a list of solids, consuming them; returns null for an empty list.
+ *
+ * Throws on a failed fuse rather than dropping the part: a silently incomplete
+ * union would make the containment assertions below pass against grooves that
+ * aren't there, which is exactly the kernel regression this file exists to catch.
+ */
 function fuseAll(parts: Shape3D[]): Shape3D | null {
   let union: Shape3D | null = null;
   for (const part of parts) {
@@ -92,13 +98,14 @@ function fuseAll(parts: Shape3D[]): Shape3D | null {
       continue;
     }
     const f = fuse(union, part);
-    if (isOk(f)) {
+    if (!isOk(f)) {
       union.delete();
       part.delete();
-      union = f.value;
-    } else {
-      part.delete();
+      throw new Error('fuse failed while building the groove union');
     }
+    union.delete();
+    part.delete();
+    union = f.value;
   }
   return union;
 }

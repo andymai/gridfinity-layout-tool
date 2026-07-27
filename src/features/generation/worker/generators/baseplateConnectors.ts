@@ -406,13 +406,16 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector (#2414): one male tongue per mating grid
-  // cell along the detached exterior wall, protruding into the rail — so a long
-  // rail is anchored evenly along its length rather than at a single point
-  // (#2428). The rail carries the matching grooves
-  // (`buildMarginSeamGroove` at the same cell centers). Rails are solid (no
-  // sockets), so no relief is needed. `hasMarginSeam` already requires a
-  // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
+  // Opt-in body↔long-rail connector (#2414), in one of two forms:
+  //   - integral (dovetail/puzzle): one male tongue per mating grid cell along the
+  //     detached exterior wall, protruding into the rail, so a long rail is
+  //     anchored evenly along its length rather than at a single point (#2428);
+  //   - keyed (dovetailKey, #2866): a female groove per interior cell BOUNDARY,
+  //     with the seated key spanning into the rail's matching groove.
+  // Either way the rail carries the mating half at the same anchors
+  // (`buildMarginSeamGroove`). Rails are solid (no sockets), so no tongue relief
+  // is needed. `hasMarginSeam` requires a style that supports a seam at all, so a
+  // stray snapClip edge emits nothing.
   if (hasMarginSeam) {
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;

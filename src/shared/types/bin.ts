@@ -182,6 +182,9 @@ export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined)
  * makes both sides of the body↔rail seam female and seats the same separate key
  * the split seams use. `snapClip` stays friction-fit — its top-insert clip has no
  * seated form at a body↔rail seam.
+ *
+ * `undefined` counts, as in {@link isSeamConnectorStyle}: it's the stored default
+ * for dovetail (the ConnectorPicker persists dovetail as absent).
  */
 export function isMarginSeamStyle(style: BaseplateConnectorStyle | undefined): boolean {
   return isSeamConnectorStyle(style) || style === 'dovetailKey';
