@@ -41,9 +41,11 @@ describe('LABEL_ICON_PATHS', () => {
     }
   });
 
-  it('uses no transforms, strokes, or relative shorthand that the importer ignores', () => {
+  // Only the command letters — a blanket /[a-z]/ would also reject exponent
+  // notation like 1e-3, which SVG permits and plenty of editors emit.
+  it('uses absolute path commands only', () => {
     for (const { label, d } of allSubpaths()) {
-      expect(d, label).not.toMatch(/[a-z]/);
+      expect(d, `${label} must not use relative commands`).not.toMatch(/[mlhvcsqtaz]/);
     }
   });
 
