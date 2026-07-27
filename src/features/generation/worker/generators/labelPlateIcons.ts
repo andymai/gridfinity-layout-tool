@@ -1,102 +1,42 @@
 /**
  * Hardware icon silhouettes for swappable label plates (#2666 follow-up,
- * gflabel-style). Each icon is a filled 2D drawing in a local frame spanning
- * ±5 units (fasteners point right, face-on parts are origin-centered), fitted
- * to the plate's readable band by its own silhouette bounds and
- * embossed/debossed exactly like plate text — the caller fuses/cuts the
- * returned solid and tags it for paint_color.
+ * gflabel-style). Each icon is a filled 2D drawing imported from the SVG path
+ * data in `@/shared/constants/labelIconPaths`, fitted to the plate's readable
+ * band by its own silhouette bounds and embossed/debossed exactly like plate
+ * text — the caller fuses/cuts the returned solid and tags it for paint_color.
  */
 
-import {
-  draw,
-  drawCircle,
-  drawPolysides,
-  drawingCut,
-  scaleDrawing,
-  translateDrawing,
-} from 'brepjs';
-import type { Drawing, Shape3D } from 'brepjs';
+import { cut, isOk, scaleDrawing, translateDrawing } from 'brepjs';
+import type { Drawing, Shape3D, ValidSolid } from 'brepjs';
+import { LABEL_ICON_PATHS } from '@/shared/constants/labelIconPaths';
+import type { LabelIconDef } from '@/shared/constants/labelIconPaths';
 import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
+import { drawingFromSvgPath } from './svgDrawing';
 import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
-
-/** Hex-head bolt, side view: head, shaft, chamfered tip. */
-function boltDrawing(): Drawing {
-  return draw([-5, -3.4])
-    .lineTo([-2.8, -3.4])
-    .lineTo([-2.8, -1.5])
-    .lineTo([4.2, -1.5])
-    .lineTo([5, -0.9])
-    .lineTo([5, 0.9])
-    .lineTo([4.2, 1.5])
-    .lineTo([-2.8, 1.5])
-    .lineTo([-2.8, 3.4])
-    .lineTo([-5, 3.4])
-    .close();
-}
-
-/** Countersunk machine screw, side view: flared head, pointed tip. */
-function screwDrawing(): Drawing {
-  return draw([-5, -3.2])
-    .lineTo([-3.6, -1.4])
-    .lineTo([3.4, -1.4])
-    .lineTo([5, 0])
-    .lineTo([3.4, 1.4])
-    .lineTo([-3.6, 1.4])
-    .lineTo([-5, 3.2])
-    .close();
-}
-
-/** Pan-head wood screw, side view: wide head + long tapered point. */
-function woodScrewDrawing(): Drawing {
-  return draw([-5, -2.6])
-    .lineTo([-3.4, -2.6])
-    .lineTo([-3.4, -1.3])
-    .lineTo([1, -1.3])
-    .lineTo([5, 0])
-    .lineTo([1, 1.3])
-    .lineTo([-3.4, 1.3])
-    .lineTo([-3.4, 2.6])
-    .lineTo([-5, 2.6])
-    .close();
-}
-
-/** Hex nut, face-on, with the thread bore. */
-function nutDrawing(): Drawing {
-  return drawingCut(drawPolysides(5, 6), drawCircle(2.4));
-}
-
-/** Flat washer, face-on. */
-function washerDrawing(): Drawing {
-  return drawingCut(drawCircle(5), drawCircle(2.6));
-}
-
-/** Round-head nail, side view. */
-function nailDrawing(): Drawing {
-  return draw([-5, -3])
-    .lineTo([-4.3, -3])
-    .lineTo([-4.3, -0.8])
-    .lineTo([4, -0.8])
-    .lineTo([5, 0])
-    .lineTo([4, 0.8])
-    .lineTo([-4.3, 0.8])
-    .lineTo([-4.3, 3])
-    .lineTo([-5, 3])
-    .close();
-}
 
 // Map, not a keyed object: the icon id crosses the worker message boundary,
 // and a Map lookup can neither reach the prototype chain nor dispatch to an
 // unexpected member on a crafted key (CodeQL js/unvalidated-dynamic-method-call).
-const ICON_DRAWINGS: ReadonlyMap<LabelPlateIconId, () => Drawing> = new Map([
-  ['bolt', boltDrawing],
-  ['screw', screwDrawing],
-  ['woodScrew', woodScrewDrawing],
-  ['nut', nutDrawing],
-  ['washer', washerDrawing],
-  ['nail', nailDrawing],
-]);
+// Built on first use, not at module init — #1466 traced a boot crash to reading
+// an imported constant binding while a chunk cycle still had it undefined.
+let iconDefs: ReadonlyMap<LabelPlateIconId, LabelIconDef> | null = null;
+
+function iconDef(icon: LabelPlateIconId): LabelIconDef | null {
+  if (!isLabelPlateIconId(icon)) return null;
+  iconDefs ??= new Map(Object.entries(LABEL_ICON_PATHS) as [LabelPlateIconId, LabelIconDef][]);
+  return iconDefs.get(icon) ?? null;
+}
+
+/**
+ * Outline only — holes are strictly interior, so they never move the bounding
+ * box that sizing and placement are derived from.
+ */
+function iconOutline(icon: LabelPlateIconId): Drawing | null {
+  const def = iconDef(icon);
+  return def === null ? null : drawingFromSvgPath(def.outline);
+}
 
 export interface IconBox {
   readonly widthMm: number;
@@ -116,9 +56,9 @@ export function measureIconBox(
   heightMm: number,
   maxWidthMm: number
 ): IconBox | null {
-  const drawIcon = isLabelPlateIconId(icon) ? ICON_DRAWINGS.get(icon) : undefined;
-  if (!drawIcon) return null;
-  const fit = fitIcon(drawIcon(), heightMm, maxWidthMm);
+  const outline = iconOutline(icon);
+  if (!outline) return null;
+  const fit = fitIcon(outline, heightMm, maxWidthMm);
   return fit && { widthMm: fit.width * fit.scale, heightMm: fit.height * fit.scale };
 }
 
@@ -155,30 +95,65 @@ export interface IconSolidOptions {
  * Build the icon as a solid ready to fuse (emboss) or cut (deboss) into the
  * plate top, mirroring `buildTextSolid`'s epsilon conventions. Returns null
  * for an id outside the catalog (worker payloads are untrusted).
+ *
+ * Bores are cut in 3D, after extrusion, rather than from the 2D outline.
+ * brepjs's 2D boolean silently returns the subject unchanged when the outline
+ * is a single closed curve and the cutter is strictly interior with no
+ * intersections — which is how the washer shipped as a solid disc. The 3D
+ * boolean has no such gap, and it also keeps this away from the 2D
+ * `drawingCut`s that `generation/README.md` records as corrupting the plate.
  */
 export function buildIconSolid(
   options: IconSolidOptions
 ): { solid: Shape3D; op: 'fuse' | 'cut' } | null {
-  const drawIcon = isLabelPlateIconId(options.icon) ? ICON_DRAWINGS.get(options.icon) : undefined;
-  if (!drawIcon) return null;
-  const raw = drawIcon();
-  const fit = fitIcon(raw, options.heightMm, options.maxWidthMm);
+  const def = iconDef(options.icon);
+  if (!def) return null;
+  const outline = drawingFromSvgPath(def.outline);
+  if (!outline) return null;
+  const fit = fitIcon(outline, options.heightMm, options.maxWidthMm);
   if (!fit) return null;
-  // Scale about the silhouette's own centroid, then place it — the design
-  // frames are not all symmetric, so scaling about the origin would drift.
+  // Scale about the outline's own centroid, then place it — the design frames
+  // are not all symmetric, so scaling about the origin would drift. Holes take
+  // the IDENTICAL transform so they stay registered with the outline.
   const [cx, cy] = fit.center;
-  const drawing = translateDrawing(scaleDrawing(raw, fit.scale, [cx, cy]), [
-    options.centerX - cx,
-    options.centerY - cy,
-  ]);
-  const sketchZ =
-    options.mode === 'emboss'
-      ? options.topZ - TEXT_BOOLEAN_EPSILON
-      : options.topZ + TEXT_BOOLEAN_EPSILON;
-  const extrusion =
-    options.mode === 'emboss'
-      ? options.depthMm + TEXT_BOOLEAN_EPSILON
-      : -(options.depthMm + TEXT_BOOLEAN_EPSILON);
-  const solid = sketch(drawing, 'XY', sketchZ).extrude(extrusion);
-  return { solid, op: options.mode === 'emboss' ? 'fuse' : 'cut' };
+  const place = (drawing: Drawing): Drawing =>
+    translateDrawing(scaleDrawing(drawing, fit.scale, [cx, cy]), [
+      options.centerX - cx,
+      options.centerY - cy,
+    ]);
+
+  const emboss = options.mode === 'emboss';
+  const sketchZ = emboss
+    ? options.topZ - TEXT_BOOLEAN_EPSILON
+    : options.topZ + TEXT_BOOLEAN_EPSILON;
+  const extrusion = emboss
+    ? options.depthMm + TEXT_BOOLEAN_EPSILON
+    : -(options.depthMm + TEXT_BOOLEAN_EPSILON);
+
+  // Only the returned solid outlives this function — the caller registers it in
+  // its disposal scope. Every intermediate is native WASM memory that nothing
+  // else will reclaim, so each cutter and each superseded solid is deleted here,
+  // including on the failure paths.
+  let solid = sketch(place(outline), 'XY', sketchZ).extrude(extrusion) as ValidSolid;
+  for (const hole of def.holes ?? []) {
+    const holeDrawing = drawingFromSvgPath(hole);
+    if (!holeDrawing) {
+      solid.delete();
+      return null;
+    }
+    // Overshoot both ends so the bore is a clean through-cut rather than a
+    // pocket left by coincident faces.
+    const cutter = sketch(place(holeDrawing), 'XY', sketchZ - extrusion).extrude(
+      extrusion * 3
+    ) as ValidSolid;
+    const result = cut(solid, cutter);
+    cutter.delete();
+    if (!isOk(result)) {
+      solid.delete();
+      return null;
+    }
+    if (result.value !== solid) solid.delete();
+    solid = result.value;
+  }
+  return { solid, op: emboss ? 'fuse' : 'cut' };
 }
