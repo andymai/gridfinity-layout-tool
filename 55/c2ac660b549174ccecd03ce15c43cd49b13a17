@@ -1,0 +1,99 @@
+src/i18n/locales/sv.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/zh-CN.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/es.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_c029b4d0133f83::t_d1e7656edc7421 3,16,21,28,236-384
+  s_c029b4d0133f83::t_19071c68e53394 165-167
+  s_c029b4d0133f83::t_bf1c453f3e1f33 385-387
+src/features/bin-designer/README.md
+  s_c029b4d0133f83::t_d751d36a596e81 40-43,198-206
+src/design-system/Icon/icons/AlignEndVertical.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-21
+  s_c029b4d0133f83::t_990dae82b6fbf4 22-23
+src/design-system/Icon/icons/AlignEndHorizontal.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-21
+  s_c029b4d0133f83::t_cbef05f8346270 22-23
+src/i18n/locales/pt-BR.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.test.ts
+  s_c029b4d0133f83::t_769ad26db62b66 1-121,126-240
+  s_c029b4d0133f83::t_c3b9f96e0c8af9 122-125
+src/i18n/locales/de.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/design-system/Icon/icons/AlignVerticalDistributeCenter.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-24
+  s_c029b4d0133f83::t_6f8a78af0c1f7e 25-27
+src/design-system/Icon/icons/AlignHorizontalDistributeCenter.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-24
+  s_c029b4d0133f83::t_db61cf69b89396 25-27
+src/i18n/locales/ja.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/features/bin-designer/components/CutoutWorkspace/AlignControls.tsx
+  s_c029b4d0133f83::t_52e174d1db2c21 1-135
+src/i18n/locales/ko.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/features/bin-designer/components/CutoutWorkspace/AlignControls.test.tsx
+  s_c029b4d0133f83::t_5db0c4fb4b8fae 1-72
+src/design-system/Icon/icons/AlignStartHorizontal.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-21
+  s_c029b4d0133f83::t_fe3e8176eaebb0 22-23
+src/i18n/locales/pl.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/uk.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/it.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/en.ts
+  s_c029b4d0133f83::t_fac66bdc820eaf 2203-2212
+src/design-system/Icon/index.ts
+  s_c029b4d0133f83::t_15871f33a65ad7 9-24
+src/design-system/Icon/icons/AlignCenterVertical.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-23
+  s_c029b4d0133f83::t_9102b85d5d3902 24-25
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_c029b4d0133f83::t_4f1ddd77c2c20c 21-23
+  s_c029b4d0133f83::t_b33e42ccbfdaad 359-371
+  s_c029b4d0133f83::t_ddaf9e251775a2 159-164
+  s_c029b4d0133f83::t_4b838255722ebd 166-176,210,319
+  s_c029b4d0133f83::t_c0b075d60f7b54 177,179-209,211,213,216-225
+  s_c029b4d0133f83::t_14266b4553fb02 14-15,20
+  s_c029b4d0133f83::t_0b5c9096831e14 264-269,271-314
+  s_c029b4d0133f83::t_c8f260a840696b 12
+  s_c029b4d0133f83::t_e3cfba6bd25b11 178
+src/i18n/locales/nl.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/design-system/Icon/icons/AlignStartVertical.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-21
+  s_c029b4d0133f83::t_15da762e5a3fd4 22-23
+src/i18n/locales/nb.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_c029b4d0133f83::t_127eb790aa24b3 29,31-34,36
+  s_c029b4d0133f83::t_a1e3de3ff8b16a 1-28,30,35,37-138
+src/design-system/Icon/icons/AlignCenterHorizontal.tsx
+  s_c029b4d0133f83::t_72319b6b37536a 1-23
+  s_c029b4d0133f83::t_2d0f133b9d8159 24-25
+src/i18n/locales/cs.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+src/i18n/locales/fr.json
+  s_c029b4d0133f83::t_25cc72fdd08d05 518-527
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "55c2ac660b549174ccecd03ce15c43cd49b13a17",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
