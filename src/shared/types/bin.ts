@@ -204,6 +204,7 @@ export function hasMarginSeamKeys(params: ResolvedBaseplateParams): boolean {
   );
 }
 
+/**
  * Whether a connector style makes BOTH sides of every seam female and ships a
  * separate seated part (the hammered-in dovetail key, the snap clip). Only these
  * styles can carry {@link ResolvedBaseplateParams.connectorSlotsAllEdges} — an
