@@ -139,6 +139,20 @@ describe('SVG conversion fidelity', () => {
     expect(solidVolume('washer')).toBeLessThan(uncutDisc * 0.95);
   });
 
+  // The horseshoe's outer boundary meets its legs tangentially, which collapses
+  // a true-arc wire to roughly half its area while leaving the bounding box
+  // correct. Hence the polyline arch — and hence this guard. A 1% band is far
+  // tighter than that failure (48% low) and loose enough for the polyline.
+  it('keeps the horseshoe arch at its full enclosed area', () => {
+    const magnetScale = TEXT_BAND_MM / 8.3;
+    const arch = (Math.PI * (4.4 ** 2 - 1.8 ** 2)) / 2 + 2 * (2.6 * 3.9);
+    const poleFaces = 2 * (1.8 * 1.0);
+    const expected = (arch - poleFaces) * magnetScale ** 2 * SOLID_HEIGHT_MM;
+    const actual = solidVolume('magnet');
+    expect(actual).toBeGreaterThan(expected * 0.99);
+    expect(actual).toBeLessThan(expected * 1.01);
+  });
+
   it('returns null rather than throwing on unparseable path data', () => {
     expect(drawingFromSvgPath('')).toBeNull();
     expect(drawingFromSvgPath('not a path')).toBeNull();
