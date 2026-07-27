@@ -17,7 +17,7 @@ import {
 vi.mock('@/features/bin-designer', () => ({
   loadDesign: vi.fn(),
   useCustomBins: vi.fn(() => []),
-  binDimensions: vi.fn(() => ({ innerW: 100 })),
+  binDimensions: vi.fn(() => ({ innerW: 100, innerD: 80 })),
 }));
 
 const mockLoadDesign = vi.mocked(loadDesign);
@@ -43,7 +43,7 @@ function makeSocketDesign(params: Partial<Record<string, unknown>> = {}): SavedD
     id: D1,
     name: 'Socket Design',
     params: {
-      label: { enabled: true, mode: 'socket' },
+      label: { enabled: true, mode: 'socket', depth: 12 },
       compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2 },
       ...params,
     } as unknown as BinParams,
@@ -59,7 +59,7 @@ describe('useLabelPlateCounts', () => {
     vi.clearAllMocks();
     clearLabelPlateCountCache();
     mockUseCustomBins.mockReturnValue([]);
-    mockBinDimensions.mockReturnValue({ innerW: 100 } as unknown as ReturnType<
+    mockBinDimensions.mockReturnValue({ innerW: 100, innerD: 80 } as unknown as ReturnType<
       typeof binDimensions
     >);
   });
@@ -95,10 +95,31 @@ describe('useLabelPlateCounts', () => {
     await waitFor(() => expect(result.current.get(D1)).toEqual({ perBin: 2, widthsU: [1, 1] }));
   });
 
+  // #2910: the print list quoted one plate per compartment while the worker
+  // cut a socket on each of the compartment's two walls.
+  it('counts a plate per edge when tabs sit on both edges', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          label: { enabled: true, mode: 'socket', depth: 12, edges: 'both' },
+          compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+        })
+      )
+    );
+
+    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLabelPlateCounts(bins));
+
+    await waitFor(() =>
+      expect(result.current.get(D1)).toEqual({ perBin: 4, widthsU: [1, 1, 1, 1] })
+    );
+  });
+
   it('omits text-mode designs', async () => {
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
     mockLoadDesign.mockResolvedValue(
-      ok(makeSocketDesign({ label: { enabled: true, mode: 'text' } }))
+      ok(makeSocketDesign({ label: { enabled: true, mode: 'text', depth: 12 } }))
     );
 
     const bins = [createTestBin({ linkedDesignId: D1 })];

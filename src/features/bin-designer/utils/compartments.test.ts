@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  compartmentTabEligible,
   rowHasFullWidthWall,
   spanRegionDepth,
   spanningTabEligible,
@@ -1646,6 +1647,74 @@ describe('full-width label tab geometry', () => {
 // The single gate the worker, ghost overlay and plate export all consult. If
 // they answered differently the user would get a preview that doesn't match the
 // mesh, or a printed plate with no socket to click into.
+describe('compartmentTabEligible', () => {
+  const grid = (cols: number, rows: number, cells: number[]): CompartmentConfig => ({
+    cols,
+    rows,
+    thickness: 1.2,
+    cells,
+  });
+  const fit = (over: Partial<Parameters<typeof compartmentTabEligible>[3]> = {}) => ({
+    tabDepth: 12,
+    inset: 0,
+    cellD: 40,
+    bothEdges: false,
+    ...over,
+  });
+
+  it('allows both walls of a compartment with room for the body', () => {
+    const g = grid(2, 2, [0, 1, 2, 3]);
+
+    expect(compartmentTabEligible(g, 0, 'back', fit())).toBe(true);
+    expect(compartmentTabEligible(g, 0, 'front', fit())).toBe(true);
+  });
+
+  it('rejects an id absent from the grid', () => {
+    expect(compartmentTabEligible(grid(2, 1, [0, 1]), 7, 'back', fit())).toBe(false);
+  });
+
+  it('rejects only the wall carrying a tilted divider', () => {
+    const tilted: CompartmentConfig = {
+      ...grid(2, 2, [0, 1, 2, 3]),
+      dividerOverrides: [{ compartmentA: 0, compartmentB: 2, offsetStart: 3, offsetEnd: -3 }],
+    };
+
+    expect(compartmentTabEligible(tilted, 0, 'back', fit())).toBe(false);
+    expect(compartmentTabEligible(tilted, 0, 'front', fit())).toBe(true);
+  });
+
+  it('measures the body against the compartment depth, not one cell', () => {
+    // Compartment 0 spans both rows, so it has 80mm of depth to give.
+    const tall = grid(2, 2, [0, 1, 0, 2]);
+
+    expect(compartmentTabEligible(tall, 0, 'back', fit({ tabDepth: 60 }))).toBe(true);
+    expect(compartmentTabEligible(tall, 1, 'back', fit({ tabDepth: 60 }))).toBe(false);
+  });
+
+  it('counts inset against the compartment depth', () => {
+    const g = grid(2, 2, [0, 1, 2, 3]);
+
+    expect(compartmentTabEligible(g, 0, 'back', fit({ tabDepth: 30, inset: 5 }))).toBe(true);
+    expect(compartmentTabEligible(g, 0, 'back', fit({ tabDepth: 30, inset: 15 }))).toBe(false);
+  });
+
+  it('drops only the front tab when a both-edges pair would collide', () => {
+    const g = grid(2, 2, [0, 1, 2, 3]);
+    const tight = fit({ tabDepth: 22, bothEdges: true });
+
+    expect(compartmentTabEligible(g, 0, 'back', tight)).toBe(true);
+    expect(compartmentTabEligible(g, 0, 'front', tight)).toBe(false);
+  });
+
+  it('keeps the front tab when the pair fits', () => {
+    const g = grid(2, 2, [0, 1, 2, 3]);
+
+    expect(compartmentTabEligible(g, 0, 'front', fit({ tabDepth: 15, bothEdges: true }))).toBe(
+      true
+    );
+  });
+});
+
 describe('spanningTabEligible', () => {
   const grid = (cols: number, rows: number, cells: number[]): CompartmentConfig => ({
     cols,

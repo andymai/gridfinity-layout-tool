@@ -54,8 +54,42 @@ describe('useLabelPlateExport', () => {
     });
     const { result } = renderHook(() => useLabelPlateExport());
     expect(result.current.plates).toEqual([
-      { compartmentId: 0, widthU: 1, text: 'SCREWS' },
-      { compartmentId: 1, widthU: 1, text: 'BOLTS' },
+      { scope: 'compartment', compartmentId: 0, anchor: 'back', widthU: 1, text: 'SCREWS' },
+      { scope: 'compartment', compartmentId: 1, anchor: 'back', widthU: 1, text: 'BOLTS' },
+    ]);
+  });
+
+  // #2910: the designer's own plate download under-counted the same way the
+  // whole-layout sheet did — one plate per compartment, two sockets per
+  // compartment.
+  it('derives a plate per edge when tabs sit on both edges', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 1,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket',
+          depth: 14,
+          edges: 'both',
+        },
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 2,
+          rows: 1,
+          cells: [0, 1],
+          compartmentTexts: ['SCREWS', 'BOLTS'],
+        },
+      },
+    });
+    const { result } = renderHook(() => useLabelPlateExport());
+    expect(result.current.plates.map((p) => `${p.text}:${p.anchor}`)).toEqual([
+      'SCREWS:back',
+      'SCREWS:front',
+      'BOLTS:back',
+      'BOLTS:front',
     ]);
   });
 
