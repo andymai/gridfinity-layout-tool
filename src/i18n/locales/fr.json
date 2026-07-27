@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Vis à bois",
   "binDesigner.plateIcon.zipTie": "Serre-câble",
   "binDesigner.plateIconAria": "Icône de plaque pour le compartiment {n}",
+  "binDesigner.plateIconAriaValue": "Icône de plaque pour le compartiment {n} : {icon}",
   "binDesigner.plateSpanningNote": "Les compartiments sont trop étroits pour des plaques individuelles — un seul logement sur toute la largeur du bac est utilisé.",
   "binDesigner.plateWidth": "Largeur de plaque",
   "binDesigner.plateWidthAria": "Largeur de plaque du compartiment {n}",

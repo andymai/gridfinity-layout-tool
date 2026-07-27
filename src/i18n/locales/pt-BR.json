@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Parafuso para madeira",
   "binDesigner.plateIcon.zipTie": "Abraçadeira",
   "binDesigner.plateIconAria": "Ícone da placa para o compartimento {n}",
+  "binDesigner.plateIconAriaValue": "Ícone da placa para o compartimento {n}: {icon}",
   "binDesigner.plateSpanningNote": "Os compartimentos são estreitos demais para placas individuais — um único encaixe na largura total é usado.",
   "binDesigner.plateWidth": "Largura da placa",
   "binDesigner.plateWidthAria": "Largura da placa do compartimento {n}",

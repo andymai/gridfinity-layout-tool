@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Tornillo para madera",
   "binDesigner.plateIcon.zipTie": "Brida",
   "binDesigner.plateIconAria": "Icono de placa para el compartimento {n}",
+  "binDesigner.plateIconAriaValue": "Icono de placa para el compartimento {n}: {icon}",
   "binDesigner.plateSpanningNote": "Los compartimentos son demasiado estrechos para placas individuales; se usa un solo alojamiento a lo ancho del contenedor.",
   "binDesigner.plateWidth": "Ancho de placa",
   "binDesigner.plateWidthAria": "Ancho de placa del compartimento {n}",

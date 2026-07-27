@@ -1654,6 +1654,7 @@ const en: Record<string, string> = {
   'binDesigner.socketStyle.slideHint':
     'Plates slide in from the compartment side under retaining lips and park behind a small detent. Takes the same standard plates as click-in.',
   'binDesigner.plateIconAria': 'Plate icon for compartment {n}',
+  'binDesigner.plateIconAriaValue': 'Plate icon for compartment {n}: {icon}',
   'binDesigner.plateIcon.none': 'No icon',
   'binDesigner.plateIcon.searchPlaceholder': 'Search icons',
   'binDesigner.plateIcon.group.fastener': 'Fasteners',

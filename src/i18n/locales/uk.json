@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Шуруп",
   "binDesigner.plateIcon.zipTie": "Стяжка",
   "binDesigner.plateIconAria": "Значок пластини для відділення {n}",
+  "binDesigner.plateIconAriaValue": "Піктограма таблички для відділення {n}: {icon}",
   "binDesigner.plateSpanningNote": "Відсіки завузькі для окремих пластин — використовується одне гніздо на всю ширину контейнера.",
   "binDesigner.plateWidth": "Ширина пластини",
   "binDesigner.plateWidthAria": "Ширина пластини для відсіку {n}",

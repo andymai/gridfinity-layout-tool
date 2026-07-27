@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "木ネジ",
   "binDesigner.plateIcon.zipTie": "結束バンド",
   "binDesigner.plateIconAria": "仕切り{n}のプレートアイコン",
+  "binDesigner.plateIconAriaValue": "仕切り {n} のプレートアイコン: {icon}",
   "binDesigner.plateSpanningNote": "コンパートメントが狭すぎるため、ビン全幅の1つのソケットを使用します。",
   "binDesigner.plateWidth": "プレート幅",
   "binDesigner.plateWidthAria": "コンパートメント{n}のプレート幅",

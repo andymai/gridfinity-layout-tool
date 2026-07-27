@@ -10,7 +10,28 @@ import { LabelIconGlyph } from './LabelIconGlyph';
 export interface LabelIconPickerProps {
   readonly value: LabelPlateIconId | null;
   readonly onChange: (icon: LabelPlateIconId | null) => void;
-  readonly 'aria-label': string;
+  /** Compartment this picker belongs to, for the accessible name. */
+  readonly compartmentNumber: number;
+}
+
+/** Stand-in for the empty state — an outlined slot rather than a blank button. */
+function NoIconMark() {
+  return (
+    <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true" focusable="false">
+      <rect
+        x="3.5"
+        y="3.5"
+        width="13"
+        height="13"
+        rx="2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeDasharray="3 2.5"
+        opacity="0.65"
+      />
+    </svg>
+  );
 }
 
 /**
@@ -21,11 +42,7 @@ export interface LabelIconPickerProps {
  * passed a handful of entries — "Wood screw" and "Self-tapping screw" are not
  * distinguishable as words at a glance, but they are as shapes.
  */
-export function LabelIconPicker({
-  value,
-  onChange,
-  'aria-label': ariaLabel,
-}: LabelIconPickerProps) {
+export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIconPickerProps) {
   const t = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -39,6 +56,8 @@ export function LabelIconPicker({
   }, [isOpen]);
 
   const label = (icon: LabelPlateIconId): string => t(`binDesigner.plateIcon.${icon}`);
+  const currentName = value ? label(value) : t('binDesigner.plateIcon.none');
+  const dialogLabel = t('binDesigner.plateIconAria', { n: compartmentNumber });
 
   // Match the localized name as well as the id, so a Swedish user searching
   // "insex" finds the socket cap screw and a contributor searching the id does
@@ -74,20 +93,17 @@ export function LabelIconPicker({
         type="button"
         variant="secondary"
         size="sm"
-        className="w-28 shrink-0 justify-start"
-        aria-label={ariaLabel}
+        className="w-9 shrink-0 justify-center px-0"
+        aria-label={t('binDesigner.plateIconAriaValue', {
+          n: compartmentNumber,
+          icon: currentName,
+        })}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
+        title={currentName}
         onClick={() => setIsOpen((open) => !open)}
       >
-        {value ? (
-          <>
-            <LabelIconGlyph icon={value} size={16} className="shrink-0" />
-            <span className="truncate">{label(value)}</span>
-          </>
-        ) : (
-          <span className="truncate text-content-secondary">{t('binDesigner.plateIcon.none')}</span>
-        )}
+        {value ? <LabelIconGlyph icon={value} size={18} /> : <NoIconMark />}
       </Button>
 
       <Popover
@@ -96,7 +112,7 @@ export function LabelIconPicker({
         onClose={close}
         className="w-72 rounded-lg border border-stroke-subtle bg-surface-raised p-2 shadow-lg"
       >
-        <div role="dialog" aria-label={ariaLabel}>
+        <div role="dialog" aria-label={dialogLabel}>
           <Input
             ref={searchRef}
             size="sm"

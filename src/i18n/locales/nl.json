@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Houtschroef",
   "binDesigner.plateIcon.zipTie": "Tiewrap",
   "binDesigner.plateIconAria": "Plaatjespictogram voor vak {n}",
+  "binDesigner.plateIconAriaValue": "Plaatpictogram voor vak {n}: {icon}",
   "binDesigner.plateSpanningNote": "De vakken zijn te smal voor losse plaatjes — er wordt één houder over de hele breedte gebruikt.",
   "binDesigner.plateWidth": "Plaatbreedte",
   "binDesigner.plateWidthAria": "Plaatbreedte voor vak {n}",

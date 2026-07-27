@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Wkręt do drewna",
   "binDesigner.plateIcon.zipTie": "Opaska zaciskowa",
   "binDesigner.plateIconAria": "Ikona płytki dla przegrody {n}",
+  "binDesigner.plateIconAriaValue": "Ikona tabliczki dla przegrody {n}: {icon}",
   "binDesigner.plateSpanningNote": "Przegrody są zbyt wąskie na indywidualne płytki — używane jest jedno gniazdo na szerokość bina.",
   "binDesigner.plateWidth": "Szerokość płytki",
   "binDesigner.plateWidthAria": "Szerokość płytki dla przegrody {n}",

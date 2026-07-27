@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "木螺丝",
   "binDesigner.plateIcon.zipTie": "扎带",
   "binDesigner.plateIconAria": "隔间 {n} 的标签板图标",
+  "binDesigner.plateIconAriaValue": "隔层 {n} 的标签图标：{icon}",
   "binDesigner.plateSpanningNote": "隔间太窄，放不下单独的标签板 — 改用一个贯通收纳盒整宽的卡槽。",
   "binDesigner.plateWidth": "标签板宽度",
   "binDesigner.plateWidthAria": "隔间 {n} 的标签板宽度",

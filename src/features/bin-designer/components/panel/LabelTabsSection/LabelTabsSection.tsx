@@ -260,7 +260,7 @@ export function LabelTabsSection() {
                           <LabelIconPicker
                             value={row.icon}
                             onChange={(icon) => handlers.setCompartmentPlateIcon(row.id, icon)}
-                            aria-label={t('binDesigner.plateIconAria', { n: row.displayNumber })}
+                            compartmentNumber={row.displayNumber}
                           />
                         )}
                       </li>

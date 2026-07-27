@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Holzschraube",
   "binDesigner.plateIcon.zipTie": "Kabelbinder",
   "binDesigner.plateIconAria": "Plattensymbol für Fach {n}",
+  "binDesigner.plateIconAriaValue": "Plattensymbol für Fach {n}: {icon}",
   "binDesigner.plateSpanningNote": "Die Fächer sind zu schmal für einzelne Etiketten — stattdessen wird eine behälterbreite Aufnahme verwendet.",
   "binDesigner.plateWidth": "Etikettenbreite",
   "binDesigner.plateWidthAria": "Etikettenbreite für Fach {n}",

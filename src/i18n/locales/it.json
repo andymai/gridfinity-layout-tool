@@ -954,6 +954,7 @@
   "binDesigner.plateIcon.woodScrew": "Vite per legno",
   "binDesigner.plateIcon.zipTie": "Fascetta",
   "binDesigner.plateIconAria": "Icona targhetta per lo scomparto {n}",
+  "binDesigner.plateIconAriaValue": "Icona targhetta per lo scomparto {n}: {icon}",
   "binDesigner.plateSpanningNote": "Gli scomparti sono troppo stretti per targhette singole: viene usata una sola sede a tutta larghezza.",
   "binDesigner.plateWidth": "Larghezza targhetta",
   "binDesigner.plateWidthAria": "Larghezza targhetta per lo scomparto {n}",

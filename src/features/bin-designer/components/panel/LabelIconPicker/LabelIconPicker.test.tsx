@@ -6,24 +6,40 @@ import { LabelIconPicker } from './LabelIconPicker';
 
 const setup = (value: Parameters<typeof LabelIconPicker>[0]['value'] = null) => {
   const onChange = vi.fn();
-  render(<LabelIconPicker value={value} onChange={onChange} aria-label="Plate icon" />);
+  render(<LabelIconPicker value={value} onChange={onChange} compartmentNumber={1} />);
   return { onChange, user: userEvent.setup() };
 };
 
+const TRIGGER = /^Plate icon for compartment 1:/;
+
 const openPicker = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: 'Plate icon' }));
-  return screen.getByRole('dialog', { name: 'Plate icon' });
+  await user.click(screen.getByRole('button', { name: TRIGGER }));
+  return screen.getByRole('dialog', { name: 'Plate icon for compartment 1' });
 };
 
 describe('LabelIconPicker', () => {
-  it('shows the empty state until an icon is chosen', () => {
+  // The trigger is icon-only — a 112px labelled button left the adjacent
+  // plate-width select about 16px in the 256px landscape panel, and truncated
+  // every name anyway. The value rides in the accessible name instead.
+  it('reports the empty state in its accessible name', () => {
     setup();
-    expect(screen.getByRole('button', { name: 'Plate icon' })).toHaveTextContent('No icon');
+    expect(
+      screen.getByRole('button', { name: 'Plate icon for compartment 1: No icon' })
+    ).toBeInTheDocument();
   });
 
-  it('names the current icon on the trigger', () => {
+  it('reports the current icon in its accessible name', () => {
     setup('washer');
-    expect(screen.getByRole('button', { name: 'Plate icon' })).toHaveTextContent('Washer');
+    expect(
+      screen.getByRole('button', { name: 'Plate icon for compartment 1: Washer' })
+    ).toBeInTheDocument();
+  });
+
+  it('shows the chosen silhouette on the trigger', () => {
+    setup('washer');
+    const trigger = screen.getByRole('button', { name: TRIGGER });
+    expect(trigger.querySelector('svg')).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('title', 'Washer');
   });
 
   it('keeps the grid closed until asked', () => {
