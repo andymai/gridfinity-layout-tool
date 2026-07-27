@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.322.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.321.0...gridfinity-layout-tool-v4.322.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** render swappable label plates in the 3D preview ([#2912](https://github.com/andymai/gridfinity-layout-tool/issues/2912)) ([2f1bc25](https://github.com/andymai/gridfinity-layout-tool/commit/2f1bc25de9f7cc3b77a568bd8418264ef7088f5a))
+
 ## [4.321.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.320.0...gridfinity-layout-tool-v4.321.0) (2026-07-27)
 
 
