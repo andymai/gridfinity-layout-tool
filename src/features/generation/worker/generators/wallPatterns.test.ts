@@ -393,10 +393,10 @@ describe('getPatternDescriptors — corner keep-out (#2865)', () => {
     // Pre-fix behaviour (a lip re-joins the walls, so no keep-out is applied):
     // the hole reaches to within a sliver of the corner.
     const withLip = frontCornerGap(params, innerW, innerD, true);
-    expect(withLip.gap).toBeLessThan(1);
+    expect(withLip.gap).toBeLessThan(WALL_CORNER_KEEP_OUT);
     // No lip → keep-out clears the outermost column(s), restoring a solid band.
     const noLip = frontCornerGap(params, innerW, innerD, false);
-    expect(noLip.gap).toBeGreaterThanOrEqual(WALL_CORNER_KEEP_OUT - 0.5);
+    expect(noLip.gap).toBeGreaterThanOrEqual(WALL_CORNER_KEEP_OUT);
     expect(noLip.cols).toBeLessThan(withLip.cols);
   });
 
