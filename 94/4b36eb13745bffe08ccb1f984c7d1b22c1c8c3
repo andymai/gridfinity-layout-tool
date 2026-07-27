@@ -1,0 +1,25 @@
+src/features/baseplate/utils/connectorKeys.ts
+  s_b71dadf490462d::t_b7731124b52d1d 92-98,103-106,109-110,115-116,146-149,155-163,166
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_b71dadf490462d::t_278151e1ceb06b 163-171,175-176
+src/features/baseplate/utils/connectorKeys.test.ts
+  s_b71dadf490462d::t_4f1061bfc998d2 224-261
+src/features/baseplate/README.md
+  s_b71dadf490462d::t_bde8b2f01e395e 64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "944b36eb13745bffe08ccb1f984c7d1b22c1c8c3",
+  "prompts": {},
+  "sessions": {
+    "s_b71dadf490462d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d63aa6a-1dd4-4ad7-9510-5f605c1e034c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
