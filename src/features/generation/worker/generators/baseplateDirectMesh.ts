@@ -26,6 +26,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { hasAllEdgeSlots } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import { creaseEdges } from './utils';
@@ -312,7 +313,14 @@ export function generateBaseplateDirect(
       params.invertDovetails,
       fractionalEdgeX,
       fractionalEdgeY,
-      gridUnitMmY
+      gridUnitMmY,
+      hasAllEdgeSlots(params),
+      {
+        left: params.paddingLeft,
+        right: params.paddingRight,
+        front: params.paddingFront,
+        back: params.paddingBack,
+      }
     );
     for (const pos of connPositions) {
       if (pos.isMale) {
