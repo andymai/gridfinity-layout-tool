@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Засувне",
   "binDesigner.socketStyle.slideHint": "Пластини засуваються з боку відділення під утримувальні губки та фіксуються за невеликим виступом. Підходять ті самі стандартні пластини, що й для защіпки.",
   "binDesigner.spacerDisablesInterior": "У проставці немає дна для внутрішніх елементів",
+  "binDesigner.spacerDisablesStyle": "Проставка — це відкрита рамка, тож немає внутрішнього простору для формування",
   "binDesigner.spacerDisablesAttachment": "У проставці немає дна для магніту чи гвинта",
   "binDesigner.spacerDisablesBase": "Проставка вже відкриває основу наскрізь",
   "binDesigner.flatFloorDisablesSpacer": "Проставці потрібні ніжки, крізь які вона відкривається",

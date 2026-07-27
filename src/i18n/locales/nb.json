@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Skyv-inn",
   "binDesigner.socketStyle.slideHint": "Platene skyves inn fra romsiden under holdelepper og hviler bak en liten knast. Bruker de samme standardplatene som klikk-sokkelen.",
   "binDesigner.spacerDisablesInterior": "En avstandsdel har ingen bunn å holde innmat i",
+  "binDesigner.spacerDisablesStyle": "En avstandsdel er en åpen ramme — det finnes ingen innmat å forme",
   "binDesigner.spacerDisablesAttachment": "En avstandsdel har ingen bunn å holde magnet eller skrue i",
   "binDesigner.spacerDisablesBase": "Avstandsdelen åpner allerede basen helt gjennom",
   "binDesigner.flatFloorDisablesSpacer": "En avstandsdel trenger føtter å åpne gjennom",

@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Deslizante",
   "binDesigner.socketStyle.slideHint": "As placas deslizam pelo lado do compartimento sob abas de retenção e param atrás de um pequeno ressalto. Usa as mesmas placas padrão do encaixe de pressão.",
   "binDesigner.spacerDisablesInterior": "Um espaçador não tem piso para elementos internos",
+  "binDesigner.spacerDisablesStyle": "Um espaçador é uma moldura aberta: não há interior para configurar",
   "binDesigner.spacerDisablesAttachment": "Um espaçador não tem piso para um ímã ou parafuso",
   "binDesigner.spacerDisablesBase": "O espaçador já abre a base de ponta a ponta",
   "binDesigner.flatFloorDisablesSpacer": "Um espaçador precisa de pés para atravessar",

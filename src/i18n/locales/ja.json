@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "スライド式",
   "binDesigner.socketStyle.slideHint": "プレートは仕切り側から押さえリップの下にスライドさせ、小さな突起の奥で固定されます。はめ込み式と同じ標準プレートが使えます。",
   "binDesigner.spacerDisablesInterior": "スペーサーには内部パーツを受ける床がありません",
+  "binDesigner.spacerDisablesStyle": "スペーサーは開いた枠なので、形づくる内部がありません",
   "binDesigner.spacerDisablesAttachment": "スペーサーにはマグネットやネジを受ける床がありません",
   "binDesigner.spacerDisablesBase": "スペーサーはすでにベースを貫通させています",
   "binDesigner.flatFloorDisablesSpacer": "スペーサーには貫通させる脚が必要です",

@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Coulissant",
   "binDesigner.socketStyle.slideHint": "Les plaques coulissent depuis le côté du compartiment sous des lèvres de retenue et se calent derrière un petit cran. Accepte les mêmes plaques standard que le socle clipsable.",
   "binDesigner.spacerDisablesInterior": "Une entretoise n'a pas de fond pour recevoir des aménagements",
+  "binDesigner.spacerDisablesStyle": "Une entretoise est un cadre ouvert : il n'y a pas d'intérieur à façonner",
   "binDesigner.spacerDisablesAttachment": "Une entretoise n'a pas de fond pour recevoir un aimant ou une vis",
   "binDesigner.spacerDisablesBase": "L'entretoise ouvre déjà la base de part en part",
   "binDesigner.flatFloorDisablesSpacer": "Une entretoise a besoin de pieds à traverser",

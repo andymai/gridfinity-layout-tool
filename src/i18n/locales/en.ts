@@ -1940,6 +1940,7 @@ const en: Record<string, string> = {
   'binDesigner.floorPatternDisablesLightweight':
     'Cannot combine drainage holes with a lightweight floor',
   'binDesigner.spacerDisablesInterior': 'A spacer has no floor to hold interior features',
+  'binDesigner.spacerDisablesStyle': 'A spacer is an open frame — there is no interior to shape',
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
   'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',

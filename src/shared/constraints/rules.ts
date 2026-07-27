@@ -149,18 +149,17 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Spacer disables every floor-dependent feature',
     source: 'base.spacer',
     when: (p) => p.base.spacer,
-    disables: [
-      'compartments',
-      'label',
-      'scoop',
-      'floorPattern',
-      'inserts',
-      'cutouts',
-      'slotConfig',
-      'style.slotted',
-      'style.solid',
-    ],
+    disables: ['compartments', 'label', 'scoop', 'floorPattern', 'inserts', 'cutouts'],
     reason: 'binDesigner.spacerDisablesInterior',
+  },
+  {
+    // Split from the rule above so the copy fits: "no floor to hold interior
+    // features" reads wrong next to a greyed-out wall STYLE.
+    description: 'Spacer disables the interior styles (it has no interior to shape)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['slotConfig', 'style.slotted', 'style.solid'],
+    reason: 'binDesigner.spacerDisablesStyle',
   },
   {
     description: 'Spacer disables attachment hardware (no floor for a magnet pad)',

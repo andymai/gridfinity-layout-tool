@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "밀어 끼움",
   "binDesigner.socketStyle.slideHint": "플레이트가 칸 옆에서 고정 립 아래로 밀려 들어가 작은 걸림턱 뒤에 자리 잡습니다. 딸깍 끼움과 같은 표준 플레이트를 사용합니다.",
   "binDesigner.spacerDisablesInterior": "스페이서에는 내부 구조를 받칠 바닥이 없습니다",
+  "binDesigner.spacerDisablesStyle": "스페이서는 열린 프레임이라 구성할 내부가 없습니다",
   "binDesigner.spacerDisablesAttachment": "스페이서에는 자석이나 나사를 받칠 바닥이 없습니다",
   "binDesigner.spacerDisablesBase": "스페이서는 이미 베이스를 관통시킵니다",
   "binDesigner.flatFloorDisablesSpacer": "스페이서에는 관통할 발이 필요합니다",

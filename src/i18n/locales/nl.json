@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Schuif-in",
   "binDesigner.socketStyle.slideHint": "Plaatjes schuiven vanaf de vakzijde onder borglippen en rusten achter een kleine nok. Gebruikt dezelfde standaardplaatjes als de klik-houder.",
   "binDesigner.spacerDisablesInterior": "Een afstandhouder heeft geen bodem voor interieurelementen",
+  "binDesigner.spacerDisablesStyle": "Een afstandhouder is een open frame — er is geen interieur om vorm te geven",
   "binDesigner.spacerDisablesAttachment": "Een afstandhouder heeft geen bodem voor een magneet of schroef",
   "binDesigner.spacerDisablesBase": "De afstandhouder opent de basis al helemaal",
   "binDesigner.flatFloorDisablesSpacer": "Een afstandhouder heeft voetjes nodig om door te openen",

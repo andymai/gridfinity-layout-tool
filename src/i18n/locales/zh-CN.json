@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "滑入式",
   "binDesigner.socketStyle.slideHint": "标签板从隔间侧面滑入固定唇边下方，并停在一个小卡点后。使用与卡入式相同的标准标签板。",
   "binDesigner.spacerDisablesInterior": "垫高件没有底板来承载内部结构",
+  "binDesigner.spacerDisablesStyle": "垫高件是开放框架，没有可设置的内部结构",
   "binDesigner.spacerDisablesAttachment": "垫高件没有底板来固定磁铁或螺钉",
   "binDesigner.spacerDisablesBase": "垫高件已经把底座完全打通",
   "binDesigner.flatFloorDisablesSpacer": "垫高件需要可打通的底脚",

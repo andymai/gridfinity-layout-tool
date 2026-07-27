@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "A scorrimento",
   "binDesigner.socketStyle.slideHint": "Le targhette scorrono dal lato dello scomparto sotto labbri di ritenuta e si fermano dietro un piccolo dente. Usa le stesse targhette standard dell’attacco a scatto.",
   "binDesigner.spacerDisablesInterior": "Un distanziale non ha fondo per gli elementi interni",
+  "binDesigner.spacerDisablesStyle": "Un distanziale è un telaio aperto: non c'è un interno da configurare",
   "binDesigner.spacerDisablesAttachment": "Un distanziale non ha fondo per un magnete o una vite",
   "binDesigner.spacerDisablesBase": "Il distanziale apre già la base da parte a parte",
   "binDesigner.flatFloorDisablesSpacer": "Un distanziale ha bisogno di piedini da attraversare",

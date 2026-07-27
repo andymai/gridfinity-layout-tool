@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Deslizante",
   "binDesigner.socketStyle.slideHint": "Las placas se deslizan desde el lado del compartimento bajo pestañas de retención y quedan fijadas tras un pequeño tope. Usa las mismas placas estándar que el zócalo a presión.",
   "binDesigner.spacerDisablesInterior": "Un separador no tiene suelo para alojar elementos interiores",
+  "binDesigner.spacerDisablesStyle": "Un separador es un marco abierto: no hay interior que configurar",
   "binDesigner.spacerDisablesAttachment": "Un separador no tiene suelo para alojar un imán o tornillo",
   "binDesigner.spacerDisablesBase": "El separador ya abre la base de lado a lado",
   "binDesigner.flatFloorDisablesSpacer": "Un separador necesita pies por los que abrirse",

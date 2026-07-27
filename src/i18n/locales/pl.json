@@ -1652,6 +1652,7 @@
   "binDesigner.lightweightDisablesFloorPattern": "Lekka podłoga jest już otwarta — nie ma płyty do perforowania",
   "binDesigner.floorPatternDisablesLightweight": "Nie można łączyć otworów odpływowych z lekką podłogą",
   "binDesigner.spacerDisablesInterior": "Przekładka nie ma podłogi dla elementów wnętrza",
+  "binDesigner.spacerDisablesStyle": "Przekładka to otwarta rama — nie ma wnętrza do ukształtowania",
   "binDesigner.spacerDisablesAttachment": "Przekładka nie ma podłogi dla magnesu ani wkrętu",
   "binDesigner.spacerDisablesBase": "Przekładka już otwiera podstawę na wylot",
   "binDesigner.flatFloorDisablesSpacer": "Przekładka potrzebuje stopek, przez które się otwiera",

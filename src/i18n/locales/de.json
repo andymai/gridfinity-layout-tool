@@ -923,6 +923,7 @@
   "binDesigner.socketStyle.slideChannel": "Einschieben",
   "binDesigner.socketStyle.slideHint": "Platten werden von der Fachseite unter Haltelippen eingeschoben und rasten hinter einer kleinen Nase ein. Nimmt dieselben Standardplatten wie der Klick-Sockel auf.",
   "binDesigner.spacerDisablesInterior": "Ein Abstandshalter hat keinen Boden für Innenausbau",
+  "binDesigner.spacerDisablesStyle": "Ein Abstandshalter ist ein offener Rahmen — es gibt keinen Innenraum zu gestalten",
   "binDesigner.spacerDisablesAttachment": "Ein Abstandshalter hat keinen Boden für Magnet oder Schraube",
   "binDesigner.spacerDisablesBase": "Der Abstandshalter öffnet die Basis schon vollständig",
   "binDesigner.flatFloorDisablesSpacer": "Ein Abstandshalter braucht Füße, durch die er öffnet",
