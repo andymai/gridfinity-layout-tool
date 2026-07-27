@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LABEL_PLATE_ICONS } from '@/shared/constants/labelPlates';
 import { LabelIconPicker } from './LabelIconPicker';
@@ -130,6 +130,20 @@ describe('LabelIconPicker', () => {
     await user.click(screen.getByRole('button', { name: TRIGGER }));
     const reopened = await openPicker(user);
     expect(within(reopened).getByRole('textbox')).toHaveValue('');
+  });
+
+  it('returns focus to the trigger after a selection', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.click(within(dialog).getByRole('button', { name: 'Hex key' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: TRIGGER })).toHaveFocus());
+  });
+
+  it('returns focus to the trigger after Escape', async () => {
+    const { user } = setup();
+    await openPicker(user);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.getByRole('button', { name: TRIGGER })).toHaveFocus());
   });
 
   it('names a single dialog, without nesting one inside the popover', async () => {

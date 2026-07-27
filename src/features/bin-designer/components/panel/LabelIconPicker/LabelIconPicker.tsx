@@ -79,6 +79,12 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
   const close = (): void => {
     setIsOpen(false);
     setQuery('');
+    // Closing unmounts whatever held focus. Hand it back to the trigger only if
+    // it was orphaned onto <body> — an outside click has already placed focus
+    // where the user pointed, and stealing it back fights them.
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body) anchorRef.current?.focus();
+    });
   };
 
   const select = (icon: LabelPlateIconId | null): void => {
