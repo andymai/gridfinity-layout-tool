@@ -88,13 +88,20 @@ export function useBaseSection() {
 
   const toggleSpacer = useCallback(() => {
     if (!base.spacer && !spacerStatus.available) return;
-    const enabled = !base.spacer;
-    const { params: resolved } = resolveConstraints(params, { feature: 'base.spacer', enabled });
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.spacer',
+      enabled: !base.spacer,
+    });
     // Only a spacer may stand 1u tall (#2915), so leaving spacer mode has to
     // lift the height back to the normal floor rather than strand the bin
     // under it — the numeric bound is outside what the constraint engine,
     // which only enables and disables features, can express.
-    const minHeight = minHeightUnits(enabled);
+    //
+    // Read off `resolved`, never the requested value: the engine's post-check
+    // returns the params untouched when an enable turns out to be blocked, and
+    // that verdict is computed against the patched params, not the `available`
+    // status this callback guarded on.
+    const minHeight = minHeightUnits(resolved.base.spacer);
     setParams(resolved.height < minHeight ? { ...resolved, height: minHeight } : resolved);
   }, [params, base.spacer, spacerStatus.available, setParams]);
 
