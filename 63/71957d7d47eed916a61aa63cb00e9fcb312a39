@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_c029b4d0133f83::t_5200265064433d 188-193,356,401,411-414,416-421
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_c029b4d0133f83::t_d95022314022de 750-775
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "6371957d7d47eed916a61aa63cb00e9fcb312a39",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
