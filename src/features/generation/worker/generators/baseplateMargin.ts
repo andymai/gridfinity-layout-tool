@@ -160,11 +160,20 @@ function buildMarginSolid(
     // case: a 1-cell body piece has no boundary, so a keyed rail stays flat rather
     // than growing a lone groove at its center with nothing to mate.
     const keyed = params.connectorStyle === 'dovetailKey';
+    // `cellUnits` counts cells along the RAIL's running axis, so it must be
+    // converted with that axis's pitch: X for a front/back rail, Y for a
+    // left/right one. Using the X pitch for both put a left/right rail's grooves
+    // at the wrong spots on a non-square grid, where they no longer met the body's
+    // (which uses the real Y pitch).
+    const runningPitch =
+      margin.side === 'front' || margin.side === 'back'
+        ? params.gridUnitMm
+        : (params.gridUnitMmY ?? params.gridUnitMm);
     const anchors = !seam
       ? []
       : keyed
-        ? computeCellBoundariesMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge)
-        : computeCellCentersMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge);
+        ? computeCellBoundariesMm(seam.cellUnits, runningPitch, seam.fractionalEdge)
+        : computeCellCentersMm(seam.cellUnits, runningPitch, seam.fractionalEdge);
     const centerOffset = seam?.centerOffsetMm ?? 0;
     const fallback = keyed ? [] : [0];
     const positions = (anchors.length > 0 ? anchors : fallback).map((b) => b + centerOffset);

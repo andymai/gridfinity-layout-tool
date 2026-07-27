@@ -221,6 +221,44 @@ describe('keyed margin seams (issue #2866)', () => {
     expect(countConnectorKeys(tiling, params)).toBeGreaterThan(0);
   });
 
+  it('converts a left/right rail with the DEPTH pitch on a non-square grid', () => {
+    // `seamConnector.cellUnits` counts cells along the rail's running axis — Y for
+    // a left/right rail — so a non-square plate has to convert it with the Y
+    // pitch. Using the X pitch put the keys where the grooves aren't.
+    const gridUnitMmY = 22;
+    const params = detached({ gridUnitMmY, depth: 8 });
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfD = (tiling.totalDepthUnits * gridUnitMmY) / 2;
+
+    for (const j of marginJunctions(params)) {
+      // Every key must land on an interior cell boundary of the DEPTH axis.
+      const fromFront = j.yMm + halfD;
+      const cells = fromFront / gridUnitMmY;
+      expect(Math.abs(cells - Math.round(cells)), `y=${j.yMm}`).toBeLessThan(1e-6);
+      expect(fromFront).toBeGreaterThan(0);
+      expect(fromFront).toBeLessThan(2 * halfD);
+    }
+  });
+
+  it('places split-seam keys on the depth pitch too (non-square)', () => {
+    const gridUnitMmY = 22;
+    const params = makeParams({
+      width: 18,
+      depth: 18,
+      gridUnitMmY,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfD = (tiling.totalDepthUnits * gridUnitMmY) / 2;
+    const vertical = computeSeamJunctions(tiling, params).filter((j) => j.axis === 'x');
+    expect(vertical.length).toBeGreaterThan(0);
+    for (const j of vertical) {
+      const cells = (j.yMm + halfD) / gridUnitMmY;
+      expect(Math.abs(cells - Math.round(cells)), `y=${j.yMm}`).toBeLessThan(1e-6);
+    }
+  });
+
   it('counts margin keys on top of the split-seam keys', () => {
     const params = detached();
     const tiling = computeBaseplateTiling(params, 256);

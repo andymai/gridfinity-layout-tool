@@ -89,27 +89,31 @@ export function computeSeamJunctions(
   tiling: BaseplateTiling,
   params: ResolvedBaseplateParams
 ): SeamJunction[] {
-  const g = params.gridUnitMm;
-  const totalWmm = tiling.totalWidthUnits * g;
-  const totalDmm = tiling.totalDepthUnits * g;
+  // Per-axis pitch: equal on a square grid, so this reduces to the old single-`g`
+  // arithmetic there. Each measurement has to use the pitch of the axis it runs
+  // along, or a non-square plate's keys land where the grooves aren't.
+  const gx = params.gridUnitMm;
+  const gy = params.gridUnitMmY ?? gx;
+  const totalWmm = tiling.totalWidthUnits * gx;
+  const totalDmm = tiling.totalDepthUnits * gy;
   const junctions: SeamJunction[] = [];
 
   if (hasSeatedConnector(params)) {
     for (const piece of tiling.pieces) {
-      const pieceWmm = piece.widthUnits * g;
-      const pieceDmm = piece.depthUnits * g;
-      const centerX = piece.gridOffsetX * g + pieceWmm / 2 - totalWmm / 2;
-      const centerY = piece.gridOffsetY * g + pieceDmm / 2 - totalDmm / 2;
+      const pieceWmm = piece.widthUnits * gx;
+      const pieceDmm = piece.depthUnits * gy;
+      const centerX = piece.gridOffsetX * gx + pieceWmm / 2 - totalWmm / 2;
+      const centerY = piece.gridOffsetY * gy + pieceDmm / 2 - totalDmm / 2;
 
       if (piece.edges.right === 'join') {
-        const seamX = piece.gridOffsetX * g + pieceWmm - totalWmm / 2;
-        for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, g, piece.fractionalEdgeY)) {
+        const seamX = piece.gridOffsetX * gx + pieceWmm - totalWmm / 2;
+        for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, gy, piece.fractionalEdgeY)) {
           junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
         }
       }
       if (piece.edges.back === 'join') {
-        const seamY = piece.gridOffsetY * g + pieceDmm - totalDmm / 2;
-        for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, g, piece.fractionalEdgeX)) {
+        const seamY = piece.gridOffsetY * gy + pieceDmm - totalDmm / 2;
+        for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, gx, piece.fractionalEdgeX)) {
           junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
         }
       }
@@ -139,20 +143,27 @@ function marginSeamJunctions(
 ): SeamJunction[] {
   if (!hasMarginSeamKeys(params)) return [];
 
-  const g = params.gridUnitMm;
-  const halfWmm = (tiling.totalWidthUnits * g) / 2;
-  const halfDmm = (tiling.totalDepthUnits * g) / 2;
+  const gx = params.gridUnitMm;
+  const gy = params.gridUnitMmY ?? gx;
+  const halfWmm = (tiling.totalWidthUnits * gx) / 2;
+  const halfDmm = (tiling.totalDepthUnits * gy) / 2;
   const junctions: SeamJunction[] = [];
 
   for (const margin of tiling.margins ?? []) {
     const seam = margin.seamConnector;
     if (margin.role !== 'long' || !seam) continue;
-    const offsets = interiorBoundaryOffsetsMm(seam.cellUnits, g, seam.fractionalEdge);
+    // A front/back rail runs along X, so its `cellUnits` are width cells (X
+    // pitch) and its key spans Y; a left/right rail is the mirror image. Both
+    // must use their own axis's pitch, matching `buildMarginSolid`.
+    const horizontal = margin.side === 'front' || margin.side === 'back';
+    const offsets = interiorBoundaryOffsetsMm(
+      seam.cellUnits,
+      horizontal ? gx : gy,
+      seam.fractionalEdge
+    );
     for (const off of offsets) {
       const along = off + seam.centerOffsetMm;
-      // A front/back rail runs along X, so its key spans Y and vice versa —
-      // matching the 'x' = spans-X convention of the join-edge walk.
-      if (margin.side === 'front' || margin.side === 'back') {
+      if (horizontal) {
         const y = margin.side === 'front' ? -halfDmm : halfDmm;
         junctions.push({ xMm: margin.worldOffsetMm.x + along, yMm: y, axis: 'y' });
       } else {
