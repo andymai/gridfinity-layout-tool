@@ -289,9 +289,8 @@ export function useGeneration(): void {
         // meshes, which never render plates. Persisting them would bloat every
         // entry the layout later reads back — the designer rebuilds them cheaply
         // on the next generation.
-        const { labelPlates: _plates, ...persistable } = result.mesh;
-        void _plates;
-        savePersistedBinMesh(binMeshCacheKey(genParams), persistable);
+        const { labelPlates, ...withoutPlates } = result.mesh;
+        savePersistedBinMesh(binMeshCacheKey(genParams), labelPlates ? withoutPlates : result.mesh);
 
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer

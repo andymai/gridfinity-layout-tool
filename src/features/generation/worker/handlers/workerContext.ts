@@ -216,7 +216,6 @@ export function runGeneration(
             vertices: maybeCopy(plate.vertices),
             normals: maybeCopy(plate.normals),
             indices: maybeCopy(plate.indices),
-            edgeVertices: maybeCopy(plate.edgeVertices),
             triangleCount: plate.triangleCount,
             seatX: plate.seatX,
             seatY: plate.seatY,
@@ -299,12 +298,7 @@ export function runGeneration(
     }
     if (labelPlates) {
       for (const plate of labelPlates.plates) {
-        transfer.push(
-          plate.vertices.buffer,
-          plate.normals.buffer,
-          plate.indices.buffer,
-          plate.edgeVertices.buffer
-        );
+        transfer.push(plate.vertices.buffer, plate.normals.buffer, plate.indices.buffer);
       }
     }
     const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);

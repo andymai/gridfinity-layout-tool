@@ -168,7 +168,9 @@ describe('useLinkedDesignMeshes', () => {
     const { result } = renderHook(() => useLinkedDesignMeshes(bins));
 
     await waitFor(() => {
-      expect(result.current.get(D1)?.mesh).toEqual(mesh);
+      // No plates present, so the mesh passes through untouched rather than
+      // being re-wrapped by the strip.
+      expect(result.current.get(D1)?.mesh).toBe(mesh);
     });
     expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key', mesh);
     expect(mockRelease).toHaveBeenCalledTimes(1);

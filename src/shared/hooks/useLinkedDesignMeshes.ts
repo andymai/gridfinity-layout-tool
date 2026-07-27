@@ -99,6 +99,19 @@ function centerImportedVertices(
   return centered;
 }
 
+/**
+ * Drop label-plate buffers, which are a bin-designer preview affordance.
+ *
+ * Returns the mesh unchanged when there are none, so the common path keeps its
+ * identity instead of allocating a wrapper on every resolve.
+ */
+function stripLabelPlates(mesh: MeshData): MeshData {
+  if (!mesh.labelPlates) return mesh;
+  const { labelPlates: _plates, ...rest } = mesh;
+  void _plates;
+  return rest;
+}
+
 async function resolveDesignMesh(
   design: SavedDesign,
   sig: string,
@@ -146,8 +159,7 @@ async function resolveDesignMesh(
     // here, but the bridge's params cache is shared across callers — so a
     // designer result could alias in. Strip them rather than bake plate buffers
     // into every cross-session cache entry.
-    const { labelPlates: _plates, ...mesh } = result.mesh;
-    void _plates;
+    const mesh = stripLabelPlates(result.mesh);
     savePersistedBinMesh(persistKey, mesh);
     return { sig, mesh, width: params.width, depth: params.depth };
   } finally {

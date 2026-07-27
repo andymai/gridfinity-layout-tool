@@ -785,7 +785,6 @@ export interface LabelPlateMeshData {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
-  readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
   /**
    * Seated pose in bin-interior coordinates: plate centre in X/Y, BOTTOM face

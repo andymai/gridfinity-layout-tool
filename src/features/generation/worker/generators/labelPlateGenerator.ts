@@ -12,12 +12,11 @@
  * reference row beside the bin — so a plate is never tessellated twice.
  */
 
-import { mesh, meshEdges, getKernelCapabilities } from 'brepjs';
+import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { LabelPlatesMeshData, LabelPlateMeshData } from '../../bridge/types';
-import { toIndexedMeshData, creaseEdges } from './utils';
-import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
+import { toIndexedMeshData } from './utils';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { labelPlateWidthMm } from '@/shared/constants/labelPlates';
@@ -84,7 +83,6 @@ export function generateLabelPlates(
   // Plates are small and flat; their only curved detail is the corner radius
   // and glyph outlines, so the fine tier costs little and reads cleanly.
   const { tolerance, angularTolerance } = computeTessellationTolerances(false, true, dim.innerW);
-  const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
 
   const plates: LabelPlateMeshData[] = [];
   for (let i = 0; i < shown.length; i++) {
@@ -99,16 +97,15 @@ export function generateLabelPlates(
       continue;
     }
     try {
+      // No edge lines: on a plate, crease edges trace the outline AND every
+      // glyph, which reads as noise at this scale — and the preview would pay
+      // kernel time plus a transferred buffer to render nothing.
       const shapeMesh = mesh(solid, { tolerance, angularTolerance });
-      const edgeLines = buildTime
-        ? creaseEdges(shapeMesh)
-        : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
-      const indexed = toIndexedMeshData(shapeMesh, edgeLines);
+      const indexed = toIndexedMeshData(shapeMesh);
       plates.push({
         vertices: indexed.vertices,
         normals: indexed.normals,
         indices: indexed.indices,
-        edgeVertices: indexed.edgeVertices,
         triangleCount: indexed.triangleCount,
         seatX: seat.x,
         seatY: seat.y,
