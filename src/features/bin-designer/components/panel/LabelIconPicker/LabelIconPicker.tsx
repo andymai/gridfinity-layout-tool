@@ -101,7 +101,7 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         title={currentName}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => (isOpen ? close() : setIsOpen(true))}
       >
         {value ? <LabelIconGlyph icon={value} size={18} /> : <NoIconMark />}
       </Button>
@@ -111,60 +111,59 @@ export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIco
         isOpen={isOpen}
         onClose={close}
         className="w-72 rounded-lg border border-stroke-subtle bg-surface-raised p-2 shadow-lg"
+        aria-label={dialogLabel}
       >
-        <div role="dialog" aria-label={dialogLabel}>
-          <Input
-            ref={searchRef}
+        <Input
+          ref={searchRef}
+          size="sm"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('binDesigner.plateIcon.searchPlaceholder')}
+          aria-label={t('binDesigner.plateIcon.searchPlaceholder')}
+        />
+
+        <div className="mt-2 max-h-72 overflow-y-auto">
+          <Button
+            type="button"
+            variant="ghost"
             size="sm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('binDesigner.plateIcon.searchPlaceholder')}
-            aria-label={t('binDesigner.plateIcon.searchPlaceholder')}
-          />
+            className="w-full justify-start"
+            aria-pressed={value === null}
+            onClick={() => select(null)}
+          >
+            {t('binDesigner.plateIcon.none')}
+          </Button>
 
-          <div className="mt-2 max-h-72 overflow-y-auto">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start"
-              aria-pressed={value === null}
-              onClick={() => select(null)}
-            >
-              {t('binDesigner.plateIcon.none')}
-            </Button>
-
-            {groups.map(({ domain, icons }) => (
-              <div key={domain} className="mt-2">
-                <p className="px-1 pb-1 text-xs font-medium text-content-tertiary">
-                  {t(`binDesigner.plateIcon.group.${domain}`)}
-                </p>
-                <div className="grid grid-cols-6 gap-1">
-                  {icons.map((icon) => (
-                    <Button
-                      key={icon}
-                      type="button"
-                      variant={icon === value ? 'primary' : 'ghost'}
-                      size="sm"
-                      className="h-9 w-full justify-center px-0"
-                      aria-pressed={icon === value}
-                      aria-label={label(icon)}
-                      title={label(icon)}
-                      onClick={() => select(icon)}
-                    >
-                      <LabelIconGlyph icon={icon} size={20} />
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {groups.length === 0 && (
-              <p className="px-1 py-3 text-center text-xs text-content-tertiary">
-                {t('binDesigner.plateIcon.noResults')}
+          {groups.map(({ domain, icons }) => (
+            <div key={domain} className="mt-2">
+              <p className="px-1 pb-1 text-xs font-medium text-content-tertiary">
+                {t(`binDesigner.plateIcon.group.${domain}`)}
               </p>
-            )}
-          </div>
+              <div className="grid grid-cols-6 gap-1">
+                {icons.map((icon) => (
+                  <Button
+                    key={icon}
+                    type="button"
+                    variant={icon === value ? 'primary' : 'ghost'}
+                    size="sm"
+                    className="h-9 w-full justify-center px-0"
+                    aria-pressed={icon === value}
+                    aria-label={label(icon)}
+                    title={label(icon)}
+                    onClick={() => select(icon)}
+                  >
+                    <LabelIconGlyph icon={icon} size={20} />
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {groups.length === 0 && (
+            <p className="px-1 py-3 text-center text-xs text-content-tertiary">
+              {t('binDesigner.plateIcon.noResults')}
+            </p>
+          )}
         </div>
       </Popover>
     </>

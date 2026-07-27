@@ -120,4 +120,21 @@ describe('LabelIconPicker', () => {
     const reopened = await openPicker(user);
     expect(within(reopened).getByRole('textbox')).toHaveValue('');
   });
+
+  // Popover's click-outside handler excludes the anchor, so closing from the
+  // trigger never reaches onClose — the reset has to happen on the click.
+  it('drops the query when closed from the trigger', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'zzzz');
+    await user.click(screen.getByRole('button', { name: TRIGGER }));
+    const reopened = await openPicker(user);
+    expect(within(reopened).getByRole('textbox')).toHaveValue('');
+  });
+
+  it('names a single dialog, without nesting one inside the popover', async () => {
+    const { user } = setup();
+    await openPicker(user);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
 });
