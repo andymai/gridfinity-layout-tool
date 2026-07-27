@@ -427,7 +427,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const { innerW, innerD, interiorHeight, innerOffsetX, innerOffsetY } = dim;
   const patternCutTargets: Shape3D[] = [];
 
-  const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
+  const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight, dim.hasLip);
   if (!patternResult) return patternCutTargets;
 
   // patternResult.calculator is a StampPatternCalculator: getPatternDescriptors

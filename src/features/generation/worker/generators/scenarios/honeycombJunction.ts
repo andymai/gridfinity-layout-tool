@@ -11,6 +11,7 @@ import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
+import { assertWatertight } from '../__kernel-tests__/meshAssertions';
 import type { MeshData } from '@/features/generation/bridge/types';
 
 /** Enclosed (solid) volume of a triangle mesh via the signed-tetrahedron sum. */
@@ -302,6 +303,40 @@ export const honeycombJunction: ScenarioCase[] = [
             'triangle count must match regardless of walls.enabled when no sides are active'
           ).toBe(cutoutsOnSidesOff.triangleCount);
         },
+      },
+      timeout: 60_000,
+    }
+  ),
+
+  // ── #2865: a BOLD wall pattern on thin, lip-less walls with pattern dividers.
+  //    At 0.8mm walls the round holes (70% scale) reach to within ~0.4mm of each
+  //    corner, leaving a razor-thin corner post — it renders as a seam and prints
+  //    as a break ("empty space between wall faces"). Without a lip there is no
+  //    top rim to re-join the walls. The corner keep-out clears the pattern from
+  //    each corner so a solid post survives. Structural + (via the export-
+  //    integrity matrix) hole-free STL guard for the exact reported config.
+
+  defineScenario(
+    'honeycomb junction',
+    'bold round pattern + dividers, thin walls, no lip — solid corners (#2865)',
+    {
+      assert: 'structural',
+      params: {
+        width: 2,
+        depth: 3,
+        height: 6,
+        wallThickness: 0.8,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+        wallPattern: { enabled: true, pattern: 'round', scale: 0.7, dividers: true },
+        compartments: { cols: 1, rows: 2, cells: [0, 1], thickness: 1.2 },
+        walls: ALL_SIDES_OFF,
+      },
+      customAssert: (mesh) => {
+        expect(
+          meshVolume(mesh),
+          'bold-pattern thin-wall bin should enclose positive volume'
+        ).toBeGreaterThan(0);
+        assertWatertight(mesh, 'bold round pattern + dividers, thin walls, no lip (#2865)');
       },
       timeout: 60_000,
     }
