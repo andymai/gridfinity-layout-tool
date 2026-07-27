@@ -114,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!contentResult.passed) {
         return res.status(400).json({
           error: `Content blocked: ${contentResult.reason}`,
-          code: 'CONTENT_BLOCKED',
+          code: ErrorCode.CONTENT_BLOCKED,
         });
       }
 
@@ -135,7 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!designContent.passed) {
         return res.status(400).json({
           error: `Content blocked: ${designContent.reason}`,
-          code: 'CONTENT_BLOCKED',
+          code: ErrorCode.CONTENT_BLOCKED,
         });
       }
     }
