@@ -1,0 +1,28 @@
+src/i18n/locales/ko.json
+  s_180f27a5f871f2::t_9ddefef40eabce 2892-2894
+api/lib/designerValidation.ts
+  s_180f27a5f871f2::t_4cb24edcdbe27d 265-267
+  s_180f27a5f871f2::t_60693c5fb2756f 260-262,269
+src/i18n/locales/cs.json
+  s_180f27a5f871f2::t_9ddefef40eabce 2892-2894
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_180f27a5f871f2::t_60693c5fb2756f 80-81
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_180f27a5f871f2::t_60693c5fb2756f 169-170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "be1848d0af3d68c9971720cb6e909cd7142f22c0",
+  "prompts": {},
+  "sessions": {
+    "s_180f27a5f871f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3bdcfdd-1c2c-4765-b91c-fcbfc5693c53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
