@@ -33,8 +33,6 @@ import {
   LABEL_PLATE_FIT_OFFSET_MAX,
   LABEL_PLATE_FIT_OFFSET_MIN,
   LABEL_PLATE_FIT_OFFSET_STEP,
-  LABEL_PLATE_ICONS,
-  isLabelPlateIconId,
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
@@ -42,6 +40,7 @@ import { CompartmentTextInput } from './CompartmentTextInput';
 import { LabelColorControls } from './LabelColorControls';
 import { LabelPlatesControls } from './LabelPlatesControls';
 import { LabelFitSampleButton } from './LabelFitSampleButton';
+import { LabelIconPicker } from '../LabelIconPicker';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import type { LabelTabMode } from '../../../types';
 
@@ -258,24 +257,10 @@ export function LabelTabsSection() {
                           />
                         )}
                         {row.autoWidthU !== null && (
-                          <Select
-                            size="sm"
-                            value={row.icon ?? 'none'}
-                            onChange={(e) =>
-                              handlers.setCompartmentPlateIcon(
-                                row.id,
-                                isLabelPlateIconId(e.target.value) ? e.target.value : null
-                              )
-                            }
+                          <LabelIconPicker
+                            value={row.icon}
+                            onChange={(icon) => handlers.setCompartmentPlateIcon(row.id, icon)}
                             aria-label={t('binDesigner.plateIconAria', { n: row.displayNumber })}
-                            className="w-28 shrink-0"
-                            options={[
-                              { id: 'none', name: t('binDesigner.plateIcon.none') },
-                              ...LABEL_PLATE_ICONS.map((iconId): SelectOption => ({
-                                id: iconId,
-                                name: t(`binDesigner.plateIcon.${iconId}`),
-                              })),
-                            ]}
                           />
                         )}
                       </li>

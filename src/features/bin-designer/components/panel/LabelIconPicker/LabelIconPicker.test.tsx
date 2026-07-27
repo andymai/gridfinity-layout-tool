@@ -1,0 +1,107 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { LABEL_PLATE_ICONS } from '@/shared/constants/labelPlates';
+import { LabelIconPicker } from './LabelIconPicker';
+
+const setup = (value: Parameters<typeof LabelIconPicker>[0]['value'] = null) => {
+  const onChange = vi.fn();
+  render(<LabelIconPicker value={value} onChange={onChange} aria-label="Plate icon" />);
+  return { onChange, user: userEvent.setup() };
+};
+
+const openPicker = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('button', { name: 'Plate icon' }));
+  return screen.getByRole('dialog', { name: 'Plate icon' });
+};
+
+describe('LabelIconPicker', () => {
+  it('shows the empty state until an icon is chosen', () => {
+    setup();
+    expect(screen.getByRole('button', { name: 'Plate icon' })).toHaveTextContent('No icon');
+  });
+
+  it('names the current icon on the trigger', () => {
+    setup('washer');
+    expect(screen.getByRole('button', { name: 'Plate icon' })).toHaveTextContent('Washer');
+  });
+
+  it('keeps the grid closed until asked', () => {
+    setup();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('offers every catalog icon, grouped by domain', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    // One cell per icon, plus the "No icon" row — so a new id added to the
+    // allowlist without path data fails here rather than rendering a blank cell.
+    expect(within(dialog).getAllByRole('button')).toHaveLength(LABEL_PLATE_ICONS.length + 1);
+    expect(within(dialog).getByText('Fasteners')).toBeInTheDocument();
+    expect(within(dialog).getByText('Tooling')).toBeInTheDocument();
+  });
+
+  it('reports the chosen icon and closes', async () => {
+    const { onChange, user } = setup();
+    const dialog = await openPicker(user);
+    await user.click(within(dialog).getByRole('button', { name: 'Hex key' }));
+    expect(onChange).toHaveBeenCalledWith('hexKey');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('clears the icon from the empty row', async () => {
+    const { onChange, user } = setup('bolt');
+    const dialog = await openPicker(user);
+    await user.click(within(dialog).getByRole('button', { name: 'No icon' }));
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
+
+  it('marks the current icon as pressed', async () => {
+    const { user } = setup('nut');
+    const dialog = await openPicker(user);
+    expect(within(dialog).getByRole('button', { name: 'Nut' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('filters by name', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'washer');
+    expect(within(dialog).getByRole('button', { name: 'Washer' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Lock washer' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Hex key' })).not.toBeInTheDocument();
+  });
+
+  it('filters by id, so the ids in the docs are searchable', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'hexSocket');
+    expect(within(dialog).getByRole('button', { name: 'Socket cap screw' })).toBeInTheDocument();
+  });
+
+  it('hides an empty domain group rather than leaving a bare heading', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'drill');
+    expect(within(dialog).queryByText('Fasteners')).not.toBeInTheDocument();
+    expect(within(dialog).getByText('Tooling')).toBeInTheDocument();
+  });
+
+  it('says so when nothing matches', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'zzzz');
+    expect(within(dialog).getByText('No icons match')).toBeInTheDocument();
+  });
+
+  it('drops the query when reopened', async () => {
+    const { user } = setup();
+    const dialog = await openPicker(user);
+    await user.type(within(dialog).getByRole('textbox'), 'zzzz');
+    await user.keyboard('{Escape}');
+    const reopened = await openPicker(user);
+    expect(within(reopened).getByRole('textbox')).toHaveValue('');
+  });
+});
