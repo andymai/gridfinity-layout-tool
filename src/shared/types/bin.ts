@@ -253,12 +253,17 @@ export function cutsExtraEdgeSlots(params: ResolvedBaseplateParams): boolean {
 }
 
 /**
- * Whether an edge of a split piece carries a female seam slot, given the
- * piece's padding on that side. `join` edges always do; `exterior` edges only
- * under {@link hasAllEdgeSlots}, and only when that side is padding-free — a
- * padded edge's wall sits `padding` mm outside the grid, so its slot would not
- * line up with a neighbouring plate's. `marginSeam` is handled by the
- * margin-seam connector, not here.
+ * Whether an edge of a split piece carries a seam connector at all, given the
+ * piece's padding on that side.
+ *
+ * A `join` edge always does — whichever half the style puts there (a tongue, a
+ * groove, or a both-female slot); this predicate answers "is there a feature
+ * here", not "which half". An `exterior` edge only does under
+ * {@link hasAllEdgeSlots}, and then it is always the female slot, since that
+ * option is restricted to the both-female styles; it additionally needs that side
+ * to be padding-free, because a padded edge's wall sits `padding` mm outside the
+ * grid and its slot would not line up with a neighbouring plate's. `marginSeam`
+ * is handled by the margin-seam connector, not here.
  */
 export function edgeCarriesSlot(
   kind: BaseplateEdgeKind,

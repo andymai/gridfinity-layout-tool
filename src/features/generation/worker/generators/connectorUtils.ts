@@ -1,9 +1,10 @@
 /**
  * Legacy connector position computation for the direct mesh baseplate generator.
  *
- * Computes nub/hole positions along join edges of split baseplate pieces.
- * Only used by baseplateDirectMesh.ts — the BREP generator uses dovetail
- * connectors from splitConnectorBuilder.ts instead.
+ * Computes nub/hole positions along the seam edges of split baseplate pieces:
+ * the join edges, plus every padding-free exterior edge once all-edge slots are
+ * enabled (#2866). Only used by baseplateDirectMesh.ts — the BREP generator uses
+ * dovetail connectors from splitConnectorBuilder.ts instead.
  *
  * The markers are a style-agnostic cylindrical stand-in for whichever connector
  * profile the exact build cuts; only WHICH edges carry one has to agree with
