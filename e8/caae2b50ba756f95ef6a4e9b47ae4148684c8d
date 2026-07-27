@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/wallPatterns.test.ts
+  s_180f27a5f871f2::t_143596ef201284 396,399
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "e8caae2b50ba756f95ef6a4e9b47ae4148684c8d",
+  "prompts": {},
+  "sessions": {
+    "s_180f27a5f871f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3bdcfdd-1c2c-4765-b91c-fcbfc5693c53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
