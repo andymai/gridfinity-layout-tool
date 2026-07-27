@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/labelPlateGenerator.ts
+  s_c029b4d0133f83::t_3c9365476203f4 66,70-71,78-82
+src/features/bin-designer/hooks/useGeneration.ts
+  s_c029b4d0133f83::t_3c9365476203f4 286-294
+src/features/generation/worker/generators/labelPlateGenerator.test.ts
+  s_c029b4d0133f83::t_0f4dbe884e0e62 132-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f3989e4b9185c33e6dccea6c5e3e3d049f79d007",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
