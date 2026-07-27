@@ -1,0 +1,86 @@
+src/i18n/locales/ko.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/hooks/useGeneration.ts
+  s_c029b4d0133f83::t_bcc2b98b6160ab 54,80
+src/i18n/locales/es.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/fr.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.tsx
+  s_c029b4d0133f83::t_ec3db81658cc61 1-23,26,30-42,44-65,67-68,70,72-79,81,89-97,99-104
+  s_c029b4d0133f83::t_0db4e3ba865ae6 27-29,80,82-83
+  s_c029b4d0133f83::t_de2d2b7fef0e1b 24-25,43,84-88,98
+  s_c029b4d0133f83::t_b8c9324002fd1c 66,69,71
+src/i18n/locales/nb.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/nl.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_c029b4d0133f83::t_5fafdce5fe1ac7 243-256
+src/features/bin-designer/components/preview/LabelPlateMeshes/LabelPlateMeshes.test.tsx
+  s_c029b4d0133f83::t_09e03616dac42d 2-7,10,12-36,38-64
+  s_c029b4d0133f83::t_b9d600ac3478c6 1,8-9,11,37
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.ts
+  s_c029b4d0133f83::t_9cbeeaea0e2e4d 1-57
+src/i18n/locales/pt-BR.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/de.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/components/preview/index.ts
+  s_c029b4d0133f83::t_6aced8c8cbb7a0 4
+src/i18n/locales/en.ts
+  s_c029b4d0133f83::t_64927c3d2c735a 1746
+src/i18n/locales/zh-CN.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_c029b4d0133f83::t_5fafdce5fe1ac7 39,53,587-588
+src/i18n/locales/cs.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/shared/types/generation.ts
+  s_c029b4d0133f83::t_bcc2b98b6160ab 14-15
+src/i18n/locales/uk.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/it.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/ja.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/generation/worker/generators/labelPlateGenerator.test.ts
+  s_c029b4d0133f83::t_fae1b4210546b7 1-140
+  s_c029b4d0133f83::t_a6eb8b937397b1 141-142
+src/features/bin-designer/components/preview/LabelPlateMeshes/platePoses.test.ts
+  s_c029b4d0133f83::t_d8f33e7f6d4ad8 1-97
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_c029b4d0133f83::t_48e3b8f1b5b887 444-451
+  s_c029b4d0133f83::t_bb75db213ca483 27
+src/features/bin-designer/types/generation.ts
+  s_c029b4d0133f83::t_1112a125002f64 49-50
+  s_c029b4d0133f83::t_f1c452c3decc8e 6
+src/features/generation/bridge/types.ts
+  s_c029b4d0133f83::t_c0edd0ccfc7593 800-805
+src/i18n/locales/sv.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/i18n/locales/pl.json
+  s_c029b4d0133f83::t_64927c3d2c735a 393
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.test.tsx
+  s_c029b4d0133f83::t_a86586a5ca57f4 186-189
+src/features/bin-designer/components/preview/LabelPlateMeshes/index.ts
+  s_c029b4d0133f83::t_6aced8c8cbb7a0 1
+src/features/bin-designer/README.md
+  s_c029b4d0133f83::t_ae2ab80af6fc64 198-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "47b3358d1f70d6c8891f8ba05a8411177818b1e0",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
