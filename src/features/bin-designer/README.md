@@ -201,6 +201,9 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   with the origin. Locked cutouts anchor: they never move but still define the selection
   bounds, so "lock a reference hole, align the rest to it" works. This deliberately differs
   from flip/rotate in the context menu, which disable wholesale when anything is locked.
+  Distribute runs per anchor-to-anchor SEGMENT (extremes + every locked shape between them),
+  not once across the whole span — spacing the full run and merely skipping locked shapes
+  would place the rest as if the anchor had moved to its even-spacing slot.
 - **Lock covers transforms only**: `Cutout.locked` means "cannot be moved, resized, or
   rotated". Batch edits to cut depth, chamfer and colour still apply to locked shapes; X/Y,
   W/H and rotation skip them.

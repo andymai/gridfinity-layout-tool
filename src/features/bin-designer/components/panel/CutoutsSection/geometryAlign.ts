@@ -106,8 +106,10 @@ export function alignSelection(
  * constant pitch. The outermost two define the span and never move — so with
  * exactly two cutouts there is nothing to place, and this is a no-op.
  *
- * Locked cutouts hold their position while still occupying their slot, so the
- * remaining shapes fill in around them.
+ * Distribution runs per anchor-to-anchor segment. The two extremes anchor, and
+ * so does every locked cutout in between — spacing each span independently, so
+ * that locking a reference hole partway along divides the run into two evenly
+ * spaced halves rather than shifting everything as if the anchor had moved.
  */
 export function distributeSelection(
   cutouts: readonly Cutout[],
@@ -123,16 +125,30 @@ export function distributeSelection(
   };
 
   const ordered = [...cutouts].sort((a, b) => centerOf(a) - centerOf(b));
-  const first = centerOf(ordered[0]);
-  const last = centerOf(ordered[ordered.length - 1]);
-  const step = (last - first) / (ordered.length - 1);
 
+  // The extremes plus any locked cutout between them. Everything strictly
+  // between two consecutive anchors is unlocked by construction.
+  const anchors = [0];
   for (let i = 1; i < ordered.length - 1; i++) {
-    const cutout = ordered[i];
-    if (cutout.locked) continue;
-    const delta = first + step * i - centerOf(cutout);
-    if (Math.abs(delta) < EPSILON) continue;
-    updates.set(cutout.id, translate(cutout, horizontal ? delta : 0, horizontal ? 0 : delta));
+    if (ordered[i].locked) anchors.push(i);
+  }
+  anchors.push(ordered.length - 1);
+
+  for (let a = 0; a < anchors.length - 1; a++) {
+    const startIdx = anchors[a];
+    const endIdx = anchors[a + 1];
+    const gap = endIdx - startIdx;
+    if (gap < 2) continue; // adjacent anchors — nothing to place between them
+
+    const startCenter = centerOf(ordered[startIdx]);
+    const step = (centerOf(ordered[endIdx]) - startCenter) / gap;
+
+    for (let k = 1; k < gap; k++) {
+      const cutout = ordered[startIdx + k];
+      const delta = startCenter + step * k - centerOf(cutout);
+      if (Math.abs(delta) < EPSILON) continue;
+      updates.set(cutout.id, translate(cutout, horizontal ? delta : 0, horizontal ? 0 : delta));
+    }
   }
   return updates;
 }

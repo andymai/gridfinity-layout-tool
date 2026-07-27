@@ -214,6 +214,69 @@ describe('distributeSelection', () => {
     expect(distributeSelection(cutouts, 'horizontal').size).toBe(0);
   });
 
+  // A locked anchor splits the run into independently spaced segments. Spacing
+  // the whole span at once and merely skipping the locked shape would place
+  // everything as if the anchor had moved to its even-spacing slot.
+  it('distributes each side of a locked anchor independently', () => {
+    const cutouts = [
+      cutout({ id: 'a', x: 0 }), //   centre   5
+      cutout({ id: 'b', x: 5 }), //   centre  10  → segment a..anchor
+      cutout({ id: 'anchor', x: 20, locked: true }), // centre 25
+      cutout({ id: 'd', x: 90 }), //  centre  95  → segment anchor..e
+      cutout({ id: 'e', x: 100 }), // centre 105
+    ];
+
+    const updates = distributeSelection(cutouts, 'horizontal');
+
+    expect(updates.has('anchor')).toBe(false);
+    // Segment 1 spans centres 5..25 with one shape between → target centre 15.
+    expect(updates.get('b')?.x).toBe(10);
+    // Segment 2 spans centres 25..105 with one shape between → target centre 65.
+    expect(updates.get('d')?.x).toBe(60);
+  });
+
+  it('handles two locked anchors, spacing all three segments', () => {
+    const cutouts = [
+      cutout({ id: 'a', x: 0 }), //     centre   5
+      cutout({ id: 'b', x: 5 }), //     centre  10
+      cutout({ id: 'lock1', x: 20, locked: true }), // centre 25
+      cutout({ id: 'c', x: 30 }), //    centre  35
+      cutout({ id: 'lock2', x: 60, locked: true }), // centre 65
+      cutout({ id: 'd', x: 70 }), //    centre  75
+      cutout({ id: 'e', x: 100 }), //   centre 105
+    ];
+
+    const updates = distributeSelection(cutouts, 'horizontal');
+
+    expect(updates.has('lock1')).toBe(false);
+    expect(updates.has('lock2')).toBe(false);
+    expect(updates.get('b')?.x).toBe(10); // midpoint of 5..25  → centre 15
+    expect(updates.get('c')?.x).toBe(40); // midpoint of 25..65 → centre 45
+    expect(updates.get('d')?.x).toBe(80); // midpoint of 65..105 → centre 85
+  });
+
+  // Locking an extreme changes nothing: the endpoints were already fixed.
+  it('is unaffected by a locked endpoint', () => {
+    const withLock = [
+      cutout({ id: 'a', x: 0, locked: true }),
+      cutout({ id: 'b', x: 10 }),
+      cutout({ id: 'c', x: 100 }),
+    ];
+
+    expect(distributeSelection(withLock, 'horizontal').get('b')?.x).toBe(50);
+  });
+
+  it('produces nothing when every interior shape is locked', () => {
+    const cutouts = [
+      cutout({ id: 'a', x: 0 }),
+      cutout({ id: 'b', x: 10, locked: true }),
+      cutout({ id: 'c', x: 40, locked: true }),
+      cutout({ id: 'd', x: 100 }),
+    ];
+
+    expect(distributeSelection(cutouts, 'horizontal').size).toBe(0);
+  });
+
   it('skips cutouts already evenly spaced', () => {
     const cutouts = [
       cutout({ id: 'a', x: 0 }),
