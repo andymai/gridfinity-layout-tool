@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.316.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.0...gridfinity-layout-tool-v4.316.1) (2026-07-27)
+
+
+### Performance
+
+* **test:** split the export-integrity matrix per domain to unblock CI ([#2882](https://github.com/andymai/gridfinity-layout-tool/issues/2882)) ([1e59368](https://github.com/andymai/gridfinity-layout-tool/commit/1e59368e5f99b81623c964c77fb1a04be9d2e947))
+
 ## [4.316.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.315.0...gridfinity-layout-tool-v4.316.0) (2026-07-27)
 
 
