@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.313.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.1...gridfinity-layout-tool-v4.313.0) (2026-07-27)
+
+
+### Features
+
+* **lid:** add edge retention magnets to stop large magnetic lids sagging ([#2853](https://github.com/andymai/gridfinity-layout-tool/issues/2853)) ([8d54b42](https://github.com/andymai/gridfinity-layout-tool/commit/8d54b42152d037d99190b80ac5ebff2999f367e7))
+
 ## [4.312.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.0...gridfinity-layout-tool-v4.312.1) (2026-07-27)
 
 
