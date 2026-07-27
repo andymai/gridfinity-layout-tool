@@ -118,6 +118,17 @@ describe('generateLabelPlates', () => {
     }
   });
 
+  // Counted against the plan, so a plate skipped as unbuildable is reported
+  // just like one past the ceiling — otherwise "showing N of M" under-reports.
+  it('counts omissions against the planned set, not the cap', () => {
+    const result = generateLabelPlates(socketParams());
+
+    expect(result).not.toBeNull();
+    // Every planned plate built here, so the set is complete.
+    expect(result!.omittedCount).toBe(0);
+    expect(result!.plates.length).toBeGreaterThan(0);
+  });
+
   it('carries compartment captions onto the meshed plates', () => {
     const withText = generateLabelPlates(
       socketParams({

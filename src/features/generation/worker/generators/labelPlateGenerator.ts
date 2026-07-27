@@ -61,7 +61,6 @@ export function generateLabelPlates(
   if (seats.length === 0) return null;
 
   const shown = seats.slice(0, MAX_PREVIEW_LABEL_PLATES);
-  const omittedCount = seats.length - shown.length;
 
   // One text size across the set, matching how the printed sheet sizes them —
   // otherwise the preview would show sizes the exported plates don't have.
@@ -121,5 +120,8 @@ export function generateLabelPlates(
   }
 
   if (plates.length === 0) return null;
-  return { plates, omittedCount };
+  // Counted against the plan, not the cap: a plate skipped above (unbuildable)
+  // is just as absent from the preview as one past the ceiling, and the UI's
+  // "showing N of M" would under-report the design if only the cap counted.
+  return { plates, omittedCount: seats.length - plates.length };
 }

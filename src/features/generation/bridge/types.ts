@@ -803,7 +803,10 @@ export interface LabelPlatesMeshData {
    * same reason `compartments.cells` is `number[]`.
    */
   readonly plates: LabelPlateMeshData[];
-  /** Plates beyond `MAX_PREVIEW_LABEL_PLATES`; 0 when the set is complete. */
+  /**
+   * Planned plates absent from `plates` — past `MAX_PREVIEW_LABEL_PLATES`, or
+   * skipped because they failed to build. 0 when the preview is complete.
+   */
   readonly omittedCount: number;
 }
 

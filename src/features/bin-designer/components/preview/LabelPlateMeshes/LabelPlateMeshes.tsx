@@ -14,7 +14,7 @@
  * bottom on Z=0) and reports each seated pose, so both draws reuse one geometry.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -34,13 +34,19 @@ interface LabelPlateMeshesProps {
   readonly wireframe?: boolean;
 }
 
+/**
+ * One plate's geometry, drawn at each pose it occupies — seated, and again in
+ * the reference row. Both draws share a single `BufferGeometry`; instantiating
+ * this component per pose would build the same tessellated buffers twice for
+ * no visual difference.
+ */
 function PlateInstance({
   plate,
-  position,
+  poses,
   material,
 }: {
   plate: LabelPlateMeshData;
-  position: Pose;
+  poses: readonly Pose[];
   material: THREE.Material;
 }) {
   const { geometry } = useMeshGeometry({
@@ -52,7 +58,13 @@ function PlateInstance({
   });
 
   if (!geometry) return null;
-  return <mesh geometry={geometry} material={material} position={position} renderOrder={2} />;
+  return (
+    <>
+      {poses.map((pose, i) => (
+        <mesh key={i} geometry={geometry} material={material} position={pose} renderOrder={2} />
+      ))}
+    </>
+  );
 }
 
 export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: LabelPlateMeshesProps) {
@@ -70,6 +82,10 @@ export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: Labe
     [color, wireframe]
   );
 
+  // Without this, every colour or wireframe change strands the previous
+  // material on the GPU for the rest of the editing session.
+  useEffect(() => () => material.dispose(), [material]);
+
   const plates = useMemo(() => labelPlates?.plates ?? EMPTY_PLATES, [labelPlates]);
 
   // Reference row: laid out along X beside the bin, parked beyond its back
@@ -85,17 +101,9 @@ export function LabelPlateMeshes({ color, lidOffsetMm, wireframe = false }: Labe
     <group>
       {plates.map((plate, i) => (
         <PlateInstance
-          key={`seated-${i}`}
+          key={i}
           plate={plate}
-          position={seatedPose(plate, lidOffsetMm)}
-          material={material}
-        />
-      ))}
-      {plates.map((plate, i) => (
-        <PlateInstance
-          key={`row-${i}`}
-          plate={plate}
-          position={rowPositions[i]}
+          poses={[seatedPose(plate, lidOffsetMm), rowPositions[i]]}
           material={material}
         />
       ))}
