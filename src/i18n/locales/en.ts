@@ -1803,6 +1803,10 @@ const en: Record<string, string> = {
   'binDesigner.lid.retentionMagnetDepthAria': 'Retention magnet depth in millimeters',
   'binDesigner.lid.retentionMagnetHint':
     'Press a ⌀{diameter} × {depth} mm magnet into each corner of the bin and lid. Glue them in with matching poles facing so the lid only closes one way.',
+  'binDesigner.lid.retentionEdgeMagnets': 'Edge magnets',
+  'binDesigner.lid.retentionEdgeMagnetsAria': 'Extra retention magnets per long edge',
+  'binDesigner.lid.retentionEdgeMagnetsHint':
+    'Adds this many extra magnets along each long edge, between the corners, to stop a large lid sagging in the middle. Only added on edges big enough to space them out, so small lids keep the four corners.',
   'binDesigner.lid.trayDepth': 'Tray depth',
   'binDesigner.lid.trayDepthAria': 'Tray recess depth in millimeters',
   'binDesigner.lid.trayWall': 'Tray rim',

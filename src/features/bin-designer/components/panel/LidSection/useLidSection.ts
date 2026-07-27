@@ -22,6 +22,9 @@ import {
   LID_MAGNET_DEPTH_MIN_MM,
   LID_MAGNET_DEPTH_MAX_MM,
   LID_MAGNET_DIMENSION_STEP_MM,
+  LID_MAGNET_EDGE_COUNT_MIN,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_STEP,
   LID_TRAY_DEPTH_MIN_MM,
   LID_TRAY_DEPTH_MAX_MM,
   LID_TRAY_WALL_MIN_MM,
@@ -360,6 +363,19 @@ export function useLidSection() {
     [lid.retentionMagnet, updateLid]
   );
 
+  const setRetentionMagnetEdgeMagnets = useCallback(
+    (edgeMagnets: number) => {
+      // Whole number in range; the stepper bounds input but keyboard entry can't
+      // be trusted. Placement still drops any that don't fit a given edge.
+      const clamped = Math.min(
+        LID_MAGNET_EDGE_COUNT_MAX,
+        Math.max(LID_MAGNET_EDGE_COUNT_MIN, Math.round(edgeMagnets))
+      );
+      updateLid({ retentionMagnet: { ...lid.retentionMagnet, edgeMagnets: clamped } });
+    },
+    [lid.retentionMagnet, updateLid]
+  );
+
   const setTrayDepth = useCallback(
     (depthMm: number) => {
       const clamped = Math.min(LID_TRAY_DEPTH_MAX_MM, Math.max(LID_TRAY_DEPTH_MIN_MM, depthMm));
@@ -414,8 +430,7 @@ export function useLidSection() {
         LID_TOP_THICKNESS_MAX_MM,
         Math.max(LID_TOP_THICKNESS_MIN_MM, topThicknessMm)
       );
-      const stepped =
-        Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
+      const stepped = Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
       // 0.2 isn't representable in binary, so the multiply lands on values like
       // 2.4000000000000004 — harmless for geometry, but it would persist into
       // shared design JSON and the mm readout. One decimal is exact for a
@@ -651,6 +666,11 @@ export function useLidSection() {
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
       retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
+      // Edge magnets per long edge (#2844) — anti-sag reinforcement for big lids.
+      retentionMagnetEdgeMagnets: lid.retentionMagnet.edgeMagnets,
+      retentionMagnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,
+      retentionMagnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
+      retentionMagnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       // Tray recess state + bounds. Mutual exclusion with the stack grid is
       // handled by `setTopSurface`, so no disabled-reason string is needed.
       tray: lid.tray,
@@ -707,6 +727,7 @@ export function useLidSection() {
       setTopThickness,
       setRetentionMagnetDiameter,
       setRetentionMagnetDepth,
+      setRetentionMagnetEdgeMagnets,
       setTrayDepth,
       setTrayWall,
       fixIssue,

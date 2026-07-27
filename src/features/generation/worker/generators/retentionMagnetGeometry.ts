@@ -45,28 +45,95 @@ export function retentionMagnetInset(magnetDiameter: number): number {
 }
 
 /**
- * The four corner magnet XY positions, centred on the origin like both the bin
- * body and the lid, inset from the NOMINAL footprint corner by
- * {@link retentionMagnetInset}. Nominal (not per-part) so the bin's slightly-
- * larger body and the lid's slightly-smaller cavity keep the magnets coaxial.
+ * A single retention magnet's XY position plus how its bin-side pad anchors.
+ * The lid side ignores `anchor` (its bosses just hang from the floor); the bin
+ * side reads it to pick the pad shape.
+ */
+export interface RetentionMagnetPlacement {
+  readonly x: number;
+  readonly y: number;
+  /**
+   * - `corner`: the classic gusset welded into the two adjacent interior walls.
+   * - `y`: mid-span on a front/back wall (constant Y); its pad welds into that
+   *   single Y-normal wall and cantilevers inward along Y.
+   * - `x`: mid-span on a left/right wall (constant X); pad welds into that
+   *   single X-normal wall and cantilevers inward along X.
+   */
+  readonly anchor: 'corner' | 'x' | 'y';
+}
+
+/** Along-edge clearance (mm) added to the boss diameter when deciding how many
+ *  edge magnets fit, so neighbouring bosses can't fuse on a tiny custom grid. */
+const EDGE_MAGNET_BOSS_GAP = 4;
+
+/**
+ * Evenly-spaced offsets (centre coords, symmetric about 0) for `requested`
+ * magnets between two endpoints `span` apart, reduced to as many as keep every
+ * gap — including the two gaps to the endpoints (the corner magnets) — at least
+ * `minSpacing`. Empty when none fit, so a short edge yields no edge magnets even
+ * when the user asks for some.
+ */
+function edgeMagnetOffsets(span: number, requested: number, minSpacing: number): number[] {
+  if (requested < 1 || span <= 0) return [];
+  // k interior points split the span into k+1 gaps; keep each gap >= minSpacing.
+  const maxFit = Math.floor(span / minSpacing) - 1;
+  const k = Math.min(requested, maxFit);
+  if (k < 1) return [];
+  const offsets: number[] = [];
+  for (let i = 1; i <= k; i++) {
+    offsets.push(-span / 2 + (span * i) / (k + 1));
+  }
+  return offsets;
+}
+
+/**
+ * Magnet XY positions, centred on the origin like both the bin body and the
+ * lid, inset from the NOMINAL footprint corner by {@link retentionMagnetInset}.
+ * Nominal (not per-part) so the bin's slightly-larger body and the lid's
+ * slightly-smaller cavity keep the magnets coaxial.
+ *
+ * Always the four corners; plus, when `edgeMagnets >= 1`, that many magnets
+ * spread along each edge long enough to space them clear of the corners (issue
+ * #2844 — anti-sag reinforcement for large lids). `bossRadius` sizes the
+ * min-spacing floor; it's unused when `edgeMagnets` is 0.
  */
 export function retentionMagnetPositions(
   width: number,
   depth: number,
   gridUnitMmX: number,
   gridUnitMmY: number,
-  inset: number
-): ReadonlyArray<readonly [number, number]> {
+  inset: number,
+  edgeMagnets = 0,
+  bossRadius = 0
+): ReadonlyArray<RetentionMagnetPlacement> {
   const halfW = (width * gridUnitMmX) / 2;
   const halfD = (depth * gridUnitMmY) / 2;
   const x = halfW - inset;
   const y = halfD - inset;
-  return [
-    [-x, -y],
-    [x, -y],
-    [-x, y],
-    [x, y],
+  const placements: RetentionMagnetPlacement[] = [
+    { x: -x, y: -y, anchor: 'corner' },
+    { x, y: -y, anchor: 'corner' },
+    { x: -x, y, anchor: 'corner' },
+    { x, y, anchor: 'corner' },
   ];
+  if (edgeMagnets >= 1) {
+    // Space edge magnets at least one grid pitch apart (and never closer than
+    // the boss diameter plus a small gap). `span` is the corner-magnet-to-
+    // corner-magnet distance, so the same spacing check keeps them clear of the
+    // corners too.
+    const minGap = 2 * bossRadius + EDGE_MAGNET_BOSS_GAP;
+    const minSpacingX = Math.max(gridUnitMmX, minGap);
+    const minSpacingY = Math.max(gridUnitMmY, minGap);
+    // Front/back walls (constant Y = ±y) run along X → distribute along X.
+    for (const ox of edgeMagnetOffsets(2 * x, edgeMagnets, minSpacingX)) {
+      placements.push({ x: ox, y: -y, anchor: 'y' }, { x: ox, y, anchor: 'y' });
+    }
+    // Left/right walls (constant X = ±x) run along Y → distribute along Y.
+    for (const oy of edgeMagnetOffsets(2 * y, edgeMagnets, minSpacingY)) {
+      placements.push({ x: -x, y: oy, anchor: 'x' }, { x, y: oy, anchor: 'x' });
+    }
+  }
+  return placements;
 }
 
 /**

@@ -143,7 +143,14 @@ graph TB
   XY only) so the magnets aren't fighting a friction fit. Magnetic retention anchors its
   bosses to the cavity BOTTOM, so a deep cavity lengthens the pillar rather than
   lifting the magnets out of the bin's reach — the bin's pads land in the same
-  place whatever the lid's depth knobs say.
+  place whatever the lid's depth knobs say. `retentionMagnet.edgeMagnets`
+  (#2844) adds extra magnets along each long edge, between the corners, so a big
+  lid doesn't sag in the middle where four corner magnets can't reach; they only
+  materialise on edges long enough to space them clear of the corners (see
+  `retentionMagnetPositions`), so the count is a per-edge ceiling and small lids
+  keep the plain four-corner layout. Mid-edge pads anchor to a single wall with
+  their own support-free 45° taper (`anchor: 'x' | 'y'`), unlike the two-wall
+  corner gussets.
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's
