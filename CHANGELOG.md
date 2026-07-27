@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.312.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.0...gridfinity-layout-tool-v4.312.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **generation:** keep wall pattern clear of corners on lip-less bins ([#2865](https://github.com/andymai/gridfinity-layout-tool/issues/2865)) ([#2870](https://github.com/andymai/gridfinity-layout-tool/issues/2870)) ([81b6420](https://github.com/andymai/gridfinity-layout-tool/commit/81b64208bb0300753f3512886cf6b45323ad1f14))
+
 ## [4.312.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.311.0...gridfinity-layout-tool-v4.312.0) (2026-07-27)
 
 
