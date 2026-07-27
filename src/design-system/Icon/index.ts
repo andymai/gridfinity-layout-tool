@@ -6,6 +6,22 @@ export type { IconProps } from './Icon';
 export { ArrowLeftIcon } from './icons/ArrowLeft';
 export type { ArrowLeftIconProps } from './icons/ArrowLeft';
 
+export { AlignStartVerticalIcon } from './icons/AlignStartVertical';
+export type { AlignStartVerticalIconProps } from './icons/AlignStartVertical';
+export { AlignCenterVerticalIcon } from './icons/AlignCenterVertical';
+export type { AlignCenterVerticalIconProps } from './icons/AlignCenterVertical';
+export { AlignEndVerticalIcon } from './icons/AlignEndVertical';
+export type { AlignEndVerticalIconProps } from './icons/AlignEndVertical';
+export { AlignStartHorizontalIcon } from './icons/AlignStartHorizontal';
+export type { AlignStartHorizontalIconProps } from './icons/AlignStartHorizontal';
+export { AlignCenterHorizontalIcon } from './icons/AlignCenterHorizontal';
+export type { AlignCenterHorizontalIconProps } from './icons/AlignCenterHorizontal';
+export { AlignEndHorizontalIcon } from './icons/AlignEndHorizontal';
+export type { AlignEndHorizontalIconProps } from './icons/AlignEndHorizontal';
+export { AlignHorizontalDistributeCenterIcon } from './icons/AlignHorizontalDistributeCenter';
+export type { AlignHorizontalDistributeCenterIconProps } from './icons/AlignHorizontalDistributeCenter';
+export { AlignVerticalDistributeCenterIcon } from './icons/AlignVerticalDistributeCenter';
+export type { AlignVerticalDistributeCenterIconProps } from './icons/AlignVerticalDistributeCenter';
 export { ArrowLeftRightIcon } from './icons/ArrowLeftRight';
 export type { ArrowLeftRightIconProps } from './icons/ArrowLeftRight';
 

@@ -1,6 +1,6 @@
 import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { InspectorContent } from './InspectorContent';
 import type { Cutout } from '@/features/bin-designer/types';
 
@@ -13,17 +13,19 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
     label,
     value,
     indeterminate,
+    onChange,
   }: {
     label: string;
     value: number;
     indeterminate?: boolean;
+    onChange?: (value: number) => void;
   }) => (
     <input
       data-testid={`compact-input-${label}`}
       data-label={label}
       data-indeterminate={indeterminate ? 'true' : 'false'}
       value={value}
-      readOnly
+      onChange={(e) => onChange?.(Number(e.target.value))}
     />
   ),
 }));
@@ -160,8 +162,9 @@ describe('InspectorContent', () => {
     );
     expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
     expect(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
-    // X/Y/W/H are single-selection only
-    expect(screen.queryByTestId('compact-input-X')).not.toBeInTheDocument();
+    // X/Y/W/H are batch-editable too as of #2898 — see the multi-select suite
+    // below for the per-cutout clamping they apply.
+    expect(screen.getByTestId('compact-input-X')).toBeInTheDocument();
   });
 
   it('shows the locked badge when the selected cutout is locked', () => {
@@ -228,5 +231,157 @@ describe('InspectorContent', () => {
       'data-indeterminate',
       'false'
     );
+  });
+});
+
+// The multi-select surface gained align/distribute plus the position, size and
+// chamfer fields the reporter asked for in #2898.
+describe('InspectorContent multi-select editing', () => {
+  const two = [
+    createCutout({ id: 'a', x: 0, y: 0, width: 20, depth: 20 }),
+    createCutout({ id: 'b', x: 50, y: 50, width: 10, depth: 10 }),
+  ];
+
+  function renderMulti(cutouts: Cutout[], onUpdateBatch = vi.fn()) {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={cutouts}
+        selection={new Set(cutouts.map((c) => c.id))}
+        onUpdateBatch={onUpdateBatch}
+      />
+    );
+    return onUpdateBatch;
+  }
+
+  it('shows align and distribute controls for a multi-selection', () => {
+    renderMulti(two);
+
+    expect(
+      screen.getByRole('button', { name: 'binDesigner.cutouts.align.left' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'binDesigner.cutouts.distribute.horizontal' })
+    ).toBeInTheDocument();
+  });
+
+  it('hides align controls for a single selection', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+      />
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'binDesigner.cutouts.align.left' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('aligns the selection when an align button is pressed', () => {
+    const onUpdateBatch = renderMulti(two);
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.cutouts.align.left' }));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('b')?.x).toBe(0);
+  });
+
+  it('marks a mixed field indeterminate and a shared one concrete', () => {
+    renderMulti(two);
+
+    // x differs (0 vs 50) → indeterminate; both cutouts share rotation 0.
+    expect(screen.getByTestId('compact-input-X')).toHaveAttribute('data-indeterminate', 'true');
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toHaveAttribute(
+      'data-indeterminate',
+      'false'
+    );
+  });
+
+  it('clamps a batch X per cutout so a wide shape cannot run past the wall', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'narrow', width: 10 }),
+      createCutout({ id: 'wide', width: 80 }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-X'), { target: { value: '95' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    // binWidth is 100, so each cutout stops at 100 - its own width.
+    expect(updates.get('narrow')?.x).toBe(90);
+    expect(updates.get('wide')?.x).toBe(20);
+  });
+
+  // Lock means "cannot be moved, resized, or rotated".
+  it('leaves locked cutouts out of position, size and rotation batches', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'free' }),
+      createCutout({ id: 'pinned', locked: true }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-X'), { target: { value: '5' } });
+    fireEvent.change(screen.getByTestId('compact-input-binDesigner.cutouts.rotation'), {
+      target: { value: '45' },
+    });
+
+    for (const call of onUpdateBatch.mock.calls) {
+      expect((call[0] as Map<string, Partial<Cutout>>).has('pinned')).toBe(false);
+    }
+  });
+
+  // Cut depth isn't a transform, so lock doesn't gate it.
+  it('still applies cut depth to locked cutouts', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'free' }),
+      createCutout({ id: 'pinned', locked: true }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth'), {
+      target: { value: '8' },
+    });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('pinned')?.cutDepth).toBe(8);
+  });
+
+  it('skips meshes when batch-resizing, since their geometry is baked', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'rect' }),
+      createCutout({ id: 'imported', shape: 'mesh' }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '30' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.has('rect')).toBe(true);
+    expect(updates.has('imported')).toBe(false);
+  });
+
+  it('clamps batch chamfer to each cutout’s own cut-depth headroom', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'deep', cutDepth: 10 }),
+      createCutout({ id: 'shallow', cutDepth: 1 }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-binDesigner.cutouts.chamfer'), {
+      target: { value: '3' },
+    });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('deep')?.chamferWidth).toBe(3);
+    // A 1mm cut keeps a 0.2mm straight wall, so 0.8mm is all it can take.
+    expect(updates.get('shallow')?.chamferWidth).toBeCloseTo(0.8, 6);
+  });
+
+  it('omits the chamfer control when no selected shape accepts one', () => {
+    renderMulti([
+      createCutout({ id: 'a', shape: 'roundedSlot' as Cutout['shape'] }),
+      createCutout({ id: 'b', shape: 'roundedSlot' as Cutout['shape'] }),
+    ]);
+
+    expect(
+      screen.queryByTestId('compact-input-binDesigner.cutouts.chamfer')
+    ).not.toBeInTheDocument();
   });
 });

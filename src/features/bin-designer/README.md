@@ -37,7 +37,10 @@ graph TB
   `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
   single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
   and an empty board-settings state; number-first `CompactNumberInput` (drag-scrub + type)
-  replaces sliders, and hardware-size presets surface as quick-pick chips.
+  replaces sliders, and hardware-size presets surface as quick-pick chips. The multi-select
+  section leads with `AlignControls` (align/distribute, backed by the pure
+  `panel/CutoutsSection/geometryAlign.ts`) and batch-edits position, size, rotation, cut depth,
+  chamfer, scoop and colour.
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
 - `components/panel/WallsSection/` — wall thickness, pattern picker + scale, wall text, and the
@@ -192,6 +195,15 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   on `rectangle` / `circle` / `polygon` / `slot`. The editor exposes tolerance +
   chamfer as 0.2mm steppers that still accept off-grid fractional typing.
 
+- **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
+  assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
+  silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel
+  with the origin. Locked cutouts anchor: they never move but still define the selection
+  bounds, so "lock a reference hole, align the rest to it" works. This deliberately differs
+  from flip/rotate in the context menu, which disable wholesale when anything is locked.
+- **Lock covers transforms only**: `Cutout.locked` means "cannot be moved, resized, or
+  rotated". Batch edits to cut depth, chamfer and colour still apply to locked shapes; X/Y,
+  W/H and rotation skip them.
 - **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`) that
   replicates it across a `grid`, `staggered`, or `radial` pattern from a single
   **master**. Placement math lives in `@/shared/utils/cutoutArray`
