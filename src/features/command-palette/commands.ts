@@ -205,6 +205,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'edit',
     keywords: ['height', 'equalize', 'normalize', 'tallest'],
   },
+  {
+    id: 'expand-to-fit',
+    labelKey: 'commandPalette.expandToFit',
+    category: 'edit',
+    keywords: ['expand', 'fit', 'fill', 'grow', 'stretch', 'gap', 'overhang'],
+  },
 
   {
     id: 'add-layer',

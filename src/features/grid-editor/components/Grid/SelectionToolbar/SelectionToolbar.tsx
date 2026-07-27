@@ -2,8 +2,9 @@
  * Floating selection toolbar for multi-selected bins.
  *
  * Shows alignment buttons, category color dots, and bulk action buttons
- * (rotate, match height, move to layer, move to stash, delete) when 2+
- * bins are selected. Desktop only — visibility controlled by the parent.
+ * (rotate, match height, expand to fit, move to layer, move to stash,
+ * delete) when 2+ bins are selected. Desktop only — visibility controlled
+ * by the parent.
  */
 
 import { useState } from 'react';
@@ -19,6 +20,7 @@ interface SelectionToolbarProps {
   readonly onSetCategory: (categoryId: CategoryId) => void;
   readonly onRotateAll: () => void;
   readonly onMatchHeight: () => void;
+  readonly onExpandToFit: () => void;
   readonly onMoveToLayer: (targetLayerId: LayerId) => void;
   readonly onMoveToStash: () => void;
   readonly onDeleteAll: () => void;
@@ -28,7 +30,7 @@ interface SelectionToolbarProps {
 
 const TOOLBAR_OFFSET = 44;
 const VIEWPORT_PADDING = 8;
-const TOOLBAR_WIDTH_ESTIMATE = 560;
+const TOOLBAR_WIDTH_ESTIMATE = 590;
 
 function computePosition(selectedBinIds: readonly BinId[]): { top: number; left: number } | null {
   let minX = Infinity;
@@ -64,6 +66,7 @@ export function SelectionToolbar({
   onSetCategory,
   onRotateAll,
   onMatchHeight,
+  onExpandToFit,
   onMoveToLayer,
   onMoveToStash,
   onDeleteAll,
@@ -160,6 +163,23 @@ export function SelectionToolbar({
             <line x1="9" y1="2" x2="13" y2="2" />
             <line x1="1" y1="12" x2="5" y2="12" />
             <line x1="9" y1="12" x2="13" y2="12" />
+          </svg>
+        </ToolbarButton>
+
+        {/* Expand to fit */}
+        <ToolbarButton label={t('selectionToolbar.expandToFit')} onClick={onExpandToFit}>
+          <svg
+            className="h-3.5 w-3.5"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <line x1="1.5" y1="2.5" x2="1.5" y2="11.5" />
+            <line x1="12.5" y1="2.5" x2="12.5" y2="11.5" />
+            <line x1="4" y1="7" x2="10" y2="7" />
+            <path d="M6 5L4 7l2 2M8 5l2 2-2 2" />
           </svg>
         </ToolbarButton>
 

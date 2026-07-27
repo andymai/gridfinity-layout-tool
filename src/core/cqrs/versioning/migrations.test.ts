@@ -170,6 +170,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'bin.deleted',
     'bin.batchDeleted',
     'bin.duplicated',
+    'bin.expandedToFit',
     'bin.movedToStaging',
     'bin.movedFromStaging',
     'bin.layerFilled',

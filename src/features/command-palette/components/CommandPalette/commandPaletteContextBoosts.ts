@@ -44,6 +44,7 @@ export function useContextBoosts(): Record<string, number> {
       'align-bottom': hasMultipleBins ? 2.0 : 0.3,
       'rotate-all': hasMultipleBins ? 2.0 : 0.3,
       'match-height': hasMultipleBins ? 2.0 : 0.3,
+      'expand-to-fit': hasBinsSelected ? 2.0 : 0.3,
       'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
 
       // Layer commands - boost when multiple layers

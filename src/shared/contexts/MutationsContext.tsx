@@ -80,6 +80,8 @@ export interface Mutations {
     halfGridMode?: boolean
   ) => number;
   fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfGridMode?: boolean) => number;
+  /** Resolves the whole selection at once; `err.reason` is an `ExpandBlockedReason`. */
+  expandBinsToFit: (ids: BinId[]) => Result<number, LayoutError>;
   clearLayer: (layerId: LayerId) => number;
 
   // Layout metadata
