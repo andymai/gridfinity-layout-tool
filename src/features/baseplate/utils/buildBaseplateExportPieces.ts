@@ -264,6 +264,31 @@ export async function buildBaseplateExportPieces(
     bandThicknessMm: m.bandThicknessMm,
   }));
 
+  // Seated connector parts (dovetail key / snap clip). A keyed margin seam adds
+  // junctions of its own (#2866), so an UNSPLIT plate can need keys too — the
+  // single-body paths below have to ship them or the seam grooves are unusable.
+  const keyCount = countConnectorKeys(tiling, fullParams);
+  const exportConnectorKeyPiece = async (): Promise<ExportPiece[]> => {
+    if (keyCount === 0) return [];
+    const bridgeFormat: ExportFormat = format === '3mf' ? 'stl' : format;
+    let keyData = await getOrExport(
+      `connkey|${buildExportCacheKey(fullParams, bridgeFormat, nozzleMm)}`,
+      () => bridge.exportConnectorKey(fullParams, bridgeFormat).then((r) => r.data)
+    );
+    if (format === '3mf') {
+      const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, printSettings);
+      keyData = await blob.arrayBuffer();
+    }
+    return [{ data: keyData, label: 'key' }];
+  };
+  const keyNote =
+    keyCount > 0
+      ? {
+          key: { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount },
+          params: fullParams,
+        }
+      : undefined;
+
   if (tiling.isSplit && splitEnabled) {
     const bridgeFormat: ExportFormat = format === '3mf' ? 'stl' : format;
 
@@ -365,19 +390,7 @@ export async function buildBaseplateExportPieces(
       }
     }
 
-    const keyCount = countConnectorKeys(tiling, fullParams);
-    if (keyCount > 0) {
-      let keyData = await getOrExport(
-        `connkey|${buildExportCacheKey(fullParams, bridgeFormat, nozzleMm)}`,
-        () => bridge.exportConnectorKey(fullParams, bridgeFormat).then((r) => r.data)
-      );
-      if (format === '3mf') {
-        const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, printSettings);
-        keyData = await blob.arrayBuffer();
-      }
-      pieces.push({ data: keyData, label: 'key' });
-    }
-
+    pieces.push(...(await exportConnectorKeyPiece()));
     pieces.push(...(await exportRailPieces()));
 
     const guideText = generatePrintGuide({
@@ -387,10 +400,7 @@ export async function buildBaseplateExportPieces(
       parentParams: fullParams,
       fileExtension: extension,
       baseFileName: baseNameNoExt,
-      connectorKey:
-        keyCount > 0
-          ? { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount }
-          : undefined,
+      connectorKey: keyNote?.key,
       margins: marginGuideInfo.length > 0 ? marginGuideInfo : undefined,
       stackPrint: stackEnabled ? stack : undefined,
       stackCap,
@@ -417,8 +427,12 @@ export async function buildBaseplateExportPieces(
     );
     if (railMargins.length > 0) {
       return {
-        pieces: [{ data, label: 'body' }, ...(await exportRailPieces())],
-        guideText: generateMarginGuide(marginGuideInfo),
+        pieces: [
+          { data, label: 'body' },
+          ...(await exportConnectorKeyPiece()),
+          ...(await exportRailPieces()),
+        ],
+        guideText: generateMarginGuide(marginGuideInfo, keyNote),
         baseNameNoExt,
         extension,
       };
@@ -441,7 +455,7 @@ export async function buildBaseplateExportPieces(
     const multiTower = towers.length > 1;
 
     let guideText = '';
-    if (hasRails) guideText = generateStackPrintNote(stack, marginGuideInfo, copies);
+    if (hasRails) guideText = generateStackPrintNote(stack, marginGuideInfo, copies, keyNote);
     else if (multiTower) guideText = generateStackPrintNote(stack);
 
     const pieces: ExportPiece[] = [];
@@ -465,6 +479,7 @@ export async function buildBaseplateExportPieces(
       );
       pieces.push({ data: await blob.arrayBuffer(), label });
     }
+    pieces.push(...(await exportConnectorKeyPiece()));
     pieces.push(...(await exportRailPieces()));
     return { pieces, guideText, baseNameNoExt, extension };
   }
@@ -478,8 +493,12 @@ export async function buildBaseplateExportPieces(
         ? await convertStlTo3mf(stlData, `${baseNameNoExt}_body`, printSettings).arrayBuffer()
         : stlData;
     return {
-      pieces: [{ data: bodyData, label: 'body' }, ...(await exportRailPieces())],
-      guideText: generateMarginGuide(marginGuideInfo),
+      pieces: [
+        { data: bodyData, label: 'body' },
+        ...(await exportConnectorKeyPiece()),
+        ...(await exportRailPieces()),
+      ],
+      guideText: generateMarginGuide(marginGuideInfo, keyNote),
       baseNameNoExt,
       extension,
     };

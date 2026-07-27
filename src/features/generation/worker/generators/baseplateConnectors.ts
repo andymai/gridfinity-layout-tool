@@ -37,7 +37,7 @@
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { isSeamConnectorStyle } from '@/shared/types/bin';
+import { isMarginSeamStyle } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -180,11 +180,12 @@ export function buildConnectors(
   if (!edges) return { nubs: tongues, holes: grooves };
   // The opt-in margin-seam connector (#2414) is gated independently of
   // `connectorNubs` (split-piece connectors) — a user can want a rail connector
-  // without split-piece dovetails. Only the integral tongue/groove styles carry
-  // a seam; snapClip/dovetailKey stay friction-fit (splitPlanner enforces this,
-  // and this guard keeps the function self-consistent if called directly).
+  // without split-piece dovetails. The integral styles put a tongue on the seam;
+  // `dovetailKey` puts a groove there and lets the seated key span it (#2866).
+  // snapClip stays friction-fit (splitPlanner enforces this, and this guard keeps
+  // the function self-consistent if called directly).
   const hasMarginSeam =
-    isSeamConnectorStyle(params.connectorStyle) &&
+    isMarginSeamStyle(params.connectorStyle) &&
     (edges.left === 'marginSeam' ||
       edges.right === 'marginSeam' ||
       edges.front === 'marginSeam' ||
@@ -405,17 +406,34 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector (#2414): one male tongue per mating grid
-  // cell along the detached exterior wall, protruding into the rail — so a long
-  // rail is anchored evenly along its length rather than at a single point
-  // (#2428). The rail carries the matching grooves
-  // (`buildMarginSeamGroove` at the same cell centers). Rails are solid (no
-  // sockets), so no relief is needed. `hasMarginSeam` already requires a
-  // dovetail/puzzle style, so a stray snapClip/dovetailKey edge emits no tongue.
+  // Opt-in body↔long-rail connector (#2414), in one of two forms:
+  //   - integral (dovetail/puzzle): one male tongue per mating grid cell along the
+  //     detached exterior wall, protruding into the rail, so a long rail is
+  //     anchored evenly along its length rather than at a single point (#2428);
+  //   - keyed (dovetailKey, #2866): a female groove per interior cell BOUNDARY,
+  //     with the seated key spanning into the rail's matching groove.
+  // Either way the rail carries the mating half at the same anchors
+  // (`buildMarginSeamGroove`). Rails are solid (no sockets), so no tongue relief
+  // is needed. `hasMarginSeam` requires a style that supports a seam at all, so a
+  // stray snapClip edge emits nothing.
   if (hasMarginSeam) {
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;
       const pt = ptFor(def);
+      if (isDovetailKey) {
+        // Keyed seam (#2866): female on the body too, with the rail carrying the
+        // matching groove. Placed on cell BOUNDARIES rather than the tongue's cell
+        // centers — a boundary puts the key at a junction of two body cells, which
+        // is the four-foot layout `buildDovetailKey`'s socket relief is cut for. A
+        // 1-cell-wide piece therefore has no boundary and stays friction-fit,
+        // matching how a 1-cell split seam behaves.
+        for (const bp of def.boundaries) {
+          grooves.push(
+            makePuzzleGroove(pt, def.wallPos, bp, def.protrudeDir, cl, ext, totalHeight)
+          );
+        }
+        continue;
+      }
       const positions = def.centers.length > 0 ? def.centers : [0];
       for (const bp of positions) tongues.push(mkTongue(pt, def.wallPos, bp, def.protrudeDir));
     }
@@ -478,8 +496,11 @@ export function makeGroove(
  * cuts one per cell). Built in the rail's own origin-centered frame (see
  * `baseplateMargin.buildMarginSolid`): the seam face is the rail's inner long
  * edge (+railD/2 front, −railD/2 back, +railW/2 left, −railW/2 right), and the
- * groove cuts inward from it — `d` equals that face's sign. Only `dovetail`/
- * `puzzle` styles reach here.
+ * groove cuts inward from it — `d` equals that face's sign.
+ *
+ * Under `dovetailKey` the body wall is female too, so this groove receives one
+ * lobe of the seated key rather than a body tongue (#2866): same puzzle profile,
+ * but the tighter `DOVETAIL_KEY_CLEARANCE` the key's press fit is sized against.
  */
 export function buildMarginSeamGroove(
   side: 'left' | 'right' | 'front' | 'back',
@@ -501,8 +522,13 @@ export function buildMarginSeamGroove(
   const pt: (wall: number, bp: number) => [number, number] = horizontal
     ? (wall, bp) => [bp, wall]
     : (wall, bp) => [wall, bp];
-  const cl = effectiveClearance(TONGUE_CLEARANCE, fitOffset, nozzleSizeMm);
-  return connectorStyle === 'puzzle'
+  const isKey = connectorStyle === 'dovetailKey';
+  const cl = effectiveClearance(
+    isKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE,
+    fitOffset,
+    nozzleSizeMm
+  );
+  return connectorStyle === 'puzzle' || isKey
     ? makePuzzleGroove(pt, seamPos, tongueOffsetMm, seamSign, cl, COPLANAR_MARGIN, totalHeight)
     : makeGroove(
         pt,

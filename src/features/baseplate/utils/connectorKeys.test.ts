@@ -141,3 +141,134 @@ describe('computeSeamJunctions', () => {
     }
   });
 });
+
+describe('keyed margin seams (issue #2866)', () => {
+  /** Left/right padding only ⇒ they run long and carry the seam connector. */
+  const detached = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams =>
+    makeParams({
+      width: 18,
+      depth: 12,
+      paddingLeft: 12,
+      paddingRight: 12,
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+      ...overrides,
+    });
+
+  /** Junctions that sit on an outer grid edge — i.e. on a body↔rail seam. */
+  function marginJunctions(
+    params: ResolvedBaseplateParams
+  ): ReturnType<typeof computeSeamJunctions> {
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfW = (tiling.totalWidthUnits * params.gridUnitMm) / 2;
+    return computeSeamJunctions(tiling, params).filter(
+      (j) => Math.abs(Math.abs(j.xMm) - halfW) < 1e-6
+    );
+  }
+
+  it('seats a key on every interior boundary of each long rail', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const longRails = (tiling.margins ?? []).filter((m) => m.role === 'long' && m.seamConnector);
+    expect(longRails.length, 'left+right rails, one segment per row').toBeGreaterThan(0);
+
+    // One key per interior cell boundary of each rail's mating wall.
+    const expected = longRails.reduce((sum, m) => {
+      const units = m.seamConnector?.cellUnits ?? 0;
+      const cells = Math.floor(units) + (units % 1 >= 0.5 ? 1 : 0);
+      return sum + Math.max(0, cells - 1);
+    }, 0);
+    expect(marginJunctions(params).length).toBe(expected);
+  });
+
+  it('places them on the body grid edge, spanning across the seam', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfW = (tiling.totalWidthUnits * params.gridUnitMm) / 2;
+    const junctions = marginJunctions(params);
+    expect(junctions.length).toBeGreaterThan(0);
+    for (const j of junctions) {
+      // Detached sides print padding-free, so the body wall is the grid edge.
+      expect(Math.abs(j.xMm)).toBeCloseTo(halfW, 6);
+      // A left/right rail seam runs along Y, so the key spans X.
+      expect(j.axis).toBe('x');
+      // On an interior cell boundary of the mating wall, never a corner. The rail
+      // runs along Y, so measure with the DEPTH pitch.
+      const gy = params.gridUnitMmY ?? params.gridUnitMm;
+      const fromFront = j.yMm + (tiling.totalDepthUnits * gy) / 2;
+      expect(Math.abs(fromFront - Math.round(fromFront / gy) * gy)).toBeLessThan(1e-6);
+      expect(fromFront).toBeGreaterThan(0);
+      expect(fromFront).toBeLessThan(tiling.totalDepthUnits * gy);
+    }
+  });
+
+  it('needs the connector opted in and the key style selected', () => {
+    expect(marginJunctions(detached({ detachMarginConnector: false })).length).toBe(0);
+    expect(marginJunctions(detached({ detachMargins: false })).length).toBe(0);
+    // A tongued seam needs no separate part; a snap-clip seam stays friction-fit.
+    expect(marginJunctions(detached({ connectorStyle: 'puzzle' })).length).toBe(0);
+    expect(marginJunctions(detached({ connectorStyle: 'snapClip' })).length).toBe(0);
+  });
+
+  it('keys an unsplit plate whose margins detach', () => {
+    // No split seams at all, so every key comes from the body↔rail seams — and the
+    // rail seam is gated independently of split-piece connectors (#2414), so
+    // `connectorNubs: false` must still produce them.
+    const params = detached({ width: 4, depth: 4, connectorNubs: false });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(false);
+    expect(countConnectorKeys(tiling, params)).toBe(marginJunctions(params).length);
+    expect(countConnectorKeys(tiling, params)).toBeGreaterThan(0);
+  });
+
+  it('converts a left/right rail with the DEPTH pitch on a non-square grid', () => {
+    // `seamConnector.cellUnits` counts cells along the rail's running axis — Y for
+    // a left/right rail — so a non-square plate has to convert it with the Y
+    // pitch. Using the X pitch put the keys where the grooves aren't.
+    const gridUnitMmY = 22;
+    const params = detached({ gridUnitMmY, depth: 8 });
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfD = (tiling.totalDepthUnits * gridUnitMmY) / 2;
+
+    for (const j of marginJunctions(params)) {
+      // Every key must land on an interior cell boundary of the DEPTH axis.
+      const fromFront = j.yMm + halfD;
+      const cells = fromFront / gridUnitMmY;
+      expect(Math.abs(cells - Math.round(cells)), `y=${j.yMm}`).toBeLessThan(1e-6);
+      expect(fromFront).toBeGreaterThan(0);
+      expect(fromFront).toBeLessThan(2 * halfD);
+    }
+  });
+
+  it('places split-seam keys on the depth pitch too (non-square)', () => {
+    const gridUnitMmY = 22;
+    const params = makeParams({
+      width: 18,
+      depth: 18,
+      gridUnitMmY,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfD = (tiling.totalDepthUnits * gridUnitMmY) / 2;
+    const vertical = computeSeamJunctions(tiling, params).filter((j) => j.axis === 'x');
+    expect(vertical.length).toBeGreaterThan(0);
+    for (const j of vertical) {
+      const cells = (j.yMm + halfD) / gridUnitMmY;
+      expect(Math.abs(cells - Math.round(cells)), `y=${j.yMm}`).toBeLessThan(1e-6);
+    }
+  });
+
+  it('counts margin keys on top of the split-seam keys', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const splitOnly = computeBaseplateTiling({ ...params, detachMarginConnector: false }, 256);
+    const splitKeys = countConnectorKeys(splitOnly, {
+      ...params,
+      detachMarginConnector: false,
+    });
+    expect(countConnectorKeys(tiling, params)).toBe(splitKeys + marginJunctions(params).length);
+  });
+});
