@@ -1,18 +1,24 @@
 // @vitest-environment node
 /**
- * Tripwire for occt-wasm's helix handedness gaps (run with the other
- * __kernel-tests__ diagnostics on every brepjs/occt-wasm bump).
+ * occt-wasm helix handedness, for kumikoWrapBuilder's corner FALLING diagonals
+ * (run with the other __kernel-tests__ diagnostics on every brepjs bump).
  *
- * Pinned CURRENT behavior (the assertions below fail when upstream fixes it):
- *   - makeHelixWire has no handedness input, so brepjs's sketchHelix
- *     left-handed flag is a NO-OP — both flags produce the identical
- *     right-handed sweep. This is why kumikoWrapBuilder approximates corner
- *     FALLING diagonals with chord boxes instead of helix sweeps.
- *   - brepjs `mirror` on a helical sweep yields an EMPTY solid (volume 0),
- *     so mirroring a right-handed sweep is not a viable left-handed
- *     substitute either.
- * A failure here means the upstream gap is fixed: retire the chord-box
- * approximation in kumikoWrapBuilder's falling-diagonal branch.
+ * The two cases here fail for OPPOSITE reasons — read the one that broke:
+ *
+ *   1. Tripwire. `makeHelixWire` takes no handedness input, so sketchHelix's
+ *      left-handed flag is a NO-OP: both flags give the same right-handed
+ *      sweep. A FAILURE means upstream gained handedness.
+ *
+ *   2. Regression guard. `mirror` on a helical sweep used to yield an empty
+ *      solid; as of brepjs 18.119.2 it yields a true reflection, so a mirrored
+ *      right-handed sweep is a viable left-handed substitute. This one should
+ *      keep PASSING — a failure means that capability regressed.
+ *
+ * Either outcome bears on the same decision: the chord-box approximation in
+ * kumikoWrapBuilder's falling-diagonal branch exists because BOTH routes to a
+ * left-handed sweep were unavailable. Route 2 has since opened, so the
+ * approximation is already retirable (see the TODO on that case); case 1
+ * turning green would make it doubly so.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { sketchHelix, drawRoundedRectangle, mesh, mirror, measureVolume, unwrap } from 'brepjs';
@@ -37,7 +43,7 @@ function sweepAndMeasure(lefthand: boolean, mirrored = false): SweepFootprint {
     frenet: true,
   });
   if (mirrored) {
-    const m2 = mirror(swept, [0, 1, 0], [0, 0, 0]);
+    const m2 = mirror(swept, { normal: [0, 1, 0], at: [0, 0, 0] });
     swept.delete();
     swept = m2;
   }
@@ -67,11 +73,35 @@ describe('helix handedness tripwire', () => {
     expect(left.vol).toBeCloseTo(right.vol, 3);
   }, 120_000);
 
-  it('mirror on a helical sweep is still empty (else it becomes a viable left-handed substitute)', () => {
+  // This tripwire FIRED. It asserted mirror yields an empty solid; on
+  // brepjs 18.119.2 it yields a real one (~11.66mm³ for this fixture), so a
+  // mirrored right-handed sweep is now a viable left-handed substitute. The
+  // assertion is inverted to record that, and still catches a regression if
+  // mirror goes back to producing nothing.
+  // TODO: retire the chord-box approximation in kumikoWrapBuilder's
+  // falling-diagonal branch, now that this substitute exists. Needs visual
+  // verification of the corner diagonals before/after.
+  it('mirror on a helical sweep produces a true reflection (left-handed substitute is viable)', () => {
+    const right = sweepAndMeasure(false);
     const mirrored = sweepAndMeasure(false, true);
+
+    // A non-empty result is not enough to justify retiring the workaround — a
+    // degenerate sliver would clear that bar. Reflection through the y=0 plane
+    // preserves volume and negates phi = atan2(y, x), so the angular footprint
+    // must come back inverted end-for-end. The ~1 rad sweep never approaches
+    // the ±pi branch cut, so phiMin/phiMax stay comparable.
+    //
+    // The footprint is asymmetric ([-0.211, +1.211] rad right-handed), which is
+    // what makes this discriminating: an unmirrored or wrongly-oriented solid
+    // misses by ~1 rad against a 5e-4 tolerance.
     expect(
       mirrored.vol,
-      'mirror now produces a real solid from a helical sweep — a mirrored right-handed sweep can replace the kumiko chord boxes'
-    ).toBeLessThan(1e-6);
+      'mirror stopped reproducing the sweep volume — the left-handed substitute regressed'
+    ).toBeCloseTo(right.vol, 3);
+    expect(
+      mirrored.phiMin,
+      'mirrored footprint is not the reflection of the right-handed one'
+    ).toBeCloseTo(-right.phiMax, 3);
+    expect(mirrored.phiMax).toBeCloseTo(-right.phiMin, 3);
   }, 120_000);
 });

@@ -22,7 +22,20 @@ export const LEARN_LINKS: ReadonlyArray<{ slug: string; labelKey: string; locali
 
 // Locales with translated content pages (mirrors vercel.json's localized rewrite).
 // `ja` has UI translations but no content pages, so it stays on English content.
-const CONTENT_LOCALES = new Set<Locale>(['de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk']);
+const CONTENT_LOCALES = new Set<Locale>([
+  'de',
+  'fr',
+  'es',
+  'pt-BR',
+  'nl',
+  'sv',
+  'nb',
+  'uk',
+  'pl',
+  'zh-CN',
+  'cs',
+  'ko',
+]);
 
 /**
  * Resolves the href for a Learn link, prefixing the active locale only when the

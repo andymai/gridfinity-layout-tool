@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BinContextMenu } from './BinContextMenu';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
+import { STAGING_ID } from '@/core/constants';
 
 // Mock dependencies
 vi.mock('@/shared/contexts', () => ({
@@ -31,6 +32,7 @@ vi.mock('@/shared/hooks/useContextMenu', () => ({
 
 vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isDesktop: false, isMobile: true }),
+  useExpandToFit: () => ({ expandToFit: vi.fn(), expandBins: vi.fn(), canExpand: true }),
 }));
 
 vi.mock('@/i18n', () => ({
@@ -94,5 +96,17 @@ describe('BinContextMenu', () => {
     const onClose = vi.fn();
     render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={onClose} />);
     expect(screen.getByTestId('divider')).toBeInTheDocument();
+  });
+
+  it('offers expand to fit for a bin on the grid', () => {
+    const bin = createTestBin();
+    render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
+    expect(screen.getByText('mobile.binMenu.expandToFit')).toBeInTheDocument();
+  });
+
+  it('hides expand to fit for a stashed bin', () => {
+    const bin = createTestBin({ layerId: STAGING_ID });
+    render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
+    expect(screen.queryByText('mobile.binMenu.expandToFit')).not.toBeInTheDocument();
   });
 });

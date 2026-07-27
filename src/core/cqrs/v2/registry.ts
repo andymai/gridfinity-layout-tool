@@ -20,6 +20,7 @@ import { moveBinToStaging } from './domain/bin/moveBinToStaging';
 import { moveBinFromStaging } from './domain/bin/moveBinFromStaging';
 import { fillLayer } from './domain/bin/fillLayer';
 import { fillGaps } from './domain/bin/fillGaps';
+import { expandToFit } from './domain/bin/expandToFit';
 import { clearLayer } from './domain/bin/clearLayer';
 import { addLayer } from './domain/layer/addLayer';
 import { updateLayer } from './domain/layer/updateLayer';
@@ -75,6 +76,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [moveBinFromStaging.type]: wrapV2Handler(moveBinFromStaging) as V2HandlerFn,
   [fillLayer.type]: wrapV2Handler(fillLayer) as V2HandlerFn,
   [fillGaps.type]: wrapV2Handler(fillGaps) as V2HandlerFn,
+  [expandToFit.type]: wrapV2Handler(expandToFit) as V2HandlerFn,
   [clearLayer.type]: wrapV2Handler(clearLayer) as V2HandlerFn,
   [addLayer.type]: wrapV2Handler(addLayer) as V2HandlerFn,
   [updateLayer.type]: wrapV2Handler(updateLayer) as V2HandlerFn,
@@ -116,6 +118,7 @@ export const v2Commands = [
   moveBinFromStaging,
   fillLayer,
   fillGaps,
+  expandToFit,
   clearLayer,
   addLayer,
   updateLayer,

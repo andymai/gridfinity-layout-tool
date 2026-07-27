@@ -1,5 +1,75 @@
 # Changelog
 
+## [4.312.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.311.0...gridfinity-layout-tool-v4.312.0) (2026-07-27)
+
+
+### Features
+
+* **layout:** expand bins to fit the space around them ([#2871](https://github.com/andymai/gridfinity-layout-tool/issues/2871)) ([24ed520](https://github.com/andymai/gridfinity-layout-tool/commit/24ed520b2059d2d71645323c6d9b57f42da4413a))
+
+## [4.311.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.1...gridfinity-layout-tool-v4.311.0) (2026-07-26)
+
+
+### Features
+
+* **layout:** per-placement bin overhang ([#2867](https://github.com/andymai/gridfinity-layout-tool/issues/2867)) ([0c34156](https://github.com/andymai/gridfinity-layout-tool/commit/0c341561f1c87da482174a22f437235c1bdcc15f))
+
+## [4.310.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.0...gridfinity-layout-tool-v4.310.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **content:** correct max bin size, compartment grid, and magnet default ([#2863](https://github.com/andymai/gridfinity-layout-tool/issues/2863)) ([d487a88](https://github.com/andymai/gridfinity-layout-tool/commit/d487a8804fdb3655f2e12229ae6b01d7d549e815))
+
+## [4.310.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.309.0...gridfinity-layout-tool-v4.310.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Korean (ko) SEO landing pages ([#2861](https://github.com/andymai/gridfinity-layout-tool/issues/2861)) ([11e72e9](https://github.com/andymai/gridfinity-layout-tool/commit/11e72e9883cfde7254b05a70cecc26cdf3f11002))
+
+## [4.309.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.308.0...gridfinity-layout-tool-v4.309.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Czech (cs) SEO landing pages ([#2859](https://github.com/andymai/gridfinity-layout-tool/issues/2859)) ([f8bbf2f](https://github.com/andymai/gridfinity-layout-tool/commit/f8bbf2f0d81182a591a47e3189d77e2333019112))
+
+## [4.308.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.307.0...gridfinity-layout-tool-v4.308.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Simplified Chinese (zh-CN) SEO landing pages ([#2857](https://github.com/andymai/gridfinity-layout-tool/issues/2857)) ([c9f282d](https://github.com/andymai/gridfinity-layout-tool/commit/c9f282daee33b62548a713f37871eeee670f66e3))
+
+## [4.307.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.1...gridfinity-layout-tool-v4.307.0) (2026-07-26)
+
+
+### Features
+
+* **content:** add Polish (pl) SEO landing pages ([#2855](https://github.com/andymai/gridfinity-layout-tool/issues/2855)) ([6ec8fc3](https://github.com/andymai/gridfinity-layout-tool/commit/6ec8fc32b0289cd81141352b886de97d2ea1fe06))
+
+## [4.306.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.306.0...gridfinity-layout-tool-v4.306.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **generation:** repair rotted __kernel-tests__ diagnostics ([#2851](https://github.com/andymai/gridfinity-layout-tool/issues/2851)) ([b79957f](https://github.com/andymai/gridfinity-layout-tool/commit/b79957fa00c09994827a34a4fcd1dbb46fa14a8b))
+
+## [4.306.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.305.0...gridfinity-layout-tool-v4.306.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Korean (ko) locale ([#2850](https://github.com/andymai/gridfinity-layout-tool/issues/2850)) ([41b1368](https://github.com/andymai/gridfinity-layout-tool/commit/41b1368c7a507cee36f7617dc004f1d289710ed1))
+
+## [4.305.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.304.0...gridfinity-layout-tool-v4.305.0) (2026-07-26)
+
+
+### Features
+
+* **i18n:** add Czech (cs) locale ([#2848](https://github.com/andymai/gridfinity-layout-tool/issues/2848)) ([7accc33](https://github.com/andymai/gridfinity-layout-tool/commit/7accc3342663182d6237a8e07d4eec84ccd3547d))
+
 ## [4.304.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.303.0...gridfinity-layout-tool-v4.304.0) (2026-07-26)
 
 

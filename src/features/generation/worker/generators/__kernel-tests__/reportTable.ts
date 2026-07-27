@@ -1,7 +1,21 @@
 /**
- * Console timing table for scenario test performance reporting.
- * Called from afterAll — output is suppressed in --reporter=json mode.
+ * Reporting helpers for the __kernel-tests__ diagnostics: `printTimingTable`
+ * for the console summary (called from afterAll — suppressed under
+ * --reporter=json) and `writeReport` for probes that dump results to a file.
  */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+/**
+ * Write a probe report, creating the directory first.
+ *
+ * These default to /tmp/perfbench, which does not exist on a clean machine —
+ * probes were failing on ENOENT before reaching their assertions.
+ */
+export function writeReport(path: string, contents: string): void {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, contents);
+}
 
 export interface TimingEntry {
   name: string;

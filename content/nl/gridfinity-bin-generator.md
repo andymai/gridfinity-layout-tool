@@ -61,7 +61,7 @@ faqs:
   - q: Kan ik opslaan en later verder?
     a: Ja. Ontwerpen worden automatisch opgeslagen in je browser. Geef een ontwerp een naam en het blijft bewaard tussen sessies.
   - q: Hoe groot kunnen bins zijn?
-    a: Tot 8×8 rastereenheden (336 mm × 336 mm). Voor grotere ruimtes combineer je meerdere bins in de layout-planner.
+    a: Tot 16×16 rastereenheden (672 mm × 672 mm). Voor grotere ruimtes combineer je meerdere bins in de layout-planner.
   - q: Waar krijg ik bodemplaten?
     a: Gebruik de bodemplaat-generator voor een bodemplaat op maat van je lade, met optionele magneetgaten en randpadding. Exporteer als STL, STEP of 3MF.
 navCta:
@@ -86,7 +86,7 @@ Een parametrische bin-generator die in je browser draait. Stel afmetingen in, vo
 
 ## Functies
 
-**Vakken.** Verdeel een bin in een raster van secties, tot 8×8. De scheidingsmuren worden automatisch gegenereerd. Je kunt verwijderbare scheiders als losse bestanden exporteren om opnieuw in te richten zonder herprinten.
+**Vakken.** Verdeel een bin in een raster van secties, tot 12×12. De scheidingsmuren worden automatisch gegenereerd. Je kunt verwijderbare scheiders als losse bestanden exporteren om opnieuw in te richten zonder herprinten.
 
 **Scheppen en wanduitsparingen.** Scheppen helpen kleine onderdelen onderin te pakken. Wanduitsparingen — U-vormige inkepingen aan elke zijde — laten je dingen zijdelings uit de bin halen.
 

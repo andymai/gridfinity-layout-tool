@@ -167,6 +167,46 @@
       ]
     },
     {
+      "source": "/pl/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "pl" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/zh-CN/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "zh-CN" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/cs/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "cs" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/ko/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "ko" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/fr/:path((?!api/).*)",
       "headers": [
         { "key": "Content-Language", "value": "fr" },
@@ -314,7 +354,7 @@
       "destination": "/:slug/index.html"
     },
     {
-      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk|pl|zh-CN|cs|ko)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
       "destination": "/:locale/:slug/index.html"
     },
     { "source": "/designer", "destination": "/" },

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { writeFileSync } from 'node:fs';
+import { writeReport } from './reportTable';
 import { describe, it, beforeAll, expect } from 'vitest';
 import { measureVolume, unwrap } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './wasmInit';
@@ -33,7 +33,7 @@ describe('export shell cache', () => {
     gen(p, undefined, true);
     const second = performance.now() - t;
     const v2 = vol(getLastSolid());
-    writeFileSync(
+    writeReport(
       '/tmp/perfbench/export-cache.txt',
       `first=${first.toFixed(0)}ms second=${second.toFixed(0)}ms vol1=${v1.toFixed(0)} vol2=${v2.toFixed(0)}\n`
     );

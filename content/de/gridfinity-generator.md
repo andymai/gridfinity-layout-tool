@@ -52,7 +52,7 @@ softwareApplication:
     - Parametrischer Grundplatten-Generator mit Magnetlochraster
     - Export als STL, STEP und 3MF
     - Sechs Bodenstile (Standard, Magnet, Schraube, Magnet+Schraube, beschwert, flach)
-    - Konfigurierbare Kompartimente bis 8 × 8
+    - Konfigurierbare Kompartimente bis 12 × 12
     - Wandaussparungen pro Seite (U-Form, Schaufel, Trichter)
     - Beschriftungslaschen mit Halterung oder geschlossen
     - Wabenmuster für Wände
@@ -79,9 +79,9 @@ faqs:
   - q: Passen Bins vom Generator auf meine vorhandenen Gridfinity-Grundplatten?
     a: Ja. Der Generator folgt dem Standard-42-mm-Raster und dem Standard-Sockelprofil, also passen die Bins auf jede offizielle oder community-erstellte Gridfinity-Grundplatte. Umgekehrt gilt dasselbe — Grundplatten aus dem Generator nehmen jeden Standard-Gridfinity-Bin auf.
   - q: Kann der Gridfinity-Generator Grundplatten mit Magnetlöchern erstellen?
-    a: Ja. Der Grundplatten-Generator setzt standardmäßig 6 mm × 2 mm Magnetlöcher an jeder Rasterkreuzung. Du kannst sie deaktivieren, falls du keine Magnete willst, oder eingeschaltet lassen und die Magnete beim Druck einfach weglassen.
+    a: Ja. Der Grundplatten-Generator kann 6 mm × 2 mm Magnetlöcher an jeder Rasterkreuzung hinzufügen. Sie sind standardmäßig deaktiviert — schalte sie ein, wenn du Magnete willst, oder lass sie eingeschaltet und lass die Magnete beim Druck einfach weg.
   - q: Gibt es Größenbeschränkungen im Gridfinity-Generator?
-    a: Bins können bis zu 8 × 8 Rastereinheiten (336 mm × 336 mm) und 20 Höheneinheiten (140 mm) hoch sein. Grundplatten dürfen größer sein und werden bei Bedarf automatisch in druckbettgerechte Teile aufgeteilt.
+    a: Bins können bis zu 16 × 16 Rastereinheiten (672 mm × 672 mm) und 20 Höheneinheiten (140 mm) hoch sein. Grundplatten dürfen größer sein und werden bei Bedarf automatisch in druckbettgerechte Teile aufgeteilt.
   - q: Unterstützt der Gridfinity-Generator halbe Bin-Größen?
     a: Ja. Aktiviere den Halb-Bin-Modus für 0,5-Einheit-Präzision — du kannst Bins wie 1,5 × 2,5 erstellen, um schwierige Lückenmaße abzudecken. Halb-Bin-Unterstützung läuft bis in den Layout-Planer, damit halbgroße Bins sauber neben vollen liegen.
   - q: Kann ich Bin-Boden und -Wände anpassen?
@@ -140,7 +140,7 @@ Du kannst auch den [Layout-Planer](/) nutzen, um Bins auf einer Grundplatte zu a
 
 ### Maße
 
-Breite, Tiefe und Höhe. Breite und Tiefe gehen von 0,5 bis 8 Rastereinheiten (21 mm bis 336 mm). Höhe von 2 bis 20 Höheneinheiten (14 mm bis 140 mm). Eine Höheneinheit entspricht 7 mm — der Standard-Gridfinity-Einheit aus Zack Freedmans Ursprungsspezifikation.
+Breite, Tiefe und Höhe. Breite und Tiefe gehen von 0,5 bis 16 Rastereinheiten (21 mm bis 672 mm). Höhe von 2 bis 20 Höheneinheiten (14 mm bis 140 mm). Eine Höheneinheit entspricht 7 mm — der Standard-Gridfinity-Einheit aus Zack Freedmans Ursprungsspezifikation.
 
 ### Bodenstile
 
@@ -155,7 +155,7 @@ Sechs Optionen, wie der Bin auf einer Grundplatte sitzt:
 
 ### Kompartimente
 
-Teile das Innere in ein Raster aus bis zu 8 × 8 Kompartimenten. Der Generator baut die Trennwände automatisch und passt die Wandstärke an die Größe an. Trennstege lassen sich auch als entnehmbare Einzelteile exportieren — praktisch, wenn du einen Bin später umkonfigurieren willst, ohne neu zu drucken.
+Teile das Innere in ein Raster aus bis zu 12 × 12 Kompartimenten. Der Generator baut die Trennwände automatisch und passt die Wandstärke an die Größe an. Trennstege lassen sich auch als entnehmbare Einzelteile exportieren — praktisch, wenn du einen Bin später umkonfigurieren willst, ohne neu zu drucken.
 
 ### Wand-Funktionen
 
@@ -189,7 +189,7 @@ Breite und Tiefe in Rastereinheiten. Der Generator skaliert nahtlos von 1 × 1 b
 
 ### Magnetlöcher
 
-Standard-Gridfinity nutzt 6 mm × 2 mm runde Magnete an jeder Rasterkreuzung. Der Grundplatten-Generator setzt sie standardmäßig — du kannst sie komplett deaktivieren, wenn du keine Magnete willst. Magnete verhindern, dass Bins beim Öffnen oder Schließen der Schublade verrutschen, was wichtig ist, wenn du die Schublade trägst oder einen Werkzeugwagen schiebst.
+Standard-Gridfinity nutzt 6 mm × 2 mm runde Magnete an jeder Rasterkreuzung. Der Grundplatten-Generator lässt sie standardmäßig deaktiviert — aktiviere sie, wenn du Magnete willst. Magnete verhindern, dass Bins beim Öffnen oder Schließen der Schublade verrutschen, was wichtig ist, wenn du die Schublade trägst oder einen Werkzeugwagen schiebst.
 
 ### Randabstand
 

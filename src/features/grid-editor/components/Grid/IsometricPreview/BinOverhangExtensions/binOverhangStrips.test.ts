@@ -1,0 +1,163 @@
+import { describe, it, expect } from 'vitest';
+import { buildBinOverhangStrips } from './binOverhangStrips';
+import type { OverhangStripBin } from './binOverhangStrips';
+import type { StoredBaseplateParams } from '@/core/types';
+
+function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
+  return {
+    magnetHoles: false,
+    magnetDiameter: 6,
+    magnetDepth: 2,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    ...overrides,
+  };
+}
+
+// Bottom-left 1×1 bin, 2 units tall, in a 5×4 drawer. gridUnitMm 42 → 21mm = 0.5u.
+function bin(overrides: Partial<OverhangStripBin> = {}): OverhangStripBin {
+  return { id: 'b1', x: 0, y: 0, z: 0, width: 1, depth: 1, height: 2, ...overrides };
+}
+
+const DW = 5;
+const DD = 4;
+const GRID = 42;
+
+describe('buildBinOverhangStrips', () => {
+  it('returns nothing when the bin does not extend', () => {
+    expect(buildBinOverhangStrips(bin(), DW, DD, baseplate({ paddingLeft: 21 }), GRID)).toEqual([]);
+  });
+
+  it('returns nothing with no baseplate', () => {
+    expect(buildBinOverhangStrips(bin({ extendToMargin: true }), DW, DD, undefined, GRID)).toEqual(
+      []
+    );
+  });
+
+  it('returns nothing for an interior bin', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ x: 1, y: 1, extendToMargin: true }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: 21 }),
+      GRID
+    );
+    expect(strips).toEqual([]);
+  });
+
+  it('builds one strip for a single padded edge', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ extendToMargin: true }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: 21 }),
+      GRID
+    );
+    expect(strips).toHaveLength(1);
+    const [s] = strips;
+    // left = 21/42 = 0.5u; strip x spans [-0.5, 0.02], y spans [0, 1], full height 2.
+    expect(s.size[0]).toBeCloseTo(0.52, 5);
+    expect(s.size[1]).toBeCloseTo(1, 5);
+    expect(s.size[2]).toBeCloseTo(2, 5);
+    expect(s.position[0]).toBeCloseTo(-0.24, 5);
+    expect(s.position[2]).toBeCloseTo(1, 5); // z center = z + height/2
+  });
+
+  it('builds two strips for a corner bin, side strip spanning the corner', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ extendToMargin: true }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: 21, paddingFront: 42 }), // left 0.5u, front 1u
+      GRID
+    );
+    expect(strips).toHaveLength(2);
+    const left = strips.find((s) => s.key.endsWith('-l'));
+    const front = strips.find((s) => s.key.endsWith('-f'));
+    // Left strip spans the full extended depth (incl. the front corner): y [-1, 1] → size 2.
+    expect(left?.size[1]).toBeCloseTo(2, 5);
+    // Front strip fills only the bin width: x [0, 1] → size 1.
+    expect(front?.size[0]).toBeCloseTo(1, 5);
+    expect(front?.size[1]).toBeCloseTo(1.02, 5);
+  });
+
+  it('extends the far edges (right/back)', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ x: 4, y: 3, extendToMargin: true }), // top-right corner
+      DW,
+      DD,
+      baseplate({ paddingRight: 21, paddingBack: 21 }),
+      GRID
+    );
+    expect(strips.map((s) => s.key.slice(-2)).sort()).toEqual(['-b', '-r']);
+  });
+});
+
+describe('buildBinOverhangStrips — explicit per-placement overhang', () => {
+  // The case the margin path can't serve: an interior bin, no baseplate at all.
+  it('builds strips with no baseplate configured', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ x: 2, y: 1, overhang: { enabled: true, left: 21, right: 21, front: 0, back: 0 } }),
+      DW,
+      DD,
+      undefined,
+      GRID
+    );
+    expect(strips.map((s) => s.key)).toEqual(['b1-l', 'b1-r']);
+  });
+
+  it('replaces a margin overhang rather than adding to it', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ extendToMargin: true, overhang: { left: 0, right: 21, front: 0, back: 0 } }),
+      DW,
+      DD,
+      baseplate({ paddingLeft: 21 }),
+      GRID
+    );
+    // Padding would have produced a left strip; the explicit overhang wins.
+    expect(strips.map((s) => s.key)).toEqual(['b1-r']);
+  });
+
+  it('returns nothing for a disabled overhang', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ overhang: { enabled: false, left: 21, right: 21, front: 0, back: 0 } }),
+      DW,
+      DD,
+      undefined,
+      GRID
+    );
+    expect(strips).toEqual([]);
+  });
+});
+
+describe('buildBinOverhangStrips — non-square grid', () => {
+  // On a 42×21 grid, the same mm of overhang is a different fraction of a cell
+  // on each axis. Dividing depth by the X pitch would render it at half extent.
+  it('scales the depth axis by the Y pitch, not the X pitch', () => {
+    const strips = buildBinOverhangStrips(
+      bin({ overhang: { enabled: true, left: 0, right: 0, front: 0, back: 21 } }),
+      DW,
+      DD,
+      undefined,
+      GRID,
+      21
+    );
+    expect(strips).toHaveLength(1);
+    // 21mm at a 21mm Y pitch is a full grid unit, not the half unit that the
+    // 42mm X pitch would have produced.
+    expect(strips[0].size[1]).toBeCloseTo(1 + 0.02, 6); // + OVERLAP
+  });
+
+  it('treats an omitted Y pitch as square', () => {
+    const square = buildBinOverhangStrips(
+      bin({ overhang: { enabled: true, left: 0, right: 0, front: 0, back: 21 } }),
+      DW,
+      DD,
+      undefined,
+      GRID
+    );
+    expect(square[0].size[1]).toBeCloseTo(0.5 + 0.02, 6);
+  });
+});

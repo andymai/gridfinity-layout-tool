@@ -1,43 +1,49 @@
 /**
- * 3D drawer-margin extension for bins in the isometric preview (#2462).
+ * 3D overhang extension for bins in the isometric preview (#2462).
  *
- * Renders decorative solid strips filling the margin around each extended bin
- * (see `binMarginStrips`). Kept separate from the merged bin geometry / cache /
+ * Renders decorative solid strips filling the space around each extended bin
+ * (see `binOverhangStrips`). Kept separate from the merged bin geometry / cache /
  * transition pipeline so it can't regress it; the strip count is tiny (only
- * extended edge bins). Self-gates on a configured baseplate.
+ * bins that actually extend). Deliberately does NOT gate on a configured
+ * baseplate — an explicit "Expand to Fit" overhang exists independently of one.
  */
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
-import { buildBinMarginStrips } from './binMarginStrips';
-import type { MarginStrip } from './binMarginStrips';
+import { buildBinOverhangStrips } from './binOverhangStrips';
+import type { OverhangStrip } from './binOverhangStrips';
 
-interface BinMarginExtensionsProps {
+interface BinOverhangExtensionsProps {
   bins: readonly BinRenderData[];
   drawerWidth: number;
   drawerDepth: number;
 }
 
-interface ColoredStrip extends MarginStrip {
+interface ColoredStrip extends OverhangStrip {
   readonly color: string;
   readonly opacity: number;
 }
 
-export function BinMarginExtensions({ bins, drawerWidth, drawerDepth }: BinMarginExtensionsProps) {
-  const { baseplate, gridUnitMm } = useLayoutStore(
+export function BinOverhangExtensions({
+  bins,
+  drawerWidth,
+  drawerDepth,
+}: BinOverhangExtensionsProps) {
+  const { baseplate, gridUnitMm, gridUnitMmY } = useLayoutStore(
     useShallow((s) => ({
       baseplate: s.layout.baseplateParams,
       gridUnitMm: s.layout.gridUnitMm,
+      gridUnitMmY: effectiveGridUnitMmY(s.layout),
     }))
   );
 
   const strips = useMemo<ColoredStrip[]>(() => {
-    if (!baseplate) return [];
     return bins.flatMap((bd) =>
-      buildBinMarginStrips(
+      buildBinOverhangStrips(
         {
           id: bd.bin.id,
           x: bd.x,
@@ -47,14 +53,16 @@ export function BinMarginExtensions({ bins, drawerWidth, drawerDepth }: BinMargi
           depth: bd.bin.depth,
           height: bd.height,
           extendToMargin: bd.bin.extendToMargin,
+          overhang: bd.bin.overhang,
         },
         drawerWidth,
         drawerDepth,
         baseplate,
-        gridUnitMm
+        gridUnitMm,
+        gridUnitMmY
       ).map((s) => ({ ...s, color: bd.color, opacity: bd.opacity }))
     );
-  }, [baseplate, gridUnitMm, bins, drawerWidth, drawerDepth]);
+  }, [baseplate, gridUnitMm, gridUnitMmY, bins, drawerWidth, drawerDepth]);
 
   if (strips.length === 0) return null;
 

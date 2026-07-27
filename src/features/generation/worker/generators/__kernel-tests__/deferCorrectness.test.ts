@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { writeFileSync } from 'node:fs';
+import { writeReport } from './reportTable';
 import { describe, it, beforeAll, expect } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams, makeCutout } from './scenarioTypes';
@@ -88,7 +88,7 @@ describe('defer-socket correctness vs features that reach the socket', () => {
       )
     );
 
-    writeFileSync(
+    writeReport(
       '/tmp/perfbench/defer-correctness.txt',
       rows
         .map(

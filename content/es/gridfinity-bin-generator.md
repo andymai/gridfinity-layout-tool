@@ -61,7 +61,7 @@ faqs:
   - q: ¿Puedo guardar y volver más tarde?
     a: Sí. Los diseños se guardan automáticamente en tu navegador. Pon un nombre al diseño y persistirá entre sesiones.
   - q: ¿Cuán grandes pueden ser los bins?
-    a: Hasta 8×8 unidades de cuadrícula (336 mm × 336 mm). Para espacios mayores, usa el planificador de layout para combinar varios bins.
+    a: Hasta 16×16 unidades de cuadrícula (672 mm × 672 mm). Para espacios mayores, usa el planificador de layout para combinar varios bins.
   - q: ¿Dónde consigo placas base?
     a: Usa el generador de placas para crear una placa adaptada a tu cajón, con orificios de imán y márgenes opcionales. Exporta como STL, STEP o 3MF.
 navCta:
@@ -86,7 +86,7 @@ Un generador paramétrico de bins que funciona en tu navegador. Ajusta las dimen
 
 ## Funciones
 
-**Compartimentos.** Divide un bin en una cuadrícula de secciones, hasta 8×8. Las paredes divisorias se generan automáticamente. Puedes exportar separadores extraíbles como archivos aparte para reconfigurar sin reimprimir.
+**Compartimentos.** Divide un bin en una cuadrícula de secciones, hasta 12×12. Las paredes divisorias se generan automáticamente. Puedes exportar separadores extraíbles como archivos aparte para reconfigurar sin reimprimir.
 
 **Rampas y recortes en pared.** Las rampas facilitan llegar a las piezas pequeñas del fondo. Los recortes en pared — muescas en U en cualquier lado — permiten sacar cosas hacia el lateral.
 

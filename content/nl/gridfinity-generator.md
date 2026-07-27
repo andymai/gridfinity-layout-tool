@@ -52,7 +52,7 @@ softwareApplication:
     - Parametrische bodemplaat-generator met magneetgatraster
     - Export naar STL, STEP en 3MF
     - Zes basisstijlen (standaard, magneet, schroef, magneet+schroef, verzwaard, plat)
-    - Configureerbare vakken tot 8 × 8
+    - Configureerbare vakken tot 12 × 12
     - Wanduitsparingen per zijde (U-vorm, schep, trechter)
     - Etiketten met beugel- of vaste ondersteuning
     - Honingraat-wandpatroon
@@ -79,9 +79,9 @@ faqs:
   - q: Passen bins van de generator op mijn bestaande Gridfinity-bodemplaten?
     a: Ja. De generator volgt het standaard 42-mm-raster en het standaard-socketprofiel, dus bins passen op elke officiële of community-gemaakte Gridfinity-bodemplaat. Andersom geldt hetzelfde — bodemplaten van de generator passen elke standaard Gridfinity-bin.
   - q: Kan de Gridfinity-generator bodemplaten met magneetgaten maken?
-    a: Ja. De bodemplaat-generator plaatst standaard 6 mm × 2 mm magneetgaten op elk rasterkruispunt. Je kunt ze uitschakelen als je geen magneten wilt, of ze aan laten staan en de magneten gewoon weglaten bij het printen.
+    a: Ja. De bodemplaat-generator kan 6 mm × 2 mm magneetgaten op elk rasterkruispunt toevoegen. Ze staan standaard uit — schakel ze in als je magneten wilt, of laat ze aan staan en laat de magneten gewoon weg bij het printen.
   - q: Zijn er groottelimieten in de Gridfinity-generator?
-    a: Bins kunnen tot 8 × 8 rastereenheden (336 mm × 336 mm) en 20 hoogte-eenheden (140 mm) hoog zijn. Bodemplaten kunnen groter zijn en worden automatisch opgedeeld in stukken die op je printbed passen wanneer nodig.
+    a: Bins kunnen tot 16 × 16 rastereenheden (672 mm × 672 mm) en 20 hoogte-eenheden (140 mm) hoog zijn. Bodemplaten kunnen groter zijn en worden automatisch opgedeeld in stukken die op je printbed passen wanneer nodig.
   - q: Ondersteunt de Gridfinity-generator half-bin-formaten?
     a: Ja. Activeer half-bin-modus voor 0,5 eenheid precisie — daarmee maak je bins als 1,5 × 2,5 voor lastige lade-gaten. Half-bin-ondersteuning loopt door tot in de layout-planner zodat half-formaat bins netjes naast hele liggen.
   - q: Kan ik de bin-bodem en -wanden aanpassen?
@@ -140,7 +140,7 @@ Je kunt ook de [layout-planner](/) gebruiken om bins op een bodemplaat te leggen
 
 ### Afmetingen
 
-Breedte, diepte en hoogte. Breedte en diepte van 0,5 tot 8 rastereenheden (21 mm tot 336 mm). Hoogte van 2 tot 20 hoogte-eenheden (14 mm tot 140 mm). Een hoogte-eenheid is 7 mm — de standaard Gridfinity-eenheid uit Zack Freedmans originele spec.
+Breedte, diepte en hoogte. Breedte en diepte van 0,5 tot 16 rastereenheden (21 mm tot 672 mm). Hoogte van 2 tot 20 hoogte-eenheden (14 mm tot 140 mm). Een hoogte-eenheid is 7 mm — de standaard Gridfinity-eenheid uit Zack Freedmans originele spec.
 
 ### Basisstijlen
 
@@ -155,7 +155,7 @@ Zes opties voor hoe de bin op een bodemplaat zit:
 
 ### Vakken
 
-Verdeel het interieur in een raster van maximaal 8 × 8 vakken. De generator bouwt de scheiders automatisch en past de wanddikte aan op de gekozen maat. Scheiders kunnen ook als verwijderbare losse stukken worden geëxporteerd — handig om te herconfigureren zonder herprinten.
+Verdeel het interieur in een raster van maximaal 12 × 12 vakken. De generator bouwt de scheiders automatisch en past de wanddikte aan op de gekozen maat. Scheiders kunnen ook als verwijderbare losse stukken worden geëxporteerd — handig om te herconfigureren zonder herprinten.
 
 ### Wandfuncties
 
@@ -189,7 +189,7 @@ Breedte en diepte in rastereenheden. De generator schaalt naadloos van 1 × 1 to
 
 ### Magneetgaten
 
-Standaard Gridfinity gebruikt ronde 6 mm × 2 mm magneten op elk rasterkruispunt. De bodemplaat-generator plaatst ze standaard; je kunt ze volledig uitschakelen als je geen magneten wilt. Magneten houden bins op hun plek wanneer de lade open- of dichtgaat — belangrijk als je de lade draagt of een gereedschapswagen schuift.
+Standaard Gridfinity gebruikt ronde 6 mm × 2 mm magneten op elk rasterkruispunt. De bodemplaat-generator laat ze standaard uit staan; schakel ze in als je magneten wilt. Magneten houden bins op hun plek wanneer de lade open- of dichtgaat — belangrijk als je de lade draagt of een gereedschapswagen schuift.
 
 ### Randpadding
 

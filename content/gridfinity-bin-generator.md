@@ -61,7 +61,7 @@ faqs:
   - q: Can I save and come back later?
     a: Yes. Designs save to your browser automatically. Name a design and it persists between sessions.
   - q: How big can bins be?
-    a: Up to 8×8 grid units (336mm × 336mm). For larger spaces, use the layout planner to arrange multiple bins together.
+    a: Up to 16×16 grid units (672mm × 672mm). For larger spaces, use the layout planner to arrange multiple bins together.
   - q: Where do I get baseplates?
     a: Use the baseplate generator to create a baseplate sized to your drawer, with optional magnet holes and edge padding. Export as STL, STEP, or 3MF.
 navCta:
@@ -88,7 +88,7 @@ A parametric bin generator that runs in your browser. Set your dimensions, add c
 
 ## Features
 
-**Compartments.** Split a bin into a grid of sections, up to 8×8. Divider walls generate automatically. You can export removable dividers as separate files if you want to reconfigure without reprinting.
+**Compartments.** Split a bin into a grid of sections, up to 12×12. Divider walls generate automatically. You can export removable dividers as separate files if you want to reconfigure without reprinting.
 
 **Scoop ramps and wall cutouts.** Scoop ramps make it easier to reach small parts at the bottom. Wall cutouts — U-shaped notches on any side — let you slide things out sideways.
 

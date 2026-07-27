@@ -52,7 +52,7 @@ softwareApplication:
     - Parametrisk bottenplatta-generator med magnethålsrutnät
     - Export till STL, STEP och 3MF
     - Sex basstilar (standard, magnet, skruv, magnet+skruv, viktad, platt)
-    - Konfigurerbara fack upp till 8 × 8
+    - Konfigurerbara fack upp till 12 × 12
     - Urtag per sida (U-form, skopa, tratt)
     - Etiketter med konsol- eller solid stöd
     - Bikupemönster på väggar
@@ -79,9 +79,9 @@ faqs:
   - q: Passar bins från generatorn mina befintliga Gridfinity-bottenplattor?
     a: Ja. Generatorn följer Gridfinitys standardrutnät på 42 mm och standard-socketprofilen, så bins passar alla officiella eller community-byggda Gridfinity-bottenplattor. Samma gäller omvänt — bottenplattor från generatorn tar emot alla standard-Gridfinity-bins.
   - q: Kan Gridfinity-generatorn skapa bottenplattor med magnethål?
-    a: Ja. Bottenplatta-generatorn placerar 6 mm × 2 mm magnethål vid varje rutnätskorsning som standard. Du kan stänga av dem om du inte vill ha magneter, eller behålla dem och hoppa över magneterna vid utskrift.
+    a: Ja. Bottenplatta-generatorn kan lägga till 6 mm × 2 mm magnethål vid varje rutnätskorsning. De är avstängda som standard — slå på dem om du vill ha magneter, eller behåll dem och hoppa över magneterna vid utskrift.
   - q: Finns storleksgränser i Gridfinity-generatorn?
-    a: Bins kan vara upp till 8 × 8 rutnätsenheter (336 mm × 336 mm) och 20 höjdenheter (140 mm) höga. Bottenplattor kan vara större och delas automatiskt i bitar som passar din skrivarbädd när det behövs.
+    a: Bins kan vara upp till 16 × 16 rutnätsenheter (672 mm × 672 mm) och 20 höjdenheter (140 mm) höga. Bottenplattor kan vara större och delas automatiskt i bitar som passar din skrivarbädd när det behövs.
   - q: Stöder Gridfinity-generatorn halv-bin-storlekar?
     a: Ja. Aktivera halv-bin-läge för 0,5-enhetsprecision — det låter dig göra bins som 1,5 × 2,5 för knepiga lådluckor. Halv-bin-stödet sträcker sig genom layout-planeraren så att halv-stora bins placeras snyggt bredvid hela.
   - q: Kan jag anpassa bin-botten och väggarna?
@@ -140,7 +140,7 @@ Du kan också använda [layout-planeraren](/) för att lägga ut bins på en bot
 
 ### Mått
 
-Bredd, djup och höjd. Bredd och djup går från 0,5 till 8 rutnätsenheter (21 mm till 336 mm). Höjd från 2 till 20 höjdenheter (14 mm till 140 mm). En höjdenhet motsvarar 7 mm — Gridfinitys standardenhet från Zack Freedmans ursprungliga spec.
+Bredd, djup och höjd. Bredd och djup går från 0,5 till 16 rutnätsenheter (21 mm till 672 mm). Höjd från 2 till 20 höjdenheter (14 mm till 140 mm). En höjdenhet motsvarar 7 mm — Gridfinitys standardenhet från Zack Freedmans ursprungliga spec.
 
 ### Basstilar
 
@@ -155,7 +155,7 @@ Sex alternativ för hur bin sitter på en bottenplatta:
 
 ### Fack
 
-Dela interiören i ett rutnät på upp till 8 × 8 fack. Generatorn bygger avdelarna automatiskt och justerar väggtjockleken efter vald storlek. Avdelarna kan också exporteras som separata löstagbara delar — praktiskt om du vill omkonfigurera en bin utan att skriva ut den på nytt.
+Dela interiören i ett rutnät på upp till 12 × 12 fack. Generatorn bygger avdelarna automatiskt och justerar väggtjockleken efter vald storlek. Avdelarna kan också exporteras som separata löstagbara delar — praktiskt om du vill omkonfigurera en bin utan att skriva ut den på nytt.
 
 ### Väggfunktioner
 
@@ -189,7 +189,7 @@ Bredd och djup i rutnätsenheter. Generatorn skalar sömlöst från 1 × 1 upp t
 
 ### Magnethål
 
-Standard Gridfinity använder runda 6 mm × 2 mm magneter vid varje rutnätskorsning. Bottenplatta-generatorn placerar dem som standard; du kan stänga av dem helt om du inte vill ha magneter. Magneter håller bins från att glida när lådan öppnas eller stängs, vilket spelar roll om du bär lådan eller kör en verktygsvagn.
+Standard Gridfinity använder runda 6 mm × 2 mm magneter vid varje rutnätskorsning. Bottenplatta-generatorn lämnar dem avstängda som standard; slå på dem om du vill ha magneter. Magneter håller bins från att glida när lådan öppnas eller stängs, vilket spelar roll om du bär lådan eller kör en verktygsvagn.
 
 ### Kantmarginal
 

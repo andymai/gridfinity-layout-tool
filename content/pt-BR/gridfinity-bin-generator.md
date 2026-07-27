@@ -61,7 +61,7 @@ faqs:
   - q: Posso salvar e voltar depois?
     a: Sim. Os designs são salvos automaticamente no seu navegador. Dê um nome ao design e ele persiste entre sessões.
   - q: Qual é o tamanho máximo de um bin?
-    a: Até 8×8 unidades de grade (336 mm × 336 mm). Para espaços maiores, use o planejador de layout para organizar vários bins juntos.
+    a: Até 16×16 unidades de grade (672 mm × 672 mm). Para espaços maiores, use o planejador de layout para organizar vários bins juntos.
   - q: Onde consigo as placas-base?
     a: Use o gerador de placas-base para criar uma placa ajustada à sua gaveta, com furos de ímã e folga opcional. Exporte como STL, STEP ou 3MF.
 navCta:
@@ -86,7 +86,7 @@ Um gerador paramétrico de bins que roda no seu navegador. Defina as dimensões,
 
 ## Recursos
 
-**Compartimentos.** Divida um bin em uma grade de seções, até 8×8. As divisórias se geram automaticamente. Você pode exportar divisórias removíveis como arquivos separados para reconfigurar sem reimprimir.
+**Compartimentos.** Divida um bin em uma grade de seções, até 12×12. As divisórias se geram automaticamente. Você pode exportar divisórias removíveis como arquivos separados para reconfigurar sem reimprimir.
 
 **Rampas e recortes na parede.** Rampas facilitam alcançar peças pequenas no fundo. Recortes na parede — entalhes em U em qualquer lado — permitem retirar coisas pelo lado.
 

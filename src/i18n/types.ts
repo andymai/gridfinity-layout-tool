@@ -8,7 +8,21 @@
 
 /** Supported locale codes */
 export type Locale =
-  'en' | 'de' | 'nl' | 'es' | 'pt-BR' | 'fr' | 'it' | 'nb' | 'uk' | 'sv' | 'ja' | 'pl' | 'zh-CN';
+  | 'en'
+  | 'de'
+  | 'nl'
+  | 'es'
+  | 'pt-BR'
+  | 'fr'
+  | 'it'
+  | 'nb'
+  | 'uk'
+  | 'sv'
+  | 'ja'
+  | 'pl'
+  | 'zh-CN'
+  | 'cs'
+  | 'ko';
 
 /** Locale metadata for UI display */
 export interface LocaleInfo {
@@ -35,6 +49,8 @@ export const SUPPORTED_LOCALES: readonly LocaleInfo[] = [
   { code: 'ja', nativeName: '日本語', englishName: 'Japanese' },
   { code: 'pl', nativeName: 'Polski', englishName: 'Polish' },
   { code: 'zh-CN', nativeName: '简体中文', englishName: 'Chinese (Simplified)' },
+  { code: 'cs', nativeName: 'Čeština', englishName: 'Czech' },
+  { code: 'ko', nativeName: '한국어', englishName: 'Korean' },
 ] as const;
 
 /** Flat key-value map of translations */

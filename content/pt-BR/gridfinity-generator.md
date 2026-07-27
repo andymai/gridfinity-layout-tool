@@ -52,7 +52,7 @@ softwareApplication:
     - Gerador paramétrico de placas-base com grade de furos de ímã
     - Exportação para STL, STEP e 3MF
     - Seis estilos de base (padrão, ímã, parafuso, ímã+parafuso, lastreada, plana)
-    - Compartimentos configuráveis até 8 × 8
+    - Compartimentos configuráveis até 12 × 12
     - Recortes na parede por lado (em U, rampa, funil)
     - Etiquetas com suporte em escora ou maciço
     - Padrões de parede em colmeia
@@ -79,9 +79,9 @@ faqs:
   - q: Os bins do gerador encaixam nas minhas placas-base Gridfinity existentes?
     a: Sim. O gerador segue a grade padrão de 42 mm e o perfil de socket padrão, então os bins encaixam em qualquer placa-base Gridfinity oficial ou da comunidade. O inverso vale também — placas-base do gerador recebem qualquer bin Gridfinity padrão.
   - q: O Gerador Gridfinity pode criar placas-base com furos de ímã?
-    a: Sim. O gerador de placas-base coloca por padrão furos de 6 mm × 2 mm em cada interseção da grade. Você pode desativá-los se não quiser ímãs, ou deixar e simplesmente não usar ímãs ao imprimir.
+    a: Sim. O gerador de placas-base pode adicionar furos de 6 mm × 2 mm em cada interseção da grade. Eles ficam desativados por padrão — ative-os se quiser ímãs, ou deixe e simplesmente não use ímãs ao imprimir.
   - q: Existem limites de tamanho no Gerador Gridfinity?
-    a: Bins podem ter até 8 × 8 unidades de grade (336 mm × 336 mm) e 20 unidades de altura (140 mm). Placas-base podem ser maiores e são divididas automaticamente em peças que cabem na sua mesa quando necessário.
+    a: Bins podem ter até 16 × 16 unidades de grade (672 mm × 672 mm) e 20 unidades de altura (140 mm). Placas-base podem ser maiores e são divididas automaticamente em peças que cabem na sua mesa quando necessário.
   - q: O Gerador Gridfinity suporta tamanhos meio-bin?
     a: Sim. Ative o modo meio-bin para precisão de 0,5 unidade — você cria bins como 1,5 × 2,5 para encaixar em espaços atípicos. O suporte a meio-bin chega até o planejador de layout para que bins meio se alinhem aos inteiros.
   - q: Posso personalizar o piso e as paredes do bin?
@@ -140,7 +140,7 @@ Você também pode usar o [planejador de layout](/) para arrumar bins em uma pla
 
 ### Dimensões
 
-Largura, profundidade e altura. Largura e profundidade de 0,5 a 8 unidades de grade (21 mm a 336 mm). Altura de 2 a 20 unidades de altura (14 mm a 140 mm). Uma unidade de altura equivale a 7 mm — a unidade Gridfinity padrão da especificação original de Zack Freedman.
+Largura, profundidade e altura. Largura e profundidade de 0,5 a 16 unidades de grade (21 mm a 672 mm). Altura de 2 a 20 unidades de altura (14 mm a 140 mm). Uma unidade de altura equivale a 7 mm — a unidade Gridfinity padrão da especificação original de Zack Freedman.
 
 ### Estilos de base
 
@@ -155,7 +155,7 @@ Seis opções para como o bin se assenta sobre uma placa-base:
 
 ### Compartimentos
 
-Divida o interior em uma grade de até 8 × 8 compartimentos. O gerador cria as divisórias automaticamente e ajusta a espessura da parede ao tamanho escolhido. As divisórias também podem ser exportadas como peças removíveis — útil para reconfigurar sem reimprimir.
+Divida o interior em uma grade de até 12 × 12 compartimentos. O gerador cria as divisórias automaticamente e ajusta a espessura da parede ao tamanho escolhido. As divisórias também podem ser exportadas como peças removíveis — útil para reconfigurar sem reimprimir.
 
 ### Recursos de parede
 
@@ -189,7 +189,7 @@ Largura e profundidade em unidades de grade. O gerador escala sem problemas de 1
 
 ### Furos de ímã
 
-Gridfinity padrão usa ímãs redondos de 6 mm × 2 mm em cada interseção da grade. O gerador de placas-base os coloca por padrão; você pode desativar todos se não quiser ímãs. Os ímãs evitam que os bins deslizem quando a gaveta abre ou fecha, o que importa se você carrega a gaveta ou usa um carrinho de ferramentas.
+Gridfinity padrão usa ímãs redondos de 6 mm × 2 mm em cada interseção da grade. O gerador de placas-base os deixa desativados por padrão; ative-os se quiser ímãs. Os ímãs evitam que os bins deslizem quando a gaveta abre ou fecha, o que importa se você carrega a gaveta ou usa um carrinho de ferramentas.
 
 ### Folga nas bordas
 

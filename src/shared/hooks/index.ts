@@ -24,6 +24,7 @@ export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useSelectionActions } from './useSelectionActions';
 export { useAlignBins } from './useAlignBins';
+export { useExpandToFit } from './useExpandToFit';
 
 // Ref hooks
 export { useLatestRef } from './useLatestRef';

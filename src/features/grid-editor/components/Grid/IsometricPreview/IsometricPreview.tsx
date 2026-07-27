@@ -11,7 +11,7 @@ import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { Scene, type SceneHandle } from './Scene';
 import { BatchedCornerMarkers } from './BatchedCornerMarkers';
-import { BinMarginExtensions } from './BinMarginExtensions';
+import { BinOverhangExtensions } from './BinOverhangExtensions';
 import { MergedBinMeshes } from './MergedBinMeshes';
 import { ExplodedLayerGroup } from './ExplodedLayerGroup';
 import { useExplodedLayerView } from '@/shared/hooks/useExplodedLayerView';
@@ -435,7 +435,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               />
               {/* Drawer-margin extensions (Labs) — solid strips filling the margin
                   around extended edge bins. */}
-              <BinMarginExtensions
+              <BinOverhangExtensions
                 bins={binsToRender}
                 drawerWidth={drawer.width}
                 drawerDepth={drawer.depth}
