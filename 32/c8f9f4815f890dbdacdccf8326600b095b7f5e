@@ -1,0 +1,19 @@
+src/shared/types/bin.ts
+  s_b71dadf490462d::t_31d331b753973f 207
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "32c8f9f4815f890dbdacdccf8326600b095b7f5e",
+  "prompts": {},
+  "sessions": {
+    "s_b71dadf490462d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d63aa6a-1dd4-4ad7-9510-5f605c1e034c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
