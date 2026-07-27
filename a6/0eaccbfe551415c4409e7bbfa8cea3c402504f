@@ -1,0 +1,23 @@
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_c029b4d0133f83::t_9a295c2d1cc319 288-342
+src/features/generation/bridge/bridgeGeneration.ts
+  s_c029b4d0133f83::t_14ad8f2b067dd9 95-101
+src/features/bin-designer/hooks/useGeneration.ts
+  s_c029b4d0133f83::t_14ad8f2b067dd9 272
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a60eaccbfe551415c4409e7bbfa8cea3c402504f",
+  "prompts": {},
+  "sessions": {
+    "s_c029b4d0133f83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339b4f4e-5f38-4b7f-8548-b6c73487c07b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
