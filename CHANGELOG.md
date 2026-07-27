@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.319.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.318.0...gridfinity-layout-tool-v4.319.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** replace the plate icon dropdown with a visual grid picker ([#2888](https://github.com/andymai/gridfinity-layout-tool/issues/2888)) ([e1cc849](https://github.com/andymai/gridfinity-layout-tool/commit/e1cc8494e68de736ab35162c9e27eb13e48a0106))
+
 ## [4.318.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.317.0...gridfinity-layout-tool-v4.318.0) (2026-07-27)
 
 
