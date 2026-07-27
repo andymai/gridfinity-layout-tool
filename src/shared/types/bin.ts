@@ -176,6 +176,31 @@ export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined)
   return style === undefined || style === 'dovetail' || style === 'puzzle';
 }
 
+/**
+ * Whether the margin-seam connector (#2414) can be built for a given style at
+ * all: the integral tongue/groove families, plus `dovetailKey` (#2866), which
+ * makes both sides of the body↔rail seam female and seats the same separate key
+ * the split seams use. `snapClip` stays friction-fit — its top-insert clip has no
+ * seated form at a body↔rail seam.
+ */
+export function isMarginSeamStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return isSeamConnectorStyle(style) || style === 'dovetailKey';
+}
+
+/**
+ * Whether the detached-margin seam is keyed rather than tongued: both the body
+ * wall and the rail get a female groove and a separate key spans them (#2866).
+ * Shared so the body geometry, the rail geometry, and the key
+ * count/placement can't disagree about where those grooves go.
+ */
+export function hasMarginSeamKeys(params: ResolvedBaseplateParams): boolean {
+  return (
+    params.detachMargins === true &&
+    params.detachMarginConnector === true &&
+    params.connectorStyle === 'dovetailKey'
+  );
+}
+
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
   readonly left: BaseplateEdgeKind;

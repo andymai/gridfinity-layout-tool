@@ -86,14 +86,27 @@ export function generatePrintGuide(input: PrintGuideInput): string {
 export function generateStackPrintNote(
   stack: StackPrintParams,
   margins?: PrintGuideInput['margins'],
-  copies = 1
+  copies = 1,
+  keyNote?: ConnectorKeyNote
 ): string {
   const sections = [
     generateStackingSection(stack),
+    ...(keyNote ? [generateConnectorKeySection(keyNote.key, keyNote.params)] : []),
     ...(margins && margins.length > 0 ? [generateMarginSection(margins, copies)] : []),
     generateFooter(),
   ];
   return sections.join('\n\n');
+}
+
+/**
+ * A seated connector part shipped with a single-body (unsplit) export, which has
+ * no piece table to hang the key section off. Reached when a detached margin's
+ * body↔rail seam is keyed (#2866) — the seam grooves need their key even though
+ * the plate itself was never split.
+ */
+export interface ConnectorKeyNote {
+  readonly key: { readonly fileName: string; readonly count: number };
+  readonly params: ResolvedBaseplateParams;
 }
 
 /**
@@ -117,8 +130,15 @@ function generateAssemblyIntro(): string {
  * Standalone margin guide for single-body detached exports that have no split
  * piece table — the unsplit ZIP still ships a guide listing its rail files.
  */
-export function generateMarginGuide(margins: NonNullable<PrintGuideInput['margins']>): string {
-  return `${generateMarginSection(margins)}\n\n${generateFooter()}`;
+export function generateMarginGuide(
+  margins: NonNullable<PrintGuideInput['margins']>,
+  keyNote?: ConnectorKeyNote
+): string {
+  return [
+    ...(keyNote ? [generateConnectorKeySection(keyNote.key, keyNote.params)] : []),
+    generateMarginSection(margins),
+    generateFooter(),
+  ].join('\n\n');
 }
 
 function generateMarginSection(

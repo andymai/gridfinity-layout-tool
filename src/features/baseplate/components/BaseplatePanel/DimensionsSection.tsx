@@ -21,7 +21,7 @@ import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX } from '../PaddingStepper';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
-import { isSeamConnectorStyle } from '@/shared/types/bin';
+import { isMarginSeamStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { padOutline } from '@/shared/utils/padOutline';
 import {
@@ -130,10 +130,11 @@ export function DimensionsSection() {
     baseplateParams.paddingBack >= MARGIN_MIN_DETACH_MM;
   const detachStored = baseplateParams.detachMargins === true;
   const marginConnectorStored = baseplateParams.detachMarginConnector === true;
-  // The seam connector reuses the body's tongue/groove; snapClip/dovetailKey
-  // seams would need a separate clip part, so they stay friction-fit (#2414).
-  // `undefined` is the stored default for dovetail, so it counts.
-  const marginConnectorStyleOk = isSeamConnectorStyle(baseplateParams.connectorStyle);
+  // The seam connector reuses the body's tongue/groove, or — under the puzzle key
+  // — a groove on both sides that the same seated key spans (#2866). Snap clip
+  // stays friction-fit: its top-insert clip has no seated form at a body↔rail
+  // seam. `undefined` is the stored default for dovetail, so it counts.
+  const marginConnectorStyleOk = isMarginSeamStyle(baseplateParams.connectorStyle);
 
   const hasFractionalWidth = effectiveWidth % 1 !== 0;
   const hasFractionalDepth = effectiveDepth % 1 !== 0;

@@ -2630,8 +2630,9 @@ const en: Record<string, string> = {
   'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
   'baseplate.detachMarginConnector': 'Add connector',
   'baseplate.detachMarginConnectorHint':
-    'Adds a tongue-and-groove joint so the long rails clip onto the plate. Short rails and corners stay friction-fit.',
-  'baseplate.detachMarginConnectorStyle': 'Connector needs the Dovetail or Puzzle seam style.',
+    'Joins the long rails to the plate with the same connector the seams use, instead of relying on friction. Short rails and corners stay friction-fit.',
+  'baseplate.detachMarginConnectorStyle':
+    'Connector needs the Dovetail, Puzzle, or Puzzle key seam style.',
   'baseplate.sectionBase': 'Base',
   'baseplate.sectionView': 'View',
   'baseplate.splitInfo': '{count} pieces',

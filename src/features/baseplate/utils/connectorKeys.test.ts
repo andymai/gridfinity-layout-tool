@@ -141,3 +141,94 @@ describe('computeSeamJunctions', () => {
     }
   });
 });
+
+describe('keyed margin seams (issue #2866)', () => {
+  /** Left/right padding only ⇒ they run long and carry the seam connector. */
+  const detached = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams =>
+    makeParams({
+      width: 18,
+      depth: 12,
+      paddingLeft: 12,
+      paddingRight: 12,
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+      ...overrides,
+    });
+
+  /** Junctions that sit on an outer grid edge — i.e. on a body↔rail seam. */
+  function marginJunctions(
+    params: ResolvedBaseplateParams
+  ): ReturnType<typeof computeSeamJunctions> {
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfW = (tiling.totalWidthUnits * params.gridUnitMm) / 2;
+    return computeSeamJunctions(tiling, params).filter(
+      (j) => Math.abs(Math.abs(j.xMm) - halfW) < 1e-6
+    );
+  }
+
+  it('seats a key on every interior boundary of each long rail', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const longRails = (tiling.margins ?? []).filter((m) => m.role === 'long' && m.seamConnector);
+    expect(longRails.length, 'left+right rails, one segment per row').toBeGreaterThan(0);
+
+    // One key per interior cell boundary of each rail's mating wall.
+    const expected = longRails.reduce((sum, m) => {
+      const units = m.seamConnector?.cellUnits ?? 0;
+      const cells = Math.floor(units) + (units % 1 >= 0.5 ? 1 : 0);
+      return sum + Math.max(0, cells - 1);
+    }, 0);
+    expect(marginJunctions(params).length).toBe(expected);
+  });
+
+  it('places them on the body grid edge, spanning across the seam', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const halfW = (tiling.totalWidthUnits * params.gridUnitMm) / 2;
+    const junctions = marginJunctions(params);
+    expect(junctions.length).toBeGreaterThan(0);
+    for (const j of junctions) {
+      // Detached sides print padding-free, so the body wall is the grid edge.
+      expect(Math.abs(j.xMm)).toBeCloseTo(halfW, 6);
+      // A left/right rail seam runs along Y, so the key spans X.
+      expect(j.axis).toBe('x');
+      // On an interior cell boundary of the mating wall, never a corner.
+      const fromFront = j.yMm + (tiling.totalDepthUnits * params.gridUnitMm) / 2;
+      expect(
+        Math.abs(fromFront - Math.round(fromFront / params.gridUnitMm) * params.gridUnitMm)
+      ).toBeLessThan(1e-6);
+      expect(fromFront).toBeGreaterThan(0);
+      expect(fromFront).toBeLessThan(tiling.totalDepthUnits * params.gridUnitMm);
+    }
+  });
+
+  it('needs the connector opted in and the key style selected', () => {
+    expect(marginJunctions(detached({ detachMarginConnector: false })).length).toBe(0);
+    expect(marginJunctions(detached({ detachMargins: false })).length).toBe(0);
+    // A tongued seam needs no separate part; a snap-clip seam stays friction-fit.
+    expect(marginJunctions(detached({ connectorStyle: 'puzzle' })).length).toBe(0);
+    expect(marginJunctions(detached({ connectorStyle: 'snapClip' })).length).toBe(0);
+  });
+
+  it('keys an unsplit plate whose margins detach', () => {
+    // No split seams at all, so every key comes from the body↔rail seams.
+    const params = detached({ width: 4, depth: 4 });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(false);
+    expect(countConnectorKeys(tiling, params)).toBe(marginJunctions(params).length);
+    expect(countConnectorKeys(tiling, params)).toBeGreaterThan(0);
+  });
+
+  it('counts margin keys on top of the split-seam keys', () => {
+    const params = detached();
+    const tiling = computeBaseplateTiling(params, 256);
+    const splitOnly = computeBaseplateTiling({ ...params, detachMarginConnector: false }, 256);
+    const splitKeys = countConnectorKeys(splitOnly, {
+      ...params,
+      detachMarginConnector: false,
+    });
+    expect(countConnectorKeys(tiling, params)).toBe(splitKeys + marginJunctions(params).length);
+  });
+});
