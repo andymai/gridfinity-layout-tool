@@ -130,6 +130,22 @@ export function BaseSection() {
                         label={t('baseplate.dovetails.invert')}
                       />
                     )}
+                  {/* Both-female styles only: an integral tongue on an exterior
+                      edge would protrude past the drawer-facing wall (#2866). */}
+                  {(style === 'dovetailKey' || style === 'snapClip') && (
+                    <div className="space-y-1">
+                      <Checkbox
+                        checked={baseplateParams.connectorSlotsAllEdges === true}
+                        onChange={(checked) =>
+                          updateParam('connectorSlotsAllEdges', checked || undefined)
+                        }
+                        label={t('baseplate.connectorSlotsAllEdges')}
+                      />
+                      <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                        {t('baseplate.connectorSlotsAllEdgesHint')}
+                      </p>
+                    </div>
+                  )}
                   <Checkbox
                     checked={baseplateParams.preferIdenticalPieces === true}
                     onChange={(checked) =>

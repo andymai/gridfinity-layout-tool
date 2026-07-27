@@ -37,7 +37,7 @@
 import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { isMarginSeamStyle } from '@/shared/types/bin';
+import { isMarginSeamStyle, hasAllEdgeSlots, edgeCarriesSlot } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -269,6 +269,8 @@ export function buildConnectors(
     isMale: boolean;
     maleOffsetSign: -1 | 1;
     wallPos: number;
+    /** Drawer-fit padding on this side (mm) — an all-edge slot needs 0 here. */
+    paddingMm: number;
     boundaries: readonly number[];
     centers: readonly number[];
     boundaryCells: readonly CellSpan[];
@@ -280,6 +282,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
+      paddingMm: params.paddingLeft,
       boundaries: yBoundaries,
       centers: yCenters,
       boundaryCells: yCellSpans,
@@ -291,6 +294,7 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
+      paddingMm: params.paddingRight,
       boundaries: yBoundaries,
       centers: yCenters,
       boundaryCells: yCellSpans,
@@ -302,6 +306,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
+      paddingMm: params.paddingFront,
       boundaries: xBoundaries,
       centers: xCenters,
       boundaryCells: xCellSpans,
@@ -313,6 +318,7 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
+      paddingMm: params.paddingBack,
       boundaries: xBoundaries,
       centers: xCenters,
       boundaryCells: xCellSpans,
@@ -373,10 +379,18 @@ export function buildConnectors(
       ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
       : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
+  // All-edge slots (#2866): the exterior edges of a padding-free piece get the
+  // same female slot the join seams do, so every piece is a standard 42mm tile
+  // that keys into any plate printed later. Restricted to the both-female styles
+  // (`hasAllEdgeSlots`), so the male branches below are unreachable for an
+  // exterior edge — a tongue there would protrude past the drawer-facing wall.
+  const allEdgeSlots = hasAllEdgeSlots(params);
+
   // Split-piece connectors only when the user enabled them.
   if (connectorNubs) {
     for (const def of edgeDefs) {
-      if (edges[def.side] !== 'join' || def.boundaries.length === 0) continue;
+      if (!edgeCarriesSlot(edges[def.side], allEdgeSlots, def.paddingMm)) continue;
+      if (def.boundaries.length === 0) continue;
       const pt = ptFor(def);
 
       for (const bp of def.boundaries) {

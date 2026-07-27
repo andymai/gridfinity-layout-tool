@@ -12,6 +12,7 @@ import type {
 } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import {
   clampCornerCuts,
   cornerCutVertices,
@@ -207,6 +208,17 @@ export function buildFullParams(
   // plate never had — so the strip turns the seam off too.
   const detachMarginConnector =
     detachMargins && stored.detachMarginConnector === true && !stripConnectors;
+  // All-edge slots (#2866) only exist for the both-female styles with split
+  // connectors on. Normalize an orphaned flag away (rather than letting it ride
+  // along) so it can't fragment the mesh cache or the piece fingerprints; the
+  // stored value returns as soon as a key/clip style is selected again.
+  const connectorSlotsAllEdges =
+    !stripConnectors &&
+    stored.connectorSlotsAllEdges === true &&
+    stored.connectorNubs === true &&
+    isSeatedConnectorStyle(stored.connectorStyle)
+      ? true
+      : undefined;
 
   return {
     width,
@@ -239,6 +251,7 @@ export function buildFullParams(
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,
     connectorStyle: stripConnectors ? undefined : stored.connectorStyle,
+    connectorSlotsAllEdges,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
     // Stack printing nests flipped plates into each other, which needs the

@@ -53,6 +53,24 @@ describe('meshCacheKey — connector fit offset (issue #2024)', () => {
   });
 });
 
+describe('meshCacheKey — all-edge slots (issue #2866)', () => {
+  const key = (overrides: Partial<ResolvedBaseplateParams>): string =>
+    meshCacheKey(base({ connectorStyle: 'dovetailKey', ...overrides }), false);
+
+  it('separates a slotted tile from the same tile without exterior slots', () => {
+    const edges = { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const;
+    expect(key({ edges })).not.toBe(key({ edges, connectorSlotsAllEdges: true }));
+  });
+
+  it('keeps the existing key when the option cannot engage', () => {
+    // An integral style ignores the flag, so a plate carrying a stale one must
+    // not be pushed onto a fresh cache entry.
+    expect(key({ connectorStyle: 'puzzle' })).toBe(
+      key({ connectorStyle: 'puzzle', connectorSlotsAllEdges: true })
+    );
+  });
+});
+
 describe('meshCacheKey — draft preview', () => {
   // The draft preview skips the lightweight floor cut, so its mesh differs from
   // the full build; the two must not alias onto one cache entry.

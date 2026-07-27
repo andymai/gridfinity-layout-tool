@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "Odsazení je pro tento tvar příliš velké, proto je ignorováno. Zmenši ho tak, aby se vešlo kolem obrysu.",
   "baseplate.decreasePadding": "Zmenšit {label}",
   "baseplate.dovetails.invert": "Obrátit spojky",
+  "baseplate.connectorSlotsAllEdges": "Drážky na všech hranách",
+  "baseplate.connectorSlotsAllEdgesHint": "Vyřízne drážky i do vnějších hran, takže každý díl je standardní dlaždice, která se spojí s deskami vytištěnými později. Hrany s okrajem pro dosednutí do zásuvky se vynechají.",
   "baseplate.editDimensions": "Upravit rozměry základní desky",
   "baseplate.editDimensionsDepth": "Hloubka základní desky v mm",
   "baseplate.editDimensionsWidth": "Šířka základní desky v mm",

@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "여백이 이 모양에 비해 너무 커서 무시됩니다. 윤곽선에 맞도록 줄이세요.",
   "baseplate.decreasePadding": "{label} 줄이기",
   "baseplate.dovetails.invert": "커넥터 반전",
+  "baseplate.connectorSlotsAllEdges": "모든 가장자리에 슬롯",
+  "baseplate.connectorSlotsAllEdgesHint": "바깥 가장자리에도 슬롯을 파서 모든 조각이 표준 타일이 되고, 나중에 출력한 플레이트와 맞물립니다. 서랍 맞춤 여백이 있는 가장자리는 제외됩니다.",
   "baseplate.editDimensions": "베이스플레이트 치수 편집",
   "baseplate.editDimensionsDepth": "베이스플레이트 깊이(mm)",
   "baseplate.editDimensionsWidth": "베이스플레이트 너비(mm)",

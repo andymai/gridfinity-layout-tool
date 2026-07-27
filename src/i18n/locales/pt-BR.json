@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "O preenchimento é grande demais para este formato e é ignorado. Reduza-o para caber ao redor do contorno.",
   "baseplate.decreasePadding": "Diminuir {label}",
   "baseplate.dovetails.invert": "Inverter conectores",
+  "baseplate.connectorSlotsAllEdges": "Encaixes em todas as bordas",
+  "baseplate.connectorSlotsAllEdgesHint": "Corta os encaixes também nas bordas externas, então cada peça é um módulo padrão que se conecta às placas impressas depois. Bordas com margem de ajuste da gaveta são ignoradas.",
   "baseplate.editDimensions": "Editar dimensões da base",
   "baseplate.editDimensionsDepth": "Profundidade da base em mm",
   "baseplate.editDimensionsWidth": "Largura da base em mm",

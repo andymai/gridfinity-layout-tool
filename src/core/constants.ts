@@ -339,6 +339,9 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
     obj.connectorStyle === 'snapClip'
       ? { connectorStyle: obj.connectorStyle }
       : {}),
+    ...(typeof obj.connectorSlotsAllEdges === 'boolean'
+      ? { connectorSlotsAllEdges: obj.connectorSlotsAllEdges }
+      : {}),
     ...(typeof obj.connectorFitOffset === 'number'
       ? {
           connectorFitOffset: clampNumber(

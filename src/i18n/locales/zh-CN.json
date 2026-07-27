@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "留边对此形状来说太大，因此被忽略。请减小它以贴合轮廓。",
   "baseplate.decreasePadding": "减少 {label}",
   "baseplate.dovetails.invert": "反转连接件",
+  "baseplate.connectorSlotsAllEdges": "所有边缘都开槽",
+  "baseplate.connectorSlotsAllEdgesHint": "在外边缘也切出插槽，这样每一块都是标准拼块，可与以后打印的底板相连。带抽屉留边的边缘会跳过。",
   "baseplate.editDimensions": "编辑底板尺寸",
   "baseplate.editDimensionsDepth": "底板深度（mm）",
   "baseplate.editDimensionsWidth": "底板宽度（mm）",

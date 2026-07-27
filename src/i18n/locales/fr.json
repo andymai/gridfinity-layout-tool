@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "La marge est trop grande pour cette forme, elle est donc ignorée. Réduisez-la pour qu'elle tienne autour du contour.",
   "baseplate.decreasePadding": "Diminuer {label}",
   "baseplate.dovetails.invert": "Inverser les connecteurs",
+  "baseplate.connectorSlotsAllEdges": "Fentes sur tous les bords",
+  "baseplate.connectorSlotsAllEdgesHint": "Découpe aussi les fentes dans les bords extérieurs : chaque pièce devient une tuile standard qui s'assemble avec les plaques imprimées plus tard. Les bords portant une marge d'ajustement au tiroir sont ignorés.",
   "baseplate.editDimensions": "Modifier les dimensions de la plaque",
   "baseplate.editDimensionsDepth": "Profondeur de la plaque en mm",
   "baseplate.editDimensionsWidth": "Largeur de la plaque en mm",

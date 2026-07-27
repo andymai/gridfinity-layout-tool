@@ -12,6 +12,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { hasAllEdgeSlots } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { hashOutline } from '@/shared/utils/drawerOutline';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
@@ -115,6 +116,9 @@ export function meshCacheKey(
     params.invertDovetails ?? false,
     params.preferIdenticalPieces ?? false,
     params.connectorStyle ?? 'dovetail',
+    // Folded to false unless it actually engages, so plates that merely carry a
+    // stale flag keep their existing cache identity.
+    hasAllEdgeSlots(params),
     quantize(connectorClearance),
     featureNozzle,
     params.lightweight ?? true,

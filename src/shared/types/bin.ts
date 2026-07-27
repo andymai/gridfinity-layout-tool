@@ -204,6 +204,46 @@ export function hasMarginSeamKeys(params: ResolvedBaseplateParams): boolean {
   );
 }
 
+ * Whether a connector style makes BOTH sides of every seam female and ships a
+ * separate seated part (the hammered-in dovetail key, the snap clip). Only these
+ * styles can carry {@link ResolvedBaseplateParams.connectorSlotsAllEdges} — an
+ * integral tongue/groove style would grow a male tongue past the plate's outer
+ * wall and break the drawer fit.
+ */
+export function isSeatedConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return style === 'dovetailKey' || style === 'snapClip';
+}
+
+/**
+ * Whether {@link ResolvedBaseplateParams.connectorSlotsAllEdges} is actually in
+ * effect. Shared so the geometry (`buildConnectors`), the mesh cache key, and
+ * the dedup fingerprint can never disagree about which edges carry a slot.
+ */
+export function hasAllEdgeSlots(params: ResolvedBaseplateParams): boolean {
+  return (
+    params.connectorSlotsAllEdges === true &&
+    params.connectorNubs === true &&
+    isSeatedConnectorStyle(params.connectorStyle)
+  );
+}
+
+/**
+ * Whether an edge of a split piece carries a female seam slot, given the
+ * piece's padding on that side. `join` edges always do; `exterior` edges only
+ * under {@link hasAllEdgeSlots}, and only when that side is padding-free — a
+ * padded edge's wall sits `padding` mm outside the grid, so its slot would not
+ * line up with a neighbouring plate's. `marginSeam` is handled by the
+ * margin-seam connector, not here.
+ */
+export function edgeCarriesSlot(
+  kind: BaseplateEdgeKind,
+  allEdgeSlots: boolean,
+  paddingMm: number
+): boolean {
+  if (kind === 'join') return true;
+  return allEdgeSlots && kind === 'exterior' && paddingMm === 0;
+}
+
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
   readonly left: BaseplateEdgeKind;
@@ -351,6 +391,15 @@ export interface ResolvedBaseplateParams {
    * ("staple") whose barbs catch the ledges.
    */
   readonly connectorStyle?: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
+  /**
+   * Cut the seam slot on the plate's EXTERIOR edges too, not just on the join
+   * seams between split pieces (issue #2866). Every piece then reads as a
+   * standard 42mm-grid tile that can key into any other plate later, and
+   * same-size pieces dedupe instead of splitting into edge/corner/interior
+   * variants. See {@link hasAllEdgeSlots} / {@link edgeCarriesSlot} for when it
+   * engages (both-female styles only, padding-free edges only).
+   */
+  readonly connectorSlotsAllEdges?: boolean;
   /**
    * User fit offset (mm) added to the per-side groove clearance to compensate
    * for printer/filament variation (issue #2024). Positive = looser, negative =

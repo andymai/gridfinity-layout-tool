@@ -2749,6 +2749,9 @@ const en: Record<string, string> = {
   'baseplate.connectorFit.info':
     'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
   'baseplate.dovetails.invert': 'Invert connectors',
+  'baseplate.connectorSlotsAllEdges': 'Slots on all edges',
+  'baseplate.connectorSlotsAllEdgesHint':
+    'Also cuts the slots into the outer edges, so every piece is a standard tile that keys onto plates you print later. Edges with a drawer-fit margin are skipped.',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts',
   'baseplate.connectorSample.button': 'Print fit sample',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',

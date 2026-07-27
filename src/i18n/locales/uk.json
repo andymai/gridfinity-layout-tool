@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "Відступ завеликий для цієї форми, тому його проігноровано. Зменшіть його, щоб він умістився навколо контуру.",
   "baseplate.decreasePadding": "Зменшити {label}",
   "baseplate.dovetails.invert": "Інвертувати з’єднувачі",
+  "baseplate.connectorSlotsAllEdges": "Пази на всіх краях",
+  "baseplate.connectorSlotsAllEdgesHint": "Вирізає пази також у зовнішніх краях, тож кожна деталь стає стандартною плиткою, яка з’єднується з пластинами, надрукованими пізніше. Краї з полем підгонки до шухляди пропускаються.",
   "baseplate.editDimensions": "Редагувати розміри базової плити",
   "baseplate.editDimensionsDepth": "Глибина базової плити в мм",
   "baseplate.editDimensionsWidth": "Ширина базової плити в мм",
