@@ -603,6 +603,12 @@ export interface MeshResultResponse {
   readonly connectorKeyIndices?: Uint32Array;
   readonly connectorKeyTriangleCount?: number;
   /**
+   * Swappable label plates with their seated poses (preview only). A set
+   * rather than flat fields because the count varies with the design; the
+   * fixed companions above stay flat for back-compat.
+   */
+  readonly labelPlates?: LabelPlatesMeshData;
+  /**
    * Fine-grained timing breakdown. The worker always emits one — overhead
    * is a handful of `performance.now()` calls — but the field is `?` so
    * older worker builds (e.g., a stale Service Worker payload on the first
@@ -759,6 +765,41 @@ export interface MeshData {
    * Present only for split snap-clip baseplates.
    */
   readonly connectorKeyMesh?: ConnectorKeyMeshData;
+  /**
+   * Optional swappable label plates (#2666) with their seated poses, so the
+   * preview shows the real engraved parts. Preview only — export packs its own
+   * bed-sized sheet. Present only in socket mode with at least one plate.
+   */
+  readonly labelPlates?: LabelPlatesMeshData;
+}
+
+/** One swappable label plate, meshed in plate-local coords. */
+export interface LabelPlateMeshData {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
+  /**
+   * Seated pose in bin-interior coordinates: plate centre in X/Y, BOTTOM face
+   * in Z. The mesh itself is centred on the origin bottom-on-Z=0, so the
+   * preview applies this to draw it clicked in, and its own layout to draw the
+   * same mesh again in the reference row.
+   */
+  readonly seatX: number;
+  readonly seatY: number;
+  readonly seatZ: number;
+  /** Direction the plate withdraws from its socket (±Y). */
+  readonly slideY: 1 | -1;
+  /** Footprint width (mm), so the preview can lay the reference row out. */
+  readonly widthMm: number;
+}
+
+/** A bin's label plates plus however many exceeded the preview ceiling. */
+export interface LabelPlatesMeshData {
+  readonly plates: readonly LabelPlateMeshData[];
+  /** Plates beyond `MAX_PREVIEW_LABEL_PLATES`; 0 when the set is complete. */
+  readonly omittedCount: number;
 }
 
 /**
