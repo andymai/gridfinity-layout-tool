@@ -163,7 +163,7 @@ export type DesignerValidationResult =
  * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
  * numeric `magnetDepth` (0.5–10), numeric `screwDiameter` (1–10), and boolean `stackingLip`.
  *
- * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`).
+ * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`, and the optional `spacer`).
  * @returns A string describing the first validation error encountered, or `null` if `base` is valid.
  */
 function validateBase(base: unknown): string | null {
