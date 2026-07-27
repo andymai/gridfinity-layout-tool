@@ -257,11 +257,16 @@ function validateLid(lid: unknown): string | null {
     // Edge-magnet count (#2844). Feeds the worker's placement loop, so cap it
     // server-side — a crafted share can't smuggle in a huge count that spawns
     // thousands of boss/pocket booleans. Mirrors LID_MAGNET_EDGE_COUNT_*.
+    // Must be a whole number, not merely in range: the placement loop divides
+    // the span by `count + 1`, so a fractional 2.5 emits two magnets spaced for
+    // 3.5 and lands them off-centre. The client already rounds.
     if (
       m.edgeMagnets !== undefined &&
-      (!isNumber(m.edgeMagnets) || !inRange(m.edgeMagnets, 0, 3))
+      (!isNumber(m.edgeMagnets) ||
+        !Number.isInteger(m.edgeMagnets) ||
+        !inRange(m.edgeMagnets, 0, 3))
     ) {
-      return 'lid.retentionMagnet.edgeMagnets must be 0-3';
+      return 'lid.retentionMagnet.edgeMagnets must be an integer 0-3';
     }
   }
   if (lid.tray !== undefined) {

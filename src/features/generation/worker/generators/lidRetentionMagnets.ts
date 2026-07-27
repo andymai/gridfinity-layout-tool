@@ -77,7 +77,8 @@ export function addLidRetentionMagnets(
   const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
   const bossHeight = bossTopZ - interfaceZ;
 
-  // 1. Fuse the four bosses onto the floor (welds along the floor plate).
+  // 1. Fuse every boss onto the floor (welds along the floor plate). Four
+  // corners, plus any mid-edge magnets.
   let result = body;
   for (const { x: px, y: py } of positions) {
     const boss = scope.register(

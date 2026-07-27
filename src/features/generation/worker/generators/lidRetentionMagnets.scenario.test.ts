@@ -166,8 +166,8 @@ describe('magnetic-retention lid geometry', () => {
         { width: 6, depth: 4, height: 5 }
       )
     );
-    expect(result).not.toBeNull();
-    assertStructurallyValid(result!, '6x4 magnetic lid with edge magnets');
+    if (result === null) throw new Error('expected a lid mesh');
+    assertStructurallyValid(result, '6x4 magnetic lid with edge magnets');
   });
 
   it('edge magnets add valid bin pads with no new unsupported overhang (#2844)', async () => {
