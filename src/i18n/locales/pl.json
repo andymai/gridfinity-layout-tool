@@ -2366,6 +2366,8 @@
   "baseplate.connectorFit.label": "Tolerancja",
   "baseplate.connectorFit.info": "Dostosowuje szczelinę łącznika (mm), aby dostroić dopasowanie do Twojej drukarki i filamentu. Wyżej = luźniej, niżej = ciaśniej.",
   "baseplate.dovetails.invert": "Odwróć łączniki",
+  "baseplate.connectorSlotsAllEdges": "Gniazda na wszystkich krawędziach",
+  "baseplate.connectorSlotsAllEdgesHint": "Wycina gniazda również w krawędziach zewnętrznych, więc każda część jest standardowym kaflem, który połączysz z płytami wydrukowanymi później. Krawędzie z marginesem dopasowania do szuflady są pomijane.",
   "baseplate.preferIdenticalPieces": "Mniej unikalnych części",
   "baseplate.connectorSample.button": "Wydrukuj próbkę dopasowania",
   "baseplate.connectorSample.dialogTitle": "Próbka dopasowania łącznika",

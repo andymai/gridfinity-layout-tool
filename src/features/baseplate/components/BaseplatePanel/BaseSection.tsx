@@ -20,6 +20,7 @@ import { CornerRadiusControl } from './CornerRadiusControl';
 import { ConnectorSampleButton } from './ConnectorSampleButton';
 import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
+import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { maxCornerRadiusMm } from '../../utils/buildFullParams';
 import { Stepper } from '@/design-system/Stepper';
 import {
@@ -130,6 +131,23 @@ export function BaseSection() {
                         label={t('baseplate.dovetails.invert')}
                       />
                     )}
+                  {/* Both-female styles only: an integral tongue on an exterior
+                      edge would protrude past the drawer-facing wall (#2866).
+                      Same predicate the geometry uses, so the gate can't drift. */}
+                  {isSeatedConnectorStyle(style) && (
+                    <div className="space-y-1">
+                      <Checkbox
+                        checked={baseplateParams.connectorSlotsAllEdges === true}
+                        onChange={(checked) =>
+                          updateParam('connectorSlotsAllEdges', checked || undefined)
+                        }
+                        label={t('baseplate.connectorSlotsAllEdges')}
+                      />
+                      <p className="text-[11px] leading-relaxed text-content-tertiary pl-6">
+                        {t('baseplate.connectorSlotsAllEdgesHint')}
+                      </p>
+                    </div>
+                  )}
                   <Checkbox
                     checked={baseplateParams.preferIdenticalPieces === true}
                     onChange={(checked) =>

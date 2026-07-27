@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "El relleno es demasiado grande para esta forma, por lo que se ignora. Redúcelo para que quepa alrededor del contorno.",
   "baseplate.decreasePadding": "Disminuir {label}",
   "baseplate.dovetails.invert": "Invertir conectores",
+  "baseplate.connectorSlotsAllEdges": "Ranuras en todos los bordes",
+  "baseplate.connectorSlotsAllEdgesHint": "Corta las ranuras también en los bordes exteriores, de modo que cada pieza es una baldosa estándar que encaja con las placas que imprimas más adelante. Los bordes con margen de ajuste al cajón se omiten.",
   "baseplate.editDimensions": "Editar dimensiones de la base",
   "baseplate.editDimensionsDepth": "Profundidad de la base en mm",
   "baseplate.editDimensionsWidth": "Ancho de la base en mm",

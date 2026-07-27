@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "De opvulling is te groot voor deze vorm en wordt genegeerd. Verklein deze zodat hij rond de contour past.",
   "baseplate.decreasePadding": "{label} verkleinen",
   "baseplate.dovetails.invert": "Verbinders omkeren",
+  "baseplate.connectorSlotsAllEdges": "Sleuven op alle randen",
+  "baseplate.connectorSlotsAllEdgesHint": "Snijdt de sleuven ook in de buitenranden, zodat elk onderdeel een standaardtegel is die aansluit op platen die je later print. Randen met een lademarge worden overgeslagen.",
   "baseplate.editDimensions": "Basisplaatafmetingen bewerken",
   "baseplate.editDimensionsDepth": "Basisplaatdiepte in mm",
   "baseplate.editDimensionsWidth": "Basisplaatbreedte in mm",

@@ -132,6 +132,16 @@ export interface StoredBaseplateParams {
    */
   readonly connectorStyle?: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
   /**
+   * Cut the seam slot on the plate's exterior edges as well as on the join seams
+   * between split pieces, so each piece is a standard 42mm-grid tile that can
+   * key into any other plate printed later (issue #2866). Only meaningful for
+   * the both-female styles (`dovetailKey`, `snapClip`) with `connectorNubs` on —
+   * an integral tongue would protrude past the drawer-facing wall. Exterior
+   * edges carrying drawer-fit padding are skipped (their wall is offset from the
+   * grid, so a slot there would not line up). Default false.
+   */
+  readonly connectorSlotsAllEdges?: boolean;
+  /**
    * User fit offset (mm) added to the per-side connector groove clearance to
    * compensate for printer/filament variation (issue #2024). Positive = looser,
    * negative = tighter; clamped so effective clearance never goes negative.

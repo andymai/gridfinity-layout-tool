@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "Utfyllnaden är för stor för den här formen och ignoreras. Minska den så att den får plats runt konturen.",
   "baseplate.decreasePadding": "Minska {label}",
   "baseplate.dovetails.invert": "Invertera kopplingar",
+  "baseplate.connectorSlotsAllEdges": "Spår på alla kanter",
+  "baseplate.connectorSlotsAllEdgesHint": "Skär även spåren i ytterkanterna, så att varje del blir en standardbricka som kopplas till plattor du skriver ut senare. Kanter med lådmarginal hoppas över.",
   "baseplate.editDimensions": "Redigera bottenplattans mått",
   "baseplate.editDimensionsDepth": "Bottenplattans djup i mm",
   "baseplate.editDimensionsWidth": "Bottenplattans bredd i mm",

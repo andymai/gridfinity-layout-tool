@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "Der Rand ist zu groß für diese Form und wird ignoriert. Verkleinern Sie ihn, damit er um die Kontur passt.",
   "baseplate.decreasePadding": "{label} verkleinern",
   "baseplate.dovetails.invert": "Verbinder umkehren",
+  "baseplate.connectorSlotsAllEdges": "Schlitze an allen Kanten",
+  "baseplate.connectorSlotsAllEdgesHint": "Schneidet die Schlitze auch in die Außenkanten, sodass jedes Teil eine Standardkachel ist, die an später gedruckte Platten andockt. Kanten mit Schubladen-Rand werden übersprungen.",
   "baseplate.editDimensions": "Grundplattenmaße bearbeiten",
   "baseplate.editDimensionsDepth": "Grundplattentiefe in mm",
   "baseplate.editDimensionsWidth": "Grundplattenbreite in mm",

@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "Polstringen er for stor for denne formen og ignoreres. Reduser den slik at den passer rundt konturen.",
   "baseplate.decreasePadding": "Reduser {label}",
   "baseplate.dovetails.invert": "Inverter koblinger",
+  "baseplate.connectorSlotsAllEdges": "Spor på alle kanter",
+  "baseplate.connectorSlotsAllEdgesHint": "Skjærer sporene også i ytterkantene, slik at hver del blir en standardflis som kobles til plater du skriver ut senere. Kanter med skuffemarg hoppes over.",
   "baseplate.editDimensions": "Rediger grunnplatemål",
   "baseplate.editDimensionsDepth": "Grunnplatedybde i mm",
   "baseplate.editDimensionsWidth": "Grunnplatebredde i mm",

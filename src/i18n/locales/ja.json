@@ -69,6 +69,8 @@
   "baseplate.shapedPaddingTooLarge": "パディングがこの形状には大きすぎるため無視されます。輪郭に収まるように小さくしてください。",
   "baseplate.decreasePadding": "{label}を減らす",
   "baseplate.dovetails.invert": "コネクタを反転",
+  "baseplate.connectorSlotsAllEdges": "すべての縁にスロット",
+  "baseplate.connectorSlotsAllEdgesHint": "外周の縁にもスロットを彫るので、どのパーツも標準タイルになり、後から印刷したプレートと連結できます。引き出し合わせの余白がある縁は対象外です。",
   "baseplate.editDimensions": "ベースプレートの寸法を編集",
   "baseplate.editDimensionsDepth": "ベースプレートの奥行き(mm)",
   "baseplate.editDimensionsWidth": "ベースプレートの幅(mm)",
