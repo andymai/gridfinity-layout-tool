@@ -18,6 +18,7 @@ import {
   hasDividerOverrides,
   hasMultipleCompartments,
 } from '../compartmentBuilder';
+import { planSpanningDividerClips, spanningDividerClipsKey } from '../labelTabBuilder';
 // HEIGHT_UNIT is kept as a fallback default for backwards compatibility with
 // callers (or serialized designs) that predate heightUnitMm. The grid-unit
 // fallback now lives in `pitchFromParams` (gridPitch.ts).
@@ -158,6 +159,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const compartmentsKey =
     compartmentsBakedIntoShell || lightweight ? buildCompartmentsCacheKey(params) : 'none';
 
+  // Only the shell-baked path carries dividers in the shell; elsewhere the
+  // clip lands on the additive walls and is keyed by that feature instead.
+  const spanningClipKey = compartmentsBakedIntoShell
+    ? spanningDividerClipsKey(
+        planSpanningDividerClips(params, innerW, innerD, interiorHeight, params.wallThickness)
+      )
+    : '';
+
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
@@ -190,7 +199,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       ...(collarHeight > 0 ? [`collar${quantize(collarHeight)}`] : []),
       // Spacer punches the floor through, so it must never share a cached body
       // with the lite bin it otherwise looks like. Appended for the same reason.
-      ...(isSpacer ? ['spacer'] : [])
+      ...(isSpacer ? ['spacer'] : []),
+      // Shell-baked dividers get clipped where a spanning label shelf crosses
+      // them (#2897), so that clip is part of the shell. Appended only when it
+      // applies, keeping every other bin's v7 key byte-identical.
+      ...(spanningClipKey ? [`spanclip${spanningClipKey}`] : [])
     )
   );
 

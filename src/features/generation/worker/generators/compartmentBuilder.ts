@@ -5,13 +5,20 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box, withScope, clone, unwrap, fuseAll, draw, intersect } from 'brepjs';
+import { box, withScope, clone, unwrap, fuseAll, draw, intersect, cut } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
 import { sketch } from './meshUtils';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { isAbortError } from './utils/abort';
+import {
+  buildSpanningDividerClipTools,
+  planSpanningDividerClips,
+  spanningDividerClipsKey,
+} from './labelTabBuilder';
+import type { SpanningDividerClip } from './labelTabBuilder';
 
 // Re-export for backwards compatibility with existing imports
 export { fuseAllOrNull } from './utils/shapeOps';
@@ -663,7 +670,8 @@ export function buildCompartmentWalls(
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  spanningClips: readonly SpanningDividerClip[] = []
 ): Shape3D | null {
   const { cols, rows, cells } = params.compartments;
 
@@ -673,8 +681,39 @@ export function buildCompartmentWalls(
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const fused = buildCompartmentWallsInScope(scope, params, innerW, innerD, wallHeight);
-    return fused ? unwrap(clone(fused)) : null;
+    if (!fused) return null;
+    const clipped = clipUnderSpanningTabs(scope, fused, spanningClips, wallHeight);
+    return clipped ? unwrap(clone(clipped)) : null;
   });
+}
+
+/**
+ * Drop the divider tops that a wall-to-wall label shelf passes over (#2897),
+ * so the span reads as one unbroken surface instead of being sliced by
+ * dividers standing proud of it.
+ *
+ * A failed cut returns the unclipped walls: a divider poking through the shelf
+ * is cosmetically wrong, a missing divider set is a broken bin.
+ */
+function clipUnderSpanningTabs(
+  scope: DisposalScope,
+  walls: Shape3D,
+  clips: readonly SpanningDividerClip[],
+  wallHeight: number
+): Shape3D | null {
+  if (clips.length === 0) return walls;
+  const tools = buildSpanningDividerClipTools(clips, wallHeight + 1).map((t) => scope.register(t));
+  if (tools.length === 0) return walls;
+  let result = walls;
+  for (const tool of tools) {
+    try {
+      result = scope.register(unwrap(cut(result as ValidSolid, tool as ValidSolid)));
+    } catch (e: unknown) {
+      if (isAbortError(e)) throw e;
+      return walls;
+    }
+  }
+  return result;
 }
 
 function buildCompartmentWallsInScope(
@@ -791,6 +830,32 @@ function buildCompartmentWallsInScope(
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
 
+/**
+ * Spanning-shelf clips that actually reach this bin's dividers.
+ *
+ * A divider shortened below the shelf underside (an explicit
+ * `compartments.dividerHeight`) already ends under the span, so its clip cuts
+ * nothing. Filtering here rather than at the cut keeps the cache key honest —
+ * otherwise identical geometry would key differently and miss the cache.
+ */
+function spanClipsThatBite(ctx: {
+  params: BinParams;
+  dimensions: { innerW: number; innerD: number; interiorHeight: number };
+}): SpanningDividerClip[] {
+  const { params, dimensions: dim } = ctx;
+  const dividerHeight = resolveCompartmentDividerHeight(
+    params.compartments.dividerHeight,
+    dim.interiorHeight
+  );
+  return planSpanningDividerClips(
+    params,
+    dim.innerW,
+    dim.innerD,
+    dim.interiorHeight,
+    params.wallThickness
+  ).filter((clip) => clip.zMin < dividerHeight);
+}
+
 export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
   tag: FeatureTag.DIVIDER,
@@ -801,7 +866,9 @@ export const compartmentWallsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v2',
+        // `v3`: dividers crossed by a spanning label shelf are clipped to its
+        // underside (#2897), so the same grid now yields shorter dividers.
+        'v3',
         dim.shellKey,
         quantize(dim.innerW),
         quantize(dim.innerD),
@@ -813,19 +880,19 @@ export const compartmentWallsFeature: FeatureBuilder = {
         stableSerialize(params.compartments.dividerOverrides ?? []),
         quantize(
           resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight)
-        )
+        ),
+        spanningDividerClipsKey(spanClipsThatBite(ctx))
       )
     );
   },
   build: (ctx) => {
+    const { params, dimensions: dim } = ctx;
     const result = buildCompartmentWalls(
-      ctx.params,
-      ctx.dimensions.innerW,
-      ctx.dimensions.innerD,
-      resolveCompartmentDividerHeight(
-        ctx.params.compartments.dividerHeight,
-        ctx.dimensions.interiorHeight
-      )
+      params,
+      dim.innerW,
+      dim.innerD,
+      resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight),
+      spanClipsThatBite(ctx)
     );
     return result ? [result] : null;
   },
