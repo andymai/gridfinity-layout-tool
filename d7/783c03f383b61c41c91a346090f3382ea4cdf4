@@ -1,0 +1,106 @@
+src/i18n/locales/nb.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/design-system/SliderInput/EditableValueBadge.test.tsx
+  s_539197aeb05631::t_74949b9ca141ff 64
+  s_539197aeb05631::t_1dfb1d33c69d85 1-63,65-88
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_539197aeb05631::t_4bfe6835d6997f 141-144
+  s_539197aeb05631::t_b0fbcc748b2260 112-140,145-171
+src/i18n/locales/fr.json
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+src/i18n/locales/en.ts
+  s_539197aeb05631::t_d6922898cf7028 1946
+  s_539197aeb05631::t_2b1e9334b1f0ad 1943-1945,1947
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_539197aeb05631::t_254f1192a63496 156-158,164-174
+  s_539197aeb05631::t_09226fb35f909a 159-163,175-201
+  s_539197aeb05631::t_036068cc2a59be 12-15,19,22-23,40,60,69,77,138-145,153,155
+  s_539197aeb05631::t_42e101bcbcf6d6 28
+  s_539197aeb05631::t_adb2401f5bb627 18
+src/features/bin-designer/components/panel/OverhangSection/OverhangSliderRow.test.tsx
+  s_539197aeb05631::t_1ba143f5f84f92 1-47
+src/design-system/SliderInput/EditableValueBadge.tsx
+  s_539197aeb05631::t_993f4c9257d6f5 81
+  s_539197aeb05631::t_ad671a8b4d4016 31-32
+  s_539197aeb05631::t_8ced77e133fe2d 47,50,53-60
+  s_539197aeb05631::t_597d33a57d0177 1-30,33-46,48-49,51-52,61-80,82-151
+src/features/bin-designer/components/panel/OverhangSection/TaperProfileCards.test.tsx
+  s_539197aeb05631::t_a0656cbf55c631 2,38-51
+  s_539197aeb05631::t_85cfe16e5ea4bb 1,3-37,52-62
+src/design-system/SliderInput/SliderInput.tsx
+  s_539197aeb05631::t_afb2bc98927413 9,12,50-51,74-86
+src/i18n/locales/nl.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/features/bin-designer/components/panel/OverhangSection/TaperProfileCards.tsx
+  s_539197aeb05631::t_20a26683a7851b 1-11,15-16,18,20,24-25,28-42,48,67-68,77-79,81-82,84,87-88,100,136-140
+  s_539197aeb05631::t_1247a942ed8436 12-14,17,19,21-23,26-27,43-47,49-66,69-76,80,83,85-86,89-99,101-135
+src/i18n/locales/zh-CN.json
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+src/i18n/locales/es.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/i18n/locales/sv.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/i18n/locales/pl.json
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+src/i18n/locales/it.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/i18n/locales/ja.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/design-system/index.ts
+  s_539197aeb05631::t_26a621b54bae28 90-91
+src/features/bin-designer/components/panel/OverhangSection/OverhangSliderRow.tsx
+  s_539197aeb05631::t_7555cfefa89ee3 1-19,26-41,43-54,56-68,71-72,74-98,100,102,109,111-124
+  s_539197aeb05631::t_d66716af6c4247 20-25
+  s_539197aeb05631::t_8b94b2a24c10ac 99,110
+  s_539197aeb05631::t_c8676028513ccb 42,55
+  s_539197aeb05631::t_3075c7b5ddc09e 101,105-108
+  s_539197aeb05631::t_34470d1a54461b 69-70,73
+  s_539197aeb05631::t_1963c6da7e2387 103-104
+src/i18n/locales/de.json
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+src/i18n/locales/pt-BR.json
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+src/i18n/locales/ko.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/i18n/locales/cs.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/design-system/SliderInput/index.ts
+  s_539197aeb05631::t_37cd1ad8ec3aa1 3-4
+src/i18n/locales/uk.json
+  s_539197aeb05631::t_55fcd6f13b9f84 3003
+  s_539197aeb05631::t_e894ca140dc5ba 3000-3002,3004
+src/features/bin-designer/components/panel/OverhangSection/useOverhangSection.ts
+  s_539197aeb05631::t_2cc20f9582aa4f 184
+  s_539197aeb05631::t_955a1198a2c2c2 5
+  s_539197aeb05631::t_4d5e4fc8067f4c 142-145
+  s_539197aeb05631::t_e041975a842715 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d7783c03f383b61c41c91a346090f3382ea4cdf4",
+  "prompts": {},
+  "sessions": {
+    "s_539197aeb05631": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b1e903-8d2b-4599-93a0-37fc9b888560",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
