@@ -858,7 +858,7 @@
   "binDesigner.lid.stackGridHint": "Plná mřížka zásuvek přes celou horní plochu. Boxy postavené na víko zapadnou do jednotlivých buněk.",
   "binDesigner.lid.stackLipOnly": "Pouze stohovací lem",
   "binDesigner.lid.stackLipOnlyNoOp": "V této velikosti nemá efekt — jednobuňková horní plocha je už jedna kapsa.",
-  "binDesigner.lid.stackLipOnlyPrintNote": "Víko se tiskne dnem vzhůru, takže lem-only nechá celou plochu bez podpory. Samostatná základní deska níže se tomu vyhne.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Víko se tiskne dnem vzhůru, takže samotný lem nechá celou plochu bez podpory. Samostatná základní deska níže se tomu vyhne.",
   "binDesigner.lid.stackLipOnlyHint": "Místo mřížky jen jeden lem po obvodu — čistá horní plocha a méně filamentu. Boxy postavené na víko se ustaví na vnějším lemu, nikoli po buňkách.",
   "binDesigner.lid.side.back": "Zadní",
   "binDesigner.lid.side.front": "Přední",
