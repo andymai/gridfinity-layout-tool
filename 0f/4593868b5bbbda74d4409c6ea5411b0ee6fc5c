@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_7a7eed6d2a9a7b::t_e6fe2de0fcfbcb 44-47,54-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "0f4593868b5bbbda74d4409c6ea5411b0ee6fc5c",
+  "prompts": {},
+  "sessions": {
+    "s_7a7eed6d2a9a7b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ccd3876d-10ed-4952-8524-fc3f17483fe9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
