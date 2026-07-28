@@ -15,7 +15,7 @@ export function useDimensionsSection() {
     fractionalEdgeX,
     fractionalEdgeY,
     baseHalfSockets,
-    baseSpacer,
+    base,
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
@@ -32,7 +32,7 @@ export function useDimensionsSection() {
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
-      baseSpacer: s.params.base.spacer,
+      base: s.params.base,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
@@ -49,7 +49,7 @@ export function useDimensionsSection() {
   const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
   // A spacer is floorless, so it may go down to 1u (#2915).
-  const minHeight = minHeightUnits(baseSpacer);
+  const minHeight = minHeightUnits(base);
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);

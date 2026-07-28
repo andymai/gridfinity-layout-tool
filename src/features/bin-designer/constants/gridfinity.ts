@@ -144,12 +144,21 @@ export const DESIGNER_CONSTRAINTS = {
  * Lowest height (in height units) a bin may be built at.
  *
  * The single source of truth for that floor: the stepper bound, the client
- * validator and the spacer toggle's clamp all read it, so none can let through
- * a height another rejects. Mirrored server-side in
+ * validator and the base toggles' clamp all read it, so none can let through a
+ * height another rejects. Mirrored server-side in
  * `api/lib/designerValidation.ts` (which cannot import from `src/`).
+ *
+ * The relaxed 1u floor tracks the EFFECTIVE spacer, matching `deriveDimensions`
+ * (`isSpacer = base.spacer && !isFlat`) — a spacer needs a socket to shell
+ * through, so the flag is inert on a flat base. Keying off `base.spacer` alone
+ * would let `{ style: 'flat', spacer: true, height: 1 }` through as a 1u bin
+ * with an ordinary floor.
  */
-export function minHeightUnits(isSpacer: boolean): number {
-  return isSpacer ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+export function minHeightUnits(base: { readonly spacer: boolean; readonly style: string }): number {
+  const isEffectiveSpacer = base.spacer && base.style !== 'flat';
+  return isEffectiveSpacer
+    ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT
+    : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
 }
 
 /**

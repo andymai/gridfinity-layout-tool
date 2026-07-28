@@ -144,6 +144,29 @@ describe('useBaseSection', () => {
     expect(params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
   });
 
+  // The spacer can also END without touching its own toggle: a flat base
+  // auto-disables it through CONSTRAINT_RULES, which would otherwise leave a 1u
+  // bin below the floor its own stepper enforces.
+  it('enabling the flat base on a 1u spacer lifts the height too', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleFlat();
+    });
+
+    const params = useDesignerStore.getState().params;
+    expect(params.base.style).toBe('flat');
+    expect(params.base.spacer).toBe(false);
+    expect(params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
+  });
+
   it('leaving spacer mode leaves a height already above the floor alone', () => {
     useDesignerStore.setState({
       params: {
