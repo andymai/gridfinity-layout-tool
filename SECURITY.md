@@ -54,6 +54,13 @@ A finding we can't fix yet stays red rather than being silenced, and "the
 advisory looks wrong" is not grounds for an exception — verify it by running the
 advisory's proof-of-concept against the installed version before believing it.
 
+**Currently open:** `brace-expansion@1.1.16` (CVE-2026-14257, High, build-time
+devDependency only). It arrives via `minimatch@3`, which `eslint-plugin-jsx-a11y`
+and `@ts-morph/common` both require and call as a function — an API minimatch@10
+dropped. No version of either package uses a minimatch line that resolves a
+patched `brace-expansion`, and 1.1.16 is the `maintenance-v1` head, so there is
+nothing to upgrade to. It clears when jsx-a11y and ts-morph move to minimatch@10.
+
 **Adding a build script allow-list entry** (`allowBuilds`) is a security
 decision. Audit the package's postinstall behavior before adding.
 

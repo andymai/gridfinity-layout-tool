@@ -73,20 +73,17 @@ overrides:
   serialize-javascript: '^7.0.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
-  # minimatch <10.2 pins brace-expansion ^1/^2/^4, and every one of those lines
-  # is unpatched for CVE-2026-14257 with no release to upgrade to. 10.2.x is the
-  # only line that pulls a fixed brace-expansion (5.0.8), so these three consumers
-  # are forced onto it to keep the vulnerable copies out of the tree entirely.
+  'eslint-plugin-jsx-a11y>minimatch': '^3.1.3'
+  # filelist reaches minimatch only through `minimatch.match(...)`, a named
+  # export 10.x still provides, so it can move off the minimatch@5 line — whose
+  # brace-expansion ^2.0.1 resolves to 2.1.2, unpatched for CVE-2026-14257 with
+  # no 2.x release to upgrade to. 10.2.x is the only line pulling a fixed
+  # brace-expansion (5.0.8).
   #
-  # jsx-a11y is the one with a caveat: it does `_interopRequireDefault(require(
-  # 'minimatch'))` and calls `.default(...)`, but minimatch@10's CJS build sets
-  # __esModule with no default export, so that call throws. Only
-  # mayHaveAccessibleLabel / mayContainChildComponent use it, reached solely from
-  # `label-has-associated-control` and `control-has-associated-label` — both
-  # disabled here. Enabling either requires dropping this override and accepting
-  # the CVE back, until jsx-a11y ships a minimatch@10-compatible release.
-  'eslint-plugin-jsx-a11y>minimatch': '^10.2.5'
-  '@ts-morph/common>minimatch': '^10.2.5'
+  # jsx-a11y and @ts-morph/common cannot follow: both call minimatch's *default*
+  # export, which minimatch@10's CJS build does not define (it sets __esModule
+  # with no `default`), so both throw `is not a function` at runtime. That keeps
+  # minimatch@3 — and brace-expansion@1.1.16 — in the tree. See SECURITY.md.
   'filelist>minimatch': '^10.2.5'
   '@vercel/build-utils>minimatch': '^10.2.3'
   '@vercel/python-analysis>minimatch': '^10.2.3'
