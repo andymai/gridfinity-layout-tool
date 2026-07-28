@@ -67,5 +67,7 @@ See [`interactions/README.md`](./interactions/README.md) for the FSM architectur
 4. **Collab sync loop prevention** — `lastEditSource === 'local'` skips re-sync of own edits
 5. **View-only shares stay local** — `permission === 'view'` never connects to Liveblocks
 6. **Keyboard skips inputs** — `useKeyboard` ignores events when focus is in `<input>` or `<textarea>`
+   — but a `<canvas>` passes that check, so `App.tsx` gates the whole listener behind
+   `isNonLayoutRoute`; without it a Bin Designer `Delete`/`r`/`w` also reaches the layout (#2896)
 7. **Half-bin remediation** — `handleRemediate()` moves fractional bins to staging before disabling mode
 8. **Layout switch side effects** — clears undo history, resets selection, updates URL slug, resets ML session

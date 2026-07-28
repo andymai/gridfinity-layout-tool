@@ -1462,4 +1462,67 @@ describe('useKeyboard', () => {
       expect(useSelectionStore.getState().focusedBinId).toBe(binId2);
     });
   });
+
+  describe('disabled option', () => {
+    function addSelectedBin(width = 2, depth = 2): ReturnType<typeof getBinId> {
+      const { addBin, layout } = useLayoutStore.getState();
+      const binId = getBinId(
+        addBin({
+          layerId: layout.layers[0].id,
+          x: 0,
+          y: 0,
+          width,
+          depth,
+          height: 3,
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+      useSelectionStore.getState().setSelectedBins([binId]);
+      return binId;
+    }
+
+    it('does not delete the selected bin when disabled', () => {
+      addSelectedBin();
+
+      renderHook(() => useKeyboard({ disabled: true }));
+
+      act(() => {
+        pressKey('Delete');
+      });
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(1);
+    });
+
+    it('does not rotate the selected bin when disabled', () => {
+      addSelectedBin(2, 4);
+
+      renderHook(() => useKeyboard({ disabled: true }));
+
+      act(() => {
+        pressKey('r');
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect([bin.width, bin.depth]).toEqual([2, 4]);
+    });
+
+    it('binds again once re-enabled', () => {
+      addSelectedBin();
+
+      const { rerender } = renderHook(({ disabled }) => useKeyboard({ disabled }), {
+        initialProps: { disabled: true },
+      });
+
+      rerender({ disabled: false });
+
+      act(() => {
+        pressKey('Delete');
+      });
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+  });
 });

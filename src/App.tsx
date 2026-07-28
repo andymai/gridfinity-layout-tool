@@ -131,8 +131,13 @@ export default function App() {
   // those hooks don't rewrite the URL and strip the query params we depend on.
   const isDevThumbnailRoute =
     import.meta.env.DEV && new URLSearchParams(window.location.search).get('devThumbnails') === '1';
+  // Every route tree except the layout editor. Hooks that act on the layout
+  // (its shortcuts, its URL slug) stand down here; add new routes to this one
+  // expression rather than to each call site.
+  const isNonLayoutRoute =
+    isDesignerRoute || isBaseplateRoute || isSupportersRoute || isDevThumbnailRoute;
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
-    disabled: isDesignerRoute || isBaseplateRoute || isSupportersRoute,
+    disabled: isNonLayoutRoute,
   });
   const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
@@ -256,12 +261,10 @@ export default function App() {
     }
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
-  useKeyboard();
+  useKeyboard({ disabled: isNonLayoutRoute });
   const saveStatus = useAutoSave();
   useCrossTabSync();
-  useLayoutRouting({
-    skip: isDesignerRoute || isBaseplateRoute || isSupportersRoute || isDevThumbnailRoute,
-  });
+  useLayoutRouting({ skip: isNonLayoutRoute });
   usePWAUpdate();
   useAnalytics();
   useEngagementNudges();
