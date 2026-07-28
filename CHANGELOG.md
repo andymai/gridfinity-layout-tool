@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.326.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.0...gridfinity-layout-tool-v4.326.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** stop the fillet taper cavity breaching the wall ([#2948](https://github.com/andymai/gridfinity-layout-tool/issues/2948)) ([6b480ab](https://github.com/andymai/gridfinity-layout-tool/commit/6b480ab78fc02db1d9ad975088473950d74bce7d))
+
 ## [4.326.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.3...gridfinity-layout-tool-v4.326.0) (2026-07-28)
 
 
