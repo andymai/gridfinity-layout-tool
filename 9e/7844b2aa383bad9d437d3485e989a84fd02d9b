@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_88fb7e4cb490e1::t_a25250240523f9 18-19,36-37,53-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "9e7844b2aa383bad9d437d3485e989a84fd02d9b",
+  "prompts": {},
+  "sessions": {
+    "s_88fb7e4cb490e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f93772b3-00a9-4d4e-a15c-24ba1d845be0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
