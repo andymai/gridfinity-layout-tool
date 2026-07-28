@@ -22,6 +22,7 @@ import { unwrap, fuse, cut } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { buildTextSolid } from './textBuilder';
 import { pocketCornerRadius } from './generatorConstants';
+import { LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { STACK_INSET_BOT } from './lidStackGrid';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
@@ -63,7 +64,12 @@ function resolveTextHostFace(inputs: LidInputs): TextHostFace {
   if (inputs.stackLipOnly) {
     const totalW = inputs.cellsX * inputs.gridUnitMm;
     const totalD = inputs.cellsY * inputs.gridUnitMmY;
-    const cornerR = Math.max(pocketCornerRadius(totalW, totalD) - STACK_INSET_BOT, 0);
+    // Same LID_MIN_CORNER_RADIUS floor `buildStackLipCutter` applies, so the
+    // fit box can never assume squarer corners than the floor actually has.
+    const cornerR = Math.max(
+      pocketCornerRadius(totalW, totalD) - STACK_INSET_BOT,
+      LID_MIN_CORNER_RADIUS
+    );
     return {
       availW: totalW - 2 * STACK_INSET_BOT - 2 * cornerR,
       availD: totalD - 2 * STACK_INSET_BOT - 2 * cornerR,
