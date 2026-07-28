@@ -2,21 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { partitionDisjoint, strokeFootprint, type FootprintBox } from './kumikoWrapBuilder';
 import type { KumikoSegment } from './patterns';
 
-/** partitionDisjoint only reads `boxes`; the tool handles are opaque to it. */
-function toolsFor(boxes: readonly FootprintBox[]): number[] {
-  return boxes.map((_, i) => i);
-}
-
 function box(u0: number, u1: number, z0: number, z1: number): FootprintBox {
   return { u0, u1, z0, z1 };
 }
 
 function partitionIndices(boxes: readonly FootprintBox[]): number[][] {
-  // The production signature takes Shape3D[]; the algorithm never touches a
-  // shape, so stand in plain indices to keep this test off the WASM kernel.
+  // `partitionDisjoint` reads only `box` and never touches the solid, so stand
+  // in plain indices to keep this test off the WASM kernel.
+  const tools = boxes.map((b, i) => ({ solid: i, box: b }));
   return partitionDisjoint(
-    toolsFor(boxes) as unknown as Parameters<typeof partitionDisjoint>[0],
-    boxes
+    tools as unknown as Parameters<typeof partitionDisjoint>[0]
   ) as unknown as number[][];
 }
 
@@ -31,13 +26,22 @@ describe('strokeFootprint', () => {
     expect(f.z1).toBeCloseTo(1, 6);
   });
 
-  it('grows the box for a rotated segment', () => {
+  it('encloses a rotated segment on every side', () => {
+    // A 45° thin rect: the box must contain the whole rotated rectangle, and
+    // pinning all four bounds catches an asymmetric under-estimate that a
+    // width-only check would let through. `partitionDisjoint` relies on the
+    // enclosure being conservative, never tight.
     const diagonal: KumikoSegment = { a: [0, 0], b: [10, 10] };
     const f = strokeFootprint(diagonal, 2);
-    // A 45° thin rect needs a box wider than its own width on both axes —
-    // this conservatism is why struts are not partitioned this way.
+    // len = 10√2; stroke rect is (len + 2) x 2 at 45°, so each half-extent is
+    // ((len + 2) + 2) / √2 / 2, about the midpoint (5, 5).
+    const half = (10 * Math.SQRT2 + 4) / Math.SQRT2 / 2;
+    expect(f.u0).toBeCloseTo(5 - half, 6);
+    expect(f.u1).toBeCloseTo(5 + half, 6);
+    expect(f.z0).toBeCloseTo(5 - half, 6);
+    expect(f.z1).toBeCloseTo(5 + half, 6);
+    // Conservative: strictly larger than the segment's own 10mm span.
     expect(f.u1 - f.u0).toBeGreaterThan(10);
-    expect(f.z1 - f.z0).toBeGreaterThan(10);
   });
 
   it('honours a per-segment width override', () => {

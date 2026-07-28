@@ -398,6 +398,13 @@ function boxesOverlap(a: FootprintBox, b: FootprintBox): boolean {
   return a.u0 < b.u1 && b.u0 < a.u1 && a.z0 < b.z1 && b.z0 < a.z1;
 }
 
+/** A cut tool paired with its footprint. One array, not two, so a tool can
+ *  never drift out of step with the box that describes it. */
+export interface BoxedTool {
+  readonly solid: Shape3D;
+  readonly box: FootprintBox;
+}
+
 /**
  * Split tools into buckets whose footprints are pairwise disjoint.
  *
@@ -413,17 +420,16 @@ function boxesOverlap(a: FootprintBox, b: FootprintBox): boolean {
  * buckets beat smaller overlapping ones, since each `cutAll` also carries a
  * fixed cost that punishes over-splitting.
  */
-export function partitionDisjoint(tools: Shape3D[], boxes: readonly FootprintBox[]): Shape3D[][] {
+export function partitionDisjoint(tools: readonly BoxedTool[]): Shape3D[][] {
   const buckets: Shape3D[][] = [];
   const bucketBoxes: FootprintBox[][] = [];
-  for (let i = 0; i < tools.length; i++) {
-    const box = boxes[i];
+  for (const { solid, box } of tools) {
     const free = bucketBoxes.findIndex((taken) => !taken.some((o) => boxesOverlap(o, box)));
     if (free === -1) {
-      buckets.push([tools[i]]);
+      buckets.push([solid]);
       bucketBoxes.push([box]);
     } else {
-      buckets[free].push(tools[i]);
+      buckets[free].push(solid);
       bucketBoxes[free].push(box);
     }
   }
@@ -478,8 +484,7 @@ export function buildFlatSlabCutter(
   // below. Prebuilt per-vertex stamp solids were tried and measured WORSE:
   // neighboring stamps overlap, and overlapping multi-prism tools cost more in
   // the cutAll than the extra prism count saves.
-  const fillings: Shape3D[] = [];
-  const fillingBoxes: FootprintBox[] = [];
+  const fillings: BoxedTool[] = [];
   const maxW = maxStrutWidth(lattice);
   for (const piece of fillingPiecesForRange(lattice, uA - maxW, uB + maxW, perimeter)) {
     const pw = piece.width ?? w;
@@ -489,10 +494,12 @@ export function buildFlatSlabCutter(
       ...(piece.width === undefined ? {} : { width: piece.width }),
     };
     const extended = extendSegment(absolute, pw / 2);
-    fillingBoxes.push(strokeFootprint(extended, w));
     const drawing = strokeSegment(extended, w, uCenter, zCenter);
     const prism = sketch(drawing, 'XY').extrude(strutDepth);
-    fillings.push(translate(prism, [0, 0, -strutDepth / 2]));
+    fillings.push({
+      solid: translate(prism, [0, 0, -strutDepth / 2]),
+      box: strokeFootprint(extended, w),
+    });
     prism.delete();
   }
 
@@ -506,7 +513,7 @@ export function buildFlatSlabCutter(
   let region = translate(slabPrism, [0, 0, -halfDepth]);
   slabPrism.delete();
 
-  for (const family of [...families, ...partitionDisjoint(fillings, fillingBoxes)]) {
+  for (const family of [...families, ...partitionDisjoint(fillings)]) {
     if (family.length === 0) continue;
     const carved = unwrap(cutAll(region, family, { trackEvolution: false }));
     region.delete();
