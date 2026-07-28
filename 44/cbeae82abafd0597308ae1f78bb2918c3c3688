@@ -1,0 +1,32 @@
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.test.ts
+  s_0aa75b2ebdc4cc::t_b2ecfddf379f27 6
+  s_0aa75b2ebdc4cc::t_1f55b1e11597b1 137,139-144,147,149
+src/core/constants.ts
+  s_0aa75b2ebdc4cc::t_458a2fae34729a 56-58,60
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_0aa75b2ebdc4cc::t_31780d0ccfe805 89-98
+  s_0aa75b2ebdc4cc::t_9b97e22c2fb2d4 11
+src/core/store/layout.test.ts
+  s_0aa75b2ebdc4cc::t_86381a12fcef3b 818-821
+src/core/store/layout/coreActions.test.ts
+  s_0aa75b2ebdc4cc::t_92405069503248 85-92
+src/core/cqrs/v2/domain/layout/setPrintBedSize.test.ts
+  s_0aa75b2ebdc4cc::t_b4cd1b97c5c46d 4
+  s_0aa75b2ebdc4cc::t_441a67fdfbbd9a 10,12-23,25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "44cbeae82abafd0597308ae1f78bb2918c3c3688",
+  "prompts": {},
+  "sessions": {
+    "s_0aa75b2ebdc4cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a033b1a-9cf9-4dad-aedf-3ced6703c2c5",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
