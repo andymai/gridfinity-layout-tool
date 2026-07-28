@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "La plaque de base s'imprime à plat séparément (grille vers le haut, face à coller vers le bas) pour que le couvercle reste sans supports. Collez-la sur le dessus du couvercle après l'impression.",
   "binDesigner.lid.stackGridHint": "Une grille complète d’alvéoles sur toute la face supérieure. Les bacs empilés dessus se verrouillent dans chaque cellule.",
   "binDesigner.lid.stackLipOnly": "Lèvre d’empilage seule",
+  "binDesigner.lid.stackLipOnlyNoOp": "Sans effet à cette taille — une face d’une seule cellule est déjà une seule alvéole.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Le couvercle s’imprime à l’envers : une lèvre seule laisse toute la face sans support. La plaque de base séparée ci-dessous l’évite.",
   "binDesigner.lid.stackLipOnlyHint": "Une seule lèvre sur le pourtour au lieu de la grille — face supérieure dégagée et moins de filament. Les bacs empilés dessus se positionnent sur la lèvre extérieure, pas cellule par cellule.",
   "binDesigner.lid.side.back": "Arrière",
   "binDesigner.lid.side.front": "Avant",

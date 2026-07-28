@@ -245,6 +245,56 @@ describe('LidSection', () => {
       expect(screen.getByText(/Glue it onto the lid/i)).toBeInTheDocument();
     });
 
+    it('flags the lip-only toggle as a no-op on a single-cell lid (#2930)', () => {
+      resetStore({
+        width: 1,
+        depth: 1,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/No effect at this size/i)).toBeInTheDocument();
+      // The print note would be noise here — nothing changes at 1x1.
+      expect(screen.queryByText(/prints upside down/i)).not.toBeInTheDocument();
+    });
+
+    it('points a multi-cell lip-only lid at the separate baseplate (#2930)', () => {
+      resetStore({
+        width: 3,
+        depth: 2,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/prints upside down/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No effect at this size/i)).not.toBeInTheDocument();
+    });
+
+    it('drops the print note once the baseplate is split off (#2930)', () => {
+      resetStore({
+        width: 3,
+        depth: 2,
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          stackableTop: true,
+          stackLipOnly: true,
+          separateStackPlate: true,
+        },
+      });
+      render(<LidSection />);
+      expect(screen.queryByText(/prints upside down/i)).not.toBeInTheDocument();
+    });
+
+    it('keeps lip-only off when an imported design had it set without a stack top', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: false, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Stackable' }));
+      const lid = useDesignerStore.getState().params.lid;
+      expect(lid.stackableTop).toBe(true);
+      expect(lid.stackLipOnly).toBe(false);
+    });
+
     it('toggles the lip-only stack top and swaps the hint (#2930)', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true } });
       render(<LidSection />);

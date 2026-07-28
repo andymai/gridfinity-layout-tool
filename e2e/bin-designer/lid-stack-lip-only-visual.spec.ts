@@ -6,9 +6,6 @@
  * interior grid ridges must disappear from the canvas while the lid keeps its
  * perimeter lip, and the hint must swap to describe the lip.
  *
- * A 1x1 bin would be a false pass — its grid is already a single pocket, so the
- * two settings are the same geometry. Hence the width bump below.
- *
  * Run with: `pnpm test:e2e e2e/bin-designer/lid-stack-lip-only-visual.spec.ts`
  */
 

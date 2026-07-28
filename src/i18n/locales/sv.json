@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "Bottenplattan skrivs ut platt för sig (rutnät upp, limyta ner) så att locket förblir stödfritt. Limma fast den på lockets ovansida efter utskrift.",
   "binDesigner.lid.stackGridHint": "Ett fullt rutnät av socklar över hela ovansidan. Lådor som staplas ovanpå låses i enskilda celler.",
   "binDesigner.lid.stackLipOnly": "Endast stapelbar läpp",
+  "binDesigner.lid.stackLipOnlyNoOp": "Ingen effekt i den här storleken — en ovansida med en cell är redan en sockel.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Locket skrivs ut upp och ned, så enbart en läpp lämnar hela ytan utan stöd. Den separata bottenplattan nedan undviker det.",
   "binDesigner.lid.stackLipOnlyHint": "En enda läpp runt kanten i stället för rutnätet — fri ovansida och mindre filament. Lådor som staplas ovanpå styrs av den yttre läppen, inte cell för cell.",
   "binDesigner.lid.side.back": "Bak",
   "binDesigner.lid.side.front": "Fram",

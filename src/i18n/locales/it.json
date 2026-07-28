@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "La baseplate si stampa in piano da sola (griglia verso l'alto, faccia da incollare verso il basso) così il coperchio resta senza supporti. Incollala sulla parte superiore del coperchio dopo la stampa.",
   "binDesigner.lid.stackGridHint": "Una griglia completa di alloggiamenti su tutta la faccia superiore. I contenitori impilati sopra si incastrano nelle singole celle.",
   "binDesigner.lid.stackLipOnly": "Solo labbro di impilamento",
+  "binDesigner.lid.stackLipOnlyNoOp": "Nessun effetto a questa misura: una faccia di una sola cella è già un solo alloggiamento.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Il coperchio si stampa capovolto, quindi il solo labbro lascia tutta la faccia senza supporti. La baseplate separata qui sotto lo evita.",
   "binDesigner.lid.stackLipOnlyHint": "Un solo labbro lungo il bordo invece della griglia: faccia superiore libera e meno filamento. I contenitori impilati sopra si posizionano sul labbro esterno, non cella per cella.",
   "binDesigner.lid.side.back": "Retro",
   "binDesigner.lid.side.front": "Fronte",

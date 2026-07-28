@@ -28,8 +28,8 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 /**
  * Resolved lid-top text (issue #2695): the trimmed string plus the effective
  * style — the design's `textDefaults` merged with the shared surface-text
- * override. Null when there's no text or a gate rejects it (stackable top,
- * polygon footprint).
+ * override. Null when there's no text or a gate rejects it (full stack
+ * grid, polygon footprint).
  */
 export interface LidTextInputs {
   readonly value: string;
@@ -73,9 +73,8 @@ export interface LidInputs {
   readonly cavityInset: number;
   readonly stackableTop: boolean;
   /**
-   * Cut the stack top as a single perimeter pocket instead of one pocket per
-   * cell (#2930). Already gated on `stackableTop` here. See
-   * {@link LidConfig.stackLipOnly}.
+   * Already gated on `stackableTop` here, so `buildStackGrid` can branch on the
+   * flag directly. See {@link LidConfig.stackLipOnly}.
    */
   readonly stackLipOnly: boolean;
   /**
@@ -213,9 +212,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // merged with the surface-text override; polygon lids are excluded
   // (rectangular auto-fit), mirroring the UI.
   //
-  // A full stack grid leaves no flat surface to write on. The lip-only variant
-  // (#2930) does — its recessed floor is one clear face — so text is allowed
-  // there and `applyLidText` fits it inside the lip.
+  // A full stack grid leaves no flat surface to write on; the lip-only variant
+  // (#2930) does — its recessed floor is one clear face.
   const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly;
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
@@ -275,7 +273,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cavityExtraMm: cavityExtra,
     cavityInset,
     stackableTop: params.lid.stackableTop,
-    // Only a stack top has pockets to collapse into one perimeter lip.
+    // Gate here so buildStackGrid can trust the flag without re-checking.
     stackLipOnly: params.lid.stackLipOnly && params.lid.stackableTop,
     // Splitting the stack grid off only means anything when there IS a stack
     // grid — gate on stackableTop so buildLid/buildStackPlate can trust the

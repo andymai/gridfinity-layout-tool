@@ -129,8 +129,9 @@ export const WALL_TEXT_ALIGNS: readonly WallTextVerticalAlign[] = [
 export interface SurfaceTextConfig {
   /**
    * Text on the lid's top face — or the tray floor when the lid has a tray
-   * recess. Ignored when the lid is stackable (the stack grid owns the top
-   * face) or the bin has a polygon `cellMask` (auto-fit assumes a rectangle).
+   * recess, or the recessed floor inside the lip on a lip-only stack top.
+   * Ignored under a FULL stack grid (no flat face left) or on a bin with a
+   * polygon `cellMask` (auto-fit assumes a rectangle).
    */
   readonly lidText?: string;
   /**

@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "ベースプレートは単体で平らに印刷され（グリッドを上、接着面を下）、フタはサポート不要になります。印刷後にフタの上面へ接着してください。",
   "binDesigner.lid.stackGridHint": "天面全体にソケットのグリッドを配置します。上に積んだビンは各セルに固定されます。",
   "binDesigner.lid.stackLipOnly": "スタッキングリップのみ",
+  "binDesigner.lid.stackLipOnlyNoOp": "このサイズでは効果がありません。1セルの天面はすでに単一のポケットです。",
+  "binDesigner.lid.stackLipOnlyPrintNote": "フタは上下逆さまに印刷されるため、リップのみだと天面全体がサポートなしになります。下の分割ベースプレートを使うと回避できます。",
   "binDesigner.lid.stackLipOnlyHint": "グリッドの代わりに外周のリップのみ。天面がすっきりしてフィラメントも節約できます。上に積んだビンはセル単位ではなく外周のリップで位置決めされます。",
   "binDesigner.lid.side.back": "奥",
   "binDesigner.lid.side.front": "手前",

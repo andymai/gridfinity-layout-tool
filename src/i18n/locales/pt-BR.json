@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "A placa base é impressa plana à parte (grade para cima, face de cola para baixo) para a tampa ficar sem suportes. Cole-a no topo da tampa após imprimir.",
   "binDesigner.lid.stackGridHint": "Uma grade completa de encaixes por toda a face superior. Caixas empilhadas em cima travam em células individuais.",
   "binDesigner.lid.stackLipOnly": "Somente borda de empilhamento",
+  "binDesigner.lid.stackLipOnlyNoOp": "Sem efeito neste tamanho — um topo de uma só célula já é um único encaixe.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "A tampa imprime de cabeça para baixo, então só a borda deixa a face inteira sem suporte. A placa base separada abaixo evita isso.",
   "binDesigner.lid.stackLipOnlyHint": "Apenas uma borda no perímetro em vez da grade — face superior livre e menos filamento. Caixas empilhadas em cima se posicionam pela borda externa, não célula por célula.",
   "binDesigner.lid.side.back": "Trás",
   "binDesigner.lid.side.front": "Frente",

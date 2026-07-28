@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "Płyta bazowa drukuje się płasko osobno (siatka do góry, powierzchnia klejenia w dół), aby pokrywa nie wymagała podpór. Przyklej ją na górze pokrywy po wydruku.",
   "binDesigner.lid.stackGridHint": "Pełna siatka gniazd na całej górnej ściance. Pojemniki ustawione na wierzchu wpasowują się w poszczególne komórki.",
   "binDesigner.lid.stackLipOnly": "Tylko kołnierz sztaplujący",
+  "binDesigner.lid.stackLipOnlyNoOp": "Bez efektu przy tym rozmiarze — jednokomórkowa góra to już jedno gniazdo.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Pokrywa drukuje się do góry nogami, więc sam kołnierz zostawia całą ściankę bez podpór. Osobna płyta bazowa poniżej tego unika.",
   "binDesigner.lid.stackLipOnlyHint": "Zamiast siatki tylko jeden kołnierz po obwodzie — wolna górna ścianka i mniej filamentu. Pojemniki ustawione na wierzchu pozycjonują się na zewnętrznym kołnierzu, a nie komórka po komórce.",
   "binDesigner.lid.side.back": "Tył",
   "binDesigner.lid.side.front": "Przód",
