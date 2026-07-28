@@ -8,6 +8,7 @@ import {
 import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
+import { CONSTRAINTS } from '@/core/constants';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { computePieceFingerprint } from './pieceFingerprint';
@@ -83,6 +84,16 @@ describe('computeBaseplateTiling', () => {
     expect(piece.edges.right).toBe('exterior');
     expect(piece.edges.front).toBe('exterior');
     expect(piece.edges.back).toBe('exterior');
+  });
+
+  it('leaves the largest expressible plate unsplit on a bed at PRINT_BED_MM_MAX', () => {
+    const params = makeParams({ width: CONSTRAINTS.GRID_MAX, depth: CONSTRAINTS.GRID_MAX });
+    const tiling = computeBaseplateTiling(params, CONSTRAINTS.PRINT_BED_MM_MAX);
+
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.pieces).toHaveLength(1);
+    expect(tiling.pieces[0].widthUnits).toBe(CONSTRAINTS.GRID_MAX);
+    expect(tiling.pieces[0].depthUnits).toBe(CONSTRAINTS.GRID_MAX);
   });
 
   it('preserves all padding on single piece', () => {

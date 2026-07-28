@@ -1,16 +1,29 @@
 import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
+import { CONSTRAINTS } from '@/core/constants';
 import { mm } from '@/core/types';
 import { setPrintBedSize } from './setPrintBedSize';
 import { makeLayout } from './_testHelpers';
 
 describe('v2 layout.setPrintBedSize', () => {
-  it('clamps size to [42, 500]', () => {
+  it('clamps size to the configured print-bed bounds', () => {
     const layout = makeLayout();
-    const result = setPrintBedSize.handle({ size: 9999 }, { aggregate: layout });
+    const tooLarge = setPrintBedSize.handle({ size: 99999 }, { aggregate: layout });
+    if (!isOk(tooLarge)) throw new Error('handle failed');
+    expect(tooLarge.value.event.payload.size).toBe(CONSTRAINTS.PRINT_BED_MM_MAX);
+
+    const tooSmall = setPrintBedSize.handle({ size: 1 }, { aggregate: layout });
+    if (!isOk(tooSmall)) throw new Error('handle failed');
+    expect(tooSmall.value.event.payload.size).toBe(CONSTRAINTS.PRINT_BED_MM_MIN);
+  });
+
+  it('accepts large-format beds', () => {
+    const layout = makeLayout();
+    const result = setPrintBedSize.handle({ size: 1000, depth: 1000 }, { aggregate: layout });
     if (!isOk(result)) throw new Error('handle failed');
-    expect(result.value.event.payload.size).toBe(500);
+    expect(result.value.event.payload.size).toBe(1000);
+    expect(result.value.event.payload.depth).toBe(1000);
   });
 
   it('captures previousSize and previousDepth', () => {

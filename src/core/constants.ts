@@ -53,8 +53,11 @@ export const CONSTRAINTS = {
   // detector in storage migration: a stored printBedSize below it is grid
   // units, not mm. Kept distinct from GRID_UNIT_MM_DEFAULT even though both
   // are 42 — they're unrelated concepts that happen to share a value.
+  // The max equals GRID_MAX × GRID_UNIT_MM_MAX (3000), the largest drawer
+  // dimension: a bed at the cap never forces a split, so a higher value would
+  // have no effect on any layout, bin or baseplate.
   PRINT_BED_MM_MIN: 42,
-  PRINT_BED_MM_MAX: 500,
+  PRINT_BED_MM_MAX: 3000,
   PRINT_BED_MM_DEFAULT: 256,
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
