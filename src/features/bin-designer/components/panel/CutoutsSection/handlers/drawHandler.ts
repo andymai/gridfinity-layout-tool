@@ -5,8 +5,9 @@
  * support: Shift constrains to square, Alt draws from center.
  */
 
+import { createDefaultCutout } from '../cutoutHelpers';
 import { MIN_CUTOUT_SIZE } from '../geometry';
-import { rectFitsInMask } from '../maskFit';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters } from './types';
 
@@ -56,20 +57,21 @@ export function handleDrawMove(
     shape: mode.shape,
   };
 
-  // Polygon mask: hard-reject draw preview that overhangs the polygon.
-  if (
-    bounds.cellMask &&
-    bounds.maskCellSize &&
-    !rectFitsInMask(
-      bounds.cellMask,
+  // Polygon mask: hard-reject draw preview that overhangs the polygon. Tested
+  // as the shape being drawn, not its box, so a circle can nest into a notch
+  // corner its bounding rect would straddle.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    const candidate = createDefaultCutout(
+      'draw-preview',
+      preview.shape,
       preview.x,
       preview.y,
       preview.width,
-      preview.depth,
-      bounds.maskCellSize
-    )
-  ) {
-    return;
+      preview.depth
+    );
+    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize, bounds.meshAssets)) {
+      return;
+    }
   }
 
   setters.setDrawingPreview(preview);

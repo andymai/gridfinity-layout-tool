@@ -118,3 +118,71 @@ describe('handleDragMove rotation-aware clamping', () => {
     expect(patch?.x).toBe(bounds.binWidth - cutout.width);
   });
 });
+
+describe('handleDragMove polygon-mask rejection', () => {
+  // 2×2 mask, top-right cell empty — the notch is x ≥ 50, y ≥ 50.
+  const L_MASK: BinBounds = {
+    binWidth: 100,
+    binDepth: 100,
+    cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+    maskCellSize: { cellMmX: 50, cellMmY: 50 },
+  };
+
+  const squarePath = (x: number, y: number, size: number) =>
+    [
+      { x, y },
+      { x: x + size, y },
+      { x: x + size, y: y + size },
+      { x, y: y + size },
+    ].map((p) => ({ ...p, handleIn: null, handleOut: null, symmetric: false }));
+
+  it('sticks a path cutout at the polygon edge instead of letting it slide into the notch', () => {
+    // Path vertices are absolute; the drag commit translates them along with
+    // x/y, so the candidate has to be tested at the dragged-to position.
+    const cutout = makeCutout({
+      shape: 'path',
+      x: 5,
+      y: 60,
+      width: 20,
+      depth: 20,
+      path: squarePath(5, 60, 20),
+    });
+    const setters = makeSetters();
+
+    handleDragMove(
+      makeMode(5, 60, [['c-1', 0, 0]]),
+      { mmX: 70, mmY: 60 },
+      [cutout],
+      L_MASK,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    expect(setters.setPreview).not.toHaveBeenCalled();
+  });
+
+  it('allows a path drag that stays on filled cells', () => {
+    const cutout = makeCutout({
+      shape: 'path',
+      x: 5,
+      y: 60,
+      width: 20,
+      depth: 20,
+      path: squarePath(5, 60, 20),
+    });
+    const setters = makeSetters();
+
+    handleDragMove(
+      makeMode(5, 60, [['c-1', 0, 0]]),
+      { mmX: 25, mmY: 60 },
+      [cutout],
+      L_MASK,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    expect(setters.preview?.get('c-1')?.x).toBe(25);
+  });
+});

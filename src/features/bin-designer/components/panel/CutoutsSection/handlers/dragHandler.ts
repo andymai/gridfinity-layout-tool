@@ -12,6 +12,7 @@ import {
   findAlignmentGuides,
   getRotatedBounds,
 } from '../geometry';
+import { translateCutoutPreview } from '../cutoutHelpers';
 import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
@@ -90,8 +91,11 @@ export function handleDragMove(
     for (const [id, updates] of nextPreview) {
       const orig = cutouts.find((c) => c.id === id);
       if (!orig) continue;
-      const candidate = { ...orig, ...updates };
-      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
+      // Path vertices are absolute and get translated on commit
+      // (`commitTransformPreview`), so the candidate has to move them too —
+      // otherwise the outline is validated at the position the drag left.
+      const candidate = translateCutoutPreview(orig, updates);
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize, bounds.meshAssets)) {
         return;
       }
     }
