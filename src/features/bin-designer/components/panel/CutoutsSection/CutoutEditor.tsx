@@ -161,6 +161,7 @@ export function CutoutEditor() {
     gridSize,
     cellMask: params.cellMask,
     maskCellSize,
+    meshAssets: params.meshAssets,
   });
 
   const t = useTranslation();

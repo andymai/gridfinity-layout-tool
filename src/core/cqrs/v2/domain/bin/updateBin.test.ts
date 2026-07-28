@@ -74,4 +74,70 @@ describe('v2 bin.update', () => {
 
     expect(applied).toEqual(native);
   });
+
+  describe('overhang', () => {
+    const OH = { enabled: true, left: 0, right: 14, front: 0, back: 0 };
+
+    it('sets an explicit overhang', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1')] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { overhang: OH } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.overhang).toEqual(OH);
+    });
+
+    it('clears it when null is sent, and captures the previous value for undo', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { overhang: OH })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { overhang: null } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.overhang).toBeUndefined();
+      expect(result.value.event.payload.previous.overhang).toEqual(OH);
+    });
+
+    // The values only hold for the position they were computed for, so a bare
+    // move must not leave the bin extending into space it no longer borders.
+    it('drops a stale overhang when the bin moves', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { overhang: OH })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { x: 3 } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('overhang' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.overhang).toBeUndefined();
+      expect(result.value.event.payload.previous.overhang).toEqual(OH);
+    });
+
+    it('keeps an overhang supplied alongside the move (reposition + re-extend)', () => {
+      const next = { enabled: true, left: 7, right: 7, front: 0, back: 0 };
+      const layout = makeLayout({ bins: [makeBin('bin_1', { overhang: OH })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { x: 3, overhang: next } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.overhang).toEqual(next);
+    });
+
+    it('leaves a non-spatial update alone', () => {
+      const layout = makeLayout({ bins: [makeBin('bin_1', { overhang: OH })] });
+      const result = updateBin.handle(
+        { id: 'bin_1', updates: { label: 'x' } },
+        { aggregate: layout }
+      );
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('overhang' in result.value.event.payload.changes).toBe(false);
+    });
+  });
+
 });

@@ -22,6 +22,7 @@ import { createCqrsMutations, commandBus } from '@/core/cqrs';
 import type { CommandBus, UpdateDrawerPayload } from '@/core/cqrs';
 import type {
   Bin,
+  BinUpdates,
   Layer,
   Category,
   BinId,
@@ -43,7 +44,7 @@ import type { Result, ValidationError, LayoutError } from '@/core/result';
 export interface Mutations {
   // Bin operations
   addBin: (bin: Omit<Bin, 'id'>) => Result<BinId, ValidationError>;
-  updateBin: (id: BinId, updates: Partial<Bin>) => Result<void, LayoutError>;
+  updateBin: (id: BinId, updates: BinUpdates) => Result<void, LayoutError>;
   deleteBin: (id: BinId) => Result<void, LayoutError>;
   deleteBins: (ids: BinId[]) => Result<void, LayoutError>;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
@@ -79,6 +80,8 @@ export interface Mutations {
     halfGridMode?: boolean
   ) => number;
   fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfGridMode?: boolean) => number;
+  /** Resolves the whole selection at once; `err.reason` is an `ExpandBlockedReason`. */
+  expandBinsToFit: (ids: BinId[]) => Result<number, LayoutError>;
   clearLayer: (layerId: LayerId) => number;
 
   // Layout metadata

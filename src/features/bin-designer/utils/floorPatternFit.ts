@@ -34,7 +34,7 @@ export function assessFloorPatternFit(params: BinParams): FloorPatternFit {
   const floorPattern = params.floorPattern;
   if (floorPattern?.enabled !== true) return 'unavailable';
   if (params.base.solid || params.style === 'solid') return 'unavailable';
-  if (params.base.lightweight) return 'unavailable';
+  if (params.base.lightweight || params.base.spacer) return 'unavailable';
 
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const { shapeRadius } = wallPatternElementMetrics(

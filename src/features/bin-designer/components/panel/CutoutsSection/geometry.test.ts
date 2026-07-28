@@ -1123,5 +1123,114 @@ describe('geometry', () => {
       });
       expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
     });
+
+    // Issue #2922: the bounding box of a concave cutout spans the board's notch
+    // even when every point of the outline sits on filled cells.
+    describe('concave outlines on a concave board', () => {
+      const pathPoint = (x: number, y: number): PathPoint => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+
+      /** L-shaped path filling the same three quadrants the L-mask fills. */
+      const lPath: PathPoint[] = [
+        pathPoint(2, 2),
+        pathPoint(82, 2),
+        pathPoint(82, 40),
+        pathPoint(40, 40),
+        pathPoint(40, 82),
+        pathPoint(2, 82),
+      ];
+
+      it('accepts an L-shaped path nested in the L-shaped board', () => {
+        const cutout = createCutout({
+          shape: 'path',
+          x: 2,
+          y: 2,
+          width: 80,
+          depth: 80,
+          path: lPath,
+        });
+        // Its box spans x 2–82, y 2–82 — straight across the notch.
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(true);
+      });
+
+      it('still rejects the same path once an arm reaches into the notch', () => {
+        const intoNotch = lPath.map((p) => pathPoint(p.x + 4, p.y + 4));
+        const cutout = createCutout({
+          shape: 'path',
+          x: 6,
+          y: 6,
+          width: 80,
+          depth: 80,
+          path: intoNotch,
+        });
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
+      });
+
+      it('accepts a circle whose corner-straddling box overhangs the notch', () => {
+        // Centered at (34, 34) with r=10: the box reaches (44, 44) past the
+        // notch corner at (42, 42), but that corner is 11.3mm out — clear of
+        // the rim, so no part of the disc is actually off the board.
+        const cutout = createCutout({ shape: 'circle', x: 24, y: 24, width: 20, depth: 20 });
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(true);
+      });
+
+      it('rejects a circle that genuinely reaches into the notch', () => {
+        // Centered at (36, 36) with r=20 — the notch corner is 8.5mm out, well
+        // inside the disc.
+        const cutout = createCutout({ shape: 'circle', x: 16, y: 16, width: 40, depth: 40 });
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
+      });
+
+      it('validates a mesh imprint by its silhouette when the asset is supplied', () => {
+        const assets = {
+          m1: {
+            name: 'tool',
+            data: '',
+            triangleCount: 0,
+            sizeMm: { x: 80, y: 80, z: 5 },
+            outlines: [
+              [
+                { x: 0, y: 0 },
+                { x: 80, y: 0 },
+                { x: 80, y: 38 },
+                { x: 38, y: 38 },
+                { x: 38, y: 80 },
+                { x: 0, y: 80 },
+              ],
+            ],
+          },
+        };
+        const cutout = createCutout({
+          shape: 'mesh',
+          meshId: 'm1',
+          x: 2,
+          y: 2,
+          width: 80,
+          depth: 80,
+        });
+        expect(cutoutFitsInMask(cutout, lMask, CELL, assets)).toBe(true);
+        // Without the asset there is no silhouette to vouch for, so the
+        // footprint box decides — and it straddles the notch.
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
+      });
+
+      it('rejects an outline that escapes the board entirely', () => {
+        const outside = lPath.map((p) => pathPoint(p.x + 200, p.y));
+        const cutout = createCutout({
+          shape: 'path',
+          x: 202,
+          y: 2,
+          width: 80,
+          depth: 80,
+          path: outside,
+        });
+        expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
+      });
+    });
   });
 });

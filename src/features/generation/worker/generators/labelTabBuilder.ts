@@ -6,6 +6,7 @@
  */
 
 import {
+  box,
   draw,
   drawRoundedRectangle,
   unwrap,
@@ -19,11 +20,19 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import { BOX_CORNER_RADIUS, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
-import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
+import type {
+  BinParams,
+  LabelTabAlignment,
+  LabelTabFit,
+  TextStyleDefaults,
+  TextStyleOverride,
+} from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
-  getCompartmentBounds,
+  compartmentTabEligible,
+  rowHasFullWidthWall,
+  spanRegionDepth,
 } from '@/shared/types/bin';
 import {
   LABEL_PLATE_CORNER_RADIUS_MM,
@@ -48,6 +57,8 @@ import {
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
+import { isLabelPlateIconId } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid, fitTextToHost } from './textBuilder';
@@ -172,14 +183,129 @@ export function buildLabelTabs(
   });
 }
 
-function buildLabelTabsInScope(
-  scope: DisposalScope,
+/**
+ * A footprint a wall-to-wall shelf passes over, in the bin-interior frame.
+ * `zMin` is the shelf underside: divider material from there up is what the
+ * shelf would otherwise collide with.
+ */
+export interface SpanningDividerClip {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
+  readonly zMin: number;
+}
+
+/**
+ * Where a full-width shelf crosses the column dividers (#2897).
+ *
+ * `planSpanningTabAtRow` already assumes those dividers "pass beneath" the
+ * span — but nothing ever shortened them, so they ran to the interior ceiling
+ * and stood proud of any shelf sunk below it (a click-in socket's stacking
+ * relief, or an explicit `label.height`), splitting the one continuous label
+ * surface the feature exists to provide.
+ *
+ * Derived from the same layout plan the shelves themselves are built from, so
+ * the clip and the shelf cannot drift apart. Both spanning shapes qualify: the
+ * `label.span` feature and the socket plan's bin-spanning fallback.
+ */
+export function planSpanningDividerClips(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
   wallThickness: number
-): Shape3D | null {
+): SpanningDividerClip[] {
+  if (!params.label.enabled) return [];
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return [];
+  // Per-compartment tabs are bounded by the dividers rather than crossing
+  // them, so there is nothing to clip.
+  if (!layout.spanningFallback && params.label.span !== true) return [];
+
+  const { dims } = layout;
+  const zMin = dims.shelfTopZ - dims.shelfT;
+  const clips: SpanningDividerClip[] = [];
+  for (const row of layout.plannedRows) {
+    const depthSign = row.anchor === 'back' ? -1 : 1;
+    for (const slot of row.slots) {
+      const yEnd = slot.positionY + depthSign * dims.tabDepth;
+      clips.push({
+        xMin: slot.tabXStart,
+        xMax: slot.tabXStart + slot.tabWidth,
+        yMin: Math.min(slot.positionY, yEnd),
+        yMax: Math.max(slot.positionY, yEnd),
+        zMin,
+      });
+    }
+  }
+  return clips;
+}
+
+/**
+ * Cut tools for a clip set, each running from the shelf underside to `topZ`.
+ *
+ * `topZ` must clear whatever the caller is cutting (the interior ceiling, or a
+ * collared rim) — the box only has to swallow the divider top, and overshooting
+ * upward hits empty space.
+ */
+export function buildSpanningDividerClipTools(
+  clips: readonly SpanningDividerClip[],
+  topZ: number,
+  offsetX = 0,
+  offsetY = 0
+): Shape3D[] {
+  const tools: Shape3D[] = [];
+  for (const c of clips) {
+    const height = topZ - c.zMin;
+    if (height <= 0) continue;
+    const w = c.xMax - c.xMin;
+    const d = c.yMax - c.yMin;
+    if (w <= 0 || d <= 0) continue;
+    tools.push(
+      box(w, d, height, {
+        at: [(c.xMin + c.xMax) / 2 + offsetX, (c.yMin + c.yMax) / 2 + offsetY, c.zMin + height / 2],
+      })
+    );
+  }
+  return tools;
+}
+
+/** Cache-key segment for a clip set. Empty string when nothing is clipped. */
+export function spanningDividerClipsKey(clips: readonly SpanningDividerClip[]): string {
+  if (clips.length === 0) return '';
+  return clips
+    .map((c) => [c.xMin, c.xMax, c.yMin, c.yMax, c.zMin].map((n) => n.toFixed(3)).join(','))
+    .join(';');
+}
+
+/** Everything the tab build needs, resolved without touching BREP. */
+interface TabLayout {
+  readonly dims: TabBuildDimensions;
+  readonly plannedRows: readonly PlannedTabRow[];
+  /**
+   * True when the socket plan degraded to one bin-spanning tab, which is
+   * planned against a SYNTHETIC 1x1 grid. Slot `cellId`s then index that
+   * grid, not the real compartments — see the note on {@link TabSlot}.
+   */
+  readonly spanningFallback: boolean;
+}
+
+/**
+ * Resolve tab dimensions and slot placement.
+ *
+ * Pure, and separate from the build because label tabs are a CACHED pipeline
+ * feature: on a cache hit no geometry is rebuilt, so anything that needs to
+ * know where the tabs ended up (the label-plate preview seats) has to be able
+ * to ask independently rather than observe the build.
+ */
+function planLabelTabLayout(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): TabLayout | null {
   const { cols, rows } = params.compartments;
   const tabDepth = params.label.depth;
 
@@ -233,6 +359,20 @@ function buildLabelTabsInScope(
     const plateByCompartment = new Map<number, LabelPlateWidthU>();
     if (spanningWidthU !== null) {
       plateByCompartment.set(0, spanningWidthU);
+    } else if (params.label.span === true) {
+      // Spanning slots are keyed by row and all share the bin-wide pocket, so
+      // the per-compartment plan doesn't apply — reuse the full-width plate.
+      const widthU =
+        planLabelSockets(
+          { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
+          innerW,
+          clearanceMm
+        ).compartments[0]?.plateWidthU ?? null;
+      if (widthU !== null) {
+        for (let row = 0; row < params.compartments.rows; row++) {
+          plateByCompartment.set(row, widthU);
+        }
+      }
     } else {
       for (const p of plan.compartments) {
         if (p.plateWidthU !== null) plateByCompartment.set(p.compartmentId, p.plateWidthU);
@@ -282,15 +422,11 @@ function buildLabelTabsInScope(
   const rowDims: TabBuildDimensions = isSpanning ? { ...dims, cellW: innerW, cellD: innerD } : dims;
   const rowCount = isSpanning ? 1 : rows;
 
-  let collidingFrontIds: Set<number>;
-  if (edges !== 'both') {
-    collidingFrontIds = new Set();
-  } else if (isSpanning) {
-    const inset = params.label.inset ?? 0;
-    collidingFrontIds = 2 * tabDepth + 2 * inset > innerD ? new Set([0]) : new Set();
-  } else {
-    collidingFrontIds = findCollidingFrontCompartments(params, dims);
-  }
+  // Full-width mode (#2897) plans one shelf per row against the real config —
+  // never the socket fallback's synthetic grid, whose missing divider overrides
+  // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
+  // socket fallback is already one full-width tab.
+  const spanMode = params.label.span === true && !isSpanning;
 
   const plannedRows: PlannedTabRow[] = [];
   for (let row = 0; row < rowCount; row++) {
@@ -299,10 +435,131 @@ function buildLabelTabsInScope(
         params: rowParams,
         anchor,
         dims: rowDims,
-        slots: planTabsAtRow(rowParams, row, anchor, rowDims, collidingFrontIds),
+        slots: spanMode
+          ? planSpanningTabAtRow(params, row, anchor, dims)
+          : planTabsAtRow(rowParams, row, anchor, rowDims, edges === 'both'),
       });
     }
   }
+
+  return { dims, plannedRows, spanningFallback: isSpanning };
+}
+
+/**
+ * Where one swappable label plate seats, in bin-interior world coordinates.
+ *
+ * `z` is the plate's BOTTOM face (plates are modelled bottom-on-Z=0), and
+ * `slideY` is the direction it withdraws from its socket — the same sign the
+ * shelf body protrudes in, since the mouth opens through the compartment-facing
+ * edge.
+ */
+export interface LabelPlateSeat {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly slideY: 1 | -1;
+  readonly plateWidthU: LabelPlateWidthU;
+  readonly text: string;
+  readonly icon?: LabelPlateIconId;
+}
+
+/**
+ * Resolve where every swappable label plate seats, so the preview can render
+ * the real parts clicked into their sockets (#2666 plates, preview per user
+ * request).
+ *
+ * Planned rather than observed: label tabs are a cached pipeline feature, so a
+ * cache hit rebuilds no geometry and there is nothing to watch. This shares
+ * `planLabelTabLayout` with the builder, so a seat can only exist where a
+ * socket was actually cut.
+ *
+ * Returns an empty array outside socket mode.
+ */
+export function planLabelPlateSeats(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): LabelPlateSeat[] {
+  if (!params.label.enabled) return [];
+  if ((params.label.mode ?? 'text') !== 'socket') return [];
+
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return [];
+  const { dims, plannedRows, spanningFallback } = layout;
+  const { socket, tabDepth, shelfTopZ } = dims;
+  if (!socket) return [];
+
+  // Mirrors the pocket floor in `cutLabelSocket` for each retention profile.
+  const pocketDepth =
+    socket.style === 'slideChannel'
+      ? LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM + LABEL_SOCKET_POCKET_DEPTH_MM
+      : LABEL_SOCKET_CLICK_POCKET_DEPTH_MM;
+
+  // The bin-spanning fallback plans against a synthetic 1x1 grid, so its slot
+  // `cellId` indexes that grid rather than the real compartments — reading
+  // per-compartment metadata by it would engrave compartment 0's caption and
+  // icon onto a plate that represents the whole bin.
+  const spanning = params.label.span === true;
+  const texts = spanningFallback
+    ? []
+    : spanning
+      ? (params.label.rowTexts ?? [])
+      : (params.compartments.compartmentTexts ?? []);
+  const icons = spanningFallback ? [] : (params.compartments.labelIcons ?? []);
+  const alignment = params.label.alignment;
+  const wall = LABEL_SOCKET_WALL_MM;
+
+  const seats: LabelPlateSeat[] = [];
+  for (const planned of plannedRows) {
+    const depthSign: 1 | -1 = planned.anchor === 'back' ? -1 : 1;
+    for (const slot of planned.slots) {
+      const plateWidthU = socket.plateByCompartment.get(slot.cellId);
+      if (plateWidthU === undefined) continue;
+
+      // Same guards `applySocket` applies before cutting: no pocket, no seat.
+      const pocketW = labelPlateWidthMm(plateWidthU) + socket.clearanceMm;
+      const pocketD = LABEL_PLATE_HEIGHT_MM + socket.clearanceMm;
+      if (pocketW + 2 * wall > slot.tabWidth + 0.01) continue;
+      if (pocketD + 2 * wall > tabDepth + 0.01) continue;
+
+      const pocketX0 =
+        alignment === 'left'
+          ? wall
+          : alignment === 'right'
+            ? slot.tabWidth - wall - pocketW
+            : (slot.tabWidth - pocketW) / 2;
+
+      const icon = icons[slot.cellId];
+      seats.push({
+        // Local pocket centre plus the tab's world translation
+        // (`[tabXStart, positionY, shelfTopZ - tabHeight]`).
+        x: slot.tabXStart + pocketX0 + pocketW / 2,
+        y: slot.positionY + depthSign * (wall + pocketD / 2),
+        z: shelfTopZ - pocketDepth,
+        slideY: depthSign,
+        plateWidthU,
+        text: (texts[slot.cellId] ?? '').trim(),
+        ...(isLabelPlateIconId(icon) && !spanning ? { icon } : {}),
+      });
+    }
+  }
+  return seats;
+}
+
+function buildLabelTabsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return null;
+  const { dims, plannedRows } = layout;
+  const { socket, tabDepth } = dims;
 
   // Resolved per row/anchor group, not per bin: those tabs are what a viewer
   // sees side by side, and a bin-wide size would let one narrow compartment
@@ -368,48 +625,6 @@ function clipToOuterFootprint(
 }
 
 /**
- * For `edges='both'`: identify compartment IDs where the back + front tabs
- * would collide (2·depth + 2·inset > compartmentDepth) so we can silently
- * drop the front tab. The UI surfaces the same condition as an inline
- * warning so the user isn't confused by missing geometry (#1898).
- */
-function findCollidingFrontCompartments(params: BinParams, dims: TabBuildDimensions): Set<number> {
-  const { cols, rows, cells } = params.compartments;
-  const tabDepth = params.label.depth;
-  const inset = params.label.inset ?? 0;
-  const colliding = new Set<number>();
-  const visited = new Set<number>();
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const cellId = cells[row * cols + col];
-      if (visited.has(cellId)) continue;
-      visited.add(cellId);
-
-      const bounds = getCompartmentBounds(params.compartments, cellId);
-      if (!bounds) continue;
-
-      // Rectangular constraint: any cell at (minRow-1, minCol..maxCol)
-      // differing from cellId means the compartment has a front edge there.
-      // Same logic, mirrored, for the back edge.
-      const hasFrontAnchor =
-        bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
-      const hasBackAnchor =
-        bounds.maxRow === rows - 1 || cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
-
-      if (!hasBackAnchor || !hasFrontAnchor) continue;
-
-      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * dims.cellD;
-      if (2 * tabDepth + 2 * inset > compartmentDepth) {
-        colliding.add(cellId);
-      }
-    }
-  }
-
-  return colliding;
-}
-
-/**
  * Resolve which compartments host a tab anchored to one row's edge (back or
  * front) and where each one sits. Pure — no geometry, no scope — so the whole
  * bin's tabs can be planned before any are built (see
@@ -424,7 +639,7 @@ function planTabsAtRow(
   row: number,
   anchor: TabAnchor,
   dims: TabBuildDimensions,
-  collidingFrontIds: Set<number>
+  bothEdges: boolean
 ): TabSlot[] {
   const { cols, rows, thickness, cells } = params.compartments;
   const widthPercent = params.label.width;
@@ -439,8 +654,7 @@ function planTabsAtRow(
   //   front → has-edge when row is first OR cell in front (-row) differs
   const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
   const neighborRowOffset = anchor === 'back' ? 1 : -1;
-  const hasTiltedAnchorWall =
-    anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  const fit: LabelTabFit = { tabDepth, inset, cellD, bothEdges };
 
   const slots: TabSlot[] = [];
   let col = 0;
@@ -457,35 +671,14 @@ function planTabsAtRow(
       continue;
     }
 
-    // Skip tabs whose anchor wall is a tilted divider — the shelf and gusset
-    // geometry assumes an axis-aligned anchor wall. The compartment text
-    // input still persists in storage; only the rendering is suppressed.
-    if (hasTiltedAnchorWall(params.compartments, cellId)) {
+    // Tilted anchor wall, a body deeper than the compartment, or a front tab
+    // colliding with its back partner under `edges='both'` — the shared
+    // predicate answers all three, and the plate planner and ghost overlay
+    // gate on the same one so none of the three can drift (#2910). Compartment
+    // text still persists in storage; only the geometry is suppressed.
+    if (!compartmentTabEligible(params.compartments, cellId, anchor, fit)) {
       col++;
       continue;
-    }
-
-    // For `edges='both'`, drop the front tab in compartments where the
-    // back+front pair would collide (#1898 collision rule). The back tab
-    // is unaffected.
-    if (anchor === 'front' && collidingFrontIds.has(cellId)) {
-      col++;
-      continue;
-    }
-
-    // Per-compartment depth+inset guard. The tab body uses `tabDepth + inset`
-    // mm of compartment depth; if that exceeds the compartment's available
-    // depth the body would extend past the opposite wall (and fuse into it).
-    // The UI clamps the stepper, but a cloud-share payload can still smuggle
-    // in an invalid combo — silently drop to match the existing bridge guard.
-    // (Copilot review on #1904.)
-    const cellBounds = getCompartmentBounds(params.compartments, cellId);
-    if (cellBounds) {
-      const compartmentDepth = (cellBounds.maxRow - cellBounds.minRow + 1) * cellD;
-      if (tabDepth + inset > compartmentDepth) {
-        col++;
-        continue;
-      }
     }
 
     // Find extent of consecutive same-compId columns with edges at this row
@@ -522,53 +715,127 @@ function planTabsAtRow(
 
     const availableLeft = groupLeft + leftDeduction;
     const availableRight = groupRight - rightDeduction;
-    const availableWidth = availableRight - availableLeft;
-
-    // Compute tab width from percentage of available group width. Socket
-    // mode ignores the percentage and always spans the full group — the
-    // pocket needs the room, and `alignment` instead positions the socket
-    // within the tab (below).
-    const tabWidth = socket ? availableWidth : (availableWidth * widthPercent) / 100;
-    if (tabWidth <= 0) {
-      col = groupEnd;
-      continue;
-    }
-
-    // Compute X offset based on alignment within the group
-    let tabXStart: number;
-    if (socket || alignment === 'left') {
-      tabXStart = availableLeft;
-    } else if (alignment === 'right') {
-      tabXStart = availableRight - tabWidth;
-    } else {
-      const availableCenter = (availableLeft + availableRight) / 2;
-      tabXStart = availableCenter - tabWidth / 2;
-    }
 
     // Y position of the anchor wall (front face of back wall, or back face
     // of front wall — i.e., the interior surface). Inset slides the tab
     // inward along the body direction (depthSign).
     const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
-    const positionY = anchorY + depthSign * inset;
 
-    // -- Determine which ends touch a wall --
-    const fullWidth = tabWidth >= availableWidth - 0.01;
-    const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
-    const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
-
-    slots.push({
+    const slot = fitTabInSpan({
       cellId,
       text: params.compartments.compartmentTexts?.[cellId] ?? '',
-      tabWidth,
-      tabXStart,
-      positionY,
-      touchesLeft,
-      touchesRight,
+      availableLeft,
+      availableRight,
+      hasLeftWall,
+      hasRightWall,
+      positionY: anchorY + depthSign * inset,
+      widthPercent,
+      alignment,
+      socket: socket !== null,
     });
+    if (slot) slots.push(slot);
     col = groupEnd;
   }
 
   return slots;
+}
+
+/**
+ * Plan the single full-width tab at one row's anchor wall (#2897).
+ *
+ * Deliberately runs against the REAL compartment config rather than a synthetic
+ * one-column grid: the tilt and depth guards below read `dividerOverrides` and
+ * real bounds, and would silently pass on a fabricated config.
+ */
+function planSpanningTabAtRow(
+  params: BinParams,
+  row: number,
+  anchor: TabAnchor,
+  dims: TabBuildDimensions
+): TabSlot[] {
+  const { cols, cells } = params.compartments;
+  const { innerW, innerD, cellD, tabDepth } = dims;
+  const inset = params.label.inset ?? 0;
+
+  if (!rowHasFullWidthWall(params.compartments, row, anchor)) return [];
+
+  // A tilted divider anywhere along this boundary breaks the axis-aligned
+  // anchor-wall assumption the shelf and gusset geometry depends on.
+  const hasTilt = anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+  for (let col = 0; col < cols; col++) {
+    if (hasTilt(params.compartments, cells[row * cols + col])) return [];
+  }
+
+  // The body would otherwise punch through the wall bounding the far side.
+  if (tabDepth + inset > spanRegionDepth(params.compartments, row, anchor, cellD)) return [];
+
+  const depthSign = anchor === 'back' ? -1 : 1;
+  const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+
+  // Spanning tabs run outer wall to outer wall. Column dividers pass beneath
+  // rather than bounding the span, so they take no thickness deduction.
+  const slot = fitTabInSpan({
+    cellId: row,
+    text: params.label.rowTexts?.[row] ?? '',
+    availableLeft: -innerW / 2,
+    availableRight: innerW / 2,
+    hasLeftWall: true,
+    hasRightWall: true,
+    positionY: anchorY + depthSign * inset,
+    widthPercent: params.label.width,
+    alignment: params.label.alignment,
+    socket: dims.socket !== null,
+  });
+  return slot ? [slot] : [];
+}
+
+/**
+ * Resolve a tab's width and X placement inside an available span.
+ *
+ * Shared by the per-compartment planner and the full-width spanning planner so
+ * the two can never drift on width percentage, socket override, alignment or
+ * wall-contact rules. Returns null when the span leaves no room for a tab.
+ */
+function fitTabInSpan(args: {
+  readonly cellId: number;
+  readonly text: string;
+  readonly availableLeft: number;
+  readonly availableRight: number;
+  readonly hasLeftWall: boolean;
+  readonly hasRightWall: boolean;
+  readonly positionY: number;
+  readonly widthPercent: number;
+  readonly alignment: LabelTabAlignment;
+  readonly socket: boolean;
+}): TabSlot | null {
+  const { availableLeft, availableRight, alignment, socket } = args;
+  const availableWidth = availableRight - availableLeft;
+
+  // Socket mode ignores the width percentage and always spans the full
+  // available width — the pocket needs the room, and `alignment` instead
+  // positions the socket within the tab.
+  const tabWidth = socket ? availableWidth : (availableWidth * args.widthPercent) / 100;
+  if (tabWidth <= 0) return null;
+
+  let tabXStart: number;
+  if (socket || alignment === 'left') {
+    tabXStart = availableLeft;
+  } else if (alignment === 'right') {
+    tabXStart = availableRight - tabWidth;
+  } else {
+    tabXStart = (availableLeft + availableRight) / 2 - tabWidth / 2;
+  }
+
+  const fullWidth = tabWidth >= availableWidth - 0.01;
+  return {
+    cellId: args.cellId,
+    text: args.text,
+    tabWidth,
+    tabXStart,
+    positionY: args.positionY,
+    touchesLeft: (fullWidth || alignment === 'left') && args.hasLeftWall,
+    touchesRight: (fullWidth || alignment === 'right') && args.hasRightWall,
+  };
 }
 
 /**

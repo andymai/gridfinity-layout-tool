@@ -524,3 +524,364 @@ describe('resolveUniformTabTextSize', () => {
     expect(otherRow).toBeCloseTo(alone, 3);
   });
 });
+
+// Full-width labels (#2897): one shelf per row rather than one per compartment.
+describe('buildLabelTabs — span full width', () => {
+  const spanParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true },
+    ...over,
+  });
+
+  it('builds a spanning shelf for a divided bin', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const result = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(result).not.toBeNull();
+  });
+
+  // A spanning shelf crosses every column, so it must be wider than the
+  // per-compartment tabs the same grid produces.
+  it('produces more material than per-compartment tabs on the same grid', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const spanned = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+    const perCompartment = buildLabelTabs(
+      spanParams({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: false },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+
+    expect(spanned).not.toBeNull();
+    expect(perCompartment).not.toBeNull();
+    const spannedVolume = measureVolume(spanned!);
+    const perCompartmentVolume = measureVolume(perCompartment!);
+    expect(isOk(spannedVolume)).toBe(true);
+    expect(isOk(perCompartmentVolume)).toBe(true);
+    if (isOk(spannedVolume) && isOk(perCompartmentVolume)) {
+      expect(spannedVolume.value).toBeGreaterThan(perCompartmentVolume.value);
+    }
+  });
+
+  // Rows that merge across the boundary have no wall to hang a full-width
+  // shelf from, so only the outer back wall hosts one.
+  it('skips a row whose compartments merge through the boundary', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    // Column 1 spans both rows (id 1), so the row 0/1 boundary has no wall.
+    const merged = buildLabelTabs(
+      spanParams({
+        compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 1, 5] },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+    const fullyDivided = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(merged).not.toBeNull();
+    const mergedVolume = measureVolume(merged!);
+    const dividedVolume = measureVolume(fullyDivided!);
+    if (isOk(mergedVolume) && isOk(dividedVolume)) {
+      // One spanning tab instead of two.
+      expect(mergedVolume.value).toBeLessThan(dividedVolume.value);
+    }
+  });
+
+  it('engraves the row caption rather than compartment text', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const withRowText = buildLabelTabs(
+      spanParams({
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          span: true,
+          rowTexts: ['CABLES', 'ADAPTERS'],
+        },
+      }),
+      80,
+      80,
+      35,
+      1.2
+    );
+    const blank = buildLabelTabs(spanParams(), 80, 80, 35, 1.2);
+
+    expect(withRowText).not.toBeNull();
+    const engraved = measureVolume(withRowText!);
+    const plain = measureVolume(blank!);
+    if (isOk(engraved) && isOk(plain)) {
+      // Engraving removes material from the shelf face.
+      expect(engraved.value).toBeLessThan(plain.value);
+    }
+  });
+});
+
+// Seats for the swappable-label plate preview. Planned rather than observed:
+// label tabs are a cached pipeline feature, so a cache hit rebuilds nothing.
+describe('planLabelPlateSeats', () => {
+  const socketParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const, depth: 14 },
+    ...over,
+  });
+
+  it('returns nothing when labels are disabled', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: false, mode: 'socket' as const },
+    });
+
+    expect(planLabelPlateSeats(params, 120, 80, 35, 1.2)).toEqual([]);
+  });
+
+  // Text-mode tabs engrave directly; there is no pocket and so no plate.
+  it('returns nothing in text mode', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'text' as const },
+    });
+
+    expect(planLabelPlateSeats(params, 120, 80, 35, 1.2)).toEqual([]);
+  });
+
+  it('seats one plate per socket', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const seats = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+
+    expect(seats.length).toBeGreaterThan(0);
+    for (const seat of seats) {
+      expect(Number.isFinite(seat.x)).toBe(true);
+      expect(Number.isFinite(seat.y)).toBe(true);
+      expect(Number.isFinite(seat.z)).toBe(true);
+      expect(seat.plateWidthU).toBeGreaterThan(0);
+    }
+  });
+
+  // Back-anchored tabs protrude toward -Y, so their plates withdraw that way.
+  it('reports the withdrawal direction of a back-anchored socket', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const seats = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+
+    expect(seats.every((s) => s.slideY === -1)).toBe(true);
+  });
+
+  it('seats a plate on each edge under edges: both', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const backOnly = planLabelPlateSeats(socketParams(), 120, 80, 35, 1.2);
+    const both = planLabelPlateSeats(
+      socketParams({
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket' as const,
+          depth: 14,
+          edges: 'both' as const,
+        },
+      }),
+      120,
+      80,
+      35,
+      1.2
+    );
+
+    expect(both.length).toBe(backOnly.length * 2);
+    expect(both.some((s) => s.slideY === 1)).toBe(true);
+    expect(both.some((s) => s.slideY === -1)).toBe(true);
+  });
+
+  it('carries the compartment caption onto its plate', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      compartments: {
+        cols: 3,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+        compartmentTexts: ['M3', 'M4', 'M5'],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 120, 80, 35, 1.2);
+
+    expect(seats.map((s) => s.text).sort()).toEqual(['M3', 'M4', 'M5']);
+  });
+
+  // Span mode labels rows, so captions come from `label.rowTexts` (#2897).
+  it('reads row captions in span mode', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const params = socketParams({
+      compartments: {
+        cols: 3,
+        rows: 1,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+        compartmentTexts: ['ignored', 'ignored', 'ignored'],
+      },
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        mode: 'socket' as const,
+        depth: 14,
+        span: true,
+        rowTexts: ['FASTENERS'],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 120, 80, 35, 1.2);
+
+    expect(seats).toHaveLength(1);
+    expect(seats[0].text).toBe('FASTENERS');
+  });
+
+  // The bin-spanning fallback plans against a synthetic 1x1 grid, so its slot
+  // cellId indexes THAT grid — reading compartment metadata by it would engrave
+  // compartment 0's caption onto a plate representing the whole bin.
+  it('does not inherit compartment 0 metadata in the bin-spanning fallback', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    // 12 narrow columns: no compartment can host a plate, so the socket plan
+    // degrades to one bin-spanning tab.
+    const params = socketParams({
+      compartments: {
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+        compartmentTexts: ['LEAK', ...Array.from({ length: 11 }, () => '')],
+        labelIcons: ['screw', ...Array.from({ length: 11 }, () => null)],
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 80, 80, 35, 1.2);
+
+    for (const seat of seats) {
+      expect(seat.text).toBe('');
+      expect(seat.icon).toBeUndefined();
+    }
+  });
+
+  // Every seat must correspond to a socket the builder actually cut.
+  it('seats nothing when no compartment can host a plate', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    // 12 columns across an 80mm interior leaves ~6mm per tab — far under a 1U plate.
+    const params = socketParams({
+      compartments: {
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+      },
+    });
+
+    const seats = planLabelPlateSeats(params, 80, 80, 35, 1.2);
+
+    // Either no seats, or the bin-spanning fallback's single seat — never a
+    // seat for a compartment too narrow to hold a plate.
+    expect(seats.length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('planSpanningDividerClips', () => {
+  const fourColumns = { cols: 4, rows: 1, thickness: 1.2, cells: [0, 1, 2, 3] };
+  const INNER_W = 123.1;
+  const INNER_D = 123.1;
+  const INTERIOR_H = 15.3;
+
+  const spanParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...fourColumns },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true, ...over },
+  });
+
+  it('produces no clips for per-compartment tabs', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = spanParams({ span: false });
+    expect(planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2)).toHaveLength(0);
+  });
+
+  it('produces no clips when labels are disabled', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = spanParams({ enabled: false });
+    expect(planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2)).toHaveLength(0);
+  });
+
+  it('clips at the shelf underside for a full-width span', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const clips = planSpanningDividerClips(spanParams(), INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    // Text mode: shelf is one wallThickness thick and tops out at the ceiling.
+    expect(clips[0].zMin).toBeCloseTo(INTERIOR_H - 1.2, 5);
+    // The footprint reaches the dividers it has to clear.
+    expect(clips[0].xMax - clips[0].xMin).toBeCloseTo(INNER_W, 5);
+    expect(clips[0].yMax - clips[0].yMin).toBeCloseTo(DEFAULT_BIN_PARAMS.label.depth, 5);
+  });
+
+  // The reporter's case (#2897): a click-in socket on a lipped bin sinks the
+  // shelf below the ceiling, so full-height dividers stood proud of it.
+  it('clips below the interior ceiling for a click-in socket on a lipped bin', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = {
+      ...spanParams({ mode: 'socket' as const, socketStyle: 'clickIn' as const, depth: 14 }),
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    };
+
+    const clips = planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    expect(clips[0].zMin).toBeLessThan(INTERIOR_H);
+  });
+
+  // The socket plan degrades to one bin-wide tab when no column can host a
+  // plate — that shelf spans the dividers too, without `label.span`.
+  // A divider already ending below the shelf has nothing to clip; the feature
+  // builder filters those out so the cache key can't churn on identical geometry.
+  it('reports clips above a shortened divider so callers can filter them', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const clips = planSpanningDividerClips(spanParams(), INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    // A 5mm divider ends well under the shelf underside, so nothing bites.
+    expect(clips.filter((c) => c.zMin < 5)).toHaveLength(0);
+    // A full-height divider does.
+    expect(clips.filter((c) => c.zMin < INTERIOR_H)).toHaveLength(1);
+  });
+
+  it('clips for the socket bin-spanning fallback even with span off', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+      },
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        span: false,
+        mode: 'socket' as const,
+        depth: 14,
+      },
+    };
+
+    const clips = planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips.length).toBeGreaterThan(0);
+  });
+});

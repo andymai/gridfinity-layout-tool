@@ -7,6 +7,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { hasAllEdgeSlots } from '@/shared/types/bin';
 import { hashOutline } from '@/shared/utils/drawerOutline';
 import { exteriorCorners, type CornerKey } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
@@ -98,7 +99,13 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     // plain exterior one and the export reuses a tongue-less mesh.
     const ms = `${+(canon.left === 'marginSeam')}${+(canon.right === 'marginSeam')}${+(canon.front === 'marginSeam')}${+(canon.back === 'marginSeam')}`;
     if (ms !== '0000') parts.push(`ms:${ms}`);
-    if (params.connectorNubs === true) {
+    // With all-edge slots (#2866) an exterior edge carries the same female slot
+    // a join edge does, so the edge LABEL no longer distinguishes the connector
+    // geometry — what does is whether the side is padding-free, and padding is
+    // keyed above. Fall through to the rounding key so edge/corner/interior
+    // pieces of one size collapse into a single printable tile (the point of the
+    // option) without ever merging pieces whose corners round differently.
+    if (params.connectorNubs === true && !hasAllEdgeSlots(params)) {
       parts.push(`el:${canon.left}`, `er:${canon.right}`, `ef:${canon.front}`, `eb:${canon.back}`);
     } else {
       // Per-corner nominal radius (mirrors resolveCornerRadii precedence:

@@ -24,6 +24,7 @@ import {
   BinMesh,
   LidMesh,
   StackPlateMesh,
+  LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
   LID_OFFSET_DEFAULT,
@@ -439,6 +440,14 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 lidOffsetMm={lidOffsetMm}
                 wireframe={wireframe}
                 xray={xray}
+              />
+              {/* Swappable label plates (socket mode): seated in their sockets
+                and again in a reference row beside the bin. Shares the explode
+                slider — it withdraws the seated ones, the row stays put. */}
+              <LabelPlateMeshes
+                color={previewColor}
+                lidOffsetMm={lidOffsetMm}
+                wireframe={wireframe}
               />
               {/* Dashed guide line between bin's lip top and lid's mating opening,
                 visible only when the lid is meaningfully exploded. */}

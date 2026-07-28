@@ -28,8 +28,8 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 /**
  * Resolved lid-top text (issue #2695): the trimmed string plus the effective
  * style — the design's `textDefaults` merged with the shared surface-text
- * override. Null when there's no text or a gate rejects it (stackable top,
- * polygon footprint).
+ * override. Null when there's no text or a gate rejects it (full stack
+ * grid, polygon footprint).
  */
 export interface LidTextInputs {
   readonly value: string;
@@ -73,6 +73,11 @@ export interface LidInputs {
   readonly cavityInset: number;
   readonly stackableTop: boolean;
   /**
+   * Already gated on `stackableTop` here, so `buildStackGrid` can branch on the
+   * flag directly. See {@link LidConfig.stackLipOnly}.
+   */
+  readonly stackLipOnly: boolean;
+  /**
    * When true, the stack grid is NOT fused into the lid — it's emitted as a
    * standalone companion slab (glued on by the user). Already gated on
    * `stackableTop` here, so consumers can check it directly. See
@@ -92,6 +97,8 @@ export interface LidInputs {
   readonly retentionMagnets: boolean;
   readonly retentionMagnetDiameter: number;
   readonly retentionMagnetDepth: number;
+  /** Extra magnets per long edge (#2844); 0 = the classic four-corner lid. */
+  readonly retentionMagnetEdgeMagnets: number;
   /**
    * Resolved tray recess. `enabled` is already gated on `!stackableTop` here,
    * so the builder can trust it directly. Dimensions are pre-clamped upstream.
@@ -154,10 +161,11 @@ export interface LidInputs {
   readonly cellMask: CellMask | undefined;
   /**
    * Lid-top text, or null when absent/gated off. Rendered on the plain top
-   * face, or the tray floor when the tray recess is active. Gates mirror the
-   * LidSection UI: a stackable top owns the surface, and polygon lids are
-   * excluded (auto-fit assumes a rectangular face — same rectangularity
-   * restriction as `retentionMagnets`).
+   * face, the tray floor when the tray recess is active, or the recessed floor
+   * inside the lip on a lip-only stack top. Gates mirror the LidSection UI: a
+   * FULL stack grid owns the surface, and polygon lids are excluded (auto-fit
+   * assumes a rectangular face — same rectangularity restriction as
+   * `retentionMagnets`).
    */
   readonly text: LidTextInputs | null;
   /**
@@ -201,11 +209,15 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
 
   // Lid-top text (issue #2695). Shared surface style = design textDefaults
-  // merged with the surface-text override; a stackable top owns the surface
-  // and polygon lids are excluded (rectangular auto-fit), mirroring the UI.
+  // merged with the surface-text override; polygon lids are excluded
+  // (rectangular auto-fit), mirroring the UI.
+  //
+  // A full stack grid leaves no flat surface to write on; the lip-only variant
+  // (#2930) does — its recessed floor is one clear face.
+  const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly;
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
-  if (lidTextValue !== '' && !params.lid.stackableTop && !cellMask) {
+  if (lidTextValue !== '' && !stackGridOwnsTop && !cellMask) {
     const style = { ...params.textDefaults, ...params.surfaceText?.style };
     text = {
       value: lidTextValue,
@@ -261,6 +273,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cavityExtraMm: cavityExtra,
     cavityInset,
     stackableTop: params.lid.stackableTop,
+    // Gate here so buildStackGrid can trust the flag without re-checking.
+    stackLipOnly: params.lid.stackLipOnly && params.lid.stackableTop,
     // Splitting the stack grid off only means anything when there IS a stack
     // grid — gate on stackableTop so buildLid/buildStackPlate can trust the
     // flag directly without re-checking stackableTop.
@@ -276,6 +290,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     retentionMagnets,
     retentionMagnetDiameter: params.lid.retentionMagnet.diameter,
     retentionMagnetDepth: params.lid.retentionMagnet.depth,
+    retentionMagnetEdgeMagnets: params.lid.retentionMagnet.edgeMagnets,
     tray: {
       enabled: trayEnabled,
       depthMm: params.lid.tray.depthMm,

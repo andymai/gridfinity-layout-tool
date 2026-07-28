@@ -1,5 +1,208 @@
 # Changelog
 
+## [4.325.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.2...gridfinity-layout-tool-v4.325.3) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** clip dividers under a spanning label shelf ([#2943](https://github.com/andymai/gridfinity-layout-tool/issues/2943)) ([26db433](https://github.com/andymai/gridfinity-layout-tool/commit/26db433f1e1b9ba89e8cd81ee78f3ee91266d0d4))
+
+## [4.325.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.1...gridfinity-layout-tool-v4.325.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **shortcuts:** scope layout keyboard shortcuts to the layout route ([#2941](https://github.com/andymai/gridfinity-layout-tool/issues/2941)) ([f8e0e3c](https://github.com/andymai/gridfinity-layout-tool/commit/f8e0e3c7f3144a9a5c8a76e6a16f656f4bc47407))
+
+## [4.325.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.0...gridfinity-layout-tool-v4.325.1) (2026-07-28)
+
+
+### Performance
+
+* **generation:** cut kumiko wall pattern generation by up to 55% ([#2939](https://github.com/andymai/gridfinity-layout-tool/issues/2939)) ([4019bfc](https://github.com/andymai/gridfinity-layout-tool/commit/4019bfc72efd7189f5fa4232cf2cefa0c51b0812))
+
+## [4.325.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.324.0...gridfinity-layout-tool-v4.325.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** allow lid text on lip-only stack tops ([#2936](https://github.com/andymai/gridfinity-layout-tool/issues/2936)) ([db6ee89](https://github.com/andymai/gridfinity-layout-tool/commit/db6ee896447815e93e51c089adc90f07d695cd97))
+
+## [4.324.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.5...gridfinity-layout-tool-v4.324.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** add stacking-lip-only option for stackable lids ([#2934](https://github.com/andymai/gridfinity-layout-tool/issues/2934)) ([1627b43](https://github.com/andymai/gridfinity-layout-tool/commit/1627b431be6f842a2b241a3397b52aa824175a2d))
+
+## [4.323.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.4...gridfinity-layout-tool-v4.323.5) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** stop lid magnet pads punching through the bin corner ([#2931](https://github.com/andymai/gridfinity-layout-tool/issues/2931)) ([6e70b14](https://github.com/andymai/gridfinity-layout-tool/commit/6e70b149bdfbeeaaee2d22ac4a733ebdeeb82ea5))
+
+## [4.323.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.3...gridfinity-layout-tool-v4.323.4) (2026-07-28)
+
+
+### Bug Fixes
+
+* **bin-designer:** validate cutout placement by outline, not bounding box ([#2927](https://github.com/andymai/gridfinity-layout-tool/issues/2927)) ([17826d9](https://github.com/andymai/gridfinity-layout-tool/commit/17826d9513e20f2f0ce3387f8ff9dffdb0b7fa6b))
+
+## [4.323.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.2...gridfinity-layout-tool-v4.323.3) (2026-07-28)
+
+
+### Bug Fixes
+
+* **deps:** drop vulnerable brace-expansion@2.1.2 via minimatch@10 ([#2924](https://github.com/andymai/gridfinity-layout-tool/issues/2924)) ([0faa3e5](https://github.com/andymai/gridfinity-layout-tool/commit/0faa3e5fd058c3dfaded65ccd1c394ace478bbfe))
+
+## [4.323.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.1...gridfinity-layout-tool-v4.323.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **security:** stop suppressing real brace-expansion CVE findings ([#2921](https://github.com/andymai/gridfinity-layout-tool/issues/2921)) ([44b306e](https://github.com/andymai/gridfinity-layout-tool/commit/44b306e6be595f1375f53a50430ae4fae25ba0ca))
+
+## [4.323.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.0...gridfinity-layout-tool-v4.323.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **deps:** patch js-yaml and brace-expansion DoS advisories ([#2919](https://github.com/andymai/gridfinity-layout-tool/issues/2919)) ([76599c2](https://github.com/andymai/gridfinity-layout-tool/commit/76599c242af9bee3c125918ef62127bb29014309))
+
+## [4.323.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.1...gridfinity-layout-tool-v4.323.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** allow a 1u height in spacer mode ([#2917](https://github.com/andymai/gridfinity-layout-tool/issues/2917)) ([4d5c33c](https://github.com/andymai/gridfinity-layout-tool/commit/4d5c33c3caaa694ffec552752ad9e909d0545aae))
+
+## [4.322.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.0...gridfinity-layout-tool-v4.322.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **bin-designer:** ship a label plate for every socket, not every compartment ([#2914](https://github.com/andymai/gridfinity-layout-tool/issues/2914)) ([028bb94](https://github.com/andymai/gridfinity-layout-tool/commit/028bb94b8150e5be3420de552e60b8a28e1729d4))
+
+## [4.322.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.321.0...gridfinity-layout-tool-v4.322.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** render swappable label plates in the 3D preview ([#2912](https://github.com/andymai/gridfinity-layout-tool/issues/2912)) ([2f1bc25](https://github.com/andymai/gridfinity-layout-tool/commit/2f1bc25de9f7cc3b77a568bd8418264ef7088f5a))
+
+## [4.321.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.320.0...gridfinity-layout-tool-v4.321.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** span label tabs across the full bin width ([#2909](https://github.com/andymai/gridfinity-layout-tool/issues/2909)) ([b604262](https://github.com/andymai/gridfinity-layout-tool/commit/b60426271e080069495bd695cd8efa027a686d80))
+
+## [4.320.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.2...gridfinity-layout-tool-v4.320.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** align, distribute and batch-edit cutouts ([#2907](https://github.com/andymai/gridfinity-layout-tool/issues/2907)) ([a07ff80](https://github.com/andymai/gridfinity-layout-tool/commit/a07ff80c38e6a8d7c285f2fbfe4b74ea4a1aa852))
+
+## [4.319.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.1...gridfinity-layout-tool-v4.319.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* **cloud-share:** carry linked bin designs through share links ([#2904](https://github.com/andymai/gridfinity-layout-tool/issues/2904)) ([00c505f](https://github.com/andymai/gridfinity-layout-tool/commit/00c505f6aed325e725ec3115824ab360283d03ae))
+
+## [4.319.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.319.0...gridfinity-layout-tool-v4.319.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **bin-designer:** persist pending design edits when leaving the designer ([#2903](https://github.com/andymai/gridfinity-layout-tool/issues/2903)) ([c4aeb66](https://github.com/andymai/gridfinity-layout-tool/commit/c4aeb66a760b668cbdeb09d51c9cc983ac494ce8))
+
+## [4.319.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.318.0...gridfinity-layout-tool-v4.319.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** replace the plate icon dropdown with a visual grid picker ([#2888](https://github.com/andymai/gridfinity-layout-tool/issues/2888)) ([e1cc849](https://github.com/andymai/gridfinity-layout-tool/commit/e1cc8494e68de736ab35162c9e27eb13e48a0106))
+
+## [4.318.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.317.0...gridfinity-layout-tool-v4.318.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** add 26 label plate icons across fasteners and tooling ([#2890](https://github.com/andymai/gridfinity-layout-tool/issues/2890)) ([952a35f](https://github.com/andymai/gridfinity-layout-tool/commit/952a35fc0f05cd656475e60124932d7a95455ec0))
+
+## [4.317.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.2...gridfinity-layout-tool-v4.317.0) (2026-07-27)
+
+
+### Features
+
+* **generation:** source label plate icons from SVG paths ([#2886](https://github.com/andymai/gridfinity-layout-tool/issues/2886)) ([31f6e63](https://github.com/andymai/gridfinity-layout-tool/commit/31f6e63b65bea73c2a357a6f54f388255a9441bc))
+
+## [4.316.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.1...gridfinity-layout-tool-v4.316.2) (2026-07-27)
+
+
+### Performance
+
+* **ci:** give the generators group 6 shards now that it is CPU-bound ([#2884](https://github.com/andymai/gridfinity-layout-tool/issues/2884)) ([e2e468d](https://github.com/andymai/gridfinity-layout-tool/commit/e2e468d13173aa08fa98722b97d705a38a1e4b5a))
+
+## [4.316.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.316.0...gridfinity-layout-tool-v4.316.1) (2026-07-27)
+
+
+### Performance
+
+* **test:** split the export-integrity matrix per domain to unblock CI ([#2882](https://github.com/andymai/gridfinity-layout-tool/issues/2882)) ([1e59368](https://github.com/andymai/gridfinity-layout-tool/commit/1e59368e5f99b81623c964c77fb1a04be9d2e947))
+
+## [4.316.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.315.0...gridfinity-layout-tool-v4.316.0) (2026-07-27)
+
+
+### Features
+
+* **baseplate:** cut key slots on all edges so split pieces are standard tiles ([#2875](https://github.com/andymai/gridfinity-layout-tool/issues/2875)) ([61badac](https://github.com/andymai/gridfinity-layout-tool/commit/61badac10dbb87f77facaa3a4c63fa9a0fd560cf))
+
+## [4.315.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.314.0...gridfinity-layout-tool-v4.315.0) (2026-07-27)
+
+
+### Features
+
+* **bin-designer:** add a spacer mode so bins of different heights finish flush ([#2878](https://github.com/andymai/gridfinity-layout-tool/issues/2878)) ([4c2fc3b](https://github.com/andymai/gridfinity-layout-tool/commit/4c2fc3b499d8658caf92093de32bd0e384e69c76))
+
+## [4.314.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.313.0...gridfinity-layout-tool-v4.314.0) (2026-07-27)
+
+
+### Features
+
+* **baseplate:** key the detached margin seam so rails lock on like the pieces do ([#2876](https://github.com/andymai/gridfinity-layout-tool/issues/2876)) ([c7d7a7b](https://github.com/andymai/gridfinity-layout-tool/commit/c7d7a7b156aa2fdf77f090642f9369ab70241508))
+
+## [4.313.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.1...gridfinity-layout-tool-v4.313.0) (2026-07-27)
+
+
+### Features
+
+* **lid:** add edge retention magnets to stop large magnetic lids sagging ([#2853](https://github.com/andymai/gridfinity-layout-tool/issues/2853)) ([8d54b42](https://github.com/andymai/gridfinity-layout-tool/commit/8d54b42152d037d99190b80ac5ebff2999f367e7))
+
+## [4.312.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.312.0...gridfinity-layout-tool-v4.312.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **generation:** keep wall pattern clear of corners on lip-less bins ([#2865](https://github.com/andymai/gridfinity-layout-tool/issues/2865)) ([#2870](https://github.com/andymai/gridfinity-layout-tool/issues/2870)) ([81b6420](https://github.com/andymai/gridfinity-layout-tool/commit/81b64208bb0300753f3512886cf6b45323ad1f14))
+
+## [4.312.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.311.0...gridfinity-layout-tool-v4.312.0) (2026-07-27)
+
+
+### Features
+
+* **layout:** expand bins to fit the space around them ([#2871](https://github.com/andymai/gridfinity-layout-tool/issues/2871)) ([24ed520](https://github.com/andymai/gridfinity-layout-tool/commit/24ed520b2059d2d71645323c6d9b57f42da4413a))
+
+## [4.311.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.1...gridfinity-layout-tool-v4.311.0) (2026-07-26)
+
+
+### Features
+
+* **layout:** per-placement bin overhang ([#2867](https://github.com/andymai/gridfinity-layout-tool/issues/2867)) ([0c34156](https://github.com/andymai/gridfinity-layout-tool/commit/0c341561f1c87da482174a22f437235c1bdcc15f))
+
 ## [4.310.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.310.0...gridfinity-layout-tool-v4.310.1) (2026-07-26)
 
 

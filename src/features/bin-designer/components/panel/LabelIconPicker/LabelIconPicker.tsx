@@ -1,0 +1,177 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Input, Popover } from '@/design-system';
+import { useTranslation } from '@/i18n';
+import { LABEL_ICON_DOMAINS, LABEL_ICON_PATHS } from '@/shared/constants/labelIconPaths';
+import type { LabelIconDomain } from '@/shared/constants/labelIconPaths';
+import { LABEL_PLATE_ICONS } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
+import { LabelIconGlyph } from './LabelIconGlyph';
+
+export interface LabelIconPickerProps {
+  readonly value: LabelPlateIconId | null;
+  readonly onChange: (icon: LabelPlateIconId | null) => void;
+  /** Compartment this picker belongs to, for the accessible name. */
+  readonly compartmentNumber: number;
+}
+
+/** Stand-in for the empty state — an outlined slot rather than a blank button. */
+function NoIconMark() {
+  return (
+    <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true" focusable="false">
+      <rect
+        x="3.5"
+        y="3.5"
+        width="13"
+        height="13"
+        rx="2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeDasharray="3 2.5"
+        opacity="0.65"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Icon picker for swappable label plates: a grid of the actual silhouettes,
+ * grouped by domain and filterable.
+ *
+ * Replaces a flat `<Select>` of names, which stopped working once the catalog
+ * passed a handful of entries — "Wood screw" and "Self-tapping screw" are not
+ * distinguishable as words at a glance, but they are as shapes.
+ */
+export function LabelIconPicker({ value, onChange, compartmentNumber }: LabelIconPickerProps) {
+  const t = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Focus the filter on open the way a command palette does. Done in an effect
+  // rather than with autoFocus, which fires on mount regardless of visibility.
+  useEffect(() => {
+    if (isOpen) searchRef.current?.focus();
+  }, [isOpen]);
+
+  const label = (icon: LabelPlateIconId): string => t(`binDesigner.plateIcon.${icon}`);
+  const currentName = value ? label(value) : t('binDesigner.plateIcon.none');
+  const dialogLabel = t('binDesigner.plateIconAria', { n: compartmentNumber });
+
+  // Match the localized name as well as the id, so a Swedish user searching
+  // "insex" finds the socket cap screw and a contributor searching the id does
+  // too.
+  const groups = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const matches = LABEL_PLATE_ICONS.filter(
+      (icon) =>
+        needle === '' ||
+        icon.toLowerCase().includes(needle) ||
+        t(`binDesigner.plateIcon.${icon}`).toLowerCase().includes(needle)
+    );
+    return LABEL_ICON_DOMAINS.map((domain: LabelIconDomain) => ({
+      domain,
+      icons: matches.filter((icon) => LABEL_ICON_PATHS[icon].domain === domain),
+    })).filter((group) => group.icons.length > 0);
+  }, [query, t]);
+
+  const close = (): void => {
+    setIsOpen(false);
+    setQuery('');
+    // Closing unmounts whatever held focus. Hand it back to the trigger only if
+    // it was orphaned onto <body> — an outside click has already placed focus
+    // where the user pointed, and stealing it back fights them.
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body) anchorRef.current?.focus();
+    });
+  };
+
+  const select = (icon: LabelPlateIconId | null): void => {
+    onChange(icon);
+    close();
+  };
+
+  return (
+    <>
+      <Button
+        ref={anchorRef}
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="h-7 w-9 shrink-0 justify-center px-0"
+        aria-label={t('binDesigner.plateIconAriaValue', {
+          n: compartmentNumber,
+          icon: currentName,
+        })}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        title={currentName}
+        onClick={() => (isOpen ? close() : setIsOpen(true))}
+      >
+        {value ? <LabelIconGlyph icon={value} size={18} /> : <NoIconMark />}
+      </Button>
+
+      <Popover
+        anchorRef={anchorRef}
+        isOpen={isOpen}
+        onClose={close}
+        className="w-72 rounded-lg border border-stroke-subtle bg-surface-raised p-2 shadow-lg"
+        aria-label={dialogLabel}
+      >
+        <Input
+          ref={searchRef}
+          size="sm"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('binDesigner.plateIcon.searchPlaceholder')}
+          aria-label={t('binDesigner.plateIcon.searchPlaceholder')}
+        />
+
+        <div className="mt-2 max-h-72 overflow-y-auto">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            aria-pressed={value === null}
+            onClick={() => select(null)}
+          >
+            {t('binDesigner.plateIcon.none')}
+          </Button>
+
+          {groups.map(({ domain, icons }) => (
+            <div key={domain} className="mt-2">
+              <p className="px-1 pb-1 text-xs font-medium text-content-tertiary">
+                {t(`binDesigner.plateIcon.group.${domain}`)}
+              </p>
+              <div className="grid grid-cols-6 gap-1">
+                {icons.map((icon) => (
+                  <Button
+                    key={icon}
+                    type="button"
+                    variant={icon === value ? 'primary' : 'ghost'}
+                    size="sm"
+                    className="h-9 w-full justify-center px-0"
+                    aria-pressed={icon === value}
+                    aria-label={label(icon)}
+                    title={label(icon)}
+                    onClick={() => select(icon)}
+                  >
+                    <LabelIconGlyph icon={icon} size={20} />
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {groups.length === 0 && (
+            <p className="px-1 py-3 text-center text-xs text-content-tertiary">
+              {t('binDesigner.plateIcon.noResults')}
+            </p>
+          )}
+        </div>
+      </Popover>
+    </>
+  );
+}

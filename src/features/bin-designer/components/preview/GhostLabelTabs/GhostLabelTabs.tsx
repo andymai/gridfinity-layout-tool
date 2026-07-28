@@ -16,9 +16,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { labelShelfCeilingMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import {
-  compartmentHasTiltedBackWall,
-  compartmentHasTiltedFrontWall,
-  getCompartmentBounds,
+  compartmentTabEligible,
+  spanningTabEligible,
 } from '@/features/bin-designer/utils/compartments';
 
 const GHOST_COLOR = '#fbbf24';
@@ -105,45 +104,46 @@ export function GhostLabelTabs() {
     const includeBack = edges === 'back' || edges === 'both';
     const includeFront = edges === 'front' || edges === 'both';
 
-    // Precompute the set of compartments whose front tab would collide with
-    // its back tab when `edges='both'`. Mirrors `findCollidingFrontCompartments`
-    // in labelTabBuilder.ts. Without this, the preview would show a front tab
-    // the worker silently drops — a real ghost/output mismatch (#1904 review).
-    const collidingFrontIds = new Set<number>();
-    if (edges === 'both') {
-      const visited = new Set<number>();
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const cellId = cells[row * cols + col];
-          if (visited.has(cellId)) continue;
-          visited.add(cellId);
-          const bounds = getCompartmentBounds(compartments, cellId);
-          if (!bounds) continue;
-          const hasFrontAnchor =
-            bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
-          const hasBackAnchor =
-            bounds.maxRow === rows - 1 ||
-            cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
-          if (!hasFrontAnchor || !hasBackAnchor) continue;
-          const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
-          if (2 * tabDepth + 2 * inset > compartmentDepth) {
-            collidingFrontIds.add(cellId);
-          }
-        }
-      }
-    }
+    const fit = { tabDepth, inset, cellD, bothEdges: edges === 'both' };
 
     const matrices: THREE.Matrix4[] = [];
 
     // Build per-row tab quads for one anchor (back or front). Mirrors the
     // worker-side grouping in `labelTabBuilder.ts` — both must stay in sync
     // so the ghost overlay matches the eventual BREP output.
+    // Full-width mode (#2897): one shelf per row, outer wall to outer wall.
+    const buildSpanningRow = (row: number, anchor: 'back' | 'front') => {
+      const depthSign = anchor === 'back' ? -1 : 1;
+      if (!spanningTabEligible(compartments, row, anchor, fit)) return;
+
+      const availableLeft = -innerW / 2;
+      const availableRight = innerW / 2;
+      const tabWidth = ((availableRight - availableLeft) * widthPercent) / 100;
+      if (tabWidth <= 0) return;
+
+      let tabXStart: number;
+      if (alignment === 'left') {
+        tabXStart = availableLeft;
+      } else if (alignment === 'right') {
+        tabXStart = availableRight - tabWidth;
+      } else {
+        tabXStart = (availableLeft + availableRight) / 2 - tabWidth / 2;
+      }
+
+      const anchorY =
+        anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+      const centerY = anchorY + depthSign * inset + depthSign * (tabDepth / 2);
+
+      const matrix = new THREE.Matrix4();
+      matrix.makeScale(tabWidth, tabDepth, 1);
+      matrix.setPosition(tabXStart + tabWidth / 2, centerY, 0);
+      matrices.push(matrix);
+    };
+
     const buildAnchorRow = (row: number, anchor: 'back' | 'front') => {
       const depthSign = anchor === 'back' ? -1 : 1;
       const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
       const neighborRowOffset = anchor === 'back' ? 1 : -1;
-      const hasTiltedAnchorWall =
-        anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
 
       let col = 0;
       while (col < cols) {
@@ -158,26 +158,11 @@ export function GhostLabelTabs() {
           continue;
         }
 
-        // Mirror the worker's suppression rules so the ghost stays in sync
-        // with what will actually be generated (#1904 review).
-        if (hasTiltedAnchorWall(compartments, cellId)) {
+        // Same predicate the worker gates on, so the ghost can't show a tab
+        // that will be silently dropped from the mesh (#1904 review).
+        if (!compartmentTabEligible(compartments, cellId, anchor, fit)) {
           col++;
           continue;
-        }
-        if (anchor === 'front' && collidingFrontIds.has(cellId)) {
-          col++;
-          continue;
-        }
-
-        // Per-compartment depth guard: if the tab body + inset would exceed
-        // the compartment depth, the worker drops the tab silently. Match.
-        const bounds = getCompartmentBounds(compartments, cellId);
-        if (bounds) {
-          const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
-          if (tabDepth + inset > compartmentDepth) {
-            col++;
-            continue;
-          }
         }
 
         // Find extent of consecutive same-compId columns with edges
@@ -240,9 +225,10 @@ export function GhostLabelTabs() {
       }
     };
 
+    const buildRow = label.span === true ? buildSpanningRow : buildAnchorRow;
     for (let row = 0; row < rows; row++) {
-      if (includeBack) buildAnchorRow(row, 'back');
-      if (includeFront) buildAnchorRow(row, 'front');
+      if (includeBack) buildRow(row, 'back');
+      if (includeFront) buildRow(row, 'front');
     }
 
     if (matrices.length === 0) return null;
@@ -300,6 +286,7 @@ export function GhostLabelTabs() {
     label.alignment,
     label.edges,
     label.inset,
+    label.span,
   ]);
 
   const material = useMemo(() => {

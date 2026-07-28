@@ -20,6 +20,7 @@ describe('COMMAND_SCHEMAS', () => {
     'bin.moveFromStaging',
     'bin.fillLayer',
     'bin.fillGaps',
+    'bin.expandToFit',
     'bin.clearLayer',
     'layer.add',
     'layer.update',
@@ -43,9 +44,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 38 schemas', () => {
+  it('has exactly 39 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(38);
+    expect(registeredCount).toBe(39);
   });
 });
 
@@ -215,6 +216,30 @@ describe('bin.update schema', () => {
 
   it('rejects missing id', () => {
     const result = z.safeParse(schema, { updates: { label: 'hi' } });
+    expect(result.success).toBe(false);
+  });
+
+  // The validate middleware gates dispatch on THIS schema, separately from the
+  // v2 command's own payload schema. Both have to admit the overhang shapes or
+  // the inspector's Reset fails at runtime while handler tests still pass.
+  it('accepts an explicit overhang', () => {
+    const result = z.safeParse(schema, {
+      id: 'bin-1',
+      updates: { overhang: { enabled: true, left: 0, right: 14, front: 0, back: 0 } },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts null to clear the overhang', () => {
+    const result = z.safeParse(schema, { id: 'bin-1', updates: { overhang: null } });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an inward (negative) overhang side', () => {
+    const result = z.safeParse(schema, {
+      id: 'bin-1',
+      updates: { overhang: { left: -5, right: 0, front: 0, back: 0 } },
+    });
     expect(result.success).toBe(false);
   });
 });

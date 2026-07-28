@@ -69,6 +69,15 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.bins.push(...event.payload.bins);
       break;
 
+    case 'bin.expandedToFit': {
+      const byId = new Map(event.payload.placements.map((p) => [p.id, p]));
+      next.bins = next.bins.map((b) => {
+        const p = byId.get(b.id);
+        return p ? { ...b, x: p.x, y: p.y, overhang: p.overhang } : b;
+      });
+      break;
+    }
+
     case 'bin.layerCleared': {
       const clearedIds = new Set(event.payload.bins.map((b) => b.id));
       next.bins = next.bins.filter((b) => !clearedIds.has(b.id));

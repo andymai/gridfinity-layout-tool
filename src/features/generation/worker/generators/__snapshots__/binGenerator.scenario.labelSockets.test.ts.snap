@@ -6,7 +6,7 @@ exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `836`;
 
 exports[`label sockets > 1×1 text mode unchanged 1`] = `708`;
 
-exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `2820`;
+exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `2064`;
 
 exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `2176`;
 

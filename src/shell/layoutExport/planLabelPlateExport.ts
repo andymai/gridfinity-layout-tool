@@ -159,29 +159,28 @@ export function planLabelPlateExport(
     if (linkedBins.length === 0) continue;
 
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
-    const planned = planLabelPlates(
-      params.compartments,
-      binDimensions(params).innerW,
+    const dims = binDimensions(params);
+    const planned = planLabelPlates({
+      compartments: params.compartments,
+      label: params.label,
+      innerWmm: dims.innerW,
+      innerDmm: dims.innerD,
       clearanceMm,
-      ''
-    );
+      fallbackText: '',
+    });
     if (planned.length === 0) continue;
 
-    // Expand to physical plates: per-compartment plates repeat per placed
-    // bin; a spanning plate instead takes each bin's own label text.
-    const spanning = planned.length === 1 && planned[0].compartmentId === null;
-    const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] = spanning
-      ? linkedBins.map((b) => ({
-          widthU: planned[0].widthU,
-          text: b.label.trim() || design.name,
+    // Expand to physical plates: every plate the plan lists repeats per placed
+    // bin. Bin-spanning plates label the whole bin rather than any compartment,
+    // so they take each bin's own label text instead of the plan's caption.
+    const expanded: { widthU: LabelPlateWidthU; text: string; icon?: LabelPlateIconId }[] =
+      linkedBins.flatMap((b) =>
+        planned.map((p) => ({
+          widthU: p.widthU,
+          text: p.scope === 'bin' ? b.label.trim() || design.name : p.text,
+          ...(p.icon !== undefined ? { icon: p.icon } : {}),
         }))
-      : linkedBins.flatMap(() =>
-          planned.map((p) => ({
-            widthU: p.widthU,
-            text: p.text,
-            ...(p.icon !== undefined ? { icon: p.icon } : {}),
-          }))
-        );
+      );
 
     // Bed-fit guard: a plate wider than the usable bed (e.g. a 3U plate on
     // a small printer) cannot ship on any sheet — skip it and surface the

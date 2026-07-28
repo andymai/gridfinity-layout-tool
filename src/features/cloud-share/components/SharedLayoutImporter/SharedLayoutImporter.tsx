@@ -224,8 +224,26 @@ export function SharedLayoutImporter() {
         return;
       }
 
-      const { layout, metadata } = result.value;
+      const { metadata, linkedDesigns } = result.value;
       const permission = metadata.permission;
+
+      // Materialize the sharer's bin designs locally and repoint the bins at
+      // them, so the recipient sees real geometry and can export each bin
+      // (#2894). A storage failure degrades to the plain layout rather than
+      // dropping the share.
+      let layout = result.value.layout;
+      if (linkedDesigns && linkedDesigns.length > 0) {
+        try {
+          const { restoreSharedDesigns } = await import('@/core/storage');
+          layout = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
+        } catch (e) {
+          console.error('Failed to restore shared bin designs:', e);
+        }
+      }
+
+      if (!isMountedRef.current) {
+        return;
+      }
 
       // Auto-track this share in "Shared with me" (unless it's the owner's own)
       // Wrap in try-catch to ensure robust error handling

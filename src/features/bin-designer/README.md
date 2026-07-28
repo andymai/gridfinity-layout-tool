@@ -37,7 +37,10 @@ graph TB
   `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
   single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
   and an empty board-settings state; number-first `CompactNumberInput` (drag-scrub + type)
-  replaces sliders, and hardware-size presets surface as quick-pick chips.
+  replaces sliders, and hardware-size presets surface as quick-pick chips. The multi-select
+  section leads with `AlignControls` (align/distribute, backed by the pure
+  `panel/CutoutsSection/geometryAlign.ts`) and batch-edits position, size, rotation, cut depth,
+  chamfer, scoop and colour.
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
 - `components/panel/WallsSection/` — wall thickness, pattern picker + scale, wall text, and the
@@ -48,7 +51,7 @@ graph TB
   On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),
   and the panel notes that the pattern only shows on the exported pieces — `GhostDividerPieces`
   renders merged boxes with no CSG and cannot subtract the holes
-- `components/panel/BaseSection/` — magnet/screw/lip/flat/half-socket/lightweight toggles plus the
+- `components/panel/BaseSection/` — magnet/screw/lip/flat/half-socket/lightweight/spacer toggles plus the
   "Drainage holes" floor pattern (`floorPattern`, #2816), which perforates the floor slab AND the
   feet under it. Reuses `WallsSection`'s `PatternSelector` narrowed to `FLOOR_PATTERN_TYPES` — the
   kumiko lattices are perimeter-wrapped and have no meaning on a floor. Its too-small copy comes
@@ -56,7 +59,7 @@ graph TB
   `@/shared/generation/floorPatternMetrics` rather than mirroring it: that rule is what keeps holes
   off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
   refuses to pattern
-- `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
+- `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
 - `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)
@@ -85,6 +88,7 @@ graph TB
 ## Critical Concepts
 
 - **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration. Cosmetic cutout mutations (lock/hide/z-reorder/showAllCutouts) call `pushHistoryEntry(state, { affectsGeometry: false })` so undo still works but the worker doesn't re-run — only properties the worker reads (everything except `locked`/`hidden`/`zIndex`) bump the epoch
+- **Spacer / riser (`base.spacer`, issue #2869)**: a floorless bin used as a riser so bins of different heights finish flush. Deliberately NOT a new `BinStyle` — it's a base property, so it composes with the wall features and doesn't ripple through the ~20 `style` consumers. Implementation is almost entirely reuse: it derives `dimensions.lightweight = true` and asks `lightweightBaseBuilder` for the new `'through'` open direction, which is simply **zShift 0** — the inner foot is a uniform-`wallThickness` lateral offset at every depth, so an unshifted cut leaves the cup open at BOTH ends. The floor-opening slug the lite path already builds punches the body floor over each cup, so the whole cell becomes a through-hole. **What holds a multi-cell spacer together is the inter-cell webbing** (each cup keeps its own wall, and adjacent cups' walls meet) plus the perimeter — remove that and interior feet would come loose as separate solids, which is what the 3×3 scenario guards. Envelope, feet and lip are untouched, so the stacking arithmetic is inherited from a normal bin: a 2u spacer under a 2u bin reaches the top of a 4u one. **A spacer is the one bin allowed down to 1u** (#2915) — `DESIGNER_CONSTRAINTS.MIN_HEIGHT` is 2 because 1u leaves no usable cavity, which a floorless riser doesn't have anyway, and 1u is what shims a stack from an odd to an even total height. The floor lives in ONE place, `minHeightUnits(base)`, read by the stepper bound, `validateBinParams` and every base toggle; `api/lib/designerValidation.ts` mirrors it (it cannot import from `src/`). It keys off the **effective** spacer — `base.spacer && style !== 'flat'`, the same condition `deriveDimensions` uses — because the flag is inert on a flat base, so keying off `base.spacer` alone would hand the relaxed floor to a `{ style: 'flat', spacer: true, height: 1 }` payload that generates an ordinary 1u bin. Because the constraint engine only enables and disables features, the numeric bound is not expressible as a rule: `useBaseSection` routes every toggle through one `commit()` that re-applies the floor. That has to cover more than `toggleSpacer` — enabling the flat base auto-disables the spacer through `CONSTRAINT_RULES`, which would otherwise strand a 1u bin below the floor its own stepper enforces. `commit` reads the floor off the RESOLVED params, never the requested change, since the engine's post-check can return the params untouched when an enable turns out to be blocked. Layout placement is deliberately NOT included: `CONSTRAINTS.MIN_BIN_HEIGHT` stays 2, so a 1u spacer is a design/export part, not something you can drop into a drawer layout at its true height. **Attachment hardware is suppressed** (`deriveDimensions` zeroes `withMagnet`/`withScrew`, and the constraint engine disables the toggles): a magnet pad inside a through-hole would be a free-standing pillar. Incompatibilities are declared once in `CONSTRAINT_RULES`, and deliberately **one-way** from the interior features (the `style.solid` precedent): a spacer is a mode switch, so it stays reachable from a fully-designed bin and clears the incompatible set on the way in, rather than greying itself out and leaving the user to hand-clear compartments/scoop/label first. Only the flat base blocks it, and that block is genuinely mutual — a plate with no feet has nothing to open through. Every place that special-cases the shelled base takes the spacer too — the direct-mesh draft gate (`canBinUseDirectMesh`, or the instant preview would show a floor that isn't there), the split floor-scarf, the generation timeout budget, split alignment, and the floor-pattern fit/estimate
 - **Mesh cache**: 100MB budget, attached to history for instant undo
 - **Custom bin registry**: Syncs to localStorage for Layout Planner palette
 - **Ghost overlays**: Lightweight Three.js primitives render during `generationStatus === 'generating'` for instant visual feedback before BREP mesh completes. Components: `GhostDividers`, `GhostWireframe`, `GhostCompartmentPreview`, `GhostLabelTabs`, `GhostScoops`, `GhostCutouts`, `GhostWallCutouts`, `GhostSlotLines`, `GhostDividerPieces`
@@ -129,8 +133,9 @@ graph TB
   compound assembly translated to its mated position. `LidSection` exposes
   the extra-height cavity boost (`extraHeightMm`, 0–100mm — a taller lid
   encloses items that poke up out of a short bin, e.g. toothpicks; 0 = the
-  standard one-grid-unit lid), the stack-grid / magnet / separate-baseplate
-  toggles, per-side click-rail snaps with a coverage slider, and the floor-plate
+  standard one-grid-unit lid), the top-surface picker and its sub-toggles
+  (magnet pockets, lip-only stack top, separate baseplate), per-side
+  click-rail snaps with a coverage slider, and the floor-plate
   thickness (`topThicknessMm`, 0.8–5mm — a thicker top for a stiffer, less
   translucent lid on large bins; 0.8 = the historical plate). Wall thickness and
   fit clearance stay locked-down constants in `lidConstants.ts` (a single
@@ -143,7 +148,14 @@ graph TB
   XY only) so the magnets aren't fighting a friction fit. Magnetic retention anchors its
   bosses to the cavity BOTTOM, so a deep cavity lengthens the pillar rather than
   lifting the magnets out of the bin's reach — the bin's pads land in the same
-  place whatever the lid's depth knobs say.
+  place whatever the lid's depth knobs say. `retentionMagnet.edgeMagnets`
+  (#2844) adds extra magnets along each long edge, between the corners, so a big
+  lid doesn't sag in the middle where four corner magnets can't reach; they only
+  materialise on edges long enough to space them clear of the corners (see
+  `retentionMagnetPositions`), so the count is a per-edge ceiling and small lids
+  keep the plain four-corner layout. Mid-edge pads anchor to a single wall with
+  their own support-free 45° taper (`anchor: 'x' | 'y'`), unlike the two-wall
+  corner gussets.
 - **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
   optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
   (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's
@@ -184,6 +196,53 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   on `rectangle` / `circle` / `polygon` / `slot`. The editor exposes tolerance +
   chamfer as 0.2mm steppers that still accept off-grid fractional typing.
 
+- **Label plate preview**: socket-mode plates render as REAL geometry, meshed by
+  `labelPlateGenerator` and carried on the generation result beside `lidMesh`. Seats come
+  from `planLabelPlateSeats`, which shares `planLabelTabLayout` with the tab builder —
+  planned, not observed, because label tabs are a CACHED pipeline feature and a cache hit
+  rebuilds nothing for a collector to watch. Each plate is meshed once in plate-local
+  coords and drawn twice (seated + reference row) via `platePoses`. Capped at
+  `MAX_PREVIEW_LABEL_PLATES`; the remainder is surfaced in the label panel rather than
+  silently truncated. Preview only — export packs its own bed-sized sheet.
+- **Full-width label tabs (#2897)**: `label.span` swaps per-compartment tabs for one
+  shelf per ROW. A row only gets one where a divider runs the full inner width behind it
+  (`rowHasFullWidthWall`) — a shelf needs something to hang from. Captions live in
+  `label.rowTexts`, NOT beside `compartments.compartmentTexts`: every array on
+  `compartments` is compartment-indexed and gets dropped by `setCompartmentGrid` /
+  renumbered by `normalizeIdsWithRemap`, whereas row captions are row-indexed and must
+  survive both. Entries past the current row count are ignored, not trimmed.
+  `planSpanningTabAtRow` runs against the REAL compartment config — never a synthetic
+  grid — because the tilt guard reads `dividerOverrides` off whatever config it is handed
+  and would silently pass on a fabricated one. Anything that changes which rows host a tab
+  must go through `spanningTabEligible` — the single gate covering full-width wall, tilt,
+  region depth and the both-edges collision. The worker, `GhostLabelTabs` (preview) and
+  `planLabelPlates` (socket sheets) all call it; sharing only the wall check let the
+  export ship plates for rows the worker rejected, i.e. plates with no socket to click
+  into. `featureColors.hasTabText` reads `label.rowTexts` in span mode for the same reason.
+  `compartmentTabEligible` is the same gate for the default per-compartment layout (tilt,
+  compartment depth, both-edges collision) and has the same three callers. #2910 is what
+  happens without it: the plate planner keyed off the compartment grid alone, so an
+  `edges: 'both'` design — two sockets per compartment — shipped half the plates it needed.
+  A spanning shelf runs wall to wall, so the column dividers it crosses must stop at its
+  underside — `planSpanningDividerClips` (labelTabBuilder) derives those footprints from the
+  same layout plan the shelves are built from. The clip has to be applied at BOTH divider
+  sources: the shell itself when `compartmentsBakedIntoShell` (2D cavity drawings can't
+  express a partial height, so `shellStage` cuts it before `featuresStage` fuses the shelf —
+  the boolean stage runs every cut AFTER every fuse, so a cut target would eat the shelf) and
+  `buildCompartmentWalls` on the additive path. Both spanning shapes need it: `label.span`,
+  and the socket plan's bin-spanning fallback for columns too narrow to host a plate.
+- **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
+  assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
+  silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel
+  with the origin. Locked cutouts anchor: they never move but still define the selection
+  bounds, so "lock a reference hole, align the rest to it" works. This deliberately differs
+  from flip/rotate in the context menu, which disable wholesale when anything is locked.
+  Distribute runs per anchor-to-anchor SEGMENT (extremes + every locked shape between them),
+  not once across the whole span — spacing the full run and merely skipping locked shapes
+  would place the rest as if the anchor had moved to its even-spacing slot.
+- **Lock covers transforms only**: `Cutout.locked` means "cannot be moved, resized, or
+  rotated". Batch edits to cut depth, chamfer and colour still apply to locked shapes; X/Y,
+  W/H and rotation skip them.
 - **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`) that
   replicates it across a `grid`, `staggered`, or `radial` pattern from a single
   **master**. Placement math lives in `@/shared/utils/cutoutArray`
@@ -241,7 +300,7 @@ estimates), and the source file name.
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
 5. **Solid style skips shell** - `keepFull` bypasses `.shell()`, so wallThickness is irrelevant
 6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
-   - **Swappable-label socket mode (#2666)**: `label.mode: 'socket'` replaces the printed-in text with a click-in pocket for standard interchange label plates (dims pinned in `@/shared/constants/labelPlates`; Cullenect v2-compatible). Tabs go full-width (width % ignored, `alignment` positions the socket), the depth floor rises to 14mm, and `compartments.labelPlateWidths` (per-compartment ID, remapped in lockstep like `compartmentTexts`) overrides the auto largest-fit plate width. Fit math is shared with the worker via `@/shared/utils/labelSocketPlan` — UI warnings and cut geometry can't drift. The matching plates export from the panel (`LabelPlatesControls` + `useLabelPlateExport` → `EXPORT_LABEL_PLATES`): one plate per socket carrying its `compartmentTexts` entry, text depth snapped to whole layer heights for filament-swap two-color printing, with a pre-export 3D preview parsed from the STL path. A fit-calibration card (`LabelFitSampleButton` + `useLabelFitSampleExport` → `EXPORT_LABEL_FIT_SAMPLE`) sweeps the socket clearance across a −0.10…+0.10mm offset ladder so the winning coupon's embossed value maps directly onto `plateFitOffset`. Plates can also carry a hardware icon (`compartments.labelIcons`, per-compartment ID and remapped in lockstep like `compartmentTexts`; allowlist `LABEL_PLATE_ICONS`, worker silhouettes in `labelPlateIcons.ts`) rendered left of the text. `label.socketStyle` (absent = `clickIn`) selects the pocket profile: `slideChannel` swaps the ribs for overhanging lips with a mouth through the tab's compartment-facing edge and a park detent — thicker shelf (`LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM`), same standard plates. On lipped bins the click-in shelf sinks `LABEL_SOCKET_STACK_RELIEF_MM` (0.8mm) below the interior ceiling — a stacked bin's foot seats only 0.25mm above that plane, so a plate standing proud of the shelf lifts it. The relief is sized for the worst case, a plate perched on the retention ribs instead of clicked home AND carrying max-depth embossed text; click-in pockets are also cut `LABEL_SOCKET_CLICK_POCKET_RELIEF_MM` deeper than the plate so a normally-seated one is recessed rather than flush. The shared resolver `resolveLabelShelfTopMm` keeps the worker, the panel's height display/ceiling, and the ghost preview on the same plane, and **caps an explicit `label.height` at the relieved plane** wherever the relief applies (elsewhere it is honored verbatim).
+   - **Swappable-label socket mode (#2666)**: `label.mode: 'socket'` replaces the printed-in text with a click-in pocket for standard interchange label plates (dims pinned in `@/shared/constants/labelPlates`; Cullenect v2-compatible). Tabs go full-width (width % ignored, `alignment` positions the socket), the depth floor rises to 14mm, and `compartments.labelPlateWidths` (per-compartment ID, remapped in lockstep like `compartmentTexts`) overrides the auto largest-fit plate width. Fit math is shared with the worker via `@/shared/utils/labelSocketPlan` — UI warnings and cut geometry can't drift. The matching plates export from the panel (`LabelPlatesControls` + `useLabelPlateExport` → `EXPORT_LABEL_PLATES`): one plate per socket carrying its `compartmentTexts` entry — per SOCKET, not per compartment, since `edges: 'both'` gives a compartment one on each wall (#2910) — text depth snapped to whole layer heights for filament-swap two-color printing, with a pre-export 3D preview parsed from the STL path. A fit-calibration card (`LabelFitSampleButton` + `useLabelFitSampleExport` → `EXPORT_LABEL_FIT_SAMPLE`) sweeps the socket clearance across a −0.10…+0.10mm offset ladder so the winning coupon's embossed value maps directly onto `plateFitOffset`. Plates can also carry a hardware icon (`compartments.labelIcons`, per-compartment ID and remapped in lockstep like `compartmentTexts`; allowlist `LABEL_PLATE_ICONS`) rendered left of the text. Icon geometry is SVG path data in `@/shared/constants/labelIconPaths`, extruded by `labelPlateIcons.ts` and previewed by `LabelIconPicker` from the SAME strings, so the grid can't show a silhouette the plate won't print — contributor contract in `docs/label-icons.md`. `label.socketStyle` (absent = `clickIn`) selects the pocket profile: `slideChannel` swaps the ribs for overhanging lips with a mouth through the tab's compartment-facing edge and a park detent — thicker shelf (`LABEL_SOCKET_SLIDE_SHELF_THICKNESS_MM`), same standard plates. On lipped bins the click-in shelf sinks `LABEL_SOCKET_STACK_RELIEF_MM` (0.8mm) below the interior ceiling — a stacked bin's foot seats only 0.25mm above that plane, so a plate standing proud of the shelf lifts it. The relief is sized for the worst case, a plate perched on the retention ribs instead of clicked home AND carrying max-depth embossed text; click-in pockets are also cut `LABEL_SOCKET_CLICK_POCKET_RELIEF_MM` deeper than the plate so a normally-seated one is recessed rather than flush. The shared resolver `resolveLabelShelfTopMm` keeps the worker, the panel's height display/ceiling, and the ghost preview on the same plane, and **caps an explicit `label.height` at the relieved plane** wherever the relief applies (elsewhere it is honored verbatim).
    - **Per-compartment label text is edited in two places, one source of truth.** `compartments.compartmentTexts` (keyed by compartment id) feeds both the engraving (`labelTabBuilder`) and two editors: the `CompartmentEditor` "Add labels" mode (primary — `useCompartmentLabeling` + `CompartmentLabelField`, transient view state, **standard style + >1 compartment only**) and the collapsed bulk list in `LabelTabsSection` (keyboard/a11y fallback). Both call `setCompartmentText`. Labels render **always-visible** on grid cells (truncated, full text via `title`) so they're legible without hover (which doesn't exist on touch); typing a label when label tabs are off shows an inline "Enable label tabs" prompt. The text persists regardless of whether tabs are enabled or actually generate.
 7. **cellMask dimensions must track width × depth** - `cols` must equal
    `Math.round(width × MASK_CELLS_PER_UNIT)` and `rows` the depth equivalent.
@@ -371,6 +430,20 @@ estimates), and the source file name.
     cell-aligned placement where every instance fits the polygon, and leaves the
     cutout flagged when none exists (translation can't fit an arbitrary concave
     region — honest rather than a silent false-fix).
+21. **A masked board is concave, so a bounding box can't decide containment** —
+    an axis-aligned box proves a fit but never a miss once the board has a
+    notch: an L-shaped cutout nested in an L-shaped bin has a box spanning the
+    notch. `cutoutFitsInMask` therefore uses `rectFitsInMask` as a **fast
+    accept** only, falling back to clipping the real silhouette
+    (`cutoutOutline.getCutoutOutline`) against the filled region with
+    `polygon-clipping`. Rings are deliberately **conservative supersets** —
+    curved spans sample a _circumscribing_ polygon — so an accepted placement
+    never clips in the generated mesh. `mesh` cutouts need their stored
+    silhouette, which is why `meshAssets` is threaded to every mask check;
+    without it a mesh imprint falls back to its footprint rectangle. Any new
+    caller building a _candidate_ cutout from a drag patch must move path
+    vertices with x/y (`translateCutoutPreview`), or the outline is validated
+    where the cutout used to be.
 
 21. **Wall taper extends the overhang, hollow single-cavity only** — the curved-bin taper (#2933) lives on `OverhangConfig.taper`: per-side inset clamped to that side's overhang (a side only tapers where it has overhang), chamfer or fillet, shared band height. The `OverhangSection` control is **mutually exclusive with overhang feet** and gated to hollow, single-compartment bins (`taperAvailable`) to match the generator's strip. `paramSlice.updateOverhang` must carry `taper` through its field-by-field rebuild (clamped outward-only) — like the other overhang fields, it is dropped if omitted from the rebuild.
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBaseSection } from './useBaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 
 describe('useBaseSection', () => {
   beforeEach(() => {
@@ -86,6 +86,116 @@ describe('useBaseSection', () => {
 
     expect(useDesignerStore.getState().params.base.lightweight).toBe(true);
     expect(result.current.state.hasLightweight).toBe(true);
+  });
+
+  it('toggleSpacer flips the boolean and clears the magnet it cannot hold', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    expect(result.current.state.isSpacer).toBe(false);
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    const base = useDesignerStore.getState().params.base;
+    expect(base.spacer).toBe(true);
+    // A floorless riser has nowhere for the magnet pad to stand.
+    expect(base.style).toBe('standard');
+    // ...but it keeps the lip, or nothing would seat on top of it.
+    expect(base.stackingLip).toBe(true);
+  });
+
+  it('spacer stays selectable with a scoop present and clears it', () => {
+    // A spacer is a mode switch, so it must be reachable from a designed bin.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.spacerDisabledReason).toBeUndefined();
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+    expect(useDesignerStore.getState().params.base.spacer).toBe(true);
+    expect(useDesignerStore.getState().params.scoop.enabled).toBe(false);
+  });
+
+  // #2915: only a spacer may stand 1u tall, so leaving the mode has to lift the
+  // height back to the normal floor instead of stranding the bin under it.
+  it('leaving spacer mode lifts a 1u height back to the bin minimum', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    const params = useDesignerStore.getState().params;
+    expect(params.base.spacer).toBe(false);
+    expect(params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
+  });
+
+  // The spacer can also END without touching its own toggle: a flat base
+  // auto-disables it through CONSTRAINT_RULES, which would otherwise leave a 1u
+  // bin below the floor its own stepper enforces.
+  it('enabling the flat base on a 1u spacer lifts the height too', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleFlat();
+    });
+
+    const params = useDesignerStore.getState().params;
+    expect(params.base.style).toBe('flat');
+    expect(params.base.spacer).toBe(false);
+    expect(params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
+  });
+
+  it('leaving spacer mode leaves a height already above the floor alone', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        base: { ...DEFAULT_BIN_PARAMS.base, spacer: true },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+
+    expect(useDesignerStore.getState().params.height).toBe(6);
+  });
+
+  it('spacer is greyed out with a reason on a flat base', () => {
+    // The one genuine block: no feet for the spacer to open through.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.spacerDisabledReason).toBeTruthy();
+
+    act(() => {
+      result.current.handlers.toggleSpacer();
+    });
+    expect(useDesignerStore.getState().params.base.spacer).toBe(false);
   });
 
   it('lightweight coexists with magnet style (allow-all, no constraint clearing)', () => {

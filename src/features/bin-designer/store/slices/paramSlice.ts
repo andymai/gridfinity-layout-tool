@@ -495,6 +495,26 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
+    setLabelRowText: (row: number, text: string) => {
+      const { params } = get();
+      const clamped = text.slice(0, TEXT_MAX_LENGTH);
+      const prev = params.label.rowTexts ?? [];
+      // Same idle+blur double-commit guard as setCompartmentText.
+      if ((prev[row] ?? '') === clamped) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.slice();
+        while (next.length <= row) next.push('');
+        next[row] = clamped;
+        while (next.length > 0 && next[next.length - 1] === '') next.pop();
+        state.params.label = {
+          ...state.params.label,
+          ...(next.length > 0 ? { rowTexts: next } : { rowTexts: undefined }),
+        };
+      });
+    },
+
     setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => {
       const { params } = get();
       const prev = params.compartments.labelPlateWidths ?? [];

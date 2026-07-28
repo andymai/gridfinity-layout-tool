@@ -119,7 +119,7 @@ export function DimensionsSection() {
           value={state.height}
           onChange={(v) => handlers.setParam('height', v)}
           onStep={handlers.handleHeightStep}
-          min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
+          min={state.minHeight}
           max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
           step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
           size={stepperSize}

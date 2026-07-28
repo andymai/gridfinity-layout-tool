@@ -36,6 +36,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'bin.moveFromStaging': 'domain',
   'bin.fillLayer': 'domain',
   'bin.fillGaps': 'domain',
+  'bin.expandToFit': 'domain',
   'bin.clearLayer': 'domain',
   'layer.add': 'domain',
   'layer.update': 'domain',

@@ -13,13 +13,52 @@ import { validateImport } from '@/shared/utils/validation';
 import { isValidLayoutId, isLegacyUUID } from '@/shared/utils/uuid';
 import { generateBinId, generateLayerId, generateCategoryId, STAGING_ID } from '@/core/constants';
 import type { Layout, LayerId, CategoryId, DesignId } from '@/core/types';
+import { designId as toDesignId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
-interface LinkedDesignExport {
+export interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
   readonly params: BinParams;
+}
+
+/**
+ * Resolve the bin designs referenced by a layout's `linkedDesignId`s.
+ *
+ * Shared by file export and cloud share so both carry the same payload — a
+ * layout that travels without its designs arrives as bins with dangling
+ * references (#2894). Designs that fail to load (deleted) or have no `params`
+ * (tool racks, imported meshes) are omitted rather than failing the whole set.
+ */
+export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesignExport[]> {
+  const designIds = new Set<DesignId>();
+  for (const bin of layout.bins) {
+    if (bin.linkedDesignId) {
+      designIds.add(bin.linkedDesignId);
+    }
+  }
+  if (designIds.size === 0) return [];
+
+  // Dynamic import keeps the bin-designer chunk out of the core/storage
+  // entry; the layer rule's `disallow` covers static imports but flags
+  // dynamic ones too. Until the call site is inverted to pass the
+  // loader in (or this service moves to shared/), the exception is
+  // documented here.
+  // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see the note above
+  const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+  const linkedDesigns: LinkedDesignExport[] = [];
+  for (const id of designIds) {
+    const result = await loadDesign(id);
+    if (isOk(result) && result.value.params) {
+      linkedDesigns.push({
+        id: result.value.id,
+        name: result.value.name,
+        params: result.value.params,
+      });
+    }
+  }
+  return linkedDesigns;
 }
 
 /**
@@ -42,36 +81,7 @@ export function exportLayoutJSON(layout: Layout): string {
  * Async because it needs to look up designs from IndexedDB.
  */
 export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<string> {
-  // Collect unique linkedDesignIds from bins
-  const designIds = new Set<DesignId>();
-  for (const bin of layout.bins) {
-    if (bin.linkedDesignId) {
-      designIds.add(bin.linkedDesignId);
-    }
-  }
-
-  // Look up each design from IndexedDB
-  const linkedDesigns: LinkedDesignExport[] = [];
-  if (designIds.size > 0) {
-    // Dynamic import keeps the bin-designer chunk out of the core/storage
-    // entry; the layer rule's `disallow` covers static imports but flags
-    // dynamic ones too. Until the call site is inverted to pass the
-    // loader in (or this service moves to shared/), the exception is
-    // documented here.
-    // eslint-disable-next-line boundaries/dependencies
-    const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
-    for (const id of designIds) {
-      const result = await loadDesign(id);
-      if (isOk(result) && result.value.params) {
-        linkedDesigns.push({
-          id: result.value.id,
-          name: result.value.name,
-          params: result.value.params,
-        });
-      }
-      // If design not found (deleted) or non-bin (no params), just omit it
-    }
-  }
+  const linkedDesigns = await collectLinkedDesigns(layout);
 
   const exportData = {
     ...layout,
@@ -230,6 +240,92 @@ export async function restoreEmbeddedDesigns(
 
   return { layout, importedDesignCount };
 }
+/** djb2 string hash → unsigned 32-bit hex (matches meshPersistence's pattern). */
+function djb2(str: string): string {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(16);
+}
+
+/**
+ * Local id for a design that arrived with a share.
+ *
+ * Derived from (share, source design) rather than generated, because unlike a
+ * one-shot file import a share link is re-fetched on every visit — a fresh id
+ * each time would pile up duplicates in the recipient's design library. Hashed
+ * to stay well inside the 64-char id budget the share API enforces, so a
+ * recipient can re-share what they received.
+ */
+function sharedDesignLocalId(shareId: string, sourceDesignId: string): DesignId {
+  return toDesignId(`design_shared_${djb2(`${shareId}:${sourceDesignId}`)}`);
+}
+
+/**
+ * Persist the designs that travelled with a cloud share and repoint the
+ * layout's bins at the local copies.
+ *
+ * Without this the recipient gets bins whose `linkedDesignId` names a design
+ * that only ever existed in the sharer's browser (#2894) — no 3D geometry, no
+ * per-bin export, nothing to print.
+ */
+export async function restoreSharedDesigns(
+  shareId: string,
+  layout: Layout,
+  designs: ReadonlyArray<{ id: string; name: string; params: unknown }>
+): Promise<Layout> {
+  if (designs.length === 0) return layout;
+
+  // Dynamic imports for the same code-splitting reason as collectLinkedDesigns.
+  // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see collectLinkedDesigns
+  const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+  const { upsertRegistryEntry, registryEdgeFields } = await import(
+    // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see collectLinkedDesigns
+    '@/features/bin-designer/store/customBinRegistry'
+  );
+
+  const idMap = new Map<string, DesignId>();
+  for (const design of designs) {
+    if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
+      continue;
+    }
+    const params = design.params as BinParams;
+
+    const result = await saveDesign({
+      id: sharedDesignLocalId(shareId, design.id),
+      name: design.name,
+      params,
+      thumbnail: null,
+      exportFileNameConfig: null,
+    });
+    if (!isOk(result)) continue;
+
+    idMap.set(design.id, result.value.id);
+    // The planner palette and the linked-bin mesh cache both key off the
+    // registry, so a design that skips it stays invisible to the layout.
+    upsertRegistryEntry({
+      id: result.value.id,
+      name: result.value.name,
+      width: params.width,
+      depth: params.depth,
+      height: params.height,
+      ...registryEdgeFields(params),
+      updatedAt: result.value.updatedAt,
+    });
+  }
+
+  if (idMap.size === 0) return layout;
+
+  return {
+    ...layout,
+    bins: layout.bins.map((bin) => {
+      const localId = bin.linkedDesignId ? idMap.get(bin.linkedDesignId) : undefined;
+      return localId ? { ...bin, linkedDesignId: localId } : bin;
+    }),
+  };
+}
+
 /**
  * Escape a value for TSV format.
  * Replaces tabs and newlines with spaces to prevent breaking the format.

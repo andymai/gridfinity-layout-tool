@@ -9,11 +9,18 @@ import { useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { CHAMFER_SHAPES, MAX_CUTOUT_CHAMFER, maxEntryChamfer } from '@/features/bin-designer/types';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
+import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
+import { AlignControls } from './AlignControls';
+
+/** Matches the per-cutout minimum the single-cutout inspector enforces. */
+const MIN_CUTOUT_SIZE_MM = 2;
 
 /** Editor-level settings surfaced in the empty (no-selection) state. */
 export interface BoardSettings {
@@ -149,14 +156,72 @@ export function InspectorContent({
   const sharedRotation = getSharedValue(selectedCutouts, preview, 'rotation');
   const sharedScoopRadiusW = getSharedValue(selectedCutouts, preview, 'scoopRadiusW');
   const sharedScoopRadiusD = getSharedValue(selectedCutouts, preview, 'scoopRadiusD');
+  const sharedX = getSharedValue(selectedCutouts, preview, 'x');
+  const sharedY = getSharedValue(selectedCutouts, preview, 'y');
+  const sharedWidth = getSharedValue(selectedCutouts, preview, 'width');
+  const sharedDepth = getSharedValue(selectedCutouts, preview, 'depth');
+  const chamferCutouts = selectedCutouts.filter((c) => CHAMFER_SHAPES.includes(c.shape));
+  const sharedChamfer = getSharedValue(chamferCutouts, preview, 'chamferWidth');
 
-  const handleBatchUpdate = (key: keyof Cutout, value: number) => {
-    if (onUpdateBatch && selectedCutouts.length > 1) {
-      const updates = new Map<string, Partial<Cutout>>();
-      for (const c of selectedCutouts) updates.set(c.id, { [key]: value });
-      onUpdateBatch(updates);
+  // `transformOnly` fields fall under the lock contract ("cannot be moved,
+  // resized, or rotated"); cut depth and colour do not, so they still apply to
+  // locked shapes.
+  const handleBatchUpdate = (key: keyof Cutout, value: number, transformOnly = false) => {
+    if (!onUpdateBatch || selectedCutouts.length <= 1) return;
+    const updates = new Map<string, Partial<Cutout>>();
+    for (const c of selectedCutouts) {
+      if (transformOnly && c.locked) continue;
+      updates.set(c.id, { [key]: value });
     }
+    if (updates.size > 0) onUpdateBatch(updates);
   };
+
+  // Position and size are per-cutout clamped: an X that fits a 10mm hole runs a
+  // 40mm one past the wall, so each shape gets its own ceiling rather than the
+  // control refusing the whole edit.
+  const handleGeometryBatch = (key: 'x' | 'y' | 'width' | 'depth', value: number) => {
+    if (!onUpdateBatch || selectedCutouts.length <= 1) return;
+    const updates = new Map<string, Partial<Cutout>>();
+    for (const c of selectedCutouts) {
+      if (c.locked) continue;
+      // Meshes carry baked geometry — resizing them would desync the asset.
+      if ((key === 'width' || key === 'depth') && c.shape === 'mesh') continue;
+      const limit =
+        key === 'x'
+          ? binWidth - c.width
+          : key === 'y'
+            ? binDepth - c.depth
+            : key === 'width'
+              ? binWidth
+              : binDepth;
+      const floor = key === 'x' || key === 'y' ? 0 : MIN_CUTOUT_SIZE_MM;
+      updates.set(c.id, { [key]: Math.max(floor, Math.min(value, limit)) });
+    }
+    if (updates.size > 0) onUpdateBatch(updates);
+  };
+
+  // Chamfer headroom depends on each cutout's own cut depth, and not every
+  // shape takes one — so ineligible shapes are skipped rather than blocking the
+  // control for the whole selection.
+  const handleChamferBatch = (value: number) => {
+    if (!onUpdateBatch || selectedCutouts.length <= 1) return;
+    const updates = new Map<string, Partial<Cutout>>();
+    for (const c of selectedCutouts) {
+      if (!CHAMFER_SHAPES.includes(c.shape)) continue;
+      updates.set(c.id, { chamferWidth: Math.min(value, maxEntryChamfer(c.cutDepth)) });
+    }
+    if (updates.size > 0) onUpdateBatch(updates);
+  };
+
+  const applySelectionUpdates = (updates: ReadonlyMap<string, Partial<Cutout>>) => {
+    if (onUpdateBatch && updates.size > 0) onUpdateBatch(updates);
+  };
+
+  const handleAlign = (mode: AlignMode) =>
+    applySelectionUpdates(alignSelection(selectedCutouts, mode));
+
+  const handleDistribute = (axis: DistributeAxis) =>
+    applySelectionUpdates(distributeSelection(selectedCutouts, axis));
 
   // Non-rectangle cutouts collapse W/D to a single value via max() in the
   // generator, so writing only one axis would silently no-op when the other is
@@ -196,12 +261,62 @@ export function InspectorContent({
           <div className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
           </div>
+          <AlignControls
+            selectedCount={selectedCutouts.length}
+            onAlign={handleAlign}
+            onDistribute={handleDistribute}
+            disabled={disabled}
+          />
           <div className="grid grid-cols-2 gap-1">
+            <CompactNumberInput
+              label="X"
+              value={sharedX ?? 0}
+              indeterminate={sharedX === null}
+              onChange={(x) => handleGeometryBatch('x', x)}
+              min={0}
+              max={binWidth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="Y"
+              value={sharedY ?? 0}
+              indeterminate={sharedY === null}
+              onChange={(y) => handleGeometryBatch('y', y)}
+              min={0}
+              max={binDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="W"
+              value={sharedWidth ?? 0}
+              indeterminate={sharedWidth === null}
+              onChange={(width) => handleGeometryBatch('width', width)}
+              min={MIN_CUTOUT_SIZE_MM}
+              max={binWidth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="H"
+              value={sharedDepth ?? 0}
+              indeterminate={sharedDepth === null}
+              onChange={(depth) => handleGeometryBatch('depth', depth)}
+              min={MIN_CUTOUT_SIZE_MM}
+              max={binDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
             <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
               indeterminate={sharedRotation === null}
-              onChange={(rotation) => handleBatchUpdate('rotation', rotation)}
+              onChange={(rotation) => handleBatchUpdate('rotation', rotation, true)}
               min={0}
               max={359}
               step={1}
@@ -241,6 +356,19 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
+            {chamferCutouts.length > 0 && (
+              <CompactNumberInput
+                label={t('binDesigner.cutouts.chamfer')}
+                value={sharedChamfer ?? 0}
+                indeterminate={sharedChamfer === null}
+                onChange={handleChamferBatch}
+                min={0}
+                max={MAX_CUTOUT_CHAMFER}
+                step={0.2}
+                unit="mm"
+                disabled={disabled}
+              />
+            )}
           </div>
           <div className="pt-1">
             <CutoutColorControls

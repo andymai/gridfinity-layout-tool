@@ -26,9 +26,44 @@ export interface ShareMetadata {
   authorName?: string;
 }
 
+export interface SharedLinkedDesign {
+  id: string;
+  name: string;
+  params: unknown;
+}
+
 export interface FetchShareResponse {
   layout: Layout;
+  /** Bin designs the layout's bins reference. Absent on pre-#2894 shares. */
+  linkedDesigns?: SharedLinkedDesign[];
   metadata: ShareMetadata;
+}
+
+/**
+ * Mirrors MAX_LINKED_DESIGNS_BYTES in api/lib/validation.ts. Trimming here
+ * keeps an oversized design set (realistically: imported-mesh designs carrying
+ * base64 geometry) from turning the whole share into a 400.
+ */
+const LINKED_DESIGNS_BUDGET_BYTES = 512 * 1024;
+
+/**
+ * Resolve a layout's linked designs, dropping any that would push the payload
+ * past the server's budget. Order is preserved so the result is deterministic;
+ * a single oversized design is skipped rather than starving the rest.
+ */
+async function collectDesignsForShare(layout: Layout): Promise<SharedLinkedDesign[]> {
+  const { collectLinkedDesigns } = await import('@/core/storage/ShareService');
+  const designs = await collectLinkedDesigns(layout);
+
+  const withinBudget: SharedLinkedDesign[] = [];
+  let bytes = 0;
+  for (const design of designs) {
+    const size = JSON.stringify(design.params).length;
+    if (bytes + size > LINKED_DESIGNS_BUDGET_BYTES) continue;
+    bytes += size;
+    withinBudget.push({ id: design.id, name: design.name, params: design.params });
+  }
+  return withinBudget;
 }
 
 export interface UpdateShareResponse {
@@ -99,7 +134,23 @@ function validateFetchShareResponse(
     return { valid: false, errors: layoutValidation.errors };
   }
 
-  return { valid: true, data };
+  // Drop anything malformed rather than rejecting the whole share — a bad
+  // design entry should cost that one design, not the layout.
+  const raw: unknown = (data as unknown as Record<string, unknown>).linkedDesigns;
+  const linkedDesigns = Array.isArray(raw)
+    ? raw.filter(
+        (entry): entry is SharedLinkedDesign =>
+          typeof entry === 'object' &&
+          entry !== null &&
+          typeof (entry as Record<string, unknown>).id === 'string' &&
+          typeof (entry as Record<string, unknown>).name === 'string' &&
+          typeof (entry as Record<string, unknown>).params === 'object' &&
+          (entry as Record<string, unknown>).params !== null &&
+          !Array.isArray((entry as Record<string, unknown>).params)
+      )
+    : undefined;
+
+  return { valid: true, data: { ...data, linkedDesigns } };
 }
 
 /**
@@ -127,10 +178,11 @@ export async function createShare(
   authorName?: string
 ): Promise<Result<ShareResponse, ApiError>> {
   try {
+    const linkedDesigns = await collectDesignsForShare(layout);
     const response = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layoutId, layout, permission, authorName }),
+      body: JSON.stringify({ layoutId, layout, permission, authorName, linkedDesigns }),
     });
 
     const data: unknown = await response.json();
@@ -161,10 +213,11 @@ export async function updateShare(
   permission?: SharePermission
 ): Promise<Result<UpdateShareResponse, ApiError>> {
   try {
+    const linkedDesigns = await collectDesignsForShare(layout);
     const response = await fetch(`/api/share/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, permission, deleteToken }),
+      body: JSON.stringify({ layout, permission, deleteToken, linkedDesigns }),
     });
 
     const data: unknown = await response.json();

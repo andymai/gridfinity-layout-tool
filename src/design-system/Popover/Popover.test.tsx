@@ -127,4 +127,14 @@ describe('Popover', () => {
     expect(dialog.className).toContain('w-64');
     expect(dialog.className).toContain('p-4');
   });
+
+  it('names the dialog so callers need not nest one of their own', () => {
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} aria-label="Plate icons">
+        <span>Content</span>
+      </Popover>
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Plate icons' })).toBeInTheDocument();
+  });
 });

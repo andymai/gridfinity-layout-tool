@@ -12,6 +12,7 @@
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { cutsExtraEdgeSlots } from '@/shared/types/bin';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { hashOutline } from '@/shared/utils/drawerOutline';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
@@ -115,6 +116,11 @@ export function meshCacheKey(
     params.invertDovetails ?? false,
     params.preferIdenticalPieces ?? false,
     params.connectorStyle ?? 'dovetail',
+    // Folded to false unless this piece actually gains a slot — an interior piece
+    // (all join edges) or one whose exterior edges are all padded is byte-identical
+    // either way, so it must keep its existing cache entry instead of minting a
+    // second one for the same mesh.
+    cutsExtraEdgeSlots(params),
     quantize(connectorClearance),
     featureNozzle,
     params.lightweight ?? true,

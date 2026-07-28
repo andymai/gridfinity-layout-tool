@@ -142,6 +142,13 @@ describe('resolveLidInputs', () => {
     expect(on.separateStackPlate).toBe(true);
   });
 
+  it('gates stackLipOnly on stackableTop (no pockets to collapse without one)', () => {
+    const off = resolveLidInputs(makeParams({ stackableTop: false, stackLipOnly: true }));
+    expect(off.stackLipOnly).toBe(false);
+    const on = resolveLidInputs(makeParams({ stackableTop: true, stackLipOnly: true }));
+    expect(on.stackLipOnly).toBe(true);
+  });
+
   it('keeps the stack grid fused when separateStackPlate is off', () => {
     const inputs = resolveLidInputs(makeParams({ stackableTop: true, separateStackPlate: false }));
     expect(inputs.stackableTop).toBe(true);

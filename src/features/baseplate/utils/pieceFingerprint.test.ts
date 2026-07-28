@@ -204,6 +204,53 @@ describe('computePieceFingerprint', () => {
     });
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
+
+  describe('all-edge slots (issue #2866)', () => {
+    const corner = { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const;
+    const interior = { left: 'join', right: 'join', front: 'join', back: 'join' } as const;
+    const allEdges = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams =>
+      makeParams({
+        width: 4,
+        depth: 4,
+        connectorNubs: true,
+        connectorStyle: 'dovetailKey',
+        connectorSlotsAllEdges: true,
+        ...overrides,
+      });
+
+    it('dedupes a square-cornered corner piece with an interior piece', () => {
+      // Every edge is slotted and nothing rounds, so the two tiles are the same
+      // printable part — the whole point of the option.
+      const base = allEdges({ cornerRadius: 0 });
+      expect(computePieceFingerprint({ ...base, edges: corner })).toBe(
+        computePieceFingerprint({ ...base, edges: interior })
+      );
+    });
+
+    it('still splits pieces whose corners actually round', () => {
+      const base = allEdges({ cornerRadius: 2.5 });
+      expect(computePieceFingerprint({ ...base, edges: corner })).not.toBe(
+        computePieceFingerprint({ ...base, edges: interior })
+      );
+    });
+
+    it('still splits a padded exterior edge from a slotted one', () => {
+      // A padded edge gets no slot, so the geometry genuinely differs.
+      const base = allEdges({ cornerRadius: 0 });
+      expect(computePieceFingerprint({ ...base, edges: corner, paddingLeft: 5 })).not.toBe(
+        computePieceFingerprint({ ...base, edges: interior })
+      );
+    });
+
+    it('keeps keying on raw edges when the option cannot engage', () => {
+      // An integral style never grows exterior slots, so edge/corner/interior
+      // pieces must stay distinct even with the flag set.
+      const base = allEdges({ cornerRadius: 0, connectorStyle: 'puzzle' });
+      expect(computePieceFingerprint({ ...base, edges: corner })).not.toBe(
+        computePieceFingerprint({ ...base, edges: interior })
+      );
+    });
+  });
 });
 
 describe('groupPiecesByFingerprint', () => {

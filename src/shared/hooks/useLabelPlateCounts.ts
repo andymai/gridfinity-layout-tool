@@ -52,12 +52,15 @@ function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlate
   const params = design.params;
   if (!params?.label.enabled || (params.label.mode ?? 'text') !== 'socket') return null;
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
-  const planned = planLabelPlates(
-    params.compartments,
-    binDimensions(params).innerW,
+  const dims = binDimensions(params);
+  const planned = planLabelPlates({
+    compartments: params.compartments,
+    label: params.label,
+    innerWmm: dims.innerW,
+    innerDmm: dims.innerD,
     clearanceMm,
-    ''
-  );
+    fallbackText: '',
+  });
   if (planned.length === 0) return null;
   return { perBin: planned.length, widthsU: planned.map((p) => p.widthU) };
 }

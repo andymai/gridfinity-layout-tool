@@ -20,6 +20,7 @@ export type {
   MoveBinFromStagingCommand,
   FillLayerCommand,
   FillLayerGapsCommand,
+  ExpandBinsToFitCommand,
   ClearLayerCommand,
 } from './binCommands';
 

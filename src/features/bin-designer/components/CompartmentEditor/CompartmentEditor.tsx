@@ -61,6 +61,7 @@ export function CompartmentEditor() {
   const stepperSize = isMobile ? 'lg' : 'md';
   const {
     compartments,
+    labelSpan,
     width,
     depth,
     gridUnitMm,
@@ -84,6 +85,7 @@ export function CompartmentEditor() {
   } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
+      labelSpan: s.params.label.span === true,
       width: s.params.width,
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
@@ -659,10 +661,17 @@ export function CompartmentEditor() {
               >
                 {t('binDesigner.compartmentEditor.modeDividers')}
               </Button>
+              {/* Full-width labels read `label.rowTexts`, so per-compartment
+                  text edited here would render nothing (#2897). The stored
+                  texts are kept and return when span is switched off. */}
               <Button
                 type="button"
                 variant="ghost"
                 touchTarget={false}
+                disabled={labelSpan}
+                title={
+                  labelSpan ? t('binDesigner.compartmentEditor.labelsSpanDisabled') : undefined
+                }
                 onClick={() => labeling.setLabelMode(true)}
                 aria-pressed={labeling.labelMode}
                 className={`flex-1 ${getSegmentClass(labeling.labelMode)}`}

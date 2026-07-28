@@ -37,7 +37,7 @@ describe('useLidGroupSummary', () => {
     setLid({
       enabled: true,
       attachment: 'magnetic',
-      retentionMagnet: { diameter: 6, depth: 2 },
+      retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 0 },
     });
     const { result } = renderHook(() => useLidGroupSummary());
     expect(result.current).toMatch(/6\.0 × 2\.0 mm/);

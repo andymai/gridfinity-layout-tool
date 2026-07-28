@@ -24,6 +24,12 @@
  * - [/]: Cycle category of selected bins, or cycle active drawing category if no bin selected
  * - L: Open quick label popover for selected bin
  *
+ * These bind on `window`, so they stay armed on every route the host
+ * component renders. Pass `disabled` on routes that own their own shortcuts
+ * (Bin Designer, Baseplate) — otherwise a `Delete` aimed at a cutout shape
+ * also deletes the selected layout bin, and `r`/`w`/`s` rotate bins and swap
+ * layers behind the user's back (issue #2896).
+ *
  * @example
  * ```tsx
  * function GridEditor() {
@@ -91,7 +97,12 @@ const handlers: KeyboardHandler[] = [
   handleNudge,
 ];
 
-export function useKeyboard() {
+interface UseKeyboardOptions {
+  /** Skip binding the listener entirely (non-layout routes). */
+  readonly disabled?: boolean;
+}
+
+export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
   const t = useTranslation();
 
   const {
@@ -228,7 +239,8 @@ export function useKeyboard() {
   );
 
   useEffect(() => {
+    if (disabled) return;
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [handleKeyDown, disabled]);
 }

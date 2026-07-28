@@ -8,24 +8,62 @@
  * socket engages the lid the same way it engages a baseplate. The
  * remaining slab material between pockets forms the ring + dividers.
  *
+ * `stackLipOnly` (#2930) swaps the per-cell pockets for one footprint-wide
+ * pocket, so only the perimeter ring survives — the same lip an upper bin
+ * registers on, without the interior dividers.
+ *
  * `isCellFilled` is also exported because the magnet-hole pass (a separate
  * sibling) needs the same cell-fill predicate for polygon bins.
  */
 
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
-import type { Shape3D, DisposalScope, Sketch, ValidSolid } from 'brepjs';
+import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
 import { pocketCornerRadius } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
-import { LID_COPLANAR_MARGIN } from './lidConstants';
+import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { type CellMask } from '@/shared/utils/cellMask';
 import { forEachCell } from './cellDecomposition';
+import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
 import type { LidInputs } from './lidInputs';
 
 /** Insets at each Z breakpoint — same values as `baseplateGenerator`. */
 const STACK_INSET_TOP = 0;
 const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+/** Inset at the pocket floor, per side — on a lip-only top this is how far the
+ *  lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
+ *  the text fit box from it. */
+export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+
+/** Floor for every inset-derived pocket dimension. The deepest inset is
+ *  STACK_INSET_BOT (2.95mm per side), which a small enough cell or grid unit
+ *  would otherwise drive to zero or negative. */
+const MIN_POCKET_MM = 0.1;
+
+/**
+ * Z breakpoints of the pocket profile, paired with their per-side inset — the
+ * baseplate socket profile, walked top-down, with a coplanar cap at each end so
+ * the cut bites cleanly through both slab faces.
+ */
+const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
+  [SOCKET_HEIGHT + LID_COPLANAR_MARGIN, STACK_INSET_TOP],
+  [SOCKET_HEIGHT, STACK_INSET_TOP],
+  [SOCKET_HEIGHT - CLEARANCE / 2, STACK_INSET_TOP],
+  [SOCKET_HEIGHT - SOCKET_BIG_TAPER, STACK_INSET_MID],
+  [SOCKET_HEIGHT - SOCKET_BIG_TAPER - (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH), STACK_INSET_MID],
+  [0, STACK_INSET_BOT],
+  [-LID_COPLANAR_MARGIN, STACK_INSET_BOT],
+];
+
+/** `outlineAt` must return sections that share a vertex topology at every
+ *  inset — a ruled loft can't bridge differing curve counts, which is why both
+ *  callers floor their corner radius rather than let it reach zero. */
+function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
+  const [first, ...rest] = POCKET_PROFILE.map(
+    ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
+  );
+  return first.loftWith(rest, { ruled: true });
+}
 
 /**
  * Build a single pocket cutter for one cell. Multi-section loft with
@@ -36,26 +74,41 @@ const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
  */
 function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
-  const section = (z: number, inset: number): Sketch => {
-    const w = Math.max(cellW_mm - 2 * inset, 0.1);
-    const d = Math.max(cellD_mm - 2 * inset, 0.1);
-    const r = Math.max(cornerR - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
+  return loftPocket((inset) =>
+    drawRoundedRectangle(
+      Math.max(cellW_mm - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellD_mm - 2 * inset, MIN_POCKET_MM),
+      Math.max(cornerR - inset, MIN_POCKET_MM)
+    )
+  );
+}
 
-  // Slab top sits at Z=SOCKET_HEIGHT (5mm above the lid floor); pocket
-  // breakpoints walk DOWN from there mirroring the baseplate's profile.
-  const TOP = SOCKET_HEIGHT;
-  const s0 = section(TOP + LID_COPLANAR_MARGIN, STACK_INSET_TOP);
-  const sections: Sketch[] = [
-    section(TOP, STACK_INSET_TOP),
-    section(TOP - CLEARANCE / 2, STACK_INSET_TOP),
-    section(TOP - SOCKET_BIG_TAPER, STACK_INSET_MID),
-    section(TOP - SOCKET_BIG_TAPER - (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH), STACK_INSET_MID),
-    section(0, STACK_INSET_BOT),
-    section(-LID_COPLANAR_MARGIN, STACK_INSET_BOT),
-  ];
-  return s0.loftWith(sections, { ruled: true });
+/**
+ * ONE pocket spanning the whole footprint (#2930) — only the perimeter lip
+ * survives.
+ *
+ * Sized from the NOMINAL socket grid, not `buildOutlineDrawing`'s lid
+ * perimeter: that perimeter is shrunk by `fitClearance` and both grown and
+ * shifted by asymmetric overhang, none of which the sockets of a bin stacked
+ * on top move with. The per-cell path stays on the nominal grid for the same
+ * reason.
+ */
+function buildStackLipCutter(inputs: LidInputs): Shape3D {
+  const { cellsX, cellsY, gridUnitMm, gridUnitMmY, cellMask } = inputs;
+  const totalW = cellsX * gridUnitMm;
+  const totalD = cellsY * gridUnitMmY;
+  const cornerR = pocketCornerRadius(totalW, totalD);
+
+  return loftPocket((inset) => {
+    const radius = Math.max(cornerR - inset, LID_MIN_CORNER_RADIUS);
+    return cellMask
+      ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
+      : drawRoundedRectangle(
+          Math.max(totalW - 2 * inset, MIN_POCKET_MM),
+          Math.max(totalD - 2 * inset, MIN_POCKET_MM),
+          radius
+        );
+  });
 }
 
 /**
@@ -90,32 +143,37 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
   let slab: Shape3D = scope.register(slabSketch.extrude(SOCKET_HEIGHT));
 
-  // 2. Pocket cutters — one per filled cell. `forEachCell` decomposes
-  //    half-bin grids into 1u + 0.5u sub-cells; we cut a pocket sized
-  //    to whichever sub-cell appears at each position. Polygon
-  //    (cellMask) bins skip pockets in unfilled cells so the lip
+  // 2. Pocket cutters. Lip-only (#2930) cuts a single footprint-wide pocket,
+  //    leaving just the perimeter lip. Otherwise one per filled cell:
+  //    `forEachCell` decomposes half-bin grids into 1u + 0.5u sub-cells and we
+  //    cut a pocket sized to whichever sub-cell appears at each position.
+  //    Polygon (cellMask) bins skip pockets in unfilled cells so the lip
   //    pattern only covers material that actually exists.
-  const halfTotalW = (cellsX * gridUnitMm) / 2;
-  const halfTotalD = (cellsY * gridUnitMmY) / 2;
   const pockets: Shape3D[] = [];
-  forEachCell(
-    cellsX,
-    cellsY,
-    (cell) => {
-      const cellW = cell.widthUnits * gridUnitMm;
-      const cellD = cell.depthUnits * gridUnitMmY;
-      if (inputs.cellMask) {
-        const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
-        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
-        if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
-      }
-      const pocket = buildLidStackPocketCutter(cellW, cellD);
-      const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
-      pocket.delete();
-      pockets.push(positioned);
-    },
-    { gridUnitMm: pitch }
-  );
+  if (inputs.stackLipOnly) {
+    pockets.push(scope.register(buildStackLipCutter(inputs)));
+  } else {
+    const halfTotalW = (cellsX * gridUnitMm) / 2;
+    const halfTotalD = (cellsY * gridUnitMmY) / 2;
+    forEachCell(
+      cellsX,
+      cellsY,
+      (cell) => {
+        const cellW = cell.widthUnits * gridUnitMm;
+        const cellD = cell.depthUnits * gridUnitMmY;
+        if (inputs.cellMask) {
+          const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
+          const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
+          if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
+        }
+        const pocket = buildLidStackPocketCutter(cellW, cellD);
+        const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
+        pocket.delete();
+        pockets.push(positioned);
+      },
+      { gridUnitMm: pitch }
+    );
+  }
 
   if (pockets.length > 0) {
     scope.register(slab);

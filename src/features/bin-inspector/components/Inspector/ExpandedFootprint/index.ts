@@ -1,0 +1,1 @@
+export { ExpandedFootprint } from './ExpandedFootprint';

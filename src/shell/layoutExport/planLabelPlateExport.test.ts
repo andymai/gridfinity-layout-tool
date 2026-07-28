@@ -114,6 +114,55 @@ describe('planLabelPlateExport', () => {
     );
   });
 
+  // #2910: `edges: 'both'` cuts a socket on each compartment wall, so the
+  // sheet has to carry a plate for each. It used to ship one per compartment,
+  // leaving the user half the plates they needed.
+  it('ships a plate per socket when tabs sit on both edges', () => {
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Both edges', {
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            mode: 'socket',
+            depth: 14,
+            edges: 'both',
+          },
+        }),
+      },
+    ];
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED, 0.4);
+    expect(plan.totalPlates).toBe(4);
+    expect(plan.groups[0].manifestPlates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ text: 'SCREWS', quantity: 2 }),
+        expect.objectContaining({ text: 'BOLTS', quantity: 2 }),
+      ])
+    );
+  });
+
+  it('ships no plate for a front socket the worker drops as colliding', () => {
+    // 2·20mm of tab body against a ~39mm compartment: the front tab never gets
+    // cut, so a plate for it would print a part that fits nowhere.
+    const loaded: LoadedDesign[] = [
+      {
+        id: designId('d1'),
+        design: socketDesign('d1', 'Colliding', {
+          label: {
+            ...DEFAULT_BIN_PARAMS.label,
+            enabled: true,
+            mode: 'socket',
+            depth: 20,
+            edges: 'both',
+          },
+        }),
+      },
+    ];
+    const plan = planLabelPlateExport([linkedBin('d1')], loaded, BED, BED, 0.4);
+    expect(plan.totalPlates).toBe(2);
+  });
+
   it('uses per-bin labels (falling back to the design name) for spanning sockets', () => {
     // 4 narrow columns → no per-compartment socket fits → spanning socket.
     const loaded: LoadedDesign[] = [

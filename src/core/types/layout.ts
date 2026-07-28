@@ -10,6 +10,7 @@ import type {
 } from '@gridfinity/branded-types';
 import type { StoredBaseplateParams } from './baseplate';
 import type { DrawerOutline, FractionalEdge, MeasuredDrawerMm } from './drawerOutline';
+import type { OverhangConfig, WallTaperProfile } from './overhang';
 /**
  * Where magnet holes anchor within each grid cell.
  * - `edge` (default): a constant 8mm from the cell edge, so holes track the
@@ -88,13 +89,6 @@ export interface Layer {
   height: HeightUnits; // >= 1
 }
 
-/**
- * Cross-section shape of an outer-wall taper for drawer-fit "curved" bins
- * (#2933). Defined in core so the placed-bin `Bin.marginTaper` and the
- * bin-designer `WallTaperConfig` share one source of truth.
- */
-export type WallTaperProfile = 'chamfer' | 'fillet';
-
 export interface Bin {
   id: BinId;
   layerId: LayerId; // base layer ID or STAGING_ID
@@ -125,7 +119,26 @@ export interface Bin {
     bandHeight: number; // mm
     enabled?: boolean;
   };
+  // Explicit per-placement overhang (mm), authored by "Expand to Fit" so several
+  // bins can tile a span that isn't a whole number of grid units while sharing
+  // one linked design. Wins over `extendToMargin` and over the design's own
+  // `params.overhang` — see `resolveBinOverhang`. Cleared whenever the bin
+  // moves or is resized, since the values only hold for the position they were
+  // computed for.
+  overhang?: OverhangConfig;
 }
+/**
+ * Update payload for a bin.
+ *
+ * Identical to `Partial<Bin>` except that `overhang` is tri-state: omitted
+ * leaves it alone, an object sets it, and `null` clears it. A plain optional
+ * field can't express "clear" — `{ overhang: undefined }` is indistinguishable
+ * from omission once it crosses the command boundary.
+ */
+export type BinUpdates = Partial<Omit<Bin, 'overhang'>> & {
+  overhang?: OverhangConfig | null;
+};
+
 /** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {
   x: GridUnits;

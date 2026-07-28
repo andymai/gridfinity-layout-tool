@@ -22,6 +22,9 @@ import {
   LID_MAGNET_DEPTH_MIN_MM,
   LID_MAGNET_DEPTH_MAX_MM,
   LID_MAGNET_DIMENSION_STEP_MM,
+  LID_MAGNET_EDGE_COUNT_MIN,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_STEP,
   LID_TRAY_DEPTH_MIN_MM,
   LID_TRAY_DEPTH_MAX_MM,
   LID_TRAY_WALL_MIN_MM,
@@ -326,19 +329,28 @@ export function useLidSection() {
   const setTopSurface = useCallback(
     (mode: LidTopSurface) => {
       if (mode === 'stackable') {
-        updateLid({ stackableTop: true, tray: { ...lid.tray, enabled: false } });
+        // Normalise stackLipOnly on the way IN as well as out: an imported design
+        // can carry it true with stackableTop false, which would otherwise make
+        // picking "Stackable" land on lip-only unannounced.
+        updateLid({
+          stackableTop: true,
+          stackLipOnly: lid.stackableTop && lid.stackLipOnly,
+          tray: { ...lid.tray, enabled: false },
+        });
       } else {
-        // Flat or tray: no stack grid, so magnet pockets and the separate
-        // baseplate (both grid-only) are force-cleared. Tray owns the surface.
+        // Flat or tray: no stack grid, so magnet pockets, the lip-only variant,
+        // and the separate baseplate (all grid-only) are force-cleared. Tray
+        // owns the surface.
         updateLid({
           stackableTop: false,
+          stackLipOnly: false,
           magnetHoles: false,
           separateStackPlate: false,
           tray: { ...lid.tray, enabled: mode === 'tray' },
         });
       }
     },
-    [lid.tray, updateLid]
+    [lid.stackableTop, lid.stackLipOnly, lid.tray, updateLid]
   );
 
   const setRetentionMagnetDiameter = useCallback(
@@ -360,6 +372,19 @@ export function useLidSection() {
     [lid.retentionMagnet, updateLid]
   );
 
+  const setRetentionMagnetEdgeMagnets = useCallback(
+    (edgeMagnets: number) => {
+      // Whole number in range; the stepper bounds input but keyboard entry can't
+      // be trusted. Placement still drops any that don't fit a given edge.
+      const clamped = Math.min(
+        LID_MAGNET_EDGE_COUNT_MAX,
+        Math.max(LID_MAGNET_EDGE_COUNT_MIN, Math.round(edgeMagnets))
+      );
+      updateLid({ retentionMagnet: { ...lid.retentionMagnet, edgeMagnets: clamped } });
+    },
+    [lid.retentionMagnet, updateLid]
+  );
+
   const setTrayDepth = useCallback(
     (depthMm: number) => {
       const clamped = Math.min(LID_TRAY_DEPTH_MAX_MM, Math.max(LID_TRAY_DEPTH_MIN_MM, depthMm));
@@ -376,13 +401,18 @@ export function useLidSection() {
     [lid.tray, updateLid]
   );
 
+  const toggleStackLipOnly = useCallback(() => {
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
+    updateLid({ stackLipOnly: !lid.stackLipOnly });
+  }, [lid.stackableTop, lid.stackLipOnly, updateLid]);
+
   const toggleMagnetHoles = useCallback(() => {
-    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
     updateLid({ magnetHoles: !lid.magnetHoles });
   }, [lid.stackableTop, lid.magnetHoles, updateLid]);
 
   const toggleSeparateStackPlate = useCallback(() => {
-    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
     updateLid({ separateStackPlate: !lid.separateStackPlate });
   }, [lid.stackableTop, lid.separateStackPlate, updateLid]);
 
@@ -414,8 +444,7 @@ export function useLidSection() {
         LID_TOP_THICKNESS_MAX_MM,
         Math.max(LID_TOP_THICKNESS_MIN_MM, topThicknessMm)
       );
-      const stepped =
-        Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
+      const stepped = Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
       // 0.2 isn't representable in binary, so the multiply lands on values like
       // 2.4000000000000004 — harmless for geometry, but it would persist into
       // shared design JSON and the mm readout. One decimal is exact for a
@@ -441,11 +470,24 @@ export function useLidSection() {
   const anyRail =
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
+  // ── Stack top (#2930) ─────────────────────────────────────────────────
+  // Both gated on `stackableTop`, matching the worker's split in
+  // `resolveLidInputs`: the persisted lip-only flag can outlive a stack top.
+  const lipOnlyTop = lid.stackableTop && lid.stackLipOnly;
+  const stackGridOwnsTop = lid.stackableTop && !lid.stackLipOnly;
+  // A single-cell footprint's grid is already one pocket, so the toggle
+  // emits identical geometry — say so rather than let it read as broken.
+  const stackLipOnlyIsNoOp = lipOnlyTop && params.width <= 1 && params.depth <= 1;
+  // Every stackable lid exports flipped (`keepsNaturalOrientation` only spares
+  // trays), which lands a lip-only top pockets-down: the floor plate becomes one
+  // unsupported span instead of the grid's per-cell bridges. The separate
+  // baseplate is the existing way out.
+  const stackLipOnlyNeedsPlateHint = lipOnlyTop && !stackLipOnlyIsNoOp && !lid.separateStackPlate;
+
   // ── Lid-top text (#2695) ──────────────────────────────────────────────
-  // Mirrors the worker gates in `resolveLidInputs`: a stackable top owns the
-  // surface, and polygon lids are excluded (rectangular auto-fit).
+  // Polygon lids are excluded (rectangular auto-fit), mirroring the worker.
   const lidText = params.surfaceText?.lidText ?? '';
-  const textDisabledReason = lid.stackableTop
+  const textDisabledReason = stackGridOwnsTop
     ? t('binDesigner.lid.text.disabledStackable')
     : isPartialMask(params.cellMask)
       ? t('binDesigner.lid.text.disabledPolygon')
@@ -639,6 +681,9 @@ export function useLidSection() {
       attachment: lid.attachment,
       topSurface,
       stackableTop: lid.stackableTop,
+      stackLipOnly: lid.stackLipOnly,
+      stackLipOnlyIsNoOp,
+      stackLipOnlyNeedsPlateHint,
       magnetHoles: lid.magnetHoles,
       separateStackPlate: lid.separateStackPlate,
       magnetDiameter: base.magnetDiameter,
@@ -651,6 +696,11 @@ export function useLidSection() {
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
       retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
+      // Edge magnets per long edge (#2844) — anti-sag reinforcement for big lids.
+      retentionMagnetEdgeMagnets: lid.retentionMagnet.edgeMagnets,
+      retentionMagnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,
+      retentionMagnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
+      retentionMagnetEdgeStep: LID_MAGNET_EDGE_COUNT_STEP,
       // Tray recess state + bounds. Mutual exclusion with the stack grid is
       // handled by `setTopSurface`, so no disabled-reason string is needed.
       tray: lid.tray,
@@ -693,12 +743,16 @@ export function useLidSection() {
       textMode,
       textDisabledReason,
       textOnTrayFloor: topSurface === 'tray',
+      textOnStackLipFloor: lipOnlyTop,
+      // Warning, not a gate — same treatment as the through-cut stencil note.
+      textEmbossBlocksStacking: lipOnlyTop && textMode === 'emboss',
       isLidTextOpen,
     },
     handlers: {
       toggleEnabled,
       setAttachment,
       setTopSurface,
+      toggleStackLipOnly,
       toggleMagnetHoles,
       toggleSeparateStackPlate,
       toggleClickRailSide,
@@ -707,6 +761,7 @@ export function useLidSection() {
       setTopThickness,
       setRetentionMagnetDiameter,
       setRetentionMagnetDepth,
+      setRetentionMagnetEdgeMagnets,
       setTrayDepth,
       setTrayWall,
       fixIssue,

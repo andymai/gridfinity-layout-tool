@@ -93,6 +93,31 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
     expect(stats.boundaryEdges, `${label}: boundary edges`).toBe(0);
   }
 
+  // #2897: a wall-to-wall label shelf clips the dividers it passes over. That
+  // clip lands on the shell itself (compartments baked in) or on the additive
+  // walls, so it must not reintroduce the seam this suite exists to guard.
+  it(
+    'spanning label shelf over four columns exports watertight STL',
+    async () => {
+      clearAllCaches();
+      const params = withCompartments(4, 1, [0, 1, 2, 3], {
+        width: 3,
+        depth: 3,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          span: true,
+          mode: 'socket',
+          socketStyle: 'clickIn',
+          depth: 14,
+        },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      });
+      expectWatertight(analyzeManifold((await exportBin(params, 'stl')).data), 'spanning label');
+    },
+    TEST_TIMEOUT_MS
+  );
+
   it(
     '2×2 bin with a single full-span divider exports watertight STL',
     async () => {

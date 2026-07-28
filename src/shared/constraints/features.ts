@@ -65,6 +65,13 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     },
   },
 
+  'base.spacer': {
+    key: 'base.spacer',
+    label: 'Spacer',
+    isEnabled: (p) => p.base.spacer,
+    apply: (p, enabled) => ({ base: { ...p.base, spacer: enabled } }),
+  },
+
   'base.flat': {
     key: 'base.flat',
     label: 'Flat Base',

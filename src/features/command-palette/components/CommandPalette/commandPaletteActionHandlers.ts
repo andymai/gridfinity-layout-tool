@@ -32,6 +32,7 @@ import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
+import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
@@ -130,6 +131,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
+  const { expandToFit, canExpand } = useExpandToFit();
 
   return useMemo(() => {
     const hasBinsSelected = selectedBinIds.length > 0;
@@ -274,6 +276,8 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'align-bottom': hasMultipleBins ? () => alignBins('bottom') : null,
       'rotate-all': hasMultipleBins ? () => rotateAll() : null,
       'match-height': hasMultipleBins ? () => matchHeight() : null,
+      // Available for a single bin too — it absorbs the gap around itself.
+      'expand-to-fit': canExpand ? () => expandToFit() : null,
     };
 
     const invertedIds = (() => {
@@ -497,6 +501,8 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     alignBins,
     rotateAll,
     matchHeight,
+    expandToFit,
+    canExpand,
     addToast,
     t,
     isDesignerRoute,

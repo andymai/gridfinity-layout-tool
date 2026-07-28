@@ -49,6 +49,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'invertDovetails',
   'preferIdenticalPieces',
   'connectorStyle',
+  'connectorSlotsAllEdges',
   'connectorFitOffset',
   'cornerRadius',
   'cornerRadii',

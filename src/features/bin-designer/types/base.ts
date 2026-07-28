@@ -36,4 +36,16 @@ export interface BaseConfig {
    * ("Gridfinity Lite"). Magnet/screw pads are retained as solid islands.
    */
   readonly lightweight: boolean;
+  /**
+   * Spacer / riser mode (#2869): a floorless frame that lifts a bin so bins of
+   * different heights line up flush. Feet and stacking lip are unchanged, so its
+   * height counts in the stack exactly like a bin of the same height — a 2u
+   * spacer under a 2u bin reaches the top of a 4u one.
+   *
+   * The floor is punched through every cell, leaving the shelled feet plus the
+   * webbing between them as the structure. Interior features (compartments,
+   * scoops, labels, inserts, cutouts, floor patterns) have no floor to sit on and
+   * are ruled out by the constraint engine; wall features still apply.
+   */
+  readonly spacer: boolean;
 }

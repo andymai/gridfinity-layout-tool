@@ -49,6 +49,7 @@ import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlann
 import { shouldDeferBrepPreview } from '../utils/previewComplexity';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import type { MarginMeshEntry, PieceMeshEntry } from '../store/baseplatePageStore';
 import type { GenerationResult } from '@/shared/generation/bridge';
 import type { BaseplateTiling } from '../types/tiling';
@@ -216,6 +217,14 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     paddingBack: bp.paddingBack,
     connectorNubs: bp.connectorNubs,
     connectorStyle: bp.connectorStyle,
+    // All-edge slots add grooves to the exterior edges and change which pieces
+    // dedupe, so it must re-trigger BREP — but `buildFullParams` drops it unless
+    // connectors are on with a both-female style, so fold it out otherwise
+    // rather than regenerating for a flag that can't change the mesh.
+    connectorSlotsAllEdges:
+      bp.connectorNubs === true &&
+      isSeatedConnectorStyle(bp.connectorStyle) &&
+      bp.connectorSlotsAllEdges === true,
     syncWithLayout: bp.syncWithLayout,
     baseplateWidth: bp.baseplateWidth,
     baseplateDepth: bp.baseplateDepth,

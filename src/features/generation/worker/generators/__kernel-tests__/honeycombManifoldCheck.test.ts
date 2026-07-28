@@ -12,6 +12,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getKernelName } from './wasmInit';
 import { buildParams } from './scenarioTypes';
+import { assertWatertight } from './meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { clearAllCaches } from '../shapeCache';
 
@@ -50,5 +51,7 @@ describe(`honeycomb wall pattern on ${getKernelName()}`, () => {
 
     expect(honeycomb.triangleCount).toBeGreaterThan(plain.triangleCount);
     expect(minZ(honeycomb.vertices)).toBeGreaterThanOrEqual(-0.001);
+    // The carved shell must stay closed, not just gain triangles.
+    assertWatertight(honeycomb, `honeycomb wall pattern on ${getKernelName()}`);
   });
 });

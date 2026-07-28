@@ -170,6 +170,54 @@ describe('buildFullParams', () => {
     });
   });
 
+  describe('all-edge slots (issue #2866)', () => {
+    const withFlag = (overrides: Record<string, unknown>) =>
+      buildFullParams(
+        { ...storedBase, connectorSlotsAllEdges: true, ...overrides },
+        10,
+        8,
+        42,
+        'end',
+        'end'
+      );
+
+    it('resolves for a both-female style with connectors on', () => {
+      expect(
+        withFlag({ connectorNubs: true, connectorStyle: 'dovetailKey' }).connectorSlotsAllEdges
+      ).toBe(true);
+      expect(
+        withFlag({ connectorNubs: true, connectorStyle: 'snapClip' }).connectorSlotsAllEdges
+      ).toBe(true);
+    });
+
+    it('drops the flag for an integral style, so it cannot fragment caches', () => {
+      // A tongue on an exterior edge would protrude past the drawer-facing wall.
+      expect(
+        withFlag({ connectorNubs: true, connectorStyle: 'puzzle' }).connectorSlotsAllEdges
+      ).toBeUndefined();
+      expect(
+        withFlag({ connectorNubs: true, connectorStyle: undefined }).connectorSlotsAllEdges
+      ).toBeUndefined();
+    });
+
+    it('drops the flag when split connectors are off', () => {
+      expect(
+        withFlag({ connectorNubs: false, connectorStyle: 'dovetailKey' }).connectorSlotsAllEdges
+      ).toBeUndefined();
+    });
+
+    it('drops the flag when stacking strips the snap-clip style', () => {
+      // The strip turns connectors off entirely, so exterior slots must go too.
+      const result = withFlag({
+        connectorNubs: true,
+        connectorStyle: 'snapClip',
+        stackPrint: { enabled: true, gapMm: 0.2 },
+      });
+      expect(result.connectorNubs).toBe(false);
+      expect(result.connectorSlotsAllEdges).toBeUndefined();
+    });
+  });
+
   describe('magnetAnchor', () => {
     it("defaults to 'edge' when the argument is omitted", () => {
       const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');

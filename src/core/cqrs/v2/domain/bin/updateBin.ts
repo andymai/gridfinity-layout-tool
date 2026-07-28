@@ -23,6 +23,18 @@ import {
 } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
+/** Explicit per-placement overhang (mm). `null` clears it (inspector Reset). */
+const overhangSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    left: z.number().min(0),
+    right: z.number().min(0),
+    front: z.number().min(0),
+    back: z.number().min(0),
+    feet: z.boolean().optional(),
+  })
+  .nullable();
+
 const updatesSchema = z
   .object({
     layerId: z.string().min(1),
@@ -43,6 +55,7 @@ const updatesSchema = z
       bandHeight: z.number().min(0),
       enabled: z.boolean().optional(),
     }),
+    overhang: overhangSchema,
   })
   .partial();
 
@@ -74,6 +87,8 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
     result.linkedDesignId = toDesignId(updates.linkedDesignId);
   if (updates.extendToMargin !== undefined) result.extendToMargin = updates.extendToMargin;
   if (updates.marginTaper !== undefined) result.marginTaper = updates.marginTaper;
+  // `null` is the wire form of "clear it"; the field itself is just optional.
+  if (updates.overhang !== undefined) result.overhang = updates.overhang ?? undefined;
   return result;
 }
 
@@ -111,15 +126,25 @@ export const updateBin = defineCommand({
     }
 
     const changes = brandUpdates(payload.updates);
-    const merged: Bin = { ...existing, ...changes };
 
-    // Validate placement when spatial properties change for on-grid bins.
     const spatial =
       changes.x !== undefined ||
       changes.y !== undefined ||
       changes.width !== undefined ||
       changes.depth !== undefined ||
       changes.layerId !== undefined;
+
+    // An explicit overhang is only correct for the position it was computed
+    // for, so moving or resizing the bin drops it — otherwise a dragged bin
+    // keeps extending into space it no longer borders, and footprint
+    // validation would still read as legal. Skipped when the same update sets
+    // an overhang itself (`'overhang' in changes`), which is how a caller
+    // repositions and re-extends atomically.
+    if (spatial && !('overhang' in changes) && existing.overhang !== undefined) {
+      changes.overhang = undefined;
+    }
+
+    const merged: Bin = { ...existing, ...changes };
 
     if (spatial && merged.layerId !== STAGING_ID) {
       const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };

@@ -43,7 +43,42 @@ export function isLabelPlateWidthU(value: unknown): value is LabelPlateWidthU {
  * silhouettes). Shared by the compartment icon picker, the server-side
  * validation allowlist, and the worker's icon geometry so they never drift.
  */
-export const LABEL_PLATE_ICONS = ['bolt', 'screw', 'woodScrew', 'nut', 'washer', 'nail'] as const;
+export const LABEL_PLATE_ICONS = [
+  // Fasteners
+  'bolt',
+  'screw',
+  'woodScrew',
+  'nut',
+  'washer',
+  'nail',
+  'hexSocketCap',
+  'setScrew',
+  'selfTapping',
+  'threadedRod',
+  'splitPin',
+  'lockWasher',
+  'wingNut',
+  'squareNut',
+  'threadedInsert',
+  'eyeBolt',
+  'thumbScrew',
+  'standoff',
+  // Tooling and consumables
+  'drillBit',
+  'hexKey',
+  'tap',
+  'countersink',
+  'utilityBlade',
+  'spring',
+  'oRing',
+  'bearing',
+  'magnet',
+  'zipTie',
+  'sawBlade',
+  'file',
+  'endMill',
+  'clip',
+] as const;
 
 export type LabelPlateIconId = (typeof LABEL_PLATE_ICONS)[number];
 

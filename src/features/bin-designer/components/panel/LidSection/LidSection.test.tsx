@@ -195,6 +195,7 @@ describe('LidSection', () => {
           ...DEFAULT_BIN_PARAMS.lid,
           enabled: true,
           stackableTop: true,
+          stackLipOnly: true,
           magnetHoles: true,
           separateStackPlate: true,
         },
@@ -203,6 +204,7 @@ describe('LidSection', () => {
       fireEvent.click(screen.getByRole('radio', { name: 'Flat' }));
       const lid = useDesignerStore.getState().params.lid;
       expect(lid.stackableTop).toBe(false);
+      expect(lid.stackLipOnly).toBe(false);
       expect(lid.magnetHoles).toBe(false);
       expect(lid.separateStackPlate).toBe(false);
     });
@@ -226,6 +228,7 @@ describe('LidSection', () => {
       expect(
         screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' })
       ).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Stacking lip only' })).toBeInTheDocument();
     });
 
     it('hides stackable sub-toggles when top surface is flat', () => {
@@ -240,6 +243,65 @@ describe('LidSection', () => {
       fireEvent.click(screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' }));
       expect(useDesignerStore.getState().params.lid.separateStackPlate).toBe(true);
       expect(screen.getByText(/Glue it onto the lid/i)).toBeInTheDocument();
+    });
+
+    it('flags the lip-only toggle as a no-op on a single-cell lid (#2930)', () => {
+      resetStore({
+        width: 1,
+        depth: 1,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/No effect at this size/i)).toBeInTheDocument();
+      // The print note would be noise here — nothing changes at 1x1.
+      expect(screen.queryByText(/prints upside down/i)).not.toBeInTheDocument();
+    });
+
+    it('points a multi-cell lip-only lid at the separate baseplate (#2930)', () => {
+      resetStore({
+        width: 3,
+        depth: 2,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/prints upside down/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No effect at this size/i)).not.toBeInTheDocument();
+    });
+
+    it('drops the print note once the baseplate is split off (#2930)', () => {
+      resetStore({
+        width: 3,
+        depth: 2,
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          stackableTop: true,
+          stackLipOnly: true,
+          separateStackPlate: true,
+        },
+      });
+      render(<LidSection />);
+      expect(screen.queryByText(/prints upside down/i)).not.toBeInTheDocument();
+    });
+
+    it('keeps lip-only off when an imported design had it set without a stack top', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: false, stackLipOnly: true },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Stackable' }));
+      const lid = useDesignerStore.getState().params.lid;
+      expect(lid.stackableTop).toBe(true);
+      expect(lid.stackLipOnly).toBe(false);
+    });
+
+    it('toggles the lip-only stack top and swaps the hint (#2930)', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true } });
+      render(<LidSection />);
+      expect(screen.getByText(/full grid of sockets/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('switch', { name: 'Stacking lip only' }));
+      expect(useDesignerStore.getState().params.lid.stackLipOnly).toBe(true);
+      expect(screen.getByText(/One lip around the edge/i)).toBeInTheDocument();
     });
 
     it('reveals tray dimensions under Advanced when Tray is selected', () => {
@@ -373,13 +435,42 @@ describe('LidSection', () => {
       expect(screen.getByText(/stencil/i)).toBeInTheDocument();
     });
 
-    it('replaces the input with a reason when the top is stackable', () => {
+    it('replaces the input with a reason under a full stack grid', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true },
       });
       render(<LidSection />);
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
-      expect(screen.getByText(/stack grid owns/)).toBeInTheDocument();
+      expect(screen.getByText(/full stack grid/i)).toBeInTheDocument();
+    });
+
+    it('allows text on a lip-only stack top and says where it lands (#2930)', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
+      expect(screen.queryByText(/full stack grid/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/recessed floor inside the lip/i)).toBeInTheDocument();
+    });
+
+    it('warns that embossed text blocks stacking on a lip-only top (#2930)', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+        surfaceText: { lidText: 'Cables', style: { mode: 'emboss' } },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/won’t seat flat/i)).toBeInTheDocument();
+    });
+
+    it('does not warn about embossed text on a plain flat top', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables', style: { mode: 'emboss' } },
+      });
+      render(<LidSection />);
+      expect(screen.queryByText(/won’t seat flat/i)).not.toBeInTheDocument();
     });
 
     it('replaces the input with a reason for custom-shape (cellMask) bins', () => {

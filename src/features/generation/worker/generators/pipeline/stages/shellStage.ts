@@ -18,10 +18,11 @@ import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet, baseSocketShapeKey } from '../../socketBuilder';
 import { buildLightweightBase } from '../../lightweightBaseBuilder';
-import type { LightweightBase } from '../../lightweightBaseBuilder';
+import type { LightweightBase, LightweightOpenDirection } from '../../lightweightBaseBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { maskHasHoles } from '../../maskPolygon';
+import { buildSpanningDividerClipTools, planSpanningDividerClips } from '../../labelTabBuilder';
 import { hasOverhang, overhangKey } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
@@ -34,6 +35,20 @@ import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
+
+/**
+ * Which way the lite cups open.
+ *
+ * A spacer (#2869) opens BOTH ends, so each foot becomes a tube and the cell is a
+ * clean through-hole; it never carries magnets or screws (`deriveDimensions`
+ * suppresses them — a pad inside a through-hole would be free-standing). Solid
+ * bins open downward, since their body keeps its floor; everything else opens up
+ * into the cavity.
+ */
+function cupOpenDirection(dim: PipelineContext['dimensions']): LightweightOpenDirection {
+  if (dim.isSpacer) return 'through';
+  return dim.solid ? 'down' : 'up';
+}
 
 export const shellStage: PipelineStage = {
   name: 'base',
@@ -82,7 +97,7 @@ export const shellStage: PipelineStage = {
         params.base.magnetDiameter / 2,
         params.base.magnetDepth,
         params.base.screwDiameter / 2,
-        dim.solid ? 'down' : 'up',
+        cupOpenDirection(dim),
         true, // full 5-section foot profile, matching buildBaseSocket here
         dim.halfSockets,
         pitch,
@@ -207,6 +222,43 @@ export const shellStage: PipelineStage = {
         built = opened;
         floorOpenings.delete();
         floorOpenings = null;
+      }
+
+      // Dividers baked into the shell by the multi-cavity cut still run to the
+      // rim, so a wall-to-wall label shelf would be sliced by the ones it
+      // passes over (#2897). The cavity drawings are 2D and can't express a
+      // partial height, so drop those divider tops here — before featuresStage
+      // fuses the shelf, which a later cut pass would otherwise eat into.
+      if (dim.compartmentsBakedIntoShell) {
+        const clips = planSpanningDividerClips(
+          params,
+          dim.innerW,
+          dim.innerD,
+          dim.interiorHeight,
+          params.wallThickness
+        );
+        const tools = buildSpanningDividerClipTools(
+          clips,
+          boxWallHeight + 1,
+          dim.innerOffsetX,
+          dim.innerOffsetY
+        );
+        // Best effort per tool: a divider left standing through the shelf is
+        // cosmetically wrong, a failed shell is an unusable bin. Clips that
+        // already succeeded stay applied.
+        try {
+          for (const tool of tools) {
+            try {
+              const clipped = unwrap(cut(built as ValidSolid, tool as ValidSolid));
+              if (clipped !== built) built.delete();
+              built = clipped;
+            } catch (e: unknown) {
+              if (isAbortError(e)) throw e;
+            }
+          }
+        } finally {
+          for (const tool of tools) tool.delete();
+        }
       }
 
       setShellCache(dim.shellKey, built);

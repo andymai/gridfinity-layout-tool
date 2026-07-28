@@ -141,6 +141,54 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.handles.unavailableSlotted',
   },
 
+  // ── Base: spacer (#2869) ─────────────────────────────────────────────────
+  // A spacer is a floorless riser: the floor is punched through every cell so
+  // only the shelled feet and the webbing between them remain. Nothing that
+  // needs a floor to sit on, cut into, or perforate can come along.
+  {
+    description: 'Spacer disables every floor-dependent feature',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['compartments', 'label', 'scoop', 'floorPattern', 'inserts', 'cutouts'],
+    reason: 'binDesigner.spacerDisablesInterior',
+  },
+  {
+    // Split from the rule above so the copy fits: "no floor to hold interior
+    // features" reads wrong next to a greyed-out wall STYLE.
+    description: 'Spacer disables the interior styles (it has no interior to shape)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['slotConfig', 'style.slotted', 'style.solid'],
+    reason: 'binDesigner.spacerDisablesStyle',
+  },
+  {
+    description: 'Spacer disables attachment hardware (no floor for a magnet pad)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.magnet', 'base.screw'],
+    reason: 'binDesigner.spacerDisablesAttachment',
+  },
+  {
+    description: 'Spacer disables the flat base (nothing to shell through) and lite (implied)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.flat', 'base.lightweight'],
+    reason: 'binDesigner.spacerDisablesBase',
+  },
+  // Deliberately ONE-WAY from the interior features: a spacer is a mode switch, so
+  // it must stay reachable from a fully-designed bin and clear the incompatible
+  // set on the way in (the `style.solid` precedent). A reverse rule would grey the
+  // toggle out and leave the user hand-clearing compartments, scoop and label
+  // first. Only the flat base blocks it, and that is genuinely mutual — a plate
+  // with no feet has nothing for the spacer to open through.
+  {
+    description: 'Flat base incompatible with a spacer (no feet to open through)',
+    source: 'base.flat',
+    when: (p) => p.base.style === 'flat',
+    disables: ['base.spacer'],
+    reason: 'binDesigner.flatFloorDisablesSpacer',
+  },
+
   // ── Style: solid ─────────────────────────────────────────────────────────
   {
     description: 'Solid style disables cavity features',

@@ -130,9 +130,14 @@ export {
   compartmentHasTiltedEdge,
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
+  compartmentTabEligible,
   getCompartmentBounds,
   rectStraddlesTiltedDivider,
+  rowHasFullWidthWall,
+  spanRegionDepth,
+  spanningTabEligible,
 } from '@/features/bin-designer/utils/compartments';
+export type { TabAnchorSide, LabelTabFit } from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,
   LidCompatibilityId,
@@ -175,6 +180,105 @@ export type BaseplateConnectorStyle = NonNullable<ResolvedBaseplateParams['conne
  */
 export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
   return style === undefined || style === 'dovetail' || style === 'puzzle';
+}
+
+/**
+ * Whether the margin-seam connector (#2414) can be built for a given style at
+ * all: the integral tongue/groove families, plus `dovetailKey` (#2866), which
+ * makes both sides of the body↔rail seam female and seats the same separate key
+ * the split seams use. `snapClip` stays friction-fit — its top-insert clip has no
+ * seated form at a body↔rail seam.
+ *
+ * `undefined` counts, as in {@link isSeamConnectorStyle}: it's the stored default
+ * for dovetail (the ConnectorPicker persists dovetail as absent).
+ */
+export function isMarginSeamStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return isSeamConnectorStyle(style) || style === 'dovetailKey';
+}
+
+/**
+ * Whether the detached-margin seam is keyed rather than tongued: both the body
+ * wall and the rail get a female groove and a separate key spans them (#2866).
+ * Shared so the body geometry, the rail geometry, and the key
+ * count/placement can't disagree about where those grooves go.
+ */
+export function hasMarginSeamKeys(params: ResolvedBaseplateParams): boolean {
+  return (
+    params.detachMargins === true &&
+    params.detachMarginConnector === true &&
+    params.connectorStyle === 'dovetailKey'
+  );
+}
+
+/**
+ * Whether a connector style makes BOTH sides of every seam female and ships a
+ * separate seated part (the hammered-in dovetail key, the snap clip). Only these
+ * styles can carry {@link ResolvedBaseplateParams.connectorSlotsAllEdges} — an
+ * integral tongue/groove style would grow a male tongue past the plate's outer
+ * wall and break the drawer fit.
+ */
+export function isSeatedConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
+  return style === 'dovetailKey' || style === 'snapClip';
+}
+
+/**
+ * Whether {@link ResolvedBaseplateParams.connectorSlotsAllEdges} is actually in
+ * effect. Shared so the geometry (`buildConnectors`), the mesh cache key, and
+ * the dedup fingerprint can never disagree about which edges carry a slot.
+ */
+export function hasAllEdgeSlots(params: ResolvedBaseplateParams): boolean {
+  return (
+    params.connectorSlotsAllEdges === true &&
+    params.connectorNubs === true &&
+    isSeatedConnectorStyle(params.connectorStyle)
+  );
+}
+
+/**
+ * Whether all-edge slots actually add anything to THIS piece: it needs at least
+ * one padding-free exterior edge. An interior piece (every edge a join seam), or
+ * one whose exterior edges all carry drawer-fit padding, is byte-identical with
+ * the option on or off — so the mesh cache must fold the flag out for it rather
+ * than mint a second entry for the same geometry.
+ *
+ * Deliberately NOT used by `computePieceFingerprint`: the fingerprint has to pick
+ * one keying scheme for the whole plate, or a fully-slotted interior piece and a
+ * fully-slotted edge piece would be keyed differently and never dedupe — which is
+ * the merge the option exists to enable.
+ */
+export function cutsExtraEdgeSlots(params: ResolvedBaseplateParams): boolean {
+  const { edges } = params;
+  if (!edges || !hasAllEdgeSlots(params)) return false;
+  const added = (kind: BaseplateEdgeKind, paddingMm: number): boolean =>
+    kind !== 'join' && edgeCarriesSlot(kind, true, paddingMm);
+  return (
+    added(edges.left, params.paddingLeft) ||
+    added(edges.right, params.paddingRight) ||
+    added(edges.front, params.paddingFront) ||
+    added(edges.back, params.paddingBack)
+  );
+}
+
+/**
+ * Whether an edge of a split piece carries a seam connector at all, given the
+ * piece's padding on that side.
+ *
+ * A `join` edge always does — whichever half the style puts there (a tongue, a
+ * groove, or a both-female slot); this predicate answers "is there a feature
+ * here", not "which half". An `exterior` edge only does under
+ * {@link hasAllEdgeSlots}, and then it is always the female slot, since that
+ * option is restricted to the both-female styles; it additionally needs that side
+ * to be padding-free, because a padded edge's wall sits `padding` mm outside the
+ * grid and its slot would not line up with a neighbouring plate's. `marginSeam`
+ * is handled by the margin-seam connector, not here.
+ */
+export function edgeCarriesSlot(
+  kind: BaseplateEdgeKind,
+  allEdgeSlots: boolean,
+  paddingMm: number
+): boolean {
+  if (kind === 'join') return true;
+  return allEdgeSlots && kind === 'exterior' && paddingMm === 0;
 }
 
 /** Per-side edge classification for split baseplate pieces. */
@@ -324,6 +428,15 @@ export interface ResolvedBaseplateParams {
    * ("staple") whose barbs catch the ledges.
    */
   readonly connectorStyle?: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
+  /**
+   * Cut the seam slot on the plate's EXTERIOR edges too, not just on the join
+   * seams between split pieces (issue #2866). Every piece then reads as a
+   * standard 42mm-grid tile that can key into any other plate later, and
+   * same-size pieces dedupe instead of splitting into edge/corner/interior
+   * variants. See {@link hasAllEdgeSlots} / {@link edgeCarriesSlot} for when it
+   * engages (both-female styles only, padding-free edges only).
+   */
+  readonly connectorSlotsAllEdges?: boolean;
   /**
    * User fit offset (mm) added to the per-side groove clearance to compensate
    * for printer/filament variation (issue #2024). Positive = looser, negative =

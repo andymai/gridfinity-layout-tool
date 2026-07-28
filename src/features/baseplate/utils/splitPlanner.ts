@@ -17,7 +17,7 @@
  */
 
 import type { BaseplateEdgeKind, ResolvedBaseplateParams } from '@/shared/types/bin';
-import { isExteriorEdge, isSeamConnectorStyle } from '@/shared/types/bin';
+import { isExteriorEdge, isMarginSeamStyle } from '@/shared/types/bin';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
@@ -829,10 +829,11 @@ export function computeBaseplateTiling(
   const det = detachedSides(params);
 
   // The opt-in connector (#2414) marks the body↔long-rail seam so the connector
-  // builder adds a tongue there. Scoped to the LONG rails only (short rails stay
-  // friction-fit) and to the tongue/groove styles — snapClip seams would need a
-  // separate clip part, which `marginSeam` must not emit. `longAxisX` mirrors
-  // `emitMargins`: front/back are the long rails, else left/right.
+  // builder adds a tongue there — or, under `dovetailKey`, a female groove that
+  // the seated key spans (#2866). Scoped to the LONG rails only (short rails stay
+  // friction-fit); snapClip stays out, as its top-insert clip has no seated form
+  // at a body↔rail seam. `longAxisX` mirrors `emitMargins`: front/back are the
+  // long rails, else left/right.
   //
   // NOTE: the seam tongue protrudes TONGUE_PROTRUSION (1.5mm) past the body's
   // detached edge, which `axisChunkMm` doesn't yet budget against the bed. Only
@@ -842,7 +843,7 @@ export function computeBaseplateTiling(
   const seamOn =
     params.detachMargins === true &&
     params.detachMarginConnector === true &&
-    isSeamConnectorStyle(params.connectorStyle);
+    isMarginSeamStyle(params.connectorStyle);
   const longAxisX = det.front || det.back;
   const seam = {
     left: seamOn && det.left && !longAxisX,
@@ -1151,6 +1152,10 @@ export function pieceToBaseplateParams(
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).
     connectorStyle: parentParams.connectorStyle,
+    // All-edge slots (#2866) are symmetric across all four sides, so — like the
+    // style — the flag is rotation-invariant. Which sides actually get a slot is
+    // derived per-piece from the (already rotated) edges and padding.
+    connectorSlotsAllEdges: parentParams.connectorSlotsAllEdges,
     // The fit offset and nozzle both size the female groove clearance
     // (effectiveClearance), so they must reach every split piece — otherwise the
     // groove is cut at nominal regardless of the user's tolerance (issue #2554).

@@ -1,14 +1,18 @@
 /**
- * Seated-connector accounting + placement for split baseplates.
+ * Seated-connector accounting + placement for baseplates.
  *
  * The dovetail-key and snap-clip styles both make every join edge female and
  * ship a separate part seated at each seam junction (a hammered-in key, or a
- * top-inserted snap clip). This module is the single source of truth for WHERE
+ * top-inserted snap clip). Under `dovetailKey` a detached margin's body↔rail seam
+ * is female on both sides too, so it seats the same key (#2866) — which is why this
+ * is not split-only: a rail exists whether or not the plate was split, so an
+ * UNSPLIT plate can need keys. This module is the single source of truth for WHERE
  * those parts go (and therefore HOW MANY), so the export count, the print guide,
  * and the 3D preview never disagree.
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { hasMarginSeamKeys } from '@/shared/types/bin';
 import type { BaseplateTiling } from '../types/tiling';
 
 /**
@@ -65,44 +69,108 @@ function hasSeatedConnector(params: ResolvedBaseplateParams): boolean {
 }
 
 /**
- * Seated dovetail key locations for a split baseplate. Walk the pieces emitting a
- * junction for every interior boundary on each RIGHT (vertical seam) and BACK
- * (horizontal seam) join edge — so every internal seam junction is produced
- * exactly once. Valid because the tiling is a strict grid: a seam's two adjacent
- * pieces share the same cross-axis size, so their grooves align.
+ * Seated connector locations for a split baseplate — every place a key or clip
+ * has to be hammered in.
+ *
+ * Split seams: walk the pieces emitting a junction for every interior boundary on
+ * each RIGHT (vertical seam) and BACK (horizontal seam) join edge, so every
+ * internal seam junction is produced exactly once. Valid because the tiling is a
+ * strict grid: a seam's two adjacent pieces share the same cross-axis size, so
+ * their grooves align.
+ *
+ * Margin seams: the body↔rail seams of detached margins add their own junctions
+ * under `dovetailKey` ({@link marginSeamJunctions}, #2866).
  *
  * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
  *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
  *
- * Returns [] unless a seated-connector style (dovetail key / snap clip) is active.
+ * Returns [] when neither a seated-connector style nor a keyed margin seam is
+ * active.
  */
 export function computeSeamJunctions(
   tiling: BaseplateTiling,
   params: ResolvedBaseplateParams
 ): SeamJunction[] {
-  if (!hasSeatedConnector(params)) return [];
-
-  const g = params.gridUnitMm;
-  const totalWmm = tiling.totalWidthUnits * g;
-  const totalDmm = tiling.totalDepthUnits * g;
+  // Per-axis pitch: equal on a square grid, so this reduces to the old single-`g`
+  // arithmetic there. Each measurement has to use the pitch of the axis it runs
+  // along, or a non-square plate's keys land where the grooves aren't.
+  const gx = params.gridUnitMm;
+  const gy = params.gridUnitMmY ?? gx;
+  const totalWmm = tiling.totalWidthUnits * gx;
+  const totalDmm = tiling.totalDepthUnits * gy;
   const junctions: SeamJunction[] = [];
 
-  for (const piece of tiling.pieces) {
-    const pieceWmm = piece.widthUnits * g;
-    const pieceDmm = piece.depthUnits * g;
-    const centerX = piece.gridOffsetX * g + pieceWmm / 2 - totalWmm / 2;
-    const centerY = piece.gridOffsetY * g + pieceDmm / 2 - totalDmm / 2;
+  if (hasSeatedConnector(params)) {
+    for (const piece of tiling.pieces) {
+      const pieceWmm = piece.widthUnits * gx;
+      const pieceDmm = piece.depthUnits * gy;
+      const centerX = piece.gridOffsetX * gx + pieceWmm / 2 - totalWmm / 2;
+      const centerY = piece.gridOffsetY * gy + pieceDmm / 2 - totalDmm / 2;
 
-    if (piece.edges.right === 'join') {
-      const seamX = piece.gridOffsetX * g + pieceWmm - totalWmm / 2;
-      for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, g, piece.fractionalEdgeY)) {
-        junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
+      if (piece.edges.right === 'join') {
+        const seamX = piece.gridOffsetX * gx + pieceWmm - totalWmm / 2;
+        for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, gy, piece.fractionalEdgeY)) {
+          junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
+        }
+      }
+      if (piece.edges.back === 'join') {
+        const seamY = piece.gridOffsetY * gy + pieceDmm - totalDmm / 2;
+        for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, gx, piece.fractionalEdgeX)) {
+          junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
+        }
       }
     }
-    if (piece.edges.back === 'join') {
-      const seamY = piece.gridOffsetY * g + pieceDmm - totalDmm / 2;
-      for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, g, piece.fractionalEdgeX)) {
-        junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
+  }
+
+  junctions.push(...marginSeamJunctions(tiling, params));
+  return junctions;
+}
+
+/**
+ * Seated key locations on the body↔rail seams of detached margins (#2866).
+ *
+ * A long rail is emitted per outer body piece and records the mating wall's grid
+ * span in `seamConnector`, so the key positions are that span's interior cell
+ * boundaries — the same anchors both sides cut their grooves on — re-centered from
+ * the piece's grid center onto the rail's own center (`centerOffsetMm`).
+ *
+ * The cross-seam coordinate is the body's GRID edge (`±total/2`): detached sides
+ * print padding-free, so the body wall sits exactly there and the rail begins
+ * where it ends. Same frame as the join-edge walk above, and the same frame
+ * `emitMargins` uses for `worldOffsetMm`.
+ */
+function marginSeamJunctions(
+  tiling: BaseplateTiling,
+  params: ResolvedBaseplateParams
+): SeamJunction[] {
+  if (!hasMarginSeamKeys(params)) return [];
+
+  const gx = params.gridUnitMm;
+  const gy = params.gridUnitMmY ?? gx;
+  const halfWmm = (tiling.totalWidthUnits * gx) / 2;
+  const halfDmm = (tiling.totalDepthUnits * gy) / 2;
+  const junctions: SeamJunction[] = [];
+
+  for (const margin of tiling.margins ?? []) {
+    const seam = margin.seamConnector;
+    if (margin.role !== 'long' || !seam) continue;
+    // A front/back rail runs along X, so its `cellUnits` are width cells (X
+    // pitch) and its key spans Y; a left/right rail is the mirror image. Both
+    // must use their own axis's pitch, matching `buildMarginSolid`.
+    const horizontal = margin.side === 'front' || margin.side === 'back';
+    const offsets = interiorBoundaryOffsetsMm(
+      seam.cellUnits,
+      horizontal ? gx : gy,
+      seam.fractionalEdge
+    );
+    for (const off of offsets) {
+      const along = off + seam.centerOffsetMm;
+      if (horizontal) {
+        const y = margin.side === 'front' ? -halfDmm : halfDmm;
+        junctions.push({ xMm: margin.worldOffsetMm.x + along, yMm: y, axis: 'y' });
+      } else {
+        const x = margin.side === 'left' ? -halfWmm : halfWmm;
+        junctions.push({ xMm: x, yMm: margin.worldOffsetMm.y + along, axis: 'x' });
       }
     }
   }
@@ -111,9 +179,8 @@ export function computeSeamJunctions(
 
 /**
  * Number of seated connector parts a split baseplate needs — one per seam
- * junction. Derived from {@link computeSeamJunctions} so the count and the
- * placements can never diverge. Returns 0 unless a seated-connector style
- * (dovetail key or snap clip) is active.
+ * junction, split seams and keyed margin seams alike. Derived from
+ * {@link computeSeamJunctions} so the count and the placements can never diverge.
  */
 export function countConnectorKeys(
   tiling: BaseplateTiling,

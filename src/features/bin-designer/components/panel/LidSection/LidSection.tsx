@@ -281,6 +281,20 @@ export function LidSection() {
             {state.topSurface === 'stackable' && (
               <div className="space-y-2">
                 <Switch
+                  label={t('binDesigner.lid.stackLipOnly')}
+                  checked={state.stackLipOnly}
+                  onChange={handlers.toggleStackLipOnly}
+                />
+                <Hint>
+                  {state.stackLipOnly
+                    ? t('binDesigner.lid.stackLipOnlyHint')
+                    : t('binDesigner.lid.stackGridHint')}
+                </Hint>
+                {state.stackLipOnlyIsNoOp && <Hint>{t('binDesigner.lid.stackLipOnlyNoOp')}</Hint>}
+                {state.stackLipOnlyNeedsPlateHint && (
+                  <Hint>{t('binDesigner.lid.stackLipOnlyPrintNote')}</Hint>
+                )}
+                <Switch
                   label={t('binDesigner.lid.magnetHoles')}
                   checked={state.magnetHoles}
                   onChange={handlers.toggleMagnetHoles}
@@ -342,6 +356,12 @@ export function LidSection() {
                         <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
                       )}
                       {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
+                      {state.textOnStackLipFloor && (
+                        <Hint>{t('binDesigner.lid.text.stackLipHint')}</Hint>
+                      )}
+                      {state.textEmbossBlocksStacking && (
+                        <Hint>{t('binDesigner.lid.text.stackLipEmbossWarning')}</Hint>
+                      )}
                     </>
                   )}
                 </>
@@ -438,6 +458,25 @@ export function LidSection() {
                     aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
                     commitMode="deferred"
                   />
+                  <div className="space-y-1">
+                    <StepperField
+                      label={t('binDesigner.lid.retentionEdgeMagnets')}
+                      value={state.retentionMagnetEdgeMagnets}
+                      onChange={handlers.setRetentionMagnetEdgeMagnets}
+                      onStep={(delta) =>
+                        handlers.setRetentionMagnetEdgeMagnets(
+                          state.retentionMagnetEdgeMagnets + delta * state.retentionMagnetEdgeStep
+                        )
+                      }
+                      min={state.retentionMagnetEdgeMin}
+                      max={state.retentionMagnetEdgeMax}
+                      step={state.retentionMagnetEdgeStep}
+                      size="md"
+                      aria-label={t('binDesigner.lid.retentionEdgeMagnetsAria')}
+                      commitMode="deferred"
+                    />
+                    <Hint>{t('binDesigner.lid.retentionEdgeMagnetsHint')}</Hint>
+                  </div>
                 </div>
               )}
 

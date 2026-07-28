@@ -18,6 +18,7 @@ import {
   hasDividerOverrides,
   hasMultipleCompartments,
 } from '../compartmentBuilder';
+import { planSpanningDividerClips, spanningDividerClipsKey } from '../labelTabBuilder';
 // HEIGHT_UNIT is kept as a fallback default for backwards compatibility with
 // callers (or serialized designs) that predate heightUnitMm. The grid-unit
 // fallback now lives in `pitchFromParams` (gridPitch.ts).
@@ -41,9 +42,17 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !isFlat;
   const solid = params.base.solid;
+  // Spacer (#2869): a floorless riser that lifts a bin so mismatched heights line
+  // up. Feet and stacking lip are unchanged — only the floor is gone, so every
+  // height/stacking rule the bin already follows carries over. Needs a socket to
+  // shell through, so it's inert on a flat base; the constraint engine also keeps
+  // the two from being on together.
+  const isSpacer = params.base.spacer && !isFlat;
   // Lightweight shells the socket region; a flat bin has no socket, so the
   // flag is inert there. migrateParams backfills the field on legacy designs.
-  const lightweight = params.base.lightweight && !isFlat;
+  // A spacer always shells (its feet ARE the structure once the floor is gone),
+  // so it takes the same build path whether or not the user asked for lite.
+  const lightweight = (params.base.lightweight || isSpacer) && !isFlat;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
@@ -85,10 +94,16 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const innerOffsetY = ovhExp?.offsetY ?? 0;
   const isSlotted = params.style === 'slotted';
 
+  // A spacer has no floor for a magnet/screw boss to stand on — a pad inside a
+  // through-hole would be a free-standing pillar — so attachment hardware is
+  // suppressed here as well as ruled out by the constraint engine, keeping a
+  // crafted share payload from producing a disconnected solid. Same shape of
+  // guard as `isFlat`, which has no socket to drill at all.
+  const noAttachment = isFlat || isSpacer;
   const withMagnet =
-    !isFlat && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+    !noAttachment && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
-    !isFlat && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+    !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
@@ -152,6 +167,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const compartmentsKey =
     compartmentsBakedIntoShell || lightweight ? buildCompartmentsCacheKey(params) : 'none';
 
+  // Only the shell-baked path carries dividers in the shell; elsewhere the
+  // clip lands on the additive walls and is keyed by that feature instead.
+  const spanningClipKey = compartmentsBakedIntoShell
+    ? spanningDividerClipsKey(
+        planSpanningDividerClips(params, innerW, innerD, interiorHeight, params.wallThickness)
+      )
+    : '';
+
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
@@ -181,7 +204,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Collar segment — appended only when present so collarless bins keep
       // byte-identical v7 keys (no cache churn), mirroring the non-square pitch
       // segment above.
-      ...(collarHeight > 0 ? [`collar${quantize(collarHeight)}`] : [])
+      ...(collarHeight > 0 ? [`collar${quantize(collarHeight)}`] : []),
+      // Spacer punches the floor through, so it must never share a cached body
+      // with the lite bin it otherwise looks like. Appended for the same reason.
+      ...(isSpacer ? ['spacer'] : []),
+      // Shell-baked dividers get clipped where a spanning label shelf crosses
+      // them (#2897), so that clip is part of the shell. Appended only when it
+      // applies, keeping every other bin's v7 key byte-identical.
+      ...(spanningClipKey ? [`spanclip${spanningClipKey}`] : [])
     )
   );
 
@@ -198,6 +228,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     isFlat,
     halfSockets,
     lightweight,
+    isSpacer,
     solid,
     isSlotted,
     hasLip,

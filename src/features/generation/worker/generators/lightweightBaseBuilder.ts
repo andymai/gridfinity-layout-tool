@@ -20,6 +20,11 @@
  *   opening through the body floor (see `floorOpenings`).
  * - `'down'` (solid bins): the cup opens toward the underside, closed at the
  *   top by a `wt` membrane under the solid body. No floor opening.
+ * - `'through'` (spacers, #2869): NO shift, so the uniform-`wt` offset leaves the
+ *   cup open at both ends — a foot-shaped tube. Still emits the floor opening, so
+ *   the body floor is punched too and the cell becomes a clean through-hole. The
+ *   inter-cell webbing (each cup keeps its own `wt` wall) is what ties the feet
+ *   together once the floor is gone, so a multi-cell spacer stays one solid.
  *
  * Coordinate system matches the socket: Z=0 top (mates with body), Z=-SOCKET_HEIGHT bottom.
  */
@@ -55,8 +60,8 @@ import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cel
 /** Solid margin of plastic around each magnet/screw hole in a retained pad. */
 const PAD_MARGIN = 1.2;
 
-/** Which side of the base the lite shell opens toward. */
-export type LightweightOpenDirection = 'up' | 'down';
+/** Which side of the base the lite shell opens toward — or both, for a spacer. */
+export type LightweightOpenDirection = 'up' | 'down' | 'through';
 
 /** Result of {@link buildLightweightBase}. */
 export interface LightweightBase {
@@ -87,6 +92,10 @@ export interface LightweightBase {
  * open at the bottom, so the pad spans the full SOCKET_HEIGHT to tie the magnet
  * boss up to the solid body above (otherwise it'd float). Either way the drill
  * intersects the pad and the pocket is cut.
+ *
+ * `'through'` never reaches here: a spacer with magnets keeps its cup floors
+ * (`'up'`) precisely because a boss standing in a through-hole would have nothing
+ * to attach to — see the openDir choice in `shellStage`.
  */
 function buildCellPads(
   scope: DisposalScope,
@@ -151,8 +160,11 @@ export function buildLightweightBase(
   };
 
   // Vertical shift applied to the inner-foot cut tool. Positive opens the top
-  // (cavity side); negative opens the bottom (underside).
-  const zShift = openDir === 'up' ? wallThickness : -wallThickness;
+  // (cavity side); negative opens the bottom (underside); zero opens both, since
+  // the inner foot is a uniform-wt lateral offset at every depth.
+  const zShift = openDir === 'through' ? 0 : openDir === 'up' ? wallThickness : -wallThickness;
+  // Both open-top directions punch the body floor over the cup mouth.
+  const opensUpward = openDir === 'up' || openDir === 'through';
 
   return withScope((scope: DisposalScope): LightweightBase => {
     // Build a vertical prism over the whole base Z-range from a set of footprint
@@ -222,7 +234,7 @@ export function buildLightweightBase(
         voids.push(
           translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])
         );
-        if (openDir === 'up') {
+        if (opensUpward) {
           openingTools.push(
             translate(scope.register(unwrap(clone(innerFoot))), [
               cell.centerX,

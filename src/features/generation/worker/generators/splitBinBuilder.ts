@@ -202,7 +202,8 @@ function splitSolidIntoPieces(
   // the floor scarf off and keep wall "key" connectors (those sit in the solid
   // walls and are unaffected).
   const rawConnectorConfig = splitConnectorConfig ?? params.splitConnectors;
-  const liteBase = params.base.lightweight && params.base.style !== 'flat';
+  // A spacer has no floor whatsoever, so it needs the same treatment as lite.
+  const liteBase = (params.base.lightweight || params.base.spacer) && params.base.style !== 'flat';
   const connectorConfig =
     rawConnectorConfig && liteBase ? { ...rawConnectorConfig, enabled: false } : rawConnectorConfig;
 

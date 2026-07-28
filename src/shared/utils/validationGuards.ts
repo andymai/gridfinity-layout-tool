@@ -32,6 +32,7 @@ export interface BinShape {
   label?: string;
   notes?: string;
   customProperties?: Record<string, string>;
+  linkedDesignId?: string;
 }
 
 export interface CategoryShape {
@@ -116,6 +117,7 @@ export function isValidBin(value: unknown): value is BinShape {
   if (obj.category !== undefined && typeof obj.category !== 'string') return false;
   if (obj.label !== undefined && typeof obj.label !== 'string') return false;
   if (obj.notes !== undefined && typeof obj.notes !== 'string') return false;
+  if (obj.linkedDesignId !== undefined && typeof obj.linkedDesignId !== 'string') return false;
   // customProperties (when present) must be a plain object of string values.
   if (obj.customProperties !== undefined) {
     if (

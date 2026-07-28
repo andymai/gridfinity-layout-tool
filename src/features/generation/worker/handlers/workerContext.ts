@@ -208,6 +208,25 @@ export function runGeneration(
         }
       : undefined;
 
+    // Plates are a variable-length set, unlike the fixed lid/stack/connector
+    // companions — each carries its own buffers plus its seated pose.
+    const labelPlates = meshData.labelPlates
+      ? {
+          plates: meshData.labelPlates.plates.map((plate) => ({
+            vertices: maybeCopy(plate.vertices),
+            normals: maybeCopy(plate.normals),
+            indices: maybeCopy(plate.indices),
+            triangleCount: plate.triangleCount,
+            seatX: plate.seatX,
+            seatY: plate.seatY,
+            seatZ: plate.seatZ,
+            slideY: plate.slideY,
+            widthMm: plate.widthMm,
+          })),
+          omittedCount: meshData.labelPlates.omittedCount,
+        }
+      : undefined;
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
@@ -247,6 +266,7 @@ export function runGeneration(
             connectorKeyTriangleCount: connectorKey.triangleCount,
           }
         : {}),
+      ...(labelPlates ? { labelPlates } : {}),
     };
 
     const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];
@@ -275,6 +295,11 @@ export function runGeneration(
         connectorKey.normals.buffer,
         connectorKey.indices.buffer
       );
+    }
+    if (labelPlates) {
+      for (const plate of labelPlates.plates) {
+        transfer.push(plate.vertices.buffer, plate.normals.buffer, plate.indices.buffer);
+      }
     }
     const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);
     self.postMessage(response, { transfer: nonEmptyTransfer });

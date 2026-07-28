@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import type { BaseplateEdges } from '@/shared/types/bin';
 import { computeConnectorPositions } from './connectorUtils';
 
-const ALL_JOIN = { left: 'join', right: 'join', front: 'join', back: 'join' };
+const ALL_JOIN: BaseplateEdges = { left: 'join', right: 'join', front: 'join', back: 'join' };
 
 // 2x2 grid, 42mm grid unit, zero offsets
 const WIDTH = 2;
@@ -73,7 +74,7 @@ describe('computeConnectorPositions', () => {
       TOTAL_D,
       OFFSET_X,
       OFFSET_Y,
-      { left: 'open', right: 'open', front: 'open', back: 'open' }
+      { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' }
     );
 
     expect(result).toEqual([]);
@@ -97,7 +98,7 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
       4.5 * 42,
       0,
       0,
-      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
       false,
       'end',
       'end'
@@ -122,7 +123,7 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
       4.5 * 42,
       0,
       0,
-      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
       false,
       'end',
       'start'
@@ -141,13 +142,101 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
       4.5 * 42,
       0,
       0,
-      { left: 'open', right: 'open', front: 'join', back: 'open' },
+      { left: 'exterior', right: 'exterior', front: 'join', back: 'exterior' },
       false,
       'start',
       'end'
     );
     const xs = result.map((p) => p.cx).sort((a, b) => a - b);
     expect(xs).toEqual([-73.5, -31.5, 10.5, 52.5]);
+  });
+
+  it('all-edge slots place exterior markers on the same boundaries (#2866)', () => {
+    // The instant draft must mark the same edges the exact build cuts, since it
+    // stays on screen if BREP fails. A 4.5-deep left edge gets its 4 boundaries
+    // whether that edge is a join seam or a padding-free exterior one.
+    const asJoin = computeConnectorPositions(
+      4.5,
+      4.5,
+      42,
+      10,
+      4.5 * 42,
+      4.5 * 42,
+      0,
+      0,
+      { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+      false,
+      'end',
+      'end'
+    );
+    const asExterior = computeConnectorPositions(
+      4.5,
+      4.5,
+      42,
+      10,
+      4.5 * 42,
+      4.5 * 42,
+      0,
+      0,
+      { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+      false,
+      'end',
+      'end',
+      42,
+      true
+    ).filter((p) => p.nx === -1);
+    expect(asExterior.map((p) => p.cy).sort((a, b) => a - b)).toEqual(
+      asJoin.map((p) => p.cy).sort((a, b) => a - b)
+    );
+    // ...but always female: the option only engages for the both-female styles.
+    expect(asExterior.every((p) => !p.isMale)).toBe(true);
+    expect(asJoin.some((p) => p.isMale)).toBe(true);
+  });
+
+  it('a both-female style drafts every marker female, whatever invert says', () => {
+    // dovetailKey/snapClip put a female half on BOTH sides of every seam, so an
+    // inverted plate — where right/back would be male by convention — must still
+    // draft every marker female, with or without all-edge slots.
+    const allJoin = { left: 'join', right: 'join', front: 'join', back: 'join' } as const;
+    const args = [2, 2, 42, 10, 2 * 42, 2 * 42, 0, 0, allJoin, true, 'end', 'end'] as const;
+
+    // All-edge slots always ride along with a both-female style, which is what
+    // actually suppresses the male half — `baseplateDirectMesh` passes both.
+    const slotted = computeConnectorPositions(...args, 42, true, undefined, true);
+    expect(slotted.length).toBeGreaterThan(0);
+    expect(slotted.some((p) => p.isMale)).toBe(false);
+
+    // ...and equally without the option, since the style is what decides.
+    const seatedOnly = computeConnectorPositions(...args, 42, false, undefined, true);
+    expect(seatedOnly.some((p) => p.isMale)).toBe(false);
+
+    // An integral style keeps its male half, so the assertions above aren't vacuous.
+    expect(computeConnectorPositions(...args).some((p) => p.isMale)).toBe(true);
+  });
+
+  it('all-edge slots skip a padded exterior edge (#2866)', () => {
+    const PAD = 5;
+    const marked = computeConnectorPositions(
+      3,
+      2,
+      42,
+      10,
+      3 * 42 + PAD,
+      2 * 42,
+      -PAD / 2,
+      0,
+      { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+      false,
+      'end',
+      'end',
+      42,
+      true,
+      { left: PAD, right: 0, front: 0, back: 0 }
+    );
+    // Left's wall is offset from the grid, so it gets nothing; the other three
+    // contribute 1 (right) + 2 + 2 (front/back) = 5.
+    expect(marked).toHaveLength(5);
+    expect(marked.some((p) => p.nx === -1)).toBe(false);
   });
 
   it('integer depth: fractionalEdgeY is irrelevant', () => {
@@ -160,7 +249,7 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
       5 * 42,
       0,
       0,
-      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
       false,
       'end',
       'end'
@@ -174,7 +263,7 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
       5 * 42,
       0,
       0,
-      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
       false,
       'end',
       'start'

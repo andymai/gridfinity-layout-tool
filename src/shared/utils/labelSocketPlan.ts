@@ -11,8 +11,17 @@
  * divider-deduction math in `labelTabBuilder.ts` in closed form.
  */
 
-import type { CompartmentConfig } from '@/shared/types/bin';
-import { getCompartmentBounds } from '@/shared/types/bin';
+import type {
+  CompartmentConfig,
+  LabelTabConfig,
+  LabelTabFit,
+  TabAnchorSide,
+} from '@/shared/types/bin';
+import {
+  compartmentTabEligible,
+  getCompartmentBounds,
+  spanningTabEligible,
+} from '@/shared/types/bin';
 import {
   isLabelPlateIconId,
   isLabelPlateWidthU,
@@ -46,10 +55,9 @@ export interface LabelSocketPlan {
   readonly anyFits: boolean;
 }
 
-/** One printable plate derived from a socket-mode design. */
-export interface LabelPlatePlanEntry {
-  /** Compartment the plate labels, or null for the bin-spanning socket. */
-  readonly compartmentId: number | null;
+interface LabelPlatePlanBase {
+  /** Wall the socket this plate clicks into hangs from. */
+  readonly anchor: TabAnchorSide;
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
   /** Hardware icon beside the text, from `compartments.labelIcons`. */
@@ -57,34 +65,125 @@ export interface LabelPlatePlanEntry {
 }
 
 /**
- * Enumerate the plates a socket-mode design needs: one per socketed
- * compartment carrying its `compartmentTexts` entry (or the spanning
- * fallback's single plate carrying `fallbackText`). Shares `planLabelSockets`
- * so the plate set can never disagree with the cut sockets.
+ * One printable plate derived from a socket-mode design, discriminated by what
+ * it labels: a single compartment, one full-width row (`label.span`), or the
+ * whole bin (the spanning-socket fallback, whose caption the caller supplies).
  */
-export function planLabelPlates(
-  compartments: CompartmentConfig,
-  innerWmm: number,
-  clearanceMm: number,
-  fallbackText: string
-): LabelPlatePlanEntry[] {
+export type LabelPlatePlanEntry =
+  | (LabelPlatePlanBase & { readonly scope: 'compartment'; readonly compartmentId: number })
+  | (LabelPlatePlanBase & { readonly scope: 'row'; readonly row: number })
+  | (LabelPlatePlanBase & { readonly scope: 'bin' });
+
+export interface LabelPlatePlanInput {
+  readonly compartments: CompartmentConfig;
+  readonly label: LabelTabConfig;
+  /** Bin interior width (mm). */
+  readonly innerWmm: number;
+  /** Bin interior depth (mm) — what the tab bodies have to fit inside. */
+  readonly innerDmm: number;
+  readonly clearanceMm: number;
+  /** Caption for the bin-spanning plate, which labels no single compartment. */
+  readonly fallbackText: string;
+}
+
+/**
+ * Enumerate the plates a socket-mode design needs: exactly one per socket the
+ * worker actually cuts.
+ *
+ * That is one plate per *surviving tab*, not per compartment — with
+ * `label.edges = 'both'` a compartment hosts a tab on each wall and therefore
+ * needs two plates, minus the front tabs dropped where the pair would collide
+ * (issue #2910). Eligibility runs through the same `compartmentTabEligible` /
+ * `spanningTabEligible` predicates the worker gates on, and widths through the
+ * same `planLabelSockets` fit math, so a planned plate always has a socket to
+ * click into and every cut socket gets a plate.
+ */
+export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
+  const { compartments, label, innerWmm, innerDmm, clearanceMm, fallbackText } = input;
+
+  const edges = label.edges ?? 'back';
+  const anchors: TabAnchorSide[] = [];
+  if (edges === 'back' || edges === 'both') anchors.push('back');
+  if (edges === 'front' || edges === 'both') anchors.push('front');
+
   const plan = planLabelSockets(compartments, innerWmm, clearanceMm);
+  const fitAt = (cellD: number): LabelTabFit => ({
+    tabDepth: label.depth,
+    inset: label.inset ?? 0,
+    cellD,
+    bothEdges: edges === 'both',
+  });
+
+  // Bin-spanning fallback: the worker models the whole interior as one
+  // synthetic 1x1 compartment, so eligibility is measured against the full
+  // inner depth and the grid carries no divider overrides to tilt an anchor.
   if (plan.spanningWidthU !== null) {
-    return [{ compartmentId: null, widthU: plan.spanningWidthU, text: fallbackText.trim() }];
+    const widthU = plan.spanningWidthU;
+    const synthetic: CompartmentConfig = {
+      cols: 1,
+      rows: 1,
+      thickness: compartments.thickness,
+      cells: [0],
+    };
+    const fit = fitAt(innerDmm);
+    return anchors
+      .filter((anchor) => compartmentTabEligible(synthetic, 0, anchor, fit))
+      .map((anchor) => ({ scope: 'bin' as const, anchor, widthU, text: fallbackText.trim() }));
   }
+
+  const cellD = innerDmm / compartments.rows;
+
+  // Full-width mode (#2897): one bin-wide plate per row that hosts a spanning
+  // tab, captioned from `label.rowTexts`. All rows share the bin-wide pocket,
+  // so the per-compartment widths above don't describe this layout.
+  if (label.span === true) {
+    const widthU =
+      planLabelSockets(
+        { cols: 1, rows: 1, thickness: compartments.thickness, cells: [0] },
+        innerWmm,
+        clearanceMm
+      ).compartments[0]?.plateWidthU ?? null;
+    if (widthU === null) return [];
+
+    const fit = fitAt(cellD);
+    const plates: LabelPlatePlanEntry[] = [];
+    for (let row = 0; row < compartments.rows; row++) {
+      for (const anchor of anchors) {
+        if (!spanningTabEligible(compartments, row, anchor, fit)) continue;
+        plates.push({
+          scope: 'row',
+          row,
+          anchor,
+          widthU,
+          text: (label.rowTexts?.[row] ?? '').trim(),
+        });
+      }
+    }
+    return plates;
+  }
+
   const texts = compartments.compartmentTexts ?? [];
   const icons = compartments.labelIcons ?? [];
-  return plan.compartments
-    .filter((p) => p.plateWidthU !== null)
-    .map((p) => {
-      const icon = icons[p.compartmentId];
-      return {
+  const fit = fitAt(cellD);
+
+  const plates: LabelPlatePlanEntry[] = [];
+  for (const p of plan.compartments) {
+    const widthU = p.plateWidthU;
+    if (widthU === null) continue;
+    const icon = icons[p.compartmentId];
+    for (const anchor of anchors) {
+      if (!compartmentTabEligible(compartments, p.compartmentId, anchor, fit)) continue;
+      plates.push({
+        scope: 'compartment',
         compartmentId: p.compartmentId,
-        widthU: p.plateWidthU as LabelPlateWidthU,
+        anchor,
+        widthU,
         text: (texts[p.compartmentId] ?? '').trim(),
         ...(isLabelPlateIconId(icon) ? { icon } : {}),
-      };
-    });
+      });
+    }
+  }
+  return plates;
 }
 
 export function planLabelSockets(

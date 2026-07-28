@@ -26,6 +26,7 @@ import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { SelectionToolbar } from './SelectionToolbar';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
+import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
@@ -101,6 +102,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // Bulk action hooks - for selection toolbar
   const { setCategory, rotateAll, matchHeight, moveToLayer, moveToStash, deleteAll } =
     useSelectionActions();
+  const { expandToFit } = useExpandToFit();
 
   // Half-bin mode - single value, no useShallow needed
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
@@ -578,6 +580,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
           onSetCategory={setCategory}
           onRotateAll={rotateAll}
           onMatchHeight={matchHeight}
+          onExpandToFit={expandToFit}
           onMoveToLayer={moveToLayer}
           onMoveToStash={moveToStash}
           onDeleteAll={deleteAll}

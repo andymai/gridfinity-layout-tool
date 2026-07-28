@@ -356,6 +356,86 @@ function fillingPiecesForRange(
  * Returns null when the slab has no struts at all — an empty lattice must
  * degrade to solid walls, not cut the whole wall away.
  */
+/** Axis-aligned footprint of a stroked segment in the slab's (u, z) plane. */
+export interface FootprintBox {
+  readonly u0: number;
+  readonly u1: number;
+  readonly z0: number;
+  readonly z1: number;
+}
+
+/**
+ * AABB of the rectangle `strokeSegment` draws for `seg` — length |ab| + width,
+ * height width, rotated to the segment's direction.
+ *
+ * Deliberately conservative for a rotated segment: the box around a diagonal
+ * thin rectangle is much larger than the rectangle. That over-reports overlap,
+ * which is safe here (a bucket stays disjoint) but is why this is only used to
+ * partition filling pieces — the struts are already split by direction, and
+ * boxing a diagonal family would split it far past the point where the
+ * per-`cutAll` overhead outweighs the saved intersection work.
+ */
+export function strokeFootprint(seg: KumikoSegment, defaultWidth: number): FootprintBox {
+  const width = seg.width ?? defaultWidth;
+  const [ua, za] = seg.a;
+  const [ub, zb] = seg.b;
+  const du = ub - ua;
+  const dz = zb - za;
+  const len = Math.hypot(du, dz);
+  const cos = len === 0 ? 1 : Math.abs(du) / len;
+  const sin = len === 0 ? 0 : Math.abs(dz) / len;
+  const halfU = ((len + width) * cos + width * sin) / 2;
+  const halfZ = ((len + width) * sin + width * cos) / 2;
+  return {
+    u0: (ua + ub) / 2 - halfU,
+    u1: (ua + ub) / 2 + halfU,
+    z0: (za + zb) / 2 - halfZ,
+    z1: (za + zb) / 2 + halfZ,
+  };
+}
+
+function boxesOverlap(a: FootprintBox, b: FootprintBox): boolean {
+  return a.u0 < b.u1 && b.u0 < a.u1 && a.z0 < b.z1 && b.z0 < a.z1;
+}
+
+/** A cut tool paired with its footprint. One array, not two, so a tool can
+ *  never drift out of step with the box that describes it. */
+export interface BoxedTool {
+  readonly solid: Shape3D;
+  readonly box: FootprintBox;
+}
+
+/**
+ * Split tools into buckets whose footprints are pairwise disjoint.
+ *
+ * `cutAll` pays for tool-TOOL intersections on top of tool-vs-region, and that
+ * pairwise cost grows super-linearly in the bucket — which is exactly why the
+ * struts are partitioned by direction above. Filling pieces radiate from a
+ * lattice vertex and are extended to weld into their neighbours, so they have
+ * no direction to group by and every piece overlaps the next; cutting all of
+ * them in one op was ~93% of a kumiko bin's generation time.
+ *
+ * Greedy first-fit. A piece only reaches its immediate neighbours, so this
+ * settles at a handful of buckets (6 of 14 for asanoha) — and bigger disjoint
+ * buckets beat smaller overlapping ones, since each `cutAll` also carries a
+ * fixed cost that punishes over-splitting.
+ */
+export function partitionDisjoint(tools: readonly BoxedTool[]): Shape3D[][] {
+  const buckets: Shape3D[][] = [];
+  const bucketBoxes: FootprintBox[][] = [];
+  for (const { solid, box } of tools) {
+    const free = bucketBoxes.findIndex((taken) => !taken.some((o) => boxesOverlap(o, box)));
+    if (free === -1) {
+      buckets.push([solid]);
+      bucketBoxes.push([box]);
+    } else {
+      buckets[free].push(solid);
+      bucketBoxes[free].push(box);
+    }
+  }
+  return buckets;
+}
+
 export function buildFlatSlabCutter(
   slab: FlatSlab,
   lattice: KumikoLattice,
@@ -400,11 +480,11 @@ export function buildFlatSlabCutter(
       strutCount++;
     }
   }
-  // Filling pieces ride as individual prisms in their own bucket. Prebuilt
-  // per-vertex stamp solids were tried and measured WORSE: neighboring stamps
-  // overlap, and overlapping multi-prism tools cost more in the cutAll than
-  // the extra prism count saves.
-  const fillings: Shape3D[] = [];
+  // Filling pieces ride as individual prisms, bucketed by `partitionDisjoint`
+  // below. Prebuilt per-vertex stamp solids were tried and measured WORSE:
+  // neighboring stamps overlap, and overlapping multi-prism tools cost more in
+  // the cutAll than the extra prism count saves.
+  const fillings: BoxedTool[] = [];
   const maxW = maxStrutWidth(lattice);
   for (const piece of fillingPiecesForRange(lattice, uA - maxW, uB + maxW, perimeter)) {
     const pw = piece.width ?? w;
@@ -413,9 +493,13 @@ export function buildFlatSlabCutter(
       b: [piece.b[0], piece.b[1] + bandZ0],
       ...(piece.width === undefined ? {} : { width: piece.width }),
     };
-    const drawing = strokeSegment(extendSegment(absolute, pw / 2), w, uCenter, zCenter);
+    const extended = extendSegment(absolute, pw / 2);
+    const drawing = strokeSegment(extended, w, uCenter, zCenter);
     const prism = sketch(drawing, 'XY').extrude(strutDepth);
-    fillings.push(translate(prism, [0, 0, -strutDepth / 2]));
+    fillings.push({
+      solid: translate(prism, [0, 0, -strutDepth / 2]),
+      box: strokeFootprint(extended, w),
+    });
     prism.delete();
   }
 
@@ -429,7 +513,7 @@ export function buildFlatSlabCutter(
   let region = translate(slabPrism, [0, 0, -halfDepth]);
   slabPrism.delete();
 
-  for (const family of [...families, fillings]) {
+  for (const family of [...families, ...partitionDisjoint(fillings)]) {
     if (family.length === 0) continue;
     const carved = unwrap(cutAll(region, family, { trackEvolution: false }));
     region.delete();

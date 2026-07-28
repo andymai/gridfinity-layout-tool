@@ -4,13 +4,14 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
-import type { FloorPatternType, WallPatternType } from '@/features/bin-designer/types';
+import type { BinParams, FloorPatternType, WallPatternType } from '@/features/bin-designer/types';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
   FLOOR_PATTERN_TYPES,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
+import { minHeightUnits } from '@/features/bin-designer/constants';
 
 /** Narrow a picker selection to the subset the floor supports. */
 function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternType {
@@ -40,6 +41,25 @@ export function useBaseSection() {
   const flatStatus = getFeatureStatus(params, 'base.flat');
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
   const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
+  const spacerStatus = getFeatureStatus(params, 'base.spacer');
+
+  // Every base toggle commits through here. Only an effective spacer may stand
+  // 1u tall (#2915), and several toggles can END one: leaving spacer mode, or
+  // enabling the flat base, which auto-disables the spacer via CONSTRAINT_RULES.
+  // Any of those would otherwise strand the bin under the ordinary floor, below
+  // what the height stepper will even let the user climb back out of.
+  //
+  // The floor is read off the RESOLVED params, never the requested change: the
+  // engine's post-check returns the params untouched when an enable turns out
+  // to be blocked, and it computes that verdict against the patched params
+  // rather than the `available` status each callback guarded on.
+  const commit = useCallback(
+    (resolved: BinParams) => {
+      const minHeight = minHeightUnits(resolved.base);
+      setParams(resolved.height < minHeight ? { ...resolved, height: minHeight } : resolved);
+    },
+    [setParams]
+  );
 
   const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
   const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
@@ -50,6 +70,7 @@ export function useBaseSection() {
   const lightweightDisabledReason = lightweightStatus.reason
     ? t(lightweightStatus.reason)
     : undefined;
+  const spacerDisabledReason = spacerStatus.reason ? t(spacerStatus.reason) : undefined;
 
   const toggleMagnet = useCallback(() => {
     // Only block enabling — allow disabling so users can recover from invalid states
@@ -58,8 +79,8 @@ export function useBaseSection() {
       feature: 'base.magnet',
       enabled: !hasMagnet,
     });
-    setParams(resolved);
-  }, [params, hasMagnet, magnetStatus.available, setParams]);
+    commit(resolved);
+  }, [params, hasMagnet, magnetStatus.available, commit]);
 
   const toggleScrew = useCallback(() => {
     if (!hasScrew && !screwStatus.available) return;
@@ -67,8 +88,8 @@ export function useBaseSection() {
       feature: 'base.screw',
       enabled: !hasScrew,
     });
-    setParams(resolved);
-  }, [params, hasScrew, screwStatus.available, setParams]);
+    commit(resolved);
+  }, [params, hasScrew, screwStatus.available, commit]);
 
   const toggleStackingLip = useCallback(() => {
     updateBase({ stackingLip: !base.stackingLip });
@@ -80,8 +101,13 @@ export function useBaseSection() {
       feature: 'base.lightweight',
       enabled: !base.lightweight,
     });
-    setParams(resolved);
-  }, [params, base.lightweight, lightweightStatus.available, setParams]);
+    commit(resolved);
+  }, [params, base.lightweight, lightweightStatus.available, commit]);
+
+  const toggleSpacer = useCallback(() => {
+    if (!base.spacer && !spacerStatus.available) return;
+    commit(resolveConstraints(params, { feature: 'base.spacer', enabled: !base.spacer }).params);
+  }, [params, base.spacer, spacerStatus.available, commit]);
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
@@ -89,16 +115,16 @@ export function useBaseSection() {
       feature: 'base.halfSockets',
       enabled: !hasHalfSockets,
     });
-    setParams(resolved);
-  }, [params, hasHalfSockets, halfSocketsStatus.available, setParams]);
+    commit(resolved);
+  }, [params, hasHalfSockets, halfSocketsStatus.available, commit]);
 
   const toggleFlat = useCallback(() => {
     const { params: resolved } = resolveConstraints(params, {
       feature: 'base.flat',
       enabled: !isFlat,
     });
-    setParams(resolved);
-  }, [params, isFlat, setParams]);
+    commit(resolved);
+  }, [params, isFlat, commit]);
 
   // ── Floor pattern (#2816) ────────────────────────────────────────────────
   // Drainage / ventilation holes through the floor slab and the feet below it.
@@ -114,8 +140,8 @@ export function useBaseSection() {
       feature: 'floorPattern',
       enabled: !floorPattern.enabled,
     });
-    setParams(resolved);
-  }, [params, floorPattern.enabled, floorPatternStatus.available, setParams]);
+    commit(resolved);
+  }, [params, floorPattern.enabled, floorPatternStatus.available, commit]);
 
   const setFloorPatternType = useCallback(
     (pattern: WallPatternType | null) => {
@@ -126,13 +152,13 @@ export function useBaseSection() {
           feature: 'floorPattern',
           enabled: false,
         });
-        setParams(resolved);
+        commit(resolved);
         return;
       }
       if (!isFloorPatternType(pattern)) return;
       updateFloorPattern({ pattern, enabled: true });
     },
-    [params, setParams, updateFloorPattern]
+    [params, commit, updateFloorPattern]
   );
 
   const setFloorPatternScale = useCallback(
@@ -171,6 +197,7 @@ export function useBaseSection() {
       isFlat,
       hasHalfSockets,
       hasLightweight: base.lightweight,
+      isSpacer: base.spacer,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
       floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),
@@ -195,6 +222,8 @@ export function useBaseSection() {
       flatDisabledReason,
       halfSocketsDisabledReason,
       lightweightDisabledReason,
+      toggleSpacer,
+      spacerDisabledReason,
     },
   };
 }

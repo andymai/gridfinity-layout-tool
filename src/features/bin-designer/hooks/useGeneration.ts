@@ -51,6 +51,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     // Stack plate has no face groups; the readonly typed arrays are ingested
     // directly (Immer treats typed arrays as opaque leaves).
     stackPlateMesh: result.mesh.stackPlateMesh,
+    labelPlates: result.mesh.labelPlates,
     error: null,
     timingMs: result.timingMs,
   };
@@ -76,6 +77,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
         }
       : undefined,
     stackPlateMesh: mesh.stackPlateMesh,
+    labelPlates: mesh.labelPlates,
     error: null,
     timingMs: 0,
   };
@@ -266,7 +268,8 @@ export function useGeneration(): void {
       }
 
       try {
-        const result = await bridge.generate(genParams, () => {});
+        // Only the designer preview renders label plates (#2666 preview).
+        const result = await bridge.generate(genParams, undefined, true);
 
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
@@ -280,7 +283,14 @@ export function useGeneration(): void {
         // Persist the exact preview mesh so reopening this design next session
         // paints instantly (pre-draft) instead of re-paying the cold start.
         // Fire-and-forget; refreshes LRU freshness even when the entry exists.
-        savePersistedBinMesh(binMeshCacheKey(genParams), result.mesh);
+        //
+        // Label plates are stripped first: this store is keyed by
+        // `binMeshCacheKey` and shared with the layout planner's linked-design
+        // meshes, which never render plates. Persisting them would bloat every
+        // entry the layout later reads back — the designer rebuilds them cheaply
+        // on the next generation.
+        const { labelPlates, ...withoutPlates } = result.mesh;
+        savePersistedBinMesh(binMeshCacheKey(genParams), labelPlates ? withoutPlates : result.mesh);
 
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer

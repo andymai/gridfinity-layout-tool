@@ -4,7 +4,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateShareLayout, validateExpiration } from '../../api/lib/validation.js';
+import {
+  validateShareLayout,
+  validateExpiration,
+  validateSharedDesigns,
+} from '../../api/lib/validation.js';
 
 interface TestBin {
   id: string;
@@ -18,6 +22,7 @@ interface TestBin {
   label: string;
   notes: string;
   customProperties?: Record<string, string>;
+  linkedDesignId?: string;
 }
 
 // Helper to create a valid layout for testing
@@ -837,5 +842,128 @@ describe('drawer outline validation (issue #2528)', () => {
       ],
     };
     expect(validateShareLayout(layoutWithOutline(overlapping)).valid).toBe(false);
+  });
+});
+
+// A shared layout whose bins lose their design reference arrives as plain
+// boxes the recipient can neither preview nor print (#2894).
+describe('linked designs', () => {
+  it('preserves linkedDesignId through bin sanitization', () => {
+    const layout = createValidLayout();
+    layout.bins[0].linkedDesignId = 'design_1730000000000_ab12cd';
+
+    const result = validateShareLayout(layout, 1000);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].linkedDesignId).toBe('design_1730000000000_ab12cd');
+    }
+  });
+
+  it('leaves linkedDesignId undefined when the bin has no design', () => {
+    const result = validateShareLayout(createValidLayout(), 1000);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].linkedDesignId).toBeUndefined();
+    }
+  });
+
+  it('rejects a non-string linkedDesignId', () => {
+    const layout = createValidLayout();
+    (layout.bins[0] as unknown as Record<string, unknown>).linkedDesignId = 42;
+
+    expect(validateShareLayout(layout, 1000).valid).toBe(false);
+  });
+});
+
+describe('validateSharedDesigns', () => {
+  // Mirrors the fixture in designerValidation.test.ts — each design's params go
+  // through that same validator.
+  const validParams = () => ({
+    width: 2,
+    depth: 2,
+    height: 6,
+    style: 'standard',
+    scoop: true,
+    base: {
+      style: 'magnet',
+      magnetDiameter: 6.2,
+      magnetDepth: 2.4,
+      screwDiameter: 3,
+      stackingLip: true,
+    },
+    compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+    label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'center' },
+    walls: { front: 0, back: 0, left: 0, right: 0 },
+    inserts: [] as Record<string, unknown>[],
+  });
+  const design = (over: Record<string, unknown> = {}) => ({
+    id: 'design_1',
+    name: 'Socket Tray',
+    params: validParams(),
+    ...over,
+  });
+
+  it('treats absent designs as an empty set', () => {
+    const result = validateSharedDesigns(undefined);
+    expect(result).toEqual({ valid: true, designs: [] });
+  });
+
+  it('accepts a well-formed design', () => {
+    const result = validateSharedDesigns([design()]);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.designs).toHaveLength(1);
+      expect(result.designs[0].id).toBe('design_1');
+      expect(result.designs[0].name).toBe('Socket Tray');
+    }
+  });
+
+  it('rejects a non-array payload', () => {
+    expect(validateSharedDesigns({ id: 'design_1' }).valid).toBe(false);
+  });
+
+  it('rejects entries with a missing or oversized id', () => {
+    expect(validateSharedDesigns([design({ id: '' })]).valid).toBe(false);
+    expect(validateSharedDesigns([design({ id: 'x'.repeat(65) })]).valid).toBe(false);
+    expect(validateSharedDesigns([design({ id: 7 })]).valid).toBe(false);
+  });
+
+  it('rejects a design whose params fail the designer validator', () => {
+    expect(validateSharedDesigns([design({ params: { width: -1 } })]).valid).toBe(false);
+  });
+
+  // Several bins routinely share one design, so the client can emit the same
+  // id more than once.
+  it('collapses duplicate ids', () => {
+    const result = validateSharedDesigns([design(), design()]);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.designs).toHaveLength(1);
+  });
+
+  it('rejects more designs than the count cap allows', () => {
+    const many = Array.from({ length: 251 }, (_, i) => design({ id: `design_${i}` }));
+    const result = validateSharedDesigns(many);
+
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects a design set over the byte budget', () => {
+    // Padded with inert names to push the set past 512KB without tripping the
+    // per-design param validator.
+    const bulky = Array.from({ length: 200 }, (_, i) =>
+      design({
+        id: `design_${i}`,
+        params: { ...validParams(), inserts: [], notes: 'x'.repeat(4000) },
+      })
+    );
+    const result = validateSharedDesigns(bulky);
+
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.error.code).toBe('SIZE_LIMIT');
   });
 });

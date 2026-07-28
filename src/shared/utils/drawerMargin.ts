@@ -1,17 +1,21 @@
 /**
- * Drawer-fit margin ("extend into drawer margin") resolution for placed bins
- * (#2462).
+ * How far a placed bin's body extends beyond its grid footprint.
  *
- * A baseplate fills the gap between an integral grid and the physical drawer
- * with per-side padding (mm), stored on the layout as `baseplateParams`. A bin
- * that opts in (`bin.extendToMargin`) extends its walls into that padding on
- * every drawer edge it abuts. The overhang is derived live from the current
- * padding — never stored on the bin — so it tracks later padding edits, and its
- * feet match the baseplate's over-tile margin so the extension seats.
+ * Two sources feed this. A baseplate fills the gap between an integral grid and
+ * the physical drawer with per-side padding (mm), stored on the layout as
+ * `baseplateParams`; a bin that opts in (`bin.extendToMargin`) extends its walls
+ * into that padding on every drawer edge it abuts, derived live so it tracks
+ * later padding edits (#2462). Separately, a bin may carry an explicit
+ * `bin.overhang` authored by "Expand to Fit", which lets several bins tile a
+ * span that isn't a whole number of grid units while sharing one linked design.
+ *
+ * `resolveBinOverhang` is the chokepoint that reconciles the two; everything
+ * downstream (2D grid, isometric preview, export) goes through it. The
+ * `binMarginSides`/`binCanExtendToMargin` pair stays padding-only, because the
+ * inspector toggle's visibility must depend on padding alone.
  */
 
-import type { Bin, StoredBaseplateParams } from '@/core/types';
-import type { OverhangConfig } from '@/shared/types/bin';
+import type { OverhangConfig, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
 
 /** Per-side padding (mm) a bin could claim on each drawer edge it abuts. */
 export interface MarginSides {
@@ -89,7 +93,7 @@ export function binCanExtendToMargin(
  * from the current padding; `feet` matches the baseplate's over-tile margin.
  */
 export function resolveBinMarginOverhang(
-  bin: Pick<Bin, 'x' | 'y' | 'width' | 'depth' | 'extendToMargin' | 'marginTaper'>,
+  bin: Pick<OverhangSource, 'x' | 'y' | 'width' | 'depth' | 'extendToMargin' | 'marginTaper'>,
   drawer: DrawerSize,
   baseplate: StoredBaseplateParams | undefined
 ): OverhangConfig | null {
@@ -120,5 +124,75 @@ export function resolveBinMarginOverhang(
     back: sides.back,
     feet,
     ...(taper ? { taper } : {}),
+  };
+}
+
+/**
+ * Everything the overhang resolution needs from a bin. Extends the plain-number
+ * `BinRect` for the same reason it exists: the isometric preview passes
+ * scene-space numbers, not branded `GridUnits`. A real `Bin` is structurally
+ * assignable.
+ */
+export interface OverhangSource extends BinRect {
+  readonly extendToMargin?: boolean;
+  readonly overhang?: OverhangConfig;
+  readonly marginTaper?: {
+    readonly profile: WallTaperProfile;
+    readonly bandHeight: number;
+    readonly enabled?: boolean;
+  };
+}
+
+/** A bin's own overhang, if it carries an enabled, non-trivial one. */
+function explicitBinOverhang(bin: Pick<OverhangSource, 'overhang'>): OverhangConfig | null {
+  const o = bin.overhang;
+  if (!o) return null;
+  if (o.enabled === false) return null;
+  if (o.left + o.right + o.front + o.back <= EPS) return null;
+  return o;
+}
+
+/**
+ * The single chokepoint every consumer (2D grid, isometric preview, export)
+ * uses to decide how far a placed bin's body extends beyond its footprint.
+ *
+ * Precedence:
+ *  1. `bin.overhang` — explicit, authored by "Expand to Fit".
+ *  2. `bin.extendToMargin` — derived live from the baseplate's drawer padding.
+ *  3. `null` — the caller keeps whatever the linked design specifies in
+ *     `params.overhang`.
+ *
+ * Tier 3 is deliberately *absence* rather than a third branch: the design's
+ * params are only reachable where designs are loaded (export), and a signature
+ * that took them would force `grid-editor` to import `bin-designer`, which the
+ * module boundaries forbid. Returning `null` lets each caller apply its own
+ * fallback — and matches the established rule that a resolved placement
+ * overhang REPLACES the design's own rather than adding to it.
+ */
+export function resolveBinOverhang(
+  bin: OverhangSource,
+  drawer: DrawerSize,
+  baseplate: StoredBaseplateParams | undefined
+): OverhangConfig | null {
+  return explicitBinOverhang(bin) ?? resolveBinMarginOverhang(bin, drawer, baseplate);
+}
+
+/**
+ * Per-side mm a placed bin's body extends past its footprint, for renderers
+ * that want plain numbers rather than an `OverhangConfig`. Zero on every side
+ * when the bin has no resolved overhang.
+ */
+export function binOverhangSides(
+  bin: OverhangSource,
+  drawer: DrawerSize,
+  baseplate: StoredBaseplateParams | undefined
+): MarginSides {
+  const o = resolveBinOverhang(bin, drawer, baseplate);
+  if (!o) return ZERO_SIDES;
+  return {
+    left: Math.max(0, o.left),
+    right: Math.max(0, o.right),
+    front: Math.max(0, o.front),
+    back: Math.max(0, o.back),
   };
 }

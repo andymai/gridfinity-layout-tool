@@ -150,6 +150,24 @@ export const LID_MAGNET_DEPTH_DEFAULT_MM = 2;
 export const LID_MAGNET_DIMENSION_STEP_MM = 0.5;
 
 /**
+ * Bounds for the optional edge-retention magnets (issue #2844). Four corner
+ * magnets pin only the corners of a lid, so on a large lid the middle of a long
+ * unsupported span bows up. `edgeMagnets` adds this many extra magnets along
+ * each sufficiently long edge — evenly spaced between the corners — pulling the
+ * centre of the span down too.
+ *
+ * `0` = the classic four-corner lid, and the default, so every pre-#2844 design
+ * regenerates byte-identically. The magnets only materialise on edges long
+ * enough to keep each one clear of its neighbours and the corners (see
+ * `retentionMagnetPositions`), so a small lid with a non-zero count simply gets
+ * none — the count is a ceiling, not a guarantee.
+ */
+export const LID_MAGNET_EDGE_COUNT_MIN = 0;
+export const LID_MAGNET_EDGE_COUNT_MAX = 3;
+export const LID_MAGNET_EDGE_COUNT_DEFAULT = 0;
+export const LID_MAGNET_EDGE_COUNT_STEP = 1;
+
+/**
  * Bounds for the {@link LidTrayConfig} recess — a shallow tray shelled into the
  * lid's top face (offered only when the lid has no stackable baseplate). Depth
  * is how far the recess sinks below the top surface; wall is the rim thickness
@@ -167,6 +185,14 @@ export const LID_TRAY_DIMENSION_STEP_MM = 0.5;
 export interface LidMagnetConfig {
   readonly diameter: number;
   readonly depth: number;
+  /**
+   * Extra magnets placed along each long edge, between the corners (issue
+   * #2844). Anti-sag reinforcement for large lids — `0` keeps the four-corner
+   * lid. Bounded by {@link LID_MAGNET_EDGE_COUNT_MIN}/{@link LID_MAGNET_EDGE_COUNT_MAX};
+   * only actually placed on edges long enough to space them clear of the
+   * corners, so the value is a ceiling per edge rather than a guarantee.
+   */
+  readonly edgeMagnets: number;
 }
 
 /**
@@ -249,6 +275,15 @@ export interface LidConfig {
   readonly attachment: LidAttachment;
   /** Include Gridfinity stack-grid pattern on top of lid (other bins stack on it). */
   readonly stackableTop: boolean;
+  /**
+   * Cut ONE pocket spanning the whole footprint instead of one per grid cell
+   * (#2930) — a perimeter stacking lip, no interior grid ridges. Requires
+   * `stackableTop`. Same baseplate-spec taper outside, so an upper bin still
+   * seats; it just locates on the outer lip rather than cell-by-cell.
+   *
+   * NB: unrelated to `base.stackingLip`, which is the BIN's own top-rim lip.
+   */
+  readonly stackLipOnly: boolean;
   /** Include magnet holes in the lid (uses bin's BaseConfig magnetDiameter).
    *  Requires `stackableTop`: pockets only do something when a bin can
    *  stack on the lid above them. */
@@ -333,6 +368,8 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   // so enabling a lid without touching the mode still clicks shut.
   attachment: 'clickRails',
   stackableTop: false,
+  // Off: pre-#2930 designs keep the full per-cell grid.
+  stackLipOnly: false,
   magnetHoles: false,
   separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
@@ -343,6 +380,7 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   retentionMagnet: {
     diameter: LID_MAGNET_DIAMETER_DEFAULT_MM,
     depth: LID_MAGNET_DEPTH_DEFAULT_MM,
+    edgeMagnets: LID_MAGNET_EDGE_COUNT_DEFAULT,
   },
   tray: {
     enabled: false,

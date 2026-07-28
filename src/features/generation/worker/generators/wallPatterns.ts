@@ -73,6 +73,24 @@ export const TOP_KEEP_OUT = 1.5;
 export const CUTOUT_BORDER_WIDTH = 1.5;
 
 /**
+ * Solid keep-out at each wall END (the shared corner), applied only when the bin
+ * has NO stacking lip (#2865).
+ *
+ * With a lip, the continuous top rim re-joins all four walls, so the corner is
+ * not the sole join and no keep-out is needed — lipped bins regenerate
+ * identically. With NO lip, a bold pattern on a thin wall places its outermost
+ * element hard against the corner: at 0.8mm walls a 70%-scale round hole lands
+ * ~0.4mm from the corner, leaving a razor-thin corner post. The mesh stays
+ * closed but that post reads as a seam and prints as a break ("empty space
+ * between wall faces"). Keeping the outermost element this far clear of each
+ * corner restores a solid post. Sized to `CUTOUT_BORDER_WIDTH` — the same solid
+ * border the wall-pattern border rule uses everywhere else. For a circular
+ * element this is exact: the keep-out changes a bin only when its corner gap
+ * would otherwise fall below this width.
+ */
+export const WALL_CORNER_KEEP_OUT = CUTOUT_BORDER_WIDTH;
+
+/**
  * Solid skirt left ABOVE the interior floor before the pattern starts (mm).
  * The bottom keep-out is `wallThickness + this`: one `wallThickness` clears the
  * floor slab, and the skirt is the actual solid band the lowest hex row anchors
@@ -102,7 +120,8 @@ function getWallPatternDescriptors(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  calculator: StampPatternCalculator
+  calculator: StampPatternCalculator,
+  hasLip: boolean
 ): { descriptors: WallPatternDescriptor[]; patternHeight: number } | null {
   if (!params.wallPattern.enabled) {
     return null;
@@ -136,7 +155,12 @@ function getWallPatternDescriptors(
     zRotation?: number,
     allowClip = true
   ): void => {
-    const centers = calculator.calculateCenters({ fillW, fillH: patternHeight });
+    // Corner keep-out (#2865): on a lip-less bin, trim the outermost pattern
+    // column clear of both wall ends so a bold pattern can't leave a razor-thin
+    // corner post. `wallSpan` stays the full inner span so cutout/handle clip
+    // anchoring is unaffected; only the stamped centers shrink.
+    const centerFillW = hasLip ? fillW : Math.max(0, fillW - 2 * WALL_CORNER_KEEP_OUT);
+    const centers = calculator.calculateCenters({ fillW: centerFillW, fillH: patternHeight });
     if (centers.length === 0) return;
     const [first, ...rest] = centers;
     descriptors.push({
@@ -344,7 +368,10 @@ export function getPatternDescriptors(
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  // Defaults to true so omitting it reproduces the pre-#2865 behavior (no corner
+  // keep-out); the sole production caller passes the real `dim.hasLip`.
+  hasLip = true
 ): {
   descriptors: WallPatternDescriptor[];
   calculator: StampPatternCalculator;
@@ -375,7 +402,7 @@ export function getPatternDescriptors(
     return null;
   }
 
-  const result = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator);
+  const result = getWallPatternDescriptors(params, innerW, innerD, wallHeight, calculator, hasLip);
 
   if (!result) {
     return null;

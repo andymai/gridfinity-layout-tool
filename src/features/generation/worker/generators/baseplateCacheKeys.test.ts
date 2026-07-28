@@ -53,6 +53,55 @@ describe('meshCacheKey — connector fit offset (issue #2024)', () => {
   });
 });
 
+describe('meshCacheKey — all-edge slots (issue #2866)', () => {
+  const key = (overrides: Partial<ResolvedBaseplateParams>): string =>
+    meshCacheKey(base({ connectorStyle: 'dovetailKey', ...overrides }), false);
+
+  it('separates a slotted tile from the same tile without exterior slots', () => {
+    const edges = { left: 'exterior', right: 'join', front: 'exterior', back: 'join' } as const;
+    expect(key({ edges })).not.toBe(key({ edges, connectorSlotsAllEdges: true }));
+  });
+
+  it('keeps the existing key when the option cannot engage', () => {
+    // An integral style ignores the flag, so a plate carrying a stale one must
+    // not be pushed onto a fresh cache entry.
+    expect(key({ connectorStyle: 'puzzle' })).toBe(
+      key({ connectorStyle: 'puzzle', connectorSlotsAllEdges: true })
+    );
+  });
+
+  it('keeps the existing key for an interior piece, which gains no slot', () => {
+    // Every edge is already a join seam — toggling the option cannot change this
+    // piece's mesh, and most pieces of a large split look like this.
+    const edges = { left: 'join', right: 'join', front: 'join', back: 'join' } as const;
+    expect(key({ edges })).toBe(key({ edges, connectorSlotsAllEdges: true }));
+  });
+
+  it('keeps the existing key when every exterior edge is padded', () => {
+    // A padded exterior wall sits outside the grid, so it is skipped — the piece
+    // is byte-identical either way and must not fragment the cache.
+    const padded = {
+      edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 4,
+      paddingBack: 4,
+    } as const;
+    expect(key(padded)).toBe(key({ ...padded, connectorSlotsAllEdges: true }));
+  });
+
+  it('still separates the key when one exterior edge is padding-free', () => {
+    const mixed = {
+      edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+      paddingLeft: 4,
+      paddingRight: 0,
+      paddingFront: 4,
+      paddingBack: 4,
+    } as const;
+    expect(key(mixed)).not.toBe(key({ ...mixed, connectorSlotsAllEdges: true }));
+  });
+});
+
 describe('meshCacheKey — draft preview', () => {
   // The draft preview skips the lightweight floor cut, so its mesh differs from
   // the full build; the two must not alias onto one cache entry.

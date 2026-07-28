@@ -13,6 +13,7 @@ import {
   exportLayoutJSON,
   exportLayoutJSONWithDesigns,
   restoreEmbeddedDesigns,
+  restoreSharedDesigns,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
@@ -35,6 +36,12 @@ const mockSaveDesign = vi.fn();
 vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
   loadDesign: (...args: unknown[]) => mockLoadDesign(...args),
   saveDesign: (...args: unknown[]) => mockSaveDesign(...args),
+}));
+
+const mockUpsertRegistryEntry = vi.fn();
+vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
+  upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
+  registryEdgeFields: () => ({}),
 }));
 
 describe('storage-share', () => {
@@ -898,6 +905,116 @@ describe('storage-share', () => {
       expect(result.importedDesignCount).toBe(2);
       expect(result.layout.bins[0].linkedDesignId).toBe('new-id-1');
       expect(result.layout.bins[1].linkedDesignId).toBe('new-id-2');
+    });
+  });
+
+  // A cloud share used to carry bins whose linkedDesignId named a design that
+  // only existed in the sharer's browser (#2894).
+  describe('restoreSharedDesigns', () => {
+    const SHARE_ID = 'abc123DEF456';
+
+    const layoutLinkedTo = (designId: string): Layout => {
+      const layout = createTestLayout();
+      layout.bins = layout.bins.map((bin, i) => ({
+        ...bin,
+        linkedDesignId: i === 0 ? designId : undefined,
+      }));
+      return layout;
+    };
+
+    const savedAs = (id: string) =>
+      ok({
+        id,
+        name: 'Socket Tray',
+        params: { ...DEFAULT_BIN_PARAMS },
+        thumbnail: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        exportFileNameConfig: null,
+      });
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('returns the layout untouched when no designs travelled with it', async () => {
+      const layout = createTestLayout();
+      const result = await restoreSharedDesigns(SHARE_ID, layout, []);
+
+      expect(result).toBe(layout);
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+    });
+
+    it('persists each design and repoints the bins at the local copies', async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
+      const layout = layoutLinkedTo('remote-design-1');
+
+      const result = await restoreSharedDesigns(SHARE_ID, layout, [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ]);
+
+      expect(result.bins[0].linkedDesignId).toBe('design_shared_deadbeef');
+      expect(result.bins[1]?.linkedDesignId).toBeUndefined();
+    });
+
+    it('registers each design so the planner and 3D preview can resolve it', async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
+
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ]);
+
+      expect(mockUpsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'design_shared_deadbeef', name: 'Socket Tray' })
+      );
+    });
+
+    // Unlike a one-shot file import, a share link is re-fetched on every visit.
+    it('derives a stable local id so re-opening a link does not duplicate designs', async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
+      const designs = [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ];
+
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), designs);
+      const firstId = mockSaveDesign.mock.calls[0][0].id;
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), designs);
+      const secondId = mockSaveDesign.mock.calls[1][0].id;
+
+      expect(firstId).toBe(secondId);
+      expect(String(firstId).length).toBeLessThanOrEqual(64);
+    });
+
+    it('scopes the local id to the share so two shares cannot collide', async () => {
+      mockSaveDesign.mockResolvedValue(savedAs('design_shared_deadbeef'));
+      const designs = [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ];
+
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), designs);
+      await restoreSharedDesigns('zzz999ZZZ999', layoutLinkedTo('remote-design-1'), designs);
+
+      expect(mockSaveDesign.mock.calls[0][0].id).not.toBe(mockSaveDesign.mock.calls[1][0].id);
+    });
+
+    it('keeps the bin unlinked when the design fails to persist', async () => {
+      mockSaveDesign.mockResolvedValue(err(storageNotFound('nope')));
+      const layout = layoutLinkedTo('remote-design-1');
+
+      const result = await restoreSharedDesigns(SHARE_ID, layout, [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ]);
+
+      expect(result.bins[0].linkedDesignId).toBe('remote-design-1');
+    });
+
+    it('skips entries whose params are not an object', async () => {
+      const result = await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), [
+        { id: 'remote-design-1', name: 'Socket Tray', params: 'nonsense' },
+      ]);
+
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+      expect(result.bins[0].linkedDesignId).toBe('remote-design-1');
     });
   });
 });

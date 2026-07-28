@@ -1260,7 +1260,7 @@ describe('preferIdenticalPieces × fractional dimensions — dovetail alignment 
         pp.depth * G,
         0,
         0,
-        pp.edges as { left: string; right: string; front: string; back: string },
+        pp.edges as NonNullable<typeof pp.edges>,
         pp.invertDovetails ?? false,
         pp.fractionalEdgeX,
         pp.fractionalEdgeY

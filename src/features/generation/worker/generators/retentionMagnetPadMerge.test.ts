@@ -71,8 +71,8 @@ function geometryMerges(params: BinParams): boolean {
   );
   for (let i = 0; i < pos.length; i++) {
     for (let j = i + 1; j < pos.length; j++) {
-      const dx = pos[i][0] - pos[j][0];
-      const dy = pos[i][1] - pos[j][1];
+      const dx = pos[i].x - pos[j].x;
+      const dy = pos[i].y - pos[j].y;
       if (Math.hypot(dx, dy) < 2 * r - 1e-9) return true;
     }
   }

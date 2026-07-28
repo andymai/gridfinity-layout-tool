@@ -18,6 +18,8 @@ export interface PopoverProps {
   children: ReactNode;
   /** Additional class names for the popover container */
   className?: string;
+  /** Accessible name for the dialog container */
+  'aria-label'?: string;
 }
 
 /**
@@ -32,6 +34,7 @@ export function Popover({
   offset: gap = 6,
   children,
   className = '',
+  'aria-label': ariaLabel,
 }: PopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -134,6 +137,7 @@ export function Popover({
     <div
       ref={popoverRef}
       role="dialog"
+      aria-label={ariaLabel}
       className={`fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in ${className}`}
       style={{ top: position.top, left: position.left }}
     >

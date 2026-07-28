@@ -81,6 +81,65 @@ export function meshVolume({ vertices, indices }: MeshData): number {
   return Math.abs(volume) / 6;
 }
 
+// ─── Watertightness (hole-free) ──────────────────────────────────────────────
+
+export interface MeshTopologyStats {
+  /** Edges used by exactly one triangle — a mesh is hole-free iff this is 0. */
+  boundaryEdges: number;
+  /** Edges shared by more than two triangles (non-manifold junctions). */
+  nonManifoldEdges: number;
+}
+
+/**
+ * Weld vertices by quantized position and count boundary / non-manifold edges.
+ *
+ * Welding by position (not index) is required: the kernel tessellates each face
+ * independently, so a closed solid still has coincident-but-distinct vertices
+ * along every shared edge. Quantizing to 1e-4 mm collapses those so a genuinely
+ * closed surface reports zero boundary edges. Mirrors the `analyze()` topology
+ * pass in the binGenerator.export.<domain>.test.ts matrix, which asserts the same
+ * invariant over every exported scenario.
+ */
+export function meshTopologyStats({ vertices, indices }: MeshData): MeshTopologyStats {
+  const QUANTIZE = 1e4;
+  const vKey = (i: number): string => {
+    const b = i * 3;
+    return `${Math.round(vertices[b] * QUANTIZE)},${Math.round(vertices[b + 1] * QUANTIZE)},${Math.round(vertices[b + 2] * QUANTIZE)}`;
+  };
+  const eKey = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+  const edgeCount = new Map<string, number>();
+  for (let i = 0; i < indices.length; i += 3) {
+    const k = [vKey(indices[i]), vKey(indices[i + 1]), vKey(indices[i + 2])];
+    for (let e = 0; e < 3; e++) {
+      const key = eKey(k[e], k[(e + 1) % 3]);
+      edgeCount.set(key, (edgeCount.get(key) ?? 0) + 1);
+    }
+  }
+
+  let boundaryEdges = 0;
+  let nonManifoldEdges = 0;
+  for (const count of edgeCount.values()) {
+    if (count === 1) boundaryEdges++;
+    else if (count > 2) nonManifoldEdges++;
+  }
+  return { boundaryEdges, nonManifoldEdges };
+}
+
+/**
+ * Assert a mesh is hole-free (watertight): every edge is shared by ≥2 triangles.
+ *
+ * The definitive "the shell didn't split apart" check. A severed wall/corner
+ * pillar opens the shell, producing boundary edges (#2865).
+ */
+export function assertWatertight(result: MeshData, label?: string): void {
+  const prefix = label ? `${label}: ` : '';
+  const { boundaryEdges } = meshTopologyStats(result);
+  expect(boundaryEdges, `${prefix}mesh has ${boundaryEdges} boundary edges (not watertight)`).toBe(
+    0
+  );
+}
+
 // ─── Bounding box ────────────────────────────────────────────────────────────
 
 export interface BoundingBox {

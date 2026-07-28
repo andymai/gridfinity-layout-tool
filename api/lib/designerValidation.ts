@@ -163,7 +163,7 @@ export type DesignerValidationResult =
  * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
  * numeric `magnetDepth` (0.5–10), numeric `screwDiameter` (1–10), and boolean `stackingLip`.
  *
- * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`).
+ * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`, and the optional `spacer`).
  * @returns A string describing the first validation error encountered, or `null` if `base` is valid.
  */
 function validateBase(base: unknown): string | null {
@@ -181,6 +181,11 @@ function validateBase(base: unknown): string | null {
     return 'base.screwDiameter must be 1-10';
   }
   if (!isBoolean(base.stackingLip)) return 'base.stackingLip must be boolean';
+  // Spacer changes the shell (a floorless riser), so a shared payload has to
+  // declare it honestly rather than smuggle a truthy non-boolean past the client.
+  if (base.spacer !== undefined && !isBoolean(base.spacer)) {
+    return 'base.spacer must be boolean';
+  }
   return null;
 }
 
@@ -253,6 +258,20 @@ function validateLid(lid: unknown): string | null {
     }
     if (isNumber(m.depth) && !inRange(m.depth, 1, 6)) {
       return 'lid.retentionMagnet.depth must be 1-6';
+    }
+    // Edge-magnet count (#2844). Feeds the worker's placement loop, so cap it
+    // server-side — a crafted share can't smuggle in a huge count that spawns
+    // thousands of boss/pocket booleans. Mirrors LID_MAGNET_EDGE_COUNT_*.
+    // Must be a whole number, not merely in range: the placement loop divides
+    // the span by `count + 1`, so a fractional 2.5 emits two magnets spaced for
+    // 3.5 and lands them off-centre. The client already rounds.
+    if (
+      m.edgeMagnets !== undefined &&
+      (!isNumber(m.edgeMagnets) ||
+        !Number.isInteger(m.edgeMagnets) ||
+        !inRange(m.edgeMagnets, 0, 3))
+    ) {
+      return 'lid.retentionMagnet.edgeMagnets must be an integer 0-3';
     }
   }
   if (lid.tray !== undefined) {
@@ -397,6 +416,9 @@ function validateSurfaceText(value: unknown): string | null {
   return null;
 }
 
+/** Mirrors the client `TEXT_MAX_LENGTH`, as `compartmentTexts` does numerically. */
+const LABEL_TEXT_MAX_LENGTH = 50;
+
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -446,6 +468,29 @@ function validateLabel(label: unknown): string | null {
     // Optional field (#1898); absent = back-edge anchor (legacy).
     if (label.edges !== undefined && !['back', 'front', 'both'].includes(label.edges as string)) {
       return 'label.edges must be "back", "front", or "both"';
+    }
+    // Optional field (#2897); absent = per-compartment tabs (legacy).
+    if (label.span !== undefined && !isBoolean(label.span)) {
+      return 'label.span must be boolean';
+    }
+    // Row captions for full-width tabs. Bounded like `compartmentTexts` so a
+    // direct HTTP POST can't smuggle an unbounded array past the UI.
+    if (label.rowTexts !== undefined) {
+      if (!Array.isArray(label.rowTexts)) {
+        return 'label.rowTexts must be an array';
+      }
+      if (label.rowTexts.length > CONSTRAINTS.MAX_COMPARTMENT_GRID) {
+        return `label.rowTexts length must not exceed ${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+      }
+      for (let i = 0; i < label.rowTexts.length; i++) {
+        const t = label.rowTexts[i] as unknown;
+        if (!isString(t)) {
+          return `label.rowTexts[${i}] must be a string`;
+        }
+        if (t.length > LABEL_TEXT_MAX_LENGTH) {
+          return `label.rowTexts[${i}] must not exceed ${LABEL_TEXT_MAX_LENGTH} characters`;
+        }
+      }
     }
     // Optional field (#1898); absent = 0 (tab abuts anchor wall).
     if (label.inset !== undefined) {
@@ -884,13 +929,18 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
       `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`
     );
   }
-  if (
-    !isNumber(params.height) ||
-    !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)
-  ) {
+  // Mirrors `minHeightUnits` in `src/features/bin-designer/constants/gridfinity.ts`,
+  // including its EFFECTIVE-spacer condition: `deriveDimensions` makes the flag
+  // inert on a flat base (no socket to shell through), so a crafted
+  // `{ style: 'flat', spacer: true, height: 1 }` would otherwise buy the relaxed
+  // floor while generating an ordinary 1u bin.
+  const isEffectiveSpacer =
+    isObject(params.base) && params.base.spacer === true && params.base.style !== 'flat';
+  const minHeight = isEffectiveSpacer ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
+  if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(
       'INVALID_PARAMS',
-      `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`
+      `height must be ${minHeight}-${CONSTRAINTS.MAX_HEIGHT}`
     );
   }
 

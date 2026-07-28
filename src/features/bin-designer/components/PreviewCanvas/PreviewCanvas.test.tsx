@@ -183,6 +183,10 @@ vi.mock('three', () => {
     SphereGeometry: function SphereGeometry() {
       return { dispose: vi.fn() };
     },
+    // Label plates build one of these (LabelPlateMeshes).
+    MeshStandardMaterial: function MeshStandardMaterial() {
+      return { dispose: vi.fn() };
+    },
     MeshBasicMaterial: function MeshBasicMaterial() {
       return { dispose: vi.fn() };
     },

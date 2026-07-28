@@ -20,7 +20,7 @@
 import { mesh, meshEdges, translate, getKernelCapabilities, exportSTEP, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
-import { isSeamConnectorStyle } from '@/shared/types/bin';
+import { isMarginSeamStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
@@ -33,7 +33,7 @@ import {
 import type { SideMargins } from './generatorTypes';
 import { buildSlabProfile } from './baseplateSlab';
 import { buildMarginSeamGroove } from './baseplateConnectors';
-import { computeCellCentersMm } from './cellDecomposition';
+import { computeCellBoundariesMm, computeCellCentersMm } from './cellDecomposition';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -141,36 +141,57 @@ function buildMarginSolid(
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
   }
 
-  // Opt-in connector (#2414): carve seam grooves into a LONG rail's inner face
-  // to receive the body's tongues. Long rails are exactly the seam sides
-  // (splitPlanner marks the matching body edge `marginSeam`); short rails stay
-  // friction-fit. Only dovetail/puzzle styles carry a seam. One groove per mating
-  // grid cell (#2428) — recomputed from the same `cellUnits`/`fractionalEdge` the
-  // body used, then shifted by `centerOffsetMm` onto the corner-extended rail.
+  // Opt-in connector (#2414): carve seam grooves into a LONG rail's inner face to
+  // receive the body's tongues — or, under `dovetailKey`, one lobe of the seated
+  // key that also engages the body's own groove (#2866). Long rails are exactly
+  // the seam sides (splitPlanner marks the matching body edge `marginSeam`); short
+  // rails stay friction-fit. Positions are recomputed from the same
+  // `cellUnits`/`fractionalEdge` the body used, then shifted by `centerOffsetMm`
+  // onto the corner-extended rail.
   if (
     params.detachMarginConnector === true &&
-    isSeamConnectorStyle(params.connectorStyle) &&
+    isMarginSeamStyle(params.connectorStyle) &&
     margin.role === 'long'
   ) {
     const seam = margin.seamConnector;
-    const cellCenters = seam
-      ? computeCellCentersMm(seam.cellUnits, params.gridUnitMm, seam.fractionalEdge)
-      : [];
+    // Keyed seams sit on cell BOUNDARIES (a two-cell junction, which is the foot
+    // layout the seated key is relieved for); tongued seams sit on cell CENTERS
+    // (#2428). Mirrors the body side in `buildConnectors`, including the empty
+    // case: a 1-cell body piece has no boundary, so a keyed rail stays flat rather
+    // than growing a lone groove at its center with nothing to mate.
+    const keyed = params.connectorStyle === 'dovetailKey';
+    // `cellUnits` counts cells along the RAIL's running axis, so it must be
+    // converted with that axis's pitch: X for a front/back rail, Y for a
+    // left/right one. Using the X pitch for both put a left/right rail's grooves
+    // at the wrong spots on a non-square grid, where they no longer met the body's
+    // (which uses the real Y pitch).
+    const runningPitch =
+      margin.side === 'front' || margin.side === 'back'
+        ? params.gridUnitMm
+        : (params.gridUnitMmY ?? params.gridUnitMm);
+    const anchors = !seam
+      ? []
+      : keyed
+        ? computeCellBoundariesMm(seam.cellUnits, runningPitch, seam.fractionalEdge)
+        : computeCellCentersMm(seam.cellUnits, runningPitch, seam.fractionalEdge);
     const centerOffset = seam?.centerOffsetMm ?? 0;
-    const positions = (cellCenters.length > 0 ? cellCenters : [0]).map((b) => b + centerOffset);
-    const grooves = positions.map((pos) =>
-      buildMarginSeamGroove(
-        margin.side,
-        railW,
-        railD,
-        totalHeight,
-        params.connectorStyle,
-        params.connectorFitOffset ?? 0,
-        params.nozzleSizeMm,
-        pos
-      )
-    );
-    rail = cutInBatches(rail, grooves);
+    const fallback = keyed ? [] : [0];
+    const positions = (anchors.length > 0 ? anchors : fallback).map((b) => b + centerOffset);
+    if (positions.length > 0) {
+      const grooves = positions.map((pos) =>
+        buildMarginSeamGroove(
+          margin.side,
+          railW,
+          railD,
+          totalHeight,
+          params.connectorStyle,
+          params.connectorFitOffset ?? 0,
+          params.nozzleSizeMm,
+          pos
+        )
+      );
+      rail = cutInBatches(rail, grooves);
+    }
   }
 
   // Shift up so Z=0 is the bottom face, matching the body's final transform.

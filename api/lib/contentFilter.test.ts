@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { filterDisplayName, filterLayoutContent } from '../../api/lib/contentFilter.js';
+import {
+  filterDisplayName,
+  filterLayoutContent,
+  filterSharedDesignsContent,
+} from '../../api/lib/contentFilter.js';
 
 describe('filterLayoutContent', () => {
   describe('clean content', () => {
@@ -312,5 +316,78 @@ describe('filterDisplayName', () => {
     const started = performance.now();
     filterDisplayName('on'.repeat(100_000));
     expect(performance.now() - started).toBeLessThan(150);
+  });
+});
+
+// Designs riding along with a shared layout carry user-authored names and
+// engraved text shown to whoever opens the link; without this they were a way
+// around layout moderation entirely.
+describe('filterSharedDesignsContent', () => {
+  const design = (over: Record<string, unknown> = {}) => ({
+    name: 'Socket Tray',
+    params: { width: 2, depth: 2 },
+    ...over,
+  });
+
+  it('passes clean designs', () => {
+    expect(filterSharedDesignsContent([design()]).passed).toBe(true);
+  });
+
+  it('passes an empty set', () => {
+    expect(filterSharedDesignsContent([]).passed).toBe(true);
+  });
+
+  it('blocks an offensive design name', () => {
+    const result = filterSharedDesignsContent([design({ name: 'retard box' })]);
+
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('Design name');
+  });
+
+  it('blocks offensive text engraved on a wall', () => {
+    const result = filterSharedDesignsContent([
+      design({ params: { surfaceText: { front: { text: 'kill yourself' } } } }),
+    ]);
+
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('text');
+  });
+
+  it('blocks an offensive cutout label nested in an array', () => {
+    const result = filterSharedDesignsContent([
+      design({ params: { cutouts: [{ id: 'c1', label: 'faggot' }] } }),
+    ]);
+
+    expect(result.passed).toBe(false);
+  });
+
+  it('blocks a harmful pattern in engraved text', () => {
+    const result = filterSharedDesignsContent([
+      design({ params: { surfaceText: { front: { text: 'https://evil.example' } } } }),
+    ]);
+
+    expect(result.passed).toBe(false);
+  });
+
+  // Enum values, hex colours and font names share the params tree; running
+  // them through the blocklist would be noise, so only text-bearing keys count.
+  it('ignores non-text string values', () => {
+    const result = filterSharedDesignsContent([
+      design({ params: { style: 'solid', featureColors: { body: '#aabbcc' }, fontFamily: 'kys' } }),
+    ]);
+
+    expect(result.passed).toBe(true);
+  });
+
+  it('tolerates params that are not an object', () => {
+    expect(filterSharedDesignsContent([design({ params: null })]).passed).toBe(true);
+    expect(filterSharedDesignsContent([design({ params: 'nonsense' })]).passed).toBe(true);
+  });
+
+  it('terminates on deeply nested params', () => {
+    let deep: Record<string, unknown> = { text: 'clean' };
+    for (let i = 0; i < 200; i++) deep = { nested: deep };
+
+    expect(filterSharedDesignsContent([design({ params: deep })]).passed).toBe(true);
   });
 });

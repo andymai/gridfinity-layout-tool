@@ -2,9 +2,15 @@ import { put, head, del } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { validateShareLayout, isValidationError } from './lib/validation.js';
+import {
+  validateShareLayout,
+  isValidationError,
+  validateSharedDesigns,
+  isSharedDesignsError,
+  type SharedDesignShape,
+} from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
-import { filterLayoutContent } from './lib/contentFilter.js';
+import { filterLayoutContent, filterSharedDesignsContent } from './lib/contentFilter.js';
 import {
   isValidShareId,
   hashToken,
@@ -48,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Parse and validate request body
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const { layout, layoutId, permission = 'view', authorName, type, params } = body;
+    const { layout, layoutId, permission = 'view', authorName, type, params, linkedDesigns } = body;
 
     // Validate layoutId - must be provided by client
     if (!isValidShareId(layoutId)) {
@@ -67,6 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     let sharePayload: unknown;
+    let sharedDesigns: SharedDesignShape[] = [];
 
     if (type === 'designer') {
       // Designer share: validate BinParams
@@ -107,11 +114,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!contentResult.passed) {
         return res.status(400).json({
           error: `Content blocked: ${contentResult.reason}`,
-          code: 'CONTENT_BLOCKED',
+          code: ErrorCode.CONTENT_BLOCKED,
         });
       }
 
       sharePayload = validationResult.layout;
+
+      const designsResult = validateSharedDesigns(linkedDesigns);
+      if (isSharedDesignsError(designsResult)) {
+        return res.status(400).json({
+          error: designsResult.error.message,
+          code: designsResult.error.code,
+        });
+      }
+      sharedDesigns = designsResult.designs;
+
+      // Design names and engraved text are user-authored and shown to the
+      // recipient, so they get the same moderation the layout does.
+      const designContent = filterSharedDesignsContent(sharedDesigns);
+      if (!designContent.passed) {
+        return res.status(400).json({
+          error: `Content blocked: ${designContent.reason}`,
+          code: ErrorCode.CONTENT_BLOCKED,
+        });
+      }
     }
 
     // Use client-provided layoutId as the share ID
@@ -138,6 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // tooling reading directly from the blob.
     const shareData: ShareData = {
       layout: sharePayload,
+      ...(sharedDesigns.length > 0 ? { linkedDesigns: sharedDesigns } : {}),
       metadata: {
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
