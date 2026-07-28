@@ -99,7 +99,14 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
     const radius = Math.max(cornerR - inset, LID_MIN_CORNER_RADIUS);
     return cellMask
       ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
-      : drawRoundedRectangle(totalW - 2 * inset, totalD - 2 * inset, radius);
+      : // Same 0.1mm floor as the per-cell cutter: the deepest inset is
+        // STACK_INSET_BOT (2.95mm per side), which a small enough grid unit
+        // would drive to a zero/negative dimension.
+        drawRoundedRectangle(
+          Math.max(totalW - 2 * inset, 0.1),
+          Math.max(totalD - 2 * inset, 0.1),
+          radius
+        );
   });
 }
 
