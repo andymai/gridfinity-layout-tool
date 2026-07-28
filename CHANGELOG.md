@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.1...gridfinity-layout-tool-v4.323.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **security:** stop suppressing real brace-expansion CVE findings ([#2921](https://github.com/andymai/gridfinity-layout-tool/issues/2921)) ([44b306e](https://github.com/andymai/gridfinity-layout-tool/commit/44b306e6be595f1375f53a50430ae4fae25ba0ca))
+
 ## [4.323.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.0...gridfinity-layout-tool-v4.323.1) (2026-07-28)
 
 
