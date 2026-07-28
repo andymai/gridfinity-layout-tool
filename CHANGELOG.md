@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.325.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.0...gridfinity-layout-tool-v4.325.1) (2026-07-28)
+
+
+### Performance
+
+* **generation:** cut kumiko wall pattern generation by up to 55% ([#2939](https://github.com/andymai/gridfinity-layout-tool/issues/2939)) ([4019bfc](https://github.com/andymai/gridfinity-layout-tool/commit/4019bfc72efd7189f5fa4232cf2cefa0c51b0812))
+
 ## [4.325.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.324.0...gridfinity-layout-tool-v4.325.0) (2026-07-28)
 
 
