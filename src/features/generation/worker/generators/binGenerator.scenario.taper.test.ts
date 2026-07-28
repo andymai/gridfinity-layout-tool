@@ -98,12 +98,15 @@ describe('bin wall taper geometry (#2933)', () => {
       true
     );
     assertStructurallyValid(tall, 'tall fillet');
+    const topology = meshTopologyStats(tall);
+    // Closed first — the Euler count below only means "same topology as the
+    // untapered bin" if the surface is actually closed and manifold.
+    expect(topology.boundaryEdges).toBe(0);
+    expect(topology.nonManifoldEdges).toBe(0);
     // The cavity loft is sampled at the floor plane where the outer loft only
     // has a chord; on a concave profile the chord falls inside the true curve,
     // so a coarse band let the cavity cut a slot clean through the wall.
-    expect(meshTopologyStats(tall).eulerCharacteristic).toBe(
-      meshTopologyStats(flat).eulerCharacteristic
-    );
+    expect(topology.eulerCharacteristic).toBe(meshTopologyStats(flat).eulerCharacteristic);
   });
 
   it('asymmetric taper (drawer-facing sides only) stays valid and removes material', () => {
