@@ -847,6 +847,19 @@ describe('planSpanningDividerClips', () => {
 
   // The socket plan degrades to one bin-wide tab when no column can host a
   // plate — that shelf spans the dividers too, without `label.span`.
+  // A divider already ending below the shelf has nothing to clip; the feature
+  // builder filters those out so the cache key can't churn on identical geometry.
+  it('reports clips above a shortened divider so callers can filter them', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const clips = planSpanningDividerClips(spanParams(), INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    // A 5mm divider ends well under the shelf underside, so nothing bites.
+    expect(clips.filter((c) => c.zMin < 5)).toHaveLength(0);
+    // A full-height divider does.
+    expect(clips.filter((c) => c.zMin < INTERIOR_H)).toHaveLength(1);
+  });
+
   it('clips for the socket bin-spanning fallback even with span off', async () => {
     const { planSpanningDividerClips } = await import('./labelTabBuilder');
     const params = {

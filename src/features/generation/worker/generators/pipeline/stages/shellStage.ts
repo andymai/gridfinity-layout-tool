@@ -240,16 +240,21 @@ export const shellStage: PipelineStage = {
           dim.innerOffsetX,
           dim.innerOffsetY
         );
-        for (const tool of tools) {
-          try {
-            const clipped = unwrap(cut(built as ValidSolid, tool as ValidSolid));
-            if (clipped !== built) built.delete();
-            built = clipped;
-          } catch {
-            // Keep the unclipped shell: a divider through the shelf is
-            // cosmetically wrong, a failed shell is an unusable bin.
+        // Best effort per tool: a divider left standing through the shelf is
+        // cosmetically wrong, a failed shell is an unusable bin. Clips that
+        // already succeeded stay applied.
+        try {
+          for (const tool of tools) {
+            try {
+              const clipped = unwrap(cut(built as ValidSolid, tool as ValidSolid));
+              if (clipped !== built) built.delete();
+              built = clipped;
+            } catch (e: unknown) {
+              if (isAbortError(e)) throw e;
+            }
           }
-          tool.delete();
+        } finally {
+          for (const tool of tools) tool.delete();
         }
       }
 

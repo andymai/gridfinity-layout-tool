@@ -12,6 +12,7 @@ import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKey
 import { sketch } from './meshUtils';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import { isAbortError } from './utils/abort';
 import {
   buildSpanningDividerClipTools,
   planSpanningDividerClips,
@@ -707,7 +708,8 @@ function clipUnderSpanningTabs(
   for (const tool of tools) {
     try {
       result = scope.register(unwrap(cut(result as ValidSolid, tool as ValidSolid)));
-    } catch {
+    } catch (e: unknown) {
+      if (isAbortError(e)) throw e;
       return walls;
     }
   }
@@ -828,6 +830,32 @@ function buildCompartmentWallsInScope(
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
 
+/**
+ * Spanning-shelf clips that actually reach this bin's dividers.
+ *
+ * A divider shortened below the shelf underside (an explicit
+ * `compartments.dividerHeight`) already ends under the span, so its clip cuts
+ * nothing. Filtering here rather than at the cut keeps the cache key honest —
+ * otherwise identical geometry would key differently and miss the cache.
+ */
+function spanClipsThatBite(ctx: {
+  params: BinParams;
+  dimensions: { innerW: number; innerD: number; interiorHeight: number };
+}): SpanningDividerClip[] {
+  const { params, dimensions: dim } = ctx;
+  const dividerHeight = resolveCompartmentDividerHeight(
+    params.compartments.dividerHeight,
+    dim.interiorHeight
+  );
+  return planSpanningDividerClips(
+    params,
+    dim.innerW,
+    dim.innerD,
+    dim.interiorHeight,
+    params.wallThickness
+  ).filter((clip) => clip.zMin < dividerHeight);
+}
+
 export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
   tag: FeatureTag.DIVIDER,
@@ -853,15 +881,7 @@ export const compartmentWallsFeature: FeatureBuilder = {
         quantize(
           resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight)
         ),
-        spanningDividerClipsKey(
-          planSpanningDividerClips(
-            params,
-            dim.innerW,
-            dim.innerD,
-            dim.interiorHeight,
-            params.wallThickness
-          )
-        )
+        spanningDividerClipsKey(spanClipsThatBite(ctx))
       )
     );
   },
@@ -872,13 +892,7 @@ export const compartmentWallsFeature: FeatureBuilder = {
       dim.innerW,
       dim.innerD,
       resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight),
-      planSpanningDividerClips(
-        params,
-        dim.innerW,
-        dim.innerD,
-        dim.interiorHeight,
-        params.wallThickness
-      )
+      spanClipsThatBite(ctx)
     );
     return result ? [result] : null;
   },
