@@ -4,8 +4,7 @@
  * Desktop packs label, track and value onto a single line — the section carries
  * up to nine sliders, and the stacked two-line form pushed the taper controls
  * off-screen. Touch keeps the stacked `SliderInput`, whose full-width track
- * stays above the 36mm-equivalent secondary touch target that a ~96px inline
- * track would not.
+ * clears the 36px secondary touch target that the ~84px inline track does not.
  *
  * `cap` renders a side's ceiling next to its value ("21 of 21"); a side with no
  * overhang left to taper renders as an inert row rather than unmounting, so the

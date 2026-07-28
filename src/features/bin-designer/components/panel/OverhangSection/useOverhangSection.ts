@@ -139,7 +139,7 @@ export function useOverhangSection() {
   // surface that as a disabled state rather than silently ignoring input.
   const disabledReason = isCustomShape ? t('binDesigner.shape.custom.hint') : undefined;
 
-  // The one-line row shrinks the track to ~96px, below a comfortable touch
+  // The one-line row shrinks the track to ~84px, below a comfortable touch
   // target; anything touch-driven keeps the stacked full-width slider.
   const stackedSliders = isMobile || isTablet || isTouchDevice;
 
