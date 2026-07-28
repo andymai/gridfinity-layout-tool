@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.2...gridfinity-layout-tool-v4.323.3) (2026-07-28)
+
+
+### Bug Fixes
+
+* **deps:** drop vulnerable brace-expansion@2.1.2 via minimatch@10 ([#2924](https://github.com/andymai/gridfinity-layout-tool/issues/2924)) ([0faa3e5](https://github.com/andymai/gridfinity-layout-tool/commit/0faa3e5fd058c3dfaded65ccd1c394ace478bbfe))
+
 ## [4.323.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.1...gridfinity-layout-tool-v4.323.2) (2026-07-28)
 
 
