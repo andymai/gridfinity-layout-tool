@@ -109,9 +109,66 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    expect(screen.getByText('Chamfer')).toBeDefined();
-    expect(screen.getByText('Fillet')).toBeDefined();
-    expect(screen.getByText('Taper height')).toBeDefined();
+    expect(screen.getByRole('radio', { name: 'Chamfer' })).toBeDefined();
+    expect(screen.getByRole('radio', { name: 'Fillet' })).toBeDefined();
+    expect(screen.getByText('Rises up')).toBeDefined();
+  });
+
+  it('separates the taper sides under their own heading and shows each cap', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 8,
+          front: 0,
+          back: 0,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 5,
+            left: 6,
+            right: 8,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    expect(screen.getByText('Taper back, per side')).toBeDefined();
+    // Right has 8mm of overhang to taper within, so its value reads against it.
+    expect(screen.getByRole('button', { name: /Taper back Right/ }).textContent).toBe('8 of 8');
+    // Distinct from the overhang control of the same visible name above it.
+    expect(screen.getByRole('slider', { name: 'Right' })).toBeDefined();
+    expect(screen.getByRole('slider', { name: 'Taper back Right' })).toBeDefined();
+  });
+
+  it('keeps sides with no overhang in place rather than unmounting them', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 8,
+          front: 0,
+          back: 0,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 5,
+            left: 0,
+            right: 8,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    // Three untaperable sides, each explained rather than silently dropped —
+    // otherwise the list reflows while the overhang sliders above are dragged.
+    expect(screen.getAllByText('No overhang')).toHaveLength(3);
   });
 
   it('cannot enable the taper without overhang', () => {

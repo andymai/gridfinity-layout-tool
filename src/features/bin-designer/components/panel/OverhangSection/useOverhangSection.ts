@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -21,6 +22,7 @@ export function useOverhangSection() {
     }))
   );
   const t = useTranslation();
+  const { isMobile, isTablet, isTouchDevice } = useResponsive();
 
   const overhang = params.overhang ?? ZERO_OVERHANG;
   const isCustomShape = isPartialMask(params.cellMask);
@@ -137,6 +139,10 @@ export function useOverhangSection() {
   // surface that as a disabled state rather than silently ignoring input.
   const disabledReason = isCustomShape ? t('binDesigner.shape.custom.hint') : undefined;
 
+  // The one-line row shrinks the track to ~84px, below a comfortable touch
+  // target; anything touch-driven keeps the stacked full-width slider.
+  const stackedSliders = isMobile || isTablet || isTouchDevice;
+
   return {
     state: {
       overhang,
@@ -175,7 +181,7 @@ export function useOverhangSection() {
       setBandHeight,
       setTaperSide,
     },
-    meta: { disabledReason },
+    meta: { disabledReason, stackedSliders },
     t,
   };
 }
