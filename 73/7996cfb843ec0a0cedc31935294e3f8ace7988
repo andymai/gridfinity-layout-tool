@@ -1,0 +1,19 @@
+src/App.tsx
+  s_806094f9ffe7bd::t_916772c508f7e2 140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "737996cfb843ec0a0cedc31935294e3f8ace7988",
+  "prompts": {},
+  "sessions": {
+    "s_806094f9ffe7bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85eca049-658c-476d-a58a-53ce5189fc9a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
