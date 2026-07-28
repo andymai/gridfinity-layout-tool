@@ -15,7 +15,8 @@ export function useDimensionsSection() {
     fractionalEdgeX,
     fractionalEdgeY,
     baseHalfSockets,
-    base,
+    baseSpacer,
+    baseStyle,
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
@@ -32,7 +33,8 @@ export function useDimensionsSection() {
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
-      base: s.params.base,
+      baseSpacer: s.params.base.spacer,
+      baseStyle: s.params.base.style,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
@@ -48,8 +50,9 @@ export function useDimensionsSection() {
   // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
   const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
-  // A spacer is floorless, so it may go down to 1u (#2915).
-  const minHeight = minHeightUnits(base);
+  // A spacer is floorless, so it may go down to 1u (#2915) — but only an
+  // EFFECTIVE one, hence the style: the flag is inert on a flat base.
+  const minHeight = minHeightUnits({ spacer: baseSpacer, style: baseStyle });
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);
