@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.326.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.3...gridfinity-layout-tool-v4.326.0) (2026-07-28)
+
+
+### Features
+
+* **generation:** add drawer-fit wall taper for curved bins ([#2933](https://github.com/andymai/gridfinity-layout-tool/issues/2933)) ([1e64c59](https://github.com/andymai/gridfinity-layout-tool/commit/1e64c59a4320b02eba9a4223f80cf3fd28baae43))
+
 ## [4.325.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.2...gridfinity-layout-tool-v4.325.3) (2026-07-28)
 
 
