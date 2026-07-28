@@ -91,6 +91,23 @@ describe('validateBinParams', () => {
       expectOk(validateBinParams(makeParams({ height: 20 })));
     });
 
+    // #2915: a spacer is floorless, so the usable-cavity floor doesn't bind —
+    // 1u is what shims a stack from an odd to an even total height.
+    it('should accept a 1u spacer but not a 1u bin', () => {
+      const spacer = { ...DEFAULT_BIN_PARAMS.base, spacer: true };
+      expectOk(validateBinParams(makeParams({ height: 1, base: spacer })));
+
+      const error = expectErr(validateBinParams(makeParams({ height: 1 })));
+      expect(error.code).toBe('DIMENSION_OUT_OF_RANGE');
+      expect(error.field).toBe('height');
+    });
+
+    it('should still reject a spacer below 1u', () => {
+      const spacer = { ...DEFAULT_BIN_PARAMS.base, spacer: true };
+      const error = expectErr(validateBinParams(makeParams({ height: 0, base: spacer })));
+      expect(error.code).toBe('DIMENSION_OUT_OF_RANGE');
+    });
+
     it('should reject 0.5×0.5 footprint', () => {
       const result = validateBinParams(makeParams({ width: 0.5, depth: 0.5 }));
       const error = expectErr(result);

@@ -929,13 +929,18 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
       `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`
     );
   }
-  if (
-    !isNumber(params.height) ||
-    !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)
-  ) {
+  // Mirrors `minHeightUnits` in `src/features/bin-designer/constants/gridfinity.ts`,
+  // including its EFFECTIVE-spacer condition: `deriveDimensions` makes the flag
+  // inert on a flat base (no socket to shell through), so a crafted
+  // `{ style: 'flat', spacer: true, height: 1 }` would otherwise buy the relaxed
+  // floor while generating an ordinary 1u bin.
+  const isEffectiveSpacer =
+    isObject(params.base) && params.base.spacer === true && params.base.style !== 'flat';
+  const minHeight = isEffectiveSpacer ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
+  if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(
       'INVALID_PARAMS',
-      `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`
+      `height must be ${minHeight}-${CONSTRAINTS.MAX_HEIGHT}`
     );
   }
 
