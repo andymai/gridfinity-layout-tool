@@ -1,0 +1,71 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_ea57e891b65e31::t_eae831962093d4 355-360
+src/i18n/locales/cs.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_ea57e891b65e31::t_0f730387ac2260 727-731
+  s_ea57e891b65e31::t_b43eacdc8c68e1 467-469,471-477
+src/i18n/locales/ko.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/pl.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/pt-BR.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/en.ts
+  s_ea57e891b65e31::t_91fdf5025202c6 1789,1792-1794
+src/features/generation/README.md
+  s_ea57e891b65e31::t_a1a3d3616a3526 50
+  s_ea57e891b65e31::t_f2597d8db659fe 197
+src/i18n/locales/ja.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/uk.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_ea57e891b65e31::t_02a8e65d9fa30c 388,394-423
+src/features/generation/worker/generators/lidInputs.ts
+  s_ea57e891b65e31::t_9e068eab86350b 213-219,222
+  s_ea57e891b65e31::t_dd049f2ee7da99 165-169
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_ea57e891b65e31::t_5173b093a7a32e 6-13
+  s_ea57e891b65e31::t_86cb0e891765a7 127-128
+  s_ea57e891b65e31::t_37acd966c02c90 40-97,113
+  s_ea57e891b65e31::t_e8a03136c7a54b 24-25
+src/i18n/locales/fr.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/de.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/nl.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/es.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/nb.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/zh-CN.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_ea57e891b65e31::t_c156807ccefdea 1125-1126
+  s_ea57e891b65e31::t_1283b4c91b5d8a 1110,1121-1124,1127-1190
+  s_ea57e891b65e31::t_98a11f39b25868 1191-1192
+src/features/generation/worker/generators/lidStackGrid.ts
+  s_ea57e891b65e31::t_616bec58e4dc98 33-38
+src/i18n/locales/sv.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+src/i18n/locales/it.json
+  s_ea57e891b65e31::t_6c0fb41ac51b78 873,875-876
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5a6547351ff32e3148ae263770d085820919e020",
+  "prompts": {},
+  "sessions": {
+    "s_ea57e891b65e31": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "022e8073-672c-474f-ace2-938e9d3084ff",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
