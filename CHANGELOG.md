@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.325.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.1...gridfinity-layout-tool-v4.325.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **shortcuts:** scope layout keyboard shortcuts to the layout route ([#2941](https://github.com/andymai/gridfinity-layout-tool/issues/2941)) ([f8e0e3c](https://github.com/andymai/gridfinity-layout-tool/commit/f8e0e3c7f3144a9a5c8a76e6a16f656f4bc47407))
+
 ## [4.325.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.0...gridfinity-layout-tool-v4.325.1) (2026-07-28)
 
 
