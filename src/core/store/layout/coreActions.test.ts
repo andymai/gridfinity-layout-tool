@@ -77,9 +77,9 @@ describe('coreActions', () => {
       expect(useLayoutStore.getState().layout.printBedSize).toBe(300);
     });
 
-    it('clamps to minimum 42', () => {
+    it('clamps to the minimum', () => {
       useLayoutStore.getState().setPrintBedSize(1);
-      expect(useLayoutStore.getState().layout.printBedSize).toBe(42);
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_MIN);
     });
 
     it('accepts large-format beds', () => {
