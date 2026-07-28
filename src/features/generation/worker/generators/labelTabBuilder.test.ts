@@ -793,3 +793,82 @@ describe('planLabelPlateSeats', () => {
     expect(seats.length).toBeLessThanOrEqual(1);
   });
 });
+
+describe('planSpanningDividerClips', () => {
+  const fourColumns = { cols: 4, rows: 1, thickness: 1.2, cells: [0, 1, 2, 3] };
+  const INNER_W = 123.1;
+  const INNER_D = 123.1;
+  const INTERIOR_H = 15.3;
+
+  const spanParams = (over: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...fourColumns },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true, ...over },
+  });
+
+  it('produces no clips for per-compartment tabs', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = spanParams({ span: false });
+    expect(planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2)).toHaveLength(0);
+  });
+
+  it('produces no clips when labels are disabled', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = spanParams({ enabled: false });
+    expect(planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2)).toHaveLength(0);
+  });
+
+  it('clips at the shelf underside for a full-width span', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const clips = planSpanningDividerClips(spanParams(), INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    // Text mode: shelf is one wallThickness thick and tops out at the ceiling.
+    expect(clips[0].zMin).toBeCloseTo(INTERIOR_H - 1.2, 5);
+    // The footprint reaches the dividers it has to clear.
+    expect(clips[0].xMax - clips[0].xMin).toBeCloseTo(INNER_W, 5);
+    expect(clips[0].yMax - clips[0].yMin).toBeCloseTo(DEFAULT_BIN_PARAMS.label.depth, 5);
+  });
+
+  // The reporter's case (#2897): a click-in socket on a lipped bin sinks the
+  // shelf below the ceiling, so full-height dividers stood proud of it.
+  it('clips below the interior ceiling for a click-in socket on a lipped bin', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = {
+      ...spanParams({ mode: 'socket' as const, socketStyle: 'clickIn' as const, depth: 14 }),
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    };
+
+    const clips = planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips).toHaveLength(1);
+    expect(clips[0].zMin).toBeLessThan(INTERIOR_H);
+  });
+
+  // The socket plan degrades to one bin-wide tab when no column can host a
+  // plate — that shelf spans the dividers too, without `label.span`.
+  it('clips for the socket bin-spanning fallback even with span off', async () => {
+    const { planSpanningDividerClips } = await import('./labelTabBuilder');
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 12,
+        rows: 1,
+        thickness: 1.2,
+        cells: Array.from({ length: 12 }, (_, i) => i),
+      },
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        span: false,
+        mode: 'socket' as const,
+        depth: 14,
+      },
+    };
+
+    const clips = planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2);
+
+    expect(clips.length).toBeGreaterThan(0);
+  });
+});

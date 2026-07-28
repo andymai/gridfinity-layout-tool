@@ -22,6 +22,7 @@ import type { LightweightBase, LightweightOpenDirection } from '../../lightweigh
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { maskHasHoles } from '../../maskPolygon';
+import { buildSpanningDividerClipTools, planSpanningDividerClips } from '../../labelTabBuilder';
 import { hasOverhang, overhangKey } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
@@ -218,6 +219,38 @@ export const shellStage: PipelineStage = {
         built = opened;
         floorOpenings.delete();
         floorOpenings = null;
+      }
+
+      // Dividers baked into the shell by the multi-cavity cut still run to the
+      // rim, so a wall-to-wall label shelf would be sliced by the ones it
+      // passes over (#2897). The cavity drawings are 2D and can't express a
+      // partial height, so drop those divider tops here — before featuresStage
+      // fuses the shelf, which a later cut pass would otherwise eat into.
+      if (dim.compartmentsBakedIntoShell) {
+        const clips = planSpanningDividerClips(
+          params,
+          dim.innerW,
+          dim.innerD,
+          dim.interiorHeight,
+          params.wallThickness
+        );
+        const tools = buildSpanningDividerClipTools(
+          clips,
+          boxWallHeight + 1,
+          dim.innerOffsetX,
+          dim.innerOffsetY
+        );
+        for (const tool of tools) {
+          try {
+            const clipped = unwrap(cut(built as ValidSolid, tool as ValidSolid));
+            if (clipped !== built) built.delete();
+            built = clipped;
+          } catch {
+            // Keep the unclipped shell: a divider through the shelf is
+            // cosmetically wrong, a failed shell is an unusable bin.
+          }
+          tool.delete();
+        }
       }
 
       setShellCache(dim.shellKey, built);

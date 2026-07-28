@@ -223,6 +223,14 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   compartment depth, both-edges collision) and has the same three callers. #2910 is what
   happens without it: the plate planner keyed off the compartment grid alone, so an
   `edges: 'both'` design — two sockets per compartment — shipped half the plates it needed.
+  A spanning shelf runs wall to wall, so the column dividers it crosses must stop at its
+  underside — `planSpanningDividerClips` (labelTabBuilder) derives those footprints from the
+  same layout plan the shelves are built from. The clip has to be applied at BOTH divider
+  sources: the shell itself when `compartmentsBakedIntoShell` (2D cavity drawings can't
+  express a partial height, so `shellStage` cuts it before `featuresStage` fuses the shelf —
+  the boolean stage runs every cut AFTER every fuse, so a cut target would eat the shelf) and
+  `buildCompartmentWalls` on the additive path. Both spanning shapes need it: `label.span`,
+  and the socket plan's bin-spanning fallback for columns too narrow to host a plate.
 - **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
   assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
   silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel
