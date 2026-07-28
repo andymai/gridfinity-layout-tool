@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/kumikoWrapBuilder.partition.test.ts
+  s_ea57e891b65e31::t_011496a23b52d2 1-91
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_ea57e891b65e31::t_94ea23eaa7012d 359,368-376,389-394,405-414,477-480,509
+  s_ea57e891b65e31::t_011496a23b52d2 360,378,416
+  s_ea57e891b65e31::t_df14d0245241c0 361-367,377,379-388,395-404,415,417-432,482,491-493
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "6cd2fee2daf5a7c25797e6afaebc7608f924cb87",
+  "prompts": {},
+  "sessions": {
+    "s_ea57e891b65e31": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "022e8073-672c-474f-ace2-938e9d3084ff",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
