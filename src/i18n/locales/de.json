@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "Die Grundplatte wird separat flach gedruckt (Raster oben, Klebefläche unten), damit der Deckel stützfrei bleibt. Nach dem Druck auf die Deckeloberseite kleben.",
   "binDesigner.lid.stackGridHint": "Ein vollständiges Rastermuster über die ganze Oberseite. Darauf gestapelte Boxen rasten in einzelne Zellen ein.",
   "binDesigner.lid.stackLipOnly": "Nur Stapelrand",
+  "binDesigner.lid.stackLipOnlyNoOp": "Bei dieser Größe ohne Wirkung — eine Ein-Zellen-Oberseite ist bereits eine Tasche.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Der Deckel wird kopfüber gedruckt, ein reiner Rand lässt die ganze Fläche ohne Stützen. Die separate Grundplatte unten vermeidet das.",
   "binDesigner.lid.stackLipOnlyHint": "Statt des Rasters nur ein Rand außen herum — freie Oberseite und weniger Filament. Darauf gestapelte Boxen zentrieren sich am äußeren Rand statt zellenweise.",
   "binDesigner.lid.side.back": "Hinten",
   "binDesigner.lid.side.front": "Vorne",

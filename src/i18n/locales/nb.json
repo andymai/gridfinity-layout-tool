@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "Bunnplaten skrives ut flatt for seg selv (rutenett opp, limflate ned) slik at lokket forblir støttefritt. Lim den på toppen av lokket etter utskrift.",
   "binDesigner.lid.stackGridHint": "Et fullt rutenett av sokler over hele oversiden. Binger som stables oppå, låses til enkeltceller.",
   "binDesigner.lid.stackLipOnly": "Bare stablekant",
+  "binDesigner.lid.stackLipOnlyNoOp": "Ingen effekt i denne størrelsen — en overside med én celle er allerede én lomme.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Lokket skrives ut opp ned, så bare en kant lar hele flaten stå uten støtte. Den separate bunnplaten under unngår det.",
   "binDesigner.lid.stackLipOnlyHint": "Én kant rundt ytterkanten i stedet for rutenettet — ren overside og mindre filament. Binger som stables oppå, styres av ytterkanten, ikke celle for celle.",
   "binDesigner.lid.side.back": "Bak",
   "binDesigner.lid.side.front": "Foran",

@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "底板单独平放打印（网格朝上、粘贴面朝下），使盖子保持无需支撑。打印后将其粘到盖子顶面。",
   "binDesigner.lid.stackGridHint": "在整个顶面生成完整的网格凹槽。叠放在上面的收纳盒会锁进各个格子。",
   "binDesigner.lid.stackLipOnly": "仅堆叠唇边",
+  "binDesigner.lid.stackLipOnlyNoOp": "此尺寸下无效果 — 单格顶面本来就是一个凹槽。",
+  "binDesigner.lid.stackLipOnlyPrintNote": "盖子是倒过来打印的，只留唇边会让整个顶面悬空。使用下方的单独底板即可避免。",
   "binDesigner.lid.stackLipOnlyHint": "只在四周保留一圈唇边，不做网格 — 顶面干净、更省耗材。叠放在上面的收纳盒靠外圈唇边定位，而不是逐格定位。",
   "binDesigner.lid.side.back": "后",
   "binDesigner.lid.side.front": "前",

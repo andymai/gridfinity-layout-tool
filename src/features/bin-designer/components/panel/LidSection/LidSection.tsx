@@ -290,6 +290,10 @@ export function LidSection() {
                     ? t('binDesigner.lid.stackLipOnlyHint')
                     : t('binDesigner.lid.stackGridHint')}
                 </Hint>
+                {state.stackLipOnlyIsNoOp && <Hint>{t('binDesigner.lid.stackLipOnlyNoOp')}</Hint>}
+                {state.stackLipOnlyNeedsPlateHint && (
+                  <Hint>{t('binDesigner.lid.stackLipOnlyPrintNote')}</Hint>
+                )}
                 <Switch
                   label={t('binDesigner.lid.magnetHoles')}
                   checked={state.magnetHoles}

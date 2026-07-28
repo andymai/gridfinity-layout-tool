@@ -1804,6 +1804,10 @@ const en: Record<string, string> = {
   'binDesigner.lid.stackLipOnly': 'Stacking lip only',
   'binDesigner.lid.stackGridHint':
     'A full grid of sockets across the top. Bins stacked on it lock to individual cells.',
+  'binDesigner.lid.stackLipOnlyNoOp':
+    'No effect at this size — a single-cell top is already one pocket.',
+  'binDesigner.lid.stackLipOnlyPrintNote':
+    'The lid prints upside down, so a lip-only top leaves the whole face unsupported. The separate baseplate below avoids that.',
   'binDesigner.lid.stackLipOnlyHint':
     'One lip around the edge instead of the grid — a clear top face and less filament. Bins stacked on it locate on the outer lip, not per cell.',
   'binDesigner.lid.magnetHoles': 'Magnet pockets',

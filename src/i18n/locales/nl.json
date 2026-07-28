@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "De grondplaat wordt apart plat geprint (raster omhoog, lijmvlak omlaag) zodat het deksel steunvrij blijft. Lijm hem na het printen op de bovenkant van het deksel.",
   "binDesigner.lid.stackGridHint": "Een volledig raster van vakken over de hele bovenkant. Bakjes die erop worden gestapeld, klikken in afzonderlijke cellen.",
   "binDesigner.lid.stackLipOnly": "Alleen stapelrand",
+  "binDesigner.lid.stackLipOnlyNoOp": "Geen effect bij dit formaat — een bovenkant van één cel is al één vak.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "Het deksel print ondersteboven, dus alleen een rand laat het hele vlak zonder support. De aparte grondplaat hieronder voorkomt dat.",
   "binDesigner.lid.stackLipOnlyHint": "Eén rand langs de buitenkant in plaats van het raster — een vrije bovenkant en minder filament. Bakjes die erop worden gestapeld, centreren op de buitenrand en niet per cel.",
   "binDesigner.lid.side.back": "Achter",
   "binDesigner.lid.side.front": "Voor",

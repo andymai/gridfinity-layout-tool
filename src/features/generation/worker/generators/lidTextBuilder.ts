@@ -38,8 +38,6 @@ export const LID_TEXT_ENGRAVE_FLOOR = 0.4;
  *  (and geometrically degenerate — the extrusion would be ~epsilon). */
 const MIN_ENGRAVE_DEPTH = 0.05;
 
-/** The face the text lands on: its fit box, its centre, the Z it starts from,
- *  and how much plate sits below it (which bounds an engrave). */
 interface TextHostFace {
   readonly availW: number;
   readonly availD: number;
@@ -49,11 +47,6 @@ interface TextHostFace {
   readonly hostThickness: number;
 }
 
-/**
- * Resolve which face the text writes on. Three hosts, and they differ in more
- * than size — the lip-only floor is anchored in a different coordinate frame
- * than the other two (lid gotcha 7).
- */
 function resolveTextHostFace(inputs: LidInputs): TextHostFace {
   // Lip-only stack top (#2930): the text sits on the recessed floor inside the
   // lip. That floor is GRID-anchored — the pocket is cut from the nominal

@@ -857,6 +857,8 @@
   "binDesigner.lid.separateStackPlateHint": "La placa base se imprime plana por separado (rejilla arriba, cara de pegado abajo) para que la tapa no necesite soportes. Pégala en la parte superior de la tapa tras imprimir.",
   "binDesigner.lid.stackGridHint": "Una rejilla completa de huecos por toda la parte superior. Las cajas apiladas encima encajan en celdas individuales.",
   "binDesigner.lid.stackLipOnly": "Solo borde apilable",
+  "binDesigner.lid.stackLipOnlyNoOp": "Sin efecto a este tamaño: una parte superior de una sola celda ya es un único hueco.",
+  "binDesigner.lid.stackLipOnlyPrintNote": "La tapa se imprime del revés, así que un borde solo deja toda la cara sin soporte. La placa base separada de abajo lo evita.",
   "binDesigner.lid.stackLipOnlyHint": "Un solo borde perimetral en lugar de la rejilla: cara superior libre y menos filamento. Las cajas apiladas encima se sitúan en el borde exterior, no celda por celda.",
   "binDesigner.lid.side.back": "Atrás",
   "binDesigner.lid.side.front": "Frente",

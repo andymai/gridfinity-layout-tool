@@ -329,7 +329,14 @@ export function useLidSection() {
   const setTopSurface = useCallback(
     (mode: LidTopSurface) => {
       if (mode === 'stackable') {
-        updateLid({ stackableTop: true, tray: { ...lid.tray, enabled: false } });
+        // Normalise stackLipOnly on the way IN as well as out: an imported design
+        // can carry it true with stackableTop false, which would otherwise make
+        // picking "Stackable" land on lip-only unannounced.
+        updateLid({
+          stackableTop: true,
+          stackLipOnly: lid.stackableTop && lid.stackLipOnly,
+          tray: { ...lid.tray, enabled: false },
+        });
       } else {
         // Flat or tray: no stack grid, so magnet pockets, the lip-only variant,
         // and the separate baseplate (all grid-only) are force-cleared. Tray
@@ -343,7 +350,7 @@ export function useLidSection() {
         });
       }
     },
-    [lid.tray, updateLid]
+    [lid.stackableTop, lid.stackLipOnly, lid.tray, updateLid]
   );
 
   const setRetentionMagnetDiameter = useCallback(
@@ -400,12 +407,12 @@ export function useLidSection() {
   }, [lid.stackableTop, lid.stackLipOnly, updateLid]);
 
   const toggleMagnetHoles = useCallback(() => {
-    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
     updateLid({ magnetHoles: !lid.magnetHoles });
   }, [lid.stackableTop, lid.magnetHoles, updateLid]);
 
   const toggleSeparateStackPlate = useCallback(() => {
-    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
     updateLid({ separateStackPlate: !lid.separateStackPlate });
   }, [lid.stackableTop, lid.separateStackPlate, updateLid]);
 
@@ -463,18 +470,28 @@ export function useLidSection() {
   const anyRail =
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
+  // ── Stack top (#2930) ─────────────────────────────────────────────────
+  // Both gated on `stackableTop`, matching the worker's split in
+  // `resolveLidInputs`: the persisted lip-only flag can outlive a stack top.
+  const lipOnlyTop = lid.stackableTop && lid.stackLipOnly;
+  const stackGridOwnsTop = lid.stackableTop && !lid.stackLipOnly;
+  // A single-cell footprint's grid is already one pocket, so the toggle
+  // emits identical geometry — say so rather than let it read as broken.
+  const stackLipOnlyIsNoOp = lipOnlyTop && params.width <= 1 && params.depth <= 1;
+  // Every stackable lid exports flipped (`keepsNaturalOrientation` only spares
+  // trays), which lands a lip-only top pockets-down: the floor plate becomes one
+  // unsupported span instead of the grid's per-cell bridges. The separate
+  // baseplate is the existing way out.
+  const stackLipOnlyNeedsPlateHint = lipOnlyTop && !stackLipOnlyIsNoOp && !lid.separateStackPlate;
+
   // ── Lid-top text (#2695) ──────────────────────────────────────────────
-  // Mirrors the worker gates in `resolveLidInputs`: a FULL stack grid owns the
-  // surface (the lip-only variant leaves its recessed floor free, #2930), and
-  // polygon lids are excluded (rectangular auto-fit).
+  // Polygon lids are excluded (rectangular auto-fit), mirroring the worker.
   const lidText = params.surfaceText?.lidText ?? '';
-  const textOnStackLipFloor = lid.stackableTop && lid.stackLipOnly;
-  const textDisabledReason =
-    lid.stackableTop && !lid.stackLipOnly
-      ? t('binDesigner.lid.text.disabledStackable')
-      : isPartialMask(params.cellMask)
-        ? t('binDesigner.lid.text.disabledPolygon')
-        : undefined;
+  const textDisabledReason = stackGridOwnsTop
+    ? t('binDesigner.lid.text.disabledStackable')
+    : isPartialMask(params.cellMask)
+      ? t('binDesigner.lid.text.disabledPolygon')
+      : undefined;
   // Effective mode: the shared surface-text override wins over textDefaults.
   const textMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
 
@@ -665,6 +682,8 @@ export function useLidSection() {
       topSurface,
       stackableTop: lid.stackableTop,
       stackLipOnly: lid.stackLipOnly,
+      stackLipOnlyIsNoOp,
+      stackLipOnlyNeedsPlateHint,
       magnetHoles: lid.magnetHoles,
       separateStackPlate: lid.separateStackPlate,
       magnetDiameter: base.magnetDiameter,
@@ -724,11 +743,9 @@ export function useLidSection() {
       textMode,
       textDisabledReason,
       textOnTrayFloor: topSurface === 'tray',
-      textOnStackLipFloor,
-      // Raised glyphs on the lip-only floor sit under whatever stacks on the
-      // lid, so it can't seat flat — surfaced as a warning rather than a gate,
-      // matching how the through-cut stencil note is handled.
-      textEmbossBlocksStacking: textOnStackLipFloor && textMode === 'emboss',
+      textOnStackLipFloor: lipOnlyTop,
+      // Warning, not a gate — same treatment as the through-cut stencil note.
+      textEmbossBlocksStacking: lipOnlyTop && textMode === 'emboss',
       isLidTextOpen,
     },
     handlers: {

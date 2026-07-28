@@ -30,20 +30,20 @@ import type { LidInputs } from './lidInputs';
 /** Insets at each Z breakpoint — same values as `baseplateGenerator`. */
 const STACK_INSET_TOP = 0;
 const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-/**
- * Inset at the pocket's floor — so on a lip-only top this is how far the lip's
- * inner face sits inside the nominal socket grid at Z=0, i.e. the usable width
- * of the recessed floor. `lidTextBuilder` fits text against it.
- */
+/** Inset at the pocket floor, per side — on a lip-only top this is how far the
+ *  lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
+ *  the text fit box from it. */
 export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
+/** Floor for every inset-derived pocket dimension. The deepest inset is
+ *  STACK_INSET_BOT (2.95mm per side), which a small enough cell or grid unit
+ *  would otherwise drive to zero or negative. */
+const MIN_POCKET_MM = 0.1;
+
 /**
- * Z breakpoints of the pocket profile, paired with their inset. The slab's top
- * face sits at `SOCKET_HEIGHT` (5mm above the lid floor) and the breakpoints
- * walk DOWN from there mirroring the baseplate's profile, with a coplanar cap
- * at each end so the cut bites cleanly through both faces. Kept in that
- * descending order because reversing a ruled loft flips the solid's face
- * orientation.
+ * Z breakpoints of the pocket profile, paired with their per-side inset — the
+ * baseplate socket profile, walked top-down, with a coplanar cap at each end so
+ * the cut bites cleanly through both slab faces.
  */
 const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
   [SOCKET_HEIGHT + LID_COPLANAR_MARGIN, STACK_INSET_TOP],
@@ -55,8 +55,9 @@ const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
   [-LID_COPLANAR_MARGIN, STACK_INSET_BOT],
 ];
 
-/** Loft a pocket cutter from `POCKET_PROFILE`, sketching each section with
- *  `outlineAt(inset)`. Sections must share a vertex topology. */
+/** `outlineAt` must return sections that share a vertex topology at every
+ *  inset — a ruled loft can't bridge differing curve counts, which is why both
+ *  callers floor their corner radius rather than let it reach zero. */
 function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
   const [first, ...rest] = POCKET_PROFILE.map(
     ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
@@ -75,24 +76,22 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   return loftPocket((inset) =>
     drawRoundedRectangle(
-      Math.max(cellW_mm - 2 * inset, 0.1),
-      Math.max(cellD_mm - 2 * inset, 0.1),
-      Math.max(cornerR - inset, 0.1)
+      Math.max(cellW_mm - 2 * inset, MIN_POCKET_MM),
+      Math.max(cellD_mm - 2 * inset, MIN_POCKET_MM),
+      Math.max(cornerR - inset, MIN_POCKET_MM)
     )
   );
 }
 
 /**
- * Build ONE pocket cutter spanning the whole footprint — the lip-only stack
- * top (#2930). Same profile as a per-cell pocket, so the outer lip an upper
- * bin registers against is bit-identical to the grid version's; only the
- * interior cell ridges are gone.
+ * ONE pocket spanning the whole footprint (#2930) — only the perimeter lip
+ * survives.
  *
- * Sized from the NOMINAL socket grid rather than `buildOutlineDrawing`'s lid
+ * Sized from the NOMINAL socket grid, not `buildOutlineDrawing`'s lid
  * perimeter: that perimeter is shrunk by `fitClearance` and both grown and
  * shifted by asymmetric overhang, none of which the sockets of a bin stacked
  * on top move with. The per-cell path stays on the nominal grid for the same
- * reason (its pockets sit at nominal cell centres).
+ * reason.
  */
 function buildStackLipCutter(inputs: LidInputs): Shape3D {
   const { cellsX, cellsY, gridUnitMm, gridUnitMmY, cellMask } = inputs;
@@ -104,12 +103,9 @@ function buildStackLipCutter(inputs: LidInputs): Shape3D {
     const radius = Math.max(cornerR - inset, LID_MIN_CORNER_RADIUS);
     return cellMask
       ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
-      : // Same 0.1mm floor as the per-cell cutter: the deepest inset is
-        // STACK_INSET_BOT (2.95mm per side), which a small enough grid unit
-        // would drive to a zero/negative dimension.
-        drawRoundedRectangle(
-          Math.max(totalW - 2 * inset, 0.1),
-          Math.max(totalD - 2 * inset, 0.1),
+      : drawRoundedRectangle(
+          Math.max(totalW - 2 * inset, MIN_POCKET_MM),
+          Math.max(totalD - 2 * inset, MIN_POCKET_MM),
           radius
         );
   });
