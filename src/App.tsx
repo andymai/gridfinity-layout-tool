@@ -256,7 +256,9 @@ export default function App() {
     }
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
-  useKeyboard();
+  useKeyboard({
+    disabled: isDesignerRoute || isBaseplateRoute || isSupportersRoute || isDevThumbnailRoute,
+  });
   const saveStatus = useAutoSave();
   useCrossTabSync();
   useLayoutRouting({
