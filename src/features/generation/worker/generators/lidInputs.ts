@@ -73,6 +73,12 @@ export interface LidInputs {
   readonly cavityInset: number;
   readonly stackableTop: boolean;
   /**
+   * Cut the stack top as a single perimeter pocket instead of one pocket per
+   * cell (#2930). Already gated on `stackableTop` here. See
+   * {@link LidConfig.stackLipOnly}.
+   */
+  readonly stackLipOnly: boolean;
+  /**
    * When true, the stack grid is NOT fused into the lid — it's emitted as a
    * standalone companion slab (glued on by the user). Already gated on
    * `stackableTop` here, so consumers can check it directly. See
@@ -263,6 +269,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cavityExtraMm: cavityExtra,
     cavityInset,
     stackableTop: params.lid.stackableTop,
+    // Only a stack top has pockets to collapse into one perimeter lip.
+    stackLipOnly: params.lid.stackLipOnly && params.lid.stackableTop,
     // Splitting the stack grid off only means anything when there IS a stack
     // grid — gate on stackableTop so buildLid/buildStackPlate can trust the
     // flag directly without re-checking stackableTop.

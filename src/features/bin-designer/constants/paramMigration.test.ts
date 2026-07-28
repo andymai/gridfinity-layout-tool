@@ -949,11 +949,17 @@ describe('migrateParams', () => {
     expect((result.lid as any).topThickness).toBeUndefined();
   });
 
+  it('backfills stackLipOnly off so pre-#2930 designs keep the full grid', () => {
+    const result = migrateParams({ lid: { enabled: true, stackableTop: true } as any });
+    expect(result.lid.stackLipOnly).toBe(false);
+  });
+
   it('passes through fully-specified lid config', () => {
     const lid = {
       enabled: true,
       attachment: 'magnetic' as const,
       stackableTop: true,
+      stackLipOnly: true,
       magnetHoles: true,
       separateStackPlate: true,
       clickRails: { front: false, back: true, left: true, right: false },

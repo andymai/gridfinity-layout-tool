@@ -331,10 +331,12 @@ export function useLidSection() {
       if (mode === 'stackable') {
         updateLid({ stackableTop: true, tray: { ...lid.tray, enabled: false } });
       } else {
-        // Flat or tray: no stack grid, so magnet pockets and the separate
-        // baseplate (both grid-only) are force-cleared. Tray owns the surface.
+        // Flat or tray: no stack grid, so magnet pockets, the lip-only variant,
+        // and the separate baseplate (all grid-only) are force-cleared. Tray
+        // owns the surface.
         updateLid({
           stackableTop: false,
+          stackLipOnly: false,
           magnetHoles: false,
           separateStackPlate: false,
           tray: { ...lid.tray, enabled: mode === 'tray' },
@@ -391,6 +393,11 @@ export function useLidSection() {
     },
     [lid.tray, updateLid]
   );
+
+  const toggleStackLipOnly = useCallback(() => {
+    if (!lid.stackableTop) return; // Gated; UI also hides the switch.
+    updateLid({ stackLipOnly: !lid.stackLipOnly });
+  }, [lid.stackableTop, lid.stackLipOnly, updateLid]);
 
   const toggleMagnetHoles = useCallback(() => {
     if (!lid.stackableTop) return; // Gated; UI also disables the switch.
@@ -654,6 +661,7 @@ export function useLidSection() {
       attachment: lid.attachment,
       topSurface,
       stackableTop: lid.stackableTop,
+      stackLipOnly: lid.stackLipOnly,
       magnetHoles: lid.magnetHoles,
       separateStackPlate: lid.separateStackPlate,
       magnetDiameter: base.magnetDiameter,
@@ -719,6 +727,7 @@ export function useLidSection() {
       toggleEnabled,
       setAttachment,
       setTopSurface,
+      toggleStackLipOnly,
       toggleMagnetHoles,
       toggleSeparateStackPlate,
       toggleClickRailSide,

@@ -1786,7 +1786,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.text.placeholder': 'e.g. Cables',
   'binDesigner.lid.text.aria': 'Lid text',
   'binDesigner.lid.text.disabledStackable':
-    'Not available with a stackable top — the stack grid owns the lid’s top face.',
+    'Not available with a stackable top — the stacking surface owns the lid’s top face.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
   'binDesigner.lid.text.trayHint': 'Text is placed on the tray floor, inside the rim.',
   'binDesigner.lid.topSurface.flat': 'Flat',
@@ -1798,6 +1798,11 @@ const en: Record<string, string> = {
     'Grips the lip by friction alone, with no rails or magnets. Easiest to print and pull off.',
   'binDesigner.lid.advanced': 'Advanced',
   'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
+  'binDesigner.lid.stackLipOnly': 'Stacking lip only',
+  'binDesigner.lid.stackGridHint':
+    'A full grid of sockets across the top. Bins stacked on it lock to individual cells.',
+  'binDesigner.lid.stackLipOnlyHint':
+    'One lip around the edge instead of the grid — a clear top face and less filament. Bins stacked on it locate on the outer lip, not per cell.',
   'binDesigner.lid.magnetHoles': 'Magnet pockets',
   'binDesigner.lid.magnetSpec':
     'Pocket: ⌀{diameter}mm × {depth}mm deep (matches bin magnet specs).',

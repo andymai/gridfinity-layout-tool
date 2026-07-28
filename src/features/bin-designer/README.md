@@ -59,7 +59,7 @@ graph TB
   `@/shared/generation/floorPatternMetrics` rather than mirroring it: that rule is what keeps holes
   off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
   refuses to pattern
-- `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
+- `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
 - `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)
@@ -133,8 +133,9 @@ graph TB
   compound assembly translated to its mated position. `LidSection` exposes
   the extra-height cavity boost (`extraHeightMm`, 0–100mm — a taller lid
   encloses items that poke up out of a short bin, e.g. toothpicks; 0 = the
-  standard one-grid-unit lid), the stack-grid / magnet / separate-baseplate
-  toggles, per-side click-rail snaps with a coverage slider, and the floor-plate
+  standard one-grid-unit lid), the top-surface picker and its sub-toggles
+  (magnet pockets, lip-only stack top, separate baseplate), per-side
+  click-rail snaps with a coverage slider, and the floor-plate
   thickness (`topThicknessMm`, 0.8–5mm — a thicker top for a stiffer, less
   translucent lid on large bins; 0.8 = the historical plate). Wall thickness and
   fit clearance stay locked-down constants in `lidConstants.ts` (a single
