@@ -49,11 +49,10 @@ to fail closed on the patterns those attacks exploited:
 They cover user-authored packages (no security benefit from delaying our own
 releases) and high-trust org scopes that release frequently and lockstep.
 
-**OSV suppressions** live in [`osv-scanner.toml`](osv-scanner.toml) and are for
-advisories that are wrong about us, not advisories we've decided to accept. Each
-entry pins an exact package version, explains the evidence, and sets an
-`effectiveUntil` so it expires rather than lingering. Suppressing a finding you
-simply can't fix yet is not a valid use — leave the scan red instead.
+**OSV findings are not suppressed.** There is deliberately no `osv-scanner.toml`.
+A finding we can't fix yet stays red rather than being silenced, and "the
+advisory looks wrong" is not grounds for an exception — verify it by running the
+advisory's proof-of-concept against the installed version before believing it.
 
 **Adding a build script allow-list entry** (`allowBuilds`) is a security
 decision. Audit the package's postinstall behavior before adding.
