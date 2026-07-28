@@ -24,17 +24,21 @@ minimumReleaseAgeExclude:
   - '@vercel/*'
   - '@protobufjs/*'
   - protobufjs
-  # fast-uri 3.1.4 (2026-07-19) is the first version patched against the
-  # host-confusion-via-backslash-authority flaw (CVE-2026-16221,
-  # GHSA-v2hh-gcrm-f6hx). Scoped to the exact reviewed release so no later
-  # fast-uri publish can bypass the cooldown via a lockfile regen.
-  # TODO: remove after 2026-07-26 once 3.1.4 has aged past the window.
-  - fast-uri@3.1.4
   # tar 7.5.21 (2026-07-21) is the first version patched against the
   # uncatchable stack-overflow DoS via crafted long-path archives
   # (GHSA-r292-9mhp-454m). Scoped to the exact reviewed release.
   # TODO: remove after 2026-07-28 once 7.5.21 has aged past the window.
   - tar@7.5.21
+  # js-yaml 5.2.2 (2026-07-23) is the first version patched against the
+  # exponential flow-collection parsing DoS (GHSA-pm4m-ph32-ghv5).
+  # TODO: remove after 2026-07-30 once 5.2.2 has aged past the window.
+  - js-yaml@5.2.2
+  # brace-expansion 5.0.8 (2026-07-23) is the first 5.x version patched
+  # against the unbounded-expansion OOM (CVE-2026-14257). The 1.x and 2.x
+  # lines were already patched in 1.1.16 / 2.1.2 despite the advisory's
+  # overbroad '<= 5.0.7' range, so only the 5.x line needs to move.
+  # TODO: remove after 2026-07-30 once 5.0.8 has aged past the window.
+  - brace-expansion@5.0.8
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -83,6 +87,10 @@ overrides:
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
   'brace-expansion@<1.1.16': '^1.1.16'
+  # Scoped to the 5.x line: minimatch@3 does `var expand = require(...)` and
+  # calls it directly, but brace-expansion@5's CJS build exports `{ expand }`,
+  # so a blanket range would drag 1.1.16 up to 5.x and break it at runtime.
+  'brace-expansion@>=5.0.0 <5.0.8': '^5.0.8'
   'tar@<7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'

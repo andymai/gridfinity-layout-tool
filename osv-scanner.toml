@@ -1,0 +1,36 @@
+# Suppressions for the blocking OSV scan (.github/workflows/osv-scan.yml).
+# Keep this file empty by default — every entry must name the advisory, state
+# why the finding is wrong, and carry an effectiveUntil so it cannot linger.
+#
+# effectiveUntil must stay an unquoted TOML date. Quoting it fails to decode
+# into time.Time, and osv-scanner then discards the WHOLE file with only an
+# "Ignored invalid config file" line on stdout — every suppression here silently
+# stops applying while the scan still exits non-zero. Re-verify after editing:
+#   osv-scanner scan source --lockfile=pnpm-lock.yaml
+
+# GHSA-mh99-v99m-4gvg / CVE-2026-14257 declares a single affected range of
+# "<= 5.0.7", which sweeps in the 1.x and 2.x lines even though both were
+# already patched: 1.1.16 and 2.1.2 (published 2026-07-08, two weeks before the
+# advisory) define EXPANSION_MAX_LENGTH = 4_000_000 and name the CVE in source;
+# 1.1.15 and 2.1.1 contain neither. They are also the newest releases in their
+# lines, so there is no version to upgrade to. Both are pulled in by minimatch@3
+# (via eslint-plugin-jsx-a11y and vite-plugin-pwa), which cannot move to
+# brace-expansion@5 — it calls the module as a function, and 5.x exports an
+# object. Pinned to the exact patched versions so any other version still scans.
+# TODO: remove once the upstream advisory range is corrected.
+
+[[PackageOverrides]]
+name = "brace-expansion"
+version = "1.1.16"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-10-31
+reason = "1.1.16 is the 1.x backport of the CVE-2026-14257 fix; the advisory's '<= 5.0.7' range is overbroad."
+
+[[PackageOverrides]]
+name = "brace-expansion"
+version = "2.1.2"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-10-31
+reason = "2.1.2 is the 2.x backport of the CVE-2026-14257 fix; the advisory's '<= 5.0.7' range is overbroad."
