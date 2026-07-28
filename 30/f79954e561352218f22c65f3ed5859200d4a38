@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/drawHandler.test.ts
+  s_112b170171473d::t_dfc2e4b91d193f 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "30f79954e561352218f22c65f3ed5859200d4a38",
+  "prompts": {},
+  "sessions": {
+    "s_112b170171473d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16d7cb98-26f9-4f13-baf3-eee4a4a89caa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
