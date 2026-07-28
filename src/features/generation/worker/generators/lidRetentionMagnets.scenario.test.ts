@@ -41,12 +41,19 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
  * `BOX_CORNER_RADIUS`. Negative means everything is inboard of the wall.
  */
 function maxProfileProtrusion(mesh: MeshData, halfW: number, halfD: number): number {
+  // A mesh with no vertices would leave `worst` at -Infinity, and a NaN
+  // coordinate would fail every `>` comparison — either would sail through the
+  // callers' upper-bound assertions and make them blind to a failed generation.
+  if (mesh.vertices.length === 0) throw new Error('empty mesh — nothing to measure');
   const cx = halfW - BOX_CORNER_RADIUS;
   const cy = halfD - BOX_CORNER_RADIUS;
   let worst = -Infinity;
   for (let i = 0; i < mesh.vertices.length; i += 3) {
     const x = Math.abs(mesh.vertices[i]);
     const y = Math.abs(mesh.vertices[i + 1]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      throw new Error(`non-finite vertex at index ${i / 3}`);
+    }
     const dx = x - cx;
     const dy = y - cy;
     const outside =
