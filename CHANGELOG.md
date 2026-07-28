@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.1...gridfinity-layout-tool-v4.323.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** allow a 1u height in spacer mode ([#2917](https://github.com/andymai/gridfinity-layout-tool/issues/2917)) ([4d5c33c](https://github.com/andymai/gridfinity-layout-tool/commit/4d5c33c3caaa694ffec552752ad9e909d0545aae))
+
 ## [4.322.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.0...gridfinity-layout-tool-v4.322.1) (2026-07-27)
 
 
