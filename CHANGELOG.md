@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.325.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.324.0...gridfinity-layout-tool-v4.325.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** allow lid text on lip-only stack tops ([#2936](https://github.com/andymai/gridfinity-layout-tool/issues/2936)) ([db6ee89](https://github.com/andymai/gridfinity-layout-tool/commit/db6ee896447815e93e51c089adc90f07d695cd97))
+
 ## [4.324.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.5...gridfinity-layout-tool-v4.324.0) (2026-07-28)
 
 
