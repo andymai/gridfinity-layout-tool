@@ -9,17 +9,23 @@
  * only tapers where it has overhang) and is mutually exclusive with feet.
  * A feature toggle gates the per-side controls; values are retained while off.
  * Suppressed for custom-shape bins.
+ *
+ * The taper's per-side sliders repeat the same four side names as the overhang
+ * block above them, so they sit under their own heading and each shows the
+ * overhang it is capped by ("21 of 21").
  */
 
-import { Checkbox, SliderInput, SegmentedControl } from '@/design-system';
-import type { SegmentedControlOption } from '@/design-system';
-import type { WallTaperProfile } from '@/core/types';
+import { useId } from 'react';
+import { Checkbox } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureToggle } from '../FeatureToggle';
+import { OverhangSliderRow } from './OverhangSliderRow';
+import { TaperProfileCards } from './TaperProfileCards';
 import { useOverhangSection, type OverhangSide } from './useOverhangSection';
 
 export function OverhangSection() {
   const { state, handlers, meta, t } = useOverhangSection();
+  const taperSidesHeadingId = useId();
 
   const sides: { side: OverhangSide; label: string }[] = [
     { side: 'left', label: t('binDesigner.overhang.side.left') },
@@ -28,14 +34,10 @@ export function OverhangSection() {
     { side: 'back', label: t('binDesigner.overhang.side.back') },
   ];
 
-  const profileOptions: SegmentedControlOption<WallTaperProfile>[] = [
-    { value: 'chamfer', label: t('binDesigner.overhang.taper.profileChamfer') },
-    { value: 'fillet', label: t('binDesigner.overhang.taper.profileFillet') },
-  ];
-
   const { taper } = state;
   const feetEnabled = state.hasOverhang && !taper.enabled;
   const taperToggleEnabled = taper.canTaper && !state.feet;
+  const stacked = meta.stackedSliders;
 
   let taperHintKey = 'binDesigner.overhang.taper.hint';
   if (state.feet) taperHintKey = 'binDesigner.overhang.taper.feetConflict';
@@ -55,7 +57,7 @@ export function OverhangSection() {
           </p>
           {sides.map(({ side, label }) => (
             // Wrapper relays hover + keyboard focus to the 3D wall highlight
-            // without touching the shared SliderInput primitive (onFocus/onBlur
+            // without touching the shared slider primitives (onFocus/onBlur
             // bubble from the inner input).
             <div
               key={side}
@@ -64,7 +66,7 @@ export function OverhangSection() {
               onFocus={() => handlers.setHovered(side)}
               onBlur={() => handlers.setHovered(null)}
             >
-              <SliderInput
+              <OverhangSliderRow
                 label={label}
                 value={state.overhang[side]}
                 onChange={(v) => handlers.setSide(side, v)}
@@ -72,6 +74,7 @@ export function OverhangSection() {
                 max={DESIGNER_CONSTRAINTS.MAX_OVERHANG}
                 step={DESIGNER_CONSTRAINTS.OVERHANG_STEP}
                 unit="mm"
+                stacked={stacked}
               />
             </div>
           ))}
@@ -132,20 +135,14 @@ export function OverhangSection() {
 
             {taper.enabled && taper.canTaper && (
               <>
-                <div>
-                  <span className="mb-1 block text-xs text-content-tertiary">
-                    {t('binDesigner.overhang.taper.profile')}
-                  </span>
-                  <SegmentedControl
-                    options={profileOptions}
-                    value={taper.profile}
-                    onChange={handlers.setTaperProfile}
-                    aria-label={t('binDesigner.overhang.taper.profile')}
-                    size="sm"
-                    fullWidth
-                  />
-                </div>
-                <SliderInput
+                <TaperProfileCards
+                  value={taper.profile}
+                  onChange={handlers.setTaperProfile}
+                  chamferLabel={t('binDesigner.overhang.taper.profileChamfer')}
+                  filletLabel={t('binDesigner.overhang.taper.profileFillet')}
+                  groupLabel={t('binDesigner.overhang.taper.profile')}
+                />
+                <OverhangSliderRow
                   label={t('binDesigner.overhang.taper.bandHeight')}
                   value={taper.bandHeight}
                   onChange={handlers.setBandHeight}
@@ -153,28 +150,55 @@ export function OverhangSection() {
                   max={taper.maxBand}
                   step={DESIGNER_CONSTRAINTS.TAPER_BAND_STEP}
                   unit="mm"
+                  stacked={stacked}
                 />
-                {sides.map(({ side, label }) =>
-                  taper.maxPerSide[side] > 0 ? (
-                    <div
-                      key={side}
-                      onMouseEnter={() => handlers.setHovered(side)}
-                      onMouseLeave={() => handlers.setHovered(null)}
-                      onFocus={() => handlers.setHovered(side)}
-                      onBlur={() => handlers.setHovered(null)}
-                    >
-                      <SliderInput
-                        label={label}
-                        value={taper.sides[side]}
-                        onChange={(v) => handlers.setTaperSide(side, v)}
-                        min={DESIGNER_CONSTRAINTS.MIN_TAPER}
-                        max={taper.maxPerSide[side]}
-                        step={DESIGNER_CONSTRAINTS.TAPER_STEP}
-                        unit="mm"
-                      />
-                    </div>
-                  ) : null
-                )}
+
+                {/* Labelled group: the four side names repeat the overhang
+                    block above, so the heading has to be programmatically
+                    attached, not just visually adjacent. */}
+                <div
+                  role="group"
+                  aria-labelledby={taperSidesHeadingId}
+                  className="flex flex-col gap-2"
+                >
+                  <p
+                    id={taperSidesHeadingId}
+                    className="mt-1 text-[11px] font-medium text-content-tertiary"
+                  >
+                    {t('binDesigner.overhang.taper.sidesHeading')}
+                  </p>
+                  {sides.map(({ side, label }) => {
+                    const sideMax = taper.maxPerSide[side];
+                    return (
+                      <div
+                        key={side}
+                        onMouseEnter={() => handlers.setHovered(side)}
+                        onMouseLeave={() => handlers.setHovered(null)}
+                        onFocus={() => handlers.setHovered(side)}
+                        onBlur={() => handlers.setHovered(null)}
+                      >
+                        <OverhangSliderRow
+                          label={label}
+                          srLabel={t('binDesigner.overhang.taper.sideAria', { side: label })}
+                          value={taper.sides[side]}
+                          onChange={(v) => handlers.setTaperSide(side, v)}
+                          min={DESIGNER_CONSTRAINTS.MIN_TAPER}
+                          max={sideMax}
+                          step={DESIGNER_CONSTRAINTS.TAPER_STEP}
+                          unit="mm"
+                          stacked={stacked}
+                          cap={t('binDesigner.overhang.taper.sideCap', {
+                            value: taper.sides[side],
+                            max: sideMax,
+                          })}
+                          inertReason={
+                            sideMax > 0 ? undefined : t('binDesigner.overhang.taper.sideNoOverhang')
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </>
             )}
           </div>

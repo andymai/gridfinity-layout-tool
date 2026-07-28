@@ -6,10 +6,10 @@
  * on blur or Enter, and cancels on Escape.
  */
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import { Slider } from '../Slider';
 import { cn } from '../cn';
-import { interactiveTransition } from '../variants';
+import { EditableValueBadge } from './EditableValueBadge';
 
 export interface SliderInputProps {
   /** Display label */
@@ -47,58 +47,9 @@ export function SliderInput({
   highlight = false,
 }: SliderInputProps) {
   const id = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
-
+  // Mirrors the badge's edit state purely to target <label htmlFor> at the
+  // input that replaces the badge while typing.
   const [isEditing, setIsEditing] = useState(false);
-  const [localDraft, setLocalDraft] = useState('');
-  const skipBlurCommit = useRef(false);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const commitValue = useCallback(() => {
-    setIsEditing(false);
-    const raw = Number(localDraft);
-    if (isNaN(raw) || localDraft.trim() === '') {
-      return;
-    }
-    const clamped = Math.min(max, Math.max(min, raw));
-    // Snap relative to min so values align to the step grid
-    const snapped = min + Math.round((clamped - min) / step) * step;
-    const final = Number(snapped.toFixed(3));
-    if (final !== value) {
-      onChange(final);
-    }
-  }, [localDraft, value, min, max, step, onChange]);
-
-  const handleBlur = useCallback(() => {
-    if (skipBlurCommit.current) {
-      skipBlurCommit.current = false;
-      return;
-    }
-    commitValue();
-  }, [commitValue]);
-
-  const startEditing = () => {
-    if (disabled) return;
-    setLocalDraft(String(value));
-    setIsEditing(true);
-  };
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      skipBlurCommit.current = true;
-      commitValue();
-      (e.target as HTMLInputElement).blur();
-    } else if (e.key === 'Escape') {
-      skipBlurCommit.current = true;
-      setIsEditing(false);
-      (e.target as HTMLInputElement).blur();
-    }
-  };
 
   const infoId = `${id}-info`;
   const valueText = unit ? `${value} ${unit}` : String(value);
@@ -120,44 +71,19 @@ export function SliderInput({
           {label}
         </label>
 
-        <div className="flex items-center gap-1">
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              id={id}
-              type="text"
-              inputMode="decimal"
-              value={localDraft}
-              onChange={(e) => setLocalDraft(e.target.value)}
-              onBlur={handleBlur}
-              onKeyDown={handleInputKeyDown}
-              disabled={disabled}
-              className={cn(
-                'w-16 rounded-md bg-surface px-2 py-0.5 text-right text-sm font-semibold tabular-nums text-content outline-none',
-                'ring-2 ring-accent'
-              )}
-              aria-label={label}
-              aria-describedby={info ? infoId : undefined}
-            />
-          ) : (
-            <button
-              id={id}
-              type="button"
-              onClick={startEditing}
-              disabled={disabled}
-              className={cn(
-                'rounded-md bg-surface-secondary px-2 py-0.5 text-sm font-semibold tabular-nums text-content',
-                interactiveTransition,
-                !disabled && 'cursor-text hover:ring-1 hover:ring-stroke-subtle',
-                disabled && 'cursor-not-allowed'
-              )}
-              aria-label={`${label}: ${valueText}`}
-            >
-              {value}
-            </button>
-          )}
-          {unit && <span className="text-xs text-content-tertiary">{unit}</span>}
-        </div>
+        <EditableValueBadge
+          label={label}
+          value={value}
+          onChange={onChange}
+          min={min}
+          max={max}
+          step={step}
+          unit={unit}
+          disabled={disabled}
+          id={id}
+          describedBy={info ? infoId : undefined}
+          onEditingChange={setIsEditing}
+        />
       </div>
 
       {info && (
