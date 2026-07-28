@@ -1,0 +1,28 @@
+SECURITY.md
+  s_be6d478db17cd2::t_e58c88ed90255b 52-57
+osv-scanner.toml
+  s_be6d478db17cd2::t_3d9a6e6e17cb28 1-30
+package.json
+  s_be6d478db17cd2::t_6945c3a676f8b6 198
+pnpm-workspace.yaml
+  s_be6d478db17cd2::t_f2cd68310a4195 90-93
+  s_be6d478db17cd2::t_eb0ce2c435b27c 32-41
+pnpm-lock.yaml
+  s_be6d478db17cd2::t_7fe7204070d3ed 35,247-248,3112-3114,4191-4192,8684,9832,10148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f24414e5b473f594e3be5f6859e3439dfe21b243",
+  "prompts": {},
+  "sessions": {
+    "s_be6d478db17cd2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b506bd77-38e2-4c47-ba05-8268ea8c230c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
