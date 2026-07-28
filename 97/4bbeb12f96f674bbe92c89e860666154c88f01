@@ -1,0 +1,22 @@
+src/shared/hooks/README.hooks.md
+  s_806094f9ffe7bd::t_2760f0b98908ab 70-71
+src/App.tsx
+  s_806094f9ffe7bd::t_b50e6d90e5ca50 264,267
+  s_806094f9ffe7bd::t_7ab06bc3fde625 134-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "974bbeb12f96f674bbe92c89e860666154c88f01",
+  "prompts": {},
+  "sessions": {
+    "s_806094f9ffe7bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85eca049-658c-476d-a58a-53ce5189fc9a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
