@@ -1,0 +1,23 @@
+SECURITY.md
+  s_be6d478db17cd2::t_8ab0ab597501a7 57-63
+pnpm-workspace.yaml
+  s_be6d478db17cd2::t_138679b97eb3a1 76-81,83-86
+pnpm-lock.yaml
+  s_be6d478db17cd2::t_a492048d25d013 21,3075-3077,3107-3109,3266-3268,4561-4563,8000,8647-8648,8669-8673,8820-8821,9187,10140-10143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "7d169b3923a1cc9c10375706b9584000df7a5399",
+  "prompts": {},
+  "sessions": {
+    "s_be6d478db17cd2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b506bd77-38e2-4c47-ba05-8268ea8c230c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
