@@ -1,0 +1,29 @@
+src/shared/hooks/useKeyboard.test.ts
+  s_806094f9ffe7bd::t_2458cbeef335d9 1500
+  s_806094f9ffe7bd::t_e7ca5ffedd861b 1465-1466,1468-1473,1476-1499,1501-1527
+  s_806094f9ffe7bd::t_398a2e3986986d 1467,1474-1475
+src/shared/hooks/README.hooks.md
+  s_806094f9ffe7bd::t_b6db2bc752779b 70-71
+src/App.tsx
+  s_806094f9ffe7bd::t_d254fa56524c61 259-261
+src/shared/hooks/useKeyboard.ts
+  s_806094f9ffe7bd::t_1a8560fc2f839b 242,245
+  s_806094f9ffe7bd::t_58abf0237fccf8 27-32
+  s_806094f9ffe7bd::t_9f6514f238479d 100-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d677517e36b62133a1ec8d7c09ca1979a51ad190",
+  "prompts": {},
+  "sessions": {
+    "s_806094f9ffe7bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85eca049-658c-476d-a58a-53ce5189fc9a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
