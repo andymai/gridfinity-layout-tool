@@ -235,6 +235,148 @@ describe('lid generation and export scenarios', () => {
     expect(withBB.minY).toBeGreaterThanOrEqual(withoutBB.minY - tolerance);
   });
 
+  describe('stacking-lip-only top (#2930)', () => {
+    const DIMS = { width: 3, depth: 2, height: 3 } as const;
+    /** Z of the lip's knife edge — see the profile arithmetic below. */
+    const LIP_EDGE_Z = 4.5;
+
+    /** Leftmost point of the lip's knife edge. Locates the pocket itself,
+     *  which the bounding box can't: that only sees the slab. */
+    function lipEdgeMinX(vertices: ArrayLike<number>): number {
+      let min = Infinity;
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (Math.abs(vertices[i + 2] - LIP_EDGE_Z) > 0.05) continue;
+        min = Math.min(min, vertices[i]);
+      }
+      return min;
+    }
+
+    it('drops the interior grid but keeps the lid Z extent and footprint', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const grid = generateLid(makeParams({ stackableTop: true }, DIMS));
+      const lipOnly = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, DIMS));
+      expect(grid).not.toBeNull();
+      expect(lipOnly).not.toBeNull();
+      assertStructurallyValid(lipOnly!, '3x2 lip-only lid');
+
+      // One pocket instead of six — strictly less geometry on the top face.
+      expect(lipOnly!.triangleCount).toBeLessThan(grid!.triangleCount);
+
+      // Same footprint and same depth below the floor — the change is
+      // confined to the top face.
+      const g = boundingBox(grid!.vertices);
+      const l = boundingBox(lipOnly!.vertices);
+      expect(l.minZ).toBeCloseTo(g.minZ, 3);
+      expect(l.maxX - l.minX).toBeCloseTo(g.maxX - g.minX, 3);
+      expect(l.maxY - l.minY).toBeCloseTo(g.maxY - g.minY, 3);
+
+      // The grid's 5mm high-water mark is its INTERIOR ridges — knife edges
+      // where two cells' tapers meet. Its outer rim tops out lower, and that
+      // rim is exactly what lip-only keeps: SOCKET_HEIGHT, less the pocket's
+      // CLEARANCE/2 vertical run (0.25mm), less the LID_FIT_CLEARANCE (0.25mm)
+      // the lid outline sits inside the socket grid, down a 45° taper. A lip
+      // ending anywhere else would not be the full socket profile.
+      expect(g.maxZ).toBeCloseTo(5, 3);
+      expect(l.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
+    });
+
+    it('is a no-op at 1x1, where the grid is already a single pocket', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const one = { width: 1, depth: 1, height: 2 } as const;
+      const grid = generateLid(makeParams({ stackableTop: true }, one));
+      const lipOnly = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, one));
+      expect(grid).not.toBeNull();
+      expect(lipOnly).not.toBeNull();
+      expect(lipOnly!.triangleCount).toBe(grid!.triangleCount);
+    });
+
+    it('follows the polygon outline on a cellMask lid', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const lipOnly = generateLid(
+        makeParams(
+          { stackableTop: true, stackLipOnly: true },
+          { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK }
+        )
+      );
+      expect(lipOnly).not.toBeNull();
+      assertStructurallyValid(lipOnly!, 'L-shape lip-only lid');
+      // Lip follows the L, so the removed corner still has no material: the
+      // footprint stays the 3x3 bounding box, not a grown rectangle.
+      const bb = boundingBox(lipOnly!.vertices);
+      expect(bb.maxX - bb.minX).toBeLessThan(3 * DEFAULT_BIN_PARAMS.gridUnitMm + 0.5);
+      expect(bb.maxY - bb.minY).toBeLessThan(3 * DEFAULT_BIN_PARAMS.gridUnitMm + 0.5);
+    });
+
+    it('keeps the lip on the socket grid under asymmetric overhang', async () => {
+      // The slab follows the lid's overhang-shifted perimeter, but the pocket
+      // must stay on the nominal socket grid — that's what an upper bin's feet
+      // sit on. Cutting it from the shifted perimeter would drag the lip
+      // sideways with the overhang and the bin would no longer seat.
+      const { generateLid } = await import('./lidOrchestrator');
+      const plain = generateLid(makeParams({ stackableTop: true, stackLipOnly: true }, DIMS));
+      const shifted = generateLid(
+        makeParams(
+          { stackableTop: true, stackLipOnly: true },
+          { ...DIMS, overhang: { left: 0, right: 8, front: 0, back: 0 } }
+        )
+      );
+      expect(plain).not.toBeNull();
+      expect(shifted).not.toBeNull();
+      assertStructurallyValid(shifted!, 'overhang lip-only lid');
+
+      // Overhang grows the perimeter on +X only, so the -X lip is untouched.
+      // A perimeter-anchored pocket would have moved with it, pushing the -X
+      // knife edge inboard (and off Z=4.5 entirely) — probe the edge rather
+      // than the bounding box, which only sees the slab.
+      expect(lipEdgeMinX(shifted!.vertices)).toBeCloseTo(lipEdgeMinX(plain!.vertices), 2);
+
+      // The +X strip beyond the socket grid is never reached by the pocket, so
+      // it stays a full-height ledge — same as the per-cell path does today.
+      expect(boundingBox(shifted!.vertices).maxZ).toBeCloseTo(5, 3);
+    });
+
+    it('spans a fractional footprint as one pocket', async () => {
+      // The per-cell path decomposes 2.5u into 1u + 1u + 0.5u sub-cells;
+      // lip-only skips `forEachCell` entirely, so the half-unit edge must
+      // still come out as plain footprint rather than a dropped cell.
+      const { generateLid } = await import('./lidOrchestrator');
+      const params = makeParams(
+        { stackableTop: true, stackLipOnly: true },
+        { width: 2.5, depth: 2, height: 3 }
+      );
+      const lipOnly = generateLid(params);
+      expect(lipOnly).not.toBeNull();
+      assertStructurallyValid(lipOnly!, '2.5x2 lip-only lid');
+      const bb = boundingBox(lipOnly!.vertices);
+      expect(bb.maxX - bb.minX).toBeCloseTo(2.5 * params.gridUnitMm - 0.5, 1);
+      expect(bb.maxZ).toBeCloseTo(LIP_EDGE_Z, 3);
+    });
+
+    it('splits off as a valid glue-on plate', async () => {
+      const { generateStackPlate } = await import('./lidOrchestrator');
+      const plate = generateStackPlate(
+        makeParams({ stackableTop: true, stackLipOnly: true, separateStackPlate: true }, DIMS)
+      );
+      expect(plate).not.toBeNull();
+      assertStructurallyValid(plate!, '3x2 lip-only baseplate');
+      const bb = boundingBox(plate!.vertices);
+      expect(bb.minZ).toBeGreaterThan(-0.5);
+      expect(bb.maxZ).toBeGreaterThan(4);
+      expect(bb.maxZ).toBeLessThan(6);
+    });
+
+    it('leaves the top flat when the stack top is off', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      // Persisted flag on but no stackable top — nothing to collapse, and the
+      // lid must not sprout a lip from it.
+      const flat = generateLid(makeParams({ stackableTop: false, stackLipOnly: true }, DIMS));
+      const plain = generateLid(makeParams({ stackableTop: false }, DIMS));
+      expect(flat).not.toBeNull();
+      expect(plain).not.toBeNull();
+      expect(flat!.triangleCount).toBe(plain!.triangleCount);
+    });
+  });
+
   describe('separate stack-grid baseplate', () => {
     it('generateStackPlate returns null unless the lid opts in', async () => {
       const { generateStackPlate } = await import('./lidOrchestrator');

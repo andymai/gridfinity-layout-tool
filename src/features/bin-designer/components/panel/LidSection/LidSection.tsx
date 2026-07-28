@@ -281,6 +281,16 @@ export function LidSection() {
             {state.topSurface === 'stackable' && (
               <div className="space-y-2">
                 <Switch
+                  label={t('binDesigner.lid.stackLipOnly')}
+                  checked={state.stackLipOnly}
+                  onChange={handlers.toggleStackLipOnly}
+                />
+                <Hint>
+                  {state.stackLipOnly
+                    ? t('binDesigner.lid.stackLipOnlyHint')
+                    : t('binDesigner.lid.stackGridHint')}
+                </Hint>
+                <Switch
                   label={t('binDesigner.lid.magnetHoles')}
                   checked={state.magnetHoles}
                   onChange={handlers.toggleMagnetHoles}

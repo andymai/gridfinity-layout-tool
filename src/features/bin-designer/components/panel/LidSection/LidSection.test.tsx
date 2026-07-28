@@ -195,6 +195,7 @@ describe('LidSection', () => {
           ...DEFAULT_BIN_PARAMS.lid,
           enabled: true,
           stackableTop: true,
+          stackLipOnly: true,
           magnetHoles: true,
           separateStackPlate: true,
         },
@@ -203,6 +204,7 @@ describe('LidSection', () => {
       fireEvent.click(screen.getByRole('radio', { name: 'Flat' }));
       const lid = useDesignerStore.getState().params.lid;
       expect(lid.stackableTop).toBe(false);
+      expect(lid.stackLipOnly).toBe(false);
       expect(lid.magnetHoles).toBe(false);
       expect(lid.separateStackPlate).toBe(false);
     });
@@ -226,6 +228,7 @@ describe('LidSection', () => {
       expect(
         screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' })
       ).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Stacking lip only' })).toBeInTheDocument();
     });
 
     it('hides stackable sub-toggles when top surface is flat', () => {
@@ -240,6 +243,15 @@ describe('LidSection', () => {
       fireEvent.click(screen.getByRole('switch', { name: 'Separate baseplate (glue-on)' }));
       expect(useDesignerStore.getState().params.lid.separateStackPlate).toBe(true);
       expect(screen.getByText(/Glue it onto the lid/i)).toBeInTheDocument();
+    });
+
+    it('toggles the lip-only stack top and swaps the hint (#2930)', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true } });
+      render(<LidSection />);
+      expect(screen.getByText(/full grid of sockets/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('switch', { name: 'Stacking lip only' }));
+      expect(useDesignerStore.getState().params.lid.stackLipOnly).toBe(true);
+      expect(screen.getByText(/One lip around the edge/i)).toBeInTheDocument();
     });
 
     it('reveals tray dimensions under Advanced when Tray is selected', () => {
@@ -379,7 +391,7 @@ describe('LidSection', () => {
       });
       render(<LidSection />);
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
-      expect(screen.getByText(/stack grid owns/)).toBeInTheDocument();
+      expect(screen.getByText(/stacking surface owns/)).toBeInTheDocument();
     });
 
     it('replaces the input with a reason for custom-shape (cellMask) bins', () => {

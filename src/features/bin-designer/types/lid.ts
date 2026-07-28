@@ -275,6 +275,19 @@ export interface LidConfig {
   readonly attachment: LidAttachment;
   /** Include Gridfinity stack-grid pattern on top of lid (other bins stack on it). */
   readonly stackableTop: boolean;
+  /**
+   * Cut ONE pocket spanning the whole footprint instead of one per grid cell
+   * (issue #2930) — the lid keeps a perimeter stacking lip but loses the
+   * interior grid ridges. Requires `stackableTop`.
+   *
+   * Same baseplate-spec taper on the outside, so an upper bin still seats and
+   * registers; it just locates on the outer lip rather than cell-by-cell. On a
+   * multi-unit lid that trades some lateral registration for a clear top face
+   * and noticeably less filament. Identical geometry either way at 1×1.
+   *
+   * NB: unrelated to `base.stackingLip`, which is the BIN's own top-rim lip.
+   */
+  readonly stackLipOnly: boolean;
   /** Include magnet holes in the lid (uses bin's BaseConfig magnetDiameter).
    *  Requires `stackableTop`: pockets only do something when a bin can
    *  stack on the lid above them. */
@@ -359,6 +372,8 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   // so enabling a lid without touching the mode still clicks shut.
   attachment: 'clickRails',
   stackableTop: false,
+  // Full per-cell grid, so every pre-#2930 design regenerates byte-identically.
+  stackLipOnly: false,
   magnetHoles: false,
   separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
