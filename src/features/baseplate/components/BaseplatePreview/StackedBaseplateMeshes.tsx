@@ -72,6 +72,7 @@ export function StackedBaseplateMeshes({
     drawerDepth,
     gridUnitMm,
     gridUnitMmY,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -81,6 +82,7 @@ export function StackedBaseplateMeshes({
       drawerDepth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
+      socketHeightMm: s.layout.socketHeightMm,
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -104,14 +106,19 @@ export function StackedBaseplateMeshes({
       nozzleSizeMm,
       undefined,
       undefined,
-      gridUnitMmY
+      gridUnitMmY,
+      socketHeightMm
     );
     const groups = stackGroupsFromTiling(
       tiling,
       fullParams,
       stack.copies ?? STACK_PRINT_DEFAULT_COPIES
     );
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
+    const cap = stackHeightCap(
+      maxPrintHeightMm,
+      socketHeightMm ?? GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      stack.gapMm
+    );
     const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
@@ -173,6 +180,7 @@ export function StackedBaseplateMeshes({
     drawerDepth,
     gridUnitMm,
     gridUnitMmY,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleSizeMm,

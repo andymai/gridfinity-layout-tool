@@ -21,6 +21,30 @@ const base = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBasepla
   ...overrides,
 });
 
+describe('cache keys — base profile (socketHeightMm)', () => {
+  it('keeps the default-profile key byte-identical whether socketHeightMm is unset or 5', () => {
+    expect(meshCacheKey(base(), false)).toBe(meshCacheKey(base({ socketHeightMm: 5 }), false));
+    expect(slabPocketsCacheKey(base(), false)).toBe(
+      slabPocketsCacheKey(base({ socketHeightMm: 5 }), false)
+    );
+  });
+
+  it('busts the mesh cache when the profile is reduced (no stale plate height)', () => {
+    const standard = meshCacheKey(base(), false);
+    expect(meshCacheKey(base({ socketHeightMm: 3 }), false)).not.toBe(standard);
+    expect(meshCacheKey(base({ socketHeightMm: 2 }), false)).not.toBe(standard);
+    expect(meshCacheKey(base({ socketHeightMm: 3 }), false)).not.toBe(
+      meshCacheKey(base({ socketHeightMm: 2 }), false)
+    );
+  });
+
+  it('busts the slab+pockets cache when the profile is reduced', () => {
+    const standard = slabPocketsCacheKey(base(), false);
+    expect(slabPocketsCacheKey(base({ socketHeightMm: 3 }), false)).not.toBe(standard);
+    expect(slabPocketsCacheKey(base({ socketHeightMm: 2 }), false)).not.toBe(standard);
+  });
+});
+
 describe('meshCacheKey — connector fit offset (issue #2024)', () => {
   // The cache key must track CLAMPED groove geometry, not the raw offset, so
   // offsets that produce identical geometry reuse one cache entry.

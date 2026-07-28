@@ -7,7 +7,13 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
-import { HEIGHT_UNIT, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
+import {
+  HEIGHT_UNIT,
+  CLEARANCE,
+  LIP_SMALL_TAPER,
+  MAGNET_FLOOR,
+  resolveSocketHeight,
+} from '../generatorConstants';
 import {
   buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
@@ -53,7 +59,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
   const lightweight = (params.base.lightweight || isSpacer) && !isFlat;
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  // Base-profile depth (low-profile toggle). Standard 5mm unless the owning
+  // layout set a smaller value; a shorter socket grows the usable interior for
+  // the same total height.
+  const socketHeightMm = resolveSocketHeight(params);
+  const wallHeight = isFlat ? totalHeight : totalHeight - socketHeightMm;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
@@ -92,8 +102,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // crafted share payload from producing a disconnected solid. Same shape of
   // guard as `isFlat`, which has no socket to drill at all.
   const noAttachment = isFlat || isSpacer;
+  // A magnet needs its full depth plus a retaining floor within the socket. A
+  // low-profile base too thin to hold one auto-disables magnet holes (the UI
+  // surfaces a note); screws are through-cut and unaffected.
+  const magnetFits = socketHeightMm >= params.base.magnetDepth + MAGNET_FLOOR;
   const withMagnet =
-    !noAttachment && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
+    !noAttachment &&
+    magnetFits &&
+    (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
     !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
@@ -216,6 +232,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     gridUnitMmY: gridUnitY,
     wallHeight,
     totalHeight,
+    socketHeightMm,
     collarHeight,
     isFlat,
     halfSockets,

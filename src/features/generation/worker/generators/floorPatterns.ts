@@ -31,7 +31,7 @@ import { filledSocketCells } from './socketBuilder';
 import { magnetPositionsForCell } from './baseplateMagnets';
 import { forEachCell } from './cellDecomposition';
 import { FLOOR_PATTERN_BORDER, floorWindowInset } from './floorPatternWindow';
-import { CLEARANCE, COPLANAR_MARGIN, SOCKET_HEIGHT } from './generatorConstants';
+import { CLEARANCE, COPLANAR_MARGIN } from './generatorConstants';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { BinDimensions } from './pipeline/types';
 
@@ -254,7 +254,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   // own faces, which OCCT resolves into non-manifold topology.
   return {
     windows,
-    cutZ0: (dim.isFlat ? 0 : -SOCKET_HEIGHT) - COPLANAR_MARGIN,
+    cutZ0: (dim.isFlat ? 0 : -dim.socketHeightMm) - COPLANAR_MARGIN,
     cutZ1: params.wallThickness + COPLANAR_MARGIN,
   };
 }

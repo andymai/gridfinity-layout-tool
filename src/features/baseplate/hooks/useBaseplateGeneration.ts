@@ -205,6 +205,9 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // Layout-scoped magnet anchor (edge vs legacy center). Changes hole XY on
     // grids >42mm, so it must re-trigger BREP like the other magnet params.
     magnetAnchor: state.layout.magnetAnchor,
+    // Layout-scoped base-profile depth (low-profile toggle). Changes slab height
+    // + pocket depth and can auto-disable magnets, so it must re-trigger BREP.
+    socketHeightMm: state.layout.socketHeightMm,
     // Solid floor changes slab height + through-cut, and its thickness sets how
     // much taller the plate gets — both must re-trigger BREP. The thickness only
     // bites when the floor is on, so fold it out otherwise to avoid needless
@@ -296,6 +299,7 @@ export function useBaseplateGeneration(): void {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    socketHeightMm,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,
@@ -840,7 +844,8 @@ export function useBaseplateGeneration(): void {
           useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
           layoutState.layout.drawer.outline,
           layoutState.layout.magnetAnchor,
-          effectiveGridUnitMmY(layoutState.layout)
+          effectiveGridUnitMmY(layoutState.layout),
+          layoutState.layout.socketHeightMm
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -895,7 +900,8 @@ export function useBaseplateGeneration(): void {
       nozzleSizeMm,
       drawerOutline,
       magnetAnchor,
-      gridUnitMmY
+      gridUnitMmY,
+      socketHeightMm
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -909,6 +915,7 @@ export function useBaseplateGeneration(): void {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    socketHeightMm,
     printBedSize,
     printBedDepth,
     fractionalEdgeX,

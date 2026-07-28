@@ -19,12 +19,24 @@ import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { pitchKeySegments } from './gridPitch';
 import {
   SIZE,
+  SOCKET_HEIGHT,
+  resolveSocketHeight,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
   SNAP_CLIP_CLEARANCE,
   effectiveClearance,
   baseplateFloorDepth,
 } from './generatorConstants';
+
+/**
+ * Low-profile base changes the slab height + pocket depth, so it must bust both
+ * baseplate caches. Appended only for a non-standard depth, so default-profile
+ * plates keep their pre-feature cache identity (no needless invalidation).
+ */
+function socketHeightSegments(params: ResolvedBaseplateParams): string[] {
+  const h = resolveSocketHeight(params);
+  return h === SOCKET_HEIGHT ? [] : [`sh:${quantize(h)}`];
+}
 
 export function meshCacheKey(
   params: ResolvedBaseplateParams,
@@ -132,7 +144,8 @@ export function meshCacheKey(
     forExport,
     // Draft preview skips the lightweight floor cut, so its mesh differs from
     // the full-geometry build — but only when that cut would actually run.
-    geometryAffectingDraft
+    geometryAffectingDraft,
+    ...socketHeightSegments(params)
   );
 }
 
@@ -177,6 +190,7 @@ export function slabPocketsCacheKey(
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
-    forExport
+    forExport,
+    ...socketHeightSegments(params)
   );
 }

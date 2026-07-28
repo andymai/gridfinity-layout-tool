@@ -2,7 +2,7 @@
  * Stack-grid pocket cutter for the lid's optional Gridfinity-spec top
  * surface.
  *
- * Builds a `SOCKET_HEIGHT`-tall slab over the lid outline, then cuts the
+ * Builds a `socketHeightMm`-tall slab over the lid outline, then cuts the
  * baseplate-style tapered pocket per cell. Pocket dimensions match
  * `baseplateGenerator.buildPocketCutter` exactly so an upper bin's base
  * socket engages the lid the same way it engages a baseplate. The
@@ -19,7 +19,12 @@
 import { drawRoundedRectangle, unwrap, translate, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, Drawing, Sketch, ValidSolid } from 'brepjs';
 import { pocketCornerRadius } from './generatorConstants';
-import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
+import {
+  socketProfileSections,
+  socketBottomInset,
+  PROFILE_INSET_TOP,
+  PROFILE_INSET_BOT,
+} from './socketProfile';
 import { LID_COPLANAR_MARGIN, LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { type CellMask } from '@/shared/utils/cellMask';
 import { forEachCell } from './cellDecomposition';
@@ -27,13 +32,11 @@ import { buildMaskDrawingAtInset } from './maskPolygon';
 import { buildOutlineDrawing } from './lidProfile';
 import type { LidInputs } from './lidInputs';
 
-/** Insets at each Z breakpoint — same values as `baseplateGenerator`. */
-const STACK_INSET_TOP = 0;
-const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
 /** Inset at the pocket floor, per side — on a lip-only top this is how far the
  *  lip's inner face sits inside the nominal socket grid. `lidTextBuilder` sizes
- *  the text fit box from it. */
-export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+ *  the text fit box from it. Equals the standard (H=5) bottom inset; low
+ *  profiles taper differently but the lip text stays on the nominal grid. */
+export const STACK_INSET_BOT = PROFILE_INSET_BOT; // 2.95mm
 
 /** Floor for every inset-derived pocket dimension. The deepest inset is
  *  STACK_INSET_BOT (2.95mm per side), which a small enough cell or grid unit
@@ -41,40 +44,44 @@ export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 const MIN_POCKET_MM = 0.1;
 
 /**
- * Z breakpoints of the pocket profile, paired with their per-side inset — the
- * baseplate socket profile, walked top-down, with a coplanar cap at each end so
- * the cut bites cleanly through both slab faces.
+ * Loft a pocket from a per-inset outline, walking the shared
+ * {@link socketProfileSections} (the same profile the baseplate pocket and bin
+ * socket use) translated UP by `socketHeightMm` so the slab sits at
+ * Z ∈ [0, socketHeightMm] rather than the baseplate's Z ∈ [-socketHeightMm, 0].
+ * Sharing the profile guarantees an upper bin's socket engages the lid at any
+ * base-profile depth.
+ *
+ * `outlineAt` must return sections that share a vertex topology at every inset —
+ * a ruled loft can't bridge differing curve counts, which is why both callers
+ * floor their corner radius rather than let it reach zero.
  */
-const POCKET_PROFILE: readonly (readonly [z: number, inset: number])[] = [
-  [SOCKET_HEIGHT + LID_COPLANAR_MARGIN, STACK_INSET_TOP],
-  [SOCKET_HEIGHT, STACK_INSET_TOP],
-  [SOCKET_HEIGHT - CLEARANCE / 2, STACK_INSET_TOP],
-  [SOCKET_HEIGHT - SOCKET_BIG_TAPER, STACK_INSET_MID],
-  [SOCKET_HEIGHT - SOCKET_BIG_TAPER - (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH), STACK_INSET_MID],
-  [0, STACK_INSET_BOT],
-  [-LID_COPLANAR_MARGIN, STACK_INSET_BOT],
-];
+function loftPocket(socketHeightMm: number, outlineAt: (inset: number) => Drawing): Shape3D {
+  const TOP = socketHeightMm;
+  const sketchAt = (z: number, inset: number): Sketch =>
+    outlineAt(inset).sketchOnPlane('XY', z) as Sketch;
 
-/** `outlineAt` must return sections that share a vertex topology at every
- *  inset — a ruled loft can't bridge differing curve counts, which is why both
- *  callers floor their corner radius rather than let it reach zero. */
-function loftPocket(outlineAt: (inset: number) => Drawing): Shape3D {
-  const [first, ...rest] = POCKET_PROFILE.map(
-    ([z, inset]) => outlineAt(inset).sketchOnPlane('XY', z) as Sketch
-  );
-  return first.loftWith(rest, { ruled: true });
+  const s0 = sketchAt(TOP + LID_COPLANAR_MARGIN, PROFILE_INSET_TOP);
+  const sections: Sketch[] = [
+    ...socketProfileSections(socketHeightMm).map((sec) => sketchAt(sec.z + TOP, sec.inset)),
+    // Extend below the lid floor from the truncated profile's real bottom inset
+    // (not a hardcoded PROFILE_INSET_BOT) so a low profile doesn't leave a ledge.
+    sketchAt(-LID_COPLANAR_MARGIN, socketBottomInset(socketHeightMm)),
+  ];
+  return s0.loftWith(sections, { ruled: true });
 }
 
 /**
- * Build a single pocket cutter for one cell. Multi-section loft with
- * the same five sections + two coplanar caps that
- * `baseplateGenerator.buildPocketCutter` uses, just translated UP by
- * `SOCKET_HEIGHT` so the slab sits at Z ∈ [0, SOCKET_HEIGHT] rather
- * than the baseplate's Z ∈ [-SOCKET_HEIGHT, 0].
+ * Build a single pocket cutter for one cell. Uses the shared socket profile
+ * translated up by the base-profile depth so an upper bin's socket engages the
+ * lid the same way it engages a baseplate.
  */
-function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
+function buildLidStackPocketCutter(
+  cellW_mm: number,
+  cellD_mm: number,
+  socketHeightMm: number
+): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
-  return loftPocket((inset) =>
+  return loftPocket(socketHeightMm, (inset) =>
     drawRoundedRectangle(
       Math.max(cellW_mm - 2 * inset, MIN_POCKET_MM),
       Math.max(cellD_mm - 2 * inset, MIN_POCKET_MM),
@@ -94,12 +101,12 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
  * reason.
  */
 function buildStackLipCutter(inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm, gridUnitMmY, cellMask } = inputs;
+  const { cellsX, cellsY, gridUnitMm, gridUnitMmY, cellMask, socketHeightMm } = inputs;
   const totalW = cellsX * gridUnitMm;
   const totalD = cellsY * gridUnitMmY;
   const cornerR = pocketCornerRadius(totalW, totalD);
 
-  return loftPocket((inset) => {
+  return loftPocket(socketHeightMm, (inset) => {
     const radius = Math.max(cornerR - inset, LID_MIN_CORNER_RADIUS);
     return cellMask
       ? buildMaskDrawingAtInset(cellMask, { x: gridUnitMm, y: gridUnitMmY }, inset, radius)
@@ -131,17 +138,17 @@ export function isCellFilled(mask: CellMask, cellX: number, cellY: number): bool
 }
 
 export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm, gridUnitMmY } = inputs;
+  const { cellsX, cellsY, gridUnitMm, gridUnitMmY, socketHeightMm } = inputs;
   // Non-square grids scale columns by X and rows by Y; the pocket cells must
   // mate with the (equally non-square) sockets of a bin stacked on top.
   const pitch = { x: gridUnitMm, y: gridUnitMmY };
 
-  // 1. Slab — lid's outer footprint extruded UP by SOCKET_HEIGHT (5mm,
-  //    matching the baseplate's slab depth). `buildOutlineDrawing(inputs, 0)`
+  // 1. Slab — lid's outer footprint extruded UP by the base-profile depth
+  //    (matching the baseplate's slab depth). `buildOutlineDrawing(inputs, 0)`
   //    gives the full perimeter — rounded for plain bins, polygon for
   //    cellMask bins.
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
-  let slab: Shape3D = scope.register(slabSketch.extrude(SOCKET_HEIGHT));
+  let slab: Shape3D = scope.register(slabSketch.extrude(socketHeightMm));
 
   // 2. Pocket cutters. Lip-only (#2930) cuts a single footprint-wide pocket,
   //    leaving just the perimeter lip. Otherwise one per filled cell:
@@ -166,7 +173,7 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
           const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMmY / 2) / gridUnitMmY);
           if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
         }
-        const pocket = buildLidStackPocketCutter(cellW, cellD);
+        const pocket = buildLidStackPocketCutter(cellW, cellD, socketHeightMm);
         const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
         pocket.delete();
         pockets.push(positioned);

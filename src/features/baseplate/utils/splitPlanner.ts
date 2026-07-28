@@ -1133,6 +1133,13 @@ export function pieceToBaseplateParams(
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,
+    // Layout-scoped, resolved-at-generation fields that must reach every split
+    // piece or the piece falls back to defaults: the magnet anchor shifts hole
+    // XY on >42mm grids, and the base-profile depth sets slab height + pocket
+    // depth. Both are rotation-invariant (anchor is symmetric across all four
+    // sides; socket height is a Z-axis property), so they copy straight through.
+    magnetAnchor: parentParams.magnetAnchor,
+    socketHeightMm: parentParams.socketHeightMm,
     paddingLeft: rot ? piece.paddingRight : piece.paddingLeft,
     paddingRight: rot ? piece.paddingLeft : piece.paddingRight,
     paddingFront: rot ? piece.paddingBack : piece.paddingFront,

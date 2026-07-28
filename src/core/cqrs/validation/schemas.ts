@@ -246,6 +246,9 @@ const layoutSetMagnetAnchorSchema = z.object({ anchor: z.enum(['edge', 'center']
 /** layout.setHeightUnitMm */
 const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 
+/** layout.setSocketHeightMm */
+const layoutSetSocketHeightMmSchema = z.object({ mm: positiveMm });
+
 /** Baseplate params schema */
 // Max = gridUnitMm/2 (capped at 200mm) + max padding (100mm). UI derives a tighter bound per-layout.
 const cornerRadiusMm = z.number().min(0).max(200);
@@ -330,6 +333,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setGridUnitMmY': layoutSetGridUnitMmYSchema,
   'layout.setMagnetAnchor': layoutSetMagnetAnchorSchema,
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
+  'layout.setSocketHeightMm': layoutSetSocketHeightMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,
 

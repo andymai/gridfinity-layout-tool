@@ -26,6 +26,51 @@ describe('buildFullParams', () => {
     expect(result.paddingBack).toBe(4.0);
   });
 
+  describe('base profile (socketHeightMm)', () => {
+    it('leaves socketHeightMm undefined and magnets on at the standard profile', () => {
+      const result = buildFullParams(storedBase, 10, 8, 42, 'end', 'end');
+      expect(result.socketHeightMm).toBeUndefined();
+      expect(result.magnetHoles).toBe(true);
+    });
+
+    it('injects the socket height and keeps magnets where they fit (Low = 3mm)', () => {
+      // magnetDepth 2.4 + retaining floor 0.5 = 2.9 <= 3, so magnets still fit.
+      const result = buildFullParams(
+        storedBase,
+        10,
+        8,
+        42,
+        'end',
+        'end',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        3
+      );
+      expect(result.socketHeightMm).toBe(3);
+      expect(result.magnetHoles).toBe(true);
+    });
+
+    it('auto-disables magnets at Minimal (2mm) — too thin for depth + retaining floor', () => {
+      const result = buildFullParams(
+        storedBase,
+        10,
+        8,
+        42,
+        'end',
+        'end',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        2
+      );
+      expect(result.socketHeightMm).toBe(2);
+      expect(result.magnetHoles).toBe(false);
+    });
+  });
+
   it('forwards overTileHalfGrid when over-tile is on', () => {
     const result = buildFullParams(
       { ...storedBase, overTile: true, overTileHalfGrid: true },

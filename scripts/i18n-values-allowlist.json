@@ -97,6 +97,8 @@
     "binDesigner.shape.preset.rectangle",
     "binDesigner.shape.preset.t",
     "binDesigner.shape.preset.u",
+    "binDesigner.socketHeightMinimal",
+    "binDesigner.socketHeightStandard",
     "binDesigner.slotDirection",
     "binDesigner.slotHorizontal",
     "binDesigner.slotVertical",

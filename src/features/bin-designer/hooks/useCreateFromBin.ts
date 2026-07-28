@@ -160,6 +160,7 @@ export function useCreateFromBin(): void {
       fractionalEdgeManualY: false,
       gridUnitMm: layoutState.layout.gridUnitMm,
       heightUnitMm: layoutState.layout.heightUnitMm,
+      socketHeightMm: layoutState.layout.socketHeightMm,
     };
 
     // Set the dimensions (don't use setParams as it pushes to history)

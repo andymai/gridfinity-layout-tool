@@ -54,6 +54,14 @@ export interface BinParams {
   readonly nozzleSizeMm?: number;
   /** Height unit size in mm (default 7mm per Gridfinity spec) */
   readonly heightUnitMm: number;
+  /**
+   * Base-profile (socket) depth in mm — the low-profile toggle. Like
+   * {@link magnetAnchor}, injected from the owning layout at generation time
+   * (the layout is the source of truth). Undefined ⇒ the standard 5mm profile.
+   * A smaller value shortens the base, growing the usable interior for the same
+   * total height; the baseplate pocket shrinks in lockstep so bins still seat.
+   */
+  readonly socketHeightMm?: number;
   /** Wall thickness in mm (default 1.2) */
   readonly wallThickness: number;
   readonly base: BaseConfig;

@@ -39,6 +39,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     drawerDepth,
     gridUnitMm,
     gridUnitMmY,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -48,6 +49,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       drawerDepth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
+      socketHeightMm: s.layout.socketHeightMm,
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -70,12 +72,16 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       nozzleSizeMm,
       undefined,
       undefined,
-      gridUnitMmY
+      gridUnitMmY,
+      socketHeightMm
     );
+    // Stacked plates nest into each other by the socket depth, so the per-plate
+    // stack pitch is the resolved base-profile height, not the fixed 5mm.
+    const socketH = socketHeightMm ?? GRIDFINITY_SPEC.SOCKET_HEIGHT;
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
+    const cap = stackHeightCap(maxPrintHeightMm, socketH, gapMm);
     return {
-      status: evaluateStackPrint(groups, cap, GRIDFINITY_SPEC.SOCKET_HEIGHT, maxPrintHeightMm),
+      status: evaluateStackPrint(groups, cap, socketH, maxPrintHeightMm),
       plan: planPhysicalStacks(groups, cap),
     };
   }, [
@@ -84,6 +90,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     drawerDepth,
     gridUnitMm,
     gridUnitMmY,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleSizeMm,

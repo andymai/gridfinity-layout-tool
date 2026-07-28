@@ -91,6 +91,7 @@ export interface Mutations {
   setGridUnitMmY: (mm: number | null) => void;
   setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
+  setSocketHeightMm: (mm: number) => void;
   setBaseplateParams: (params: StoredBaseplateParams) => void;
   setActiveBaseplate: (designId: BaseplateDesignId | null, params: StoredBaseplateParams) => void;
 

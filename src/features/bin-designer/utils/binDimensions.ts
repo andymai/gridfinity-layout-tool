@@ -14,6 +14,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { resolveSocketHeight } from '@/shared/printSettings/gridfinityGeometry';
 import type { BinParams, OverhangConfig } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -62,8 +63,9 @@ export function binDimensions(params: BinParams): BinDimensions {
   const innerD = outerD - 2 * params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const floorZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  const socketHeightMm = resolveSocketHeight(params);
+  const wallHeight = isFlat ? totalH : totalH - socketHeightMm;
+  const floorZ = isFlat ? 0 : socketHeightMm;
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 

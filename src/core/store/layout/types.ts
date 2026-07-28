@@ -89,6 +89,8 @@ export interface LayoutState {
   setGridUnitMmY: (mm: number | null) => void;
   setMagnetAnchor: (anchor: MagnetAnchor) => void;
   setHeightUnitMm: (mm: number) => void;
+  /** Set the base-profile (socket) depth in mm — clamped to [MIN, MAX]. */
+  setSocketHeightMm: (mm: number) => void;
 
   // History restoration (used by history store for undo/redo)
   restoreLayout: (layout: Layout) => void;

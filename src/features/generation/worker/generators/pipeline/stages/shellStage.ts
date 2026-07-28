@@ -104,7 +104,8 @@ export const shellStage: PipelineStage = {
         params.cellMask,
         openFloorDrawings,
         { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-        params.magnetAnchor
+        params.magnetAnchor,
+        dim.socketHeightMm
       );
       floorOpenings = liteBase.floorOpenings;
     }
@@ -295,7 +296,8 @@ export const shellStage: PipelineStage = {
           pitch,
           params.cellMask,
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-          params.magnetAnchor
+          params.magnetAnchor,
+          dim.socketHeightMm
         );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
@@ -309,7 +311,14 @@ export const shellStage: PipelineStage = {
         // mate with baseplate sockets), so they keep the default 'end'
         // decomposition regardless of fractionalEdge — only the seam tiling at a
         // fractional edge differs cosmetically, never the socket mating.
-        feet = buildOverhangFeet(params.width, params.depth, dim.overhang, pitch, true);
+        feet = buildOverhangFeet(
+          params.width,
+          params.depth,
+          dim.overhang,
+          pitch,
+          true,
+          dim.socketHeightMm
+        );
         if (feet) {
           const withFeet = unwrap(fuse(socket, feet));
           socket.delete();
@@ -350,7 +359,8 @@ export const shellStage: PipelineStage = {
             pitch,
             params.cellMask,
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
-            params.magnetAnchor
+            params.magnetAnchor,
+            dim.socketHeightMm
           )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
 
       return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };

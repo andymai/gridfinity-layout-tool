@@ -13,7 +13,7 @@ import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
 import { planPhysicalStacks } from './stackPrint';
-import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import { MAGNET_FLOOR, resolveSocketHeight } from '@/shared/printSettings/gridfinityGeometry';
 import {
   TONGUE_PROTRUSION,
   TONGUE_CLEARANCE,
@@ -21,8 +21,6 @@ import {
   SNAP_CLIP_CLEARANCE,
   effectiveClearance,
 } from '@/shared/constants/connectors';
-
-const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
 export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
@@ -407,7 +405,8 @@ function generatePieceTable(
       (params.edges?.front === 'join' && (isPaired || startMale) ? tongue : 0) +
       (params.edges?.back === 'join' && (isPaired || !startMale) ? tongue : 0);
     const heightMm =
-      SOCKET_HEIGHT + (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
+      resolveSocketHeight(parentParams) +
+      (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
 
     // Under preferIdenticalPieces opposite-corner pieces share a mesh, so one
     // of each pair is assembled rotated 180° around its center. Annotate the

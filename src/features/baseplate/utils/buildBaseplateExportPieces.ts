@@ -61,6 +61,8 @@ export interface BuildBaseplateExportInput {
   readonly gridUnitMmY?: number;
   /** Layout-scoped magnet anchor (default 'edge'). */
   readonly magnetAnchor?: MagnetAnchor;
+  /** Layout-scoped base-profile depth (undefined = standard 5mm). */
+  readonly socketHeightMm?: number;
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
   readonly printBedWidthMm: number;
@@ -175,6 +177,7 @@ export async function buildBaseplateExportPieces(
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     printBedWidthMm,
@@ -200,7 +203,8 @@ export async function buildBaseplateExportPieces(
     nozzleMm,
     drawerOutline,
     magnetAnchor,
-    gridUnitMmY
+    gridUnitMmY,
+    socketHeightMm
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
 
@@ -209,7 +213,7 @@ export async function buildBaseplateExportPieces(
   const copies = Math.max(1, Math.floor(stack?.copies ?? STACK_PRINT_DEFAULT_COPIES));
   const stackCap = stackHeightCap(
     printSettings.maxPrintHeightMm,
-    GRIDFINITY_SPEC.SOCKET_HEIGHT,
+    socketHeightMm ?? GRIDFINITY_SPEC.SOCKET_HEIGHT,
     stack?.gapMm ?? 0.2
   );
 
@@ -227,7 +231,8 @@ export async function buildBaseplateExportPieces(
     nozzleMm,
     drawerOutline,
     magnetAnchor,
-    gridUnitMmY
+    gridUnitMmY,
+    socketHeightMm
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

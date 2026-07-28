@@ -44,12 +44,13 @@ export const MAGNET_EDGE_CLEARANCE = 1.5;
 function buildMagnetCutters(
   positions: ReadonlyArray<readonly [number, number]>,
   magnetRadius: number,
-  magnetDepth: number
+  magnetDepth: number,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D[] {
   // Cutter starts above the pocket floor (COPLANAR_MARGIN avoids coplanar with
-  // pocket bottom at Z=-SOCKET_HEIGHT) and cuts downward by magnetDepth.
+  // the pocket bottom at Z=-socketHeightMm) and cuts downward by magnetDepth.
   // Leaves MAGNET_FLOOR of solid material at the bottom of each hole.
-  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterZ = -socketHeightMm + COPLANAR_MARGIN;
   const cutterDepth = magnetDepth + COPLANAR_MARGIN;
   const magnetTemplate = cylinder(magnetRadius, cutterDepth, {
     at: [0, 0, cutterZ],
@@ -82,7 +83,8 @@ export function buildMagnetHoles(
   magnetDepth: number,
   cellOpts?: ForEachCellOptions,
   cellFilter?: (cell: CellInfo) => boolean,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D[] {
   const { x: pitchX, y: pitchY } = resolvePitch(cellOpts?.gridUnitMm);
   const positions: Array<[number, number]> = [];
@@ -98,7 +100,7 @@ export function buildMagnetHoles(
     },
     cellOpts
   );
-  return buildMagnetCutters(positions, magnetRadius, magnetDepth);
+  return buildMagnetCutters(positions, magnetRadius, magnetDepth, socketHeightMm);
 }
 
 /**
@@ -215,7 +217,8 @@ export function buildPartialCellMagnetHoles(
   magnetRadius: number,
   magnetDepth: number,
   gridUnitMm: GridUnitInput,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D[] {
   // `x` scales width, `y` scales depth (equal for a square grid).
   const { x: pitchX, y: pitchY } = resolvePitch(gridUnitMm);
@@ -223,5 +226,5 @@ export function buildPartialCellMagnetHoles(
   for (const cell of cells) {
     positions.push(...magnetPositionsForCell(cell, magnetRadius, pitchX, pitchY, anchor));
   }
-  return buildMagnetCutters(positions, magnetRadius, magnetDepth);
+  return buildMagnetCutters(positions, magnetRadius, magnetDepth, socketHeightMm);
 }

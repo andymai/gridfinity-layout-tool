@@ -29,6 +29,7 @@ vi.mock('@/core/store', () => ({
         defaultLayerHeight: 3,
         defaultPrintBedSize: 256,
         defaultGridUnitMm: 42,
+        defaultSocketHeightMm: 3,
         defaultCategories: null,
         printSettings: {
           filamentCostPerKg: 20,
@@ -38,6 +39,8 @@ vi.mock('@/core/store', () => ({
       },
       updateSetting: mockUpdateSetting,
     }),
+  useLayoutStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({ layout: { socketHeightMm: 3 } }),
 }));
 
 vi.mock('@/core/store/toast', () => ({
@@ -124,6 +127,26 @@ describe('DefaultsTab', () => {
     render(<DefaultsTab />);
     expect(screen.getByTestId('stepper-common.width')).toBeInTheDocument();
     expect(screen.getByTestId('stepper-common.depth')).toBeInTheDocument();
+  });
+
+  it('renders the base-profile Standard/Low/Minimal preset buttons', () => {
+    render(<DefaultsTab />);
+    expect(screen.getByText('binDesigner.socketHeightStandard')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.socketHeightLow')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.socketHeightMinimal')).toBeInTheDocument();
+  });
+
+  it('clicking the Low preset sets the default socket height', () => {
+    render(<DefaultsTab />);
+    fireEvent.click(screen.getByText('binDesigner.socketHeightLow'));
+    expect(mockUpdateSetting).toHaveBeenCalledWith('defaultSocketHeightMm', 3);
+  });
+
+  it('copy-from-layout persists the current socket height as the new-layout default', () => {
+    render(<DefaultsTab />);
+    fireEvent.click(screen.getByText('settings.copyFromCurrentLayout'));
+    fireEvent.click(screen.getByTestId('confirm-btn'));
+    expect(mockUpdateSetting).toHaveBeenCalledWith('defaultSocketHeightMm', 3);
   });
 
   it('renders copy from layout button', () => {

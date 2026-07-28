@@ -57,7 +57,8 @@ function resolveThumbnailFraming(stored: StoredBaseplateParams): BaseplateThumbn
     nozzleSizeMm,
     layout.drawer.outline,
     layout.magnetAnchor,
-    effectiveGridUnitMmY(layout)
+    effectiveGridUnitMmY(layout),
+    layout.socketHeightMm
   );
   return {
     width: full.width,

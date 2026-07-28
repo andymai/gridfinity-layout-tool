@@ -188,6 +188,10 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       bus.dispatch(createCommand('layout.setHeightUnitMm', { mm }));
     },
 
+    setSocketHeightMm(mm: number): void {
+      bus.dispatch(createCommand('layout.setSocketHeightMm', { mm }));
+    },
+
     setBaseplateParams(params: StoredBaseplateParams): void {
       bus.dispatch(createCommand('layout.setBaseplateParams', { params }));
     },

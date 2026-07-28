@@ -19,6 +19,7 @@ import {
   cornerCutsMatchVertices,
 } from '@/shared/utils/cornerCutOutline';
 import { padOutline } from '@/shared/utils/padOutline';
+import { MAGNET_FLOOR, resolveSocketHeight } from '@/shared/printSettings/gridfinityGeometry';
 
 /** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
  * own geometric radius clamp). */
@@ -161,9 +162,16 @@ export function buildFullParams(
   drawerOutline?: DrawerOutline,
   magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  // Base-profile depth from the owning layout (undefined ⇒ standard 5mm). Shared
+  // with the layout's bins so the plate pockets shrink in lockstep and bins seat.
+  socketHeightMm?: number
 ): ResolvedBaseplateParams {
   const synced = stored.syncWithLayout !== false;
+  // A low-profile plate too thin to hold a magnet (depth + retaining floor)
+  // auto-disables its magnet holes (the UI surfaces a note), mirroring the bin
+  // rule in the pipeline's deriveDimensions.
+  const magnetFits = resolveSocketHeight({ socketHeightMm }) >= stored.magnetDepth + MAGNET_FLOOR;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
 
@@ -225,9 +233,10 @@ export function buildFullParams(
     depth,
     gridUnitMm,
     gridUnitMmY,
+    socketHeightMm,
     nozzleSizeMm,
     outline,
-    magnetHoles: stackingOn ? false : stored.magnetHoles,
+    magnetHoles: stackingOn || !magnetFits ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
     magnetAnchor,

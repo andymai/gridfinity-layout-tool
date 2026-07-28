@@ -45,7 +45,7 @@ import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat, ConnectorKeyMeshData } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
+  resolveSocketHeight,
   forEachCell,
   frameCells,
   toIndexedMeshData,
@@ -232,7 +232,7 @@ function buildConnectorKeyMeshIfNeeded(
   const hasJoinEdge = params.edges ? Object.values(params.edges).some((e) => e === 'join') : false;
   if (!hasJoinEdge) return undefined;
 
-  const totalHeight = SOCKET_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = resolveSocketHeight(params) + baseplateFloorDepth(params);
   if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0, params.nozzleSizeMm).viable)
     return undefined;
 
@@ -285,9 +285,14 @@ export function buildBaseplateSolid(
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   const pitch = { x: gridUnitMm, y: gridUnitMmY };
   const floorDepth = baseplateFloorDepth(params);
+  // Base-profile depth (low-profile toggle). Standard 5mm unless the owning
+  // layout set a smaller value; the plate's socket pocket shrinks in lockstep
+  // with its bins so parts still seat. The magnet floor (floorDepth) is added
+  // *below* the socket, so magnets stay dimensionally correct when they fit.
+  const socketHeightMm = resolveSocketHeight(params);
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const totalHeight = socketHeightMm + floorDepth;
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm: pitch };
@@ -390,7 +395,7 @@ export function buildBaseplateSolid(
     const addPocket = (cell: CellInfo): void => {
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMmY;
-      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut, socketHeightMm);
       // pocket from getPocketTemplate is a clone owned by caller — translate
       // produces a new shape, so dispose the pre-translation clone.
       const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
@@ -503,7 +508,8 @@ export function buildBaseplateSolid(
       magnetDepth,
       cellOpts,
       magnetCellFilter,
-      magnetAnchor
+      magnetAnchor,
+      socketHeightMm
     );
     // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
     // spread/centered magnet for tiles too small for any corner — so the clipped
@@ -517,7 +523,8 @@ export function buildBaseplateSolid(
           magnetDiameter / 2,
           magnetDepth,
           pitch,
-          magnetAnchor
+          magnetAnchor,
+          socketHeightMm
         )
       );
     }
@@ -546,7 +553,8 @@ export function buildBaseplateSolid(
       params.lightweight,
       floorCellFilter,
       params.nozzleSizeMm,
-      magnetAnchor
+      magnetAnchor,
+      socketHeightMm
     );
     const floorFrame =
       floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
@@ -559,7 +567,8 @@ export function buildBaseplateSolid(
           pitch,
           params.lightweight,
           params.nozzleSizeMm,
-          magnetAnchor
+          magnetAnchor,
+          socketHeightMm
         )
       );
     }
@@ -683,7 +692,7 @@ export async function exportConnectorKey(
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const params = sanitizeParams(rawParams);
-  const totalHeight = SOCKET_HEIGHT + baseplateFloorDepth(params);
+  const totalHeight = resolveSocketHeight(params) + baseplateFloorDepth(params);
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
   const key =
     params.connectorStyle === 'snapClip'

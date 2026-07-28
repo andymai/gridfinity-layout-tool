@@ -28,14 +28,12 @@ import {
   CLEARANCE,
   CORNER_RADIUS,
   SOCKET_HEIGHT,
-  SOCKET_BIG_TAPER,
-  SOCKET_VERTICAL_PART,
-  SOCKET_TAPER_WIDTH,
   MIN_PRINTABLE_TILE_MM,
   forEachCell,
   frameCells,
   type CellInfo,
 } from './generatorTypes';
+import { socketProfileSections, socketProfileSectionsSimplified } from './socketProfile';
 import { hasOverhang, type ResolvedOverhang } from './overhang';
 import {
   socketCacheKey,
@@ -226,26 +224,21 @@ export function filledSocketCells(
  *
  * This approach avoids EdgeFinder limitations with non-square cells.
  *
+ * At the standard depth the breakpoints are 0 / -0.25 / -2.4 / -4.2 / -5.0; a
+ * reduced `socketHeightMm` scales them proportionally (see socketProfile.ts).
+ *
  * @param cellW_mm Physical width of this cell in mm (after clearance)
  * @param cellD_mm Physical depth of this cell in mm (after clearance)
+ * @param socketHeightMm Base-profile depth (defaults to the standard 5mm)
  */
-export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
+export function buildSingleCellSocket(
+  cellW_mm: number,
+  cellD_mm: number,
+  socketHeightMm: number = SOCKET_HEIGHT
+): Shape3D {
   // Clamp corner radius to fit within cell dimensions
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
   const cornerR = Math.min(CORNER_RADIUS, maxRadius);
-
-  // Profile insets from outer boundary at each Z breakpoint
-  // (derived from socketProfile after translate(CLEARANCE/2, 0))
-  const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-  // Z positions of profile breakpoints
-  const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2); // -0.25
-  const Z3 = -SOCKET_BIG_TAPER; // -2.4
-  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
-  const Z5 = -SOCKET_HEIGHT; // -5.0
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
   const sectionAt = (z: number, inset: number): Sketch => {
@@ -255,34 +248,29 @@ export function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Build 5 cross-sections matching the socket profile breakpoints
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s2 = sectionAt(Z2, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_MID);
-  const s4 = sectionAt(Z4, INSET_MID);
-  const s5 = sectionAt(Z5, INSET_BOT);
-
-  // Ruled loft through all sections -- straight-line connections between
-  // corresponding points, matching the angular profile exactly
-  return s1.loftWith([s2, s3, s4, s5], { ruled: true });
+  // Shared 5-section profile (identical to socket & baseplate pocket by
+  // construction, so bins seat). Ruled loft: straight-line connections between
+  // corresponding points, matching the angular profile exactly.
+  const [s1, ...rest] = socketProfileSections(socketHeightMm).map((sec) =>
+    sectionAt(sec.z, sec.inset)
+  );
+  return s1.loftWith(rest, { ruled: true });
 }
 
 /**
- * Build a simplified 3-section socket cell for preview rendering.
+ * Build a simplified 2-section socket cell for preview rendering.
  *
- * Uses only 3 sections (top, mid, bottom) instead of the full 5-section
- * profile. Visually similar but generates fewer triangles for faster
- * preview updates. Export mode uses buildSingleCellSocket for full fidelity.
+ * Uses only top + bottom sections instead of the full 5-section profile.
+ * Visually similar but generates fewer triangles for faster preview updates.
+ * Export mode uses buildSingleCellSocket for full fidelity.
  */
-export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
+export function buildSimplifiedCellSocket(
+  cellW_mm: number,
+  cellD_mm: number,
+  socketHeightMm: number = SOCKET_HEIGHT
+): Shape3D {
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
   const cornerR = Math.min(CORNER_RADIUS, maxRadius);
-
-  const INSET_TOP = 0;
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;
-
-  const Z1 = 0;
-  const Z3 = -SOCKET_HEIGHT;
 
   const sectionAt = (z: number, inset: number): Sketch => {
     const w = cellW_mm - 2 * inset;
@@ -291,10 +279,10 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_BOT);
-
-  return s1.loftWith([s3], { ruled: true });
+  const [s1, ...rest] = socketProfileSectionsSimplified(socketHeightMm).map((sec) =>
+    sectionAt(sec.z, sec.inset)
+  );
+  return s1.loftWith(rest, { ruled: true });
 }
 
 /**
@@ -306,13 +294,27 @@ export function buildSimplifiedCellSocket(cellW_mm: number, cellD_mm: number): S
  * grids. The returned clone is owned by the caller — register + translate it;
  * the cache keeps the original.
  */
-function getCellSocketTemplate(cellW_mm: number, cellD_mm: number, forExport: boolean): Shape3D {
-  const key = buildCacheKey('cell-socket-v1', quantize(cellW_mm), quantize(cellD_mm), forExport);
+function getCellSocketTemplate(
+  cellW_mm: number,
+  cellD_mm: number,
+  forExport: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
+): Shape3D {
+  // Append the socket-height segment only when it differs from the standard
+  // depth, so default-profile keys stay byte-identical to pre-feature keys.
+  const heightSegments = socketHeightMm === SOCKET_HEIGHT ? [] : [`sh:${quantize(socketHeightMm)}`];
+  const key = buildCacheKey(
+    'cell-socket-v1',
+    quantize(cellW_mm),
+    quantize(cellD_mm),
+    forExport,
+    ...heightSegments
+  );
   const cached = getCellSocketTemplateCache(key);
   if (cached) return cached;
   const template = forExport
-    ? buildSingleCellSocket(cellW_mm, cellD_mm)
-    : buildSimplifiedCellSocket(cellW_mm, cellD_mm);
+    ? buildSingleCellSocket(cellW_mm, cellD_mm, socketHeightMm)
+    : buildSimplifiedCellSocket(cellW_mm, cellD_mm, socketHeightMm);
   return setCellSocketTemplateCache(key, template);
 }
 
@@ -362,7 +364,8 @@ export function baseSocketShapeKey(
   gridUnitMm: GridUnitInput,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): string {
   const usingMask = isPartialMask(cellMask);
   return socketCacheKey(
@@ -379,7 +382,8 @@ export function baseSocketShapeKey(
     usingMask ? hashMask(cellMask) : undefined,
     fractionalEdge.x,
     fractionalEdge.y,
-    anchor
+    anchor,
+    socketHeightMm
   );
 }
 
@@ -396,7 +400,8 @@ export function buildBaseSocket(
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
@@ -418,7 +423,8 @@ export function buildBaseSocket(
     gridUnitMm,
     cellMask,
     fractionalEdge,
-    anchor
+    anchor,
+    socketHeightMm
   );
   const cached = getSocketCache(key);
   if (cached) {
@@ -465,7 +471,7 @@ export function buildBaseSocket(
       // because fuseAll may return one of its inputs when given a single
       // element. They're deleted manually.
       const cellSocket = translate(
-        scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)),
+        scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport, socketHeightMm)),
         [cell.centerX, cell.centerY, 0]
       );
       cellSockets.push(cellSocket);
@@ -479,7 +485,7 @@ export function buildBaseSocket(
     const holeTools: Shape3D[] = [];
     if (withScrew || withMagnet) {
       const magnetCutout = withMagnet ? scope.register(cylinder(magnetRadius, magnetDepth)) : null;
-      const screwCutout = withScrew ? scope.register(cylinder(screwRadius, SOCKET_HEIGHT)) : null;
+      const screwCutout = withScrew ? scope.register(cylinder(screwRadius, socketHeightMm)) : null;
 
       // When both exist, fuse creates a new shape (register it); when only one exists,
       // it's already registered above — don't double-register
@@ -502,7 +508,7 @@ export function buildBaseSocket(
           // centered hole — so magnet/screw holes never breach the foot's side.
           for (const [x, y] of magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)) {
             holeTools.push(
-              translate(scope.register(unwrap(clone(cutout))), [x, y, -SOCKET_HEIGHT])
+              translate(scope.register(unwrap(clone(cutout))), [x, y, -socketHeightMm])
             );
           }
         },
@@ -561,7 +567,8 @@ export function buildOverhangFeet(
   gridD: number,
   overhang: ResolvedOverhang,
   gridUnitMm: GridUnitInput,
-  forExport: boolean
+  forExport: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D | null {
   if (!hasOverhang(overhang)) return null;
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
@@ -578,11 +585,10 @@ export function buildOverhangFeet(
     const sockets: Shape3D[] = frame.map((cell) => {
       const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
       const cellD_mm = cell.depthUnits * unitY - CLEARANCE;
-      return translate(scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport)), [
-        cell.centerX,
-        cell.centerY,
-        0,
-      ]);
+      return translate(
+        scope.register(getCellSocketTemplate(cellW_mm, cellD_mm, forExport, socketHeightMm)),
+        [cell.centerX, cell.centerY, 0]
+      );
     });
     const result = unwrap(fuseAll(sockets as ValidSolid[], { optimisation: 'commonFace' }));
     for (const s of sockets) {

@@ -165,6 +165,7 @@ export interface UserSettings {
   defaultPrintBedDepth?: number; // undefined = linked (same as defaultPrintBedSize)
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
+  defaultSocketHeightMm: number; // Base-profile (socket) depth for new layouts (mm); standard Gridfinity = 5
 
   // UI preferences
   defaultZoom: number;
@@ -327,6 +328,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   defaultPrintBedSize: 256,
   defaultGridUnitMm: 42,
   defaultHeightUnitMm: 7,
+  // Literal, not CONSTRAINTS.SOCKET_HEIGHT_MM_DEFAULT, for the #1466 init-cycle reason above.
+  defaultSocketHeightMm: 5,
 
   // UI preferences
   defaultZoom: 1.0,

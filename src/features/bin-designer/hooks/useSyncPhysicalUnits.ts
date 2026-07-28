@@ -1,8 +1,9 @@
 /**
- * Syncs gridUnitMm, heightUnitMm, and the magnet anchor from the layout store
- * into the designer store's BinParams. This ensures the bin designer always uses
- * the layout's physical unit settings — and its layout-scoped magnet anchor — for
- * generation and export, so a designed bin's magnets mate with the baseplate.
+ * Syncs gridUnitMm, heightUnitMm, the base-profile depth, and the magnet anchor
+ * from the layout store into the designer store's BinParams. This ensures the bin
+ * designer always uses the layout's physical unit settings — its layout-scoped
+ * magnet anchor and low-profile socket depth — for generation and export, so a
+ * designed bin's socket and magnets mate with the baseplate.
  *
  * Updates are applied WITHOUT pushing history (no undo entry) since the user
  * changed the value in the layout store, not via the designer panel.
@@ -15,10 +16,11 @@ import { useDesignerStore } from '../store';
 import { setPendingMeshCache } from '../store/helpers';
 
 export function useSyncPhysicalUnits(): void {
-  const { gridUnitMm, heightUnitMm, magnetAnchor } = useLayoutStore(
+  const { gridUnitMm, heightUnitMm, socketHeightMm, magnetAnchor } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
+      socketHeightMm: state.layout.socketHeightMm,
       magnetAnchor: state.layout.magnetAnchor,
     }))
   );
@@ -28,6 +30,7 @@ export function useSyncPhysicalUnits(): void {
     if (
       params.gridUnitMm === gridUnitMm &&
       params.heightUnitMm === heightUnitMm &&
+      params.socketHeightMm === socketHeightMm &&
       params.magnetAnchor === magnetAnchor
     ) {
       return;
@@ -43,6 +46,7 @@ export function useSyncPhysicalUnits(): void {
         ...state.params,
         gridUnitMm,
         heightUnitMm,
+        socketHeightMm,
         magnetAnchor,
       },
       generation: {
@@ -50,5 +54,5 @@ export function useSyncPhysicalUnits(): void {
         epoch: state.generation.epoch + 1,
       },
     }));
-  }, [gridUnitMm, heightUnitMm, magnetAnchor]);
+  }, [gridUnitMm, heightUnitMm, socketHeightMm, magnetAnchor]);
 }

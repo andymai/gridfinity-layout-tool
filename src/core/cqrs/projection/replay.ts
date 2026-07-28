@@ -188,6 +188,10 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.heightUnitMm = mm(event.payload.mm);
       break;
 
+    case 'layout.socketHeightMmSet':
+      next.socketHeightMm = mm(event.payload.mm);
+      break;
+
     case 'layout.baseplateParamsSet':
       next.baseplateParams = event.payload.params;
       break;

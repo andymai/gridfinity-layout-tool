@@ -79,6 +79,29 @@ export const GRIDFINITY_SPEC = {
 export const MAGNET_FLOOR = 0.5;
 
 /**
+ * Base-profile (socket) depth bounds for the low-profile feature, in mm.
+ * DEFAULT is the standard socket depth, so an unset `socketHeightMm` reproduces
+ * standard geometry exactly. Kept here (the shared geometry spec) so the worker
+ * generators, the non-worker `binDimensions` mirror, the store clamp, and the UI
+ * presets all read one source. Presets: Standard=DEFAULT, Low=LOW, Minimal=MIN.
+ */
+export const SOCKET_HEIGHT_MM_MIN = 2;
+export const SOCKET_HEIGHT_MM_LOW = 3;
+export const SOCKET_HEIGHT_MM_DEFAULT = GRIDFINITY_SPEC.SOCKET_HEIGHT; // 5
+export const SOCKET_HEIGHT_MM_MAX = GRIDFINITY_SPEC.SOCKET_HEIGHT; // 5
+
+/**
+ * Resolve the effective base-profile depth for a bin or baseplate. An unset
+ * `socketHeightMm` reproduces the standard profile exactly; a set value is
+ * clamped to [MIN, MAX] defensively (the store already clamps on write). Single
+ * choke point every socket/pocket consumer reads instead of the raw constant.
+ */
+export function resolveSocketHeight(x: { readonly socketHeightMm?: number }): number {
+  if (x.socketHeightMm === undefined) return GRIDFINITY_SPEC.SOCKET_HEIGHT;
+  return Math.min(Math.max(x.socketHeightMm, SOCKET_HEIGHT_MM_MIN), SOCKET_HEIGHT_MM_MAX);
+}
+
+/**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *
  * Most slicers default to 2 perimeters. For very small nozzles (0.2mm),

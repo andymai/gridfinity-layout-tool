@@ -105,6 +105,16 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
       });
     },
 
+    setSocketHeightMm: (mm: number): void => {
+      setLocal((state) => {
+        state.layout.socketHeightMm = clamp(
+          mm,
+          CONSTRAINTS.SOCKET_HEIGHT_MM_MIN,
+          CONSTRAINTS.SOCKET_HEIGHT_MM_MAX
+        ) as Mm;
+      });
+    },
+
     restoreLayout: (layout: Layout): void => {
       set((state) => {
         state.layout = layout;

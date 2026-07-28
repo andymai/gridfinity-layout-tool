@@ -10,6 +10,7 @@ import { unwrap, fuse, exportSTEP } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { resolveSocketHeight } from './generatorConstants';
 import { buildUniqueDividerPieces } from './dividerBuilder';
 import { pitchFromParams } from './gridPitch';
 import { resolveOverhang, overhangExpansion } from './overhang';
@@ -34,7 +35,6 @@ export function dividerInteriorDims(params: BinParams): { innerW: number; innerD
     innerD: outerD - 2 * params.wallThickness,
   };
 }
-const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 
 /**
  * Export unique divider piece(s) as a single STL file.
@@ -46,7 +46,7 @@ export async function exportDividers(
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  const wallHeight = isFlat ? totalHeight : totalHeight - resolveSocketHeight(params);
 
   const { innerW, innerD } = dividerInteriorDims(params);
   const hasLip = params.base.stackingLip;
@@ -103,7 +103,7 @@ export async function exportDividerPiecesSeparately(
 ): Promise<CombinedExportPiece[]> {
   const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  const wallHeight = isFlat ? totalHeight : totalHeight - resolveSocketHeight(params);
 
   const { innerW, innerD } = dividerInteriorDims(params);
   const hasLip = params.base.stackingLip;

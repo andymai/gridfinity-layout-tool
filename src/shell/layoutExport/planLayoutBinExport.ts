@@ -133,7 +133,8 @@ export function planLayoutBinExport(
   printSettings: PrintSettings,
   drawer: Pick<Drawer, 'width' | 'depth'>,
   baseplate: StoredBaseplateParams | undefined,
-  magnetAnchor?: MagnetAnchor
+  magnetAnchor?: MagnetAnchor,
+  socketHeightMm?: number
 ): LayoutBinExportPlan {
   const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
 
@@ -178,11 +179,12 @@ export function planLayoutBinExport(
     const design = designById.get(b.linkedDesignId);
     if (!design?.params) continue; // missing/non-bin already tallied above
     const overhang = resolveBinOverhang(b, drawer, baseplate);
-    // Inject the layout's magnet anchor (source of truth), overriding any value
-    // saved on the design, so exported bins mate with the baseplate's magnets.
+    // Inject the layout's magnet anchor and base-profile depth (source of truth),
+    // overriding any value saved on the design, so exported bins mate with the
+    // baseplate's magnets and sit at the layout's socket depth.
     const params: BinParams = overhang
-      ? { ...design.params, overhang, magnetAnchor }
-      : { ...design.params, magnetAnchor };
+      ? { ...design.params, overhang, magnetAnchor, socketHeightMm }
+      : { ...design.params, magnetAnchor, socketHeightMm };
     const key = `${b.linkedDesignId}|${overhangKey(overhang)}`;
     const existing = groups.get(key);
     if (existing) {

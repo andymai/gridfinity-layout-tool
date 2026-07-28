@@ -43,6 +43,7 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'layout.gridUnitMmYSet': 1,
   'layout.magnetAnchorSet': 1,
   'layout.heightUnitMmSet': 1,
+  'layout.socketHeightMmSet': 1,
   'layout.baseplateParamsSet': 1,
   'layout.activeBaseplateSet': 1,
 

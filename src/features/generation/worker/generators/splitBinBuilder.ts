@@ -20,7 +20,7 @@ import {
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
-import { CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
+import { CLEARANCE, resolveSocketHeight } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams, type GridPitch } from './gridPitch';
@@ -210,8 +210,9 @@ function splitSolidIntoPieces(
   // Bin geometry context for connector placement
   const isFlat = params.base.style === 'flat';
   const totalHeight = params.height * params.heightUnitMm;
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
-  const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
+  const socketHeightMm = resolveSocketHeight(params);
+  const wallHeight = isFlat ? totalHeight : totalHeight - socketHeightMm;
+  const floorZ = isFlat ? 0 : socketHeightMm;
   const wallTopZ = floorZ + wallHeight;
 
   // An overhang grows the outer body past the nominal grid footprint (#1949);

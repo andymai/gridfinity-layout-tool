@@ -43,6 +43,14 @@ export interface Layout {
    */
   gridUnitMmY?: Mm;
   heightUnitMm: Mm; // mm per height unit (default 7)
+  /**
+   * Base-profile (socket) depth in mm — the low-profile toggle. Shared by every
+   * bin socket and the baseplate pocket in this layout so parts stay mutually
+   * seatable. `undefined` ⇒ the standard 5mm profile (byte-identical to
+   * pre-feature layouts). Clamped to
+   * [`SOCKET_HEIGHT_MM_MIN`, `SOCKET_HEIGHT_MM_MAX`] on write.
+   */
+  socketHeightMm?: Mm;
   /** Magnet hole placement anchor (default 'edge'). See {@link MagnetAnchor}. */
   magnetAnchor?: MagnetAnchor;
   categories: Category[]; // 1-20 items

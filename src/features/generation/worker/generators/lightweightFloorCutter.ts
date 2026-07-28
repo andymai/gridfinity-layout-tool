@@ -88,12 +88,13 @@ export function buildLightweightFloorCutters(
   lightweight?: boolean,
   cellFilter?: (cell: CellInfo) => boolean,
   nozzleSizeMm?: number,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D[] {
   if (lightweight === false) return [];
 
   const { x: unitX, y: unitY } = resolvePitch(cellOpts.gridUnitMm);
-  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterZ = -socketHeightMm + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
   const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
   const outerWallMargin = magnetOuterWallMarginForNozzle(nozzleSizeMm);
@@ -430,11 +431,12 @@ export function buildPartialCellFloorCutters(
   gridUnitMm: GridUnitInput,
   lightweight?: boolean,
   nozzleSizeMm?: number,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D[] {
   if (lightweight === false) return [];
 
-  const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
+  const cutterZ = -socketHeightMm + COPLANAR_MARGIN;
   const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
 
   const cutters: Shape3D[] = [];

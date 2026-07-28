@@ -18,6 +18,15 @@ import { SegmentedControl } from '@/design-system';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { effectiveGridUnitMmY } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/validation';
+import {
+  GRIDFINITY_SPEC,
+  MAGNET_FLOOR,
+  SOCKET_HEIGHT_MM_DEFAULT,
+  SOCKET_HEIGHT_MM_LOW,
+  SOCKET_HEIGHT_MM_MIN,
+} from '@/shared/printSettings/gridfinityGeometry';
 
 /** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
 function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
@@ -25,17 +34,38 @@ function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: numb
   return `${gridUnitMm}mm · ${bed}`;
 }
 
+/** Base-profile quick-select buttons (value + i18n label key). Layout-scoped, so
+ * changing it here keeps the plate and its bins on the same profile. */
+const SOCKET_PRESET_BUTTONS = [
+  { value: SOCKET_HEIGHT_MM_DEFAULT, labelKey: 'binDesigner.socketHeightStandard' },
+  { value: SOCKET_HEIGHT_MM_LOW, labelKey: 'binDesigner.socketHeightLow' },
+  { value: SOCKET_HEIGHT_MM_MIN, labelKey: 'binDesigner.socketHeightMinimal' },
+] as const;
+
 export function PhysicalUnitsSection() {
   const t = useTranslation();
-  const { gridUnitMm, gridUnitMmY, magnetAnchor, printBedSize, printBedDepth } = useLayoutStore(
-    useShallow((state) => ({
-      gridUnitMm: state.layout.gridUnitMm,
-      gridUnitMmY: effectiveGridUnitMmY(state.layout),
-      magnetAnchor: state.layout.magnetAnchor ?? 'edge',
-      printBedSize: state.layout.printBedSize,
-      printBedDepth: state.layout.printBedDepth,
-    }))
-  );
+  const { gridUnitMm, gridUnitMmY, magnetAnchor, socketHeightMm, printBedSize, printBedDepth } =
+    useLayoutStore(
+      useShallow((state) => ({
+        gridUnitMm: state.layout.gridUnitMm,
+        gridUnitMmY: effectiveGridUnitMmY(state.layout),
+        magnetAnchor: state.layout.magnetAnchor ?? 'edge',
+        socketHeightMm: state.layout.socketHeightMm,
+        printBedSize: state.layout.printBedSize,
+        printBedDepth: state.layout.printBedDepth,
+      }))
+    );
+  // A base too thin to hold a magnet (depth + retaining floor) auto-disables
+  // magnet holes; surface a note so the disabled magnet toggle makes sense.
+  const effectiveSocketHeightMm = socketHeightMm ?? SOCKET_HEIGHT_MM_DEFAULT;
+  const magnetsDisabled = effectiveSocketHeightMm < GRIDFINITY_SPEC.MAGNET_DEPTH + MAGNET_FLOOR;
+  const handleSocketHeightChange = useCallback((value: number) => {
+    useLayoutStore
+      .getState()
+      .setSocketHeightMm(
+        clamp(value, CONSTRAINTS.SOCKET_HEIGHT_MM_MIN, CONSTRAINTS.SOCKET_HEIGHT_MM_MAX)
+      );
+  }, []);
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const handleNozzleChange = useCallback((value: number) => {
@@ -82,6 +112,43 @@ export function PhysicalUnitsSection() {
               className="input w-14 py-0.5 px-1 text-xs text-right"
             />
           </SettingsRow>
+          <SettingsRow
+            label={t('binDesigner.socketHeight')}
+            unit="mm"
+            tooltip={t('binDesigner.socketHeightTooltip')}
+          >
+            <div className="flex items-center gap-1">
+              {SOCKET_PRESET_BUTTONS.map(({ value, labelKey }) => (
+                <button
+                  key={labelKey}
+                  type="button"
+                  onClick={() => handleSocketHeightChange(value)}
+                  aria-pressed={effectiveSocketHeightMm === value}
+                  className={`rounded px-1.5 py-0.5 text-[11px] ${
+                    effectiveSocketHeightMm === value
+                      ? 'bg-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-surface-2)] text-[var(--color-text-muted)]'
+                  }`}
+                >
+                  {t(labelKey)}
+                </button>
+              ))}
+              <DeferredNumberInput
+                value={effectiveSocketHeightMm}
+                onChange={handleSocketHeightChange}
+                min={CONSTRAINTS.SOCKET_HEIGHT_MM_MIN}
+                max={CONSTRAINTS.SOCKET_HEIGHT_MM_MAX}
+                step={0.5}
+                className="input w-14 py-0.5 px-1 text-xs text-right"
+                aria-label={t('binDesigner.socketHeight')}
+              />
+            </div>
+          </SettingsRow>
+          {magnetsDisabled && (
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('binDesigner.socketHeightMagnetsDisabled')}
+            </p>
+          )}
           {/* Non-square grids get a read-only Y-pitch echo — the toggle and
               edit live in the drawer's Physical Units, so the plate stays a
               reflection of the layout grid. */}

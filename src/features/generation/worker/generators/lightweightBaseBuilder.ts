@@ -102,12 +102,13 @@ function buildCellPads(
   positions: ReadonlyArray<readonly [number, number]>,
   holeRadius: number,
   holeFloorDepth: number,
-  openDir: LightweightOpenDirection
+  openDir: LightweightOpenDirection,
+  socketHeightMm: number
 ): Shape3D[] {
   const padRadius = holeRadius + PAD_MARGIN;
-  const padHeight = openDir === 'up' ? holeFloorDepth : SOCKET_HEIGHT;
+  const padHeight = openDir === 'up' ? holeFloorDepth : socketHeightMm;
   return positions.map(([x, y]) =>
-    translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -SOCKET_HEIGHT])
+    translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -socketHeightMm])
   );
 }
 
@@ -140,7 +141,8 @@ export function buildLightweightBase(
   cellMask?: CellMask,
   openFloorDrawings?: readonly Drawing[],
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   // Per-axis pitch: unitX scales width/columns, unitY scales depth/rows.
@@ -179,7 +181,7 @@ export function buildLightweightBase(
               drawings.map(
                 (d) =>
                   scope.register(
-                    sketch(d, 'XY', -SOCKET_HEIGHT - 1).extrude(SOCKET_HEIGHT + wallThickness + 2)
+                    sketch(d, 'XY', -socketHeightMm - 1).extrude(socketHeightMm + wallThickness + 2)
                   ) as ValidSolid
               )
             )
@@ -201,7 +203,9 @@ export function buildLightweightBase(
     };
 
     const buildFoot = (w: number, d: number): Shape3D =>
-      forExport ? buildSingleCellSocket(w, d) : buildSimplifiedCellSocket(w, d);
+      forExport
+        ? buildSingleCellSocket(w, d, socketHeightMm)
+        : buildSimplifiedCellSocket(w, d, socketHeightMm);
 
     const feet: Shape3D[] = [];
     const voids: Shape3D[] = [];
@@ -271,7 +275,7 @@ export function buildLightweightBase(
     if (withMagnet || withScrew) {
       const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
       const floorDepth =
-        (withMagnet ? magnetDepth : SOCKET_HEIGHT) + (withMagnet ? MAGNET_FLOOR : 0);
+        (withMagnet ? magnetDepth : socketHeightMm) + (withMagnet ? MAGNET_FLOOR : 0);
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
       forEachSocketCell(
@@ -286,7 +290,14 @@ export function buildLightweightBase(
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
           const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
-          for (const p of buildCellPads(scope, positions, holeRadius, floorDepth, openDir)) {
+          for (const p of buildCellPads(
+            scope,
+            positions,
+            holeRadius,
+            floorDepth,
+            openDir,
+            socketHeightMm
+          )) {
             pads.push(p);
           }
           for (const [x, y] of positions) {
@@ -295,16 +306,16 @@ export function buildLightweightBase(
                 translate(scope.register(cylinder(magnetRadius, magnetDepth)), [
                   x,
                   y,
-                  -SOCKET_HEIGHT,
+                  -socketHeightMm,
                 ])
               );
             }
             if (withScrew) {
               drills.push(
-                translate(scope.register(cylinder(screwRadius, SOCKET_HEIGHT + 0.01)), [
+                translate(scope.register(cylinder(screwRadius, socketHeightMm + 0.01)), [
                   x,
                   y,
-                  -SOCKET_HEIGHT,
+                  -socketHeightMm,
                 ])
               );
             }

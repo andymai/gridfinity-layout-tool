@@ -8,15 +8,26 @@
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { OVER_TILE_MIN_MARGIN_MM, SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
-import { MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  MAGNET_FLOOR,
+  SOCKET_HEIGHT_MM_MIN,
+  SOCKET_HEIGHT_MM_MAX,
+  resolveSocketHeight,
+} from '@/shared/printSettings/gridfinityGeometry';
 
-export { MAGNET_FLOOR };
+// resolveSocketHeight lives in the shared geometry spec so the non-worker
+// binDimensions mirror can read the same fallback+clamp without crossing a
+// feature module boundary; re-exported here for the worker generators.
+export { MAGNET_FLOOR, resolveSocketHeight };
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
 export const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
 export const BOX_CORNER_RADIUS = GRIDFINITY.BOX_CORNER_RADIUS;
+/** Standard base-profile depth (mm). The default when a layout sets no override. */
 export const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
+export const SOCKET_HEIGHT_MIN = SOCKET_HEIGHT_MM_MIN;
+export const SOCKET_HEIGHT_MAX = SOCKET_HEIGHT_MM_MAX;
 export const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
 export const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 export const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;

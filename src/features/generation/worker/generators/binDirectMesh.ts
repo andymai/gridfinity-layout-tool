@@ -42,12 +42,12 @@ import {
   CLEARANCE,
   CORNER_RADIUS,
   BOX_CORNER_RADIUS,
-  SOCKET_HEIGHT,
   SOCKET_TAPER_WIDTH,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
   MIN_PRINTABLE_TILE_MM,
+  resolveSocketHeight,
 } from './generatorConstants';
 
 type Pt = readonly [number, number];
@@ -159,7 +159,14 @@ function footCornerRadius(cellW: number, cellD: number): number {
  * solid; its top cap sits coincident with the body's bottom cap (an interior,
  * non-visible join) so the overlap never z-fights.
  */
-function addBaseFoot(mb: MeshBuilder, cx: number, cy: number, cellW: number, cellD: number): void {
+function addBaseFoot(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  cellW: number,
+  cellD: number,
+  socketHeightMm: number
+): void {
   const cornerR = footCornerRadius(cellW, cellD);
   const botW = Math.max(cellW - 2 * FOOT_BOTTOM_INSET, MIN_RING_DIM);
   const botD = Math.max(cellD - 2 * FOOT_BOTTOM_INSET, MIN_RING_DIM);
@@ -168,9 +175,9 @@ function addBaseFoot(mb: MeshBuilder, cx: number, cy: number, cellW: number, cel
   const topPts = roundedRectPoints(cellW, cellD, cornerR, CORNER_SEGMENTS);
   const botPts = roundedRectPoints(botW, botD, botR, CORNER_SEGMENTS);
 
-  addTaperedTube(mb, cx, cy, topPts, botPts, SOCKET_HEIGHT, 0, true);
+  addTaperedTube(mb, cx, cy, topPts, botPts, socketHeightMm, 0, true);
   addSolidCap(mb, cx, cy, botPts, 0, false); // underside
-  addSolidCap(mb, cx, cy, topPts, SOCKET_HEIGHT, true); // interface with body
+  addSolidCap(mb, cx, cy, topPts, socketHeightMm, true); // interface with body
 }
 
 interface BinBodyDims {
@@ -178,6 +185,7 @@ interface BinBodyDims {
   readonly outerD: number;
   readonly wallThickness: number;
   readonly totalHeight: number;
+  readonly socketHeightMm: number;
   readonly hasLip: boolean;
 }
 
@@ -187,7 +195,7 @@ interface BinBodyDims {
  * (no lip) or a tapered stacking-lip collar.
  */
 function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
-  const { outerW, outerD, wallThickness, totalHeight, hasLip } = dims;
+  const { outerW, outerD, wallThickness, totalHeight, socketHeightMm, hasLip } = dims;
 
   const innerW = Math.max(outerW - 2 * wallThickness, MIN_RING_DIM);
   const innerD = Math.max(outerD - 2 * wallThickness, MIN_RING_DIM);
@@ -196,9 +204,9 @@ function addBinBody(mb: MeshBuilder, dims: BinBodyDims): void {
   const outerPts = roundedRectPoints(outerW, outerD, BOX_CORNER_RADIUS, CORNER_SEGMENTS);
   const innerPts = roundedRectPoints(innerW, innerD, innerR, CORNER_SEGMENTS);
 
-  const zBodyBot = SOCKET_HEIGHT;
-  const zFloorTop = SOCKET_HEIGHT + wallThickness;
-  const zWallTop = totalHeight; // = SOCKET_HEIGHT + wallHeight
+  const zBodyBot = socketHeightMm;
+  const zFloorTop = socketHeightMm + wallThickness;
+  const zWallTop = totalHeight; // = socketHeightMm + wallHeight
   const zOuterTop = hasLip ? totalHeight + LIP_HEIGHT - LIP_OVERLAP : zWallTop;
 
   // Outer wall: flush from the socket interface up to the wall top (or lip peak).
@@ -277,6 +285,7 @@ export function generateBinDirect(
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy designs may lack heightUnitMm
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = height * heightUnit;
+  const socketHeightMm = resolveSocketHeight(params);
 
   const mb = new MeshBuilder();
 
@@ -285,6 +294,7 @@ export function generateBinDirect(
     outerD: depth * gridUnitY - CLEARANCE,
     wallThickness: params.wallThickness,
     totalHeight,
+    socketHeightMm,
     hasLip: params.base.stackingLip,
   });
 
@@ -315,7 +325,8 @@ export function generateBinDirect(
         cell.centerX,
         cell.centerY,
         cell.widthUnits * gridUnit - CLEARANCE,
-        cell.depthUnits * gridUnitY - CLEARANCE
+        cell.depthUnits * gridUnitY - CLEARANCE,
+        socketHeightMm
       );
     },
     footOpts

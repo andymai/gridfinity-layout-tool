@@ -42,7 +42,7 @@ import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
 import { formatOffset, roundedRect } from './couponHelpers';
 import {
-  SOCKET_HEIGHT,
+  resolveSocketHeight,
   MAGNET_FLOOR,
   COPLANAR_MARGIN,
   TONGUE_PROTRUSION,
@@ -213,7 +213,7 @@ function buildCoupon(
 
 function couponHeight(params: ResolvedBaseplateParams): number {
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
-  return SOCKET_HEIGHT + floorDepth;
+  return resolveSocketHeight(params) + floorDepth;
 }
 
 /**

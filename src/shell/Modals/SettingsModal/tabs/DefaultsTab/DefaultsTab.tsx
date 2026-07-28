@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useSettingsStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS } from '@/core/constants';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import {
+  SOCKET_HEIGHT_MM_DEFAULT,
+  SOCKET_HEIGHT_MM_LOW,
+  SOCKET_HEIGHT_MM_MIN,
+} from '@/shared/printSettings/gridfinityGeometry';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { clamp } from '@/shared/utils/math';
@@ -22,7 +28,16 @@ const LAYOUT_DEFAULT_KEYS: (keyof UserSettings)[] = [
   'defaultPrintBedDepth',
   'defaultGridUnitMm',
   'defaultHeightUnitMm',
+  'defaultSocketHeightMm',
 ];
+
+/** Base-profile quick-select presets — mirrors the baseplate/bin panels so the
+ * new-layout default uses the same Standard / Low / Minimal choices. */
+const SOCKET_PRESET_BUTTONS = [
+  { value: SOCKET_HEIGHT_MM_DEFAULT, labelKey: 'binDesigner.socketHeightStandard' },
+  { value: SOCKET_HEIGHT_MM_LOW, labelKey: 'binDesigner.socketHeightLow' },
+  { value: SOCKET_HEIGHT_MM_MIN, labelKey: 'binDesigner.socketHeightMinimal' },
+] as const;
 
 export function DefaultsTab() {
   const t = useTranslation();
@@ -38,6 +53,9 @@ export function DefaultsTab() {
 
   // Read current layout values for "Copy from current" feature
   const { drawer, gridUnitMm, printBedSize, activeLayerHeight } = useDrawerSettings();
+  // Socket height isn't surfaced by useDrawerSettings; read it directly. Unset ⇒ standard.
+  const currentSocketHeightMm =
+    useLayoutStore((s) => s.layout.socketHeightMm) ?? CONSTRAINTS.SOCKET_HEIGHT_MM_DEFAULT;
 
   const handleCopyFromLayout = () => {
     updateSetting('defaultDrawerWidth', drawer.width);
@@ -46,6 +64,7 @@ export function DefaultsTab() {
     updateSetting('defaultLayerHeight', activeLayerHeight);
     updateSetting('defaultPrintBedSize', printBedSize);
     updateSetting('defaultGridUnitMm', gridUnitMm);
+    updateSetting('defaultSocketHeightMm', currentSocketHeightMm);
     setShowCopyConfirm(false);
     addToast(t('settings.copiedFromLayout'), 'success');
   };
@@ -219,6 +238,50 @@ export function DefaultsTab() {
             <p className="mt-0.5 text-[10px] text-content-tertiary">
               {t('settings.gridfinityStandardMm', {
                 value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+              })}
+            </p>
+          </div>
+          <div>
+            <SettingsRow label={t('binDesigner.socketHeight')} unit="mm">
+              <div className="flex items-center gap-1">
+                {SOCKET_PRESET_BUTTONS.map(({ value, labelKey }) => (
+                  <button
+                    key={labelKey}
+                    type="button"
+                    onClick={() => updateSetting('defaultSocketHeightMm', value)}
+                    aria-pressed={settings.defaultSocketHeightMm === value}
+                    className={`rounded px-1.5 py-0.5 text-[11px] ${
+                      settings.defaultSocketHeightMm === value
+                        ? 'bg-[var(--color-accent)] text-white'
+                        : 'bg-[var(--color-surface-2)] text-[var(--color-text-muted)]'
+                    }`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+                <DeferredNumberInput
+                  value={settings.defaultSocketHeightMm}
+                  onChange={(value) =>
+                    updateSetting(
+                      'defaultSocketHeightMm',
+                      clamp(
+                        value,
+                        CONSTRAINTS.SOCKET_HEIGHT_MM_MIN,
+                        CONSTRAINTS.SOCKET_HEIGHT_MM_MAX
+                      )
+                    )
+                  }
+                  min={CONSTRAINTS.SOCKET_HEIGHT_MM_MIN}
+                  max={CONSTRAINTS.SOCKET_HEIGHT_MM_MAX}
+                  step={0.5}
+                  className="input w-14 py-0.5 px-1 text-xs text-right"
+                  aria-label={t('binDesigner.socketHeight')}
+                />
+              </div>
+            </SettingsRow>
+            <p className="mt-0.5 text-[10px] text-content-tertiary">
+              {t('settings.gridfinityStandardMm', {
+                value: CONSTRAINTS.SOCKET_HEIGHT_MM_DEFAULT,
               })}
             </p>
           </div>

@@ -42,9 +42,10 @@ interface UseStackSampleExportReturn {
 export function useStackSampleExport(): UseStackSampleExportReturn {
   const t = useTranslation();
 
-  const { gridUnitMm, baseplateParams } = useLayoutStore(
+  const { gridUnitMm, socketHeightMm, baseplateParams } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
+      socketHeightMm: state.layout.socketHeightMm,
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -83,7 +84,11 @@ export function useStackSampleExport(): UseStackSampleExportReturn {
           gridUnitMm,
           'end',
           'end',
-          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
+          undefined,
+          undefined,
+          undefined,
+          socketHeightMm
         );
 
         const result = await bridge.exportBaseplate(sampleParams, 'stl');
@@ -121,7 +126,7 @@ export function useStackSampleExport(): UseStackSampleExportReturn {
         setIsExporting(false);
       }
     },
-    [t, gridUnitMm, baseplateParams]
+    [t, gridUnitMm, socketHeightMm, baseplateParams]
   );
 
   return { isExporting, canExport, downloadSample };

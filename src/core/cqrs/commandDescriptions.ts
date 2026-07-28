@@ -33,6 +33,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'layout.setGridUnitMmY': 'undo.gridUnitChanged',
   'layout.setMagnetAnchor': 'undo.magnetAnchorChanged',
   'layout.setHeightUnitMm': 'undo.heightUnitChanged',
+  'layout.setSocketHeightMm': 'undo.socketHeightChanged',
   'layout.setBaseplateParams': 'undo.baseplateParamsChanged',
   'layout.setActiveBaseplate': 'undo.activeBaseplateChanged',
 };

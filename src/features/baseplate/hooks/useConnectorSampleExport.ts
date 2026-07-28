@@ -64,6 +64,7 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
     drawerWidth,
     drawerDepth,
     gridUnitMm,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -72,6 +73,7 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       gridUnitMm: state.layout.gridUnitMm,
+      socketHeightMm: state.layout.socketHeightMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -98,7 +100,11 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
           gridUnitMm,
           fractionalEdgeX,
           fractionalEdgeY,
-          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
+          undefined,
+          undefined,
+          undefined,
+          socketHeightMm
         );
 
         if (format === '3mf') {
@@ -118,7 +124,16 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
         setIsExporting(false);
       }
     },
-    [t, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY, baseplateParams]
+    [
+      t,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      socketHeightMm,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      baseplateParams,
+    ]
   );
 
   return { isExporting, canExport, downloadSample };

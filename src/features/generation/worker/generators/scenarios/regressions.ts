@@ -179,6 +179,43 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
+  // Low-profile base — the socket profile is the standard one truncated from the
+  // BOTTOM at depth H, so a reduced socketHeightMm must stay manifold and must
+  // NOT change the external bin height: the socket only trades base material for
+  // interior volume, so the bounding box Z still equals height * heightUnitMm (+
+  // lip). H=2 caps the frustum partway down the big taper (below the wall).
+  defineScenario(CAT, 'low-profile base (socketHeightMm=2) is manifold, outer height unchanged', {
+    assert: 'structural',
+    params: {
+      height: 4,
+      socketHeightMm: 2,
+    },
+    forExport: true,
+    customAssert: (result, params) => {
+      assertNoDegenerateTriangles(result, 'low-profile');
+      expect(hasNoNaNOrInfinity(result.vertices)).toBe(true);
+      assertBoundingBoxMatchesParams(result, params, 'low-profile');
+    },
+  }),
+
+  // Low-profile base at the 'Low' preset (H=3): truncation caps the frustum flat
+  // on the straight vertical wall (a different bottom inset than H=2's big-taper
+  // cap above), while the top flat + big taper stay byte-identical to standard.
+  // Must be a clean manifold with the outer bin height unchanged.
+  defineScenario(CAT, 'low-profile base (socketHeightMm=3) keeps standard taper, stays manifold', {
+    assert: 'structural',
+    params: {
+      height: 4,
+      socketHeightMm: 3,
+    },
+    forExport: true,
+    customAssert: (result, params) => {
+      assertNoDegenerateTriangles(result, 'low-profile-3mm');
+      expect(hasNoNaNOrInfinity(result.vertices)).toBe(true);
+      assertBoundingBoxMatchesParams(result, params, 'low-profile-3mm');
+    },
+  }),
+
   // #1437 — wall pattern + dividers had overlapping geometry near junctions.
   // Invariant: honeycomb + compartments → no degenerate triangles, valid manifold.
   defineScenario(CAT, '#1437 honeycomb + dividers — no junction overlap', {

@@ -137,7 +137,8 @@ export function socketCacheKey(
   maskHash?: string,
   fractionalEdgeX: 'start' | 'end' = 'end',
   fractionalEdgeY: 'start' | 'end' = 'end',
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  socketHeightMm: number = GRIDFINITY.SOCKET_HEIGHT
 ): string {
   // Only append when non-default so 'end'/'end' keys stay byte-identical to
   // pre-feature keys (no needless cache invalidation; existing tests stable).
@@ -145,6 +146,10 @@ export function socketCacheKey(
     fractionalEdgeX === 'end' && fractionalEdgeY === 'end'
       ? []
       : [`frac:${fractionalEdgeX}:${fractionalEdgeY}`];
+  // Reduced base profile changes the socket geometry; append only for a
+  // non-standard depth so standard-profile keys stay byte-identical.
+  const socketHeightSegments =
+    socketHeightMm === GRIDFINITY.SOCKET_HEIGHT ? [] : [`sh:${quantize(socketHeightMm)}`];
   // X pitch occupies the legacy gridUnitMm slot; the Y pitch is appended only
   // for a non-square grid so square keys stay byte-identical.
   const pitch = resolvePitch(gridUnitMm);
@@ -176,7 +181,8 @@ export function socketCacheKey(
       halfSockets,
       maskHash ?? 'rect',
       ...fracSegments,
-      ...anchorSegments
+      ...anchorSegments,
+      ...socketHeightSegments
     )
   );
 }

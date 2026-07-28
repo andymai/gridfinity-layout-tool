@@ -34,6 +34,13 @@ export interface BinDimensions {
   readonly wallHeight: number;
   readonly totalHeight: number;
   /**
+   * Resolved base-profile (socket) depth in mm — standard 5mm unless the layout
+   * set a low-profile override. Shared by the bin socket and (via the layout)
+   * the baseplate pocket so parts seat. Feature stages that build or offset from
+   * the socket read this instead of the SOCKET_HEIGHT constant.
+   */
+  readonly socketHeightMm: number;
+  /**
    * Extra exterior wall height (mm) added ABOVE {@link wallHeight} — the
    * "collar" from {@link BinParams.extraWallHeightMm}, clamped to >= 0. The
    * outer box extrusion and stacking lip rise by this amount (`wallHeight +

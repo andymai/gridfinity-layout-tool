@@ -856,6 +856,29 @@ describe('pieceToBaseplateParams', () => {
     }
   });
 
+  it('propagates socketHeightMm and magnetAnchor to every piece so split plates match their bins', () => {
+    // Regression: pieceToBaseplateParams rebuilds params field-by-field and
+    // dropped both layout-scoped, resolved-at-generation fields — so a split
+    // low-profile plate kept the default 5mm socket depth in both preview and
+    // export (bins shrank, the plate did not), and a center-anchored plate on a
+    // >42mm grid placed its split-piece magnets at the wrong XY. Both are
+    // rotation-invariant, so every piece must carry the parent's value.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      magnetHoles: true,
+      magnetAnchor: 'center',
+      socketHeightMm: 3,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      const gen = pieceToBaseplateParams(piece, parent);
+      expect(gen.socketHeightMm).toBe(3);
+      expect(gen.magnetAnchor).toBe('center');
+    }
+  });
+
   it('swaps front/back padding for rotated pieces so the body centre negates (stack-print preview relies on this)', () => {
     // The stack-print preview derives a flipped plate's body centre from the
     // SAME params the mesh was generated with. For a preferIdenticalPieces 180°

@@ -74,6 +74,7 @@ export function BaseplatePage() {
     gridUnitMm,
     gridUnitMmY,
     magnetAnchor,
+    socketHeightMm,
     fractionalEdgeX,
     fractionalEdgeY,
     baseplateParams,
@@ -86,6 +87,7 @@ export function BaseplatePage() {
       gridUnitMm: state.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
       magnetAnchor: state.layout.magnetAnchor,
+      socketHeightMm: state.layout.socketHeightMm,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
@@ -152,7 +154,8 @@ export function BaseplatePage() {
         nozzleSizeMm,
         drawerOutline,
         magnetAnchor,
-        gridUnitMmY
+        gridUnitMmY,
+        socketHeightMm
       ),
     [
       baseplateParams,
@@ -162,6 +165,7 @@ export function BaseplatePage() {
       gridUnitMm,
       gridUnitMmY,
       magnetAnchor,
+      socketHeightMm,
       fractionalEdgeX,
       fractionalEdgeY,
       nozzleSizeMm,
@@ -182,9 +186,13 @@ export function BaseplatePage() {
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
     const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
-    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stackGapMm);
+    const cap = stackHeightCap(
+      maxPrintHeightMm,
+      socketHeightMm ?? GRIDFINITY_SPEC.SOCKET_HEIGHT,
+      stackGapMm
+    );
     return planPhysicalStacks(groups, cap);
-  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies]);
+  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies, socketHeightMm]);
   const stackFileCount = stackPlan.length;
   const stackPlateCount = stackPlan.reduce((sum, s) => sum + s.copies, 0);
 

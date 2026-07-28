@@ -2497,6 +2497,13 @@ const en: Record<string, string> = {
     'These holes are too large for this base — try a finer scale',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.heightUnitTooltip': 'Size of one height unit in mm (standard Gridfinity = 7mm)',
+  'binDesigner.socketHeight': 'Base profile',
+  'binDesigner.socketHeightTooltip':
+    'Depth of the base socket in mm. A lower profile leaves more usable bin volume but is too thin for magnets. Standard Gridfinity = 5mm.',
+  'binDesigner.socketHeightStandard': 'Standard',
+  'binDesigner.socketHeightLow': 'Low',
+  'binDesigner.socketHeightMinimal': 'Minimal',
+  'binDesigner.socketHeightMagnetsDisabled': 'Base too thin for magnets',
   'binDesigner.extraWallHeight': 'Extra wall height',
   'binDesigner.extraWallHeightTooltip':
     'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim.',
@@ -3324,6 +3331,7 @@ const en: Record<string, string> = {
   'undo.gridUnitChanged': 'Changed grid unit',
   'undo.magnetAnchorChanged': 'Changed magnet anchor',
   'undo.heightUnitChanged': 'Changed height unit',
+  'undo.socketHeightChanged': 'Changed base profile',
   'undo.baseplateParamsChanged': 'Changed baseplate params',
   'undo.activeBaseplateChanged': 'Changed active baseplate',
   'undo.unknownAction': 'Action',

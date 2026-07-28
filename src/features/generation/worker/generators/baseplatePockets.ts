@@ -12,29 +12,32 @@
 
 import { drawRoundedRectangle, unwrap, clone } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
-import {
-  SOCKET_HEIGHT,
-  SOCKET_BIG_TAPER,
-  SOCKET_TAPER_WIDTH,
-  CLEARANCE,
-  INSET_BOT,
-  pocketCornerRadius,
-  COPLANAR_MARGIN,
-} from './generatorTypes';
+import { SOCKET_HEIGHT, pocketCornerRadius, COPLANAR_MARGIN } from './generatorTypes';
+import { socketProfileSections, socketBottomInset } from './socketProfile';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { pocketTemplateCache } from './baseplateCaches';
 
-/** Insets at each Z breakpoint — same taper profile as bin socket but at full cell size */
+/** Inset at the top opening (no taper yet) — full cell size, no clearance reduction. */
 const INSET_TOP = 0;
-const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
 
 function pocketCacheKey(
   cellW: number,
   cellD: number,
   forExport: boolean,
-  throughCut: boolean
+  throughCut: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): string {
-  return buildCacheKey('v1', quantize(cellW), quantize(cellD), forExport, throughCut);
+  // Append the height segment only for a non-standard profile so default-depth
+  // keys stay byte-identical to pre-feature keys.
+  const heightSegments = socketHeightMm === SOCKET_HEIGHT ? [] : [`sh:${quantize(socketHeightMm)}`];
+  return buildCacheKey(
+    'v1',
+    quantize(cellW),
+    quantize(cellD),
+    forExport,
+    throughCut,
+    ...heightSegments
+  );
 }
 
 function pocketSection(
@@ -61,26 +64,31 @@ function pocketSection(
  *   Z=-4.2:  same inset (vertical wall section)
  *   Z=-5.0:  max inset (bottom)
  *
- * When throughCut is true (no magnets), the cutter extends below SOCKET_HEIGHT
- * to cut completely through the slab. When false (magnets enabled), the pocket
- * stops at SOCKET_HEIGHT depth, leaving a solid floor for magnet holes.
+ * When throughCut is true (no magnets), the cutter extends below the socket
+ * depth to cut completely through the slab. When false (magnets enabled), the
+ * pocket stops at socket depth, leaving a solid floor for magnet holes.
+ *
+ * The pocket consumes the same {@link socketProfileSections} as the bin socket,
+ * so the pocket depth always equals the bin socket depth and bins seat at any
+ * `socketHeightMm`.
  */
-function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boolean): Shape3D {
+function buildPocketCutter(
+  cellW_mm: number,
+  cellD_mm: number,
+  throughCut: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
+): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const s = (z: number, inset: number): Sketch =>
     pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
 
   const s0 = s(COPLANAR_MARGIN, INSET_TOP);
-  const sections = [
-    s(0, INSET_TOP),
-    s(-(CLEARANCE / 2), INSET_TOP), // -0.25
-    s(-SOCKET_BIG_TAPER, INSET_MID), // -2.4
-    s(-(SOCKET_BIG_TAPER + (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH)), INSET_MID), // -4.2
-    s(-SOCKET_HEIGHT, INSET_BOT), // -5.0
-  ];
+  const sections = socketProfileSections(socketHeightMm).map((sec) => s(sec.z, sec.inset));
 
   if (throughCut) {
-    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
+    // Extend straight down from the truncated profile's actual bottom inset — a
+    // hardcoded INSET_BOT would step in and leave a ledge on a low profile.
+    sections.push(s(-socketHeightMm - COPLANAR_MARGIN, socketBottomInset(socketHeightMm)));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -93,16 +101,18 @@ function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boole
 function buildSimplifiedPocketCutter(
   cellW_mm: number,
   cellD_mm: number,
-  throughCut: boolean
+  throughCut: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const s = (z: number, inset: number): Sketch =>
     pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
 
   const s0 = s(COPLANAR_MARGIN, INSET_TOP);
-  const sections = [s(-SOCKET_HEIGHT, INSET_BOT)];
+  const bottomInset = socketBottomInset(socketHeightMm);
+  const sections = [s(-socketHeightMm, bottomInset)];
   if (throughCut) {
-    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
+    sections.push(s(-socketHeightMm - COPLANAR_MARGIN, bottomInset));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -116,16 +126,17 @@ export function getPocketTemplate(
   cellW_mm: number,
   cellD_mm: number,
   forExport: boolean,
-  throughCut: boolean
+  throughCut: boolean,
+  socketHeightMm: number = SOCKET_HEIGHT
 ): Shape3D {
-  const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut);
+  const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut, socketHeightMm);
   const cached = pocketTemplateCache.get(key);
   if (cached !== undefined) {
     return unwrap(clone(cached));
   }
   const template = forExport
-    ? buildPocketCutter(cellW_mm, cellD_mm, throughCut)
-    : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut);
+    ? buildPocketCutter(cellW_mm, cellD_mm, throughCut, socketHeightMm)
+    : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut, socketHeightMm);
   pocketTemplateCache.set(key, template);
   return unwrap(clone(template));
 }

@@ -29,7 +29,6 @@ import {
 } from '@/shared/generation/cutoutColorUnits';
 import type { FaceGroupData, MeshData } from '../../bridge/types';
 import type { BinDimensions } from './pipeline/types';
-import { SOCKET_HEIGHT } from './generatorConstants';
 import { creaseEdges } from './utils/creaseEdges';
 import { computeCreaseNormals } from './meshImprintNormals';
 import type { NormalizedMesh } from './meshImprintNormals';
@@ -158,13 +157,20 @@ function frameFromDimensions(
   params: BinParams,
   dims: Pick<
     BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'isFlat'
+    | 'innerW'
+    | 'innerD'
+    | 'wallHeight'
+    | 'innerOffsetX'
+    | 'innerOffsetY'
+    | 'isFlat'
+    | 'socketHeightMm'
   >
 ): ImprintFrame {
   return {
     originX: -dims.innerW / 2 + dims.innerOffsetX,
     originY: -dims.innerD / 2 + dims.innerOffsetY,
-    solidTopZ: (dims.isFlat ? 0 : SOCKET_HEIGHT) + dims.wallHeight - params.cutoutConfig.topOffset,
+    solidTopZ:
+      (dims.isFlat ? 0 : dims.socketHeightMm) + dims.wallHeight - params.cutoutConfig.topOffset,
   };
 }
 
@@ -598,7 +604,14 @@ export function applyMeshImprints(
   params: BinParams,
   dims: Pick<
     BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'isFlat' | 'solid'
+    | 'innerW'
+    | 'innerD'
+    | 'wallHeight'
+    | 'innerOffsetX'
+    | 'innerOffsetY'
+    | 'isFlat'
+    | 'solid'
+    | 'socketHeightMm'
   >
 ): MeshData {
   if (!dims.solid || !hasMeshImprints(params)) return mesh;
@@ -632,7 +645,14 @@ export function imprintPieceArrays(
   params: BinParams,
   dims: Pick<
     BinDimensions,
-    'innerW' | 'innerD' | 'wallHeight' | 'innerOffsetX' | 'innerOffsetY' | 'isFlat' | 'solid'
+    | 'innerW'
+    | 'innerD'
+    | 'wallHeight'
+    | 'innerOffsetX'
+    | 'innerOffsetY'
+    | 'isFlat'
+    | 'solid'
+    | 'socketHeightMm'
   >,
   pieceBounds: Bounds2D,
   frameShift?: { readonly x: number; readonly y: number }

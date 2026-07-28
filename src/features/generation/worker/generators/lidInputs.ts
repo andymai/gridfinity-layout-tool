@@ -22,6 +22,7 @@ import {
   resolveLidCavityExtraMm,
 } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { resolveSocketHeight } from './generatorConstants';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
@@ -120,6 +121,12 @@ export interface LidInputs {
   /** Y-axis grid pitch (mm). Equals gridUnitMm for a square grid. */
   readonly gridUnitMmY: number;
   readonly heightUnitMm: number;
+  /**
+   * Base-profile (socket) depth in mm — resolved from the owning layout. The
+   * lid's stack-grid pockets are this deep so an upper bin's (equally
+   * low-profile) socket seats on the lid the same way it seats on a baseplate.
+   */
+  readonly socketHeightMm: number;
   /**
    * Per-side rail engagement overrides driven by feature conflicts.
    * Aggregated from `computeDisabledRails(params)` so the lid builder
@@ -303,6 +310,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
+    socketHeightMm: resolveSocketHeight(params),
     // Per-side rail skips derived from feature conflicts (label tabs,
     // wall cutouts on specific sides, handles intruding into the lip
     // Z range). Centralised in `lidCompatibility.computeDisabledRails`

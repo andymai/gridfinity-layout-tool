@@ -344,6 +344,56 @@ describe('createInitialContext', () => {
     });
   });
 
+  describe('low-profile base (socketHeightMm)', () => {
+    it('defaults to the standard 5mm socket when unset', () => {
+      const dim = createInitialContext(createTestParams()).dimensions;
+      expect(dim.socketHeightMm).toBe(5);
+      expect(dim.wallHeight).toBe(16); // 21 - 5
+    });
+
+    it('grows the usable wall height by (5 - socketHeightMm), total height unchanged', () => {
+      const std = createInitialContext(createTestParams()).dimensions;
+      const low = createInitialContext(createTestParams({ socketHeightMm: 3 })).dimensions;
+      expect(low.socketHeightMm).toBe(3);
+      expect(low.wallHeight).toBe(18); // 21 - 3
+      expect(low.wallHeight - std.wallHeight).toBe(2); // == 5 - 3
+      // External bin height (bounding box) is unchanged — only the interior grows.
+      expect(low.totalHeight).toBe(std.totalHeight);
+      expect(low.outerW).toBe(std.outerW);
+    });
+
+    it('clamps a value below the minimum to 2mm', () => {
+      const dim = createInitialContext(createTestParams({ socketHeightMm: 0.5 })).dimensions;
+      expect(dim.socketHeightMm).toBe(2);
+    });
+
+    const magnetBase = (socketHeightMm?: number): BinParams =>
+      createTestParams({
+        socketHeightMm,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetDepth: 2 },
+      });
+
+    it('keeps magnets at the standard profile', () => {
+      expect(createInitialContext(magnetBase()).dimensions.withMagnet).toBe(true);
+    });
+
+    it('keeps magnets at Low (3mm) where they still fit (2 + 0.5 floor)', () => {
+      expect(createInitialContext(magnetBase(3)).dimensions.withMagnet).toBe(true);
+    });
+
+    it('auto-disables magnets at Minimal (2mm) — too thin for depth + retaining floor', () => {
+      expect(createInitialContext(magnetBase(2)).dimensions.withMagnet).toBe(false);
+    });
+
+    it('discriminates the shellKey by socket height via wallHeight, leaving default keys unchanged', () => {
+      const std = createInitialContext(createTestParams()).dimensions;
+      const stdAgain = createInitialContext(createTestParams()).dimensions;
+      const low = createInitialContext(createTestParams({ socketHeightMm: 3 })).dimensions;
+      expect(std.shellKey).toBe(stdAgain.shellKey);
+      expect(low.shellKey).not.toBe(std.shellKey);
+    });
+  });
+
   describe('exterior-wall collar (extraWallHeightMm)', () => {
     it('defaults to a zero collar and leaves wall/interior height nominal', () => {
       const dim = createInitialContext(createTestParams()).dimensions;

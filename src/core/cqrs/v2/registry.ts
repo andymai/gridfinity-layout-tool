@@ -37,6 +37,7 @@ import { setGridUnitMm } from './domain/layout/setGridUnitMm';
 import { setGridUnitMmY } from './domain/layout/setGridUnitMmY';
 import { setMagnetAnchor } from './domain/layout/setMagnetAnchor';
 import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
+import { setSocketHeightMm } from './domain/layout/setSocketHeightMm';
 import { setBaseplateParams } from './domain/layout/setBaseplateParams';
 import { setActiveBaseplate } from './domain/layout/setActiveBaseplate';
 import { createEntry as libraryCreateEntry } from './domain/library/createEntry';
@@ -93,6 +94,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [setGridUnitMmY.type]: wrapV2Handler(setGridUnitMmY) as V2HandlerFn,
   [setMagnetAnchor.type]: wrapV2Handler(setMagnetAnchor) as V2HandlerFn,
   [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
+  [setSocketHeightMm.type]: wrapV2Handler(setSocketHeightMm) as V2HandlerFn,
   [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
   [setActiveBaseplate.type]: wrapV2Handler(setActiveBaseplate) as V2HandlerFn,
   [libraryCreateEntry.type]: wrapV2Handler(libraryCreateEntry) as V2HandlerFn,
@@ -135,6 +137,7 @@ export const v2Commands = [
   setGridUnitMmY,
   setMagnetAnchor,
   setHeightUnitMm,
+  setSocketHeightMm,
   setBaseplateParams,
   setActiveBaseplate,
   libraryCreateEntry,

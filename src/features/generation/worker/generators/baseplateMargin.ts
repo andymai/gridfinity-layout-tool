@@ -23,7 +23,7 @@ import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import { isMarginSeamStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
+  resolveSocketHeight,
   frameCells,
   toIndexedMeshData,
   MAGNET_FLOOR,
@@ -53,7 +53,7 @@ function railDims(params: ResolvedBaseplateParams, margin: MarginPiece): RailDim
   return {
     railW: horizontal ? margin.lengthMm : margin.bandThicknessMm,
     railD: horizontal ? margin.bandThicknessMm : margin.lengthMm,
-    totalHeight: SOCKET_HEIGHT + floorDepth,
+    totalHeight: resolveSocketHeight(params) + floorDepth,
   };
 }
 

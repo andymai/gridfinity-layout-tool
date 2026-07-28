@@ -72,6 +72,11 @@ export type HeightUnitMmSetEvent = BaseDomainEvent<
   { readonly mm: number; readonly previousMm: number }
 >;
 
+export type SocketHeightMmSetEvent = BaseDomainEvent<
+  'layout.socketHeightMmSet',
+  { readonly mm: number; readonly previousMm: number }
+>;
+
 export type BaseplateParamsSetEvent = BaseDomainEvent<
   'layout.baseplateParamsSet',
   { readonly params: StoredBaseplateParams; readonly previousParams?: StoredBaseplateParams }
@@ -96,5 +101,6 @@ export type DrawerEvent =
   | GridUnitMmYSetEvent
   | MagnetAnchorSetEvent
   | HeightUnitMmSetEvent
+  | SocketHeightMmSetEvent
   | BaseplateParamsSetEvent
   | ActiveBaseplateSetEvent;

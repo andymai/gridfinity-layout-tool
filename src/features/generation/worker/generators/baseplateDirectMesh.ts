@@ -28,11 +28,10 @@
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { hasAllEdgeSlots, isSeatedConnectorStyle } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
-import { resolveCornerRadii } from './generatorConstants';
+import { resolveCornerRadii, resolveSocketHeight } from './generatorConstants';
 import { creaseEdges } from './utils';
 import type { MeshData } from '../../bridge/types';
 import {
-  SOCKET_HEIGHT,
   forEachCell,
   frameCells,
   marginPocketDepthMm,
@@ -115,7 +114,7 @@ export function generateBaseplateDirect(
   // require one; the standalone solidFloor option adds one without magnet holes.
   const floorDepth = baseplateFloorDepth(params);
   const hasFloor = floorDepth > 0;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const totalHeight = resolveSocketHeight(params) + floorDepth;
   const totalW = width * gridUnitMm + paddingLeft + paddingRight;
   const totalD = depth * gridUnitMmY + paddingFront + paddingBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;

@@ -5,8 +5,22 @@ import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
+import {
+  GRIDFINITY_SPEC,
+  MAGNET_FLOOR,
+  SOCKET_HEIGHT_MM_DEFAULT,
+  SOCKET_HEIGHT_MM_LOW,
+  SOCKET_HEIGHT_MM_MIN,
+} from '@/shared/printSettings/gridfinityGeometry';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
+
+/** Base-profile presets (mm) shown as quick-select buttons. */
+export const SOCKET_HEIGHT_PRESETS = {
+  standard: SOCKET_HEIGHT_MM_DEFAULT,
+  low: SOCKET_HEIGHT_MM_LOW,
+  minimal: SOCKET_HEIGHT_MM_MIN,
+} as const;
 
 // The designer accepts the storage-layer grid pitch range (coreActions clamps
 // to 1-200), deliberately wider than the sidebar's 20-60 authoring range.
@@ -14,12 +28,18 @@ export const DESIGNER_GRID_UNIT_MM_MIN = 1;
 export const DESIGNER_GRID_UNIT_MM_MAX = 200;
 
 export function usePhysicalUnitsSection() {
-  const { gridUnitMm, heightUnitMm } = useLayoutStore(
+  const { gridUnitMm, heightUnitMm, socketHeightMm } = useLayoutStore(
     useShallow((s) => ({
       gridUnitMm: s.layout.gridUnitMm,
       heightUnitMm: s.layout.heightUnitMm,
+      socketHeightMm: s.layout.socketHeightMm,
     }))
   );
+  // An unset value is the standard profile. Below (magnetDepth + retaining
+  // floor) the base is too thin to hold a magnet, so the generator auto-disables
+  // magnet holes — surface a note here so the user understands why.
+  const effectiveSocketHeightMm = socketHeightMm ?? SOCKET_HEIGHT_MM_DEFAULT;
+  const magnetsDisabled = effectiveSocketHeightMm < GRIDFINITY_SPEC.MAGNET_DEPTH + MAGNET_FLOOR;
   // Y grid pitch is a designer-local override (X pitch + height unit stay owned
   // by the layout store, in sync with the planner). `gridUnitMmY === undefined`
   // is "square" mode: a single shared grid unit, with no Y field shown. A
@@ -57,6 +77,14 @@ export function usePhysicalUnitsSection() {
 
   const handleHeightUnitChange = useCallback((value: number) => {
     useLayoutStore.getState().setHeightUnitMm(value);
+  }, []);
+
+  const handleSocketHeightChange = useCallback((value: number) => {
+    useLayoutStore
+      .getState()
+      .setSocketHeightMm(
+        clamp(value, CONSTRAINTS.SOCKET_HEIGHT_MM_MIN, CONSTRAINTS.SOCKET_HEIGHT_MM_MAX)
+      );
   }, []);
 
   const handlePrintBedChange = useCallback(
@@ -97,6 +125,8 @@ export function usePhysicalUnitsSection() {
       gridUnitMmY: effectiveGridUnitMmY,
       nonSquare,
       heightUnitMm,
+      socketHeightMm: effectiveSocketHeightMm,
+      magnetsDisabled,
       printBedSize,
       printBedDepth,
       nozzleSizeMm,
@@ -104,6 +134,7 @@ export function usePhysicalUnitsSection() {
     handlers: {
       handleGridUnitChange,
       handleHeightUnitChange,
+      handleSocketHeightChange,
       handlePrintBedChange,
       handleNozzleChange,
     },

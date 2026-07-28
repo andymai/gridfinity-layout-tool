@@ -50,6 +50,11 @@ export type SetMagnetAnchorCommand = BaseCommand<
 
 export type SetHeightUnitMmCommand = BaseCommand<'layout.setHeightUnitMm', { readonly mm: number }>;
 
+export type SetSocketHeightMmCommand = BaseCommand<
+  'layout.setSocketHeightMm',
+  { readonly mm: number }
+>;
+
 export type SetBaseplateParamsCommand = BaseCommand<
   'layout.setBaseplateParams',
   { readonly params: StoredBaseplateParams }
@@ -69,5 +74,6 @@ export type DrawerCommand =
   | SetGridUnitMmYCommand
   | SetMagnetAnchorCommand
   | SetHeightUnitMmCommand
+  | SetSocketHeightMmCommand
   | SetBaseplateParamsCommand
   | SetActiveBaseplateCommand;

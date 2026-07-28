@@ -16,6 +16,12 @@ import {
   STACK_PRINT_DEFAULT_GAP_MM,
 } from './types';
 import { CONNECTOR_FIT_OFFSET_MIN, CONNECTOR_FIT_OFFSET_MAX } from '@/shared/constants/connectors';
+import {
+  SOCKET_HEIGHT_MM_MIN,
+  SOCKET_HEIGHT_MM_LOW,
+  SOCKET_HEIGHT_MM_DEFAULT,
+  SOCKET_HEIGHT_MM_MAX,
+} from '@/shared/printSettings/gridfinityGeometry';
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
@@ -49,6 +55,17 @@ export const CONSTRAINTS = {
   HEIGHT_UNIT_MM_MIN: 3,
   HEIGHT_UNIT_MM_MAX: 20,
   HEIGHT_UNIT_MM_DEFAULT: 7,
+  // Base-profile (socket) height bounds, in mm — the low-profile feature. Values
+  // are single-sourced from the shared geometry spec (gridfinityGeometry.ts) so
+  // the store clamp / UI presets can't drift from the generators. DEFAULT equals
+  // GRIDFINITY_SPEC.SOCKET_HEIGHT, so an unset value reproduces standard geometry
+  // byte-for-byte. Presets: Standard=DEFAULT, Low=LOW, Minimal=MIN. Numeric input
+  // is clamped to [MIN, MAX]; below MIN the tapered socket collapses, above MAX it
+  // breaks interop with the standard Gridfinity ecosystem.
+  SOCKET_HEIGHT_MM_MIN,
+  SOCKET_HEIGHT_MM_LOW,
+  SOCKET_HEIGHT_MM_DEFAULT,
+  SOCKET_HEIGHT_MM_MAX,
   // Print-bed dimension bounds (mm). The min doubles as the legacy grid-unit
   // detector in storage migration: a stored printBedSize below it is grid
   // units, not mm. Kept distinct from GRID_UNIT_MM_DEFAULT even though both
@@ -524,6 +541,7 @@ export interface LayoutSettings {
   defaultPrintBedDepth?: number;
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
+  defaultSocketHeightMm: number;
   /** Custom default categories. null means use DEFAULT_CATEGORIES. */
   defaultCategories: Category[] | null;
 }
@@ -547,6 +565,9 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
       settings.defaultPrintBedDepth !== undefined ? mm(settings.defaultPrintBedDepth) : undefined,
     gridUnitMm: mm(settings.defaultGridUnitMm),
     heightUnitMm: mm(settings.defaultHeightUnitMm),
+    // Base-profile depth for the new layout's bins + baseplate pockets. Standard
+    // 5 renders identically to leaving it unset (resolveSocketHeight folds it).
+    socketHeightMm: mm(settings.defaultSocketHeightMm),
     categories,
     layers: [
       {

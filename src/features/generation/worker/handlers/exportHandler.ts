@@ -26,6 +26,7 @@ import { exportLabelFitSample } from '../generators/labelFitSample';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
+import { resolveSocketHeight } from '../generators/generatorConstants';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -246,7 +247,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const innerD = outerD - 2 * params.wallThickness;
         const totalHeight = params.height * params.heightUnitMm;
         const isFlat = params.base.style === 'flat';
-        const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.SOCKET_HEIGHT;
+        const wallHeight = isFlat ? totalHeight : totalHeight - resolveSocketHeight(params);
         const hasLip = params.base.stackingLip;
 
         const dividerSolids = hasDividers

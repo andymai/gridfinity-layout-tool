@@ -368,6 +368,13 @@ export interface ResolvedBaseplateParams {
    * `@/core/types`. Layout-scoped so the plate matches its bins/lids.
    */
   readonly magnetAnchor?: MagnetAnchor;
+  /**
+   * Base-profile (socket) depth in mm — the low-profile toggle, injected from
+   * the owning layout at generation time (like {@link magnetAnchor}), so the
+   * plate's pocket depth matches its bins' socket depth. Undefined ⇒ standard
+   * 5mm. Not persisted on `StoredBaseplateParams` — resolved per generation.
+   */
+  readonly socketHeightMm?: number;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;

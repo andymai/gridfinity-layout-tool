@@ -53,6 +53,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'layout.setGridUnitMmY': 'domain',
   'layout.setMagnetAnchor': 'domain',
   'layout.setHeightUnitMm': 'domain',
+  'layout.setSocketHeightMm': 'domain',
   'layout.setBaseplateParams': 'domain',
   'layout.setActiveBaseplate': 'domain',
 
