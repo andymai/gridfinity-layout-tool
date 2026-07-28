@@ -18,6 +18,7 @@ import {
   triangleArea,
   triangleNormalZ,
 } from './__kernel-tests__/meshAssertions';
+import { BOX_CORNER_RADIUS } from './generatorConstants';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -32,6 +33,27 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
     ...extra,
     lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, ...lid },
   };
+}
+
+/**
+ * Furthest any vertex sits OUTSIDE the bin's outer wall profile — the rounded
+ * rectangle of half-extents `halfW`/`halfD` with corner radius
+ * `BOX_CORNER_RADIUS`. Negative means everything is inboard of the wall.
+ */
+function maxProfileProtrusion(mesh: MeshData, halfW: number, halfD: number): number {
+  const cx = halfW - BOX_CORNER_RADIUS;
+  const cy = halfD - BOX_CORNER_RADIUS;
+  let worst = -Infinity;
+  for (let i = 0; i < mesh.vertices.length; i += 3) {
+    const x = Math.abs(mesh.vertices[i]);
+    const y = Math.abs(mesh.vertices[i + 1]);
+    const dx = x - cx;
+    const dy = y - cy;
+    const outside =
+      dx > 0 && dy > 0 ? Math.hypot(dx, dy) - BOX_CORNER_RADIUS : Math.max(x - halfW, y - halfD);
+    if (outside > worst) worst = outside;
+  }
+  return worst;
 }
 
 describe('magnetic-retention lid geometry', () => {
@@ -235,6 +257,43 @@ describe('magnetic-retention lid geometry', () => {
     expect(magnetic.maxY).toBeCloseTo(plain.maxY, 1);
     expect(magnetic.minX).toBeCloseTo(plain.minX, 1);
     expect(magnetic.minY).toBeCloseTo(plain.minY, 1);
+  });
+
+  // The bounding-box check above cannot see this: the wall corner is an arc of
+  // BOX_CORNER_RADIUS, so a pad corner can punch through it diagonally while
+  // staying well inside the axis-aligned box (#2929).
+  it.each([0.4, 0.8, 1.2, 1.6, 2.4])(
+    'corner pads stay inside the rounded wall at wallThickness %smm (#2929)',
+    async (wallThickness) => {
+      const generateBin = getGenerateBin();
+      const base = { width: 2, depth: 2, height: 4, wallThickness };
+      const plain = generateBin(makeParams({ attachment: 'clickRails' }, base));
+      const magnetic = generateBin(makeParams({ attachment: 'magnetic' }, base));
+      const bb = boundingBox(plain.vertices);
+      // The plain bin defines the true profile; anything the pads add must not
+      // sit further out than it does (beyond tessellation slack).
+      expect(maxProfileProtrusion(plain, bb.maxX, bb.maxY)).toBeLessThan(0.02);
+      expect(maxProfileProtrusion(magnetic, bb.maxX, bb.maxY)).toBeLessThan(0.02);
+    }
+  );
+
+  // The corner arc eats `cavityCornerR + GUSSET_WALL_OVERLAP` of the pad's
+  // reach; the magnet diameter sets how far the pad reaches. Pin both ends of
+  // the allowed diameter range so a smaller magnet can't shrink the pad past
+  // the arc and fold the footprint back on itself.
+  it.each([4, 10])('corner pads stay inside the rounded wall at %smm magnets', async (diameter) => {
+    const generateBin = getGenerateBin();
+    const base = { width: 2, depth: 2, height: 4 };
+    const plain = generateBin(makeParams({ attachment: 'clickRails' }, base));
+    const magnetic = generateBin(
+      makeParams(
+        { attachment: 'magnetic', retentionMagnet: { diameter, depth: 2, edgeMagnets: 0 } },
+        base
+      )
+    );
+    const bb = boundingBox(plain.vertices);
+    assertStructurallyValid(magnetic, `2x2 bin with ${diameter}mm retention magnets`);
+    expect(maxProfileProtrusion(magnetic, bb.maxX, bb.maxY)).toBeLessThan(0.02);
   });
 
   it('adds no bin posts when there is no stacking lip (nothing for the lid to mate)', async () => {
