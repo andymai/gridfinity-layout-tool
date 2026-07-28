@@ -1,0 +1,29 @@
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_7a7eed6d2a9a7b::t_48c1a8e043f5aa 38-58
+  s_7a7eed6d2a9a7b::t_f8058f8eaa2a6a 262-264,266-278,295
+  s_7a7eed6d2a9a7b::t_2f77ea2f30f5d0 21
+  s_7a7eed6d2a9a7b::t_932cad553e17cd 265,279-294,297
+  s_7a7eed6d2a9a7b::t_bcd6a6788ce4e1 296
+  s_7a7eed6d2a9a7b::t_ccd9ef4f8527b9 298
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_7a7eed6d2a9a7b::t_13746509fc6cc7 37
+  s_7a7eed6d2a9a7b::t_596e56911fc46e 17-19
+  s_7a7eed6d2a9a7b::t_287d1ed7971858 236-257,261-262,268-269
+  s_7a7eed6d2a9a7b::t_45c3b7252688ad 110-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "aa4de76d3b685e9e83da3eaddf04925cc1872b5d",
+  "prompts": {},
+  "sessions": {
+    "s_7a7eed6d2a9a7b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ccd3876d-10ed-4952-8524-fc3f17483fe9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
