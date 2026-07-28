@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.327.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.1...gridfinity-layout-tool-v4.327.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** compact the overhang panel and draw the taper profiles ([#2950](https://github.com/andymai/gridfinity-layout-tool/issues/2950)) ([2b0f7ee](https://github.com/andymai/gridfinity-layout-tool/commit/2b0f7ee2b19691a2c60d92feea691114169352af))
+
 ## [4.326.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.0...gridfinity-layout-tool-v4.326.1) (2026-07-28)
 
 
