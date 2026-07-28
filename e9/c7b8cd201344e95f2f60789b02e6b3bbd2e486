@@ -1,0 +1,25 @@
+src/core/constants.ts
+  s_0aa75b2ebdc4cc::t_aa38de333e8fe5 56-59
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_0aa75b2ebdc4cc::t_1a136b3536ef5d 105-121
+  s_0aa75b2ebdc4cc::t_7bd1d6cfc23b0c 90-94,96
+  s_0aa75b2ebdc4cc::t_63bb0a381090f7 95
+src/core/store/layout/coreActions.test.ts
+  s_0aa75b2ebdc4cc::t_3862cda80cf282 80,82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "e9c7b8cd201344e95f2f60789b02e6b3bbd2e486",
+  "prompts": {},
+  "sessions": {
+    "s_0aa75b2ebdc4cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a033b1a-9cf9-4dad-aedf-3ced6703c2c5",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
