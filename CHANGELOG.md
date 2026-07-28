@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.0...gridfinity-layout-tool-v4.323.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **deps:** patch js-yaml and brace-expansion DoS advisories ([#2919](https://github.com/andymai/gridfinity-layout-tool/issues/2919)) ([76599c2](https://github.com/andymai/gridfinity-layout-tool/commit/76599c242af9bee3c125918ef62127bb29014309))
+
 ## [4.323.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.322.1...gridfinity-layout-tool-v4.323.0) (2026-07-28)
 
 
