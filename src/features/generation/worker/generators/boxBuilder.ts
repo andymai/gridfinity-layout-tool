@@ -401,8 +401,15 @@ export function buildBinBox(
         );
         scope.register(box); // unused on the taper path
         return setBoxCache(boxKey, taperedBody);
-      } catch {
-        // Fall through to the plain shelled box below so the bin is never lost.
+      } catch (e: unknown) {
+        // Fall through to the plain shelled box below so the bin is never lost —
+        // but surface it (like the multi-cavity fallback) so a taper regression
+        // is observable in dev/logs rather than a silent loss of the feature.
+        logger.warn('[buildBinBox] taper build failed; falling back to a plain shelled box', {
+          err: e instanceof Error ? e.message : String(e),
+          width: gridW,
+          depth: gridD,
+        });
       }
     }
 

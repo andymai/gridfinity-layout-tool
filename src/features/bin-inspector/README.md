@@ -74,3 +74,4 @@ it nudges ranking but never outranks a literal text match.
 2. **Reserved property keys** - bin field names (`id`, `layerId`, `x`, `y`, `width`, `depth`, `height`, `clearanceHeight`, `category`, `label`, etc.) blocked from custom props
 3. **Height validation** - must fit in layer + drawer height
 4. **Rotation with relocation** - bins can be rotated in place or auto-repositioned to nearest valid spot if blocked
+5. **Placed-bin wall taper is export-only, derived from padding** — `Bin.marginTaper` (profile + band height) opts a drawer-fit bin into tapering its extended wall back to nominal at the base (#2933). The per-side reach is derived live from the baseplate padding via `resolveBinMarginOverhang` (never stored), like `extendToMargin`; the taper is suppressed on over-tiled baseplates (overhang feet fill the margin instead). The `ExtendToMarginToggle` taper controls appear only when the bin extends into a padded, non-over-tiled edge.

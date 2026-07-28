@@ -68,7 +68,11 @@ export function useOverhangSection() {
   // has overhang; it is mutually exclusive with `feet` (frame feet would poke
   // past a tapered base).
   const taper = overhang.taper;
-  const taperEnabled = taper?.enabled ?? false;
+  // Mirror resolveTaper / the OverhangConfig.enabled pattern: a legacy config
+  // with `enabled` absent is on when any side is non-zero, not off.
+  const taperEnabled =
+    taper?.enabled ??
+    (taper ? taper.left > 0 || taper.right > 0 || taper.front > 0 || taper.back > 0 : false);
 
   const updateTaper = useCallback(
     (partial: Partial<WallTaperConfig>) => {

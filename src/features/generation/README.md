@@ -203,6 +203,8 @@ and slotted bins render solid walls for kumiko in this iteration.
 
 12. **Floor pattern holes must stay off the foot taper** — the socket's tapered flank is what mates with a baseplate, so a drainage hole may only exit through the foot's FLAT underside, which starts `INSET_BOT` (2.95mm) in from the cell edge. `floorWindowInset` holds `FLOOR_PATTERN_BORDER + max(INSET_BOT, wallThickness)` on every edge of every cell, which is also why the pattern reads as one cluster per foot rather than a continuous field. A scenario asserts the foot-underside outline is unchanged with the pattern on and off; any change to the socket profile has to move that inset in lockstep.
 
+13. **Wall taper is a hollow-only `outer − cavity` loft** — the curved-bin taper (#2933, `taperedOuter.ts`) angles the outer wall inward at the base _within the overhang region_, so the base stays ≥ nominal and the base feet never protrude. It builds the hollow body as `outer_loft − cavity_loft` sampled from a **shared band origin** (which keeps wall thickness uniform for the nonlinear fillet too) and deliberately avoids `shell()`, unreliable on the non-prismatic solid. It folds into `overhangKey`, so existing body/shell caches stay correct. **v1 scope is hollow, single-cavity, rectangular bins**: `pipeline/context.ts` strips the taper for solid / multi-compartment bins (the UI gates to match) so it can't silently no-op or taper a wall while dividers stay at nominal and protrude through the base. Re-verify `binGenerator.scenario.taper.test.ts` on brepjs bumps.
+
 ## Adaptive Debounce
 
 Fast generations → 50ms delay, slow generations → 300ms delay
