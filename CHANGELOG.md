@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.4...gridfinity-layout-tool-v4.323.5) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** stop lid magnet pads punching through the bin corner ([#2931](https://github.com/andymai/gridfinity-layout-tool/issues/2931)) ([6e70b14](https://github.com/andymai/gridfinity-layout-tool/commit/6e70b149bdfbeeaaee2d22ac4a733ebdeeb82ea5))
+
 ## [4.323.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.3...gridfinity-layout-tool-v4.323.4) (2026-07-28)
 
 
