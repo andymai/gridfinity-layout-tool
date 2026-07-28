@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/binGenerator.scenario.taper.test.ts
+  s_539197aeb05631::t_a82283cd23f52a 101-105,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f87445fa06f8ebb7f1eb4f087a008437e530b7e7",
+  "prompts": {},
+  "sessions": {
+    "s_539197aeb05631": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b1e903-8d2b-4599-93a0-37fc9b888560",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
