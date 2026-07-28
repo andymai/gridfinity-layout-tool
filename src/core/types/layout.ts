@@ -88,6 +88,13 @@ export interface Layer {
   height: HeightUnits; // >= 1
 }
 
+/**
+ * Cross-section shape of an outer-wall taper for drawer-fit "curved" bins
+ * (#2933). Defined in core so the placed-bin `Bin.marginTaper` and the
+ * bin-designer `WallTaperConfig` share one source of truth.
+ */
+export type WallTaperProfile = 'chamfer' | 'fillet';
+
 export interface Bin {
   id: BinId;
   layerId: LayerId; // base layer ID or STAGING_ID
@@ -108,6 +115,16 @@ export interface Bin {
   // render/export, so it tracks later padding changes. Applies only while the
   // bin abuts a padded edge; dormant otherwise.
   extendToMargin?: boolean;
+  // Opt-in outer-wall taper for a drawer-margin bin (#2933): over `bandHeight`
+  // mm the extended wall angles inward from the padding-expanded rim back toward
+  // the nominal footprint, so the base clears a drawer's rounded corner. Per-side
+  // reach is derived live from the padding (like `extendToMargin`, which this
+  // requires); only the profile + band height are stored here.
+  marginTaper?: {
+    profile: WallTaperProfile;
+    bandHeight: number; // mm
+    enabled?: boolean;
+  };
 }
 /** Grid coordinate (0-based, origin at bottom-left). */
 export interface Coord {

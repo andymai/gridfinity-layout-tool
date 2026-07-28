@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "底面とその下の脚を貫通させ、水やほこりをそのまま落とします",
   "binDesigner.base.floorPattern.tooSmall": "この底面には穴が大きすぎます。スケールを細かくしてください",
   "binDesigner.floorPatternDisablesLightweight": "水抜き穴と軽量フロアは併用できません",
-  "binDesigner.lightweightDisablesFloorPattern": "軽量フロアはすでに開いており、貫通させる底板がありません"
+  "binDesigner.lightweightDisablesFloorPattern": "軽量フロアはすでに開いており、貫通させる底板がありません",
+  "binDesigner.overhang.taper.title": "壁をテーパー",
+  "binDesigner.overhang.taper.hint": "外壁の底部を内側に傾け、引き出しの丸い角にフィットさせます。各辺はオーバーハングの範囲内で公称サイズへ絞り込まれます。",
+  "binDesigner.overhang.taper.needsOverhang": "先に辺へオーバーハングを追加し、底部で内側に絞り込みます。",
+  "binDesigner.overhang.taper.feetConflict": "壁をテーパーするには、オーバーハング下の脚をオフにしてください。",
+  "binDesigner.overhang.taper.profile": "プロファイル",
+  "binDesigner.overhang.taper.profileChamfer": "面取り",
+  "binDesigner.overhang.taper.profileFillet": "フィレット",
+  "binDesigner.overhang.taper.bandHeight": "テーパー高さ",
+  "inspector.taper": "壁をテーパー",
+  "inspector.taper.profile": "プロファイル",
+  "inspector.taper.chamfer": "面取り",
+  "inspector.taper.fillet": "フィレット",
+  "inspector.taper.height": "テーパー高さ",
+  "binDesigner.overhang.taper.singleHollowOnly": "テーパーは中空の単一コンパートメントのビンでのみ使用できます。"
 }

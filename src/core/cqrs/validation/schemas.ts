@@ -89,6 +89,11 @@ const binPartialSchema = z
     customProperties: z.record(z.string(), z.string()),
     linkedDesignId: z.string(),
     extendToMargin: z.boolean(),
+    marginTaper: z.object({
+      profile: z.enum(['chamfer', 'fillet']),
+      bandHeight: z.number().min(0),
+      enabled: z.boolean().optional(),
+    }),
     id: binIdSchema,
   })
   .partial();

@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Perforerer bunnen og føttene under, slik at vann og støv faller rett gjennom",
   "binDesigner.base.floorPattern.tooSmall": "Disse hullene er for store for denne bunnen – prøv en finere skala",
   "binDesigner.floorPatternDisablesLightweight": "Kan ikke kombinere dreneringshull med et lettvektsgulv",
-  "binDesigner.lightweightDisablesFloorPattern": "Et lettvektsgulv er allerede åpent – det finnes ingen plate å perforere"
+  "binDesigner.lightweightDisablesFloorPattern": "Et lettvektsgulv er allerede åpent – det finnes ingen plate å perforere",
+  "binDesigner.overhang.taper.title": "Skråne vegger",
+  "binDesigner.overhang.taper.hint": "Vinkle ytterveggen innover ved bunnen så binget følger det avrundede hjørnet i en skuff. Hver side skråner tilbake mot det nominelle fotavtrykket, innenfor sitt overheng.",
+  "binDesigner.overhang.taper.needsOverhang": "Legg til overheng på en side først, og skråne det så inn ved bunnen.",
+  "binDesigner.overhang.taper.feetConflict": "Slå av føtter under overhenget for å skråne veggene.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Fas",
+  "binDesigner.overhang.taper.profileFillet": "Avrunding",
+  "binDesigner.overhang.taper.bandHeight": "Skråningshøyde",
+  "inspector.taper": "Skråne vegger",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Fas",
+  "inspector.taper.fillet": "Avrunding",
+  "inspector.taper.height": "Skråningshøyde",
+  "binDesigner.overhang.taper.singleHollowOnly": "Skråning er bare tilgjengelig på hule binger med ett rom."
 }

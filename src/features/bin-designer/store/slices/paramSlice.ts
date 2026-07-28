@@ -207,6 +207,18 @@ export function createParamSlice(set: Set, get: Get) {
           feet: false,
         };
         const next = { ...current, ...partial };
+        // Carry the optional wall taper (#2933) through, clamped outward-only.
+        // Per-side inset is clamped against overhang at generation time.
+        const taper = next.taper
+          ? {
+              ...next.taper,
+              bandHeight: Math.max(0, next.taper.bandHeight),
+              left: Math.max(0, next.taper.left),
+              right: Math.max(0, next.taper.right),
+              front: Math.max(0, next.taper.front),
+              back: Math.max(0, next.taper.back),
+            }
+          : undefined;
         state.params.overhang = {
           left: Math.max(0, next.left),
           right: Math.max(0, next.right),
@@ -214,6 +226,7 @@ export function createParamSlice(set: Set, get: Get) {
           back: Math.max(0, next.back),
           feet: next.feet ?? false,
           ...(next.enabled !== undefined ? { enabled: next.enabled } : {}),
+          ...(taper ? { taper } : {}),
         };
       });
     },

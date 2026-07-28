@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Perforeert de bodem en de voetjes eronder, zodat water en stof er recht doorheen vallen",
   "binDesigner.base.floorPattern.tooSmall": "Deze gaten zijn te groot voor deze bodem – probeer een fijnere schaal",
   "binDesigner.floorPatternDisablesLightweight": "Afvoergaten kunnen niet worden gecombineerd met een lichtgewicht bodem",
-  "binDesigner.lightweightDisablesFloorPattern": "Een lichtgewicht bodem is al open – er is geen plaat om te perforeren"
+  "binDesigner.lightweightDisablesFloorPattern": "Een lichtgewicht bodem is al open – er is geen plaat om te perforeren",
+  "binDesigner.overhang.taper.title": "Wanden taps maken",
+  "binDesigner.overhang.taper.hint": "Kantel de buitenwand aan de onderkant naar binnen zodat de bak in de afgeronde hoek van een lade past. Elke zijde loopt taps terug naar de nominale voetafdruk, binnen de overhang.",
+  "binDesigner.overhang.taper.needsOverhang": "Voeg eerst overhang toe aan een zijde en maak die dan taps aan de onderkant.",
+  "binDesigner.overhang.taper.feetConflict": "Schakel voetjes onder de overhang uit om de wanden taps te maken.",
+  "binDesigner.overhang.taper.profile": "Profiel",
+  "binDesigner.overhang.taper.profileChamfer": "Afschuining",
+  "binDesigner.overhang.taper.profileFillet": "Afronding",
+  "binDesigner.overhang.taper.bandHeight": "Taps hoogte",
+  "inspector.taper": "Wanden taps maken",
+  "inspector.taper.profile": "Profiel",
+  "inspector.taper.chamfer": "Afschuining",
+  "inspector.taper.fillet": "Afronding",
+  "inspector.taper.height": "Taps hoogte",
+  "binDesigner.overhang.taper.singleHollowOnly": "Taps toelopen is alleen beschikbaar bij holle bakken met één vak."
 }

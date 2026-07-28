@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Perforuje dno a nožky pod ním, takže voda a prach propadnou přímo skrz",
   "binDesigner.base.floorPattern.tooSmall": "Tyto otvory jsou pro tuto základnu příliš velké — zkus jemnější měřítko",
   "binDesigner.floorPatternDisablesLightweight": "Nelze kombinovat odtokové otvory s odlehčeným dnem",
-  "binDesigner.lightweightDisablesFloorPattern": "Odlehčené dno je už otevřené — není deska k perforování"
+  "binDesigner.lightweightDisablesFloorPattern": "Odlehčené dno je už otevřené — není deska k perforování",
+  "binDesigner.overhang.taper.title": "Zkosit stěny",
+  "binDesigner.overhang.taper.hint": "Nakloňte vnější stěnu u dna dovnitř, aby zásobník kopíroval zaoblený roh zásuvky. Každá strana se zužuje zpět k nominálnímu půdorysu v rámci svého přesahu.",
+  "binDesigner.overhang.taper.needsOverhang": "Nejprve přidejte přesah na stranu a poté jej u dna zužte.",
+  "binDesigner.overhang.taper.feetConflict": "Vypněte nožky pod přesahem, abyste mohli zkosit stěny.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Zkosení",
+  "binDesigner.overhang.taper.profileFillet": "Zaoblení",
+  "binDesigner.overhang.taper.bandHeight": "Výška zkosení",
+  "inspector.taper": "Zkosit stěny",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Zkosení",
+  "inspector.taper.fillet": "Zaoblení",
+  "inspector.taper.height": "Výška zkosení",
+  "binDesigner.overhang.taper.singleHollowOnly": "Zkosení je dostupné jen u dutých zásobníků s jedním oddílem."
 }

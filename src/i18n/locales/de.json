@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Durchbricht den Boden und die Füße darunter, sodass Wasser und Staub direkt hindurchfallen",
   "binDesigner.base.floorPattern.tooSmall": "Diese Löcher sind zu groß für diesen Boden – versuche eine feinere Skalierung",
   "binDesigner.floorPatternDisablesLightweight": "Ablauflöcher lassen sich nicht mit einem Leichtbauboden kombinieren",
-  "binDesigner.lightweightDisablesFloorPattern": "Ein Leichtbauboden ist bereits offen – es gibt keine Platte zum Durchbrechen"
+  "binDesigner.lightweightDisablesFloorPattern": "Ein Leichtbauboden ist bereits offen – es gibt keine Platte zum Durchbrechen",
+  "binDesigner.overhang.taper.title": "Wände abschrägen",
+  "binDesigner.overhang.taper.hint": "Neigt die Außenwand am Boden nach innen, damit der Behälter in die abgerundete Ecke einer Schublade passt. Jede Seite verjüngt sich innerhalb ihres Überhangs zurück zur Nennkontur.",
+  "binDesigner.overhang.taper.needsOverhang": "Füge zuerst an einer Seite Überhang hinzu und verjünge ihn dann am Boden zurück.",
+  "binDesigner.overhang.taper.feetConflict": "Schalte die Füße unter dem Überhang aus, um die Wände abzuschrägen.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Fase",
+  "binDesigner.overhang.taper.profileFillet": "Rundung",
+  "binDesigner.overhang.taper.bandHeight": "Abschräghöhe",
+  "inspector.taper": "Wände abschrägen",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Fase",
+  "inspector.taper.fillet": "Rundung",
+  "inspector.taper.height": "Abschräghöhe",
+  "binDesigner.overhang.taper.singleHollowOnly": "Die Verjüngung ist nur bei hohlen Behältern mit einem Fach verfügbar."
 }

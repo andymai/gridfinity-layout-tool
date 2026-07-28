@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Перфорує дно та ніжки під ним, щоб вода й пил падали наскрізь",
   "binDesigner.base.floorPattern.tooSmall": "Ці отвори завеликі для цієї основи — спробуйте дрібніший масштаб",
   "binDesigner.floorPatternDisablesLightweight": "Не можна поєднати дренажні отвори з полегшеним дном",
-  "binDesigner.lightweightDisablesFloorPattern": "Полегшене дно вже відкрите — немає плити, яку можна перфорувати"
+  "binDesigner.lightweightDisablesFloorPattern": "Полегшене дно вже відкрите — немає плити, яку можна перфорувати",
+  "binDesigner.overhang.taper.title": "Звузити стінки",
+  "binDesigner.overhang.taper.hint": "Нахиліть зовнішню стінку всередину біля основи, щоб контейнер прилягав до заокругленого кута шухляди. Кожна сторона звужується до номінального контуру в межах свого виступу.",
+  "binDesigner.overhang.taper.needsOverhang": "Спершу додайте виступ на сторону, а потім звузьте його біля основи.",
+  "binDesigner.overhang.taper.feetConflict": "Вимкніть ніжки під виступом, щоб звузити стінки.",
+  "binDesigner.overhang.taper.profile": "Профіль",
+  "binDesigner.overhang.taper.profileChamfer": "Фаска",
+  "binDesigner.overhang.taper.profileFillet": "Заокруглення",
+  "binDesigner.overhang.taper.bandHeight": "Висота звуження",
+  "inspector.taper": "Звузити стінки",
+  "inspector.taper.profile": "Профіль",
+  "inspector.taper.chamfer": "Фаска",
+  "inspector.taper.fillet": "Заокруглення",
+  "inspector.taper.height": "Висота звуження",
+  "binDesigner.overhang.taper.singleHollowOnly": "Звуження доступне лише для порожніх контейнерів з одним відділенням."
 }

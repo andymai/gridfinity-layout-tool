@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Perfora el suelo y los pies que hay debajo, para que el agua y el polvo caigan directamente",
   "binDesigner.base.floorPattern.tooSmall": "Estos orificios son demasiado grandes para esta base: prueba una escala más fina",
   "binDesigner.floorPatternDisablesLightweight": "No se pueden combinar los orificios de drenaje con un suelo ligero",
-  "binDesigner.lightweightDisablesFloorPattern": "Un suelo ligero ya está abierto: no hay losa que perforar"
+  "binDesigner.lightweightDisablesFloorPattern": "Un suelo ligero ya está abierto: no hay losa que perforar",
+  "binDesigner.overhang.taper.title": "Estrechar paredes",
+  "binDesigner.overhang.taper.hint": "Inclina la pared exterior hacia dentro en la base para que el compartimento se ajuste a la esquina redondeada de un cajón. Cada lado se estrecha hacia la huella nominal, dentro de su voladizo.",
+  "binDesigner.overhang.taper.needsOverhang": "Primero añade voladizo a un lado y luego estréchalo en la base.",
+  "binDesigner.overhang.taper.feetConflict": "Desactiva los pies bajo el voladizo para estrechar las paredes.",
+  "binDesigner.overhang.taper.profile": "Perfil",
+  "binDesigner.overhang.taper.profileChamfer": "Chaflán",
+  "binDesigner.overhang.taper.profileFillet": "Redondeo",
+  "binDesigner.overhang.taper.bandHeight": "Altura del estrechamiento",
+  "inspector.taper": "Estrechar paredes",
+  "inspector.taper.profile": "Perfil",
+  "inspector.taper.chamfer": "Chaflán",
+  "inspector.taper.fillet": "Redondeo",
+  "inspector.taper.height": "Altura del estrechamiento",
+  "binDesigner.overhang.taper.singleHollowOnly": "El estrechamiento solo está disponible en compartimentos huecos de un solo compartimento."
 }

@@ -75,6 +75,105 @@ describe('OverhangSection', () => {
     expect(useDesignerStore.getState().ui.hoveredOverhangSide).toBe('feet');
   });
 
+  it('enabling the taper seeds per-side values from the overhang and clears feet', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, overhang: { left: 0, right: 8, front: 0, back: 0 } },
+    });
+    render(<OverhangSection />);
+    fireEvent.click(screen.getByText('Taper walls'));
+    const overhang = useDesignerStore.getState().params.overhang;
+    expect(overhang?.taper?.enabled).toBe(true);
+    expect(overhang?.taper?.right).toBe(8); // seeded to taper back to nominal
+    expect(overhang?.feet).toBe(false); // mutually exclusive with feet
+  });
+
+  it('reveals the profile and taper-height controls when the taper is on', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 8,
+          front: 0,
+          back: 0,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 5,
+            left: 0,
+            right: 8,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    expect(screen.getByText('Chamfer')).toBeDefined();
+    expect(screen.getByText('Fillet')).toBeDefined();
+    expect(screen.getByText('Taper height')).toBeDefined();
+  });
+
+  it('cannot enable the taper without overhang', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 0, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
+    render(<OverhangSection />);
+    expect(
+      screen.getByText('Add overhang to a side first, then taper it back in at the base.')
+    ).toBeDefined();
+    fireEvent.click(screen.getByText('Taper walls'));
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+  });
+
+  it('cannot enable the taper while feet are on (mutually exclusive)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 0, right: 8, front: 0, back: 0, feet: true },
+      },
+    });
+    render(<OverhangSection />);
+    expect(screen.getByText('Turn off feet under overhang to taper the walls.')).toBeDefined();
+    fireEvent.click(screen.getByText('Taper walls'));
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+  });
+
+  it('disables the taper for solid bins (hollow, single-compartment only)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        overhang: { left: 8, right: 0, front: 0, back: 0 },
+      },
+    });
+    render(<OverhangSection />);
+    expect(
+      screen.getByText('Taper is available only on hollow, single-compartment bins.')
+    ).toBeDefined();
+    fireEvent.click(screen.getByText('Taper walls'));
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+  });
+
+  it('disables the taper for multi-compartment bins', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] },
+        overhang: { left: 8, right: 0, front: 0, back: 0 },
+      },
+    });
+    render(<OverhangSection />);
+    expect(
+      screen.getByText('Taper is available only on hollow, single-compartment bins.')
+    ).toBeDefined();
+    fireEvent.click(screen.getByText('Taper walls'));
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+  });
+
   it('disables the controls for custom-shape bins', () => {
     // 2×2 bin mask with one empty half-cell → partial (custom) shape.
     const mask: CellMask = {

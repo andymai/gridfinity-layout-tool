@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "在底面及其下方的脚上穿孔，让水和灰尘直接落下",
   "binDesigner.base.floorPattern.tooSmall": "这些孔对此底座来说太大 — 请尝试更细的比例",
   "binDesigner.floorPatternDisablesLightweight": "排水孔无法与减重底面并用",
-  "binDesigner.lightweightDisablesFloorPattern": "减重底面本已镂空 — 没有可穿孔的板面"
+  "binDesigner.lightweightDisablesFloorPattern": "减重底面本已镂空 — 没有可穿孔的板面",
+  "binDesigner.overhang.taper.title": "锥化侧壁",
+  "binDesigner.overhang.taper.hint": "在底部将外壁向内倾斜，使收纳盒贴合抽屉的圆角。每一侧都在其外伸范围内向名义轮廓收拢。",
+  "binDesigner.overhang.taper.needsOverhang": "请先为某一侧添加外伸，然后在底部将其收拢。",
+  "binDesigner.overhang.taper.feetConflict": "关闭外伸下方的支脚即可锥化侧壁。",
+  "binDesigner.overhang.taper.profile": "轮廓",
+  "binDesigner.overhang.taper.profileChamfer": "倒角",
+  "binDesigner.overhang.taper.profileFillet": "圆角",
+  "binDesigner.overhang.taper.bandHeight": "锥化高度",
+  "inspector.taper": "锥化侧壁",
+  "inspector.taper.profile": "轮廓",
+  "inspector.taper.chamfer": "倒角",
+  "inspector.taper.fillet": "圆角",
+  "inspector.taper.height": "锥化高度",
+  "binDesigner.overhang.taper.singleHollowOnly": "锥化仅适用于中空的单隔层收纳盒。"
 }

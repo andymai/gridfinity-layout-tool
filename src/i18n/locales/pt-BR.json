@@ -2911,5 +2911,19 @@
   "binDesigner.base.floorPattern.hint": "Perfura o fundo e os pés abaixo dele, para que água e poeira caiam direto",
   "binDesigner.base.floorPattern.tooSmall": "Esses furos são grandes demais para esta base — tente uma escala mais fina",
   "binDesigner.floorPatternDisablesLightweight": "Não é possível combinar furos de drenagem com um fundo leve",
-  "binDesigner.lightweightDisablesFloorPattern": "Um fundo leve já é aberto — não há laje para perfurar"
+  "binDesigner.lightweightDisablesFloorPattern": "Um fundo leve já é aberto — não há laje para perfurar",
+  "binDesigner.overhang.taper.title": "Afunilar paredes",
+  "binDesigner.overhang.taper.hint": "Incline a parede externa para dentro na base para que o compartimento se ajuste ao canto arredondado de uma gaveta. Cada lado afunila de volta à pegada nominal, dentro de sua saliência.",
+  "binDesigner.overhang.taper.needsOverhang": "Adicione saliência a um lado primeiro e depois afunile-a na base.",
+  "binDesigner.overhang.taper.feetConflict": "Desative os pés sob a saliência para afunilar as paredes.",
+  "binDesigner.overhang.taper.profile": "Perfil",
+  "binDesigner.overhang.taper.profileChamfer": "Chanfro",
+  "binDesigner.overhang.taper.profileFillet": "Arredondamento",
+  "binDesigner.overhang.taper.bandHeight": "Altura do afunilamento",
+  "inspector.taper": "Afunilar paredes",
+  "inspector.taper.profile": "Perfil",
+  "inspector.taper.chamfer": "Chanfro",
+  "inspector.taper.fillet": "Arredondamento",
+  "inspector.taper.height": "Altura do afunilamento",
+  "binDesigner.overhang.taper.singleHollowOnly": "O afunilamento está disponível apenas em compartimentos ocos de compartimento único."
 }

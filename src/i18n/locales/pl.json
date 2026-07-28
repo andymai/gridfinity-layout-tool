@@ -2911,5 +2911,19 @@
   "binDesigner.labelTabs.insetAria": "Wcięcie zakładki",
   "binDesigner.handles.widthAria": "Szerokość uchwytu",
   "binDesigner.handles.heightAria": "Wysokość uchwytu",
-  "binDesigner.handles.countAria": "Liczba uchwytów"
+  "binDesigner.handles.countAria": "Liczba uchwytów",
+  "binDesigner.overhang.taper.title": "Zwężaj ścianki",
+  "binDesigner.overhang.taper.hint": "Pochyl zewnętrzną ściankę do wewnątrz u podstawy, aby pojemnik pasował do zaokrąglonego narożnika szuflady. Każdy bok zwęża się z powrotem do nominalnego obrysu, w granicach swojego nawisu.",
+  "binDesigner.overhang.taper.needsOverhang": "Najpierw dodaj nawis do boku, a potem zwęź go u podstawy.",
+  "binDesigner.overhang.taper.feetConflict": "Wyłącz stopki pod nawisem, aby zwęzić ścianki.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Fazowanie",
+  "binDesigner.overhang.taper.profileFillet": "Zaokrąglenie",
+  "binDesigner.overhang.taper.bandHeight": "Wysokość zwężenia",
+  "inspector.taper": "Zwężaj ścianki",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Fazowanie",
+  "inspector.taper.fillet": "Zaokrąglenie",
+  "inspector.taper.height": "Wysokość zwężenia",
+  "binDesigner.overhang.taper.singleHollowOnly": "Zwężenie jest dostępne tylko w pustych pojemnikach z jedną komorą."
 }
