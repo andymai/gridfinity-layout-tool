@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.325.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.2...gridfinity-layout-tool-v4.325.3) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** clip dividers under a spanning label shelf ([#2943](https://github.com/andymai/gridfinity-layout-tool/issues/2943)) ([26db433](https://github.com/andymai/gridfinity-layout-tool/commit/26db433f1e1b9ba89e8cd81ee78f3ee91266d0d4))
+
 ## [4.325.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.1...gridfinity-layout-tool-v4.325.2) (2026-07-28)
 
 
