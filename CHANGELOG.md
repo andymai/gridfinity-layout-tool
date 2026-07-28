@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.324.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.5...gridfinity-layout-tool-v4.324.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** add stacking-lip-only option for stackable lids ([#2934](https://github.com/andymai/gridfinity-layout-tool/issues/2934)) ([1627b43](https://github.com/andymai/gridfinity-layout-tool/commit/1627b431be6f842a2b241a3397b52aa824175a2d))
+
 ## [4.323.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.4...gridfinity-layout-tool-v4.323.5) (2026-07-28)
 
 
