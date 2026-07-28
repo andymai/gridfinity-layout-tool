@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.323.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.3...gridfinity-layout-tool-v4.323.4) (2026-07-28)
+
+
+### Bug Fixes
+
+* **bin-designer:** validate cutout placement by outline, not bounding box ([#2927](https://github.com/andymai/gridfinity-layout-tool/issues/2927)) ([17826d9](https://github.com/andymai/gridfinity-layout-tool/commit/17826d9513e20f2f0ce3387f8ff9dffdb0b7fa6b))
+
 ## [4.323.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.323.2...gridfinity-layout-tool-v4.323.3) (2026-07-28)
 
 
