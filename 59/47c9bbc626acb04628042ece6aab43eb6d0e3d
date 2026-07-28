@@ -1,0 +1,43 @@
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_806094f9ffe7bd::t_55d12ed8b89c6b 796-874
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_806094f9ffe7bd::t_426539fc33d9cd 15-20
+  s_806094f9ffe7bd::t_f24bfca00c599f 8
+  s_806094f9ffe7bd::t_23d81e37422bb0 672-673,683-685,689-714
+  s_806094f9ffe7bd::t_25af8c90d703f9 841-843
+  s_806094f9ffe7bd::t_3eab5d9ea28cb6 855-863,869,871-880
+  s_806094f9ffe7bd::t_623a88680b962c 715-716
+src/features/generation/worker/generators/compartmentBuilder.scenario.manifold.test.ts
+  s_806094f9ffe7bd::t_37914c91772525 96-120
+src/features/generation/worker/generators/pipeline/context.ts
+  s_806094f9ffe7bd::t_8a80fa08a9ca59 162-169
+  s_806094f9ffe7bd::t_eb46d7186a2519 21
+  s_806094f9ffe7bd::t_0a3171d98f7a23 202-206
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_806094f9ffe7bd::t_5d2d2b86d967ef 245-273
+  s_806094f9ffe7bd::t_d831ecc392df66 9
+  s_806094f9ffe7bd::t_896ab80e6eed05 186-244,274-281
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_806094f9ffe7bd::t_2d5deeecdfa59d 25
+  s_806094f9ffe7bd::t_7b732068ba585f 224-255
+src/features/bin-designer/README.md
+  s_806094f9ffe7bd::t_c81441fe3f4912 226-233
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.labelSockets.test.ts.snap
+  s_806094f9ffe7bd::t_82c2bcace40c75 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5947c9bbc626acb04628042ece6aab43eb6d0e3d",
+  "prompts": {},
+  "sessions": {
+    "s_806094f9ffe7bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85eca049-658c-476d-a58a-53ce5189fc9a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
