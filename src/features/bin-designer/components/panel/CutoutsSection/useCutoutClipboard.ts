@@ -9,6 +9,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { MaskCellSize } from './maskFit';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -25,6 +26,7 @@ interface UseCutoutClipboardOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
+  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
 }
 
 export interface CutoutClipboard {
@@ -43,6 +45,7 @@ export function useCutoutClipboard({
   binDepth,
   cellMask,
   maskCellSize,
+  meshAssets,
 }: UseCutoutClipboardOptions): CutoutClipboard {
   const addToast = useToastStore((s) => s.addToast);
   const t = useTranslation();
@@ -73,7 +76,7 @@ export function useCutoutClipboard({
       cellMask && maskCellSize
         ? clipboard.filter((orig) => {
             const pos = clampedOffset(orig, offset, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
+            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize, meshAssets);
           })
         : clipboard;
     if (placeable.length === 0) return;
@@ -81,7 +84,7 @@ export function useCutoutClipboard({
     addClonedCutouts(placeable, onAdd, setSelection, (original) =>
       clampedOffset(original, offset, binWidth, binDepth)
     );
-  }, [clipboard, onAdd, setSelection, binWidth, binDepth, cellMask, maskCellSize]);
+  }, [clipboard, onAdd, setSelection, binWidth, binDepth, cellMask, maskCellSize, meshAssets]);
 
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
@@ -91,7 +94,7 @@ export function useCutoutClipboard({
       cellMask && maskCellSize
         ? selected.filter((orig) => {
             const pos = clampedOffset(orig, PASTE_OFFSET, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
+            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize, meshAssets);
           })
         : selected;
     if (placeable.length === 0) return;
@@ -99,7 +102,17 @@ export function useCutoutClipboard({
     addClonedCutouts(placeable, onAdd, setSelection, (original) =>
       clampedOffset(original, PASTE_OFFSET, binWidth, binDepth)
     );
-  }, [cutouts, selection, onAdd, setSelection, binWidth, binDepth, cellMask, maskCellSize]);
+  }, [
+    cutouts,
+    selection,
+    onAdd,
+    setSelection,
+    binWidth,
+    binDepth,
+    cellMask,
+    maskCellSize,
+    meshAssets,
+  ]);
 
   return { clipboard, copySelected, pasteFromClipboard, duplicateSelected };
 }

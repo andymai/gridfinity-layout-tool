@@ -421,6 +421,20 @@ estimates), and the source file name.
     cell-aligned placement where every instance fits the polygon, and leaves the
     cutout flagged when none exists (translation can't fit an arbitrary concave
     region — honest rather than a silent false-fix).
+21. **A masked board is concave, so a bounding box can't decide containment** —
+    an axis-aligned box proves a fit but never a miss once the board has a
+    notch: an L-shaped cutout nested in an L-shaped bin has a box spanning the
+    notch. `cutoutFitsInMask` therefore uses `rectFitsInMask` as a **fast
+    accept** only, falling back to clipping the real silhouette
+    (`cutoutOutline.getCutoutOutline`) against the filled region with
+    `polygon-clipping`. Rings are deliberately **conservative supersets** —
+    curved spans sample a _circumscribing_ polygon — so an accepted placement
+    never clips in the generated mesh. `mesh` cutouts need their stored
+    silhouette, which is why `meshAssets` is threaded to every mask check;
+    without it a mesh imprint falls back to its footprint rectangle. Any new
+    caller building a _candidate_ cutout from a drag patch must move path
+    vertices with x/y (`translateCutoutPreview`), or the outline is validated
+    where the cutout used to be.
 
 ## Thumbnail Pipeline
 

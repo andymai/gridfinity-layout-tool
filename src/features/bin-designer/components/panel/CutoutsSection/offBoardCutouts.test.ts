@@ -114,6 +114,53 @@ describe('isCutoutOffBoard', () => {
     expect(isCutoutOffBoard(overNotch, 100, 100, mask, cellSize)).toBe(true);
   });
 
+  // Issue #2922: "1 cutout(s) outside the board" on a concave cutout that is
+  // entirely on the board — its bounding box, not the cutout, spanned the notch.
+  it('does not flag a concave path nested inside the notch of an L-shaped board', () => {
+    const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
+    const cellSize = { cellMmX: 50, cellMmY: 50 };
+    // L-shaped path hugging the three filled cells; its box is the full 100×100.
+    const lShape = createCutout({
+      shape: 'path',
+      x: 2,
+      y: 2,
+      width: 96,
+      depth: 96,
+      path: [
+        corner(2, 2),
+        corner(98, 2),
+        corner(98, 48),
+        corner(48, 48),
+        corner(48, 98),
+        corner(2, 98),
+      ],
+    });
+    expect(isCutoutOffBoard(lShape, 100, 100, mask, cellSize)).toBe(false);
+    expect(getOffBoardCutoutIds([lShape], 100, 100, mask, cellSize).size).toBe(0);
+    expect(clampOffBoardCutouts([lShape], 100, 100, mask, cellSize).size).toBe(0);
+  });
+
+  it('still flags a concave path whose arm crosses into the notch', () => {
+    const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };
+    const cellSize = { cellMmX: 50, cellMmY: 50 };
+    const reachesIn = createCutout({
+      shape: 'path',
+      x: 2,
+      y: 2,
+      width: 96,
+      depth: 96,
+      path: [
+        corner(2, 2),
+        corner(98, 2),
+        corner(98, 70),
+        corner(70, 70),
+        corner(70, 98),
+        corner(2, 98),
+      ],
+    });
+    expect(isCutoutOffBoard(reachesIn, 100, 100, mask, cellSize)).toBe(true);
+  });
+
   it('flags an array whose outer instance spills past the edge', () => {
     // Master fits at 70..90, but a 2-wide grid puts a second instance at 110..130.
     const arr = createCutout({

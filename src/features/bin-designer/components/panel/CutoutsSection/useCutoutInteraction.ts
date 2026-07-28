@@ -56,6 +56,7 @@ export function useCutoutInteraction({
   gridSize = 0.5,
   cellMask,
   maskCellSize,
+  meshAssets,
 }: UseCutoutInteractionOptions) {
   const [mode, setMode] = useState<InteractionMode>({ type: 'placing', shape: 'rectangle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
@@ -197,7 +198,7 @@ export function useCutoutInteraction({
           const orig = cutouts.find((c) => c.id === id);
           if (!orig) continue;
           const candidate = { ...orig, ...patch };
-          if (!cutoutFitsInMask(candidate, cellMask, maskCellSize)) return;
+          if (!cutoutFitsInMask(candidate, cellMask, maskCellSize, meshAssets)) return;
         }
       }
 
@@ -209,7 +210,17 @@ export function useCutoutInteraction({
         }
       }
     },
-    [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth, cellMask, maskCellSize]
+    [
+      selection,
+      cutouts,
+      onUpdate,
+      onUpdateBatch,
+      binWidth,
+      binDepth,
+      cellMask,
+      maskCellSize,
+      meshAssets,
+    ]
   );
 
   // ── Sub-hooks: clipboard, context menu, undo toasts ───────────────
@@ -223,6 +234,7 @@ export function useCutoutInteraction({
     binDepth,
     cellMask,
     maskCellSize,
+    meshAssets,
   });
 
   const { contextMenu, openContextMenu, closeContextMenu } = useCutoutContextMenu();
@@ -298,6 +310,7 @@ export function useCutoutInteraction({
     binDepth,
     cellMask,
     maskCellSize,
+    meshAssets,
     rulerSnapTargets,
     rulerZoomRef,
     pastDeadZoneRef,

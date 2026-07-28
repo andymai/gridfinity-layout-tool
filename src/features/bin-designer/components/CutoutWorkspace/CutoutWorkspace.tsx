@@ -107,8 +107,16 @@ export function CutoutWorkspace() {
   // are stored in absolute mm and never auto-rescaled. Flag them so the canvas
   // can frame them and the inspector can offer a one-click clamp back in.
   const offBoardIds = useMemo(
-    () => getOffBoardCutoutIds(cutouts, binWidth, binDepth, params.cellMask, maskCellSize),
-    [cutouts, binWidth, binDepth, params.cellMask, maskCellSize]
+    () =>
+      getOffBoardCutoutIds(
+        cutouts,
+        binWidth,
+        binDepth,
+        params.cellMask,
+        maskCellSize,
+        params.meshAssets
+      ),
+    [cutouts, binWidth, binDepth, params.cellMask, maskCellSize, params.meshAssets]
   );
 
   const t = useTranslation();
@@ -166,10 +174,19 @@ export function CutoutWorkspace() {
       binWidth,
       binDepth,
       params.cellMask,
-      maskCellSize
+      maskCellSize,
+      params.meshAssets
     );
     if (updates.size > 0) updateCutoutsBatch(updates);
-  }, [cutouts, binWidth, binDepth, params.cellMask, maskCellSize, updateCutoutsBatch]);
+  }, [
+    cutouts,
+    binWidth,
+    binDepth,
+    params.cellMask,
+    maskCellSize,
+    params.meshAssets,
+    updateCutoutsBatch,
+  ]);
 
   const {
     mode,

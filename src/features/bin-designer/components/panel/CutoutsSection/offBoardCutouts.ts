@@ -10,14 +10,17 @@
  * there is no array), so an array whose outer instances spill past the edge is
  * flagged even when the master fits. Footprints use the same `getCutoutBounds`
  * placement validation uses (true vertex bounds for paths), and a custom
- * (masked) footprint defers to polygon containment.
+ * (masked) footprint defers to the outline containment in `cutoutFitsInMask` —
+ * a bounding box would flag an L-shaped cutout nested in an L-shaped bin.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { translateCutout } from './cutoutHelpers';
 import { translatePathPoints } from './pathGeometry';
-import { getCutoutBounds, cutoutFitsInMask, rectFitsInMask, type MaskCellSize } from './maskFit';
+import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import type { Bounds } from './geometryCore';
 
 /** Tolerance (mm) — mirrors the interaction clamps so a flush edge isn't flagged. */
@@ -52,12 +55,15 @@ export function isCutoutOffBoard(
   binWidth: number,
   binDepth: number,
   mask?: CellMask,
-  cellSize?: MaskCellSize
+  cellSize?: MaskCellSize,
+  meshAssets?: Readonly<Record<string, MeshAsset>>
 ): boolean {
   const instances = expandCutoutArray(cutout);
   // Custom (masked) footprint: an instance inside the bounding rectangle can
   // still overhang the polygon, so defer to the containment check placements use.
-  if (mask && cellSize) return instances.some((inst) => !cutoutFitsInMask(inst, mask, cellSize));
+  if (mask && cellSize) {
+    return instances.some((inst) => !cutoutFitsInMask(inst, mask, cellSize, meshAssets));
+  }
   return instances.some((inst) => boundsOutsideRect(getCutoutBounds(inst), binWidth, binDepth));
 }
 
@@ -67,11 +73,12 @@ export function getOffBoardCutoutIds(
   binWidth: number,
   binDepth: number,
   mask?: CellMask,
-  cellSize?: MaskCellSize
+  cellSize?: MaskCellSize,
+  meshAssets?: Readonly<Record<string, MeshAsset>>
 ): Set<string> {
   const ids = new Set<string>();
   for (const c of cutouts) {
-    if (isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize)) ids.add(c.id);
+    if (isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize, meshAssets)) ids.add(c.id);
   }
   return ids;
 }
@@ -103,28 +110,30 @@ function rectOffset(
  * corner to each mask cell, so a valid run is found whenever one exists.
  */
 function maskOffset(
-  instanceBounds: readonly Bounds[],
+  instances: readonly Cutout[],
   mask: CellMask,
-  cellSize: MaskCellSize
+  cellSize: MaskCellSize,
+  meshAssets: Readonly<Record<string, MeshAsset>> | undefined
 ): { dx: number; dy: number } | null {
-  const u = unionBounds(instanceBounds);
+  const u = unionBounds(instances.map(getCutoutBounds));
   let best: { dx: number; dy: number } | null = null;
   let bestDist = Infinity;
   // Min-corner candidates only need cells [0, cols)×[0, rows): aligning the
-  // corner to the far boundary always overhangs (rectFitsInMask rejects it).
+  // corner to the far boundary always overhangs (cutoutFitsInMask rejects it).
   for (let r = 0; r < mask.rows; r++) {
     for (let c = 0; c < mask.cols; c++) {
       const dx = c * cellSize.cellMmX - u.minX;
       const dy = r * cellSize.cellMmY - u.minY;
-      const fits = instanceBounds.every((b) =>
-        rectFitsInMask(mask, b.minX + dx, b.minY + dy, b.maxX - b.minX, b.maxY - b.minY, cellSize)
+      const dist = dx * dx + dy * dy;
+      // Containment is the expensive half of this scan, so skip candidates that
+      // can't beat the incumbent before testing them.
+      if (dist >= bestDist) continue;
+      const fits = instances.every((inst) =>
+        cutoutFitsInMask(translateCutout(inst, dx, dy), mask, cellSize, meshAssets)
       );
       if (!fits) continue;
-      const dist = dx * dx + dy * dy;
-      if (dist < bestDist) {
-        best = { dx, dy };
-        bestDist = dist;
-      }
+      best = { dx, dy };
+      bestDist = dist;
     }
   }
   return best;
@@ -141,13 +150,14 @@ export function clampCutoutToBoard(
   binWidth: number,
   binDepth: number,
   mask?: CellMask,
-  cellSize?: MaskCellSize
+  cellSize?: MaskCellSize,
+  meshAssets?: Readonly<Record<string, MeshAsset>>
 ): Partial<Cutout> | null {
-  const instanceBounds = expandCutoutArray(cutout).map(getCutoutBounds);
+  const instances = expandCutoutArray(cutout);
   const offset =
     mask && cellSize
-      ? maskOffset(instanceBounds, mask, cellSize)
-      : rectOffset(instanceBounds, binWidth, binDepth);
+      ? maskOffset(instances, mask, cellSize, meshAssets)
+      : rectOffset(instances.map(getCutoutBounds), binWidth, binDepth);
   if (!offset) return null;
   const { dx, dy } = offset;
   if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return null;
@@ -164,12 +174,13 @@ export function clampOffBoardCutouts(
   binWidth: number,
   binDepth: number,
   mask?: CellMask,
-  cellSize?: MaskCellSize
+  cellSize?: MaskCellSize,
+  meshAssets?: Readonly<Record<string, MeshAsset>>
 ): Map<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   for (const c of cutouts) {
-    if (!isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize)) continue;
-    const moved = clampCutoutToBoard(c, binWidth, binDepth, mask, cellSize);
+    if (!isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize, meshAssets)) continue;
+    const moved = clampCutoutToBoard(c, binWidth, binDepth, mask, cellSize, meshAssets);
     if (moved) updates.set(c.id, moved);
   }
   return updates;

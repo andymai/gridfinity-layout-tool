@@ -10,6 +10,7 @@
 
 import { useCallback } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
+import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import {
   handlePendingPlaceMove,
@@ -28,7 +29,7 @@ import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import { snapToNearestTarget, computeMeasurement } from './handlers/rulerHandler';
 import type { RulerMeasurement, SnapTarget } from './handlers/rulerHandler';
 import { MIN_CUTOUT_SIZE, type AlignmentGuide } from './geometry';
-import { rectFitsInMask, type MaskCellSize } from './maskFit';
+import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout, defaultPlaceSize } from './cutoutHelpers';
 import { type InteractionMode, type PreviewMap } from './cutoutInteractionTypes';
 
@@ -58,6 +59,7 @@ interface UseCutoutPointerHandlersOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
+  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
   readonly rulerSnapTargets: readonly SnapTarget[];
   readonly rulerZoomRef: React.RefObject<number>;
   readonly pastDeadZoneRef: React.RefObject<boolean>;
@@ -99,6 +101,7 @@ export function useCutoutPointerHandlers(
     binDepth,
     cellMask,
     maskCellSize,
+    meshAssets,
     rulerSnapTargets,
     rulerZoomRef,
     pastDeadZoneRef,
@@ -112,7 +115,7 @@ export function useCutoutPointerHandlers(
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
       const event = { mmX, mmY, shiftKey, altKey };
-      const bounds = { binWidth, binDepth, cellMask, maskCellSize };
+      const bounds = { binWidth, binDepth, cellMask, maskCellSize, meshAssets };
 
       switch (mode.type) {
         case 'pending-place':
@@ -206,6 +209,7 @@ export function useCutoutPointerHandlers(
       binDepth,
       cellMask,
       maskCellSize,
+      meshAssets,
       snap,
       commitPath,
       rulerSnapTargets,
@@ -228,22 +232,25 @@ export function useCutoutPointerHandlers(
       const x = Math.max(0, Math.min(snap(placeMode.startMmX - defaultW / 2), binWidth - defaultW));
       const y = Math.max(0, Math.min(snap(placeMode.startMmY - defaultD / 2), binDepth - defaultD));
 
-      // Polygon mask: reject click-to-place inside an unfilled notch.
+      const newId = crypto.randomUUID();
+      const created = createDefaultCutout(newId, placeMode.shape, x, y, defaultW, defaultD);
+
+      // Polygon mask: reject click-to-place inside an unfilled notch, testing
+      // the shape's outline rather than its bounding box.
       if (
         cellMask &&
         maskCellSize &&
-        !rectFitsInMask(cellMask, x, y, defaultW, defaultD, maskCellSize)
+        !cutoutFitsInMask(created, cellMask, maskCellSize, meshAssets)
       ) {
         setMode({ type: 'idle' });
         return;
       }
 
-      const newId = crypto.randomUUID();
-      onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultW, defaultD));
+      onAdd(created);
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
     },
-    [snap, binWidth, binDepth, cellMask, maskCellSize, onAdd, setSelection, setMode]
+    [snap, binWidth, binDepth, cellMask, maskCellSize, meshAssets, onAdd, setSelection, setMode]
   );
 
   /**

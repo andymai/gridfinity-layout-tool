@@ -61,7 +61,8 @@ export function handleGroupScaleMove(
       const orig = cutouts.find((c) => c.id === id);
       if (!orig) continue;
       const candidate = { ...orig, ...patch };
-      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) return;
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize, bounds.meshAssets))
+        return;
     }
   }
 

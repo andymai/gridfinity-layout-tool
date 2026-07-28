@@ -26,7 +26,7 @@ import {
   isSelfIntersecting,
 } from './pathGeometry';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
-import { rectFitsInMask, type MaskCellSize } from './maskFit';
+import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout } from './cutoutHelpers';
 import type { InteractionMode, PreviewMap } from './cutoutInteractionTypes';
 
@@ -104,23 +104,22 @@ export function useCutoutPathTool({
       }
 
       const { minX, minY, maxX, maxY } = getPathBounds(clamped);
+      const newId = crypto.randomUUID();
+      const created: Cutout = {
+        ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
+        path: clamped,
+      };
 
-      // Polygon bins: reject paths whose bounds overhang the mask.
-      if (
-        cellMask &&
-        maskCellSize &&
-        !rectFitsInMask(cellMask, minX, minY, maxX - minX, maxY - minY, maskCellSize)
-      ) {
+      // Polygon bins: reject paths that overhang the mask. Tested against the
+      // drawn outline, not its bounding box — a concave path can sit entirely
+      // inside a concave board whose notch its box would straddle.
+      if (cellMask && maskCellSize && !cutoutFitsInMask(created, cellMask, maskCellSize)) {
         setPathDrawingPreview(null);
         setMode({ type: 'idle' });
         return;
       }
 
-      const newId = crypto.randomUUID();
-      onAdd({
-        ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
-        path: clamped,
-      });
+      onAdd(created);
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
       setPathDrawingPreview(null);

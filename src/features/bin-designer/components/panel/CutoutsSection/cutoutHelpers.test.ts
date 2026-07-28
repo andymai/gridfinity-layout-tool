@@ -4,6 +4,7 @@ import {
   defaultPlaceSize,
   resizeKeepingCenter,
   flattenCutoutArray,
+  translateCutoutPreview,
 } from './cutoutHelpers';
 import type { Cutout } from '@/features/bin-designer/types';
 
@@ -107,5 +108,46 @@ describe('flattenCutoutArray', () => {
     expect(added.every((a) => a.array === undefined)).toBe(true);
     expect(new Set(added.map((a) => a.id)).size).toBe(2); // unique ids
     expect(added.every((a) => a.id !== 'm')).toBe(true);
+  });
+});
+
+describe('translateCutoutPreview', () => {
+  const pathCutout: Cutout = {
+    id: 'p',
+    shape: 'path',
+    x: 10,
+    y: 10,
+    width: 20,
+    depth: 20,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    path: [
+      { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+      { x: 30, y: 10, handleIn: null, handleOut: null, symmetric: false },
+      { x: 30, y: 30, handleIn: null, handleOut: null, symmetric: false },
+    ],
+  };
+
+  it('carries absolute path vertices along with an x/y patch', () => {
+    const moved = translateCutoutPreview(pathCutout, { x: 15, y: 40 });
+    expect(moved.path?.map((pt) => [pt.x, pt.y])).toEqual([
+      [15, 40],
+      [35, 40],
+      [35, 60],
+    ]);
+  });
+
+  it('leaves the path alone when the patch does not move the cutout', () => {
+    const moved = translateCutoutPreview(pathCutout, { rotation: 45 });
+    expect(moved.path).toBe(pathCutout.path);
+    expect(moved.rotation).toBe(45);
+  });
+
+  it('passes non-path shapes straight through', () => {
+    const rect = { ...pathCutout, shape: 'rectangle' as const, path: undefined };
+    expect(translateCutoutPreview(rect, { x: 99 })).toEqual({ ...rect, x: 99 });
   });
 });

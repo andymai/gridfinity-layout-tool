@@ -12,6 +12,7 @@ import {
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { translatePathPoints } from './pathGeometry';
 import {
   DEFAULT_RECT_SIZE,
   DEFAULT_CIRCLE_SIZE,
@@ -53,6 +54,25 @@ export function cloneCutoutsWithGroups(
       originalId: original.id,
     };
   });
+}
+
+/** Move a cutout by (dx, dy), carrying a path's absolute vertices along. */
+export function translateCutout(cutout: Cutout, dx: number, dy: number): Cutout {
+  const moved = { ...cutout, x: cutout.x + dx, y: cutout.y + dy };
+  if (cutout.shape !== 'path' || !cutout.path || (dx === 0 && dy === 0)) return moved;
+  return { ...moved, path: translatePathPoints(cutout.path, dx, dy) };
+}
+
+/**
+ * Apply a transform preview patch, moving a path cutout's vertices in lockstep
+ * with its x/y. Mirrors what the drag commit writes to the store, so validators
+ * run against the geometry the commit will actually produce rather than against
+ * the position the cutout is leaving.
+ */
+export function translateCutoutPreview(cutout: Cutout, patch: Partial<Cutout>): Cutout {
+  const dx = (patch.x ?? cutout.x) - cutout.x;
+  const dy = (patch.y ?? cutout.y) - cutout.y;
+  return { ...translateCutout(cutout, dx, dy), ...patch };
 }
 
 /** Clamp a position so the cutout stays within bin bounds (both lower and upper). */
