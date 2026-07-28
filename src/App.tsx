@@ -137,7 +137,7 @@ export default function App() {
   const isNonLayoutRoute =
     isDesignerRoute || isBaseplateRoute || isSupportersRoute || isDevThumbnailRoute;
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
-    disabled: isDesignerRoute || isBaseplateRoute || isSupportersRoute,
+    disabled: isNonLayoutRoute,
   });
   const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
