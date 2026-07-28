@@ -30,7 +30,12 @@ import type { LidInputs } from './lidInputs';
 /** Insets at each Z breakpoint — same values as `baseplateGenerator`. */
 const STACK_INSET_TOP = 0;
 const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
-const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+/**
+ * Inset at the pocket's floor — so on a lip-only top this is how far the lip's
+ * inner face sits inside the nominal socket grid at Z=0, i.e. the usable width
+ * of the recessed floor. `lidTextBuilder` fits text against it.
+ */
+export const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
 /**
  * Z breakpoints of the pocket profile, paired with their inset. The slab's top

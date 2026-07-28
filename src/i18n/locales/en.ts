@@ -1786,9 +1786,12 @@ const en: Record<string, string> = {
   'binDesigner.lid.text.placeholder': 'e.g. Cables',
   'binDesigner.lid.text.aria': 'Lid text',
   'binDesigner.lid.text.disabledStackable':
-    'Not available with a stackable top — the stacking surface owns the lid’s top face.',
+    'Not available with a full stack grid — switch to “Stacking lip only” to free up the lid’s top face.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
   'binDesigner.lid.text.trayHint': 'Text is placed on the tray floor, inside the rim.',
+  'binDesigner.lid.text.stackLipHint': 'Text is placed on the recessed floor inside the lip.',
+  'binDesigner.lid.text.stackLipEmbossWarning':
+    'Raised text sits under whatever stacks on the lid, so it won’t seat flat. Engrave or cut through instead.',
   'binDesigner.lid.topSurface.flat': 'Flat',
   'binDesigner.lid.topSurface.stackable': 'Stackable',
   'binDesigner.lid.topSurface.tray': 'Tray',

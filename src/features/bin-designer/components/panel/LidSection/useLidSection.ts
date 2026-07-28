@@ -464,14 +464,17 @@ export function useLidSection() {
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
   // ── Lid-top text (#2695) ──────────────────────────────────────────────
-  // Mirrors the worker gates in `resolveLidInputs`: a stackable top owns the
-  // surface, and polygon lids are excluded (rectangular auto-fit).
+  // Mirrors the worker gates in `resolveLidInputs`: a FULL stack grid owns the
+  // surface (the lip-only variant leaves its recessed floor free, #2930), and
+  // polygon lids are excluded (rectangular auto-fit).
   const lidText = params.surfaceText?.lidText ?? '';
-  const textDisabledReason = lid.stackableTop
-    ? t('binDesigner.lid.text.disabledStackable')
-    : isPartialMask(params.cellMask)
-      ? t('binDesigner.lid.text.disabledPolygon')
-      : undefined;
+  const textOnStackLipFloor = lid.stackableTop && lid.stackLipOnly;
+  const textDisabledReason =
+    lid.stackableTop && !lid.stackLipOnly
+      ? t('binDesigner.lid.text.disabledStackable')
+      : isPartialMask(params.cellMask)
+        ? t('binDesigner.lid.text.disabledPolygon')
+        : undefined;
   // Effective mode: the shared surface-text override wins over textDefaults.
   const textMode = params.surfaceText?.style?.mode ?? params.textDefaults.mode;
 
@@ -721,6 +724,11 @@ export function useLidSection() {
       textMode,
       textDisabledReason,
       textOnTrayFloor: topSurface === 'tray',
+      textOnStackLipFloor,
+      // Raised glyphs on the lip-only floor sit under whatever stacks on the
+      // lid, so it can't seat flat — surfaced as a warning rather than a gate,
+      // matching how the through-cut stencil note is handled.
+      textEmbossBlocksStacking: textOnStackLipFloor && textMode === 'emboss',
       isLidTextOpen,
     },
     handlers: {

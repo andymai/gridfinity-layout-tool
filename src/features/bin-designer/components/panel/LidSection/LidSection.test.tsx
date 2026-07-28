@@ -385,13 +385,42 @@ describe('LidSection', () => {
       expect(screen.getByText(/stencil/i)).toBeInTheDocument();
     });
 
-    it('replaces the input with a reason when the top is stackable', () => {
+    it('replaces the input with a reason under a full stack grid', () => {
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true },
       });
       render(<LidSection />);
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
-      expect(screen.getByText(/stacking surface owns/)).toBeInTheDocument();
+      expect(screen.getByText(/full stack grid/i)).toBeInTheDocument();
+    });
+
+    it('allows text on a lip-only stack top and says where it lands (#2930)', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+        surfaceText: { lidText: 'Cables' },
+      });
+      render(<LidSection />);
+      expect(screen.getByRole('textbox', { name: 'Lid text' })).toBeInTheDocument();
+      expect(screen.queryByText(/full stack grid/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/recessed floor inside the lip/i)).toBeInTheDocument();
+    });
+
+    it('warns that embossed text blocks stacking on a lip-only top (#2930)', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+        surfaceText: { lidText: 'Cables', style: { mode: 'emboss' } },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/won’t seat flat/i)).toBeInTheDocument();
+    });
+
+    it('does not warn about embossed text on a plain flat top', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        surfaceText: { lidText: 'Cables', style: { mode: 'emboss' } },
+      });
+      render(<LidSection />);
+      expect(screen.queryByText(/won’t seat flat/i)).not.toBeInTheDocument();
     });
 
     it('replaces the input with a reason for custom-shape (cellMask) bins', () => {
