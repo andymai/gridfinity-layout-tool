@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/taperedOuter.ts
+  s_539197aeb05631::t_fba660c87849fd 23-25
+  s_539197aeb05631::t_9bfff00fce2c1f 63-68,70-74,77-78,84-87
+  s_539197aeb05631::t_d08b0997148d0c 79-83
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_539197aeb05631::t_c74450e876717b 119-120,123-127,140-144
+  s_539197aeb05631::t_43b3f62a8664a5 91-97
+src/features/generation/worker/generators/binGenerator.scenario.taper.test.ts
+  s_539197aeb05631::t_7c30855eadf04d 79-108
+  s_539197aeb05631::t_f3edc4d082f46f 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "7e41348f035533212beb716b868967ce50e2caf7",
+  "prompts": {},
+  "sessions": {
+    "s_539197aeb05631": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b1e903-8d2b-4599-93a0-37fc9b888560",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
