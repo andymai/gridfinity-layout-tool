@@ -162,10 +162,11 @@ export interface LidInputs {
   readonly cellMask: CellMask | undefined;
   /**
    * Lid-top text, or null when absent/gated off. Rendered on the plain top
-   * face, or the tray floor when the tray recess is active. Gates mirror the
-   * LidSection UI: a stackable top owns the surface, and polygon lids are
-   * excluded (auto-fit assumes a rectangular face — same rectangularity
-   * restriction as `retentionMagnets`).
+   * face, the tray floor when the tray recess is active, or the recessed floor
+   * inside the lip on a lip-only stack top. Gates mirror the LidSection UI: a
+   * FULL stack grid owns the surface, and polygon lids are excluded (auto-fit
+   * assumes a rectangular face — same rectangularity restriction as
+   * `retentionMagnets`).
    */
   readonly text: LidTextInputs | null;
   /**
@@ -209,11 +210,16 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
 
   // Lid-top text (issue #2695). Shared surface style = design textDefaults
-  // merged with the surface-text override; a stackable top owns the surface
-  // and polygon lids are excluded (rectangular auto-fit), mirroring the UI.
+  // merged with the surface-text override; polygon lids are excluded
+  // (rectangular auto-fit), mirroring the UI.
+  //
+  // A full stack grid leaves no flat surface to write on. The lip-only variant
+  // (#2930) does — its recessed floor is one clear face — so text is allowed
+  // there and `applyLidText` fits it inside the lip.
+  const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly;
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
-  if (lidTextValue !== '' && !params.lid.stackableTop && !cellMask) {
+  if (lidTextValue !== '' && !stackGridOwnsTop && !cellMask) {
     const style = { ...params.textDefaults, ...params.surfaceText?.style };
     text = {
       value: lidTextValue,

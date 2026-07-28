@@ -352,6 +352,12 @@ export function LidSection() {
                         <Hint>{t('binDesigner.textMode.throughCutStencilNote')}</Hint>
                       )}
                       {state.textOnTrayFloor && <Hint>{t('binDesigner.lid.text.trayHint')}</Hint>}
+                      {state.textOnStackLipFloor && (
+                        <Hint>{t('binDesigner.lid.text.stackLipHint')}</Hint>
+                      )}
+                      {state.textEmbossBlocksStacking && (
+                        <Hint>{t('binDesigner.lid.text.stackLipEmbossWarning')}</Hint>
+                      )}
                     </>
                   )}
                 </>

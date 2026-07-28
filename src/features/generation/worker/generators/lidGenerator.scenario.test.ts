@@ -1107,7 +1107,7 @@ describe('lid generation and export scenarios', () => {
       expect(Math.abs(b.maxZ - a.maxZ)).toBeLessThan(0.01);
     });
 
-    it('stackable top ignores text (the stack grid owns the surface)', async () => {
+    it('a full stack grid ignores text (no flat surface left)', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const plain = generateLid(makeParams({ stackableTop: true }, BASE));
       const withText = generateLid(
@@ -1116,6 +1116,78 @@ describe('lid generation and export scenarios', () => {
       expect(plain).not.toBeNull();
       expect(withText).not.toBeNull();
       expect(withText!.triangleCount).toBe(plain!.triangleCount);
+    });
+
+    describe('lip-only stack top (#2930)', () => {
+      const LIP_ONLY = { stackableTop: true, stackLipOnly: true } as const;
+
+      it('engraves into the recessed floor without disturbing the lip', async () => {
+        const { generateLid } = await import('./lidOrchestrator');
+        const { resolveLidInputs } = await import('./lidBuilder');
+        // The gate opens where the full grid's stayed shut.
+        expect(
+          resolveLidInputs(makeParams(LIP_ONLY, { ...BASE, surfaceText: { lidText: 'ABC' } })).text
+            ?.value
+        ).toBe('ABC');
+
+        const plain = generateLid(makeParams(LIP_ONLY, BASE));
+        const engraved = generateLid(
+          makeParams(LIP_ONLY, { ...BASE, surfaceText: { lidText: 'ABC' } })
+        );
+        expect(plain).not.toBeNull();
+        expect(engraved).not.toBeNull();
+        assertStructurallyValid(engraved!, 'lip-only lid with text');
+        expect(engraved!.triangleCount).not.toBe(plain!.triangleCount);
+
+        // The cut goes DOWN into the floor, so the lip and footprint are
+        // untouched — a text pass that nudged either would break stacking.
+        const a = boundingBox(plain!.vertices);
+        const b = boundingBox(engraved!.vertices);
+        expect(b.maxZ).toBeCloseTo(a.maxZ, 3);
+        expect(b.maxX - b.minX).toBeCloseTo(a.maxX - a.minX, 3);
+        expect(b.maxY - b.minY).toBeCloseTo(a.maxY - a.minY, 3);
+      });
+
+      it('fits text in the grid frame, not the overhang-shifted perimeter', async () => {
+        const { generateLid } = await import('./lidOrchestrator');
+        const { resolveLidInputs } = await import('./lidBuilder');
+        const overhang = { left: 0, right: 8, front: 0, back: 0 };
+        const params = makeParams(LIP_ONLY, {
+          ...BASE,
+          overhang,
+          surfaceText: { lidText: 'ABC' },
+        });
+
+        // The perimeter frame really did move, so a fit box derived from it
+        // would be both wider than the floor and off-centre from it.
+        const inputs = resolveLidInputs(params);
+        expect(inputs.outerOffsetX).not.toBe(0);
+        expect(inputs.lidOuterW).toBeGreaterThan(
+          resolveLidInputs(makeParams(LIP_ONLY, BASE)).lidOuterW
+        );
+
+        const plain = generateLid(makeParams(LIP_ONLY, { ...BASE, overhang }));
+        const engraved = generateLid(params);
+        expect(plain).not.toBeNull();
+        expect(engraved).not.toBeNull();
+        assertStructurallyValid(engraved!, 'overhang lip-only lid with text');
+        expect(engraved!.triangleCount).not.toBe(plain!.triangleCount);
+      });
+
+      it('survives text sharing the floor with magnet pockets', async () => {
+        // Lip-only is the first config where engraved text and stack magnet
+        // pockets both land on the Z=0 floor. Overlapping cutters are a legal
+        // boolean, but assert it rather than assume it.
+        const { generateLid } = await import('./lidOrchestrator');
+        const mesh = generateLid(
+          makeParams(
+            { ...LIP_ONLY, magnetHoles: true },
+            { ...BASE, surfaceText: { lidText: 'ABC' } }
+          )
+        );
+        expect(mesh).not.toBeNull();
+        assertStructurallyValid(mesh!, 'lip-only lid with text + magnet pockets');
+      });
     });
 
     it('polygon (cellMask) lids skip text', async () => {
