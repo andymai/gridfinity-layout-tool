@@ -2989,5 +2989,19 @@
   "undo.unknownAction": "Action effectuée",
   "webgl.fallback.body": "WebGL est désactivé ou non pris en charge. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour les pilotes graphiques ou changez de navigateur.",
   "webgl.fallback.helpLink": "Vérifier la prise en charge de WebGL",
-  "webgl.fallback.title": "Votre navigateur n'a pas pu charger le rendu 3D"
+  "webgl.fallback.title": "Votre navigateur n'a pas pu charger le rendu 3D",
+  "binDesigner.overhang.taper.title": "Biseauter les parois",
+  "binDesigner.overhang.taper.hint": "Inclinez la paroi extérieure vers l'intérieur à la base pour que le bac épouse le coin arrondi d'un tiroir. Chaque côté se resserre vers l'empreinte nominale, dans la limite de son débord.",
+  "binDesigner.overhang.taper.needsOverhang": "Ajoutez d'abord un débord sur un côté, puis resserrez-le à la base.",
+  "binDesigner.overhang.taper.feetConflict": "Désactivez les pieds sous le débord pour biseauter les parois.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Chanfrein",
+  "binDesigner.overhang.taper.profileFillet": "Congé",
+  "binDesigner.overhang.taper.bandHeight": "Hauteur du biseau",
+  "inspector.taper": "Biseauter les parois",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Chanfrein",
+  "inspector.taper.fillet": "Congé",
+  "inspector.taper.height": "Hauteur du biseau",
+  "binDesigner.overhang.taper.singleHollowOnly": "Le biseau est disponible uniquement sur les bacs creux à un seul compartiment."
 }

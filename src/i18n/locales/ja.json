@@ -2989,5 +2989,19 @@
   "undo.unknownAction": "操作",
   "webgl.fallback.body": "WebGLが無効か非対応です。ブラウザ設定でハードウェアアクセラレーションを有効化する、グラフィックドライバーを更新する、またはブラウザを切り替えてみてください。",
   "webgl.fallback.helpLink": "WebGLサポートを確認",
-  "webgl.fallback.title": "お使いのブラウザは3Dレンダリングを読み込めませんでした"
+  "webgl.fallback.title": "お使いのブラウザは3Dレンダリングを読み込めませんでした",
+  "binDesigner.overhang.taper.title": "壁をテーパー",
+  "binDesigner.overhang.taper.hint": "外壁の底部を内側に傾け、引き出しの丸い角にフィットさせます。各辺はオーバーハングの範囲内で公称サイズへ絞り込まれます。",
+  "binDesigner.overhang.taper.needsOverhang": "先に辺へオーバーハングを追加し、底部で内側に絞り込みます。",
+  "binDesigner.overhang.taper.feetConflict": "壁をテーパーするには、オーバーハング下の脚をオフにしてください。",
+  "binDesigner.overhang.taper.profile": "プロファイル",
+  "binDesigner.overhang.taper.profileChamfer": "面取り",
+  "binDesigner.overhang.taper.profileFillet": "フィレット",
+  "binDesigner.overhang.taper.bandHeight": "テーパー高さ",
+  "inspector.taper": "壁をテーパー",
+  "inspector.taper.profile": "プロファイル",
+  "inspector.taper.chamfer": "面取り",
+  "inspector.taper.fillet": "フィレット",
+  "inspector.taper.height": "テーパー高さ",
+  "binDesigner.overhang.taper.singleHollowOnly": "テーパーは中空の単一コンパートメントのビンでのみ使用できます。"
 }

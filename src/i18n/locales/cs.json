@@ -2989,5 +2989,19 @@
   "undo.unknownAction": "Akce",
   "webgl.fallback.body": "WebGL je zakázáno nebo nepodporováno. Zkus v nastavení prohlížeče povolit hardwarovou akceleraci, aktualizovat ovladače grafiky nebo změnit prohlížeč.",
   "webgl.fallback.helpLink": "Zkontrolovat podporu WebGL",
-  "webgl.fallback.title": "Tvůj prohlížeč nedokázal načíst 3D vykreslování"
+  "webgl.fallback.title": "Tvůj prohlížeč nedokázal načíst 3D vykreslování",
+  "binDesigner.overhang.taper.title": "Zkosit stěny",
+  "binDesigner.overhang.taper.hint": "Nakloňte vnější stěnu u dna dovnitř, aby zásobník kopíroval zaoblený roh zásuvky. Každá strana se zužuje zpět k nominálnímu půdorysu v rámci svého přesahu.",
+  "binDesigner.overhang.taper.needsOverhang": "Nejprve přidejte přesah na stranu a poté jej u dna zužte.",
+  "binDesigner.overhang.taper.feetConflict": "Vypněte nožky pod přesahem, abyste mohli zkosit stěny.",
+  "binDesigner.overhang.taper.profile": "Profil",
+  "binDesigner.overhang.taper.profileChamfer": "Zkosení",
+  "binDesigner.overhang.taper.profileFillet": "Zaoblení",
+  "binDesigner.overhang.taper.bandHeight": "Výška zkosení",
+  "inspector.taper": "Zkosit stěny",
+  "inspector.taper.profile": "Profil",
+  "inspector.taper.chamfer": "Zkosení",
+  "inspector.taper.fillet": "Zaoblení",
+  "inspector.taper.height": "Výška zkosení",
+  "binDesigner.overhang.taper.singleHollowOnly": "Zkosení je dostupné jen u dutých zásobníků s jedním oddílem."
 }

@@ -2989,5 +2989,19 @@
   "undo.unknownAction": "Azione",
   "webgl.fallback.body": "WebGL è disabilitato o non supportato. Prova ad abilitare l'accelerazione hardware nelle impostazioni del browser, ad aggiornare i driver grafici o a cambiare browser.",
   "webgl.fallback.helpLink": "Verifica il supporto WebGL",
-  "webgl.fallback.title": "Il tuo browser non è riuscito a caricare il rendering 3D"
+  "webgl.fallback.title": "Il tuo browser non è riuscito a caricare il rendering 3D",
+  "binDesigner.overhang.taper.title": "Rastrema pareti",
+  "binDesigner.overhang.taper.hint": "Inclina la parete esterna verso l'interno alla base così il contenitore si adatta all'angolo arrotondato di un cassetto. Ogni lato rientra verso l'ingombro nominale, entro la sua sporgenza.",
+  "binDesigner.overhang.taper.needsOverhang": "Aggiungi prima la sporgenza a un lato, poi rastremala alla base.",
+  "binDesigner.overhang.taper.feetConflict": "Disattiva i piedini sotto la sporgenza per rastremare le pareti.",
+  "binDesigner.overhang.taper.profile": "Profilo",
+  "binDesigner.overhang.taper.profileChamfer": "Smusso",
+  "binDesigner.overhang.taper.profileFillet": "Raccordo",
+  "binDesigner.overhang.taper.bandHeight": "Altezza rastremazione",
+  "inspector.taper": "Rastrema pareti",
+  "inspector.taper.profile": "Profilo",
+  "inspector.taper.chamfer": "Smusso",
+  "inspector.taper.fillet": "Raccordo",
+  "inspector.taper.height": "Altezza rastremazione",
+  "binDesigner.overhang.taper.singleHollowOnly": "La rastremazione è disponibile solo su contenitori cavi a scomparto singolo."
 }

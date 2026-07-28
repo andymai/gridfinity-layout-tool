@@ -445,6 +445,8 @@ estimates), and the source file name.
     vertices with x/y (`translateCutoutPreview`), or the outline is validated
     where the cutout used to be.
 
+21. **Wall taper extends the overhang, hollow single-cavity only** — the curved-bin taper (#2933) lives on `OverhangConfig.taper`: per-side inset clamped to that side's overhang (a side only tapers where it has overhang), chamfer or fillet, shared band height. The `OverhangSection` control is **mutually exclusive with overhang feet** and gated to hollow, single-compartment bins (`taperAvailable`) to match the generator's strip. `paramSlice.updateOverhang` must carry `taper` through its field-by-field rebuild (clamped outward-only) — like the other overhang fields, it is dropped if omitted from the rebuild.
+
 ## Thumbnail Pipeline
 
 Two paths produce design thumbnails, written to IndexedDB and surfaced in the design-list modal:

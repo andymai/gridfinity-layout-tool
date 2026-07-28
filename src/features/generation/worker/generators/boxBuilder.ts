@@ -42,6 +42,7 @@ import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
+import { buildTaperedBox } from './taperedOuter';
 import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
 
@@ -381,6 +382,34 @@ export function buildBinBox(
         );
       } catch {
         return setBoxCache(boxKey, box);
+      }
+    }
+
+    // Tapered bins (#2933) build the hollow body directly (outer − cavity loft,
+    // no shell) — shell() is unreliable on a non-prismatic solid.
+    if (ov?.taper) {
+      try {
+        const taperedBody = buildTaperedBox(
+          scope,
+          outerW,
+          outerD,
+          wallHeight,
+          wallThickness,
+          ov.taper,
+          offX,
+          offY
+        );
+        scope.register(box); // unused on the taper path
+        return setBoxCache(boxKey, taperedBody);
+      } catch (e: unknown) {
+        // Fall through to the plain shelled box below so the bin is never lost —
+        // but surface it (like the multi-cavity fallback) so a taper regression
+        // is observable in dev/logs rather than a silent loss of the feature.
+        logger.warn('[buildBinBox] taper build failed; falling back to a plain shelled box', {
+          err: e instanceof Error ? e.message : String(e),
+          width: gridW,
+          depth: gridD,
+        });
       }
     }
 

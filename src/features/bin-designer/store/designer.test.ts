@@ -89,6 +89,28 @@ describe('useDesignerStore', () => {
       expect(useDesignerStore.getState().params.width).toBe(2); // default
     });
 
+    it('should undo a wall-taper change (#2933)', () => {
+      // Overhang is required for a taper; set it, then enable the taper.
+      useDesignerStore.getState().updateOverhang({ left: 8, right: 0, front: 0, back: 0 });
+      useDesignerStore.getState().updateOverhang({
+        taper: {
+          enabled: true,
+          profile: 'chamfer',
+          bandHeight: 5,
+          left: 8,
+          right: 0,
+          front: 0,
+          back: 0,
+        },
+      });
+      expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBe(true);
+
+      // One undo reverts the taper edit; the overhang set before it remains.
+      useDesignerStore.getState().undo();
+      expect(useDesignerStore.getState().params.overhang?.taper).toBeUndefined();
+      expect(useDesignerStore.getState().params.overhang?.left).toBe(8);
+    });
+
     it('should redo an undone change', () => {
       useDesignerStore.getState().setParam('width', 5);
       useDesignerStore.getState().undo();

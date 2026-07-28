@@ -446,6 +446,11 @@ const en: Record<string, string> = {
   'inspector.extendToMargin.hint':
     "Fills the baseplate's drawer-fit margin on every drawer edge it touches.",
   'inspector.extendToMargin.needsLink': 'Link a design to extend into the margin.',
+  'inspector.taper': 'Taper walls',
+  'inspector.taper.profile': 'Profile',
+  'inspector.taper.chamfer': 'Chamfer',
+  'inspector.taper.fillet': 'Fillet',
+  'inspector.taper.height': 'Taper height',
   'inspector.expandedFootprint': 'Expanded footprint',
   'inspector.expandedFootprint.sides': '{left} left · {right} right · {front} front · {back} back',
   'inspector.maxPropertiesReached': 'Maximum {max} properties reached',
@@ -1924,6 +1929,18 @@ const en: Record<string, string> = {
   'binDesigner.overhang.feet': 'Feet under overhang',
   'binDesigner.overhang.feetHint':
     'Add grid-aligned feet beneath the overhang where they fit to print, instead of a flat bottom.',
+  'binDesigner.overhang.taper.title': 'Taper walls',
+  'binDesigner.overhang.taper.hint':
+    "Angle the outer wall inward at the base so the bin hugs a drawer's rounded corner. Each side tapers back toward the nominal footprint, within its overhang.",
+  'binDesigner.overhang.taper.needsOverhang':
+    'Add overhang to a side first, then taper it back in at the base.',
+  'binDesigner.overhang.taper.singleHollowOnly':
+    'Taper is available only on hollow, single-compartment bins.',
+  'binDesigner.overhang.taper.feetConflict': 'Turn off feet under overhang to taper the walls.',
+  'binDesigner.overhang.taper.profile': 'Profile',
+  'binDesigner.overhang.taper.profileChamfer': 'Chamfer',
+  'binDesigner.overhang.taper.profileFillet': 'Fillet',
+  'binDesigner.overhang.taper.bandHeight': 'Taper height',
   'binDesigner.itemKind.bin': 'Bin',
   'binDesigner.itemKind.bin.description': 'Custom Gridfinity storage bin',
   'binDesigner.itemKind.toolRack': 'Tool rack',

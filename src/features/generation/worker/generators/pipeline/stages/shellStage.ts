@@ -152,7 +152,10 @@ export const shellStage: PipelineStage = {
         !dim.solid &&
         !dim.compartmentsBakedIntoShell &&
         getKernelCapabilities().tessellationModel === 'build-time' &&
-        !(params.cellMask && maskHasHoles(params.cellMask));
+        !(params.cellMask && maskHasHoles(params.cellMask)) &&
+        // Tapered bins (#2933) take the fuse path on both kernels so the draft
+        // preview matches the exact export — the integrated builder has no taper.
+        !dim.overhang.taper;
 
       let built = withScope((scope: DisposalScope) => {
         if (integratedLip) {

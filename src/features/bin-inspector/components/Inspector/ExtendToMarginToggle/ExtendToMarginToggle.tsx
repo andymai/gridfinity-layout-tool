@@ -1,5 +1,6 @@
 /**
- * "Extend into drawer margin" toggle for a placed bin (#2462).
+ * "Extend into drawer margin" toggle for a placed bin (#2462) + optional wall
+ * taper (#2933).
  *
  * When a baseplate adds drawer-fit padding, a bin against a padded edge can
  * extend its walls into that margin. The per-bin flag is stored on the Bin; the
@@ -7,19 +8,32 @@
  * (see `@/shared/utils/drawerMargin`). The control appears only when the bin
  * abuts a padded edge; it requires a linked design (only linked bins generate
  * geometry), so it's disabled with a hint until one is linked.
+ *
+ * The taper angles the extended wall back toward the nominal footprint at the
+ * base so the bin hugs a drawer's rounded corner; the per-side reach is derived
+ * from the padding, so only the profile + band height are stored on the Bin.
+ * It's unavailable on an over-tiled baseplate (the margin is functional grid, so
+ * overhang feet — mutually exclusive with a taper — fill it instead).
  */
 
-import { CheckboxRow } from '@/design-system';
+import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
+import type { SegmentedControlOption } from '@/design-system';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { binCanExtendToMargin } from '@/shared/utils/drawerMargin';
 import { useTranslation } from '@/i18n';
-import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
+import type { Bin, Drawer, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
+import type { Result, LayoutError } from '@/core/result';
 
 interface ExtendToMarginToggleProps {
   bin: Bin;
   drawer: Drawer;
   baseplate: StoredBaseplateParams | undefined;
 }
+
+// Default mm per height unit; the generator clamps the band to the exact wall
+// height, so an approximate cap here only bounds the slider range.
+const HEIGHT_UNIT_MM = 7;
+const TAPER_BAND_STEP = 0.5;
 
 export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
   const t = useTranslation();
@@ -29,6 +43,34 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
   if (!binCanExtendToMargin(bin, drawer, baseplate)) return null;
 
   const linked = bin.linkedDesignId !== undefined;
+  const overTile = baseplate?.overTile ?? false;
+  const canTaper = linked && bin.extendToMargin === true && !overTile;
+
+  const marginTaper = bin.marginTaper;
+  const taperOn = marginTaper?.enabled === true;
+  const maxBand = Math.max(TAPER_BAND_STEP, Math.round(bin.height * HEIGHT_UNIT_MM));
+
+  const profileOptions: SegmentedControlOption<WallTaperProfile>[] = [
+    { value: 'chamfer', label: t('inspector.taper.chamfer') },
+    { value: 'fillet', label: t('inspector.taper.fillet') },
+  ];
+
+  // Returns the mutation Result (the callers arrow-return it, matching the
+  // extend-to-margin toggle) — marginTaper is non-spatial, so it can't fail
+  // placement and there is nothing to recover on the UI side.
+  const setTaper = (
+    partial: Partial<NonNullable<Bin['marginTaper']>>
+  ): Result<void, LayoutError> => {
+    const prevBand = marginTaper?.bandHeight ?? 0;
+    return updateBin(bin.id, {
+      marginTaper: {
+        profile: marginTaper?.profile ?? 'chamfer',
+        bandHeight: prevBand > 0 ? prevBand : Math.max(TAPER_BAND_STEP, Math.round(maxBand / 3)),
+        enabled: marginTaper?.enabled ?? true,
+        ...partial,
+      },
+    });
+  };
 
   return (
     <div>
@@ -41,6 +83,37 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
       <p className="mt-1 px-2 text-[10px] leading-snug text-content-disabled">
         {linked ? t('inspector.extendToMargin.hint') : t('inspector.extendToMargin.needsLink')}
       </p>
+
+      {canTaper && (
+        <div className="mt-2">
+          <CheckboxRow
+            label={t('inspector.taper')}
+            checked={taperOn}
+            onChange={(checked) => setTaper({ enabled: checked })}
+          />
+          {taperOn && (
+            <div className="mt-1 flex flex-col gap-2 px-2">
+              <SegmentedControl
+                options={profileOptions}
+                value={marginTaper.profile}
+                onChange={(profile) => setTaper({ profile })}
+                aria-label={t('inspector.taper.profile')}
+                size="sm"
+                fullWidth
+              />
+              <SliderInput
+                label={t('inspector.taper.height')}
+                value={marginTaper.bandHeight}
+                onChange={(bandHeight) => setTaper({ bandHeight })}
+                min={0}
+                max={maxBand}
+                step={TAPER_BAND_STEP}
+                unit="mm"
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
