@@ -1,6 +1,12 @@
 # Suppressions for the blocking OSV scan (.github/workflows/osv-scan.yml).
 # Keep this file empty by default — every entry must name the advisory, state
 # why the finding is wrong, and carry an effectiveUntil so it cannot linger.
+#
+# effectiveUntil must stay an unquoted TOML date. Quoting it fails to decode
+# into time.Time, and osv-scanner then discards the WHOLE file with only an
+# "Ignored invalid config file" line on stdout — every suppression here silently
+# stops applying while the scan still exits non-zero. Re-verify after editing:
+#   osv-scanner scan source --lockfile=pnpm-lock.yaml
 
 # GHSA-mh99-v99m-4gvg / CVE-2026-14257 declares a single affected range of
 # "<= 5.0.7", which sweeps in the 1.x and 2.x lines even though both were
