@@ -16,6 +16,7 @@ import { buildParams } from './__kernel-tests__/scenarioTypes';
 import {
   assertStructurallyValid,
   boundingBox,
+  meshTopologyStats,
   meshVolume,
 } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -73,6 +74,39 @@ describe('bin wall taper geometry (#2933)', () => {
     );
     assertStructurallyValid(fillet, 'fillet taper');
     expect(meshVolume(fillet)).toBeLessThan(meshVolume(flat));
+  });
+
+  it('fillet: a tall band does not breach the wall just above the floor', () => {
+    const generateBin = getGenerateBin();
+    const ovh = { left: 21, right: 0, front: 0, back: 0 };
+    const flat = generateBin(
+      buildParams({ width: 2, depth: 2, height: 5, overhang: ovh }),
+      undefined,
+      true
+    );
+    const tall = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        height: 5,
+        overhang: {
+          ...ovh,
+          taper: { profile: 'fillet', bandHeight: 30, left: 21, right: 0, front: 0, back: 0 },
+        },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(tall, 'tall fillet');
+    const topology = meshTopologyStats(tall);
+    // Closed first — the Euler count below only means "same topology as the
+    // untapered bin" if the surface is actually closed and manifold.
+    expect(topology.boundaryEdges).toBe(0);
+    expect(topology.nonManifoldEdges).toBe(0);
+    // The cavity loft is sampled at the floor plane where the outer loft only
+    // has a chord; on a concave profile the chord falls inside the true curve,
+    // so a coarse band let the cavity cut a slot clean through the wall.
+    expect(topology.eulerCharacteristic).toBe(meshTopologyStats(flat).eulerCharacteristic);
   });
 
   it('asymmetric taper (drawer-facing sides only) stays valid and removes material', () => {
