@@ -1,0 +1,97 @@
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_112b170171473d::t_47682c83bc6a1e 58-59,64-66,76-77,81
+  s_112b170171473d::t_a3885698bb5b8b 153-154,156,159-160
+  s_112b170171473d::t_e394a53f219b36 21,132
+  s_112b170171473d::t_83407475caae1a 13-14
+  s_112b170171473d::t_5a127f2117c26a 18,23
+  s_112b170171473d::t_a3d3f0b58617ac 113,115-116,118,122,127-131,135-136
+  s_112b170171473d::t_92cb52d1f8dbb5 177-178,182-183
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.test.ts
+  s_112b170171473d::t_ebcc12c3e028f3 121-188
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts
+  s_112b170171473d::t_790d1a32a8412f 237
+  s_112b170171473d::t_f0b66278d4808d 59,201,213-223,313
+src/features/bin-designer/components/panel/CutoutsSection/renderer/OffBoardFrames3D.tsx
+  s_112b170171473d::t_1c7b1e4b28cb75 9
+  s_112b170171473d::t_aae076115a714b 34-37,48-50
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_112b170171473d::t_98f24e040c20df 1126-1174,1179-1182,1186-1234
+  s_112b170171473d::t_74345922e0cae3 1175-1178,1183-1185
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_112b170171473d::t_130800a40084cf 7,113-152
+  s_112b170171473d::t_ef68fbd51a3997 153
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_112b170171473d::t_0a8ea5ba757809 66,71-72,76-77
+  s_112b170171473d::t_70387ab98dead3 15
+  s_112b170171473d::t_449e182d864b73 59-65,67-70,73-75
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.test.ts
+  s_112b170171473d::t_9252861dbd28ef 1-180
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_112b170171473d::t_74e7d4096148d7 110-119,177-178,181-189
+src/features/bin-designer/components/panel/CutoutsSection/handlers/types.ts
+  s_112b170171473d::t_6eb4583016ddd5 10
+  s_112b170171473d::t_23b5dbcc0a20c1 36-38
+src/features/bin-designer/components/panel/CutoutsSection/handlers/resizeHandler.ts
+  s_112b170171473d::t_948b8eb958bc1a 79
+src/features/bin-designer/README.md
+  s_112b170171473d::t_0b470a4b13e40c 424-437
+src/features/bin-designer/components/panel/CutoutsSection/cutoutInteractionTypes.ts
+  s_112b170171473d::t_65c702d1c450c1 9
+  s_112b170171473d::t_af9ce2b0d4d63b 133-135
+src/features/bin-designer/components/panel/CutoutsSection/handlers/rotateHandler.ts
+  s_112b170171473d::t_948b8eb958bc1a 60
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_112b170171473d::t_7c636c518a2b76 1-192
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.ts
+  s_112b170171473d::t_78b2842b216f2c 15
+  s_112b170171473d::t_caad5afb9b632c 94-98
+src/features/bin-designer/components/panel/CutoutsSection/maskFit.ts
+  s_112b170171473d::t_d34101dd000822 8-14,17,19,21
+  s_112b170171473d::t_5d2a15adf48e08 102,104-135,137-204,208-217,219-220
+  s_112b170171473d::t_f66b99b8ea60c1 205-207
+src/features/bin-designer/components/panel/CutoutsSection/handlers/groupScaleHandler.ts
+  s_112b170171473d::t_948b8eb958bc1a 64
+  s_112b170171473d::t_afd2ae679d5e0a 65
+src/features/bin-designer/components/panel/CutoutsSection/handlers/drawHandler.ts
+  s_112b170171473d::t_6fa9c594b36ab5 60-66,70-74
+  s_112b170171473d::t_0f7de421db5b3b 8,10
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPathTool.ts
+  s_112b170171473d::t_f2722ccdef0fbb 29
+  s_112b170171473d::t_0de96613b28144 107-111,113-116,122
+src/features/bin-designer/components/panel/CutoutsSection/handlers/groupRotateHandler.ts
+  s_112b170171473d::t_948b8eb958bc1a 63
+  s_112b170171473d::t_f3f8f99e2db408 64
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_112b170171473d::t_fafc738f163601 164
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutClipboard.ts
+  s_112b170171473d::t_778bfe6b4419fd 29,48,105-115
+  s_112b170171473d::t_34e51a3bae6dc8 12,79,87,97
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
+  s_112b170171473d::t_1492124120b9f4 117-149,158,161
+  s_112b170171473d::t_ab6def0a2a62d8 150-152,155-157
+  s_112b170171473d::t_60621f04811733 159-160
+  s_112b170171473d::t_0328c4cbda30b5 162-163
+  s_112b170171473d::t_1a7a7a9dd7f6de 153-154
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutPointerHandlers.ts
+  s_112b170171473d::t_783dad0db3ed0c 243
+  s_112b170171473d::t_1b2b77da93fd12 118
+  s_112b170171473d::t_a6c0659b3654f0 13,62,104,212,253
+  s_112b170171473d::t_04a2cd273c5c4c 235-239,249
+  s_112b170171473d::t_a9281db9934d71 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "17c8b8806930f4d6f5c4d5d2a491e4cc452ec7d0",
+  "prompts": {},
+  "sessions": {
+    "s_112b170171473d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16d7cb98-26f9-4f13-baf3-eee4a4a89caa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
