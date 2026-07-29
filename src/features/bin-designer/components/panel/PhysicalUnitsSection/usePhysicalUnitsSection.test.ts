@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
+import { CONSTRAINTS } from '@/core/constants';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { resetAllStores } from '@/test/testUtils';
@@ -133,15 +134,19 @@ describe('usePhysicalUnitsSection', () => {
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
-      result.current.handlers.handlePrintBedChange(10, 999);
+      result.current.handlers.handlePrintBedChange(10, 99999);
     });
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(42);
-    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(500);
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(
+      CONSTRAINTS.PRINT_BED_MM_MIN
+    );
+    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(
+      CONSTRAINTS.PRINT_BED_MM_MAX
+    );
 
     act(() => {
-      result.current.handlers.handlePrintBedChange(999);
+      result.current.handlers.handlePrintBedChange(1000);
     });
-    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(500);
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(1000);
     expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBeUndefined();
   });
 });

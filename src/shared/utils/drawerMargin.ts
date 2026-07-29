@@ -15,7 +15,7 @@
  * inspector toggle's visibility must depend on padding alone.
  */
 
-import type { OverhangConfig, StoredBaseplateParams } from '@/core/types';
+import type { OverhangConfig, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
 
 /** Per-side padding (mm) a bin could claim on each drawer edge it abuts. */
 export interface MarginSides {
@@ -93,20 +93,37 @@ export function binCanExtendToMargin(
  * from the current padding; `feet` matches the baseplate's over-tile margin.
  */
 export function resolveBinMarginOverhang(
-  bin: Pick<OverhangSource, 'x' | 'y' | 'width' | 'depth' | 'extendToMargin'>,
+  bin: Pick<OverhangSource, 'x' | 'y' | 'width' | 'depth' | 'extendToMargin' | 'marginTaper'>,
   drawer: DrawerSize,
   baseplate: StoredBaseplateParams | undefined
 ): OverhangConfig | null {
   if (!bin.extendToMargin) return null;
   const sides = binMarginSides(bin, drawer, baseplate);
   if (sidesTotal(sides) <= EPS) return null;
+  const feet = baseplate?.overTile ?? false;
+  // Taper the extended wall back to nominal at the base (#2933): per-side reach
+  // = the padding (so it fully retracts). Mutually exclusive with over-tile
+  // feet, which the generator's resolve also enforces.
+  const taper =
+    bin.marginTaper?.enabled && !feet
+      ? {
+          enabled: true,
+          profile: bin.marginTaper.profile,
+          bandHeight: bin.marginTaper.bandHeight,
+          left: sides.left,
+          right: sides.right,
+          front: sides.front,
+          back: sides.back,
+        }
+      : undefined;
   return {
     enabled: true,
     left: sides.left,
     right: sides.right,
     front: sides.front,
     back: sides.back,
-    feet: baseplate?.overTile ?? false,
+    feet,
+    ...(taper ? { taper } : {}),
   };
 }
 
@@ -119,6 +136,11 @@ export function resolveBinMarginOverhang(
 export interface OverhangSource extends BinRect {
   readonly extendToMargin?: boolean;
   readonly overhang?: OverhangConfig;
+  readonly marginTaper?: {
+    readonly profile: WallTaperProfile;
+    readonly bandHeight: number;
+    readonly enabled?: boolean;
+  };
 }
 
 /** A bin's own overhang, if it carries an enabled, non-trivial one. */

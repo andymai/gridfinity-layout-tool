@@ -815,7 +815,10 @@ describe('layout store', () => {
       expect(useLayoutStore.getState().layout.printBedSize).toBe(300);
 
       setPrintBedSize(1000);
-      expect(useLayoutStore.getState().layout.printBedSize).toBe(500); // Max
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(1000);
+
+      setPrintBedSize(99999);
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_MAX);
     });
 
     it('setGridUnitMm updates and clamps value', () => {

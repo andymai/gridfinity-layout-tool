@@ -1,32 +1,44 @@
-import { analyze } from '../lib/findings.js';
+import { analyzeWithReverify } from '../lib/findings.js';
 import { buildInventory } from '../lib/inventory.js';
 import { colors, formatFinding } from '../lib/output.js';
+import { createProgress } from '../lib/progress.js';
 import { connect } from '../lib/redis.js';
 import { categoryOf, suggestFor } from '../lib/suggest.js';
 import type { Args } from '../lib/args.js';
 import type { Finding } from '../lib/types.js';
 
+/** Findings that should fail `--strict`. Info is housekeeping, not a defect. */
+export function failsStrict(findings: readonly Finding[]): boolean {
+  return findings.some((f) => f.severity === 'error' || f.severity === 'warn');
+}
+
 export async function audit(args: Args): Promise<number> {
   const redis = connect();
+  const progress = createProgress(true);
   try {
-    const inv = await buildInventory(redis, { user: args.user, kind: args.kind });
-    const findings = await analyze(inv, { fetchPayloads: !args.noPayloadFetch });
+    const inv = await buildInventory(redis, { user: args.user, kind: args.kind, progress });
+    const { findings, suppressed } = await analyzeWithReverify(inv, {
+      fetchPayloads: !args.noPayloadFetch,
+      reverifyWith: args.noReverify ? undefined : redis,
+      progress,
+    });
 
     if (args.json) {
       const payload = {
-        summary: summarize(inv, findings),
+        summary: summarize(inv, findings, suppressed),
         findings: findings.map((f) => ({
           ...f,
           suggestions: args.suggest ? suggestFor(f) : undefined,
           category: categoryOf(f),
         })),
+        suppressed: suppressed.map((f) => ({ ...f, category: categoryOf(f) })),
       };
       process.stdout.write(JSON.stringify(payload, null, 2) + '\n');
     } else {
-      printHuman(inv, findings, args.suggest);
+      printHuman(inv, findings, suppressed, args.suggest);
     }
 
-    return args.strict && findings.length > 0 ? 1 : 0;
+    return args.strict && failsStrict(findings) ? 1 : 0;
   } finally {
     await redis.quit();
   }
@@ -34,7 +46,8 @@ export async function audit(args: Args): Promise<number> {
 
 function summarize(
   inv: ReturnType<typeof buildInventory> extends Promise<infer T> ? T : never,
-  findings: Finding[]
+  findings: Finding[],
+  suppressed: Finding[]
 ) {
   return {
     blobs: inv.blobs.length,
@@ -49,6 +62,10 @@ function summarize(
       warnings: findings.filter((f) => f.severity === 'warn').length,
       info: findings.filter((f) => f.severity === 'info').length,
       byKind: groupCount(findings, (f) => f.kind),
+    },
+    suppressed: {
+      total: suppressed.length,
+      byKind: groupCount(suppressed, (f) => f.kind),
     },
   };
 }
@@ -70,6 +87,7 @@ function printHuman(
     redisUsers: Set<string>;
   },
   findings: Finding[],
+  suppressed: Finding[],
   withSuggestions: boolean
 ): void {
   const live = inv.indexRows.filter((r) => !r.tombstone).length;
@@ -81,6 +99,11 @@ function printHuman(
   console.log(
     `Findings:        ${findings.length}  (errors: ${findings.filter((f) => f.severity === 'error').length}, warnings: ${findings.filter((f) => f.severity === 'warn').length}, info: ${findings.filter((f) => f.severity === 'info').length})`
   );
+  if (suppressed.length > 0) {
+    console.log(
+      colors.dim(`Suppressed:      ${suppressed.length}  (re-verified as in-flight writes)`)
+    );
+  }
 
   if (findings.length === 0) {
     console.log(`\n${colors.cyan('✓ no findings')}`);

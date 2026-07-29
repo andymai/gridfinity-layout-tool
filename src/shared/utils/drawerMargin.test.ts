@@ -148,6 +148,48 @@ describe('resolveBinMarginOverhang', () => {
     const solid = baseplate({ paddingLeft: 3, overTile: false });
     expect(resolveBinMarginOverhang(bin(0, 1, 1, 1, true), DRAWER, solid)?.feet).toBe(false);
   });
+
+  it('derives a taper from the padding when marginTaper is enabled (non-over-tile)', () => {
+    const solid = baseplate({ paddingLeft: 3, paddingFront: 2, overTile: false });
+    const b = {
+      ...bin(0, 0, 1, 1, true),
+      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true },
+    } as Bin;
+    expect(resolveBinMarginOverhang(b, DRAWER, solid)).toEqual({
+      enabled: true,
+      left: 3,
+      right: 0,
+      front: 2,
+      back: 0,
+      feet: false,
+      taper: {
+        enabled: true,
+        profile: 'chamfer',
+        bandHeight: 6,
+        left: 3,
+        right: 0,
+        front: 2,
+        back: 0,
+      },
+    });
+  });
+
+  it('omits the taper on an over-tiled baseplate (feet are mutually exclusive)', () => {
+    const b = {
+      ...bin(0, 0, 1, 1, true),
+      marginTaper: { profile: 'fillet' as const, bandHeight: 6, enabled: true },
+    } as Bin;
+    expect(resolveBinMarginOverhang(b, DRAWER, bp)?.taper).toBeUndefined();
+  });
+
+  it('omits the taper when marginTaper is not enabled', () => {
+    const solid = baseplate({ paddingLeft: 3, overTile: false });
+    const b = {
+      ...bin(0, 0, 1, 1, true),
+      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: false },
+    } as Bin;
+    expect(resolveBinMarginOverhang(b, DRAWER, solid)?.taper).toBeUndefined();
+  });
 });
 
 describe('resolveBinOverhang', () => {

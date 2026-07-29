@@ -1,6 +1,7 @@
-import { analyze } from '../lib/findings.js';
+import { analyzeWithReverify } from '../lib/findings.js';
 import { buildInventory } from '../lib/inventory.js';
 import { colors } from '../lib/output.js';
+import { createProgress } from '../lib/progress.js';
 import { connect } from '../lib/redis.js';
 import {
   categoryOf,
@@ -28,18 +29,26 @@ export async function suggest(args: Args): Promise<number> {
 
   const redis = connect();
   try {
+    const progress = createProgress(true);
     const inv = await buildInventory(redis, {
       user: args.user,
       kind: args.kind,
       skipBlobs: !NEEDS_BLOBS[cat],
+      progress,
     });
-    const findings = await analyze(inv, {
+    // Re-verify before emitting anything: these commands delete blobs and index
+    // entries, and a finding produced by a write landing mid-scan is not a
+    // defect to remediate.
+    const { findings, suppressed } = await analyzeWithReverify(inv, {
       // Payload fetching only contributes envelope/payload findings, none of
       // which feed into `suggest`'s categories. Skip the fetch pass entirely.
       fetchPayloads: false,
       staleTombstoneMs: args.olderThanMs,
+      reverifyWith: args.noReverify ? undefined : redis,
+      progress,
     });
     const matched = findings.filter((f) => categoryOf(f) === cat);
+    const skipped = suppressed.filter((f) => categoryOf(f) === cat);
 
     if (args.json) {
       process.stdout.write(
@@ -54,11 +63,17 @@ export async function suggest(args: Args): Promise<number> {
 
     if (matched.length === 0) {
       console.log(colors.cyan(`✓ no findings in category "${cat}"`));
+      if (skipped.length > 0) {
+        console.log(colors.dim(`  (${skipped.length} suppressed as in-flight writes)`));
+      }
       return 0;
     }
     for (const line of SCRIPT_PREAMBLE) console.log(line);
     console.log(`# sync-admin suggest ${cat} — ${matched.length} finding(s)`);
     console.log(`# Review each command before running.`);
+    if (skipped.length > 0) {
+      console.log(`# ${skipped.length} candidate(s) omitted: in-flight writes, not defects.`);
+    }
     console.log('');
     for (const f of matched) {
       for (const line of suggestFor(f)) console.log(line);

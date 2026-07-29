@@ -1,5 +1,40 @@
 # Changelog
 
+## [4.328.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.0...gridfinity-layout-tool-v4.328.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **sync-admin:** stop reporting mid-scan writes as integrity errors ([#2958](https://github.com/andymai/gridfinity-layout-tool/issues/2958)) ([4346984](https://github.com/andymai/gridfinity-layout-tool/commit/43469846fe9330b3f8c30017e18134b60452c352))
+
+## [4.328.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.327.0...gridfinity-layout-tool-v4.328.0) (2026-07-29)
+
+
+### Features
+
+* **settings:** raise the print bed size cap to 3000mm ([#2953](https://github.com/andymai/gridfinity-layout-tool/issues/2953)) ([d0764c0](https://github.com/andymai/gridfinity-layout-tool/commit/d0764c0bfbdbfd48f317061a2c693fa849b5ae96))
+
+## [4.327.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.1...gridfinity-layout-tool-v4.327.0) (2026-07-28)
+
+
+### Features
+
+* **bin-designer:** compact the overhang panel and draw the taper profiles ([#2950](https://github.com/andymai/gridfinity-layout-tool/issues/2950)) ([2b0f7ee](https://github.com/andymai/gridfinity-layout-tool/commit/2b0f7ee2b19691a2c60d92feea691114169352af))
+
+## [4.326.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.0...gridfinity-layout-tool-v4.326.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **generation:** stop the fillet taper cavity breaching the wall ([#2948](https://github.com/andymai/gridfinity-layout-tool/issues/2948)) ([6b480ab](https://github.com/andymai/gridfinity-layout-tool/commit/6b480ab78fc02db1d9ad975088473950d74bce7d))
+
+## [4.326.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.3...gridfinity-layout-tool-v4.326.0) (2026-07-28)
+
+
+### Features
+
+* **generation:** add drawer-fit wall taper for curved bins ([#2933](https://github.com/andymai/gridfinity-layout-tool/issues/2933)) ([1e64c59](https://github.com/andymai/gridfinity-layout-tool/commit/1e64c59a4320b02eba9a4223f80cf3fd28baae43))
+
 ## [4.325.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.325.2...gridfinity-layout-tool-v4.325.3) (2026-07-28)
 
 

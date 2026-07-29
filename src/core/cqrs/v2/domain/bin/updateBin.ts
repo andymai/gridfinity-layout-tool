@@ -50,6 +50,11 @@ const updatesSchema = z
     customProperties: z.record(z.string(), z.string()),
     linkedDesignId: z.string(),
     extendToMargin: z.boolean(),
+    marginTaper: z.object({
+      profile: z.enum(['chamfer', 'fillet']),
+      bandHeight: z.number().min(0),
+      enabled: z.boolean().optional(),
+    }),
     overhang: overhangSchema,
   })
   .partial();
@@ -81,6 +86,7 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.linkedDesignId !== undefined)
     result.linkedDesignId = toDesignId(updates.linkedDesignId);
   if (updates.extendToMargin !== undefined) result.extendToMargin = updates.extendToMargin;
+  if (updates.marginTaper !== undefined) result.marginTaper = updates.marginTaper;
   // `null` is the wire form of "clear it"; the field itself is just optional.
   if (updates.overhang !== undefined) result.overhang = updates.overhang ?? undefined;
   return result;

@@ -43,7 +43,7 @@ export interface WallConfig {
 // Canonical home is `@/core/types` — it describes both `BinParams.overhang`
 // (authored) and `Bin.overhang` (per-placement), so core can't import it from
 // here. Re-exported so designer code keeps its local import path.
-export type { OverhangConfig } from '@/core/types/overhang';
+export type { OverhangConfig, WallTaperConfig } from '@/core/types/overhang';
 
 /** Overhang-section hover-highlight target: a wall side or the bottom feet ring. */
 export type OverhangHighlightSide = 'left' | 'right' | 'front' | 'back' | 'feet';

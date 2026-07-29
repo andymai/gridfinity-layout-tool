@@ -88,6 +88,13 @@ export interface MeshTopologyStats {
   boundaryEdges: number;
   /** Edges shared by more than two triangles (non-manifold junctions). */
   nonManifoldEdges: number;
+  /**
+   * V − E + F over the welded mesh. A closed genus-0 shell reads 2 and each
+   * handle subtracts 2 — so this is the only cheap signal for "a boolean
+   * punched a passage clean through a wall", which `boundaryEdges` cannot see
+   * (a breached wall is still a closed surface).
+   */
+  eulerCharacteristic: number;
 }
 
 /**
@@ -109,8 +116,15 @@ export function meshTopologyStats({ vertices, indices }: MeshData): MeshTopology
   const eKey = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
   const edgeCount = new Map<string, number>();
+  const weldedVertices = new Set<string>();
+  let faces = 0;
   for (let i = 0; i < indices.length; i += 3) {
     const k = [vKey(indices[i]), vKey(indices[i + 1]), vKey(indices[i + 2])];
+    // A tessellation seam can collapse a triangle to a sliver whose three welded
+    // corners are not distinct; it contributes no face or edges to the topology.
+    if (k[0] === k[1] || k[1] === k[2] || k[0] === k[2]) continue;
+    faces++;
+    for (const key of k) weldedVertices.add(key);
     for (let e = 0; e < 3; e++) {
       const key = eKey(k[e], k[(e + 1) % 3]);
       edgeCount.set(key, (edgeCount.get(key) ?? 0) + 1);
@@ -123,7 +137,11 @@ export function meshTopologyStats({ vertices, indices }: MeshData): MeshTopology
     if (count === 1) boundaryEdges++;
     else if (count > 2) nonManifoldEdges++;
   }
-  return { boundaryEdges, nonManifoldEdges };
+  return {
+    boundaryEdges,
+    nonManifoldEdges,
+    eulerCharacteristic: weldedVertices.size - edgeCount.size + faces,
+  };
 }
 
 /**

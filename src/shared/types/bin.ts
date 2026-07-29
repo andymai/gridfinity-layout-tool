@@ -68,6 +68,7 @@ export type {
   WallTextVerticalAlign,
   DividerOverride,
   OverhangConfig,
+  WallTaperConfig,
 } from '@/features/bin-designer/types';
 
 export {

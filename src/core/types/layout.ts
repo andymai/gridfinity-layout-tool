@@ -10,7 +10,7 @@ import type {
 } from '@gridfinity/branded-types';
 import type { StoredBaseplateParams } from './baseplate';
 import type { DrawerOutline, FractionalEdge, MeasuredDrawerMm } from './drawerOutline';
-import type { OverhangConfig } from './overhang';
+import type { OverhangConfig, WallTaperProfile } from './overhang';
 /**
  * Where magnet holes anchor within each grid cell.
  * - `edge` (default): a constant 8mm from the cell edge, so holes track the
@@ -117,6 +117,16 @@ export interface Bin {
   // render/export, so it tracks later padding changes. Applies only while the
   // bin abuts a padded edge; dormant otherwise.
   extendToMargin?: boolean;
+  // Opt-in outer-wall taper for a drawer-margin bin (#2933): over `bandHeight`
+  // mm the extended wall angles inward from the padding-expanded rim back toward
+  // the nominal footprint, so the base clears a drawer's rounded corner. Per-side
+  // reach is derived live from the padding (like `extendToMargin`, which this
+  // requires); only the profile + band height are stored here.
+  marginTaper?: {
+    profile: WallTaperProfile;
+    bandHeight: number; // mm
+    enabled?: boolean;
+  };
   // Explicit per-placement overhang (mm), authored by "Expand to Fit" so several
   // bins can tile a span that isn't a whole number of grid units while sharing
   // one linked design. Wins over `extendToMargin` and over the design's own

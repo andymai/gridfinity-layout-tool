@@ -1,6 +1,7 @@
 import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
 import { buildInventory } from '../lib/inventory.js';
 import { colors, formatTable } from '../lib/output.js';
+import { createProgress } from '../lib/progress.js';
 import { connect } from '../lib/redis.js';
 import type { Args } from '../lib/args.js';
 import type { Kind } from '../lib/types.js';
@@ -22,6 +23,7 @@ export async function tombstones(args: Args): Promise<number> {
       user: args.user,
       kind: args.kind,
       skipBlobs: true,
+      progress: createProgress(true),
     });
     const staleAge = args.olderThanMs ?? TOMBSTONE_RETENTION_MS;
     const now = Date.now();

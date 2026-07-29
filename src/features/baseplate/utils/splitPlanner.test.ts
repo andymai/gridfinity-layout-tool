@@ -8,6 +8,7 @@ import {
 import { bodyCenterYMm } from './stackPrint';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
+import { CONSTRAINTS } from '@/core/constants';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { computePieceFingerprint } from './pieceFingerprint';
@@ -83,6 +84,39 @@ describe('computeBaseplateTiling', () => {
     expect(piece.edges.right).toBe('exterior');
     expect(piece.edges.front).toBe('exterior');
     expect(piece.edges.back).toBe('exterior');
+  });
+
+  it('leaves the largest expressible plate unsplit on a bed at PRINT_BED_MM_MAX', () => {
+    // GRID_MAX × GRID_UNIT_MM_MAX is exactly PRINT_BED_MM_MAX, so this is the
+    // boundary case the cap is derived from, not merely a large plate.
+    const params = makeParams({
+      width: CONSTRAINTS.GRID_MAX,
+      depth: CONSTRAINTS.GRID_MAX,
+      gridUnitMm: CONSTRAINTS.GRID_UNIT_MM_MAX,
+    });
+    const tiling = computeBaseplateTiling(params, CONSTRAINTS.PRINT_BED_MM_MAX);
+
+    expect(tiling.isSplit).toBe(false);
+    expect(tiling.pieces).toHaveLength(1);
+    expect(tiling.pieces[0].widthUnits).toBe(CONSTRAINTS.GRID_MAX);
+    expect(tiling.pieces[0].depthUnits).toBe(CONSTRAINTS.GRID_MAX);
+  });
+
+  it('still splits a padded max plate at PRINT_BED_MM_MAX', () => {
+    // Padding is charged against the bed budget on top of the grid extent, so
+    // the cap does not make every plate single-piece.
+    const params = makeParams({
+      width: CONSTRAINTS.GRID_MAX,
+      depth: CONSTRAINTS.GRID_MAX,
+      gridUnitMm: CONSTRAINTS.GRID_UNIT_MM_MAX,
+      paddingLeft: 100,
+      paddingRight: 100,
+      paddingFront: 100,
+      paddingBack: 100,
+    });
+    const tiling = computeBaseplateTiling(params, CONSTRAINTS.PRINT_BED_MM_MAX);
+
+    expect(tiling.isSplit).toBe(true);
   });
 
   it('preserves all padding on single piece', () => {
