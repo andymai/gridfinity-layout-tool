@@ -12,6 +12,7 @@ import {
   SOCKET_HEIGHT_MM_LOW,
   SOCKET_HEIGHT_MM_MIN,
 } from '@/shared/printSettings/gridfinityGeometry';
+import { useMutations } from '@/shared/contexts';
 import { useTranslation } from '@/i18n';
 import type { SectionMeta } from '../types';
 
@@ -58,6 +59,7 @@ export function usePhysicalUnitsSection() {
       }))
     );
   const t = useTranslation();
+  const mutations = useMutations();
 
   // Linked grid-pitch control. X edits the shared layout pitch; the Y pitch is
   // a designer-local override where `undefined` means square (relinked) —
@@ -79,13 +81,16 @@ export function usePhysicalUnitsSection() {
     useLayoutStore.getState().setHeightUnitMm(value);
   }, []);
 
-  const handleSocketHeightChange = useCallback((value: number) => {
-    useLayoutStore
-      .getState()
-      .setSocketHeightMm(
+  // Dispatch through the CQRS mutations path (not the raw store setter) so the
+  // base-profile change is undoable and publishes an event.
+  const handleSocketHeightChange = useCallback(
+    (value: number) => {
+      mutations.setSocketHeightMm(
         clamp(value, CONSTRAINTS.SOCKET_HEIGHT_MM_MIN, CONSTRAINTS.SOCKET_HEIGHT_MM_MAX)
       );
-  }, []);
+    },
+    [mutations]
+  );
 
   const handlePrintBedChange = useCallback(
     (width: number, depth?: number) => {

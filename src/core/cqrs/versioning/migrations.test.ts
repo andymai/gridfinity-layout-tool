@@ -193,6 +193,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'layout.gridUnitMmYSet',
     'layout.magnetAnchorSet',
     'layout.heightUnitMmSet',
+    'layout.socketHeightMmSet',
     'layout.baseplateParamsSet',
     'layout.activeBaseplateSet',
     // Library events

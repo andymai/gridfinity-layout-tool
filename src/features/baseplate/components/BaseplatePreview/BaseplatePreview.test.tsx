@@ -112,8 +112,11 @@ vi.mock('./GhostPaddingOutline', () => ({
 vi.mock('./useMeshGeometry', () => ({
   useMeshGeometry: () => ({ geometry: null, edgesGeometry: null, hasPrecomputedNormals: false }),
 }));
-vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
-  GRIDFINITY_SPEC: { SOCKET_HEIGHT: 5 },
+// Spread the real (dependency-free) module so every export the BaseplatePreview
+// subtree pulls in — socket-height presets, resolveSocketHeight, MAGNET_FLOOR —
+// stays defined as new ones are added.
+vi.mock('@/shared/printSettings/gridfinityGeometry', async (importActual) => ({
+  ...(await importActual<typeof import('@/shared/printSettings/gridfinityGeometry')>()),
 }));
 
 const { BaseplatePreview } = await import('./BaseplatePreview');

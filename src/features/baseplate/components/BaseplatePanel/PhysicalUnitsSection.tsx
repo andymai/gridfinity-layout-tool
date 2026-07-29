@@ -20,6 +20,7 @@ import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
+import { useMutations } from '@/shared/contexts';
 import {
   GRIDFINITY_SPEC,
   MAGNET_FLOOR,
@@ -44,6 +45,7 @@ const SOCKET_PRESET_BUTTONS = [
 
 export function PhysicalUnitsSection() {
   const t = useTranslation();
+  const mutations = useMutations();
   const { gridUnitMm, gridUnitMmY, magnetAnchor, socketHeightMm, printBedSize, printBedDepth } =
     useLayoutStore(
       useShallow((state) => ({
@@ -59,13 +61,16 @@ export function PhysicalUnitsSection() {
   // magnet holes; surface a note so the disabled magnet toggle makes sense.
   const effectiveSocketHeightMm = socketHeightMm ?? SOCKET_HEIGHT_MM_DEFAULT;
   const magnetsDisabled = effectiveSocketHeightMm < GRIDFINITY_SPEC.MAGNET_DEPTH + MAGNET_FLOOR;
-  const handleSocketHeightChange = useCallback((value: number) => {
-    useLayoutStore
-      .getState()
-      .setSocketHeightMm(
+  // Dispatch through the CQRS mutations path (not the raw store setter) so the
+  // base-profile change is undoable and publishes an event.
+  const handleSocketHeightChange = useCallback(
+    (value: number) => {
+      mutations.setSocketHeightMm(
         clamp(value, CONSTRAINTS.SOCKET_HEIGHT_MM_MIN, CONSTRAINTS.SOCKET_HEIGHT_MM_MAX)
       );
-  }, []);
+    },
+    [mutations]
+  );
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const handleNozzleChange = useCallback((value: number) => {
