@@ -1,0 +1,28 @@
+SECURITY.md
+  s_b7575e8689bf8f::t_4a45566226d8ed 66
+  s_b7575e8689bf8f::t_efca1530fd180d 51-57
+  s_b7575e8689bf8f::t_620b9931d2b551 64-65,67-80
+pnpm-workspace.yaml
+  s_b7575e8689bf8f::t_b36090b0f5077f 104-105
+  s_b7575e8689bf8f::t_933ce26641d9c9 31-42
+  s_b7575e8689bf8f::t_aab9988498505f 87
+  s_b7575e8689bf8f::t_a54d576e741eb3 101
+pnpm-lock.yaml
+  s_b7575e8689bf8f::t_92330e06c33769 35,1500,1504,1508,1518,2978,3112-3113,8674,10147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d63de95844e31ddfc92d5171b141e7c3ba9d1678",
+  "prompts": {},
+  "sessions": {
+    "s_b7575e8689bf8f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9e5cfa5b-119b-4519-a308-ec4157979b3c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
