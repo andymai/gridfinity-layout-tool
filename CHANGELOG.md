@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.328.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.1...gridfinity-layout-tool-v4.328.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* **sync-admin:** keep findings when a re-verify fetch fails ([#2960](https://github.com/andymai/gridfinity-layout-tool/issues/2960)) ([f15db55](https://github.com/andymai/gridfinity-layout-tool/commit/f15db55890029cde63078d1a2d8e86800fbf538f))
+
 ## [4.328.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.0...gridfinity-layout-tool-v4.328.1) (2026-07-29)
 
 
