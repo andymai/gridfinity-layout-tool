@@ -58,7 +58,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
   }, [mutations]);
 
   // 44px on mobile to match the touch target the rest of the settings sheet uses.
-  const actionClass = variant === 'mobile' ? 'text-sm h-11' : 'text-xs h-8';
+  const actionClass = variant === 'mobile' ? 'text-sm h-11 px-3' : 'text-xs h-8 px-2';
 
   return (
     <>
@@ -69,13 +69,10 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
         helpTarget="drawer-shape"
         variant={variant}
       />
-      {/* Full-width action buttons, matching the ActiveLayerPanel toolbar rather
-          than floating a lone ghost link. Corner cuts stay available with no
-          outline — they build one from the plain rectangle. */}
-      <div className="flex gap-1.5 pt-2">
+      <div className="flex justify-end gap-1 pt-1">
         <Button
-          variant="secondary"
-          fullWidth
+          variant="ghost"
+          size="sm"
           type="button"
           onClick={handleOpenCorners}
           className={actionClass}
@@ -84,8 +81,8 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
         </Button>
         {hasOutline && (
           <Button
-            variant="secondary"
-            fullWidth
+            variant="ghost"
+            size="sm"
             type="button"
             onClick={handleOpenEditor}
             className={actionClass}

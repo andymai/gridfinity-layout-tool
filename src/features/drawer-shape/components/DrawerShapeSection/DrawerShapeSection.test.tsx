@@ -69,6 +69,21 @@ describe('DrawerShapeSection', () => {
     expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toHaveClass('h-8');
   });
 
+  it('renders the actions as right-aligned links, not full-width buttons', () => {
+    useLayoutStore.setState((s) => ({
+      layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
+    }));
+    render(<DrawerShapeSection />);
+    const corners = screen.getByRole('button', { name: 'drawerShape.corners.open' });
+    const edit = screen.getByRole('button', { name: 'drawerShape.edit' });
+    for (const action of [corners, edit]) {
+      expect(action).not.toHaveClass('w-full');
+      expect(action).toHaveClass('bg-transparent');
+    }
+    expect(corners.parentElement).toHaveClass('justify-end');
+    expect(corners.compareDocumentPosition(edit)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it('confirms before resetting an existing shape', () => {
     useLayoutStore.setState((s) => ({
       layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
