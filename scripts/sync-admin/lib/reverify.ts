@@ -180,11 +180,14 @@ async function payloadStillInconsistent(
   let text: string;
   try {
     const r = await fetch(s.blobUrl, { signal: AbortSignal.timeout(fetchTimeoutMs) });
-    if (!r.ok) return f.kind === 'envelope_invalid';
+    // Suppression requires positive evidence that the item is fine. A failed
+    // re-fetch is the absence of evidence, so the finding has to stand — the
+    // listing still shows this blob (stateKey matched), so a non-2xx here is
+    // itself worth surfacing.
+    if (!r.ok) return true;
     text = await r.text();
   } catch {
-    // A second failure on the same blob is a real problem, not a race.
-    return f.kind === 'envelope_invalid' || f.kind === 'fetch_timeout';
+    return true;
   }
 
   if (f.kind === 'fetch_timeout' || f.kind === 'envelope_invalid') {

@@ -280,6 +280,53 @@ describe('reverify — payload-dependent kinds', () => {
     expect(suppressed).toHaveLength(1);
   });
 
+  it.each([
+    'modifiedAt_mismatch',
+    'listing_size_mismatch',
+    'fetch_timeout',
+    'envelope_invalid',
+  ] as const)('keeps %s when the re-fetch returns a non-2xx', async (kind) => {
+    stableRead();
+    fetchMock.mockResolvedValue({ ok: false, status: 500, text: async () => '' });
+    const redis = redisStub(JSON.stringify({ modifiedAt: T, sizeBytes: 100 }));
+
+    const finding: Finding = {
+      kind,
+      uid: UID,
+      itemKind: 'layouts',
+      id: 'a1',
+      severity: 'error',
+      detail: 'x',
+    };
+    const { confirmed, suppressed } = await reverify(redis, stableInv(), [finding], 1000);
+
+    expect(suppressed).toHaveLength(0);
+    expect(confirmed).toHaveLength(1);
+  });
+
+  it.each([
+    'modifiedAt_mismatch',
+    'listing_size_mismatch',
+    'fetch_timeout',
+    'envelope_invalid',
+  ] as const)('keeps %s when the re-fetch throws', async (kind) => {
+    stableRead();
+    fetchMock.mockRejectedValue(new Error('network down'));
+    const redis = redisStub(JSON.stringify({ modifiedAt: T, sizeBytes: 100 }));
+
+    const finding: Finding = {
+      kind,
+      uid: UID,
+      itemKind: 'layouts',
+      id: 'a1',
+      severity: 'error',
+      detail: 'x',
+    };
+    const { confirmed } = await reverify(redis, stableInv(), [finding], 1000);
+
+    expect(confirmed).toHaveLength(1);
+  });
+
   it('confirms envelope_invalid when the envelope is still wrong', async () => {
     stableRead();
     fetchMock.mockResolvedValue({

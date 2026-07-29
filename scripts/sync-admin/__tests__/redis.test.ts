@@ -83,6 +83,12 @@ describe('hgetallMany', () => {
     await expect(hgetallMany(redis, ['k'])).rejects.toThrow('WRONGTYPE');
   });
 
+  it.each([0, -1, 1.5, NaN])('rejects a chunkSize of %s instead of looping forever', async (n) => {
+    const { redis } = redisStub({});
+
+    await expect(hgetallMany(redis, ['k'], n)).rejects.toThrow('positive integer');
+  });
+
   it('throws when the pipeline itself fails', async () => {
     const redis = {
       pipeline: () => ({
