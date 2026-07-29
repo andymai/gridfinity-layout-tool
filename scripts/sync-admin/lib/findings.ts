@@ -5,6 +5,9 @@ import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
 import { pMap } from './concurrency.js';
 import { expectedEnvelopeDelta } from './delta.js';
 import { isMalformedRow, itemKey } from './inventory.js';
+import { createProgress, type Progress } from './progress.js';
+import { reverify } from './reverify.js';
+import type Redis from 'ioredis';
 import type { Finding, Inventory, Kind } from './types.js';
 
 interface AnalyzeOpts {
@@ -12,9 +15,41 @@ interface AnalyzeOpts {
   staleTombstoneMs?: number;
   /** Per-fetch deadline in ms. Default 15s. */
   fetchTimeoutMs?: number;
+  /**
+   * Re-read each flagged item to separate real corruption from writes that
+   * landed mid-scan. Requires a redis handle; skipped when absent.
+   */
+  reverifyWith?: Redis;
+  progress?: Progress;
+}
+
+export interface AnalyzeResult {
+  findings: Finding[];
+  suppressed: Finding[];
 }
 
 const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
+export async function analyzeWithReverify(
+  inv: Inventory,
+  opts: AnalyzeOpts
+): Promise<AnalyzeResult> {
+  const progress = opts.progress ?? createProgress(false);
+  const candidates = await analyze(inv, opts);
+  if (!opts.reverifyWith || candidates.length === 0) {
+    return { findings: candidates, suppressed: [] };
+  }
+  progress.phase('re-verifying candidates');
+  const { confirmed, suppressed } = await reverify(
+    opts.reverifyWith,
+    inv,
+    candidates,
+    opts.fetchTimeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS,
+    (done, total) => progress.update(`${done}/${total}`)
+  );
+  progress.done(`${confirmed.length} confirmed, ${suppressed.length} in-flight`);
+  return { findings: confirmed, suppressed };
+}
 
 export async function analyze(
   inv: Inventory,
@@ -140,9 +175,15 @@ export async function analyze(
       // findings would be misleading or use NaN values in the detail line.
       return r && !r.tombstone && !isMalformedRow(r);
     });
+    const progress = opts.progress ?? createProgress(false);
+    progress.phase('validating payloads');
+    let done = 0;
     const payloadFindings = await pMap(liveBlobs, async (blob) => {
-      return validateBlob(blob, inv, timeoutMs);
+      const out = await validateBlob(blob, inv, timeoutMs);
+      progress.update(`${++done}/${liveBlobs.length}`);
+      return out;
     });
+    progress.done(`${liveBlobs.length} blobs`);
     for (const list of payloadFindings) findings.push(...list);
   }
 

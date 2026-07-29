@@ -28,14 +28,16 @@ Commands:
   suggest <category>     Emit shell commands for: drift | orphans | stale-tombstones | malformed
 
 Flags:
-  --json                 Machine-readable output
-  --strict               Exit non-zero if any error/warning finding present
-  --kind=layouts|designs Restrict to one item kind
-  --user=<uid>           Restrict to one user (audit/tombstones/suggest)
-  --no-payload-fetch     Skip per-blob HTTP fetch (faster; envelope checks skipped)
-  --suggest              For \`audit\`: inline fix commands beneath each finding
-  --older-than=Nd        For \`tombstones\` / \`suggest stale-tombstones\`: age threshold (default 90d)
-  --help                 Show this message
+  --json                          Machine-readable output
+  --strict                        Exit non-zero if any error/warning finding present
+  --kind=layouts|designs|baseplates
+                                  Restrict to one item kind
+  --user=<uid>                    Restrict to one user (audit/tombstones/suggest)
+  --no-payload-fetch              Skip per-blob HTTP fetch (faster; envelope checks skipped)
+  --no-reverify                   Report raw findings without re-reading flagged items
+  --suggest                       For \`audit\`: inline fix commands beneath each finding
+  --older-than=Nd                 For \`tombstones\` / \`suggest stale-tombstones\`: age threshold (default 90d)
+  --help                          Show this message
 
 Examples:
   pnpm sync-admin audit

@@ -7,6 +7,7 @@ export interface Args {
   strict: boolean;
   suggest: boolean;
   noPayloadFetch: boolean;
+  noReverify: boolean;
   kind?: Kind;
   user?: string;
   olderThanMs?: number;
@@ -29,6 +30,7 @@ export function parseArgs(argv: readonly string[]): Args {
     strict: false,
     suggest: false,
     noPayloadFetch: false,
+    noReverify: false,
     help: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -37,6 +39,7 @@ export function parseArgs(argv: readonly string[]): Args {
     else if (arg === '--strict') a.strict = true;
     else if (arg === '--suggest') a.suggest = true;
     else if (arg === '--no-payload-fetch') a.noPayloadFetch = true;
+    else if (arg === '--no-reverify') a.noReverify = true;
     else if (arg === '--help' || arg === '-h') a.help = true;
     else if (arg.startsWith('--kind=')) {
       const v = arg.slice('--kind='.length);
