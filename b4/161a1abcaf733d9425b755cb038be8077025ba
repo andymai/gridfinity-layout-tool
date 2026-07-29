@@ -1,0 +1,22 @@
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_298af80808e554::t_bfbadb89acffc0 61
+  s_298af80808e554::t_6e0bd75c5bd922 72,74-75,84-85
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.test.tsx
+  s_298af80808e554::t_f2a31e7c840842 72-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b4161a1abcaf733d9425b755cb038be8077025ba",
+  "prompts": {},
+  "sessions": {
+    "s_298af80808e554": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "62618067-a6fc-4ac4-8b5e-281fa908e8a0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
