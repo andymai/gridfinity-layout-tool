@@ -1,0 +1,22 @@
+.claude/skills/i18n-changes/SKILL.md
+  s_5bad95026005eb::t_d369598bfaf12e 18
+  s_5bad95026005eb::t_3f8650418d0957 27
+  s_5bad95026005eb::t_c1999927017aba 35
+  s_5bad95026005eb::t_d94e48ab03a5d8 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5dec1571676d1246e50b46c6ed8234ac94c97e18",
+  "prompts": {},
+  "sessions": {
+    "s_5bad95026005eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e7d09fe9-c16c-435e-a50e-b52c9557f338",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
