@@ -63,8 +63,8 @@ advisory's proof-of-concept against the installed version before believing it.
 
 **Currently open:** `brace-expansion@1.1.17` (CVE-2026-14257, High, build-time
 devDependency only — `pnpm why brace-expansion --prod` is empty, so it is never
-shipped to users) — **reported but not exploitable; the installed version carries
-the fix.**
+shipped to users) — **reported against a version that carries the fix.** The
+advisory's range is stale, not the dependency.
 
 Upstream backported the fix to the 1.x line as 1.1.17 on 2026-07-29. `minimatch@3`
 — still pinned by `eslint-plugin-jsx-a11y`, which calls minimatch as a function, an
