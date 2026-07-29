@@ -1,0 +1,86 @@
+scripts/sync-admin/lib/types.ts
+  s_4d4c66ae4f1635::t_e08c32c281236c 29-33
+scripts/sync-admin/lib/inventory.ts
+  s_4d4c66ae4f1635::t_0921792c574e7d 5-6,14,18-19
+  s_4d4c66ae4f1635::t_6e74b85a612bd9 50,54
+  s_4d4c66ae4f1635::t_b1ead71d74356b 74,76
+  s_4d4c66ae4f1635::t_9e6954633650a4 80,84,88-91,97
+  s_4d4c66ae4f1635::t_a7c949f0bb23af 35-43
+  s_4d4c66ae4f1635::t_b0ea3eaf6992a8 27
+scripts/sync-admin/__tests__/findings.test.ts
+  s_4d4c66ae4f1635::t_db4ecda064d42e 25
+scripts/sync-admin/index.ts
+  s_4d4c66ae4f1635::t_c4113216dda497 31-40
+scripts/sync-admin/__tests__/reverify.test.ts
+  s_4d4c66ae4f1635::t_a2a5ab7f35e3e6 1-332
+scripts/sync-admin/lib/findings.ts
+  s_4d4c66ae4f1635::t_a012fd9ace4cd1 8-10,18-28,33-52
+  s_4d4c66ae4f1635::t_48bed1dfa6cb53 178-180,182-184,186
+  s_94cacf722ff5ca::t_1699d395bab6e8 53
+scripts/sync-admin/commands/audit.ts
+  s_4d4c66ae4f1635::t_3ecf643f39d79a 1,4,10-14,19-24,28,34,38,41,49-50,66-69,90,102-106
+  s_4d4c66ae4f1635::t_83f10069127445 17
+scripts/sync-admin/lib/progress.ts
+  s_4d4c66ae4f1635::t_3bf5225b18fb03 1-12,19-28,30-31,33-35,37-39
+  s_4d4c66ae4f1635::t_1a353cd8183438 13-18,29,32,36
+scripts/sync-admin/__tests__/redis.test.ts
+  s_4d4c66ae4f1635::t_475bd3a16b99ac 2-91,93-98
+  s_4d4c66ae4f1635::t_611ea6bd79318e 1
+  s_4d4c66ae4f1635::t_ea9466bdcbed88 92
+scripts/sync-admin/lib/redis.ts
+  s_4d4c66ae4f1635::t_2beac3e083f841 12-39
+scripts/sync-admin/commands/user.ts
+  s_4d4c66ae4f1635::t_062f723217cce3 64-65
+  s_4d4c66ae4f1635::t_f74218769aa30d 17-23,36,43
+  s_4d4c66ae4f1635::t_e70a13e4a800f9 1,4
+  s_4d4c66ae4f1635::t_272ab000b27642 73-75
+scripts/sync-admin/README.md
+  s_4d4c66ae4f1635::t_04f47fffd4b629 33-34,38-47,49-66
+  s_4d4c66ae4f1635::t_e311e9203a6416 148,154-156,164-167
+  s_4d4c66ae4f1635::t_413e709667d0e8 142-143
+  s_4d4c66ae4f1635::t_95568848e5df93 119,121-129
+  s_4d4c66ae4f1635::t_291e546f5cf0fa 48
+  s_4d4c66ae4f1635::t_1989fab898430c 67
+  s_4d4c66ae4f1635::t_adf417777062a2 120
+scripts/sync-admin/lib/reverify.ts
+  s_4d4c66ae4f1635::t_229065057a38d5 31-39
+  s_4d4c66ae4f1635::t_fa3423d780937a 161,166
+  s_4d4c66ae4f1635::t_24755049b88732 146,149,152
+  s_4d4c66ae4f1635::t_a32d337cf4f5b2 1-5,7-13,16,19-22,29-30,56-57,59-63,65-66,68,70-78,80-83,88-91,98-107,112-114,116,118-120,123,125-126,130-132,134,136,138-141,143-145,147,150-151,153-160,162-164,167-171,201
+  s_4d4c66ae4f1635::t_60dabf58f1b481 6,14-15,17-18,23-28,40-55,58,64,67,69,79,84-87,92-97,108-111,115,117,121-122,124,127-129,133,135,137,142,148,165,172-200,202-208
+scripts/sync-admin/commands/suggest.ts
+  s_4d4c66ae4f1635::t_c09f8805059760 66-68,74-76
+  s_4d4c66ae4f1635::t_f9cb41f66fb392 1,4
+  s_4d4c66ae4f1635::t_d39f179c3ca9a6 32,37,39-42,47-48,51
+scripts/sync-admin/lib/args.ts
+  s_4d4c66ae4f1635::t_d1075cac0f5638 10
+  s_4d4c66ae4f1635::t_974bcc3fda9d25 33
+  s_4d4c66ae4f1635::t_b3fc2ac83e6246 42
+scripts/sync-admin/commands/tombstones.ts
+  s_4d4c66ae4f1635::t_d6fe8c2fdd8b83 4
+  s_4d4c66ae4f1635::t_b80af3c8f8e055 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d5331ed436ed873cc1b5dd694a5f6c1795b8d44f",
+  "prompts": {},
+  "sessions": {
+    "s_4d4c66ae4f1635": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ebbdfa3-ed3d-4e53-8312-390e80ab2c5f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_94cacf722ff5ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4dc28448-9527-448f-b976-bb96a06de354",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
