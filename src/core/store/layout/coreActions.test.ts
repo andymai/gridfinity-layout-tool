@@ -77,14 +77,19 @@ describe('coreActions', () => {
       expect(useLayoutStore.getState().layout.printBedSize).toBe(300);
     });
 
-    it('clamps to minimum 42', () => {
+    it('clamps to the minimum', () => {
       useLayoutStore.getState().setPrintBedSize(1);
-      expect(useLayoutStore.getState().layout.printBedSize).toBe(42);
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_MIN);
     });
 
-    it('clamps to maximum 500', () => {
-      useLayoutStore.getState().setPrintBedSize(9999);
-      expect(useLayoutStore.getState().layout.printBedSize).toBe(500);
+    it('accepts large-format beds', () => {
+      useLayoutStore.getState().setPrintBedSize(1000);
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(1000);
+    });
+
+    it('clamps to the maximum', () => {
+      useLayoutStore.getState().setPrintBedSize(99999);
+      expect(useLayoutStore.getState().layout.printBedSize).toBe(CONSTRAINTS.PRINT_BED_MM_MAX);
     });
   });
 

@@ -53,8 +53,12 @@ export const CONSTRAINTS = {
   // detector in storage migration: a stored printBedSize below it is grid
   // units, not mm. Kept distinct from GRID_UNIT_MM_DEFAULT even though both
   // are 42 — they're unrelated concepts that happen to share a value.
+  // The max equals GRID_MAX × GRID_UNIT_MM_MAX (3000), the largest grid extent
+  // the tool can express, so a bed at the cap never splits an unpadded plate.
+  // Baseplate padding and connector tongues are charged against the bed budget
+  // on top of that, so a heavily padded plate can still split at the cap.
   PRINT_BED_MM_MIN: 42,
-  PRINT_BED_MM_MAX: 500,
+  PRINT_BED_MM_MAX: 3000,
   PRINT_BED_MM_DEFAULT: 256,
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
