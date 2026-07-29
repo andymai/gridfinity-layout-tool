@@ -1,0 +1,19 @@
+SECURITY.md
+  s_b7575e8689bf8f::t_0fc806cd75f2c1 66-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "232b52213efe0215265ffebc37c92dad7e6da71d",
+  "prompts": {},
+  "sessions": {
+    "s_b7575e8689bf8f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9e5cfa5b-119b-4519-a308-ec4157979b3c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
