@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.328.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.3...gridfinity-layout-tool-v4.328.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* **deps:** upgrade brace-expansion to 1.1.17 (CVE-2026-14257) ([#2964](https://github.com/andymai/gridfinity-layout-tool/issues/2964)) ([6735b2c](https://github.com/andymai/gridfinity-layout-tool/commit/6735b2c5989ed3bf981d5d4c9a95d776de531d18))
+
 ## [4.328.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.2...gridfinity-layout-tool-v4.328.3) (2026-07-29)
 
 
