@@ -2,7 +2,8 @@ import { list } from '@vercel/blob';
 import type Redis from 'ioredis';
 import { userIndexKey } from '../../../api/lib/redisKeys.js';
 import type { IndexEntry } from '../../../api/lib/userIndex.js';
-import { scanKeys } from './redis.js';
+import { createProgress, type Progress } from './progress.js';
+import { hgetallMany, scanKeys } from './redis.js';
 import type { BlobRow, Inventory, IndexRow, Kind } from './types.js';
 
 interface BuildOpts {
@@ -10,10 +11,12 @@ interface BuildOpts {
   kind?: Kind;
   /** Skip the Vercel Blob listing — only Redis index data is needed. */
   skipBlobs?: boolean;
+  progress?: Progress;
 }
 
 export async function buildInventory(redis: Redis, opts: BuildOpts = {}): Promise<Inventory> {
-  const blobs = opts.skipBlobs ? [] : await listBlobs(opts);
+  const progress = opts.progress ?? createProgress(false);
+  const blobs = opts.skipBlobs ? [] : await listBlobs(opts, progress);
   const blobMap = new Map<string, BlobRow>();
   const blobUsers = new Set<string>();
   for (const b of blobs) {
@@ -21,7 +24,7 @@ export async function buildInventory(redis: Redis, opts: BuildOpts = {}): Promis
     blobUsers.add(b.uid);
   }
 
-  const indexRows = await readIndexes(redis, opts);
+  const indexRows = await readIndexes(redis, opts, progress);
   const indexMap = new Map<string, IndexRow>();
   const redisUsers = new Set<string>();
   for (const r of indexRows) {
@@ -29,17 +32,26 @@ export async function buildInventory(redis: Redis, opts: BuildOpts = {}): Promis
     redisUsers.add(r.uid);
   }
 
-  return { blobs, blobMap, indexRows, indexMap, blobUsers, redisUsers };
+  return {
+    blobs,
+    blobMap,
+    indexRows,
+    indexMap,
+    blobUsers,
+    redisUsers,
+    blobsListed: !opts.skipBlobs,
+  };
 }
 
 export function itemKey(uid: string, kind: Kind, id: string): string {
   return `${uid}/${kind}/${id}`;
 }
 
-async function listBlobs(opts: BuildOpts): Promise<BlobRow[]> {
+async function listBlobs(opts: BuildOpts, progress: Progress): Promise<BlobRow[]> {
   const prefix = opts.user ? `users/${opts.user}/` : 'users/';
   const out: BlobRow[] = [];
   let cursor: string | undefined;
+  progress.phase('listing blobs');
   do {
     const page = await list({ prefix, cursor, limit: 1000 });
     for (const b of page.blobs) {
@@ -59,24 +71,30 @@ async function listBlobs(opts: BuildOpts): Promise<BlobRow[]> {
       });
     }
     cursor = page.cursor;
+    progress.update(`${out.length} found`);
   } while (cursor);
+  progress.done(`${out.length} found`);
   return out;
 }
 
-async function readIndexes(redis: Redis, opts: BuildOpts): Promise<IndexRow[]> {
+async function readIndexes(redis: Redis, opts: BuildOpts, progress: Progress): Promise<IndexRow[]> {
   const kinds: Kind[] = opts.kind ? [opts.kind] : ['layouts', 'designs', 'baseplates'];
   const out: IndexRow[] = [];
   for (const kind of kinds) {
+    progress.phase(`reading ${kind} index`);
     const keys = opts.user
       ? [userIndexKey(opts.user, kind)]
       : await scanKeys(redis, `users:*:index:${kind}`);
-    for (const key of keys) {
+    const hashes = await hgetallMany(redis, keys, 200, (done) =>
+      progress.update(`${done}/${keys.length} users`)
+    );
+    for (const [key, raw] of hashes) {
       const uid = key.split(':')[1];
-      const raw = await redis.hgetall(key);
       for (const [id, encoded] of Object.entries(raw)) {
         out.push(parseRow(uid, kind, id, encoded));
       }
     }
+    progress.done(`${keys.length} users`);
   }
   return out;
 }

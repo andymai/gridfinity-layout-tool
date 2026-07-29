@@ -1,6 +1,7 @@
-import { analyze } from '../lib/findings.js';
+import { analyzeWithReverify } from '../lib/findings.js';
 import { buildInventory } from '../lib/inventory.js';
 import { colors, formatFinding, formatTable } from '../lib/output.js';
+import { createProgress } from '../lib/progress.js';
 import { connect } from '../lib/redis.js';
 import { suggestFor } from '../lib/suggest.js';
 import type { Args } from '../lib/args.js';
@@ -13,8 +14,13 @@ export async function user(args: Args): Promise<number> {
   }
   const redis = connect();
   try {
-    const inv = await buildInventory(redis, { user: uid, kind: args.kind });
-    const findings = await analyze(inv, { fetchPayloads: !args.noPayloadFetch });
+    const progress = createProgress(true);
+    const inv = await buildInventory(redis, { user: uid, kind: args.kind, progress });
+    const { findings, suppressed } = await analyzeWithReverify(inv, {
+      fetchPayloads: !args.noPayloadFetch,
+      reverifyWith: args.noReverify ? undefined : redis,
+      progress,
+    });
 
     if (args.json) {
       process.stdout.write(
@@ -27,13 +33,14 @@ export async function user(args: Args): Promise<number> {
               ...f,
               suggestions: args.suggest ? suggestFor(f) : undefined,
             })),
+            suppressed,
           },
           null,
           2
         ) + '\n'
       );
     } else {
-      printHuman(uid, inv, findings);
+      printHuman(uid, inv, findings, suppressed);
     }
 
     const hasErrors = findings.some((f) => f.severity === 'error' || f.severity === 'warn');
@@ -54,7 +61,8 @@ function printHuman(
       entry: { modifiedAt: number; sizeBytes: number; deletedAt?: number };
     }[];
   },
-  findings: readonly { severity: string }[]
+  findings: readonly { severity: string }[],
+  suppressed: readonly unknown[]
 ): void {
   console.log(colors.bold(`=== user ${uid} ===`));
   const live = inv.indexRows.filter((r) => !r.tombstone);
@@ -62,6 +70,9 @@ function printHuman(
   console.log(`Blobs:         ${inv.blobs.length}`);
   console.log(`Live entries:  ${live.length}`);
   console.log(`Tombstones:    ${tombs.length}`);
+  if (suppressed.length > 0) {
+    console.log(colors.dim(`Suppressed:    ${suppressed.length} (in-flight writes)`));
+  }
   console.log('');
 
   if (inv.blobs.length) {

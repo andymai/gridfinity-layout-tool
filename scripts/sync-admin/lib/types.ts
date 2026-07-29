@@ -26,6 +26,11 @@ export interface Inventory {
   indexMap: Map<string, IndexRow>;
   blobUsers: Set<string>;
   redisUsers: Set<string>;
+  /**
+   * False when built with `skipBlobs`. An empty blobMap then means "not looked
+   * at", not "absent" — re-verification must not read it as the latter.
+   */
+  blobsListed: boolean;
 }
 
 export type FindingKind =

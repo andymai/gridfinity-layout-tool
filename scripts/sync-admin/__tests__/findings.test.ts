@@ -22,7 +22,7 @@ function makeInventory(blobs: BlobRow[], indexRows: IndexRow[]): Inventory {
     indexMap.set(itemKey(r.uid, r.kind, r.id), r);
     redisUsers.add(r.uid);
   }
-  return { blobs, blobMap, indexRows, indexMap, blobUsers, redisUsers };
+  return { blobs, blobMap, indexRows, indexMap, blobUsers, redisUsers, blobsListed: true };
 }
 
 const T = 1_780_000_000_000;

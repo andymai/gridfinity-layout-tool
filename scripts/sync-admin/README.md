@@ -30,10 +30,40 @@ PUT endpoints use), and sanitization-drift detection.
 ```bash
 pnpm sync-admin audit                       # human-readable report
 pnpm sync-admin audit --suggest             # inline fix commands per finding
-pnpm sync-admin audit --no-payload-fetch    # fast path, skips HTTP fetch
-pnpm sync-admin audit --strict              # exit non-zero on any finding (CI)
+pnpm sync-admin audit --no-payload-fetch    # skips HTTP fetch
+pnpm sync-admin audit --strict              # exit non-zero on error/warn (CI)
 pnpm --silent sync-admin audit --json       # structured output for piping
 ```
+
+Expect roughly 1–2 minutes at ~1k users and ~8.5k blobs; progress goes to
+stderr so `--json` stdout stays pipeable.
+
+## Re-verification (why findings can be suppressed)
+
+The scan lists every blob before reading the Redis index, so on a live database
+any save landing in that gap is observed inconsistently — the old blob listing
+paired with the new index entry. That fabricates findings:
+
+| In-flight event       | Fabricated finding                              |
+| --------------------- | ----------------------------------------------- |
+| Create                | `missing_blob`                                  |
+| Edit shrinking bytes  | `index_size_undercount`                         |
+| Edit growing bytes    | `sanitization_drift`                            |
+| Any rewrite           | `modifiedAt_mismatch` + `listing_size_mismatch` |
+| Blob replaced mid-run | `envelope_invalid` (HTTP 404)                   |
+
+Every flagged item is therefore re-read once and compared against the first
+observation:
+
+- **Moved again** → being actively written → suppressed as in-flight.
+- **Byte-identical and still inconsistent** → real → reported.
+
+Suppressed counts are always printed (and listed under `suppressed` in `--json`)
+so nothing disappears silently. `--no-reverify` returns the raw findings, which
+is useful when debugging the detector itself.
+
+`suggest` runs the same pass, so a mid-write item can never produce a
+remediation command.
 
 ### `user <uid>`
 
@@ -86,15 +116,17 @@ bash drift-fixes.sh
 
 ## Shared flags
 
-| Flag                      | Applies to                 | Effect                                                                               |
-| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
-| `--json`                  | all                        | Machine-readable output (use with `pnpm --silent`)                                   |
-| `--strict`                | audit, user, tombstones    | Exit 1 if any finding present (errors, warnings, _and_ info — e.g. stale tombstones) |
-| `--kind=layouts\|designs` | most                       | Restrict to one item kind                                                            |
-| `--user=<uid>`            | audit, suggest, tombstones | Restrict to one user                                                                 |
-| `--no-payload-fetch`      | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)                                     |
-| `--suggest`               | audit                      | Inline fix commands beneath each finding                                             |
-| `--older-than=Nd`         | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                                          |
+| Flag                                  | Applies to                 | Effect                                                        |
+| ------------------------------------- | -------------------------- | ------------------------------------------------------------- |
+| `--json`                              | all                        | Machine-readable output (use with `pnpm --silent`)            |
+| `--strict`                            | audit, user                | Exit 1 on any error or warning finding; info does not fail    |
+| `--strict`                            | tombstones                 | Exit 1 if any tombstone is stale (that command's whole point) |
+| `--kind=layouts\|designs\|baseplates` | most                       | Restrict to one item kind                                     |
+| `--user=<uid>`                        | audit, suggest, tombstones | Restrict to one user                                          |
+| `--no-payload-fetch`                  | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)              |
+| `--no-reverify`                       | audit, user, suggest       | Report raw findings without re-reading flagged items          |
+| `--suggest`                           | audit                      | Inline fix commands beneath each finding                      |
+| `--older-than=Nd`                     | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                   |
 
 ## Finding kinds
 
@@ -107,18 +139,21 @@ bash drift-fixes.sh
 | `modifiedAt_mismatch`   | error    | Envelope's `modifiedAt` differs from index entry's           |
 | `envelope_invalid`      | error    | Envelope shape wrong: bad `schemaVersion` / `modifiedAt`     |
 | `payload_invalid`       | error    | `validateShareLayout` / `validateDesignerShare` rejected     |
+| `index_size_undercount` | error    | Index `sizeBytes` under-counts the blob; hides quota usage   |
+| `fetch_timeout`         | error    | Blob fetch exceeded the per-fetch deadline (default 15s)     |
 | `sanitization_drift`    | warn     | Index `sizeBytes` over-counts (quota leak in system's favor) |
 | `listing_size_mismatch` | warn     | Vercel Blob listing's `size` differs from fetched byte count |
 | `stale_tombstone`       | info     | Tombstone older than retention; safe to sweep                |
 
-## CI usage
+## Scripted / scheduled usage
 
 ```bash
 pnpm sync-admin audit --strict --no-payload-fetch
 ```
 
-Exits 1 on any error/warning. `--no-payload-fetch` keeps the run sub-second
-without sacrificing membership + drift detection.
+Exits 1 on any error or warning. This is an operator tool, not a per-PR gate:
+it needs production Redis + Blob credentials and takes minutes, so nothing in
+CI runs it. Run it by hand, or on a schedule with the credentials available.
 
 ## Implementation notes
 
@@ -126,6 +161,10 @@ without sacrificing membership + drift detection.
   `TOMBSTONE_RETENTION_MS` directly from `api/lib/` so production validation
   changes are reflected automatically.
 - Bounded concurrency of 16 in-flight blob fetches via `lib/concurrency.ts`.
+- Index reads are pipelined in chunks of 200 (`lib/redis.ts`). One `HGETALL`
+  per user serially cost `users × RTT`, which dominated the run against a
+  remote Redis and widened the blob↔index gap that manufactures findings.
+- `SCAN` stays serial — the cursor is inherently sequential.
 - The envelope-overhead delta math lives in `lib/delta.ts`; see comments
   there for the precise byte accounting that distinguishes "expected" from
   "drift".
