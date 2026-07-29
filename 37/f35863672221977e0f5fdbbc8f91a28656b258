@@ -1,0 +1,25 @@
+scripts/sync-admin/__tests__/redis.test.ts
+  s_4d4c66ae4f1635::t_42aeaa60d81878 86-91
+scripts/sync-admin/lib/redis.ts
+  s_4d4c66ae4f1635::t_19b0933ca28573 24-26
+scripts/sync-admin/__tests__/reverify.test.ts
+  s_4d4c66ae4f1635::t_95a9f5f5ea1c8b 283-329
+scripts/sync-admin/lib/reverify.ts
+  s_4d4c66ae4f1635::t_67194d22d6ff5d 183-187,190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "37f35863672221977e0f5fdbbc8f91a28656b258",
+  "prompts": {},
+  "sessions": {
+    "s_4d4c66ae4f1635": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ebbdfa3-ed3d-4e53-8312-390e80ab2c5f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
