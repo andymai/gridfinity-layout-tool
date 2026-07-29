@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.328.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.327.0...gridfinity-layout-tool-v4.328.0) (2026-07-29)
+
+
+### Features
+
+* **settings:** raise the print bed size cap to 3000mm ([#2953](https://github.com/andymai/gridfinity-layout-tool/issues/2953)) ([d0764c0](https://github.com/andymai/gridfinity-layout-tool/commit/d0764c0bfbdbfd48f317061a2c693fa849b5ae96))
+
 ## [4.327.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.326.1...gridfinity-layout-tool-v4.327.0) (2026-07-28)
 
 
