@@ -1,0 +1,23 @@
+scripts/sync-admin/lib/inventory.ts
+  s_4d4c66ae4f1635::t_d0736c88055758 101-112
+  s_4d4c66ae4f1635::t_f96628beb01d60 80-94,96-100,113-121,123-125,128-130
+scripts/sync-admin/__tests__/inventory.test.ts
+  s_4d4c66ae4f1635::t_0a68ac4f890dd8 2,47-71
+  s_4d4c66ae4f1635::t_8c3aa9ab64236d 72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "3c338d6a5e1fd5ce8d1b03658eeb728ed5254c4f",
+  "prompts": {},
+  "sessions": {
+    "s_4d4c66ae4f1635": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ebbdfa3-ed3d-4e53-8312-390e80ab2c5f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
