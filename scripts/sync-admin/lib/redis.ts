@@ -21,6 +21,9 @@ export async function hgetallMany(
   chunkSize = 200,
   onChunk?: (done: number) => void
 ): Promise<Map<string, Record<string, string>>> {
+  if (!Number.isInteger(chunkSize) || chunkSize < 1) {
+    throw new Error(`hgetallMany: chunkSize must be a positive integer, got ${chunkSize}`);
+  }
   const out = new Map<string, Record<string, string>>();
   for (let i = 0; i < keys.length; i += chunkSize) {
     const chunk = keys.slice(i, i + chunkSize);
