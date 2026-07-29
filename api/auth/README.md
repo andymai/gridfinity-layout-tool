@@ -2,9 +2,7 @@
 
 OAuth-gated sign-in for the multi-device sync feature. Self-hosted via [Arctic](https://arcticjs.dev/) — no SaaS auth dependency. Cookie sessions stored in Redis. The app stays fully usable anonymously; sign-in only unlocks cross-device sync.
 
-> **Status: not yet user-facing.** The auth surface (endpoints + client session store + SignInButton component) is built and tested, but the UI is gated behind `SYNC_UI_ENABLED` (sourced from `VITE_ENABLE_SYNC_UI`). The gate is **off** in production until the full sync feature lands (target: PR 6). Vite tree-shakes the SignInButton chunk when the gate is false, so the production bundle has zero footprint for this feature today.
->
-> To exercise the flow locally: `echo 'VITE_ENABLE_SYNC_UI=1' >> .env.local`.
+> **Local setup.** Sign-in is surfaced through `UserDock`; there is no build-time or Labs gate. To exercise the flow locally, set the provider credentials plus `OAUTH_REDIRECT_BASE_URL` in `.env.local` — see [Provider setup](#provider-setup) below.
 
 ## Endpoints
 
