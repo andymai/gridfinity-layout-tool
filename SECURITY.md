@@ -61,8 +61,10 @@ A finding we can't fix yet stays red rather than being silenced, and "the
 advisory looks wrong" is not grounds for an exception — verify it by running the
 advisory's proof-of-concept against the installed version before believing it.
 
-**Currently open:** `brace-expansion@1.1.17` (CVE-2026-14257) — **reported but not
-exploitable; the installed version carries the fix.**
+**Currently open:** `brace-expansion@1.1.17` (CVE-2026-14257, High, build-time
+devDependency only — `pnpm why brace-expansion --prod` is empty, so it is never
+shipped to users) — **reported but not exploitable; the installed version carries
+the fix.**
 
 Upstream backported the fix to the 1.x line as 1.1.17 on 2026-07-29. `minimatch@3`
 — still pinned by `eslint-plugin-jsx-a11y`, which calls minimatch as a function, an
@@ -75,7 +77,8 @@ marker is not evidence of a fix.
 
 GHSA-mh99-v99m-4gvg declares a single range, `introduced: 0` → `fixed: 5.0.8`, with
 no per-line fixed events, so it sweeps in every backport below 5.0.8 (1.1.17, 2.1.3,
-3.0.5). The scan therefore stays red on a version that is genuinely patched. Per the
+3.0.3). The scan therefore stays red on a version that is genuinely patched. A range
+correction is filed upstream as github/advisory-database#8877. Per the
 no-suppression rule above this is left red rather than silenced; the fix is an
 upstream correction to the advisory's ranges, not an `osv-scanner.toml`.
 
