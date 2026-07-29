@@ -77,25 +77,57 @@ async function listBlobs(opts: BuildOpts, progress: Progress): Promise<BlobRow[]
   return out;
 }
 
+const ALL_KINDS: readonly Kind[] = ['layouts', 'designs', 'baseplates'];
+
+/**
+ * `users:{uid}:index:{kind}` → its parts, or null for anything else the glob
+ * happens to reach. Sibling keys (`indexUpdatedAt`, `tombstoneSweptAt`) can't
+ * match `users:*:index:*` today, but a future one shouldn't become an index row.
+ */
+export function parseIndexKey(key: string): { uid: string; kind: Kind } | null {
+  const parts = key.split(':');
+  if (parts.length !== 4 || parts[0] !== 'users' || parts[2] !== 'index') return null;
+  const kind = parts[3] as Kind;
+  if (!ALL_KINDS.includes(kind) || !parts[1]) return null;
+  return { uid: parts[1], kind };
+}
+
 async function readIndexes(redis: Redis, opts: BuildOpts, progress: Progress): Promise<IndexRow[]> {
-  const kinds: Kind[] = opts.kind ? [opts.kind] : ['layouts', 'designs', 'baseplates'];
-  const out: IndexRow[] = [];
-  for (const kind of kinds) {
-    progress.phase(`reading ${kind} index`);
-    const keys = opts.user
-      ? [userIndexKey(opts.user, kind)]
-      : await scanKeys(redis, `users:*:index:${kind}`);
-    const hashes = await hgetallMany(redis, keys, 200, (done) =>
-      progress.update(`${done}/${keys.length} users`)
-    );
-    for (const [key, raw] of hashes) {
-      const uid = key.split(':')[1];
-      for (const [id, encoded] of Object.entries(raw)) {
-        out.push(parseRow(uid, kind, id, encoded));
-      }
+  const kinds = opts.kind ? [opts.kind] : ALL_KINDS;
+  const user = opts.user;
+  progress.phase('reading index');
+
+  const targets: { key: string; uid: string; kind: Kind }[] = [];
+  if (user) {
+    // uid and kind are already known here; no need to parse them back out.
+    for (const kind of kinds) targets.push({ key: userIndexKey(user, kind), uid: user, kind });
+  } else {
+    // One cursor pass covers every kind. MATCH filters server-side but SCAN
+    // still walks the whole keyspace, so a scan per kind paid that walk thrice.
+    const keys = await scanKeys(redis, `users:*:index:${opts.kind ?? '*'}`);
+    const wanted = new Set<Kind>(kinds);
+    for (const key of keys) {
+      const parsed = parseIndexKey(key);
+      if (parsed && wanted.has(parsed.kind)) targets.push({ key, ...parsed });
     }
-    progress.done(`${keys.length} users`);
   }
+
+  const hashes = await hgetallMany(
+    redis,
+    targets.map((t) => t.key),
+    200,
+    (done) => progress.update(`${done}/${targets.length} indexes`)
+  );
+
+  const out: IndexRow[] = [];
+  for (const { key, uid, kind } of targets) {
+    for (const [id, encoded] of Object.entries(hashes.get(key) ?? {})) {
+      out.push(parseRow(uid, kind, id, encoded));
+    }
+  }
+  progress.done(
+    `${targets.length} indexes across ${new Set(targets.map((t) => t.uid)).size} users`
+  );
   return out;
 }
 
