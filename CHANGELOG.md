@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.328.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.0...gridfinity-layout-tool-v4.328.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **sync-admin:** stop reporting mid-scan writes as integrity errors ([#2958](https://github.com/andymai/gridfinity-layout-tool/issues/2958)) ([4346984](https://github.com/andymai/gridfinity-layout-tool/commit/43469846fe9330b3f8c30017e18134b60452c352))
+
 ## [4.328.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.327.0...gridfinity-layout-tool-v4.328.0) (2026-07-29)
 
 
