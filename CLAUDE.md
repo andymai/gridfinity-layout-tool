@@ -2,8 +2,6 @@
 
 Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organizer layouts.
 
-**Stack:** React 19, TypeScript 6, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks, PostHog.
-
 ## Git & Quality
 
 - **Main is protected** - all changes via PRs
@@ -18,56 +16,9 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 | `useShallow` for multi-select | `var`, `==`               |
 | `@/` path alias               | Non-null assertions (`!`) |
 
-## Directory Structure
-
-```
-src/
-├── core/           # Infrastructure: api/, constants.ts, cqrs/, labs/, result/, storage/,
-│                   # store/, sync/, types.ts
-├── features/       # Vertical slices (each has README.md): baseplate, bin-designer,
-│                   # bin-inspector, bin-recommender, categories, cloud-share,
-│                   # command-palette, design-linking, drawer-shape, engagement,
-│                   # generation, grid-editor, inspiration-gallery, labs, layers,
-│                   # layout-library, onboarding, print-export, scan-capture,
-│                   # snapshots, staging, supporters
-├── shared/         # Cross-cutting: analytics/, components/, constants/, contexts/,
-│                   # generation/, hooks/, printSettings/, types/, utils/
-├── shell/          # App shell: Header/, Sidebar/, Collab/, Mobile/, Modals/,
-│                   # Tablet/, layouts/, styles/
-├── design-system/  # UI primitives: Button, Checkbox, Dialog, Input, Select, etc.
-└── i18n/           # Localization (en, de, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs, ko)
-```
-
 ## Core Architecture
 
-### Stores (`src/core/store/`)
-
-| Store                | Purpose                                                                          |
-| -------------------- | -------------------------------------------------------------------------------- |
-| `layout/`            | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
-| `library.ts`         | Multi-layout library, `activeLayoutId`, thumbnails                               |
-| `settings.ts`        | User preferences (localStorage: `gridfinity-settings-v1`)                        |
-| `selection.ts`       | Selected bins, active layer/category                                             |
-| `interaction.ts`     | Current interaction, drop targets, layer view mode                               |
-| `view.ts`            | 3D preview camera, isometric snap                                                |
-| `toast.ts`           | Toast notification queue                                                         |
-| `labs.ts`            | Experimental feature flags                                                       |
-| `halfGridMode.ts`    | Half-grid toggle (0.5 grid steps + couples new designs to half-pitch sockets)    |
-| `mobile.ts`          | Mobile-specific UI state                                                         |
-| `layoutAnalytics.ts` | Layout statistics tracking                                                       |
-| `sharedPreview.ts`   | Shared preview/embed state                                                       |
-| `sharePopover.ts`    | Share popover open/anchor state                                                  |
-| `sharedWithMe.ts`    | Layouts shared with the signed-in user                                           |
-| `snapshots.ts`       | Layout snapshot list state                                                       |
-
 Undo/redo (max 100) lives in `src/core/cqrs/undo/historyStore.ts`, captured automatically by the CQRS undo middleware.
-
-### Data Model (`src/core/types.ts`)
-
-```
-Layout → Drawer, Categories[], Layers[], Bins[], printBedSize, gridUnitMm, heightUnitMm
-Bin → position (x,y), size (w,d,h), layerId, category, label, notes, customProperties?
-```
 
 ### Critical Gotchas
 
@@ -90,73 +41,13 @@ Error types: `LayoutError`, `ValidationError`, `StorageError`, `ApiError`. Use `
 
 Import from `@/core/storage` (public facade).
 
-### Interaction Types (`src/core/types.ts`)
-
-`draw` | `drag` | `resize` | `stagingDrag` | `paint`
-
-**Layer view modes** (`view.ts`): `focus` | `stack` | `all`
-
 ### CQRS (`src/core/cqrs/`)
 
-| Component   | Purpose                                                   |
-| ----------- | --------------------------------------------------------- |
-| Commands    | Typed user intents via `createCommand()` factory          |
-| Events      | Past-tense domain facts, persisted to IndexedDB           |
-| Handlers    | Command -> store mutation + event emission                |
-| Middleware  | Validation (Zod), undo capture, analytics, logging        |
-| Event Store | IndexedDB append-only with retry queue                    |
-| Versioning  | Schema versions + migration registry for persisted events |
-
 See `src/core/cqrs/README.md` for architecture details, adding new commands/events, and migration guide.
-
-## Key Constants (`src/core/constants.ts`)
-
-| Constraint        | Value                    |
-| ----------------- | ------------------------ |
-| Grid size         | 0.5-50 units             |
-| Layers            | 1-10                     |
-| Categories        | 1-20                     |
-| Layouts           | 500 max (warning at 450) |
-| Undo states       | 100                      |
-| Grid unit         | 42mm                     |
-| Height unit       | 7mm                      |
-| Print bed default | 256mm                    |
-
-**Breakpoints:** MD: 768px (mobile/tablet), LG: 900px (tablet/desktop)
-
-## i18n (`src/i18n/`)
-
-```typescript
-const t = useTranslation();
-t('toast.binsDeleted', { count: 5 }); // Interpolation with {variable}
-```
-
-Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Locales: de, en, es, fr, it, ja, nb, nl, pl, pt-BR, sv, uk, zh-CN, cs, ko.
-
-## API (`api/`)
-
-| Endpoint                                      | Purpose                                                                  |
-| --------------------------------------------- | ------------------------------------------------------------------------ |
-| `share.ts`                                    | POST: Create share                                                       |
-| `share/[id].ts`                               | GET/PUT/DELETE share                                                     |
-| `liveblocks-auth.ts`                          | Liveblocks auth token endpoint                                           |
-| `ml-telemetry.ts`                             | ML usage telemetry                                                       |
-| `kofi-webhook.ts`                             | POST: Ko-fi payment → supporter                                          |
-| `supporters.ts`                               | GET: public supporter list                                               |
-| `report/[id].ts`                              | Report shared layout                                                     |
-| `scan-session.ts` + `scan-session/[token].ts` | Phone-scan handoff sessions                                              |
-| `auth/`                                       | OAuth sign-in (login/callback/me/logout, Arctic providers)               |
-| `sync/`                                       | Per-user cloud sync (layouts/designs/baseplates/manifest/export/account) |
-| `lib/rateLimit.ts`                            | 100/min (CRUD), 10/hr (report)                                           |
-| `lib/validation.ts`                           | 500KB max, 2500 bins max                                                 |
-| `lib/contentFilter.ts`                        | Content moderation                                                       |
-| `lib/designerValidation.ts`                   | Bin designer input validation                                            |
 
 ## Testing
 
 - **Convention:** Colocated sibling tests — `foo.ts` + `foo.test.ts` in the same directory
-- **Unit:** Vitest + jsdom. Use `createTestLayout()` from `@/test/testUtils`
-- **E2E:** Playwright in `e2e/`. `pnpm run test:e2e`
 - **Infrastructure (`src/test/`):** `setup.ts`, `testUtils.ts`, `mocks/` — shared test utilities (stays centralized)
 - Pre-commit **blocks** if edited component file has no sibling test
 - Run `pnpm run test:coverage` before commit
@@ -172,19 +63,6 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
   ```
 - **Coordinate transforms** — grid units ↔ mm conversions use `gridUnitMm` (42mm). Height units use `heightUnitMm` (7mm). Never mix unit systems.
 - **Common traps**: stale closures in hooks (missing deps), `useShallow` omitted on multi-select, `layers[0]` = bottom (UI reverses display).
-
-## Scripts
-
-```bash
-pnpm run dev           # Dev server
-pnpm run build         # TypeScript + production build
-pnpm run test:coverage # Tests with coverage
-pnpm run test:e2e      # Playwright E2E
-pnpm run quality       # typecheck + lint + knip (dead code)
-pnpm run typecheck     # TypeScript check (no emit)
-pnpm run lint          # ESLint
-pnpm run size          # Bundle size check
-```
 
 ## Environment Variables
 
