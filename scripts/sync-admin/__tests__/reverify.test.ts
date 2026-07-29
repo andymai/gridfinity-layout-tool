@@ -328,5 +328,7 @@ describe('stateKey', () => {
     const { confirmed } = await reverify(redis, inv, [finding], 1000);
 
     expect(confirmed).toHaveLength(1);
+    // skipBlobs inventories ignore blob fields, so don't pay for the listing.
+    expect(listMock).not.toHaveBeenCalled();
   });
 });

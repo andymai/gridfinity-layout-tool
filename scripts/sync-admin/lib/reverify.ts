@@ -59,12 +59,14 @@ export async function readItemState(
   redis: Redis,
   uid: string,
   kind: Kind,
-  id: string
+  id: string,
+  withBlob = true
 ): Promise<ItemState> {
   const pathname = `users/${uid}/${kind}/${id}.json`;
   const [encoded, page] = await Promise.all([
     redis.hget(userIndexKey(uid, kind), id),
-    list({ prefix: pathname, limit: 1 }),
+    // A skipBlobs inventory ignores these fields anyway; don't pay for them.
+    withBlob ? list({ prefix: pathname, limit: 1 }) : Promise.resolve({ blobs: [] }),
   ]);
   const blob = page.blobs.find((b) => b.pathname === pathname);
   let row: IndexRow | null = null;
@@ -140,7 +142,7 @@ async function isReal(
   if (RACE_IMMUNE.has(f.kind)) return true;
 
   const before = stateFromInventory(inv, f.uid, f.itemKind, f.id);
-  const after = await readItemState(redis, f.uid, f.itemKind, f.id);
+  const after = await readItemState(redis, f.uid, f.itemKind, f.id, inv.blobsListed);
 
   // Moved between the two reads — the item is being written right now.
   if (stateKey(before, inv.blobsListed) !== stateKey(after, inv.blobsListed)) return false;
