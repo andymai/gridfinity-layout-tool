@@ -35,8 +35,9 @@ pnpm sync-admin audit --strict              # exit non-zero on error/warn (CI)
 pnpm --silent sync-admin audit --json       # structured output for piping
 ```
 
-Expect roughly 1–2 minutes at ~1k users and ~8.5k blobs; progress goes to
-stderr so `--json` stdout stays pipeable.
+Expect roughly 30s at ~1.2k users and ~8.5k blobs, most of it the per-blob
+payload fetch (`--no-payload-fetch` cuts it to ~10s). Progress goes to stderr
+so `--json` stdout stays pipeable.
 
 ## Re-verification (why findings can be suppressed)
 
@@ -164,7 +165,11 @@ CI runs it. Run it by hand, or on a schedule with the credentials available.
 - Index reads are pipelined in chunks of 200 (`lib/redis.ts`). One `HGETALL`
   per user serially cost `users × RTT`, which dominated the run against a
   remote Redis and widened the blob↔index gap that manufactures findings.
-- `SCAN` stays serial — the cursor is inherently sequential.
+- `SCAN` stays serial — the cursor is inherently sequential — but runs with
+  `COUNT 10000`. `MATCH` filters server-side while the scan still walks the
+  whole keyspace (~142k keys for ~1.2k matches), and measured per-call latency
+  is round-trip-bound rather than growing with `COUNT`, so a small `COUNT` only
+  bought extra round trips. See `lib/redis.ts` for the measurements.
 - The envelope-overhead delta math lives in `lib/delta.ts`; see comments
   there for the precise byte accounting that distinguishes "expected" from
   "drift".

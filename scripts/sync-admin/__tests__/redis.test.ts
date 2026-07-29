@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type Redis from 'ioredis';
-import { hgetallMany } from '../lib/redis';
+import { hgetallMany, scanKeys } from '../lib/redis';
 
 /**
  * Pipeline stub recording how many batches were flushed, so the test can assert
@@ -100,5 +100,48 @@ describe('hgetallMany', () => {
     } as unknown as Redis;
 
     await expect(hgetallMany(redis, ['k'])).rejects.toThrow('pipeline failed');
+  });
+});
+
+describe('scanKeys', () => {
+  function scanStub(pages: [string, string[]][]) {
+    const counts: number[] = [];
+    let i = 0;
+    const redis = {
+      scan: vi.fn(async (_cursor: string, _m: string, _p: string, _c: string, count: number) => {
+        counts.push(count);
+        return pages[i++];
+      }),
+    } as unknown as Redis;
+    return { redis, counts };
+  }
+
+  it('follows the cursor to completion and de-duplicates repeated keys', async () => {
+    // SCAN may return the same key in more than one page.
+    const { redis } = scanStub([
+      ['12', ['a', 'b']],
+      ['7', ['b', 'c']],
+      ['0', ['c']],
+    ]);
+
+    const keys = await scanKeys(redis, 'users:*:index:layouts');
+
+    expect(keys.sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('uses a COUNT large enough to keep round trips down', async () => {
+    const { redis, counts } = scanStub([['0', []]]);
+
+    await scanKeys(redis, 'users:*:index:layouts');
+
+    expect(counts[0]).toBeGreaterThanOrEqual(10_000);
+  });
+
+  it('honours an explicit count override', async () => {
+    const { redis, counts } = scanStub([['0', []]]);
+
+    await scanKeys(redis, 'p', 250);
+
+    expect(counts).toEqual([250]);
   });
 });
