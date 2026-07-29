@@ -1,0 +1,24 @@
+api/auth/README.md
+  s_bb577d2a77f3f9::t_fd6b8927af12b3 42
+  s_bb577d2a77f3f9::t_9310fba4b31880 39-41
+  s_bb577d2a77f3f9::t_7294e71d92ee7f 43
+  s_bb577d2a77f3f9::t_8a132ddced18d8 36-38
+CLAUDE.md
+  s_bb577d2a77f3f9::t_17987652d97e58 71,73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a226bc46122c6ced767e0fd7c24b17c918e2fa5d",
+  "prompts": {},
+  "sessions": {
+    "s_bb577d2a77f3f9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6793d7a5-74a7-4f01-b37e-d4daa925487f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
