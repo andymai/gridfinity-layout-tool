@@ -33,14 +33,14 @@ OAuth-gated sign-in for the multi-device sync feature. Self-hosted via [Arctic](
 
 ## Environment variables
 
-| Var                       | Required   | Purpose                                                                                            |
-| ------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
-| `GOOGLE_CLIENT_ID`        | yes        | Google OAuth app client id                                                                         |
-| `GOOGLE_CLIENT_SECRET`    | yes        | Google OAuth app client secret                                                                     |
-| `GITHUB_CLIENT_ID`        | yes        | GitHub OAuth app client id                                                                         |
-| `GITHUB_CLIENT_SECRET`    | yes        | GitHub OAuth app client secret                                                                     |
-| `OAUTH_REDIRECT_BASE_URL` | optional   | Override for the redirect base (e.g. custom domain). Falls back to `getBaseUrl()` (Vercel-derived) |
-| `REDIS_URL`               | yes (prod) | Same Redis used by share / rate-limit. Sessions and profiles stored here                           |
+| Var                       | Required   | Purpose                                                                                                                                                                                                          |
+| ------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_CLIENT_ID`        | yes        | Google OAuth app client id                                                                                                                                                                                       |
+| `GOOGLE_CLIENT_SECRET`    | yes        | Google OAuth app client secret                                                                                                                                                                                   |
+| `GITHUB_CLIENT_ID`        | yes        | GitHub OAuth app client id                                                                                                                                                                                       |
+| `GITHUB_CLIENT_SECRET`    | yes        | GitHub OAuth app client secret                                                                                                                                                                                   |
+| `OAUTH_REDIRECT_BASE_URL` | local dev  | Override for the redirect base (e.g. custom domain). Falls back to `getBaseUrl()`, which is Vercel-derived in deployments but `https://localhost:3000` elsewhere — so local dev must set this to the Vite origin |
+| `REDIS_URL`               | yes (prod) | Same Redis used by share / rate-limit. Sessions and profiles stored here                                                                                                                                         |
 
 ## Cookie shape
 
