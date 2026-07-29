@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.328.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.2...gridfinity-layout-tool-v4.328.3) (2026-07-29)
+
+
+### Performance
+
+* **sync-admin:** cut index-read cost from ~54s to ~2s ([#2962](https://github.com/andymai/gridfinity-layout-tool/issues/2962)) ([ab1a7d0](https://github.com/andymai/gridfinity-layout-tool/commit/ab1a7d037aa5f86b644ba5000fac13e36e6a8841))
+
 ## [4.328.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.1...gridfinity-layout-tool-v4.328.2) (2026-07-29)
 
 
