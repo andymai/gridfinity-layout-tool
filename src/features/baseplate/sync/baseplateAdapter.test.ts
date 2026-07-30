@@ -66,7 +66,7 @@ describe('baseplateAdapter.list', () => {
   });
 
   it('returns [] when listDesigns errors', async () => {
-    listDesignsMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    listDesignsMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
     expect(await baseplateAdapter.list()).toEqual([]);
   });
 });
@@ -195,7 +195,7 @@ describe('baseplateAdapter.applyRemote', () => {
 
   it('throws when saveDesign fails', async () => {
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('x')));
-    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
 
     await expect(
       baseplateAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 })
@@ -223,7 +223,7 @@ describe('baseplateAdapter.applyRemote', () => {
 
   it('does not touch the registry when saveDesign fails', async () => {
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('x')));
-    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
 
     await expect(
       baseplateAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 })
@@ -239,7 +239,7 @@ describe('baseplateAdapter.applyRemoteDelete', () => {
   });
 
   it('throws on other delete failures', async () => {
-    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
     await expect(baseplateAdapter.applyRemoteDelete('x')).rejects.toThrow(/deleteDesign failed/);
   });
 
@@ -261,7 +261,7 @@ describe('baseplateAdapter.applyRemoteDelete', () => {
   });
 
   it('does not touch the registry when the delete fails', async () => {
-    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
     await expect(baseplateAdapter.applyRemoteDelete('x')).rejects.toThrow();
     expect(removeRegistryEntryMock).not.toHaveBeenCalled();
   });

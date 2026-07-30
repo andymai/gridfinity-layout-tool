@@ -9,6 +9,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -43,7 +44,7 @@ describe('kernel performance stats', () => {
       width: 2,
       depth: 2,
       height: 3,
-      base: { style: 'socket', magnet: true, screw: false },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
     });
 
     // First generation

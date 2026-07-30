@@ -136,7 +136,7 @@ const LARGE: BinParams = buildParams({
   width: 6,
   depth: 6,
   height: 4,
-  base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+  base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
 });
 
 /** 3. Cutout/socket array (bit organizer): solid bin carved by a 6×6 hex array (36 cuts). */

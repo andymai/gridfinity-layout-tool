@@ -3,7 +3,7 @@ import { createEventBus } from '../bus/eventBus';
 import type { EventBus } from '../bus/eventBus';
 import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
-import { layerId, categoryId, binId, gridUnits, heightUnits } from '@/core/types';
+import { layerId, categoryId, binId, layoutId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { connectFillAnalytics } from './fillAnalytics';
 
@@ -55,11 +55,11 @@ function makeFillEvent(
       timestamp: 0,
       correlationId: correlationId('cor_1'),
       commandId: commandId('cmd_1'),
-      aggregateId: layerId('layout_1'),
+      aggregateId: layoutId('layout_1'),
       version: 1,
       schemaVersion: 1,
     },
-  } as DomainEvent;
+  };
 }
 
 describe('fillAnalytics subscriber', () => {

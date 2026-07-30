@@ -1,10 +1,33 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { mm } from '@gridfinity/branded-types';
 import { BaseSection } from './BaseSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import type { BaseplatePiece } from '../../types/tiling';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
+
+/** Minimal exterior-front/back, join-shared-edge piece for a 2-col split row. */
+function makePiece(
+  overrides: Partial<BaseplatePiece> &
+    Pick<
+      BaseplatePiece,
+      'label' | 'col' | 'row' | 'widthUnits' | 'depthUnits' | 'gridOffsetX' | 'gridOffsetY'
+    >
+): BaseplatePiece {
+  return {
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    fractionalEdgeX: 'none',
+    fractionalEdgeY: 'none',
+    edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+    placementRotationDeg: 0,
+    ...overrides,
+  };
+}
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -39,7 +62,7 @@ describe('BaseSection', () => {
         cols: 2,
         rows: 1,
         pieces: [
-          {
+          makePiece({
             label: 'A1',
             col: 0,
             row: 0,
@@ -47,9 +70,9 @@ describe('BaseSection', () => {
             depthUnits: 4,
             gridOffsetX: 0,
             gridOffsetY: 0,
-            placementRotationDeg: 0,
-          },
-          {
+            edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+          }),
+          makePiece({
             label: 'B1',
             col: 1,
             row: 0,
@@ -57,14 +80,16 @@ describe('BaseSection', () => {
             depthUnits: 4,
             gridOffsetX: 5,
             gridOffsetY: 0,
-            placementRotationDeg: 0,
-          },
+            edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+          }),
         ],
+        margins: [],
         totalWidthUnits: 10,
         totalDepthUnits: 4,
         stackCount: 1,
         stackSeparatorThickness: 0,
         bedLoads: 1,
+        paddingReductionHint: null,
       });
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
@@ -97,7 +122,7 @@ describe('BaseSection', () => {
   it('renders nothing when stacking hides every control and the plate is unsplit', () => {
     useLayoutStore.getState().setBaseplateParams({
       ...DEFAULT_BASEPLATE_PARAMS,
-      stackPrint: { enabled: true, copies: 2, gapMm: 0.2 },
+      stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
     });
     const { container } = render(<BaseSection />);
     expect(container).toBeEmptyDOMElement();

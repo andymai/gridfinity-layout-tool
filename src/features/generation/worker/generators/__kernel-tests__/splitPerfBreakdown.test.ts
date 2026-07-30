@@ -87,7 +87,7 @@ function makeScenario(
       width,
       depth,
       height,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
       ...extra,
     },
   };

@@ -169,6 +169,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 42,
       });
@@ -209,6 +210,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 10,
       });
@@ -272,6 +274,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array(9),
         normals: new Float32Array(9),
         indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 5,
       });
@@ -307,6 +310,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 1,
       });
@@ -390,6 +394,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 7,
       });
@@ -422,6 +427,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array(9),
         normals: new Float32Array(9),
         indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 1,
       });
@@ -602,6 +608,7 @@ describe('GenerationBridge', () => {
         vertices: new Float32Array([1, 2, 3]),
         normals: new Float32Array([0, 0, 1]),
         indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
         triangleCount: 1,
         timingMs: 4,
       });
@@ -934,7 +941,7 @@ describe('GenerationBridge', () => {
       await vi.advanceTimersByTimeAsync(31_000);
 
       const error = await rejection;
-      expect(error).toBeInstanceOf(Error);
+      if (!(error instanceof Error)) throw new Error('expected generate() to reject with an Error');
       expect(error.message).toContain('timed out');
     });
 

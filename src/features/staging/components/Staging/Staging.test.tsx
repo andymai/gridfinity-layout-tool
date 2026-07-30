@@ -7,6 +7,7 @@ import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
+import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 
 // Mock useResponsive
@@ -48,14 +49,14 @@ describe('Staging', () => {
 
   function createStagedBin(overrides: Partial<Bin> = {}): Bin {
     return {
-      id: `staged-bin-${Math.random().toString(36).slice(2, 9)}`,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
+      id: binId(`staged-bin-${Math.random().toString(36).slice(2, 9)}`),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
       layerId: STAGING_ID,
-      category: useLayoutStore.getState().layout.categories[0]?.id || 'default',
+      category: useLayoutStore.getState().layout.categories[0]?.id ?? categoryId('default'),
       label: '',
       notes: '',
       ...overrides,
@@ -114,8 +115,8 @@ describe('Staging', () => {
     });
 
     it('renders staged bins with category colors', () => {
-      const categoryId = useLayoutStore.getState().layout.categories[0].id;
-      addStagedBins([{ category: categoryId }]);
+      const firstCategoryId = useLayoutStore.getState().layout.categories[0].id;
+      addStagedBins([{ category: firstCategoryId }]);
 
       render(<Staging />);
 
@@ -124,7 +125,7 @@ describe('Staging', () => {
     });
 
     it('renders bin dimensions in bin', () => {
-      addStagedBins([{ width: 3, depth: 2, label: '' }]);
+      addStagedBins([{ width: gridUnits(3), depth: gridUnits(2), label: '' }]);
 
       render(<Staging />);
 
@@ -134,7 +135,7 @@ describe('Staging', () => {
 
     it('renders bin label when label fits', () => {
       // Use a large bin so label fits
-      addStagedBins([{ label: 'Test', width: 4, depth: 4 }]);
+      addStagedBins([{ label: 'Test', width: gridUnits(4), depth: gridUnits(4) }]);
 
       render(<Staging />);
 
@@ -143,7 +144,7 @@ describe('Staging', () => {
     });
 
     it('formats fractional dimensions correctly', () => {
-      addStagedBins([{ width: 1.5, depth: 2.5, label: '' }]);
+      addStagedBins([{ width: gridUnits(1.5), depth: gridUnits(2.5), label: '' }]);
 
       render(<Staging />);
 
@@ -376,9 +377,9 @@ describe('Staging', () => {
     it('packs multiple bins without overlap', () => {
       // Add bins that would overlap if not packed
       addStagedBins([
-        { width: 2, depth: 2 },
-        { width: 2, depth: 2 },
-        { width: 2, depth: 2 },
+        { width: gridUnits(2), depth: gridUnits(2) },
+        { width: gridUnits(2), depth: gridUnits(2) },
+        { width: gridUnits(2), depth: gridUnits(2) },
       ]);
 
       render(<Staging />);
@@ -391,8 +392,8 @@ describe('Staging', () => {
     it('sorts bins by area for better packing', () => {
       // Add small bin first, then large bin
       const bins = addStagedBins([
-        { width: 1, depth: 1 },
-        { width: 3, depth: 3 },
+        { width: gridUnits(1), depth: gridUnits(1) },
+        { width: gridUnits(3), depth: gridUnits(3) },
       ]);
 
       render(<Staging />);
@@ -406,7 +407,7 @@ describe('Staging', () => {
       // Create a second category
       const layout = useLayoutStore.getState().layout;
       const cat1 = layout.categories[0].id;
-      const cat2 = 'test-category-2';
+      const cat2 = categoryId('test-category-2');
       useLayoutStore.setState({
         layout: {
           ...layout,
@@ -417,10 +418,10 @@ describe('Staging', () => {
       // Add bins: cat2, cat1, cat2, cat1 (interleaved)
       // After clustering, cat1 bins should be grouped, cat2 bins should be grouped
       const bins = addStagedBins([
-        { id: 'bin-cat2-a', width: 2, depth: 2, category: cat2 },
-        { id: 'bin-cat1-a', width: 2, depth: 2, category: cat1 },
-        { id: 'bin-cat2-b', width: 2, depth: 2, category: cat2 },
-        { id: 'bin-cat1-b', width: 2, depth: 2, category: cat1 },
+        { id: binId('bin-cat2-a'), width: gridUnits(2), depth: gridUnits(2), category: cat2 },
+        { id: binId('bin-cat1-a'), width: gridUnits(2), depth: gridUnits(2), category: cat1 },
+        { id: binId('bin-cat2-b'), width: gridUnits(2), depth: gridUnits(2), category: cat2 },
+        { id: binId('bin-cat1-b'), width: gridUnits(2), depth: gridUnits(2), category: cat1 },
       ]);
 
       render(<Staging />);
@@ -436,9 +437,9 @@ describe('Staging', () => {
       // 2x2 and 2.5x2.5 should cluster (both floor to 2x2)
       // 4x4 should be in its own cluster
       const bins = addStagedBins([
-        { id: 'bin-small-a', width: 2, depth: 2 },
-        { id: 'bin-large', width: 4, depth: 4 },
-        { id: 'bin-small-b', width: 2.5, depth: 2.5 },
+        { id: binId('bin-small-a'), width: gridUnits(2), depth: gridUnits(2) },
+        { id: binId('bin-large'), width: gridUnits(4), depth: gridUnits(4) },
+        { id: binId('bin-small-b'), width: gridUnits(2.5), depth: gridUnits(2.5) },
       ]);
 
       render(<Staging />);
@@ -453,8 +454,8 @@ describe('Staging', () => {
       // floor(1.9) = 1, floor(2.0) = 2, so these should be in different clusters
       // This documents the "same floor value" behavior
       const bins = addStagedBins([
-        { id: 'bin-1.9', width: 1.9, depth: 1.9 },
-        { id: 'bin-2.0', width: 2.0, depth: 2.0 },
+        { id: binId('bin-1.9'), width: gridUnits(1.9), depth: gridUnits(1.9) },
+        { id: binId('bin-2.0'), width: gridUnits(2.0), depth: gridUnits(2.0) },
       ]);
 
       render(<Staging />);
@@ -469,7 +470,7 @@ describe('Staging', () => {
       // Create categories
       const layout = useLayoutStore.getState().layout;
       const cat1 = layout.categories[0].id;
-      const cat2 = 'test-category-many';
+      const cat2 = categoryId('test-category-many');
       useLayoutStore.setState({
         layout: {
           ...layout,
@@ -480,10 +481,10 @@ describe('Staging', () => {
       // cat2 has 3 bins, cat1 has 1 bin
       // cat2 cluster should appear first (bottom-left in grid)
       addStagedBins([
-        { id: 'bin-cat1-single', width: 2, depth: 2, category: cat1 },
-        { id: 'bin-cat2-a', width: 2, depth: 2, category: cat2 },
-        { id: 'bin-cat2-b', width: 2, depth: 2, category: cat2 },
-        { id: 'bin-cat2-c', width: 2, depth: 2, category: cat2 },
+        { id: binId('bin-cat1-single'), width: gridUnits(2), depth: gridUnits(2), category: cat1 },
+        { id: binId('bin-cat2-a'), width: gridUnits(2), depth: gridUnits(2), category: cat2 },
+        { id: binId('bin-cat2-b'), width: gridUnits(2), depth: gridUnits(2), category: cat2 },
+        { id: binId('bin-cat2-c'), width: gridUnits(2), depth: gridUnits(2), category: cat2 },
       ]);
 
       render(<Staging />);
@@ -550,7 +551,7 @@ describe('Staging', () => {
   describe('grid layout', () => {
     it('uses drawer width for grid width', () => {
       addStagedBins([{}]);
-      useLayoutStore.getState().updateDrawer({ width: 8 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(8) });
 
       const { container } = render(<Staging />);
 
@@ -561,7 +562,7 @@ describe('Staging', () => {
 
     it('handles fractional drawer width', () => {
       addStagedBins([{}]);
-      useLayoutStore.getState().updateDrawer({ width: 8.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(8.5) });
 
       render(<Staging />);
 
@@ -578,7 +579,7 @@ describe('Staging', () => {
      * which collapses the explicit grid and causes bins to overflow below the panel.
      */
     it('keeps fractional-depth bins inside the explicit grid', () => {
-      addStagedBins([{ width: 2, depth: 2.5 }]);
+      addStagedBins([{ width: gridUnits(2), depth: gridUnits(2.5) }]);
 
       render(<Staging />);
 
@@ -596,7 +597,7 @@ describe('Staging', () => {
       // y=0 means the bin sits at the bottom of the grid. With a fractional depth,
       // the bin's pixel height is shorter than its (ceiled) row span, so we need
       // alignSelf:'end' to keep the bottom edge at grid Y=0 instead of floating up.
-      addStagedBins([{ width: 2, depth: 2.5 }]);
+      addStagedBins([{ width: gridUnits(2), depth: gridUnits(2.5) }]);
 
       render(<Staging />);
 
@@ -606,7 +607,7 @@ describe('Staging', () => {
     });
 
     it('does not force alignment for whole-cell-depth bins', () => {
-      addStagedBins([{ width: 2, depth: 2 }]);
+      addStagedBins([{ width: gridUnits(2), depth: gridUnits(2) }]);
 
       render(<Staging />);
 
@@ -617,8 +618,8 @@ describe('Staging', () => {
 
     it('places every bin within the explicit grid rows', () => {
       addStagedBins([
-        { width: 2, depth: 2.5 },
-        { width: 1, depth: 1 },
+        { width: gridUnits(2), depth: gridUnits(2.5) },
+        { width: gridUnits(1), depth: gridUnits(1) },
       ]);
 
       render(<Staging />);
@@ -651,7 +652,9 @@ describe('Staging', () => {
 
   describe('bin title/tooltip', () => {
     it('shows bin info in title attribute', () => {
-      addStagedBins([{ label: 'Test Bin', width: 3, depth: 2, height: 4 }]);
+      addStagedBins([
+        { label: 'Test Bin', width: gridUnits(3), depth: gridUnits(2), height: heightUnits(4) },
+      ]);
 
       render(<Staging />);
 
@@ -888,30 +891,28 @@ describe('Staging as drop target', () => {
     vi.clearAllMocks();
   });
 
-  // Note: Full drop target behavior requires simulating drag from grid,
-  // which is complex to test in unit tests. These tests verify the
-  // component structure for drop target states.
-
   it('shows drop zone when dragging from grid with movement', () => {
-    // Set up drag interaction
+    const origin = { x: gridUnits(0), y: gridUnits(0) };
     useInteractionStore.setState({
       interaction: {
         type: 'drag',
-        binIds: ['some-bin'],
-        offset: { x: 0, y: 0 },
-        originalPositions: [],
-        currentCoord: { x: 0, y: 0 },
+        binIds: [binId('some-bin')],
+        startCoord: origin,
+        currentCoord: origin,
         valid: false,
-        originalLayerId: 'layer-1',
+        isOverGrid: false,
       },
     });
 
     render(<Staging />);
 
-    // Simulate pointer movement to trigger hasMoved state
+    // Before any pointer movement the stash still shows its idle hint
+    expect(screen.getByText('Drag a bin here to stash it')).toBeInTheDocument();
+    expect(screen.queryByText('Drop here to stash')).not.toBeInTheDocument();
+
     fireEvent(document, new PointerEvent('pointermove', { bubbles: true }));
 
-    // After movement, the drop zone should appear
-    // (Component will re-render with showAsDropTarget)
+    expect(screen.getByText('Drop here to stash')).toBeInTheDocument();
+    expect(screen.queryByText('Drag a bin here to stash it')).not.toBeInTheDocument();
   });
 });

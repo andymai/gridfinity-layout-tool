@@ -10,10 +10,11 @@ import {
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import type { BinParams, WallPatternSides } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 
 /** Minimal BinParams stub for testing wallPatterns functions. */
 const BASE_PARAMS: BinParams = {
+  ...DEFAULT_BIN_PARAMS,
   width: 1,
   depth: 1,
   height: 3,
@@ -22,17 +23,12 @@ const BASE_PARAMS: BinParams = {
   wallThickness: 1.2,
   style: 'standard',
   slotConfig: {
+    ...DEFAULT_BIN_PARAMS.slotConfig,
     x: { enabled: false, pitch: 20 },
     y: { enabled: false, pitch: 20 },
   },
-  base: { magnetHoles: false, screwHoles: false },
-  lip: true,
-  label: { enabled: false, width: 12, angle: 45, overhangAngle: 60 },
-  compartments: { enabled: false, rows: 1, cols: 1, thickness: 1.2, cells: [true] },
-  inserts: [],
   wallPattern: { enabled: false, pattern: 'honeycomb' as const },
-  exportFileName: { template: 'gridfinity_{w}x{d}x{h}', separator: '_' },
-} as BinParams;
+};
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...BASE_PARAMS, ...overrides };
@@ -130,6 +126,7 @@ describe('getPatternDescriptors — side field', () => {
       height: 5,
       style: 'slotted',
       slotConfig: {
+        ...BASE_PARAMS.slotConfig,
         x: { enabled: true, pitch: 20 },
         y: { enabled: false, pitch: 20 },
       },
@@ -183,6 +180,7 @@ describe('getPatternDescriptors — per-side selection (#2966)', () => {
       height: 5,
       style: 'slotted',
       slotConfig: {
+        ...BASE_PARAMS.slotConfig,
         x: { enabled: true, pitch: 20 },
         y: { enabled: false, pitch: 20 },
       },

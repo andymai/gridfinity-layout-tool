@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runSignOut, type KeepLocalPrompt } from './signOut';
-import type { SyncAdapter, SyncAdapters, SyncableItem } from './adapters/types';
+import type {
+  SyncAdapter,
+  SyncAdapters,
+  SyncableItem,
+  LayoutAdapter,
+  DesignAdapter,
+  BaseplateAdapter,
+} from './adapters/types';
 
 const flushNowMock = vi.fn();
 const getPendingEntriesMock = vi.fn();
@@ -51,8 +58,8 @@ let designs: MockAdapter;
 let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 const onAnonymous = vi.fn();
-const promptKeep: KeepLocalPrompt = vi.fn(async () => 'keep');
-const promptWipe: KeepLocalPrompt = vi.fn(async () => 'wipe');
+const promptKeep: KeepLocalPrompt = vi.fn(async () => 'keep' as const);
+const promptWipe: KeepLocalPrompt = vi.fn(async () => 'wipe' as const);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -60,7 +67,16 @@ beforeEach(() => {
   layouts = makeAdapter();
   designs = makeAdapter();
   baseplates = makeAdapter();
-  adapters = { layouts, designs, baseplates };
+  // MockAdapter's payload is deliberately untyped (`unknown`) — this flow
+  // never inspects payload shape, only `id`/`modifiedAt`. SyncAdapter<Layout
+  // |DesignSyncPayload|BaseplatePayload> is assignable to SyncAdapter<unknown>
+  // (the concrete payload is assignable to `unknown`), so the reverse cast
+  // here is sound, not a type-safety bypass.
+  adapters = {
+    layouts: layouts as LayoutAdapter,
+    designs: designs as DesignAdapter,
+    baseplates: baseplates as BaseplateAdapter,
+  };
   flushNowMock.mockResolvedValue(undefined);
   getPendingEntriesMock.mockResolvedValue([]);
   apiSignOutMock.mockResolvedValue(undefined);
@@ -168,7 +184,7 @@ describe('runSignOut — outbox flush', () => {
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
     ]);
-    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel');
+    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel' as const);
     const result = await runSignOut({ adapters, promptKeepLocal: promptCancel, onAnonymous });
     expect(result.status).toBe('cancelled');
     expect(flushNowMock).not.toHaveBeenCalled();
@@ -185,7 +201,7 @@ describe('runSignOut — outbox flush', () => {
     let tick = 0;
     const promptOrdered: KeepLocalPrompt = vi.fn(async () => {
       promptFiredAt = tick++;
-      return 'keep';
+      return 'keep' as const;
     });
     flushNowMock.mockImplementation(async () => {
       flushFiredAt = tick++;
@@ -240,7 +256,7 @@ describe('runSignOut — poller high-water reset', () => {
   });
 
   it('does not reset the poller on cancel (user is still signed in)', async () => {
-    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel');
+    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel' as const);
     await runSignOut({ adapters, promptKeepLocal: promptCancel, onAnonymous });
     expect(resetPullStateMock).not.toHaveBeenCalled();
   });

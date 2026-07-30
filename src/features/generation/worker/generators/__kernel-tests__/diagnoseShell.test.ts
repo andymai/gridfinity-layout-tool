@@ -8,6 +8,8 @@
  */
 import { test, expect } from 'vitest';
 import { withKernel, measureVolume, getBounds } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
+import { isOk } from '@/core/result';
 import { getLastSolid, clearAllCaches } from '@/features/generation/worker/generators/shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
@@ -29,6 +31,12 @@ import { STANDARD_BIN_WIDTH, STANDARD_HEIGHT, SHELL_THICKNESS } from './testCase
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const SHELL_RADIUS = 4; // mm
+
+function unwrapVolume(shape: Shape3D): number {
+  const result = measureVolume(shape);
+  if (!isOk(result)) throw new Error('measureVolume failed');
+  return result.value;
+}
 
 test('diagnose flat no-lip face counts', async () => {
   await initBrepkitKernel();
@@ -52,7 +60,7 @@ test('diagnose flat no-lip face counts', async () => {
   const totalBefore = totalCount(typesBefore);
 
   // Entity counts and geometry before unify
-  const volBefore = withKernel('brepkit', () => measureVolume(bkSolid!));
+  const volBefore = withKernel('brepkit', () => unwrapVolume(bkSolid!));
   const countsBefore = withKernel('brepkit', () => getEntityCounts(rawKernel, solidId));
   const bb = withKernel('brepkit', () => getBounds(bkSolid!));
   const edgeTypes = withKernel('brepkit', () => collectEdgeTypeBreakdown(rawKernel, solidId));
@@ -109,7 +117,7 @@ test('diagnose flat no-lip face counts', async () => {
   console.log('');
 
   // Check volume using the updated solid reference
-  const vol = withKernel('brepkit', () => measureVolume(bkSolidAfter!));
+  const vol = withKernel('brepkit', () => unwrapVolume(bkSolidAfter!));
   console.log('GEOMETRY VALIDATION:');
   console.log(`  Volume: ${vol.toFixed(2)} mm³`);
   console.log(`  Volume valid: ${vol > 0 ? 'YES' : 'NO'}`);
@@ -148,7 +156,7 @@ test('step-by-step volume: extrude then shell', async () => {
     }
 
     const box = sketchResult.extrude(h);
-    const extrudeVol = measureVolume(box);
+    const extrudeVol = unwrapVolume(box);
     const extrudeBB = getBounds(box);
     const expectedExtrude = (outerW * outerD - (4 - Math.PI) * r * r) * h;
 
@@ -175,8 +183,8 @@ test('step-by-step volume: extrude then shell', async () => {
     // Step 2: shell
     const topFaces = faceFinder().parallelTo('Z').atDistance(h, [0, 0, 0]).findAll(box);
     console.log(`  Top faces found for shell: ${topFaces.length}`);
-    const shelled = unwrap(shell(box, topFaces, t));
-    const shellVol = measureVolume(shelled);
+    const shelled = unwrap(shell(box as ValidSolid, topFaces, t));
+    const shellVol = unwrapVolume(shelled);
     const shellBB = getBounds(shelled);
 
     const innerW = outerW - 2 * t;

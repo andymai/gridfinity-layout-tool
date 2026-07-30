@@ -53,7 +53,7 @@ const WALL_ONLY: SplitConnectorConfig = {
   wallConnector: 'key',
 };
 
-function totalTriCount(pieces: { indices: { length: number } }[]): number {
+function totalTriCount(pieces: readonly { indices: { length: number } }[]): number {
   return pieces.reduce((sum, p) => sum + p.indices.length / 3, 0);
 }
 

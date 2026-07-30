@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { mm } from '@gridfinity/branded-types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { buildBaseplateExportPieces } from './buildBaseplateExportPieces';
@@ -119,10 +120,10 @@ describe('buildBaseplateExportPieces', () => {
       input({
         baseplateParams: {
           ...DEFAULT_BASEPLATE_PARAMS,
-          paddingLeft: 10,
-          paddingRight: 10,
+          paddingLeft: mm(10),
+          paddingRight: mm(10),
           detachMargins: true,
-          stackPrint: { enabled: true, gapMm: 0.2 as never, copies: 3 },
+          stackPrint: { enabled: true, gapMm: mm(0.2), copies: 3 },
         },
       })
     );
@@ -148,7 +149,7 @@ describe('buildBaseplateExportPieces', () => {
       input({
         baseplateParams: {
           ...DEFAULT_BASEPLATE_PARAMS,
-          stackPrint: { enabled: true, gapMm: 0.2 as never, copies: 3 },
+          stackPrint: { enabled: true, gapMm: mm(0.2), copies: 3 },
         },
       })
     );

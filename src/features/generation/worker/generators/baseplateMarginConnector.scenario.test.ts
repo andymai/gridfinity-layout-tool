@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, intersect, fuse } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { ResolvedBaseplateParams, MarginPiece, BaseplateEdges } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
@@ -111,21 +111,23 @@ function frontGrooveUnion(rail: MarginPiece): Shape3D {
     );
     const world = translate(g, [rail.worldOffsetMm.x, rail.worldOffsetMm.y, 0]);
     g.delete();
-    if (!union) {
-      union = world;
-    } else {
-      const f = fuse(union, world);
-      if (isOk(f)) {
-        union.delete();
-        world.delete();
-        union = f.value;
-      } else {
-        // Keep the running union; drop only the piece that failed to merge.
-        world.delete();
-      }
-    }
+    union = union ? fuseWorldPiece(union, world) : world;
   }
-  return union!;
+  if (!union) throw new Error('frontGrooveUnion: no groove positions produced');
+  return union;
+}
+
+/** Fuse `world` into the running `union`; on fuse failure, drop `world` and keep `union`. */
+function fuseWorldPiece(union: Shape3D, world: Shape3D): Shape3D {
+  const f = fuse(union as ValidSolid, world as ValidSolid);
+  if (isOk(f)) {
+    union.delete();
+    world.delete();
+    return f.value;
+  }
+  // Keep the running union; drop only the piece that failed to merge.
+  world.delete();
+  return union;
 }
 
 describe('margin-seam connector geometry (#2414)', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import * as THREE from 'three';
 import { createTestBin } from '@/test/testUtils';
+import { gridUnits } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 import { LinkedBinMesh } from './LinkedBinMesh';
 import type { DesignGeometryEntry } from './useDesignGeometries';
@@ -14,7 +15,7 @@ vi.mock('@react-three/fiber', () => ({
 
 function makeBinData(overrides: Partial<BinRenderData> = {}): BinRenderData {
   return {
-    bin: createTestBin({ width: 2, depth: 1 }),
+    bin: createTestBin({ width: gridUnits(2), depth: gridUnits(1) }),
     x: 3,
     y: 4,
     z: 0.5,

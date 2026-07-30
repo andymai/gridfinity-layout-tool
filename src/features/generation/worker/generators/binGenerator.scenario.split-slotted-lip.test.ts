@@ -54,6 +54,7 @@ describe('slotted bin split with stacking lip (#1652)', () => {
       ...baseParams,
       style: 'slotted',
       slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
         x: { enabled: true, pitch: 42 },
         y: { enabled: false, pitch: 42 },
       },
@@ -91,6 +92,7 @@ describe('slotted bin split with stacking lip (#1652)', () => {
       ...baseParams,
       style: 'slotted',
       slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
         x: { enabled: true, pitch: 42 },
         y: { enabled: true, pitch: 42 },
       },
@@ -131,6 +133,7 @@ describe('slotted bin split with stacking lip + wall thickness extremes', () => 
         wallThickness,
         style: 'slotted',
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 42 },
           y: { enabled: false, pitch: 42 },
         },

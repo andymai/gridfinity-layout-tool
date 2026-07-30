@@ -4,8 +4,14 @@ import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
+import type { Rect } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 import { getBinId } from '@/test/testUtils';
 import { createMockGridRef, setupStores } from './useInteraction.testUtils';
+
+function gridRect(x: number, y: number, width: number, depth: number): Rect {
+  return { x: gridUnits(x), y: gridUnits(y), width: gridUnits(width), depth: gridUnits(depth) };
+}
 
 describe('startResize', () => {
   beforeEach(() => {
@@ -20,11 +26,11 @@ describe('startResize', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -62,11 +68,11 @@ describe('startResize', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -76,11 +82,11 @@ describe('startResize', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -113,11 +119,11 @@ describe('startResize', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -163,11 +169,11 @@ describe('resize rect calculation (integration)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -197,11 +203,11 @@ describe('resize rect calculation (integration)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -239,11 +245,11 @@ describe('resize pointer events', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -281,11 +287,11 @@ describe('resize pointer events', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -323,11 +329,11 @@ describe('resize completion with changes', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -346,8 +352,8 @@ describe('resize completion with changes', () => {
           binIds: [binId],
           handle: 'e',
           valid: true,
-          startRects: new Map([[binId, { x: 0, y: 0, width: 2, depth: 2 }]]),
-          currentRects: new Map([[binId, { x: 0, y: 0, width: 4, depth: 2 }]]), // Width changed: 2 -> 4
+          startRects: new Map([[binId, gridRect(0, 0, 2, 2)]]),
+          currentRects: new Map([[binId, gridRect(0, 0, 4, 2)]]), // Width changed: 2 -> 4
         },
       });
     });
@@ -372,11 +378,11 @@ describe('resize completion with changes', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -386,11 +392,11 @@ describe('resize completion with changes', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -410,12 +416,12 @@ describe('resize completion with changes', () => {
           handle: 'n',
           valid: true,
           startRects: new Map([
-            [binId1, { x: 0, y: 0, width: 2, depth: 2 }],
-            [binId2, { x: 5, y: 0, width: 2, depth: 2 }],
+            [binId1, gridRect(0, 0, 2, 2)],
+            [binId2, gridRect(5, 0, 2, 2)],
           ]),
           currentRects: new Map([
-            [binId1, { x: 0, y: 0, width: 2, depth: 4 }],
-            [binId2, { x: 5, y: 0, width: 2, depth: 4 }],
+            [binId1, gridRect(0, 0, 2, 4)],
+            [binId2, gridRect(5, 0, 2, 4)],
           ]),
         },
       });
@@ -443,11 +449,11 @@ describe('resize completion with changes', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -466,8 +472,8 @@ describe('resize completion with changes', () => {
           binIds: [binId],
           handle: 'e',
           valid: true,
-          startRects: new Map([[binId, { x: 0, y: 0, width: 2, depth: 2 }]]),
-          currentRects: new Map([[binId, { x: 0, y: 0, width: 2, depth: 2 }]]), // Same as start
+          startRects: new Map([[binId, gridRect(0, 0, 2, 2)]]),
+          currentRects: new Map([[binId, gridRect(0, 0, 2, 2)]]), // Same as start
         },
       });
     });
@@ -498,11 +504,11 @@ describe('resize via pointer movement', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -542,11 +548,11 @@ describe('resize via pointer movement', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 3,
-        y: 3,
-        width: 3,
-        depth: 3,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(3),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -588,11 +594,11 @@ describe('resize via pointer movement', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 3,
-        y: 3,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(3),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -632,11 +638,11 @@ describe('resize via pointer movement', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 3,
-        y: 3,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(3),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',

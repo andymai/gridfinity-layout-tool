@@ -49,12 +49,12 @@ describe('socket mesh cache (kernel)', () => {
     const plain = buildParams({
       width: 2,
       depth: 2,
-      base: { ...DEFAULT_BIN_PARAMS.base, magnetHoles: false },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard' },
     });
     const magnets = buildParams({
       width: 2,
       depth: 2,
-      base: { ...DEFAULT_BIN_PARAMS.base, magnetHoles: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
     });
 
     const plainRef = generateBin(plain);

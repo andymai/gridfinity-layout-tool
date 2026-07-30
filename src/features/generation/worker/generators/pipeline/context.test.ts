@@ -37,6 +37,7 @@ describe('createInitialContext', () => {
     const ctx = createInitialContext(
       createTestParams({
         base: {
+          ...DEFAULT_BIN_PARAMS.base,
           style: 'flat',
           stackingLip: false,
           halfSockets: false,
@@ -179,7 +180,8 @@ describe('createInitialContext', () => {
     const ctx = createInitialContext(
       createTestParams({
         base: {
-          style: 'plain',
+          ...DEFAULT_BIN_PARAMS.base,
+          style: 'standard',
           stackingLip: true,
           halfSockets: false,
           solid: false,

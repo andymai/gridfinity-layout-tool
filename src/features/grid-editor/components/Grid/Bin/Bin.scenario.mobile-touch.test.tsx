@@ -4,7 +4,8 @@ import { Bin } from '@/features/grid-editor/components/Grid/Bin';
 import { useViewStore, useSelectionStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { resetAllStores } from '@/test/testUtils';
-import type { Bin as BinType, Category, Layer } from '@/core/types';
+import { binId, gridUnits, heightUnits } from '@/core/types';
+import type { Bin as BinType, Category, Drawer, Layer } from '@/core/types';
 
 // Mock useResponsive to simulate touch device
 vi.mock('@/shared/hooks/useResponsive', () => ({
@@ -25,6 +26,8 @@ Object.defineProperty(navigator, 'vibrate', {
   writable: true,
 });
 
+const testDrawer: Drawer = { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) };
+
 describe('Mobile Touch Interactions', () => {
   let testBin: BinType;
   let testCategory: Category;
@@ -44,12 +47,12 @@ describe('Mobile Touch Interactions', () => {
     testCategory = layout.categories[0];
     testLayer = layout.layers[0];
     testBin = {
-      id: 'test-bin-1',
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
+      id: binId('test-bin-1'),
+      x: gridUnits(2),
+      y: gridUnits(2),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
       layerId: testLayer.id,
       category: testCategory.id,
       label: 'Test Bin',
@@ -68,7 +71,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -116,7 +119,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -152,7 +155,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -201,7 +204,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -245,7 +248,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -276,7 +279,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -309,7 +312,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -361,7 +364,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={false}
@@ -412,7 +415,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={true}
@@ -442,7 +445,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={false}
           isSelected={true}
@@ -474,7 +477,7 @@ describe('Mobile Touch Interactions', () => {
           bin={testBin}
           category={testCategory}
           layer={testLayer}
-          drawer={{ width: 10, depth: 8 }}
+          drawer={testDrawer}
           cellSize={32}
           isGhost={true}
           isSelected={false}
