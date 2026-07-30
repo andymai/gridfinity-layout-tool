@@ -1,0 +1,174 @@
+src/features/staging/components/Staging/StagingBin.test.tsx
+  s_bb8f1233002a7e::t_b71d626baadcd3 53-54
+  s_bb8f1233002a7e::t_d7562dfe4f7b8d 41,55,58,64,72-79
+  s_bb8f1233002a7e::t_113876d43f81d7 3,8-9
+  s_bb8f1233002a7e::t_f4f9b5191fcb11 10
+src/features/grid-editor/components/Grid/IsometricPreview/AnimatedBinMesh/AnimatedBinMesh.test.tsx
+  s_bb8f1233002a7e::t_4f13e16b56b9b0 3,5
+  s_bb8f1233002a7e::t_1f243c0800935a 62-70,72
+src/features/grid-editor/utils/navigation.test.ts
+  s_bb8f1233002a7e::t_11d79e23569055 8-20,22-29
+  s_bb8f1233002a7e::t_2ab9a034e349f7 21
+  s_bb8f1233002a7e::t_39b680a6c6dbfb 36-37,45-46,54-55,63-64,74-75,83-84,92-93,101-102,110,118-119,129-131,142-144,152-154,162,164,166,175,177-178,189,191,199-200,212,217,220,223,226,241-243,250-251,259-261,268-269
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.test.tsx
+  s_bb8f1233002a7e::t_34f89abfa23d31 9
+  s_bb8f1233002a7e::t_49785beb3d3b77 60-69
+  s_bb8f1233002a7e::t_3100ad18c27996 209-212
+  s_bb8f1233002a7e::t_974e5b804b7b74 257-265,267-272
+  s_bb8f1233002a7e::t_5d6d0c4e2e14f2 118-124,127-133
+src/features/grid-editor/hooks/useGridAxisLabels.test.ts
+  s_bb8f1233002a7e::t_1604ba6b6f18aa 4-5,7-15,17-20
+src/features/grid-editor/components/Grid/GridAxisLabels/GridAxisLabels.test.tsx
+  s_bb8f1233002a7e::t_8aaf6c71f5417c 102,105,120-122,125,128,141-145
+  s_bb8f1233002a7e::t_fcf64bfe26b29c 46
+  s_bb8f1233002a7e::t_b8f1d5281d8627 157
+  s_bb8f1233002a7e::t_0201dab2a535ee 216,219,235-237,240,243,257-261
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_bb8f1233002a7e::t_3a1633610242ea 12
+  s_bb8f1233002a7e::t_e4d08bf279cf33 203
+  s_bb8f1233002a7e::t_f9c6d3d009a10b 180,183-190
+  s_bb8f1233002a7e::t_10e0a009fe145c 388-389
+  s_bb8f1233002a7e::t_31f7b42e584c3a 319-320,325
+src/features/grid-editor/components/Grid/BrushHoverGhost/BrushHoverGhost.test.tsx
+  s_bb8f1233002a7e::t_17d4ef074cc4eb 80-81
+  s_bb8f1233002a7e::t_9be67464665240 38,40
+  s_bb8f1233002a7e::t_1cd7dc5bec2423 9
+src/features/grid-editor/hooks/useInteraction.resize.test.ts
+  s_bb8f1233002a7e::t_4a770159170df4 419-420,423-424
+  s_bb8f1233002a7e::t_e3769ea59609ea 7-8,12-14
+  s_bb8f1233002a7e::t_5e8132c2d887be 355-356
+  s_bb8f1233002a7e::t_e2eb78e2c279c9 475-476
+  s_bb8f1233002a7e::t_181b3f7ffe992b 15,29-33,71-75,85-89,122-126,172-176,206-210,248-252,290-294,332-336,381-385,395-399,452-456,507-511,551-555,597-601,641-645
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.test.tsx
+  s_bb8f1233002a7e::t_0d942273719097 96,112-117,119
+  s_bb8f1233002a7e::t_e658c6d4bb2b0e 53
+  s_bb8f1233002a7e::t_2fb7b51da09f4a 68
+  s_bb8f1233002a7e::t_31c944af44c5c6 19,22-27
+  s_bb8f1233002a7e::t_7dc8497c17b7a5 78
+  s_bb8f1233002a7e::t_72e65095e9c12d 7
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/Scene.test.tsx
+  s_bb8f1233002a7e::t_82f0f495a06217 46-55
+  s_bb8f1233002a7e::t_fd11e023f3e369 108-114,117-123
+src/features/grid-editor/components/Grid/IsometricPreview/SplitLineOverlay/SplitLineOverlay.test.tsx
+  s_bb8f1233002a7e::t_ad004f8599e967 87-93,96-102
+  s_bb8f1233002a7e::t_f41f5370229838 35-44
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.test.tsx
+  s_bb8f1233002a7e::t_2d3d4b073d84a2 41
+  s_bb8f1233002a7e::t_5cad830739bfa1 16,19-24
+  s_bb8f1233002a7e::t_63c4b8b962b93d 8
+  s_bb8f1233002a7e::t_1adf0754cfa885 32-36
+  s_bb8f1233002a7e::t_8a3050181c214d 37-40,44-51,56,82
+src/features/staging/components/Staging/Staging.test.tsx
+  s_bb8f1233002a7e::t_6e3873ef747b32 410,421-424
+  s_bb8f1233002a7e::t_84f15c5349c823 147
+  s_bb8f1233002a7e::t_b44dd6dc26c648 10
+  s_bb8f1233002a7e::t_955c94fd678453 473,484-487
+  s_bb8f1233002a7e::t_ebb3401b1b230a 565
+  s_bb8f1233002a7e::t_85476677430672 895,899-901,903,909-912,915-916
+  s_bb8f1233002a7e::t_7d2d34aef4b9f7 380-382
+  s_bb8f1233002a7e::t_4800e22b70e062 457-458
+  s_bb8f1233002a7e::t_1be7e187b4e882 395-396
+  s_bb8f1233002a7e::t_74a0669b1cabb2 610
+  s_bb8f1233002a7e::t_f41d25e29441a0 118-119
+  s_bb8f1233002a7e::t_71ec0b85ff1254 128
+  s_bb8f1233002a7e::t_74f5e2c5e1605d 554
+  s_bb8f1233002a7e::t_b81e8120f81768 621-622
+  s_bb8f1233002a7e::t_ba7070425049a8 582,600
+  s_bb8f1233002a7e::t_8b1e6f900ae2c8 440-442
+  s_bb8f1233002a7e::t_087ef17cd16ded 52-57,59
+  s_bb8f1233002a7e::t_7d31d992f255ee 138
+  s_bb8f1233002a7e::t_a039305345c86b 655-657
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.test.tsx
+  s_bb8f1233002a7e::t_c45da690dccae5 445-446,486-487
+  s_bb8f1233002a7e::t_5b8fb0aba71bde 11,110-115,140-145,156-159,186-189,193-198,215,230-235,251,264-269,276-281,288-293,353-354,396-401,451-457,473,492-498,513,530,551,572-573,593,615,642-647,683-688,729-734
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_bb8f1233002a7e::t_bb0d189ee95639 110-111
+  s_bb8f1233002a7e::t_eb2382046ff57e 8
+  s_bb8f1233002a7e::t_ed14a99fd44a05 45-52,58,64,66,70-72
+  s_bb8f1233002a7e::t_d8af815ba655c6 99-101
+  s_bb8f1233002a7e::t_e9bf91c5f9605f 181,189,196,226,252,261-262,268,277,547-551,585,598,652,708,715,722-726,733-737,795-799,813-817
+src/features/grid-editor/components/Grid/IsometricPreview/useBinsToRender.test.ts
+  s_bb8f1233002a7e::t_0191c28e354465 4-6,9-14,16,20-21,25-26,45,47-48,56,70-71,77,95-96,116-117,136-137,155,172,174-175
+  s_bb8f1233002a7e::t_74540a50925d40 176-180,201-212
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.test.tsx
+  s_bb8f1233002a7e::t_f637717ad3c8db 64
+  s_bb8f1233002a7e::t_68aac9ef42a1b5 160
+  s_bb8f1233002a7e::t_016f3e2123540b 20,23-28
+  s_bb8f1233002a7e::t_d8346fe5366efc 36-42
+  s_bb8f1233002a7e::t_4365cfbf8d146d 8
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.test.tsx
+  s_bb8f1233002a7e::t_3746a93dc9ed4c 34,41-42
+  s_bb8f1233002a7e::t_10bffec9879834 7
+src/features/grid-editor/components/Grid/IsometricPreview/BinMesh/BinMesh.test.tsx
+  s_bb8f1233002a7e::t_c41068396f7e3f 3,5
+  s_bb8f1233002a7e::t_3278a6ffa6ae53 113-121,123
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.test.tsx
+  s_bb8f1233002a7e::t_34c52803a2e4e5 4
+  s_bb8f1233002a7e::t_a9042dc5063456 44
+src/features/staging/hooks/useStagingResize.test.ts
+  s_bb8f1233002a7e::t_d5df05a0079958 10-17,23,27-32,39
+  s_bb8f1233002a7e::t_e185dacd881fbd 430
+  s_bb8f1233002a7e::t_6f23c04f5eff81 459
+  s_bb8f1233002a7e::t_90fe4fab87fdea 218,250,282,314,679,712
+src/features/grid-editor/components/Grid/IsometricPreview/BatchedCornerMarkers/BatchedCornerMarkers.test.tsx
+  s_bb8f1233002a7e::t_89874b53da1217 75-81,84-90
+  s_bb8f1233002a7e::t_28690ed36207e4 28-37
+src/features/grid-editor/components/Grid/IsometricPreview/FloorGrid/FloorGrid.test.tsx
+  s_bb8f1233002a7e::t_987998c454ca6b 75-81,84-90
+  s_bb8f1233002a7e::t_392a30c3caf7c3 28-37
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.test.ts
+  s_bb8f1233002a7e::t_9551fa118bbdc8 4,10-15
+  s_bb8f1233002a7e::t_7d5e3ba8e2b510 31-33,47,58,76,94,119
+src/features/grid-editor/components/Grid/Bin/binPropsAreEqual.test.ts
+  s_bb8f1233002a7e::t_e62311422d490f 23-29
+src/features/grid-editor/components/Grid/IsometricPreview/previewSummary.test.ts
+  s_bb8f1233002a7e::t_7173632fe568e8 4
+  s_bb8f1233002a7e::t_d166a4c786d7a6 55
+  s_bb8f1233002a7e::t_04f710887f2ccc 19-23
+  s_bb8f1233002a7e::t_c0633d73c44598 42-44
+src/features/grid-editor/components/Grid/IsometricPreview/LinkedBinMeshes/LinkedBinMesh.test.tsx
+  s_bb8f1233002a7e::t_84bb8bac773792 5
+  s_bb8f1233002a7e::t_ac5b4fba399726 18
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_ba4bf88160242d 3
+src/features/grid-editor/components/Grid/Bin/Bin.scenario.mobile-touch.test.tsx
+  s_bb8f1233002a7e::t_25586b18bda469 7-8,29-30,50-55,74,122,158,207,251,282,315,367,418,448,480
+src/features/grid-editor/components/Grid/Overlay/Overlay.test.tsx
+  s_bb8f1233002a7e::t_777c43f6439740 6-7,37-38,47,53-58,70-72,83,89-94,106-119,129,135-141,152-153,165-166,179-180,189,195-200,212-214
+src/features/grid-editor/components/Grid/QuickLabelPopover/QuickLabelPopover.test.tsx
+  s_bb8f1233002a7e::t_1472227eb66b23 8,48,52,71-76,85,97,100,119-124,133,147,150,169-174,183,196,203-208,217
+src/features/grid-editor/hooks/useGridCoords.test.ts
+  s_bb8f1233002a7e::t_a05cf7b1770ae3 8,29,51,65,105-106,168-171,174-177,184-187,197,209,220-222,230-233,240-242,268-273,279-281,289-294,299-300,309-314,334-339,360-365
+src/features/grid-editor/hooks/useGridNavigation.test.ts
+  s_bb8f1233002a7e::t_f81434bb434660 8,23-30,55-58,82,85,103,106,130,134,159,163,182,185,206,209,228,231,249-251,259-260,264,291,296,302,320-323
+src/features/grid-editor/hooks/useGridResize.test.ts
+  s_bb8f1233002a7e::t_c7b5c7270adada 8,384-388
+src/features/grid-editor/hooks/useGridRowColumnSelection.test.ts
+  s_bb8f1233002a7e::t_9363c903389529 6,15-22,97-98,132-133
+src/features/grid-editor/hooks/useGridZoom.test.ts
+  s_bb8f1233002a7e::t_ce41fe9b19d446 89,107,271,398
+src/features/grid-editor/hooks/useInteraction.core.test.ts
+  s_bb8f1233002a7e::t_3c187709882812 6,21,47,65,92,109-113,140-144
+src/features/grid-editor/hooks/useInteraction.drag.test.ts
+  s_bb8f1233002a7e::t_1e3d0e7bf4502e 7,25-29,63-67,77-81,116-120,130-134,165,185-189,227-231,263-267,306-310,346-350,395-399,431-435,459-460,502-506,516-520,547-548,595-599,618-619,645-649,668-669,695-699,716-717,751-755,772-773,800-804,814-818,835-836
+src/features/grid-editor/hooks/useInteraction.draw.test.ts
+  s_bb8f1233002a7e::t_28ccfd14d1af91 6,19,39,61,86,95-96,122,154,166-167
+src/features/grid-editor/hooks/useInteraction.staging.test.ts
+  s_bb8f1233002a7e::t_326ab4fe9031ca 7,25-29,42,73-77,99,128-132,145,171,177-181,206,243-247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "c6728ded9997066fbeb744cf5b7263ac4e3d0e57",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
