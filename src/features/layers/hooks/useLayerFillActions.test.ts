@@ -7,6 +7,8 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
+import { binId } from '@/core/types';
+import type { LayerId } from '@/core/types';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -20,7 +22,7 @@ vi.mock('@/shared/contexts', () => ({
   useMutations: () => mutations,
 }));
 
-function activeLayerId(): string {
+function activeLayerId(): LayerId {
   const id = useSelectionStore.getState().activeLayerId;
   if (!id) throw new Error('no active layer in test setup');
   return id;
@@ -87,7 +89,7 @@ describe('useLayerFillActions', () => {
     useLayoutStore.setState({
       layout: { ...state.layout, bins: [createTestBin({ layerId })] },
     });
-    useSelectionStore.getState().setSelectedBins(['some-bin']);
+    useSelectionStore.getState().setSelectedBins([binId('some-bin')]);
 
     const onAfterAction = vi.fn();
     const { result } = renderHook(() => useLayerFillActions({ onAfterAction }));

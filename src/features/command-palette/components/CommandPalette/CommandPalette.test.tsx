@@ -10,6 +10,8 @@ import {
 } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
+import { OK } from '@/core/result';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 /**
  * CommandPalette Component Tests
@@ -24,14 +26,14 @@ describe('CommandPalette', () => {
   const testLayout = createTestLayout({
     bins: [
       {
-        id: 'bin1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'layer1',
-        category: 'cat1',
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('cat1'),
         label: 'Test Bin',
         notes: '',
       },
@@ -44,8 +46,8 @@ describe('CommandPalette', () => {
 
     useLayoutStore.setState({ layout: testLayout });
     useSelectionStore.setState({
-      activeLayerId: 'layer1',
-      activeCategoryId: 'cat1',
+      activeLayerId: layerId('layer1'),
+      activeCategoryId: categoryId('cat1'),
       selectedBinIds: [],
     });
     useHistoryStore.setState({
@@ -62,7 +64,7 @@ describe('CommandPalette', () => {
     });
     useHalfGridModeStore.setState({
       halfGridMode: false,
-      toggleHalfGridMode: vi.fn(() => ({ success: true })),
+      toggleHalfGridMode: vi.fn(() => OK),
     });
     useViewStore.setState({
       setShowLayoutManager: vi.fn(),
@@ -100,8 +102,8 @@ describe('CommandPalette', () => {
     it('handles multiple layers in layout', () => {
       const layoutWithLayers = createTestLayout({
         layers: [
-          { id: 'layer1', name: 'Layer 1', height: 3 },
-          { id: 'layer2', name: 'Layer 2', height: 3 },
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
         ],
       });
       useLayoutStore.setState({ layout: layoutWithLayers });
@@ -114,7 +116,7 @@ describe('CommandPalette', () => {
 
   describe('state management', () => {
     it('works with selected bins', () => {
-      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1'), binId('bin2')] });
 
       const { container } = render(<CommandPalette open={false} onOpenChange={mockOnOpenChange} />);
 
