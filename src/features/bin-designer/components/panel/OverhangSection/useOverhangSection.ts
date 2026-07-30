@@ -146,17 +146,17 @@ export function useOverhangSection() {
   const toggleTaper = useCallback(() => {
     // Toggling either way holds the base width steady: the stored overhang is
     // the rim, so it has to gain the flare on enable and shed it on disable.
-    if (taperEnabled) {
+    const prev = overhang.taper;
+    if (prev && taperEnabled) {
       updateOverhang({
         left: base.left,
         right: base.right,
         front: base.front,
         back: base.back,
-        taper: { ...(overhang.taper as WallTaperConfig), enabled: false },
+        taper: { ...prev, enabled: false },
       });
       return;
     }
-    const prev = overhang.taper;
     const defaultBand = Math.max(DESIGNER_CONSTRAINTS.TAPER_BAND_STEP, Math.round(wallHeight / 3));
     const prevBand = prev?.bandHeight ?? 0;
     // Re-enabling restores the dormant per-side values; a first enable seeds

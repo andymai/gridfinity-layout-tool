@@ -78,7 +78,7 @@ export function OverhangSliderRow({
         aria-valuetext={`${value} ${unit}`}
         className="w-[5.25rem] shrink-0"
       />
-      {/* Fixed width, right-aligned: values range from `0` to `42.5` across the
+      {/* Fixed width, right-aligned: values range from `0` to `42` across the
           section, which would otherwise shove every track to a different x and
           leave the column ragged. `nowrap` keeps a near-miss from silently
           wrapping the badge instead. */}
