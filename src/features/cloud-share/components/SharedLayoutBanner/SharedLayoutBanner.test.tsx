@@ -4,8 +4,10 @@ import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayo
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
+import type * as LibraryModule from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
+import { categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 
 // Hoisted mock for computePreview - used by both storage and library store re-export
@@ -98,7 +100,7 @@ vi.mock('@/core/storage', () => ({
 
 // Mock the library store's computePreview re-export
 vi.mock('@/core/store/library', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof LibraryModule>();
   return {
     ...actual,
     computePreview: mockComputePreview,
@@ -137,12 +139,12 @@ vi.mock('@/core/result', async (importOriginal) => {
 const mockLayout: Layout = {
   version: '1.0',
   name: 'Shared Layout',
-  drawer: { width: 10, depth: 8, height: 12 },
-  printBedSize: 256,
-  gridUnitMm: 42,
-  heightUnitMm: 7,
-  categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
-  layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+  drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+  printBedSize: mm(256),
+  gridUnitMm: mm(42),
+  heightUnitMm: mm(7),
+  categories: [{ id: categoryId('cat1'), name: 'Category', color: '#ff0000' }],
+  layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
   bins: [],
 };
 
@@ -163,17 +165,17 @@ describe('SharedLayoutBanner', () => {
     useLibraryStore.setState({
       library: {
         version: '1.0',
-        activeLayoutId: 'existing-layout',
+        activeLayoutId: layoutId('existing-layout'),
         entries: [
           {
-            id: 'existing-layout',
+            id: layoutId('existing-layout'),
             name: 'Existing Layout',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
@@ -182,7 +184,6 @@ describe('SharedLayoutBanner', () => {
         settings: { authorName: '' },
       },
       isLoaded: true,
-      showLayoutManager: false,
     });
 
     // Reset toast store

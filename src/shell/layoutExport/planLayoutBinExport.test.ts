@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { designId, gridUnits } from '@/core/types';
+import { designId, gridUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
@@ -13,12 +13,12 @@ const DRAWER: Pick<Drawer, 'width' | 'depth'> = { width: gridUnits(5), depth: gr
 function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
   return {
     magnetHoles: false,
-    magnetDiameter: 6,
-    magnetDepth: 2,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
     ...overrides,
   };
 }
@@ -43,11 +43,11 @@ const CONFIG = { style: 'descriptive', customName: '', format: 'stl' } as const;
 
 describe('planLayoutBinExport', () => {
   it('dedupes by design and counts quantity per design', () => {
-    const bins = [
+    const bins: Bin[] = [
       linkedBin('d1', { id: createTestBin({}).id }),
-      { ...linkedBin('d1'), id: createTestBin({ x: 1 }).id, x: 1 },
-      { ...linkedBin('d2'), id: createTestBin({ x: 2 }).id, x: 2 },
-    ] as Bin[];
+      { ...linkedBin('d1'), id: createTestBin({ x: gridUnits(1) }).id, x: gridUnits(1) },
+      { ...linkedBin('d2'), id: createTestBin({ x: gridUnits(2) }).id, x: gridUnits(2) },
+    ];
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Box', { width: 1, depth: 1, height: 6 }) },
       { id: designId('d2'), design: design('d2', 'Tray', { width: 2, depth: 2, height: 3 }) },
@@ -69,10 +69,10 @@ describe('planLayoutBinExport', () => {
   });
 
   it('buckets unlinked, non-bin, and missing designs as skipped', () => {
-    const bins = [
+    const bins: Bin[] = [
       linkedBin('d1'),
-      createTestBin({ id: createTestBin({ x: 9 }).id, x: 9 }), // unlinked
-    ] as Bin[];
+      createTestBin({ id: createTestBin({ x: gridUnits(9) }).id, x: gridUnits(9) }), // unlinked
+    ];
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Box') },
       { id: designId('d2'), design: { ...design('d2', 'Rack'), params: undefined } }, // non-bin
@@ -96,7 +96,7 @@ describe('planLayoutBinExport', () => {
   });
 
   it('dedupes colliding file names so no bin overwrites another', () => {
-    const bins = [linkedBin('d1'), { ...linkedBin('d2'), x: 1 }] as Bin[];
+    const bins: Bin[] = [linkedBin('d1'), { ...linkedBin('d2'), x: gridUnits(1) }];
     // Two distinct designs, identical dims + name → same generated name.
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Box', { width: 1, depth: 1, height: 6 }) },
@@ -117,7 +117,7 @@ describe('planLayoutBinExport', () => {
   });
 
   it('flags designs with removable dividers as companions', () => {
-    const bins = [linkedBin('d1')] as Bin[];
+    const bins: Bin[] = [linkedBin('d1')];
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Slotted', { style: 'slotted' }) },
     ];
@@ -135,7 +135,7 @@ describe('planLayoutBinExport', () => {
   });
 
   it('marks plain designs as having no companions', () => {
-    const bins = [linkedBin('d1')] as Bin[];
+    const bins: Bin[] = [linkedBin('d1')];
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: design('d1', 'Box') }];
     const plan = planLayoutBinExport(
       bins,
@@ -150,7 +150,7 @@ describe('planLayoutBinExport', () => {
   });
 
   it('sums totals as per-bin estimate × quantity', () => {
-    const bins = [linkedBin('d1'), { ...linkedBin('d1'), x: 1 }] as Bin[];
+    const bins: Bin[] = [linkedBin('d1'), { ...linkedBin('d1'), x: gridUnits(1) }];
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Box', { width: 1, depth: 1, height: 6 }) },
     ];
@@ -169,12 +169,23 @@ describe('planLayoutBinExport', () => {
 
   describe('extend into drawer margin', () => {
     const box = () => design('d1', 'Box', { width: 1, depth: 1, height: 6 });
+    const unitBin = (x: number, y: number): Bin =>
+      linkedBin('d1', {
+        x: gridUnits(x),
+        y: gridUnits(y),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
+    const extendedUnitBin = (x: number, y: number): Bin => ({
+      ...unitBin(x, y),
+      extendToMargin: true,
+    });
 
     it('splits an extended bin into its own group with a position-suffixed name and overhang', () => {
-      const bins = [
-        linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }), // abuts left → extends
-        linkedBin('d1', { x: 0, y: 2, width: 1, depth: 1 }), // plain sibling
-      ] as Bin[];
+      const bins: Bin[] = [
+        extendedUnitBin(0, 0), // abuts left → extends
+        unitBin(0, 2), // plain sibling
+      ];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('d1'), design: box() }],
@@ -182,7 +193,7 @@ describe('planLayoutBinExport', () => {
         CONFIG,
         DEFAULT_PRINT_SETTINGS,
         DRAWER,
-        baseplate({ paddingLeft: 3 })
+        baseplate({ paddingLeft: mm(3) })
       );
 
       expect(plan.exportable).toHaveLength(2);
@@ -203,11 +214,7 @@ describe('planLayoutBinExport', () => {
     // Identical extended bins share one mesh, so one file covers several spots.
     // The manifest has to carry all of them, sorted, or it misreports placement.
     it('records every position of a shared extended variant, sorted', () => {
-      const bins = [
-        linkedBin('d1', { x: 0, y: 2, width: 1, depth: 1, extendToMargin: true }),
-        linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }),
-        linkedBin('d1', { x: 0, y: 1, width: 1, depth: 1, extendToMargin: true }),
-      ] as Bin[];
+      const bins: Bin[] = [extendedUnitBin(0, 2), extendedUnitBin(0, 0), extendedUnitBin(0, 1)];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('d1'), design: box() }],
@@ -215,7 +222,7 @@ describe('planLayoutBinExport', () => {
         CONFIG,
         DEFAULT_PRINT_SETTINGS,
         DRAWER,
-        baseplate({ paddingLeft: 3 })
+        baseplate({ paddingLeft: mm(3) })
       );
 
       expect(plan.manifestBins).toHaveLength(1);
@@ -231,22 +238,19 @@ describe('planLayoutBinExport', () => {
 
     it('leaves atPositions off a plain (non-extended) entry', () => {
       const plan = planLayoutBinExport(
-        [linkedBin('d1', { x: 1, y: 1, width: 1, depth: 1 })] as Bin[],
+        [unitBin(1, 1)],
         [{ id: designId('d1'), design: box() }],
         'stl',
         CONFIG,
         DEFAULT_PRINT_SETTINGS,
         DRAWER,
-        baseplate({ paddingLeft: 3 })
+        baseplate({ paddingLeft: mm(3) })
       );
       expect(plan.manifestBins[0].atPositions).toBeUndefined();
     });
 
     it('dedupes two identically-extended bins into one group', () => {
-      const bins = [
-        linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }),
-        linkedBin('d1', { x: 0, y: 1, width: 1, depth: 1, extendToMargin: true }),
-      ] as Bin[];
+      const bins: Bin[] = [extendedUnitBin(0, 0), extendedUnitBin(0, 1)];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('d1'), design: box() }],
@@ -254,17 +258,17 @@ describe('planLayoutBinExport', () => {
         CONFIG,
         DEFAULT_PRINT_SETTINGS,
         DRAWER,
-        baseplate({ paddingLeft: 3 })
+        baseplate({ paddingLeft: mm(3) })
       );
       expect(plan.exportable).toHaveLength(1);
       expect(plan.manifestBins[0].quantity).toBe(2);
     });
 
     it('leaves an opted-in bin dormant when it abuts no padded edge', () => {
-      const bins = [
-        linkedBin('d1', { x: 1, y: 1, width: 1, depth: 1, extendToMargin: true }), // interior
-        linkedBin('d1', { x: 2, y: 1, width: 1, depth: 1 }),
-      ] as Bin[];
+      const bins: Bin[] = [
+        extendedUnitBin(1, 1), // interior
+        unitBin(2, 1),
+      ];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('d1'), design: box() }],
@@ -272,16 +276,14 @@ describe('planLayoutBinExport', () => {
         CONFIG,
         DEFAULT_PRINT_SETTINGS,
         DRAWER,
-        baseplate({ paddingBack: 3 }) // padding only on an edge this bin doesn't touch
+        baseplate({ paddingBack: mm(3) }) // padding only on an edge this bin doesn't touch
       );
       expect(plan.exportable).toHaveLength(1);
       expect(plan.exportable[0].path).not.toContain('_extended');
     });
 
     it('is inert without a baseplate', () => {
-      const bins = [
-        linkedBin('d1', { x: 0, y: 0, width: 1, depth: 1, extendToMargin: true }),
-      ] as Bin[];
+      const bins: Bin[] = [extendedUnitBin(0, 0)];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('d1'), design: box() }],
@@ -335,10 +337,10 @@ describe('planLayoutBinExport', () => {
     }
 
     it('exports a mesh design with quantity grouping and a manifest entry', () => {
-      const bins = [
+      const bins: Bin[] = [
         linkedBin('m1'),
-        { ...linkedBin('m1'), id: createTestBin({ x: 3 }).id, x: 3 },
-      ] as Bin[];
+        { ...linkedBin('m1'), id: createTestBin({ x: gridUnits(3) }).id, x: gridUnits(3) },
+      ];
       const loaded: LoadedDesign[] = [{ id: designId('m1'), design: meshDesign('m1', 'widget') }];
 
       const plan = planLayoutBinExport(
@@ -363,7 +365,7 @@ describe('planLayoutBinExport', () => {
     });
 
     it('uses the measured volume for the estimate when present', () => {
-      const bins = [linkedBin('m1')] as Bin[];
+      const bins: Bin[] = [linkedBin('m1')];
       const withVolume = planLayoutBinExport(
         bins,
         [{ id: designId('m1'), design: meshDesign('m1', 'widget', 10_000) }],
@@ -379,10 +381,10 @@ describe('planLayoutBinExport', () => {
     });
 
     it('dedupes a mesh name against a parametric design with the same stem', () => {
-      const bins = [
+      const bins: Bin[] = [
         linkedBin('d1'),
-        { ...linkedBin('m1'), id: createTestBin({ x: 3 }).id, x: 3 },
-      ] as Bin[];
+        { ...linkedBin('m1'), id: createTestBin({ x: gridUnits(3) }).id, x: gridUnits(3) },
+      ];
       const loaded: LoadedDesign[] = [
         { id: designId('d1'), design: design('d1', 'widget') },
         { id: designId('m1'), design: meshDesign('m1', 'widget') },
@@ -401,7 +403,7 @@ describe('planLayoutBinExport', () => {
     });
 
     it('skips mesh designs under STEP with a dedicated tally', () => {
-      const bins = [linkedBin('m1')] as Bin[];
+      const bins: Bin[] = [linkedBin('m1')];
       const plan = planLayoutBinExport(
         bins,
         [{ id: designId('m1'), design: meshDesign('m1', 'widget') }],
@@ -417,7 +419,7 @@ describe('planLayoutBinExport', () => {
     });
 
     it('still tallies tool racks (non-mesh paramsless designs) as nonBinDesigns', () => {
-      const bins = [linkedBin('r1')] as Bin[];
+      const bins: Bin[] = [linkedBin('r1')];
       const rack: SavedDesign = { ...design('r1', 'Rack'), params: undefined, kind: 'toolRack' };
       const plan = planLayoutBinExport(
         bins,

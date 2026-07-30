@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import { ShareButton } from './ShareButton';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestLayout, resetAllStores } from '@/test/testUtils';
 import {
   useLabsStore,
   useLayoutStore,
@@ -39,6 +39,7 @@ vi.mock('@/shared/utils/slug', () => ({
 function mockCloudShare(overrides: Partial<ReturnType<typeof useCloudShare>> = {}) {
   vi.mocked(useCloudShare).mockReturnValue({
     status: 'idle',
+    result: null,
     existingShare: null,
     hasActiveShare: false,
     share: vi.fn(),
@@ -57,7 +58,7 @@ describe('ShareButton', () => {
     vi.clearAllMocks();
 
     useLayoutStore.setState({
-      layout: { name: 'Test Layout', bins: [], layers: [], categories: [] },
+      layout: createTestLayout({ name: 'Test Layout' }),
     });
   });
 
@@ -118,7 +119,7 @@ describe('ShareButton', () => {
   it('shows the manage-share label when viewing someone else’s shared layout', () => {
     useSharedPreviewStore.setState({
       sharedPreview: {
-        layout: { name: 'Shared', bins: [], layers: [], categories: [] },
+        layout: createTestLayout({ name: 'Shared' }),
         originalName: 'Shared',
         authorName: null,
         cloudShareId: 'share-456',

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { PrintLayout } from './PrintLayout';
 import { resetAllStores, createTestLayout, createTestBin } from '@/test/testUtils';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { PrintViewSettings } from '@/core/store/settings';
 
 // Mock child components
@@ -76,7 +77,7 @@ describe('PrintLayout', () => {
     showCustomProperties: true,
     orientation: 'portrait',
     fitToPage: true,
-    binListSortOrder: 'position',
+    binListSortOrder: [{ field: 'position', enabled: true }],
   };
 
   beforeEach(() => {
@@ -87,7 +88,11 @@ describe('PrintLayout', () => {
   it('renders without crashing with empty layout', () => {
     const layout = createTestLayout();
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText(/print.noBinsToPrintInSelectedLayerS/)).toBeInTheDocument();
@@ -97,7 +102,11 @@ describe('PrintLayout', () => {
     const layout = createTestLayout({ bins: [] });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText(/print.noBinsToPrintInSelectedLayerS/)).toBeInTheDocument();
@@ -106,11 +115,15 @@ describe('PrintLayout', () => {
   it('renders layout name when showLayoutName is true', () => {
     const layout = createTestLayout({
       name: 'My Test Layout',
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText('My Test Layout')).toBeInTheDocument();
@@ -119,13 +132,13 @@ describe('PrintLayout', () => {
   it('does not render header when showHeader is false', () => {
     const layout = createTestLayout({
       name: 'My Test Layout',
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
       <PrintLayout
         layout={layout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={{ ...defaultSettings, showHeader: false }}
       />
     );
@@ -136,13 +149,17 @@ describe('PrintLayout', () => {
   it('renders bins in grid', () => {
     const layout = createTestLayout({
       bins: [
-        createTestBin({ id: 'bin-1', label: 'Bin One', layerId: 'layer1' }),
-        createTestBin({ id: 'bin-2', label: 'Bin Two', layerId: 'layer1' }),
+        createTestBin({ id: binId('bin-1'), label: 'Bin One', layerId: layerId('layer1') }),
+        createTestBin({ id: binId('bin-2'), label: 'Bin Two', layerId: layerId('layer1') }),
       ],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByTestId('print-bin-bin-1')).toBeInTheDocument();
@@ -151,12 +168,16 @@ describe('PrintLayout', () => {
 
   it('shows drawer dimensions when showDrawerInfo is true', () => {
     const layout = createTestLayout({
-      drawer: { width: 12, depth: 10, height: 15 },
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      drawer: { width: gridUnits(12), depth: gridUnits(10), height: heightUnits(15) },
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText(/print.drawer/)).toBeInTheDocument();
@@ -164,11 +185,15 @@ describe('PrintLayout', () => {
 
   it('shows date when showDate is true', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText('2024-01-15')).toBeInTheDocument();
@@ -177,17 +202,29 @@ describe('PrintLayout', () => {
   it('shows category legend when showLegend is true', () => {
     const layout = createTestLayout({
       categories: [
-        { id: 'cat1', name: 'Tools', color: '#ff0000' },
-        { id: 'cat2', name: 'Parts', color: '#00ff00' },
+        { id: categoryId('cat1'), name: 'Tools', color: '#ff0000' },
+        { id: categoryId('cat2'), name: 'Parts', color: '#00ff00' },
       ],
       bins: [
-        createTestBin({ id: 'bin-1', layerId: 'layer1', category: 'cat1' }),
-        createTestBin({ id: 'bin-2', layerId: 'layer1', category: 'cat2' }),
+        createTestBin({
+          id: binId('bin-1'),
+          layerId: layerId('layer1'),
+          category: categoryId('cat1'),
+        }),
+        createTestBin({
+          id: binId('bin-2'),
+          layerId: layerId('layer1'),
+          category: categoryId('cat2'),
+        }),
       ],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText(/common.categories/)).toBeInTheDocument();
@@ -197,11 +234,15 @@ describe('PrintLayout', () => {
 
   it('shows bin list when showBinList is true', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'bin-1', label: 'Test Bin', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), label: 'Test Bin', layerId: layerId('layer1') })],
     });
 
     render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     expect(screen.getByText(/print.binDetails/)).toBeInTheDocument();
@@ -209,11 +250,15 @@ describe('PrintLayout', () => {
 
   it('renders grid coordinates when showGridCoordinates is true', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     const { container } = render(
-      <PrintLayout layout={layout} selectedLayerIds={['layer1']} settings={defaultSettings} />
+      <PrintLayout
+        layout={layout}
+        selectedLayerIds={[layerId('layer1')]}
+        settings={defaultSettings}
+      />
     );
 
     const colLabels = container.querySelector('.print-col-labels');
@@ -222,13 +267,13 @@ describe('PrintLayout', () => {
 
   it('uses landscape width when orientation is landscape', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
       <PrintLayout
         layout={layout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={{ ...defaultSettings, orientation: 'landscape' }}
       />
     );
@@ -239,13 +284,13 @@ describe('PrintLayout', () => {
 
   it('uses custom availableWidth when provided', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     render(
       <PrintLayout
         layout={layout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={defaultSettings}
         availableWidth={800}
       />
@@ -258,14 +303,14 @@ describe('PrintLayout', () => {
     // A very deep drawer (40 rows) in portrait mode should produce smaller cells
     // than a shallow drawer, since the grid must fit the page height
     const deepLayout = createTestLayout({
-      drawer: { width: 5, depth: 40, height: 12 },
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      drawer: { width: gridUnits(5), depth: gridUnits(40), height: heightUnits(12) },
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     const { container } = render(
       <PrintLayout
         layout={deepLayout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={{ ...defaultSettings, fitToPage: true, orientation: 'portrait' }}
       />
     );
@@ -281,14 +326,14 @@ describe('PrintLayout', () => {
 
   it('does not constrain by height when fitToPage is disabled', () => {
     const deepLayout = createTestLayout({
-      drawer: { width: 5, depth: 40, height: 12 },
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      drawer: { width: gridUnits(5), depth: gridUnits(40), height: heightUnits(12) },
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     const { container } = render(
       <PrintLayout
         layout={deepLayout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={{ ...defaultSettings, fitToPage: false, orientation: 'portrait' }}
       />
     );
@@ -302,14 +347,14 @@ describe('PrintLayout', () => {
 
   it('applies proportional height constraint in modal preview when fitToPage is enabled', () => {
     const deepLayout = createTestLayout({
-      drawer: { width: 5, depth: 40, height: 12 },
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      drawer: { width: gridUnits(5), depth: gridUnits(40), height: heightUnits(12) },
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     const { container } = render(
       <PrintLayout
         layout={deepLayout}
-        selectedLayerIds={['layer1']}
+        selectedLayerIds={[layerId('layer1')]}
         settings={{ ...defaultSettings, fitToPage: true, orientation: 'portrait' }}
         availableWidth={670}
       />
@@ -326,8 +371,8 @@ describe('PrintLayout', () => {
 
   it('renders safely when no layers are selected with fitToPage enabled', () => {
     const layout = createTestLayout({
-      drawer: { width: 5, depth: 5, height: 12 },
-      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+      drawer: { width: gridUnits(5), depth: gridUnits(5), height: heightUnits(12) },
+      bins: [createTestBin({ id: binId('bin-1'), layerId: layerId('layer1') })],
     });
 
     // Should not throw (no divide-by-zero)

@@ -5,6 +5,7 @@ import { CategoriesPanel } from '@/features/categories/components/CategoriesPane
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
+import { categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 // Mock ConfirmDialog to simplify testing
 vi.mock('@/shared/components/ConfirmDialog', () => ({
@@ -59,21 +60,21 @@ describe('CategoriesPanel', () => {
       layout: {
         version: '1.0',
         name: 'Test',
-        drawer: { width: 10, depth: 8, height: 12 },
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
         categories: [
-          { id: 'coral', name: 'Coral', color: '#FF6B6B' },
-          { id: 'sky', name: 'Sky', color: '#38bdf8' },
+          { id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' },
+          { id: categoryId('sky'), name: 'Sky', color: '#38bdf8' },
         ],
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [],
       },
     });
 
     useSelectionStore.setState({
-      activeCategoryId: 'coral',
+      activeCategoryId: categoryId('coral'),
       selectedBinIds: [],
     });
   });
@@ -120,13 +121,13 @@ describe('CategoriesPanel', () => {
       // Add a bin and select it
       const { addBin } = useLayoutStore.getState();
       addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -277,13 +278,13 @@ describe('CategoriesPanel', () => {
     it('prevents deleting category with bins', () => {
       // Add bin using coral category
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -303,7 +304,7 @@ describe('CategoriesPanel', () => {
       useLayoutStore.setState({
         layout: {
           ...useLayoutStore.getState().layout,
-          categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
+          categories: [{ id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' }],
         },
       });
 
@@ -322,24 +323,24 @@ describe('CategoriesPanel', () => {
     it('shows bin count for categories with bins', () => {
       // Add bins
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });

@@ -8,7 +8,8 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import * as storage from '@/core/storage';
 import * as cloudShareHook from '@/features/cloud-share/hooks/useCloudShare';
-import type { LayoutLibrary, LayoutEntry } from '@/core/types';
+import type { LayoutLibrary, LayoutEntry, LayoutId } from '@/core/types';
+import { gridUnits, heightUnits, layoutId as toLayoutId } from '@/core/types';
 
 // Mock the storage module
 vi.mock('@/core/storage', () => {
@@ -179,19 +180,19 @@ vi.mock('@/shared/utils/validation', async () => {
   };
 });
 
-const TEST_LAYOUT_ID = 'test-layout-id';
-const SECOND_LAYOUT_ID = 'second-layout-id';
+const TEST_LAYOUT_ID = toLayoutId('test-layout-id');
+const SECOND_LAYOUT_ID = toLayoutId('second-layout-id');
 
-function createTestEntry(id: string, name: string, modifiedAt?: number): LayoutEntry {
+function createTestEntry(id: LayoutId, name: string, modifiedAt?: number): LayoutEntry {
   return {
     id,
     name,
     createdAt: Date.now() - 10000,
     modifiedAt: modifiedAt || Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 2,
     },
@@ -201,7 +202,7 @@ function createTestEntry(id: string, name: string, modifiedAt?: number): LayoutE
 function createTestLibrary(entries: LayoutEntry[]): LayoutLibrary {
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id ?? toLayoutId(''),
     settings: {},
     entries,
   };
@@ -223,7 +224,6 @@ describe('MobileLayoutsPanel', () => {
         createTestEntry(SECOND_LAYOUT_ID, 'Second Layout'),
       ]),
       isLoaded: true,
-      showLayoutManager: false,
     });
 
     useMobileStore.setState({
@@ -435,7 +435,6 @@ describe('MobileLayoutsPanel', () => {
       useLibraryStore.setState({
         library: createTestLibrary([createTestEntry(TEST_LAYOUT_ID, 'Only Layout')]),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 
@@ -462,7 +461,6 @@ describe('MobileLayoutsPanel', () => {
       useLibraryStore.setState({
         library: createTestLibrary([entryWithFork]),
         isLoaded: true,
-        showLayoutManager: false,
       });
     });
 

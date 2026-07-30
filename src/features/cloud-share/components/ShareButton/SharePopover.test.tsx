@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { createRef } from 'react';
 import { SharePopover } from './SharePopover';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useLayoutStore, useSharedPreviewStore, useSharePopoverStore } from '@/core/store';
 import type { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 
@@ -23,6 +23,7 @@ type CloudShare = ReturnType<typeof useCloudShare>;
 function makeCloudShare(overrides: Partial<CloudShare> = {}): CloudShare {
   return {
     status: 'idle',
+    result: null,
     existingShare: null,
     hasActiveShare: false,
     share: vi.fn(),
@@ -32,7 +33,7 @@ function makeCloudShare(overrides: Partial<CloudShare> = {}): CloudShare {
     error: null,
     reset: vi.fn(),
     ...overrides,
-  } as CloudShare;
+  };
 }
 
 function renderPopover(cloudShare: CloudShare = makeCloudShare()) {
@@ -50,7 +51,7 @@ describe('SharePopover', () => {
   beforeEach(() => {
     resetAllStores();
     useLayoutStore.setState({
-      layout: { name: 'Test Layout', bins: [], layers: [], categories: [] },
+      layout: createTestLayout({ name: 'Test Layout' }),
     });
   });
 
@@ -71,7 +72,12 @@ describe('SharePopover', () => {
     const { cleanup } = renderPopover(
       makeCloudShare({
         hasActiveShare: true,
-        existingShare: { id: 'share-123', permission: 'view' },
+        existingShare: {
+          id: 'share-123',
+          deleteToken: 'token-123',
+          sharedAt: 0,
+          permission: 'view',
+        },
       })
     );
     expect(screen.getByDisplayValue(/\/l\/share-123\/test-layout$/)).toBeInTheDocument();
@@ -81,7 +87,7 @@ describe('SharePopover', () => {
   it('renders read-only permission when viewing someone else’s shared layout', () => {
     useSharedPreviewStore.setState({
       sharedPreview: {
-        layout: { name: 'Shared', bins: [], layers: [], categories: [] },
+        layout: createTestLayout({ name: 'Shared' }),
         originalName: 'Shared',
         authorName: null,
         cloudShareId: 'share-456',

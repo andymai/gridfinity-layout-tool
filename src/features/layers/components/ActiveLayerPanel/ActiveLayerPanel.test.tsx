@@ -5,6 +5,8 @@ import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog
@@ -47,19 +49,19 @@ describe('ActiveLayerPanel', () => {
       layout: {
         version: '1.0',
         name: 'Test',
-        drawer: { width: 10, depth: 8, height: 12 },
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
+        categories: [{ id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [],
       },
     });
 
     useSelectionStore.setState({
-      activeLayerId: 'layer1',
-      activeCategoryId: 'coral',
+      activeLayerId: layerId('layer1'),
+      activeCategoryId: categoryId('coral'),
     });
     useInteractionStore.setState({
       paintSize: null,
@@ -90,7 +92,7 @@ describe('ActiveLayerPanel', () => {
     });
 
     it('returns null when no active layer', () => {
-      useSelectionStore.setState({ activeLayerId: '' });
+      useSelectionStore.setState({ activeLayerId: layerId('') });
       const { container } = render(<ActiveLayerPanel />);
 
       expect(container.firstChild).toBeNull();
@@ -209,7 +211,7 @@ describe('ActiveLayerPanel', () => {
 
     it('disables fill gaps when no empty cells', () => {
       // Fill the layer completely
-      useLayoutStore.getState().fillLayer('layer1', 2, 2, 'coral', false);
+      useLayoutStore.getState().fillLayer(layerId('layer1'), 2, 2, categoryId('coral'), false);
 
       render(<ActiveLayerPanel />);
 
@@ -220,13 +222,13 @@ describe('ActiveLayerPanel', () => {
     it('fills gaps when button clicked', () => {
       // Add one bin to leave gaps
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -243,24 +245,24 @@ describe('ActiveLayerPanel', () => {
     it('shows clear button with bin count', () => {
       // Add some bins
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -279,13 +281,13 @@ describe('ActiveLayerPanel', () => {
 
     it('shows confirmation dialog on clear click', () => {
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -298,13 +300,13 @@ describe('ActiveLayerPanel', () => {
 
     it('clears bins on confirm', () => {
       useLayoutStore.getState().addBin({
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       });
@@ -353,7 +355,7 @@ describe('ActiveLayerPanel', () => {
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(1);
-      expect(bins[0].layerId).toBe('__staging__');
+      expect(bins[0].layerId).toBe(STAGING_ID);
       expect(bins[0].width).toBe(2);
       expect(bins[0].depth).toBe(2);
     });

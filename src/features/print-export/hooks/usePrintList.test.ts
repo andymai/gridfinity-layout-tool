@@ -4,7 +4,16 @@ import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, generateId } from '@/core/constants';
-import { designId } from '@/core/types';
+import {
+  binId,
+  categoryId,
+  designId,
+  gridUnits,
+  heightUnits,
+  layerId,
+  layoutId,
+  mm,
+} from '@/core/types';
 import type { Layout, Bin } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
 
@@ -17,14 +26,14 @@ const mockUseLabelPlateCounts = vi.mocked(useLabelPlateCounts);
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: generateId(),
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
-    layerId: 'layer1',
-    category: 'cat1',
+    id: binId(generateId()),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(3),
+    layerId: layerId('layer1'),
+    category: categoryId('cat1'),
     label: '',
     notes: '',
     ...overrides,
@@ -36,10 +45,10 @@ function createTestLayout(bins: Bin[] = []): Layout {
   const layout = createDefaultLayout();
   return {
     ...layout,
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     categories: [
-      { id: 'cat1', name: 'Tools', color: '#ff0000' },
-      { id: 'cat2', name: 'Parts', color: '#00ff00' },
+      { id: categoryId('cat1'), name: 'Tools', color: '#ff0000' },
+      { id: categoryId('cat2'), name: 'Parts', color: '#00ff00' },
     ],
     bins,
   };
@@ -54,7 +63,7 @@ describe('usePrintList', () => {
     const layout = createTestLayout();
     useLayoutStore.setState({
       layout,
-      activeLayoutId: 'test-layout',
+      activeLayoutId: layoutId('test-layout'),
     });
     useSelectionStore.setState({
       selectedBinIds: [],
@@ -73,8 +82,14 @@ describe('usePrintList', () => {
 
     it('generates rows from bins', () => {
       const layout = createTestLayout([
-        createTestBin({ width: 1, depth: 1, height: 3 }),
-        createTestBin({ width: 2, depth: 2, height: 3, x: 2, y: 0 }),
+        createTestBin({ width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) }),
+        createTestBin({
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
+          x: gridUnits(2),
+          y: gridUnits(0),
+        }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -85,7 +100,9 @@ describe('usePrintList', () => {
     });
 
     it('calculates total filament', () => {
-      const layout = createTestLayout([createTestBin({ width: 1, depth: 1, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -94,7 +111,9 @@ describe('usePrintList', () => {
     });
 
     it('calculates total cost based on filament', () => {
-      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(2), depth: gridUnits(2), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -103,7 +122,9 @@ describe('usePrintList', () => {
     });
 
     it('calculates spool percentage', () => {
-      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(2), depth: gridUnits(2), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -113,7 +134,9 @@ describe('usePrintList', () => {
     });
 
     it('calculates print time', () => {
-      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(2), depth: gridUnits(2), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -125,8 +148,8 @@ describe('usePrintList', () => {
   describe('filtering', () => {
     it('toggles category visibility', () => {
       const layout = createTestLayout([
-        createTestBin({ category: 'cat1' }),
-        createTestBin({ category: 'cat2', x: 1 }),
+        createTestBin({ category: categoryId('cat1') }),
+        createTestBin({ category: categoryId('cat2'), x: gridUnits(1) }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -141,7 +164,7 @@ describe('usePrintList', () => {
         result.current.toggleCategoryVisibility('cat1');
       });
 
-      expect(result.current.filters.hiddenCategoryIds.has('cat1')).toBe(true);
+      expect(result.current.filters.hiddenCategoryIds.has(categoryId('cat1'))).toBe(true);
       expect(result.current.rows.length).toBeLessThan(initialRowCount);
 
       // Toggle again to show
@@ -149,7 +172,7 @@ describe('usePrintList', () => {
         result.current.toggleCategoryVisibility('cat1');
       });
 
-      expect(result.current.filters.hiddenCategoryIds.has('cat1')).toBe(false);
+      expect(result.current.filters.hiddenCategoryIds.has(categoryId('cat1'))).toBe(false);
     });
 
     it('resets filters', () => {
@@ -245,8 +268,8 @@ describe('usePrintList', () => {
   describe('grouping', () => {
     it('toggles group by category', () => {
       const layout = createTestLayout([
-        createTestBin({ category: 'cat1' }),
-        createTestBin({ category: 'cat2', x: 1 }),
+        createTestBin({ category: categoryId('cat1') }),
+        createTestBin({ category: categoryId('cat2'), x: gridUnits(1) }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -264,8 +287,8 @@ describe('usePrintList', () => {
 
     it('grouped rows contain category info', () => {
       const layout = createTestLayout([
-        createTestBin({ category: 'cat1' }),
-        createTestBin({ category: 'cat2', x: 1 }),
+        createTestBin({ category: categoryId('cat1') }),
+        createTestBin({ category: categoryId('cat2'), x: gridUnits(1) }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -305,7 +328,9 @@ describe('usePrintList', () => {
     });
 
     it('updates total cost when config changes', () => {
-      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(2), depth: gridUnits(2), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -323,8 +348,13 @@ describe('usePrintList', () => {
 
   describe('selection', () => {
     it('selects bins by row', () => {
-      const bin1 = createTestBin({ id: 'bin1', width: 1, depth: 1 });
-      const bin2 = createTestBin({ id: 'bin2', width: 1, depth: 1, x: 1 });
+      const bin1 = createTestBin({ id: binId('bin1'), width: gridUnits(1), depth: gridUnits(1) });
+      const bin2 = createTestBin({
+        id: binId('bin2'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        x: gridUnits(1),
+      });
       const layout = createTestLayout([bin1, bin2]);
       useLayoutStore.setState({ layout });
 
@@ -349,9 +379,9 @@ describe('usePrintList', () => {
     it('detects bins that need splitting', () => {
       // Create a large bin that exceeds print bed
       const layout = createTestLayout([
-        createTestBin({ width: 10, depth: 10, height: 3 }), // Way larger than typical print bed
+        createTestBin({ width: gridUnits(10), depth: gridUnits(10), height: heightUnits(3) }), // Way larger than typical print bed
       ]);
-      layout.printBedSize = 84; // Small print bed (2 grid units)
+      layout.printBedSize = mm(84); // Small print bed (2 grid units)
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -361,7 +391,9 @@ describe('usePrintList', () => {
     });
 
     it('reports no splits for small bins', () => {
-      const layout = createTestLayout([createTestBin({ width: 1, depth: 1, height: 3 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -383,9 +415,9 @@ describe('usePrintList', () => {
   describe('aggregates', () => {
     it('calculates total bins correctly', () => {
       const layout = createTestLayout([
-        createTestBin({ x: 0, y: 0 }),
-        createTestBin({ x: 1, y: 0 }),
-        createTestBin({ x: 2, y: 0 }),
+        createTestBin({ x: gridUnits(0), y: gridUnits(0) }),
+        createTestBin({ x: gridUnits(1), y: gridUnits(0) }),
+        createTestBin({ x: gridUnits(2), y: gridUnits(0) }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -397,8 +429,13 @@ describe('usePrintList', () => {
     it('calculates total pieces correctly', () => {
       // Bins of different sizes will generate different piece counts when split
       const layout = createTestLayout([
-        createTestBin({ width: 1, depth: 1, height: 3 }), // 1 piece
-        createTestBin({ width: 1, depth: 1, height: 3, x: 1 }), // 1 piece
+        createTestBin({ width: gridUnits(1), depth: gridUnits(1), height: heightUnits(3) }), // 1 piece
+        createTestBin({
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          x: gridUnits(1),
+        }), // 1 piece
       ]);
       useLayoutStore.setState({ layout });
 
@@ -409,7 +446,9 @@ describe('usePrintList', () => {
     });
 
     it('calculates spool estimate correctly', () => {
-      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 6 })]);
+      const layout = createTestLayout([
+        createTestBin({ width: gridUnits(2), depth: gridUnits(2), height: heightUnits(6) }),
+      ]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -438,9 +477,9 @@ describe('usePrintList', () => {
         () => new Map([[D1, { perBin: 2, widthsU: [1, 2] as const }]])
       );
       const layout = createTestLayout([
-        createTestBin({ linkedDesignId: D1, width: 2 }),
-        createTestBin({ linkedDesignId: D1, width: 2, x: 2 }),
-        createTestBin({ x: 4 }),
+        createTestBin({ linkedDesignId: D1, width: gridUnits(2) }),
+        createTestBin({ linkedDesignId: D1, width: gridUnits(2), x: gridUnits(2) }),
+        createTestBin({ x: gridUnits(4) }),
       ]);
       useLayoutStore.setState({ layout });
 
@@ -484,11 +523,11 @@ describe('usePrintList', () => {
         const { addBin, layout: currentLayout } = useLayoutStore.getState();
         addBin({
           layerId: currentLayout.layers[0].id,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: currentLayout.categories[0].id,
           label: '',
           notes: '',
@@ -499,7 +538,7 @@ describe('usePrintList', () => {
     });
 
     it('updates when bins are removed', () => {
-      const bin1 = createTestBin({ id: 'bin1' });
+      const bin1 = createTestBin({ id: binId('bin1') });
       const layout = createTestLayout([bin1]);
       useLayoutStore.setState({ layout });
 
@@ -509,7 +548,7 @@ describe('usePrintList', () => {
 
       // Remove the bin
       act(() => {
-        useLayoutStore.getState().deleteBin('bin1');
+        useLayoutStore.getState().deleteBin(binId('bin1'));
       });
 
       expect(result.current.totalBins).toBe(0);
