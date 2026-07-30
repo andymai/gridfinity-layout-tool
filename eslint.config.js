@@ -16,7 +16,10 @@ import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js
 const literal = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx', 'src/test/setup.ts']),
+  // `.worktrees` / `.claude/worktrees` hold git worktrees — each is a full copy
+  // of the repo. Both are gitignored, but flat config does not read .gitignore,
+  // so without these `eslint .` type-checks every checkout at once and OOMs.
+  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'brep-parts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx', 'src/test/setup.ts', '.worktrees', '.claude/worktrees']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
