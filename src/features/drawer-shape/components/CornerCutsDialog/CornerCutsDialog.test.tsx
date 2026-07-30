@@ -10,7 +10,10 @@ vi.mock('@/i18n', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
-const mockSetDrawerOutline = vi.fn(() => ({ ok: true, value: undefined }));
+const mockSetDrawerOutline = vi.fn((_outline: DrawerOutline | null) => ({
+  ok: true,
+  value: undefined,
+}));
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: () => ({ setDrawerOutline: mockSetDrawerOutline }),
 }));
@@ -34,7 +37,8 @@ describe('CornerCutsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
 
     expect(mockSetDrawerOutline).toHaveBeenCalledTimes(1);
-    const outline = mockSetDrawerOutline.mock.calls[0][0] as DrawerOutline;
+    const outline = mockSetDrawerOutline.mock.calls[0][0];
+    if (outline === null) throw new Error('expected an outline, got null');
     expect(outline.authoring?.kind).toBe('corners');
     expect(outline.authoring?.corners?.tr.kind).toBe('chamfer');
     expect(onClose).toHaveBeenCalled();
@@ -120,9 +124,8 @@ describe('review regressions', () => {
     const plus = screen.getAllByRole('button', { name: /increase|increment|\+/i })[0];
     fireEvent.click(plus);
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
-    const outline = mockSetDrawerOutline.mock.calls[0][0] as {
-      authoring?: { corners?: { tr: { kind: string; size?: number } } };
-    };
+    const outline = mockSetDrawerOutline.mock.calls[0][0];
+    if (outline === null) throw new Error('expected an outline, got null');
     expect(outline.authoring?.corners?.tr).toEqual({ kind: 'chamfer', size: 22 });
   });
 

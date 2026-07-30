@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeGaps, calculateFillPercentage } from '@/shared/analytics/gapAnalysis';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { createTestLayout } from '@/test/testUtils';
 
 describe('gapAnalysis', () => {
   describe('analyzeGaps', () => {
     it('returns full gap for empty layer', () => {
       const layout = createTestLayout();
-      const result = analyzeGaps(layout, 'layer1');
+      const result = analyzeGaps(layout, layerId('layer1'));
 
       expect(result.largestGap).toBe('10x8');
       expect(result.fillPct).toBe(0);
@@ -17,21 +18,21 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 5,
-            depth: 4,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(5),
+            depth: gridUnits(4),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
         ],
       });
 
-      const result = analyzeGaps(layout, 'layer1');
+      const result = analyzeGaps(layout, layerId('layer1'));
 
       // 5*4 = 20 cells occupied out of 10*8 = 80 total = 25%
       expect(result.fillPct).toBe(25);
@@ -41,14 +42,14 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 8,
-            depth: 8,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(8),
+            depth: gridUnits(8),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
@@ -56,7 +57,7 @@ describe('gapAnalysis', () => {
       });
 
       // Remaining gap is 2x8 on the right
-      const result = analyzeGaps(layout, 'layer1', { width: 2, depth: 8 });
+      const result = analyzeGaps(layout, layerId('layer1'), { width: 2, depth: 8 });
 
       expect(result.gapFit).toBe('exact');
     });
@@ -65,14 +66,14 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 5,
-            depth: 8,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(5),
+            depth: gridUnits(8),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
@@ -80,7 +81,7 @@ describe('gapAnalysis', () => {
       });
 
       // Remaining gap is 5x8, placing a 2x2 would be partial fit
-      const result = analyzeGaps(layout, 'layer1', { width: 2, depth: 2 });
+      const result = analyzeGaps(layout, layerId('layer1'), { width: 2, depth: 2 });
 
       expect(result.gapFit).toBe('partial');
     });
@@ -89,14 +90,14 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 9,
-            depth: 8,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(9),
+            depth: gridUnits(8),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
@@ -104,7 +105,7 @@ describe('gapAnalysis', () => {
       });
 
       // Remaining gap is 1x8, placing a 2x2 would not fit
-      const result = analyzeGaps(layout, 'layer1', { width: 2, depth: 2 });
+      const result = analyzeGaps(layout, layerId('layer1'), { width: 2, depth: 2 });
 
       expect(result.gapFit).toBe('none');
     });
@@ -112,26 +113,26 @@ describe('gapAnalysis', () => {
     it('ignores bins on other layers', () => {
       const layout = createTestLayout({
         layers: [
-          { id: 'layer1', name: 'Layer 1', height: 3 },
-          { id: 'layer2', name: 'Layer 2', height: 3 },
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
         ],
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer2', // Different layer
-            x: 0,
-            y: 0,
-            width: 10,
-            depth: 8,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer2'), // Different layer
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(10),
+            depth: gridUnits(8),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
         ],
       });
 
-      const result = analyzeGaps(layout, 'layer1');
+      const result = analyzeGaps(layout, layerId('layer1'));
 
       // Layer 1 should still be empty
       expect(result.fillPct).toBe(0);
@@ -142,33 +143,33 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
           {
-            id: 'bin2',
-            layerId: 'layer1',
-            x: 2,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin2'),
+            layerId: layerId('layer1'),
+            x: gridUnits(2),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
         ],
       });
 
-      const result = analyzeGaps(layout, 'layer1');
+      const result = analyzeGaps(layout, layerId('layer1'));
 
       // 2*2 + 2*2 = 8 cells out of 80 = 10%
       expect(result.fillPct).toBe(10);
@@ -178,7 +179,7 @@ describe('gapAnalysis', () => {
   describe('calculateFillPercentage', () => {
     it('returns 0 for empty layer', () => {
       const layout = createTestLayout();
-      const result = calculateFillPercentage(layout, 'layer1');
+      const result = calculateFillPercentage(layout, layerId('layer1'));
 
       expect(result).toBe(0);
     });
@@ -187,21 +188,21 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 4,
-            depth: 4,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(4),
+            depth: gridUnits(4),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
         ],
       });
 
-      const result = calculateFillPercentage(layout, 'layer1');
+      const result = calculateFillPercentage(layout, layerId('layer1'));
 
       // 4*4 = 16 out of 80 = 20%
       expect(result).toBe(20);
@@ -211,31 +212,31 @@ describe('gapAnalysis', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 10,
-            depth: 8,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(10),
+            depth: gridUnits(8),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
         ],
       });
 
-      const result = calculateFillPercentage(layout, 'layer1');
+      const result = calculateFillPercentage(layout, layerId('layer1'));
 
       expect(result).toBe(100);
     });
 
     it('handles empty drawer', () => {
       const layout = createTestLayout({
-        drawer: { width: 0, depth: 0, height: 0 },
+        drawer: { width: gridUnits(0), depth: gridUnits(0), height: heightUnits(0) },
       });
 
-      const result = calculateFillPercentage(layout, 'layer1');
+      const result = calculateFillPercentage(layout, layerId('layer1'));
 
       expect(result).toBe(0);
     });

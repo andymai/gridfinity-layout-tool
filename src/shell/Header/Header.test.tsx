@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useViewStore } from '@/core/store/view';
 import { resetAllStores } from '@/test/testUtils';
+import type * as SharedHooks from '@/shared/hooks';
 
 // Mock the LayoutManagerModal to avoid deep component tree
 // Note: Module is lazy-loaded in Header, so mock must be set up before import
@@ -56,7 +57,7 @@ vi.mock('@/features/print-export/components/PrintModal', () => ({
 let mockIsCollaborative = false;
 
 vi.mock('@/shared/hooks', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof SharedHooks>();
   return {
     ...actual,
     useResponsive: () => ({ isTablet: false, isMobile: false }),

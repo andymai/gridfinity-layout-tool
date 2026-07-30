@@ -4,7 +4,8 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
+import { binId, gridUnits, heightUnits, layerId as toLayerId } from '@/core/types';
 import type { Layer } from '@/core/types';
 
 // Mock Collapsible to simplify testing
@@ -129,7 +130,7 @@ describe('LayerPanel', () => {
       useLayoutStore.setState({
         layout: { ...layout, layers: [] },
       });
-      useSelectionStore.setState({ activeLayerId: null });
+      useSelectionStore.setState({ activeLayerId: toLayerId('') });
 
       const { container } = render(<LayerPanel />);
 
@@ -151,12 +152,16 @@ describe('LayerPanel', () => {
       const layout = useLayoutStore.getState().layout;
       const layers: Layer[] = [];
       for (let i = 0; i < 10; i++) {
-        layers.push({ id: `layer-${i}`, name: `Layer ${i + 1}`, height: 1 });
+        layers.push({
+          id: toLayerId(`layer-${i}`),
+          name: `Layer ${i + 1}`,
+          height: heightUnits(1),
+        });
       }
       useLayoutStore.setState({
         layout: { ...layout, layers },
       });
-      useSelectionStore.setState({ activeLayerId: 'layer-0' });
+      useSelectionStore.setState({ activeLayerId: toLayerId('layer-0') });
 
       render(<LayerPanel />);
 
@@ -168,11 +173,11 @@ describe('LayerPanel', () => {
       useLayoutStore.setState({
         layout: {
           ...layout,
-          drawer: { ...layout.drawer, height: 3 },
-          layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+          drawer: { ...layout.drawer, height: heightUnits(3) },
+          layers: [{ id: toLayerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
         },
       });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: toLayerId('layer-1') });
 
       render(<LayerPanel />);
 
@@ -196,12 +201,12 @@ describe('LayerPanel', () => {
         layout: {
           ...layout,
           layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-            { id: 'layer-2', name: 'Layer 2', height: 3 },
+            { id: toLayerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: toLayerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
           ],
         },
       });
-      useSelectionStore.setState({ activeLayerId: 'layer-2' });
+      useSelectionStore.setState({ activeLayerId: toLayerId('layer-2') });
     });
 
     it('shows confirm dialog when onDeleteLayer callback is triggered', () => {
@@ -290,12 +295,12 @@ describe('LayerPanel', () => {
         layout: {
           ...layout,
           layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-            { id: 'layer-2', name: 'Layer 2', height: 3 },
+            { id: toLayerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: toLayerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
           ],
         },
       });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: toLayerId('layer-1') });
 
       render(<LayerPanel />);
 
@@ -331,12 +336,12 @@ describe('LayerPanel', () => {
         layout: {
           ...layout,
           layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-            { id: 'layer-2', name: 'Layer 2', height: 3 },
+            { id: toLayerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: toLayerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
           ],
         },
       });
-      useSelectionStore.setState({ activeLayerId: 'layer-1' });
+      useSelectionStore.setState({ activeLayerId: toLayerId('layer-1') });
     });
 
     it('shows total stats for multiple layers', () => {
@@ -361,18 +366,13 @@ describe('LayerPanel', () => {
         layout: {
           ...layout,
           bins: [
-            {
-              id: 'bin-1',
-              x: 0,
-              y: 0,
-              width: 5,
-              depth: 4,
-              height: 3,
+            createTestBin({
+              id: binId('bin-1'),
+              width: gridUnits(5),
+              depth: gridUnits(4),
               layerId,
               category: layout.categories[0].id,
-              label: '',
-              notes: '',
-            },
+            }),
           ],
         },
       });

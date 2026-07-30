@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { CollabGhosts } from './CollabGhosts';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
+import { categoryId, gridUnits, heightUnits, layerId as brandLayerId } from '@/core/types';
 
 // Mock Liveblocks hooks
 vi.mock('@/liveblocks.config', () => ({
@@ -44,13 +45,11 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts />);
@@ -62,13 +61,15 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
-          interaction: { type: 'drawing', start: { x: 0, y: 0 }, current: { x: 2, y: 2 } },
+          interaction: {
+            type: 'drawing',
+            start: { x: gridUnits(0), y: gridUnits(0) },
+            current: { x: gridUnits(2), y: gridUnits(2) },
+          },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts />);
@@ -77,8 +78,18 @@ describe('CollabGhosts', () => {
 
   it('renders dragging ghost when user is dragging bins', () => {
     const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    const layerId = useLayoutStore.getState().layout.layers[0]?.id ?? brandLayerId('layer1');
+    addBin({
+      layerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const bins = useLayoutStore.getState().layout.bins;
     const binId = bins[0]?.id || 'bin1';
@@ -87,13 +98,15 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
-          interaction: { type: 'dragging', binIds: [binId], delta: { x: 1, y: 1 } },
+          interaction: {
+            type: 'dragging',
+            binIds: [binId],
+            delta: { x: gridUnits(1), y: gridUnits(1) },
+          },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts />);
@@ -102,8 +115,18 @@ describe('CollabGhosts', () => {
 
   it('renders resizing ghost when user is resizing bins', () => {
     const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    const layerId = useLayoutStore.getState().layout.layers[0]?.id ?? brandLayerId('layer1');
+    addBin({
+      layerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const bins = useLayoutStore.getState().layout.bins;
     const binId = bins[0]?.id || 'bin1';
@@ -112,13 +135,11 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'resizing', binIds: [binId], handle: 'se' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts />);
@@ -130,13 +151,15 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
-          interaction: { type: 'drawing', start: { x: 0, y: 0 }, current: { x: 1, y: 1 } },
+          interaction: {
+            type: 'drawing',
+            start: { x: gridUnits(0), y: gridUnits(0) },
+            current: { x: gridUnits(1), y: gridUnits(1) },
+          },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts className="custom-class" />);
@@ -148,13 +171,15 @@ describe('CollabGhosts', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
-          interaction: { type: 'drawing', start: { x: 0, y: 0 }, current: { x: 1, y: 1 } },
+          interaction: {
+            type: 'drawing',
+            start: { x: gridUnits(0), y: gridUnits(0) },
+            current: { x: gridUnits(1), y: gridUnits(1) },
+          },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabGhosts />);

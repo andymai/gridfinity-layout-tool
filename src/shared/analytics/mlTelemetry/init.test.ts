@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Mock } from 'vitest';
 import type { Layout } from '@/core/types';
 
 // Mock dependencies before importing the module under test
@@ -8,18 +9,29 @@ vi.mock('./sessionState');
 vi.mock('./trackers');
 
 // Override DEV to false so initMLTelemetry exercises production code paths
-vi.stubEnv('DEV', '');
+vi.stubEnv('DEV', false);
 
 import { setLayoutStoreRef, initMLTelemetry, cleanupMLTelemetry } from './init';
 import * as eventBuffer from './eventBuffer';
 import * as sessionState from './sessionState';
 import * as trackers from './trackers';
 
+type LayoutStoreState = { layout: Layout; lastEditSource: string | null };
+type StoreSubscriber = (state: { lastEditSource: string | null }) => void;
+
 describe('ML Telemetry Initialization', () => {
   let mockLayout: Layout;
-  let mockGetState: ReturnType<typeof vi.fn>;
-  let mockUnsubscribe: ReturnType<typeof vi.fn>;
-  let mockSubscribe: ReturnType<typeof vi.fn>;
+  let mockGetState: Mock<() => LayoutStoreState>;
+  let mockUnsubscribe: Mock<() => void>;
+  let mockSubscribe: Mock<(callback: StoreSubscriber) => () => void> & {
+    _lastCallback?: StoreSubscriber;
+  };
+
+  function getSubscribeCallback(): StoreSubscriber {
+    const callback = mockSubscribe._lastCallback;
+    if (!callback) throw new Error('Store subscribe callback was never captured');
+    return callback;
+  }
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,17 +58,17 @@ describe('ML Telemetry Initialization', () => {
       heightUnitMm: 7,
     } as unknown as Layout;
 
-    mockGetState = vi.fn(() => ({
+    mockGetState = vi.fn((): LayoutStoreState => ({
       layout: mockLayout,
       lastEditSource: null,
     }));
 
-    mockUnsubscribe = vi.fn();
-    mockSubscribe = vi.fn((callback: unknown) => {
+    mockUnsubscribe = vi.fn(() => {});
+    mockSubscribe = vi.fn((callback: StoreSubscriber): (() => void) => {
       // Store the callback so tests can invoke it
       mockSubscribe._lastCallback = callback;
       return mockUnsubscribe;
-    }) as ReturnType<typeof vi.fn> & { _lastCallback?: unknown };
+    });
 
     vi.mocked(sessionState.getTimeSinceLastEdit).mockReturnValue(0);
     vi.mocked(sessionState.checkAndSetIdleTracked).mockReturnValue(false);
@@ -134,10 +146,7 @@ describe('ML Telemetry Initialization', () => {
       initMLTelemetry();
 
       // Invoke the subscription callback with a local edit
-      const callback = mockSubscribe._lastCallback as (state: {
-        lastEditSource: string | null;
-      }) => void;
-      callback({ lastEditSource: 'local' });
+      getSubscribeCallback()({ lastEditSource: 'local' });
 
       expect(sessionState.markEditActivity).toHaveBeenCalledOnce();
       expect(sessionState.incrementEditCount).toHaveBeenCalledOnce();
@@ -147,10 +156,7 @@ describe('ML Telemetry Initialization', () => {
       setLayoutStoreRef(mockGetState, mockSubscribe);
       initMLTelemetry();
 
-      const callback = mockSubscribe._lastCallback as (state: {
-        lastEditSource: string | null;
-      }) => void;
-      callback({ lastEditSource: 'remote' });
+      getSubscribeCallback()({ lastEditSource: 'remote' });
 
       expect(sessionState.markEditActivity).not.toHaveBeenCalled();
       expect(sessionState.incrementEditCount).not.toHaveBeenCalled();
@@ -160,10 +166,7 @@ describe('ML Telemetry Initialization', () => {
       setLayoutStoreRef(mockGetState, mockSubscribe);
       initMLTelemetry();
 
-      const callback = mockSubscribe._lastCallback as (state: {
-        lastEditSource: string | null;
-      }) => void;
-      callback({ lastEditSource: null });
+      getSubscribeCallback()({ lastEditSource: null });
 
       expect(sessionState.markEditActivity).not.toHaveBeenCalled();
       expect(sessionState.incrementEditCount).not.toHaveBeenCalled();

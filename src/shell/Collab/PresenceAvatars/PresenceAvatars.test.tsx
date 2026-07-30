@@ -30,6 +30,8 @@ vi.mock('@/shared/hooks', () => ({
     isTouchDevice: false,
     layoutMode: 'desktop' as const,
     viewportWidth: 1200,
+    viewportHeight: 800,
+    isLandscape: true,
   })),
 }));
 
@@ -82,6 +84,8 @@ describe('PresenceAvatars', () => {
       isTouchDevice: false,
       layoutMode: 'desktop',
       viewportWidth: 1200,
+      viewportHeight: 800,
+      isLandscape: true,
     });
 
     render(<PresenceAvatars />);
@@ -102,6 +106,8 @@ describe('PresenceAvatars', () => {
       isTouchDevice: true,
       layoutMode: 'mobile',
       viewportWidth: 375,
+      viewportHeight: 667,
+      isLandscape: false,
     });
 
     render(<PresenceAvatars />);
@@ -122,6 +128,8 @@ describe('PresenceAvatars', () => {
       isTouchDevice: false,
       layoutMode: 'desktop',
       viewportWidth: 1200,
+      viewportHeight: 800,
+      isLandscape: true,
     });
 
     render(<PresenceAvatars className="custom-class" />);

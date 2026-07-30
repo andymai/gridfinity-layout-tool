@@ -3,6 +3,8 @@ import { render } from '@testing-library/react';
 import { CollabSelectionRings } from './CollabSelectionRings';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
+import { STAGING_ID } from '@/core/constants';
+import { categoryId, gridUnits, heightUnits, layerId as brandLayerId } from '@/core/types';
 
 // Mock Liveblocks hooks
 vi.mock('@/liveblocks.config', () => ({
@@ -18,6 +20,8 @@ vi.mock('@/shared/hooks', () => ({
     isTouchDevice: false,
     layoutMode: 'desktop' as const,
     viewportWidth: 1200,
+    viewportHeight: 800,
+    isLandscape: true,
   })),
 }));
 
@@ -44,14 +48,12 @@ describe('CollabSelectionRings', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           selectedBinIds: [],
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabSelectionRings />);
@@ -60,8 +62,18 @@ describe('CollabSelectionRings', () => {
 
   it('renders selection rings when users have selected bins', () => {
     const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    const layerId = useLayoutStore.getState().layout.layers[0]?.id ?? brandLayerId('layer1');
+    addBin({
+      layerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const binId = useLayoutStore.getState().layout.bins[0]?.id || 'bin1';
 
@@ -69,14 +81,12 @@ describe('CollabSelectionRings', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           selectedBinIds: [binId],
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabSelectionRings />);
@@ -85,8 +95,18 @@ describe('CollabSelectionRings', () => {
 
   it('applies custom className', () => {
     const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    const layerId = useLayoutStore.getState().layout.layers[0]?.id ?? brandLayerId('layer1');
+    addBin({
+      layerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const binId = useLayoutStore.getState().layout.bins[0]?.id || 'bin1';
 
@@ -94,14 +114,12 @@ describe('CollabSelectionRings', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           selectedBinIds: [binId],
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabSelectionRings className="custom-class" />);
@@ -110,8 +128,18 @@ describe('CollabSelectionRings', () => {
 
   it('is aria-hidden for accessibility', () => {
     const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    const layerId = useLayoutStore.getState().layout.layers[0]?.id ?? brandLayerId('layer1');
+    addBin({
+      layerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const binId = useLayoutStore.getState().layout.bins[0]?.id || 'bin1';
 
@@ -119,14 +147,12 @@ describe('CollabSelectionRings', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           selectedBinIds: [binId],
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabSelectionRings />);
@@ -135,7 +161,17 @@ describe('CollabSelectionRings', () => {
 
   it('skips bins in staging layer', () => {
     const { addBin } = useLayoutStore.getState();
-    addBin({ layerId: '__staging__', x: 0, y: 0, width: 1, depth: 1, height: 3 });
+    addBin({
+      layerId: STAGING_ID,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
 
     const binId = useLayoutStore.getState().layout.bins[0]?.id || 'bin1';
 
@@ -143,14 +179,12 @@ describe('CollabSelectionRings', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           selectedBinIds: [binId],
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     const { container } = render(<CollabSelectionRings />);

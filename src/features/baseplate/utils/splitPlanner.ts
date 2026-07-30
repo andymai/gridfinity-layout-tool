@@ -43,8 +43,15 @@ import { FRACTIONAL_THRESHOLD, isFractional, reorderForDisplay } from './splitRe
  * weight in the tiling cost (`LOAD_WEIGHT * bedLoads + pieceCount`): a finer
  * split that removes a load wins only if it adds fewer than this many pieces,
  * so the planner pursues fewer bed swaps without fragmenting into tiny tiles.
+ *
+ * Set to 2 (#2988): one saved load is worth at most one extra piece. Each extra
+ * piece is another dovetailed seam to print, align, and glue, and the finer
+ * split's load saving is only realized if the user re-derives the non-obvious
+ * cross-row bed packing (the print guide groups pieces by grid position, not by
+ * bed). So adding 2+ pieces to save a single load is a bad trade for most users
+ * — they'd rather print the coarser split's few large pieces one-per-bed.
  */
-const MAX_EXTRA_PIECES_PER_BED_LOAD = 4;
+const MAX_EXTRA_PIECES_PER_BED_LOAD = 2;
 
 /**
  * Only run the packing-aware refinement when the coarsest split has at most this

@@ -29,6 +29,7 @@ import {
 } from '@/shared/analytics/mlTelemetry';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Layout } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import { createDefaultLayout } from '@/core/constants';
 
 // Mock the settings store
@@ -66,15 +67,16 @@ function createTestLayoutWithBins(binCount: number): Layout {
   layout.bins = [];
   for (let i = 0; i < binCount; i++) {
     layout.bins.push({
-      id: `bin-${i}`,
-      x: i % layout.drawer.width,
-      y: Math.floor(i / layout.drawer.width),
-      width: 1,
-      depth: 1,
-      height: 1,
+      id: binId(`bin-${i}`),
+      x: gridUnits(i % layout.drawer.width),
+      y: gridUnits(Math.floor(i / layout.drawer.width)),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(1),
       layerId: layout.layers[0].id,
       category: layout.categories[0].id,
-      label: i % 2 === 0 ? `Label ${i}` : undefined,
+      label: i % 2 === 0 ? `Label ${i}` : '',
+      notes: '',
     });
   }
   return layout;
@@ -236,14 +238,16 @@ describe('mlTelemetry', () => {
       layout.bins = [];
       // Track some deletions first
       const testBin = {
-        id: 'test-bin',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layout.layers[0].id,
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       };
       trackBinDeletion(testBin, layout, 'key', 1);
 
@@ -256,24 +260,28 @@ describe('mlTelemetry', () => {
       // Add just 2 bins for very low fill
       layout.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 1,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(1),
           layerId: layout.layers[0].id,
           category: layout.categories[0].id,
+          label: '',
+          notes: '',
         },
         {
-          id: 'bin-2',
-          x: 1,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 1,
+          id: binId('bin-2'),
+          x: gridUnits(1),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(1),
           layerId: layout.layers[0].id,
           category: layout.categories[0].id,
+          label: '',
+          notes: '',
         },
       ];
       resetMLSession();
@@ -680,15 +688,16 @@ describe('mlTelemetry', () => {
 
   describe('mlTracking object', () => {
     const testBin = {
-      id: 'test-bin',
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      layerId: 'layer-1',
-      category: 'cat-1',
+      id: binId('test-bin'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      layerId: layerId('layer-1'),
+      category: categoryId('cat-1'),
       label: 'Test Bin',
+      notes: '',
     };
 
     // mlTracking methods use lazy dynamic imports, so they are async.

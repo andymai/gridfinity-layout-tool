@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CollabCursors } from './CollabCursors';
 import { resetAllStores } from '@/test/testUtils';
+import { gridUnits } from '@/core/types';
 
 // Mock Liveblocks hooks
 vi.mock('@/liveblocks.config', () => ({
@@ -28,6 +29,8 @@ vi.mock('@/shared/hooks', () => ({
     isTouchDevice: false,
     layoutMode: 'desktop' as const,
     viewportWidth: 1200,
+    viewportHeight: 800,
+    isLandscape: true,
   })),
 }));
 
@@ -67,13 +70,11 @@ describe('CollabCursors', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     vi.mocked(useInterpolatedPresence).mockReturnValue(new Map());
@@ -87,17 +88,15 @@ describe('CollabCursors', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     vi.mocked(useInterpolatedPresence).mockReturnValue(
-      new Map([[1, { x: 100, y: 200, opacity: 1 }]])
+      new Map([[1, { x: 100, y: 200, isVisible: true, opacity: 1 }]])
     );
 
     render(<CollabCursors />);
@@ -110,30 +109,26 @@ describe('CollabCursors', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
       {
         connectionId: 2,
         presence: {
-          cursor: { x: 0.3, y: 0.7 },
+          cursor: { x: gridUnits(0.3), y: gridUnits(0.7) },
           name: 'User 2',
           color: '#00ff00',
           interaction: { type: 'idle' },
         },
-        id: '2',
-        info: {},
       },
     ]);
     vi.mocked(useInterpolatedPresence).mockReturnValue(
       new Map([
-        [1, { x: 100, y: 200, opacity: 1 }],
-        [2, { x: 150, y: 250, opacity: 1 }],
+        [1, { x: 100, y: 200, isVisible: true, opacity: 1 }],
+        [2, { x: 150, y: 250, isVisible: true, opacity: 1 }],
       ])
     );
 
@@ -149,17 +144,15 @@ describe('CollabCursors', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     vi.mocked(useInterpolatedPresence).mockReturnValue(
-      new Map([[1, { x: 100, y: 200, opacity: 1 }]])
+      new Map([[1, { x: 100, y: 200, isVisible: true, opacity: 1 }]])
     );
 
     const { container } = render(<CollabCursors className="custom-class" />);
@@ -171,17 +164,15 @@ describe('CollabCursors', () => {
       {
         connectionId: 1,
         presence: {
-          cursor: { x: 0.5, y: 0.5 },
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
           name: 'User 1',
           color: '#ff0000',
           interaction: { type: 'idle' },
         },
-        id: '1',
-        info: {},
       },
     ]);
     vi.mocked(useInterpolatedPresence).mockReturnValue(
-      new Map([[1, { x: 100, y: 200, opacity: 1 }]])
+      new Map([[1, { x: 100, y: 200, isVisible: true, opacity: 1 }]])
     );
 
     render(<CollabCursors />);

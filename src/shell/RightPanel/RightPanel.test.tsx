@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
 import { useLayoutStore, useViewStore, useSettingsStore } from '@/core/store';
-import { resetAllStores } from '@/test/testUtils';
+import type { EnhancedPrintRow } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
+import { resetAllStores, createTestBin, createTestLayout } from '@/test/testUtils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import type { UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
 
@@ -151,33 +153,22 @@ import { useBinInspector } from '@/features/bin-inspector';
 const mockUseBinInspector = useBinInspector as ReturnType<typeof vi.fn>;
 
 describe('RightPanel', () => {
-  const mockLayout = {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+  const mockLayout = createTestLayout({
     categories: [
-      { id: 'coral', name: 'Coral', color: '#FF6B6B' },
-      { id: 'blue', name: 'Blue', color: '#4ECDC4' },
+      { id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' },
+      { id: categoryId('blue'), name: 'Blue', color: '#4ECDC4' },
     ],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
     bins: [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+      createTestBin({
+        id: binId('bin1'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        category: categoryId('coral'),
         label: 'Screws',
         notes: 'M3',
-      },
+      }),
     ],
-  };
+  });
 
   const createMockInspector = (
     overrides: Partial<UseBinInspectorReturn> = {}
@@ -191,11 +182,15 @@ describe('RightPanel', () => {
       minHeight: 2,
       maxHeight: 12,
       maxClearance: 9,
-      maxGridUnits: 6,
+      maxGridUnits: { width: 6, depth: 6 },
       needsSplit: false,
       heightRange: '2u – 12u',
+      minHeightReason: 'global_minimum',
+      maxHeightReason: 'drawer_height',
     },
     updateField: vi.fn(),
+    updateCustomProperties: vi.fn(),
+    updateMultiCustomProperty: vi.fn(),
     updateMultiCategory: vi.fn(),
     updateMultiHeight: vi.fn(),
     updateMultiClearance: vi.fn(),
@@ -207,9 +202,12 @@ describe('RightPanel', () => {
     moveToStaging: vi.fn(),
     clearSelection: vi.fn(),
     rotateBin: vi.fn(),
+    applySuggestedSize: vi.fn(),
+    canApplySuggestedSize: vi.fn(),
     deleteConfirmState: null,
     layout: mockLayout,
     categories: mockLayout.categories,
+    existingPropertyKeys: [],
     ...overrides,
   });
 
@@ -226,6 +224,8 @@ describe('RightPanel', () => {
     spoolEstimate: 0,
     spoolPercentage: 0,
     hasAnySplits: false,
+    totalLabelPlates: 0,
+    labelPlateWidthSummary: '',
     filters: {
       hiddenCategoryIds: new Set(),
       sortKey: 'default',
@@ -241,6 +241,7 @@ describe('RightPanel', () => {
       filamentCostPerKg: 25,
       metersPerKg: 330,
     },
+    nozzleSizeMm: 0.4,
     setFilamentCostPerKg: vi.fn(),
     selectBinsByRow: mockSelectBinsByRow,
     categories: mockLayout.categories,
@@ -351,7 +352,7 @@ describe('RightPanel', () => {
     });
 
     it('shows MultiBinInspector when multiple bins selected', () => {
-      const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: 'bin2' }];
+      const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: binId('bin2') }];
       mockUseBinInspector.mockReturnValue(
         createMockInspector({
           selectedBins: bins,
@@ -385,7 +386,7 @@ describe('RightPanel', () => {
     });
 
     it('calls clearSelection when multi inspector close clicked', () => {
-      const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: 'bin2' }];
+      const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: binId('bin2') }];
       const mockClearSelection = vi.fn();
       mockUseBinInspector.mockReturnValue(
         createMockInspector({
@@ -424,18 +425,21 @@ describe('RightPanel', () => {
   });
 
   describe('print list section - with data', () => {
-    const printRow = {
+    const printRow: EnhancedPrintRow = {
       size: '2×2',
-      height: 3,
+      height: heightUnits(3),
       binCount: 2,
-      binIds: ['bin1', 'bin2'],
+      binIds: [binId('bin1'), binId('bin2')],
       labels: ['Screws'],
       notes: 'M3',
       needsSplit: false,
       pieces: [],
       totalPieces: 2,
       filament: 1.5,
-      categoryIds: ['coral'],
+      categoryIds: [categoryId('coral')],
+      area: 4,
+      costEstimate: 0.11,
+      spoolPercentage: 0.5,
     };
 
     beforeEach(() => {
@@ -521,16 +525,19 @@ describe('RightPanel', () => {
         rows: [
           {
             size: '2×2',
-            height: 3,
+            height: heightUnits(3),
             binCount: 1,
-            binIds: ['bin1'],
+            binIds: [binId('bin1')],
             labels: [],
             notes: '',
             needsSplit: false,
             pieces: [],
             totalPieces: 1,
             filament: 0.8,
-            categoryIds: ['coral'],
+            categoryIds: [categoryId('coral')],
+            area: 4,
+            costEstimate: 0.06,
+            spoolPercentage: 0.2,
           },
         ],
         totalBins: 1,
@@ -573,16 +580,19 @@ describe('RightPanel', () => {
         rows: [
           {
             size: '2×2',
-            height: 3,
+            height: heightUnits(3),
             binCount: 1,
-            binIds: ['bin1'],
+            binIds: [binId('bin1')],
             labels: [],
             notes: '',
             needsSplit: false,
             pieces: [],
             totalPieces: 1,
             filament: 0.8,
-            categoryIds: ['coral'],
+            categoryIds: [categoryId('coral')],
+            area: 4,
+            costEstimate: 0.06,
+            spoolPercentage: 0.2,
           },
         ],
         totalBins: 1,
@@ -618,18 +628,21 @@ describe('RightPanel', () => {
   });
 
   describe('print list - splits', () => {
-    const splitRow = {
+    const splitRow: EnhancedPrintRow = {
       size: '8×8',
-      height: 3,
+      height: heightUnits(3),
       binCount: 1,
-      binIds: ['bin1'],
+      binIds: [binId('bin1')],
       labels: [],
       notes: '',
       needsSplit: true,
-      pieces: [{ width: 4, depth: 4, count: 4 }],
+      pieces: [{ width: gridUnits(4), depth: gridUnits(4), count: 4 }],
       totalPieces: 4,
       filament: 3.2,
-      categoryIds: ['coral'],
+      categoryIds: [categoryId('coral')],
+      area: 64,
+      costEstimate: 0.24,
+      spoolPercentage: 1,
     };
 
     beforeEach(() => {
@@ -690,16 +703,19 @@ describe('RightPanel', () => {
         rows: [
           {
             size: '2×2',
-            height: 3,
+            height: heightUnits(3),
             binCount: 1,
-            binIds: ['bin1'],
+            binIds: [binId('bin1')],
             labels: [],
             notes: '',
             needsSplit: false,
             pieces: [],
             totalPieces: 1,
             filament: 0.8,
-            categoryIds: ['coral'],
+            categoryIds: [categoryId('coral')],
+            area: 4,
+            costEstimate: 0.06,
+            spoolPercentage: 0.2,
           },
         ],
         totalBins: 1,
@@ -716,16 +732,25 @@ describe('RightPanel', () => {
         rows: [
           {
             size: '2×2',
-            height: 3,
+            height: heightUnits(3),
             binCount: 4,
-            binIds: ['bin1', 'bin2', 'bin3', 'bin4'],
+            binIds: [binId('bin1'), binId('bin2'), binId('bin3'), binId('bin4')],
             labels: [],
             notes: '',
             needsSplit: false,
             pieces: [],
             totalPieces: 4,
             filament: 3.2,
-            categoryIds: ['coral', 'blue', 'cat3', 'cat4', 'cat5'],
+            categoryIds: [
+              categoryId('coral'),
+              categoryId('blue'),
+              categoryId('cat3'),
+              categoryId('cat4'),
+              categoryId('cat5'),
+            ],
+            area: 4,
+            costEstimate: 0.24,
+            spoolPercentage: 1,
           },
         ],
         totalBins: 4,
@@ -861,16 +886,19 @@ describe('RightPanel', () => {
         rows: [
           {
             size: '2×2',
-            height: 3,
+            height: heightUnits(3),
             binCount: 1,
-            binIds: ['bin1'],
+            binIds: [binId('bin1')],
             labels: [],
             notes: '',
             needsSplit: false,
             pieces: [],
             totalPieces: 1,
             filament: 0.8,
-            categoryIds: ['coral'],
+            categoryIds: [categoryId('coral')],
+            area: 4,
+            costEstimate: 0.06,
+            spoolPercentage: 0.2,
           },
         ],
         totalBins: 1,

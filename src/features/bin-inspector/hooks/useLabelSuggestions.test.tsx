@@ -1,29 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Bin } from '@/core/types';
+import { binId, gridUnits } from '@/core/types';
+import { createTestBin } from '@/test/testUtils';
 import { useLabelSuggestions } from './useLabelSuggestions';
 
-function bin(overrides: Partial<Bin> & { id: string }): Bin {
-  return {
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
-    layerId: 'L0',
-    category: 'c1',
-    label: '',
-    notes: '',
-    ...overrides,
-  } as unknown as Bin;
-}
-
 describe('useLabelSuggestions', () => {
-  const target = bin({ id: 't', x: 2, label: '' });
+  const target = createTestBin({ id: binId('t'), x: gridUnits(2), label: '' });
   const bins = [
     target,
-    bin({ id: 'a', x: 0, label: 'M3 screws' }),
-    bin({ id: 'b', x: 1, label: 'M4 screws' }),
+    createTestBin({ id: binId('a'), x: gridUnits(0), label: 'M3 screws' }),
+    createTestBin({ id: binId('b'), x: gridUnits(1), label: 'M4 screws' }),
   ];
 
   it('derives ranked suggestions and a ghost from the layout', () => {

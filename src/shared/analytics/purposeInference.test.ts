@@ -1,5 +1,19 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import type { Layout, Bin, Drawer, Layer, Category } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
+import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import type { Layout, Drawer, Layer, Category } from '@/core/types';
+
+interface BinSpec {
+  x?: number;
+  y?: number;
+  width?: number;
+  depth?: number;
+  height?: number;
+  layerId?: string;
+  category?: string;
+  label?: string;
+  notes?: string;
+}
 
 // Mock the IndexedDB backend before importing the module under test
 vi.mock('@/core/storage/backends/indexedDB', () => ({
@@ -19,45 +33,47 @@ import {
 } from '@/shared/analytics/purposeInference';
 
 // Helper to create test layouts
-function createTestLayout(bins: Partial<Bin>[], drawer?: Partial<Drawer>): Layout {
+function createTestLayout(bins: BinSpec[], drawer?: Partial<Drawer>): Layout {
   const defaultDrawer: Drawer = {
-    width: 10,
-    depth: 8,
-    height: 12,
+    width: gridUnits(10),
+    depth: gridUnits(8),
+    height: heightUnits(12),
     ...drawer,
   };
 
   const defaultLayer: Layer = {
-    id: 'layer-1',
+    id: layerId('layer-1'),
     name: 'Layer 1',
     height: defaultDrawer.height,
   };
 
   const defaultCategory: Category = {
-    id: 'default',
+    id: categoryId('default'),
     name: 'Default',
     color: '#3B82F6',
   };
 
   return {
+    version: '1.0',
+    name: 'Test Layout',
     drawer: defaultDrawer,
     layers: [defaultLayer],
     categories: [defaultCategory],
     bins: bins.map((b, i) => ({
-      id: `bin-${i}`,
-      x: b.x ?? 0,
-      y: b.y ?? 0,
-      width: b.width ?? 1,
-      depth: b.depth ?? 1,
-      height: b.height ?? 3,
-      layerId: b.layerId ?? 'layer-1',
-      category: b.category ?? 'default',
-      label: b.label,
-      notes: b.notes,
+      id: binId(`bin-${i}`),
+      x: gridUnits(b.x ?? 0),
+      y: gridUnits(b.y ?? 0),
+      width: gridUnits(b.width ?? 1),
+      depth: gridUnits(b.depth ?? 1),
+      height: heightUnits(b.height ?? 3),
+      layerId: layerId(b.layerId ?? 'layer-1'),
+      category: categoryId(b.category ?? 'default'),
+      label: b.label ?? '',
+      notes: b.notes ?? '',
     })),
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
   };
 }
 
@@ -155,7 +171,7 @@ describe('purposeInference', () => {
     it('excludes staging bins from analysis', () => {
       const layout = createTestLayout([
         { x: 0, y: 0, width: 2, depth: 2, label: 'screwdriver', layerId: 'layer-1' },
-        { x: 0, y: 0, width: 2, depth: 2, label: 'resistor', layerId: '__staging__' },
+        { x: 0, y: 0, width: 2, depth: 2, label: 'resistor', layerId: STAGING_ID },
       ]);
       const result = inferDrawerPurpose(layout);
 
@@ -234,7 +250,7 @@ describe('purposeInference', () => {
     it('skips staging bins', () => {
       const layout = createTestLayout([
         { x: 0, y: 0, width: 2, depth: 2, label: 'screwdriver', layerId: 'layer-1' },
-        { x: 0, y: 0, width: 2, depth: 2, label: 'wrench', layerId: '__staging__' },
+        { x: 0, y: 0, width: 2, depth: 2, label: 'wrench', layerId: STAGING_ID },
       ]);
 
       recordLayoutLabelSizes(layout);

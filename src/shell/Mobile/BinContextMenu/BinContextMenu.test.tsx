@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BinContextMenu } from './BinContextMenu';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
+import { gridUnits } from '@/core/types';
 
 // Mock dependencies
 vi.mock('@/shared/contexts', () => ({
@@ -64,7 +65,7 @@ describe('BinContextMenu', () => {
   });
 
   it('displays bin dimensions in header', () => {
-    const bin = createTestBin({ width: 2, depth: 3 });
+    const bin = createTestBin({ width: gridUnits(2), depth: gridUnits(3) });
     const onClose = vi.fn();
     render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={onClose} />);
     expect(screen.getByText('2×3 Bin')).toBeInTheDocument();

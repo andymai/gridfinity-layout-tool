@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DesignerUpdatedDialog } from './DesignerUpdatedDialog';
 import { useLinkingStore } from '../../../store';
+import { designId } from '@/core/types';
 
 // Mock useBinLinking
 const mockEditLinkedDesign = vi.fn();
@@ -29,7 +30,7 @@ describe('DesignerUpdatedDialog', () => {
   it('renders dialog when pendingDesignerUpdated is set', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
-        designId: 'design-1',
+        designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
     });
@@ -42,7 +43,7 @@ describe('DesignerUpdatedDialog', () => {
   it('hides dialog on dismiss', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
-        designId: 'design-1',
+        designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
     });
@@ -56,7 +57,7 @@ describe('DesignerUpdatedDialog', () => {
   it('navigates to designer on "Edit Design" click', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
-        designId: 'design-1',
+        designId: designId('design-1'),
         designName: 'My Custom Bin',
       },
     });
@@ -71,7 +72,7 @@ describe('DesignerUpdatedDialog', () => {
   it('includes design name in description', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
-        designId: 'design-1',
+        designId: designId('design-1'),
         designName: 'Screwdriver Holder',
       },
     });

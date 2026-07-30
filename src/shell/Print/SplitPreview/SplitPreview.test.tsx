@@ -2,17 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { SplitPreview } from '@/shell/Print/SplitPreview';
 import type { PrintPiece } from '@/core/types';
+import { gridUnits } from '@/core/types';
 
 describe('SplitPreview', () => {
   const createPiece = (width: number, depth: number, count = 1): PrintPiece => ({
-    width,
-    depth,
+    width: gridUnits(width),
+    depth: gridUnits(depth),
     count,
-    height: 3,
-    filament: 10,
-    printTime: 1,
-    cost: 0.5,
-    isOversized: false,
   });
 
   describe('rendering', () => {

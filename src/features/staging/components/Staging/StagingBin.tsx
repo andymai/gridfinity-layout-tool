@@ -13,7 +13,6 @@ interface StagingBinProps {
   isDragging: boolean;
   isHovered: boolean;
   isTouchDevice: boolean;
-  isTopRow: boolean;
   cellSize: number;
   gap: number;
   gridHeight: number;
@@ -92,7 +91,6 @@ export const StagingBin = memo(function StagingBin({
   isDragging,
   isHovered,
   isTouchDevice,
-  isTopRow,
   cellSize,
   gap,
   gridHeight,
@@ -142,6 +140,12 @@ export const StagingBin = memo(function StagingBin({
 
   // Calculate grid row start (must be integer for valid CSS Grid)
   const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
+
+  // Staging renders bottom-origin (higher bin.y draws higher, i.e. a smaller
+  // gridRowStart), so the visually top row is gridRowStart === 1 — not bin.y === 0
+  // (which is the bottom row). Derived from gridRowStart here, rather than passed
+  // in, so the two can't disagree about which row is on top (#2979).
+  const isTopRow = gridRowStart === 1;
 
   const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
   const hasLabel = !!bin.label;
@@ -285,6 +289,8 @@ export const StagingBin = memo(function StagingBin({
           className="absolute transition-opacity duration-150"
           style={{
             right: -22,
+            // Button normally sits above the bin (top: -22); for the visually top
+            // row that would overflow above the stash, so flip it below instead.
             ...(isTopRow ? { bottom: -22 } : { top: -22 }),
             width: 44,
             height: 44,

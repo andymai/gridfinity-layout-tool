@@ -4,6 +4,7 @@ import { CollabCursor } from './CollabCursor';
 import type { UserPresence } from '@/liveblocks.config';
 import type { InterpolatedPosition } from '@/shared/hooks/useInterpolatedPresence';
 import { resetAllStores } from '@/test/testUtils';
+import { gridUnits } from '@/core/types';
 
 describe('CollabCursor', () => {
   beforeEach(() => {
@@ -12,7 +13,7 @@ describe('CollabCursor', () => {
   });
 
   const mockPresence: UserPresence = {
-    cursor: { x: 0.5, y: 0.5 },
+    cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
     name: 'Test User',
     color: '#ff0000',
     interaction: { type: 'idle' },
@@ -21,6 +22,7 @@ describe('CollabCursor', () => {
   const mockPosition: InterpolatedPosition = {
     x: 100,
     y: 200,
+    isVisible: true,
     opacity: 1,
   };
 
@@ -60,7 +62,11 @@ describe('CollabCursor', () => {
   it('shows "Drawing..." when interaction is drawing', () => {
     const drawingPresence: UserPresence = {
       ...mockPresence,
-      interaction: { type: 'drawing', start: { x: 0, y: 0 }, current: { x: 1, y: 1 } },
+      interaction: {
+        type: 'drawing',
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
+      },
     };
     render(<CollabCursor presence={drawingPresence} position={mockPosition} />);
     expect(screen.getByText('Drawing...')).toBeInTheDocument();
@@ -69,7 +75,11 @@ describe('CollabCursor', () => {
   it('shows "Moving..." when interaction is dragging', () => {
     const draggingPresence: UserPresence = {
       ...mockPresence,
-      interaction: { type: 'dragging', binIds: ['bin1'], delta: { x: 1, y: 1 } },
+      interaction: {
+        type: 'dragging',
+        binIds: ['bin1'],
+        delta: { x: gridUnits(1), y: gridUnits(1) },
+      },
     };
     render(<CollabCursor presence={draggingPresence} position={mockPosition} />);
     expect(screen.getByText('Moving...')).toBeInTheDocument();
@@ -87,14 +97,23 @@ describe('CollabCursor', () => {
   it('shows "Selecting..." when interaction is selecting', () => {
     const selectingPresence: UserPresence = {
       ...mockPresence,
-      interaction: { type: 'selecting', start: { x: 0, y: 0 }, current: { x: 1, y: 1 } },
+      interaction: {
+        type: 'selecting',
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
+      },
     };
     render(<CollabCursor presence={selectingPresence} position={mockPosition} />);
     expect(screen.getByText('Selecting...')).toBeInTheDocument();
   });
 
   it('renders with partial opacity', () => {
-    const fadingPosition: InterpolatedPosition = { x: 100, y: 200, opacity: 0.5 };
+    const fadingPosition: InterpolatedPosition = {
+      x: 100,
+      y: 200,
+      isVisible: true,
+      opacity: 0.5,
+    };
     const { container } = render(
       <CollabCursor presence={mockPresence} position={fadingPosition} />
     );

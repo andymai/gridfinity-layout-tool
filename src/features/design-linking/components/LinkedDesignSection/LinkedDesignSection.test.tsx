@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LinkedDesignSection } from './LinkedDesignSection';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
+import { binId, designId } from '@/core/types';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 
@@ -47,8 +48,23 @@ vi.mock('@/i18n', () => ({
   },
 }));
 
+function makeBinLinkingMock(): ReturnType<typeof useBinLinking> {
+  return {
+    linkBin: vi.fn(),
+    unlinkBin: vi.fn(),
+    unlinkBins: vi.fn(),
+    deleteLinkedDesign: vi.fn(),
+    editLinkedDesign: vi.fn(),
+    showCreateDesignDialog: vi.fn(),
+    promptSyncIfNeeded: vi.fn(),
+    executeSyncFromDesign: vi.fn(),
+    navigateToCreateDesign: vi.fn(),
+    matchDesignEdgesToDrawer: vi.fn(),
+  };
+}
+
 describe('LinkedDesignSection', () => {
-  const testBin: Bin = createTestBin({ id: 'bin-1', linkedDesignId: undefined });
+  const testBin: Bin = createTestBin({ id: binId('bin-1'), linkedDesignId: undefined });
 
   beforeEach(() => {
     resetAllStores();
@@ -61,12 +77,7 @@ describe('LinkedDesignSection', () => {
       hasLink: false,
     });
 
-    vi.mocked(useBinLinking).mockReturnValue({
-      editLinkedDesign: vi.fn(),
-      showCreateDesignDialog: vi.fn(),
-      unlinkBin: vi.fn(),
-      deleteLinkedDesign: vi.fn(),
-    });
+    vi.mocked(useBinLinking).mockReturnValue(makeBinLinkingMock());
 
     vi.mocked(useQuickExport).mockReturnValue({
       isExporting: false,
@@ -89,10 +100,8 @@ describe('LinkedDesignSection', () => {
   it('calls showCreateDesignDialog when create button clicked', () => {
     const mockShowCreate = vi.fn();
     vi.mocked(useBinLinking).mockReturnValue({
-      editLinkedDesign: vi.fn(),
+      ...makeBinLinkingMock(),
       showCreateDesignDialog: mockShowCreate,
-      unlinkBin: vi.fn(),
-      deleteLinkedDesign: vi.fn(),
     });
 
     render(<LinkedDesignSection bin={testBin} variant="desktop" />);
@@ -120,7 +129,7 @@ describe('LinkedDesignSection', () => {
     });
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
-        id: 'design-1',
+        id: designId('design-1'),
         name: 'My Design',
         width: 2,
         depth: 3,
@@ -145,7 +154,7 @@ describe('LinkedDesignSection', () => {
   it('shows placeholder thumbnail when no thumbnail available', () => {
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
-        id: 'design-1',
+        id: designId('design-1'),
         name: 'My Design',
         width: 2,
         depth: 3,
@@ -163,7 +172,7 @@ describe('LinkedDesignSection', () => {
   it('uses mobile-specific styling when variant is mobile', () => {
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
-        id: 'design-1',
+        id: designId('design-1'),
         name: 'Mobile Design',
         width: 2,
         depth: 3,
@@ -181,7 +190,7 @@ describe('LinkedDesignSection', () => {
   it('opens overflow menu and shows unlink and delete options', () => {
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {
-        id: 'design-1',
+        id: designId('design-1'),
         name: 'My Design',
         width: 2,
         depth: 3,

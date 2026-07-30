@@ -16,20 +16,21 @@ import {
   linkedDesignExists,
 } from './linkageQueries';
 import type { Bin } from '@/core/types';
+import { binId, designId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { CustomBinRef } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -38,7 +39,7 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
 
 function makeDesignRef(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
   return {
-    id: 'design-1',
+    id: designId('design-1'),
     name: 'Test Design',
     width: 2,
     depth: 3,
@@ -51,7 +52,7 @@ function makeDesignRef(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
 describe('linkageQueries', () => {
   describe('getLinkedDesignId', () => {
     it('returns design ID when bin is linked', () => {
-      const bin = makeBin({ linkedDesignId: 'design-1' });
+      const bin = makeBin({ linkedDesignId: designId('design-1') });
       expect(getLinkedDesignId(bin)).toBe('design-1');
     });
 
@@ -68,7 +69,7 @@ describe('linkageQueries', () => {
 
   describe('isLinked', () => {
     it('returns true when bin has a linkedDesignId', () => {
-      const bin = makeBin({ linkedDesignId: 'design-1' });
+      const bin = makeBin({ linkedDesignId: designId('design-1') });
       expect(isLinked(bin)).toBe(true);
     });
 
@@ -85,56 +86,59 @@ describe('linkageQueries', () => {
 
   describe('isLinkedTo', () => {
     it('returns true when bin is linked to specified design', () => {
-      const bin = makeBin({ linkedDesignId: 'design-1' });
-      expect(isLinkedTo(bin, 'design-1')).toBe(true);
+      const bin = makeBin({ linkedDesignId: designId('design-1') });
+      expect(isLinkedTo(bin, designId('design-1'))).toBe(true);
     });
 
     it('returns false when bin is linked to different design', () => {
-      const bin = makeBin({ linkedDesignId: 'design-1' });
-      expect(isLinkedTo(bin, 'design-2')).toBe(false);
+      const bin = makeBin({ linkedDesignId: designId('design-1') });
+      expect(isLinkedTo(bin, designId('design-2'))).toBe(false);
     });
 
     it('returns false when bin is not linked', () => {
       const bin = makeBin();
-      expect(isLinkedTo(bin, 'design-1')).toBe(false);
+      expect(isLinkedTo(bin, designId('design-1'))).toBe(false);
     });
   });
 
   describe('getBinsLinkedToDesign', () => {
     it('returns bins linked to specified design', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-2' }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-1' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-1') }),
       ];
 
-      const result = getBinsLinkedToDesign(bins, 'design-1');
+      const result = getBinsLinkedToDesign(bins, designId('design-1'));
 
       expect(result).toHaveLength(2);
       expect(result.map((b) => b.id)).toEqual(['bin-1', 'bin-3']);
     });
 
     it('returns empty array when no bins are linked to design', () => {
-      const bins = [makeBin({ id: 'bin-1', linkedDesignId: 'design-2' }), makeBin({ id: 'bin-2' })];
+      const bins = [
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-2') }),
+      ];
 
-      const result = getBinsLinkedToDesign(bins, 'design-1');
+      const result = getBinsLinkedToDesign(bins, designId('design-1'));
       expect(result).toEqual([]);
     });
 
     it('returns empty array for empty bins list', () => {
-      expect(getBinsLinkedToDesign([], 'design-1')).toEqual([]);
+      expect(getBinsLinkedToDesign([], designId('design-1'))).toEqual([]);
     });
   });
 
   describe('getBinIdsLinkedToDesign', () => {
     it('returns IDs of bins linked to specified design', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-2' }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-1' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-1') }),
       ];
 
-      const result = getBinIdsLinkedToDesign(bins, 'design-1');
+      const result = getBinIdsLinkedToDesign(bins, designId('design-1'));
 
       expect(result).toEqual(['bin-1', 'bin-3']);
     });
@@ -142,43 +146,49 @@ describe('linkageQueries', () => {
 
   describe('hasLinkedBins', () => {
     it('returns true when design has linked bins', () => {
-      const bins = [makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }), makeBin({ id: 'bin-2' })];
+      const bins = [
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2') }),
+      ];
 
-      expect(hasLinkedBins(bins, 'design-1')).toBe(true);
+      expect(hasLinkedBins(bins, designId('design-1'))).toBe(true);
     });
 
     it('returns false when design has no linked bins', () => {
-      const bins = [makeBin({ id: 'bin-1', linkedDesignId: 'design-2' }), makeBin({ id: 'bin-2' })];
+      const bins = [
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-2') }),
+      ];
 
-      expect(hasLinkedBins(bins, 'design-1')).toBe(false);
+      expect(hasLinkedBins(bins, designId('design-1'))).toBe(false);
     });
   });
 
   describe('countLinkedBins', () => {
     it('counts bins linked to design', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-2' }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-4', linkedDesignId: 'design-1' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-4'), linkedDesignId: designId('design-1') }),
       ];
 
-      expect(countLinkedBins(bins, 'design-1')).toBe(3);
+      expect(countLinkedBins(bins, designId('design-1'))).toBe(3);
     });
 
     it('returns 0 when no bins linked', () => {
-      const bins = [makeBin({ id: 'bin-1' })];
-      expect(countLinkedBins(bins, 'design-1')).toBe(0);
+      const bins = [makeBin({ id: binId('bin-1') })];
+      expect(countLinkedBins(bins, designId('design-1'))).toBe(0);
     });
   });
 
   describe('getLinkedDesignIds', () => {
     it('returns unique design IDs', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-2' }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-4' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2'), linkedDesignId: designId('design-2') }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-4') }),
       ];
 
       const result = getLinkedDesignIds(bins);
@@ -189,7 +199,7 @@ describe('linkageQueries', () => {
     });
 
     it('returns empty array when no bins are linked', () => {
-      const bins = [makeBin({ id: 'bin-1' }), makeBin({ id: 'bin-2' })];
+      const bins = [makeBin({ id: binId('bin-1') }), makeBin({ id: binId('bin-2') })];
       expect(getLinkedDesignIds(bins)).toEqual([]);
     });
   });
@@ -197,9 +207,9 @@ describe('linkageQueries', () => {
   describe('getLinkedBins', () => {
     it('returns all bins that have a linkedDesignId', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2' }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-2' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2') }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-2') }),
       ];
 
       const result = getLinkedBins(bins);
@@ -211,14 +221,14 @@ describe('linkageQueries', () => {
 
   describe('binMatchesDesign', () => {
     it('returns true when dimensions match', () => {
-      const bin = makeBin({ width: 2, depth: 3, height: 4 });
+      const bin = makeBin({ width: gridUnits(2), depth: gridUnits(3), height: heightUnits(4) });
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
       expect(binMatchesDesign(bin, designDims)).toBe(true);
     });
 
     it('returns false when dimensions differ', () => {
-      const bin = makeBin({ width: 2, depth: 3, height: 4 });
+      const bin = makeBin({ width: gridUnits(2), depth: gridUnits(3), height: heightUnits(4) });
       const designDims: SyncableDimensions = { width: 3, depth: 3, height: 4 };
 
       expect(binMatchesDesign(bin, designDims)).toBe(false);
@@ -228,13 +238,31 @@ describe('linkageQueries', () => {
   describe('getBinsWithDimensionMismatch', () => {
     it('returns bins linked to design with mismatched dimensions', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1', width: 2, depth: 3, height: 4 }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-1', width: 3, depth: 3, height: 4 }), // Mismatch
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-2', width: 5, depth: 5, height: 5 }),
+        makeBin({
+          id: binId('bin-1'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }), // Mismatch
+        makeBin({
+          id: binId('bin-3'),
+          linkedDesignId: designId('design-2'),
+          width: gridUnits(5),
+          depth: gridUnits(5),
+          height: heightUnits(5),
+        }),
       ];
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      const result = getBinsWithDimensionMismatch(bins, 'design-1', designDims);
+      const result = getBinsWithDimensionMismatch(bins, designId('design-1'), designDims);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('bin-2');
@@ -242,12 +270,24 @@ describe('linkageQueries', () => {
 
     it('returns empty array when all dimensions match', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1', width: 2, depth: 3, height: 4 }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-1', width: 2, depth: 3, height: 4 }),
+        makeBin({
+          id: binId('bin-1'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
       ];
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      const result = getBinsWithDimensionMismatch(bins, 'design-1', designDims);
+      const result = getBinsWithDimensionMismatch(bins, designId('design-1'), designDims);
       expect(result).toEqual([]);
     });
   });
@@ -255,13 +295,25 @@ describe('linkageQueries', () => {
   describe('buildLinkedBinsSummary', () => {
     it('builds summary with linked bins', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1', width: 2, depth: 3, height: 4 }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-1', width: 2, depth: 3, height: 4 }),
-        makeBin({ id: 'bin-3', linkedDesignId: 'design-2' }),
+        makeBin({
+          id: binId('bin-1'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+        makeBin({ id: binId('bin-3'), linkedDesignId: designId('design-2') }),
       ];
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      const result = buildLinkedBinsSummary('design-1', 'My Design', bins, designDims);
+      const result = buildLinkedBinsSummary(designId('design-1'), 'My Design', bins, designDims);
 
       expect(result.designId).toBe('design-1');
       expect(result.designName).toBe('My Design');
@@ -272,20 +324,26 @@ describe('linkageQueries', () => {
 
     it('detects dimension mismatch', () => {
       const bins = [
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1', width: 3, depth: 3, height: 4 }), // Mismatch
+        makeBin({
+          id: binId('bin-1'),
+          linkedDesignId: designId('design-1'),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }), // Mismatch
       ];
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      const result = buildLinkedBinsSummary('design-1', 'My Design', bins, designDims);
+      const result = buildLinkedBinsSummary(designId('design-1'), 'My Design', bins, designDims);
 
       expect(result.hasDimensionMismatch).toBe(true);
     });
 
     it('handles empty linked bins', () => {
-      const bins = [makeBin({ id: 'bin-1', linkedDesignId: 'other-design' })];
+      const bins = [makeBin({ id: binId('bin-1'), linkedDesignId: designId('other-design') })];
       const designDims: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      const result = buildLinkedBinsSummary('design-1', 'My Design', bins, designDims);
+      const result = buildLinkedBinsSummary(designId('design-1'), 'My Design', bins, designDims);
 
       expect(result.linkedBinCount).toBe(0);
       expect(result.linkedBinIds).toEqual([]);
@@ -296,47 +354,47 @@ describe('linkageQueries', () => {
   describe('resolveLinkedDesign', () => {
     it('returns design ref when found in registry', () => {
       const registry = [
-        makeDesignRef({ id: 'design-1', name: 'Design One' }),
-        makeDesignRef({ id: 'design-2', name: 'Design Two' }),
+        makeDesignRef({ id: designId('design-1'), name: 'Design One' }),
+        makeDesignRef({ id: designId('design-2'), name: 'Design Two' }),
       ];
 
-      const result = resolveLinkedDesign('design-1', registry);
+      const result = resolveLinkedDesign(designId('design-1'), registry);
 
       expect(result).not.toBeNull();
       expect(result?.name).toBe('Design One');
     });
 
     it('returns null when design not found', () => {
-      const registry = [makeDesignRef({ id: 'design-1' })];
+      const registry = [makeDesignRef({ id: designId('design-1') })];
 
-      const result = resolveLinkedDesign('design-999', registry);
+      const result = resolveLinkedDesign(designId('design-999'), registry);
       expect(result).toBeNull();
     });
 
     it('returns null when linkedDesignId is undefined', () => {
-      const registry = [makeDesignRef({ id: 'design-1' })];
+      const registry = [makeDesignRef({ id: designId('design-1') })];
 
       expect(resolveLinkedDesign(undefined, registry)).toBeNull();
     });
 
     it('returns null for empty registry', () => {
-      expect(resolveLinkedDesign('design-1', [])).toBeNull();
+      expect(resolveLinkedDesign(designId('design-1'), [])).toBeNull();
     });
   });
 
   describe('linkedDesignExists', () => {
     it('returns true when design exists in registry', () => {
-      const registry = [makeDesignRef({ id: 'design-1' })];
-      expect(linkedDesignExists('design-1', registry)).toBe(true);
+      const registry = [makeDesignRef({ id: designId('design-1') })];
+      expect(linkedDesignExists(designId('design-1'), registry)).toBe(true);
     });
 
     it('returns false when design not in registry', () => {
-      const registry = [makeDesignRef({ id: 'design-1' })];
-      expect(linkedDesignExists('design-999', registry)).toBe(false);
+      const registry = [makeDesignRef({ id: designId('design-1') })];
+      expect(linkedDesignExists(designId('design-999'), registry)).toBe(false);
     });
 
     it('returns false when linkedDesignId is undefined', () => {
-      const registry = [makeDesignRef({ id: 'design-1' })];
+      const registry = [makeDesignRef({ id: designId('design-1') })];
       expect(linkedDesignExists(undefined, registry)).toBe(false);
     });
   });

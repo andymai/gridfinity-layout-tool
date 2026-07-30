@@ -61,7 +61,7 @@ describe('EditableValueBadge', () => {
     const button = screen.getByRole('button');
     expect(button.textContent).toBe('21 of 21');
     fireEvent.click(button);
-    expect(screen.getByRole('textbox').value).toBe('21');
+    expect(screen.getByRole<HTMLInputElement>('textbox').value).toBe('21');
   });
 
   it('reports edit-mode transitions so a caller can retarget its label', () => {

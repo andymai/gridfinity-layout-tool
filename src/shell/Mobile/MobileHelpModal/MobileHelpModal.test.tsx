@@ -70,7 +70,7 @@ describe('MobileHelpModal', () => {
     const onClose = vi.fn();
     const { rerender } = render(<MobileHelpModal isOpen={true} onClose={onClose} />);
 
-    const input = screen.getByPlaceholderText('Search shortcuts and features...');
+    const input = screen.getByPlaceholderText<HTMLInputElement>('Search shortcuts and features...');
     fireEvent.change(input, { target: { value: 'bed size' } });
     expect(input.value).toBe('bed size');
 
@@ -79,7 +79,9 @@ describe('MobileHelpModal', () => {
     expect(onClose).toHaveBeenCalled();
 
     rerender(<MobileHelpModal isOpen={true} onClose={onClose} />);
-    const reopenedInput = screen.getByPlaceholderText('Search shortcuts and features...');
+    const reopenedInput = screen.getByPlaceholderText<HTMLInputElement>(
+      'Search shortcuts and features...'
+    );
     expect(reopenedInput.value).toBe('');
   });
 });

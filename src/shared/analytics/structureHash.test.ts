@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { computeStructureHash, computeTemporalFields } from '@/shared/analytics/structureHash';
-import { createDefaultLayout } from '@/core/constants';
+import { createDefaultLayout, STAGING_ID } from '@/core/constants';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { Layout, Bin } from '@/core/types';
 
 // Helper to create a test layout with bins
@@ -9,14 +10,16 @@ function createTestLayoutWithBins(binCount: number): Layout {
   layout.bins = [];
   for (let i = 0; i < binCount; i++) {
     layout.bins.push({
-      id: `bin-${i}`,
-      x: i % layout.drawer.width,
-      y: Math.floor(i / layout.drawer.width),
-      width: 1,
-      depth: 1,
-      height: 1,
+      id: binId(`bin-${i}`),
+      x: gridUnits(i % layout.drawer.width),
+      y: gridUnits(Math.floor(i / layout.drawer.width)),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(1),
       layerId: layout.layers[0].id,
       category: layout.categories[0].id,
+      label: '',
+      notes: '',
     });
   }
   return layout;
@@ -25,7 +28,7 @@ function createTestLayoutWithBins(binCount: number): Layout {
 // Helper to create a layout with specific drawer dimensions
 function createLayoutWithDrawer(width: number, depth: number, height: number): Layout {
   const layout = createDefaultLayout();
-  layout.drawer = { width, depth, height };
+  layout.drawer = { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(height) };
   layout.bins = [];
   return layout;
 }
@@ -65,14 +68,16 @@ describe('structureHash', () => {
 
       // Add same bins to both
       const bin: Bin = {
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layout1.layers[0].id,
         category: layout1.categories[0].id,
+        label: '',
+        notes: '',
       };
       layout1.bins = [bin];
       layout2.bins = [{ ...bin, layerId: layout2.layers[0].id }];
@@ -97,14 +102,16 @@ describe('structureHash', () => {
 
       // Add a staging bin
       layoutWithStaging.bins.push({
-        id: 'staging-bin',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: '__staging__',
+        id: binId('staging-bin'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: STAGING_ID,
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       });
 
       const hash1 = computeStructureHash(layout);
@@ -119,14 +126,16 @@ describe('structureHash', () => {
       const layoutTopLeft = createLayoutWithDrawer(10, 10, 12);
       layoutTopLeft.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 9, // Top-left (grid origin is bottom-left)
-          width: 1,
-          depth: 1,
-          height: 1,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(9), // Top-left (grid origin is bottom-left)
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(1),
           layerId: layoutTopLeft.layers[0].id,
           category: layoutTopLeft.categories[0].id,
+          label: '',
+          notes: '',
         },
       ];
 
@@ -134,14 +143,16 @@ describe('structureHash', () => {
       const layoutBottomRight = createLayoutWithDrawer(10, 10, 12);
       layoutBottomRight.bins = [
         {
-          id: 'bin-1',
-          x: 9,
-          y: 0, // Bottom-right
-          width: 1,
-          depth: 1,
-          height: 1,
+          id: binId('bin-1'),
+          x: gridUnits(9),
+          y: gridUnits(0), // Bottom-right
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(1),
           layerId: layoutBottomRight.layers[0].id,
           category: layoutBottomRight.categories[0].id,
+          label: '',
+          notes: '',
         },
       ];
 
@@ -155,28 +166,32 @@ describe('structureHash', () => {
       const layoutSmall = createDefaultLayout();
       layoutSmall.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1, // Small bin
-          height: 1,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1), // Small bin
+          height: heightUnits(1),
           layerId: layoutSmall.layers[0].id,
           category: layoutSmall.categories[0].id,
+          label: '',
+          notes: '',
         },
       ];
 
       const layoutLarge = createDefaultLayout();
       layoutLarge.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 5,
-          depth: 5, // Large bin
-          height: 1,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(5),
+          depth: gridUnits(5), // Large bin
+          height: heightUnits(1),
           layerId: layoutLarge.layers[0].id,
           category: layoutLarge.categories[0].id,
+          label: '',
+          notes: '',
         },
       ];
 

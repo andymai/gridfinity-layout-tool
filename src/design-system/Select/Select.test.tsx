@@ -29,7 +29,7 @@ describe('Select', () => {
 
     it('disables individual options', () => {
       render(<Select options={options} aria-label="Choice" />);
-      const gammaOption = screen.getByText('Gamma');
+      const gammaOption = screen.getByText<HTMLOptionElement>('Gamma');
       expect(gammaOption.disabled).toBe(true);
     });
   });
