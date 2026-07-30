@@ -24,10 +24,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { ResolvedBaseplateParams, ExportFileFormat } from '@/shared/types/bin';
 import { BASEPLATE_EXPORT_DB_NAME } from '@/core/storage/storageKeys';
-// Pulls in the ambient `__GIT_SHA__` (and friends) declared in vite-env.d.ts —
-// not part of tsconfig.test.json's file set otherwise, so the build-time
-// define below is invisible to the test type-checker without this.
-import '@/vite-env.d.ts';
 
 const DB_NAME = BASEPLATE_EXPORT_DB_NAME;
 const DB_VERSION = 1;
