@@ -7,7 +7,7 @@ minimumReleaseAge: 10080
 
 # Excluded: user-authored packages (no security benefit from cooldown) +
 # high-trust org scopes that release lockstep (would block install for a
-# week on every dep bump). The trailing entries are temporary — see TODO.
+# week on every dep bump). The trailing entry is temporary — see TODO.
 minimumReleaseAgeExclude:
   - brepjs
   - brepkit-wasm
@@ -24,22 +24,18 @@ minimumReleaseAgeExclude:
   - '@vercel/*'
   - '@protobufjs/*'
   - protobufjs
-  # js-yaml 5.2.2 (2026-07-23) is the first version patched against the
-  # exponential flow-collection parsing DoS (GHSA-pm4m-ph32-ghv5).
-  # TODO: remove after 2026-07-30 once 5.2.2 has aged past the window.
-  - js-yaml@5.2.2
-  # Both versions patch the unbounded-expansion OOM (CVE-2026-14257): 5.0.8
-  # (2026-07-23) on the 5.x line, and 1.1.17 (2026-07-29) backporting it to the
-  # 1.x line that minimatch@3 pins. 1.1.16 shipped an EXPANSION_MAX_LENGTH
-  # constant but the bound was ineffective — it still OOMs on the advisory's own
-  # PoC, so the marker cannot be trusted in place of running it.
+  # brace-expansion 1.1.17 (2026-07-29) backports the unbounded-expansion OOM
+  # fix (CVE-2026-14257) to the 1.x line that minimatch@3 pins. 1.1.16 shipped
+  # an EXPANSION_MAX_LENGTH constant but the bound was ineffective — it still
+  # OOMs on the advisory's own PoC, so the marker cannot be trusted in place of
+  # running it.
   #
-  # These MUST stay one `||` union entry, not two lines: pnpm returns the first
-  # rule whose package name matches and never unions across entries, so a second
+  # If another brace-expansion version ever needs exempting, add it to THIS
+  # entry as a `||` union, never as a second line: pnpm returns the first rule
+  # whose package name matches and never unions across entries, so a second
   # `brace-expansion@...` line is silently dead and its version stays blocked.
-  # TODO: drop 5.0.8 after 2026-07-30 and 1.1.17 after 2026-08-05, once each has
-  # aged past the window; remove the entry once both are gone.
-  - brace-expansion@1.1.17||5.0.8
+  # TODO: remove after 2026-08-05 once 1.1.17 has aged past the window.
+  - brace-expansion@1.1.17
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
