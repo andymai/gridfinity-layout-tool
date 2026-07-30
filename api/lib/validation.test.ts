@@ -26,9 +26,11 @@ interface TestBin {
 }
 
 /**
- * Mirrors the validator's internal `DrawerShape`, which is not exported. Tests
- * set `outline`, `measuredMm`, and the fractional edges, so the fixture has to
- * carry them or every assignment needs a cast that defeats checking.
+ * The input side of the validator's internal `DrawerShape`, which is not
+ * exported. Tests set `outline`, `measuredMm`, and the fractional edges, so the
+ * fixture has to carry them or every assignment needs a cast that defeats
+ * checking. `outline` stays `unknown` rather than mirroring the real shape:
+ * these tests deliberately feed malformed outlines in to be rejected.
  */
 interface TestDrawer {
   width: number;
@@ -42,10 +44,13 @@ interface TestDrawer {
 
 // Helper to create a valid layout for testing
 function createValidLayout() {
+  // Annotated, not asserted: `as TestDrawer` would suppress excess-property
+  // checking on the literal, which is the opposite of the point.
+  const drawer: TestDrawer = { width: 10, depth: 8, height: 12 };
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 } as TestDrawer,
+    drawer,
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
