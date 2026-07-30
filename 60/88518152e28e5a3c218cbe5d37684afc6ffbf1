@@ -1,0 +1,48 @@
+src/shared/utils/drawerMargin.ts
+  s_04e0eea2db2b69::t_14d024cded00e8 115-117
+src/core/types/overhang.ts
+  s_04e0eea2db2b69::t_1c6074b0cf5c1d 15-21
+  s_04e0eea2db2b69::t_3464f09a78a7ad 80-82
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_04e0eea2db2b69::t_d8300e5bc334c0 15-16
+  s_04e0eea2db2b69::t_4db88dc3000136 49
+src/features/bin-inspector/README.md
+  s_04e0eea2db2b69::t_7609199a1913e7 77
+src/features/generation/worker/generators/socketBuilder.ts
+  s_04e0eea2db2b69::t_723234ef6dbacd 575
+  s_04e0eea2db2b69::t_979a778f657e2a 39
+  s_04e0eea2db2b69::t_31738a0a9bee66 558-561
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_04e0eea2db2b69::t_943ff0b884b892 11-12
+  s_04e0eea2db2b69::t_a34756788aff0a 40-41,45
+src/shared/utils/overhang.ts
+  s_04e0eea2db2b69::t_b4bf7dd1c5920e 71
+  s_04e0eea2db2b69::t_8764cdaa58e836 100
+  s_04e0eea2db2b69::t_77f33788a439fa 114-135
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_04e0eea2db2b69::t_cc1217f6afed8a 230,239-242
+src/features/bin-designer/README.md
+  s_04e0eea2db2b69::t_f3d03488945aaa 454
+src/features/bin-designer/constants/gridfinity.ts
+  s_04e0eea2db2b69::t_4249cebe87e2c6 124-126
+src/features/generation/worker/generators/binGenerator.scenario.taper.test.ts
+  s_04e0eea2db2b69::t_b5b022d8459546 233-237,245-262
+  s_04e0eea2db2b69::t_cf26852a45e62c 185-217
+  s_04e0eea2db2b69::t_eaf828f0a5ed7b 218-232,238-244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "6088518152e28e5a3c218cbe5d37684afc6ffbf1",
+  "prompts": {},
+  "sessions": {
+    "s_04e0eea2db2b69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "219bf8ef-fd99-4092-9a71-9a4313a3fff2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
