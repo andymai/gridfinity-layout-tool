@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { ok } from '@/core/result';
-import { useLabsStore } from '@/core/store';
+import type { useLabsStore } from '@/core/store';
 import type { FeatureFlag } from '@/core/labs';
 
 type LabsStore = ReturnType<typeof useLabsStore.getState>;
