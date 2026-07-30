@@ -1,0 +1,23 @@
+scripts/check-test-types.ts
+  s_bb8f1233002a7e::t_b222eeb67a9950 154-169
+  s_bb8f1233002a7e::t_c7581d3adfabc6 33
+  s_bb8f1233002a7e::t_bbdf5d18080a9f 190-191
+package.json
+  s_bb8f1233002a7e::t_48ae004b57cb29 46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "a0e43165b6e410bec4a482f8cbc62ed11e31ef43",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
