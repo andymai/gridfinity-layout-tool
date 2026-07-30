@@ -2,9 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { PrintBin } from '@/features/print-export';
 import type { Bin, Category, Drawer } from '@/core/types';
+import { categoryId, binId, layerId, gridUnits, heightUnits } from '@/core/types';
 import type { PrintViewSettings } from '@/core/store/settings';
+import { DEFAULT_PRINT_VIEW_SETTINGS } from '@/core/store/settings';
 
 const defaultSettings: PrintViewSettings = {
+  ...DEFAULT_PRINT_VIEW_SETTINGS,
   showLabel: true,
   showSize: true,
   showHeight: true,
@@ -14,21 +17,21 @@ const defaultSettings: PrintViewSettings = {
 };
 
 const defaultCategory: Category = {
-  id: 'cat-1',
+  id: categoryId('cat-1'),
   name: 'Test Category',
   color: '#3b82f6',
 };
 
 function createBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+    height: heightUnits(3),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -37,9 +40,9 @@ function createBin(overrides: Partial<Bin> = {}): Bin {
 
 function createDrawer(overrides: Partial<Drawer> = {}): Drawer {
   return {
-    width: 10,
-    depth: 8,
-    height: 12,
+    width: gridUnits(10),
+    depth: gridUnits(8),
+    height: heightUnits(12),
     ...overrides,
   };
 }
@@ -47,8 +50,13 @@ function createDrawer(overrides: Partial<Drawer> = {}): Drawer {
 describe('PrintBin', () => {
   describe('grid positioning', () => {
     it('renders bin at correct position for integer drawer', () => {
-      const bin = createBin({ x: 2, y: 3, width: 2, depth: 2 });
-      const drawer = createDrawer({ width: 10, depth: 8 });
+      const bin = createBin({
+        x: gridUnits(2),
+        y: gridUnits(3),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const drawer = createDrawer({ width: gridUnits(10), depth: gridUnits(8) });
 
       const { container } = render(
         <PrintBin
@@ -70,10 +78,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin correctly with fractionalEdgeX=start', () => {
-      const bin = createBin({ x: 1, y: 0, width: 2, depth: 1 });
+      const bin = createBin({
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(1),
+      });
       const drawer = createDrawer({
-        width: 10.5,
-        depth: 8,
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
         fractionalEdgeX: 'start',
       });
 
@@ -95,10 +108,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin correctly with fractionalEdgeX=end', () => {
-      const bin = createBin({ x: 9, y: 0, width: 1.5, depth: 1 });
+      const bin = createBin({
+        x: gridUnits(9),
+        y: gridUnits(0),
+        width: gridUnits(1.5),
+        depth: gridUnits(1),
+      });
       const drawer = createDrawer({
-        width: 10.5,
-        depth: 8,
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
         fractionalEdgeX: 'end',
       });
 
@@ -120,10 +138,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin correctly with fractionalEdgeY=start', () => {
-      const bin = createBin({ x: 0, y: 1, width: 1, depth: 2 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(1),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'start',
       });
 
@@ -144,10 +167,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin correctly with fractionalEdgeY=end', () => {
-      const bin = createBin({ x: 0, y: 7, width: 1, depth: 1.5 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(7),
+        width: gridUnits(1),
+        depth: gridUnits(1.5),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'end',
       });
 
@@ -167,10 +195,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin in fractional row at bottom with fractionalEdgeY=start', () => {
-      const bin = createBin({ x: 0, y: 0, width: 1, depth: 0.5 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(0.5),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'start',
       });
 
@@ -192,10 +225,15 @@ describe('PrintBin', () => {
     });
 
     it('positions bin in fractional column at left with fractionalEdgeX=start', () => {
-      const bin = createBin({ x: 0, y: 0, width: 0.5, depth: 1 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(0.5),
+        depth: gridUnits(1),
+      });
       const drawer = createDrawer({
-        width: 10.5,
-        depth: 8,
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
         fractionalEdgeX: 'start',
       });
 
@@ -219,10 +257,15 @@ describe('PrintBin', () => {
 
   describe('pixel dimensions and offsets', () => {
     it('calculates custom pixel width for fractional drawer with fractionalEdgeX=start', () => {
-      const bin = createBin({ x: 0, y: 0, width: 1, depth: 1 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
       const drawer = createDrawer({
-        width: 10.5,
-        depth: 8,
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
         fractionalEdgeX: 'start',
       });
 
@@ -244,10 +287,15 @@ describe('PrintBin', () => {
     });
 
     it('calculates custom pixel height for fractional drawer with fractionalEdgeY=end', () => {
-      const bin = createBin({ x: 0, y: 7, width: 1, depth: 1.5 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(7),
+        width: gridUnits(1),
+        depth: gridUnits(1.5),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'end',
       });
 
@@ -268,10 +316,15 @@ describe('PrintBin', () => {
     });
 
     it('applies correct offset for bin in integer area with fractionalEdgeX=start', () => {
-      const bin = createBin({ x: 1.5, y: 0, width: 1, depth: 1 });
+      const bin = createBin({
+        x: gridUnits(1.5),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
       const drawer = createDrawer({
-        width: 10.5,
-        depth: 8,
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
         fractionalEdgeX: 'start',
       });
 
@@ -293,10 +346,15 @@ describe('PrintBin', () => {
     });
 
     it('applies correct offset for bin with fractionalEdgeY=start in integer area', () => {
-      const bin = createBin({ x: 0, y: 1, width: 1, depth: 1.5 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(1),
+        width: gridUnits(1),
+        depth: gridUnits(1.5),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'start',
       });
 
@@ -316,10 +374,15 @@ describe('PrintBin', () => {
     });
 
     it('applies correct offset for bin entirely in fractional row at bottom', () => {
-      const bin = createBin({ x: 0, y: 0.25, width: 1, depth: 0.25 });
+      const bin = createBin({
+        x: gridUnits(0),
+        y: gridUnits(0.25),
+        width: gridUnits(1),
+        depth: gridUnits(0.25),
+      });
       const drawer = createDrawer({
-        width: 10,
-        depth: 8.5,
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'start',
       });
 
@@ -343,7 +406,7 @@ describe('PrintBin', () => {
 
   describe('label rendering', () => {
     it('renders label when showLabel is true and label fits', () => {
-      const bin = createBin({ label: 'Test', width: 3, depth: 3 });
+      const bin = createBin({ label: 'Test', width: gridUnits(3), depth: gridUnits(3) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -363,8 +426,8 @@ describe('PrintBin', () => {
     it('shows dimensions when label is too long to fit', () => {
       const bin = createBin({
         label: 'This is a very long label that will not fit',
-        width: 1,
-        depth: 1,
+        width: gridUnits(1),
+        depth: gridUnits(1),
       });
       const drawer = createDrawer();
 
@@ -384,7 +447,7 @@ describe('PrintBin', () => {
     });
 
     it('rotates text for tall narrow bins', () => {
-      const bin = createBin({ width: 1, depth: 3 }); // depth > width * 1.5
+      const bin = createBin({ width: gridUnits(1), depth: gridUnits(3) }); // depth > width * 1.5
       const drawer = createDrawer();
 
       const { container } = render(
@@ -403,7 +466,7 @@ describe('PrintBin', () => {
     });
 
     it('does not rotate text for square bins', () => {
-      const bin = createBin({ width: 2, depth: 2 });
+      const bin = createBin({ width: gridUnits(2), depth: gridUnits(2) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -422,7 +485,7 @@ describe('PrintBin', () => {
     });
 
     it('shows secondary text (dimensions) when label is primary and space permits', () => {
-      const bin = createBin({ label: 'ABC', width: 4, depth: 4 });
+      const bin = createBin({ label: 'ABC', width: gridUnits(4), depth: gridUnits(4) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -442,7 +505,7 @@ describe('PrintBin', () => {
     });
 
     it('formats fractional dimensions correctly', () => {
-      const bin = createBin({ width: 1.5, depth: 2.5 });
+      const bin = createBin({ width: gridUnits(1.5), depth: gridUnits(2.5) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -462,7 +525,7 @@ describe('PrintBin', () => {
 
   describe('additional properties', () => {
     it('renders height when showHeight is true', () => {
-      const bin = createBin({ height: 5 });
+      const bin = createBin({ height: heightUnits(5) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -480,7 +543,7 @@ describe('PrintBin', () => {
     });
 
     it('renders notes when showNotes is true', () => {
-      const bin = createBin({ notes: 'Test notes', width: 3, depth: 3 });
+      const bin = createBin({ notes: 'Test notes', width: gridUnits(3), depth: gridUnits(3) });
       const drawer = createDrawer();
 
       const { container } = render(
@@ -499,8 +562,8 @@ describe('PrintBin', () => {
 
     it('renders custom properties when showCustomProperties is true', () => {
       const bin = createBin({
-        width: 3,
-        depth: 3,
+        width: gridUnits(3),
+        depth: gridUnits(3),
         customProperties: { SKU: '12345' },
       });
       const drawer = createDrawer();
