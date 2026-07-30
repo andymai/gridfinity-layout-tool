@@ -1,0 +1,37 @@
+src/features/generation/worker/generators/compartmentBuilder.scenario.manifold.test.ts
+  s_bb8f1233002a7e::t_b9e26b7da3ad7a 28-34
+  s_bb8f1233002a7e::t_8cdb2252ec5094 484-487
+  s_bb8f1233002a7e::t_a101559c8b601f 462-468
+  s_bb8f1233002a7e::t_7e23800ae2f4f8 27
+  s_bb8f1233002a7e::t_8266cd73f8ee34 234-237
+  s_bb8f1233002a7e::t_db82f6b359c2cc 205-210,224-233,238-240
+  s_bb8f1233002a7e::t_31e6d36e04c2a9 253-257
+  s_bb8f1233002a7e::t_5ec5679b8b460e 116-122
+  s_bb8f1233002a7e::t_2cc1ba69ca25ff 96-115,123-124
+  s_bb8f1233002a7e::t_48a4492f9a5096 217
+  s_99f37687cd028e::t_fda8c2845326ae 241-243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "123844388e0db226ec7ce7fa28a6bd41fdfd98e0",
+  "prompts": {},
+  "sessions": {
+    "s_99f37687cd028e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3ca919f9-ca03-42b9-aba8-fb55037a60b3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
