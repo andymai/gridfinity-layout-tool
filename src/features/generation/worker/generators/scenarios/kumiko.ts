@@ -71,6 +71,23 @@ function assertCornersWrapped(widthU: number, depthU: number) {
   };
 }
 
+/**
+ * Per-side selection (#2966): with only the front wall picked, no corner has
+ * BOTH its walls selected, so every corner slab is skipped and the corners must
+ * come out as solid as the un-patterned twin — while the front wall still opens.
+ */
+function assertOnlyFrontWrapped(widthU: number, depthU: number) {
+  return (patterned: MeshData, solid: MeshData): void => {
+    assertRemovesMaterial(patterned, solid);
+    const patternedCorners = countCornerVertices(patterned, widthU, depthU);
+    const solidCorners = countCornerVertices(solid, widthU, depthU);
+    expect(
+      patternedCorners,
+      `corners were cut (patterned=${patternedCorners}, solid=${solidCorners}) — a corner slab survived with only one of its walls selected`
+    ).toBeLessThan(solidCorners * 2);
+  };
+}
+
 /** Closest distance from a point to a triangle (Ericson, Real-Time Collision Detection). */
 function pointTriangleDistance(
   p: readonly number[],
@@ -314,6 +331,32 @@ export const kumiko: ScenarioCase[] = [
         walls: ALL_SIDES_OFF,
       },
       assert: assertCornersWrapped(1, 1),
+    },
+  }),
+  defineScenario('kumiko', 'mitsukude on the front wall only leaves the corners solid (#2966)', {
+    assert: 'structural',
+    timeout: 180_000,
+    params: {
+      width: 1,
+      depth: 1,
+      height: 6,
+      wallPattern: {
+        enabled: true,
+        pattern: 'mitsukude',
+        scale: 0.5,
+        sides: { left: false, right: false, front: true, back: false },
+      },
+      walls: ALL_SIDES_OFF,
+    },
+    compareWith: {
+      params: {
+        width: 1,
+        depth: 1,
+        height: 6,
+        wallPattern: { enabled: false, pattern: 'mitsukude', scale: 0.5 },
+        walls: ALL_SIDES_OFF,
+      },
+      assert: assertOnlyFrontWrapped(1, 1),
     },
   }),
   defineScenario('kumiko', 'mitsukude carves 3×3×5 walls', {

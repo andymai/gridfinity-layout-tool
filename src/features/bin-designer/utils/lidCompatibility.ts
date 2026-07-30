@@ -23,6 +23,7 @@
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
+import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import type { BinParams, HandleConfig, HandleSide } from '../types';
 import { resolveLidCavityExtraMm } from '../types/lid';
 
@@ -186,8 +187,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 
   // 2. Wall pattern. Patterns extend up to (LIP_HEIGHT + 2)mm into the
   //    lip Z range (see `wallPatternBuilder.clipOvershoot`), perforating
-  //    the lip's inner face that the lid's rails grip.
-  if (params.wallPattern.enabled && !isPolygon && !isMagnetic) {
+  //    the lip's inner face that the lid's rails grip. A divider-only
+  //    pattern (#2966: every outer wall deselected) never touches the lip.
+  if (
+    params.wallPattern.enabled &&
+    hasAnyPatternedWall(params.wallPattern) &&
+    !isPolygon &&
+    !isMagnetic
+  ) {
     issues.push({ id: 'wallPattern', severity: 'warning' });
   }
 

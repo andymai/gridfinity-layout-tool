@@ -43,9 +43,13 @@ graph TB
   chamfer, scoop and colour.
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
-- `components/panel/WallsSection/` — wall thickness, pattern picker + scale, wall text, and the
+- `components/panel/WallsSection/` — wall thickness, pattern picker + scale, the "Patterned walls"
+  spatial side selector (`wallPattern.sides`, #2966 — shares `panel/shared/SideSelector` with the
+  cutout and handle sections; a slot-blocked wall renders disabled so the stored selection survives
+  the slots), wall text, and the
   "Pattern divider walls" opt-in (`wallPattern.dividers`, #2811) that carries the same pattern and
-  scale through the compartment dividers. Its availability/too-small copy comes from
+  scale through the compartment dividers. Deselecting every wall is a valid "dividers only" config,
+  not an error, so the panel explains it rather than forcing a minimum selection. Its availability/too-small copy comes from
   `utils/dividerPatternFit.ts`, a deliberately conservative params-only mirror of the worker's
   `dividerPatterns.ts` — it judges the band and each divider's span, never the feature keep-outs.
   On slotted bins it assesses the REMOVABLE pieces instead (free-standing, so no floor-slab term),

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WallsSection } from './WallsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import type { WallPatternSides } from '@/features/bin-designer/types';
 
 describe('WallsSection', () => {
   beforeEach(() => {
@@ -155,6 +156,93 @@ describe('WallsSection', () => {
       render(<WallsSection />);
       expect(screen.queryByRole('textbox', { name: 'Front wall text' })).not.toBeInTheDocument();
       expect(screen.getByText('Not available for solid bins.')).toBeInTheDocument();
+    });
+  });
+
+  describe('patterned walls (#2966)', () => {
+    const patterned = (sides?: WallPatternSides) => ({
+      ...DEFAULT_BIN_PARAMS,
+      wallPattern: {
+        ...DEFAULT_BIN_PARAMS.wallPattern,
+        enabled: true,
+        ...(sides ? { sides } : {}),
+      },
+    });
+
+    it('hides the side selector until a pattern is picked', () => {
+      render(<WallsSection />);
+      expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
+    });
+
+    it('shows all four walls selected for a freshly enabled pattern', () => {
+      useDesignerStore.setState({ params: patterned() });
+      render(<WallsSection />);
+      expect(screen.getByText('Patterned walls')).toBeInTheDocument();
+      for (const side of ['Left', 'Right', 'Front', 'Back']) {
+        expect(screen.getByRole('switch', { name: side })).toHaveAttribute('aria-checked', 'true');
+      }
+    });
+
+    it('writes the full side record when a wall is toggled off', () => {
+      useDesignerStore.setState({ params: patterned() });
+      render(<WallsSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'Back' }));
+      expect(useDesignerStore.getState().params.wallPattern.sides).toEqual({
+        left: true,
+        right: true,
+        front: true,
+        back: false,
+      });
+    });
+
+    it('explains an all-deselected pattern instead of silently doing nothing', () => {
+      useDesignerStore.setState({
+        params: patterned({ left: false, right: false, front: false, back: false }),
+      });
+      render(<WallsSection />);
+      expect(
+        screen.getByText('Pick a wall, or pattern the divider walls below')
+      ).toBeInTheDocument();
+    });
+
+    it('reads an all-deselected pattern with dividers on as dividers-only', () => {
+      useDesignerStore.setState({
+        params: {
+          ...patterned({ left: false, right: false, front: false, back: false }),
+          compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+          wallPattern: {
+            ...DEFAULT_BIN_PARAMS.wallPattern,
+            enabled: true,
+            dividers: true,
+            sides: { left: false, right: false, front: false, back: false },
+          },
+        },
+      });
+      render(<WallsSection />);
+      expect(
+        screen.getByText('Outer walls stay solid — only the dividers are patterned')
+      ).toBeInTheDocument();
+    });
+
+    it('disables a slot-blocked wall and explains why', () => {
+      useDesignerStore.setState({
+        params: {
+          ...patterned(),
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: true, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+        },
+      });
+      render(<WallsSection />);
+      const left = screen.getByRole('switch', { name: 'Left' });
+      expect(left).toBeDisabled();
+      // Disabled reads as off even though the stored selection is untouched.
+      expect(left).toHaveAttribute('aria-checked', 'false');
+      expect(left).toHaveAttribute('title', 'This wall has divider slots and stays solid');
+      expect(screen.getByRole('switch', { name: 'Front' })).toBeEnabled();
     });
   });
 

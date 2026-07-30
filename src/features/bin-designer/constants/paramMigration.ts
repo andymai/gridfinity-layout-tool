@@ -14,6 +14,7 @@ import type {
   HandleConfig,
   SlotConfig,
   WallPatternConfig,
+  WallPatternSides,
   FloorPatternConfig,
   Cutout,
   HandleCutoutShape,
@@ -743,6 +744,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // crafted or out-of-range scale into [0, 1] so persisted data stays honest.
   {
     const rawScale = wallPatternConfig.scale;
+    const rawSides = wallPatternConfig.sides as Partial<WallPatternSides> | undefined;
     wallPatternConfig = {
       ...wallPatternConfig,
       pattern: VALID_WALL_PATTERNS.has(wallPatternConfig.pattern)
@@ -753,6 +755,14 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
           ? Math.min(1, Math.max(0, rawScale))
           : DEFAULT_PATTERN_SCALE,
       dividers: wallPatternConfig.dividers === true,
+      // Absent on every design saved before #2966, which patterned all four
+      // walls — so a missing side reads as ON, not off.
+      sides: {
+        left: rawSides?.left !== false,
+        right: rawSides?.right !== false,
+        front: rawSides?.front !== false,
+        back: rawSides?.back !== false,
+      },
     };
   }
 

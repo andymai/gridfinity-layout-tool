@@ -281,6 +281,47 @@ describe('printEstimates', () => {
       expect(honeycomb.volumeMm3).toBe(standard.volumeMm3);
     });
 
+    it('scales the saving with the number of patterned walls (#2966)', () => {
+      const base: BinParams = { ...DEFAULT_BIN_PARAMS, height: 6 };
+      const solid = estimatePrint(base).volumeMm3;
+      const allWalls = estimatePrint({
+        ...base,
+        wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      }).volumeMm3;
+      const frontOnly = estimatePrint({
+        ...base,
+        wallPattern: {
+          enabled: true,
+          pattern: 'honeycomb' as const,
+          sides: { left: false, right: false, front: true, back: false },
+        },
+      }).volumeMm3;
+      expect(frontOnly).toBeLessThan(solid);
+      expect(frontOnly).toBeGreaterThan(allWalls);
+      // A square bin: one of four equal walls should save about a quarter.
+      expect(solid - frontOnly).toBeCloseTo((solid - allWalls) / 4, 5);
+    });
+
+    it('still counts the divider saving when every outer wall is deselected', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        height: 6,
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      const dividersOnly = estimatePrint({
+        ...base,
+        wallPattern: {
+          enabled: true,
+          pattern: 'honeycomb' as const,
+          dividers: true,
+          sides: { left: false, right: false, front: false, back: false },
+        },
+      });
+      expect(dividersOnly.volumeMm3).toBeLessThan(estimatePrint(base).volumeMm3);
+    });
+
     it('shortening the dividers reduces the estimate', () => {
       const base: BinParams = {
         ...DEFAULT_BIN_PARAMS,

@@ -2387,6 +2387,11 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.scaleHint': 'Finer holes to the left, bolder to the right',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
+  'binDesigner.walls.pattern.sides': 'Patterned walls',
+  'binDesigner.walls.pattern.sides.slotted': 'This wall has divider slots and stays solid',
+  'binDesigner.walls.pattern.sides.none': 'Pick a wall, or pattern the divider walls below',
+  'binDesigner.walls.pattern.sides.dividersOnly':
+    'Outer walls stay solid — only the dividers are patterned',
   'binDesigner.walls.pattern.dividers': 'Pattern divider walls',
   'binDesigner.walls.pattern.dividersHint':
     'Compartment dividers use the same pattern and scale as the outer walls',

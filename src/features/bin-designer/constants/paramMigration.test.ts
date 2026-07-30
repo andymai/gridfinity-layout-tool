@@ -520,6 +520,35 @@ describe('migrateParams', () => {
     const result1 = migrateParams({});
     const result2 = migrateParams({});
     expect(result1.wallPattern).not.toBe(result2.wallPattern);
+    expect(result1.wallPattern.sides).not.toBe(result2.wallPattern.sides);
+  });
+
+  it('should backfill wallPattern.sides to all four walls (#2966)', () => {
+    // Designs saved before per-side selection patterned every wall — a missing
+    // `sides` must not be read as "no walls".
+    expect(
+      migrateParams({ wallPattern: { enabled: true, pattern: 'round' } }).wallPattern.sides
+    ).toEqual({ left: true, right: true, front: true, back: true });
+  });
+
+  it('should preserve an explicit wallPattern.sides selection', () => {
+    expect(
+      migrateParams({
+        wallPattern: {
+          enabled: true,
+          pattern: 'round',
+          sides: { left: false, right: false, front: true, back: false },
+        },
+      }).wallPattern.sides
+    ).toEqual({ left: false, right: false, front: true, back: false });
+  });
+
+  it('should coerce a partial or crafted wallPattern.sides object', () => {
+    expect(
+      migrateParams({
+        wallPattern: { enabled: true, pattern: 'round', sides: { back: false, left: 'yes' } },
+      } as never).wallPattern.sides
+    ).toEqual({ left: true, right: true, front: true, back: false });
   });
 
   it('should handle mixed legacy walls with partial WallCutout objects alongside numbers', () => {

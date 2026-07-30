@@ -8,7 +8,8 @@
  * assertions + a volume comparison rather than snapshots.
  */
 import { expect } from 'vitest';
-import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, GRIDFINITY } from '@/shared/constants/bin';
+import { countWallVerticesInZone } from '../__kernel-tests__/meshAssertions';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -79,7 +80,51 @@ function patternCase(pattern: WallPatternType, scale = 0.5): ScenarioCase {
   });
 }
 
+/**
+ * Per-side selection (#2966): the pattern must land on the picked wall and
+ * leave the others solid. Asserted on vertex density in the pattern band rather
+ * than volume — volume alone can't tell one carved wall from four sparse ones.
+ * With all four selected the front count drops to ~1/4 of this, so the ratio
+ * catches a filter that silently stops filtering.
+ */
+function frontOnlyCase(): ScenarioCase {
+  const outerW = 3 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerD = outerW;
+  const params = {
+    width: 3,
+    depth: 3,
+    height: 5,
+    wallPattern: {
+      enabled: true,
+      pattern: 'honeycomb' as const,
+      sides: { left: false, right: false, front: true, back: false },
+    },
+    walls: ALL_SIDES_OFF,
+  };
+
+  return defineScenario('wall patterns', 'front-only selection carves only the front wall', {
+    params,
+    assert: 'structural',
+    timeout: 60_000,
+    customAssert: (result) => {
+      // Mid-band of the pattern zone on a 35mm-tall bin — comfortably inside
+      // the keep-outs at both ends whatever the exact band works out to.
+      const stats = countWallVerticesInZone(result, outerW, outerD, 12, 22, 1.0);
+      for (const count of [stats.back, stats.left, stats.right]) {
+        expect(stats.front, 'front wall must carry far more pattern geometry').toBeGreaterThan(
+          count * 4
+        );
+      }
+    },
+    compareWith: {
+      params: { ...params, wallPattern: { ...params.wallPattern, enabled: false } },
+      assert: assertRemovesMaterial,
+    },
+  });
+}
+
 export const wallPatterns: ScenarioCase[] = [
+  frontOnlyCase(),
   patternCase('round'),
   patternCase('diamond'),
   patternCase('triangle'),

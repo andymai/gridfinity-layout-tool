@@ -11,6 +11,7 @@ import { DEFAULT_PATTERN_SCALE } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { slottedWalls } from '@/shared/utils/slotMath';
+import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, StampPatternCalculator } from './patterns';
@@ -143,6 +144,10 @@ function getWallPatternDescriptors(
     return null;
   }
 
+  // Per-side selection (#2966). Intersected with the slot-free gate: a wall is
+  // patterned only when the user picked it AND it has no divider slots.
+  const chosen = resolveWallPatternSides(params.wallPattern);
+
   const patternCenterZ = bottomKeepOut + patternHeight / 2;
 
   const descriptors: WallPatternDescriptor[] = [];
@@ -187,7 +192,7 @@ function getWallPatternDescriptors(
       params.wallThickness
     );
     for (const seg of polygonWalls) {
-      if (!slotFree[seg.side]) continue;
+      if (!slotFree[seg.side] || !chosen[seg.side]) continue;
       addWall(
         seg.side,
         seg.wallSpan,
@@ -200,10 +205,10 @@ function getWallPatternDescriptors(
     return descriptors.length > 0 ? { descriptors, patternHeight } : null;
   }
 
-  if (slotFree.front) addWall('front', innerW, 0, -innerD / 2);
-  if (slotFree.back) addWall('back', innerW, 0, innerD / 2, 180);
-  if (slotFree.left) addWall('left', innerD, -innerW / 2, 0, 90);
-  if (slotFree.right) addWall('right', innerD, innerW / 2, 0, -90);
+  if (slotFree.front && chosen.front) addWall('front', innerW, 0, -innerD / 2);
+  if (slotFree.back && chosen.back) addWall('back', innerW, 0, innerD / 2, 180);
+  if (slotFree.left && chosen.left) addWall('left', innerD, -innerW / 2, 0, 90);
+  if (slotFree.right && chosen.right) addWall('right', innerD, innerW / 2, 0, -90);
 
   return descriptors.length > 0 ? { descriptors, patternHeight } : null;
 }

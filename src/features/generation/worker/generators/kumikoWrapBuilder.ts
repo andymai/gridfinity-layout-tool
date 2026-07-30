@@ -48,6 +48,7 @@ import type { PipelineContext } from './pipeline/types';
 import type { PerfCollector } from './pipeline/perfCollector';
 import type { WallPatternDescriptor } from './wallPatterns';
 import { getSlotFreeWalls, TOP_KEEP_OUT, BOTTOM_SOLID_SKIRT } from './wallPatterns';
+import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { getPatternCalculator, isWrappedLatticeCalculator, PATTERN_REGISTRY } from './patterns';
 import type { KumikoLattice, KumikoSegment, WrappedLatticeCalculator } from './patterns';
 import { BOX_CORNER_RADIUS, COPLANAR_OVERLAP } from './generatorConstants';
@@ -933,10 +934,19 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   const patternType = calculator.getPatternType();
   const shapeRadius = calculator.getShapeRadius();
 
+  const wallSides: readonly WallSide[] = ['front', 'right', 'back', 'left'];
+
+  // Per-side selection (#2966). The lattice itself still spans the whole
+  // perimeter — only which slabs get cut changes — so an unselected wall does
+  // not shift the columns on the walls that stay patterned.
+  const chosen = resolveWallPatternSides(params.wallPattern);
+  const sideMask = wallSides.map((s) => (chosen[s] ? '1' : '0')).join('');
+
   const baseKey = compactKey(
     buildCacheKey(
       'kumiko-v1',
       patternType,
+      sideMask,
       quantize(layout.perimeter),
       quantize(patternHeight),
       quantize(lattice.columnPitch),
@@ -951,7 +961,6 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   );
 
   const clipCtx = computeWallClipContext(params, dim, cutDepth);
-  const wallSides: readonly WallSide[] = ['front', 'right', 'back', 'left'];
   const wallClips = wallSides.map((side) => ({
     side,
     descriptor: clipDescriptorFor(side, innerW, innerD, patternCenterZ),
@@ -973,7 +982,14 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
   // as a single operand, defeating its per-tool bounding-box pruning (measured
   // 2.5× slower on the final cut). Cutter count is deterministic from the
   // layout, so both caches store one entry per slab index.
-  const activeSlabs = layout.slabs.filter((s) => s.kind === 'flat' || exact);
+  // A corner needs BOTH its walls selected: cutting it while one neighbour
+  // stays solid would leave the arc's struts landing on solid wall with nothing
+  // to continue into. Leaving it solid is the same shape the draft kernel
+  // already produces (corners are exact-only), so it's a proven-safe omission.
+  const slabSelected = (s: PerimeterSlab): boolean =>
+    s.kind === 'flat' ? chosen[s.side] : chosen[s.prevSide] && chosen[s.nextSide];
+  const activeSlabs = layout.slabs.filter((s) => (s.kind === 'flat' || exact) && slabSelected(s));
+  if (activeSlabs.length === 0) return [];
   // One planned cutter per flat window / corner — the plan is deterministic
   // from layout + lattice, so cache entries index it directly.
   const plan: Array<{ slab: PerimeterSlab; windowA: number; windowB: number }> = [];

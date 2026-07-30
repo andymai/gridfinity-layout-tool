@@ -97,6 +97,12 @@ export function isKumikoPattern(pattern: WallPatternType): boolean {
 /** Neutral pattern scale — reproduces each pattern's legacy element size. */
 export const DEFAULT_PATTERN_SCALE = 0.5;
 
+/** The four outer walls a pattern can be applied to, in side-selector order. */
+export const WALL_PATTERN_SIDES = ['left', 'right', 'front', 'back'] as const;
+
+/** Which outer walls carry the wall pattern. */
+export type WallPatternSides = Record<(typeof WALL_PATTERN_SIDES)[number], boolean>;
+
 /** Wall pattern configuration — stored per design in BinParams */
 export interface WallPatternConfig {
   readonly enabled: boolean;
@@ -114,4 +120,10 @@ export interface WallPatternConfig {
    * as off.
    */
   readonly dividers?: boolean;
+  /**
+   * Which outer walls carry the pattern (#2966). Optional for back-compat with
+   * saved designs; migration backfills it and the geometry layer treats a
+   * missing side as ON, so a pre-#2966 design keeps patterning all four walls.
+   */
+  readonly sides?: WallPatternSides;
 }

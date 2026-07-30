@@ -9,8 +9,15 @@ import type {
   WallPatternType,
   WallTextVerticalAlign,
 } from '@/features/bin-designer/types';
-import { DEFAULT_PATTERN_SCALE, WALL_TEXT_SIDES } from '@/features/bin-designer/types';
+import type { Side } from '../shared';
+import {
+  DEFAULT_PATTERN_SCALE,
+  WALL_PATTERN_SIDES,
+  WALL_TEXT_SIDES,
+} from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { slottedWalls } from '@/shared/utils/slotMath';
+import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { assessDividerPatternFit } from '@/features/bin-designer/utils/dividerPatternFit';
 import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
@@ -89,9 +96,33 @@ export function useWallsSection() {
     return undefined;
   }, [someWallsSlotted, patternStatus.available, t]);
 
+  // ── Per-side selection (#2966) ────────────────────────────────────────────
+  // Mirrors the worker gate in `wallPatterns.getWallPatternDescriptors`: a wall
+  // is patterned only when the user picked it AND it carries no divider slots.
+  // Memoized on the store slice: the resolver returns a fresh object, which
+  // would otherwise re-identify `togglePatternSide` on every render.
+  const patternSides = useMemo(() => resolveWallPatternSides(wallPattern), [wallPattern]);
+  const slotBlocked = useMemo(
+    () =>
+      params.style === 'slotted'
+        ? slottedWalls(params.slotConfig)
+        : { front: false, back: false, left: false, right: false },
+    [params.style, params.slotConfig]
+  );
+
+  const togglePatternSide = useCallback(
+    (side: Side) => updateWallPattern({ sides: { ...patternSides, [side]: !patternSides[side] } }),
+    [updateWallPattern, patternSides]
+  );
+
+  const activePatternSideCount = WALL_PATTERN_SIDES.filter(
+    (side) => patternSides[side] && !slotBlocked[side]
+  ).length;
+
   // ── Divider walls (#2811) ─────────────────────────────────────────────────
   // The same pattern and scale carried through the compartment dividers, so a
   // patterned bin doesn't read as hollow walls around solid dividers.
+  const dividersEnabled = wallPattern.dividers === true;
   const handleDividersChange = useCallback(
     (dividers: boolean) => updateWallPattern({ dividers }),
     [updateWallPattern]
@@ -130,6 +161,16 @@ export function useWallsSection() {
     params.slotConfig.y.enabled,
     t,
   ]);
+
+  // Deselecting every outer wall is a legitimate "dividers only" config, so it
+  // gets an explanatory note rather than a forced minimum selection — but say so
+  // either way, since an all-off selector otherwise reads as a broken pattern.
+  const patternSidesNote = useMemo(() => {
+    if (activePatternSideCount > 0) return undefined;
+    return dividersEnabled && dividersAvailableReason === undefined
+      ? t('binDesigner.walls.pattern.sides.dividersOnly')
+      : t('binDesigner.walls.pattern.sides.none');
+  }, [activePatternSideCount, dividersEnabled, dividersAvailableReason, t]);
 
   const dividersFit = useMemo(() => assessDividerPatternFit(params), [params]);
   const dividersNote = useMemo(() => {
@@ -208,7 +249,10 @@ export function useWallsSection() {
       patternDisabled: !patternStatus.available,
       patternDisabledReason,
       patternPartialNote,
-      dividersEnabled: wallPattern.dividers === true,
+      patternSides,
+      patternSideBlocked: slotBlocked,
+      patternSidesNote,
+      dividersEnabled,
       dividersAvailableReason,
       dividersNote,
       wallTexts,
@@ -222,6 +266,7 @@ export function useWallsSection() {
       handleChange,
       handlePatternChange,
       handleScaleChange,
+      togglePatternSide,
       handleDividersChange,
       commitWallTextAt,
       setWallTextAlign,
