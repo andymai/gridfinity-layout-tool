@@ -13,6 +13,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import * as url from '@/shared/utils/url';
+import { gridUnits, heightUnits, mm, layerId, categoryId, layoutId } from '@/core/types';
+import type { LayoutPreview } from '@/core/types';
 
 // Mock the url utilities
 vi.mock('@/shared/utils/url', async () => {
@@ -43,37 +45,38 @@ describe('useLayoutRouting with cloud share URLs', () => {
     // Reset stores
     useLayoutStore.setState({
       layout: {
+        version: '1.0',
         name: mockLocalLayoutName,
-        drawer: { width: 10, depth: 8, height: 12 },
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
         bins: [],
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 1 }],
-        categories: [{ id: 'cat1', name: 'Default', color: '#666666' }],
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(1) }],
+        categories: [{ id: categoryId('cat1'), name: 'Default', color: '#666666' }],
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
       },
-      activeLayoutId: mockLocalLayoutId,
+      activeLayoutId: layoutId(mockLocalLayoutId),
     });
 
     useLibraryStore.setState({
       isLoaded: true,
       library: {
         version: '1.0',
-        activeLayoutId: mockLocalLayoutId,
+        activeLayoutId: layoutId(mockLocalLayoutId),
         settings: {},
         entries: [
           {
-            id: mockLocalLayoutId,
+            id: layoutId(mockLocalLayoutId),
             name: mockLocalLayoutName,
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
-            },
+            } satisfies LayoutPreview,
           },
         ],
       },

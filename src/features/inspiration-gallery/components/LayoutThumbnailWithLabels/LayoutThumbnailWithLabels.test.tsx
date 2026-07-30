@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { LayoutThumbnailWithLabels } from '.';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { gridUnits, heightUnits, binId, categoryId, layerId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 describe('LayoutThumbnailWithLabels', () => {
   describe('rendering', () => {
@@ -59,7 +61,7 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('renders grid lines', () => {
       const layout = createTestLayout({
-        drawer: { width: 5, depth: 4, height: 12 },
+        drawer: { width: gridUnits(5), depth: gridUnits(4), height: heightUnits(12) },
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
 
@@ -72,7 +74,15 @@ describe('LayoutThumbnailWithLabels', () => {
   describe('bin rendering', () => {
     it('renders bin rectangles', () => {
       const layout = createTestLayout({
-        bins: [createTestBin({ id: 'b1', x: 0, y: 0, width: 2, depth: 2 })],
+        bins: [
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+          }),
+        ],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
 
@@ -84,9 +94,9 @@ describe('LayoutThumbnailWithLabels', () => {
     it('renders multiple bins', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'b1', x: 0, y: 0 }),
-          createTestBin({ id: 'b2', x: 2, y: 0 }),
-          createTestBin({ id: 'b3', x: 4, y: 0 }),
+          createTestBin({ id: binId('b1'), x: gridUnits(0), y: gridUnits(0) }),
+          createTestBin({ id: binId('b2'), x: gridUnits(2), y: gridUnits(0) }),
+          createTestBin({ id: binId('b3'), x: gridUnits(4), y: gridUnits(0) }),
         ],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
@@ -97,8 +107,8 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('applies category color to bins', () => {
       const layout = createTestLayout({
-        categories: [{ id: 'tools', name: 'Tools', color: '#ff0000' }],
-        bins: [createTestBin({ id: 'b1', category: 'tools' })],
+        categories: [{ id: categoryId('tools'), name: 'Tools', color: '#ff0000' }],
+        bins: [createTestBin({ id: binId('b1'), category: categoryId('tools') })],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
 
@@ -109,8 +119,8 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('uses fallback color for unknown category', () => {
       const layout = createTestLayout({
-        categories: [{ id: 'known', name: 'Known', color: '#ff0000' }],
-        bins: [createTestBin({ id: 'b1', category: 'unknown' })],
+        categories: [{ id: categoryId('known'), name: 'Known', color: '#ff0000' }],
+        bins: [createTestBin({ id: binId('b1'), category: categoryId('unknown') })],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
 
@@ -124,8 +134,8 @@ describe('LayoutThumbnailWithLabels', () => {
     it('excludes bins in staging area', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'b1', layerId: 'layer1' }),
-          createTestBin({ id: 'b2', layerId: '__staging__' }),
+          createTestBin({ id: binId('b1'), layerId: layerId('layer1') }),
+          createTestBin({ id: binId('b2'), layerId: STAGING_ID }),
         ],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
@@ -138,8 +148,8 @@ describe('LayoutThumbnailWithLabels', () => {
     it('renders no bins when all are in staging', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'b1', layerId: '__staging__' }),
-          createTestBin({ id: 'b2', layerId: '__staging__' }),
+          createTestBin({ id: binId('b1'), layerId: STAGING_ID }),
+          createTestBin({ id: binId('b2'), layerId: STAGING_ID }),
         ],
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
@@ -154,9 +164,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4, // Large enough to show label
-            depth: 4,
+            id: binId('b1'),
+            width: gridUnits(4), // Large enough to show label
+            depth: gridUnits(4),
             label: 'Screws',
           }),
         ],
@@ -171,9 +181,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4,
-            depth: 4,
+            id: binId('b1'),
+            width: gridUnits(4),
+            depth: gridUnits(4),
             label: '',
           }),
         ],
@@ -188,9 +198,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4,
-            depth: 4,
+            id: binId('b1'),
+            width: gridUnits(4),
+            depth: gridUnits(4),
             label: '   ',
           }),
         ],
@@ -205,9 +215,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 1, // Too small
-            depth: 1,
+            id: binId('b1'),
+            width: gridUnits(1), // Too small
+            depth: gridUnits(1),
             label: 'Screws',
           }),
         ],
@@ -222,7 +232,7 @@ describe('LayoutThumbnailWithLabels', () => {
   describe('aspect ratio', () => {
     it('calculates correct aspect ratio for square drawer', () => {
       const layout = createTestLayout({
-        drawer: { width: 10, depth: 10, height: 12 },
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
@@ -232,7 +242,7 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('calculates correct aspect ratio for wide drawer', () => {
       const layout = createTestLayout({
-        drawer: { width: 20, depth: 10, height: 12 },
+        drawer: { width: gridUnits(20), depth: gridUnits(10), height: heightUnits(12) },
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
@@ -242,7 +252,7 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('calculates correct aspect ratio for tall drawer', () => {
       const layout = createTestLayout({
-        drawer: { width: 10, depth: 20, height: 12 },
+        drawer: { width: gridUnits(10), depth: gridUnits(20), height: heightUnits(12) },
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
@@ -254,7 +264,7 @@ describe('LayoutThumbnailWithLabels', () => {
   describe('defaults', () => {
     it('uses default size of 160', () => {
       const layout = createTestLayout({
-        drawer: { width: 10, depth: 10, height: 12 }, // Square for easy calculation
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) }, // Square for easy calculation
       });
       const { container } = render(<LayoutThumbnailWithLabels layout={layout} />);
 
@@ -277,9 +287,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 2,
-            depth: 4, // depth > width * 1.5 (4 > 3)
+            id: binId('b1'),
+            width: gridUnits(2),
+            depth: gridUnits(4), // depth > width * 1.5 (4 > 3)
             label: 'Test',
           }),
         ],
@@ -298,9 +308,9 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4,
-            depth: 2, // width > depth, should not rotate
+            id: binId('b1'),
+            width: gridUnits(4),
+            depth: gridUnits(2), // width > depth, should not rotate
             label: 'Test',
           }),
         ],
@@ -319,13 +329,13 @@ describe('LayoutThumbnailWithLabels', () => {
     // We can test the contrast behavior indirectly by checking text fill colors
     it('uses dark text on light background', () => {
       const layout = createTestLayout({
-        categories: [{ id: 'light', name: 'Light', color: '#ffffff' }],
+        categories: [{ id: categoryId('light'), name: 'Light', color: '#ffffff' }],
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4,
-            depth: 4,
-            category: 'light',
+            id: binId('b1'),
+            width: gridUnits(4),
+            depth: gridUnits(4),
+            category: categoryId('light'),
             label: 'Test',
           }),
         ],
@@ -340,13 +350,13 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('uses light text on dark background', () => {
       const layout = createTestLayout({
-        categories: [{ id: 'dark', name: 'Dark', color: '#000000' }],
+        categories: [{ id: categoryId('dark'), name: 'Dark', color: '#000000' }],
         bins: [
           createTestBin({
-            id: 'b1',
-            width: 4,
-            depth: 4,
-            category: 'dark',
+            id: binId('b1'),
+            width: gridUnits(4),
+            depth: gridUnits(4),
+            category: categoryId('dark'),
             label: 'Test',
           }),
         ],

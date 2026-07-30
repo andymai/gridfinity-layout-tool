@@ -2,17 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayoutActions } from '@/features/layout-library/components/LayoutManagerModal/LayoutActions';
 import type { LayoutEntry } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 function createTestEntry(overrides: Partial<LayoutEntry> = {}): LayoutEntry {
   return {
-    id: 'test-layout',
+    id: layoutId('test-layout'),
     name: 'Test Layout',
     createdAt: Date.now() - 1000000,
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 1,
     },

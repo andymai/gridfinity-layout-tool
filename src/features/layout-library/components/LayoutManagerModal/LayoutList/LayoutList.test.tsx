@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
+import { gridUnits, heightUnits, layoutId, layerId, mm } from '@/core/types';
 
 // Mock storage
 vi.mock('@/core/storage', () => ({
@@ -70,14 +71,14 @@ vi.mock('@/features/layout-library/components/LayoutManagerModal/LayoutActions',
 
 function createTestEntry(id: string, name: string, modifiedAt?: number): LayoutEntry {
   return {
-    id,
+    id: layoutId(id),
     name,
     createdAt: Date.now() - 1000000,
     modifiedAt: modifiedAt ?? Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 1,
     },
@@ -396,15 +397,15 @@ describe('LayoutList', () => {
       // Setup current layout in store
       useLayoutStore.setState({
         layout: {
-          id: 'layout-1',
+          version: '1.0',
           name: 'First Layout',
-          drawer: { width: 10, depth: 8, height: 12 },
-          layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+          drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+          layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
           categories: [],
           bins: [],
-          printBedSize: 256,
-          gridUnitMm: 42,
-          heightUnitMm: 7,
+          printBedSize: mm(256),
+          gridUnitMm: mm(42),
+          heightUnitMm: mm(7),
         },
       });
 

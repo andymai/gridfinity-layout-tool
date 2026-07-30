@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm, binId, layerId, categoryId } from '@/core/types';
 import { ImportView } from '@/features/layout-library/components/LayoutManagerModal/ImportView';
 import * as validation from '@/shared/utils/validation';
 import * as storage from '@/core/storage';
@@ -22,37 +23,37 @@ describe('ImportView', () => {
   const mockOnImport = vi.fn();
   const mockOnCancel = vi.fn();
 
-  const validLayout = {
+  const validLayout: Layout = {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [
       {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        id: binId('bin1'),
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       },
       {
-        id: 'bin2',
-        layerId: 'layer1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        id: binId('bin2'),
+        layerId: layerId('layer1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       },

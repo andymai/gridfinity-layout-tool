@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutCard } from '.';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 
 // Mock LayoutThumbnailWithLabels to avoid complex SVG rendering in tests
@@ -16,8 +17,6 @@ const createMockLayout = (overrides: Partial<InspirationLayout> = {}): Inspirati
   theme: 'workshop',
   description: 'A detailed description of the test layout',
   shortDescription: 'A short description',
-  complexity: 'beginner',
-  features: [],
   metrics: {
     binCount: 12,
     layerCount: 2,
@@ -26,22 +25,23 @@ const createMockLayout = (overrides: Partial<InspirationLayout> = {}): Inspirati
     drawerSize: { width: 10, depth: 8, height: 12 },
   },
   preview: {
-    drawerWidth: 10,
-    drawerDepth: 8,
-    drawerHeight: 12,
+    drawerWidth: gridUnits(10),
+    drawerDepth: gridUnits(8),
+    drawerHeight: heightUnits(12),
     binCount: 12,
     layerCount: 2,
     binMap: [],
   },
   layout: {
+    version: '1.0',
     name: 'Test',
-    drawer: { width: 10, depth: 8, height: 12 },
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
     layers: [],
     categories: [],
     bins: [],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
   },
   tags: ['test'],
   ...overrides,
