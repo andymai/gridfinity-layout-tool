@@ -410,8 +410,10 @@ export function buildBinBox(
         // sequentially re-traverses the whole (growing) solid every time, which
         // dominates on a fine grid.
         const result = unwrap(cutAll(solidBase as ValidSolid, tools as ValidSolid[]));
+        // `solidBase` is either `box` or `lofts.outer`, and both are already
+        // owned by the scope — registering it again would queue a second
+        // `delete()` on the same handle.
         scope.register(box);
-        if (result !== solidBase) scope.register(solidBase);
         return setBoxCache(boxKey, result);
       } catch (e: unknown) {
         // Defensive only — context.ts is supposed to gate this path with
