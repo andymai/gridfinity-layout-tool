@@ -14,7 +14,11 @@ import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { labelShelfCeilingMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
+import {
+  labelLipReservationMm,
+  labelShelfCeilingMm,
+  resolveLabelShelfTopMm,
+} from '@/shared/constants/labelPlates';
 import {
   compartmentTabEligible,
   spanningTabEligible,
@@ -108,6 +112,28 @@ export function GhostLabelTabs() {
 
     const matrices: THREE.Matrix4[] = [];
 
+    // Lip strip (#2971): a thin vertical rim ghosted along each tab's free edge
+    // for instant feedback before the mesh regenerates. 0 unless the lip is
+    // enabled on a text-mode tab. Rotating the base XY quad to vertical (XZ)
+    // lets the merge loop below consume it like any tab quad; local Z ∈
+    // [0, lipHeight] renders above the shelf plane once the mesh's
+    // shelfTopWorldZ offset is applied.
+    const lipHeight = labelLipReservationMm({
+      mode: label.mode,
+      lip: label.lip,
+      lipHeight: label.lipHeight,
+    });
+    const pushLipStrip = (centerX: number, freeEdgeY: number, tabWidth: number) => {
+      if (lipHeight <= 0) return;
+      const m = new THREE.Matrix4();
+      m.compose(
+        new THREE.Vector3(centerX, freeEdgeY, lipHeight / 2),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0)),
+        new THREE.Vector3(tabWidth, lipHeight, 1)
+      );
+      matrices.push(m);
+    };
+
     // Build per-row tab quads for one anchor (back or front). Mirrors the
     // worker-side grouping in `labelTabBuilder.ts` — both must stay in sync
     // so the ghost overlay matches the eventual BREP output.
@@ -138,6 +164,7 @@ export function GhostLabelTabs() {
       matrix.makeScale(tabWidth, tabDepth, 1);
       matrix.setPosition(tabXStart + tabWidth / 2, centerY, 0);
       matrices.push(matrix);
+      pushLipStrip(tabXStart + tabWidth / 2, centerY + depthSign * (tabDepth / 2), tabWidth);
     };
 
     const buildAnchorRow = (row: number, anchor: 'back' | 'front') => {
@@ -220,6 +247,7 @@ export function GhostLabelTabs() {
         matrix.makeScale(tabWidth, tabDepth, 1);
         matrix.setPosition(tabXStart + tabWidth / 2, centerY, 0);
         matrices.push(matrix);
+        pushLipStrip(tabXStart + tabWidth / 2, centerY + depthSign * (tabDepth / 2), tabWidth);
 
         col = groupEnd;
       }
@@ -287,6 +315,8 @@ export function GhostLabelTabs() {
     label.edges,
     label.inset,
     label.span,
+    label.lip,
+    label.lipHeight,
   ]);
 
   const material = useMemo(() => {

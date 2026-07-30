@@ -91,6 +91,46 @@ describe('buildLabelTabs', () => {
     expect(minZ).toBeGreaterThan(wallHeight / 2);
   });
 
+  it('lip drops the shelf and tops the rim at the ceiling (#2971)', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+    const { mesh } = await import('brepjs');
+    const wallHeight = 35;
+    const wt = 1.2;
+    const lipH = 2;
+    const base = {
+      ...DEFAULT_BIN_PARAMS,
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' as const },
+    };
+    const noLip = buildLabelTabs(base, 80, 80, wallHeight, wt);
+    const withLip = buildLabelTabs(
+      { ...base, label: { ...base.label, lip: true, lipHeight: lipH } },
+      80,
+      80,
+      wallHeight,
+      wt
+    );
+    expect(noLip).not.toBeNull();
+    expect(withLip).not.toBeNull();
+
+    const zBounds = (s: NonNullable<typeof noLip>) => {
+      const v = mesh(s, { tolerance: 0.5, angularTolerance: 15 }).vertices;
+      let mn = Infinity;
+      let mx = -Infinity;
+      for (let i = 2; i < v.length; i += 3) {
+        if (v[i] < mn) mn = v[i];
+        if (v[i] > mx) mx = v[i];
+      }
+      return { mn, mx };
+    };
+    const a = zBounds(noLip!);
+    const b = zBounds(withLip!);
+    // Both top out at the ceiling — the rim tops where the flat shelf used to,
+    // so a lipped tab never stands proud and breaks stacking.
+    expect(b.mx).toBeCloseTo(a.mx, 1);
+    // Enabling the lip dropped the whole shelf+gusset assembly by the lip height.
+    expect(b.mn).toBeCloseTo(a.mn - lipH, 0);
+  });
+
   describe('engraved compartment text', () => {
     it('builds tabs without crashing when compartmentTexts is present', async () => {
       const { buildLabelTabs } = await import('./labelTabBuilder');

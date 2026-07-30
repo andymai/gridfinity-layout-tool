@@ -51,6 +51,7 @@ import {
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_WALL_MM,
   effectiveLabelSocketClearance,
+  labelLipReservationMm,
   labelPlateWidthMm,
   resolveLabelShelfTopMm,
 } from '@/shared/constants/labelPlates';
@@ -1036,6 +1037,42 @@ function buildTabsAtRow(
         centerYSign: depthSign,
         uniformTextSize,
       });
+    }
+
+    // -- Lip: raised rim along the free edge to retain loose labels (#2971).
+    // Text-mode only — labelLipReservationMm returns 0 for socket tabs and when
+    // disabled. shelfTopZ was already dropped by this amount, so the rim tops
+    // out at the interior ceiling. The rim spans the shelf's full thickness
+    // (bonding it to the plate) and rises `lipHeight` above the shelf top,
+    // occupying `wt` inward from the free edge (at Y = depthExtent).
+    const lipHeight = labelLipReservationMm(params.label);
+    if (lipHeight > 0) {
+      const yFree = depthExtent;
+      const yInner = depthExtent - depthSign * wt;
+      const yLo = Math.min(yFree, yInner);
+      const yHi = Math.max(yFree, yInner);
+      const rimZ0 = tabHeight - wt;
+      const rimH = wt + lipHeight;
+      let rim: Shape3D = scope.register(
+        sketch(
+          draw([0, yLo]).lineTo([tabWidth, yLo]).lineTo([tabWidth, yHi]).lineTo([0, yHi]).close(),
+          'XY',
+          rimZ0
+        ).extrude(rimH)
+      );
+      // Clip to the rounded shelf footprint so the rim follows the free-edge
+      // corner rounding rather than poking past it (mirrors the gusset clip).
+      if (!touchesLeft || !touchesRight) {
+        try {
+          const footprint = scope.register(
+            sketch(buildOutline(), 'XY', rimZ0 - 0.1).extrude(rimH + 0.2)
+          );
+          rim = scope.register(unwrap(intersect(rim as ValidSolid, footprint as ValidSolid)));
+        } catch {
+          // Best-effort cosmetic clip; keep the un-clipped rim rather than fail.
+        }
+      }
+      tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, rim as ValidSolid)));
     }
 
     // Position: X at alignment offset, Y at anchor wall + inset offset,

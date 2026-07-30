@@ -1751,6 +1751,12 @@ const en: Record<string, string> = {
   'binDesigner.labelPlatesOmitted': 'Previewing {shown} of {total} label plates',
   'binDesigner.tabSpanFullWidth': 'Span full width',
   'binDesigner.tabSpanFullWidthHint': 'One label per row instead of one per compartment.',
+  'binDesigner.tabLip': 'Label lip',
+  'binDesigner.tabLipHint':
+    'A raised rim along the tab’s front edge so a loose paper label can’t slide off.',
+  'binDesigner.tabLipHeight': 'Lip height',
+  'binDesigner.tabLipTooTallWarning':
+    'Not enough height for the lip. Reduce the lip height or depth, or turn the lip off.',
   'binDesigner.compartmentEditor.labelsSpanDisabled':
     'Full-width labels use row captions — edit them in the Label tab section.',
   'binDesigner.textMode': 'Style',
@@ -3621,6 +3627,7 @@ const en: Record<string, string> = {
   'binDesigner.labelTabs.depthAria': 'Tab depth',
   'binDesigner.labelTabs.heightAria': 'Tab height',
   'binDesigner.labelTabs.insetAria': 'Tab inset',
+  'binDesigner.labelTabs.lipHeightAria': 'Lip height',
   'binDesigner.handles.widthAria': 'Handle width',
   'binDesigner.handles.heightAria': 'Handle height',
   'binDesigner.handles.countAria': 'Handle count',

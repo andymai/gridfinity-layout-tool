@@ -66,6 +66,12 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_LABEL_TAB_HEIGHT: 9, // mm — derived from MIN_LABEL_TAB_DEPTH + 1
   MAX_LABEL_TAB_HEIGHT: 140, // mm — derived from MAX_HEIGHT (20) * heightUnitMm (7)
   LABEL_TAB_HEIGHT_STEP: 1, // mm
+  // Label lip (#2971): a raised rim on the tab's free edge to retain loose
+  // labels. Height reserves that much shelf headroom so the rim tops at the
+  // interior ceiling. Bounds mirror LABEL_TAB_LIP_HEIGHT_{MIN,MAX}_MM.
+  MIN_LABEL_TAB_LIP_HEIGHT: 0.4, // mm
+  MAX_LABEL_TAB_LIP_HEIGHT: 5, // mm
+  LABEL_TAB_LIP_HEIGHT_STEP: 0.2, // mm
   MAX_HISTORY: 100, // undo/redo states
   // Wall thickness
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)

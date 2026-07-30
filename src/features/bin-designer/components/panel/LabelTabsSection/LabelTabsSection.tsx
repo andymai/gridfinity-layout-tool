@@ -586,6 +586,60 @@ export function LabelTabsSection() {
                     />
                   </div>
                 </div>
+                {/* Label lip: raised rim to retain loose labels (#2971).
+                    Text-mode only — socket plates retain themselves. */}
+                {state.lipAvailable && (
+                  <div className="mt-3 border-t border-border-subtle pt-3">
+                    <CheckboxRow
+                      label={t('binDesigner.tabLip')}
+                      checked={state.lipEnabled}
+                      onChange={handlers.toggleLabelLip}
+                    />
+                    <p className="mt-0.5 pl-7 text-[11px] leading-snug text-content-tertiary">
+                      {t('binDesigner.tabLipHint')}
+                    </p>
+                    {state.lipEnabled && (
+                      <div className="mt-2 min-w-0 pl-7">
+                        <span className="mb-1 block text-xs text-content-tertiary">
+                          {t('binDesigner.tabLipHeight')}
+                        </span>
+                        <Stepper
+                          value={state.lipHeightMm}
+                          onChange={handlers.setLabelLipHeight}
+                          onStep={(delta) =>
+                            handlers.setLabelLipHeight(
+                              Math.min(
+                                state.lipMax,
+                                Math.max(state.lipMin, state.lipHeightMm + delta * state.lipStep)
+                              )
+                            )
+                          }
+                          min={state.lipMin}
+                          max={state.lipMax}
+                          step={state.lipStep}
+                          size="md"
+                          aria-label={t('binDesigner.labelTabs.lipHeightAria')}
+                        />
+                      </div>
+                    )}
+                    {state.lipWontFit && (
+                      <div className="mt-1 flex items-start gap-2 pl-7 text-xs text-warning">
+                        <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                        <span className="flex-1">{t('binDesigner.tabLipTooTallWarning')}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          touchTarget={false}
+                          onClick={handlers.autoFixLip}
+                          className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
+                        >
+                          {t('binDesigner.tabAutoFix')}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </Collapsible>
             </div>
           </Collapsible>

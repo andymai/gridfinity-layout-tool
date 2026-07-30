@@ -262,6 +262,17 @@ export const LABEL_SOCKET_STACK_RELIEF_MM =
   LABEL_SOCKET_CLICK_POCKET_DEPTH_MM +
   LABEL_PLATE_TEXT_DEPTH_MAX_MM;
 
+/**
+ * Optional raised rim on a label tab's free edge that stops a loose paper /
+ * vinyl label sliding off (#2971). Height (mm) is user-tunable; the rim's
+ * thickness follows the shelf wall. Only offered on text-mode tabs — socket
+ * tabs already retain their plates, and the slide-channel socket's insertion
+ * mouth is on the same free edge the lip would wall off.
+ */
+export const LABEL_TAB_LIP_HEIGHT_DEFAULT_MM = 1;
+export const LABEL_TAB_LIP_HEIGHT_MIN_MM = 0.4;
+export const LABEL_TAB_LIP_HEIGHT_MAX_MM = 5;
+
 /** Label-tab config fields the shelf-plane resolvers need (structural
  * subset of `LabelTabConfig`, kept inline so this shared module doesn't
  * depend on feature types). */
@@ -269,6 +280,21 @@ export interface LabelShelfConfig {
   readonly height?: number;
   readonly mode?: 'text' | 'socket';
   readonly socketStyle?: LabelSocketStyle;
+  readonly lip?: boolean;
+  readonly lipHeight?: number;
+}
+
+/**
+ * How far the label lip (#2971) reserves the shelf top below the ceiling, so
+ * the rim tops out at the interior ceiling rather than standing proud and
+ * breaking stackability. Zero unless the lip is enabled on a text-mode tab.
+ * Clamped to the supported range so a stale/out-of-bounds stored value can't
+ * push the shelf past its guard band.
+ */
+export function labelLipReservationMm(label: LabelShelfConfig): number {
+  if (!label.lip || (label.mode ?? 'text') !== 'text') return 0;
+  const h = label.lipHeight ?? LABEL_TAB_LIP_HEIGHT_DEFAULT_MM;
+  return Math.min(Math.max(h, LABEL_TAB_LIP_HEIGHT_MIN_MM), LABEL_TAB_LIP_HEIGHT_MAX_MM);
 }
 
 /**
@@ -282,8 +308,11 @@ export function labelShelfCeilingMm(wallHeightMm: number, stackingLip: boolean):
   return stackingLip ? wallHeightMm - GRIDFINITY_SPEC.LIP_SMALL_TAPER : wallHeightMm;
 }
 
-/** Default shelf-top Z when `label.height` is unset: the ceiling, sunk by
- * the stacking relief for click-in sockets on lipped bins. */
+/** Default shelf-top Z when `label.height` is unset: the ceiling, sunk by the
+ * larger of the click-in-socket stacking relief (lipped bins) and the label
+ * lip reservation (#2971). The two are mutually exclusive in practice — socket
+ * relief is socket-only, the lip is text-only — so `max` just picks whichever
+ * applies. */
 export function defaultLabelShelfTopMm(
   ceilingMm: number,
   stackingLip: boolean,
@@ -291,7 +320,8 @@ export function defaultLabelShelfTopMm(
 ): number {
   const clickInSocket =
     (label.mode ?? 'text') === 'socket' && (label.socketStyle ?? 'clickIn') === 'clickIn';
-  return clickInSocket && stackingLip ? ceilingMm - LABEL_SOCKET_STACK_RELIEF_MM : ceilingMm;
+  const socketRelief = clickInSocket && stackingLip ? LABEL_SOCKET_STACK_RELIEF_MM : 0;
+  return ceilingMm - Math.max(socketRelief, labelLipReservationMm(label));
 }
 
 /**
