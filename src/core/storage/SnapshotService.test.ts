@@ -11,6 +11,7 @@ import {
 import * as indexedDB from './backends/indexedDB';
 import { createTestLayout } from '@/test/testUtils';
 import type { CompressedSnapshot } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 import { compressLayout, decompressLayout } from '@/shared/utils';
 
 vi.mock('./backends/indexedDB');
@@ -24,9 +25,9 @@ function makeCompressedSnapshot(overrides: Partial<CompressedSnapshot> = {}): Co
     layoutId: 'layout-1',
     timestamp: 1000,
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },
@@ -230,7 +231,11 @@ describe('SnapshotService', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe('STORAGE_NOT_FOUND');
-        expect(result.error.key).toBe('non-existent');
+        if (result.error.code === 'STORAGE_NOT_FOUND') {
+          expect(result.error.key).toBe('non-existent');
+        } else {
+          throw new Error('Expected STORAGE_NOT_FOUND error');
+        }
       }
     });
   });

@@ -7,6 +7,7 @@ import {
   getStorageUsage,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 
 // Mock localStorage
@@ -157,24 +158,24 @@ describe('storage', () => {
         ...defaultLayout,
         bins: [
           {
-            id: 'half-bin-1',
-            x: 0.5, // Half-unit offset
-            y: 1.5, // Half-unit offset
-            width: 1.5, // Half-unit width
-            depth: 2.5, // Half-unit depth
-            height: 3,
+            id: binId('half-bin-1'),
+            x: gridUnits(0.5), // Half-unit offset
+            y: gridUnits(1.5), // Half-unit offset
+            width: gridUnits(1.5), // Half-unit width
+            depth: gridUnits(2.5), // Half-unit depth
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: 'Half bin test',
             notes: '',
           },
           {
-            id: 'half-bin-2',
-            x: 3,
-            y: 0,
-            width: 0.5, // Minimum half-unit size
-            depth: 0.5,
-            height: 3,
+            id: binId('half-bin-2'),
+            x: gridUnits(3),
+            y: gridUnits(0),
+            width: gridUnits(0.5), // Minimum half-unit size
+            depth: gridUnits(0.5),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -211,13 +212,13 @@ describe('storage', () => {
         ...defaultLayout,
         bins: [
           {
-            id: 'bin-with-clearance',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            clearanceHeight: 5, // Extra blocked space above
+            id: binId('bin-with-clearance'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            clearanceHeight: heightUnits(5), // Extra blocked space above
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -283,7 +284,7 @@ describe('storage', () => {
     });
 
     it('exports rows with custom properties as additional columns', () => {
-      const rows = [
+      const rows: Parameters<typeof exportPrintListTSV>[0] = [
         {
           size: '1×1',
           height: 3,

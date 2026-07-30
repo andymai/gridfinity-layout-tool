@@ -14,6 +14,7 @@ import {
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
 import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
+import { layoutId, binId, gridUnits, heightUnits } from '@/core/types';
 import { clearAllData as clearIndexedDB, closeDatabase } from '@/core/storage/backends/indexedDB';
 import { resetStorageBackendCache } from '@/core/storage/backend';
 
@@ -30,14 +31,14 @@ function createTestLibrary(entryCount = 1): LayoutLibrary {
   const entries: LayoutEntry[] = [];
   for (let i = 0; i < entryCount; i++) {
     entries.push({
-      id: `layout-${i}`,
+      id: layoutId(`layout-${i}`),
       name: `Test Layout ${i}`,
       createdAt: Date.now(),
       modifiedAt: Date.now(),
       preview: {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: i,
         layerCount: 1,
       },
@@ -46,7 +47,7 @@ function createTestLibrary(entryCount = 1): LayoutLibrary {
 
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id || layoutId(''),
     settings: {},
     entries,
   };
@@ -285,7 +286,7 @@ describe('storage-library', () => {
 
     it('preserves activeLayoutId even if layout data is missing', () => {
       const library = createTestLibrary(3);
-      library.activeLayoutId = 'layout-2';
+      library.activeLayoutId = layoutId('layout-2');
       window.localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
 
       const loaded = loadLibrary();
@@ -546,17 +547,17 @@ describe('storage-library', () => {
       const categoryId = layout.categories[0].id;
 
       // Expand drawer to fit 100 bins (10x10 grid)
-      layout.drawer = { width: 10, depth: 10, height: 12 };
+      layout.drawer = { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) };
 
       layout.bins = [];
       for (let i = 0; i < 100; i++) {
         layout.bins.push({
-          id: `bin-${i}`,
-          x: i % 10,
-          y: Math.floor(i / 10),
-          width: 1,
-          depth: 1,
-          height: 3,
+          id: binId(`bin-${i}`),
+          x: gridUnits(i % 10),
+          y: gridUnits(Math.floor(i / 10)),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
           layerId,
           category: categoryId,
           label: `Bin ${i}`,
@@ -614,17 +615,17 @@ describe('storage-library', () => {
 
       layout.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           layerId,
           category: categoryId,
           label: '',
           notes: '',
-          clearanceHeight: 5,
+          clearanceHeight: heightUnits(5),
         },
       ];
 

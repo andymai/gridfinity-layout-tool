@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import type { Bin, Layer, Category } from '@/core/types';
-import { binId, layerId, categoryId } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { findBin, requireBin, requireLayer, requireCategory, toPlacementError } from './helpers';
 
 const makeBin = (id: string): Bin => ({
   id: binId(id),
   layerId: layerId('layer1'),
-  x: 0,
-  y: 0,
-  width: 1,
-  depth: 1,
-  height: 3,
+  x: gridUnits(0),
+  y: gridUnits(0),
+  width: gridUnits(1),
+  depth: gridUnits(1),
+  height: heightUnits(3),
   category: categoryId('cat1'),
   label: '',
   notes: '',
@@ -20,7 +20,7 @@ const makeBin = (id: string): Bin => ({
 const makeLayer = (id: string): Layer => ({
   id: layerId(id),
   name: `Layer ${id}`,
-  height: 3,
+  height: heightUnits(3),
 });
 
 const makeCategory = (id: string): Category => ({

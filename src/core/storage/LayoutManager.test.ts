@@ -18,7 +18,8 @@ import {
 import { expectOk, expectErr } from '@/test/testUtils';
 import { ok, err, storageQuotaExceeded, storageUnavailable } from '@/core/result';
 import { createDefaultLayout, STAGING_ID, CONSTRAINTS, SHARED_PREVIEW_ID } from '@/core/constants';
-import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
+import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
 
 // Mock the backend module
 vi.mock('@/core/storage/backend', () => ({
@@ -70,50 +71,56 @@ function createTestLayoutWithBins(name = 'Layout With Bins'): Layout {
   const layout = createTestLayout(name);
   layout.bins = [
     {
-      id: 'bin-1',
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
+      id: binId('bin-1'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
       layerId: layout.layers[0].id,
       category: layout.categories[0].id,
+      label: '',
+      notes: '',
     },
     {
-      id: 'bin-2',
-      x: 2,
-      y: 0,
-      width: 1,
-      depth: 1,
-      height: 3,
+      id: binId('bin-2'),
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
       layerId: layout.layers[0].id,
       category: layout.categories[1]?.id || layout.categories[0].id,
+      label: '',
+      notes: '',
     },
     // Staging bin - should be excluded from preview
     {
-      id: 'staging-bin',
-      x: 0,
-      y: 0,
-      width: 1,
-      depth: 1,
-      height: 3,
+      id: binId('staging-bin'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
       layerId: STAGING_ID,
       category: layout.categories[0].id,
+      label: '',
+      notes: '',
     },
-  ] as Bin[];
+  ];
   return layout;
 }
 
 function createTestEntry(id: string, name: string): LayoutEntry {
   return {
-    id,
+    id: layoutId(id),
     name,
     createdAt: Date.now() - 10000,
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
       binMap: [],
@@ -124,7 +131,7 @@ function createTestEntry(id: string, name: string): LayoutEntry {
 function createTestLibrary(entries: LayoutEntry[]): LayoutLibrary {
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id || layoutId(''),
     settings: {},
     entries,
   };
@@ -135,7 +142,7 @@ function createTestLibrary(entries: LayoutEntry[]): LayoutLibrary {
 describe('computePreview', () => {
   it('computes drawer dimensions from layout', () => {
     const layout = createTestLayout();
-    layout.drawer = { width: 15, depth: 10, height: 20 };
+    layout.drawer = { width: gridUnits(15), depth: gridUnits(10), height: heightUnits(20) };
 
     const preview = computePreview(layout);
 
@@ -156,9 +163,9 @@ describe('computePreview', () => {
   it('counts layers correctly', () => {
     const layout = createTestLayout();
     layout.layers = [
-      { id: 'layer-1', name: 'Layer 1', height: 3 },
-      { id: 'layer-2', name: 'Layer 2', height: 5 },
-      { id: 'layer-3', name: 'Layer 3', height: 7 },
+      { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+      { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(5) },
+      { id: layerId('layer-3'), name: 'Layer 3', height: heightUnits(7) },
     ];
 
     const preview = computePreview(layout);
@@ -172,9 +179,10 @@ describe('computePreview', () => {
     const preview = computePreview(layout);
 
     // binMap should exclude staging bins
-    expect(preview.binMap.length).toBe(2);
-    expect(preview.binMap.some((b) => b.x === 0 && b.y === 0 && b.w === 2)).toBe(true);
-    expect(preview.binMap.some((b) => b.x === 2 && b.y === 0 && b.w === 1)).toBe(true);
+    const binMap = preview.binMap ?? [];
+    expect(binMap.length).toBe(2);
+    expect(binMap.some((b) => b.x === 0 && b.y === 0 && b.w === 2)).toBe(true);
+    expect(binMap.some((b) => b.x === 2 && b.y === 0 && b.w === 1)).toBe(true);
   });
 
   it('maps category colors to bins', () => {
@@ -183,18 +191,18 @@ describe('computePreview', () => {
 
     const preview = computePreview(layout);
 
-    const binWithColor = preview.binMap.find((b) => b.x === 0 && b.y === 0);
+    const binWithColor = (preview.binMap ?? []).find((b) => b.x === 0 && b.y === 0);
     expect(binWithColor?.c).toBe('#FF0000');
   });
 
   it('uses fallback color for unknown category', () => {
     const layout = createTestLayoutWithBins();
     // Set bin to unknown category
-    layout.bins[0].category = 'unknown-category';
+    layout.bins[0].category = categoryId('unknown-category');
 
     const preview = computePreview(layout);
 
-    const binWithFallback = preview.binMap.find((b) => b.x === 0 && b.y === 0);
+    const binWithFallback = (preview.binMap ?? []).find((b) => b.x === 0 && b.y === 0);
     expect(binWithFallback?.c).toBe('#6B7280'); // Gray fallback
   });
 
@@ -241,7 +249,7 @@ describe('saveLayoutWithMetadata', () => {
 
     const value = expectOk(result);
     expect(value.entry.preview.binCount).toBe(3);
-    expect(value.entry.preview.binMap.length).toBe(2); // Excludes staging
+    expect((value.entry.preview.binMap ?? []).length).toBe(2); // Excludes staging
   });
 
   it('updates modifiedAt timestamp', async () => {
@@ -299,9 +307,9 @@ describe('saveLayoutWithMetadata', () => {
     const entry = createTestEntry('layout-1', 'Test');
     const library = createTestLibrary([entry]);
     const customPreview = {
-      drawerWidth: 99,
-      drawerDepth: 99,
-      drawerHeight: 99,
+      drawerWidth: gridUnits(99),
+      drawerDepth: gridUnits(99),
+      drawerHeight: heightUnits(99),
       binCount: 999,
       layerCount: 99,
       binMap: [],
@@ -481,7 +489,7 @@ describe('deleteLayoutWithEntry', () => {
       createTestEntry('layout-1', 'Layout 1'),
       createTestEntry('layout-2', 'Layout 2'),
     ]);
-    library.activeLayoutId = 'layout-1';
+    library.activeLayoutId = layoutId('layout-1');
 
     const result = await deleteLayoutWithEntry('layout-1', library);
 
@@ -495,7 +503,7 @@ describe('deleteLayoutWithEntry', () => {
       createTestEntry('layout-1', 'Layout 1'),
       createTestEntry('layout-2', 'Layout 2'),
     ]);
-    library.activeLayoutId = 'layout-1';
+    library.activeLayoutId = layoutId('layout-1');
 
     const result = await deleteLayoutWithEntry('layout-2', library);
 
@@ -557,7 +565,7 @@ describe('deleteLayoutWithEntry', () => {
       createTestEntry('layout-1', 'Layout 1'),
       createTestEntry('layout-2', 'Layout 2'),
     ]);
-    library.activeLayoutId = 'layout-1';
+    library.activeLayoutId = layoutId('layout-1');
     vi.mocked(backend.deleteAsync).mockRejectedValueOnce(new Error('Blob gone'));
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -680,7 +688,7 @@ describe('switchActiveLayout', () => {
       createTestEntry('from-id', 'From'),
       createTestEntry('to-id', 'To'),
     ]);
-    library.activeLayoutId = 'from-id';
+    library.activeLayoutId = layoutId('from-id');
 
     const result = await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 

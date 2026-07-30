@@ -11,6 +11,7 @@ import {
 import type { BinListSortOrder, STLSearchSite } from '@/core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '@/test/testUtils';
 import { isOk, isErr } from '@/core/result';
+import { categoryId } from '@/core/types';
 
 describe('settings store', () => {
   let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
@@ -563,8 +564,8 @@ describe('settings store', () => {
     it('saves categories as default categories', () => {
       const { saveCategoriesAsDefaults } = useSettingsStore.getState();
       const categories = [
-        { id: 'cat-1', name: 'Tools', color: '#FF0000' },
-        { id: 'cat-2', name: 'Parts', color: '#00FF00' },
+        { id: categoryId('cat-1'), name: 'Tools', color: '#FF0000' },
+        { id: categoryId('cat-2'), name: 'Parts', color: '#00FF00' },
       ];
 
       saveCategoriesAsDefaults(categories);
@@ -575,7 +576,7 @@ describe('settings store', () => {
 
     it('deep copies categories to avoid reference issues', () => {
       const { saveCategoriesAsDefaults } = useSettingsStore.getState();
-      const categories = [{ id: 'cat-1', name: 'Tools', color: '#FF0000' }];
+      const categories = [{ id: categoryId('cat-1'), name: 'Tools', color: '#FF0000' }];
 
       saveCategoriesAsDefaults(categories);
 
@@ -587,7 +588,9 @@ describe('settings store', () => {
     it('sets null when given empty array', () => {
       const { saveCategoriesAsDefaults, updateSetting } = useSettingsStore.getState();
       // First set some categories
-      updateSetting('defaultCategories', [{ id: 'cat-1', name: 'Tools', color: '#FF0000' }]);
+      updateSetting('defaultCategories', [
+        { id: categoryId('cat-1'), name: 'Tools', color: '#FF0000' },
+      ]);
 
       // Then clear with empty array
       saveCategoriesAsDefaults([]);

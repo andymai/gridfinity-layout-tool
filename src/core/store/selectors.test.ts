@@ -14,6 +14,7 @@ import {
 } from '@/core/store/selectors';
 import { resetAllStores, createTestLayout, createTestBin, expectOk } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
+import { binId, gridUnits, layerId as toLayerId } from '@/core/types';
 
 describe('store selectors', () => {
   beforeEach(() => {
@@ -42,9 +43,13 @@ describe('store selectors', () => {
       useSelectionStore.setState({ activeLayerId: layerId });
 
       // Add bins on the active layer
-      const result1 = useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 }));
+      const result1 = useLayoutStore
+        .getState()
+        .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }));
       expectOk(result1);
-      const result2 = useLayoutStore.getState().addBin(createTestBin({ layerId, x: 2, y: 0 }));
+      const result2 = useLayoutStore
+        .getState()
+        .addBin(createTestBin({ layerId, x: gridUnits(2), y: gridUnits(0) }));
       expectOk(result2);
 
       const { result } = renderHook(() => useActiveLayerBins());
@@ -59,9 +64,15 @@ describe('store selectors', () => {
       useSelectionStore.setState({ activeLayerId: layerId });
 
       // Add a grid bin and a staging bin
-      expectOk(useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 })));
       expectOk(
-        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 0, y: 0 }))
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }))
+      );
+      expectOk(
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId: STAGING_ID, x: gridUnits(0), y: gridUnits(0) }))
       );
 
       const { result } = renderHook(() => useActiveLayerBins());
@@ -75,7 +86,9 @@ describe('store selectors', () => {
       useSelectionStore.setState({ activeLayerId: STAGING_ID });
 
       expectOk(
-        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 1, y: 1 }))
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId: STAGING_ID, x: gridUnits(1), y: gridUnits(1) }))
       );
 
       const { result } = renderHook(() => useActiveLayerBins());
@@ -107,7 +120,7 @@ describe('store selectors', () => {
     it('returns undefined when active layer does not exist', () => {
       const layout = createTestLayout();
       useLayoutStore.setState({ layout });
-      useSelectionStore.setState({ activeLayerId: 'nonexistent' as never });
+      useSelectionStore.setState({ activeLayerId: toLayerId('nonexistent') });
 
       const { result } = renderHook(() => useActiveLayer());
       expect(result.current).toBeUndefined();
@@ -121,11 +134,25 @@ describe('store selectors', () => {
       useLayoutStore.setState({ layout });
 
       // Add 3 bins on the layer + 1 staging
-      expectOk(useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 })));
-      expectOk(useLayoutStore.getState().addBin(createTestBin({ layerId, x: 1, y: 0 })));
-      expectOk(useLayoutStore.getState().addBin(createTestBin({ layerId, x: 2, y: 0 })));
       expectOk(
-        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 0, y: 0 }))
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }))
+      );
+      expectOk(
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId, x: gridUnits(1), y: gridUnits(0) }))
+      );
+      expectOk(
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId, x: gridUnits(2), y: gridUnits(0) }))
+      );
+      expectOk(
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId: STAGING_ID, x: gridUnits(0), y: gridUnits(0) }))
       );
 
       const { result } = renderHook(() => useLayerBinCounts());
@@ -148,12 +175,20 @@ describe('store selectors', () => {
       const layerId = layout.layers[0].id;
       useLayoutStore.setState({ layout });
 
-      expectOk(useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 })));
       expectOk(
-        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 0, y: 0 }))
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }))
       );
       expectOk(
-        useLayoutStore.getState().addBin(createTestBin({ layerId: STAGING_ID, x: 1, y: 0 }))
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId: STAGING_ID, x: gridUnits(0), y: gridUnits(0) }))
+      );
+      expectOk(
+        useLayoutStore
+          .getState()
+          .addBin(createTestBin({ layerId: STAGING_ID, x: gridUnits(1), y: gridUnits(0) }))
       );
 
       const { result } = renderHook(() => useStagingBins());
@@ -168,8 +203,12 @@ describe('store selectors', () => {
       const layerId = layout.layers[0].id;
       useLayoutStore.setState({ layout });
 
-      const r1 = useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 }));
-      const r2 = useLayoutStore.getState().addBin(createTestBin({ layerId, x: 1, y: 0 }));
+      const r1 = useLayoutStore
+        .getState()
+        .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }));
+      const r2 = useLayoutStore
+        .getState()
+        .addBin(createTestBin({ layerId, x: gridUnits(1), y: gridUnits(0) }));
       const id1 = expectOk(r1);
       const id2 = expectOk(r2);
 
@@ -193,11 +232,13 @@ describe('store selectors', () => {
       const layerId = layout.layers[0].id;
       useLayoutStore.setState({ layout });
 
-      const r1 = useLayoutStore.getState().addBin(createTestBin({ layerId, x: 0, y: 0 }));
+      const r1 = useLayoutStore
+        .getState()
+        .addBin(createTestBin({ layerId, x: gridUnits(0), y: gridUnits(0) }));
       const id1 = expectOk(r1);
 
       // Select a valid ID and a fake one
-      useSelectionStore.setState({ selectedBinIds: [id1, 'nonexistent' as never] });
+      useSelectionStore.setState({ selectedBinIds: [id1, binId('nonexistent')] });
 
       const { result } = renderHook(() => useSelectedBins());
       expect(result.current).toHaveLength(1);

@@ -12,6 +12,7 @@ import {
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
 import type { Layout, LayoutLibrary } from '@/core/types';
+import { gridUnits, heightUnits, layoutId as toLayoutId } from '@/core/types';
 
 // Mock IndexedDB backend (saveLibrary now fires off to IndexedDB)
 vi.mock('@/core/storage/backends/indexedDB', () => ({
@@ -187,7 +188,7 @@ describe('storage error handling', () => {
   describe('saveLibrary', () => {
     const testLibrary: LayoutLibrary = {
       version: '1.0',
-      activeLayoutId: 'test-id',
+      activeLayoutId: toLayoutId('test-id'),
       settings: {},
       entries: [],
     };
@@ -234,31 +235,31 @@ describe('storage error handling', () => {
       // is deferred to reconcileLibraryAsync() after mount.
       const library: LayoutLibrary = {
         version: '1.0',
-        activeLayoutId: 'existing-id',
+        activeLayoutId: toLayoutId('existing-id'),
         settings: {},
         entries: [
           {
-            id: 'existing-id',
+            id: toLayoutId('existing-id'),
             name: 'Existing',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
           },
           {
-            id: 'orphaned-id',
+            id: toLayoutId('orphaned-id'),
             name: 'Orphaned',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
@@ -278,18 +279,18 @@ describe('storage error handling', () => {
       // validateLibraryStructure still ensures activeLayoutId references a valid entry
       const library: LayoutLibrary = {
         version: '1.0',
-        activeLayoutId: 'non-existent-id',
+        activeLayoutId: toLayoutId('non-existent-id'),
         settings: {},
         entries: [
           {
-            id: 'valid-id',
+            id: toLayoutId('valid-id'),
             name: 'Valid',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
@@ -316,7 +317,7 @@ describe('storage error handling', () => {
     });
 
     it('loads existing library', async () => {
-      const layoutId = 'existing-layout';
+      const layoutId = toLayoutId('existing-layout');
       const existingLayout: Layout = {
         ...defaultLayout,
         name: 'My Existing Layout',
@@ -333,9 +334,9 @@ describe('storage error handling', () => {
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
@@ -355,31 +356,31 @@ describe('storage error handling', () => {
 
       const library: LayoutLibrary = {
         version: '1.0',
-        activeLayoutId: 'missing-layout',
+        activeLayoutId: toLayoutId('missing-layout'),
         settings: {},
         entries: [
           {
-            id: 'missing-layout',
+            id: toLayoutId('missing-layout'),
             name: 'Missing',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
           },
           {
-            id: 'backup-layout',
+            id: toLayoutId('backup-layout'),
             name: 'Backup',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },
@@ -408,18 +409,18 @@ describe('storage error handling', () => {
 
       const library: LayoutLibrary = {
         version: '1.0',
-        activeLayoutId: 'corrupted-1',
+        activeLayoutId: toLayoutId('corrupted-1'),
         settings: {},
         entries: [
           {
-            id: 'corrupted-1',
+            id: toLayoutId('corrupted-1'),
             name: 'Corrupted 1',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
             preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
+              drawerWidth: gridUnits(10),
+              drawerDepth: gridUnits(8),
+              drawerHeight: heightUnits(12),
               binCount: 0,
               layerCount: 1,
             },

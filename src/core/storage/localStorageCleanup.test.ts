@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';
+import { createDefaultLayout } from '@/core/constants';
 
 // Mock backends
 vi.mock('./backends/localStorage', () => ({
@@ -16,7 +17,7 @@ vi.mock('./backends/indexedDB', () => ({
 import * as localStorageBackend from './backends/localStorage';
 import * as indexedDBBackend from './backends/indexedDB';
 
-const DUMMY_LAYOUT = { name: 'Test', version: '1.0' };
+const DUMMY_LAYOUT = { ...createDefaultLayout(), name: 'Test', version: '1.0' };
 
 beforeEach(() => {
   vi.clearAllMocks();

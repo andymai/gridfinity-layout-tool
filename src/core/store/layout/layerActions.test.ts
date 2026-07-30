@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { STAGING_ID, CONSTRAINTS } from '@/core/constants';
-import { layerId } from '@/core/types';
+import { layerId, gridUnits, heightUnits } from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { resetAllStores, expectOk } from '@/test/testUtils';
 
@@ -19,7 +19,7 @@ describe('layerActions', () => {
 
     it('returns error when at max layers', () => {
       // Set drawer height high enough to fit all layers
-      useLayoutStore.getState().updateDrawer({ height: 100 });
+      useLayoutStore.getState().updateDrawer({ height: heightUnits(100) });
 
       // Add layers up to max (already have 1)
       for (let i = 1; i < CONSTRAINTS.LAYERS_MAX; i++) {
@@ -53,7 +53,7 @@ describe('layerActions', () => {
       const { layout, updateLayer } = useLayoutStore.getState();
       const lid = layout.layers[0].id;
       // Drawer height is 12, try to set layer to 100
-      updateLayer(lid, { height: 100 });
+      updateLayer(lid, { height: heightUnits(100) });
       const h = useLayoutStore.getState().layout.layers[0].height;
       expect(h).toBeLessThanOrEqual(12);
     });
@@ -61,7 +61,7 @@ describe('layerActions', () => {
     it('clamps layer height to min', () => {
       const { layout, updateLayer } = useLayoutStore.getState();
       const lid = layout.layers[0].id;
-      updateLayer(lid, { height: 0 });
+      updateLayer(lid, { height: heightUnits(0) });
       const h = useLayoutStore.getState().layout.layers[0].height;
       expect(h).toBeGreaterThanOrEqual(CONSTRAINTS.MIN_LAYER_HEIGHT);
     });
@@ -82,11 +82,11 @@ describe('layerActions', () => {
       const { addBin, layout } = useLayoutStore.getState();
       addBin({
         layerId: newLayerId,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
