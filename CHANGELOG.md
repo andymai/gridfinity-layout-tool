@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.331.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.330.0...gridfinity-layout-tool-v4.331.0) (2026-07-30)
+
+
+### Features
+
+* add wall flare on top of bin overhang ([#2933](https://github.com/andymai/gridfinity-layout-tool/issues/2933)) ([#3015](https://github.com/andymai/gridfinity-layout-tool/issues/3015)) ([435c898](https://github.com/andymai/gridfinity-layout-tool/commit/435c8981d520b7f4dcd770e05ad0f45726dce7cd))
+
 ## [4.330.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.7...gridfinity-layout-tool-v4.330.0) (2026-07-30)
 
 
