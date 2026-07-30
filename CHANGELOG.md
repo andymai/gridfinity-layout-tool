@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.4...gridfinity-layout-tool-v4.329.5) (2026-07-30)
+
+
+### Bug Fixes
+
+* **deps:** patch brepjs to dispose intersectCurves' bounding boxes ([#2985](https://github.com/andymai/gridfinity-layout-tool/issues/2985)) ([#3006](https://github.com/andymai/gridfinity-layout-tool/issues/3006)) ([f814d90](https://github.com/andymai/gridfinity-layout-tool/commit/f814d9019627ea2bf4587c145443939048871d0e))
+
 ## [4.329.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.3...gridfinity-layout-tool-v4.329.4) (2026-07-30)
 
 
