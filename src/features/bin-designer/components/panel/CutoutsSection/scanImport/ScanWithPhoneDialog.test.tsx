@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ScanWithPhoneDialog } from './ScanWithPhoneDialog';
 
-const mockAddScanCutouts = vi.fn(() => 1);
+const mockAddScanCutouts = vi.fn((..._args: unknown[]) => 1);
 vi.mock('./useScanImport', () => ({
   useScanImport: () => ({ addScanCutouts: mockAddScanCutouts }),
 }));

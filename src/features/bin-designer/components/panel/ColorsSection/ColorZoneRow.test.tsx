@@ -30,7 +30,9 @@ const baseProps = {
   label: 'Body',
   color: '#3b82f6',
   defaultColor: '#d4d8dc',
+  bodyColor: '#d4d8dc',
   otherColors: [],
+  recentColors: [],
   onChange: () => undefined,
   onHover: () => undefined,
 };

@@ -3,7 +3,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_GENERATION_STATE,
+} from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 // Mock the bridge module
@@ -57,6 +60,7 @@ describe('useExport', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -77,6 +81,7 @@ describe('useExport', () => {
   it('canExport is true when mesh with vertices exists', () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array(9),
@@ -97,6 +102,7 @@ describe('useExport', () => {
   it('canExport is false when mesh has an error', () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'error',
         mesh: {
           vertices: null,
@@ -135,6 +141,7 @@ describe('useExport', () => {
     // Set up valid mesh
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -202,6 +209,7 @@ describe('useExport', () => {
   it('downloadBin with step format calls bridge with step', async () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -265,6 +273,7 @@ describe('useExport', () => {
   it('downloadBin respects name style parameter', async () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -407,6 +416,7 @@ describe('useExport', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),

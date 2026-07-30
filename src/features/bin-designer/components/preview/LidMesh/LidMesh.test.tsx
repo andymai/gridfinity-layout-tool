@@ -2,7 +2,11 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_UI_STATE,
+  DEFAULT_GENERATION_STATE,
+} from '@/features/bin-designer/constants';
 import { LidMesh } from './LidMesh';
 import { lidAnchorZ as lidAnchorZMain, lidWallBottomZ as lidWallBottomZMain } from './lidAnchorZ';
 import {
@@ -77,6 +81,7 @@ describe('LidMesh color (#1654)', () => {
   function seedLidMesh(): void {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: { ...tri, error: null, timingMs: 1, lidMesh: { ...tri, triangleCount: 1 } },
         progress: 0,

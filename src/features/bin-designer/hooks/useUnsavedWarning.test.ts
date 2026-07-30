@@ -23,57 +23,65 @@ describe('useUnsavedWarning', () => {
   it('should not register listener when no unsaved changes', () => {
     renderHook(() => useUnsavedWarning());
 
-    const beforeunloadCalls = addSpy.mock.calls.filter(([event]) => event === 'beforeunload');
+    const beforeunloadCalls = addSpy.mock.calls.filter(
+      ([event]: [string, ...unknown[]]) => event === 'beforeunload'
+    );
     expect(beforeunloadCalls).toHaveLength(0);
   });
 
   it('should not register listener when design is saved (has ID)', () => {
     useDesignerStore.setState({
       currentDesignId: 'saved-id',
-      history: { past: [{ params: DEFAULT_BIN_PARAMS }], future: [] },
+      history: { past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }], future: [] },
     });
 
     renderHook(() => useUnsavedWarning());
 
-    const beforeunloadCalls = addSpy.mock.calls.filter(([event]) => event === 'beforeunload');
+    const beforeunloadCalls = addSpy.mock.calls.filter(
+      ([event]: [string, ...unknown[]]) => event === 'beforeunload'
+    );
     expect(beforeunloadCalls).toHaveLength(0);
   });
 
   it('should register listener when untitled design has history', () => {
     useDesignerStore.setState({
       currentDesignId: null,
-      history: { past: [{ params: DEFAULT_BIN_PARAMS }], future: [] },
+      history: { past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }], future: [] },
     });
 
     renderHook(() => useUnsavedWarning());
 
-    const beforeunloadCalls = addSpy.mock.calls.filter(([event]) => event === 'beforeunload');
+    const beforeunloadCalls = addSpy.mock.calls.filter(
+      ([event]: [string, ...unknown[]]) => event === 'beforeunload'
+    );
     expect(beforeunloadCalls).toHaveLength(1);
   });
 
   it('should remove listener on unmount', () => {
     useDesignerStore.setState({
       currentDesignId: null,
-      history: { past: [{ params: DEFAULT_BIN_PARAMS }], future: [] },
+      history: { past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }], future: [] },
     });
 
     const { unmount } = renderHook(() => useUnsavedWarning());
     unmount();
 
-    const removeCalls = removeSpy.mock.calls.filter(([event]) => event === 'beforeunload');
+    const removeCalls = removeSpy.mock.calls.filter(
+      ([event]: [string, ...unknown[]]) => event === 'beforeunload'
+    );
     expect(removeCalls.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should call preventDefault on beforeunload event', () => {
     useDesignerStore.setState({
       currentDesignId: null,
-      history: { past: [{ params: DEFAULT_BIN_PARAMS }], future: [] },
+      history: { past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }], future: [] },
     });
 
     renderHook(() => useUnsavedWarning());
 
     const handler = addSpy.mock.calls.find(
-      ([event]) => event === 'beforeunload'
+      ([event]: [string, ...unknown[]]) => event === 'beforeunload'
     )?.[1] as EventListener;
 
     const event = new Event('beforeunload');

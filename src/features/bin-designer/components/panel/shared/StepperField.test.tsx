@@ -12,7 +12,7 @@ describe('StepperField', () => {
         onStep={() => {}}
         min={0}
         max={10}
-        ariaLabel="Height"
+        aria-label="Height"
       />
     );
     expect(screen.getByText('Height')).toBeDefined();
@@ -21,7 +21,7 @@ describe('StepperField', () => {
 
   it('omits the unit suffix when no unit is given', () => {
     render(
-      <StepperField label="Count" value={1} onStep={() => {}} min={1} max={5} ariaLabel="Count" />
+      <StepperField label="Count" value={1} onStep={() => {}} min={1} max={5} aria-label="Count" />
     );
     expect(screen.getByText('Count')).toBeDefined();
     expect(screen.queryByText(/\(/)).toBeNull();

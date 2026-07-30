@@ -42,7 +42,7 @@ describe('LipColorEditor', () => {
       screen.queryByRole('radiogroup', { name: 'binDesigner.colors.lip.cornersLabel' })
     ).toBeNull();
     expect(
-      screen.getByRole('checkbox', {
+      screen.getByRole<HTMLInputElement>('checkbox', {
         name: 'binDesigner.colors.lip.splitZones',
       }).checked
     ).toBe(false);
@@ -82,7 +82,7 @@ describe('LipColorEditor', () => {
     ).toBeDefined();
     expect(screen.getAllByText(/binDesigner\.colors\.lip\.bandN/)).toHaveLength(4);
     expect(
-      screen.getByRole('checkbox', {
+      screen.getByRole<HTMLInputElement>('checkbox', {
         name: 'binDesigner.colors.lip.splitZones',
       }).checked
     ).toBe(true);

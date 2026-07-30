@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '../../store';
 import { useToastStore } from '@/core/store/toast';
-import { DEFAULT_BIN_PARAMS } from '../../constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../../constants';
 
 // Mock Three.js rendering (jsdom has no WebGL)
 vi.mock('@react-three/fiber', () => ({
@@ -233,8 +233,9 @@ describe('PreviewCanvas', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
-      wasmStatus: 'idle',
+      wasmStatus: 'unloaded',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -260,7 +261,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when no mesh is available', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
     render(<PreviewCanvas />);
 
@@ -270,7 +277,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generating with no prior mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'generating', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
     render(<PreviewCanvas />);
 
@@ -280,7 +293,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generation has error with no mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'error', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'error',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
     render(<PreviewCanvas />);
 
@@ -291,6 +310,7 @@ describe('PreviewCanvas', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -314,6 +334,7 @@ describe('PreviewCanvas', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -340,6 +361,7 @@ describe('PreviewCanvas', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -362,6 +384,7 @@ describe('PreviewCanvas', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -395,6 +418,7 @@ describe('PreviewCanvas', () => {
       useDesignerStore.setState({
         wasmStatus: 'ready',
         generation: {
+          ...DEFAULT_GENERATION_STATE,
           status: 'error',
           mesh: {
             vertices: null,
@@ -422,6 +446,7 @@ describe('PreviewCanvas', () => {
       useDesignerStore.setState({
         wasmStatus: 'ready',
         generation: {
+          ...DEFAULT_GENERATION_STATE,
           status: 'error',
           mesh: {
             vertices: null,
@@ -452,6 +477,7 @@ describe('PreviewCanvas', () => {
       useDesignerStore.setState({
         wasmStatus: 'ready',
         generation: {
+          ...DEFAULT_GENERATION_STATE,
           status: 'error',
           mesh: {
             vertices: null,
@@ -489,7 +515,13 @@ describe('PreviewCanvas', () => {
     it('does not show revert button for WASM errors (only retry)', () => {
       useDesignerStore.setState({
         wasmStatus: 'error',
-        generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          status: 'idle',
+          mesh: null,
+          progress: 0,
+          epoch: 0,
+        },
         history: {
           past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
           future: [],

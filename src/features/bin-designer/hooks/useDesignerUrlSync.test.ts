@@ -6,6 +6,7 @@ import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorag
 import { ok, err, storageUnavailable } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { SavedDesign } from '../types';
+import { designId } from '@/core/types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
@@ -31,10 +32,11 @@ describe('useDesignerUrlSync', () => {
 
   function makeSavedDesign(id: string, name = 'Test Design'): SavedDesign {
     return {
-      id,
+      id: designId(id),
       name,
       params: { ...DEFAULT_BIN_PARAMS, width: 3 },
       thumbnail: null,
+      exportFileNameConfig: null,
       createdAt: '2026-01-22T00:00:00.000Z',
       updatedAt: '2026-01-22T00:00:00.000Z',
     };
@@ -86,9 +88,7 @@ describe('useDesignerUrlSync', () => {
     });
 
     it('handles storage load failure gracefully', async () => {
-      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(
-        err(storageUnavailable('IndexedDB not available'))
-      );
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err(storageUnavailable('indexedDB')));
 
       window.history.replaceState(null, '', '/designer?id=missing-design');
 

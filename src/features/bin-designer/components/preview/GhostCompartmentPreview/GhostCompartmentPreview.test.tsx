@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { GhostCompartmentPreview } from './GhostCompartmentPreview';
 
 vi.mock('@react-three/fiber', () => ({
@@ -97,6 +97,7 @@ describe('GhostCompartmentPreview', () => {
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
       ui: {
+        ...DEFAULT_UI_STATE,
         previewCompartments: null,
         previewSelection: null,
         designListOpen: false,
@@ -113,6 +114,7 @@ describe('GhostCompartmentPreview', () => {
   it('renders nothing with null preview selection', () => {
     useDesignerStore.setState({
       ui: {
+        ...DEFAULT_UI_STATE,
         previewCompartments: null,
         previewSelection: null,
         designListOpen: false,
@@ -126,6 +128,7 @@ describe('GhostCompartmentPreview', () => {
   it('renders merge preview when preview selection is set for merge', () => {
     useDesignerStore.setState({
       ui: {
+        ...DEFAULT_UI_STATE,
         previewCompartments: null,
         previewSelection: {
           action: 'merge',

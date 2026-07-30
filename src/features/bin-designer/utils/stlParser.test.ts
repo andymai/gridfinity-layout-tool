@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { parseSTLBinary } from './stlParser';
 import { isOk, isErr } from '@/core/result';
+import type { ValidationError, ValidationImportError } from '@/core/result';
 import { buildSTLBuffer } from '@/features/generation/export/stlExporter';
+
+function expectImportFailed(error: ValidationError): ValidationImportError {
+  if (error.code !== 'VALIDATION_IMPORT_FAILED') {
+    throw new Error(`expected VALIDATION_IMPORT_FAILED, got ${error.code}`);
+  }
+  return error;
+}
 
 describe('parseSTLBinary', () => {
   /** Build a binary STL with known data for round-trip testing */
@@ -70,8 +78,9 @@ describe('parseSTLBinary', () => {
     const result = parseSTLBinary(new ArrayBuffer(10));
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-    expect(result.error.errors[0]).toMatch(/too small/);
+    const err = expectImportFailed(result.error);
+    expect(err.code).toBe('VALIDATION_IMPORT_FAILED');
+    expect(err.errors[0]).toMatch(/too small/);
   });
 
   it('returns Err on triangle count mismatch', () => {
@@ -82,7 +91,7 @@ describe('parseSTLBinary', () => {
     const result = parseSTLBinary(buffer);
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/does not match/);
+    expect(expectImportFailed(result.error).errors[0]).toMatch(/does not match/);
   });
 
   it('returns Err on misaligned payload size', () => {
@@ -93,7 +102,7 @@ describe('parseSTLBinary', () => {
     const result = parseSTLBinary(buffer);
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/not a multiple/);
+    expect(expectImportFailed(result.error).errors[0]).toMatch(/not a multiple/);
   });
 
   it('handles empty mesh (0 triangles)', () => {

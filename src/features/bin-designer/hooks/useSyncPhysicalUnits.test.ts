@@ -3,13 +3,19 @@ import { renderHook, act } from '@testing-library/react';
 import { useSyncPhysicalUnits } from './useSyncPhysicalUnits';
 import { useDesignerStore } from '../store';
 import { useLayoutStore } from '@/core/store/layout';
-import { DEFAULT_BIN_PARAMS } from '../constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
 
 describe('useSyncPhysicalUnits', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
     useLayoutStore.getState().setGridUnitMm(42);
     useLayoutStore.getState().setHeightUnitMm(7);

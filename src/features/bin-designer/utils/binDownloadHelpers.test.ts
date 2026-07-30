@@ -11,8 +11,8 @@ import type { CombinedExportResult } from '@/shared/generation/bridge';
 import type { ThreeMFPrintSettings } from '@/shared/generation/export';
 import { ok } from '@/core/result';
 
-const export3MFSpy = vi.fn(() => new Blob([], { type: 'model/3mf' }));
-const export3MFMultiObjectSpy = vi.fn(() => new Blob([], { type: 'model/3mf' }));
+const export3MFSpy = vi.fn((..._args: unknown[]) => new Blob([], { type: 'model/3mf' }));
+const export3MFMultiObjectSpy = vi.fn((..._args: unknown[]) => new Blob([], { type: 'model/3mf' }));
 
 vi.mock('@/shared/generation/export', () => ({
   export3MF: (...args: unknown[]) => export3MFSpy(...args),
@@ -43,7 +43,7 @@ const PRINT_SETTINGS: ThreeMFPrintSettings = {
   estimatedGrams: 15,
 };
 
-const FAKE_FACE_GROUPS: CombinedExportResult['faceGroups'] = [{ feature: 0, start: 0, count: 1 }];
+const FAKE_FACE_GROUPS: CombinedExportResult['faceGroups'] = [{ tag: 0, start: 0, count: 1 }];
 
 function paramsWithMultiColor(enabled: boolean): BinParams {
   return {

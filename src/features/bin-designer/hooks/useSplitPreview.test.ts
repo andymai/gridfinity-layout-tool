@@ -8,6 +8,7 @@ import {
   DEFAULT_UI_STATE,
   DEFAULT_GENERATION_STATE,
 } from '@/features/bin-designer/constants/defaults';
+import type { GenerationStatus } from '@/features/bin-designer/types';
 
 // ── Bridge mock ──────────────────────────────────────────────────────────────
 
@@ -75,8 +76,13 @@ function makeSplitResult(count = 1) {
 
 /** A stub mesh entry for pre-seeding the store. */
 const STUB_MESH_ENTRY = {
+  label: 'Piece 1x1',
   col: 1,
   row: 1,
+  widthUnits: 1,
+  depthUnits: 1,
+  offsetX: 0,
+  offsetY: 0,
   mesh: {
     vertices: new Float32Array(0),
     normals: new Float32Array(0),
@@ -92,7 +98,7 @@ function setOversizedExplodedState(overrides?: {
   width?: number;
   depth?: number;
   splitViewMode?: 'exploded' | 'assembled';
-  generationStatus?: string;
+  generationStatus?: GenerationStatus;
 }) {
   useDesignerStore.setState({
     params: {

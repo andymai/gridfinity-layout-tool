@@ -469,7 +469,7 @@ describe('migrateParams', () => {
   it('should coerce unknown persisted pattern values to honeycomb', () => {
     const result = migrateParams({
       wallPattern: { enabled: true, pattern: 'not-a-pattern' },
-    } as never);
+    });
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
 
@@ -547,7 +547,7 @@ describe('migrateParams', () => {
     expect(
       migrateParams({
         wallPattern: { enabled: true, pattern: 'round', sides: { back: false, left: 'yes' } },
-      } as never).wallPattern.sides
+      }).wallPattern.sides
     ).toEqual({ left: true, right: true, front: true, back: false });
   });
 
@@ -651,8 +651,8 @@ describe('migrateParams', () => {
     expect(result.handles.back.enabled).toBe(false); // default
     expect(result.handles.left.enabled).toBe(true); // default
     // Verify legacy fields are not present on migrated config
-    expect((result.handles as Record<string, unknown>).depth).toBeUndefined();
-    expect((result.handles as Record<string, unknown>).filletRadius).toBeUndefined();
+    expect('depth' in result.handles).toBe(false);
+    expect('filletRadius' in result.handles).toBe(false);
   });
 
   it('should preserve valid walls.shape values', () => {

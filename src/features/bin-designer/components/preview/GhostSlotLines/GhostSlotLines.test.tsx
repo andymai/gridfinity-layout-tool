@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import { GhostSlotLines } from './GhostSlotLines';
 
 vi.mock('@react-three/fiber', () => ({
@@ -83,6 +83,7 @@ describe('GhostSlotLines', () => {
         style: 'standard',
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -102,11 +103,13 @@ describe('GhostSlotLines', () => {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 20 },
           y: { enabled: false, pitch: 20 },
         },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -123,11 +126,13 @@ describe('GhostSlotLines', () => {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 20 },
           y: { enabled: false, pitch: 20 },
         },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,

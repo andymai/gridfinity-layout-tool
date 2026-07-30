@@ -323,7 +323,7 @@ describe('WallsSection', () => {
     });
 
     render(<WallsSection />);
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select.value).toBe('honeycomb');
   });
 });

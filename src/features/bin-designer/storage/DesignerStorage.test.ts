@@ -15,8 +15,23 @@ import {
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
-import type { BinParams } from '../types';
+import type { BinParams, SavedDesign } from '../types';
 import { expectOk, expectErr } from '@/test/testUtils';
+import { designId } from '@/core/types';
+import type { StorageError, StorageCorruptedError } from '@/core/result';
+
+function expectStorageCorrupted(error: StorageError): StorageCorruptedError {
+  if (error.code !== 'STORAGE_CORRUPTED') {
+    throw new Error(`expected STORAGE_CORRUPTED, got ${error.code}`);
+  }
+  return error;
+}
+
+function expectBinParams(design: SavedDesign): BinParams {
+  expect(design.params).toBeDefined();
+  if (!design.params) throw new Error('expected design.params to be defined');
+  return design.params;
+}
 
 describe('DesignerStorage', () => {
   beforeEach(async () => {
@@ -34,6 +49,7 @@ describe('DesignerStorage', () => {
         name: 'Test Bin',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const value = expectOk(result);
@@ -46,10 +62,11 @@ describe('DesignerStorage', () => {
 
     it('should save with a provided ID', async () => {
       const result = await saveDesign({
-        id: 'custom-id-123',
+        id: designId('custom-id-123'),
         name: 'Custom ID Bin',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const value = expectOk(result);
@@ -58,10 +75,11 @@ describe('DesignerStorage', () => {
 
     it('should update existing design preserving createdAt', async () => {
       const firstResult = await saveDesign({
-        id: 'update-test',
+        id: designId('update-test'),
         name: 'First',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const firstValue = expectOk(firstResult);
@@ -71,10 +89,11 @@ describe('DesignerStorage', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       const secondResult = await saveDesign({
-        id: 'update-test',
+        id: designId('update-test'),
         name: 'Updated',
         params: { ...DEFAULT_BIN_PARAMS, width: 4 },
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const secondValue = expectOk(secondResult);
@@ -87,13 +106,14 @@ describe('DesignerStorage', () => {
   describe('loadDesign', () => {
     it('should load a saved design', async () => {
       await saveDesign({
-        id: 'load-test',
+        id: designId('load-test'),
         name: 'Load Test',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
-      const result = await loadDesign('load-test');
+      const result = await loadDesign(designId('load-test'));
       const value = expectOk(result);
       expect(value.name).toBe('Load Test');
       expect(value.params).toEqual(DEFAULT_BIN_PARAMS);
@@ -106,34 +126,36 @@ describe('DesignerStorage', () => {
       delete oldParams.compartments;
 
       await saveDesign({
-        id: 'old-design',
+        id: designId('old-design'),
         name: 'Old Design',
-        // @ts-expect-error - Intentionally passing incomplete params
         params: oldParams,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
-      const result = await loadDesign('old-design');
+      const result = await loadDesign(designId('old-design'));
       const value = expectOk(result);
       expect(value.name).toBe('Old Design');
       // Should have migrated compartments
-      expect(value.params.compartments).toBeDefined();
-      expect(value.params.compartments.cells).toBeDefined();
-      expect(Array.isArray(value.params.compartments.cells)).toBe(true);
+      const params = expectBinParams(value);
+      expect(params.compartments).toBeDefined();
+      expect(params.compartments.cells).toBeDefined();
+      expect(Array.isArray(params.compartments.cells)).toBe(true);
     });
 
     it('should return error for non-existent design', async () => {
-      const result = await loadDesign('nonexistent');
+      const result = await loadDesign(designId('nonexistent'));
       expectErr(result);
     });
 
     it('should return corruption error when params is null', async () => {
       // First save a valid design to ensure DB is initialized
       await saveDesign({
-        id: 'temp-design',
+        id: designId('temp-design'),
         name: 'Temp',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Now directly inject corrupted data using raw IndexedDB
@@ -156,8 +178,8 @@ describe('DesignerStorage', () => {
       });
       db.close();
 
-      const result = await loadDesign('corrupted-null');
-      const error = expectErr(result);
+      const result = await loadDesign(designId('corrupted-null'));
+      const error = expectStorageCorrupted(expectErr(result));
       expect(error.code).toBe('STORAGE_CORRUPTED');
       expect(error.key).toBe('corrupted-null');
     });
@@ -165,10 +187,11 @@ describe('DesignerStorage', () => {
     it('should return corruption error when params is a primitive', async () => {
       // First save a valid design to ensure DB is initialized
       await saveDesign({
-        id: 'temp-design-2',
+        id: designId('temp-design-2'),
         name: 'Temp 2',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Now directly inject corrupted data
@@ -191,8 +214,8 @@ describe('DesignerStorage', () => {
       });
       db.close();
 
-      const result = await loadDesign('corrupted-primitive');
-      const error = expectErr(result);
+      const result = await loadDesign(designId('corrupted-primitive'));
+      const error = expectStorageCorrupted(expectErr(result));
       expect(error.code).toBe('STORAGE_CORRUPTED');
       expect(error.key).toBe('corrupted-primitive');
     });
@@ -200,10 +223,11 @@ describe('DesignerStorage', () => {
     it('should return corruption error when params is an array', async () => {
       // First save a valid design to ensure DB is initialized
       await saveDesign({
-        id: 'temp-design-3',
+        id: designId('temp-design-3'),
         name: 'Temp 3',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Now directly inject corrupted data
@@ -226,8 +250,8 @@ describe('DesignerStorage', () => {
       });
       db.close();
 
-      const result = await loadDesign('corrupted-array');
-      const error = expectErr(result);
+      const result = await loadDesign(designId('corrupted-array'));
+      const error = expectStorageCorrupted(expectErr(result));
       expect(error.code).toBe('STORAGE_CORRUPTED');
       expect(error.key).toBe('corrupted-array');
     });
@@ -236,17 +260,19 @@ describe('DesignerStorage', () => {
   describe('listDesigns', () => {
     it('should list all designs sorted by updatedAt', async () => {
       await saveDesign({
-        id: 'first',
+        id: designId('first'),
         name: 'First',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
       await new Promise((r) => setTimeout(r, 10));
       await saveDesign({
-        id: 'second',
+        id: designId('second'),
         name: 'Second',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const result = await listDesigns();
@@ -262,18 +288,19 @@ describe('DesignerStorage', () => {
       delete oldParams.compartments;
 
       await saveDesign({
-        id: 'old-list-test',
+        id: designId('old-list-test'),
         name: 'Old Design in List',
-        // @ts-expect-error - Intentionally passing incomplete params
         params: oldParams,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const result = await listDesigns();
       const value = expectOk(result);
       expect(value.length).toBe(1);
-      expect(value[0].params.compartments).toBeDefined();
-      expect(value[0].params.compartments.cells).toBeDefined();
+      const params = expectBinParams(value[0]);
+      expect(params.compartments).toBeDefined();
+      expect(params.compartments.cells).toBeDefined();
     });
 
     it('should return empty list when no designs exist', async () => {
@@ -285,10 +312,11 @@ describe('DesignerStorage', () => {
     it('should filter out corrupted designs with null params', async () => {
       // Save one valid design
       await saveDesign({
-        id: 'valid-design',
+        id: designId('valid-design'),
         name: 'Valid Design',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Directly inject corrupted data to IndexedDB
@@ -321,10 +349,11 @@ describe('DesignerStorage', () => {
     it('should filter out corrupted designs with primitive params', async () => {
       // Save one valid design
       await saveDesign({
-        id: 'valid-design-2',
+        id: designId('valid-design-2'),
         name: 'Valid Design 2',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Directly inject corrupted data with string params
@@ -356,16 +385,18 @@ describe('DesignerStorage', () => {
     it('should handle mix of valid and corrupted designs', async () => {
       // Save valid designs
       await saveDesign({
-        id: 'valid-1',
+        id: designId('valid-1'),
         name: 'Valid 1',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
       await saveDesign({
-        id: 'valid-2',
+        id: designId('valid-2'),
         name: 'Valid 2',
         params: { ...DEFAULT_BIN_PARAMS, width: 3 },
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       // Add multiple corrupted entries
@@ -407,21 +438,22 @@ describe('DesignerStorage', () => {
   describe('deleteDesign', () => {
     it('should delete an existing design', async () => {
       await saveDesign({
-        id: 'delete-test',
+        id: designId('delete-test'),
         name: 'Delete Me',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
-      const deleteResult = await deleteDesign('delete-test');
+      const deleteResult = await deleteDesign(designId('delete-test'));
       expectOk(deleteResult);
 
-      const loadResult = await loadDesign('delete-test');
+      const loadResult = await loadDesign(designId('delete-test'));
       expectErr(loadResult);
     });
 
     it('should return error for non-existent design', async () => {
-      const result = await deleteDesign('nonexistent');
+      const result = await deleteDesign(designId('nonexistent'));
       expectErr(result);
     });
   });
@@ -429,24 +461,25 @@ describe('DesignerStorage', () => {
   describe('duplicateDesign', () => {
     it('should duplicate a design with new ID and name', async () => {
       await saveDesign({
-        id: 'original-design',
+        id: designId('original-design'),
         name: 'My Bin',
         params: { ...DEFAULT_BIN_PARAMS, width: 3 },
         thumbnail: 'data:image/test',
+        exportFileNameConfig: null,
       });
 
-      const result = await duplicateDesign('original-design');
+      const result = await duplicateDesign(designId('original-design'));
 
       const value = expectOk(result);
       expect(value.id).not.toBe('original-design');
       expect(value.id).toMatch(/^design_/);
       expect(value.name).toBe('Copy of My Bin');
-      expect(value.params.width).toBe(3);
+      expect(expectBinParams(value).width).toBe(3);
       expect(value.thumbnail).toBe('data:image/test');
     });
 
     it('should return error for non-existent design', async () => {
-      const result = await duplicateDesign('nonexistent');
+      const result = await duplicateDesign(designId('nonexistent'));
       expectErr(result);
     });
   });
@@ -454,23 +487,24 @@ describe('DesignerStorage', () => {
   describe('updateDesignParams', () => {
     it('should update params of existing design', async () => {
       await saveDesign({
-        id: 'params-test',
+        id: designId('params-test'),
         name: 'Params Test',
         params: DEFAULT_BIN_PARAMS,
         thumbnail: null,
+        exportFileNameConfig: null,
       });
 
       const newParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 4, height: 6 };
-      const result = await updateDesignParams('params-test', newParams);
+      const result = await updateDesignParams(designId('params-test'), newParams);
 
       const value = expectOk(result);
-      expect(value.params.width).toBe(4);
-      expect(value.params.height).toBe(6);
+      expect(expectBinParams(value).width).toBe(4);
+      expect(expectBinParams(value).height).toBe(6);
       expect(value.name).toBe('Params Test'); // name preserved
     });
 
     it('should return error for non-existent design', async () => {
-      const result = await updateDesignParams('nonexistent', DEFAULT_BIN_PARAMS);
+      const result = await updateDesignParams(designId('nonexistent'), DEFAULT_BIN_PARAMS);
       expectErr(result);
     });
   });
@@ -487,12 +521,12 @@ describe('DesignerStorage', () => {
     });
 
     it('should set and get active design ID', () => {
-      setActiveDesignId('test-design-123');
+      setActiveDesignId(designId('test-design-123'));
       expect(getActiveDesignId()).toBe('test-design-123');
     });
 
     it('should clear active design ID when set to null', () => {
-      setActiveDesignId('test-design-123');
+      setActiveDesignId(designId('test-design-123'));
       setActiveDesignId(null);
       expect(getActiveDesignId()).toBeNull();
     });
@@ -534,15 +568,16 @@ describe('DesignerStorage', () => {
     it('should load existing active design', async () => {
       // Create a design first
       const createResult = await saveDesign({
-        id: 'existing-design',
+        id: designId('existing-design'),
         name: 'Existing Design',
         params: { ...DEFAULT_BIN_PARAMS, width: 5 },
         thumbnail: null,
+        exportFileNameConfig: null,
       });
       expectOk(createResult);
 
       // Set it as active
-      setActiveDesignId('existing-design');
+      setActiveDesignId(designId('existing-design'));
 
       // Initialize should load it
       const result = await initializeDesigner();
@@ -550,12 +585,12 @@ describe('DesignerStorage', () => {
       const value = expectOk(result);
       expect(value.id).toBe('existing-design');
       expect(value.name).toBe('Existing Design');
-      expect(value.params.width).toBe(5);
+      expect(expectBinParams(value).width).toBe(5);
     });
 
     it('should create new design if active design was deleted', async () => {
       // Set a non-existent design as active
-      setActiveDesignId('deleted-design');
+      setActiveDesignId(designId('deleted-design'));
 
       const result = await initializeDesigner();
 

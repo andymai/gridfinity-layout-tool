@@ -11,6 +11,7 @@ describe('CutoutShapeToolbar', () => {
   const idleMode: InteractionMode = { type: 'idle' };
   const placingRect: InteractionMode = { type: 'placing', shape: 'rectangle' };
   const placingCircle: InteractionMode = { type: 'placing', shape: 'circle' };
+  const gridSizeProps = { gridSize: 0.5, onGridSizeChange: vi.fn() };
 
   it('renders pointer, rectangle, circle, and snap buttons', () => {
     render(
@@ -19,6 +20,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     expect(screen.getByTitle('binDesigner.cutouts.pointerTool')).toBeInTheDocument();
@@ -34,6 +36,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     const pointerButton = screen.getByTitle('binDesigner.cutouts.pointerTool');
@@ -48,6 +51,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -63,6 +67,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -78,6 +83,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -93,6 +99,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -108,6 +115,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -123,6 +131,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -138,6 +147,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={onSelectShape}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
 
@@ -153,6 +163,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={onSnapToggle}
+        {...gridSizeProps}
       />
     );
 
@@ -167,6 +178,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     const snapButton = screen.getByTitle('binDesigner.cutouts.snapToGrid');
@@ -180,6 +192,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={false}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     const snapButton = screen.getByTitle('binDesigner.cutouts.snapToGrid');
@@ -194,6 +207,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     expect(screen.getByText('binDesigner.cutouts.dragToDraw')).toBeInTheDocument();
@@ -206,6 +220,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     expect(screen.queryByText('binDesigner.cutouts.dragToDraw')).not.toBeInTheDocument();
@@ -218,6 +233,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
         onImportSvg={vi.fn()}
       />
     );
@@ -231,6 +247,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     expect(screen.queryByTitle('binDesigner.cutouts.importSvg')).not.toBeInTheDocument();
@@ -244,6 +261,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
         onImportSvg={onImportSvg}
       />
     );
@@ -259,6 +277,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
         onScanWithPhone={vi.fn()}
       />
     );
@@ -272,6 +291,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
       />
     );
     expect(screen.queryByTitle('binDesigner.cutouts.scanImport.title')).not.toBeInTheDocument();
@@ -285,6 +305,7 @@ describe('CutoutShapeToolbar', () => {
         onSelectShape={vi.fn()}
         snapEnabled={true}
         onSnapToggle={vi.fn()}
+        {...gridSizeProps}
         onScanWithPhone={onScanWithPhone}
       />
     );

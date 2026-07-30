@@ -111,6 +111,7 @@ describe('GhostDividerPieces', () => {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: false, pitch: 20 },
           y: { enabled: false, pitch: 20 },
         },
@@ -126,6 +127,7 @@ describe('GhostDividerPieces', () => {
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
         slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
           x: { enabled: true, pitch: 20 },
           y: { enabled: false, pitch: 20 },
         },

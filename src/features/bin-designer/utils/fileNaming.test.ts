@@ -52,7 +52,7 @@ describe('generateFileName', () => {
 
     it('should include label', () => {
       const name = generateFileName(
-        makeParams({ label: { enabled: true, text: 'Test', fontSize: 'auto' } }),
+        makeParams({ label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }),
         'stl',
         'descriptive'
       );
@@ -87,7 +87,7 @@ describe('generateFileName', () => {
         makeParams({
           style: 'slotted',
           compartments: { cols: 2, rows: 3, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
-          label: { enabled: true, text: 'Tools', fontSize: 'auto' },
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
           base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
         }),
         'stl',
@@ -142,7 +142,7 @@ describe('generateFileName', () => {
 
     it('should include features with design name in descriptive mode', () => {
       const name = generateFileName(
-        makeParams({ label: { enabled: true, text: 'Test', fontSize: 'auto' } }),
+        makeParams({ label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }),
         'stl',
         'descriptive',
         'Screwdriver Bin'

@@ -11,7 +11,10 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('three', () => ({
   DoubleSide: 2,
   Color: class {
-    constructor(public value?: string) {}
+    value?: string;
+    constructor(value?: string) {
+      this.value = value;
+    }
   },
   MeshBasicMaterial: class {
     dispose = vi.fn();

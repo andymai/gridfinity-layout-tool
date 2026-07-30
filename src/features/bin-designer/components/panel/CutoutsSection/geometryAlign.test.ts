@@ -4,7 +4,6 @@ import { alignSelection, distributeSelection } from './geometryAlign';
 
 function cutout(over: Partial<Cutout> & { id: string }): Cutout {
   return {
-    id: over.id,
     shape: 'rectangle',
     x: 0,
     y: 0,

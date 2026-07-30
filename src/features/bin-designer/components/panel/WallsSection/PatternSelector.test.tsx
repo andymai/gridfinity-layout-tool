@@ -37,7 +37,7 @@ describe('PatternSelector', () => {
   it('renders all pattern options in dropdown', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     const options = select.querySelectorAll('option');
 
     expect(options).toHaveLength(13);
@@ -59,7 +59,7 @@ describe('PatternSelector', () => {
   it('groups kumiko patterns under a Kumiko optgroup', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     const group = select.querySelector('optgroup');
     expect(group).toHaveAttribute('label', 'Kumiko');
     expect(group?.querySelectorAll('option')).toHaveLength(7);
@@ -76,14 +76,14 @@ describe('PatternSelector', () => {
   it('shows "none" as selected when pattern is null', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select.value).toBe('none');
   });
 
   it('shows honeycomb as selected when pattern is honeycomb', () => {
     render(<PatternSelector selectedPattern="honeycomb" onChange={() => {}} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select.value).toBe('honeycomb');
   });
 
@@ -91,7 +91,7 @@ describe('PatternSelector', () => {
     const onChange = vi.fn();
     render(<PatternSelector selectedPattern="honeycomb" onChange={onChange} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     fireEvent.change(select, { target: { value: 'none' } });
 
     expect(onChange).toHaveBeenCalledWith(null);
@@ -101,7 +101,7 @@ describe('PatternSelector', () => {
     const onChange = vi.fn();
     render(<PatternSelector selectedPattern={null} onChange={onChange} />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     fireEvent.change(select, { target: { value: 'honeycomb' } });
 
     expect(onChange).toHaveBeenCalledWith('honeycomb');
@@ -110,7 +110,7 @@ describe('PatternSelector', () => {
   it('disables the dropdown when disabled prop is true', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} disabled />);
 
-    const select = screen.getByRole('combobox');
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
     expect(select).toBeDisabled();
   });
 

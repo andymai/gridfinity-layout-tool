@@ -5,23 +5,26 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { ok } from '@/core/result';
 import type { SavedDesign } from '@/features/bin-designer/types';
+import { designId } from '@/core/types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
 const mockDesigns: SavedDesign[] = [
   {
-    id: 'design-1',
+    id: designId('design-1'),
     name: 'Tool Holder',
     params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2 },
     thumbnail: null,
+    exportFileNameConfig: null,
     createdAt: '2026-01-20T10:00:00.000Z',
     updatedAt: '2026-01-22T12:00:00.000Z',
   },
   {
-    id: 'design-2',
+    id: designId('design-2'),
     name: 'Screw Bin',
     params: { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 6 },
     thumbnail: 'data:image/png;base64,abc',
+    exportFileNameConfig: null,
     createdAt: '2026-01-19T08:00:00.000Z',
     updatedAt: '2026-01-21T15:00:00.000Z',
   },
@@ -43,7 +46,7 @@ describe('DesignListDialog', () => {
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok(mockDesigns));
     vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(ok(undefined));
     vi.mocked(DesignerStorage.duplicateDesign).mockResolvedValue(
-      ok({ ...mockDesigns[0], id: 'design-3', name: 'Copy of Tool Holder' })
+      ok({ ...mockDesigns[0], id: designId('design-3'), name: 'Copy of Tool Holder' })
     );
     vi.mocked(DesignerStorage.saveDesign).mockResolvedValue(
       ok({ ...mockDesigns[0], name: 'Renamed' })
@@ -283,7 +286,7 @@ describe('DesignListDialog', () => {
 
   it('renders all designs when there are more than 9 saved', async () => {
     const manyDesigns: SavedDesign[] = Array.from({ length: 12 }, (_, i) => ({
-      id: `design-${i + 1}`,
+      id: designId(`design-${i + 1}`),
       name: `Design ${i + 1}`,
       params: { ...DEFAULT_BIN_PARAMS, width: i + 1 },
       thumbnail: null,

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGeneration } from './useGeneration';
 import { useDesignerStore } from '../store';
+import { DEFAULT_GENERATION_STATE } from '../constants';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
 
@@ -96,7 +97,13 @@ describe('useGeneration', () => {
     // (forcing a fallback) can't change the next test's direct-mesh eligibility.
     useDesignerStore.setState({
       wasmStatus: 'unloaded',
-      generation: { status: 'idle', mesh: null, isDraft: false, progress: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        isDraft: false,
+        progress: 0,
+      },
       params: PRISTINE_PARAMS,
     });
   });

@@ -65,7 +65,7 @@ describe('designAdapter.list', () => {
   });
 
   it('returns [] when listDesigns errors', async () => {
-    listDesignsMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    listDesignsMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
     expect(await designAdapter.list()).toEqual([]);
   });
 });
@@ -278,7 +278,7 @@ describe('designAdapter.applyRemote', () => {
 
   it('throws when saveDesign fails', async () => {
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('x')));
-    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    saveDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
 
     await expect(
       designAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 })
@@ -293,7 +293,7 @@ describe('designAdapter.applyRemoteDelete', () => {
   });
 
   it('throws on other delete failures', async () => {
-    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('idb')));
+    deleteDesignMock.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
     await expect(designAdapter.applyRemoteDelete('x')).rejects.toThrow(/deleteDesign failed/);
   });
 

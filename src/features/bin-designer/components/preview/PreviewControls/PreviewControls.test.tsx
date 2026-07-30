@@ -5,9 +5,13 @@ import { PreviewControls } from './PreviewControls';
 describe('PreviewControls', () => {
   const defaultProps = {
     wireframe: false,
+    xray: false,
+    projection: 'perspective' as const,
     previewColor: '#d4d8dc',
     activePreset: null as 'front' | 'side' | 'top' | 'isometric' | null,
     onWireframeToggle: vi.fn(),
+    onXrayToggle: vi.fn(),
+    onProjectionToggle: vi.fn(),
     onColorChange: vi.fn(),
     onCameraPreset: vi.fn(),
     onResetView: vi.fn(),
