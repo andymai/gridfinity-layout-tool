@@ -272,9 +272,10 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with corrupted error for invalid legacy layout', async () => {
-      vi.mocked(backend.loadSync).mockReturnValue({
-        invalid: 'data',
-      } as Layout);
+      // A structurally valid Layout with a blank version fails salvageImport's
+      // structural check (version must be a non-empty string) — this drives
+      // the STORAGE_CORRUPTED path without faking an unrelated shape.
+      vi.mocked(backend.loadSync).mockReturnValue({ ...defaultLayout, version: '' });
 
       const result = await migrateFromLegacyStorageResult();
 

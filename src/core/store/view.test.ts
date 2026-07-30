@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useViewStore } from '@/core/store/view';
 import { CONSTRAINTS } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
+import { binId, categoryId } from '@/core/types';
 
 const getState = () => useViewStore.getState();
 
@@ -129,7 +130,7 @@ describe('view store', () => {
 
   describe('context menu', () => {
     it('showContextMenu with single ID opens menu', () => {
-      getState().showContextMenu('bin1', { x: 100, y: 200 });
+      getState().showContextMenu(binId('bin1'), { x: 100, y: 200 });
       const menu = getState().contextMenu;
       expect(menu).not.toBeNull();
       expect(menu?.binIds).toEqual(['bin1']);
@@ -138,18 +139,18 @@ describe('view store', () => {
     });
 
     it('showContextMenu with array of IDs opens menu', () => {
-      getState().showContextMenu(['bin1', 'bin2'], { x: 50, y: 75 });
+      getState().showContextMenu([binId('bin1'), binId('bin2')], { x: 50, y: 75 });
       const menu = getState().contextMenu;
       expect(menu?.binIds).toEqual(['bin1', 'bin2']);
     });
 
     it('showContextMenu with staging source sets source', () => {
-      getState().showContextMenu('bin1', { x: 0, y: 0 }, 'staging');
+      getState().showContextMenu(binId('bin1'), { x: 0, y: 0 }, 'staging');
       expect(getState().contextMenu?.source).toBe('staging');
     });
 
     it('hideContextMenu closes the menu', () => {
-      getState().showContextMenu('bin1', { x: 0, y: 0 });
+      getState().showContextMenu(binId('bin1'), { x: 0, y: 0 });
       expect(getState().contextMenu).not.toBeNull();
 
       getState().hideContextMenu();
@@ -159,7 +160,7 @@ describe('view store', () => {
 
   describe('highlighting', () => {
     it('setHighlightedCategoryId sets and clears category highlight', () => {
-      getState().setHighlightedCategoryId('cat1');
+      getState().setHighlightedCategoryId(categoryId('cat1'));
       expect(getState().highlightedCategoryId).toBe('cat1');
 
       getState().setHighlightedCategoryId(null);

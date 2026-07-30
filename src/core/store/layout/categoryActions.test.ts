@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { CONSTRAINTS } from '@/core/constants';
-import { categoryId } from '@/core/types';
+import { categoryId, gridUnits, heightUnits } from '@/core/types';
 import { isOk, isErr } from '@/core/result';
 import { resetAllStores, expectOk } from '@/test/testUtils';
 
@@ -92,11 +92,11 @@ describe('categoryActions', () => {
 
       addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: secondCatId,
         label: '',
         notes: '',

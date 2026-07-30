@@ -16,7 +16,9 @@ import {
   restoreSharedDesigns,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
+import type { Result, ValidationError, ValidationImportError } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr } from '@/test/testUtils';
 
@@ -44,27 +46,38 @@ vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   registryEdgeFields: () => ({}),
 }));
 
+function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
+  const error = expectErr(result);
+  expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+  if (error.code !== 'VALIDATION_IMPORT_FAILED') {
+    throw new Error(`Expected VALIDATION_IMPORT_FAILED, got ${error.code}`);
+  }
+  return error;
+}
+
 describe('storage-share', () => {
   // Create a test layout
   const createTestLayout = (): Layout => ({
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'cat-1', name: 'Red', color: '#ff0000' }],
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: categoryId('cat-1'), name: 'Red', color: '#ff0000' }],
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [
       {
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'layer-1',
-        category: 'cat-1',
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer-1'),
+        category: categoryId('cat-1'),
+        label: '',
+        notes: '',
       },
     ],
   });
@@ -401,14 +414,14 @@ describe('storage-share', () => {
 
       // Add more complex data
       layout.bins.push({
-        id: 'bin-2',
-        x: 3,
-        y: 3,
-        width: 3,
-        depth: 2,
-        height: 5,
-        layerId: 'layer-1',
-        category: 'cat-1',
+        id: binId('bin-2'),
+        x: gridUnits(3),
+        y: gridUnits(3),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(5),
+        layerId: layerId('layer-1'),
+        category: categoryId('cat-1'),
         label: 'Test Bin',
         notes: 'Some notes here',
       });
@@ -435,10 +448,15 @@ describe('storage-share', () => {
       // Verify bin data preserved (except IDs)
       const originalBin = layout.bins.find((b) => b.label === 'Test Bin');
       const decodedBin = decoded.bins.find((b) => b.label === 'Test Bin');
+      expect(originalBin).toBeDefined();
       expect(decodedBin).toBeDefined();
-      expect(decodedBin!.position).toEqual(originalBin!.position);
-      expect(decodedBin!.size).toEqual(originalBin!.size);
-      expect(decodedBin!.notes).toBe(originalBin!.notes);
+      if (!originalBin || !decodedBin) throw new Error('Test Bin missing from round-trip');
+      expect(decodedBin.x).toBe(originalBin.x);
+      expect(decodedBin.y).toBe(originalBin.y);
+      expect(decodedBin.width).toBe(originalBin.width);
+      expect(decodedBin.depth).toBe(originalBin.depth);
+      expect(decodedBin.height).toBe(originalBin.height);
+      expect(decodedBin.notes).toBe(originalBin.notes);
     });
   });
 
@@ -459,8 +477,7 @@ describe('storage-share', () => {
     it('returns Err with ValidationImportError on invalid JSON', () => {
       const result = importLayoutResult('not valid json{{{');
 
-      const error = expectErr(result);
-      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      const error = expectImportError(result);
       expect(error.kind).toBe('ValidationError');
       expect(error.errors.length).toBeGreaterThan(0);
       expect(error.errors[0]).toContain('Parse error');
@@ -469,8 +486,7 @@ describe('storage-share', () => {
     it('returns Err with validation errors on invalid layout structure', () => {
       const result = importLayoutResult(JSON.stringify({ invalid: 'data' }));
 
-      const error = expectErr(result);
-      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      const error = expectImportError(result);
       expect(error.errors.length).toBeGreaterThan(0);
       // Errors should describe what's missing
       expect(error.errors.some((e) => e.includes('drawer') || e.includes('Missing'))).toBe(true);
@@ -513,8 +529,7 @@ describe('storage-share', () => {
     it('returns Err on invalid encoded string', () => {
       const result = decodeLayoutResult('invalid!!!');
 
-      const error = expectErr(result);
-      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      const error = expectImportError(result);
       expect(error.errors.length).toBeGreaterThan(0);
     });
 
@@ -605,8 +620,7 @@ describe('storage-share', () => {
 
       const result = getSharedLayoutResult();
       expect(result).not.toBeNull();
-      const error = expectErr(result!);
-      expect(error.code).toBe('VALIDATION_IMPORT_FAILED');
+      const error = expectImportError(result!);
       expect(error.errors.length).toBeGreaterThan(0);
     });
   });
@@ -618,7 +632,7 @@ describe('storage-share', () => {
       const layout = createTestLayout();
       layout.bins = layout.bins.map((bin, i) => ({
         ...bin,
-        linkedDesignId: i === 0 ? 'design-1' : undefined,
+        linkedDesignId: i === 0 ? designId('design-1') : undefined,
       }));
       return layout;
     };
@@ -684,8 +698,13 @@ describe('storage-share', () => {
     it('includes only found designs when some are missing', async () => {
       const layout = createTestLayout();
       layout.bins = [
-        { ...layout.bins[0], linkedDesignId: 'design-1' },
-        { ...layout.bins[0], id: 'bin-2', x: 2, linkedDesignId: 'design-2' },
+        { ...layout.bins[0], linkedDesignId: designId('design-1') },
+        {
+          ...layout.bins[0],
+          id: binId('bin-2'),
+          x: gridUnits(2),
+          linkedDesignId: designId('design-2'),
+        },
       ];
 
       // Mock loadDesign: design-1 found, design-2 not found
@@ -741,7 +760,7 @@ describe('storage-share', () => {
 
     it('saves each embedded design to IndexedDB with fresh IDs', async () => {
       const layout = createTestLayout();
-      layout.bins[0].linkedDesignId = 'old-design-id';
+      layout.bins[0].linkedDesignId = designId('old-design-id');
 
       const json = JSON.stringify({
         ...layout,
@@ -780,7 +799,7 @@ describe('storage-share', () => {
 
     it('updates linkedDesignId references on bins', async () => {
       const layout = createTestLayout();
-      layout.bins[0].linkedDesignId = 'old-design-id';
+      layout.bins[0].linkedDesignId = designId('old-design-id');
 
       const json = JSON.stringify({
         ...layout,
@@ -845,7 +864,7 @@ describe('storage-share', () => {
 
     it('handles saveDesign failures gracefully', async () => {
       const layout = createTestLayout();
-      layout.bins[0].linkedDesignId = 'design-1';
+      layout.bins[0].linkedDesignId = designId('design-1');
 
       const json = JSON.stringify({
         ...layout,
@@ -864,8 +883,13 @@ describe('storage-share', () => {
     it('processes multiple designs correctly', async () => {
       const layout = createTestLayout();
       layout.bins = [
-        { ...layout.bins[0], linkedDesignId: 'design-1' },
-        { ...layout.bins[0], id: 'bin-2', x: 2, linkedDesignId: 'design-2' },
+        { ...layout.bins[0], linkedDesignId: designId('design-1') },
+        {
+          ...layout.bins[0],
+          id: binId('bin-2'),
+          x: gridUnits(2),
+          linkedDesignId: designId('design-2'),
+        },
       ];
 
       const json = JSON.stringify({
@@ -913,11 +937,11 @@ describe('storage-share', () => {
   describe('restoreSharedDesigns', () => {
     const SHARE_ID = 'abc123DEF456';
 
-    const layoutLinkedTo = (designId: string): Layout => {
+    const layoutLinkedTo = (remoteDesignId: string): Layout => {
       const layout = createTestLayout();
       layout.bins = layout.bins.map((bin, i) => ({
         ...bin,
-        linkedDesignId: i === 0 ? designId : undefined,
+        linkedDesignId: i === 0 ? designId(remoteDesignId) : undefined,
       }));
       return layout;
     };

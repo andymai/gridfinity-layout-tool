@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('drawerActions', () => {
   beforeEach(() => {
@@ -11,38 +12,38 @@ describe('drawerActions', () => {
   describe('updateDrawer', () => {
     it('updates drawer width', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
       expect(useLayoutStore.getState().layout.drawer.width).toBe(5);
     });
 
     it('updates drawer depth', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ depth: 6 });
+      updateDrawer({ depth: gridUnits(6) });
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(6);
     });
 
     it('clamps width to min', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ width: 0 });
+      updateDrawer({ width: gridUnits(0) });
       expect(useLayoutStore.getState().layout.drawer.width).toBe(CONSTRAINTS.GRID_MIN);
     });
 
     it('clamps width to max', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ width: 999 });
+      updateDrawer({ width: gridUnits(999) });
       expect(useLayoutStore.getState().layout.drawer.width).toBe(CONSTRAINTS.GRID_MAX);
     });
 
     it('clamps depth to min', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ depth: -1 });
+      updateDrawer({ depth: gridUnits(-1) });
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(CONSTRAINTS.GRID_MIN);
     });
 
     it('updates drawer height, clamped to at least total layer height', () => {
       const { updateDrawer } = useLayoutStore.getState();
       // Default layout has 1 layer with height 3
-      updateDrawer({ height: 1 });
+      updateDrawer({ height: heightUnits(1) });
       const h = useLayoutStore.getState().layout.drawer.height;
       // Should be at least the total layer height (3)
       expect(h).toBeGreaterThanOrEqual(3);
@@ -56,11 +57,11 @@ describe('drawerActions', () => {
       // Place bin at (8, 0) — valid in 10-wide drawer
       addBin({
         layerId: lid,
-        x: 8,
-        y: 0,
-        width: 2,
-        depth: 1,
-        height: 3,
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
@@ -69,7 +70,7 @@ describe('drawerActions', () => {
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(lid);
 
       // Shrink drawer to 5 wide — bin at x=8 is now out of bounds
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].layerId).toBe(STAGING_ID);
     });
@@ -79,12 +80,12 @@ describe('drawerActions', () => {
       useLayoutStore.setState((state) => ({
         layout: {
           ...state.layout,
-          bins: [createTestBin({ layerId: STAGING_ID, x: 99, y: 99 })],
+          bins: [createTestBin({ layerId: STAGING_ID, x: gridUnits(99), y: gridUnits(99) })],
         },
       }));
 
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ width: 3 });
+      updateDrawer({ width: gridUnits(3) });
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].layerId).toBe(STAGING_ID);
     });
@@ -96,16 +97,16 @@ describe('drawerActions', () => {
 
       addBin({
         layerId: lid,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
       });
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(lid);
     });
 
