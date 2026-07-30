@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.5...gridfinity-layout-tool-v4.329.6) (2026-07-30)
+
+
+### Bug Fixes
+
+* **lint:** ignore git worktree directories ([#3009](https://github.com/andymai/gridfinity-layout-tool/issues/3009)) ([cfd03f0](https://github.com/andymai/gridfinity-layout-tool/commit/cfd03f09682a6acf57944eca97209620dd026db7))
+
 ## [4.329.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.4...gridfinity-layout-tool-v4.329.5) (2026-07-30)
 
 
