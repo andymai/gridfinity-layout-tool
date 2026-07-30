@@ -11,6 +11,7 @@
 import * as z from 'zod';
 import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
+import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import type { CommandType } from '../commands';
 import {
   libraryCreateEntrySchema,
@@ -265,7 +266,7 @@ const baseplateParamsSchema = z.object({
   paddingAnchor: z.enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom']).optional(),
   connectorNubs: z.boolean().optional(),
   invertDovetails: z.boolean().optional(),
-  connectorStyle: z.enum(['dovetail', 'puzzle', 'dovetailKey', 'snapClip']).optional(),
+  connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),
   lightweight: z.boolean().optional(),
   solidFloor: z.boolean().optional(),
   solidFloorThickness: z.number().min(SOLID_FLOOR_MIN_MM).max(SOLID_FLOOR_MAX_MM).optional(),

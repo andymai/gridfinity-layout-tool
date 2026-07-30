@@ -10,6 +10,7 @@ import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
 import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
+import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { defineCommand } from '../../defineCommand';
 
 // StoredBaseplateParams has many fields, most optional; the schema is permissive
@@ -28,7 +29,7 @@ const payloadSchema = z.object({
       .enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'])
       .optional(),
     connectorNubs: z.boolean().optional(),
-    connectorStyle: z.enum(['dovetail', 'dovetailKey']).optional(),
+    connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),
     lightweight: z.boolean().optional(),
     solidFloor: z.boolean().optional(),
     solidFloorThickness: z.number().optional(),

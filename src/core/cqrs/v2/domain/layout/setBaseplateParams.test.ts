@@ -3,6 +3,7 @@ import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import type { StoredBaseplateParams } from '@/core/types';
 import { mm } from '@/core/types';
+import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { setBaseplateParams } from './setBaseplateParams';
 import { makeLayout } from './_testHelpers';
 
@@ -55,6 +56,16 @@ describe('v2 layout.setBaseplateParams', () => {
     if (!isOk(result)) throw new Error('handle failed');
     expect(result.value.event.payload.params.paddingAnchor).toBe('tr');
   });
+
+  it.each(BASEPLATE_CONNECTOR_STYLES)(
+    'payload schema accepts the %s connector style',
+    (connectorStyle) => {
+      const parsed = setBaseplateParams.payload.safeParse({
+        params: { ...baseParams, connectorNubs: true, connectorStyle },
+      });
+      expect(parsed.success).toBe(true);
+    }
+  );
 
   it('apply() installs the new params', () => {
     const layout = makeLayout();
