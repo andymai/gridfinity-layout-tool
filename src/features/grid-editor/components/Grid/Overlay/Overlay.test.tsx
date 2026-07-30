@@ -3,7 +3,8 @@ import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { Overlay } from './Overlay';
 import { useInteractionStore, useLayoutStore, useHalfGridModeStore } from '@/core/store';
-import { createDefaultLayout } from '@/core/constants';
+import { createDefaultLayout, STAGING_ID } from '@/core/constants';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 
 // Mock i18n
 vi.mock('@/i18n', () => ({
@@ -33,8 +34,8 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'draw',
-        start: { x: 0, y: 0 },
-        current: { x: 2, y: 2 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(2), y: gridUnits(2) },
       },
     });
     const { container } = render(<Overlay cellSize={32} gap={2} />);
@@ -43,18 +44,18 @@ describe('Overlay', () => {
 
   it('renders drag preview when valid', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
     useLayoutStore.setState({
       layout: {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -66,8 +67,9 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'drag',
-        binIds: [binId],
-        currentCoord: { x: 1, y: 1 },
+        binIds: [testBinId],
+        startCoord: { x: gridUnits(2), y: gridUnits(2) },
+        currentCoord: { x: gridUnits(1), y: gridUnits(1) },
         valid: true,
         isOverGrid: true,
       },
@@ -78,18 +80,18 @@ describe('Overlay', () => {
 
   it('renders resize preview', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
     useLayoutStore.setState({
       layout: {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -101,8 +103,20 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'resize',
-        binIds: [binId],
-        currentRects: new Map([[binId, { x: 2, y: 2, width: 3, depth: 3 }]]),
+        binIds: [testBinId],
+        handle: 'se',
+        startRects: new Map([
+          [
+            testBinId,
+            { x: gridUnits(2), y: gridUnits(2), width: gridUnits(2), depth: gridUnits(2) },
+          ],
+        ]),
+        currentRects: new Map([
+          [
+            testBinId,
+            { x: gridUnits(2), y: gridUnits(2), width: gridUnits(3), depth: gridUnits(3) },
+          ],
+        ]),
         valid: true,
       },
     });
@@ -112,19 +126,19 @@ describe('Overlay', () => {
 
   it('renders staging drag preview', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
     useLayoutStore.setState({
       layout: {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: '__staging__',
+            id: testBinId,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: STAGING_ID,
             category: defaultLayout.categories[0].id,
             label: '',
             notes: '',
@@ -135,8 +149,8 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'stagingDrag',
-        binId,
-        currentCoord: { x: 2, y: 2 },
+        binId: testBinId,
+        currentCoord: { x: gridUnits(2), y: gridUnits(2) },
         valid: true,
       },
     });
@@ -148,8 +162,8 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'paint',
-        start: { x: 0, y: 0 },
-        current: { x: 4, y: 4 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(4), y: gridUnits(4) },
         paintSize: { width: 2, depth: 2 },
       },
     });
@@ -162,8 +176,8 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'draw',
-        start: { x: 0, y: 0 },
-        current: { x: 1.5, y: 1.5 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1.5), y: gridUnits(1.5) },
       },
     });
     const { container } = render(<Overlay cellSize={32} gap={2} />);
@@ -172,18 +186,18 @@ describe('Overlay', () => {
 
   it('shows error indicator when drag is invalid', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
     useLayoutStore.setState({
       layout: {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -195,8 +209,9 @@ describe('Overlay', () => {
     useInteractionStore.setState({
       interaction: {
         type: 'drag',
-        binIds: [binId],
-        currentCoord: { x: 1, y: 1 },
+        binIds: [testBinId],
+        startCoord: { x: gridUnits(2), y: gridUnits(2) },
+        currentCoord: { x: gridUnits(1), y: gridUnits(1) },
         valid: false,
         isOverGrid: true,
         invalidReason: 'collision',

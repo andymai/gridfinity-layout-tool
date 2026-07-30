@@ -4,6 +4,7 @@ import { resetAllStores } from '@/test/testUtils';
 import { DrawerMargin } from './DrawerMargin';
 import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
+import { mm } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
 
 vi.mock('@/i18n', () => ({
@@ -15,15 +16,15 @@ function setPadding(padding: Partial<StoredBaseplateParams>): void {
   useLayoutStore.setState({
     layout: {
       ...layout,
-      gridUnitMm: 42,
+      gridUnitMm: mm(42),
       baseplateParams: {
         magnetHoles: false,
-        magnetDiameter: 6,
-        magnetDepth: 2,
-        paddingLeft: 0,
-        paddingRight: 0,
-        paddingFront: 0,
-        paddingBack: 0,
+        magnetDiameter: mm(6),
+        magnetDepth: mm(2),
+        paddingLeft: mm(0),
+        paddingRight: mm(0),
+        paddingFront: mm(0),
+        paddingBack: mm(0),
         ...padding,
       },
     },
@@ -49,7 +50,7 @@ describe('DrawerMargin', () => {
 
   it('extends per side by the padding, scaled to the grid pitch', () => {
     // gridUnitMm 42, pitch = cellSize + gap = 34px. 21mm = half a unit = 17px.
-    setPadding({ paddingLeft: 21, paddingBack: 42 });
+    setPadding({ paddingLeft: mm(21), paddingBack: mm(42) });
     const { getByLabelText } = render(<DrawerMargin cellSize={32} gap={2} />);
     const band = getByLabelText('grid.drawerMargin.tooltip');
     // left = -(21/42)*34 = -17; top (back) = -(42/42)*34 = -34.
@@ -64,7 +65,7 @@ describe('DrawerMargin', () => {
   });
 
   it('maps front padding to the bottom edge and right padding to the right', () => {
-    setPadding({ paddingFront: 42, paddingRight: 21 });
+    setPadding({ paddingFront: mm(42), paddingRight: mm(21) });
     const { getByLabelText } = render(<DrawerMargin cellSize={32} gap={2} />);
     const band = getByLabelText('grid.drawerMargin.tooltip');
     expect(band.style.bottom).toBe('-34px');
@@ -74,7 +75,7 @@ describe('DrawerMargin', () => {
   });
 
   it('clamps negative padding to zero', () => {
-    setPadding({ paddingLeft: -10, paddingRight: 21 });
+    setPadding({ paddingLeft: mm(-10), paddingRight: mm(21) });
     const { getByLabelText } = render(<DrawerMargin cellSize={32} gap={2} />);
     const band = getByLabelText('grid.drawerMargin.tooltip');
     expect(band.style.left).toBe('0px');
@@ -92,7 +93,7 @@ describe('shaped drawer', () => {
     useLayoutStore.setState({
       layout: {
         ...layout,
-        gridUnitMm: 42,
+        gridUnitMm: mm(42),
         drawer: {
           ...layout.drawer,
           outline: {
@@ -108,14 +109,14 @@ describe('shaped drawer', () => {
         },
         baseplateParams: {
           magnetHoles: false,
-          magnetDiameter: 6,
-          magnetDepth: 2,
-          paddingLeft: 10,
-          paddingRight: 10,
-          paddingFront: 10,
-          paddingBack: 10,
+          magnetDiameter: mm(6),
+          magnetDepth: mm(2),
+          paddingLeft: mm(10),
+          paddingRight: mm(10),
+          paddingFront: mm(10),
+          paddingBack: mm(10),
         },
-      } as never,
+      },
     });
     const { container } = render(<DrawerMargin cellSize={40} gap={2} />);
     expect(container.firstChild).toBeNull();

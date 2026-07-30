@@ -20,7 +20,13 @@ function props(bin: Bin): BinProps {
 }
 
 function bin(overhang?: OverhangConfig): Bin {
-  return createTestBin({ x: 0, y: 0, width: 1, depth: 1, overhang });
+  return createTestBin({
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    overhang,
+  });
 }
 
 describe('binPropsAreEqual — overhang', () => {

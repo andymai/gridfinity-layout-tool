@@ -4,6 +4,7 @@ import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { getBinId } from '@/test/testUtils';
 import { createMockGridRef, setupStores } from './useInteraction.testUtils';
@@ -21,11 +22,11 @@ describe('startDrag', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -59,11 +60,11 @@ describe('startDrag', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -73,11 +74,11 @@ describe('startDrag', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -112,11 +113,11 @@ describe('startDrag', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -126,11 +127,11 @@ describe('startDrag', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -161,7 +162,7 @@ describe('startDrag', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDrag('non-existent-id', 50, 50);
+      result.current.startDrag(binId('non-existent-id'), 50, 50);
     });
 
     expect(useInteractionStore.getState().interaction).toBeNull();
@@ -181,11 +182,11 @@ describe('drag pointer events', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -223,11 +224,11 @@ describe('drag pointer events', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -259,11 +260,11 @@ describe('drag pointer events', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -302,11 +303,11 @@ describe('drag pointer events', () => {
     // Add a bin at position (2, 2)
     const addResult = useLayoutStore.getState().addBin({
       layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
+      x: gridUnits(2),
+      y: gridUnits(2),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
       category: categoryId,
       label: 'Test',
       notes: '',
@@ -342,11 +343,11 @@ describe('drag pointer events', () => {
 
     const addResult = useLayoutStore.getState().addBin({
       layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
       category: categoryId,
       label: '',
       notes: '',
@@ -391,11 +392,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: '',
@@ -427,11 +428,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: 'Test notes',
@@ -455,8 +456,8 @@ describe('duplicate drag (Alt+drag)', () => {
         interaction: {
           type: 'drag',
           binIds: [binId],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 3, y: 0 }, // Delta: move 3 units right
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(3), y: gridUnits(0) }, // Delta: move 3 units right
           valid: true,
           isOverGrid: true,
           duplicate: true,
@@ -498,11 +499,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin 1',
         notes: '',
@@ -512,11 +513,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin 2',
         notes: '',
@@ -543,8 +544,8 @@ describe('duplicate drag (Alt+drag)', () => {
         interaction: {
           type: 'drag',
           binIds: [binId1, binId2],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 0, y: 3 }, // Delta: move 3 units up
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(3) }, // Delta: move 3 units up
           valid: true,
           isOverGrid: true,
           duplicate: true,
@@ -591,11 +592,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -614,8 +615,8 @@ describe('duplicate drag (Alt+drag)', () => {
         interaction: {
           type: 'drag',
           binIds: [binId],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 0, y: 0 },
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(0) },
           valid: false, // Invalid position
           isOverGrid: true,
           duplicate: true,
@@ -641,11 +642,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -664,8 +665,8 @@ describe('duplicate drag (Alt+drag)', () => {
         interaction: {
           type: 'drag',
           binIds: [binId],
-          startCoord: { x: 2, y: 2 },
-          currentCoord: { x: 0, y: 0 }, // No delta
+          startCoord: { x: gridUnits(2), y: gridUnits(2) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(0) }, // No delta
           valid: true,
           isOverGrid: true,
           duplicate: true,
@@ -691,11 +692,11 @@ describe('duplicate drag (Alt+drag)', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -712,8 +713,8 @@ describe('duplicate drag (Alt+drag)', () => {
         interaction: {
           type: 'drag',
           binIds: [binId],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 3, y: 0 },
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(3), y: gridUnits(0) },
           valid: true,
           isOverGrid: true,
           duplicate: true,
@@ -747,11 +748,11 @@ describe('drag completion with movement', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -768,8 +769,8 @@ describe('drag completion with movement', () => {
         interaction: {
           type: 'drag',
           binIds: [binId],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 3, y: 2 }, // Move delta: (3, 2)
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(3), y: gridUnits(2) }, // Move delta: (3, 2)
           valid: true,
           isOverGrid: true,
         },
@@ -796,11 +797,11 @@ describe('drag completion with movement', () => {
     const binId1 = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -810,11 +811,11 @@ describe('drag completion with movement', () => {
     const binId2 = getBinId(
       addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -831,8 +832,8 @@ describe('drag completion with movement', () => {
         interaction: {
           type: 'drag',
           binIds: [binId1, binId2],
-          startCoord: { x: 0, y: 0 },
-          currentCoord: { x: 0, y: 3 }, // Move delta: (0, 3)
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(3) }, // Move delta: (0, 3)
           valid: true,
           isOverGrid: true,
         },
