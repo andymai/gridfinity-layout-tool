@@ -24,6 +24,14 @@ import type { BinParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import type { CellMask } from '@/shared/utils/cellMask';
+import {
+  buildFullMask,
+  countFilled,
+  isPartialMask,
+  validateMask,
+  MASK_CELLS_PER_UNIT,
+} from '@/shared/utils/cellMask';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { exportBin } from './binExporter';
 import { clearAllCaches } from './shapeCache';
@@ -83,6 +91,35 @@ function withCompartments(
     ...overrides,
     compartments: { cols, rows, cells: [...cells], thickness: 1.2 },
   };
+}
+
+/**
+ * Full-bin mask with whole grid-unit quadrants cleared, given as `[col, row]`
+ * in grid units. Masks store half-bin cells (MASK_CELLS_PER_UNIT per unit), so
+ * one quadrant covers a 2×2 block of cells.
+ */
+function maskWithoutQuadrants(
+  widthUnits: number,
+  depthUnits: number,
+  quadrants: readonly (readonly [number, number])[]
+): CellMask {
+  const mask = buildFullMask(widthUnits, depthUnits);
+  const cells = [...mask.cells];
+  const n = MASK_CELLS_PER_UNIT;
+  for (const [qx, qy] of quadrants) {
+    for (let dy = 0; dy < n; dy++) {
+      for (let dx = 0; dx < n; dx++) {
+        cells[(qy * n + dy) * mask.cols + (qx * n + dx)] = 0;
+      }
+    }
+  }
+  const result = { ...mask, cells };
+  // Without this, an indexing slip would yield a full mask and every polygon
+  // test below would silently pass while exercising a plain rectangle.
+  expect(countFilled(result)).toBe(countFilled(mask) - quadrants.length * n * n);
+  expect(isPartialMask(result)).toBe(true);
+  expect(validateMask(result)).toBeNull();
+  return result;
 }
 
 describe('compartmentBuilder — partition export manifold-ness (issue #1753)', () => {
@@ -165,30 +202,42 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
     TEST_TIMEOUT_MS
   );
 
-  // ── Known gap (polygon-mask + compartments) ─────────────────────────────
-  // Bins with a non-rectangular footprint (L/T/U cellMask) still take the
-  // additive-fuse compartment path and remain susceptible to the original
-  // T-junction non-manifold bug. The multi-cavity-cut path in `buildBinBox`
-  // only handles rectangular footprints today; extending it to clip
-  // compartment cavities against an arbitrary polygon mask is a follow-up.
-  // Unskip and verify when that work lands.
-  it.skip(
-    'TODO #1753 follow-up: L-shaped (polygon-mask) bin with compartments exports watertight STL',
+  // ── Non-rectangular footprints (polygon mask + compartments) ────────────
+  // A masked bin takes a different compartment path than a plain rectangle,
+  // so it needs its own manifold coverage. Masks are at half-bin resolution
+  // (MASK_CELLS_PER_UNIT), hence a 2×2 bin carrying a 4×4 mask.
+  it(
+    'L-shaped (polygon-mask) bin with compartments exports watertight STL',
     async () => {
       clearAllCaches();
-      const cellMask = {
-        cols: 2,
-        rows: 2,
-        cells: [true, true, true, false], // L-shape: bottom-right cell missing
-      };
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         width: 2,
         depth: 2,
-        cellMask,
+        cellMask: maskWithoutQuadrants(2, 2, [[1, 0]]),
         compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       };
       expectWatertight(analyzeManifold((await exportBin(params, 'stl')).data), 'L-shape mask');
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'T-shaped (polygon-mask) bin with 2×2 compartments exports watertight STL',
+    async () => {
+      clearAllCaches();
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        // Both bottom corners removed — two reflex corners rather than one.
+        cellMask: maskWithoutQuadrants(3, 2, [
+          [0, 0],
+          [2, 0],
+        ]),
+        compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+      };
+      expectWatertight(analyzeManifold((await exportBin(params, 'stl')).data), 'T-shape mask');
     },
     TEST_TIMEOUT_MS
   );
@@ -201,12 +250,11 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
  * matrix.
  *
  * Diagnosis note: the reporter's bin was non-manifold, but the matrix
- * below (which excludes label tabs) is manifold across the board. The
- * actual non-manifold trigger turned out to be the label-tab feature
- * the reporter had enabled — its gusset back faces sit coincident with
- * the bin's inner back wall on fuse, leaving duplicate triangles that
- * BambuStudio reports. That case is captured as it.skip TODO tests at
- * the end of this describe block (see follow-up comments).
+ * below (which excludes label tabs) was manifold across the board. The
+ * actual trigger was the label-tab feature the reporter had enabled —
+ * its gusset back faces fused coincident with the bin's inner back wall,
+ * leaving the duplicate triangles BambuStudio reports. The two tests at
+ * the end of this block cover that combination.
  *
  * Matrix axes (kept tight to fit the test budget):
  *   - halfSockets {true, false}        — confirms halfSockets doesn't
@@ -411,26 +459,13 @@ describe('compartmentBuilder — half-sockets + tilted divider manifold (issue #
     TEST_TIMEOUT_MS
   );
 
-  // Label-tab repro: the actual feature combination the reporter must
-  // have had (their 3MF has ~35336 triangles, matching label-enabled +
-  // tilted divider on a 1.5×6×6 halfSockets bin). The reporter mentioned
-  // only the tilted divider; investigation showed the non-manifold edges
-  // are produced by the label tab's gusset back faces (coplanar with the
-  // bin's inner back wall), independent of the divider tilt.
-  //
-  // TODO(#1822 follow-up): drive the residual ~444 NM to 0. Diagnosed
-  // root cause is OCCT GFA leaving the gusset back faces coincident with
-  // the bin's inner back wall on fuse — neither `simplify`, fuzzy-value
-  // tolerance, `COPLANAR_OVERLAP` overshoot, nor a final `simplify()`
-  // pass coalesces them. The `optimisation: 'sameFace'` hint does fix it
-  // (drops to ~126) but makes OCCT throw on scoop and split-bin fuses
-  // where no exact-shared face exists, so it can't be applied globally
-  // in booleanStage. Likely needs per-target fuse options (split the
-  // booleanStage into label-tab-aware passes) or a structural rework
-  // (cut a slot in the wall and seat the tab into it rather than
-  // fusing). Tracking as known gap until then.
-  it.skip(
-    'TODO #1822 follow-up: 1.5×6 halfSockets + ±40mm tilted divider + label tab — full reporter config',
+  // Label-tab repro: the reporter's actual feature combination (their 3MF has
+  // ~35336 triangles, matching label-enabled + tilted divider on a 1.5×6×6
+  // halfSockets bin). The label tab, not the divider tilt, was what produced
+  // the non-manifold edges — its gusset back faces fused coincident with the
+  // bin's inner back wall.
+  it(
+    '1.5×6 halfSockets + ±40mm tilted divider + label tab — full reporter config',
     async () => {
       clearAllCaches();
       const base = withCompartments(1, 2, [0, 1], { width: 1.5, depth: 6, height: 6 });
@@ -446,12 +481,10 @@ describe('compartmentBuilder — half-sockets + tilted divider manifold (issue #
     TEST_TIMEOUT_MS
   );
 
-  // Label tab + axis-aligned divider — both compartments get tabs. Same
-  // gusset-back-face coplanarity bug as above, slightly higher NM count
-  // (~642) because both compartments contribute gusset arrays. See the
-  // TODO on the previous test for the diagnosed root cause.
-  it.skip(
-    'TODO #1822 follow-up: 1.5×6 halfSockets + axis-aligned divider + label tab — both compartments tabbed',
+  // Label tab + axis-aligned divider — both compartments get tabs, so both
+  // contribute gusset arrays. Isolates the gussets from the divider tilt.
+  it(
+    '1.5×6 halfSockets + axis-aligned divider + label tab — both compartments tabbed',
     async () => {
       clearAllCaches();
       const base = withCompartments(1, 2, [0, 1], { width: 1.5, depth: 6, height: 6 });
