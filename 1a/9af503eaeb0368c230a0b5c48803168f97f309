@@ -1,0 +1,113 @@
+src/design-system/Checkbox/Checkbox.test.tsx
+  s_bb8f1233002a7e::t_5091ec54bf2d40 76
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.test.tsx
+  s_bb8f1233002a7e::t_42b8cc63a184e5 6
+  s_bb8f1233002a7e::t_f9ef35e65a6064 22
+  s_bb8f1233002a7e::t_eb19e09246c746 51
+  s_bb8f1233002a7e::t_dc3ce3e2be489d 80
+  s_bb8f1233002a7e::t_9de17ecdd7918d 27-29
+  s_bb8f1233002a7e::t_ef737253f07339 56
+src/shell/LayoutThumbnail/LayoutThumbnail.test.tsx
+  s_bb8f1233002a7e::t_dfd1f7e5b37b5c 8-9,17-18,23-24
+  s_bb8f1233002a7e::t_332dbe0c71d8e8 5,10-12,19-21
+  s_bb8f1233002a7e::t_fc02ae00295fb6 25-31
+src/shell/Mobile/BinContextMenuWrapper/BinContextMenuWrapper.test.tsx
+  s_bb8f1233002a7e::t_0ae17bb022d95a 6
+  s_bb8f1233002a7e::t_34d43e41f4e23e 23
+  s_bb8f1233002a7e::t_e16464bd449a47 24,32-34
+  s_bb8f1233002a7e::t_42e941f2e38cc6 25-31,35-36,39-41
+src/design-system/Select/Select.test.tsx
+  s_bb8f1233002a7e::t_7dd11cf47dd2c7 32
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_bb8f1233002a7e::t_f2d9f704587b0b 205
+  s_bb8f1233002a7e::t_c19eec4aba09b0 183-184,186
+  s_bb8f1233002a7e::t_8f4bc5baf4985a 12
+  s_bb8f1233002a7e::t_7fbb9f327fbfa3 193-195
+  s_bb8f1233002a7e::t_37221ed2d0bf46 11
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_bb8f1233002a7e::t_a9eac7cadb405d 45,54
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.test.tsx
+  s_bb8f1233002a7e::t_1d925bfcea9628 11
+src/design-system/Popover/Popover.test.tsx
+  s_bb8f1233002a7e::t_01d1fe3293268b 7
+src/shell/Collab/CollabGhosts/CollabGhosts.test.tsx
+  s_bb8f1233002a7e::t_a043a65c1541b2 6
+  s_bb8f1233002a7e::t_891feedf8fdd59 48,64,67-71,81-92,101,104-108,118-129,138,154,157-161,174,177-181
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.test.tsx
+  s_bb8f1233002a7e::t_a0716395048f2b 82-84
+  s_bb8f1233002a7e::t_cc8a0549b3d6b0 73
+src/shell/Sidebar/Sidebar.test.tsx
+  s_bb8f1233002a7e::t_84523ddc263a5b 10
+  s_bb8f1233002a7e::t_5c9f1845f07a66 262,270,340,351,362,371,380,390
+src/shell/Header/Header.test.tsx
+  s_bb8f1233002a7e::t_39e0f0703b2634 8
+  s_bb8f1233002a7e::t_8201d63a30637e 60
+src/design-system/SliderInput/EditableValueBadge.test.tsx
+  s_bb8f1233002a7e::t_ef059a83ec319c 64
+src/shared/components/DeferredNumberInput/DeferredNumberInput.test.tsx
+  s_bb8f1233002a7e::t_3938319bf9fa6a 234
+src/shell/Print/SplitPreview/SplitPreview.test.tsx
+  s_bb8f1233002a7e::t_a7c5088fbc53c6 5,9-10
+src/shell/AppShell.scenario.accessibility.test.tsx
+  s_bb8f1233002a7e::t_715a17897dd6f9 89-92
+src/shell/Mobile/BinContextMenu/BinContextMenu.test.tsx
+  s_bb8f1233002a7e::t_98d5aaa26b49bd 68
+  s_bb8f1233002a7e::t_b2519798245e57 6
+src/shell/RightPanel/RightPanel.test.tsx
+  s_bb8f1233002a7e::t_f18ec8f2d7c0e1 735,737,744-753
+  s_bb8f1233002a7e::t_e4ca56c8a8c34f 528,530,537-540,583,585,592-595,706,708,715-718,889,891,898-901
+  s_bb8f1233002a7e::t_13b3271c222537 6
+  s_bb8f1233002a7e::t_0ae54954b818a2 7-8
+  s_bb8f1233002a7e::t_ecf77c7b196a38 205-206,210
+  s_bb8f1233002a7e::t_83118cb633ad37 631,633,635,639,642-645
+  s_bb8f1233002a7e::t_a711c291657f72 355,389
+  s_bb8f1233002a7e::t_cf95b4734ce203 185,188-189,192-193
+  s_bb8f1233002a7e::t_038d1ee0e1eaec 156,158-159,162-166,169,171
+  s_bb8f1233002a7e::t_69ec696ecfa742 428,430,432,439-442
+  s_bb8f1233002a7e::t_c984f8e070c391 244
+  s_bb8f1233002a7e::t_386dced62a2117 227-228
+src/shell/DragPreview/DragPreview.test.tsx
+  s_bb8f1233002a7e::t_3c153c914fb083 40-47,57
+  s_bb8f1233002a7e::t_a18fd76e6892f2 5
+  s_bb8f1233002a7e::t_9b9d20525c58d9 265
+  s_bb8f1233002a7e::t_5a2d42c3b4a9b0 101-111,179-181,195,208,222-224,238-240,257-264,266-270,297,317-319,350-352,376,385
+src/shell/Collab/CollabCursor/CollabCursor.test.tsx
+  s_bb8f1233002a7e::t_05a48cf1828eb9 100-104
+  s_bb8f1233002a7e::t_6ea059fa954277 111-116
+  s_bb8f1233002a7e::t_562aea7ccad3a3 7,16,25
+  s_bb8f1233002a7e::t_2f491ff5dc316b 78-82
+  s_bb8f1233002a7e::t_fe536b6ef42c35 65-69
+src/shell/Modals/ImportModal/ImportModal.test.tsx
+  s_bb8f1233002a7e::t_56a80501a418aa 6
+  s_bb8f1233002a7e::t_9d93b39d1b32af 386-392
+  s_bb8f1233002a7e::t_ca7516426fb0e8 413-418
+  s_bb8f1233002a7e::t_d3ea11017401f2 151
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.test.tsx
+  s_bb8f1233002a7e::t_fdcc5e932c3aa7 7
+  s_bb8f1233002a7e::t_63468b1e1bb7a6 8
+  s_bb8f1233002a7e::t_06282e1b27141e 52-71,73,76-78,82,84-86,91,93-95
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_2294a917083c9b 3
+src/shell/Collab/CollabCursors/CollabCursors.test.tsx
+  s_bb8f1233002a7e::t_498f84d712ca35 5,32-33,73,91,99,112,121,130-131,147,155,167,175
+src/shell/Collab/CollabSelectionRings/CollabSelectionRings.test.tsx
+  s_bb8f1233002a7e::t_bb01d5c509668c 6-7,23-24,51,65-76,84,98-109,117,131-142,150,164-174,182
+src/shell/Collab/PresenceAvatars/PresenceAvatars.test.tsx
+  s_bb8f1233002a7e::t_3d422d4f2ed631 33-34,87-88,109-110,131-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1a9af503eaeb0368c230a0b5c48803168f97f309",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
