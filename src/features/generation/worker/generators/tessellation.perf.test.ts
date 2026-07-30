@@ -62,7 +62,7 @@ describe('tessellation performance budget', () => {
       width: 2,
       depth: 2,
       height: 4,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
     });
     const avgMs = benchmarkGeneration(params);
 
@@ -76,7 +76,7 @@ describe('tessellation performance budget', () => {
       width: 4,
       depth: 4,
       height: 4,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
     });
     const avgMs = benchmarkGeneration(params);
 
@@ -90,7 +90,7 @@ describe('tessellation performance budget', () => {
       width: 8,
       depth: 8,
       height: 4,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
     });
     const avgMs = benchmarkGeneration(params);
 

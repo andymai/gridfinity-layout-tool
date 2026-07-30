@@ -58,7 +58,7 @@ describe('defer-socket correctness vs features that reach the socket', () => {
           width: 2,
           depth: 2,
           height: 3,
-          base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
         })
       )
     );

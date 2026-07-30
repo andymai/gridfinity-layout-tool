@@ -18,6 +18,7 @@ import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAss
 import type { BoundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, WallTextSide } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { canBinUseDirectMesh } from './binDirectMesh';
 import { WALL_TEXT_MAX_EMBOSS } from './wallTextLayout';
 
@@ -184,7 +185,7 @@ describe('wall surface text scenarios', () => {
 
   it('polygon (cellMask) bins ignore wall text', () => {
     const generateBin = getGenerateBin();
-    const mask = {
+    const mask: CellMask = {
       cols: 4,
       rows: 4,
       cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],

@@ -34,7 +34,7 @@ const NO_CONNECTORS: SplitConnectorConfig = {
 };
 
 /** Sum triangle counts across all pieces. */
-function totalTris(pieces: { indices: { length: number } }[]): number {
+function totalTris(pieces: readonly { indices: { length: number } }[]): number {
   return pieces.reduce((sum, p) => sum + p.indices.length / 3, 0);
 }
 

@@ -9,6 +9,13 @@ import { describe as describeSolid, measureVolume, exportSTEP, unwrap, getKernel
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import { isOk } from '@/core/result';
+
+function unwrapVolume(solid: Shape3D): number {
+  const result = measureVolume(solid);
+  if (!isOk(result)) throw new Error('measureVolume failed');
+  return result.value;
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +104,7 @@ export function collectTopologyStats(solid: Shape3D): TopologyStats {
     faceCount: desc.faceCount,
     edgeCount: desc.edgeCount,
     vertexCount: desc.vertexCount,
-    volume: measureVolume(solid),
+    volume: unwrapVolume(solid),
     eulerCharacteristic: desc.vertexCount - desc.edgeCount + desc.faceCount,
   };
 }
@@ -128,7 +135,7 @@ export function collectTopologyStatsRaw(
     faceCount,
     edgeCount,
     vertexCount,
-    volume: measureVolume(solid),
+    volume: unwrapVolume(solid),
     eulerCharacteristic: vertexCount - edgeCount + faceCount,
   };
 }

@@ -22,7 +22,7 @@ describe('export shell cache', () => {
       width: 6,
       depth: 6,
       height: 4,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
     });
     clearAllCaches();
     let t = performance.now();

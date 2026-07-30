@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isErr } from '@/core/result';
 import { initTestKernel } from '@/test/initTestKernel';
+import { makeInsert } from './__kernel-tests__/scenarioTypes';
 
 type BuildCompartmentWallsFn = (
   params: BinParams,
@@ -270,7 +271,15 @@ describe('buildInsertCuts', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       inserts: [
-        { shape: 'circle', width: 20, depth: 20, cutDepth: 5, x: 0, y: 0, cornerRadius: 0 },
+        makeInsert({
+          shape: 'circle',
+          width: 20,
+          depth: 20,
+          cutDepth: 5,
+          x: 0,
+          y: 0,
+          cornerRadius: 0,
+        }),
       ],
     };
     const result = buildInsertCuts(params);
@@ -283,7 +292,7 @@ describe('buildInsertCuts', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       inserts: [
-        {
+        makeInsert({
           shape: 'rounded-rect',
           width: 30,
           depth: 20,
@@ -291,7 +300,7 @@ describe('buildInsertCuts', () => {
           x: 0,
           y: 0,
           cornerRadius: 3,
-        },
+        }),
       ],
     };
     const result = buildInsertCuts(params);
@@ -577,6 +586,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 0,
         depth: 0,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
@@ -597,6 +607,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 70,
         depth: 50,
         front: DISABLED_WALL_CUTOUT,
@@ -615,6 +626,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 0,
         depth: 0,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
@@ -635,6 +647,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 0,
         depth: 0,
         front: DISABLED_WALL_CUTOUT,
@@ -654,6 +667,7 @@ describe('buildWallCutoutCuts', () => {
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 70,
         depth: 50,
         front: DISABLED_WALL_CUTOUT,
@@ -674,6 +688,7 @@ describe('buildWallCutoutCuts', () => {
       ...DEFAULT_BIN_PARAMS,
       walls: {
         enabled: true,
+        shape: 'u-shape',
         width: 0,
         depth: 0,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },

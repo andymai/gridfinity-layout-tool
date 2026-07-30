@@ -7,9 +7,10 @@ import {
   computeDividerJunctionZones,
 } from './dividerBlendBuilder';
 import type { BinParams } from '@/shared/types/bin';
-import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 
 const BASE_PARAMS: BinParams = {
+  ...DEFAULT_BIN_PARAMS,
   width: 2,
   depth: 2,
   height: 3,
@@ -17,22 +18,12 @@ const BASE_PARAMS: BinParams = {
   heightUnitMm: 7,
   wallThickness: 1.2,
   style: 'standard',
-  slotConfig: {
-    x: { enabled: false, pitch: 20 },
-    y: { enabled: false, pitch: 20 },
-  },
-  base: { magnetHoles: false, screwHoles: false },
-  lip: true,
-  label: { enabled: false, width: 12, angle: 45, overhangAngle: 60 },
   compartments: {
-    enabled: true,
     rows: 1,
     cols: 2,
     thickness: 1.2,
     cells: [0, 1],
   },
-  inserts: [],
-  wallPattern: { enabled: false, pattern: 'honeycomb' as const },
   walls: {
     enabled: true,
     shape: 'u-shape' as const,
@@ -44,8 +35,7 @@ const BASE_PARAMS: BinParams = {
     right: DISABLED_WALL_CUTOUT,
     interior: DISABLED_WALL_CUTOUT,
   },
-  exportFileName: { template: 'gridfinity_{w}x{d}x{h}', separator: '_' },
-} as BinParams;
+};
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...BASE_PARAMS, ...overrides };
@@ -106,14 +96,14 @@ describe('resolveOuterCutouts', () => {
 describe('collectDividers', () => {
   it('returns empty for single-compartment bins', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 1, thickness: 1.2, cells: [0] },
+      compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
     expect(collectDividers(params, INNER_W, INNER_D)).toEqual([]);
   });
 
   it('returns empty when all cells share one ID', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 2, thickness: 1.2, cells: [0, 0] },
+      compartments: { rows: 1, cols: 2, thickness: 1.2, cells: [0, 0] },
     });
     expect(collectDividers(params, INNER_W, INNER_D)).toEqual([]);
   });
@@ -129,7 +119,7 @@ describe('collectDividers', () => {
 
   it('returns vertical and horizontal dividers for 2×2 grid', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 2, cols: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+      compartments: { rows: 2, cols: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
     });
     const dividers = collectDividers(params, INNER_W, INNER_D);
     const verticals = dividers.filter((d) => d.axis === 'vertical');
@@ -140,7 +130,7 @@ describe('collectDividers', () => {
 
   it('omits walls between merged cells', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 0, 1] },
+      compartments: { rows: 1, cols: 3, thickness: 1.2, cells: [0, 0, 1] },
     });
     const dividers = collectDividers(params, INNER_W, INNER_D);
     // Only one divider between cell 1 (id=0) and cell 2 (id=1)
@@ -162,7 +152,7 @@ describe('buildDividerBlends', () => {
 
   it('returns null for single-compartment bins', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 1, thickness: 1.2, cells: [0] },
+      compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
     expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, true)).toBeNull();
   });
@@ -191,7 +181,7 @@ describe('computeRampZones', () => {
 
   it('returns empty when no dividers exist', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 1, thickness: 1.2, cells: [0] },
+      compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
     expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
   });
@@ -206,7 +196,7 @@ describe('computeRampZones', () => {
     // Gap from cutout edge to nearest divider: 13.6 - 12.24 = 1.36mm — a
     // sub-wall sliver → the ramp blends the divider end.
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+      compartments: { rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
       walls: {
         ...BASE_PARAMS.walls,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 30, depth: 80 },
@@ -232,7 +222,7 @@ describe('computeRampZones', () => {
     // (15.84mm at 80% depth) — a tall cutout slanting a straight divider a
     // whole compartment away. A tall/narrow cutout must not change this.
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+      compartments: { rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
       walls: {
         ...BASE_PARAMS.walls,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 15, depth: 80 },
@@ -250,7 +240,7 @@ describe('computeDividerJunctionZones (#1345)', () => {
 
   it('returns empty when no dividers exist', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 1, thickness: 1.2, cells: [0] },
+      compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
     expect(computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
   });
@@ -285,7 +275,7 @@ describe('computeDividerJunctionZones (#1345)', () => {
 
   it('returns zones for horizontal dividers touching left/right walls', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 2, cols: 1, thickness: 1.2, cells: [0, 1] },
+      compartments: { rows: 2, cols: 1, thickness: 1.2, cells: [0, 1] },
       walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
     });
     const leftZones = computeDividerJunctionZones('left', params, INNER_W, INNER_D, WALL_HEIGHT);
@@ -298,7 +288,7 @@ describe('computeDividerJunctionZones (#1345)', () => {
 
   it('returns multiple zones for multi-column grids', () => {
     const params = makeParams({
-      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+      compartments: { rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
       walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
     });
     const zones = computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);

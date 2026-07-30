@@ -47,7 +47,7 @@ function buildRawMultiShellScoopSolid(): unknown {
     params.cellMask,
     undefined,
     undefined,
-    { x: 0, y: 0, feet: false }
+    { left: 0, right: 0, front: 0, back: 0, feet: false, taper: null }
   );
   const scoop = buildScoopRamps(params, innerW, innerD, wallHeight, wt);
   if (!scoop) throw new Error('scoop not built');

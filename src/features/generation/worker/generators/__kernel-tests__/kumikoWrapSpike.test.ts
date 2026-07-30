@@ -30,10 +30,16 @@ import {
   measureVolume,
   mesh,
   sketchHelix,
+  orientedFace,
+  planarFace,
   type Shape3D,
+  type OrientedFace,
+  type PlanarFace,
 } from 'brepjs';
 import { initBrepjs, getKernelName } from './wasmInit';
 import { sketch } from '../meshUtils';
+
+type RevolveProfile = OrientedFace & PlanarFace;
 
 // Geometry mirroring a 1x1 bin corner: outer radius ~4mm, 1.2mm wall.
 const R_OUT = 4;
@@ -52,9 +58,13 @@ beforeAll(async () => {
 }, 120_000);
 
 /** Radial profile rect on the XZ plane: r ∈ [r0, r1], z ∈ [z0, z1]. */
-function radialProfileFace(r0: number, r1: number, z0: number, z1: number) {
+function radialProfileFace(r0: number, r1: number, z0: number, z1: number): RevolveProfile {
   const drawing = drawRoundedRectangle(r1 - r0, z1 - z0, 0).translate((r0 + r1) / 2, (z0 + z1) / 2);
-  return sketch(drawing, 'XZ').face();
+  const face = sketch(drawing, 'XZ').face();
+  const oriented = unwrap(orientedFace(face));
+  // Both brands are runtime-proven above; TS's planarFace signature drops the
+  // oriented brand, so restore the intersection it verified.
+  return unwrap(planarFace(oriented)) as RevolveProfile;
 }
 
 /** Annular wedge: radial rect revolved around Z from θ=0 to `angle`. */

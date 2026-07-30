@@ -71,7 +71,7 @@ describe('snap-clip pull-apart capture (issue #1610 follow-up)', () => {
   }
 
   it('seats with clearance but blocks the plate from being pulled apart', () => {
-    const clip = buildSnapClip(H, GU); // seam at x=0
+    const clip = buildSnapClip(H, GU) as ValidSolid; // seam at x=0
 
     // Seated: a clearance fit, so essentially no interference (sub-tolerance
     // contact from the fillet/corner mismatch between the crisp pocket and the
