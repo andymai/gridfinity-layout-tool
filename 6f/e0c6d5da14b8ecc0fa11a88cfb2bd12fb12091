@@ -1,0 +1,21 @@
+api/lib/validation.test.ts
+  s_bb8f1233002a7e::t_829cd97d950795 47-48,53
+  s_bb8f1233002a7e::t_ba39309a89a054 49
+  s_bb8f1233002a7e::t_9a72b7aaa01444 29-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "6fe0c6d5da14b8ecc0fa11a88cfb2bd12fb12091",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
