@@ -169,9 +169,20 @@ export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
   return kind === 'exterior' || kind === 'marginSeam';
 }
 
-/** Baseplate split-connector styles — derived from the param definition below
- *  so it can't drift when a style is added. */
-export type BaseplateConnectorStyle = NonNullable<ResolvedBaseplateParams['connectorStyle']>;
+/**
+ * Baseplate split-connector styles — the single source of truth for the union,
+ * as a runtime tuple so zod schemas can derive their enum from it instead of
+ * restating the strings (three copies had already drifted; see #2982). The
+ * `ResolvedBaseplateParams.connectorStyle` field and this type both point here.
+ */
+export const BASEPLATE_CONNECTOR_STYLES = [
+  'dovetail',
+  'puzzle',
+  'dovetailKey',
+  'snapClip',
+] as const;
+
+export type BaseplateConnectorStyle = (typeof BASEPLATE_CONNECTOR_STYLES)[number];
 
 /**
  * Whether the margin-seam connector (#2414) engages for a given connector
@@ -429,7 +440,7 @@ export interface ResolvedBaseplateParams {
    * edges blind ledged pockets and ships a separate top-insert snap clip
    * ("staple") whose barbs catch the ledges.
    */
-  readonly connectorStyle?: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
+  readonly connectorStyle?: BaseplateConnectorStyle;
   /**
    * Cut the seam slot on the plate's EXTERIOR edges too, not just on the join
    * seams between split pieces (issue #2866). Every piece then reads as a
