@@ -4,8 +4,10 @@
  * Receives batched telemetry events from clients and aggregates into Redis counters.
  * No raw events are stored - only aggregate counts for ML training.
  *
- * Every key below carries a sliding 90-day TTL (see ./lib/mlTelemetry/retention.ts),
- * so a hash that stops receiving writes ages out instead of accumulating forever.
+ * Aggregates carry a sliding 90-day TTL (see ./lib/mlTelemetry/retention.ts), so a
+ * hash that stops receiving writes ages out instead of accumulating forever. The
+ * running totals under Metadata are the exception — nothing refreshes them, so
+ * they are never given a TTL (ML_LIFETIME_KEYS).
  *
  * Redis Schema:
  *
@@ -106,13 +108,16 @@
  * - ml:cluster_archetypes:{hash} -> Archetype correlations per cluster
  * - ml:cluster_distribution   -> How common each structure hash is
  *
- * === Metadata ===
- * - ml:meta:*                 -> Metadata counters
+ * === Metadata (running totals — never expired) ===
+ * - ml:meta:total_events      -> Total events accepted
+ * - ml:meta:last_updated      -> ISO timestamp of the last accepted batch
  * - ml:meta:validation:passed -> Total events that passed validation
  * - ml:meta:validation:failed -> Total events that failed validation
- * - ml:meta:validation:failed:{type} -> Failed events by event type
- * - ml:meta:vocab_version:{version} -> Events by vocabulary version
- * - ml:meta:client_version:{version} -> Events by client version
+ * - ml:meta:validation:failed_by_type -> HASH of event type -> failed count
+ *
+ * === Metadata (expiring) ===
+ * - ml:meta:vocab_versions    -> HASH of vocabulary version -> event count
+ * - ml:meta:client_versions   -> HASH of client version -> event count
  */
 
 import { createHash } from 'crypto';

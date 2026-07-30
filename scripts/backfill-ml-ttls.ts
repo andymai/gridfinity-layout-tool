@@ -53,14 +53,18 @@ async function main(): Promise<number> {
     const needsTtl: string[] = [];
     let alreadyExpiring = 0;
     let lifetime = 0;
+    let vanished = 0;
 
     for (const key of keys) {
       if (!isExpiringAggregate(key)) {
         lifetime++;
         continue;
       }
-      // -1 is "exists, no TTL"; -2 is "already gone" (expired mid-scan).
-      if (ttls.get(key) === -1) needsTtl.push(key);
+      const ttl = ttls.get(key);
+      if (ttl === -1) needsTtl.push(key);
+      // -2 means the key expired between SCAN and TTL. Counting it as
+      // "already expiring" would mask drift between the two passes.
+      else if (ttl === -2) vanished++;
       else alreadyExpiring++;
     }
 
@@ -73,6 +77,7 @@ async function main(): Promise<number> {
     console.log(`scanned            ${keys.length} ml:* keys`);
     console.log(`already expiring   ${alreadyExpiring}`);
     console.log(`lifetime (skipped) ${lifetime}`);
+    console.log(`vanished mid-scan  ${vanished}`);
     console.log(`needs TTL          ${needsTtl.length}`);
     console.log('');
     for (const [ns, n] of [...byNamespace].sort((a, b) => b[1] - a[1]).slice(0, 20)) {
