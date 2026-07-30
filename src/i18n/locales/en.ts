@@ -1941,8 +1941,7 @@ const en: Record<string, string> = {
   'binDesigner.overhang.taper.title': 'Taper walls',
   'binDesigner.overhang.taper.hint':
     "Angle the wall outward above the base so the bin reaches into a drawer's curved sides. The base keeps its overhang width, so the bin still sits flat.",
-  'binDesigner.overhang.taper.singleHollowOnly':
-    'Taper is available only on hollow, single-compartment bins.',
+  'binDesigner.overhang.taper.hollowOnly': 'Taper is available only on hollow bins.',
   'binDesigner.overhang.taper.profile': 'Profile',
   'binDesigner.overhang.taper.profileChamfer': 'Chamfer',
   'binDesigner.overhang.taper.profileFillet': 'Fillet',

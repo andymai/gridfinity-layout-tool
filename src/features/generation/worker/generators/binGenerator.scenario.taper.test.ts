@@ -158,7 +158,11 @@ describe('bin wall taper geometry (#2933)', () => {
     expect(meshVolume(taperNoOverhang)).toBeCloseTo(meshVolume(plain), 3);
   });
 
-  it('is a no-op on a multi-compartment bin (v1 scope: single-cavity only)', () => {
+  // The multi-cavity path cuts compartments out of a lofted outer instead of a
+  // prism (#3017). Each compartment is clipped to the inner envelope first —
+  // below the band a rim-sized prism spans the whole wall thickness, so an
+  // unclipped cut would open a slot straight through the wall.
+  it('applies to a multi-compartment bin without breaching the wall', () => {
     const generateBin = getGenerateBin();
     const compartments = { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] };
     const noTaper = generateBin(
@@ -179,8 +183,51 @@ describe('bin wall taper geometry (#2933)', () => {
       undefined,
       true
     );
-    // Taper is stripped for multi-compartment bins → identical geometry.
-    expect(meshVolume(withTaper)).toBeCloseTo(meshVolume(noTaper), 3);
+    assertStructurallyValid(withTaper, 'tapered multi-compartment');
+    // The taper now does something rather than silently no-opping.
+    expect(meshVolume(withTaper)).toBeLessThan(meshVolume(noTaper));
+
+    const topology = meshTopologyStats(withTaper);
+    expect(topology.boundaryEdges).toBe(0);
+    expect(topology.nonManifoldEdges).toBe(0);
+    // A slot through the wall leaves the surface closed, so only the Euler
+    // count catches it.
+    expect(topology.eulerCharacteristic).toBe(meshTopologyStats(noTaper).eulerCharacteristic);
+  });
+
+  it('applies to a fillet multi-compartment grid without breaching the wall', () => {
+    const generateBin = getGenerateBin();
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 2,
+      cells: [0, 1, 2, 3],
+    };
+    const noTaper = generateBin(
+      buildParams({ width: 2, depth: 2, height: 5, overhang: OVH, compartments }),
+      undefined,
+      true
+    );
+    const withTaper = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        height: 5,
+        overhang: {
+          ...OVH,
+          taper: { profile: 'fillet', bandHeight: 25, left: 10, right: 10, front: 10, back: 10 },
+        },
+        compartments,
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(withTaper, 'tapered 2x2 fillet');
+    expect(meshVolume(withTaper)).toBeLessThan(meshVolume(noTaper));
+    const topology = meshTopologyStats(withTaper);
+    expect(topology.boundaryEdges).toBe(0);
+    expect(topology.nonManifoldEdges).toBe(0);
+    expect(topology.eulerCharacteristic).toBe(meshTopologyStats(noTaper).eulerCharacteristic);
   });
 
   // Cutouts are cut from the wall top down, the taper band rises from the

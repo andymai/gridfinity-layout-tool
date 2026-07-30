@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Skråningshøyde",
   "inspector.taper.flare": "Utvidelse",
   "inspector.taper.flare.hint": "Ekstra bredde ved toppkanten, utover skuffemargen, slik at beholderen når inn i skuffens buede sider.",
-  "binDesigner.overhang.taper.singleHollowOnly": "Skråning er bare tilgjengelig på hule binger med ett rom."
+  "binDesigner.overhang.taper.hollowOnly": "Skråkant er kun tilgjengelig på hule beholdere."
 }

@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Altezza rastremazione",
   "inspector.taper.flare": "Svasatura",
   "inspector.taper.flare.hint": "Larghezza aggiuntiva sul bordo superiore, oltre il margine del cassetto, così il contenitore raggiunge i lati curvi del cassetto.",
-  "binDesigner.overhang.taper.singleHollowOnly": "La rastremazione è disponibile solo su contenitori cavi a scomparto singolo."
+  "binDesigner.overhang.taper.hollowOnly": "La svasatura è disponibile solo sui contenitori cavi."
 }

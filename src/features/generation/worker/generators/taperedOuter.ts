@@ -24,7 +24,30 @@ const FILLET_SECTION_MM = 2.5;
 const FILLET_SECTIONS_MIN = 6;
 const FILLET_SECTIONS_MAX = 16;
 
-export function buildTaperedBox(
+/**
+ * The two ruled lofts the tapered body is composed from, both registered with
+ * the caller's scope.
+ *
+ * `outer` is the tapered solid; `cavity` is the inner envelope, i.e. the most
+ * material any hollow may claim. A single-compartment bin is just
+ * `outer - cavity`; a multi-compartment one clips each compartment against
+ * `cavity` before cutting, so its walls keep `wallThickness` against a wall
+ * that narrows below them.
+ */
+export interface TaperedLofts {
+  readonly outer: Shape3D;
+  readonly cavity: Shape3D;
+  /**
+   * The cavity's narrowest cross-section, at the floor where the inset is
+   * greatest. A compartment whose footprint fits inside this never meets the
+   * tapered wall at any height, so it can be cut unclipped — which matters:
+   * the clip is a boolean per compartment, and on a 12x12 grid clipping all of
+   * them took generation past its timeout.
+   */
+  readonly narrowestInner: { minX: number; maxX: number; minY: number; maxY: number };
+}
+
+export function buildTaperedLofts(
   scope: DisposalScope,
   outerW: number,
   outerD: number,
@@ -33,7 +56,7 @@ export function buildTaperedBox(
   taper: ResolvedTaper,
   offX: number,
   offY: number
-): Shape3D {
+): TaperedLofts {
   const band = Math.min(taper.bandHeight, wallHeight);
 
   // Per-side inset at height z: full at the base, zero at/above the band top.
@@ -101,6 +124,50 @@ export function buildTaperedBox(
       [wallThickness, ...bandLevels.filter((z) => z > wallThickness), wallHeight + COPLANAR_MARGIN],
       wallThickness
     )
+  );
+  // Same arithmetic as `section`, at the cavity's lowest level.
+  const zNarrow = wallThickness;
+  const nl = insetAt(taper.left, zNarrow);
+  const nr = insetAt(taper.right, zNarrow);
+  const nf = insetAt(taper.front, zNarrow);
+  const nb = insetAt(taper.back, zNarrow);
+  const nw = Math.max(outerW - nl - nr - 2 * wallThickness, 0.2);
+  const nd = Math.max(outerD - nf - nb - 2 * wallThickness, 0.2);
+  const ncx = offX + (nl - nr) / 2;
+  const ncy = offY + (nf - nb) / 2;
+
+  return {
+    outer,
+    cavity,
+    narrowestInner: {
+      minX: ncx - nw / 2,
+      maxX: ncx + nw / 2,
+      minY: ncy - nd / 2,
+      maxY: ncy + nd / 2,
+    },
+  };
+}
+
+/** Hollow tapered body for a single-cavity bin: the whole inner envelope removed. */
+export function buildTaperedBox(
+  scope: DisposalScope,
+  outerW: number,
+  outerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  taper: ResolvedTaper,
+  offX: number,
+  offY: number
+): Shape3D {
+  const { outer, cavity } = buildTaperedLofts(
+    scope,
+    outerW,
+    outerD,
+    wallHeight,
+    wallThickness,
+    taper,
+    offX,
+    offY
   );
   return unwrap(cut(outer as ValidSolid, cavity as ValidSolid));
 }

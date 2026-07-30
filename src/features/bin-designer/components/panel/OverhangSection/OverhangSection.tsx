@@ -44,7 +44,7 @@ export function OverhangSection() {
   const stacked = meta.stackedSliders;
 
   let taperHintKey = 'binDesigner.overhang.taper.hint';
-  if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.singleHollowOnly';
+  if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.hollowOnly';
 
   return (
     <FeatureToggle

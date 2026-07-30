@@ -78,14 +78,12 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // Overhang is suppressed for polygon masks (the mask defines its own footprint).
   const { cellMask } = params;
   const resolvedOverhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
-  // Taper is v1-scoped to hollow, single-cavity rectangular bins. Strip it for
-  // solid or multi-compartment bins so it can't silently no-op (solid / baked
-  // cavity) or taper the outer wall while dividers stay at nominal inner dims and
-  // protrude through the base on the additive-divider path (#2933).
+  // A solid bin has no cavity for the taper's inner loft to cut, so the control
+  // would silently no-op — strip it. Multi-compartment bins are handled: the
+  // multi-cavity path builds a lofted outer and clips each compartment to the
+  // inner envelope (#3017).
   const overhang =
-    resolvedOverhang.taper && (solid || hasMultipleCompartments(params))
-      ? { ...resolvedOverhang, taper: null }
-      : resolvedOverhang;
+    resolvedOverhang.taper && solid ? { ...resolvedOverhang, taper: null } : resolvedOverhang;
   const ovhExp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
 
   const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness;
