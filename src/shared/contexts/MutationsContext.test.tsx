@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ok } from '@/core/result';
-import { layerId, categoryId, binId } from '@/core/types';
+import { layerId, categoryId, binId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import type { CommandBus } from '@/core/cqrs';
 import type * as CqrsModule from '@/core/cqrs';
@@ -29,11 +29,11 @@ vi.mock('@/core/cqrs', async (importOriginal) => {
 function makeBin(): Omit<Bin, 'id'> {
   return {
     layerId: layerId('layer_1'),
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(3),
     category: categoryId('cat_1'),
     label: '',
     notes: '',

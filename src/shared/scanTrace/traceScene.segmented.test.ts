@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
 import { traceSceneSegmented, computeAutoSeed } from './traceScene';
-import type { ImageDataLike, Mask, Point } from './types';
+import type { SoftMask } from './softContour';
+import type { ImageDataLike, Point } from './types';
 
 // Same tilted-pinhole projection as traceScene.test.ts so the rendered card is
 // a realistic perspective quad the classical card detector can lock onto.
@@ -80,9 +81,9 @@ function renderWithCard(): ImageDataLike {
 }
 
 /** A clean tool mask plus a stray speck the largest-component pass must drop. */
-function toolMaskWithSpeck(): Mask {
+function toolMaskWithSpeck(): SoftMask {
   const toolImg = project(TOOL_MM);
-  const data = new Uint8Array(WIDTH * HEIGHT);
+  const data = new Float32Array(WIDTH * HEIGHT);
   for (let y = 0; y < HEIGHT; y++) {
     for (let x = 0; x < WIDTH; x++) {
       if (pointInPolygon({ x, y }, toolImg)) data[y * WIDTH + x] = 1;
@@ -119,7 +120,11 @@ describe('traceSceneSegmented', () => {
   });
 
   it('errors when the model mask is empty', () => {
-    const empty: Mask = { width: WIDTH, height: HEIGHT, data: new Uint8Array(WIDTH * HEIGHT) };
+    const empty: SoftMask = {
+      width: WIDTH,
+      height: HEIGHT,
+      data: new Float32Array(WIDTH * HEIGHT),
+    };
     const result = traceSceneSegmented(renderWithCard(), empty);
     expect(isOk(result)).toBe(false);
   });

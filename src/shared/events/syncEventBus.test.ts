@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { designId } from '@/core/types';
 import { onSyncEvent, emitSyncEvent } from './syncEventBus';
 import type { DesignSavedEvent, BinResizedEvent } from './syncEventBus';
 
@@ -9,7 +10,7 @@ describe('syncEventBus', () => {
 
     const event: DesignSavedEvent = {
       type: 'design-saved',
-      designId: 'd1',
+      designId: designId('d1'),
       dimensions: { width: 2, depth: 3, height: 5 },
     };
     emitSyncEvent(event);
@@ -25,7 +26,7 @@ describe('syncEventBus', () => {
 
     emitSyncEvent({
       type: 'design-saved',
-      designId: 'd1',
+      designId: designId('d1'),
       dimensions: { width: 1, depth: 1, height: 1 },
     });
 
@@ -40,7 +41,7 @@ describe('syncEventBus', () => {
 
     emitSyncEvent({
       type: 'design-saved',
-      designId: 'd1',
+      designId: designId('d1'),
       dimensions: { width: 1, depth: 1, height: 1 },
     });
 
@@ -59,7 +60,7 @@ describe('syncEventBus', () => {
 
     emitSyncEvent({
       type: 'design-saved',
-      designId: 'd1',
+      designId: designId('d1'),
       dimensions: { width: 1, depth: 1, height: 1 },
     });
 

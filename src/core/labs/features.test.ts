@@ -1,12 +1,22 @@
 import { describe, it, expect } from 'vitest';
+import type { FeatureFlag } from './types';
 import {
-  FEATURE_FLAGS,
+  FEATURE_FLAGS as FEATURE_FLAGS_LITERAL,
   getFeature,
   getActiveFeatures,
   getGraduatedFeatures,
   getToggleableFeatures,
   type FeatureId,
 } from './features';
+
+// `FEATURE_FLAGS` is declared without a type annotation, so TS infers the exact
+// literal shape of today's entries. Statuses absent from the current set
+// ('preview', 'deprecated') then look like impossible comparisons, and optional
+// fields no entry happens to set ('comingSoon') look nonexistent — the tests
+// below are deliberately written to survive the flag set changing. Widening to
+// the declared type once here restores that. Production does the same thing via
+// `as readonly FeatureFlag[]` casts inside features.ts.
+const FEATURE_FLAGS: readonly FeatureFlag[] = FEATURE_FLAGS_LITERAL;
 
 describe('FEATURE_FLAGS', () => {
   it('has at least one feature defined', () => {

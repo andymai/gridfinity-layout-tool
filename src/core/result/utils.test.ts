@@ -510,9 +510,11 @@ describe('match()', () => {
   });
 
   it('can return a Result itself from a handler', () => {
+    // Both handlers must share a return type; without the annotations TS infers
+    // it from the `ok` branch alone and the `err` branch then fails to match.
     const inner = match(ok(5) as Result<number, string>, {
-      ok: (n) => ok(n * 10),
-      err: (e) => err(e),
+      ok: (n): Result<number, string> => ok(n * 10),
+      err: (e): Result<number, string> => err(e),
     });
     expect(inner).toEqual({ ok: true, value: 50 });
   });

@@ -42,8 +42,10 @@ vi.mock('@/i18n', () => ({
 }));
 
 vi.mock('@/shared/utils', () => ({
+  // Raw literal rather than STAGING_ID: vi.mock factories are hoisted above
+  // imports, so referencing the imported constant here throws at runtime.
   getGridBins: vi.fn((bins: unknown[]) =>
-    bins.filter((b: Record<string, unknown>) => b.layerId !== '__staging__')
+    bins.filter((b) => (b as { layerId?: string }).layerId !== '__staging__')
   ),
 }));
 

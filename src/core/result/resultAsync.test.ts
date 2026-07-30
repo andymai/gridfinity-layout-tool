@@ -279,8 +279,8 @@ describe('ResultAsync.andThen() — error union widening', () => {
     type ErrA = { kind: 'a'; code: 'A1' };
     type ErrB = { kind: 'b'; code: 'B1' };
 
-    const start: ResultAsync<number, ErrA> = ResultAsync.fromResult(ok<number, ErrA>(1));
-    const chained = start.andThen<string, ErrB>((x) => ok<string, ErrB>(String(x)));
+    const start: ResultAsync<number, ErrA> = ResultAsync.fromResult(ok<number>(1));
+    const chained = start.andThen<string, ErrB>((x) => ok<string>(String(x)));
 
     // Type-level: chained is ResultAsync<string, ErrA | ErrB>.
     // Runtime: just verify the happy path resolves.
@@ -294,7 +294,7 @@ describe('ResultAsync.andThen() — error union widening', () => {
 
     const upstream: ErrA = { kind: 'a', code: 'A1' };
     const start: ResultAsync<number, ErrA> = ResultAsync.fromResult(err<ErrA>(upstream));
-    const fn = vi.fn((x: number) => ok<string, ErrB>(String(x)));
+    const fn = vi.fn((x: number) => ok<string>(String(x)));
 
     const result = await start.andThen<string, ErrB>(fn);
 

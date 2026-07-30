@@ -10,7 +10,7 @@ const mockSegment = vi.fn();
 const mockTraceSegmented = vi.fn();
 const mockTrace = vi.fn();
 const mockPreload = vi.fn();
-const mockCardSkew = vi.fn(() => 0);
+const mockCardSkew = vi.fn((..._args: unknown[]) => 0);
 
 vi.mock('@/shared/scanTrace', () => ({
   decodeImageToCanvas: (...args: unknown[]) => mockDecodeCanvas(...args),

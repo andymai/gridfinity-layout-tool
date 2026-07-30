@@ -2,7 +2,18 @@ import { describe, expect, it } from 'vitest';
 import '@/shared/items/registerDescriptors';
 import { getItemDescriptor, hasItemDescriptor, listItemDescriptors } from '@/shared/items/registry';
 import { DEFAULT_TOOL_RACK_STRUCTURE } from '@/shared/items/toolRack/descriptor';
-import type { ItemEnvelope } from '@/shared/types/item';
+import type { ItemEnvelope, ItemStructure, ToolRackStructure } from '@/shared/types/item';
+
+/**
+ * `getItemDescriptor()` is typed against the whole `ItemStructure` union, so
+ * `defaults()` needs discriminating before rack-only fields are readable.
+ */
+function asToolRack(structure: ItemStructure): ToolRackStructure {
+  if (structure.kind !== 'toolRack') {
+    throw new Error(`expected a toolRack structure, got '${structure.kind}'`);
+  }
+  return structure;
+}
 
 const envelope: ItemEnvelope = {
   width: 4,
@@ -40,7 +51,7 @@ describe('item descriptor registry', () => {
     const a = d.defaults();
     const b = d.defaults();
     expect(a).not.toBe(b);
-    expect(a.backRail).not.toBe(b.backRail);
+    expect(asToolRack(a).backRail).not.toBe(asToolRack(b).backRail);
     expect(d.schema.safeParse(a).success).toBe(true);
   });
 

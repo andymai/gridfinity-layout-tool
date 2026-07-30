@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LabsButton } from './LabsButton';
 import { resetAllStores } from '@/test/testUtils';
 import { useLabsStore } from '@/core/store';
+import { makeLabsState, makeFeatureFlag } from '@/features/labs/labs.testUtils';
 import { getFeature } from '@/core/labs';
 
 // Mock stores
@@ -37,19 +38,14 @@ describe('LabsButton', () => {
 
     // Default mock for useLabsStore
     vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        openDrawer: vi.fn(),
-        preferences: { enabledFeatures: {} },
-      };
+      const state = makeLabsState({ openDrawer: vi.fn() });
       return selector ? selector(state) : state;
     });
 
     // Default mock for getFeature
-    vi.mocked(getFeature).mockImplementation((id: string) => ({
-      id,
-      name: `Feature ${id}`,
-      status: 'experimental',
-    }));
+    vi.mocked(getFeature).mockImplementation((id: string) =>
+      makeFeatureFlag({ id, name: `Feature ${id}`, status: 'experimental' })
+    );
   });
 
   it('renders labs button with icon and text', () => {
@@ -99,11 +95,13 @@ describe('LabsButton', () => {
   });
 
   it('ignores graduated features in count', () => {
-    vi.mocked(getFeature).mockImplementation((id: string) => ({
-      id,
-      name: `Feature ${id}`,
-      status: id === 'graduated-feature' ? 'graduated' : 'experimental',
-    }));
+    vi.mocked(getFeature).mockImplementation((id: string) =>
+      makeFeatureFlag({
+        id,
+        name: `Feature ${id}`,
+        status: id === 'graduated-feature' ? 'graduated' : 'experimental',
+      })
+    );
 
     vi.mocked(useLabsStore).mockImplementation((selector: unknown) => {
       const state = {

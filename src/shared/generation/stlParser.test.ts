@@ -1,7 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { parseSTLBinary, parseSTLAscii, parseSTL } from './stlParser';
 import { isOk, isErr } from '@/core/result';
+import type { Result, ValidationError } from '@/core/result';
 import { buildSTLBuffer } from '@/shared/generation/export';
+
+/**
+ * Narrow to the import-failure variant and hand back its `errors` list.
+ *
+ * `expect(result.error.code).toBe(...)` asserts at runtime but narrows nothing
+ * for the type-checker, so reading `.errors` off the wider ValidationError
+ * union does not compile. This does the narrowing for real.
+ */
+function importErrors<T>(result: Result<T, ValidationError>): string[] {
+  if (!isErr(result)) throw new Error('expected an Err result');
+  if (result.error.code !== 'VALIDATION_IMPORT_FAILED') {
+    throw new Error(`expected VALIDATION_IMPORT_FAILED, got ${result.error.code}`);
+  }
+  return result.error.errors;
+}
 
 function asciiSTL(body: string, name = 'test'): ArrayBuffer {
   const text = `solid ${name}\n${body}endsolid ${name}\n`;
@@ -85,7 +101,7 @@ describe('parseSTLBinary', () => {
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
     expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
-    expect(result.error.errors[0]).toMatch(/too small/);
+    expect(importErrors(result)[0]).toMatch(/too small/);
   });
 
   it('returns Err on triangle count mismatch', () => {
@@ -96,7 +112,7 @@ describe('parseSTLBinary', () => {
     const result = parseSTLBinary(buffer);
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/does not match/);
+    expect(importErrors(result)[0]).toMatch(/does not match/);
   });
 
   it('returns Err on misaligned payload size', () => {
@@ -107,7 +123,7 @@ describe('parseSTLBinary', () => {
     const result = parseSTLBinary(buffer);
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/not a multiple/);
+    expect(importErrors(result)[0]).toMatch(/not a multiple/);
   });
 
   it('handles empty mesh (0 triangles)', () => {
@@ -191,7 +207,7 @@ endfacet
     const result = parseSTLAscii(asciiSTL(body));
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/2 vertices/);
+    expect(importErrors(result)[0]).toMatch(/2 vertices/);
   });
 
   it('returns Err on malformed vertex coordinates', () => {
@@ -206,7 +222,7 @@ endfacet
     const result = parseSTLAscii(asciiSTL(body));
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/malformed vertex/);
+    expect(importErrors(result)[0]).toMatch(/malformed vertex/);
   });
 
   it('returns Err on vertex outside a facet', () => {
@@ -218,7 +234,7 @@ endfacet
     const result = parseSTLAscii(asciiSTL(''));
     expect(isErr(result)).toBe(true);
     if (!isErr(result)) return;
-    expect(result.error.errors[0]).toMatch(/no facets/);
+    expect(importErrors(result)[0]).toMatch(/no facets/);
   });
 });
 

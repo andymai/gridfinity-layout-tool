@@ -20,6 +20,8 @@ describe('GraduatedSection', () => {
       description: 'First graduated feature',
       status: 'graduated',
       risk: 'low',
+      addedAt: '2026-01-01',
+      requiresRefresh: false,
     },
     {
       id: 'feature-2',
@@ -27,6 +29,8 @@ describe('GraduatedSection', () => {
       description: 'Second graduated feature',
       status: 'graduated',
       risk: 'low',
+      addedAt: '2026-01-01',
+      requiresRefresh: false,
     },
   ];
 
