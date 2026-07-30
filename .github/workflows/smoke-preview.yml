@@ -1,13 +1,17 @@
 name: Smoke (Preview)
 
-# Runs the PWA smoke spec against the Vercel preview deployment for every PR.
+# Runs the PWA smoke spec against a PR's Vercel preview deployment.
 # Catches deploy-time bugs (broken precache, missing assets, wwwMigration-class
-# hash mismatches) before merge. Mark this as a required status check in branch
-# protection to block merges on smoke failure.
+# hash mismatches) before merge.
 #
-# When the Vercel deploy is "ignored" by `scripts/vercel-ignore.sh` (e.g. a
-# PR that touches only CI / docs), there is no preview to smoke against.
-# The workflow exits success with a clear warning in that case.
+# Previews are OPT-IN (see scripts/vercel-ignore.sh) — branch as `preview/<name>`
+# or put `[preview]` in the head commit message. Without a preview there is
+# nothing to smoke against and this workflow exits success with a warning, so
+# it only provides real coverage on PRs that requested one. Opt in for anything
+# touching the service worker, build output, or public/ assets.
+#
+# Because it passes vacuously without a preview, this is NOT a useful required
+# status check on its own — a green run may mean "nothing was tested".
 
 on:
   pull_request:

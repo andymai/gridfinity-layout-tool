@@ -51,10 +51,30 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   fi
 fi
 
-# Always build preview deployments for PRs
+# PR previews are opt-in. Most PRs never need one, and every preview build
+# costs a full deploy. Request one either way:
+#   - branch the work as `preview/<name>`, or
+#   - put `[preview]` anywhere in the head commit message.
+#
+# Note: the PWA smoke spec (.github/workflows/smoke-preview.yml) can only run
+# against a real preview URL. Without one it exits success with a warning, so
+# opting out also opts out of deploy-time smoke coverage — precache breakage,
+# missing assets, asset-hash mismatches. Use `[preview]` on anything touching
+# the service worker, build output, or public/ assets.
 if [ -n "$VERCEL_GIT_PULL_REQUEST_ID" ]; then
-  echo "PR preview deployment. Proceeding with build."
-  exit 1
+  if [[ "$VERCEL_GIT_COMMIT_REF" == preview/* ]]; then
+    echo "PR on a preview/* branch. Proceeding with build."
+    exit 1
+  fi
+
+  if [[ "$VERCEL_GIT_COMMIT_MESSAGE" == *"[preview]"* ]]; then
+    echo "PR head commit requests [preview]. Proceeding with build."
+    exit 1
+  fi
+
+  echo "PR preview not requested. Skipping build."
+  echo "To get one: branch as preview/<name>, or add [preview] to the commit message."
+  exit 0
 fi
 
 # Skip other branch deploys (feature branches without PRs)
