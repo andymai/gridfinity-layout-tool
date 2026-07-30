@@ -1,0 +1,85 @@
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_bb8f1233002a7e::t_1d22697ec215d8 26-27,37-42,45-47,51
+  s_bb8f1233002a7e::t_f7b4cc41c8e3d6 81-82
+  s_bb8f1233002a7e::t_06b9f9f66fc1bf 2-3
+  s_bb8f1233002a7e::t_5fde47f1bba118 95,100-101,108-109
+src/features/baseplate/components/BaseplatePanel/SplitViewStrip.test.tsx
+  s_bb8f1233002a7e::t_762f63dc901f6a 20-29,36,44,48,56,60,66
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_bb8f1233002a7e::t_a36fb20e5198ce 462
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_bb8f1233002a7e::t_3ccc717afd8e28 194
+  s_bb8f1233002a7e::t_5ce5160eafa13f 3
+  s_bb8f1233002a7e::t_24f142def919af 1112-1113
+  s_bb8f1233002a7e::t_d2e3efb55aa672 1192-1195
+  s_bb8f1233002a7e::t_969e41807b8bbb 463-464
+  s_bb8f1233002a7e::t_43353530d7d897 1093
+  s_bb8f1233002a7e::t_24f0cc83fb0039 203
+  s_bb8f1233002a7e::t_4443bee982ef3c 871
+  s_bb8f1233002a7e::t_890e61b79e2655 1101
+  s_bb8f1233002a7e::t_a19b7210333837 651-652
+  s_bb8f1233002a7e::t_0117c1e6f8f6fa 416
+  s_bb8f1233002a7e::t_ec68097fdf4f15 177-178
+  s_bb8f1233002a7e::t_c008e8a6a28cfa 893
+  s_835d48ff7b3d00::t_406011b6c45e5e 564-565,595-596,1017,1024
+src/features/baseplate/utils/stackPrint.test.ts
+  s_bb8f1233002a7e::t_77f3a5f8b55ac1 6
+  s_bb8f1233002a7e::t_1e906e54650863 321-337
+  s_bb8f1233002a7e::t_fea20ad97d1061 362,375,379,385-386,391
+  s_bb8f1233002a7e::t_374b3439a5ac52 398-400,402-404
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_bb8f1233002a7e::t_b8d0b3ed1c9adf 86
+  s_bb8f1233002a7e::t_9dcdb946dd9875 3,7,11-24
+  s_bb8f1233002a7e::t_1bc30e2cb7d950 25-27
+  s_0e7a05e617740e::t_c591236139df56 28-31,65,73-75,83-84,92,125
+src/features/baseplate/store/baseplatePageStore.test.ts
+  s_bb8f1233002a7e::t_f497762eb0c564 346
+  s_bb8f1233002a7e::t_0e287a01f8344a 169
+src/features/baseplate/utils/buildBaseplateExportPieces.test.ts
+  s_bb8f1233002a7e::t_40e9300e65d1b8 2
+  s_bb8f1233002a7e::t_495820e27f3128 123-124,126
+  s_bb8f1233002a7e::t_c9a6f24a36a139 152
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_bb8f1233002a7e::t_c1ea5376c13eab 10-15,432-437,515-520,592-593
+  s_bb8f1233002a7e::t_958b4ebd16223d 2
+  s_bb8f1233002a7e::t_6a86d64d15f0d5 594-596
+  s_0e7a05e617740e::t_88e882015dc5a5 144-149,160-161,163-166,215,255-256,267-268,331,342,355,369,380-381,383,421,453-454,486,493,500,548-551,561-562,597,602-609,617-621,630-637,651,665-672,683-687,701-702,713-715
+src/features/baseplate/utils/exportCache.ts
+  s_bb8f1233002a7e::t_3df520e6a15adb 27-30
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_007b41f6990143 3
+src/features/baseplate/sync/baseplateAdapter.test.ts
+  s_bb8f1233002a7e::t_efa48c16db7a0b 69,198,226,242,264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1fca53423476753cd233b9f37b07fbac16ef687c",
+  "prompts": {},
+  "sessions": {
+    "s_0e7a05e617740e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a71c6d5ec80755509",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_835d48ff7b3d00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae55b609b7922e557",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
