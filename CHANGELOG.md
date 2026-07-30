@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.331.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.331.0...gridfinity-layout-tool-v4.331.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* let overhang feet coexist with a wall flare ([#2933](https://github.com/andymai/gridfinity-layout-tool/issues/2933)) ([#3018](https://github.com/andymai/gridfinity-layout-tool/issues/3018)) ([c4a0500](https://github.com/andymai/gridfinity-layout-tool/commit/c4a0500b6c4e6e1b5ee3722d2957807682dad753))
+
 ## [4.331.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.330.0...gridfinity-layout-tool-v4.331.0) (2026-07-30)
 
 
