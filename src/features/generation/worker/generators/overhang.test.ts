@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { resolveOverhang, hasOverhang, hasTaper, overhangExpansion, overhangKey } from './overhang';
+import {
+  resolveOverhang,
+  hasOverhang,
+  hasTaper,
+  overhangBaseSides,
+  overhangExpansion,
+  overhangKey,
+} from './overhang';
 
 describe('resolveOverhang', () => {
   it('returns all-zero for undefined', () => {
@@ -71,10 +78,28 @@ describe('resolveOverhang taper (#2933)', () => {
     ).toBeNull();
   });
 
-  it('is suppressed when overhang feet are on (mutually exclusive)', () => {
-    expect(
-      resolveOverhang({ left: 8, right: 8, front: 0, back: 0, feet: true, taper: TAPER }).taper
-    ).toBeNull();
+  it('survives overhang feet, which are framed from the base instead', () => {
+    const o = resolveOverhang({ left: 8, right: 8, front: 0, back: 0, feet: true, taper: TAPER });
+    expect(o.taper).not.toBeNull();
+    expect(o.feet).toBe(true);
+  });
+
+  it('overhangBaseSides subtracts the taper so feet stop where the wall does', () => {
+    const o = resolveOverhang({
+      left: 8,
+      right: 8,
+      front: 0,
+      back: 0,
+      feet: true,
+      taper: { ...TAPER, left: 3, right: 8 },
+    });
+    // Left keeps 5mm of base to stand feet on; right retracts fully.
+    expect(overhangBaseSides(o)).toEqual({ left: 5, right: 0, front: 0, back: 0 });
+  });
+
+  it('overhangBaseSides is the overhang itself when nothing tapers', () => {
+    const o = resolveOverhang({ left: 8, right: 3, front: 0, back: 0 });
+    expect(overhangBaseSides(o)).toEqual({ left: 8, right: 3, front: 0, back: 0 });
   });
 
   it('is null when the taper is disabled', () => {
