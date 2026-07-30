@@ -61,7 +61,6 @@ describe('StagingBin', () => {
       isDragging: false,
       isHovered: false,
       isTouchDevice: false,
-      isTopRow: false,
       cellSize: 40,
       gap: 4,
       gridHeight: 10,
@@ -224,6 +223,54 @@ describe('StagingBin', () => {
     renderInGrid(<StagingBin {...props} />);
 
     expect(screen.getByTitle('Rotate bin (R)')).toBeInTheDocument();
+  });
+
+  it('flips the rotate button below the bin for the visually top row (#2979)', () => {
+    // gridHeight 10, a depth-2 bin at y=8 lands on the top row (gridRowStart === 1);
+    // the button must escape downward (bottom: -22) so it doesn't overflow above the stash.
+    const props = defaultProps({
+      isHovered: true,
+      gridHeight: 10,
+      bin: {
+        id: binId('bin-1'),
+        x: 0,
+        y: 8,
+        width: 3,
+        depth: 2,
+        height: 4,
+        category: categoryId('cat-1'),
+        label: 'Tools',
+      },
+    });
+    renderInGrid(<StagingBin {...props} />);
+
+    const rotateButton = screen.getByTitle('Rotate bin (R)');
+    expect(rotateButton.style.bottom).toBe('-22px');
+    expect(rotateButton.style.top).toBe('');
+  });
+
+  it('keeps the rotate button above the bin for lower rows (#2979)', () => {
+    // Same 10-row stash, but a bin at y=0 is the bottom row (gridRowStart === 9),
+    // so the button stays at its normal position above the bin (top: -22).
+    const props = defaultProps({
+      isHovered: true,
+      gridHeight: 10,
+      bin: {
+        id: binId('bin-1'),
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 4,
+        category: categoryId('cat-1'),
+        label: 'Tools',
+      },
+    });
+    renderInGrid(<StagingBin {...props} />);
+
+    const rotateButton = screen.getByTitle('Rotate bin (R)');
+    expect(rotateButton.style.top).toBe('-22px');
+    expect(rotateButton.style.bottom).toBe('');
   });
 
   it('fires onBinClick with bin ID', () => {
