@@ -5,6 +5,7 @@ import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useLayoutStore } from '@/core/store/layout';
 import { resetAllStores } from '@/test/testUtils';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { RefObject } from 'react';
 
 // Mock useResponsive
@@ -25,7 +26,7 @@ describe('useGridCoords', () => {
     top = 0,
     width = 330, // 10 cells * 32px + 10 gaps
     height = 264 // 8 cells * 32px + 8 gaps
-  ): RefObject<HTMLDivElement> => ({
+  ): RefObject<HTMLDivElement | null> => ({
     current: {
       getBoundingClientRect: () => ({
         left,
@@ -47,7 +48,7 @@ describe('useGridCoords', () => {
 
     // Set default drawer: 10x8
     const layout = useLayoutStore.getState().layout;
-    layout.drawer = { width: 10, depth: 8, height: 12 };
+    layout.drawer = { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) };
     useLayoutStore.setState({ layout });
 
     // Default UI state
@@ -61,7 +62,7 @@ describe('useGridCoords', () => {
 
   describe('getGridCoords', () => {
     it('returns null when gridRef.current is null', () => {
-      const gridRef: RefObject<HTMLDivElement> = { current: null };
+      const gridRef: RefObject<HTMLDivElement | null> = { current: null };
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       const coord = result.current.getGridCoords(100, 100);
@@ -101,8 +102,8 @@ describe('useGridCoords', () => {
       // Non-square grid: Y pitch is half the X pitch, so rows are half as tall.
       // cellSize = 32px (X), cellSizeY = round(32 * 21/42) = 16px (Y), gap = 1px.
       const layout = useLayoutStore.getState().layout;
-      layout.gridUnitMm = 42 as typeof layout.gridUnitMm;
-      layout.gridUnitMmY = 21 as typeof layout.gridUnitMmY;
+      layout.gridUnitMm = mm(42);
+      layout.gridUnitMmY = mm(21);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
@@ -164,17 +165,26 @@ describe('useGridCoords', () => {
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       // Negative coordinates should clamp to 0
-      expect(result.current.clampCoords({ x: -5, y: -3 })).toEqual({ x: 0, y: 0 });
+      expect(result.current.clampCoords({ x: gridUnits(-5), y: gridUnits(-3) })).toEqual({
+        x: 0,
+        y: 0,
+      });
 
       // Coordinates beyond drawer (10x8) should clamp to max
-      expect(result.current.clampCoords({ x: 15, y: 10 })).toEqual({ x: 9, y: 7 });
+      expect(result.current.clampCoords({ x: gridUnits(15), y: gridUnits(10) })).toEqual({
+        x: 9,
+        y: 7,
+      });
     });
 
     it('allows valid coordinates through unchanged', () => {
       const gridRef = createMockGridRef(0, 0);
       const { result } = renderHook(() => useGridCoords(gridRef));
 
-      expect(result.current.clampCoords({ x: 5, y: 3 })).toEqual({ x: 5, y: 3 });
+      expect(result.current.clampCoords({ x: gridUnits(5), y: gridUnits(3) })).toEqual({
+        x: 5,
+        y: 3,
+      });
     });
 
     it('clamps to half-unit bounds when halfGridMode is enabled', () => {
@@ -184,7 +194,7 @@ describe('useGridCoords', () => {
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       // In half-bin mode, max x is 9.5 (drawer.width - 0.5)
-      const clamped = result.current.clampCoords({ x: 15, y: 10 });
+      const clamped = result.current.clampCoords({ x: gridUnits(15), y: gridUnits(10) });
       expect(clamped.x).toBe(9.5);
       expect(clamped.y).toBe(7.5);
     });
@@ -196,7 +206,7 @@ describe('useGridCoords', () => {
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       // 2.3 should snap to 2.5
-      const clamped = result.current.clampCoords({ x: 2.3, y: 3.7 });
+      const clamped = result.current.clampCoords({ x: gridUnits(2.3), y: gridUnits(3.7) });
       expect(clamped.x).toBe(2.5);
       expect(clamped.y).toBe(3.5);
     });
@@ -207,9 +217,9 @@ describe('useGridCoords', () => {
       const gridRef = createMockGridRef(0, 0);
       const { result } = renderHook(() => useGridCoords(gridRef));
 
-      expect(result.current.isInBounds({ x: 0, y: 0 })).toBe(true);
-      expect(result.current.isInBounds({ x: 5, y: 5 })).toBe(true);
-      expect(result.current.isInBounds({ x: 9, y: 7 })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(0) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(5), y: gridUnits(5) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(9), y: gridUnits(7) })).toBe(true);
     });
 
     it('returns false for coordinates outside bounds', () => {
@@ -217,19 +227,19 @@ describe('useGridCoords', () => {
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       // Drawer is 10x8
-      expect(result.current.isInBounds({ x: -1, y: 0 })).toBe(false);
-      expect(result.current.isInBounds({ x: 0, y: -1 })).toBe(false);
-      expect(result.current.isInBounds({ x: 10, y: 0 })).toBe(false); // x >= width
-      expect(result.current.isInBounds({ x: 0, y: 8 })).toBe(false); // y >= depth
+      expect(result.current.isInBounds({ x: gridUnits(-1), y: gridUnits(0) })).toBe(false);
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(-1) })).toBe(false);
+      expect(result.current.isInBounds({ x: gridUnits(10), y: gridUnits(0) })).toBe(false); // x >= width
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(8) })).toBe(false); // y >= depth
     });
 
     it('handles fractional coordinates', () => {
       const gridRef = createMockGridRef(0, 0);
       const { result } = renderHook(() => useGridCoords(gridRef));
 
-      expect(result.current.isInBounds({ x: 0.5, y: 0.5 })).toBe(true);
-      expect(result.current.isInBounds({ x: 9.5, y: 7.5 })).toBe(true);
-      expect(result.current.isInBounds({ x: 10.5, y: 0 })).toBe(false);
+      expect(result.current.isInBounds({ x: gridUnits(0.5), y: gridUnits(0.5) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(9.5), y: gridUnits(7.5) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(10.5), y: gridUnits(0) })).toBe(false);
     });
   });
 
@@ -255,15 +265,20 @@ describe('useGridCoords', () => {
 
       // Set drawer with fractional width
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 9.5, depth: 8, height: 12, fractionalEdgeX: 'end' };
+      layout.drawer = {
+        width: gridUnits(9.5),
+        depth: gridUnits(8),
+        height: heightUnits(12),
+        fractionalEdgeX: 'end',
+      };
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
       // Should still work with fractional drawer
-      expect(result.current.isInBounds({ x: 0, y: 0 })).toBe(true);
-      expect(result.current.isInBounds({ x: 9.5, y: 0 })).toBe(false); // >= width
-      expect(result.current.isInBounds({ x: 9, y: 0 })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(0) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(9.5), y: gridUnits(0) })).toBe(false); // >= width
+      expect(result.current.isInBounds({ x: gridUnits(9), y: gridUnits(0) })).toBe(true);
     });
 
     it('handles fractional drawer depth', () => {
@@ -271,13 +286,18 @@ describe('useGridCoords', () => {
 
       // Set drawer with fractional depth
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 10, depth: 7.5, height: 12, fractionalEdgeY: 'end' };
+      layout.drawer = {
+        width: gridUnits(10),
+        depth: gridUnits(7.5),
+        height: heightUnits(12),
+        fractionalEdgeY: 'end',
+      };
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
-      expect(result.current.isInBounds({ x: 0, y: 7 })).toBe(true);
-      expect(result.current.isInBounds({ x: 0, y: 7.5 })).toBe(false); // >= depth
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(7) })).toBe(true);
+      expect(result.current.isInBounds({ x: gridUnits(0), y: gridUnits(7.5) })).toBe(false); // >= depth
     });
 
     it('handles click in fractional column (cellX === -1) in standard mode', () => {
@@ -286,7 +306,12 @@ describe('useGridCoords', () => {
       const gridRef = createMockGridRef(0, 0, 346.5, 264); // 10.5 * 33 for width
 
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 10.5, depth: 8, height: 12, fractionalEdgeX: 'start' };
+      layout.drawer = {
+        width: gridUnits(10.5),
+        depth: gridUnits(8),
+        height: heightUnits(12),
+        fractionalEdgeX: 'start',
+      };
       useLayoutStore.setState({ layout });
 
       useHalfGridModeStore.setState({ halfGridMode: false });
@@ -306,7 +331,12 @@ describe('useGridCoords', () => {
       const gridRef = createMockGridRef(0, 0, 330, 280.5); // 8.5 * 33 for height
 
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
+      layout.drawer = {
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
+        height: heightUnits(12),
+        fractionalEdgeY: 'end',
+      };
       useLayoutStore.setState({ layout });
 
       useHalfGridModeStore.setState({ halfGridMode: false });
@@ -327,7 +357,12 @@ describe('useGridCoords', () => {
       const gridRef = createMockGridRef(0, 0, 330, 280.5);
 
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
+      layout.drawer = {
+        width: gridUnits(10),
+        depth: gridUnits(8.5),
+        height: heightUnits(12),
+        fractionalEdgeY: 'end',
+      };
       useLayoutStore.setState({ layout });
 
       useHalfGridModeStore.setState({ halfGridMode: true });

@@ -25,11 +25,16 @@ vi.mock('@react-three/fiber', () => ({
 // Mock Three.js
 vi.mock('three', () => {
   class Vector3 {
-    constructor(
-      public x = 0,
-      public y = 0,
-      public z = 0
-    ) {}
+    x: number;
+    y: number;
+    z: number;
+
+    constructor(x = 0, y = 0, z = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+
     set = vi.fn().mockReturnThis();
     clone = vi.fn().mockReturnThis();
     normalize = vi.fn().mockReturnThis();
@@ -67,16 +72,22 @@ vi.mock('three', () => {
       translate = vi.fn();
     },
     Float32BufferAttribute: class {
-      constructor(
-        public array: unknown,
-        public itemSize: number
-      ) {}
+      array: unknown;
+      itemSize: number;
+
+      constructor(array: unknown, itemSize: number) {
+        this.array = array;
+        this.itemSize = itemSize;
+      }
     },
     BufferAttribute: class {
-      constructor(
-        public array: unknown,
-        public itemSize: number
-      ) {}
+      array: unknown;
+      itemSize: number;
+
+      constructor(array: unknown, itemSize: number) {
+        this.array = array;
+        this.itemSize = itemSize;
+      }
     },
     MeshStandardMaterial: class {
       dispose = vi.fn();

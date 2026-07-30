@@ -5,7 +5,7 @@ import { BinOverhangExtension } from './BinOverhangExtension';
 import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
-import { gridUnits, heightUnits } from '@/core/types';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 
 vi.mock('@/i18n', () => ({ useTranslation: () => (key: string) => key }));
@@ -17,15 +17,15 @@ function setup(padding: Partial<StoredBaseplateParams> = {}) {
   useLayoutStore.setState({
     layout: {
       ...layout,
-      gridUnitMm: 42,
+      gridUnitMm: mm(42),
       baseplateParams: {
         magnetHoles: false,
-        magnetDiameter: 6,
-        magnetDepth: 2,
-        paddingLeft: 0,
-        paddingRight: 0,
-        paddingFront: 0,
-        paddingBack: 0,
+        magnetDiameter: mm(6),
+        magnetDepth: mm(2),
+        paddingLeft: mm(0),
+        paddingRight: mm(0),
+        paddingFront: mm(0),
+        paddingBack: mm(0),
         ...padding,
       },
     },
@@ -33,7 +33,13 @@ function setup(padding: Partial<StoredBaseplateParams> = {}) {
 }
 
 function bin(overrides: Partial<Bin> = {}): Bin {
-  return createTestBin({ x: 0, y: 0, width: 1, depth: 1, ...overrides });
+  return createTestBin({
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    ...overrides,
+  });
 }
 
 function renderExt(b: Bin, extra: { showSocketEdge?: boolean; cellSizeY?: number } = {}) {
@@ -55,7 +61,7 @@ function renderExt(b: Bin, extra: { showSocketEdge?: boolean; cellSizeY?: number
 describe('BinOverhangExtension', () => {
   beforeEach(() => {
     resetAllStores();
-    setup({ paddingLeft: 21 });
+    setup({ paddingLeft: mm(21) });
   });
 
   describe('drawer margin', () => {
@@ -151,7 +157,7 @@ describe('BinOverhangExtension — non-square grid', () => {
   it('scales the depth axis by the Y pitch and row height', () => {
     const layout = createDefaultLayout();
     useLayoutStore.setState({
-      layout: { ...layout, gridUnitMm: 42, gridUnitMmY: 21 },
+      layout: { ...layout, gridUnitMm: mm(42), gridUnitMmY: mm(21) },
     });
     const { container } = renderExt(
       bin({ overhang: { enabled: true, left: 21, right: 0, front: 0, back: 21 } }),

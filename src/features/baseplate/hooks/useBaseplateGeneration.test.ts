@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { mm, gridUnits } from '@gridfinity/branded-types';
+import type { StoredBaseplateParams } from '@/core/types';
 import {
   useBaseplateGeneration,
   hasMeshOnScreen,
@@ -21,7 +23,8 @@ function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): b
 
 describe('selectGenerationTriggers', () => {
   const makeState = (
-    connectorStyle: 'dovetail' | 'dovetailKey' | undefined
+    connectorStyle: 'dovetail' | 'dovetailKey' | undefined,
+    overrides: Partial<StoredBaseplateParams> = {}
   ): Parameters<typeof selectGenerationTriggers>[0] =>
     ({
       layout: {
@@ -31,20 +34,21 @@ describe('selectGenerationTriggers', () => {
         drawer: { width: 400, depth: 300, fractionalEdgeX: 'end', fractionalEdgeY: 'end' },
         baseplateParams: {
           magnetHoles: false,
-          magnetDiameter: 6,
-          magnetDepth: 2,
-          paddingLeft: 0,
-          paddingRight: 0,
-          paddingFront: 0,
-          paddingBack: 0,
+          magnetDiameter: mm(6),
+          magnetDepth: mm(2),
+          paddingLeft: mm(0),
+          paddingRight: mm(0),
+          paddingFront: mm(0),
+          paddingBack: mm(0),
           connectorNubs: true,
           syncWithLayout: true,
-          baseplateWidth: 10,
-          baseplateDepth: 10,
-          cornerRadius: 0,
+          baseplateWidth: gridUnits(10),
+          baseplateDepth: gridUnits(10),
+          cornerRadius: mm(0),
           invertDovetails: false,
           preferIdenticalPieces: false,
           connectorStyle,
+          ...overrides,
         },
       },
     }) as unknown as Parameters<typeof selectGenerationTriggers>[0];
@@ -74,11 +78,8 @@ describe('selectGenerationTriggers', () => {
    * preview never regenerates and keeps the plain over-tile mesh.
    */
   it('produces a different trigger selection when overTileHalfGrid changes', () => {
-    const makeFillState = (overTileHalfGrid: boolean) => {
-      const state = makeState(undefined);
-      Object.assign(state.layout.baseplateParams, { overTile: true, overTileHalfGrid });
-      return state;
-    };
+    const makeFillState = (overTileHalfGrid: boolean) =>
+      makeState(undefined, { overTile: true, overTileHalfGrid });
     const plain = selectGenerationTriggers(makeFillState(false));
     const halfGrid = selectGenerationTriggers(makeFillState(true));
     expect(shallowEqual(plain, halfGrid)).toBe(false);
@@ -91,26 +92,21 @@ describe('selectGenerationTriggers', () => {
    */
   it('produces a different trigger selection when solidFloor toggles', () => {
     const off = makeState(undefined);
-    const on = makeState(undefined);
-    Object.assign(on.layout.baseplateParams, { solidFloor: true });
+    const on = makeState(undefined, { solidFloor: true });
     expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
   });
 
   it('produces a different trigger selection when solidFloorThickness changes (floor on)', () => {
-    const thin = makeState(undefined);
-    const thick = makeState(undefined);
-    Object.assign(thin.layout.baseplateParams, { solidFloor: true, solidFloorThickness: 0.8 });
-    Object.assign(thick.layout.baseplateParams, { solidFloor: true, solidFloorThickness: 2 });
+    const thin = makeState(undefined, { solidFloor: true, solidFloorThickness: mm(0.8) });
+    const thick = makeState(undefined, { solidFloor: true, solidFloorThickness: mm(2) });
     expect(shallowEqual(selectGenerationTriggers(thin), selectGenerationTriggers(thick))).toBe(
       false
     );
   });
 
   it('ignores solidFloorThickness while the floor is off (no needless regen)', () => {
-    const a = makeState(undefined);
-    const b = makeState(undefined);
-    Object.assign(a.layout.baseplateParams, { solidFloor: false, solidFloorThickness: 0.8 });
-    Object.assign(b.layout.baseplateParams, { solidFloor: false, solidFloorThickness: 2 });
+    const a = makeState(undefined, { solidFloor: false, solidFloorThickness: mm(0.8) });
+    const b = makeState(undefined, { solidFloor: false, solidFloorThickness: mm(2) });
     expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
   });
 });

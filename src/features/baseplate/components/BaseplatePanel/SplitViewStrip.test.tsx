@@ -17,12 +17,23 @@ vi.mock('@/i18n', () => ({
     },
 }));
 
+const basePieceFields = {
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingFront: 0,
+  paddingBack: 0,
+  fractionalEdgeX: 'none',
+  fractionalEdgeY: 'none',
+  edges: { left: 'exterior', right: 'exterior', front: 'exterior', back: 'exterior' },
+} as const;
+
 const baseTiling: BaseplateTiling = {
   isSplit: true,
   cols: 2,
   rows: 1,
   pieces: [
     {
+      ...basePieceFields,
       label: 'A1',
       col: 0,
       row: 0,
@@ -30,9 +41,11 @@ const baseTiling: BaseplateTiling = {
       depthUnits: 4,
       gridOffsetX: 0,
       gridOffsetY: 0,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
       placementRotationDeg: 0,
     },
     {
+      ...basePieceFields,
       label: 'B1',
       col: 1,
       row: 0,
@@ -40,14 +53,17 @@ const baseTiling: BaseplateTiling = {
       depthUnits: 4,
       gridOffsetX: 5,
       gridOffsetY: 0,
+      edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
       placementRotationDeg: 0,
     },
   ],
+  margins: [],
   totalWidthUnits: 9,
   totalDepthUnits: 6,
   stackCount: 1,
   stackSeparatorThickness: 0,
   bedLoads: 1,
+  paddingReductionHint: null,
 };
 
 describe('SplitViewStrip', () => {

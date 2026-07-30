@@ -4,7 +4,7 @@ import type { EventBus } from '../bus/eventBus';
 import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
 import { useLibraryStore } from '@/core/store/library';
-import { layoutId } from '@/core/types';
+import { layoutId, gridUnits, heightUnits } from '@/core/types';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
 import { connectLibraryPersistence } from './libraryPersistence';
 import { ok } from '@/core/result';
@@ -62,9 +62,9 @@ function seedLibraryWithEntry(entryId: string, withCloudShare = false): LayoutLi
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 0,
           layerCount: 1,
         },

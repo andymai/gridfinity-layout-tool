@@ -5,6 +5,7 @@ import { QuickLabelPopover } from './QuickLabelPopover';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout } from '@/core/constants';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 
 // Mock i18n
 vi.mock('@/i18n', () => ({
@@ -44,11 +45,11 @@ describe('QuickLabelPopover', () => {
 
   it('renders popover when quickLabelBinId is set', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
 
     // Create a mock bin element in the DOM
     const binElement = document.createElement('div');
-    binElement.setAttribute('data-bin-id', binId);
+    binElement.setAttribute('data-bin-id', testBinId);
     binElement.getBoundingClientRect = vi.fn(() => ({
       top: 100,
       left: 100,
@@ -67,12 +68,12 @@ describe('QuickLabelPopover', () => {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: 'Test Label',
@@ -81,7 +82,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useSelectionStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: testBinId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox');
@@ -93,10 +94,10 @@ describe('QuickLabelPopover', () => {
 
   it('focuses and selects input on mount', async () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
 
     const binElement = document.createElement('div');
-    binElement.setAttribute('data-bin-id', binId);
+    binElement.setAttribute('data-bin-id', testBinId);
     binElement.getBoundingClientRect = vi.fn(() => ({
       top: 100,
       left: 100,
@@ -115,12 +116,12 @@ describe('QuickLabelPopover', () => {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: 'Test',
@@ -129,7 +130,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useSelectionStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: testBinId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox');
@@ -143,10 +144,10 @@ describe('QuickLabelPopover', () => {
 
   it('updates value when input changes', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'test-bin-1';
+    const testBinId = binId('test-bin-1');
 
     const binElement = document.createElement('div');
-    binElement.setAttribute('data-bin-id', binId);
+    binElement.setAttribute('data-bin-id', testBinId);
     binElement.getBoundingClientRect = vi.fn(() => ({
       top: 100,
       left: 100,
@@ -165,12 +166,12 @@ describe('QuickLabelPopover', () => {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: 'Old',
@@ -179,7 +180,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useSelectionStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: testBinId });
 
     const { getByRole } = render(<QuickLabelPopover />);
     const input = getByRole('textbox') as HTMLInputElement;
@@ -192,19 +193,19 @@ describe('QuickLabelPopover', () => {
 
   it('returns null when bin element not found in DOM', () => {
     const defaultLayout = createDefaultLayout();
-    const binId = 'nonexistent-bin';
+    const testBinId = binId('nonexistent-bin');
 
     useLayoutStore.setState({
       layout: {
         ...defaultLayout,
         bins: [
           {
-            id: binId,
-            x: 2,
-            y: 2,
-            width: 2,
-            depth: 2,
-            height: 3,
+            id: testBinId,
+            x: gridUnits(2),
+            y: gridUnits(2),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: 'Test',
@@ -213,7 +214,7 @@ describe('QuickLabelPopover', () => {
         ],
       },
     });
-    useSelectionStore.setState({ quickLabelBinId: binId });
+    useSelectionStore.setState({ quickLabelBinId: testBinId });
 
     const { container } = render(<QuickLabelPopover />);
     expect(container.textContent).toBe('');

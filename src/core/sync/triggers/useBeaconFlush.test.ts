@@ -2,7 +2,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useBeaconFlush } from './useBeaconFlush';
-import type { SyncAdapters } from '../adapters/types';
+import type {
+  SyncAdapter,
+  SyncAdapters,
+  LayoutAdapter,
+  DesignAdapter,
+  BaseplateAdapter,
+} from '../adapters/types';
 
 const getPendingEntriesMock = vi.fn();
 
@@ -10,7 +16,7 @@ vi.mock('../engine', () => ({
   getPendingEntries: () => getPendingEntriesMock(),
 }));
 
-const sendBeaconMock = vi.fn(() => true);
+const sendBeaconMock = vi.fn((_url: string, _data?: BodyInit) => true);
 
 beforeEach(() => {
   getPendingEntriesMock.mockReset();
@@ -22,31 +28,39 @@ beforeEach(() => {
   });
 });
 
+// Payloads below are deliberately untyped, opaque test fixtures — useBeaconFlush
+// only ever serializes `.payload` into a Blob, never inspects its shape.
+// SyncAdapter<Layout|DesignSyncPayload|BaseplatePayload> is assignable to
+// SyncAdapter<unknown> (the concrete payload is assignable to `unknown`), so
+// the reverse per-adapter cast below is sound, not a type-safety bypass.
 function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }): SyncAdapters {
+  const layouts: SyncAdapter = {
+    list: vi.fn(),
+    get: vi.fn(async (id: string) =>
+      layoutPayload ? { id, payload: layoutPayload, modifiedAt: 1000 } : null
+    ),
+    applyRemote: vi.fn(),
+    applyRemoteDelete: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  };
+  const designs: SyncAdapter = {
+    list: vi.fn(),
+    get: vi.fn(async (id: string) => ({ id, payload: { d: 1 }, modifiedAt: 2000 })),
+    applyRemote: vi.fn(),
+    applyRemoteDelete: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  };
+  const baseplates: SyncAdapter = {
+    list: vi.fn(),
+    get: vi.fn(async (id: string) => ({ id, payload: { b: 1 }, modifiedAt: 3000 })),
+    applyRemote: vi.fn(),
+    applyRemoteDelete: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  };
   return {
-    layouts: {
-      list: vi.fn(),
-      get: vi.fn(async (id: string) =>
-        layoutPayload ? { id, payload: layoutPayload, modifiedAt: 1000 } : null
-      ),
-      applyRemote: vi.fn(),
-      applyRemoteDelete: vi.fn(),
-      subscribe: vi.fn(() => () => {}),
-    },
-    designs: {
-      list: vi.fn(),
-      get: vi.fn(async (id: string) => ({ id, payload: { d: 1 }, modifiedAt: 2000 })),
-      applyRemote: vi.fn(),
-      applyRemoteDelete: vi.fn(),
-      subscribe: vi.fn(() => () => {}),
-    },
-    baseplates: {
-      list: vi.fn(),
-      get: vi.fn(async (id: string) => ({ id, payload: { b: 1 }, modifiedAt: 3000 })),
-      applyRemote: vi.fn(),
-      applyRemoteDelete: vi.fn(),
-      subscribe: vi.fn(() => () => {}),
-    },
+    layouts: layouts as LayoutAdapter,
+    designs: designs as DesignAdapter,
+    baseplates: baseplates as BaseplateAdapter,
   };
 }
 

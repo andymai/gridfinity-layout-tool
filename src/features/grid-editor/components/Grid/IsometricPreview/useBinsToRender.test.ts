@@ -1,31 +1,29 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useBinsToRender } from './useBinsToRender';
+import { createTestBin } from '@/test/testUtils';
+import { STAGING_ID } from '@/core/constants';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin, Layer, Category } from '@/core/types';
 
-function createTestBin(overrides: Partial<Bin> = {}): Bin {
-  return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
-    clearanceHeight: 0,
+function makeBin(overrides: Partial<Bin> = {}): Bin {
+  return createTestBin({
+    id: binId('bin-1'),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
+    clearanceHeight: heightUnits(0),
     ...overrides,
-  } as Bin;
+  });
 }
 
 const defaultLayers: Layer[] = [
-  { id: 'layer-1', name: 'Layer 1', height: 3 },
-  { id: 'layer-2', name: 'Layer 2', height: 3 },
+  { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+  { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
 ];
 
 const defaultCategories: Category[] = [
-  { id: 'cat-1', name: 'Category 1', color: '#ff0000' },
-] as Category[];
+  { id: categoryId('cat-1'), name: 'Category 1', color: '#ff0000' },
+];
 
 describe('useBinsToRender', () => {
   it('returns empty array when no bins', () => {
@@ -44,9 +42,10 @@ describe('useBinsToRender', () => {
   });
 
   it('attaches divider specs for bins linked to designs', () => {
+    const linkedDesign = designId('design-1');
     const bins = [
-      createTestBin({ id: 'bin-1', linkedDesignId: 'design-1' } as Partial<Bin>),
-      createTestBin({ id: 'bin-2' }),
+      makeBin({ id: binId('bin-1'), linkedDesignId: linkedDesign }),
+      makeBin({ id: binId('bin-2') }),
     ];
     const spec = {
       sig: 'design-1:2026',
@@ -54,9 +53,7 @@ describe('useBinsToRender', () => {
       thickness: 0.03,
       height: null,
     };
-    const designDividers = new Map([
-      [bins[0].linkedDesignId as NonNullable<Bin['linkedDesignId']>, spec],
-    ]);
+    const designDividers = new Map([[linkedDesign, spec]]);
 
     const { result } = renderHook(() =>
       useBinsToRender({
@@ -70,14 +67,14 @@ describe('useBinsToRender', () => {
       })
     );
 
-    const linked = result.current.find((b) => b.bin.id === 'bin-1');
-    const unlinked = result.current.find((b) => b.bin.id === 'bin-2');
+    const linked = result.current.find((b) => b.bin.id === binId('bin-1'));
+    const unlinked = result.current.find((b) => b.bin.id === binId('bin-2'));
     expect(linked?.dividers).toBe(spec);
     expect(unlinked?.dividers).toBeUndefined();
   });
 
   it('filters out staging bins', () => {
-    const bins = [createTestBin({ layerId: '__staging__' })];
+    const bins = [makeBin({ layerId: STAGING_ID })];
 
     const { result } = renderHook(() =>
       useBinsToRender({
@@ -95,8 +92,8 @@ describe('useBinsToRender', () => {
 
   it('includes bins on active layer in focus mode', () => {
     const bins = [
-      createTestBin({ id: 'bin-1', layerId: 'layer-1' }),
-      createTestBin({ id: 'bin-2', layerId: 'layer-2' }),
+      makeBin({ id: binId('bin-1'), layerId: layerId('layer-1') }),
+      makeBin({ id: binId('bin-2'), layerId: layerId('layer-2') }),
     ];
 
     const { result } = renderHook(() =>
@@ -116,8 +113,8 @@ describe('useBinsToRender', () => {
 
   it('includes bins on active layer and below in stack mode', () => {
     const bins = [
-      createTestBin({ id: 'bin-1', layerId: 'layer-1' }),
-      createTestBin({ id: 'bin-2', layerId: 'layer-2' }),
+      makeBin({ id: binId('bin-1'), layerId: layerId('layer-1') }),
+      makeBin({ id: binId('bin-2'), layerId: layerId('layer-2') }),
     ];
 
     const { result } = renderHook(() =>
@@ -136,8 +133,8 @@ describe('useBinsToRender', () => {
 
   it('includes all bins in all mode', () => {
     const bins = [
-      createTestBin({ id: 'bin-1', layerId: 'layer-1' }),
-      createTestBin({ id: 'bin-2', layerId: 'layer-2' }),
+      makeBin({ id: binId('bin-1'), layerId: layerId('layer-1') }),
+      makeBin({ id: binId('bin-2'), layerId: layerId('layer-2') }),
     ];
 
     const { result } = renderHook(() =>
@@ -155,7 +152,7 @@ describe('useBinsToRender', () => {
   });
 
   it('applies category color to bins', () => {
-    const bins = [createTestBin({ category: 'cat-1' })];
+    const bins = [makeBin({ category: categoryId('cat-1') })];
 
     const { result } = renderHook(() =>
       useBinsToRender({
@@ -172,10 +169,15 @@ describe('useBinsToRender', () => {
   });
 
   it('sorts bins by z then depth ordering', () => {
-    const layers: Layer[] = [{ id: 'layer-1', name: 'Layer 1', height: 3 }];
+    const layers: Layer[] = [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }];
     const bins = [
-      createTestBin({ id: 'far', x: 0, y: 5, layerId: 'layer-1' }),
-      createTestBin({ id: 'close', x: 5, y: 0, layerId: 'layer-1' }),
+      makeBin({ id: binId('far'), x: gridUnits(0), y: gridUnits(5), layerId: layerId('layer-1') }),
+      makeBin({
+        id: binId('close'),
+        x: gridUnits(5),
+        y: gridUnits(0),
+        layerId: layerId('layer-1'),
+      }),
     ];
 
     const { result } = renderHook(() =>
@@ -196,8 +198,18 @@ describe('useBinsToRender', () => {
 
   it('adds z-fighting prevention offsets', () => {
     const bins = [
-      createTestBin({ id: 'bin-1', x: 0, y: 0, layerId: 'layer-1' }),
-      createTestBin({ id: 'bin-2', x: 1, y: 0, layerId: 'layer-1' }),
+      makeBin({
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        layerId: layerId('layer-1'),
+      }),
+      makeBin({
+        id: binId('bin-2'),
+        x: gridUnits(1),
+        y: gridUnits(0),
+        layerId: layerId('layer-1'),
+      }),
     ];
 
     const { result } = renderHook(() =>

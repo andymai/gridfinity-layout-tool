@@ -7,34 +7,36 @@ import {
   MAX_STASH_HEIGHT_VH,
 } from '@/features/staging/hooks/useStagingResize';
 
+type UpdateSetting = (key: 'stashMaxHeight', value: number | null) => void;
+type PointerCapture = (pointerId: number) => void;
+
+/** jsdom always reports 0 for layout metrics, so offsetHeight has to be stubbed per element. */
+function setOffsetHeight(element: HTMLElement, value: number): void {
+  Object.defineProperty(element, 'offsetHeight', { configurable: true, value });
+}
+
 describe('useStagingResize', () => {
   let mockScrollContainer: HTMLDivElement;
   let mockResizeHandle: HTMLDivElement;
   let scrollContainerRef: RefObject<HTMLDivElement | null>;
   let resizeHandleRef: RefObject<HTMLDivElement | null>;
-  let updateSetting: ReturnType<typeof vi.fn>;
+  let updateSetting: ReturnType<typeof vi.fn<UpdateSetting>>;
   let originalInnerHeight: number;
 
   beforeEach(() => {
-    // Mock DOM elements
-    mockScrollContainer = {
-      offsetHeight: 200,
-      style: { maxHeight: '' },
-      setPointerCapture: vi.fn(),
-      releasePointerCapture: vi.fn(),
-    } as unknown as HTMLDivElement;
+    mockScrollContainer = document.createElement('div');
+    setOffsetHeight(mockScrollContainer, 200);
 
-    mockResizeHandle = {
-      setPointerCapture: vi.fn(),
-      releasePointerCapture: vi.fn(),
-    } as unknown as HTMLDivElement;
+    mockResizeHandle = document.createElement('div');
+    mockResizeHandle.setPointerCapture = vi.fn<PointerCapture>();
+    mockResizeHandle.releasePointerCapture = vi.fn<PointerCapture>();
 
     // Create refs
     scrollContainerRef = { current: mockScrollContainer };
     resizeHandleRef = { current: mockResizeHandle };
 
     // Mock updateSetting
-    updateSetting = vi.fn();
+    updateSetting = vi.fn<UpdateSetting>();
 
     // Mock window.innerHeight
     originalInnerHeight = window.innerHeight;
@@ -213,7 +215,7 @@ describe('useStagingResize', () => {
     });
 
     it('increases height when dragging up (negative dy)', () => {
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
 
       const { result } = renderHook(() =>
         useStagingResize({
@@ -245,7 +247,7 @@ describe('useStagingResize', () => {
     });
 
     it('decreases height when dragging down (positive dy)', () => {
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
 
       const { result } = renderHook(() =>
         useStagingResize({
@@ -277,7 +279,7 @@ describe('useStagingResize', () => {
     });
 
     it('clamps height to MIN_STASH_HEIGHT', () => {
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
 
       const { result } = renderHook(() =>
         useStagingResize({
@@ -309,7 +311,7 @@ describe('useStagingResize', () => {
     });
 
     it('clamps height to MAX_STASH_HEIGHT_VH percent of viewport', () => {
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
       window.innerHeight = 1000;
       const maxHeight = 1000 * (MAX_STASH_HEIGHT_VH / 100); // 900
 
@@ -425,7 +427,7 @@ describe('useStagingResize', () => {
     });
 
     it('persists final height to settings', () => {
-      mockScrollContainer.offsetHeight = 300;
+      setOffsetHeight(mockScrollContainer, 300);
 
       const { result } = renderHook(() =>
         useStagingResize({
@@ -454,7 +456,7 @@ describe('useStagingResize', () => {
       });
 
       // Update offsetHeight to reflect the new height
-      mockScrollContainer.offsetHeight = 400;
+      setOffsetHeight(mockScrollContainer, 400);
 
       // End resize
       act(() => {
@@ -674,7 +676,7 @@ describe('useStagingResize', () => {
       window.innerHeight = 800;
       const expectedMaxHeight = 800 * (MAX_STASH_HEIGHT_VH / 100); // 720
 
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
 
       const { result } = renderHook(() =>
         useStagingResize({
@@ -707,7 +709,7 @@ describe('useStagingResize', () => {
 
     it('updates max height when viewport changes between moves', () => {
       window.innerHeight = 1000;
-      mockScrollContainer.offsetHeight = 200;
+      setOffsetHeight(mockScrollContainer, 200);
 
       const { result } = renderHook(() =>
         useStagingResize({

@@ -5,6 +5,7 @@ import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } 
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
+import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
 // Mock useResponsive
@@ -41,34 +42,34 @@ describe('Bin', () => {
   const mockOnStartResize = vi.fn();
 
   const defaultBin: BinType = {
-    id: 'test-bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('test-bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+    height: heightUnits(3),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
   };
 
   const defaultCategory: Category = {
-    id: 'cat-1',
+    id: categoryId('cat-1'),
     name: 'Test Category',
     color: '#FF6B6B',
   };
 
   const defaultLayer: Layer = {
-    id: 'layer-1',
+    id: layerId('layer-1'),
     name: 'Layer 1',
-    height: 3,
+    height: heightUnits(3),
   };
 
   const defaultDrawer: Drawer = {
-    width: 10,
-    depth: 8,
-    height: 12,
+    width: gridUnits(10),
+    depth: gridUnits(8),
+    height: heightUnits(12),
   };
 
   const defaultProps = {
@@ -95,9 +96,9 @@ describe('Bin', () => {
         version: '1.0',
         name: 'Test',
         drawer: defaultDrawer,
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
+        printBedSize: mm(256),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
         categories: [defaultCategory],
         layers: [defaultLayer],
         bins: [defaultBin],
@@ -106,8 +107,8 @@ describe('Bin', () => {
 
     // Set up default UI state on focused stores (Bin.tsx uses these directly)
     useSelectionStore.setState({
-      activeLayerId: 'layer-1',
-      activeCategoryId: 'cat-1',
+      activeLayerId: layerId('layer-1'),
+      activeCategoryId: categoryId('cat-1'),
       selectedBinIds: [],
       focusedBinId: null,
     });
@@ -177,7 +178,7 @@ describe('Bin', () => {
     });
 
     it('shows dimensions as secondary text when label is shown', () => {
-      const bigBin = { ...defaultBin, width: 4, depth: 4, label: 'Big Bin' };
+      const bigBin = { ...defaultBin, width: gridUnits(4), depth: gridUnits(4), label: 'Big Bin' };
       render(<Bin {...defaultProps} bin={bigBin} />);
       // Should show both label and dimensions
       expect(screen.getByText('Big Bin')).toBeInTheDocument();
@@ -185,14 +186,14 @@ describe('Bin', () => {
     });
 
     it('hides label text on very small bins', () => {
-      const tinyBin = { ...defaultBin, width: 1, depth: 1 };
+      const tinyBin = { ...defaultBin, width: gridUnits(1), depth: gridUnits(1) };
       const { container } = render(<Bin {...defaultProps} bin={tinyBin} cellSize={16} />);
       // Bin should render but text may not be visible
       expect(container.querySelector('[data-bin-id="test-bin-1"]')).not.toBeNull();
     });
 
     it('formats fractional dimensions correctly', () => {
-      const fractionalBin = { ...defaultBin, width: 1.5, depth: 2.5 };
+      const fractionalBin = { ...defaultBin, width: gridUnits(1.5), depth: gridUnits(2.5) };
       render(<Bin {...defaultProps} bin={fractionalBin} />);
       expect(screen.getByText('1.5×2.5')).toBeInTheDocument();
     });
@@ -222,7 +223,7 @@ describe('Bin', () => {
     });
 
     it('hides resize handles during multi-select', () => {
-      useSelectionStore.setState({ selectedBinIds: ['test-bin-1', 'test-bin-2'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('test-bin-1'), binId('test-bin-2')] });
       render(<Bin {...defaultProps} isSelected={true} />);
       expect(screen.queryByTestId('resize-handles-primary')).not.toBeInTheDocument();
     });
@@ -248,7 +249,7 @@ describe('Bin', () => {
     });
 
     it('does not show text on ghost bins', () => {
-      const bigBin = { ...defaultBin, width: 4, depth: 4 };
+      const bigBin = { ...defaultBin, width: gridUnits(4), depth: gridUnits(4) };
       render(<Bin {...defaultProps} bin={bigBin} isGhost={true} />);
       // Ghost bins should not show dimensions text
       expect(screen.queryByText('4×4')).not.toBeInTheDocument();
@@ -257,14 +258,14 @@ describe('Bin', () => {
 
   describe('tall bins', () => {
     it('shows tall bin indicator when height exceeds layer height', () => {
-      const tallBin = { ...defaultBin, height: 6 };
-      const shortLayer = { ...defaultLayer, height: 3 };
+      const tallBin = { ...defaultBin, height: heightUnits(6) };
+      const shortLayer = { ...defaultLayer, height: heightUnits(3) };
       render(<Bin {...defaultProps} bin={tallBin} layer={shortLayer} />);
       expect(screen.getByText('6u')).toBeInTheDocument();
     });
 
     it('does not show tall indicator when height equals layer height', () => {
-      const normalBin = { ...defaultBin, height: 3 };
+      const normalBin = { ...defaultBin, height: heightUnits(3) };
       render(<Bin {...defaultProps} bin={normalBin} />);
       expect(screen.queryByText('3u')).not.toBeInTheDocument();
     });
@@ -273,7 +274,7 @@ describe('Bin', () => {
   describe('print split indicator', () => {
     it('shows split badge when bin exceeds print bed size', () => {
       // Set up a bin larger than max grid units (256mm / 42mm ≈ 6 units)
-      const largeBin = { ...defaultBin, width: 7, depth: 7 };
+      const largeBin = { ...defaultBin, width: gridUnits(7), depth: gridUnits(7) };
       render(<Bin {...defaultProps} bin={largeBin} />);
       expect(screen.getByText('Split')).toBeInTheDocument();
     });
@@ -543,9 +544,11 @@ describe('Bin', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
-          binIds: ['test-bin-1'],
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          binIds: [binId('test-bin-1')],
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(1), y: gridUnits(1) },
+          valid: true,
+          isOverGrid: true,
         },
       });
 
@@ -579,7 +582,7 @@ describe('Bin', () => {
 
   describe('category highlighting', () => {
     it('applies highlight styling when category is highlighted', () => {
-      useViewStore.setState({ highlightedCategoryId: 'cat-1' });
+      useViewStore.setState({ highlightedCategoryId: categoryId('cat-1') });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -592,7 +595,7 @@ describe('Bin', () => {
     });
 
     it('reduces opacity when other category is highlighted', () => {
-      useViewStore.setState({ highlightedCategoryId: 'other-cat' });
+      useViewStore.setState({ highlightedCategoryId: categoryId('other-cat') });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -646,7 +649,7 @@ describe('Bin', () => {
     it('clears focused bin on blur', () => {
       const setFocusedBinSpy = vi.fn();
       useSelectionStore.setState({
-        focusedBinId: 'test-bin-1',
+        focusedBinId: binId('test-bin-1'),
         setFocusedBin: setFocusedBinSpy,
       });
 
@@ -702,28 +705,36 @@ describe('Bin', () => {
 
   describe('fractional drawer positioning', () => {
     it('handles fractional drawer width', () => {
-      const fractionalDrawer = { ...defaultDrawer, width: 10.5 };
+      const fractionalDrawer = { ...defaultDrawer, width: gridUnits(10.5) };
       const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractional drawer depth', () => {
-      const fractionalDrawer = { ...defaultDrawer, depth: 8.5 };
+      const fractionalDrawer = { ...defaultDrawer, depth: gridUnits(8.5) };
       const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractionalEdgeX start position', () => {
-      const fractionalDrawer = { ...defaultDrawer, width: 10.5, fractionalEdgeX: 'start' as const };
+      const fractionalDrawer = {
+        ...defaultDrawer,
+        width: gridUnits(10.5),
+        fractionalEdgeX: 'start' as const,
+      };
       const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractionalEdgeY start position', () => {
-      const fractionalDrawer = { ...defaultDrawer, depth: 8.5, fractionalEdgeY: 'start' as const };
+      const fractionalDrawer = {
+        ...defaultDrawer,
+        depth: gridUnits(8.5),
+        fractionalEdgeY: 'start' as const,
+      };
       const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
@@ -781,9 +792,11 @@ describe('Bin', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
-          binIds: ['test-bin-1'],
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          binIds: [binId('test-bin-1')],
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(1), y: gridUnits(1) },
+          valid: true,
+          isOverGrid: true,
         },
       });
 
@@ -797,9 +810,11 @@ describe('Bin', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
-          binIds: ['test-bin-1'],
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          binIds: [binId('test-bin-1')],
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(1), y: gridUnits(1) },
+          valid: true,
+          isOverGrid: true,
         },
       });
 

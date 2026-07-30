@@ -6,6 +6,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { createDefaultLayout } from '@/core/constants';
+import { gridUnits } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
 
 const mockGetGridCoords = vi.fn().mockReturnValue({ x: 3, y: 2 });
@@ -34,9 +35,9 @@ describe('BrushHoverGhost', () => {
   });
 
   it('renders nothing when no brush size is loaded', () => {
-    const { queryByTestId, getByTestId } = render(<Harness />);
+    const { getByTestId } = render(<Harness />);
     fireEvent.pointerMove(getByTestId('grid'), { isPrimary: true, clientX: 50, clientY: 50 });
-    expect(queryByTestId('grid').querySelector('[data-brush-ghost]')).toBeNull();
+    expect(getByTestId('grid').querySelector('[data-brush-ghost]')).toBeNull();
   });
 
   it('shows the footprint ghost while hovering with a size loaded', () => {
@@ -76,8 +77,8 @@ describe('BrushHoverGhost', () => {
       paintSize: { width: 2, depth: 2 },
       interaction: {
         type: 'paint',
-        start: { x: 0, y: 0 },
-        current: { x: 0, y: 0 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(0), y: gridUnits(0) },
         paintSize: { width: 2, depth: 2 },
       },
     });

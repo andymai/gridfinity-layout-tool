@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { loggingMiddleware } from './logging';
-import { ok, err } from '@/core/result';
+import { ok, err, layoutInvalidOperation } from '@/core/result';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { NextFn, CommandMeta } from '../types';
@@ -57,7 +57,7 @@ describe('loggingMiddleware', () => {
   });
 
   it('handles error results without crashing', () => {
-    const errorResult = err({ code: 'TEST_ERROR', message: 'fail' });
+    const errorResult = err(layoutInvalidOperation('bin.add', 'fail'));
     const next: NextFn<Command, DomainEvent> = vi.fn(() => errorResult);
     const cmd = makeCommand('bin.add');
 

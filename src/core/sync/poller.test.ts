@@ -3,7 +3,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { __resetForTests, pullNow } from './poller';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
-import type { SyncAdapter, SyncAdapters, SyncableItem } from './adapters/types';
+import type {
+  SyncAdapter,
+  SyncAdapters,
+  SyncableItem,
+  LayoutAdapter,
+  DesignAdapter,
+  BaseplateAdapter,
+} from './adapters/types';
 
 const fetchMock = vi.fn();
 
@@ -48,7 +55,16 @@ beforeEach(() => {
   layouts = makeMockAdapter();
   designs = makeMockAdapter();
   baseplates = makeMockAdapter();
-  adapters = { layouts, designs, baseplates };
+  // MockAdapter's payload is deliberately untyped (`unknown`) — the poller
+  // never inspects payload shape, only `id`/`modifiedAt`. SyncAdapter<Layout
+  // |DesignSyncPayload|BaseplatePayload> is assignable to SyncAdapter<unknown>
+  // (the concrete payload is assignable to `unknown`), so the reverse cast
+  // here is sound, not a type-safety bypass.
+  adapters = {
+    layouts: layouts as LayoutAdapter,
+    designs: designs as DesignAdapter,
+    baseplates: baseplates as BaseplateAdapter,
+  };
 });
 
 function manifestResponse(body: unknown): Response {
