@@ -33,7 +33,8 @@ const PROJECT = 'tsconfig.test.json';
 const GENERATED_EN_LOCALE = join(ROOT, 'src', 'i18n', 'locales', 'en.json');
 
 export interface Baseline {
-  readonly note: string;
+  /** Decorative header for whoever opens the file; never read back. */
+  readonly note?: string;
   /** Human-readable summary only. `sumCounts(files)` is the authority — see readBaseline. */
   readonly total: number;
   readonly files: Record<string, number>;
