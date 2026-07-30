@@ -137,8 +137,8 @@ export function getBinId(result: Result<BinId, unknown>): BinId {
  * @returns A new Bin object
  *
  * @example
- * const bin = createTestBin({ id: 'bin-1', x: 3, y: 5 });
- * const stagingBin = createTestBin({ layerId: '__staging__' });
+ * const bin = createTestBin({ id: binId('bin-1'), x: gridUnits(3), y: gridUnits(5) });
+ * const stagingBin = createTestBin({ layerId: STAGING_ID });
  */
 export function createTestBin(overrides: Partial<Bin> = {}): Bin {
   return {
