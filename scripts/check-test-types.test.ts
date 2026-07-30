@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseDiagnostics, diffAgainstBaseline, hasDrift, readBaseline } from './check-test-types';
+import {
+  parseDiagnostics,
+  diffAgainstBaseline,
+  hasDrift,
+  readBaseline,
+  classifyRun,
+} from './check-test-types';
 
 describe('parseDiagnostics', () => {
   it('counts one diagnostic per error line', () => {
@@ -30,6 +36,32 @@ describe('parseDiagnostics', () => {
 
   it('ignores summary lines that mention errors without the diagnostic shape', () => {
     expect(parseDiagnostics('Found 3 errors in 2 files.')).toEqual({});
+  });
+});
+
+describe('classifyRun', () => {
+  it('treats a non-zero exit with diagnostics as a real run', () => {
+    const run = classifyRun({
+      status: 2,
+      stdout: 'src/a.test.ts(1,1): error TS2304: Cannot find name Foo.',
+      stderr: '',
+    });
+    expect(run.spawnFailure).toBeNull();
+    expect(parseDiagnostics(run.output)).toEqual({ 'src/a.test.ts': 1 });
+  });
+
+  it('treats a missing binary as a failure to run, not as a clean compile', () => {
+    const run = classifyRun({ code: 'ENOENT', message: 'spawn tsgo ENOENT' });
+    expect(run.spawnFailure).toBe('spawn tsgo ENOENT');
+  });
+
+  it('falls back to a message when the thrown error carries none', () => {
+    expect(classifyRun({}).spawnFailure).toBe('tsgo could not be started');
+  });
+
+  it('treats a null status as a failure to run', () => {
+    // Killed by a signal — no exit status, so no diagnostics can be trusted.
+    expect(classifyRun({ status: null, message: 'killed' }).spawnFailure).toBe('killed');
   });
 });
 
