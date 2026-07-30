@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -12,6 +12,19 @@ import type { WallTaperProfile } from '@/core/types';
 const ZERO_OVERHANG: OverhangConfig = { left: 0, right: 0, front: 0, back: 0, feet: false };
 
 export type OverhangSide = 'left' | 'right' | 'front' | 'back';
+
+type Sides = Record<OverhangSide, number>;
+
+const ZERO_SIDES: Sides = { left: 0, right: 0, front: 0, back: 0 };
+
+function sidesOf(taper: WallTaperConfig | undefined): Sides {
+  if (!taper) return ZERO_SIDES;
+  return { left: taper.left, right: taper.right, front: taper.front, back: taper.back };
+}
+
+function total(s: Sides): number {
+  return s.left + s.right + s.front + s.back;
+}
 
 export function useOverhangSection() {
   const { params, updateOverhang, setHoveredOverhangSide } = useDesignerStore(
@@ -31,11 +44,36 @@ export function useOverhangSection() {
   // it otherwise); gate the control to match so it can't silently no-op.
   const taperAvailable = !params.base.solid && new Set(params.compartments.cells).size <= 1;
 
+  const taper = overhang.taper;
+  // Mirror resolveTaper / the OverhangConfig.enabled pattern: a legacy config
+  // with `enabled` absent is on when any side is non-zero, not off.
+  const storedFlare = useMemo(() => sidesOf(taper), [taper]);
+  const taperEnabled = taper?.enabled ?? (taper ? total(storedFlare) > 0 : false);
+
+  // The stored `overhang` is the width at the rim and `taper` the inset back
+  // down to the base, but the panel presents the base-anchored view the drawer
+  // is actually measured in: `base` fills the flat gap, `flare` adds width above
+  // it. Only an *enabled* taper is subtracted — a dormant one keeps its per-side
+  // values for re-enabling while the stored overhang already reads as the base.
+  const flare = useMemo(
+    () => (taperEnabled ? storedFlare : ZERO_SIDES),
+    [taperEnabled, storedFlare]
+  );
+  const base: Sides = useMemo(
+    () => ({
+      left: Math.max(0, overhang.left - flare.left),
+      right: Math.max(0, overhang.right - flare.right),
+      front: Math.max(0, overhang.front - flare.front),
+      back: Math.max(0, overhang.back - flare.back),
+    }),
+    [overhang, flare]
+  );
+
   const setSide = useCallback(
     (side: OverhangSide, value: number) => {
-      updateOverhang({ [side]: value });
+      updateOverhang({ [side]: value + flare[side] });
     },
-    [updateOverhang]
+    [flare, updateOverhang]
   );
 
   const setHovered = useCallback(
@@ -53,8 +91,8 @@ export function useOverhangSection() {
     return () => setHoveredOverhangSide(null);
   }, [isCustomShape, setHoveredOverhangSide]);
 
-  const total = overhang.left + overhang.right + overhang.front + overhang.back;
-  const hasOverhang = total > 0;
+  const baseTotal = total(base);
+  const hasOverhang = overhang.left + overhang.right + overhang.front + overhang.back > 0;
   const enabled = overhang.enabled ?? hasOverhang;
   const feet = overhang.feet ?? false;
 
@@ -65,16 +103,6 @@ export function useOverhangSection() {
   const toggleFeet = useCallback(() => {
     updateOverhang({ feet: !feet });
   }, [feet, updateOverhang]);
-
-  // Taper insets each side within its overhang, so a side can only taper when it
-  // has overhang; it is mutually exclusive with `feet` (frame feet would poke
-  // past a tapered base).
-  const taper = overhang.taper;
-  // Mirror resolveTaper / the OverhangConfig.enabled pattern: a legacy config
-  // with `enabled` absent is on when any side is non-zero, not off.
-  const taperEnabled =
-    taper?.enabled ??
-    (taper ? taper.left > 0 || taper.right > 0 || taper.front > 0 || taper.back > 0 : false);
 
   const updateTaper = useCallback(
     (partial: Partial<WallTaperConfig>) => {
@@ -95,45 +123,66 @@ export function useOverhangSection() {
     [overhang.taper, updateOverhang]
   );
 
+  // Flare is additive, so the stored rim overhang has to move with it in the
+  // same update — writing the taper alone would silently widen or narrow the
+  // base the user set.
+  const setTaperSide = useCallback(
+    (side: OverhangSide, value: number) => {
+      const c = overhang.taper;
+      updateOverhang({
+        [side]: base[side] + value,
+        taper: {
+          enabled: true,
+          profile: c?.profile ?? 'chamfer',
+          bandHeight: c?.bandHeight ?? 0,
+          ...storedFlare,
+          [side]: value,
+        },
+      });
+    },
+    [base, overhang.taper, storedFlare, updateOverhang]
+  );
+
   const toggleTaper = useCallback(() => {
-    const prev = overhang.taper;
-    if (prev?.enabled) {
-      updateTaper({ enabled: false });
+    // Toggling either way holds the base width steady: the stored overhang is
+    // the rim, so it has to gain the flare on enable and shed it on disable.
+    if (taperEnabled) {
+      updateOverhang({
+        left: base.left,
+        right: base.right,
+        front: base.front,
+        back: base.back,
+        taper: { ...(overhang.taper as WallTaperConfig), enabled: false },
+      });
       return;
     }
-    // Seed a drawer-fit default: taper each side back to nominal over a band ~a
-    // third of the wall. Feet are mutually exclusive, so clear them.
+    const prev = overhang.taper;
     const defaultBand = Math.max(DESIGNER_CONSTRAINTS.TAPER_BAND_STEP, Math.round(wallHeight / 3));
     const prevBand = prev?.bandHeight ?? 0;
-    const seedSides =
-      prev && (prev.left > 0 || prev.right > 0 || prev.front > 0 || prev.back > 0)
-        ? { left: prev.left, right: prev.right, front: prev.front, back: prev.back }
-        : {
-            left: overhang.left,
-            right: overhang.right,
-            front: overhang.front,
-            back: overhang.back,
-          };
+    // Re-enabling restores the dormant per-side values; a first enable seeds
+    // each side's flare from its own base overhang, so an asymmetric bin stays
+    // asymmetric and a side left at zero is not flared behind the user's back.
+    const seed = total(storedFlare) > 0 ? storedFlare : base;
     updateOverhang({
+      left: base.left + seed.left,
+      right: base.right + seed.right,
+      front: base.front + seed.front,
+      back: base.back + seed.back,
       feet: false,
       taper: {
         enabled: true,
         profile: prev?.profile ?? 'chamfer',
         bandHeight: prevBand > 0 ? prevBand : defaultBand,
-        ...seedSides,
+        ...seed,
       },
     });
-  }, [overhang, wallHeight, updateOverhang, updateTaper]);
+  }, [base, overhang.taper, storedFlare, taperEnabled, wallHeight, updateOverhang]);
 
   const setTaperProfile = useCallback(
     (profile: WallTaperProfile) => updateTaper({ profile }),
     [updateTaper]
   );
   const setBandHeight = useCallback((v: number) => updateTaper({ bandHeight: v }), [updateTaper]);
-  const setTaperSide = useCallback(
-    (side: OverhangSide, v: number) => updateTaper({ [side]: v }),
-    [updateTaper]
-  );
 
   // Overhang is suppressed for custom-shape (mask) bins in the generator, so
   // surface that as a disabled state rather than silently ignoring input.
@@ -146,29 +195,23 @@ export function useOverhangSection() {
   return {
     state: {
       overhang,
+      base,
       isCustomShape,
       feet,
       hasOverhang,
+      // Feet sit under the base footprint, so a bin that is all flare has no
+      // ground for them even though its rim overhangs.
+      hasBaseOverhang: baseTotal > 0,
       enabled,
       taper: {
         enabled: taperEnabled,
         profile: taper?.profile ?? 'chamfer',
         bandHeight: taper?.bandHeight ?? 0,
-        sides: {
-          left: taper?.left ?? 0,
-          right: taper?.right ?? 0,
-          front: taper?.front ?? 0,
-          back: taper?.back ?? 0,
-        },
-        maxPerSide: {
-          left: overhang.left,
-          right: overhang.right,
-          front: overhang.front,
-          back: overhang.back,
-        },
+        sides: flare,
+        maxPerSide: DESIGNER_CONSTRAINTS.MAX_TAPER,
         maxBand: Math.max(DESIGNER_CONSTRAINTS.TAPER_BAND_STEP, Math.round(wallHeight)),
         availableForBin: taperAvailable,
-        canTaper: hasOverhang && taperAvailable,
+        canTaper: taperAvailable,
       },
     },
     handlers: {

@@ -114,43 +114,13 @@ describe('OverhangSection', () => {
     expect(screen.getByText('Rises up')).toBeDefined();
   });
 
-  it('separates the taper sides under their own heading and shows each cap', () => {
+  it('separates the flare sides under their own heading and splits base from flare', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
         overhang: {
           left: 0,
-          right: 8,
-          front: 0,
-          back: 0,
-          taper: {
-            enabled: true,
-            profile: 'chamfer',
-            bandHeight: 5,
-            left: 6,
-            right: 8,
-            front: 0,
-            back: 0,
-          },
-        },
-      },
-    });
-    render(<OverhangSection />);
-    expect(screen.getByText('Taper back, per side')).toBeDefined();
-    // Right has 8mm of overhang to taper within, so its value reads against it.
-    expect(screen.getByRole('button', { name: /Taper back Right/ }).textContent).toBe('8 of 8');
-    // Distinct from the overhang control of the same visible name above it.
-    expect(screen.getByRole('slider', { name: 'Right' })).toBeDefined();
-    expect(screen.getByRole('slider', { name: 'Taper back Right' })).toBeDefined();
-  });
-
-  it('keeps sides with no overhang in place rather than unmounting them', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        overhang: {
-          left: 0,
-          right: 8,
+          right: 20,
           front: 0,
           back: 0,
           taper: {
@@ -166,12 +136,47 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    // Three untaperable sides, each explained rather than silently dropped —
-    // otherwise the list reflows while the overhang sliders above are dragged.
-    expect(screen.getAllByText('No overhang')).toHaveLength(3);
+    expect(screen.getByText('Flare, per side')).toBeDefined();
+    // Stored 20mm at the rim is presented as 12mm of base plus 8mm of flare.
+    expect(screen.getByRole('button', { name: /^Right/ }).textContent).toBe('12');
+    expect(screen.getByRole('button', { name: /Flare Right/ }).textContent).toBe('8');
+    // Distinct from the overhang control of the same visible name above it.
+    expect(screen.getByRole('slider', { name: 'Right' })).toBeDefined();
+    expect(screen.getByRole('slider', { name: 'Flare Right' })).toBeDefined();
   });
 
-  it('cannot enable the taper without overhang', () => {
+  it('adds flare on top of the base rather than eating into it (#2933)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 19.5,
+          front: 0,
+          back: 0,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 40,
+            left: 0,
+            right: 0,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    fireEvent.change(screen.getByRole('slider', { name: 'Flare Right' }), {
+      target: { value: '20' },
+    });
+    const stored = useDesignerStore.getState().params.overhang;
+    // Rim grows to base + flare; the base the user set is untouched.
+    expect(stored?.right).toBe(39.5);
+    expect(stored?.taper?.right).toBe(20);
+  });
+
+  it('allows flare on a side with no base overhang', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -179,11 +184,47 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    expect(
-      screen.getByText('Add overhang to a side first, then taper it back in at the base.')
-    ).toBeDefined();
     fireEvent.click(screen.getByText('Taper walls'));
-    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBe(true);
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Flare Back' }), {
+      target: { value: '15' },
+    });
+    const stored = useDesignerStore.getState().params.overhang;
+    // Base stays at nominal, so the taper never cuts below the footprint.
+    expect(stored?.back).toBe(15);
+    expect(stored?.taper?.back).toBe(15);
+  });
+
+  it('holds the base steady when the taper is toggled off', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: {
+          left: 0,
+          right: 39.5,
+          front: 0,
+          back: 0,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 40,
+            left: 0,
+            right: 20,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    fireEvent.click(screen.getByText('Taper walls'));
+    const stored = useDesignerStore.getState().params.overhang;
+    // Disabling sheds the flare instead of leaving a straight 39.5mm wall.
+    expect(stored?.right).toBe(19.5);
+    expect(stored?.taper?.enabled).toBe(false);
+    // The dormant flare survives for re-enabling.
+    expect(stored?.taper?.right).toBe(20);
   });
 
   it('cannot enable the taper while feet are on (mutually exclusive)', () => {

@@ -110,14 +110,16 @@ export interface Bin {
   // bin abuts a padded edge; dormant otherwise.
   extendToMargin?: boolean;
   // Opt-in outer-wall taper for a drawer-margin bin (#2933): over `bandHeight`
-  // mm the extended wall angles inward from the padding-expanded rim back toward
-  // the nominal footprint, so the base clears a drawer's rounded corner. Per-side
-  // reach is derived live from the padding (like `extendToMargin`, which this
-  // requires); only the profile + band height are stored here.
+  // mm the wall angles outward from the padding-wide base up to the rim, so the
+  // bin reaches into a drawer's curved sides while its base still sits flat.
+  // Per-side reach is derived live from the padding (like `extendToMargin`,
+  // which this requires); `flare` is the only authored width, applied on every
+  // abutting edge.
   marginTaper?: {
     profile: WallTaperProfile;
     bandHeight: number; // mm
     enabled?: boolean;
+    flare?: number; // mm of extra width at the rim, beyond the padding
   };
   // Explicit per-placement overhang (mm), authored by "Expand to Fit" so several
   // bins can tile a span that isn't a whole number of grid units while sharing

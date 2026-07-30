@@ -22,26 +22,13 @@ describe('OverhangSliderRow', () => {
     expect(screen.getByRole('slider', { name: 'Left' })).toBeDefined();
   });
 
-  it('shows the cap in place of the bare value', () => {
-    render(<OverhangSliderRow {...base} value={21} stacked={false} cap="21 of 21" />);
-    expect(screen.getByRole('button', { name: /Left/ }).textContent).toBe('21 of 21');
-  });
-
-  it('ignores the cap in the stacked layout, which has room for a plain value', () => {
-    render(<OverhangSliderRow {...base} value={21} stacked cap="21 of 21" />);
+  it('shows the bare value', () => {
+    render(<OverhangSliderRow {...base} value={21} stacked={false} />);
     expect(screen.getByRole('button', { name: /Left/ }).textContent).toBe('21');
   });
 
-  it('renders an inert row instead of a control when there is nothing to taper', () => {
-    render(<OverhangSliderRow {...base} stacked={false} inertReason="No overhang" />);
-    expect(screen.queryByRole('slider')).toBeNull();
-    expect(screen.getByText('No overhang')).toBeDefined();
-    // The label stays put so the four sides do not reflow as overhang changes.
-    expect(screen.getByText('Left')).toBeDefined();
-  });
-
-  it('keeps the inert row out of the tab order entirely', () => {
-    render(<OverhangSliderRow {...base} stacked={false} inertReason="No overhang" />);
-    expect(screen.queryByRole('button')).toBeNull();
+  it('disambiguates repeated side names via srLabel', () => {
+    render(<OverhangSliderRow {...base} stacked={false} srLabel="Flare Left" />);
+    expect(screen.getByRole('slider', { name: 'Flare Left' })).toBeDefined();
   });
 });

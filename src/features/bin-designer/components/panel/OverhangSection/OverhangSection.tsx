@@ -4,15 +4,16 @@
  * Overhang grows the bin walls + stacking lip outward to fill the centering gap
  * a non-integral grid leaves in a drawer. Feet stay at the nominal footprint
  * (flat bottom under the overhang) unless the feet toggle is enabled. The taper
- * (#2933) instead angles the outer wall back toward nominal at the base so the
- * bin hugs a drawer's rounded corner; it insets within the overhang (so a side
- * only tapers where it has overhang) and is mutually exclusive with feet.
+ * (#2933) adds a flare *on top of* that overhang: the base keeps the overhang
+ * width and the wall angles outward to the rim, so a bin can reach into the
+ * curved upper part of a drawer wall its base can't sit in. Flare is
+ * independent of overhang — a side with no overhang can still flare, since the
+ * base only ever stays at or above nominal. Mutually exclusive with feet.
  * A feature toggle gates the per-side controls; values are retained while off.
  * Suppressed for custom-shape bins.
  *
- * The taper's per-side sliders repeat the same four side names as the overhang
- * block above them, so they sit under their own heading and each shows the
- * overhang it is capped by ("21 of 21").
+ * The flare's per-side sliders repeat the same four side names as the overhang
+ * block above them, so they sit under their own heading.
  */
 
 import { useId } from 'react';
@@ -35,14 +36,13 @@ export function OverhangSection() {
   ];
 
   const { taper } = state;
-  const feetEnabled = state.hasOverhang && !taper.enabled;
+  const feetEnabled = state.hasBaseOverhang && !taper.enabled;
   const taperToggleEnabled = taper.canTaper && !state.feet;
   const stacked = meta.stackedSliders;
 
   let taperHintKey = 'binDesigner.overhang.taper.hint';
   if (state.feet) taperHintKey = 'binDesigner.overhang.taper.feetConflict';
   else if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.singleHollowOnly';
-  else if (!state.hasOverhang) taperHintKey = 'binDesigner.overhang.taper.needsOverhang';
 
   return (
     <FeatureToggle
@@ -68,7 +68,7 @@ export function OverhangSection() {
             >
               <OverhangSliderRow
                 label={label}
-                value={state.overhang[side]}
+                value={state.base[side]}
                 onChange={(v) => handlers.setSide(side, v)}
                 min={DESIGNER_CONSTRAINTS.MIN_OVERHANG}
                 max={DESIGNER_CONSTRAINTS.MAX_OVERHANG}
@@ -167,37 +167,27 @@ export function OverhangSection() {
                   >
                     {t('binDesigner.overhang.taper.sidesHeading')}
                   </p>
-                  {sides.map(({ side, label }) => {
-                    const sideMax = taper.maxPerSide[side];
-                    return (
-                      <div
-                        key={side}
-                        onMouseEnter={() => handlers.setHovered(side)}
-                        onMouseLeave={() => handlers.setHovered(null)}
-                        onFocus={() => handlers.setHovered(side)}
-                        onBlur={() => handlers.setHovered(null)}
-                      >
-                        <OverhangSliderRow
-                          label={label}
-                          srLabel={t('binDesigner.overhang.taper.sideAria', { side: label })}
-                          value={taper.sides[side]}
-                          onChange={(v) => handlers.setTaperSide(side, v)}
-                          min={DESIGNER_CONSTRAINTS.MIN_TAPER}
-                          max={sideMax}
-                          step={DESIGNER_CONSTRAINTS.TAPER_STEP}
-                          unit="mm"
-                          stacked={stacked}
-                          cap={t('binDesigner.overhang.taper.sideCap', {
-                            value: taper.sides[side],
-                            max: sideMax,
-                          })}
-                          inertReason={
-                            sideMax > 0 ? undefined : t('binDesigner.overhang.taper.sideNoOverhang')
-                          }
-                        />
-                      </div>
-                    );
-                  })}
+                  {sides.map(({ side, label }) => (
+                    <div
+                      key={side}
+                      onMouseEnter={() => handlers.setHovered(side)}
+                      onMouseLeave={() => handlers.setHovered(null)}
+                      onFocus={() => handlers.setHovered(side)}
+                      onBlur={() => handlers.setHovered(null)}
+                    >
+                      <OverhangSliderRow
+                        label={label}
+                        srLabel={t('binDesigner.overhang.taper.sideAria', { side: label })}
+                        value={taper.sides[side]}
+                        onChange={(v) => handlers.setTaperSide(side, v)}
+                        min={DESIGNER_CONSTRAINTS.MIN_TAPER}
+                        max={taper.maxPerSide}
+                        step={DESIGNER_CONSTRAINTS.TAPER_STEP}
+                        unit="mm"
+                        stacked={stacked}
+                      />
+                    </div>
+                  ))}
                 </div>
               </>
             )}
