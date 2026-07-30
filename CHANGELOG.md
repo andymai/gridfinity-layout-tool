@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.0...gridfinity-layout-tool-v4.329.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop the wall-pattern selector claiming walls it doesn't pattern ([#2969](https://github.com/andymai/gridfinity-layout-tool/issues/2969)) ([0501662](https://github.com/andymai/gridfinity-layout-tool/commit/05016620fb5c2eca689edb10bd400d899cc929a6))
+
 ## [4.329.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.4...gridfinity-layout-tool-v4.329.0) (2026-07-30)
 
 
