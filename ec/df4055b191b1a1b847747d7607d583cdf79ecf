@@ -1,0 +1,26 @@
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_a45516b9543dc4 3,125
+src/test/testUtils.ts
+  s_bb8f1233002a7e::t_6557d0ab07e791 5
+  s_bb8f1233002a7e::t_5aaf7dec63e894 147-151
+  s_bb8f1233002a7e::t_bc671d8d14c280 242-245
+  s_bb8f1233002a7e::t_9343e45deae3d2 213-215
+src/test/setup.ts
+  s_bb8f1233002a7e::t_6b5fdf4d7966f9 26-30,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "ecdf4055b191b1a1b847747d7607d583cdf79ecf",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
