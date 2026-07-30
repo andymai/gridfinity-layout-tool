@@ -23,11 +23,15 @@ import { vi } from 'vitest';
 // file. Node-env tests only need basic get/set localStorage, so the plain object suffices.
 const isJsdom = typeof window !== 'undefined';
 if (typeof globalThis !== 'undefined') {
-  const StorageCtor = (globalThis as { Storage?: { prototype: object } }).Storage;
+  // Declared as a constructor, not a bare `{ prototype }`: the `typeof === 'function'`
+  // guard below narrows a non-function type to `never`, which made `.prototype`
+  // unreachable to the type-checker even though it resolves fine at runtime.
+  type StorageConstructor = (new () => unknown) & { prototype: Record<string, unknown> };
+  const StorageCtor = (globalThis as { Storage?: StorageConstructor }).Storage;
   let localStorageValue: object;
 
   if (isJsdom && typeof StorageCtor === 'function') {
-    const proto = StorageCtor.prototype as Record<string, unknown>;
+    const proto = StorageCtor.prototype;
     const has = (obj: object, key: string) => Object.prototype.hasOwnProperty.call(obj, key);
     proto.getItem = function (this: object, key: string) {
       return has(this, key) ? (this as Record<string, string>)[key] : null;
