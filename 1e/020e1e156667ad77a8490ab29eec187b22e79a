@@ -1,0 +1,122 @@
+src/core/cqrs/undo/historyStore.test.ts
+  s_bb8f1233002a7e::t_dd3f7ddc3cdc3a 613
+  s_bb8f1233002a7e::t_1aeca1a76593a6 7-8
+  s_bb8f1233002a7e::t_2ea25ed95e828e 567-569
+  s_bb8f1233002a7e::t_e3ec2726257127 604,610,622,626
+  s_bb8f1233002a7e::t_cffe6810fc1b90 541
+  s_bb8f1233002a7e::t_496cb1c75c5790 275,278,282,284-285
+  s_bb8f1233002a7e::t_b589a64ff182af 286-288
+  s_654fe51e04dc23::t_9ecf1f9ce2a0b5 248-252,341-345,355-359,399-403,435-439,465-469,494-498,512-516,594-598
+src/core/cqrs/subscribers/fillAnalytics.test.ts
+  s_bb8f1233002a7e::t_524566af61189b 58
+  s_bb8f1233002a7e::t_789e6deefaeb90 6
+  s_bb8f1233002a7e::t_06a30a290dca9e 62
+src/core/cqrs/v2/domain/layout/setBaseplateParams.test.ts
+  s_bb8f1233002a7e::t_26010cbca4dbb5 27,35
+  s_bb8f1233002a7e::t_ec7d9fb912eb18 53
+  s_bb8f1233002a7e::t_031bd4c0f41231 5,9-14,16-22
+src/core/cqrs/store/eventStore.test.ts
+  s_bb8f1233002a7e::t_1c590d90ab9ce4 14-15,17-32,36
+  s_bb8f1233002a7e::t_545a1dffacffef 33
+  s_bb8f1233002a7e::t_41f4fd1f7249d1 46
+  s_bb8f1233002a7e::t_5aba3fb939f2e7 104-105
+src/core/sync/claim.test.ts
+  s_bb8f1233002a7e::t_08a92e2b5afe4c 4-11
+  s_bb8f1233002a7e::t_d4136bdf2eb06b 50-51
+  s_bb8f1233002a7e::t_57d1c211059c59 60-69
+src/core/cqrs/middleware/logging.test.ts
+  s_bb8f1233002a7e::t_4457cdb92519bf 3
+  s_bb8f1233002a7e::t_a9f15dfaf3fa8d 60
+src/core/cqrs/middleware/analytics.test.ts
+  s_bb8f1233002a7e::t_9c7d23d2e1a339 59
+  s_bb8f1233002a7e::t_17ebb21694ee85 3
+src/core/sync/signOut.test.ts
+  s_bb8f1233002a7e::t_171ca211177697 4-11
+  s_bb8f1233002a7e::t_aa1bfab33c5e5b 61-62,70-79
+  s_bb8f1233002a7e::t_fcee60e6a18d5e 187,259
+  s_bb8f1233002a7e::t_d3121d593db8c0 204
+src/core/sync/adapters/layoutAdapter.test.ts
+  s_bb8f1233002a7e::t_306f309c3717b9 217
+  s_bb8f1233002a7e::t_e1f12622158185 28
+  s_bb8f1233002a7e::t_7dd387ae7ec5db 218-219
+src/core/sync/deleteAccount.test.ts
+  s_bb8f1233002a7e::t_41684c28a2ef7e 4-11
+  s_bb8f1233002a7e::t_be9f53b311ce1d 50-51,59-68
+src/core/sync/engine.test.ts
+  s_bb8f1233002a7e::t_339151e512c7c2 372-376
+  s_bb8f1233002a7e::t_bb5ea26d7ce416 86-95
+  s_bb8f1233002a7e::t_0f98db886b8b2b 14-21
+  s_bb8f1233002a7e::t_4b0247959d98da 400
+src/core/cqrs/handlers/restoreHandlers.test.ts
+  s_bb8f1233002a7e::t_f7b16ce4790c76 53
+  s_bb8f1233002a7e::t_f0dae27e21bb7f 6
+  s_bb8f1233002a7e::t_eb187257b6fca1 55-57
+  s_bb8f1233002a7e::t_2505f5c85a9cc4 41-45,51
+src/core/cqrs/projection/replay.test.ts
+  s_bb8f1233002a7e::t_21f5db40a7dacb 4,16,23-26,28,37-41
+  s_bb8f1233002a7e::t_71bfa7a43127af 100,112,117,168-169
+src/core/cqrs/subscribers/libraryPersistence.test.ts
+  s_bb8f1233002a7e::t_a6c92b987dc82a 7
+  s_bb8f1233002a7e::t_db65202fd80dde 65-67
+src/core/cqrs/versioning/migrations.test.ts
+  s_bb8f1233002a7e::t_60489c926b1c06 23
+  s_bb8f1233002a7e::t_5f646370ebea13 58
+  s_bb8f1233002a7e::t_bfad13a9e93f0a 60
+src/core/sync/poller.test.ts
+  s_bb8f1233002a7e::t_58e9d3278c1df3 6-13
+  s_bb8f1233002a7e::t_bf20e0f6798474 58-67
+src/core/sync/triggers/useBeaconFlush.test.ts
+  s_bb8f1233002a7e::t_530dd1f662bb64 31-35,37-59,61-63
+  s_bb8f1233002a7e::t_d6745d8671d318 5-11,19
+src/core/cqrs/v2/domain/bin/addBin.test.ts
+  s_bb8f1233002a7e::t_d95b3a786ea375 20
+  s_bb8f1233002a7e::t_b02aeccc77c6f1 32
+  s_bb8f1233002a7e::t_d53f25e16a3393 80-84
+src/core/cqrs/validation/validationMiddleware.test.ts
+  s_bb8f1233002a7e::t_4d181b7e65fa95 222
+  s_bb8f1233002a7e::t_310a341828cfa2 57,71
+src/core/cqrs/v2/domain/bin/fillGaps.test.ts
+  s_bb8f1233002a7e::t_13b90962256596 23-26
+src/core/cqrs/integration/pipeline.test.ts
+  s_bb8f1233002a7e::t_a111edf90a2e11 56-58
+  s_bb8f1233002a7e::t_2c76008aa21ce1 17
+  s_bb8f1233002a7e::t_502b7efbdd8b4f 10-11
+  s_bb8f1233002a7e::t_8efb88aea1ae00 29-33,42,44,46-48
+  s_3277563dc1c458::t_172ba1b555efb2 63,103,145,199-203,228
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_dfd726ede15104 3
+src/core/cqrs/validation/schemas.test.ts
+  s_bb8f1233002a7e::t_43c4ed5dae1818 68,201,251,266,291,330,340,361,383,405,443,463,483
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1e020e1e156667ad77a8490ab29eec187b22e79a",
+  "prompts": {},
+  "sessions": {
+    "s_3277563dc1c458": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a18b5a9cbae6ec4d7",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_654fe51e04dc23": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-abfdb952996afe263",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
