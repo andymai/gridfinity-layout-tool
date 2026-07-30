@@ -17,8 +17,11 @@ import {
   LABEL_SOCKET_SLIDE_Z_CLEARANCE_MM,
   LABEL_SOCKET_STACK_RELIEF_MM,
   LABEL_PLATE_WIDTHS_U,
+  LABEL_TAB_LIP_HEIGHT_MAX_MM,
+  LABEL_TAB_LIP_HEIGHT_MIN_MM,
   MIN_LABEL_SOCKET_TAB_DEPTH_MM,
   defaultLabelShelfTopMm,
+  labelLipReservationMm,
   effectiveLabelSocketClearance,
   isLabelPlateWidthU,
   labelPlateV1ChannelsFitText,
@@ -152,6 +155,43 @@ describe('labelPlates', () => {
       // Text mode never shifts.
       expect(defaultLabelShelfTopMm(15.3, true, {})).toBe(15.3);
       expect(defaultLabelShelfTopMm(15.3, true, { mode: 'text' })).toBe(15.3);
+    });
+
+    // #2971: the label lip reserves shelf headroom so the rim tops at the ceiling.
+    it('reserves the lip height only on enabled text-mode tabs', () => {
+      expect(labelLipReservationMm({ lip: true, lipHeight: 1 })).toBe(1);
+      expect(labelLipReservationMm({ lip: true, lipHeight: 1, mode: 'text' })).toBe(1);
+      // Absent lipHeight → default (1mm).
+      expect(labelLipReservationMm({ lip: true })).toBe(1);
+      // Disabled, or socket mode → nothing reserved.
+      expect(labelLipReservationMm({ lip: false, lipHeight: 2 })).toBe(0);
+      expect(labelLipReservationMm({ lip: true, lipHeight: 2, mode: 'socket' })).toBe(0);
+      expect(labelLipReservationMm({})).toBe(0);
+      // Out-of-range stored values are clamped to the supported band.
+      expect(labelLipReservationMm({ lip: true, lipHeight: 99 })).toBe(LABEL_TAB_LIP_HEIGHT_MAX_MM);
+      expect(labelLipReservationMm({ lip: true, lipHeight: 0.01 })).toBe(
+        LABEL_TAB_LIP_HEIGHT_MIN_MM
+      );
+    });
+
+    it('drops the default shelf top by the lip height on text-mode tabs', () => {
+      expect(defaultLabelShelfTopMm(15.3, true, { lip: true, lipHeight: 1 })).toBeCloseTo(14.3);
+      expect(defaultLabelShelfTopMm(16, false, { lip: true, lipHeight: 2 })).toBe(14);
+      // No lip → unchanged (byte-identical to legacy configs).
+      expect(defaultLabelShelfTopMm(16, false, {})).toBe(16);
+      // Socket relief and lip are mutually exclusive; the larger reservation wins.
+      expect(defaultLabelShelfTopMm(15.3, true, { mode: 'socket', lip: true, lipHeight: 5 })).toBe(
+        15.3 - LABEL_SOCKET_STACK_RELIEF_MM
+      );
+    });
+
+    it('caps an explicit height at the lip-relieved plane (keeps lower heights)', () => {
+      // Explicit height above ceiling−lip is lowered so the rim stays under the ceiling.
+      expect(
+        resolveLabelShelfTopMm(15.3, false, { lip: true, lipHeight: 1, height: 15.3 })
+      ).toBeCloseTo(14.3);
+      // A custom tuck-under below that plane is left untouched.
+      expect(resolveLabelShelfTopMm(15.3, false, { lip: true, lipHeight: 1, height: 10 })).toBe(10);
     });
 
     it('resolveLabelShelfTopMm honors an explicit height below the cap', () => {

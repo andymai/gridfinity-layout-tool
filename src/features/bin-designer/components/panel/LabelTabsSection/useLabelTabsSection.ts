@@ -8,6 +8,7 @@ import { useTranslation } from '@/i18n';
 import { rowHasFullWidthWall } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 import {
+  LABEL_TAB_LIP_HEIGHT_DEFAULT_MM,
   MIN_LABEL_SOCKET_TAB_DEPTH_MM,
   defaultLabelShelfTopMm,
   effectiveLabelSocketClearance,
@@ -123,6 +124,20 @@ export function useLabelTabsSection() {
   const toggleSpan = useCallback(
     (span: boolean) => {
       updateLabel({ span });
+    },
+    [updateLabel]
+  );
+
+  const toggleLabelLip = useCallback(
+    (lip: boolean) => {
+      updateLabel({ lip });
+    },
+    [updateLabel]
+  );
+
+  const setLabelLipHeight = useCallback(
+    (lipHeight: number) => {
+      updateLabel({ lipHeight });
     },
     [updateLabel]
   );
@@ -257,6 +272,46 @@ export function useLabelTabsSection() {
   // bin), collapse min onto max so the stepper can't request a rejected Z.
   const tabHeightMax = defaultShelfTopMm;
   const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
+
+  // --- Label lip (#2971) ---
+  // Only offered on text-mode tabs (socket tabs retain their plates; the
+  // slide-channel mouth is on the free edge the lip would wall off).
+  const lipAvailable = (label.mode ?? 'text') === 'text';
+  const lipEnabled = !!label.lip;
+  const lipHeightMm = label.lipHeight ?? LABEL_TAB_LIP_HEIGHT_DEFAULT_MM;
+  // The shelf top the tab would use with the lip OFF — the lip lowers the shelf
+  // by its height, so comparing against this tells us whether the lip is the
+  // reason a tab is about to silently drop (and sizes the auto-fix).
+  const shelfTopNoLip = useMemo(
+    () =>
+      resolveLabelShelfTopMm(shelfCeilingMm, stackingLip, {
+        ...label,
+        lip: false,
+        lipHeight: undefined,
+      }),
+    [shelfCeilingMm, stackingLip, label]
+  );
+  // Lip is enabled and its shelf drop is what pushes the tab past the height
+  // guard (`depth >= tabHeightMm`), even though it fit without the lip.
+  const lipWontFit =
+    lipEnabled && lipAvailable && label.depth < shelfTopNoLip && label.depth >= tabHeightMm;
+
+  const autoFixLip = useCallback(() => {
+    // The lip must stay below `shelfTopNoLip - depth` to keep the shelf above
+    // the gusset floor. Shrink it to the largest step-aligned value that fits;
+    // if even the minimum lip can't fit, turn the lip off.
+    const step = DESIGNER_CONSTRAINTS.LABEL_TAB_LIP_HEIGHT_STEP;
+    const room = shelfTopNoLip - label.depth;
+    const fitLip = Math.floor((room - 1e-6) / step) * step;
+    if (fitLip >= DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_LIP_HEIGHT) {
+      updateLabel({
+        lipHeight:
+          Math.round(Math.min(fitLip, DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_LIP_HEIGHT) * 10) / 10,
+      });
+    } else {
+      updateLabel({ lip: false });
+    }
+  }, [shelfTopNoLip, label.depth, updateLabel]);
 
   // Dynamic max for the tab-depth stepper. Geometry's bridge guard rejects
   // `tabDepth >= innerD`, so the UI clamps at innerD-1 and never wider than
@@ -579,6 +634,13 @@ export function useLabelTabsSection() {
       tabDepthMax,
       tabInsetMax,
       tabsWillSilentlyDrop,
+      lipAvailable,
+      lipEnabled,
+      lipHeightMm,
+      lipMin: DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_LIP_HEIGHT,
+      lipMax: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_LIP_HEIGHT,
+      lipStep: DESIGNER_CONSTRAINTS.LABEL_TAB_LIP_HEIGHT_STEP,
+      lipWontFit,
       compartmentTextRows,
       rowTextRows,
       isSocketMode,
@@ -591,6 +653,9 @@ export function useLabelTabsSection() {
     handlers: {
       toggleLabelTabs,
       toggleSpan,
+      toggleLabelLip,
+      setLabelLipHeight,
+      autoFixLip,
       setLabelRowText,
       setTabSupport,
       setTabDepth,

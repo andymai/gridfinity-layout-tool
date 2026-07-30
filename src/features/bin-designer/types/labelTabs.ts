@@ -64,6 +64,25 @@ export interface LabelTabConfig {
    * gusset has no room).
    */
   readonly height?: number;
+  /**
+   * Raised rim along each tab's free edge (the edge opposite its anchor wall)
+   * that stops a loose paper/vinyl label sliding off (#2971). Absent/false =
+   * flat shelf, the legacy behavior. Enabling it drops the shelf by
+   * {@link lipHeight} so the rim tops out at the interior ceiling instead of
+   * standing proud and breaking stackability (see `defaultLabelShelfTopMm`).
+   *
+   * Text-mode only: socket tabs retain their own plates, and the slide-channel
+   * socket's insertion mouth is on the same free edge. The UI hides the control
+   * in socket mode; the geometry builder also guards.
+   */
+  readonly lip?: boolean;
+  /**
+   * Lip height in mm (default {@link LABEL_TAB_LIP_HEIGHT_DEFAULT_MM} = 1).
+   * Only consulted when {@link lip} is true. Bounds
+   * `[LABEL_TAB_LIP_HEIGHT_MIN_MM, LABEL_TAB_LIP_HEIGHT_MAX_MM]`, clamped in
+   * `labelLipReservationMm`.
+   */
+  readonly lipHeight?: number;
   /** Horizontal alignment within each compartment column */
   readonly alignment: LabelTabAlignment;
   /**

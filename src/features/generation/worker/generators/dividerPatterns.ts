@@ -26,7 +26,7 @@ import {
   computeLipOffset,
   resolveScoopProfile,
 } from '@/shared/utils/scoopCalculations';
-import { resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
+import { labelLipReservationMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
 import { findCompartmentBounds, interiorDividerSegments } from './compartmentBuilder';
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
@@ -225,6 +225,9 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   const shelfTopZ = resolveLabelShelfTopMm(interiorHeight, params.base.stackingLip, params.label);
   const zMin = shelfTopZ - tabDepth;
   if (zMin <= 0 || shelfTopZ > interiorHeight) return [];
+  // The lip (#2971) rises above the shelf, so the keep-out must reach the rim
+  // top or a perforated divider could punch a hole into the lip's Z band.
+  const zMax = shelfTopZ + labelLipReservationMm(params.label);
 
   const { cols, rows, cells } = params.compartments;
   const cellW = innerW / cols;
@@ -242,10 +245,10 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
     const xMin = -innerW / 2 + minCol * cellW;
     const xMax = -innerW / 2 + (maxCol + 1) * cellW;
     const backY = -innerD / 2 + (maxRow + 1) * cellD;
-    out.push({ xMin, xMax, yMin: backY - tabDepth, yMax: backY, zMin, zMax: shelfTopZ });
+    out.push({ xMin, xMax, yMin: backY - tabDepth, yMax: backY, zMin, zMax });
     if (bothEdges) {
       const frontY = -innerD / 2 + minRow * cellD;
-      out.push({ xMin, xMax, yMin: frontY, yMax: frontY + tabDepth, zMin, zMax: shelfTopZ });
+      out.push({ xMin, xMax, yMin: frontY, yMax: frontY + tabDepth, zMin, zMax });
     }
   }
   return out;

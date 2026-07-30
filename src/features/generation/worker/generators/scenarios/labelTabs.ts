@@ -107,4 +107,47 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
+  // #2971: raised lip on the free edge. The shelf auto-drops by the lip height
+  // so the rim tops out at the interior ceiling.
+  defineScenario('label tabs', '2\u00d72 label lip bracket', {
+    params: {
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        lip: true,
+        lipHeight: 1,
+      },
+    },
+  }),
+  // #2971: lip on a solid support, taller rim \u2014 exercises the shelf-drop + fuse
+  // against a continuous prism rather than discrete gussets.
+  defineScenario('label tabs', '2\u00d72 label lip solid 2mm', {
+    params: {
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'solid',
+        alignment: 'center',
+        lip: true,
+        lipHeight: 2,
+      },
+    },
+  }),
+  // #2971: lip on both edges \u2014 each tab's own free edge gets a rim.
+  defineScenario('label tabs', '2\u00d72\u00d74 label lip both edges', {
+    params: {
+      height: 4,
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        edges: 'both',
+        lip: true,
+        lipHeight: 1,
+      },
+    },
+  }),
 ];
