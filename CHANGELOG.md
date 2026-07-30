@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.4...gridfinity-layout-tool-v4.329.0) (2026-07-30)
+
+
+### Features
+
+* **bin-designer:** apply wall patterns to selected walls only ([#2967](https://github.com/andymai/gridfinity-layout-tool/issues/2967)) ([524ab93](https://github.com/andymai/gridfinity-layout-tool/commit/524ab933d858d1e52bc39f8d691e9db5117c6d83))
+
 ## [4.328.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.328.3...gridfinity-layout-tool-v4.328.4) (2026-07-29)
 
 
