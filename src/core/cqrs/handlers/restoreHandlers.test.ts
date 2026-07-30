@@ -3,7 +3,7 @@ import { isOk } from '@/core/result';
 import { createCommand } from '../commands';
 import { resetVersionCounters } from './index';
 import type { Layout } from '@/core/types';
-import { binId, layerId, categoryId } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 
 const mockRestoreLayout = vi.fn();
 const mockRestoreSelection = vi.fn();
@@ -38,23 +38,23 @@ const testLayout: Layout = {
     {
       id: binId('bin_1'),
       layerId: layerId('layer_1'),
-      x: 0,
-      y: 0,
-      width: 1,
-      depth: 1,
-      height: 3,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
       category: categoryId('cat_1'),
       label: '',
       notes: '',
     },
   ],
-  layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: 3 }],
+  layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) }],
   categories: [{ id: categoryId('cat_1'), name: 'Default', color: '#808080' }],
-  drawer: { width: 6, depth: 4, height: 7 },
+  drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(7) },
   name: 'Test',
-  printBedSize: 256,
-  gridUnitMm: 42,
-  heightUnitMm: 7,
+  printBedSize: mm(256),
+  gridUnitMm: mm(42),
+  heightUnitMm: mm(7),
   version: '1.0',
 };
 

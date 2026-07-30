@@ -2,26 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import type { StoredBaseplateParams } from '@/core/types';
+import { mm } from '@/core/types';
 import { setBaseplateParams } from './setBaseplateParams';
 import { makeLayout } from './_testHelpers';
 
-const baseParams: StoredBaseplateParams = {
+// `satisfies` (not `: StoredBaseplateParams`) keeps the literal's narrow
+// inferred type — e.g. omitting `connectorStyle` entirely — so this value
+// stays assignable both to Layout.baseplateParams (the full stored shape)
+// and to setBaseplateParams.handle()'s narrower raw Zod-inferred payload
+// (which only permits a subset of connectorStyle's values).
+const baseParams = {
   magnetHoles: false,
-  magnetDiameter: 6 as StoredBaseplateParams['magnetDiameter'],
-  magnetDepth: 2 as StoredBaseplateParams['magnetDepth'],
-  paddingLeft: 0 as StoredBaseplateParams['paddingLeft'],
-  paddingRight: 0 as StoredBaseplateParams['paddingRight'],
-  paddingFront: 0 as StoredBaseplateParams['paddingFront'],
-  paddingBack: 0 as StoredBaseplateParams['paddingBack'],
-};
+  magnetDiameter: mm(6),
+  magnetDepth: mm(2),
+  paddingLeft: mm(0),
+  paddingRight: mm(0),
+  paddingFront: mm(0),
+  paddingBack: mm(0),
+} satisfies StoredBaseplateParams;
 
 describe('v2 layout.setBaseplateParams', () => {
   it('clamps padding values to >= 0', () => {
     const layout = makeLayout();
-    const params: StoredBaseplateParams = {
-      ...baseParams,
-      paddingLeft: -5 as StoredBaseplateParams['paddingLeft'],
-    };
+    const params = { ...baseParams, paddingLeft: mm(-5) } satisfies StoredBaseplateParams;
     const result = setBaseplateParams.handle({ params }, { aggregate: layout });
     if (!isOk(result)) throw new Error('handle failed');
     expect(result.value.event.payload.params.paddingLeft).toBe(0);
@@ -29,10 +32,7 @@ describe('v2 layout.setBaseplateParams', () => {
 
   it('clamps magnetDiameter to [0.5, 20]', () => {
     const layout = makeLayout();
-    const params: StoredBaseplateParams = {
-      ...baseParams,
-      magnetDiameter: 999 as StoredBaseplateParams['magnetDiameter'],
-    };
+    const params = { ...baseParams, magnetDiameter: mm(999) } satisfies StoredBaseplateParams;
     const result = setBaseplateParams.handle({ params }, { aggregate: layout });
     if (!isOk(result)) throw new Error('handle failed');
     expect(result.value.event.payload.params.magnetDiameter).toBe(20);
@@ -50,7 +50,7 @@ describe('v2 layout.setBaseplateParams', () => {
 
   it('preserves paddingAnchor through the handler', () => {
     const layout = makeLayout();
-    const params: StoredBaseplateParams = { ...baseParams, paddingAnchor: 'tr' };
+    const params = { ...baseParams, paddingAnchor: 'tr' } satisfies StoredBaseplateParams;
     const result = setBaseplateParams.handle({ params }, { aggregate: layout });
     if (!isOk(result)) throw new Error('handle failed');
     expect(result.value.event.payload.params.paddingAnchor).toBe('tr');

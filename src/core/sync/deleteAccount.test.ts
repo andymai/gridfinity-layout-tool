@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runDeleteAccount, type DeleteAccountConfirmPrompt } from './deleteAccount';
-import type { SyncAdapter, SyncAdapters, SyncableItem } from './adapters/types';
+import type {
+  SyncAdapter,
+  SyncAdapters,
+  SyncableItem,
+  LayoutAdapter,
+  DesignAdapter,
+  BaseplateAdapter,
+} from './adapters/types';
 
 const apiDeleteAccountMock = vi.fn();
 const clearOutboxMock = vi.fn();
@@ -40,8 +47,8 @@ let designs: MockAdapter;
 let baseplates: MockAdapter;
 let adapters: SyncAdapters;
 const onAnonymous = vi.fn();
-const promptConfirm: DeleteAccountConfirmPrompt = vi.fn(async () => 'confirm');
-const promptCancel: DeleteAccountConfirmPrompt = vi.fn(async () => 'cancel');
+const promptConfirm: DeleteAccountConfirmPrompt = vi.fn(async () => 'confirm' as const);
+const promptCancel: DeleteAccountConfirmPrompt = vi.fn(async () => 'cancel' as const);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -49,7 +56,16 @@ beforeEach(() => {
   layouts = makeAdapter();
   designs = makeAdapter();
   baseplates = makeAdapter();
-  adapters = { layouts, designs, baseplates };
+  // MockAdapter's payload is deliberately untyped (`unknown`) — this flow
+  // never inspects payload shape, only `id`/`modifiedAt`. SyncAdapter<Layout
+  // |DesignSyncPayload|BaseplatePayload> is assignable to SyncAdapter<unknown>
+  // (the concrete payload is assignable to `unknown`), so the reverse cast
+  // here is sound, not a type-safety bypass.
+  adapters = {
+    layouts: layouts as LayoutAdapter,
+    designs: designs as DesignAdapter,
+    baseplates: baseplates as BaseplateAdapter,
+  };
   apiDeleteAccountMock.mockResolvedValue(undefined);
 });
 

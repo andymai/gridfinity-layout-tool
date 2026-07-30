@@ -4,6 +4,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
 import { isOk } from '@/core/result';
+import { binId, gridUnits, heightUnits } from '@/core/types';
+import type { Bin } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
 
 describe('history store', () => {
@@ -243,11 +245,11 @@ describe('history store', () => {
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -270,20 +272,20 @@ describe('history store', () => {
 
       // Create a layout with 2500 bins (the fill limit)
       const layout = createDefaultLayout();
-      layout.drawer = { width: 50, depth: 50, height: 12 };
+      layout.drawer = { width: gridUnits(50), depth: gridUnits(50), height: heightUnits(12) };
 
       // Generate 2500 bins (50x50 grid of 1x1 bins)
-      const bins = [];
+      const bins: Bin[] = [];
       for (let y = 0; y < 50; y++) {
         for (let x = 0; x < 50; x++) {
           bins.push({
-            id: `bin-${x}-${y}`,
+            id: binId(`bin-${x}-${y}`),
             layerId: layout.layers[0].id,
-            x,
-            y,
-            width: 1,
-            depth: 1,
-            height: 3,
+            x: gridUnits(x),
+            y: gridUnits(y),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
             category: layout.categories[0].id,
             label: `Bin ${x},${y}`,
             notes: '',
@@ -336,11 +338,11 @@ describe('history store', () => {
       // State 1: Add a bin
       useLayoutStore.getState().addBin({
         layerId: initial.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: initial.categories[0].id,
         label: 'Bin 1',
         notes: '',
@@ -350,11 +352,11 @@ describe('history store', () => {
       // State 2: Add another bin
       useLayoutStore.getState().addBin({
         layerId: initial.layers[0].id,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: initial.categories[0].id,
         label: 'Bin 2',
         notes: '',
@@ -394,11 +396,11 @@ describe('history store', () => {
       // Add a bin
       const addResult = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test',
         notes: '',
@@ -430,11 +432,11 @@ describe('history store', () => {
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -460,11 +462,11 @@ describe('history store', () => {
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -489,11 +491,11 @@ describe('history store', () => {
       // Add first bin
       const result1 = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin1',
         notes: '',
@@ -507,11 +509,11 @@ describe('history store', () => {
       // Add second bin
       const result2 = useLayoutStore.getState().addBin({
         layerId,
-        x: 4,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin2',
         notes: '',
@@ -536,7 +538,7 @@ describe('history store', () => {
       push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       // Add a new layer and switch to it
-      const addLayerResult = useLayoutStore.getState().addLayer('Layer 2');
+      const addLayerResult = useLayoutStore.getState().addLayer();
       if (!isOk(addLayerResult)) throw new Error('addLayer failed');
       const newLayerId = addLayerResult.value;
 
@@ -562,7 +564,9 @@ describe('history store', () => {
       push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       // Add a new category and switch to it
-      const addCatResult = useLayoutStore.getState().addCategory('Custom Cat');
+      const addCatResult = useLayoutStore
+        .getState()
+        .addCategory({ name: 'Custom Cat', color: '#123456' });
       if (!isOk(addCatResult)) throw new Error('addCategory failed');
       const newCatId = addCatResult.value;
 
@@ -587,26 +591,26 @@ describe('history store', () => {
       // Add a bin
       const addResult = useLayoutStore.getState().addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test',
         notes: '',
       });
       if (!isOk(addResult)) throw new Error('addBin failed');
-      const binId = addResult.value;
+      const addedBinId = addResult.value;
 
       // Save state with 1 bin
       push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
       // Delete the bin
-      useLayoutStore.getState().deleteBin(binId);
+      useLayoutStore.getState().deleteBin(addedBinId);
 
       // Select a fake bin ID that doesn't exist
-      useSelectionStore.setState({ selectedBinIds: ['nonexistent-id'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('nonexistent-id')] });
 
       // Undo back to state with 1 bin
       undo();
@@ -615,11 +619,11 @@ describe('history store', () => {
       expect(useSelectionStore.getState().selectedBinIds).not.toContain('nonexistent-id');
 
       // Redo back to state with 0 bins
-      useSelectionStore.setState({ selectedBinIds: [binId] });
+      useSelectionStore.setState({ selectedBinIds: [addedBinId] });
       redo();
 
       // After redo, binId should be pruned (bin was deleted in this state)
-      expect(useSelectionStore.getState().selectedBinIds).not.toContain(binId);
+      expect(useSelectionStore.getState().selectedBinIds).not.toContain(addedBinId);
     });
   });
 

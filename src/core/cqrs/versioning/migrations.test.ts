@@ -20,7 +20,7 @@ function createTestMeta(overrides: Partial<EventMeta> = {}): EventMeta {
 
 function createTestEvent(
   type: DomainEventType,
-  meta: EventMeta,
+  meta: EventMeta | Partial<EventMeta>,
   payload: Record<string, unknown> = {}
 ): DomainEvent {
   return { type, payload, meta } as unknown as DomainEvent;
@@ -55,11 +55,9 @@ describe('migrateEvent', () => {
     });
 
     // Create event without schemaVersion in meta
-    const meta = createTestMeta();
-    const metaWithout = { ...meta } as Record<string, unknown>;
-    delete metaWithout['schemaVersion'];
+    const { schemaVersion: _schemaVersion, ...metaWithout } = createTestMeta();
 
-    const event = createTestEvent('bin.added', metaWithout as EventMeta, { bin: {} });
+    const event = createTestEvent('bin.added', metaWithout, { bin: {} });
     const result = migrateEvent(event);
 
     expect((result.payload as Record<string, unknown>)['migrated']).toBe(true);
