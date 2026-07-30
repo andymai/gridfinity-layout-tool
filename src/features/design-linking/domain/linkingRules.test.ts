@@ -7,19 +7,20 @@ import {
   generateDefaultDesignName,
 } from './linkingRules';
 import type { Bin, Layout } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+    height: heightUnits(3),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -28,17 +29,15 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
 
 function makeLayout(overrides: Partial<Layout> = {}): Layout {
   return {
-    id: 'layout-1',
+    version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 10, height: 5 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', visible: true }],
-    categories: [{ id: 'cat-1', name: 'Category 1', color: '#ff0000' }],
+    drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(5) }],
+    categories: [{ id: categoryId('cat-1'), name: 'Category 1', color: '#ff0000' }],
     bins: [],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
     ...overrides,
   };
 }
@@ -135,8 +134,15 @@ describe('linkingRules', () => {
 
   describe('checkSyncEligibility', () => {
     it('allows sync when new dimensions fit within bounds', () => {
-      const bin = makeBin({ x: 0, y: 0, width: 2, depth: 2 });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 3, depth: 3, height: 4 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, []);
@@ -145,8 +151,15 @@ describe('linkingRules', () => {
     });
 
     it('blocks sync when new width exceeds drawer bounds', () => {
-      const bin = makeBin({ x: 8, y: 0, width: 2, depth: 2 });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 4, depth: 2, height: 3 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, []);
@@ -155,8 +168,15 @@ describe('linkingRules', () => {
     });
 
     it('blocks sync when new depth exceeds drawer bounds', () => {
-      const bin = makeBin({ x: 0, y: 8, width: 2, depth: 2 });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        x: gridUnits(0),
+        y: gridUnits(8),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 2, depth: 4, height: 3 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, []);
@@ -165,9 +185,25 @@ describe('linkingRules', () => {
     });
 
     it('blocks sync when new dimensions collide with another bin', () => {
-      const bin = makeBin({ id: 'bin-1', x: 0, y: 0, width: 2, depth: 2, layerId: 'layer-1' });
-      const otherBin = makeBin({ id: 'bin-2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer-1' });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-1'),
+      });
+      const otherBin = makeBin({
+        id: binId('bin-2'),
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-1'),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 4, depth: 2, height: 3 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, [otherBin]);
@@ -176,9 +212,25 @@ describe('linkingRules', () => {
     });
 
     it('allows sync when expanding toward empty space', () => {
-      const bin = makeBin({ id: 'bin-1', x: 0, y: 0, width: 2, depth: 2, layerId: 'layer-1' });
-      const otherBin = makeBin({ id: 'bin-2', x: 5, y: 0, width: 2, depth: 2, layerId: 'layer-1' });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-1'),
+      });
+      const otherBin = makeBin({
+        id: binId('bin-2'),
+        x: gridUnits(5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-1'),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 4, depth: 2, height: 3 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, [otherBin]);
@@ -186,9 +238,25 @@ describe('linkingRules', () => {
     });
 
     it('ignores bins on different layers when checking collisions', () => {
-      const bin = makeBin({ id: 'bin-1', x: 0, y: 0, width: 2, depth: 2, layerId: 'layer-1' });
-      const otherBin = makeBin({ id: 'bin-2', x: 1, y: 0, width: 2, depth: 2, layerId: 'layer-2' });
-      const layout = makeLayout({ drawer: { width: 10, depth: 10, height: 5 } });
+      const bin = makeBin({
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-1'),
+      });
+      const otherBin = makeBin({
+        id: binId('bin-2'),
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer-2'),
+      });
+      const layout = makeLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+      });
       const newDimensions: SyncableDimensions = { width: 4, depth: 2, height: 3 };
 
       const result = checkSyncEligibility(bin, newDimensions, layout, [otherBin]);
@@ -196,7 +264,7 @@ describe('linkingRules', () => {
     });
 
     it('returns correct binId in result', () => {
-      const bin = makeBin({ id: 'my-bin-id' });
+      const bin = makeBin({ id: binId('my-bin-id') });
       const layout = makeLayout();
       const newDimensions: SyncableDimensions = { width: 2, depth: 2, height: 3 };
 
@@ -207,8 +275,8 @@ describe('linkingRules', () => {
 
   describe('checkBatchSyncEligibility', () => {
     it('checks eligibility for multiple bins', () => {
-      const bin1 = makeBin({ id: 'bin-1', x: 0, y: 0 });
-      const bin2 = makeBin({ id: 'bin-2', x: 5, y: 0 });
+      const bin1 = makeBin({ id: binId('bin-1'), x: gridUnits(0), y: gridUnits(0) });
+      const bin2 = makeBin({ id: binId('bin-2'), x: gridUnits(5), y: gridUnits(0) });
       const layout = makeLayout({ bins: [bin1, bin2] });
       const newDimensions: SyncableDimensions = { width: 3, depth: 3, height: 4 };
 
@@ -220,8 +288,8 @@ describe('linkingRules', () => {
     });
 
     it('returns mixed results when some bins can sync and others cannot', () => {
-      const bin1 = makeBin({ id: 'bin-1', x: 0, y: 0 });
-      const bin2 = makeBin({ id: 'bin-2', x: 8, y: 0 }); // Near edge
+      const bin1 = makeBin({ id: binId('bin-1'), x: gridUnits(0), y: gridUnits(0) });
+      const bin2 = makeBin({ id: binId('bin-2'), x: gridUnits(8), y: gridUnits(0) }); // Near edge
       const layout = makeLayout({ bins: [bin1, bin2] });
       const newDimensions: SyncableDimensions = { width: 4, depth: 2, height: 3 };
 

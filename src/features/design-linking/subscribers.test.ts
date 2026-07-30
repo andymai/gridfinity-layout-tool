@@ -3,6 +3,7 @@ import { createEventBus } from '@/core/cqrs/bus/eventBus';
 import type { EventBus } from '@/core/cqrs/bus/eventBus';
 import type { DomainEvent } from '@/core/cqrs/events';
 import { eventId, correlationId, commandId } from '@/core/cqrs/types';
+import { gridUnits } from '@/core/types';
 import { connectDesignLinking } from './subscribers';
 
 function makeEvent<T extends DomainEvent['type']>(
@@ -50,8 +51,8 @@ describe('connectDesignLinking', () => {
     // Dimension change — should not throw
     const dimensionEvent = makeEvent('bin.updated', {
       id: 'bin_1' as never,
-      changes: { width: 2 },
-      previous: { width: 1 },
+      changes: { width: gridUnits(2) },
+      previous: { width: gridUnits(1) },
     });
     expect(() => bus.publish(dimensionEvent)).not.toThrow();
   });

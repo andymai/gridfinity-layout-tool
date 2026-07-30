@@ -7,20 +7,22 @@ import {
   formatDimensionChange,
 } from './syncOperations';
 import type { Bin } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { BinParams } from '@/shared/types/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: 'Test Bin',
     notes: 'Some notes',
     ...overrides,
@@ -29,18 +31,10 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
 
 function makeDesignParams(overrides: Partial<BinParams> = {}): BinParams {
   return {
+    ...DEFAULT_BIN_PARAMS,
     width: 2,
     depth: 3,
     height: 4,
-    style: 'standard',
-    magnetHoles: false,
-    screwHoles: false,
-    stackable: true,
-    labelTab: 'none',
-    wallThickness: 'standard',
-    floorStyle: 'solid',
-    lipStyle: 'standard',
-    compartments: [],
     ...overrides,
   };
 }
@@ -48,14 +42,18 @@ function makeDesignParams(overrides: Partial<BinParams> = {}): BinParams {
 describe('syncOperations', () => {
   describe('extractBinDimensions', () => {
     it('extracts dimensions from bin', () => {
-      const bin = makeBin({ width: 2, depth: 3, height: 4 });
+      const bin = makeBin({ width: gridUnits(2), depth: gridUnits(3), height: heightUnits(4) });
       const result = extractBinDimensions(bin);
 
       expect(result).toEqual({ width: 2, depth: 3, height: 4 });
     });
 
     it('handles fractional dimensions', () => {
-      const bin = makeBin({ width: 2.5, depth: 3.5, height: 4 });
+      const bin = makeBin({
+        width: gridUnits(2.5),
+        depth: gridUnits(3.5),
+        height: heightUnits(4),
+      });
       const result = extractBinDimensions(bin);
 
       expect(result).toEqual({ width: 2.5, depth: 3.5, height: 4 });
@@ -63,12 +61,12 @@ describe('syncOperations', () => {
 
     it('only includes width, depth, height (not other bin properties)', () => {
       const bin = makeBin({
-        id: 'bin-1',
-        x: 5,
-        y: 10,
-        width: 2,
-        depth: 3,
-        height: 4,
+        id: binId('bin-1'),
+        x: gridUnits(5),
+        y: gridUnits(10),
+        width: gridUnits(2),
+        depth: gridUnits(3),
+        height: heightUnits(4),
         label: 'My Label',
       });
       const result = extractBinDimensions(bin);
@@ -102,13 +100,13 @@ describe('syncOperations', () => {
         depth: 3,
         height: 4,
         style: 'slotted',
-        magnetHoles: true,
+        wallThickness: 2,
       });
       const result = extractDesignDimensions(params);
 
       expect(result).toEqual({ width: 2, depth: 3, height: 4 });
       expect(result).not.toHaveProperty('style');
-      expect(result).not.toHaveProperty('magnetHoles');
+      expect(result).not.toHaveProperty('wallThickness');
     });
   });
 
