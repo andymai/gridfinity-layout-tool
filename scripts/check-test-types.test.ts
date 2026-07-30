@@ -5,6 +5,7 @@ import {
   hasDrift,
   readBaseline,
   classifyRun,
+  sumCounts,
 } from './check-test-types';
 
 describe('parseDiagnostics', () => {
@@ -52,7 +53,21 @@ describe('classifyRun', () => {
       stderr: '',
     });
     expect(run.spawnFailure).toBeNull();
+    expect(run.exitCode).toBe(2);
     expect(parseDiagnostics(run.output)).toEqual({ 'src/a.test.ts': 1 });
+  });
+
+  // A crash or a changed diagnostic format yields a non-zero exit that parses
+  // to nothing. main() must reject that rather than record zero errors.
+  it('surfaces a non-zero exit that produced no parseable diagnostics', () => {
+    const run = classifyRun({ status: 1, stdout: '', stderr: 'error: unknown option --noEmit' });
+    expect(run.spawnFailure).toBeNull();
+    expect(run.exitCode).toBe(1);
+    expect(sumCounts(parseDiagnostics(run.output))).toBe(0);
+  });
+
+  it('reports a sentinel exit code when the process never ran', () => {
+    expect(classifyRun({ code: 'ENOENT', message: 'spawn tsgo ENOENT' }).exitCode).toBe(-1);
   });
 
   it('treats a missing binary as a failure to run, not as a clean compile', () => {

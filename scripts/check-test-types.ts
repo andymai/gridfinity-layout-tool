@@ -127,6 +127,8 @@ export function hasDrift(drift: Drift): boolean {
 
 export interface CompilerRun {
   readonly output: string;
+  /** The compiler's exit status. 0 means it ran and found nothing. */
+  readonly exitCode: number;
   /** Non-null when the compiler never ran, as opposed to running and reporting errors. */
   readonly spawnFailure: string | null;
 }
@@ -147,8 +149,11 @@ export function classifyRun(error: unknown): CompilerRun {
     message?: string;
   };
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
-  const ran = typeof result.status === 'number';
-  return { output, spawnFailure: ran ? null : (result.message ?? 'tsgo could not be started') };
+  const status = result.status;
+  if (typeof status !== 'number') {
+    return { output, exitCode: -1, spawnFailure: result.message ?? 'tsgo could not be started' };
+  }
+  return { output, exitCode: status, spawnFailure: null };
 }
 
 /**
@@ -174,7 +179,7 @@ function runCompiler(): CompilerRun {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
     });
-    return { output: '', spawnFailure: null };
+    return { output: '', exitCode: 0, spawnFailure: null };
   } catch (error) {
     return classifyRun(error);
   }
@@ -189,7 +194,7 @@ function main(): void {
   const allowIncrease = process.argv.includes('--allow-increase');
 
   ensureGeneratedSources();
-  const { output, spawnFailure } = runCompiler();
+  const { output, exitCode, spawnFailure } = runCompiler();
 
   if (spawnFailure !== null) {
     console.error(`✗ Could not run the type-checker: ${spawnFailure}`);
@@ -199,10 +204,12 @@ function main(): void {
   const current = parseDiagnostics(output);
   const total = sumCounts(current);
 
-  // The compiler ran but emitted something unparseable. Without this guard the
-  // gate would read that as "zero errors" and pass vacuously.
-  if (total === 0 && output.trim() !== '') {
-    console.error(`✗ tsgo produced no parseable diagnostics but did not exit clean:\n${output}`);
+  // Only exit 0 proves "ran and found nothing". A non-zero exit we could not
+  // parse — a crash, an unrecognized flag, a changed diagnostic format — must
+  // never read as zero errors: in --update that would write an empty baseline
+  // and switch the ratchet off entirely.
+  if (exitCode !== 0 && total === 0) {
+    console.error(`✗ tsgo exited ${exitCode} with no parseable diagnostics:\n${output}`);
     process.exit(1);
   }
 
