@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_GENERATION_STATE,
+  DEFAULT_UI_STATE,
+} from '@/features/bin-designer/constants';
 import { DesignerHeader } from './DesignerHeader';
 import type { DesignNameEditor } from './useDesignNameEditor';
 import { createRef } from 'react';
@@ -42,6 +46,7 @@ describe('DesignerHeader', () => {
       currentDesignId: null,
       saveStatus: 'idle',
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -52,6 +57,7 @@ describe('DesignerHeader', () => {
         future: [],
       },
       ui: {
+        ...DEFAULT_UI_STATE,
         designListOpen: false,
         exportDialogOpen: false,
         previewCompartments: null,

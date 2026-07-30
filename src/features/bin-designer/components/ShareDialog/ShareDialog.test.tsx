@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShareDialog } from './ShareDialog';
 import { useDesignerStore } from '../../store/designer';
 import { DEFAULT_BIN_PARAMS } from '../../constants/defaults';
+import type * as DesignerDefaults from '../../constants/defaults';
 
 // Mock the sharing hook
 const mockShare = vi.fn();
@@ -21,7 +22,7 @@ vi.mock('@/features/bin-designer/hooks/useDesignerSharing', () => ({
 }));
 
 vi.mock('@/features/bin-designer/constants/defaults', async (importOriginal) => {
-  const orig = await importOriginal();
+  const orig = await importOriginal<typeof DesignerDefaults>();
   return {
     ...orig,
     migrateParams: (params: unknown) => ({ ...orig.DEFAULT_BIN_PARAMS, ...(params as object) }),

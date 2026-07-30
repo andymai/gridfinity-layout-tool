@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import { BinMesh } from './BinMesh';
 
 vi.mock('@react-three/fiber', () => ({
@@ -75,6 +76,7 @@ describe('BinMesh', () => {
     vi.clearAllMocks();
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -91,6 +93,7 @@ describe('BinMesh', () => {
   it('renders mesh when vertices are available', () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -111,6 +114,7 @@ describe('BinMesh', () => {
   it('renders wireframe mode', () => {
     useDesignerStore.setState({
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),

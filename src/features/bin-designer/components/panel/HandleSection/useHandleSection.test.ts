@@ -56,7 +56,7 @@ describe('useHandleSection', () => {
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,
-          back: { enabled: false },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
         },
       },
     });
@@ -77,7 +77,7 @@ describe('useHandleSection', () => {
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,
-          front: { enabled: true },
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
         },
       },
     });
@@ -99,7 +99,7 @@ describe('useHandleSection', () => {
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,
-          back: { enabled: false },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
         },
       },
     });
@@ -153,10 +153,10 @@ describe('useHandleSection', () => {
         handles: {
           ...DEFAULT_BIN_PARAMS.handles,
           enabled: true,
-          front: { enabled: true },
-          back: { enabled: false },
-          left: { enabled: true },
-          right: { enabled: false },
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: false },
         },
       },
     });
@@ -216,7 +216,11 @@ describe('useHandleSection', () => {
             1, 1, 1, 1, 1, 1, 1,
           ],
         },
-        handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true, front: { enabled: true } },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+        },
       },
     });
 

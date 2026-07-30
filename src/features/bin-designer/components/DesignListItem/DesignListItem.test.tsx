@@ -4,6 +4,7 @@ import { resetAllStores } from '@/test/testUtils';
 import { DesignListItem } from './DesignListItem';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { SavedDesign } from '../../types';
+import { designId } from '@/core/types';
 
 // Mock DesignActions component
 vi.mock('../DesignActions', () => ({
@@ -17,12 +18,13 @@ vi.mock('../BinDesignThumbnail', () => ({
 
 describe('DesignListItem', () => {
   const mockDesign: SavedDesign = {
-    id: 'test-id',
+    id: designId('test-id'),
     name: 'Test Design',
     params: DEFAULT_BIN_PARAMS,
     thumbnail: null,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+    exportFileNameConfig: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   const defaultProps = {

@@ -6,6 +6,7 @@ import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorag
 import { ok, err, storageUnavailable } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { SavedDesign } from '../types';
+import { designId } from '@/core/types';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 vi.mock('@/shared/hooks/useDesignerRouting', () => ({
@@ -17,10 +18,11 @@ vi.mock('@/shared/hooks/useDesignerRouting', () => ({
 
 describe('useDesignerInit', () => {
   const mockDesign: SavedDesign = {
-    id: 'init-design-123',
+    id: designId('init-design-123'),
     name: 'Untitled Bin',
     params: { ...DEFAULT_BIN_PARAMS },
     thumbnail: null,
+    exportFileNameConfig: null,
     createdAt: '2026-01-27T00:00:00.000Z',
     updatedAt: '2026-01-27T00:00:00.000Z',
   };

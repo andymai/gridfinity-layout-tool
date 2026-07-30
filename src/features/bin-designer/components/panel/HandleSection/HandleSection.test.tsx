@@ -48,7 +48,7 @@ describe('HandleSection', () => {
     });
 
     render(<HandleSection />);
-    const back = screen.getByRole('switch', { name: 'Back' });
+    const back = screen.getByRole<HTMLInputElement>('switch', { name: 'Back' });
     expect(back.disabled).toBe(true);
     // Must read as off (not an accent-tinted "on"), matching generation which
     // skips back handles while a label tab is active.

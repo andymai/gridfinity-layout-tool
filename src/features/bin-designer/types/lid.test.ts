@@ -112,7 +112,16 @@ describe('resolveLidFootprintClearance', () => {
 
     const polygon = params(
       { attachment: 'magnetic' },
-      { cellMask: { cols: 2, rows: 2, cells: [true, true, true, false] } }
+      // DEFAULT_BIN_PARAMS is a 2×2-unit bin; a cellMask is half-bin
+      // resolution (MASK_CELLS_PER_UNIT = 2), so it needs a 4×4 grid here,
+      // not 2×2.
+      {
+        cellMask: {
+          cols: 4,
+          rows: 4,
+          cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        },
+      }
     );
     expect(resolveLidFootprintClearance(polygon)).toBe(LID_FIT_CLEARANCE);
   });

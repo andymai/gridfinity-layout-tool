@@ -5,9 +5,11 @@ import { useDesignerStore } from '../store/designer';
 import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
 import { onSyncEvent } from '@/shared/events/syncEventBus';
-import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants/defaults';
 import { loadRegistry } from '../store/customBinRegistry';
 import type { SavedDesign } from '../types';
+import { designId } from '@/core/types';
+import type { Result, StorageError } from '@/core/result';
 
 vi.mock('@/features/bin-designer/storage/DesignerStorage');
 vi.mock('../../utils/thumbnail', () => ({
@@ -25,7 +27,13 @@ describe('useAutoSave', () => {
       currentDesignId: null,
       designName: 'Untitled Bin',
       saveStatus: 'idle',
-      generation: { status: 'complete', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'complete',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
   });
 
@@ -35,10 +43,11 @@ describe('useAutoSave', () => {
 
   function mockUpdateDesignParams(id: string = 'existing-id') {
     const savedDesign: SavedDesign = {
-      id,
+      id: designId(id),
       name: 'Existing Bin',
       params: { ...DEFAULT_BIN_PARAMS, width: 3 },
       thumbnail: null,
+      exportFileNameConfig: null,
       createdAt: '2026-01-22T00:00:00.000Z',
       updatedAt: '2026-01-22T00:01:00.000Z',
     };
@@ -164,7 +173,7 @@ describe('useAutoSave', () => {
   });
 
   it('should set saveStatus to saving during save operation', async () => {
-    let resolvePromise: ((value: unknown) => void) | null = null;
+    let resolvePromise: ((value: Result<SavedDesign, StorageError>) => void) | null = null;
     vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(
       new Promise((resolve) => {
         resolvePromise = resolve;
@@ -187,10 +196,11 @@ describe('useAutoSave', () => {
     await act(async () => {
       resolvePromise?.(
         ok({
-          id: 'existing-id',
+          id: designId('existing-id'),
           name: 'Test',
           params: { ...DEFAULT_BIN_PARAMS, width: 3 },
           thumbnail: null,
+          exportFileNameConfig: null,
           createdAt: '2026-01-22T00:00:00.000Z',
           updatedAt: '2026-01-22T00:00:00.000Z',
         })
@@ -240,7 +250,13 @@ describe('useAutoSave', () => {
     mockUpdateDesignParams();
     useDesignerStore.setState({
       currentDesignId: 'existing-id',
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
 
     renderHook(() => useAutoSave());
@@ -260,7 +276,13 @@ describe('useAutoSave', () => {
     // Now generation finishes; save should proceed within the next poll + render delay.
     act(() => {
       useDesignerStore.setState({
-        generation: { status: 'complete', mesh: null, progress: 1, epoch: 1 },
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          status: 'complete',
+          mesh: null,
+          progress: 1,
+          epoch: 1,
+        },
       });
     });
     await advanceThroughSave();
@@ -299,7 +321,13 @@ describe('useAutoSave', () => {
       mockUpdateDesignParams();
       useDesignerStore.setState({
         currentDesignId: 'existing-id',
-        generation: { status: 'generating', mesh: null, progress: 0, epoch: 0 },
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          status: 'generating',
+          mesh: null,
+          progress: 0,
+          epoch: 0,
+        },
       });
 
       const { unmount } = renderHook(() => useAutoSave());
@@ -350,7 +378,7 @@ describe('useAutoSave', () => {
     });
 
     it('does not duplicate a write for the save already in flight', async () => {
-      let resolveWrite: ((value: unknown) => void) | null = null;
+      let resolveWrite: ((value: Result<SavedDesign, StorageError>) => void) | null = null;
       vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(
         new Promise((resolve) => {
           resolveWrite = resolve;
@@ -379,7 +407,7 @@ describe('useAutoSave', () => {
     // The in-flight save carries older params, so the newer edit still needs
     // flushing rather than being swallowed by the dedupe above.
     it('still flushes when the in-flight save is for older params', async () => {
-      let resolveWrite: ((value: unknown) => void) | null = null;
+      let resolveWrite: ((value: Result<SavedDesign, StorageError>) => void) | null = null;
       vi.mocked(DesignerStorage.updateDesignParams).mockReturnValueOnce(
         new Promise((resolve) => {
           resolveWrite = resolve;

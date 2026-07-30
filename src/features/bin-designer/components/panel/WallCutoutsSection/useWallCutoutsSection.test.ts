@@ -56,8 +56,8 @@ describe('useWallCutoutsSection', () => {
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
-          left: { enabled: false, width: 0, depth: 0 },
-          right: { enabled: false, width: 0, depth: 0 },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false, width: 0, depth: 0 },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false, width: 0, depth: 0 },
         },
       },
     });
@@ -81,8 +81,8 @@ describe('useWallCutoutsSection', () => {
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
-          left: { enabled: true, width: 80, depth: 40 },
-          right: { enabled: false, width: 0, depth: 0 },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, width: 80, depth: 40 },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false, width: 0, depth: 0 },
         },
       },
     });
@@ -106,7 +106,7 @@ describe('useWallCutoutsSection', () => {
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
-          front: { enabled: true, width: 60, depth: 30 },
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 60, depth: 30 },
         },
       },
     });
@@ -190,11 +190,11 @@ describe('useWallCutoutsSection', () => {
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
-          front: { enabled: true, width: 70, depth: 50 },
-          back: { enabled: true, width: 70, depth: 50 },
-          left: { enabled: false, width: 0, depth: 0 },
-          right: { enabled: false, width: 0, depth: 0 },
-          interior: { enabled: false, width: 0, depth: 0 },
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 70, depth: 50 },
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true, width: 70, depth: 50 },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false, width: 0, depth: 0 },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false, width: 0, depth: 0 },
+          interior: { ...DEFAULT_BIN_PARAMS.walls.interior, enabled: false, width: 0, depth: 0 },
         },
       },
     });

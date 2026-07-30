@@ -15,9 +15,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { ok, err, storageUnavailable } from '@/core/result';
-import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants/defaults';
 import { THUMBNAIL_VERSION } from '../types';
 import type { SavedDesign } from '../types';
+import { designId } from '@/core/types';
 
 vi.mock('../utils/thumbnailRegenerator', () => ({
   regenerateThumbnail: vi.fn(),
@@ -58,9 +59,12 @@ import { useDesignerStore } from '../store/designer';
 import { useBackgroundThumbnailRegen, __resetForTests } from './useBackgroundThumbnailRegen';
 import { resetAllStores } from '@/test/testUtils';
 
-function makeDesign(overrides: Partial<SavedDesign> = {}): SavedDesign {
+function makeDesign(
+  overrides: Partial<Omit<SavedDesign, 'id'>> & { id?: string } = {}
+): SavedDesign {
+  const { id, ...rest } = overrides;
   return {
-    id: overrides.id ?? 'design-1',
+    id: designId(id ?? 'design-1'),
     name: 'Test Bin',
     params: { ...DEFAULT_BIN_PARAMS },
     thumbnail: null,
@@ -68,7 +72,7 @@ function makeDesign(overrides: Partial<SavedDesign> = {}): SavedDesign {
     exportFileNameConfig: null,
     createdAt: '2026-05-19T00:00:00.000Z',
     updatedAt: '2026-05-19T00:00:00.000Z',
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -125,7 +129,13 @@ describe('useBackgroundThumbnailRegen', () => {
       lastError: undefined,
     });
     useDesignerStore.setState({
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
     });
 
     vi.mocked(regenerateThumbnail).mockResolvedValue('data:image/webp;base64,FAKE');
@@ -273,7 +283,7 @@ describe('useBackgroundThumbnailRegen', () => {
   it('waits for sync to settle before scanning when authenticated', async () => {
     useSessionStore.setState({
       status: 'authenticated',
-      user: { userId: 'u1', email: 'a@b.c' },
+      user: { userId: 'u1', email: 'a@b.c', provider: 'google' },
     });
     useSyncStatusStore.setState({
       state: 'syncing',
@@ -329,11 +339,11 @@ describe('useBackgroundThumbnailRegen', () => {
       ok([makeDesign({ id: 'd1' }), makeDesign({ id: 'd2' })])
     );
     // Hold the first regen call open so we can unmount mid-flight.
-    let resolveFirst: ((v: string | null) => void) | null = null;
+    const deferredFirst: { resolve: ((v: string | null) => void) | null } = { resolve: null };
     vi.mocked(regenerateThumbnail).mockImplementationOnce(
       () =>
         new Promise<string | null>((resolve) => {
-          resolveFirst = resolve;
+          deferredFirst.resolve = resolve;
         })
     );
 
@@ -345,7 +355,7 @@ describe('useBackgroundThumbnailRegen', () => {
     });
 
     unmount();
-    resolveFirst?.('data:image/webp;base64,OK');
+    deferredFirst.resolve?.('data:image/webp;base64,OK');
 
     await act(async () => {
       await new Promise((r) => setTimeout(r, 20));

@@ -15,6 +15,7 @@ import type {
   SlotConfig,
   WallPatternConfig,
   WallPatternSides,
+  WallPatternType,
   FloorPatternConfig,
   Cutout,
   HandleCutoutShape,
@@ -511,6 +512,20 @@ function migrateFeatureColors(
   };
 }
 
+/**
+ * Legacy wallPattern config where `dividers`/`sides` may hold a stray
+ * non-boolean/non-object value from an older or hand-crafted save — the
+ * migration below (`wallPatternConfig.dividers === true`, the `sides`
+ * clamp) coerces whatever lands here back to a valid shape.
+ */
+interface LegacyWallPatternConfig {
+  enabled?: boolean;
+  pattern?: string;
+  scale?: number;
+  dividers?: unknown;
+  sides?: unknown;
+}
+
 /** Legacy fields that may appear in saved designs from older versions. */
 interface LegacyFields {
   dividers?: { x: number; y: number; thickness: number };
@@ -529,8 +544,19 @@ interface LegacyCutoutFields {
   scoopRadius?: number;
 }
 
-/** Input type for migrateParams — current params plus known legacy fields. */
-type MigrateParamsInput = Partial<BinParams> & LegacyFields;
+/**
+ * Input type for migrateParams — current params plus known legacy fields.
+ *
+ * `wallPattern` and `featureColors` are re-declared (via `Omit`, not a plain
+ * intersection) against their permissive legacy shapes: `Partial<BinParams>`
+ * alone would force every field to already match the CURRENT strict config,
+ * which defeats the point of a migration input.
+ */
+type MigrateParamsInput = Omit<Partial<BinParams>, 'wallPattern' | 'featureColors'> &
+  LegacyFields & {
+    wallPattern?: WallPatternConfig | LegacyWallPatternConfig;
+    featureColors?: FeatureColorConfig | LegacyFeatureColorInput;
+  };
 
 /**
  * Migrate a single cutout's legacy fields to current shape.
@@ -715,19 +741,22 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   };
 
   // Migrate wallPattern config, handling 3 cases:
-  // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference
-  let wallPatternConfig: WallPatternConfig = {
+  // Fresh object each time — avoid returning shared DEFAULT_WALL_PATTERN_CONFIG reference.
+  // `wallPatternRaw` stays in the permissive legacy shape until the coercion
+  // block below rebuilds a properly-typed `WallPatternConfig` from it — a
+  // crafted/legacy save can carry any value in `dividers`/`sides`/`pattern`.
+  let wallPatternRaw: WallPatternConfig | LegacyWallPatternConfig = {
     enabled: false,
     pattern: 'honeycomb',
     scale: DEFAULT_PATTERN_SCALE,
     dividers: false,
   };
   if (params.wallPattern !== undefined) {
-    wallPatternConfig = { ...wallPatternConfig, ...params.wallPattern };
+    wallPatternRaw = { ...wallPatternRaw, ...params.wallPattern };
   } else if (params.eco !== undefined) {
     const honeycombWall = params.eco.honeycombWall;
     if (honeycombWall) {
-      wallPatternConfig = {
+      wallPatternRaw = {
         enabled:
           typeof honeycombWall.enabled === 'boolean'
             ? honeycombWall.enabled
@@ -742,29 +771,29 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   }
   // Coerce an unknown/removed pattern back to a valid member, and clamp a
   // crafted or out-of-range scale into [0, 1] so persisted data stays honest.
-  {
-    const rawScale = wallPatternConfig.scale;
-    const rawSides = wallPatternConfig.sides as Partial<WallPatternSides> | undefined;
-    wallPatternConfig = {
-      ...wallPatternConfig,
-      pattern: VALID_WALL_PATTERNS.has(wallPatternConfig.pattern)
-        ? wallPatternConfig.pattern
+  const rawScale = wallPatternRaw.scale;
+  const rawPattern = wallPatternRaw.pattern;
+  const rawSides = wallPatternRaw.sides as Partial<WallPatternSides> | undefined;
+  const wallPatternConfig: WallPatternConfig = {
+    enabled: wallPatternRaw.enabled ?? false,
+    pattern:
+      typeof rawPattern === 'string' && VALID_WALL_PATTERNS.has(rawPattern as WallPatternType)
+        ? (rawPattern as WallPatternType)
         : 'honeycomb',
-      scale:
-        typeof rawScale === 'number' && Number.isFinite(rawScale)
-          ? Math.min(1, Math.max(0, rawScale))
-          : DEFAULT_PATTERN_SCALE,
-      dividers: wallPatternConfig.dividers === true,
-      // Absent on every design saved before #2966, which patterned all four
-      // walls — so a missing side reads as ON, not off.
-      sides: {
-        left: rawSides?.left !== false,
-        right: rawSides?.right !== false,
-        front: rawSides?.front !== false,
-        back: rawSides?.back !== false,
-      },
-    };
-  }
+    scale:
+      typeof rawScale === 'number' && Number.isFinite(rawScale)
+        ? Math.min(1, Math.max(0, rawScale))
+        : DEFAULT_PATTERN_SCALE,
+    dividers: wallPatternRaw.dividers === true,
+    // Absent on every design saved before #2966, which patterned all four
+    // walls — so a missing side reads as ON, not off.
+    sides: {
+      left: rawSides?.left !== false,
+      right: rawSides?.right !== false,
+      front: rawSides?.front !== false,
+      back: rawSides?.back !== false,
+    },
+  };
 
   // Floor pattern (#2816) — absent on every design saved before the feature.
   // Same coercion contract as the wall pattern: unknown members fall back to

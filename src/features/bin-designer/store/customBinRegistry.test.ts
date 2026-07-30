@@ -8,10 +8,11 @@ import {
   registryEdgeFields,
   type CustomBinRef,
 } from './customBinRegistry';
+import { designId } from '@/core/types';
 
 function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
   return {
-    id,
+    id: designId(id),
     name,
     width: 2,
     depth: 2,

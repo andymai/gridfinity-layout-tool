@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import { GhostScoops } from './GhostScoops';
 
 vi.mock('@react-three/fiber', () => ({
@@ -51,6 +51,7 @@ describe('GhostScoops', () => {
         scoop: { enabled: false, radius: 'auto' as const },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -71,6 +72,7 @@ describe('GhostScoops', () => {
         scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -88,6 +90,7 @@ describe('GhostScoops', () => {
         scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,
@@ -106,6 +109,7 @@ describe('GhostScoops', () => {
         scoop: { enabled: true, radius: 'auto' as const },
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,

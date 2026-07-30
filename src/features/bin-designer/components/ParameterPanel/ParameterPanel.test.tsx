@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ParameterPanel } from './ParameterPanel';
 import { useDesignerStore } from '../../store';
-import { DEFAULT_BIN_PARAMS } from '../../constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '../../constants';
 
 describe('ParameterPanel', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       ui: {
+        ...DEFAULT_UI_STATE,
         activeTab: 'dimensions',
         exportDialogOpen: false,
         designListOpen: false,
@@ -101,8 +102,8 @@ describe('ParameterPanel', () => {
     });
     render(<ParameterPanel />);
 
-    const widthInput = screen.getByLabelText('Width');
-    const depthInput = screen.getByLabelText('Depth');
+    const widthInput = screen.getByLabelText<HTMLInputElement>('Width');
+    const depthInput = screen.getByLabelText<HTMLInputElement>('Depth');
     expect(widthInput.value).toBe('2');
     expect(depthInput.value).toBe('4');
 

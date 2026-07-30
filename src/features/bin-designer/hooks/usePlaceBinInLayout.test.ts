@@ -4,6 +4,7 @@ import { navigateToPlaceInLayout, usePlaceBinFromURL } from './usePlaceBinInLayo
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('navigateToPlaceInLayout', () => {
   let originalPathname: string;
@@ -53,8 +54,8 @@ describe('usePlaceBinFromURL', () => {
       layout: {
         ...state.layout,
         bins: [],
-        drawer: { width: 10, depth: 8, height: 12 },
-        layers: [{ id: layerId, name: 'Layer 1', height: 3 }],
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+        layers: [{ id: layerId, name: 'Layer 1', height: heightUnits(3) }],
       },
     });
     useSelectionStore.setState({ selectedBinIds: [], activeLayerId: layerId });
@@ -135,7 +136,7 @@ describe('usePlaceBinFromURL', () => {
     useLayoutStore.setState({
       layout: {
         ...state.layout,
-        drawer: { width: 1, depth: 1, height: 10 },
+        drawer: { width: gridUnits(1), depth: gridUnits(1), height: heightUnits(10) },
       },
     });
 
@@ -152,7 +153,7 @@ describe('usePlaceBinFromURL', () => {
     useLayoutStore.setState({
       layout: {
         ...useLayoutStore.getState().layout,
-        drawer: { width: 10, depth: 8, height: 12 },
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       },
     });
   });

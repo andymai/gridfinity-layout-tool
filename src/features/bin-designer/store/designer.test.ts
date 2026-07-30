@@ -1,16 +1,28 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore, _resetPendingMeshCache } from './designer';
-import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
+import {
+  DEFAULT_BIN_PARAMS,
+  DESIGNER_CONSTRAINTS,
+  DEFAULT_GENERATION_STATE,
+  DEFAULT_UI_STATE,
+} from '../constants';
 
 describe('useDesignerStore', () => {
   beforeEach(() => {
     _resetPendingMeshCache();
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        ...DEFAULT_GENERATION_STATE,
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
       history: { past: [], future: [] },
       wasmStatus: 'unloaded',
       ui: {
+        ...DEFAULT_UI_STATE,
         activeTab: 'dimensions',
         exportDialogOpen: false,
         designListOpen: false,

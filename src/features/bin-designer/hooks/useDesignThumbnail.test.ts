@@ -11,10 +11,11 @@ import { loadDesign } from '../storage/DesignerStorage';
 import { ok, err, storageNotFound } from '@/core/result';
 import type { SavedDesign } from '../types';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { designId } from '@/core/types';
 
 function makeSavedDesign(overrides: Partial<SavedDesign> = {}): SavedDesign {
   return {
-    id: 'design-1',
+    id: designId('design-1'),
     name: 'Test Bin',
     params: DEFAULT_BIN_PARAMS,
     thumbnail: 'data:image/webp;base64,AAAA',
@@ -92,8 +93,8 @@ describe('useDesignThumbnail', () => {
 
   it('fetches new thumbnail when designId changes', async () => {
     vi.mocked(loadDesign)
-      .mockResolvedValueOnce(ok(makeSavedDesign({ id: 'a', thumbnail: 'thumb-a' })))
-      .mockResolvedValueOnce(ok(makeSavedDesign({ id: 'b', thumbnail: 'thumb-b' })));
+      .mockResolvedValueOnce(ok(makeSavedDesign({ id: designId('a'), thumbnail: 'thumb-a' })))
+      .mockResolvedValueOnce(ok(makeSavedDesign({ id: designId('b'), thumbnail: 'thumb-b' })));
 
     const { result, rerender } = renderHook(({ id }) => useDesignThumbnail(id), {
       initialProps: { id: 'a' },

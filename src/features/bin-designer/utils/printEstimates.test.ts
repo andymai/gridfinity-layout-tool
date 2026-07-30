@@ -376,7 +376,7 @@ describe('printEstimates', () => {
       const mask = {
         cols: 6,
         rows: 6,
-        cells: Array.from({ length: 36 }, (_, i) => i < 30),
+        cells: Array.from({ length: 36 }, (_, i): 0 | 1 => (i < 30 ? 1 : 0)),
       };
       const off = estimatePrint({
         ...base,
@@ -447,12 +447,13 @@ describe('printEstimates', () => {
       const full =
         estimatePrint(base).volumeMm3 - estimatePrint({ ...base, floorPattern }).volumeMm3;
       // An L: three of the four cells filled, so three feet carry windows.
+      const maskedCells: (0 | 1)[] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0];
       const masked = {
         ...base,
         cellMask: {
           cols: 4,
           rows: 4,
-          cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+          cells: maskedCells,
         },
       };
       const partial =

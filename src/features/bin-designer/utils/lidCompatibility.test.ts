@@ -80,7 +80,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('skips on polygon (cellMask) bins — wall cutouts are gated off by FeatureGate even when the flag is true', () => {
-      const cells = Array<number>(64).fill(1);
+      const cells = Array<0 | 1>(64).fill(1);
       cells[0] = 0; // any partial mask qualifies
       const params = withOverrides({
         width: 4,
@@ -131,7 +131,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('skips on polygon bins — wall pattern is gated off by FeatureGate', () => {
-      const cells = Array<number>(64).fill(1);
+      const cells = Array<0 | 1>(64).fill(1);
       cells[0] = 0;
       const params = withOverrides({
         width: 4,
@@ -278,7 +278,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('does not flag polygon bins (compartments are gated off by FeatureGate)', () => {
-      const cells = Array<number>(64).fill(1);
+      const cells = Array<0 | 1>(64).fill(1);
       cells[0] = 0;
       const params = withOverrides({
         width: 4,
@@ -295,7 +295,7 @@ describe('checkLidCompatibility', () => {
   describe('cellMask interior holes (O-shape)', () => {
     it('flags O-shape masks (multi-loop polygon)', () => {
       // 4×4 mask with a 2×2 hole in the middle (mask is half-bin resolution: 8×8)
-      const cells: number[] = [];
+      const cells: (0 | 1)[] = [];
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           // Hole in the middle 4×4 cells (rows 2-5, cols 2-5)
@@ -418,7 +418,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('skips on polygon (cellMask) bins', () => {
-      const cells = Array<number>(64).fill(1);
+      const cells = Array<0 | 1>(64).fill(1);
       cells[0] = 0;
       const params = withOverrides({
         width: 4,

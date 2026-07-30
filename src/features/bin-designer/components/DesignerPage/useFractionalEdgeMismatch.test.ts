@@ -6,33 +6,39 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { Bin, Layout } from '@/core/types';
+import { mm, gridUnits, heightUnits, binId, layerId, categoryId, designId } from '@/core/types';
 
-const DESIGN_ID = 'design-1';
+const DESIGN_ID = designId('design-1');
 
 function makeLayout(bins: Bin[], drawerEdgeX: 'start' | 'end' = 'start'): Layout {
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 10, height: 5, fractionalEdgeX: drawerEdgeX },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
-    categories: [{ id: 'cat-1', name: 'Category 1', color: '#ff0000' }],
+    drawer: {
+      width: gridUnits(10),
+      depth: gridUnits(10),
+      height: heightUnits(5),
+      fractionalEdgeX: drawerEdgeX,
+    },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(1) }],
+    categories: [{ id: categoryId('cat-1'), name: 'Category 1', color: '#ff0000' }],
     bins,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
   };
 }
 
 function linkedBin(): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 1.5,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1.5),
+    depth: gridUnits(2),
+    height: heightUnits(3),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     linkedDesignId: DESIGN_ID,

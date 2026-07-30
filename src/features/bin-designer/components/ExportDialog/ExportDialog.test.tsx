@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_GENERATION_STATE,
+  DEFAULT_UI_STATE,
+} from '@/features/bin-designer/constants/defaults';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
@@ -37,6 +41,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
     designName: 'Untitled Bin',
     exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
     generation: {
+      ...DEFAULT_GENERATION_STATE,
       status: 'complete',
       mesh: {
         vertices: new Float32Array(108),
@@ -50,6 +55,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
       epoch: 1,
     },
     ui: {
+      ...DEFAULT_UI_STATE,
       activeTab: 'dimensions',
       exportDialogOpen: true,
       wireframeMode: false,
@@ -69,6 +75,7 @@ describe('ExportDialog', () => {
   it('does not render when dialog is closed', () => {
     setupStore({
       ui: {
+        ...DEFAULT_UI_STATE,
         activeTab: 'dimensions',
         exportDialogOpen: false,
         wireframeMode: false,
@@ -341,6 +348,7 @@ describe('ExportDialog', () => {
         },
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format },
         ui: {
+          ...DEFAULT_UI_STATE,
           activeTab: 'dimensions',
           exportDialogOpen: open,
           wireframeMode: false,

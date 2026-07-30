@@ -3,12 +3,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DesignActions } from './DesignActions';
 import { DEFAULT_BIN_PARAMS } from '../../constants/defaults';
 import type { SavedDesign } from '../../types';
+import { designId } from '@/core/types';
 
 const mockDesign: SavedDesign = {
-  id: 'design-1',
+  id: designId('design-1'),
   name: 'Test Bin',
   params: DEFAULT_BIN_PARAMS,
   thumbnail: null,
+  exportFileNameConfig: null,
   createdAt: '2026-01-20T10:00:00.000Z',
   updatedAt: '2026-01-22T12:00:00.000Z',
 };

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore, useCutoutSelection } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '@/features/bin-designer/constants';
 import { GhostCutouts } from './GhostCutouts';
 
 vi.mock('@react-three/fiber', () => ({
@@ -78,6 +78,7 @@ describe('GhostCutouts', () => {
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'idle',
         mesh: null,
         progress: 0,
@@ -100,6 +101,7 @@ describe('GhostCutouts', () => {
         cutouts: [SOLID_CUTOUT],
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,
@@ -118,6 +120,7 @@ describe('GhostCutouts', () => {
         cutouts: [],
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,
@@ -136,6 +139,7 @@ describe('GhostCutouts', () => {
         cutouts: [SOLID_CUTOUT],
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'generating',
         mesh: null,
         progress: 0,
@@ -154,6 +158,7 @@ describe('GhostCutouts', () => {
         cutouts: [SOLID_CUTOUT],
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: null,
         progress: 0,
@@ -174,6 +179,7 @@ describe('GhostCutouts', () => {
         cutouts: [SOLID_CUTOUT],
       },
       generation: {
+        ...DEFAULT_GENERATION_STATE,
         status: 'complete',
         mesh: null,
         progress: 0,

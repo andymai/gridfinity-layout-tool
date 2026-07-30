@@ -2,10 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCustomBins, resetCustomBinsCache } from './useCustomBins';
 import { upsertRegistryEntry, type CustomBinRef } from '../store/customBinRegistry';
+import { designId } from '@/core/types';
 
 function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
   return {
-    id,
+    id: designId(id),
     name,
     width: 2,
     depth: 3,
@@ -51,7 +52,7 @@ describe('useCustomBins', () => {
 
   it('includes dimensions in each ref', () => {
     const ref: CustomBinRef = {
-      id: 'custom-1',
+      id: designId('custom-1'),
       name: 'Wide Bin',
       width: 4,
       depth: 2,
