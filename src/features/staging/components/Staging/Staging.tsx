@@ -575,7 +575,6 @@ export function Staging() {
                     isDragging={bin.id === draggingBinId}
                     isHovered={hoveredBinId === bin.id}
                     isTouchDevice={isTouchDevice}
-                    isTopRow={bin.y === 0}
                     cellSize={cellSize}
                     gap={gap}
                     gridHeight={gridHeight}
