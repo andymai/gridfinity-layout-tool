@@ -124,7 +124,9 @@ export const DESIGNER_CONSTRAINTS = {
   // Outer-wall taper (drawer-fit "curved" bins, #2933). Per-side value is the
   // base inset (chamfer) or radius (fillet), clamped to that side's overhang.
   MIN_TAPER: 0, // mm
-  MAX_TAPER: 21, // mm (matches MAX_OVERHANG; effective value clamped to overhang)
+  // Flare sits above the drawer's curve, where no extra grid cell could ever
+  // fit, so MAX_OVERHANG's "add a cell instead" ceiling doesn't apply to it.
+  MAX_TAPER: 42, // mm (one full grid unit)
   TAPER_STEP: 0.5, // mm
   MIN_TAPER_BAND: 0, // mm — band height (how far up the wall the taper rises)
   MAX_TAPER_BAND: 140, // mm — capped at MAX_SCOOP_HEIGHT; clamped to wall height at build

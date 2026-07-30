@@ -451,6 +451,9 @@ const en: Record<string, string> = {
   'inspector.taper.chamfer': 'Chamfer',
   'inspector.taper.fillet': 'Fillet',
   'inspector.taper.height': 'Taper height',
+  'inspector.taper.flare': 'Flare',
+  'inspector.taper.flare.hint':
+    "Extra width at the rim, beyond the drawer padding, so the bin reaches into the drawer's curved sides.",
   'inspector.expandedFootprint': 'Expanded footprint',
   'inspector.expandedFootprint.sides': '{left} left · {right} right · {front} front · {back} back',
   'inspector.maxPropertiesReached': 'Maximum {max} properties reached',
@@ -1937,9 +1940,7 @@ const en: Record<string, string> = {
     'Add grid-aligned feet beneath the overhang where they fit to print, instead of a flat bottom.',
   'binDesigner.overhang.taper.title': 'Taper walls',
   'binDesigner.overhang.taper.hint':
-    "Angle the outer wall inward at the base so the bin hugs a drawer's rounded corner. Each side tapers back toward the nominal footprint, within its overhang.",
-  'binDesigner.overhang.taper.needsOverhang':
-    'Add overhang to a side first, then taper it back in at the base.',
+    "Angle the wall outward above the base so the bin reaches into a drawer's curved sides. The base keeps its overhang width, so the bin still sits flat.",
   'binDesigner.overhang.taper.singleHollowOnly':
     'Taper is available only on hollow, single-compartment bins.',
   'binDesigner.overhang.taper.feetConflict': 'Turn off feet under overhang to taper the walls.',
@@ -1947,10 +1948,8 @@ const en: Record<string, string> = {
   'binDesigner.overhang.taper.profileChamfer': 'Chamfer',
   'binDesigner.overhang.taper.profileFillet': 'Fillet',
   'binDesigner.overhang.taper.bandHeight': 'Rises up',
-  'binDesigner.overhang.taper.sidesHeading': 'Taper back, per side',
-  'binDesigner.overhang.taper.sideCap': '{value} of {max}',
-  'binDesigner.overhang.taper.sideAria': 'Taper back {side}',
-  'binDesigner.overhang.taper.sideNoOverhang': 'No overhang',
+  'binDesigner.overhang.taper.sidesHeading': 'Flare, per side',
+  'binDesigner.overhang.taper.sideAria': 'Flare {side}',
   'binDesigner.itemKind.bin': 'Bin',
   'binDesigner.itemKind.bin.description': 'Custom Gridfinity storage bin',
   'binDesigner.itemKind.toolRack': 'Tool rack',

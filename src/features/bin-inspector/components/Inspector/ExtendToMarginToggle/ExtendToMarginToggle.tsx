@@ -9,11 +9,11 @@
  * abuts a padded edge; it requires a linked design (only linked bins generate
  * geometry), so it's disabled with a hint until one is linked.
  *
- * The taper angles the extended wall back toward the nominal footprint at the
- * base so the bin hugs a drawer's rounded corner; the per-side reach is derived
- * from the padding, so only the profile + band height are stored on the Bin.
- * It's unavailable on an over-tiled baseplate (the margin is functional grid, so
- * overhang feet — mutually exclusive with a taper — fill it instead).
+ * The taper angles the wall outward from the padding-wide base up to the rim so
+ * the bin reaches into a drawer's curved sides; the per-side reach is derived
+ * from the padding, so only the profile, band height and flare are stored on the
+ * Bin. It's unavailable on an over-tiled baseplate (the margin is functional
+ * grid, so overhang feet — mutually exclusive with a taper — fill it instead).
  */
 
 import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
@@ -34,6 +34,9 @@ interface ExtendToMarginToggleProps {
 // height, so an approximate cap here only bounds the slider range.
 const HEIGHT_UNIT_MM = 7;
 const TAPER_BAND_STEP = 0.5;
+// One full grid unit: the flare sits above the drawer's curve, where no extra
+// grid cell could fit, so the half-unit overhang ceiling doesn't bound it.
+const MAX_FLARE_MM = 42;
 
 export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
   const t = useTranslation();
@@ -110,6 +113,18 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
                 step={TAPER_BAND_STEP}
                 unit="mm"
               />
+              <SliderInput
+                label={t('inspector.taper.flare')}
+                value={marginTaper.flare ?? 0}
+                onChange={(flare) => setTaper({ flare })}
+                min={0}
+                max={MAX_FLARE_MM}
+                step={TAPER_BAND_STEP}
+                unit="mm"
+              />
+              <p className="text-[10px] leading-snug text-content-disabled">
+                {t('inspector.taper.flare.hint')}
+              </p>
             </div>
           )}
         </div>

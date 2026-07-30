@@ -12,7 +12,8 @@
  * `resolveBinOverhang` is the chokepoint that reconciles the two; everything
  * downstream (2D grid, isometric preview, export) goes through it. The
  * `binMarginSides`/`binCanExtendToMargin` pair stays padding-only, because the
- * inspector toggle's visibility must depend on padding alone.
+ * inspector toggle's visibility must depend on padding alone — an authored
+ * flare widens the resolved overhang but must not make the control appear.
  */
 
 import type { OverhangConfig, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
@@ -51,21 +52,27 @@ interface DrawerSize {
  * `front` = -Y (bottom), `back` = +Y (top). Fractional edges don't change which
  * physical side the padding sits on, so the mapping is direct.
  */
+function abuttingEdges(bin: BinRect, drawer: DrawerSize): Record<keyof MarginSides, boolean> {
+  return {
+    left: bin.x <= EPS,
+    front: bin.y <= EPS,
+    right: Math.abs(bin.x + bin.width - drawer.width) <= EPS,
+    back: Math.abs(bin.y + bin.depth - drawer.depth) <= EPS,
+  };
+}
+
 export function binMarginSides(
   bin: BinRect,
   drawer: DrawerSize,
   baseplate: StoredBaseplateParams | undefined
 ): MarginSides {
   if (!baseplate) return ZERO_SIDES;
-  const abutsLeft = bin.x <= EPS;
-  const abutsFront = bin.y <= EPS;
-  const abutsRight = Math.abs(bin.x + bin.width - drawer.width) <= EPS;
-  const abutsBack = Math.abs(bin.y + bin.depth - drawer.depth) <= EPS;
+  const abuts = abuttingEdges(bin, drawer);
   return {
-    left: abutsLeft ? Math.max(0, baseplate.paddingLeft) : 0,
-    right: abutsRight ? Math.max(0, baseplate.paddingRight) : 0,
-    front: abutsFront ? Math.max(0, baseplate.paddingFront) : 0,
-    back: abutsBack ? Math.max(0, baseplate.paddingBack) : 0,
+    left: abuts.left ? Math.max(0, baseplate.paddingLeft) : 0,
+    right: abuts.right ? Math.max(0, baseplate.paddingRight) : 0,
+    front: abuts.front ? Math.max(0, baseplate.paddingFront) : 0,
+    back: abuts.back ? Math.max(0, baseplate.paddingBack) : 0,
   };
 }
 
@@ -101,27 +108,36 @@ export function resolveBinMarginOverhang(
   const sides = binMarginSides(bin, drawer, baseplate);
   if (sidesTotal(sides) <= EPS) return null;
   const feet = baseplate?.overTile ?? false;
-  // Taper the extended wall back to nominal at the base (#2933): per-side reach
-  // = the padding (so it fully retracts). Mutually exclusive with over-tile
-  // feet, which the generator's resolve also enforces.
+  // Flare (#2933) widens the wall *above* the padding so the bin can reach into
+  // a drawer's curved sides, which the flat baseplate padding can't describe.
+  // The stored overhang is the width at the rim, so each abutting edge carries
+  // padding + flare there and the taper insets by the flare to leave the base at
+  // the padding. Mutually exclusive with over-tile feet, which the generator's
+  // resolve also enforces.
+  const mt = bin.marginTaper?.enabled === true && !feet ? bin.marginTaper : undefined;
+  const flare = Math.max(0, mt?.flare ?? 0);
+  const abuts = abuttingEdges(bin, drawer);
+  const flareOf = (side: keyof MarginSides): number => (abuts[side] ? flare : 0);
+  // A zero flare is no taper at all under the additive model, so drop the
+  // config rather than hand downstream an all-zero inset to resolve away.
   const taper =
-    bin.marginTaper?.enabled && !feet
+    mt && flare > EPS
       ? {
           enabled: true,
-          profile: bin.marginTaper.profile,
-          bandHeight: bin.marginTaper.bandHeight,
-          left: sides.left,
-          right: sides.right,
-          front: sides.front,
-          back: sides.back,
+          profile: mt.profile,
+          bandHeight: mt.bandHeight,
+          left: flareOf('left'),
+          right: flareOf('right'),
+          front: flareOf('front'),
+          back: flareOf('back'),
         }
       : undefined;
   return {
     enabled: true,
-    left: sides.left,
-    right: sides.right,
-    front: sides.front,
-    back: sides.back,
+    left: sides.left + flareOf('left'),
+    right: sides.right + flareOf('right'),
+    front: sides.front + flareOf('front'),
+    back: sides.back + flareOf('back'),
     feet,
     ...(taper ? { taper } : {}),
   };
@@ -140,6 +156,12 @@ export interface OverhangSource extends BinRect {
     readonly profile: WallTaperProfile;
     readonly bandHeight: number;
     readonly enabled?: boolean;
+    /**
+     * Extra width (mm) at the rim beyond the drawer padding, on every abutting
+     * edge. A single value rather than per-side, matching `profile`/`bandHeight`
+     * — the per-side reach here is derived from the baseplate, not authored.
+     */
+    readonly flare?: number;
   };
 }
 

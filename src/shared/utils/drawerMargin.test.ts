@@ -173,29 +173,53 @@ describe('resolveBinMarginOverhang', () => {
     expect(resolveBinMarginOverhang(bin(0, 1, 1, 1, true), DRAWER, solid)?.feet).toBe(false);
   });
 
-  it('derives a taper from the padding when marginTaper is enabled (non-over-tile)', () => {
+  it('adds the flare on top of the padding on every abutting edge (#2933)', () => {
     const solid = baseplate({ paddingLeft: mm(3), paddingFront: mm(2), overTile: false });
     const b = {
       ...bin(0, 0, 1, 1, true),
-      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true },
+      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true, flare: 5 },
     };
     expect(resolveBinMarginOverhang(b, DRAWER, solid)).toEqual({
       enabled: true,
-      left: 3,
+      // Rim = padding + flare on the two abutting edges; the base keeps the
+      // padding, so the taper insets by the flare alone.
+      left: 8,
       right: 0,
-      front: 2,
+      front: 7,
       back: 0,
       feet: false,
       taper: {
         enabled: true,
         profile: 'chamfer',
         bandHeight: 6,
-        left: 3,
+        left: 5,
         right: 0,
-        front: 2,
+        front: 5,
         back: 0,
       },
     });
+  });
+
+  it('omits the taper when the flare is zero (nothing to inset)', () => {
+    const solid = baseplate({ paddingLeft: mm(3), overTile: false });
+    const b = {
+      ...bin(0, 0, 1, 1, true),
+      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true },
+    };
+    const resolved = resolveBinMarginOverhang(b, DRAWER, solid);
+    expect(resolved?.taper).toBeUndefined();
+    expect(resolved?.left).toBe(3);
+  });
+
+  it('does not flare an edge the bin does not abut', () => {
+    const solid = baseplate({ paddingLeft: mm(3), paddingRight: mm(4), overTile: false });
+    const b = {
+      ...bin(0, 0, 1, 1, true),
+      marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true, flare: 5 },
+    };
+    const resolved = resolveBinMarginOverhang(b, DRAWER, solid);
+    expect(resolved?.right).toBe(0);
+    expect(resolved?.taper?.right).toBe(0);
   });
 
   it('omits the taper on an over-tiled baseplate (feet are mutually exclusive)', () => {

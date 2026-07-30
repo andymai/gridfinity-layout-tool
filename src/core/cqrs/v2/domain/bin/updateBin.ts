@@ -54,6 +54,7 @@ const updatesSchema = z
       profile: z.enum(['chamfer', 'fillet']),
       bandHeight: z.number().min(0),
       enabled: z.boolean().optional(),
+      flare: z.number().min(0).optional(),
     }),
     overhang: overhangSchema,
   })
