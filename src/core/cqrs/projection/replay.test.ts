@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { applyEvent, replayEvents } from './replay';
 import type { Layout, Bin } from '@/core/types';
-import { binId, layerId, categoryId, layoutId } from '@/core/types';
+import { binId, layerId, categoryId, layoutId, gridUnits, heightUnits, mm } from '@/core/types';
 import { eventId, correlationId, commandId } from '../types';
 import type { DomainEvent } from '../events';
 import { STAGING_ID } from '@/core/constants';
@@ -13,18 +13,19 @@ const baseMeta = {
   commandId: commandId('cmd_1'),
   aggregateId: layoutId('layout_1'),
   version: 1,
+  schemaVersion: 1,
 };
 
 function makeLayout(bins: Bin[] = []): Layout {
   return {
     version: '1.0',
     name: 'Test',
-    drawer: { width: 6, depth: 4, height: 7 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(7) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories: [{ id: categoryId('cat_1'), name: 'Default', color: '#808080' }],
-    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: 1 }],
+    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(1) }],
     bins,
   };
 }
@@ -33,11 +34,11 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
     id: binId('bin_1'),
     layerId: layerId('layer_1'),
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 1,
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(1),
     category: categoryId('cat_1'),
     label: '',
     notes: '',
@@ -96,7 +97,7 @@ describe('applyEvent', () => {
     const layout = makeLayout();
     const event: DomainEvent = {
       type: 'layer.added',
-      payload: { layer: { id: layerId('layer_2'), name: 'Layer 2', height: 1 } },
+      payload: { layer: { id: layerId('layer_2'), name: 'Layer 2', height: heightUnits(1) } },
       meta: baseMeta,
     };
 
@@ -108,12 +109,12 @@ describe('applyEvent', () => {
     const bin1 = makeBin({ id: binId('bin_1'), layerId: layerId('layer_1') });
     const bin2 = makeBin({ id: binId('bin_2'), layerId: layerId('layer_2') });
     const layout = makeLayout([bin1, bin2]);
-    layout.layers.push({ id: layerId('layer_2'), name: 'Layer 2', height: 1 });
+    layout.layers.push({ id: layerId('layer_2'), name: 'Layer 2', height: heightUnits(1) });
 
     const event: DomainEvent = {
       type: 'layer.deleted',
       payload: {
-        layer: { id: layerId('layer_1'), name: 'Layer 1', height: 1 },
+        layer: { id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(1) },
         deletedBinCount: 1,
       },
       meta: baseMeta,
@@ -164,8 +165,8 @@ describe('applyEvent', () => {
     const event: DomainEvent = {
       type: 'drawer.updated',
       payload: {
-        changes: { width: 8 },
-        previous: { width: 6 },
+        changes: { width: gridUnits(8) },
+        previous: { width: gridUnits(6) },
         binsDisplacedToStaging: 0,
       },
       meta: baseMeta,

@@ -101,7 +101,11 @@ interface ManifoldStats {
 function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
   const parsed = parseSTLBinary(stl);
   if (!isOk(parsed)) {
-    throw new Error(`${label}: STL parse failed — ${parsed.error.errors?.join('; ') ?? 'unknown'}`);
+    const detail =
+      parsed.error.code === 'VALIDATION_IMPORT_FAILED'
+        ? parsed.error.errors.join('; ')
+        : parsed.error.message;
+    throw new Error(`${label}: STL parse failed — ${detail}`);
   }
   const { vertices } = parsed.value;
   const triangleCount = vertices.length / 9;

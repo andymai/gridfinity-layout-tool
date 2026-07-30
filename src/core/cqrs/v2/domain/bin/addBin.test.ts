@@ -17,7 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import type { Bin, Layout } from '@/core/types';
-import { binId, layerId, categoryId } from '@/core/types';
+import { binId, layerId, categoryId, heightUnits, gridUnits } from '@/core/types';
 import { addBin } from './addBin';
 
 function makeLayout(overrides: Partial<Layout> = {}): Layout {
@@ -29,7 +29,7 @@ function makeLayout(overrides: Partial<Layout> = {}): Layout {
     gridUnitMm: 42 as Layout['gridUnitMm'],
     heightUnitMm: 7 as Layout['heightUnitMm'],
     categories: [{ id: categoryId('cat_1'), name: 'Default', color: '#808080' }],
-    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: 3 }],
+    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
     ...overrides,
   };
@@ -77,11 +77,11 @@ describe('v2 bin.add', () => {
       const existing: Bin = {
         id: binId('bin_existing'),
         layerId: layerId('layer_1'),
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId('cat_1'),
         label: '',
         notes: '',

@@ -11,12 +11,29 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { eventStore } from './eventStore';
 import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
-import { layoutId } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
+import type { Bin } from '@/core/types';
 
-function makeEvent(id = 'evt_test'): DomainEvent {
+function makeBin(overrides: Partial<Bin> = {}): Bin {
+  return {
+    id: binId('bin_1'),
+    layerId: layerId('layer_1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(3),
+    category: categoryId('cat_1'),
+    label: '',
+    notes: '',
+    ...overrides,
+  };
+}
+
+function makeEvent(id = 'evt_test'): Extract<DomainEvent, { type: 'bin.added' }> {
   return {
     type: 'bin.added',
-    payload: {},
+    payload: { bin: makeBin() },
     meta: {
       id: eventId(id),
       timestamp: Date.now(),
@@ -26,7 +43,7 @@ function makeEvent(id = 'evt_test'): DomainEvent {
       version: 1,
       schemaVersion: 1,
     },
-  } as DomainEvent;
+  };
 }
 
 describe('eventStore.append', () => {
@@ -84,8 +101,8 @@ describe('eventStore.append', () => {
     // Same id, different payload — a true collision, NOT an idempotent retry.
     const collider: DomainEvent = {
       ...original,
-      payload: { different: 'payload' },
-    } as DomainEvent;
+      payload: { bin: makeBin({ label: 'a different bin' }) },
+    };
 
     await eventStore.append([collider]);
 

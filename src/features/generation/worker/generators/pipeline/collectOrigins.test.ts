@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, Result } from 'brepjs';
 import type * as CollectOriginsModule from './collectOrigins';
 import { initTestKernel } from '@/test/initTestKernel';
 import type * as ShapeCacheModule from '../shapeCache';
@@ -8,9 +8,9 @@ import { FeatureTag } from '../featureTags';
 
 type BoxFn = (xLen: number, yLen: number, zLen: number) => Shape3D;
 type GetFaceOriginsFn = (shape: Shape3D) => ReadonlyMap<number, number> | undefined;
-type FuseFn = (a: Shape3D, b: Shape3D) => unknown;
+type FuseFn = (a: Shape3D, b: Shape3D) => Result<Shape3D>;
 type TranslateFn = (shape: Shape3D, v: [number, number, number]) => Shape3D;
-type MeasureVolumeFn = (shape: Shape3D) => number;
+type MeasureVolumeFn = (shape: Shape3D) => Result<number>;
 
 let collectOrigins: typeof CollectOriginsModule.collectOrigins;
 let setShellCache: typeof ShapeCacheModule.setShellCache;
@@ -21,7 +21,7 @@ let getFaceOrigins: GetFaceOriginsFn;
 let fuse: FuseFn;
 let translate: TranslateFn;
 let measureVolume: MeasureVolumeFn;
-let unwrap: <T>(r: { value: T } | T) => T;
+let unwrap: <T, E>(result: Result<T, E>) => T;
 
 beforeAll(async () => {
   const brepjs = await import('brepjs');
@@ -37,7 +37,7 @@ beforeAll(async () => {
   fuse = brepjs.fuse;
   translate = brepjs.translate;
   measureVolume = brepjs.measureVolume;
-  unwrap = brepjs.unwrap as unknown as typeof unwrap;
+  unwrap = brepjs.unwrap;
 }, 30000);
 
 describe('collectOrigins', () => {
@@ -64,7 +64,7 @@ describe('collectOrigins', () => {
     collectOrigins(base, FeatureTag.BASE, new Map());
     collectOrigins(top, FeatureTag.LIP, new Map());
 
-    const fused = unwrap(fuse(base, top)) as Shape3D;
+    const fused = unwrap(fuse(base, top));
     const origins = getFaceOrigins(fused);
     expect(origins).toBeDefined();
 
@@ -88,7 +88,7 @@ describe('shell cache preserves face origins', () => {
     const top = translate(lipBase, [0, 0, 10]);
     collectOrigins(base, FeatureTag.BASE, new Map());
     collectOrigins(top, FeatureTag.LIP, new Map());
-    const fused = unwrap(fuse(base, top)) as Shape3D;
+    const fused = unwrap(fuse(base, top));
 
     setShellCache('test-shell-key', fused);
     const retrieved = getShellCache('test-shell-key');

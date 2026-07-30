@@ -33,8 +33,8 @@ beforeAll(async () => {
   generateBin = await loadGenerateBin();
 }, 60_000);
 
-const gen = (gridW: number, gridD: number): void => {
-  withKernel('occt-wasm', () => generateBin(buildParams({ gridW, gridD }), undefined, false));
+const gen = (width: number, depth: number): void => {
+  withKernel('occt-wasm', () => generateBin(buildParams({ width, depth }), undefined, false));
 };
 
 describe('occt-wasm kernel lifecycle', () => {

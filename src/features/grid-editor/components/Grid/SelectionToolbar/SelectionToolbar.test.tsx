@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SelectionToolbar } from './SelectionToolbar';
-import { binId, categoryId, layerId } from '@/core/types';
+import { binId, categoryId, heightUnits, layerId } from '@/core/types';
 import type { Category, Layer } from '@/core/types';
 
 vi.mock('@/i18n', () => ({
@@ -41,7 +41,7 @@ const mockCategories: Category[] = [
   { id: categoryId('cat2'), name: 'Tools', color: '#ef4444' },
 ];
 
-const mockLayers: Layer[] = [{ id: layerId('layer2'), name: 'Layer 2', height: 3 }];
+const mockLayers: Layer[] = [{ id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) }];
 
 const defaultProps = {
   selectedBinIds,

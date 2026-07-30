@@ -54,7 +54,7 @@ describe('defer-socket robustness', () => {
         width: 2,
         depth: 2,
         height: 4,
-        base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
       }),
       undefined,
       false

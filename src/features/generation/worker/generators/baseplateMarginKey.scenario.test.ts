@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, rotate, intersect, fuse } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { ResolvedBaseplateParams, MarginPiece, BaseplateEdges } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
@@ -90,22 +90,22 @@ function frontRail(over: Partial<MarginPiece> = {}): MarginPiece {
  * union would make the containment assertions below pass against grooves that
  * aren't there, which is exactly the kernel regression this file exists to catch.
  */
+function fuseTwo(a: Shape3D, b: Shape3D): Shape3D {
+  const f = fuse(a as ValidSolid, b as ValidSolid);
+  if (!isOk(f)) {
+    a.delete();
+    b.delete();
+    throw new Error('fuse failed while building the groove union');
+  }
+  a.delete();
+  b.delete();
+  return f.value;
+}
+
 function fuseAll(parts: Shape3D[]): Shape3D | null {
   let union: Shape3D | null = null;
   for (const part of parts) {
-    if (!union) {
-      union = part;
-      continue;
-    }
-    const f = fuse(union, part);
-    if (!isOk(f)) {
-      union.delete();
-      part.delete();
-      throw new Error('fuse failed while building the groove union');
-    }
-    union.delete();
-    part.delete();
-    union = f.value;
+    union = union ? fuseTwo(union, part) : part;
   }
   return union;
 }

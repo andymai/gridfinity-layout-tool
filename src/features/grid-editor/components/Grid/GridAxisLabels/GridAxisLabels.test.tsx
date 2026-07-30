@@ -43,6 +43,7 @@ describe('RowLabels', () => {
     labelWidth: 32,
     labelFontSize: 12,
     columnLabelHeight: 24,
+    axisLabelsVisible: true,
     integerWidth: 10,
     integerDepth: 8,
     hasFractionalWidth: false,
@@ -98,10 +99,10 @@ describe('RowLabels', () => {
     expect(mockOnRowClick).toHaveBeenCalledWith(1, expect.any(Object));
   });
 
-  it('renders fractional row labels', () => {
+  it('sizes the bottom row label as fractional when fractionalEdgeY is start', () => {
     const fractionalLabels: GridAxisLabelsState = {
       ...mockLabels,
-      rowLabels: [0.5, 1, 2, 3, 4, 5, 6, 7, 8],
+      rowLabels: [8, 7, 6, 5, 4, 3, 2, 1, '+.5'],
       hasFractionalDepth: true,
       fractionalEdgeY: 'start' as const,
     };
@@ -116,12 +117,15 @@ describe('RowLabels', () => {
     );
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(9);
+    expect(buttons[8].textContent).toBe('+.5');
+    expect(buttons[8].style.height).toBe('16px');
+    expect(buttons[0].style.height).toBe('32px');
   });
 
-  it('renders with fractionalEdgeY at end', () => {
+  it('sizes the top row label as fractional when fractionalEdgeY is end', () => {
     const fractionalLabels: GridAxisLabelsState = {
       ...mockLabels,
-      rowLabels: [1, 2, 3, 4, 5, 6, 7, 8, 8.5],
+      rowLabels: ['+.5', 8, 7, 6, 5, 4, 3, 2, 1],
       hasFractionalDepth: true,
       fractionalEdgeY: 'end' as const,
     };
@@ -134,7 +138,11 @@ describe('RowLabels', () => {
         onRowClick={mockOnRowClick}
       />
     );
-    expect(container).toBeTruthy();
+    const buttons = container.querySelectorAll('button');
+    expect(buttons.length).toBe(9);
+    expect(buttons[0].textContent).toBe('+.5');
+    expect(buttons[0].style.height).toBe('16px');
+    expect(buttons[8].style.height).toBe('32px');
   });
 });
 
@@ -146,6 +154,7 @@ describe('ColumnLabels', () => {
     labelWidth: 32,
     labelFontSize: 12,
     columnLabelHeight: 24,
+    axisLabelsVisible: true,
     integerWidth: 10,
     integerDepth: 8,
     hasFractionalWidth: false,
@@ -204,10 +213,10 @@ describe('ColumnLabels', () => {
     expect(mockOnColumnClick).toHaveBeenCalledWith(1, expect.any(Object));
   });
 
-  it('renders fractional column labels', () => {
+  it('sizes the leftmost column label as fractional when fractionalEdgeX is start', () => {
     const fractionalLabels: GridAxisLabelsState = {
       ...mockLabels,
-      columnLabels: [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      columnLabels: ['+.5', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       hasFractionalWidth: true,
       fractionalEdgeX: 'start' as const,
     };
@@ -223,12 +232,15 @@ describe('ColumnLabels', () => {
     );
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(11);
+    expect(buttons[0].textContent).toBe('+.5');
+    expect(buttons[0].style.width).toBe('16px');
+    expect(buttons[10].style.width).toBe('32px');
   });
 
-  it('renders with fractionalEdgeX at end', () => {
+  it('sizes the rightmost column label as fractional when fractionalEdgeX is end', () => {
     const fractionalLabels: GridAxisLabelsState = {
       ...mockLabels,
-      columnLabels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10.5],
+      columnLabels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, '+.5'],
       hasFractionalWidth: true,
       fractionalEdgeX: 'end' as const,
     };
@@ -242,6 +254,10 @@ describe('ColumnLabels', () => {
         onColumnClick={mockOnColumnClick}
       />
     );
-    expect(container).toBeTruthy();
+    const buttons = container.querySelectorAll('button');
+    expect(buttons.length).toBe(11);
+    expect(buttons[10].textContent).toBe('+.5');
+    expect(buttons[10].style.width).toBe('16px');
+    expect(buttons[0].style.width).toBe('32px');
   });
 });

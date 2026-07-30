@@ -28,7 +28,7 @@ const PARAMS: BinParams = {
   width: 12,
   depth: 6,
   height: 4,
-  base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+  base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
 };
 
 /**
@@ -98,7 +98,7 @@ describe('fully-interior split piece messaging', () => {
     width: 12,
     depth: 12,
     height: 4,
-    base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true, solid },
+    base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true, solid },
   });
   const GX = cutPlanes(12 * GRID, 4);
   const GY = cutPlanes(12 * GRID, 4);

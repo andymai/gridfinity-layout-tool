@@ -29,10 +29,11 @@ vi.mock('brepjs', () => ({
 // Mock occt-wasm kernel factory
 const mockGetRawModule = vi.fn(() => ({}));
 const mockGetRawKernel = vi.fn(() => ({}));
-const mockOcctInit = vi.fn(async () => ({
+const mockOcctInit = vi.fn();
+mockOcctInit.mockResolvedValue({
   getRawModule: mockGetRawModule,
   getRawKernel: mockGetRawKernel,
-}));
+});
 vi.mock('occt-wasm', () => ({
   OcctKernel: { init: (...args: unknown[]) => mockOcctInit(...args) },
 }));
@@ -42,7 +43,8 @@ vi.mock('occt-wasm/dist/occt-wasm.wasm?url', () => ({
 
 // Mock manifold-3d factory + its WASM url
 const mockManifoldSetup = vi.fn();
-const mockManifoldModule = vi.fn(async () => ({ setup: mockManifoldSetup }));
+const mockManifoldModule = vi.fn();
+mockManifoldModule.mockResolvedValue({ setup: mockManifoldSetup });
 vi.mock('manifold-3d', () => ({ default: (...args: unknown[]) => mockManifoldModule(...args) }));
 vi.mock('manifold-3d/manifold.wasm?url', () => ({ default: '/mocked/manifold.wasm' }));
 

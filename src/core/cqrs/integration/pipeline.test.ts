@@ -7,13 +7,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { isOk, isErr } from '@/core/result';
+import { isOk, isErr, ok, err, layoutInvalidOperation } from '@/core/result';
+import type { Result, LayoutError } from '@/core/result';
 import { createCommandBus } from '../bus/commandBus';
 import { createEventBus } from '../bus/eventBus';
 import { createCommand } from '../commands';
 import { createCqrsMutations } from './mutationsAdapter';
 import { resetVersionCounters } from '../handlers';
-import { layerId, categoryId, binId } from '@/core/types';
+import { layerId, categoryId, binId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin } from '@/core/types';
 import type { DomainEvent } from '../events';
 import type { Command } from '../commands';
@@ -25,11 +26,11 @@ const bins: Bin[] = [];
 const testBin: Bin = {
   id: binId('bin_1'),
   layerId: layerId('layer_1'),
-  x: 0,
-  y: 0,
-  width: 1,
-  depth: 1,
-  height: 3,
+  x: gridUnits(0),
+  y: gridUnits(0),
+  width: gridUnits(1),
+  depth: gridUnits(1),
+  height: heightUnits(3),
   category: categoryId('cat_1'),
   label: '',
   notes: '',
@@ -38,13 +39,13 @@ const testBin: Bin = {
 const mockStore = {
   layout: {
     bins,
-    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: 3 }],
+    layers: [{ id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) }],
     categories: [{ id: categoryId('cat_1'), name: 'Default', color: '#808080' }],
-    drawer: { width: 6, depth: 4, height: 7 },
+    drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(7) },
     name: 'Test Layout',
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     version: '1.0',
   },
   addBin: vi.fn(() => {
@@ -52,14 +53,14 @@ const mockStore = {
     bins.push(newBin);
     return { ok: true, value: binId('bin_new') };
   }),
-  updateBin: vi.fn(() => ({ ok: true, value: undefined })),
-  deleteBin: vi.fn(() => ({ ok: true, value: undefined })),
-  deleteBins: vi.fn(() => ({ ok: true, value: undefined })),
+  updateBin: vi.fn((): Result<void, LayoutError> => ok(undefined)),
+  deleteBin: vi.fn((): Result<void, LayoutError> => ok(undefined)),
+  deleteBins: vi.fn((): Result<void, LayoutError> => ok(undefined)),
   setName: vi.fn(),
   updateDrawer: vi.fn(),
   addLayer: vi.fn(() => {
     const id = layerId('layer_new');
-    mockStore.layout.layers.push({ id, name: 'Layer 2', height: 3 });
+    mockStore.layout.layers.push({ id, name: 'Layer 2', height: heightUnits(3) });
     return { ok: true, value: id };
   }),
   addCategory: vi.fn(() => {
@@ -99,7 +100,7 @@ describe('CQRS Pipeline Integration', () => {
     resetVersionCounters();
     bins.length = 0;
     bins.push({ ...testBin });
-    mockStore.layout.layers = [{ id: layerId('layer_1'), name: 'Layer 1', height: 3 }];
+    mockStore.layout.layers = [{ id: layerId('layer_1'), name: 'Layer 1', height: heightUnits(3) }];
     mockStore.layout.categories = [{ id: categoryId('cat_1'), name: 'Default', color: '#808080' }];
     mockStore.layout.name = 'Test Layout';
 
@@ -141,10 +142,7 @@ describe('CQRS Pipeline Integration', () => {
   });
 
   it('does not publish events when command handler returns error', () => {
-    mockStore.deleteBin.mockReturnValueOnce({
-      ok: false,
-      error: { code: 'LAYOUT_INVALID_OPERATION' },
-    });
+    mockStore.deleteBin.mockReturnValueOnce(err(layoutInvalidOperation('deleteBin')));
     bins.length = 0; // No bin to find
 
     const cmd = createCommand('bin.delete', { id: binId('nonexistent') });
@@ -198,11 +196,11 @@ describe('CQRS Pipeline Integration', () => {
       const mutations = createCqrsMutations(commandBus);
       const result = mutations.addBin({
         layerId: layerId('layer_1'),
-        x: 2,
-        y: 3,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(3),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId('cat_1'),
         label: '',
         notes: '',
@@ -227,10 +225,7 @@ describe('CQRS Pipeline Integration', () => {
     });
 
     it('propagates errors from command results', () => {
-      mockStore.deleteBin.mockReturnValueOnce({
-        ok: false,
-        error: { code: 'LAYOUT_INVALID_OPERATION' },
-      });
+      mockStore.deleteBin.mockReturnValueOnce(err(layoutInvalidOperation('deleteBin')));
 
       const mutations = createCqrsMutations(commandBus);
       const result = mutations.deleteBin(binId('nonexistent'));
