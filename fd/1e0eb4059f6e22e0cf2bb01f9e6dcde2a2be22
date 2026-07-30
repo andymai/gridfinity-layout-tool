@@ -1,0 +1,21 @@
+scripts/vercel-ignore.sh
+  s_bb8f1233002a7e::t_001ff67b56ce70 54-63,65-77
+.github/workflows/smoke-preview.yml
+  s_bb8f1233002a7e::t_a21d063eda7179 3,5,7-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "fd1e0eb4059f6e22e0cf2bb01f9e6dcde2a2be22",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
