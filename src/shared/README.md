@@ -64,6 +64,7 @@ graph TB
 | `compression.ts`          | LZ-string compression for layout storage                                                      |
 | `color.ts`                | `getContrastColor()`, `getBinTextColors()` for bin rendering                                  |
 | `uuid.ts`                 | Layout ID generation and validation                                                           |
+| `wallPatternSides.ts`     | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON        |
 | `throttle.ts` / `idle.ts` | RAF throttle, idle scheduling utilities                                                       |
 
 ## Contexts (`contexts/`)

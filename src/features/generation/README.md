@@ -66,7 +66,7 @@ graph TB
 - `worker/generators/floorPatterns.ts` — floor pattern placement (#2816): one WINDOW per socket cell, inset by `floorWindowInset` so a drainage hole exits through the foot's flat underside and never through the baseplate-mating taper, plus the keep-outs for everything that already owns the base (magnet/screw pockets) or stands on the floor (divider footings, scoop ramps). Pure. Windows come from `socketBuilder.filledSocketCells`, so a cell with no foot (empty mask region, sub-threshold fractional fringe, the overhang region) gets no holes; a flat base has no socket and takes one interior-wide window instead
 - `worker/generators/floorPatternWindow.ts` — just the window rule (brepjs-free, re-exported to the main bundle via `@/shared/generation/floorPatternMetrics` so the panel's fit note and the print estimate share it rather than mirroring it)
 - `worker/generators/floorPatternBuilder.ts` — floor pattern geometry (#2816). Reuses `dividerPatternBuilder`'s `resolvePanelFactory` verbatim and only changes the frame: the factory emits a panel standing up (span X, band Z, thickness Y), the floor needs it lying down, so each panel is rotated -90° about X. Its tools go into `deferredCutTargets` as well as `patternCutTargets` — see the socket note under Pipeline Stages
-- `worker/generators/wallPatterns.ts` — hexgrid/slot patterns
+- `worker/generators/wallPatterns.ts` — hexgrid/slot patterns. Which walls get a descriptor is the intersection of the slot-free gate and the user's per-side selection (`wallPattern.sides`, #2966, resolved via `@/shared/utils/wallPatternSides` — a missing side means ON so pre-#2966 designs still pattern all four). On polygon bins the filter is by cardinal, so every outer edge mapped to a deselected cardinal goes solid
 - `worker/generators/slotBuilder.ts` — wall slot cutout geometry
 - `worker/generators/splitConnectorBuilder.ts` — split-piece joints: floor scarf lap + optional press-together wall-locking keys (#1869)
 - `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
@@ -184,7 +184,10 @@ quantized to an EVEN number so the ±30° diagonals reconnect across the u = 0 s
 clipping is periodicity-aware (`clipSegmentToURangePeriodic`). Kumiko composes with
 cutouts/handles/text/divider junctions through the same clip machinery as stamp patterns
 (`computeWallClipContext` / `computeWallClips` in `wallPatternBuilder.ts`). Polygon (cellMask)
-and slotted bins render solid walls for kumiko in this iteration.
+and slotted bins render solid walls for kumiko in this iteration. Per-side selection (#2966) is a
+slab filter: a flat needs its own wall selected, a corner needs BOTH its walls, or the arc's struts
+would run into solid wall — the lattice itself still spans the whole perimeter, so deselecting a
+wall never shifts the columns on the walls that stay patterned.
 
 ## Gotchas
 
