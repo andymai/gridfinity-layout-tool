@@ -1,0 +1,82 @@
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.test.tsx
+  s_bb8f1233002a7e::t_d4c5e75d7dad18 50,55-57
+  s_bb8f1233002a7e::t_839457db1473e8 5
+src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.test.tsx
+  s_bb8f1233002a7e::t_0323b682817b7d 400,402-403,406-408
+  s_bb8f1233002a7e::t_5568509282c4ff 8
+  s_bb8f1233002a7e::t_ed44715e6e8d9c 74,79-81
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.test.tsx
+  s_bb8f1233002a7e::t_98f4ef4991abc5 56,61-63
+  s_bb8f1233002a7e::t_095bbd938d99f9 5
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.test.tsx
+  s_bb8f1233002a7e::t_22b916c2ed37d7 5,9,14-16
+src/features/layout-library/hooks/useLayoutRouting.test.ts
+  s_bb8f1233002a7e::t_a35f0e3727b203 39-43,47-55,57,60-61
+  s_bb8f1233002a7e::t_6b94b1669e086c 252
+  s_bb8f1233002a7e::t_6ac45a567abb05 97
+  s_bb8f1233002a7e::t_8b32754f7737ea 12-13
+  s_bb8f1233002a7e::t_5dfea8144f9eb6 38,82,91,96,133,153,236,243,248,251
+src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
+  s_bb8f1233002a7e::t_fa153c0e1cde38 4
+  s_bb8f1233002a7e::t_c64b826e8708ef 26,29-34,37-44,49-56
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_bb8f1233002a7e::t_3bf3d5d6cde019 7,11
+  s_bb8f1233002a7e::t_49a3941b49712f 209,214-216,226
+  s_bb8f1233002a7e::t_a6dd829fb952a8 241,250-252
+src/features/layout-library/hooks/useLayoutRouting.scenario.cloudShare.test.ts
+  s_bb8f1233002a7e::t_52e284d4e8d524 16-17
+  s_bb8f1233002a7e::t_25b12e4610bace 48,50,52-56,58,65,69,74-76,79
+src/features/snapshots/components/SnapshotHistory/SnapshotHistory.test.tsx
+  s_bb8f1233002a7e::t_7167324afcc93a 8-9,20-22
+  s_bb8f1233002a7e::t_8212a099faf4d0 31-34
+  s_bb8f1233002a7e::t_418dc5a642853b 42-49
+  s_bb8f1233002a7e::t_040ff26d1b1dd1 58-61
+src/features/inspiration-gallery/components/LayoutThumbnailWithLabels/LayoutThumbnailWithLabels.test.tsx
+  s_bb8f1233002a7e::t_445384e71ea3b6 5-6,64,77-85,97-99,110-111,122-123,137-138,151-152,167-169,184-186,201-203,218-220,235,245,255,267,290-292,311-313,332,335-338,353,356-359
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.test.tsx
+  s_bb8f1233002a7e::t_20a44f371b5f71 5,13-15
+src/features/inspiration-gallery/utils/layoutBuilder.test.ts
+  s_bb8f1233002a7e::t_f0de50a7e4c24e 10-12,139,153-154,156-185,198-200,211,213-214,217-236,249-250,252-261,272-273,275-294,309-310,312-332,344-345,357-359,370-371,373-378,380-393,395,406-407,409-414,416,427,439,441-442,445-447,450-458,460,484-485,487-488,491-496,498-505,527-529,531-540
+src/features/onboarding/hooks/useOnboarding.test.ts
+  s_bb8f1233002a7e::t_a5949ee4f6d811 29,37-40,43-45
+  s_bb8f1233002a7e::t_ab80d1b199ffcc 127-130,133-135
+  s_bb8f1233002a7e::t_3a3947abedb460 7
+  s_bb8f1233002a7e::t_3e76b1b4f5f58f 25
+  s_bb8f1233002a7e::t_72a3b8e18cbbb2 167-170,173-175
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.test.tsx
+  s_bb8f1233002a7e::t_0397ac6314abe3 105-107,113
+  s_bb8f1233002a7e::t_ce04e36bbac081 102,115-117,120-127,132-139,144-151,156-158
+  s_bb8f1233002a7e::t_11f78b4ccc3a8a 321-328
+  s_bb8f1233002a7e::t_b5b2968d045001 291-298
+  s_bb8f1233002a7e::t_69bb1837f45690 6
+  s_bb8f1233002a7e::t_3c1dfea1ec74c5 178,252,265
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeList/SharedWithMeList.test.tsx
+  s_bb8f1233002a7e::t_040c15e69e223b 6
+  s_bb8f1233002a7e::t_fa236b6d74d27d 56,67,89-90,92-94,107-108,110-112,126,145-146,148-150,162-163,165-167,181,200-201,203-205,217-218,220-222,236,251-252,254-256,270
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeItem/SharedWithMeItem.test.tsx
+  s_bb8f1233002a7e::t_013c73745440a8 20,24,26,29-33
+  s_bb8f1233002a7e::t_9082616a976fc8 5
+src/features/inspiration-gallery/components/LayoutCard/LayoutCard.test.tsx
+  s_bb8f1233002a7e::t_35ac13d4bb4bf1 4
+  s_bb8f1233002a7e::t_05486a35cba9d2 28-30,36,38,42-44
+src/features/snapshots/components/RestoreDialog/RestoreDialog.test.tsx
+  s_bb8f1233002a7e::t_0c68124aac60ea 5,13-15
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_a4759e1ba2a4f6 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "4c05dc03240ffbad442cfa5f5eec66e9d246a8fc",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
