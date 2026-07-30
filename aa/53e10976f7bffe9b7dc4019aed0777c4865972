@@ -1,0 +1,192 @@
+src/core/store/layout/layerActions.test.ts
+  s_bb8f1233002a7e::t_af6222670ff248 4
+  s_bb8f1233002a7e::t_3fc7137ea58aa7 22,56,64,85-89
+src/core/store/halfGridMode.test.ts
+  s_bb8f1233002a7e::t_cb1f1198cd932f 10-11
+  s_bb8f1233002a7e::t_d2a89e05805a95 239
+  s_bb8f1233002a7e::t_eeaa146e08ac1e 361-365
+  s_bb8f1233002a7e::t_d443e79338ad85 174-179
+  s_bb8f1233002a7e::t_ae3e5e6529638a 240-242
+  s_ca0c18d9952768::t_3c53bd6df75cc4 105-109,159-163,193-197,216-220,243-244,290-294,336-340,348-352
+src/core/store/library.test.ts
+  s_bb8f1233002a7e::t_792a8beba15f6f 5
+  s_bb8f1233002a7e::t_da2c9c32f30af6 13,18-20,30,94-96,107-109
+  s_bb8f1233002a7e::t_02887dea2757db 207
+  s_bb8f1233002a7e::t_aecd0ff21664af 3,6
+  s_bb8f1233002a7e::t_cfcf19bb76a452 73-75,82,93,106,121-132,140-143,154-157,168-171,189,193,202,208-211,217,220,228,231,247,249,255,257,265,267,272-274,279,281-283,287,289,293,297,304,319,321,328,330,336,339,346,349,356,360-361,367,369,381,385-386,401,408,424,475,503-504,507-514,519-526,532-533,539-541,553,556-563,568-575,594-601,620,626,628,630,636,643,646,654-656,660,676,686,689-691,699
+src/core/store/layout/drawerActions.test.ts
+  s_bb8f1233002a7e::t_40c3973c19465c 5
+  s_bb8f1233002a7e::t_73e331fd02b6c8 15,21,27,33,39,46,60-64,73,83,88,100-104,109
+src/core/store/interaction.test.ts
+  s_bb8f1233002a7e::t_e839c752401a8d 5
+  s_bb8f1233002a7e::t_58d2c6083d0c34 46-47,56-57
+src/core/storage/backends/indexedDB.test.ts
+  s_bb8f1233002a7e::t_21938a38a9a769 485-491
+  s_bb8f1233002a7e::t_e63c5f7ab6a95f 179-181
+  s_bb8f1233002a7e::t_ec9c057f211dff 19-20,25,27-28,30-33
+  s_bb8f1233002a7e::t_f577e797025750 134-135,146-147
+  s_bb8f1233002a7e::t_8ed32b3d0c3ffa 163-165
+  s_bb8f1233002a7e::t_7bce17f6807604 193-199,205-206
+  s_bb8f1233002a7e::t_abf6c1dbd98f26 228,230,232-233,237-244,250-251,253-255
+  s_bb8f1233002a7e::t_9cbcc15b15b551 431-441
+  s_bb8f1233002a7e::t_1d04dfe3aef8c0 550-569
+  s_bb8f1233002a7e::t_d1a0f3a8c9c379 126-133,138-145,492,495
+  s_bb8f1233002a7e::t_2e7944a524e5de 570
+src/core/store/snapshots.test.ts
+  s_bb8f1233002a7e::t_f4f47af63e4ef1 19-21
+  s_bb8f1233002a7e::t_2b751c2ac6b024 7
+src/core/storage/localStorageCleanup.test.ts
+  s_bb8f1233002a7e::t_15daceb8d272cd 20
+  s_bb8f1233002a7e::t_2ce1a2856e231e 4
+src/core/store/layout/categoryActions.test.ts
+  s_bb8f1233002a7e::t_ec2cfa2de9934f 4
+  s_bb8f1233002a7e::t_fdefd2e68f0518 95-99
+src/core/store/view.test.ts
+  s_bb8f1233002a7e::t_5056b71ca0c7df 5
+  s_bb8f1233002a7e::t_9a5b0607ede11e 133,142,148,153,163
+src/core/store/layout.scenario.multi-bin.test.ts
+  s_bb8f1233002a7e::t_0a66aceeff9c06 42-43,46-47
+  s_bb8f1233002a7e::t_ac7689fb2a66f7 453-455,460-461,465
+  s_bb8f1233002a7e::t_526b889c06897f 5
+  s_bb8f1233002a7e::t_0441ae0607e788 497-498,501-502
+  s_bb8f1233002a7e::t_29bc24c7814370 202-204,206
+  s_bb8f1233002a7e::t_a7f9fb64986beb 21-25,32-36,62-66,75-79,88-92,111-115,144-148,152,183-187,220-224,246-250,257-261,270-274,305-309,316-320,329-333,366-370,379,393-397,405,421-425,432-436,443-447,476-480,487-491
+src/core/store/layout.test.ts
+  s_bb8f1233002a7e::t_f968c5ee3d20b0 543-548,551-558
+  s_bb8f1233002a7e::t_57cbf715fd6de4 7
+  s_bb8f1233002a7e::t_9547c1f380485d 27-31,50-54,72-76,85-89,105-109,128-132,152-156,162,175-179,201-205,213,227-231,239,252-256,278-282,290,303-307,330-334,377-381,419-423,440,467-471,483-487,511-515,630,653-657,664-668,703,713,728-732,739,779-783,860,876-880,897,911-915,935,945-949,956,968-972,981-985,1012,1020,1063,1076-1080,1099-1103,1137,1151-1155,1163-1167,1241,1254,1265-1269,1273,1290,1308-1312,1330-1334,1353-1357,1366-1370,1384-1389,1404-1408,1426-1430,1450-1454,1461,1474-1478,1487-1491,1519,1541-1542,1585,1684-1688,1729
+src/core/storage/migration.test.ts
+  s_bb8f1233002a7e::t_0abc1c03fb4a1c 43,48,50-51,53-56
+src/core/store/selectors.test.ts
+  s_bb8f1233002a7e::t_a88415337b3f81 17
+  s_bb8f1233002a7e::t_d448ea27d707f1 46-48,50-52,68-75,89-91,123,138-155,179-186,189-191,206-211,235-237,241
+src/core/storage/LayoutService.scenario.result.test.ts
+  s_bb8f1233002a7e::t_d590653c8c756a 275-278
+src/core/storage/preview.test.ts
+  s_bb8f1233002a7e::t_f94ba388809ea0 35-38,41,45
+  s_bb8f1233002a7e::t_79d80363a995cb 50-51,54,56
+  s_bb8f1233002a7e::t_09f1153342d372 83,86,88
+  s_bb8f1233002a7e::t_89e1906b88007b 22-24
+  s_bb8f1233002a7e::t_e5ef7ab96bca2f 61-63,66,68
+  s_bb8f1233002a7e::t_1981954fcbd3d8 94-95
+  s_bb8f1233002a7e::t_3f60d76f0a8dd4 105-112
+  s_bb8f1233002a7e::t_48ca553f41acfc 73,76,78
+  s_bb8f1233002a7e::t_b365d2c0ce236c 4-5,9-11
+  s_bb8f1233002a7e::t_e421329bfbfb07 115,117
+src/core/storage/LayoutManager.test.ts
+  s_bb8f1233002a7e::t_7112963e610d3e 310-312
+  s_bb8f1233002a7e::t_91d0ac22a45463 21-22
+  s_bb8f1233002a7e::t_16752fc9ab5a8c 182-185
+  s_bb8f1233002a7e::t_55c93c41e120fa 252
+  s_bb8f1233002a7e::t_a6cd8ae244974c 74-79,82-83,86-91,94-95,99-104,107-108,110
+  s_bb8f1233002a7e::t_b2ec4abe376c0e 116,121-123,134
+  s_bb8f1233002a7e::t_47f76538751675 166-168
+  s_bb8f1233002a7e::t_d61ea46c4677ad 194
+  s_bb8f1233002a7e::t_8d59af85382fc0 201,205
+  s_bb8f1233002a7e::t_61767fc4e8d9ea 145
+  s_bb8f1233002a7e::t_59fa78fcfcfefe 492,506,568,691
+src/core/storage/ShareService.test.ts
+  s_bb8f1233002a7e::t_8f12b0d191dd31 940,944
+  s_bb8f1233002a7e::t_28339e24cda0e3 49-57
+  s_bb8f1233002a7e::t_23f6114afeddc3 21
+  s_bb8f1233002a7e::t_13a54010c07259 532
+  s_bb8f1233002a7e::t_aa0b62bb8c8df3 489
+  s_bb8f1233002a7e::t_8d04b8e8803494 63-68,71-80
+  s_bb8f1233002a7e::t_d051f2f85c716f 19
+  s_bb8f1233002a7e::t_b1226b48e96330 417-424
+  s_bb8f1233002a7e::t_15fc48ef4a4015 623
+  s_bb8f1233002a7e::t_475ff718dc83a2 635
+  s_bb8f1233002a7e::t_d3e452b22d793e 451,453-459
+  s_bb8f1233002a7e::t_9330f57f7405a7 701-707
+  s_bb8f1233002a7e::t_949c266665b147 480
+  s_bb8f1233002a7e::t_c2b56fe3aa4643 886-892
+  s_bb8f1233002a7e::t_d5ac13374dce3a 763,802,867
+src/core/store/settings.test.ts
+  s_bb8f1233002a7e::t_2ae605a70387c3 14
+  s_bb8f1233002a7e::t_ac8d1977aeb976 567-568,579,591-593
+src/core/storage/LayoutService.scenario.errors.test.ts
+  s_bb8f1233002a7e::t_d835c4e7c69646 320
+  s_bb8f1233002a7e::t_c7971183d40409 15
+  s_bb8f1233002a7e::t_fba19582ca22a9 191,238,242,247-249,255,260-262,282,286,291-293,337-339,359,363,368-370,376,381-383,412,416,421-423
+src/core/store/layout/helpers.test.ts
+  s_bb8f1233002a7e::t_10b5984d84b6e9 23
+  s_bb8f1233002a7e::t_647a6e2bf70fae 10-14
+  s_bb8f1233002a7e::t_701a75d9bf410d 3
+src/core/store/labs.test.ts
+  s_bb8f1233002a7e::t_8aa242605c6f0f 33
+  s_bb8f1233002a7e::t_40dddde1e7db09 19
+  s_bb8f1233002a7e::t_f1875cc12df4ab 55-56
+src/core/storage/LayoutService.test.ts
+  s_bb8f1233002a7e::t_de5d7d3d1dccc1 215-221
+  s_bb8f1233002a7e::t_45baaafb5dad3e 161-166,173-178
+  s_bb8f1233002a7e::t_aeb39d8c5154f1 10
+  s_bb8f1233002a7e::t_51a0da5160c9c9 287
+src/core/storage/SnapshotService.test.ts
+  s_bb8f1233002a7e::t_fdbd1c88168997 28-30
+  s_bb8f1233002a7e::t_a62892224b11b2 14
+  s_bb8f1233002a7e::t_dc0664cc9ca474 234-238
+src/core/store/settings.normalize.test.ts
+  s_bb8f1233002a7e::t_614776511fd7fa 66
+  s_bb8f1233002a7e::t_397d668b76868f 9-10
+  s_bb8f1233002a7e::t_1da83507c66fc1 28
+  s_bb8f1233002a7e::t_33fe1b6e659bfb 72
+src/core/storage/libraryUtils.test.ts
+  s_bb8f1233002a7e::t_d0edb9df48b5cf 12,20-22
+  s_bb8f1233002a7e::t_af04c278de96ee 11,15,25,30-31
+src/core/storage/BulkArchiveService.test.ts
+  s_bb8f1233002a7e::t_627f44b142fc5e 9
+  s_bb8f1233002a7e::t_e15a792bc02fcb 35-38,40,42,47,52-54
+src/core/store/layout/bulkActions.test.ts
+  s_bb8f1233002a7e::t_fc9afeeef891df 25-29,36-40
+  s_bb8f1233002a7e::t_ae7eb859190a95 124-128
+  s_bb8f1233002a7e::t_2e9fc0b302c682 61-65,72-76
+  s_bb8f1233002a7e::t_a4c28b731fa4a3 3
+src/core/store/layout.scenario.displacement.test.ts
+  s_bb8f1233002a7e::t_2e38c4cae0032f 5
+  s_bb8f1233002a7e::t_dbfd190b793325 416
+  s_bb8f1233002a7e::t_d1d6dfde1121a3 21-25,35,50-54,63,77-81,88,104-108,118-122,130,149-153,161,177,187,203-207,216-220,237-241,250-254,273-277,292-296,316-320,345-349,358-362,387-391,421-425,470-474
+src/core/storage/backends/localStorage.test.ts
+  s_bb8f1233002a7e::t_bff784fa34e408 1
+  s_bb8f1233002a7e::t_2c13f8eff645c0 17-21
+  s_bb8f1233002a7e::t_72d5dc217627d4 22-24,63,90
+src/core/store/sharedWithMe.test.ts
+  s_bb8f1233002a7e::t_54a2a84f510bad 4
+  s_bb8f1233002a7e::t_1c3fefe7210120 73-75
+  s_bb8f1233002a7e::t_ecde7625181a27 179-181
+src/core/storage/LayoutService.scenario.library.test.ts
+  s_bb8f1233002a7e::t_3cbd4cc9be4dda 618-623,628
+  s_bb8f1233002a7e::t_666921782569a7 289
+  s_bb8f1233002a7e::t_5007ff85d124fb 17
+  s_bb8f1233002a7e::t_e5b1148a5a93e2 34,39-41,50
+  s_bb8f1233002a7e::t_c909f3d7776cad 550,555-560
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_f79268af67f2ea 3
+src/core/storage/ShareService.scenario.url.test.ts
+  s_bb8f1233002a7e::t_c460a8cf712bce 19-23,27-33,40-46,53-59,66-72,79-85,92-98,105-111,118-124,131-137,144-150,157-163,170-176,183-189,196-202,210-216,232-236,240-245,254-259,268-273,282-287,296-301
+src/core/store/layout/coreActions.test.ts
+  s_bb8f1233002a7e::t_164bb71e2de7be 139,155,172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "aa53e10976f7bffe9b7dc4019aed0777c4865972",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_ca0c18d9952768": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aac43fe4f81445056",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
