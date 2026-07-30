@@ -1,0 +1,38 @@
+api/lib/mlTelemetry/retention.test.ts
+  s_965615833a8cab::t_d41a1604f68b48 25-34
+  s_965615833a8cab::t_1bc2508fd31255 35-36
+api/ml-telemetry.ts
+  s_965615833a8cab::t_4d05b145253978 124
+  s_965615833a8cab::t_ea817854452e6a 189
+vitest.config.ts
+  s_965615833a8cab::t_7b5061a73cfa4b 119
+  s_965615833a8cab::t_62146db16370f5 45-50
+  s_965615833a8cab::t_df7f97d40b4d3f 142-151
+api/ml-telemetry.test.ts
+  s_965615833a8cab::t_edc53c960e31ee 31-39
+.github/workflows/ci.yml
+  s_965615833a8cab::t_25e7a1a17594de 161,168,174-179
+  s_965615833a8cab::t_150e15da1d2780 100-101,103
+  s_965615833a8cab::t_4c13c1a3f5a26a 120-153
+api/lib/rateLimit.ts
+  s_965615833a8cab::t_d84d84ce114857 182-195,197,209
+  s_965615833a8cab::t_6605f7716cd997 84-123,125,133,139-145
+api/lib/rateLimit.integration.test.ts
+  s_965615833a8cab::t_00a7ba4a6451a7 1-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "5a5f7564c7ab649c84463f5314fe09165c36077a",
+  "prompts": {},
+  "sessions": {
+    "s_965615833a8cab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55cf7e3-0bdb-43b7-afe9-aef90fafc8c8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
