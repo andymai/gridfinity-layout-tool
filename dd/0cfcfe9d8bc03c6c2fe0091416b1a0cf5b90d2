@@ -1,0 +1,23 @@
+api/ml-telemetry.ts
+  s_965615833a8cab::t_56b67fc0429aa8 7-10
+  s_965615833a8cab::t_ed3396bda47b39 111-113,116-120
+scripts/backfill-ml-ttls.ts
+  s_965615833a8cab::t_470772b8f6391f 80
+  s_965615833a8cab::t_b6d33f0b549e5c 56,63-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "dd0cfcfe9d8bc03c6c2fe0091416b1a0cf5b90d2",
+  "prompts": {},
+  "sessions": {
+    "s_965615833a8cab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55cf7e3-0bdb-43b7-afe9-aef90fafc8c8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
