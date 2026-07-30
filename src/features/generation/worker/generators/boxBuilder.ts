@@ -16,6 +16,8 @@ import {
   unwrap,
   fuse,
   cut,
+  cutAll,
+  fuseAll,
   intersect,
   fillet,
   faceFinder,
@@ -371,21 +373,45 @@ export function buildBinBox(
             )
           : null;
         const solidBase = lofts?.outer ?? box;
-        let result: Shape3D = solidBase;
         const cavityHeight = wallHeight - wallThickness + COPLANAR_MARGIN;
+        // Only compartments that can reach the tapered wall are clipped, and
+        // they are clipped as one fused group rather than individually — on a
+        // 12x12 grid that is 1 intersect instead of 44, worth ~4s.
+        //
+        // Two alternatives measured slower on the same grid: clipping each
+        // compartment separately (9.1s vs 5.1s), and taking the complement
+        // twice (`cavity - compartments` = dividers, then `cavity - dividers`),
+        // which is only two booleans but 19.2s — the intermediate divider solid
+        // is far more complex than the compartments it came from.
+        const plain: Shape3D[] = [];
+        const needClip: Shape3D[] = [];
         for (const cavityDrawing of compartmentCavityDrawings) {
           const prism = scope.register(
             sketch(cavityDrawing, 'XY', wallThickness).extrude(cavityHeight)
           );
-          const cavity =
-            lofts && !fitsInside(cavityDrawing, lofts.narrowestInner)
-              ? scope.register(unwrap(intersect(prism as ValidSolid, lofts.cavity as ValidSolid)))
-              : prism;
-          const prev = result;
-          result = unwrap(cut(prev as ValidSolid, cavity as ValidSolid));
-          if (prev !== solidBase) scope.register(prev);
+          if (lofts && !fitsInside(cavityDrawing, lofts.narrowestInner)) needClip.push(prism);
+          else plain.push(prism);
         }
+        const tools =
+          lofts && needClip.length > 0
+            ? [
+                ...plain,
+                scope.register(
+                  unwrap(
+                    intersect(
+                      scope.register(unwrap(fuseAll(needClip as ValidSolid[]))),
+                      lofts.cavity as ValidSolid
+                    )
+                  )
+                ),
+              ]
+            : plain;
+        // One multi-tool boolean rather than a cut per compartment: cutting
+        // sequentially re-traverses the whole (growing) solid every time, which
+        // dominates on a fine grid.
+        const result = unwrap(cutAll(solidBase as ValidSolid, tools as ValidSolid[]));
         scope.register(box);
+        if (result !== solidBase) scope.register(solidBase);
         return setBoxCache(boxKey, result);
       } catch (e: unknown) {
         // Defensive only — context.ts is supposed to gate this path with

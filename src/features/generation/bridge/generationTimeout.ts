@@ -94,20 +94,22 @@ export const FLOOR_PATTERN_MS_PER_CELL = 2_000;
 /**
  * Bonus for a wall taper on a multi-compartment bin (#3017).
  *
- * The multi-cavity path cuts each compartment out of a *lofted* outer rather
- * than a prism, and the perimeter ones are clipped to the tapered inner
- * envelope first. Measured on a 4x4u bin: a 12x12 grid goes 12.5s flat → 29.7s
- * tapered, right against the base timeout. Most of that is the cut against a
- * non-prismatic body, not the clip — skipping the clip for interior
- * compartments only recovered ~2s.
+ * The multi-cavity path cuts compartments out of a *lofted* outer rather than a
+ * prism, and the perimeter ones are clipped to the tapered inner envelope
+ * first — both more expensive than the flat path. Measured on a 4x4u bin with a
+ * 12x12 grid: 1.9s flat, 5.1s chamfer, 10.9s fillet (fillet samples up to 16
+ * sections against chamfer's 2, so it is the worst case).
  *
- * Single-cavity tapers are untouched; they build one loft and are not
- * measurably slower than the shelled path.
+ * That already fits the base budget; this is headroom for larger footprints,
+ * where the loft grows with the perimeter.
+ *
+ * Single-cavity tapers get nothing — they build one loft and are not measurably
+ * slower than the shelled path.
  */
-export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 15_000;
+export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 10_000;
 
 /** Per-compartment bonus for a tapered multi-compartment bin. */
-export const TAPER_MS_PER_COMPARTMENT = 250;
+export const TAPER_MS_PER_COMPARTMENT = 100;
 
 /**
  * Bonus per 2 height units above the reference height.
