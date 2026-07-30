@@ -25,12 +25,27 @@ interface TestBin {
   linkedDesignId?: string;
 }
 
+/**
+ * Mirrors the validator's internal `DrawerShape`, which is not exported. Tests
+ * set `outline`, `measuredMm`, and the fractional edges, so the fixture has to
+ * carry them or every assignment needs a cast that defeats checking.
+ */
+interface TestDrawer {
+  width: number;
+  depth: number;
+  height: number;
+  fractionalEdgeX?: 'start' | 'end';
+  fractionalEdgeY?: 'start' | 'end';
+  outline?: unknown;
+  measuredMm?: { width: number; depth: number; height?: number };
+}
+
 // Helper to create a valid layout for testing
 function createValidLayout() {
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
+    drawer: { width: 10, depth: 8, height: 12 } as TestDrawer,
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
@@ -654,41 +669,46 @@ describe('drawer outline validation (issue #2528)', () => {
     ],
   };
 
+  // Size is not what this block exercises, but it is a required argument:
+  // omitting it made `jsonSize > MAX_SIZE_BYTES` compare against `undefined`,
+  // so every test here silently skipped the size branch it should pass through.
+  const NOMINAL_JSON_SIZE = 1000;
+  const validateOutline = (layout: unknown) => validateShareLayout(layout, NOMINAL_JSON_SIZE);
+
   function layoutWithOutline(outline: unknown) {
     const layout = createValidLayout();
-    (layout.drawer as Record<string, unknown>).outline = outline;
+    layout.drawer.outline = outline;
     return layout;
   }
 
   it('accepts and preserves a valid outline', () => {
-    const result = validateShareLayout(layoutWithOutline(validOutline));
+    const result = validateOutline(layoutWithOutline(validOutline));
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    const drawer = result.layout.drawer as Record<string, unknown>;
-    expect(drawer.outline).toEqual(validOutline);
+    expect(result.layout.drawer.outline).toEqual(validOutline);
   });
 
   it('rebuilds the drawer explicitly — junk keys do not survive', () => {
     const layout = createValidLayout();
-    (layout.drawer as Record<string, unknown>).evil = '<script>';
-    const result = validateShareLayout(layout);
+    (layout.drawer as unknown as Record<string, unknown>).evil = '<script>';
+    const result = validateOutline(layout);
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect('evil' in (result.layout.drawer as Record<string, unknown>)).toBe(false);
+    expect('evil' in result.layout.drawer).toBe(false);
   });
 
   it('preserves fractional edges through the rebuild', () => {
     const layout = createValidLayout();
-    (layout.drawer as Record<string, unknown>).fractionalEdgeX = 'start';
-    const result = validateShareLayout(layout);
+    layout.drawer.fractionalEdgeX = 'start';
+    const result = validateOutline(layout);
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect((result.layout.drawer as Record<string, unknown>).fractionalEdgeX).toBe('start');
+    expect(result.layout.drawer.fractionalEdgeX).toBe('start');
   });
 
   it('rejects outlines with too few or too many vertices', () => {
     expect(
-      validateShareLayout(
+      validateOutline(
         layoutWithOutline({
           vertices: [
             { x: 0, y: 0 },
@@ -700,12 +720,12 @@ describe('drawer outline validation (issue #2528)', () => {
     const many = {
       vertices: Array.from({ length: 257 }, (_, i) => ({ x: i, y: i % 2 })),
     };
-    expect(validateShareLayout(layoutWithOutline(many)).valid).toBe(false);
+    expect(validateOutline(layoutWithOutline(many)).valid).toBe(false);
   });
 
   it('rejects non-finite coordinates, out-of-bounds values, and bad bulges', () => {
     expect(
-      validateShareLayout(
+      validateOutline(
         layoutWithOutline({
           vertices: [
             { x: NaN, y: 0 },
@@ -716,7 +736,7 @@ describe('drawer outline validation (issue #2528)', () => {
       ).valid
     ).toBe(false);
     expect(
-      validateShareLayout(
+      validateOutline(
         layoutWithOutline({
           vertices: [
             { x: 0, y: 0 },
@@ -727,7 +747,7 @@ describe('drawer outline validation (issue #2528)', () => {
       ).valid
     ).toBe(false);
     expect(
-      validateShareLayout(
+      validateOutline(
         layoutWithOutline({
           vertices: [
             { x: 0, y: 0, bulge: 3 },
@@ -748,11 +768,11 @@ describe('drawer outline validation (issue #2528)', () => {
         { x: 0, y: 100 },
       ],
     };
-    expect(validateShareLayout(layoutWithOutline(bowtie)).valid).toBe(false);
+    expect(validateOutline(layoutWithOutline(bowtie)).valid).toBe(false);
   });
 
   it('drops malformed corners but keeps the authoring kind', () => {
-    const result = validateShareLayout(
+    const result = validateOutline(
       layoutWithOutline({
         ...validOutline,
         authoring: { kind: 'cells', corners: { evil: 'payload' }, junk: 1 },
@@ -760,11 +780,7 @@ describe('drawer outline validation (issue #2528)', () => {
     );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    const outline = (result.layout.drawer as Record<string, unknown>).outline as Record<
-      string,
-      unknown
-    >;
-    expect(outline.authoring).toEqual({ kind: 'cells' });
+    expect(result.layout.drawer.outline?.authoring).toEqual({ kind: 'cells' });
   });
 
   it('preserves structurally valid corner cuts for editor round-trip', () => {
@@ -774,19 +790,16 @@ describe('drawer outline validation (issue #2528)', () => {
       bl: { kind: 'radius', r: 21 },
       br: { kind: 'notch', w: 42, d: 84 },
     };
-    const result = validateShareLayout(
+    const result = validateOutline(
       layoutWithOutline({ ...validOutline, authoring: { kind: 'corners', corners } })
     );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    const outline = (result.layout.drawer as Record<string, unknown>).outline as {
-      authoring?: { kind: string; corners?: unknown };
-    };
-    expect(outline.authoring).toEqual({ kind: 'corners', corners });
+    expect(result.layout.drawer.outline?.authoring).toEqual({ kind: 'corners', corners });
   });
 
   it('drops the whole corners map when any entry is malformed', () => {
-    const result = validateShareLayout(
+    const result = validateOutline(
       layoutWithOutline({
         ...validOutline,
         authoring: {
@@ -802,28 +815,21 @@ describe('drawer outline validation (issue #2528)', () => {
     );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    const outline = (result.layout.drawer as Record<string, unknown>).outline as {
-      authoring?: { kind: string; corners?: unknown };
-    };
-    expect(outline.authoring).toEqual({ kind: 'corners' });
+    expect(result.layout.drawer.outline?.authoring).toEqual({ kind: 'corners' });
   });
 
   it('accepts unknown authoring kinds (newer client) but drops the annotation', () => {
-    const result = validateShareLayout(
+    const result = validateOutline(
       layoutWithOutline({ ...validOutline, authoring: { kind: 'holo-editor-2030' } })
     );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    const outline = (result.layout.drawer as Record<string, unknown>).outline as Record<
-      string,
-      unknown
-    >;
-    expect(outline.authoring).toBeUndefined();
+    expect(result.layout.drawer.outline?.authoring).toBeUndefined();
   });
 
   it('rejects non-string authoring kinds', () => {
     expect(
-      validateShareLayout(layoutWithOutline({ ...validOutline, authoring: { kind: 42 } })).valid
+      validateOutline(layoutWithOutline({ ...validOutline, authoring: { kind: 42 } })).valid
     ).toBe(false);
   });
 
@@ -841,7 +847,7 @@ describe('drawer outline validation (issue #2528)', () => {
         { x: 0, y: 80 },
       ],
     };
-    expect(validateShareLayout(layoutWithOutline(overlapping)).valid).toBe(false);
+    expect(validateOutline(layoutWithOutline(overlapping)).valid).toBe(false);
   });
 });
 
