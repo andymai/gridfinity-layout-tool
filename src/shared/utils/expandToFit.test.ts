@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { resolveExpandToFit } from './expandToFit';
 import type { ExpandPlacement } from './expandToFit';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
-import { gridUnits, heightUnits, layerId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
+import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import type { Bin, BinId, Layout, StoredBaseplateParams } from '@/core/types';
 
 const LAYER = layerId('layer-1');
@@ -11,20 +12,20 @@ function layout(width: number, depth: number, extra: Partial<Layout> = {}): Layo
   const base = createTestLayout();
   return {
     ...base,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     drawer: { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(6) },
     layers: [{ id: LAYER, name: 'L1', height: heightUnits(6) }],
     bins: [],
     ...extra,
-  } as Layout;
+  };
 }
 
 let seq = 0;
 function bin(x: number, y: number, w: number, d: number, over: Partial<Bin> = {}): Bin {
   seq += 1;
   return createTestBin({
-    id: `bin_${seq}`,
+    id: binId(`bin_${seq}`),
     layerId: LAYER,
     x: gridUnits(x),
     y: gridUnits(y),
@@ -37,12 +38,12 @@ function bin(x: number, y: number, w: number, d: number, over: Partial<Bin> = {}
 function baseplate(o: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
   return {
     magnetHoles: false,
-    magnetDiameter: 6,
-    magnetDepth: 2,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
     ...o,
   };
 }
@@ -167,7 +168,7 @@ describe('resolveExpandToFit — span growth', () => {
       bins,
       bins.map((b) => b.id),
       l,
-      baseplate({ paddingLeft: 6, paddingRight: 6 })
+      baseplate({ paddingLeft: mm(6), paddingRight: mm(6) })
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -227,7 +228,7 @@ describe('resolveExpandToFit — blocked', () => {
       bins,
       bins.map((b) => b.id),
       l,
-      baseplate({ paddingLeft: 1, paddingRight: 1 })
+      baseplate({ paddingLeft: mm(1), paddingRight: mm(1) })
     );
     expect(result).toEqual({ ok: false, reason: 'no-grid-alignment' });
   });
@@ -261,7 +262,7 @@ describe('resolveExpandToFit — blocked', () => {
   });
 
   it('ignores staging bins', () => {
-    const staged = bin(0, 0, 1, 1, { layerId: layerId('__staging__') });
+    const staged = bin(0, 0, 1, 1, { layerId: STAGING_ID });
     const l = layout(7, 7, { bins: [staged] });
     const result = resolveExpandToFit([staged], [staged.id], l, undefined);
     expect(result).toEqual({ ok: false, reason: 'ragged' });

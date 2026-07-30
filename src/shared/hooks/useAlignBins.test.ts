@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtils';
-import { binId } from '@/core/types';
+import { binId, gridUnits } from '@/core/types';
 
 describe('useAlignBins', () => {
   beforeEach(() => {
@@ -27,8 +27,20 @@ describe('useAlignBins', () => {
 
   it('aligns bins and shows success toast', () => {
     const bins = [
-      createTestBin({ id: binId('a'), x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: binId('b'), x: 5, y: 3, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(5),
+        y: gridUnits(3),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     useLayoutStore.setState({
       layout: createTestLayout({ bins }),
@@ -53,8 +65,20 @@ describe('useAlignBins', () => {
 
   it('does nothing when all bins are already aligned', () => {
     const bins = [
-      createTestBin({ id: binId('a'), x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: binId('b'), x: 0, y: 3, width: 3, depth: 2 }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(0),
+        y: gridUnits(3),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+      }),
     ];
     useLayoutStore.setState({
       layout: createTestLayout({ bins }),

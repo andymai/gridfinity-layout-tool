@@ -343,7 +343,7 @@ describe('namedExport', () => {
       ComponentB: () => null,
     };
 
-    const result = namedExport<typeof MockComponent>('ComponentA')(module);
+    const result = namedExport('ComponentA')(module);
 
     expect(result).toEqual({ default: MockComponent });
   });
@@ -354,7 +354,7 @@ describe('namedExport', () => {
       AnotherComponent,
     };
 
-    const result = namedExport<typeof AnotherComponent>('AnotherComponent')(module);
+    const result = namedExport('AnotherComponent')(module);
 
     expect(result.default).toBe(AnotherComponent);
   });

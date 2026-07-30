@@ -7,7 +7,16 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfGridModeStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import type { InteractionContext } from '@/shared/hooks/interactions/types';
+import { gridUnits } from '@/core/types';
+import type { Coord } from '@/core/types';
+import type { RefObject } from 'react';
+import type {
+  InteractionContext,
+  PaintSize,
+  PointerCaptureHandle,
+} from '@/shared/hooks/interactions/types';
+
+const coord = (x: number, y: number): Coord => ({ x: gridUnits(x), y: gridUnits(y) });
 
 // Mock analytics to avoid side effects
 vi.mock('@/shared/analytics/useMLTracking', () => ({
@@ -32,23 +41,32 @@ describe('useDrawInteraction', () => {
   const mockSetSelectedBins = vi.fn();
   const mockAddBin = vi.fn();
   const mockExecute = vi.fn((fn: () => void) => fn());
-  const mockActivePointerIdRef = { current: null };
-  const mockCapturedPointerRef = { current: null };
-  const mockCtrlKeyRef = { current: false };
+  const mockActivePointerIdRef: RefObject<number | null> = { current: null };
+  const mockCapturedPointerRef: RefObject<PointerCaptureHandle | null> = { current: null };
+  const mockCtrlKeyRef: RefObject<boolean> = { current: false };
+  const mockGridRef: RefObject<HTMLDivElement | null> = { current: null };
 
-  const createContext = (paintSize?: { width: number; depth: number }): InteractionContext => {
+  const createContext = (paintSize?: PaintSize): InteractionContext => {
     const { layout } = useLayoutStore.getState();
     const { activeLayerId, activeCategoryId } = useSelectionStore.getState();
 
     return {
+      getGridCoords: vi.fn(() => null),
+      clampCoords: vi.fn((c: Coord) => c),
+      isInBounds: vi.fn(() => true),
+      gridRef: mockGridRef,
       layout,
       activeLayerId,
       activeCategoryId,
       paintSize: paintSize ?? null,
+      selectedBinIds: [],
       setInteraction: mockSetInteraction,
+      setDropTarget: vi.fn(),
       setSelectedBin: mockSetSelectedBin,
       setSelectedBins: mockSetSelectedBins,
       addBin: mockAddBin,
+      updateBin: vi.fn(),
+      deleteBin: vi.fn(),
       execute: mockExecute,
       activePointerIdRef: mockActivePointerIdRef,
       capturedPointerRef: mockCapturedPointerRef,
@@ -77,8 +95,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 2, y: 2 },
-          current: { x: 2, y: 2 },
+          start: coord(2, 2),
+          current: coord(2, 2),
         },
       });
 
@@ -104,8 +122,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 5, y: 5 },
-          current: { x: 5, y: 5 },
+          start: coord(5, 5),
+          current: coord(5, 5),
         },
       });
 
@@ -131,8 +149,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 9, y: 7 },
-          current: { x: 9, y: 7 },
+          start: coord(9, 7),
+          current: coord(9, 7),
         },
       });
 
@@ -159,8 +177,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 0, y: 0 },
-          current: { x: 0, y: 0 },
+          start: coord(0, 0),
+          current: coord(0, 0),
         },
       });
 
@@ -185,8 +203,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 3, y: 4 },
-          current: { x: 3, y: 4 },
+          start: coord(3, 4),
+          current: coord(3, 4),
         },
       });
 
@@ -212,8 +230,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 3, y: 3 },
-          current: { x: 3, y: 3 },
+          start: coord(3, 3),
+          current: coord(3, 3),
         },
       });
 
@@ -238,8 +256,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 3, y: 3 },
-          current: { x: 3, y: 3 },
+          start: coord(3, 3),
+          current: coord(3, 3),
         },
       });
 
@@ -264,8 +282,8 @@ describe('useDrawInteraction', () => {
         interaction: {
           type: 'paint',
           paintSize,
-          start: { x: 0, y: 0 },
-          current: { x: 3, y: 3 },
+          start: coord(0, 0),
+          current: coord(3, 3),
         },
       });
 

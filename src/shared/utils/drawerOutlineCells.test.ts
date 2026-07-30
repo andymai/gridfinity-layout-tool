@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DrawerOutline } from '@/core/types';
-import { gridUnits, heightUnits } from '@/core/types';
+import { gridUnits } from '@/core/types';
 import { getOutsideCellSet } from './drawerOutlineCells';
 
 const U = 42;
@@ -28,7 +28,7 @@ const CHAMFER: DrawerOutline = {
 };
 
 function drawer(width: number, depth: number): Parameters<typeof getOutsideCellSet>[1] {
-  return { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(6) };
+  return { width: gridUnits(width), depth: gridUnits(depth) };
 }
 
 describe('getOutsideCellSet', () => {
