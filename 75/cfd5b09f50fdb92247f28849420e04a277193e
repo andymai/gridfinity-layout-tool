@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/overhang.test.ts
+  s_04e0eea2db2b69::t_fc410864c8b1fc 88-97
+  s_04e0eea2db2b69::t_ccca35a4222188 85,87,98-102
+  s_04e0eea2db2b69::t_edf1a5041fee2a 2-9
+  s_04e0eea2db2b69::t_53f0257e5007de 81-84
+  s_04e0eea2db2b69::t_3476f5dccc9339 86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "75cfd5b09f50fdb92247f28849420e04a277193e",
+  "prompts": {},
+  "sessions": {
+    "s_04e0eea2db2b69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "219bf8ef-fd99-4092-9a71-9a4313a3fff2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
