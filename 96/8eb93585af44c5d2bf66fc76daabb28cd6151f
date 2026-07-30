@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/boxBuilder.ts
+  s_04e0eea2db2b69::t_34ec5dc5ba6ec0 413-415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "968eb93585af44c5d2bf66fc76daabb28cd6151f",
+  "prompts": {},
+  "sessions": {
+    "s_04e0eea2db2b69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "219bf8ef-fd99-4092-9a71-9a4313a3fff2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
