@@ -4,6 +4,11 @@
  * Receives batched telemetry events from clients and aggregates into Redis counters.
  * No raw events are stored - only aggregate counts for ML training.
  *
+ * Aggregates carry a sliding 90-day TTL (see ./lib/mlTelemetry/retention.ts), so a
+ * hash that stops receiving writes ages out instead of accumulating forever. The
+ * running totals under Metadata are the exception — nothing refreshes them, so
+ * they are never given a TTL (ML_LIFETIME_KEYS).
+ *
  * Redis Schema:
  *
  * === Bin Placement ===
@@ -12,7 +17,7 @@
  * - ml:drawer:{size}          -> Bin sizes per drawer size
  * - ml:label_hash:{hash}      -> Bin sizes per label hash (PRIMARY - any language, all events)
  * - ml:label_hash_high:{hash} -> Bin sizes per label hash, restricted to high-quality snapshots
- *                                (training source for the bin-size recommender; 90d TTL)
+ *                                (training source for the bin-size recommender)
  * - ml:label:{normalized}     -> Bin sizes per normalized label (ENRICHMENT)
  * - ml:label_domain:{domain}  -> Bin sizes per domain category (FALLBACK)
  * - ml:cat:{category}         -> Bin sizes per category
@@ -103,13 +108,16 @@
  * - ml:cluster_archetypes:{hash} -> Archetype correlations per cluster
  * - ml:cluster_distribution   -> How common each structure hash is
  *
- * === Metadata ===
- * - ml:meta:*                 -> Metadata counters
+ * === Metadata (running totals — never expired) ===
+ * - ml:meta:total_events      -> Total events accepted
+ * - ml:meta:last_updated      -> ISO timestamp of the last accepted batch
  * - ml:meta:validation:passed -> Total events that passed validation
  * - ml:meta:validation:failed -> Total events that failed validation
- * - ml:meta:validation:failed:{type} -> Failed events by event type
- * - ml:meta:vocab_version:{version} -> Events by vocabulary version
- * - ml:meta:client_version:{version} -> Events by client version
+ * - ml:meta:validation:failed_by_type -> HASH of event type -> failed count
+ *
+ * === Metadata (expiring) ===
+ * - ml:meta:vocab_versions    -> HASH of vocabulary version -> event count
+ * - ml:meta:client_versions   -> HASH of client version -> event count
  */
 
 import { createHash } from 'crypto';
@@ -119,6 +127,7 @@ import type { RedisOptions } from 'ioredis';
 import { getClientIP } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import type { Increments } from './lib/mlTelemetry/aggregators.js';
+import { ML_AGGREGATE_TTL_SECONDS } from './lib/mlTelemetry/retention.js';
 import {
   aggregateBinAbandonment,
   aggregateBinDeletion,
@@ -382,17 +391,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         pipe.hincrby(hash, field, count);
       }
 
-      // Add TTLs for keys that can grow unbounded (90 days)
-      // These are lower-value or temporary data
-      // Use NX flag to only set TTL on first creation, not reset on every write
-      if (
-        hash === 'ml:unknown_hashes' ||
-        hash.startsWith('ml:size_seq:') ||
-        hash.startsWith('ml:cooccur:') ||
-        hash.startsWith('ml:label_hash_high:')
-      ) {
-        pipe.expire(hash, 90 * 24 * 60 * 60, 'NX'); // 90 days, only if no TTL exists
-      }
+      pipe.expire(hash, ML_AGGREGATE_TTL_SECONDS);
     }
 
     // Update metadata
@@ -414,21 +413,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       }
     }
 
-    // Track vocab versions (90 day TTL for version tracking)
     for (const [version, count] of Object.entries(vocabVersions)) {
       const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
       pipe.hincrby('ml:meta:vocab_versions', safeVersion, count);
     }
-    // Use NX flag to only set TTL on first creation, not reset on every write
-    pipe.expire('ml:meta:vocab_versions', 90 * 24 * 60 * 60, 'NX');
+    pipe.expire('ml:meta:vocab_versions', ML_AGGREGATE_TTL_SECONDS);
 
-    // Track client versions (90 day TTL for version tracking)
     for (const [version, count] of Object.entries(clientVersions)) {
       const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
       pipe.hincrby('ml:meta:client_versions', safeVersion, count);
     }
-    // Use NX flag to only set TTL on first creation, not reset on every write
-    pipe.expire('ml:meta:client_versions', 90 * 24 * 60 * 60, 'NX');
+    pipe.expire('ml:meta:client_versions', ML_AGGREGATE_TTL_SECONDS);
 
     await pipe.exec();
 

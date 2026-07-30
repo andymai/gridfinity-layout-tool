@@ -18,5 +18,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["scripts/sync-admin/**/*.ts"]
+  "include": ["scripts/sync-admin/**/*.ts", "scripts/backfill-ml-ttls.ts"]
 }
