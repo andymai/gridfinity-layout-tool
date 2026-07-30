@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm, binId, layerId, categoryId, layoutId } from '@/core/types';
 
 describe('layout store', () => {
   beforeEach(() => {
@@ -23,11 +24,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test bin',
         notes: '',
@@ -46,11 +47,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 100, // Way out of bounds
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(100), // Way out of bounds
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -68,11 +69,11 @@ describe('layout store', () => {
       // Add first bin
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -81,11 +82,11 @@ describe('layout store', () => {
       // Try to add overlapping bin
       const result = addBin({
         layerId,
-        x: 1, // Overlaps with first bin
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(1), // Overlaps with first bin
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -101,11 +102,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 100, // Huge, would fail validation on grid
-        depth: 100,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(100), // Huge, would fail validation on grid
+        depth: gridUnits(100),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -124,11 +125,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -148,17 +149,17 @@ describe('layout store', () => {
 
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
 
-      deleteBin('nonexistent-id');
+      deleteBin(binId('nonexistent-id'));
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
   });
@@ -171,11 +172,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: '',
@@ -197,11 +198,11 @@ describe('layout store', () => {
       // Default drawer is 10x8 — a width of 2 fits fine at x:0
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -209,7 +210,7 @@ describe('layout store', () => {
       const binId = expectOk(addResult);
 
       // Expanding to width 50 would far exceed the 10-unit drawer width
-      const updateResult = updateBin(binId, { width: 50 });
+      const updateResult = updateBin(binId, { width: gridUnits(50) });
 
       expectErr(updateResult);
       // Bin should be unchanged
@@ -223,11 +224,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -235,7 +236,7 @@ describe('layout store', () => {
       const binId = expectOk(addResult);
 
       // Moving x to 100 puts the bin entirely out of bounds
-      const updateResult = updateBin(binId, { x: 100 });
+      const updateResult = updateBin(binId, { x: gridUnits(100) });
 
       expectErr(updateResult);
       expect(useLayoutStore.getState().layout.bins[0].x).toBe(0);
@@ -248,11 +249,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: '',
@@ -274,11 +275,11 @@ describe('layout store', () => {
       // Add to staging — oversized dimensions that would fail on-grid
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 50,
-        depth: 50,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(50),
+        depth: gridUnits(50),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -286,7 +287,7 @@ describe('layout store', () => {
       const binId = expectOk(addResult);
 
       // Moving a staging bin to an absurd position should not be blocked
-      const updateResult = updateBin(binId, { x: 999 });
+      const updateResult = updateBin(binId, { x: gridUnits(999) });
 
       expectOk(updateResult);
       expect(useLayoutStore.getState().layout.bins[0].x).toBe(999);
@@ -299,11 +300,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -326,11 +327,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: '',
@@ -373,11 +374,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -415,11 +416,11 @@ describe('layout store', () => {
       // Add a 2x2 bin at origin
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -436,7 +437,7 @@ describe('layout store', () => {
       const { fillLayer, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const count = fillLayer('nonexistent-layer', 2, 2, categoryId);
+      const count = fillLayer(layerId('nonexistent-layer'), 2, 2, categoryId);
       expect(count).toBe(0);
     });
   });
@@ -463,11 +464,11 @@ describe('layout store', () => {
       // Add bin to layer 1
       addBin({
         layerId: layer1Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -479,11 +480,11 @@ describe('layout store', () => {
 
       addBin({
         layerId: layer2ResultValue,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -507,11 +508,11 @@ describe('layout store', () => {
       // Add some bins first
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -539,22 +540,22 @@ describe('layout store', () => {
       const customLayout: Layout = {
         version: '1.0',
         name: 'Custom',
-        drawer: { width: 5, depth: 5, height: 6 },
-        printBedSize: 200,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        categories: [{ id: 'cat1', name: 'Custom Cat', color: '#ff0000' }],
-        layers: [{ id: 'layer1', name: 'Custom Layer', height: 3 }],
+        drawer: { width: gridUnits(5), depth: gridUnits(5), height: heightUnits(6) },
+        printBedSize: mm(200),
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
+        categories: [{ id: categoryId('cat1'), name: 'Custom Cat', color: '#ff0000' }],
+        layers: [{ id: layerId('layer1'), name: 'Custom Layer', height: heightUnits(3) }],
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            category: categoryId('cat1'),
             label: 'Imported bin',
             notes: '',
           },
@@ -626,7 +627,7 @@ describe('layout store', () => {
 
       // Set drawer height to 5, first layer already uses 3 (leaving 2 remaining)
       const { updateDrawer, addLayer } = useLayoutStore.getState();
-      updateDrawer({ height: 5 });
+      updateDrawer({ height: heightUnits(5) });
 
       const result = addLayer();
       expectOk(result);
@@ -649,22 +650,22 @@ describe('layout store', () => {
       // Add bin to each layer
       addBin({
         layerId: layer1Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       addBin({
         layerId: layer2Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -699,7 +700,7 @@ describe('layout store', () => {
     it('updateDrawer updates drawer dimensions', () => {
       const { updateDrawer } = useLayoutStore.getState();
 
-      updateDrawer({ width: 15, depth: 12 });
+      updateDrawer({ width: gridUnits(15), depth: gridUnits(12) });
 
       const drawer = useLayoutStore.getState().layout.drawer;
       expect(drawer.width).toBe(15);
@@ -709,7 +710,7 @@ describe('layout store', () => {
     it('updateDrawer clamps values to constraints', () => {
       const { updateDrawer } = useLayoutStore.getState();
 
-      updateDrawer({ width: 100, depth: -5 });
+      updateDrawer({ width: gridUnits(100), depth: gridUnits(-5) });
 
       const drawer = useLayoutStore.getState().layout.drawer;
       expect(drawer.width).toBe(50); // GRID_MAX
@@ -724,18 +725,18 @@ describe('layout store', () => {
       // Add bin at far right of 10-wide drawer
       addBin({
         layerId,
-        x: 8,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
 
       // Shrink drawer to 5 wide
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].layerId).toBe(STAGING_ID);
@@ -775,11 +776,11 @@ describe('layout store', () => {
 
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -856,7 +857,7 @@ describe('layout store', () => {
 
       expect(useLayoutStore.getState().activeLayoutId).toBeNull();
 
-      setActiveLayoutId('layout-123');
+      setActiveLayoutId(layoutId('layout-123'));
       expect(useLayoutStore.getState().activeLayoutId).toBe('layout-123');
 
       setActiveLayoutId(null);
@@ -872,11 +873,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test',
         notes: '',
@@ -893,7 +894,7 @@ describe('layout store', () => {
     it('returns Err when bin does not exist', () => {
       const { moveBinToStaging } = useLayoutStore.getState();
 
-      const result = moveBinToStaging('nonexistent');
+      const result = moveBinToStaging(binId('nonexistent'));
       expectErr(result);
     });
   });
@@ -907,11 +908,11 @@ describe('layout store', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -931,7 +932,7 @@ describe('layout store', () => {
       const { moveBinFromStaging, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
 
-      const result = moveBinFromStaging('nonexistent', layerId, 0, 0);
+      const result = moveBinFromStaging(binId('nonexistent'), layerId, 0, 0);
       expectErr(result);
     });
 
@@ -941,18 +942,18 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResultValue, 'nonexistent-layer', 0, 0);
+      const result = moveBinFromStaging(addResultValue, layerId('nonexistent-layer'), 0, 0);
       expectErr(result);
     });
 
@@ -964,11 +965,11 @@ describe('layout store', () => {
       // Add existing bin at position
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -977,11 +978,11 @@ describe('layout store', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1008,7 +1009,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
 
       // Drawer height is 12, so setting height to 20 should clamp
-      updateLayer(layerId, { height: 20 });
+      updateLayer(layerId, { height: heightUnits(20) });
       expect(useLayoutStore.getState().layout.layers[0].height).toBeLessThanOrEqual(12);
     });
 
@@ -1016,7 +1017,7 @@ describe('layout store', () => {
       const { updateLayer, layout } = useLayoutStore.getState();
       const originalName = layout.layers[0].name;
 
-      updateLayer('nonexistent', { name: 'New Name' });
+      updateLayer(layerId('nonexistent'), { name: 'New Name' });
       expect(useLayoutStore.getState().layout.layers[0].name).toBe(originalName);
     });
   });
@@ -1059,7 +1060,7 @@ describe('layout store', () => {
       const categoryId = layout.categories[0].id;
 
       // Set up drawer to accommodate two layers
-      updateDrawer({ height: 12 });
+      updateDrawer({ height: heightUnits(12) });
 
       // Add second layer
       const layer2Result = addLayer();
@@ -1072,11 +1073,11 @@ describe('layout store', () => {
       // Add a bin on layer 1 at (0,0) with height 3 (fills layer 1)
       const bin1Result = addBin({
         layerId: layer1Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1095,11 +1096,11 @@ describe('layout store', () => {
       //   Overlap check: 0 < 6 && 3 < 4 = true && true = collision!
       const bin2Result = addBin({
         layerId: layer2Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 4,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(4),
         category: categoryId,
         label: '',
         notes: '',
@@ -1133,7 +1134,7 @@ describe('layout store', () => {
       const { updateCategory, layout } = useLayoutStore.getState();
       const originalName = layout.categories[0].name;
 
-      updateCategory('nonexistent', { name: 'New Name' });
+      updateCategory(categoryId('nonexistent'), { name: 'New Name' });
       expect(useLayoutStore.getState().layout.categories[0].name).toBe(originalName);
     });
   });
@@ -1147,11 +1148,11 @@ describe('layout store', () => {
       // Add a few bins leaving gaps
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1159,11 +1160,11 @@ describe('layout store', () => {
 
       addBin({
         layerId,
-        x: 5,
-        y: 5,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(5),
+        y: gridUnits(5),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1237,7 +1238,7 @@ describe('layout store', () => {
         .layout.layers.reduce((sum, l) => sum + l.height, 0);
 
       // Try to set height below total layer heights
-      updateDrawer({ height: 1 });
+      updateDrawer({ height: heightUnits(1) });
 
       // Should be clamped to at least total layer height
       expect(useLayoutStore.getState().layout.drawer.height).toBeGreaterThanOrEqual(
@@ -1250,7 +1251,7 @@ describe('layout store', () => {
     it('returns Err when bin does not exist', () => {
       const { duplicateBin } = useLayoutStore.getState();
 
-      const result = duplicateBin('nonexistent');
+      const result = duplicateBin(binId('nonexistent'));
       expectErr(result);
     });
 
@@ -1261,15 +1262,15 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
-        clearanceHeight: 2,
+        clearanceHeight: heightUnits(2),
       });
       const addResultValue = expectOk(addResult);
 
@@ -1286,7 +1287,7 @@ describe('layout store', () => {
       const { importLayout } = useLayoutStore.getState();
       const newLayout: Layout = createDefaultLayout();
 
-      importLayout(newLayout, 'custom-layout-id');
+      importLayout(newLayout, layoutId('custom-layout-id'));
 
       expect(useLayoutStore.getState().activeLayoutId).toBe('custom-layout-id');
     });
@@ -1304,11 +1305,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test bin',
         notes: '',
@@ -1326,11 +1327,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId,
-        x: 100,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(100),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1349,11 +1350,11 @@ describe('layout store', () => {
       // Add first bin successfully
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1362,11 +1363,11 @@ describe('layout store', () => {
       // Try to add overlapping bin
       const result = addBin({
         layerId,
-        x: 1,
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1380,12 +1381,12 @@ describe('layout store', () => {
       const categoryId = layout.categories[0].id;
 
       const result = addBin({
-        layerId: 'nonexistent-layer',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        layerId: layerId('nonexistent-layer'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1400,11 +1401,11 @@ describe('layout store', () => {
 
       const result = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 100, // Would fail validation on grid
-        depth: 100,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(100), // Would fail validation on grid
+        depth: gridUnits(100),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1422,11 +1423,11 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1446,18 +1447,18 @@ describe('layout store', () => {
 
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const addResultValue = expectOk(addResult);
 
-      const result = moveBinFromStaging(addResultValue, 'nonexistent-layer', 0, 0);
+      const result = moveBinFromStaging(addResultValue, layerId('nonexistent-layer'), 0, 0);
 
       expect(expectErr(result).code).toBe('VALIDATION_INVALID_LAYER');
     });
@@ -1470,11 +1471,11 @@ describe('layout store', () => {
       // Add existing bin at position
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1483,11 +1484,11 @@ describe('layout store', () => {
       // Add bin to staging
       const stagingResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1515,7 +1516,7 @@ describe('layout store', () => {
       const { addLayer, updateDrawer } = useLayoutStore.getState();
 
       // Increase drawer height to ensure we don't run out of height before layers
-      updateDrawer({ height: 50 });
+      updateDrawer({ height: heightUnits(50) });
 
       // Add layers until max (minus 1 for existing layer)
       for (let i = 0; i < CONSTRAINTS.LAYERS_MAX - 1; i++) {
@@ -1537,8 +1538,8 @@ describe('layout store', () => {
       const { addLayer, updateDrawer, updateLayer, layout } = useLayoutStore.getState();
 
       // Set drawer height to match first layer height (no room for more)
-      updateLayer(layout.layers[0].id, { height: 12 });
-      updateDrawer({ height: 12 });
+      updateLayer(layout.layers[0].id, { height: heightUnits(12) });
+      updateDrawer({ height: heightUnits(12) });
 
       // First layer now takes all height
       const result = addLayer();
@@ -1581,7 +1582,7 @@ describe('layout store', () => {
       // Add second layer so we're not hitting last entity error
       addLayer();
 
-      const result = deleteLayer('nonexistent-layer');
+      const result = deleteLayer(layerId('nonexistent-layer'));
 
       expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });
@@ -1680,11 +1681,11 @@ describe('layout store', () => {
 
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1725,7 +1726,7 @@ describe('layout store', () => {
       // Add second category so we're not hitting last entity error
       addCategory({ name: 'Extra', color: '#000000' });
 
-      const result = deleteCategory('nonexistent-category');
+      const result = deleteCategory(categoryId('nonexistent-category'));
 
       expect(expectErr(result).code).toBe('LAYOUT_INVALID_OPERATION');
     });

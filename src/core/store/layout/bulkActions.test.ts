@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
+import { gridUnits, heightUnits } from '@/core/types';
 import { resetAllStores, expectOk } from '@/test/testUtils';
 
 describe('bulkActions', () => {
@@ -21,22 +22,22 @@ describe('bulkActions', () => {
 
       addBin({
         layerId: lid,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
       });
       addBin({
         layerId: lid,
-        x: 2,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
@@ -57,22 +58,22 @@ describe('bulkActions', () => {
 
       addBin({
         layerId: lid1,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
       });
       addBin({
         layerId: lid2,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',
@@ -120,11 +121,11 @@ describe('bulkActions', () => {
       // Place one bin, leaving gaps
       addBin({
         layerId: lid,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: cid,
         label: '',
         notes: '',

@@ -136,6 +136,7 @@ describe('coreActions', () => {
         paddingBack: 3 as Mm,
         magnetDiameter: 6.0 as Mm,
         magnetDepth: 2.0 as Mm,
+        magnetHoles: false,
       });
       const params = useLayoutStore.getState().layout.baseplateParams;
       expect(params?.paddingLeft).toBe(0); // clamped to 0
@@ -151,6 +152,7 @@ describe('coreActions', () => {
         paddingBack: 0 as Mm,
         magnetDiameter: 0.1 as Mm, // below min 0.5
         magnetDepth: 99 as Mm, // above max 10
+        magnetHoles: false,
       });
       const params = useLayoutStore.getState().layout.baseplateParams;
       expect(params?.magnetDiameter).toBe(0.5);
@@ -167,6 +169,7 @@ describe('coreActions', () => {
         magnetDepth: 2 as Mm,
         baseplateWidth: 0.1 as GridUnits, // below min 0.5
         baseplateDepth: 999 as GridUnits, // above max 50
+        magnetHoles: false,
       });
       const params = useLayoutStore.getState().layout.baseplateParams;
       expect(params?.baseplateWidth).toBe(0.5);

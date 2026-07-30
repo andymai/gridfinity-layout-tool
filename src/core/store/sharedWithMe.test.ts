@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from './sharedWithMe';
 import { CONSTRAINTS } from '@/core/constants';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('sharedWithMe store', () => {
   beforeEach(() => {
@@ -69,9 +70,9 @@ describe('sharedWithMe store', () => {
         authorName: 'Test Author',
         permission: 'edit',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 1,
         },
@@ -175,9 +176,9 @@ describe('sharedWithMe store', () => {
     it('updates preview', () => {
       const entry = useSharedWithMeStore.getState().entries[0];
       const newPreview = {
-        drawerWidth: 20,
-        drawerDepth: 15,
-        drawerHeight: 10,
+        drawerWidth: gridUnits(20),
+        drawerDepth: gridUnits(15),
+        drawerHeight: heightUnits(10),
         binCount: 50,
         layerCount: 3,
       };

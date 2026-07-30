@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { isOk, isErr } from '@/core/result';
 import { createIsolatedLocalStorageMock } from '@/test/testUtils';
 import {
@@ -13,6 +13,14 @@ import {
 
 describe('localStorage backend', () => {
   let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
+
+  // `createIsolatedLocalStorageMock`'s getItem is inferred as `(key: string) => string`
+  // because `noUncheckedIndexedAccess` is off, hiding the `null` branch it can actually
+  // return at runtime (mirrors the real `Storage.getItem` contract). Re-typing the
+  // reference here (not the shared helper) lets tests simulate a missing key.
+  function mockGetItemReturn(value: string | null): void {
+    vi.mocked<(key: string) => string | null>(localStorageMock.mock.getItem).mockReturnValue(value);
+  }
 
   beforeEach(() => {
     localStorageMock = createIsolatedLocalStorageMock();
@@ -52,7 +60,7 @@ describe('localStorage backend', () => {
     });
 
     it('returns null for missing key', () => {
-      localStorageMock.mock.getItem.mockReturnValue(null);
+      mockGetItemReturn(null);
       const result = loadFromLocalStorage('missing');
       expect(isOk(result)).toBe(true);
       if (isOk(result)) expect(result.value).toBeNull();
@@ -79,7 +87,7 @@ describe('localStorage backend', () => {
     });
 
     it('returns false when key does not exist', () => {
-      localStorageMock.mock.getItem.mockReturnValue(null);
+      mockGetItemReturn(null);
       expect(existsInLocalStorage('missing')).toBe(false);
     });
   });

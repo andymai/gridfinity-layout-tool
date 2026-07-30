@@ -4,6 +4,7 @@ import * as SnapshotService from '@/core/storage/SnapshotService';
 import { ok } from '@/core/result';
 import { createTestLayout } from '@/test/testUtils';
 import type { Snapshot } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 
 vi.mock('@/core/storage/SnapshotService');
 
@@ -15,9 +16,9 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     layoutId: 'layout-1',
     timestamp: 1000,
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },

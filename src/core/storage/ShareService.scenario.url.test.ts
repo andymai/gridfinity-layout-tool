@@ -16,130 +16,190 @@ describe('getCloudShareIdFromURL', () => {
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('returns layout ID from /l/{id} path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123xyz789',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123xyz789',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('abc123xyz789');
   });
 
   it('returns layout ID from /l/{id}/{slug} path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123xyz789/my-layout-name',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123xyz789/my-layout-name',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('abc123xyz789');
   });
 
   it('returns null for root path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('returns null for invalid share ID format (too short)', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('returns null for invalid share ID format (too long)', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123xyz7890extra',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123xyz7890extra',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('returns null for invalid share ID format (non-alphanumeric)', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc-123_xyz!',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc-123_xyz!',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('accepts lowercase alphanumeric IDs', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abcdefghijkl',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abcdefghijkl',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('abcdefghijkl');
   });
 
   it('accepts uppercase alphanumeric IDs', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/ABCDEFGHIJKL',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/ABCDEFGHIJKL',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('ABCDEFGHIJKL');
   });
 
   it('accepts mixed case alphanumeric IDs', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/AbC123XyZ789',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/AbC123XyZ789',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('AbC123XyZ789');
   });
 
   it('accepts all-numeric IDs', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/123456789012',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/123456789012',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('123456789012');
   });
 
   it('returns null for paths not under /l/', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/settings',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/settings',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('returns null for /l/ without ID', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
   it('accepts a legacy UUID share ID', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/550e8400-e29b-41d4-a716-446655440000',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/550e8400-e29b-41d4-a716-446655440000',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('550e8400-e29b-41d4-a716-446655440000');
   });
 
   it('accepts a legacy UUID share ID with a slug', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBe('550e8400-e29b-41d4-a716-446655440000');
@@ -147,9 +207,13 @@ describe('getCloudShareIdFromURL', () => {
 
   it('returns null for a non-v4 UUID-shaped string', () => {
     // Not a v4 UUID (version nibble is 5, not 4) — isLegacyUUID rejects it.
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/550e8400-e29b-51d4-a716-446655440000',
-      hash: '',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/550e8400-e29b-51d4-a716-446655440000',
+        hash: '',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     expect(getCloudShareIdFromURL()).toBeNull();
@@ -165,12 +229,20 @@ describe('clearCloudShareFromURL', () => {
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('replaces URL with / when on /l/{id} path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123xyz789',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123xyz789',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     clearCloudShareFromURL();
@@ -179,8 +251,12 @@ describe('clearCloudShareFromURL', () => {
   });
 
   it('replaces URL with / when on /l/{id}/{slug} path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/abc123xyz789/my-layout-name',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/abc123xyz789/my-layout-name',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     clearCloudShareFromURL();
@@ -189,8 +265,12 @@ describe('clearCloudShareFromURL', () => {
   });
 
   it('does not change URL when on root path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     clearCloudShareFromURL();
@@ -199,8 +279,12 @@ describe('clearCloudShareFromURL', () => {
   });
 
   it('does not change URL when not on /l/ path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/settings',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/settings',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     clearCloudShareFromURL();
@@ -209,8 +293,12 @@ describe('clearCloudShareFromURL', () => {
   });
 
   it('clears URL when on /l/{uuid}/{slug} path', () => {
-    window.location = Object.assign({}, originalLocation, {
-      pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
+    Object.defineProperty(window, 'location', {
+      value: Object.assign({}, originalLocation, {
+        pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
+      }),
+      writable: true,
+      configurable: true,
     });
 
     clearCloudShareFromURL();
