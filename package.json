@@ -43,7 +43,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:visual": "playwright test -c playwright-ct.config.ts",
     "test:visual:update": "playwright test -c playwright-ct.config.ts --update-snapshots",
-    "prepare": "husky && pnpm run build:en-locale",
+    "prepare": "husky",
     "size": "size-limit",
     "size:check": "size-limit --limit",
     "check:boundaries": "./scripts/check-module-boundaries.sh",

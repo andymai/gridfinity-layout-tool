@@ -30,6 +30,7 @@ import { join } from 'node:path';
 const ROOT = join(import.meta.dirname, '..');
 const BASELINE_PATH = join(import.meta.dirname, 'test-type-baseline.json');
 const PROJECT = 'tsconfig.test.json';
+const GENERATED_EN_LOCALE = join(ROOT, 'src', 'i18n', 'locales', 'en.json');
 
 export interface Baseline {
   readonly note: string;
@@ -150,6 +151,22 @@ export function classifyRun(error: unknown): CompilerRun {
   return { output, spawnFailure: ran ? null : (result.message ?? 'tsgo could not be started') };
 }
 
+/**
+ * `src/i18n/locales/en.json` is generated from `en.ts` and gitignored, and
+ * `src/i18n/context.tsx` imports it. Absent, the whole run reports a TS2307
+ * that has nothing to do with the caller's changes.
+ *
+ * The check generates it rather than relying on the caller having run
+ * `pnpm dev`/`build` first: `pnpm install` skips `prepare` when it has nothing
+ * to do (verified — CI installs without ever running it), so no install-time
+ * hook can be trusted to have produced it.
+ */
+function ensureGeneratedSources(): void {
+  if (existsSync(GENERATED_EN_LOCALE)) return;
+  console.log('· Generating src/i18n/locales/en.json (missing)');
+  execFileSync('pnpm', ['run', 'build:en-locale'], { cwd: ROOT, stdio: 'inherit' });
+}
+
 function runCompiler(): CompilerRun {
   try {
     execFileSync('pnpm', ['exec', 'tsgo', '-p', PROJECT, '--noEmit'], {
@@ -170,6 +187,8 @@ function sortByPath(files: Record<string, number>): Record<string, number> {
 function main(): void {
   const update = process.argv.includes('--update');
   const allowIncrease = process.argv.includes('--allow-increase');
+
+  ensureGeneratedSources();
   const { output, spawnFailure } = runCompiler();
 
   if (spawnFailure !== null) {
