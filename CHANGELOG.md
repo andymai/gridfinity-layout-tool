@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.1...gridfinity-layout-tool-v4.329.2) (2026-07-30)
+
+
+### Bug Fixes
+
+* **cqrs:** stop the v2 type extractors collapsing to never ([#2975](https://github.com/andymai/gridfinity-layout-tool/issues/2975)) ([3317f54](https://github.com/andymai/gridfinity-layout-tool/commit/3317f543ad2b76d8cf9160b3c17aa95b52dcae0f))
+
 ## [4.329.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.0...gridfinity-layout-tool-v4.329.1) (2026-07-30)
 
 
