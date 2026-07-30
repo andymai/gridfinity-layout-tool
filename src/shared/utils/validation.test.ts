@@ -9,62 +9,126 @@ import {
   isValidBin,
 } from '@/shared/utils/validation';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { isOk, isErr } from '@/core/result';
-import { designId } from '@/core/types';
-import { createTestLayout as baseCreateTestLayout, createTestBin } from '@/test/testUtils';
+import type { Result, ValidationError } from '@/core/result';
+import { isOk } from '@/core/result';
+import type { HeightUnits, Rect } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import {
+  createTestLayout as baseCreateTestLayout,
+  createTestBin,
+  expectErr,
+} from '@/test/testUtils';
+
+const LAYER_1 = layerId('layer1');
+const LAYER_2 = layerId('layer2');
 
 const createTestLayout = () =>
   baseCreateTestLayout({
-    drawer: { width: 10, depth: 10, height: 12 },
-    printBedSize: 168,
+    drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
+    printBedSize: mm(168),
     layers: [
-      { id: 'layer1', name: 'Layer 1', height: 3 },
-      { id: 'layer2', name: 'Layer 2', height: 6 },
+      { id: LAYER_1, name: 'Layer 1', height: heightUnits(3) },
+      { id: LAYER_2, name: 'Layer 2', height: heightUnits(6) },
     ],
   });
+
+function placementRect(r: {
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  height: number;
+  clearanceHeight?: number;
+}): Rect & { height: HeightUnits; clearanceHeight?: HeightUnits } {
+  return {
+    x: gridUnits(r.x),
+    y: gridUnits(r.y),
+    width: gridUnits(r.width),
+    depth: gridUnits(r.depth),
+    height: heightUnits(r.height),
+    clearanceHeight: r.clearanceHeight === undefined ? undefined : heightUnits(r.clearanceHeight),
+  };
+}
+
+// `validateCustomProperties` is typed against the whole `ValidationError`
+// union, so `errors` only exists after narrowing to the import-failure member.
+function customPropertyErrors(result: Result<void, ValidationError>): string {
+  const error = expectErr(result);
+  if (error.code !== 'VALIDATION_IMPORT_FAILED') {
+    throw new Error(`expected VALIDATION_IMPORT_FAILED, got ${error.code}`);
+  }
+  return error.errors.join(', ');
+}
 
 describe('canPlaceBin', () => {
   it('allows valid placement', () => {
     const layout = createTestLayout();
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result.valid).toBe(true);
   });
 
   it('rejects out of bounds placement', () => {
     const layout = createTestLayout();
-    const result = canPlaceBin({ x: -1, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: -1, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'out_of_bounds' });
   });
 
   it('rejects placement exceeding width', () => {
     const layout = createTestLayout();
-    const result = canPlaceBin({ x: 9, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 9, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_width' });
   });
 
   it('rejects collision with existing bin', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'existing', width: 3, depth: 3 })];
-    const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    layout.bins = [
+      createTestBin({ id: binId('existing'), width: gridUnits(3), depth: gridUnits(3) }),
+    ];
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({ binId: 'existing', layerId: 'layer1' });
   });
 
   it('allows placement next to existing bin', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'existing', width: 2, depth: 2 })];
-    const result = canPlaceBin({ x: 2, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    layout.bins = [
+      createTestBin({ id: binId('existing'), width: gridUnits(2), depth: gridUnits(2) }),
+    ];
+    const result = canPlaceBin(
+      placementRect({ x: 2, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result.valid).toBe(true);
   });
 
   it('excludes specified bin from collision check', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'moving', width: 2, depth: 2 })];
+    layout.bins = [
+      createTestBin({ id: binId('moving'), width: gridUnits(2), depth: gridUnits(2) }),
+    ];
     const result = canPlaceBin(
-      { x: 1, y: 1, width: 2, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'moving' // exclude this bin
+      binId('moving') // exclude this bin
     );
     expect(result.valid).toBe(true);
   });
@@ -73,10 +137,20 @@ describe('canPlaceBin', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Tall bin on layer 1 that protrudes into layer 2
-      createTestBin({ id: 'tall', width: 3, depth: 3, height: 6 }),
+      createTestBin({
+        id: binId('tall'),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(6),
+      }),
     ];
-    const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 6 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 6 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({ binId: 'tall', layerId: 'layer1' });
   });
 
@@ -84,33 +158,60 @@ describe('canPlaceBin', () => {
     const layout = createTestLayout();
     // Small fractional bin on layer 1 that protrudes into layer 2
     layout.bins = [
-      createTestBin({ id: 'small-tall', x: 1.5, y: 1.5, width: 0.5, depth: 0.5, height: 6 }),
+      createTestBin({
+        id: binId('small-tall'),
+        x: gridUnits(1.5),
+        y: gridUnits(1.5),
+        width: gridUnits(0.5),
+        depth: gridUnits(0.5),
+        height: heightUnits(6),
+      }),
     ];
     // Bin on layer 2 that covers the blocked zone area
-    const result = canPlaceBin({ x: 0, y: 0, width: 3, depth: 3, height: 6 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 6 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({ binId: 'small-tall', layerId: 'layer1' });
   });
 
   it('allows placement adjacent to fractional blocked zone', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'small-tall', width: 0.5, depth: 0.5, height: 6 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('small-tall'),
+        width: gridUnits(0.5),
+        depth: gridUnits(0.5),
+        height: heightUnits(6),
+      }),
+    ];
     // Bin placed at (1, 0) doesn't overlap the 0.5x0.5 blocked zone at (0, 0)
-    const result = canPlaceBin({ x: 1, y: 0, width: 2, depth: 2, height: 6 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 0, width: 2, depth: 2, height: 6 }),
+      LAYER_2,
+      layout
+    );
     expect(result.valid).toBe(true);
   });
 
   it('rejects placement exceeding depth', () => {
     const layout = createTestLayout();
-    const result = canPlaceBin({ x: 0, y: 9, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 9, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_depth' });
   });
 
   it('rejects invalid layer', () => {
     const layout = createTestLayout();
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
-      'nonexistent',
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      layerId('nonexistent'),
       layout
     );
     expect(result).toEqual({ valid: false, reason: 'invalid_layer' });
@@ -120,29 +221,43 @@ describe('canPlaceBin', () => {
     const layout = createTestLayout();
     // layer2 starts at z=3 (layer1 height), drawer height is 12
     // max height at layer2 = 12 - 3 = 9
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 15 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 15 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
   });
 
   it('allows bin shorter than layer default height (layer height is a default, not constraint)', () => {
     const layout = createTestLayout();
     // layer2 has height 6, but bins can be any height (layer height is just a default for new bins)
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 3 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toEqual({ valid: true });
   });
 
   it('excludes multiple bins from collision check via excludeBinIds', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', width: 2, depth: 2 }),
-      createTestBin({ id: 'bin2', x: 1, y: 1, width: 2, depth: 2 }),
+      createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(2) }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 3, depth: 3, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 3 }),
+      LAYER_1,
       layout,
       undefined,
-      new Set(['bin1', 'bin2'])
+      new Set([binId('bin1'), binId('bin2')])
     );
     expect(result.valid).toBe(true);
   });
@@ -164,7 +279,7 @@ describe('validateImport', () => {
 
   it('rejects drawer out of range', () => {
     const layout = createTestLayout();
-    layout.drawer.width = 100;
+    layout.drawer.width = gridUnits(100);
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
   });
@@ -172,8 +287,8 @@ describe('validateImport', () => {
   it('rejects duplicate category names', () => {
     const layout = createTestLayout();
     layout.categories = [
-      { id: '1', name: 'Tools', color: '#f00' },
-      { id: '2', name: 'tools', color: '#0f0' }, // duplicate (case-insensitive)
+      { id: categoryId('1'), name: 'Tools', color: '#f00' },
+      { id: categoryId('2'), name: 'tools', color: '#0f0' }, // duplicate (case-insensitive)
     ];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
@@ -221,7 +336,7 @@ describe('validateImport', () => {
     const layout = createTestLayout();
     layout.layers = Array(11)
       .fill(null)
-      .map((_, i) => ({ id: `layer${i}`, name: `Layer ${i}`, height: 1 }));
+      .map((_, i) => ({ id: layerId(`layer${i}`), name: `Layer ${i}`, height: heightUnits(1) }));
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('layers'))).toBe(true);
@@ -229,7 +344,14 @@ describe('validateImport', () => {
 
   it('rejects bins referencing invalid layers', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', layerId: 'nonexistent', width: 2, depth: 2 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('bin1'),
+        layerId: layerId('nonexistent'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+    ];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('invalid layer'))).toBe(true);
@@ -237,7 +359,14 @@ describe('validateImport', () => {
 
   it('rejects bins out of bounds', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', x: 15, width: 2, depth: 2 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('bin1'),
+        x: gridUnits(15),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+    ];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     // canPlaceBin provides more specific error messages
@@ -250,8 +379,19 @@ describe('validateImport', () => {
     // Bin 1: valid bin at (8,0) — overlaps with bin 0's footprint but should NOT
     //   be flagged as colliding since bin 0 is invalid and shouldn't be in the pool
     layout.bins = [
-      createTestBin({ id: 'bad', x: 9, width: 2, depth: 2 }),
-      createTestBin({ id: 'good', x: 8, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bad'),
+        x: gridUnits(9),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('good'),
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = validateImport(layout);
     // Should have exactly 1 error (the out-of-bounds bin), not 2
@@ -262,8 +402,8 @@ describe('validateImport', () => {
   it('rejects total layer height exceeding drawer', () => {
     const layout = createTestLayout();
     layout.layers = [
-      { id: 'layer1', name: 'Layer 1', height: 10 },
-      { id: 'layer2', name: 'Layer 2', height: 10 },
+      { id: LAYER_1, name: 'Layer 1', height: heightUnits(10) },
+      { id: LAYER_2, name: 'Layer 2', height: heightUnits(10) },
     ];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
@@ -272,38 +412,40 @@ describe('validateImport', () => {
 
   it('rejects drawer depth out of range', () => {
     const layout = createTestLayout();
-    layout.drawer.depth = 100;
+    layout.drawer.depth = gridUnits(100);
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
   });
 
   it('rejects invalid bin without required properties', () => {
     const layout = createTestLayout();
-    // Add an invalid bin missing id
-    layout.bins = [
-      {
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      } as any,
-    ];
-    const result = validateImport(layout);
+    // Bin is missing the required id
+    const invalidLayout = {
+      ...layout,
+      bins: [
+        {
+          layerId: 'layer1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
+      ],
+    };
+    const result = validateImport(invalidLayout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('Bin 0 is invalid'))).toBe(true);
   });
 
   it('rejects invalid category without required properties', () => {
     const layout = createTestLayout();
-    // Replace categories with invalid ones
-
-    layout.categories = [{ id: 'cat1', name: 'Category' } as any]; // Missing color
-    const result = validateImport(layout);
+    // Category is missing the required color
+    const invalidLayout = { ...layout, categories: [{ id: 'cat1', name: 'Category' }] };
+    const result = validateImport(invalidLayout);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('Category 0 is invalid'))).toBe(true);
   });
@@ -313,11 +455,24 @@ describe('salvageImport', () => {
   it('passes valid layout through unchanged', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
     expect(result.layout.bins).toHaveLength(2);
     expect(result.salvaged).toHaveLength(0);
   });
@@ -326,8 +481,20 @@ describe('salvageImport', () => {
     const layout = createTestLayout();
     // Two bins that overlap on the same layer
     layout.bins = [
-      createTestBin({ id: 'bin1', x: 0, y: 0, width: 3, depth: 3 }),
-      createTestBin({ id: 'bin2', x: 1, y: 1, width: 3, depth: 3 }),
+      createTestBin({
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
     ];
     // validateImport would reject this entirely
     expect(validateImport(layout).valid).toBe(false);
@@ -335,6 +502,7 @@ describe('salvageImport', () => {
     // salvageImport should succeed, moving the colliding bin to staging
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
     expect(result.layout.bins).toHaveLength(2);
     expect(result.salvaged).toHaveLength(1);
     expect(result.salvaged[0]).toContain('collides');
@@ -350,11 +518,24 @@ describe('salvageImport', () => {
   it('moves out-of-bounds bins to staging', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'good', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'oob', x: 15, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('good'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('oob'),
+        x: gridUnits(15),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
     expect(result.salvaged).toHaveLength(1);
     expect(result.salvaged[0]).toContain('Bin 1');
 
@@ -371,38 +552,59 @@ describe('salvageImport', () => {
   it('preserves all bin properties when moving to staging', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', x: 0, y: 0, width: 3, depth: 3 }),
       createTestBin({
-        id: 'bin2',
-        x: 1,
-        y: 1,
-        width: 3,
-        depth: 3,
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(3),
+        depth: gridUnits(3),
         label: 'My Bin',
         notes: 'Important',
-        category: 'cat1',
+        category: categoryId('cat1'),
       }),
     ];
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
 
     const staged = result.layout.bins.find((b) => b.layerId === STAGING_ID);
     expect(staged).toBeDefined();
-    expect(staged!.label).toBe('My Bin');
-    expect(staged!.notes).toBe('Important');
-    expect(staged!.width).toBe(3);
-    expect(staged!.depth).toBe(3);
+    if (!staged) throw new Error('expected a staged bin');
+    expect(staged.label).toBe('My Bin');
+    expect(staged.notes).toBe('Important');
+    expect(staged.width).toBe(3);
+    expect(staged.depth).toBe(3);
   });
 
   it('handles all bins being invalid — layout still loads with empty grid', () => {
     const layout = createTestLayout();
     // Both bins out of bounds
     layout.bins = [
-      createTestBin({ id: 'oob1', x: 50, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'oob2', x: 0, y: 50, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('oob1'),
+        x: gridUnits(50),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('oob2'),
+        x: gridUnits(0),
+        y: gridUnits(50),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
     expect(result.salvaged).toHaveLength(2);
 
     const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
@@ -412,11 +614,25 @@ describe('salvageImport', () => {
   it('leaves staging bins untouched', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'staged', layerId: '__staging__', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'grid', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('staged'),
+        layerId: STAGING_ID,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('grid'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = salvageImport(layout);
     expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected the salvage to succeed');
     // The already-staged bin should remain staged, not be double-staged
     const stagedBins = result.layout.bins.filter((b) => b.layerId === STAGING_ID);
     expect(stagedBins).toHaveLength(1);
@@ -434,26 +650,26 @@ describe('truncate', () => {
 describe('canPlaceBin - rotation scenarios', () => {
   it('allows rotation of square bin (no-op)', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 2 })];
+    layout.bins = [createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(2) })];
     // Rotation swaps width/depth, but for square it's the same
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result.valid).toBe(true);
   });
 
   it('allows rotation of rectangular bin that fits after rotation', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 4 })];
+    layout.bins = [createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(4) })];
     // Rotate: 2x4 -> 4x2 at (0,0), should fit in 10x10 drawer
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 4, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result.valid).toBe(true);
   });
@@ -462,13 +678,18 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // 2x8 bin at position (8,0) - rotation would make it 8x2 which exceeds width
-      createTestBin({ id: 'bin1', x: 8, width: 2, depth: 8 }),
+      createTestBin({
+        id: binId('bin1'),
+        x: gridUnits(8),
+        width: gridUnits(2),
+        depth: gridUnits(8),
+      }),
     ];
     const result = canPlaceBin(
-      { x: 8, y: 0, width: 8, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 8, y: 0, width: 8, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result).toEqual({ valid: false, reason: 'exceeds_width' });
   });
@@ -477,13 +698,18 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // 8x2 bin at position (0,8) - rotation would make it 2x8 which exceeds depth
-      createTestBin({ id: 'bin1', y: 8, width: 8, depth: 2 }),
+      createTestBin({
+        id: binId('bin1'),
+        y: gridUnits(8),
+        width: gridUnits(8),
+        depth: gridUnits(2),
+      }),
     ];
     const result = canPlaceBin(
-      { x: 0, y: 8, width: 2, depth: 8, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 8, width: 2, depth: 8, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result).toEqual({ valid: false, reason: 'exceeds_depth' });
   });
@@ -492,18 +718,24 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Bin to rotate: 2x4 at (0,0)
-      createTestBin({ id: 'bin1', width: 2, depth: 4 }),
+      createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(4) }),
       // Adjacent bin at (3,0) - would collide with rotated bin (4x2)
-      createTestBin({ id: 'bin2', x: 3, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(3),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     // Rotate bin1: 2x4 -> 4x2
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 4, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({ binId: 'bin2', layerId: 'layer1' });
   });
 
@@ -511,16 +743,21 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Bin to rotate: 2x4 at (0,0)
-      createTestBin({ id: 'bin1', width: 2, depth: 4 }),
+      createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(4) }),
       // Adjacent bin at (5,0) - won't collide with rotated bin (4x2)
-      createTestBin({ id: 'bin2', x: 5, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(5),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     // Rotate bin1: 2x4 -> 4x2
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 4, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result.valid).toBe(true);
   });
@@ -529,29 +766,48 @@ describe('canPlaceBin - rotation scenarios', () => {
     const layout = createTestLayout();
     layout.bins = [
       // Tall bin on layer 1 that blocks part of layer 2
-      createTestBin({ id: 'tall', width: 4, depth: 4, height: 6 }),
+      createTestBin({
+        id: binId('tall'),
+        width: gridUnits(4),
+        depth: gridUnits(4),
+        height: heightUnits(6),
+      }),
       // Bin on layer 2 to rotate: 2x4 at (5,0) - rotation would be 4x2 which doesn't overlap with blocked zone
-      createTestBin({ id: 'bin1', layerId: 'layer2', x: 5, width: 2, depth: 4, height: 6 }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: LAYER_2,
+        x: gridUnits(5),
+        width: gridUnits(2),
+        depth: gridUnits(4),
+        height: heightUnits(6),
+      }),
     ];
     // This should work since rotated position doesn't overlap blocked zone
     const result = canPlaceBin(
-      { x: 5, y: 0, width: 4, depth: 2, height: 6 },
-      'layer2',
+      placementRect({ x: 5, y: 0, width: 4, depth: 2, height: 6 }),
+      LAYER_2,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result.valid).toBe(true);
   });
 
   it('handles rotation with clearance height', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 4, clearanceHeight: 2 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('bin1'),
+        width: gridUnits(2),
+        depth: gridUnits(4),
+        clearanceHeight: heightUnits(2),
+      }),
+    ];
     // Rotate preserving clearance
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 4, depth: 2, height: 3, clearanceHeight: 2 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 4, depth: 2, height: 3, clearanceHeight: 2 }),
+      LAYER_1,
       layout,
-      'bin1'
+      binId('bin1')
     );
     expect(result.valid).toBe(true);
   });
@@ -560,7 +816,7 @@ describe('canPlaceBin - rotation scenarios', () => {
 describe('validateLayoutIntegrity', () => {
   it('returns valid for well-formed layout', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', width: 2, depth: 2 })];
+    layout.bins = [createTestBin({ id: binId('bin1'), width: gridUnits(2), depth: gridUnits(2) })];
 
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(true);
@@ -570,7 +826,13 @@ describe('validateLayoutIntegrity', () => {
   it('returns error when bin references missing layer', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', layerId: 'nonexistent', width: 2, depth: 2, label: 'Test Bin' }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: layerId('nonexistent'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        label: 'Test Bin',
+      }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -581,7 +843,13 @@ describe('validateLayoutIntegrity', () => {
   it('returns error when bin references missing category', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', width: 2, depth: 2, category: 'nonexistent', label: 'Test Bin' }),
+      createTestBin({
+        id: binId('bin1'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        category: categoryId('nonexistent'),
+        label: 'Test Bin',
+      }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -591,7 +859,14 @@ describe('validateLayoutIntegrity', () => {
 
   it('allows bins in staging with any layerId', () => {
     const layout = createTestLayout();
-    layout.bins = [createTestBin({ id: 'bin1', layerId: '__staging__', width: 2, depth: 2 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('bin1'),
+        layerId: STAGING_ID,
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+    ];
 
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(true);
@@ -621,10 +896,10 @@ describe('validateLayoutIntegrity', () => {
     const layout = createTestLayout();
     layout.bins = [
       createTestBin({
-        id: 'bin1',
-        layerId: 'nonexistent',
-        width: 2,
-        depth: 2,
+        id: binId('bin1'),
+        layerId: layerId('nonexistent'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
         label: 'My Special Bin',
       }),
     ];
@@ -637,7 +912,12 @@ describe('validateLayoutIntegrity', () => {
   it('uses bin id in error message if no label', () => {
     const layout = createTestLayout();
     layout.bins = [
-      createTestBin({ id: 'bin-abc-123', layerId: 'nonexistent', width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin-abc-123'),
+        layerId: layerId('nonexistent'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
 
     const result = validateLayoutIntegrity(layout);
@@ -661,13 +941,13 @@ describe('validateLayoutIntegrity', () => {
 
   it('returns error for bin with invalid custom properties (too many)', () => {
     const layout = createTestLayout();
-    // Use staging bin (layerId '__staging__') to skip canPlaceBin and test customProperties validation
+    // Use a staging bin to skip canPlaceBin and test customProperties validation
     const invalidLayout = {
       ...layout,
       bins: [
         {
           id: 'bin1',
-          layerId: '__staging__',
+          layerId: STAGING_ID,
           x: 0,
           y: 0,
           width: 2,
@@ -721,14 +1001,12 @@ describe('validateCustomProperties', () => {
       string,
       string
     >);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('plain object');
+    expect(customPropertyErrors(result)).toContain('plain object');
   });
 
   it('rejects non-object values', () => {
     const result = validateCustomProperties('not an object' as unknown as Record<string, string>);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('plain object');
+    expect(customPropertyErrors(result)).toContain('plain object');
   });
 
   it('rejects exceeding max property count', () => {
@@ -736,32 +1014,25 @@ describe('validateCustomProperties', () => {
     for (let i = 0; i <= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT; i++) {
       props[`key${i}`] = `value${i}`;
     }
-    const result = validateCustomProperties(props);
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) {
-      const msg = result.error.errors.join(', ');
-      expect(msg).toContain('Maximum');
-      expect(msg).toContain('custom properties');
-    }
+    const msg = customPropertyErrors(validateCustomProperties(props));
+    expect(msg).toContain('Maximum');
+    expect(msg).toContain('custom properties');
   });
 
   it('rejects empty keys', () => {
     const result = validateCustomProperties({ '': 'value' });
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('empty');
+    expect(customPropertyErrors(result)).toContain('empty');
   });
 
   it('rejects whitespace-only keys', () => {
     const result = validateCustomProperties({ '   ': 'value' });
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('empty');
+    expect(customPropertyErrors(result)).toContain('empty');
   });
 
   it('rejects keys exceeding max length', () => {
     const longKey = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH + 1);
     const result = validateCustomProperties({ [longKey]: 'value' });
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('exceeds maximum length');
+    expect(customPropertyErrors(result)).toContain('exceeds maximum length');
   });
 
   it('rejects reserved keys', () => {
@@ -779,22 +1050,19 @@ describe('validateCustomProperties', () => {
     ];
     for (const key of reservedKeys) {
       const result = validateCustomProperties({ [key]: 'value' });
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) expect(result.error.errors.join(', ')).toContain('reserved');
+      expect(customPropertyErrors(result)).toContain('reserved');
     }
   });
 
   it('rejects non-string values', () => {
     const result = validateCustomProperties({ key: 123 as unknown as string });
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('must be a string');
+    expect(customPropertyErrors(result)).toContain('must be a string');
   });
 
   it('rejects values exceeding max length', () => {
     const longValue = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH + 1);
     const result = validateCustomProperties({ key: longValue });
-    expect(isErr(result)).toBe(true);
-    if (isErr(result)) expect(result.error.errors.join(', ')).toContain('exceeds maximum length');
+    expect(customPropertyErrors(result)).toContain('exceeds maximum length');
   });
 
   it('accepts keys at exactly max length', () => {

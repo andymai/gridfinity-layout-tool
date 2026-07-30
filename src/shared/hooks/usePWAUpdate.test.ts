@@ -10,6 +10,7 @@ import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import { saveEphemeralState, type EphemeralState } from '@/shared/utils/ephemeralState';
 import { resetActivityClock } from '@/shared/pwa/reloadSafety';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 
 // Constants from usePWAUpdate (mirrored for testing)
 const IDLE_CHECK_INTERVAL_MS = 1000;
@@ -20,8 +21,7 @@ const LONG_IDLE_MS = 5 * 60 * 1000;
 let mockNeedRefresh = false;
 let mockUpdateServiceWorker: Mock;
 let mockOnRegisteredSW:
-  | ((swUrl: string, registration: ServiceWorkerRegistration) => void)
-  | undefined;
+  ((swUrl: string, registration: ServiceWorkerRegistration) => void) | undefined;
 let mockOnRegisterError: ((error: Error) => void) | undefined;
 
 // Mock the new PWA-gate modules so existing tests exercise the original
@@ -58,6 +58,27 @@ vi.mock('virtual:pwa-register/react', () => ({
   },
 }));
 
+// `installing` is readonly on the real interface, so it has to be baked in at
+// construction rather than assigned per test.
+function createMockRegistration(
+  installing: ServiceWorker | null = null
+): ServiceWorkerRegistration {
+  return {
+    installing,
+    waiting: null,
+    active: null,
+    scope: '/',
+    updateViaCache: 'imports',
+    update: vi.fn().mockResolvedValue(undefined),
+    unregister: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    onupdatefound: null,
+    navigationPreload: {} as NavigationPreloadManager,
+  } as unknown as ServiceWorkerRegistration;
+}
+
 describe('usePWAUpdate', () => {
   let timerUtils: ReturnType<typeof setupFakeTimers>;
   let mockRegistration: ServiceWorkerRegistration;
@@ -75,20 +96,7 @@ describe('usePWAUpdate', () => {
     mockOnRegisterError = undefined;
 
     // Create mock registration
-    mockRegistration = {
-      installing: null,
-      waiting: null,
-      active: null,
-      scope: '/',
-      updateViaCache: 'imports',
-      update: vi.fn().mockResolvedValue(undefined),
-      unregister: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-      onupdatefound: null,
-      navigationPreload: {} as NavigationPreloadManager,
-    } as unknown as ServiceWorkerRegistration;
+    mockRegistration = createMockRegistration();
 
     // Mock navigator.onLine
     Object.defineProperty(navigator, 'onLine', {
@@ -114,11 +122,11 @@ describe('usePWAUpdate', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
-          binIds: ['bin1'],
-          startX: 0,
-          startY: 0,
-          currentX: 0,
-          currentY: 0,
+          binIds: [binId('bin1')],
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(0) },
+          valid: true,
+          isOverGrid: true,
         },
       });
 
@@ -130,8 +138,14 @@ describe('usePWAUpdate', () => {
       });
 
       // Wait some time - should not reload due to active interaction
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       // updateServiceWorker should not have been called yet
@@ -148,13 +162,13 @@ describe('usePWAUpdate', () => {
           ...layout,
           bins: [
             {
-              id: 'staged-bin',
+              id: binId('staged-bin'),
               layerId: STAGING_ID,
-              x: 0,
-              y: 0,
-              width: 1,
-              depth: 1,
-              height: 3,
+              x: gridUnits(0),
+              y: gridUnits(0),
+              width: gridUnits(1),
+              depth: gridUnits(1),
+              height: heightUnits(3),
               category: layout.categories[0].id,
               label: '',
               notes: '',
@@ -171,8 +185,14 @@ describe('usePWAUpdate', () => {
       });
 
       // Wait some time - should not reload due to staged bins
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
@@ -190,8 +210,14 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
@@ -201,7 +227,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       useViewStore.setState({
-        contextMenu: { binIds: ['bin1'], position: { x: 100, y: 100 }, source: 'grid' },
+        contextMenu: { binIds: [binId('bin1')], position: { x: 100, y: 100 }, source: 'grid' },
       });
 
       renderHook(() => usePWAUpdate());
@@ -210,8 +236,14 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
@@ -220,7 +252,7 @@ describe('usePWAUpdate', () => {
     it('blocks reload with quick label popover open', async () => {
       mockNeedRefresh = true;
 
-      useSelectionStore.setState({ quickLabelBinId: 'bin1' });
+      useSelectionStore.setState({ quickLabelBinId: binId('bin1') });
 
       renderHook(() => usePWAUpdate());
 
@@ -228,8 +260,14 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
@@ -246,8 +284,14 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
@@ -413,16 +457,16 @@ describe('usePWAUpdate', () => {
     });
 
     it('skips update check when SW is installing', () => {
-      mockRegistration.installing = {} as ServiceWorker;
+      const installingRegistration = createMockRegistration({} as ServiceWorker);
 
       renderHook(() => usePWAUpdate());
 
       act(() => {
-        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+        mockOnRegisteredSW?.('/sw.js', installingRegistration);
       });
 
       // Should not have checked (installing)
-      expect(mockRegistration.update).not.toHaveBeenCalled();
+      expect(installingRegistration.update).not.toHaveBeenCalled();
     });
   });
 
@@ -440,8 +484,14 @@ describe('usePWAUpdate', () => {
       });
 
       // Wait for potential reload
-      act(() => {
+      // Flush the awaited getSmokeGateFlag() before advancing: without it the
+      // reload path can't have run yet, so the negative assertion is vacuous.
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(10000);
+        await Promise.resolve();
       });
 
       // Should not reload (loop prevention)
@@ -546,11 +596,11 @@ describe('usePWAUpdate', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
-          binIds: ['bin1'],
-          startX: 0,
-          startY: 0,
-          currentX: 0,
-          currentY: 0,
+          binIds: [binId('bin1')],
+          startCoord: { x: gridUnits(0), y: gridUnits(0) },
+          currentCoord: { x: gridUnits(0), y: gridUnits(0) },
+          valid: true,
+          isOverGrid: true,
         },
       });
     };
@@ -722,7 +772,7 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set up some UI state to be saved
-      useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin-1'), binId('bin-2')] });
       useViewStore.setState({ zoom: 2.0, showIsometricPreview: true });
 
       renderHook(() => usePWAUpdate());
@@ -770,13 +820,13 @@ describe('usePWAUpdate', () => {
           ...layout,
           bins: [
             {
-              id: 'bin-1',
+              id: binId('bin-1'),
               layerId: layout.layers[0].id,
-              x: 0,
-              y: 0,
-              width: 1,
-              depth: 1,
-              height: 3,
+              x: gridUnits(0),
+              y: gridUnits(0),
+              width: gridUnits(1),
+              depth: gridUnits(1),
+              height: heightUnits(3),
               category: layout.categories[0].id,
               label: '',
               notes: '',

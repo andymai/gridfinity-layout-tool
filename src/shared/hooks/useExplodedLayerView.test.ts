@@ -1,28 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useExplodedLayerView } from './useExplodedLayerView';
-import type { Bin, Layer, Category } from '@/core/types';
-import { layerId, categoryId, binId } from '@/core/types';
-import type { GridUnits, HeightUnits } from '@/core/types';
+import type { Bin, BinId, Layer, LayerId, Category } from '@/core/types';
+import { layerId, categoryId, binId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 
 function makeLayer(id: string, name: string, height: number): Layer {
-  return { id: layerId(id), name, height: height as HeightUnits };
+  return { id: layerId(id), name, height: heightUnits(height) };
 }
 
 function makeCategory(id: string, color: string): Category {
   return { id: categoryId(id), name: id, color };
 }
 
-function makeBin(overrides: Partial<Bin> & { id: string; layerId: string }): Bin {
+function makeBin(overrides: Partial<Bin> & { id: BinId; layerId: LayerId }): Bin {
   return {
-    id: binId(overrides.id),
-    layerId: layerId(overrides.layerId),
-    x: 0 as GridUnits,
-    y: 0 as GridUnits,
-    width: 1 as GridUnits,
-    depth: 1 as GridUnits,
-    height: 3 as HeightUnits,
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(3),
     category: categoryId('cat1'),
     label: '',
     notes: '',
@@ -33,9 +30,9 @@ function makeBin(overrides: Partial<Bin> & { id: string; layerId: string }): Bin
 const defaultLayers = [makeLayer('layer0', 'Bottom', 3), makeLayer('layer1', 'Top', 3)];
 const defaultCategories = [makeCategory('cat1', '#ff0000')];
 const defaultBins = [
-  makeBin({ id: 'bin1', layerId: 'layer0', x: 0 as GridUnits, y: 0 as GridUnits }),
-  makeBin({ id: 'bin2', layerId: 'layer1', x: 1 as GridUnits, y: 0 as GridUnits }),
-  makeBin({ id: 'bin3', layerId: 'layer1', x: 2 as GridUnits, y: 1 as GridUnits }),
+  makeBin({ id: binId('bin1'), layerId: layerId('layer0'), x: gridUnits(0), y: gridUnits(0) }),
+  makeBin({ id: binId('bin2'), layerId: layerId('layer1'), x: gridUnits(1), y: gridUnits(0) }),
+  makeBin({ id: binId('bin3'), layerId: layerId('layer1'), x: gridUnits(2), y: gridUnits(1) }),
 ];
 
 const heightToGridScale = 7 / 42; // 0.1667
@@ -156,7 +153,7 @@ describe('useExplodedLayerView', () => {
   });
 
   it('excludes staging bins', () => {
-    const bins = [...defaultBins, makeBin({ id: 'staged', layerId: STAGING_ID })];
+    const bins = [...defaultBins, makeBin({ id: binId('staged'), layerId: STAGING_ID })];
 
     const { result } = renderHook(() =>
       useExplodedLayerView({

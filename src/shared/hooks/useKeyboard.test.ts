@@ -9,6 +9,7 @@ import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
+import { gridUnits, heightUnits } from '@/core/types';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
@@ -52,11 +53,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -87,11 +88,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -116,11 +117,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -130,11 +131,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -159,11 +160,11 @@ describe('useKeyboard', () => {
         getBinId(
           addBin({
             layerId,
-            x,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
+            x: gridUnits(x),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             category: categoryId,
             label: '',
             notes: '',
@@ -194,11 +195,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -225,11 +226,11 @@ describe('useKeyboard', () => {
         getBinId(
           addBin({
             layerId,
-            x,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
+            x: gridUnits(x),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
             category: categoryId,
             label: '',
             notes: '',
@@ -258,11 +259,11 @@ describe('useKeyboard', () => {
 
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -288,11 +289,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -327,8 +328,8 @@ describe('useKeyboard', () => {
     it('clears interaction on Escape', () => {
       useInteractionStore.getState().setInteraction({
         type: 'draw',
-        start: { x: 0, y: 0 },
-        current: { x: 1, y: 1 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
       });
 
       renderHook(() => useKeyboard());
@@ -444,11 +445,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: 'Original',
           notes: '',
@@ -480,11 +481,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -494,11 +495,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 5,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(5),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -572,11 +573,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 2,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(2),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -603,11 +604,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 2,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(2),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -634,11 +635,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 2,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(2),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -665,11 +666,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 2,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(2),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -697,11 +698,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -727,11 +728,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId: STAGING_ID,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -757,11 +758,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -771,11 +772,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 2,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(2),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -804,11 +805,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 3,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -844,11 +845,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 3,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -858,11 +859,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 5,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(5),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -887,7 +888,7 @@ describe('useKeyboard', () => {
     it('moves to next layer on W key', () => {
       // Add another layer
       const { addLayer } = useLayoutStore.getState();
-      addLayer({ name: 'Layer 2', height: 4 });
+      addLayer();
 
       const layers = useLayoutStore.getState().layout.layers;
       useSelectionStore.setState({ activeLayerId: layers[0].id });
@@ -904,7 +905,7 @@ describe('useKeyboard', () => {
     it('moves to previous layer on S key', () => {
       // Add another layer
       const { addLayer } = useLayoutStore.getState();
-      addLayer({ name: 'Layer 2', height: 4 });
+      addLayer();
 
       const layers = useLayoutStore.getState().layout.layers;
       useSelectionStore.setState({ activeLayerId: layers[1].id });
@@ -954,11 +955,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -968,11 +969,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -997,11 +998,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1011,11 +1012,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1040,11 +1041,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1054,11 +1055,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1128,11 +1129,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categories[1].id,
           label: '',
           notes: '',
@@ -1159,11 +1160,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categories[0].id,
           label: '',
           notes: '',
@@ -1189,11 +1190,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categories[categories.length - 1].id,
           label: '',
           notes: '',
@@ -1223,11 +1224,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categories[0].id,
           label: '',
           notes: '',
@@ -1257,11 +1258,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1331,11 +1332,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1389,11 +1390,11 @@ describe('useKeyboard', () => {
 
       addBin({
         layerId,
-        x: 0.5, // Fractional position
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0.5), // Fractional position
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -1420,11 +1421,11 @@ describe('useKeyboard', () => {
       const binId1 = getBinId(
         addBin({
           layerId,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1434,11 +1435,11 @@ describe('useKeyboard', () => {
       const binId2 = getBinId(
         addBin({
           layerId,
-          x: 3,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: '',
           notes: '',
@@ -1469,11 +1470,11 @@ describe('useKeyboard', () => {
       const binId = getBinId(
         addBin({
           layerId: layout.layers[0].id,
-          x: 0,
-          y: 0,
-          width,
-          depth,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(width),
+          depth: gridUnits(depth),
+          height: heightUnits(3),
           category: layout.categories[0].id,
           label: '',
           notes: '',

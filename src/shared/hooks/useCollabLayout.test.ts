@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCollabLayout, useCollabLayoutSelector } from './useCollabLayout';
 import { useLayoutStore } from '@/core/store/layout';
-import { resetAllStores } from '@/test/testUtils';
-import type { Layout } from '@/core/types';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
+import type { Bin, Layout } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 // Import the functions we'll mock
 import * as collabModeModule from './useCollabMode';
@@ -13,12 +14,41 @@ import * as liveblocksModule from '@/liveblocks.config';
 vi.mock('./useCollabMode');
 vi.mock('@/liveblocks.config');
 
+const LOCAL_MODE = { isCollaborative: false, canEdit: true, shareId: null } as const;
+const COLLAB_MODE = { isCollaborative: true, canEdit: true, shareId: 'share-abc' } as const;
+
+function makeRemoteLayout(overrides: Partial<Layout> = {}): Layout {
+  return {
+    version: '1.0',
+    name: 'Remote Layout',
+    bins: [],
+    layers: [{ id: layerId('remote-layer'), name: 'Remote Layer', height: heightUnits(3) }],
+    categories: [],
+    drawer: { width: gridUnits(8), depth: gridUnits(8), height: heightUnits(5) },
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
+    ...overrides,
+  };
+}
+
+function makeBins(count: number): Bin[] {
+  return Array.from({ length: count }, (_, i) =>
+    createTestBin({
+      id: binId(`bin${i}`),
+      layerId: layerId('layer1'),
+      x: gridUnits(i),
+      category: categoryId('coral'),
+    })
+  );
+}
+
 describe('useCollabLayout', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
     // Default to local mode
-    vi.mocked(collabModeModule.useCollabMode).mockReturnValue({ isCollaborative: false });
+    vi.mocked(collabModeModule.useCollabMode).mockReturnValue(LOCAL_MODE);
     vi.mocked(liveblocksModule.useStorage).mockReturnValue(null);
   });
 
@@ -37,33 +67,20 @@ describe('useCollabLayout', () => {
     it('returns bins array from layout', () => {
       // Add some bins to the store
       const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        {
-          id: 'bin1',
-          layerId: 'layer1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: 'Test Bin',
-          notes: '',
-        },
-      ];
+      layout.bins = makeBins(1);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useCollabLayout());
 
       expect(result.current.bins).toHaveLength(1);
-      expect(result.current.bins[0].id).toBe('bin1');
+      expect(result.current.bins[0].id).toBe(binId('bin0'));
     });
 
     it('returns layers array from layout', () => {
       const layout = useLayoutStore.getState().layout;
       layout.layers = [
-        { id: 'layer1', name: 'Layer 1', height: 3 },
-        { id: 'layer2', name: 'Layer 2', height: 5 },
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(5) },
       ];
       useLayoutStore.setState({ layout });
 
@@ -76,8 +93,8 @@ describe('useCollabLayout', () => {
     it('returns categories array from layout', () => {
       const layout = useLayoutStore.getState().layout;
       layout.categories = [
-        { id: 'cat1', name: 'Category 1', color: 'coral' },
-        { id: 'cat2', name: 'Category 2', color: 'sky' },
+        { id: categoryId('cat1'), name: 'Category 1', color: 'coral' },
+        { id: categoryId('cat2'), name: 'Category 2', color: 'sky' },
       ];
       useLayoutStore.setState({ layout });
 
@@ -90,9 +107,9 @@ describe('useCollabLayout', () => {
     it('returns drawer settings from layout', () => {
       const layout = useLayoutStore.getState().layout;
       layout.drawer = {
-        width: 10,
-        depth: 10,
-        heightUnits: 5,
+        width: gridUnits(10),
+        depth: gridUnits(10),
+        height: heightUnits(5),
       };
       useLayoutStore.setState({ layout });
 
@@ -100,7 +117,7 @@ describe('useCollabLayout', () => {
 
       expect(result.current.drawer.width).toBe(10);
       expect(result.current.drawer.depth).toBe(10);
-      expect(result.current.drawer.heightUnits).toBe(5);
+      expect(result.current.drawer.height).toBe(5);
     });
 
     it('returns layout name', () => {
@@ -117,27 +134,17 @@ describe('useCollabLayout', () => {
   describe('collaborative mode', () => {
     beforeEach(() => {
       // Mock collaborative mode
-      vi.mocked(collabModeModule.useCollabMode).mockReturnValue({ isCollaborative: true });
+      vi.mocked(collabModeModule.useCollabMode).mockReturnValue(COLLAB_MODE);
     });
 
     it('returns remote layout when available', () => {
-      const mockRemoteLayout: Layout = {
-        id: 'remote-layout',
-        name: 'Remote Layout',
-        bins: [],
-        layers: [{ id: 'remote-layer', name: 'Remote Layer', height: 3 }],
-        categories: [],
-        drawer: { width: 8, depth: 8, heightUnits: 5 },
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        printBedSize: 256,
-      };
+      const mockRemoteLayout = makeRemoteLayout();
 
       vi.mocked(liveblocksModule.useStorage).mockReturnValue(mockRemoteLayout);
 
       const { result } = renderHook(() => useCollabLayout());
 
-      expect(result.current.layout.id).toBe('remote-layout');
+      expect(result.current.layout).toBe(mockRemoteLayout);
       expect(result.current.name).toBe('Remote Layout');
       expect(result.current.layers[0].name).toBe('Remote Layer');
     });
@@ -159,39 +166,14 @@ describe('useCollabLayoutSelector', () => {
     resetAllStores();
     vi.clearAllMocks();
     // Default to local mode
-    vi.mocked(collabModeModule.useCollabMode).mockReturnValue({ isCollaborative: false });
+    vi.mocked(collabModeModule.useCollabMode).mockReturnValue(LOCAL_MODE);
     vi.mocked(liveblocksModule.useStorage).mockReturnValue(null);
   });
 
   describe('local mode', () => {
     it('applies selector to local layout', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        {
-          id: 'bin1',
-          layerId: 'layer1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: 'Test',
-          notes: '',
-        },
-        {
-          id: 'bin2',
-          layerId: 'layer1',
-          x: 1,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: 'Test 2',
-          notes: '',
-        },
-      ];
+      layout.bins = makeBins(2);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useCollabLayoutSelector((l) => l.bins.length));
@@ -211,7 +193,7 @@ describe('useCollabLayoutSelector', () => {
 
     it('applies selector to get drawer width', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 15, depth: 10, heightUnits: 5 };
+      layout.drawer = { width: gridUnits(15), depth: gridUnits(10), height: heightUnits(5) };
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useCollabLayoutSelector((l) => l.drawer.width));
@@ -222,34 +204,14 @@ describe('useCollabLayoutSelector', () => {
 
   describe('collaborative mode', () => {
     beforeEach(() => {
-      vi.mocked(collabModeModule.useCollabMode).mockReturnValue({ isCollaborative: true });
+      vi.mocked(collabModeModule.useCollabMode).mockReturnValue(COLLAB_MODE);
     });
 
     it('applies selector to remote layout when available', () => {
-      const mockRemoteLayout: Layout = {
-        id: 'remote',
+      const mockRemoteLayout = makeRemoteLayout({
         name: 'Remote Selector Test',
-        bins: [
-          {
-            id: 'remote-bin',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          },
-        ],
-        layers: [],
-        categories: [],
-        drawer: { width: 12, depth: 8, heightUnits: 5 },
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        printBedSize: 256,
-      };
+        bins: makeBins(1),
+      });
 
       vi.mocked(liveblocksModule.useStorage).mockReturnValue(mockRemoteLayout);
 
@@ -259,54 +221,7 @@ describe('useCollabLayoutSelector', () => {
     });
 
     it('applies selector to get bin count from remote', () => {
-      const mockRemoteLayout: Layout = {
-        id: 'remote',
-        name: 'Test',
-        bins: [
-          {
-            id: '1',
-            layerId: 'l1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          },
-          {
-            id: '2',
-            layerId: 'l1',
-            x: 1,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          },
-          {
-            id: '3',
-            layerId: 'l1',
-            x: 2,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          },
-        ],
-        layers: [],
-        categories: [],
-        drawer: { width: 10, depth: 10, heightUnits: 5 },
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        printBedSize: 256,
-      };
+      const mockRemoteLayout = makeRemoteLayout({ name: 'Test', bins: makeBins(3) });
 
       vi.mocked(liveblocksModule.useStorage).mockReturnValue(mockRemoteLayout);
 

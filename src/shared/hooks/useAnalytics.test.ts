@@ -2,8 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAnalytics } from '@/shared/hooks/useAnalytics';
 import { useLayoutStore } from '@/core/store/layout';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import * as analytics from '@/shared/analytics/posthog';
+import { STAGING_ID } from '@/core/constants';
+import { binId, gridUnits, layerId } from '@/core/types';
+import type { Bin } from '@/core/types';
 
 // Mock the analytics module
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -13,8 +16,27 @@ vi.mock('@/shared/analytics/posthog', () => ({
   getActivityContext: vi.fn(() => 'viewing'),
 }));
 
+function makeGridBins(count: number): Bin[] {
+  return Array.from({ length: count }, (_, i) =>
+    createTestBin({ id: binId(`bin${i}`), layerId: layerId('layer1'), x: gridUnits(i) })
+  );
+}
+
+function makeStagingBins(count: number): Bin[] {
+  return Array.from({ length: count }, (_, i) =>
+    createTestBin({ id: binId(`staging${i}`), layerId: STAGING_ID, x: gridUnits(i) })
+  );
+}
+
+function setVisibility(state: DocumentVisibilityState): void {
+  Object.defineProperty(document, 'visibilityState', {
+    value: state,
+    configurable: true,
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
 describe('useAnalytics', () => {
-  let visibilityChangeHandlers: Array<() => void>;
   let originalVisibilityState: PropertyDescriptor | undefined;
 
   beforeEach(() => {
@@ -23,17 +45,6 @@ describe('useAnalytics', () => {
 
     // Store original visibilityState descriptor
     originalVisibilityState = Object.getOwnPropertyDescriptor(document, 'visibilityState');
-
-    // Track visibilitychange handlers
-    visibilityChangeHandlers = [];
-    vi.spyOn(document, 'addEventListener').mockImplementation(
-      (type: string, handler: EventListenerOrEventListenerObject) => {
-        if (type === 'visibilitychange' && typeof handler === 'function') {
-          visibilityChangeHandlers.push(handler);
-        }
-      }
-    );
-    vi.spyOn(document, 'removeEventListener');
   });
 
   afterEach(() => {
@@ -53,209 +64,71 @@ describe('useAnalytics', () => {
     expect(() => unmount()).not.toThrow();
   });
 
-  // Note: The following tests verify the hook behavior in production mode.
-  // In development mode (import.meta.env.DEV = true), the hook returns early
-  // without setting up tracking. These tests may not trigger tracking in dev.
-
   describe('visibilitychange handling (production mode)', () => {
-    // These tests verify the logic inside the visibility change handler
-    // They work by calling the handler directly if one was registered
+    // The hook opts out of every listener in dev, so the session-end behaviour
+    // is only observable with DEV falsy.
+    beforeEach(() => {
+      vi.stubEnv('DEV', false);
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
 
     it('does not track when visibility is visible', () => {
-      // Set up engaged layout
-      const layout = useLayoutStore.getState().layout;
-      layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10)
-        .fill(null)
-        .map((_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        }));
-      useLayoutStore.setState({ layout });
+      useLayoutStore.setState({ layout: createTestLayout({ bins: makeGridBins(10) }) });
 
       renderHook(() => useAnalytics());
 
-      // Simulate visibility = visible
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'visible',
-        configurable: true,
-      });
+      setVisibility('visible');
 
-      // Trigger any registered handlers
-      visibilityChangeHandlers.forEach((handler) => handler());
-
-      // Should not track when visible
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();
     });
 
     it('does not track non-engaged sessions (< 5 bins)', () => {
-      // Set up layout with few bins
-      const layout = useLayoutStore.getState().layout;
-      layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(3)
-        .fill(null)
-        .map((_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        }));
-      useLayoutStore.setState({ layout });
+      useLayoutStore.setState({ layout: createTestLayout({ bins: makeGridBins(3) }) });
 
       renderHook(() => useAnalytics());
 
-      // Simulate visibility = hidden
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'hidden',
-        configurable: true,
-      });
+      setVisibility('hidden');
 
-      // Trigger any registered handlers
-      visibilityChangeHandlers.forEach((handler) => handler());
-
-      // Should not track non-engaged sessions
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();
     });
 
     it('tracks engaged sessions when tab becomes hidden', () => {
-      // Set up engaged layout (5+ bins)
-      const layout = useLayoutStore.getState().layout;
-      layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10)
-        .fill(null)
-        .map((_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        }));
+      const layout = createTestLayout({ bins: makeGridBins(10) });
       useLayoutStore.setState({ layout });
 
       renderHook(() => useAnalytics());
 
-      // Simulate visibility = hidden
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'hidden',
-        configurable: true,
+      setVisibility('hidden');
+
+      expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(layout, 'session_engaged', {
+        duration_seconds: expect.any(Number),
       });
-
-      // Trigger any registered handlers
-      visibilityChangeHandlers.forEach((handler) => handler());
-
-      // In dev mode, no handler registered so nothing called
-      // In prod mode, would track the session
-      // Test passes in both cases - validates hook doesn't throw
     });
 
     it('does not double-track sessions', () => {
-      // Set up engaged layout
-      const layout = useLayoutStore.getState().layout;
-      layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10)
-        .fill(null)
-        .map((_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        }));
-      useLayoutStore.setState({ layout });
+      useLayoutStore.setState({ layout: createTestLayout({ bins: makeGridBins(10) }) });
 
       renderHook(() => useAnalytics());
 
-      // Simulate visibility = hidden
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'hidden',
-        configurable: true,
-      });
+      setVisibility('hidden');
+      setVisibility('hidden');
 
-      // Trigger handler twice
-      visibilityChangeHandlers.forEach((handler) => handler());
-      visibilityChangeHandlers.forEach((handler) => handler());
-
-      // In prod mode, should only be called once due to hasTrackedRef
-      // In dev mode, never called
-      const callCount = (analytics.trackLayoutSnapshot as ReturnType<typeof vi.fn>).mock.calls
-        .length;
-      expect(callCount).toBeLessThanOrEqual(1);
+      expect(analytics.trackLayoutSnapshot).toHaveBeenCalledTimes(1);
     });
 
     it('excludes staging bins from count', () => {
-      // Set up layout with bins - 3 on grid, 5 in staging
-      const layout = useLayoutStore.getState().layout;
-      layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = [
-        // 3 bins on grid (not engaged)
-        ...Array(3)
-          .fill(null)
-          .map((_, i) => ({
-            id: `bin${i}`,
-            layerId: 'layer1',
-            x: i,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          })),
-        // 5 bins in staging (should be excluded)
-        ...Array(5)
-          .fill(null)
-          .map((_, i) => ({
-            id: `staging${i}`,
-            layerId: '__staging__',
-            x: i,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            category: 'coral',
-            label: '',
-            notes: '',
-          })),
-      ];
-      useLayoutStore.setState({ layout });
+      // 3 on grid (not engaged) + 5 staged: engagement must ignore the stash
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [...makeGridBins(3), ...makeStagingBins(5)] }),
+      });
 
       renderHook(() => useAnalytics());
 
-      // Simulate visibility = hidden
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'hidden',
-        configurable: true,
-      });
+      setVisibility('hidden');
 
-      // Trigger handler
-      visibilityChangeHandlers.forEach((handler) => handler());
-
-      // Should NOT track because only 3 bins are on grid
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();
     });
   });

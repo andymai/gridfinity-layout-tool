@@ -301,7 +301,7 @@ describe('throttle (time-based)', () => {
   it('maintains this context for trailing calls', () => {
     const obj = {
       value: 42,
-      fn: vi.fn(function (this: { value: number }) {
+      fn: vi.fn(function (this: { value: number }, _label: string) {
         return this.value;
       }),
     };

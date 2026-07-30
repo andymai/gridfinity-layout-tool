@@ -7,7 +7,12 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { STAGING_ID } from '@/core/constants';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { resetAllStores, getBinId } from '@/test/testUtils';
-import type { InteractionContext } from '@/shared/hooks/interactions/types';
+import { binId as toBinId, gridUnits, heightUnits } from '@/core/types';
+import type { BinId, Coord } from '@/core/types';
+import type { RefObject } from 'react';
+import type { InteractionContext, PointerCaptureHandle } from '@/shared/hooks/interactions/types';
+
+const coord = (x: number, y: number): Coord => ({ x: gridUnits(x), y: gridUnits(y) });
 
 // Mock ML tracking to avoid side effects
 vi.mock('@/shared/analytics/useMLTracking', () => ({
@@ -25,20 +30,29 @@ describe('useStagingDragInteraction', () => {
   const mockUpdateBin = vi.fn();
   const mockDeleteBin = vi.fn();
   const mockExecute = vi.fn((fn: () => void) => fn());
-  const mockActivePointerIdRef = { current: null };
-  const mockCapturedPointerRef = { current: null };
-  const mockCtrlKeyRef = { current: false };
+  const mockActivePointerIdRef: RefObject<number | null> = { current: null };
+  const mockCapturedPointerRef: RefObject<PointerCaptureHandle | null> = { current: null };
+  const mockCtrlKeyRef: RefObject<boolean> = { current: false };
+  const mockGridRef: RefObject<HTMLDivElement | null> = { current: null };
 
   const createContext = (): InteractionContext => {
     const { layout } = useLayoutStore.getState();
-    const { activeLayerId } = useSelectionStore.getState();
+    const { activeLayerId, activeCategoryId, selectedBinIds } = useSelectionStore.getState();
 
     return {
+      getGridCoords: vi.fn(() => null),
+      clampCoords: vi.fn((c: Coord) => c),
+      isInBounds: vi.fn(() => true),
+      gridRef: mockGridRef,
       layout,
       activeLayerId,
+      activeCategoryId,
+      paintSize: null,
+      selectedBinIds,
       setInteraction: mockSetInteraction,
       setDropTarget: mockSetDropTarget,
       setSelectedBin: mockSetSelectedBin,
+      setSelectedBins: vi.fn(),
       updateBin: mockUpdateBin,
       deleteBin: mockDeleteBin,
       addBin: vi.fn(),
@@ -60,18 +74,18 @@ describe('useStagingDragInteraction', () => {
   });
 
   // Helper to add a bin in staging
-  function addStagingBin(): string {
+  function addStagingBin(): BinId {
     const { addBin, layout } = useLayoutStore.getState();
     const categoryId = layout.categories[0].id;
 
     return getBinId(
       addBin({
         layerId: STAGING_ID, // Staging area
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test bin',
         notes: '',
@@ -80,7 +94,7 @@ describe('useStagingDragInteraction', () => {
   }
 
   // Helper to add a bin on the grid
-  function addGridBin(x: number, y: number): string {
+  function addGridBin(x: number, y: number): BinId {
     const { addBin, layout } = useLayoutStore.getState();
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
@@ -88,11 +102,11 @@ describe('useStagingDragInteraction', () => {
     return getBinId(
       addBin({
         layerId,
-        x,
-        y,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(x),
+        y: gridUnits(y),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -123,7 +137,7 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.start('non-existent-bin-id');
+        result.current.start(toBinId('non-existent-bin-id'));
       });
 
       expect(mockSetInteraction).not.toHaveBeenCalled();
@@ -162,13 +176,13 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.handleMove({ x: 3, y: 4 }, { x: 3, y: 4 });
+        result.current.handleMove(coord(3, 4), coord(3, 4));
       });
 
       expect(mockSetInteraction).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'stagingDrag',
-          currentCoord: { x: 3, y: 4 },
+          currentCoord: coord(3, 4),
         })
       );
     });
@@ -193,7 +207,7 @@ describe('useStagingDragInteraction', () => {
 
       // Try to move beyond bounds (drawer is 10x8, bin is 2x2)
       act(() => {
-        result.current.handleMove({ x: 20, y: 20 }, { x: 20, y: 20 });
+        result.current.handleMove(coord(20, 20), coord(20, 20));
       });
 
       // Should be clamped to max position (8, 6 for a 2x2 bin in 10x8 drawer)
@@ -226,7 +240,7 @@ describe('useStagingDragInteraction', () => {
 
       // Move to valid empty spot
       act(() => {
-        result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
+        result.current.handleMove(coord(2, 2), coord(2, 2));
       });
 
       expect(mockSetInteraction).toHaveBeenCalledWith(
@@ -257,7 +271,7 @@ describe('useStagingDragInteraction', () => {
       // Cursor at x=3: 2-wide staging bin would span [3,5), overlapping grid bin at [4,6).
       // Should snap 1 cell left to x=2 where [2,4) doesn't overlap [4,6).
       act(() => {
-        result.current.handleMove({ x: 3, y: 2 }, { x: 3, y: 2 });
+        result.current.handleMove(coord(3, 2), coord(3, 2));
       });
 
       const call = mockSetInteraction.mock.calls[0][0];
@@ -286,7 +300,7 @@ describe('useStagingDragInteraction', () => {
       // With SNAP_RADIUS=2, the 2x2 bin can snap 2 steps away (e.g., to (4,2) or (0,0))
       // where it no longer overlaps the grid bin at [2,4)×[2,4)
       act(() => {
-        result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
+        result.current.handleMove(coord(2, 2), coord(2, 2));
       });
 
       const call = mockSetInteraction.mock.calls[0][0];
@@ -319,7 +333,7 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.handleMove({ x: 4, y: 4 }, { x: 4, y: 4 });
+        result.current.handleMove(coord(4, 4), coord(4, 4));
       });
 
       expect(mockSetInteraction).toHaveBeenCalledWith(
@@ -353,7 +367,7 @@ describe('useStagingDragInteraction', () => {
       // Cursor at x=2.5: bin [2.5,4.5) overlaps grid [4,6).
       // Half-bin step=0.5 → nudge left to x=2.0: bin [2,4) no overlap.
       act(() => {
-        result.current.handleMove({ x: 2.5, y: 2 }, { x: 2.5, y: 2 });
+        result.current.handleMove(coord(2.5, 2), coord(2.5, 2));
       });
 
       const call = mockSetInteraction.mock.calls[0][0];
@@ -378,11 +392,11 @@ describe('useStagingDragInteraction', () => {
       // Tall bin on layer 0 that protrudes into layer 1
       addBin({
         layerId: layer0Id,
-        x: 4,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: updatedLayout.layers[0].height + 1, // protrudes
+        x: gridUnits(4),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(updatedLayout.layers[0].height + 1), // protrudes
         category: categoryId,
         label: '',
         notes: '',
@@ -408,7 +422,7 @@ describe('useStagingDragInteraction', () => {
       // Try placing at (3,2) — overlaps blocked zone from tall bin at (4,2).
       // Should snap to (2,2) or another valid position.
       act(() => {
-        result.current.handleMove({ x: 3, y: 2 }, { x: 3, y: 2 });
+        result.current.handleMove(coord(3, 2), coord(3, 2));
       });
 
       const call = mockSetInteraction.mock.calls[0][0];
@@ -421,7 +435,7 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
+        result.current.handleMove(coord(2, 2), coord(2, 2));
       });
 
       expect(mockSetInteraction).not.toHaveBeenCalled();
@@ -433,8 +447,8 @@ describe('useStagingDragInteraction', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'draw',
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          start: coord(0, 0),
+          current: coord(1, 1),
         },
       });
 
@@ -442,7 +456,7 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
+        result.current.handleMove(coord(2, 2), coord(2, 2));
       });
 
       expect(mockSetInteraction).not.toHaveBeenCalled();
@@ -454,7 +468,7 @@ describe('useStagingDragInteraction', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'stagingDrag',
-          binId: 'non-existent',
+          binId: toBinId('non-existent'),
           currentCoord: null,
           valid: false,
         },
@@ -464,7 +478,7 @@ describe('useStagingDragInteraction', () => {
       const { result } = renderHook(() => useStagingDragInteraction(context));
 
       act(() => {
-        result.current.handleMove({ x: 2, y: 2 }, { x: 2, y: 2 });
+        result.current.handleMove(coord(2, 2), coord(2, 2));
       });
 
       expect(mockSetInteraction).not.toHaveBeenCalled();
@@ -481,7 +495,7 @@ describe('useStagingDragInteraction', () => {
         interaction: {
           type: 'stagingDrag',
           binId,
-          currentCoord: { x: 3, y: 4 },
+          currentCoord: coord(3, 4),
           valid: true,
         },
         dropTarget: null,
@@ -511,7 +525,7 @@ describe('useStagingDragInteraction', () => {
         interaction: {
           type: 'stagingDrag',
           binId,
-          currentCoord: { x: 2, y: 2 },
+          currentCoord: coord(2, 2),
           valid: false, // Invalid placement
         },
         dropTarget: null,
@@ -571,8 +585,8 @@ describe('useStagingDragInteraction', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'draw',
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          start: coord(0, 0),
+          current: coord(1, 1),
         },
       });
 
@@ -592,8 +606,8 @@ describe('useStagingDragInteraction', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'stagingDrag',
-          binId: 'deleted-bin-id',
-          currentCoord: { x: 2, y: 2 },
+          binId: toBinId('deleted-bin-id'),
+          currentCoord: coord(2, 2),
           valid: true,
         },
         dropTarget: null,
@@ -617,7 +631,7 @@ describe('useStagingDragInteraction', () => {
         interaction: {
           type: 'stagingDrag',
           binId,
-          currentCoord: { x: 2, y: 2 },
+          currentCoord: coord(2, 2),
           valid: true,
         },
         dropTarget: null,
@@ -645,7 +659,7 @@ describe('useStagingDragInteraction', () => {
         interaction: {
           type: 'stagingDrag',
           binId,
-          currentCoord: { x: 3, y: 4 },
+          currentCoord: coord(3, 4),
           valid: true,
         },
         dropTarget: null,

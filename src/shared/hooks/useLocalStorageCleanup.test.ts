@@ -9,7 +9,8 @@ vi.mock('@/core/storage/localStorageCleanup', () => ({
 
 // Mock idle callbacks to fire synchronously
 vi.mock('@/shared/utils', async (importOriginal) => {
-  const original = await importOriginal();
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import required in mock factory
+  const original = await importOriginal<typeof import('@/shared/utils')>();
   return {
     ...original,
     scheduleIdleCallback: (

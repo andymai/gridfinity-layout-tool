@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { areSizeCompatible, canSwapBins, findBinAtPosition } from '@/shared/utils/position';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 describe('areSizeCompatible', () => {
   it('returns compatible for exact size match', () => {
@@ -55,10 +56,22 @@ describe('areSizeCompatible', () => {
 describe('canSwapBins', () => {
   describe('compatible swaps', () => {
     it('allows swap of same-sized bins on same layer', () => {
-      const binA = createTestBin({ id: 'binA', x: 0, y: 0, width: 2, depth: 2 });
-      const binB = createTestBin({ id: 'binB', x: 4, y: 0, width: 2, depth: 2 });
+      const binA = createTestBin({
+        id: binId('binA'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const binB = createTestBin({
+        id: binId('binB'),
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
       const layout = createTestLayout({
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [binA, binB],
       });
 
@@ -69,10 +82,22 @@ describe('canSwapBins', () => {
     });
 
     it('allows swap of rotated-match bins (2x3 with 3x2)', () => {
-      const binA = createTestBin({ id: 'binA', x: 0, y: 0, width: 2, depth: 3 });
-      const binB = createTestBin({ id: 'binB', x: 4, y: 0, width: 3, depth: 2 });
+      const binA = createTestBin({
+        id: binId('binA'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(3),
+      });
+      const binB = createTestBin({
+        id: binId('binB'),
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+      });
       const layout = createTestLayout({
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [binA, binB],
       });
 
@@ -83,10 +108,22 @@ describe('canSwapBins', () => {
     });
 
     it('allows swap when there is enough space', () => {
-      const binA = createTestBin({ id: 'binA', x: 0, y: 0, width: 1, depth: 1 });
-      const binB = createTestBin({ id: 'binB', x: 5, y: 5, width: 1, depth: 1 });
+      const binA = createTestBin({
+        id: binId('binA'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
+      const binB = createTestBin({
+        id: binId('binB'),
+        x: gridUnits(5),
+        y: gridUnits(5),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
       const layout = createTestLayout({
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [binA, binB],
       });
 
@@ -98,10 +135,22 @@ describe('canSwapBins', () => {
 
   describe('incompatible swaps', () => {
     it('rejects swap of different-sized bins', () => {
-      const binA = createTestBin({ id: 'binA', x: 0, y: 0, width: 2, depth: 2 });
-      const binB = createTestBin({ id: 'binB', x: 4, y: 0, width: 1, depth: 1 });
+      const binA = createTestBin({
+        id: binId('binA'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      });
+      const binB = createTestBin({
+        id: binId('binB'),
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      });
       const layout = createTestLayout({
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
         bins: [binA, binB],
       });
 
@@ -112,12 +161,22 @@ describe('canSwapBins', () => {
     });
 
     it('rejects swap of bins on different layers', () => {
-      const binA = createTestBin({ id: 'binA', x: 0, y: 0, layerId: 'layer1' });
-      const binB = createTestBin({ id: 'binB', x: 4, y: 0, layerId: 'layer2' });
+      const binA = createTestBin({
+        id: binId('binA'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        layerId: layerId('layer1'),
+      });
+      const binB = createTestBin({
+        id: binId('binB'),
+        x: gridUnits(4),
+        y: gridUnits(0),
+        layerId: layerId('layer2'),
+      });
       const layout = createTestLayout({
         layers: [
-          { id: 'layer1', name: 'Layer 1', height: 3 },
-          { id: 'layer2', name: 'Layer 2', height: 3 },
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
         ],
         bins: [binA, binB],
       });
@@ -132,78 +191,149 @@ describe('canSwapBins', () => {
 
 describe('findBinAtPosition', () => {
   it('finds bin at exact grid position', () => {
-    const bin = createTestBin({ id: 'bin1', x: 2, y: 3, width: 2, depth: 2 });
+    const bin = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(2),
+      y: gridUnits(3),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
       bins: [bin],
     });
 
-    const result = findBinAtPosition({ x: 2, y: 3 }, 'layer1', layout, new Set());
+    const result = findBinAtPosition(
+      { x: gridUnits(2), y: gridUnits(3) },
+      'layer1',
+      layout,
+      new Set()
+    );
 
     expect(result).toBe(bin);
   });
 
   it('finds bin when coordinate is inside bin bounds', () => {
-    const bin = createTestBin({ id: 'bin1', x: 2, y: 3, width: 2, depth: 2 });
+    const bin = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(2),
+      y: gridUnits(3),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
       bins: [bin],
     });
 
     // Coordinate at center of bin
-    const result = findBinAtPosition({ x: 3, y: 4 }, 'layer1', layout, new Set());
+    const result = findBinAtPosition(
+      { x: gridUnits(3), y: gridUnits(4) },
+      'layer1',
+      layout,
+      new Set()
+    );
 
     expect(result).toBe(bin);
   });
 
   it('returns null when coordinate is outside all bins', () => {
-    const bin = createTestBin({ id: 'bin1', x: 2, y: 3, width: 2, depth: 2 });
+    const bin = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(2),
+      y: gridUnits(3),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
       bins: [bin],
     });
 
-    const result = findBinAtPosition({ x: 0, y: 0 }, 'layer1', layout, new Set());
+    const result = findBinAtPosition(
+      { x: gridUnits(0), y: gridUnits(0) },
+      'layer1',
+      layout,
+      new Set()
+    );
 
     expect(result).toBeNull();
   });
 
   it('excludes bins in the exclude set', () => {
-    const bin = createTestBin({ id: 'bin1', x: 2, y: 3, width: 2, depth: 2 });
+    const bin = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(2),
+      y: gridUnits(3),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
       bins: [bin],
     });
 
-    const result = findBinAtPosition({ x: 3, y: 4 }, 'layer1', layout, new Set(['bin1']));
+    const result = findBinAtPosition(
+      { x: gridUnits(3), y: gridUnits(4) },
+      'layer1',
+      layout,
+      new Set(['bin1'])
+    );
 
     expect(result).toBeNull();
   });
 
   it('only finds bins on the specified layer', () => {
-    const bin = createTestBin({ id: 'bin1', x: 2, y: 3, layerId: 'layer2' });
+    const bin = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(2),
+      y: gridUnits(3),
+      layerId: layerId('layer2'),
+    });
     const layout = createTestLayout({
       layers: [
-        { id: 'layer1', name: 'Layer 1', height: 3 },
-        { id: 'layer2', name: 'Layer 2', height: 3 },
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
       ],
       bins: [bin],
     });
 
-    const result = findBinAtPosition({ x: 2, y: 3 }, 'layer1', layout, new Set());
+    const result = findBinAtPosition(
+      { x: gridUnits(2), y: gridUnits(3) },
+      'layer1',
+      layout,
+      new Set()
+    );
 
     expect(result).toBeNull();
   });
 
   it('returns correct bin when multiple bins exist', () => {
-    const bin1 = createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2 });
-    const bin2 = createTestBin({ id: 'bin2', x: 4, y: 0, width: 2, depth: 2 });
+    const bin1 = createTestBin({
+      id: binId('bin1'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
+    const bin2 = createTestBin({
+      id: binId('bin2'),
+      x: gridUnits(4),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
       bins: [bin1, bin2],
     });
 
-    const result = findBinAtPosition({ x: 4, y: 0 }, 'layer1', layout, new Set());
+    const result = findBinAtPosition(
+      { x: gridUnits(4), y: gridUnits(0) },
+      'layer1',
+      layout,
+      new Set()
+    );
 
     expect(result).toBe(bin2);
   });

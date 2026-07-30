@@ -2,22 +2,41 @@ import { describe, it, expect } from 'vitest';
 import { canPlaceBin } from './validationPlacement';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
-import type { Layout } from '@/core/types';
-import { mm } from '@/core/types';
+import type { HeightUnits, Layout, Rect } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+
+const LAYER_1 = layerId('layer1');
+const LAYER_2 = layerId('layer2');
+
+function placementRect(r: {
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  height: number;
+}): Rect & { height: HeightUnits } {
+  return {
+    x: gridUnits(r.x),
+    y: gridUnits(r.y),
+    width: gridUnits(r.width),
+    depth: gridUnits(r.depth),
+    height: heightUnits(r.height),
+  };
+}
 
 function makeSingleLayerLayout(): Layout {
   return createTestLayout({
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    layers: [{ id: LAYER_1, name: 'Layer 1', height: heightUnits(3) }],
   });
 }
 
 function makeTwoLayerLayout(): Layout {
   return createTestLayout({
-    drawer: { width: 10, depth: 8, height: 12 },
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
     layers: [
-      { id: 'layer1', name: 'Layer 1', height: 3 },
-      { id: 'layer2', name: 'Layer 2', height: 6 },
+      { id: LAYER_1, name: 'Layer 1', height: heightUnits(3) },
+      { id: LAYER_2, name: 'Layer 2', height: heightUnits(6) },
     ],
   });
 }
@@ -25,27 +44,43 @@ function makeTwoLayerLayout(): Layout {
 describe('canPlaceBin', () => {
   it('returns valid for a bin that fits in the drawer with no obstacles', () => {
     const layout = makeSingleLayerLayout();
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: true });
   });
 
   it('returns valid at the exact right/bottom boundary', () => {
     const layout = makeSingleLayerLayout();
     // x + width = 10 = drawer.width, y + depth = 8 = drawer.depth — exact fit
-    const result = canPlaceBin({ x: 8, y: 6, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 8, y: 6, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: true });
   });
 
   describe('out_of_bounds', () => {
     it('returns out_of_bounds when x is negative', () => {
       const layout = makeSingleLayerLayout();
-      const result = canPlaceBin({ x: -1, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+      const result = canPlaceBin(
+        placementRect({ x: -1, y: 0, width: 2, depth: 2, height: 3 }),
+        LAYER_1,
+        layout
+      );
       expect(result).toEqual({ valid: false, reason: 'out_of_bounds' });
     });
 
     it('returns out_of_bounds when y is negative', () => {
       const layout = makeSingleLayerLayout();
-      const result = canPlaceBin({ x: 0, y: -1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+      const result = canPlaceBin(
+        placementRect({ x: 0, y: -1, width: 2, depth: 2, height: 3 }),
+        LAYER_1,
+        layout
+      );
       expect(result).toEqual({ valid: false, reason: 'out_of_bounds' });
     });
   });
@@ -53,22 +88,30 @@ describe('canPlaceBin', () => {
   it('returns exceeds_width when x + width exceeds drawer width', () => {
     const layout = makeSingleLayerLayout();
     // 9 + 2 = 11 > 10
-    const result = canPlaceBin({ x: 9, y: 0, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 9, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_width' });
   });
 
   it('returns exceeds_depth when y + depth exceeds drawer depth', () => {
     const layout = makeSingleLayerLayout();
     // 7 + 2 = 9 > 8
-    const result = canPlaceBin({ x: 0, y: 7, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 7, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_depth' });
   });
 
   it('returns invalid_layer for an unknown layer id', () => {
     const layout = makeSingleLayerLayout();
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
-      'nonexistent',
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      layerId('nonexistent'),
       layout
     );
     expect(result).toEqual({ valid: false, reason: 'invalid_layer' });
@@ -77,16 +120,34 @@ describe('canPlaceBin', () => {
   it('returns exceeds_height when bin height exceeds remaining drawer capacity', () => {
     const layout = makeTwoLayerLayout();
     // layer2 starts at z = layer1.height = 3; drawer.height = 12; maxHeight = 9
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 10 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 10 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
   });
 
   it('returns blocked_zone when a tall lower-layer bin protrudes into the target layer', () => {
     const layout = makeTwoLayerLayout();
     // layer1 height = 3; bin with height = 5 extends to z = 5 > layer2 start (3)
-    layout.bins = [createTestBin({ id: 'tall', x: 0, y: 0, width: 3, depth: 3, height: 5 })];
-    const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer2', layout);
+    layout.bins = [
+      createTestBin({
+        id: binId('tall'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(5),
+      }),
+    ];
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({
       binId: 'tall',
       layerId: 'layer1',
@@ -96,9 +157,22 @@ describe('canPlaceBin', () => {
 
   it('returns collision when bin footprints overlap on the same layer', () => {
     const layout = makeSingleLayerLayout();
-    layout.bins = [createTestBin({ id: 'existing', x: 0, y: 0, width: 3, depth: 3 })];
-    const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    layout.bins = [
+      createTestBin({
+        id: binId('existing'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+    ];
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo).toMatchObject({
       binId: 'existing',
       layerId: 'layer1',
@@ -108,12 +182,20 @@ describe('canPlaceBin', () => {
 
   it('excludes a single bin from collision checks via excludeBinId', () => {
     const layout = makeSingleLayerLayout();
-    layout.bins = [createTestBin({ id: 'moving', x: 0, y: 0, width: 3, depth: 3 })];
+    layout.bins = [
+      createTestBin({
+        id: binId('moving'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+    ];
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 3, depth: 3, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 3 }),
+      LAYER_1,
       layout,
-      'moving'
+      binId('moving')
     );
     expect(result).toEqual({ valid: true });
   });
@@ -121,15 +203,27 @@ describe('canPlaceBin', () => {
   it('excludes a set of bins from collision checks via excludeBinIds', () => {
     const layout = makeSingleLayerLayout();
     layout.bins = [
-      createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'bin2', x: 2, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     const result = canPlaceBin(
-      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
-      'layer1',
+      placementRect({ x: 0, y: 0, width: 4, depth: 2, height: 3 }),
+      LAYER_1,
       layout,
       undefined,
-      new Set(['bin1', 'bin2'])
+      new Set([binId('bin1'), binId('bin2')])
     );
     expect(result).toEqual({ valid: true });
   });
@@ -137,24 +231,52 @@ describe('canPlaceBin', () => {
   it('does not collide with staging bins', () => {
     const layout = makeSingleLayerLayout();
     layout.bins = [
-      createTestBin({ id: 'staged', layerId: STAGING_ID, x: 0, y: 0, width: 5, depth: 5 }),
+      createTestBin({
+        id: binId('staged'),
+        layerId: STAGING_ID,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(5),
+        depth: gridUnits(5),
+      }),
     ];
-    const result = canPlaceBin({ x: 0, y: 0, width: 3, depth: 3, height: 3 }, 'layer1', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 3, depth: 3, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toEqual({ valid: true });
   });
 
   it('allows a bin shorter than the layer default height (layer height is not a constraint)', () => {
     const layout = makeTwoLayerLayout();
     // layer2 has height 6, but bins can be shorter
-    const result = canPlaceBin({ x: 0, y: 0, width: 2, depth: 2, height: 3 }, 'layer2', layout);
+    const result = canPlaceBin(
+      placementRect({ x: 0, y: 0, width: 2, depth: 2, height: 3 }),
+      LAYER_2,
+      layout
+    );
     expect(result).toEqual({ valid: true });
   });
 
   it('includes blockingInfo.layerName as layer name, not id, when the layer is found', () => {
     const layout = makeSingleLayerLayout();
-    layout.bins = [createTestBin({ id: 'blocker', x: 0, y: 0, width: 3, depth: 3 })];
-    const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
+    layout.bins = [
+      createTestBin({
+        id: binId('blocker'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+    ];
+    const result = canPlaceBin(
+      placementRect({ x: 1, y: 1, width: 2, depth: 2, height: 3 }),
+      LAYER_1,
+      layout
+    );
     expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    if (result.valid) throw new Error('expected the placement to be rejected');
     expect(result.blockingInfo?.layerName).toBe('Layer 1');
   });
 });
@@ -180,8 +302,8 @@ describe('canPlaceBin with a drawer outline', () => {
 
   it('rejects placements in the notch with outside_drawer', () => {
     const result = canPlaceBin(
-      { x: 7, y: 5, width: 1, depth: 1, height: 3 },
-      'layer1',
+      placementRect({ x: 7, y: 5, width: 1, depth: 1, height: 3 }),
+      LAYER_1,
       makeShapedLayout()
     );
     expect(result).toMatchObject({ valid: false, reason: 'outside_drawer' });
@@ -189,8 +311,8 @@ describe('canPlaceBin with a drawer outline', () => {
 
   it('rejects footprints straddling the outline boundary', () => {
     const result = canPlaceBin(
-      { x: 5, y: 5, width: 2, depth: 1, height: 3 },
-      'layer1',
+      placementRect({ x: 5, y: 5, width: 2, depth: 1, height: 3 }),
+      LAYER_1,
       makeShapedLayout()
     );
     expect(result).toMatchObject({ valid: false, reason: 'outside_drawer' });
@@ -198,8 +320,8 @@ describe('canPlaceBin with a drawer outline', () => {
 
   it('accepts boundary-flush placements inside the shape', () => {
     const result = canPlaceBin(
-      { x: 4, y: 4, width: 2, depth: 4, height: 3 },
-      'layer1',
+      placementRect({ x: 4, y: 4, width: 2, depth: 4, height: 3 }),
+      LAYER_1,
       makeShapedLayout()
     );
     expect(result).toMatchObject({ valid: true });
@@ -207,8 +329,8 @@ describe('canPlaceBin with a drawer outline', () => {
 
   it('bounds checks still take precedence over the outline', () => {
     const result = canPlaceBin(
-      { x: 9, y: 0, width: 3, depth: 1, height: 3 },
-      'layer1',
+      placementRect({ x: 9, y: 0, width: 3, depth: 1, height: 3 }),
+      LAYER_1,
       makeShapedLayout()
     );
     expect(result).toMatchObject({ valid: false, reason: 'exceeds_width' });
@@ -234,10 +356,10 @@ describe('canPlaceBin with a drawer outline', () => {
     // Back-flush in the tall body (y ends at 8 × UY) — the X pitch on Y
     // would push the footprint past the outline.
     expect(
-      canPlaceBin({ x: 0, y: 6, width: 2, depth: 2, height: 3 }, 'layer1', layout)
+      canPlaceBin(placementRect({ x: 0, y: 6, width: 2, depth: 2, height: 3 }), LAYER_1, layout)
     ).toMatchObject({ valid: true });
     expect(
-      canPlaceBin({ x: 7, y: 5, width: 1, depth: 1, height: 3 }, 'layer1', layout)
+      canPlaceBin(placementRect({ x: 7, y: 5, width: 1, depth: 1, height: 3 }), LAYER_1, layout)
     ).toMatchObject({ valid: false, reason: 'outside_drawer' });
   });
 });

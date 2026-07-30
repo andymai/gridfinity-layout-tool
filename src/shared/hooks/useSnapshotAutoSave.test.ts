@@ -4,9 +4,9 @@ import { useSnapshotAutoSave } from './useSnapshotAutoSave';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSnapshotStore } from '@/core/store/snapshots';
-import { createTestLayout, createTestLibrary } from '@/test/testUtils';
+import { createTestBin, createTestLayout, createTestLibrary } from '@/test/testUtils';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
-import { layoutId } from '@/core/types';
+import { binId, gridUnits, heightUnits, layoutId } from '@/core/types';
 import type { Snapshot } from '@/core/types';
 
 // Mock scheduleIdleCallback to execute immediately
@@ -32,7 +32,13 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     id: 'test-layout-1234567890',
     layoutId: TEST_ID,
     timestamp: Date.now(),
-    preview: { binCount: 1, layerCount: 1 },
+    preview: {
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
+      binCount: 1,
+      layerCount: 1,
+    },
     ...overrides,
   };
 }
@@ -69,20 +75,7 @@ describe('useSnapshotAutoSave', () => {
 
   describe('bootstrap (initial snapshot)', () => {
     const layoutWithBins = createTestLayout({
-      bins: [
-        {
-          id: 'bin-1' as never,
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: 'layer1' as never,
-          category: 'cat1' as never,
-          label: '',
-          notes: '',
-        },
-      ],
+      bins: [createTestBin({ id: binId('bin-1') })],
     });
 
     it('creates initial snapshot when no snapshots exist for a non-empty layout', async () => {

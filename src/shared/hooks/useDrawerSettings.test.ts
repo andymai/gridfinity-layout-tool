@@ -6,6 +6,7 @@ import { useSelectionStore, useToastStore, useHalfGridModeStore } from '@/core/s
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('useDrawerSettings', () => {
   beforeEach(() => {
@@ -130,7 +131,7 @@ describe('useDrawerSettings', () => {
     });
 
     it('uses 0.5 step when drawer has fractional width', () => {
-      useLayoutStore.getState().updateDrawer({ width: 10.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(10.5) });
       const { result } = renderHook(() => useDrawerSettings());
 
       expect(result.current.widthStep).toBe(0.5);
@@ -138,7 +139,7 @@ describe('useDrawerSettings', () => {
     });
 
     it('uses 0.5 step when drawer has fractional depth', () => {
-      useLayoutStore.getState().updateDrawer({ depth: 8.5 });
+      useLayoutStore.getState().updateDrawer({ depth: gridUnits(8.5) });
       const { result } = renderHook(() => useDrawerSettings());
 
       expect(result.current.depthStep).toBe(0.5);
@@ -163,12 +164,14 @@ describe('useDrawerSettings', () => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.getState().addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1.5,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1.5),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       });
 
       const { result } = renderHook(() => useDrawerSettings());
@@ -189,21 +192,25 @@ describe('useDrawerSettings', () => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.getState().addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1.5,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1.5),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       });
       useLayoutStore.getState().addBin({
         layerId: layout.layers[0].id,
-        x: 3,
-        y: 0,
-        width: 2.5,
-        depth: 1,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(2.5),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       });
 
       const { result } = renderHook(() => useDrawerSettings());
@@ -245,12 +252,14 @@ describe('useDrawerSettings', () => {
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.getState().addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1.5,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1.5),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
+        label: '',
+        notes: '',
       });
 
       const { result } = renderHook(() => useDrawerSettings());

@@ -2,12 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { computeAlignedPositions } from './alignBins';
 import type { AlignEdge } from './alignBins';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
-import { binId, layerId } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 
 function makeBins(...defs: Array<{ id: string; x: number; y: number; w: number; d: number }>) {
   return defs.map((d) =>
-    createTestBin({ id: binId(d.id), x: d.x, y: d.y, width: d.w, depth: d.d })
+    createTestBin({
+      id: binId(d.id),
+      x: gridUnits(d.x),
+      y: gridUnits(d.y),
+      width: gridUnits(d.w),
+      depth: gridUnits(d.d),
+    })
   );
 }
 
@@ -78,7 +84,13 @@ describe('computeAlignedPositions', () => {
     // Blocker at x=0..3, y=0..3 (non-selected).
     // Selected bins at x=5 and x=7. Align left → ref=5 → bin 'b' moves to x=5.
     // Neither collides with blocker at this position.
-    const blocker = createTestBin({ id: binId('blocker'), x: 0, y: 0, w: 3, d: 3 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(3),
+      depth: gridUnits(3),
+    });
     const selected = makeBins(
       { id: 'a', x: 5, y: 0, w: 2, d: 2 },
       { id: 'b', x: 7, y: 0, w: 2, d: 2 }
@@ -98,7 +110,13 @@ describe('computeAlignedPositions', () => {
   it('skips a bin when alignment would overlap a non-selected blocker', () => {
     // Blocker occupies x=0..2, y=0..2. Selected bin 'a' at x=0, y=3 (no conflict).
     // Selected bin 'b' at x=5, y=0. Align left → ref=0 → 'b' tries x=0, y=0 → overlaps blocker.
-    const blocker = createTestBin({ id: binId('blocker'), x: 0, y: 0, w: 2, d: 2 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const bins = [
       blocker,
       ...makeBins({ id: 'a', x: 0, y: 3, w: 2, d: 2 }, { id: 'b', x: 5, y: 0, w: 2, d: 2 }),
@@ -129,9 +147,28 @@ describe('computeAlignedPositions', () => {
 
   it('excludes staging bins', () => {
     const bins = [
-      createTestBin({ id: binId('a'), x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: binId('b'), x: 5, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: binId('staged'), x: 0, y: 0, width: 1, depth: 1, layerId: STAGING_ID }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('staged'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        layerId: STAGING_ID,
+      }),
     ];
     const results = computeAlignedPositions(
       bins,
@@ -207,13 +244,27 @@ describe('computeAlignedPositions', () => {
   it('works with bins on different layers as long as they share a layer for collision', () => {
     const multiLayerLayout = createTestLayout({
       layers: [
-        { id: layerId('layer1'), name: 'Layer 1', height: 3 },
-        { id: layerId('layer2'), name: 'Layer 2', height: 3 },
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
       ],
     });
     const bins = [
-      createTestBin({ id: binId('a'), x: 0, y: 0, width: 2, depth: 2, layerId: layerId('layer1') }),
-      createTestBin({ id: binId('b'), x: 5, y: 0, width: 2, depth: 2, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        layerId: layerId('layer1'),
+      }),
     ];
     const results = computeAlignedPositions(bins, [binId('a'), binId('b')], 'left', {
       ...multiLayerLayout,

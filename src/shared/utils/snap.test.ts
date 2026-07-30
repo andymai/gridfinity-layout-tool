@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { snapPosition, snapGroupDelta, snapResizeRect, snapDrawRect, SNAP_RADIUS } from './snap';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import type { BinId } from '@/core/types';
-import { binId } from '@/core/types';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { SnapResult } from './snap';
 
 /** Assert non-null and return the value with narrowed type. */
@@ -21,12 +21,12 @@ describe('SNAP_RADIUS', () => {
 describe('snapPosition', () => {
   it('returns isSnapped: false when target position is valid', () => {
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [],
     });
 
     const result = assertNonNull(
-      snapPosition(2, 2, 1, 1, 3, layout.layers[0].id, layout, binId('test'), 0, 0, 1)
+      snapPosition(2, 2, 1, 1, heightUnits(3), layout.layers[0].id, layout, binId('test'), 0, 0, 1)
     );
 
     expect(result.x).toBe(2);
@@ -35,15 +35,33 @@ describe('snapPosition', () => {
   });
 
   it('snaps to nearby valid position when target collides', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 2, y: 2, width: 2, depth: 2 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(2),
+      y: gridUnits(2),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
     // Try to place at (2, 2) where blocker is — should snap to a nearby valid spot
     const result = assertNonNull(
-      snapPosition(2, 2, 1, 1, 3, layout.layers[0].id, layout, binId('moving'), 1, 0, 1)
+      snapPosition(
+        2,
+        2,
+        1,
+        1,
+        heightUnits(3),
+        layout.layers[0].id,
+        layout,
+        binId('moving'),
+        1,
+        0,
+        1
+      )
     );
 
     expect(result.isSnapped).toBe(true);
@@ -57,11 +75,19 @@ describe('snapPosition', () => {
     const bins = [];
     for (let x = 0; x < 10; x++) {
       for (let y = 0; y < 8; y++) {
-        bins.push(createTestBin({ id: `bin-${x}-${y}`, x, y, width: 1, depth: 1 }));
+        bins.push(
+          createTestBin({
+            id: binId(`bin-${x}-${y}`),
+            x: gridUnits(x),
+            y: gridUnits(y),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+          })
+        );
       }
     }
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins,
     });
 
@@ -70,7 +96,7 @@ describe('snapPosition', () => {
       4,
       1,
       1,
-      3,
+      heightUnits(3),
       layout.layers[0].id,
       layout,
       binId('moving'),
@@ -84,33 +110,75 @@ describe('snapPosition', () => {
 
   it('returns null for bounds violations (not collision)', () => {
     const layout = createTestLayout({
-      drawer: { width: 5, depth: 5, height: 12 },
+      drawer: { width: gridUnits(5), depth: gridUnits(5), height: heightUnits(12) },
       bins: [],
     });
 
     // Place at x=5, which exceeds drawer width of 5 (needs width 1, so max x=4)
-    const result = snapPosition(5, 0, 1, 1, 3, layout.layers[0].id, layout, binId('test'), 0, 0, 1);
+    const result = snapPosition(
+      5,
+      0,
+      1,
+      1,
+      heightUnits(3),
+      layout.layers[0].id,
+      layout,
+      binId('test'),
+      0,
+      0,
+      1
+    );
 
     expect(result).toBeNull();
   });
 
   it('prefers movement direction when tie-breaking', () => {
     // Place a 2x2 blocker in the middle, try to snap from its position
-    const blocker = createTestBin({ id: 'blocker', x: 4, y: 3, width: 2, depth: 2 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(4),
+      y: gridUnits(3),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
     // Moving right (moveDirX = 1): should prefer right-side snap
     const resultRight = assertNonNull(
-      snapPosition(4, 3, 1, 1, 3, layout.layers[0].id, layout, binId('moving'), 1, 0, 1)
+      snapPosition(
+        4,
+        3,
+        1,
+        1,
+        heightUnits(3),
+        layout.layers[0].id,
+        layout,
+        binId('moving'),
+        1,
+        0,
+        1
+      )
     );
     expect(resultRight.isSnapped).toBe(true);
 
     // Moving left (moveDirX = -1): should prefer left-side snap
     const resultLeft = assertNonNull(
-      snapPosition(4, 3, 1, 1, 3, layout.layers[0].id, layout, binId('moving'), -1, 0, 1)
+      snapPosition(
+        4,
+        3,
+        1,
+        1,
+        heightUnits(3),
+        layout.layers[0].id,
+        layout,
+        binId('moving'),
+        -1,
+        0,
+        1
+      )
     );
     expect(resultLeft.isSnapped).toBe(true);
 
@@ -119,14 +187,32 @@ describe('snapPosition', () => {
   });
 
   it('works with half-bin step (0.5)', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 2, y: 2, width: 1, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(2),
+      y: gridUnits(2),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
     const result = assertNonNull(
-      snapPosition(2, 2, 0.5, 0.5, 3, layout.layers[0].id, layout, binId('moving'), 0, 0, 0.5)
+      snapPosition(
+        2,
+        2,
+        0.5,
+        0.5,
+        heightUnits(3),
+        layout.layers[0].id,
+        layout,
+        binId('moving'),
+        0,
+        0,
+        0.5
+      )
     );
 
     expect(result.isSnapped).toBe(true);
@@ -134,14 +220,20 @@ describe('snapPosition', () => {
 
   it('excludes the specified bin from collision checks', () => {
     // The "excludeBinId" bin should not block itself
-    const bin = createTestBin({ id: 'self', x: 3, y: 3, width: 1, depth: 1 });
+    const bin = createTestBin({
+      id: binId('self'),
+      x: gridUnits(3),
+      y: gridUnits(3),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [bin],
     });
 
     const result = assertNonNull(
-      snapPosition(3, 3, 1, 1, 3, layout.layers[0].id, layout, binId('self'), 0, 0, 1)
+      snapPosition(3, 3, 1, 1, heightUnits(3), layout.layers[0].id, layout, binId('self'), 0, 0, 1)
     );
 
     expect(result.isSnapped).toBe(false); // Should be valid at its own position
@@ -153,11 +245,23 @@ describe('snapPosition', () => {
 describe('snapGroupDelta', () => {
   it('returns isSnapped: false when requested delta is valid', () => {
     const bins = [
-      createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
-      createTestBin({ id: 'b', x: 1, y: 0, width: 1, depth: 1 }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
     ];
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins,
     });
     const excludeIds = new Set<BinId>(bins.map((b) => b.id));
@@ -172,10 +276,24 @@ describe('snapGroupDelta', () => {
   });
 
   it('finds valid delta when requested would collide', () => {
-    const group = [createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 })];
-    const blocker = createTestBin({ id: 'blocker', x: 2, y: 0, width: 1, depth: 1 });
+    const group = [
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
+    ];
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [...group, blocker],
     });
     const excludeIds = new Set<BinId>(group.map((b) => b.id));
@@ -190,21 +308,45 @@ describe('snapGroupDelta', () => {
   });
 
   it('returns null when no valid delta exists within radius', () => {
-    const group = [createTestBin({ id: 'a', x: 0, y: 0, width: 3, depth: 3 })];
+    const group = [
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
+    ];
     // Fill the drawer with blockers
     const blockers = [];
     for (let x = 3; x < 10; x++) {
       for (let y = 0; y < 8; y++) {
-        blockers.push(createTestBin({ id: `b-${x}-${y}`, x, y, width: 1, depth: 1 }));
+        blockers.push(
+          createTestBin({
+            id: binId(`b-${x}-${y}`),
+            x: gridUnits(x),
+            y: gridUnits(y),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+          })
+        );
       }
     }
     for (let y = 3; y < 8; y++) {
       for (let x = 0; x < 3; x++) {
-        blockers.push(createTestBin({ id: `c-${x}-${y}`, x, y, width: 1, depth: 1 }));
+        blockers.push(
+          createTestBin({
+            id: binId(`c-${x}-${y}`),
+            x: gridUnits(x),
+            y: gridUnits(y),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+          })
+        );
       }
     }
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [...group, ...blockers],
     });
     const excludeIds = new Set<BinId>(group.map((b) => b.id));
@@ -217,12 +359,30 @@ describe('snapGroupDelta', () => {
 
   it('preserves relative group arrangement', () => {
     const group = [
-      createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 }),
-      createTestBin({ id: 'b', x: 1, y: 0, width: 1, depth: 1 }),
+      createTestBin({
+        id: binId('a'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
+      createTestBin({
+        id: binId('b'),
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
     ];
-    const blocker = createTestBin({ id: 'blocker', x: 3, y: 0, width: 1, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(3),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [...group, blocker],
     });
     const excludeIds = new Set<BinId>(group.map((b) => b.id));
@@ -240,17 +400,27 @@ describe('snapGroupDelta', () => {
 describe('snapResizeRect', () => {
   it('returns original rect with isSnapped: false when valid', () => {
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [],
     });
-    const startRect = { x: 0, y: 0, width: 1, depth: 1 };
-    const requestedRect = { x: 0, y: 0, width: 3, depth: 1 };
+    const startRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    };
+    const requestedRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(3),
+      depth: gridUnits(1),
+    };
 
     const result = snapResizeRect(
       startRect,
       'e',
       requestedRect,
-      3,
+      heightUnits(3),
       layout.layers[0].id,
       layout,
       binId('self'),
@@ -264,19 +434,35 @@ describe('snapResizeRect', () => {
   });
 
   it('snaps to max valid size when resize would collide', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 3, y: 0, width: 1, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(3),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
-    const startRect = { x: 0, y: 0, width: 1, depth: 1 };
-    const requestedRect = { x: 0, y: 0, width: 5, depth: 1 }; // Would collide with blocker at x=3
+    const startRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    };
+    const requestedRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(5),
+      depth: gridUnits(1),
+    }; // Would collide with blocker at x=3
 
     const result = snapResizeRect(
       startRect,
       'e',
       requestedRect,
-      3,
+      heightUnits(3),
       layout.layers[0].id,
       layout,
       binId('self'),
@@ -295,19 +481,35 @@ describe('snapResizeRect', () => {
 
   it('falls back to start rect when nothing valid between start and requested', () => {
     // Blocker immediately adjacent to start rect
-    const blocker = createTestBin({ id: 'blocker', x: 1, y: 0, width: 1, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(1),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
-    const startRect = { x: 0, y: 0, width: 1, depth: 1 };
-    const requestedRect = { x: 0, y: 0, width: 5, depth: 1 };
+    const startRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    };
+    const requestedRect = {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(5),
+      depth: gridUnits(1),
+    };
 
     const result = snapResizeRect(
       startRect,
       'e',
       requestedRect,
-      3,
+      heightUnits(3),
       layout.layers[0].id,
       layout,
       binId('self'),
@@ -325,25 +527,31 @@ describe('snapResizeRect', () => {
 describe('snapDrawRect', () => {
   it('returns original dimensions when valid', () => {
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [],
     });
 
-    const result = snapDrawRect(0, 0, 3, 2, 3, layout.layers[0].id, layout, 1);
+    const result = snapDrawRect(0, 0, 3, 2, heightUnits(3), layout.layers[0].id, layout, 1);
 
     expect(result.width).toBe(3);
     expect(result.depth).toBe(2);
   });
 
   it('shrinks width to avoid collision', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 2, y: 0, width: 1, depth: 2 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(2),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
     // Draw a 4x2 rect starting at (0,0) — would overlap with blocker at x=2
-    const result = snapDrawRect(0, 0, 4, 2, 3, layout.layers[0].id, layout, 1);
+    const result = snapDrawRect(0, 0, 4, 2, heightUnits(3), layout.layers[0].id, layout, 1);
 
     // Should shrink width to 2 to avoid the blocker
     expect(result.width).toBeLessThanOrEqual(2);
@@ -352,14 +560,20 @@ describe('snapDrawRect', () => {
   });
 
   it('shrinks depth to avoid collision', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 0, y: 2, width: 4, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(0),
+      y: gridUnits(2),
+      width: gridUnits(4),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
     // Draw a 4x4 rect starting at (0,0) — would overlap with blocker at y=2
-    const result = snapDrawRect(0, 0, 4, 4, 3, layout.layers[0].id, layout, 1);
+    const result = snapDrawRect(0, 0, 4, 4, heightUnits(3), layout.layers[0].id, layout, 1);
 
     // Width shrink didn't help (blocker spans full width range), so should shrink depth
     expect(result.depth).toBeLessThanOrEqual(2);
@@ -368,25 +582,31 @@ describe('snapDrawRect', () => {
 
   it('returns original dimensions for bounds violations (no snap)', () => {
     const layout = createTestLayout({
-      drawer: { width: 5, depth: 5, height: 12 },
+      drawer: { width: gridUnits(5), depth: gridUnits(5), height: heightUnits(12) },
       bins: [],
     });
 
     // This position is out of bounds, not collision — should not snap
-    const result = snapDrawRect(4, 4, 3, 3, 3, layout.layers[0].id, layout, 1);
+    const result = snapDrawRect(4, 4, 3, 3, heightUnits(3), layout.layers[0].id, layout, 1);
 
     expect(result.width).toBe(3);
     expect(result.depth).toBe(3);
   });
 
   it('works with half-bin step (0.5)', () => {
-    const blocker = createTestBin({ id: 'blocker', x: 1.5, y: 0, width: 1, depth: 1 });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(1.5),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 8, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
       bins: [blocker],
     });
 
-    const result = snapDrawRect(0, 0, 3, 1, 3, layout.layers[0].id, layout, 0.5);
+    const result = snapDrawRect(0, 0, 3, 1, heightUnits(3), layout.layers[0].id, layout, 0.5);
 
     // Should shrink width to 1.5 or less to avoid collision
     expect(result.width).toBeLessThanOrEqual(1.5);

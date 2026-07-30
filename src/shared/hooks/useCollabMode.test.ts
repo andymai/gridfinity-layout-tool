@@ -4,8 +4,9 @@ import { useCollabMode, getCollabMode } from '@/shared/hooks/useCollabMode';
 import { useLabsStore, useLibraryStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { CloudShareInfo, LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
-const TEST_LAYOUT_ID = 'test-layout-123';
+const TEST_LAYOUT_ID = layoutId('test-layout-123');
 const TEST_SHARE_ID = 'share-abc-123';
 
 function createTestEntry(cloudShare?: CloudShareInfo): LayoutEntry {
@@ -15,9 +16,9 @@ function createTestEntry(cloudShare?: CloudShareInfo): LayoutEntry {
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },
@@ -266,8 +267,11 @@ describe('useCollabMode', () => {
 describe('getCollabMode', () => {
   beforeEach(() => {
     useLabsStore.setState({
-      features: {},
-      isFeatureEnabled: () => false,
+      preferences: {
+        enabledFeatures: {},
+        lastModified: new Date().toISOString(),
+        version: 1,
+      },
     });
 
     useLibraryStore.setState({
@@ -292,8 +296,11 @@ describe('getCollabMode', () => {
 
   it('returns collaborative mode when feature enabled and has edit share', () => {
     useLabsStore.setState({
-      features: { collaborative_editing: { enabled: true } },
-      isFeatureEnabled: () => true,
+      preferences: {
+        enabledFeatures: { collaborative_editing: true },
+        lastModified: new Date().toISOString(),
+        version: 1,
+      },
     });
 
     useLibraryStore.setState({
@@ -309,8 +316,11 @@ describe('getCollabMode', () => {
 
   it('handles shared preview mode', () => {
     useLabsStore.setState({
-      features: { collaborative_editing: { enabled: true } },
-      isFeatureEnabled: () => true,
+      preferences: {
+        enabledFeatures: { collaborative_editing: true },
+        lastModified: new Date().toISOString(),
+        version: 1,
+      },
     });
 
     useSharedPreviewStore.setState({
@@ -331,8 +341,11 @@ describe('getCollabMode', () => {
 
   it('returns view-only mode for view permission', () => {
     useLabsStore.setState({
-      features: { collaborative_editing: { enabled: true } },
-      isFeatureEnabled: () => true,
+      preferences: {
+        enabledFeatures: { collaborative_editing: true },
+        lastModified: new Date().toISOString(),
+        version: 1,
+      },
     });
 
     useLibraryStore.setState({
