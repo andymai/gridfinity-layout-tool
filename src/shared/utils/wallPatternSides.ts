@@ -9,23 +9,22 @@
 
 import type { WallPatternConfig, WallPatternSides } from '@/shared/types/bin';
 
-const ALL_SIDES: WallPatternSides = { left: true, right: true, front: true, back: true };
-
 /**
- * Resolve the per-side selection, treating a missing config or a missing side
- * as ON so designs saved before the feature keep patterning all four walls.
+ * Resolve the per-side selection, treating an absent `sides` record — or an
+ * absent key within one — as ON, so designs saved before the field existed keep
+ * patterning all four walls. Returns a fresh record on every call; callers hold
+ * it in component state and spread it, so a shared one could be mutated.
  */
 export function resolveWallPatternSides(pattern: WallPatternConfig): WallPatternSides {
   // Widened to Partial: the type says every side is present, but a persisted
-  // design predating a side (or a crafted payload) can be missing keys, and the
-  // whole point of this function is to normalize that.
+  // design predating the field (or a crafted payload) can omit it or be a key
+  // short, and the whole point of this function is to normalize that.
   const sides = pattern.sides as Partial<WallPatternSides> | undefined;
-  if (!sides) return ALL_SIDES;
   return {
-    left: sides.left !== false,
-    right: sides.right !== false,
-    front: sides.front !== false,
-    back: sides.back !== false,
+    left: sides?.left !== false,
+    right: sides?.right !== false,
+    front: sides?.front !== false,
+    back: sides?.back !== false,
   };
 }
 

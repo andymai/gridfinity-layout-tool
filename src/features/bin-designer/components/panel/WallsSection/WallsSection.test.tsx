@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WallsSection } from './WallsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import type { WallPatternSides } from '@/features/bin-designer/types';
 
 describe('WallsSection', () => {
   beforeEach(() => {
@@ -159,7 +160,7 @@ describe('WallsSection', () => {
   });
 
   describe('patterned walls (#2966)', () => {
-    const patterned = (sides?: Record<string, boolean>) => ({
+    const patterned = (sides?: WallPatternSides) => ({
       ...DEFAULT_BIN_PARAMS,
       wallPattern: {
         ...DEFAULT_BIN_PARAMS.wallPattern,
