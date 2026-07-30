@@ -37,7 +37,9 @@ export function OverhangSection() {
   ];
 
   const { taper } = state;
-  const feetEnabled = state.hasBaseOverhang;
+  // Feet need base overhang to stand on, but stay togglable while already on —
+  // otherwise dragging the base to 0 strands them checked and un-uncheckable.
+  const feetEnabled = state.hasBaseOverhang || state.feet;
   const taperToggleEnabled = taper.canTaper;
   const stacked = meta.stackedSliders;
 

@@ -222,12 +222,14 @@ describe('resolveBinMarginOverhang', () => {
     expect(resolved?.taper?.right).toBe(0);
   });
 
-  it('omits the taper on an over-tiled baseplate (feet are mutually exclusive)', () => {
+  it('keeps the taper on an over-tiled baseplate (feet are framed from the base)', () => {
     const b = {
       ...bin(0, 0, 1, 1, true),
-      marginTaper: { profile: 'fillet' as const, bandHeight: 6, enabled: true },
+      marginTaper: { profile: 'fillet' as const, bandHeight: 6, enabled: true, flare: 6 },
     };
-    expect(resolveBinMarginOverhang(b, DRAWER, bp)?.taper).toBeUndefined();
+    const resolved = resolveBinMarginOverhang(b, DRAWER, bp);
+    expect(resolved?.feet).toBe(true);
+    expect(resolved?.taper).toMatchObject({ enabled: true, profile: 'fillet' });
   });
 
   it('omits the taper when marginTaper is not enabled', () => {

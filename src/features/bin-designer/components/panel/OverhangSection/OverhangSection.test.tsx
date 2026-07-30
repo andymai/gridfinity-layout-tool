@@ -227,6 +227,37 @@ describe('OverhangSection', () => {
     expect(stored?.taper?.right).toBe(20);
   });
 
+  it('leaves feet togglable once on, even with no base overhang left', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        // All rim, no base: feet have nothing to stand on, but they are already
+        // enabled and must not become un-uncheckable.
+        overhang: {
+          left: 0,
+          right: 8,
+          front: 0,
+          back: 0,
+          feet: true,
+          taper: {
+            enabled: true,
+            profile: 'chamfer',
+            bandHeight: 10,
+            left: 0,
+            right: 8,
+            front: 0,
+            back: 0,
+          },
+        },
+      },
+    });
+    render(<OverhangSection />);
+    const feet = screen.getByRole('checkbox', { name: 'Feet under overhang' });
+    expect(feet.getAttribute('aria-disabled')).not.toBe('true');
+    fireEvent.click(feet);
+    expect(useDesignerStore.getState().params.overhang?.feet).toBe(false);
+  });
+
   it('keeps feet on when the taper is enabled (they compose)', () => {
     useDesignerStore.setState({
       params: {
