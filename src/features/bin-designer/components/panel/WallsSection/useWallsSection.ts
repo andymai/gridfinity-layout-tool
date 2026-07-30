@@ -14,6 +14,7 @@ import {
   DEFAULT_PATTERN_SCALE,
   WALL_PATTERN_SIDES,
   WALL_TEXT_SIDES,
+  isKumikoPattern,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { slottedWalls } from '@/shared/utils/slotMath';
@@ -119,6 +120,20 @@ export function useWallsSection() {
     (side) => patternSides[side] && !slotBlocked[side]
   ).length;
 
+  // Kumiko wrapped lattices need a rectangular footprint with all four walls
+  // slot-free — `buildKumikoWallPatterns` returns no cutters otherwise, and the
+  // stamp path rejects kumiko calculators outright, so NOTHING is patterned.
+  // Without this the side selector would sit there claiming four specific walls
+  // are perforated while every one of them exports solid.
+  const patternInertReason = useMemo(() => {
+    if (!isKumikoPattern(wallPattern.pattern)) return undefined;
+    if (isPartialMask(params.cellMask)) return t('binDesigner.walls.pattern.kumiko.notPolygon');
+    const anySlotted =
+      params.style === 'slotted' &&
+      (slotBlocked.front || slotBlocked.back || slotBlocked.left || slotBlocked.right);
+    return anySlotted ? t('binDesigner.walls.pattern.kumiko.notSlotted') : undefined;
+  }, [wallPattern.pattern, params.cellMask, params.style, slotBlocked, t]);
+
   // ── Divider walls (#2811) ─────────────────────────────────────────────────
   // The same pattern and scale carried through the compartment dividers, so a
   // patterned bin doesn't read as hollow walls around solid dividers.
@@ -167,7 +182,12 @@ export function useWallsSection() {
   // either way, since an all-off selector otherwise reads as a broken pattern.
   const patternSidesNote = useMemo(() => {
     if (activePatternSideCount > 0) return undefined;
-    return dividersEnabled && dividersAvailableReason === undefined
+    if (dividersAvailableReason !== undefined) {
+      // Dividers can't carry the pattern on this bin, so pointing at that
+      // checkbox would send the user to a control they can't turn on.
+      return t('binDesigner.walls.pattern.sides.noneNoDividers');
+    }
+    return dividersEnabled
       ? t('binDesigner.walls.pattern.sides.dividersOnly')
       : t('binDesigner.walls.pattern.sides.none');
   }, [activePatternSideCount, dividersEnabled, dividersAvailableReason, t]);
@@ -252,6 +272,7 @@ export function useWallsSection() {
       patternSides,
       patternSideBlocked: slotBlocked,
       patternSidesNote,
+      patternInertReason,
       dividersEnabled,
       dividersAvailableReason,
       dividersNote,

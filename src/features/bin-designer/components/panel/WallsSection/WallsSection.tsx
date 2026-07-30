@@ -82,22 +82,30 @@ export function WallsSection() {
               />
             </div>
             {/* ── Patterned walls (#2966) — pick which outer walls carry the
-                pattern, same spatial selector the cutout/handle sections use. */}
-            <div className="mt-3">
-              <span className="mb-1 block text-[11px] text-content-tertiary">
-                {t('binDesigner.walls.pattern.sides')}
-              </span>
-              <SideSelector
-                sides={patternSideStates}
-                onToggle={handlers.togglePatternSide}
-                ariaLabel={t('binDesigner.walls.pattern.sides')}
-              />
-              {state.patternSidesNote && (
-                <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
-                  {state.patternSidesNote}
-                </p>
-              )}
-            </div>
+                pattern, same spatial selector the cutout/handle sections use.
+                Suppressed when the pattern renders nothing on this bin, so the
+                chips can't claim walls that export solid. */}
+            {state.patternInertReason ? (
+              <p className="mt-3 text-[11px] leading-relaxed text-content-tertiary">
+                {state.patternInertReason}
+              </p>
+            ) : (
+              <div className="mt-3">
+                <span className="mb-1 block text-xs text-content-secondary">
+                  {t('binDesigner.walls.pattern.sides')}
+                </span>
+                <SideSelector
+                  sides={patternSideStates}
+                  onToggle={handlers.togglePatternSide}
+                  ariaLabel={t('binDesigner.walls.pattern.sides')}
+                />
+                {state.patternSidesNote && (
+                  <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
+                    {state.patternSidesNote}
+                  </p>
+                )}
+              </div>
+            )}
             {/* ── Divider walls (#2811) — the same pattern and scale carried
                 through the compartment dividers, so a patterned bin doesn't
                 read as hollow walls around solid dividers. */}

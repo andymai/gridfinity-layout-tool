@@ -2390,6 +2390,11 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.sides': 'Patterned walls',
   'binDesigner.walls.pattern.sides.slotted': 'This wall has divider slots and stays solid',
   'binDesigner.walls.pattern.sides.none': 'Pick a wall, or pattern the divider walls below',
+  'binDesigner.walls.pattern.sides.noneNoDividers': 'Nothing is patterned — pick at least one wall',
+  'binDesigner.walls.pattern.kumiko.notPolygon':
+    'Kumiko patterns need a rectangular bin, so these walls stay solid',
+  'binDesigner.walls.pattern.kumiko.notSlotted':
+    'Kumiko patterns need all four walls free of divider slots, so these walls stay solid',
   'binDesigner.walls.pattern.sides.dividersOnly':
     'Outer walls stay solid — only the dividers are patterned',
   'binDesigner.walls.pattern.dividers': 'Pattern divider walls',
