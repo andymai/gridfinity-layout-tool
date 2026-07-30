@@ -54,6 +54,7 @@ describe('validationMiddleware', () => {
 
     expect(isErr(result)).toBe(true);
     expect(next).not.toHaveBeenCalled();
+    if (!isErr(result)) throw new Error('expected an error result');
     expect(result.error).toBeDefined();
     expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
   });
@@ -67,6 +68,7 @@ describe('validationMiddleware', () => {
     const result = validationMiddleware(cmd, next);
 
     expect(isErr(result)).toBe(true);
+    if (!isErr(result)) throw new Error('expected an error result');
     if (result.error.code === 'LAYOUT_INVALID_OPERATION') {
       expect(result.error.reason).toContain('Invalid payload');
     }
@@ -217,6 +219,7 @@ describe('validationMiddleware', () => {
     const result = validationMiddleware(cmd, next);
 
     expect(isErr(result)).toBe(true);
+    if (!isErr(result)) throw new Error('expected an error result');
     if (result.error.code === 'LAYOUT_INVALID_OPERATION') {
       expect(result.error.operation).toBe('bin.delete');
     }

@@ -25,6 +25,7 @@ vi.mock('@/core/storage', () => ({
 
 import { layoutAdapter, normalizeIncomingLayout } from './layoutAdapter';
 import type { Bin, Layout } from '@/core/types';
+import { gridUnits, categoryId } from '@/core/types';
 import type { AdapterChange } from './types';
 
 const minimalLayout = (name: string): { name: string } => ({ name });
@@ -213,7 +214,9 @@ describe('normalizeIncomingLayout', () => {
 
   it('preserves other bin fields when healing', () => {
     const out = normalizeIncomingLayout(
-      layoutWith([bin({ x: 5, y: 7, category: 'tools', notes: undefined })])
+      layoutWith([
+        bin({ x: gridUnits(5), y: gridUnits(7), category: categoryId('tools'), notes: undefined }),
+      ])
     );
     expect(out.bins[0]).toMatchObject({ x: 5, y: 7, category: 'tools', notes: '' });
   });

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { analyticsMiddleware } from './analytics';
-import { ok, err } from '@/core/result';
+import { ok, err, layoutInvalidOperation } from '@/core/result';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn, CommandMeta } from '../types';
@@ -56,7 +56,7 @@ describe('analyticsMiddleware', () => {
   });
 
   it('returns error result unchanged', () => {
-    const errorResult = err({ code: 'LAYOUT_INVALID_OPERATION', message: 'test' });
+    const errorResult = err(layoutInvalidOperation('bin.add', 'test'));
     const next: NextFn<Command, DomainEvent> = vi.fn(() => errorResult);
     const cmd = makeCommand('bin.add');
 

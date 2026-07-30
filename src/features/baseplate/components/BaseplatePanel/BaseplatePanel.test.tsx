@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { mm, gridUnits } from '@gridfinity/branded-types';
 import { BaseplatePanel } from './BaseplatePanel';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { BaseplateTiling } from '../../types/tiling';
@@ -173,8 +174,8 @@ describe('BaseplatePanel', () => {
   it('mm summary reflects total when padding is set', () => {
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 5,
-      paddingRight: 3,
+      paddingLeft: mm(5),
+      paddingRight: mm(3),
     };
     render(<BaseplatePanel />);
     // Total: 168 (grid) + 5 + 3 (padding) = 176 wide, 252 deep
@@ -190,7 +191,7 @@ describe('BaseplatePanel', () => {
   it('shows the "incl. padding" note when any padding side is non-zero', () => {
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 4,
+      paddingLeft: mm(4),
     };
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
@@ -199,7 +200,7 @@ describe('BaseplatePanel', () => {
   it('shows the "incl. padding" note when only back padding is non-zero', () => {
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingBack: 2.5,
+      paddingBack: mm(2.5),
     };
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
@@ -412,7 +413,7 @@ describe('BaseplatePanel', () => {
     });
 
     describe('while vertical stacking', () => {
-      const stacking = { enabled: true, gapMm: 0.2 } as const;
+      const stacking = { enabled: true, gapMm: mm(0.2) };
 
       it('keeps the connector picker reachable but hides magnets and corner radius', () => {
         mockLayoutState.layout.baseplateParams = {
@@ -459,8 +460,8 @@ describe('BaseplatePanel', () => {
       it('keeps the detach margins toggle interactive (#2641)', () => {
         mockLayoutState.layout.baseplateParams = {
           ...DEFAULT_BASEPLATE_PARAMS,
-          paddingLeft: 10,
-          paddingRight: 10,
+          paddingLeft: mm(10),
+          paddingRight: mm(10),
           detachMargins: true,
           stackPrint: stacking,
         };
@@ -560,8 +561,8 @@ describe('BaseplatePanel', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
         syncWithLayout: false,
-        baseplateWidth: 8,
-        baseplateDepth: 10,
+        baseplateWidth: gridUnits(8),
+        baseplateDepth: gridUnits(10),
       };
       render(<BaseplatePanel />);
       const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
@@ -591,8 +592,8 @@ describe('BaseplatePanel', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
         syncWithLayout: false,
-        baseplateWidth: 8,
-        baseplateDepth: 10,
+        baseplateWidth: gridUnits(8),
+        baseplateDepth: gridUnits(10),
       };
       render(<BaseplatePanel />);
       const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
@@ -647,8 +648,8 @@ describe('BaseplatePanel', () => {
     it('renders editable dimension button in with-padding mode', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
-        paddingLeft: 5,
-        paddingRight: 3,
+        paddingLeft: mm(5),
+        paddingRight: mm(3),
       };
       render(<BaseplatePanel />);
       const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
@@ -867,7 +868,7 @@ describe('BaseplatePanel', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
         magnetHoles: true,
-        paddingLeft: 10,
+        paddingLeft: mm(10),
         connectorNubs: true,
         connectorStyle: 'snapClip',
       };
@@ -889,7 +890,7 @@ describe('BaseplatePanel', () => {
     // A tileable margin (>= 8mm) so the grid/half-grid segments are enabled.
     const withPadding = (extra: Partial<typeof DEFAULT_BASEPLATE_PARAMS> = {}) => ({
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 21,
+      paddingLeft: mm(21),
       ...extra,
     });
 
@@ -1013,14 +1014,14 @@ describe('BaseplatePanel', () => {
     });
 
     it('disables turning on the fill toggle when every margin is below the tile threshold', () => {
-      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3 });
+      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: mm(3) });
       render(<BaseplatePanel />);
       expect(fillToggle()).toBeDisabled();
     });
 
     it('keeps the fill toggle enabled (so it can be turned off) when fill is on but padding shrank', () => {
       // overTile already enabled, but no edge can fit a tile anymore.
-      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: 3, overTile: true });
+      mockLayoutState.layout.baseplateParams = withPadding({ paddingLeft: mm(3), overTile: true });
       render(<BaseplatePanel />);
       const toggle = fillToggle();
       expect(toggle).toBeChecked();
@@ -1089,7 +1090,7 @@ describe('shaped drawer (outline present)', () => {
 
   it('composes padding and shows the compose notice for a rectilinear shape', () => {
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: L_OUTLINE } as never;
-    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: 5 };
+    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: mm(5) };
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
     expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
@@ -1097,7 +1098,7 @@ describe('shaped drawer (outline present)', () => {
 
   it('composes padding for a non-rectilinear (arc) shape too', () => {
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
-    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: 5 };
+    mockLayoutState.layout.baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS, paddingLeft: mm(5) };
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
     expect(screen.getByText('baseplate.padding')).toBeInTheDocument();
@@ -1108,8 +1109,8 @@ describe('shaped drawer (outline present)', () => {
     // 30 + 30 mm crosses the 42mm slot, so buildFullParams drops the padding.
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 30,
-      paddingRight: 30,
+      paddingLeft: mm(30),
+      paddingRight: mm(30),
     };
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedPaddingTooLarge')).toBeInTheDocument();
@@ -1188,10 +1189,10 @@ describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {
     mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: CORNER_OUTLINE } as never;
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
-      paddingLeft: 35,
-      paddingRight: 35,
-      paddingFront: 35,
-      paddingBack: 35,
+      paddingLeft: mm(35),
+      paddingRight: mm(35),
+      paddingFront: mm(35),
+      paddingBack: mm(35),
     };
     render(<BaseplatePanel />);
     expect(screen.queryByText('baseplate.detachMargins')).toBeNull();

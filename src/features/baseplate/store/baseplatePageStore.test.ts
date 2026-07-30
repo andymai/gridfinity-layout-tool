@@ -166,6 +166,7 @@ describe('baseplatePageStore', () => {
     const sampleTiling: BaseplateTiling = {
       isSplit: true,
       pieces: [],
+      margins: [],
       cols: 2,
       rows: 2,
       totalWidthUnits: 10,
@@ -342,6 +343,7 @@ describe('baseplatePageStore', () => {
       useBaseplatePageStore.getState().setTiling({
         isSplit: true,
         pieces: [],
+        margins: [],
         cols: 2,
         rows: 2,
         totalWidthUnits: 10,

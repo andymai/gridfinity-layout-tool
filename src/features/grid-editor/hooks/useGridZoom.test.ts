@@ -86,7 +86,7 @@ describe('useGridZoom', () => {
   describe('zoom limits', () => {
     it('canZoomIn is false at max zoom', () => {
       // Use null ref to prevent auto-fit from changing zoom
-      const nullRef: RefObject<HTMLDivElement> = { current: null };
+      const nullRef: RefObject<HTMLDivElement | null> = { current: null };
       useViewStore.setState({ zoom: CONSTRAINTS.ZOOM_MAX });
 
       const { result } = renderHook(() =>
@@ -104,7 +104,7 @@ describe('useGridZoom', () => {
 
     it('canZoomOut is false at min zoom', () => {
       // Use null ref to prevent auto-fit from changing zoom
-      const nullRef: RefObject<HTMLDivElement> = { current: null };
+      const nullRef: RefObject<HTMLDivElement | null> = { current: null };
       useViewStore.setState({ zoom: CONSTRAINTS.ZOOM_MIN });
 
       const { result } = renderHook(() =>
@@ -268,7 +268,7 @@ describe('useGridZoom', () => {
     });
 
     it('does nothing when container ref is null', () => {
-      const nullRef: RefObject<HTMLDivElement> = { current: null };
+      const nullRef: RefObject<HTMLDivElement | null> = { current: null };
       useViewStore.setState({ zoom: 1.5 });
 
       renderHook(() =>
@@ -395,7 +395,7 @@ describe('useGridZoom', () => {
 
     it('skips auto-fit when isResizing is true', () => {
       // Use null ref so initial render doesn't auto-fit
-      const nullRef: RefObject<HTMLDivElement> = { current: null };
+      const nullRef: RefObject<HTMLDivElement | null> = { current: null };
 
       // Set initial zoom
       useViewStore.setState({ zoom: 1.5 });
