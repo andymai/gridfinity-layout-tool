@@ -5,8 +5,11 @@ import {
   validateHalfGridModeToggle,
 } from '@/shared/utils/halfGridConstraints';
 import type { Bin } from '@/core/types';
+import { binId, gridUnits, layerId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
+
+const LAYER_1 = layerId('layer1');
 
 describe('hasFractionalBins', () => {
   it('returns false for empty bins array', () => {
@@ -15,38 +18,74 @@ describe('hasFractionalBins', () => {
 
   it('returns false when all bins have integer dimensions', () => {
     const bins: Bin[] = [
-      createTestBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 3, depth: 3 }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: LAYER_1,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        layerId: LAYER_1,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
     ];
     expect(hasFractionalBins(bins)).toBe(false);
   });
 
   it('returns true when a bin has fractional x position', () => {
-    const bins: Bin[] = [createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 })];
+    const bins: Bin[] = [
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, x: gridUnits(0.5), y: gridUnits(0) }),
+    ];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional y position', () => {
-    const bins: Bin[] = [createTestBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 1.5 })];
+    const bins: Bin[] = [
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, x: gridUnits(0), y: gridUnits(1.5) }),
+    ];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional width', () => {
-    const bins: Bin[] = [createTestBin({ id: 'bin1', layerId: 'layer1', width: 1.5 })];
+    const bins: Bin[] = [
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, width: gridUnits(1.5) }),
+    ];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional depth', () => {
-    const bins: Bin[] = [createTestBin({ id: 'bin1', layerId: 'layer1', depth: 2.5 })];
+    const bins: Bin[] = [
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, depth: gridUnits(2.5) }),
+    ];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('ignores bins in staging area', () => {
     const bins: Bin[] = [
       // Fractional bin in staging - should be ignored
-      createTestBin({ id: 'bin1', layerId: STAGING_ID, x: 0.5, y: 0.5, width: 1.5, depth: 1.5 }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: STAGING_ID,
+        x: gridUnits(0.5),
+        y: gridUnits(0.5),
+        width: gridUnits(1.5),
+        depth: gridUnits(1.5),
+      }),
       // Integer bin on grid
-      createTestBin({ id: 'bin2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin2'),
+        layerId: LAYER_1,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     expect(hasFractionalBins(bins)).toBe(false);
   });
@@ -54,9 +93,23 @@ describe('hasFractionalBins', () => {
   it('returns true when only grid bins have fractional dimensions (staging excluded)', () => {
     const bins: Bin[] = [
       // Integer bin in staging
-      createTestBin({ id: 'bin1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: STAGING_ID,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
       // Fractional bin on grid
-      createTestBin({ id: 'bin2', layerId: 'layer1', x: 0.5, y: 0, width: 2, depth: 2 }),
+      createTestBin({
+        id: binId('bin2'),
+        layerId: LAYER_1,
+        x: gridUnits(0.5),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     expect(hasFractionalBins(bins)).toBe(true);
   });
@@ -69,34 +122,63 @@ describe('getFractionalBinIds', () => {
 
   it('returns empty array when all bins are integer', () => {
     const bins: Bin[] = [
-      createTestBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
-      createTestBin({ id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 3, depth: 3 }),
+      createTestBin({
+        id: binId('bin1'),
+        layerId: LAYER_1,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
+      createTestBin({
+        id: binId('bin2'),
+        layerId: LAYER_1,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+      }),
     ];
     expect(getFractionalBinIds(bins)).toEqual([]);
   });
 
   it('returns IDs of bins with fractional positions', () => {
     const bins: Bin[] = [
-      createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 }),
-      createTestBin({ id: 'bin2', layerId: 'layer1', x: 0, y: 0 }),
-      createTestBin({ id: 'bin3', layerId: 'layer1', x: 0, y: 1.5 }),
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, x: gridUnits(0.5), y: gridUnits(0) }),
+      createTestBin({ id: binId('bin2'), layerId: LAYER_1, x: gridUnits(0), y: gridUnits(0) }),
+      createTestBin({ id: binId('bin3'), layerId: LAYER_1, x: gridUnits(0), y: gridUnits(1.5) }),
     ];
     expect(getFractionalBinIds(bins)).toEqual(['bin1', 'bin3']);
   });
 
   it('returns IDs of bins with fractional dimensions', () => {
     const bins: Bin[] = [
-      createTestBin({ id: 'bin1', layerId: 'layer1', width: 1.5 }),
-      createTestBin({ id: 'bin2', layerId: 'layer1', depth: 2.5 }),
-      createTestBin({ id: 'bin3', layerId: 'layer1', width: 2, depth: 2 }),
+      createTestBin({ id: binId('bin1'), layerId: LAYER_1, width: gridUnits(1.5) }),
+      createTestBin({ id: binId('bin2'), layerId: LAYER_1, depth: gridUnits(2.5) }),
+      createTestBin({
+        id: binId('bin3'),
+        layerId: LAYER_1,
+        width: gridUnits(2),
+        depth: gridUnits(2),
+      }),
     ];
     expect(getFractionalBinIds(bins)).toEqual(['bin1', 'bin2']);
   });
 
   it('excludes staging bins from results', () => {
     const bins: Bin[] = [
-      createTestBin({ id: 'staging-bin', layerId: STAGING_ID, x: 0.5, y: 0.5 }),
-      createTestBin({ id: 'grid-bin', layerId: 'layer1', x: 0.5, y: 0 }),
+      createTestBin({
+        id: binId('staging-bin'),
+        layerId: STAGING_ID,
+        x: gridUnits(0.5),
+        y: gridUnits(0.5),
+      }),
+      createTestBin({
+        id: binId('grid-bin'),
+        layerId: LAYER_1,
+        x: gridUnits(0.5),
+        y: gridUnits(0),
+      }),
     ];
     expect(getFractionalBinIds(bins)).toEqual(['grid-bin']);
   });
@@ -112,7 +194,14 @@ describe('validateHalfGridModeToggle', () => {
 
     it('allows enabling even when fractional bins exist', () => {
       const layout = createTestLayout({
-        bins: [createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0.5 })],
+        bins: [
+          createTestBin({
+            id: binId('bin1'),
+            layerId: LAYER_1,
+            x: gridUnits(0.5),
+            y: gridUnits(0.5),
+          }),
+        ],
       });
       const result = validateHalfGridModeToggle(layout, true);
       expect(result).toEqual({ canDisable: true });
@@ -129,8 +218,22 @@ describe('validateHalfGridModeToggle', () => {
     it('allows disabling when all bins have integer dimensions', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
-          createTestBin({ id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 3, depth: 3 }),
+          createTestBin({
+            id: binId('bin1'),
+            layerId: LAYER_1,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+          }),
+          createTestBin({
+            id: binId('bin2'),
+            layerId: LAYER_1,
+            x: gridUnits(2),
+            y: gridUnits(0),
+            width: gridUnits(3),
+            depth: gridUnits(3),
+          }),
         ],
       });
       const result = validateHalfGridModeToggle(layout, false);
@@ -140,8 +243,20 @@ describe('validateHalfGridModeToggle', () => {
     it('prevents disabling when fractional bins exist', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 }),
-          createTestBin({ id: 'bin2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
+          createTestBin({
+            id: binId('bin1'),
+            layerId: LAYER_1,
+            x: gridUnits(0.5),
+            y: gridUnits(0),
+          }),
+          createTestBin({
+            id: binId('bin2'),
+            layerId: LAYER_1,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+          }),
         ],
       });
       const result = validateHalfGridModeToggle(layout, false);
@@ -156,9 +271,21 @@ describe('validateHalfGridModeToggle', () => {
     it('reports all fractional bin IDs in violation', () => {
       const layout = createTestLayout({
         bins: [
-          createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 }),
-          createTestBin({ id: 'bin2', layerId: 'layer1', width: 1.5 }),
-          createTestBin({ id: 'bin3', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
+          createTestBin({
+            id: binId('bin1'),
+            layerId: LAYER_1,
+            x: gridUnits(0.5),
+            y: gridUnits(0),
+          }),
+          createTestBin({ id: binId('bin2'), layerId: LAYER_1, width: gridUnits(1.5) }),
+          createTestBin({
+            id: binId('bin3'),
+            layerId: LAYER_1,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+          }),
         ],
       });
       const result = validateHalfGridModeToggle(layout, false);
@@ -173,14 +300,21 @@ describe('validateHalfGridModeToggle', () => {
       const layout = createTestLayout({
         bins: [
           createTestBin({
-            id: 'staging-bin',
+            id: binId('staging-bin'),
             layerId: STAGING_ID,
-            x: 0.5,
-            y: 0.5,
-            width: 1.5,
-            depth: 1.5,
+            x: gridUnits(0.5),
+            y: gridUnits(0.5),
+            width: gridUnits(1.5),
+            depth: gridUnits(1.5),
           }),
-          createTestBin({ id: 'grid-bin', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
+          createTestBin({
+            id: binId('grid-bin'),
+            layerId: LAYER_1,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+          }),
         ],
       });
       const result = validateHalfGridModeToggle(layout, false);

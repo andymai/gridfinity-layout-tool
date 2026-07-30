@@ -8,6 +8,7 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout } from '@/core/constants';
 import type { SharedWithMeEntry, Layout } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 // Mock the API module
 vi.mock('@/core/api/share', () => ({
@@ -26,13 +27,14 @@ function createTestEntry(overrides?: Partial<SharedWithMeEntry>): SharedWithMeEn
     authorName: 'Test Author',
     permission: 'view',
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },
     addedAt: Date.now(),
+    lastAccessedAt: Date.now(),
     status: 'available',
     ...overrides,
   };
@@ -44,14 +46,14 @@ function createTestLayout(): Layout {
     name: 'Shared Test Layout',
     bins: [
       {
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'layer-1',
-        category: 'cat-1',
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer-1'),
+        category: categoryId('cat-1'),
         label: 'Test Bin',
         notes: '',
       },
@@ -123,6 +125,7 @@ describe('useSharedWithMe', () => {
         value: {
           layout,
           metadata: {
+            createdAt: new Date().toISOString(),
             permission: 'view',
             authorName: 'Test Author',
           },

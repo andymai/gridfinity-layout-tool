@@ -3,7 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import type { Layout, Bin } from '@/core/types';
+import type { Layout, Bin, LayerId } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
 
 // Mock liveblocks hooks
 const mockUseStorage = vi.fn();
@@ -25,34 +26,27 @@ function createTestLayout(bins: Bin[] = []): Layout {
   };
 }
 
-function createBinOnGrid(id: string, layerId = 'layer1'): Bin {
+function createBin(id: string, layer: LayerId): Bin {
   return {
-    id,
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 1,
-    depth: 1,
-    layerId,
-    category: 'cat1',
+    id: binId(id),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    height: heightUnits(1),
+    depth: gridUnits(1),
+    layerId: layer,
+    category: categoryId('cat1'),
     label: '',
     notes: '',
   };
 }
 
+function createBinOnGrid(id: string, layer: LayerId = layerId('layer1')): Bin {
+  return createBin(id, layer);
+}
+
 function createBinInStaging(id: string): Bin {
-  return {
-    id,
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 1,
-    depth: 1,
-    layerId: STAGING_ID,
-    category: 'cat1',
-    label: '',
-    notes: '',
-  };
+  return createBin(id, STAGING_ID);
 }
 
 describe('useCollabSync', () => {
@@ -64,7 +58,7 @@ describe('useCollabSync', () => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({
       layout: defaultLayout,
-      activeLayoutId: 'test-layout',
+      activeLayoutId: layoutId('test-layout'),
       lastEditSource: 'init',
     });
 

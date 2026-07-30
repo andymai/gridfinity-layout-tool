@@ -2,10 +2,22 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGridTemplate } from '@/shared/hooks/useGridTemplate';
 import type { Drawer } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
+
+type DrawerOverrides = Partial<Omit<Drawer, 'width' | 'depth' | 'height'>> & {
+  width?: number;
+  depth?: number;
+  height?: number;
+};
 
 // Minimal valid Drawer factory
-function makeDrawer(overrides: Partial<Drawer> = {}): Drawer {
-  return { width: 4, depth: 4, height: 10, ...overrides };
+function makeDrawer({ width = 4, depth = 4, height = 10, ...rest }: DrawerOverrides = {}): Drawer {
+  return {
+    width: gridUnits(width),
+    depth: gridUnits(depth),
+    height: heightUnits(height),
+    ...rest,
+  };
 }
 
 describe('useGridTemplate', () => {

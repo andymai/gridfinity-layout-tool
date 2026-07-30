@@ -12,35 +12,45 @@ import {
   decompressString,
   getCompressionRatio,
 } from '@/shared/utils';
-import type { Layout } from '@/core/types';
+import type { Bin, Layout } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+
+const LAYER = layerId('layer1');
+const CATEGORY = categoryId('cat1');
 
 // Helper to create a test layout
 function createTestLayout(overrides?: Partial<Layout>): Layout {
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'cat1', name: 'Default', color: '#3b82f6' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: CATEGORY, name: 'Default', color: '#3b82f6' }],
+    layers: [{ id: LAYER, name: 'Layer 1', height: heightUnits(3) }],
     bins: [
       {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'cat1',
+        id: binId('bin1'),
+        layerId: LAYER,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: CATEGORY,
         label: '',
         notes: '',
       },
     ],
     ...overrides,
   };
+}
+
+function expectLayout(decompressed: Layout | null): Layout {
+  expect(decompressed).not.toBeNull();
+  if (decompressed === null) throw new Error('expected a decompressed layout');
+  return decompressed;
 }
 
 describe('compression utilities', () => {
@@ -101,22 +111,22 @@ describe('compression utilities', () => {
     });
 
     it('should handle layouts with many bins', () => {
-      const bins = Array.from({ length: 100 }, (_, i) => ({
-        id: `bin${i}`,
-        layerId: 'layer1',
-        x: i % 10,
-        y: Math.floor(i / 10),
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: 'cat1',
+      const bins: Bin[] = Array.from({ length: 100 }, (_, i) => ({
+        id: binId(`bin${i}`),
+        layerId: LAYER,
+        x: gridUnits(i % 10),
+        y: gridUnits(Math.floor(i / 10)),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        category: CATEGORY,
         label: `Bin ${i}`,
         notes: '',
       }));
 
       const layout = createTestLayout({ bins });
       const compressed = compressLayout(layout);
-      const decompressed = decompressLayout(compressed);
+      const decompressed = expectLayout(decompressLayout(compressed));
 
       expect(decompressed).toEqual(layout);
       expect(decompressed.bins).toHaveLength(100);
@@ -126,14 +136,14 @@ describe('compression utilities', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: LAYER,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            category: CATEGORY,
             label: 'Screwdrivers',
             notes: 'Phillips and flathead, various sizes. Keep organized by size.',
           },
@@ -141,7 +151,7 @@ describe('compression utilities', () => {
       });
 
       const compressed = compressLayout(layout);
-      const decompressed = decompressLayout(compressed);
+      const decompressed = expectLayout(decompressLayout(compressed));
 
       expect(decompressed.bins[0].label).toBe('Screwdrivers');
       expect(decompressed.bins[0].notes).toContain('Phillips and flathead');
@@ -151,14 +161,14 @@ describe('compression utilities', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'bin1',
-            layerId: 'layer1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            category: 'cat1',
+            id: binId('bin1'),
+            layerId: LAYER,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            category: CATEGORY,
             label: '',
             notes: '',
             customProperties: {
@@ -170,7 +180,7 @@ describe('compression utilities', () => {
       });
 
       const compressed = compressLayout(layout);
-      const decompressed = decompressLayout(compressed);
+      const decompressed = expectLayout(decompressLayout(compressed));
 
       expect(decompressed.bins[0].customProperties).toEqual({
         partNumber: 'ABC-123',
@@ -210,14 +220,14 @@ describe('compression utilities', () => {
       const smallLayout = createTestLayout();
       const largeLayout = createTestLayout({
         bins: Array.from({ length: 50 }, (_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i % 10,
-          y: Math.floor(i / 10),
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'cat1',
+          id: binId(`bin${i}`),
+          layerId: LAYER,
+          x: gridUnits(i % 10),
+          y: gridUnits(Math.floor(i / 10)),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          category: CATEGORY,
           label: `Storage Bin ${i}`,
           notes: 'Standard storage bin for workshop organization',
         })),

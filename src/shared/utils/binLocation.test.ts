@@ -5,14 +5,22 @@ import {
   isBinInStash,
   isBinOnGrid,
   type BinLocation,
+  type RotationResult,
 } from '@/shared/utils/binLocation';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+
+function expectRotationInvalid(result: RotationResult): Extract<RotationResult, { valid: false }> {
+  expect(result.valid).toBe(false);
+  if (result.valid) throw new Error('Expected an invalid rotation');
+  return result;
+}
 
 describe('binLocation utility', () => {
   describe('getBinLocationContext', () => {
     it('returns grid context for bins on a layer', () => {
-      const bin = createTestBin({ layerId: 'layer1' });
+      const bin = createTestBin({ layerId: layerId('layer1') });
       const context = getBinLocationContext(bin);
 
       expect(context.location).toBe('grid');
@@ -48,7 +56,11 @@ describe('binLocation utility', () => {
     describe('for stash bins', () => {
       it('always returns valid for stash bins', () => {
         const layout = createTestLayout();
-        const bin = createTestBin({ layerId: STAGING_ID, width: 100, depth: 100 });
+        const bin = createTestBin({
+          layerId: STAGING_ID,
+          width: gridUnits(100),
+          depth: gridUnits(100),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -56,8 +68,14 @@ describe('binLocation utility', () => {
       });
 
       it('allows rotation regardless of dimensions', () => {
-        const layout = createTestLayout({ drawer: { width: 5, height: 12, depth: 5 } });
-        const bin = createTestBin({ layerId: STAGING_ID, width: 10, depth: 3 });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(5), height: heightUnits(12), depth: gridUnits(5) },
+        });
+        const bin = createTestBin({
+          layerId: STAGING_ID,
+          width: gridUnits(10),
+          depth: gridUnits(3),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -67,8 +85,16 @@ describe('binLocation utility', () => {
 
     describe('for grid bins', () => {
       it('allows rotation when rotated bin fits', () => {
-        const layout = createTestLayout({ drawer: { width: 10, height: 12, depth: 8 } });
-        const bin = createTestBin({ x: 0, y: 0, width: 3, depth: 2, layerId: 'layer1' });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(10), height: heightUnits(12), depth: gridUnits(8) },
+        });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -78,40 +104,63 @@ describe('binLocation utility', () => {
       it('smart rotates with repositioning when width would exceed drawer bounds', () => {
         // In a 5-wide drawer, a 3x6 bin rotated to 6x3 wouldn't fit at position 0
         // but smart rotation should fail since 6-wide can never fit in 5-wide drawer
-        const layout = createTestLayout({ drawer: { width: 5, height: 12, depth: 8 } });
-        const bin = createTestBin({ x: 0, y: 0, width: 3, depth: 6, layerId: 'layer1' });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(5), height: heightUnits(12), depth: gridUnits(8) },
+        });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(6),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
         // 6-wide rotated bin can NEVER fit in a 5-wide drawer, so this should fail
-        expect(result.valid).toBe(false);
-        expect(result.message).toContain('exceed drawer bounds');
+        expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
       });
 
       it('smart rotates with repositioning when depth would exceed drawer bounds', () => {
         // In a 5-deep drawer, a 6x3 bin rotated to 3x6 wouldn't fit
         // but smart rotation should fail since 6-deep can never fit in 5-deep drawer
-        const layout = createTestLayout({ drawer: { width: 10, height: 12, depth: 5 } });
-        const bin = createTestBin({ x: 0, y: 0, width: 6, depth: 3, layerId: 'layer1' });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(10), height: heightUnits(12), depth: gridUnits(5) },
+        });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(6),
+          depth: gridUnits(3),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
         // 6-deep rotated bin can NEVER fit in a 5-deep drawer, so this should fail
-        expect(result.valid).toBe(false);
-        expect(result.message).toContain('exceed drawer bounds');
+        expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
       });
 
       it('smart rotates with repositioning to avoid collision', () => {
         const layout = createTestLayout({
-          bins: [createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer1' })],
+          bins: [
+            createTestBin({
+              id: binId('bin2'),
+              x: gridUnits(3),
+              y: gridUnits(0),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              layerId: layerId('layer1'),
+            }),
+          ],
         });
         const bin = createTestBin({
-          id: 'bin1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 4,
-          layerId: 'layer1',
+          id: binId('bin1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(4),
+          layerId: layerId('layer1'),
         });
 
         const result = validateBinRotation(bin, layout);
@@ -127,18 +176,27 @@ describe('binLocation utility', () => {
       it('allows rotation when bins are on different layers', () => {
         const layout = createTestLayout({
           layers: [
-            { id: 'layer1', name: 'Layer 1', height: 3 },
-            { id: 'layer2', name: 'Layer 2', height: 3 },
+            { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
           ],
-          bins: [createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer2' })],
+          bins: [
+            createTestBin({
+              id: binId('bin2'),
+              x: gridUnits(3),
+              y: gridUnits(0),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              layerId: layerId('layer2'),
+            }),
+          ],
         });
         const bin = createTestBin({
-          id: 'bin1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 4,
-          layerId: 'layer1',
+          id: binId('bin1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(4),
+          layerId: layerId('layer1'),
         });
 
         const result = validateBinRotation(bin, layout);
@@ -149,29 +207,29 @@ describe('binLocation utility', () => {
       it('handles blocked zones from lower layers', () => {
         const layout = createTestLayout({
           layers: [
-            { id: 'layer1', name: 'Layer 1', height: 3 },
-            { id: 'layer2', name: 'Layer 2', height: 3 },
+            { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+            { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
           ],
           bins: [
             // Tall bin on layer1 that blocks layer2
             createTestBin({
-              id: 'bin2',
-              x: 3,
-              y: 0,
-              width: 2,
-              depth: 2,
-              layerId: 'layer1',
-              height: 6,
+              id: binId('bin2'),
+              x: gridUnits(3),
+              y: gridUnits(0),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              layerId: layerId('layer1'),
+              height: heightUnits(6),
             }),
           ],
         });
         const bin = createTestBin({
-          id: 'bin1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 4,
-          layerId: 'layer2',
+          id: binId('bin1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(4),
+          layerId: layerId('layer2'),
         });
 
         const result = validateBinRotation(bin, layout);
@@ -182,8 +240,16 @@ describe('binLocation utility', () => {
       });
 
       it('allows rotation when bin rotates in place without collision', () => {
-        const layout = createTestLayout({ drawer: { width: 10, height: 12, depth: 8 } });
-        const bin = createTestBin({ x: 0, y: 0, width: 3, depth: 2, layerId: 'layer1' });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(10), height: heightUnits(12), depth: gridUnits(8) },
+        });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -192,7 +258,13 @@ describe('binLocation utility', () => {
 
       it('handles square bins (rotation should always work)', () => {
         const layout = createTestLayout();
-        const bin = createTestBin({ x: 0, y: 0, width: 3, depth: 3, layerId: 'layer1' });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -202,8 +274,16 @@ describe('binLocation utility', () => {
 
     describe('edge cases', () => {
       it('handles bins at drawer boundaries', () => {
-        const layout = createTestLayout({ drawer: { width: 10, height: 12, depth: 8 } });
-        const bin = createTestBin({ x: 8, y: 6, width: 2, depth: 2, layerId: 'layer1' });
+        const layout = createTestLayout({
+          drawer: { width: gridUnits(10), height: heightUnits(12), depth: gridUnits(8) },
+        });
+        const bin = createTestBin({
+          x: gridUnits(8),
+          y: gridUnits(6),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -213,12 +293,12 @@ describe('binLocation utility', () => {
       it('handles bins with clearance height', () => {
         const layout = createTestLayout();
         const bin = createTestBin({
-          x: 0,
-          y: 0,
-          width: 3,
-          depth: 2,
-          layerId: 'layer1',
-          clearanceHeight: 2,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          layerId: layerId('layer1'),
+          clearanceHeight: heightUnits(2),
         });
 
         const result = validateBinRotation(bin, layout);
@@ -228,7 +308,13 @@ describe('binLocation utility', () => {
 
       it('handles fractional dimensions (half-bin mode)', () => {
         const layout = createTestLayout();
-        const bin = createTestBin({ x: 0, y: 0, width: 1.5, depth: 1, layerId: 'layer1' });
+        const bin = createTestBin({
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1.5),
+          depth: gridUnits(1),
+          layerId: layerId('layer1'),
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -244,14 +330,14 @@ describe('binLocation utility', () => {
     });
 
     it('returns false for bins on grid', () => {
-      const bin = createTestBin({ layerId: 'layer1' });
+      const bin = createTestBin({ layerId: layerId('layer1') });
       expect(isBinInStash(bin)).toBe(false);
     });
   });
 
   describe('isBinOnGrid', () => {
     it('returns true for bins on grid', () => {
-      const bin = createTestBin({ layerId: 'layer1' });
+      const bin = createTestBin({ layerId: layerId('layer1') });
       expect(isBinOnGrid(bin)).toBe(true);
     });
 
@@ -263,7 +349,7 @@ describe('binLocation utility', () => {
 
   describe('location type consistency', () => {
     it('maintains type safety for BinLocation', () => {
-      const gridBin = createTestBin({ layerId: 'layer1' });
+      const gridBin = createTestBin({ layerId: layerId('layer1') });
       const stashBin = createTestBin({ layerId: STAGING_ID });
 
       const gridContext = getBinLocationContext(gridBin);

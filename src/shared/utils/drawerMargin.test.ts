@@ -6,8 +6,9 @@ import {
   resolveBinOverhang,
   binOverhangSides,
 } from './drawerMargin';
-import { gridUnits } from '@/core/types';
-import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
+import type { OverhangSource } from './drawerMargin';
+import { gridUnits, mm } from '@/core/types';
+import type { Drawer, StoredBaseplateParams } from '@/core/types';
 
 const DRAWER: Pick<Drawer, 'width' | 'depth'> = {
   width: gridUnits(5),
@@ -17,24 +18,30 @@ const DRAWER: Pick<Drawer, 'width' | 'depth'> = {
 function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
   return {
     magnetHoles: false,
-    magnetDiameter: 6,
-    magnetDepth: 2,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
     ...overrides,
   };
 }
 
-function bin(x: number, y: number, width: number, depth: number, extendToMargin = false): Bin {
+function bin(
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  extendToMargin = false
+): OverhangSource {
   return {
     x: gridUnits(x),
     y: gridUnits(y),
     width: gridUnits(width),
     depth: gridUnits(depth),
     extendToMargin,
-  } as Bin;
+  };
 }
 
 describe('binMarginSides', () => {
@@ -48,7 +55,12 @@ describe('binMarginSides', () => {
   });
 
   it('claims padding only on abutting edges (bottom-left corner)', () => {
-    const bp = baseplate({ paddingLeft: 3, paddingRight: 3, paddingFront: 2, paddingBack: 2 });
+    const bp = baseplate({
+      paddingLeft: mm(3),
+      paddingRight: mm(3),
+      paddingFront: mm(2),
+      paddingBack: mm(2),
+    });
     // Bin in the bottom-left corner abuts left (x=0) and front (y=0) only.
     expect(binMarginSides(bin(0, 0, 1, 1), DRAWER, bp)).toEqual({
       left: 3,
@@ -59,7 +71,12 @@ describe('binMarginSides', () => {
   });
 
   it('maps the far edges (top-right corner)', () => {
-    const bp = baseplate({ paddingLeft: 3, paddingRight: 3, paddingFront: 2, paddingBack: 2 });
+    const bp = baseplate({
+      paddingLeft: mm(3),
+      paddingRight: mm(3),
+      paddingFront: mm(2),
+      paddingBack: mm(2),
+    });
     // Bin whose right edge = drawer.width and top edge = drawer.depth.
     expect(binMarginSides(bin(4, 3, 1, 1), DRAWER, bp)).toEqual({
       left: 0,
@@ -70,7 +87,12 @@ describe('binMarginSides', () => {
   });
 
   it('claims nothing for an interior bin', () => {
-    const bp = baseplate({ paddingLeft: 3, paddingRight: 3, paddingFront: 2, paddingBack: 2 });
+    const bp = baseplate({
+      paddingLeft: mm(3),
+      paddingRight: mm(3),
+      paddingFront: mm(2),
+      paddingBack: mm(2),
+    });
     expect(binMarginSides(bin(1, 1, 2, 1), DRAWER, bp)).toEqual({
       left: 0,
       right: 0,
@@ -80,7 +102,7 @@ describe('binMarginSides', () => {
   });
 
   it('ignores an abutting edge that has no padding', () => {
-    const bp = baseplate({ paddingLeft: 0, paddingBack: 5 });
+    const bp = baseplate({ paddingLeft: mm(0), paddingBack: mm(5) });
     // Abuts left (no padding) and back (padding 5).
     expect(binMarginSides(bin(0, 3, 1, 1), DRAWER, bp)).toEqual({
       left: 0,
@@ -91,31 +113,33 @@ describe('binMarginSides', () => {
   });
 
   it('handles a fractional far edge', () => {
-    const bp = baseplate({ paddingRight: 4 });
+    const bp = baseplate({ paddingRight: mm(4) });
     const fracDrawer = { width: gridUnits(5.5), depth: gridUnits(4) };
     // Bin ending at 5.5 abuts the (fractional) right edge.
     expect(binMarginSides(bin(5, 0, 0.5, 1), fracDrawer, bp).right).toBe(4);
   });
 
   it('clamps negative padding to zero', () => {
-    const bp = baseplate({ paddingLeft: -5 });
+    const bp = baseplate({ paddingLeft: mm(-5) });
     expect(binMarginSides(bin(0, 1, 1, 1), DRAWER, bp).left).toBe(0);
   });
 });
 
 describe('binCanExtendToMargin', () => {
   it('is true when the bin abuts a padded edge', () => {
-    expect(binCanExtendToMargin(bin(0, 1, 1, 1), DRAWER, baseplate({ paddingLeft: 3 }))).toBe(true);
+    expect(binCanExtendToMargin(bin(0, 1, 1, 1), DRAWER, baseplate({ paddingLeft: mm(3) }))).toBe(
+      true
+    );
   });
 
   it('is false when the abutting edge has no padding', () => {
-    expect(binCanExtendToMargin(bin(0, 1, 1, 1), DRAWER, baseplate({ paddingBack: 3 }))).toBe(
+    expect(binCanExtendToMargin(bin(0, 1, 1, 1), DRAWER, baseplate({ paddingBack: mm(3) }))).toBe(
       false
     );
   });
 
   it('is false for an interior bin and with no baseplate', () => {
-    expect(binCanExtendToMargin(bin(1, 1, 1, 1), DRAWER, baseplate({ paddingLeft: 3 }))).toBe(
+    expect(binCanExtendToMargin(bin(1, 1, 1, 1), DRAWER, baseplate({ paddingLeft: mm(3) }))).toBe(
       false
     );
     expect(binCanExtendToMargin(bin(0, 0, 1, 1), DRAWER, undefined)).toBe(false);
@@ -123,7 +147,7 @@ describe('binCanExtendToMargin', () => {
 });
 
 describe('resolveBinMarginOverhang', () => {
-  const bp = baseplate({ paddingLeft: 3, paddingFront: 2, overTile: true });
+  const bp = baseplate({ paddingLeft: mm(3), paddingFront: mm(2), overTile: true });
 
   it('returns null when the bin has not opted in', () => {
     expect(resolveBinMarginOverhang(bin(0, 0, 1, 1, false), DRAWER, bp)).toBeNull();
@@ -145,16 +169,16 @@ describe('resolveBinMarginOverhang', () => {
   });
 
   it('uses flat feet for a solid (non-over-tiled) margin', () => {
-    const solid = baseplate({ paddingLeft: 3, overTile: false });
+    const solid = baseplate({ paddingLeft: mm(3), overTile: false });
     expect(resolveBinMarginOverhang(bin(0, 1, 1, 1, true), DRAWER, solid)?.feet).toBe(false);
   });
 
   it('derives a taper from the padding when marginTaper is enabled (non-over-tile)', () => {
-    const solid = baseplate({ paddingLeft: 3, paddingFront: 2, overTile: false });
+    const solid = baseplate({ paddingLeft: mm(3), paddingFront: mm(2), overTile: false });
     const b = {
       ...bin(0, 0, 1, 1, true),
       marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: true },
-    } as Bin;
+    };
     expect(resolveBinMarginOverhang(b, DRAWER, solid)).toEqual({
       enabled: true,
       left: 3,
@@ -178,22 +202,22 @@ describe('resolveBinMarginOverhang', () => {
     const b = {
       ...bin(0, 0, 1, 1, true),
       marginTaper: { profile: 'fillet' as const, bandHeight: 6, enabled: true },
-    } as Bin;
+    };
     expect(resolveBinMarginOverhang(b, DRAWER, bp)?.taper).toBeUndefined();
   });
 
   it('omits the taper when marginTaper is not enabled', () => {
-    const solid = baseplate({ paddingLeft: 3, overTile: false });
+    const solid = baseplate({ paddingLeft: mm(3), overTile: false });
     const b = {
       ...bin(0, 0, 1, 1, true),
       marginTaper: { profile: 'chamfer' as const, bandHeight: 6, enabled: false },
-    } as Bin;
+    };
     expect(resolveBinMarginOverhang(b, DRAWER, solid)?.taper).toBeUndefined();
   });
 });
 
 describe('resolveBinOverhang', () => {
-  const bp = baseplate({ paddingLeft: 3, overTile: true });
+  const bp = baseplate({ paddingLeft: mm(3), overTile: true });
   const explicit = { enabled: true, left: 7, right: 14, front: 0, back: 0 };
 
   it('falls through to null so the caller keeps the design overhang', () => {

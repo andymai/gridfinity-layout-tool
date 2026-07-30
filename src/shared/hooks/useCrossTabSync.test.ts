@@ -7,6 +7,8 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
+import type { LayoutLibrary } from '@/core/types';
 import * as storage from '@/core/storage';
 import * as validation from '@/shared/utils/validation';
 vi.mock('@/core/storage', () => ({
@@ -38,8 +40,8 @@ describe('useCrossTabSync', () => {
     resetAllStores();
 
     // Set up test-specific state
-    useLayoutStore.setState({ activeLayoutId: 'test-layout-id' });
-    useSelectionStore.setState({ activeLayerId: 'layer-1' });
+    useLayoutStore.setState({ activeLayoutId: layoutId('test-layout-id') });
+    useSelectionStore.setState({ activeLayerId: layerId('layer-1') });
   });
 
   afterEach(() => {
@@ -47,20 +49,20 @@ describe('useCrossTabSync', () => {
   });
 
   it('syncs library when BroadcastChannel notification received', async () => {
-    const mockLibrary = {
+    const mockLibrary: LayoutLibrary = {
       version: '1.0',
-      activeLayoutId: 'new-layout',
+      activeLayoutId: layoutId('new-layout'),
       settings: {},
       entries: [
         {
-          id: 'new-layout',
+          id: layoutId('new-layout'),
           name: 'New',
           createdAt: 1,
           modifiedAt: 1,
           preview: {
-            drawerWidth: 10,
-            drawerDepth: 8,
-            drawerHeight: 12,
+            drawerWidth: gridUnits(10),
+            drawerDepth: gridUnits(8),
+            drawerHeight: heightUnits(12),
             binCount: 0,
             layerCount: 1,
           },
@@ -88,9 +90,9 @@ describe('useCrossTabSync', () => {
   it('syncs active layout when its storage key changes', async () => {
     const mockLayout = createTestLayout({
       name: 'Updated Layout',
-      drawer: { width: 12, depth: 10, height: 14 },
-      layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
-      categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
+      drawer: { width: gridUnits(12), depth: gridUnits(10), height: heightUnits(14) },
+      layers: [{ id: layerId('layer-1'), name: 'Base', height: heightUnits(1) }],
+      categories: [{ id: categoryId('cat-1'), name: 'Default', color: '#3B82F6' }],
     });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
@@ -120,7 +122,7 @@ describe('useCrossTabSync', () => {
   });
 
   it('does not sync when non-active layout changes', () => {
-    const mockLayout = { name: 'Other Layout' };
+    const mockLayout = createTestLayout({ name: 'Other Layout' });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
@@ -142,7 +144,7 @@ describe('useCrossTabSync', () => {
   });
 
   it('does not sync invalid layout data', () => {
-    const mockLayout = { name: 'Invalid' };
+    const mockLayout = createTestLayout({ name: 'Invalid' });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({
       valid: false,
@@ -195,13 +197,13 @@ describe('useCrossTabSync', () => {
   it('clears selection when syncing layout', async () => {
     const mockLayout = createTestLayout({
       name: 'Updated',
-      layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
-      categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
+      layers: [{ id: layerId('layer-1'), name: 'Base', height: heightUnits(1) }],
+      categories: [{ id: categoryId('cat-1'), name: 'Default', color: '#3B82F6' }],
     });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+    useSelectionStore.setState({ selectedBinIds: [binId('bin-1'), binId('bin-2')] });
     const clearSelectionSpy = vi.spyOn(useSelectionStore.getState(), 'clearSelection');
 
     renderHook(() => useCrossTabSync());
@@ -224,13 +226,13 @@ describe('useCrossTabSync', () => {
   it('updates active layer if it no longer exists', async () => {
     const mockLayout = createTestLayout({
       name: 'Updated',
-      layers: [{ id: 'new-layer', name: 'New Layer', height: 1 }],
-      categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
+      layers: [{ id: layerId('new-layer'), name: 'New Layer', height: heightUnits(1) }],
+      categories: [{ id: categoryId('cat-1'), name: 'Default', color: '#3B82F6' }],
     });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useSelectionStore.setState({ activeLayerId: 'old-layer' });
+    useSelectionStore.setState({ activeLayerId: layerId('old-layer') });
     const setActiveLayerSpy = vi.spyOn(useSelectionStore.getState(), 'setActiveLayer');
 
     renderHook(() => useCrossTabSync());
@@ -315,14 +317,14 @@ describe('useCrossTabSync', () => {
   it('does not apply layout if active layout changed during async load', async () => {
     const mockLayout = createTestLayout({
       name: 'Stale Layout',
-      layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
-      categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
+      layers: [{ id: layerId('layer-1'), name: 'Base', height: heightUnits(1) }],
+      categories: [{ id: categoryId('cat-1'), name: 'Default', color: '#3B82F6' }],
     });
 
     // Simulate async load that resolves after layout switch
     vi.mocked(storage.loadLayoutAsync).mockImplementation(async () => {
       // Simulate user switching to a different layout during the async load
-      useLayoutStore.setState({ activeLayoutId: 'different-layout-id' });
+      useLayoutStore.setState({ activeLayoutId: layoutId('different-layout-id') });
       return mockLayout;
     });
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
@@ -381,13 +383,13 @@ describe('useCrossTabSync', () => {
   it('updates active category if it no longer exists', async () => {
     const mockLayout = createTestLayout({
       name: 'Updated',
-      layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
-      categories: [{ id: 'new-cat', name: 'New Category', color: '#3B82F6' }],
+      layers: [{ id: layerId('layer-1'), name: 'Base', height: heightUnits(1) }],
+      categories: [{ id: categoryId('new-cat'), name: 'New Category', color: '#3B82F6' }],
     });
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    useSelectionStore.setState({ activeCategoryId: 'old-cat' });
+    useSelectionStore.setState({ activeCategoryId: categoryId('old-cat') });
     const setActiveCategorySpy = vi.spyOn(useSelectionStore.getState(), 'setActiveCategory');
 
     renderHook(() => useCrossTabSync());

@@ -195,7 +195,7 @@ describe('useLinkedDesignMeshes', () => {
       expect(result.current.get(D1)).toBeDefined();
     });
 
-    const persisted = mockSavePersistedBinMesh.mock.calls[0][1] as Record<string, unknown>;
+    const persisted = mockSavePersistedBinMesh.mock.calls[0][1];
     expect(persisted).not.toHaveProperty('labelPlates');
     expect(result.current.get(D1)?.mesh).not.toHaveProperty('labelPlates');
   });

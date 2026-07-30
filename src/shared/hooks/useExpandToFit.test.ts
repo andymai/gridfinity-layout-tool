@@ -5,16 +5,25 @@ import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtils';
-import { binId } from '@/core/types';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 
 /** One row of three 2u bins in a 7u-wide, 2u-deep drawer — slack on X only. */
 function seedRowOfThree(): void {
   const bins = [0, 2, 4].map((x, i) =>
-    createTestBin({ id: binId(`b${i}`), x, y: 0, width: 2, depth: 2 })
+    createTestBin({
+      id: binId(`b${i}`),
+      x: gridUnits(x),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    })
   );
   useLayoutStore.setState({
-    layout: createTestLayout({ drawer: { width: 7, depth: 2, height: 12 }, bins }),
+    layout: createTestLayout({
+      drawer: { width: gridUnits(7), depth: gridUnits(2), height: heightUnits(12) },
+      bins,
+    }),
   });
   useSelectionStore.setState({ selectedBinIds: bins.map((b) => b.id) });
 }
@@ -86,9 +95,12 @@ describe('useExpandToFit', () => {
   });
 
   it('leaves the layout alone and explains why when there is no slack', () => {
-    const bin = createTestBin({ id: binId('a'), width: 2, depth: 2 });
+    const bin = createTestBin({ id: binId('a'), width: gridUnits(2), depth: gridUnits(2) });
     useLayoutStore.setState({
-      layout: createTestLayout({ drawer: { width: 2, depth: 2, height: 12 }, bins: [bin] }),
+      layout: createTestLayout({
+        drawer: { width: gridUnits(2), depth: gridUnits(2), height: heightUnits(12) },
+        bins: [bin],
+      }),
     });
     useSelectionStore.setState({ selectedBinIds: [bin.id] });
 
@@ -106,11 +118,17 @@ describe('useExpandToFit', () => {
   });
 
   it('ignores staged bins mixed into the selection', () => {
-    const placed = createTestBin({ id: binId('p'), x: 0, y: 0, width: 1, depth: 1 });
+    const placed = createTestBin({
+      id: binId('p'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
     const staged = createTestBin({ id: binId('s'), layerId: STAGING_ID });
     useLayoutStore.setState({
       layout: createTestLayout({
-        drawer: { width: 2, depth: 2, height: 12 },
+        drawer: { width: gridUnits(2), depth: gridUnits(2), height: heightUnits(12) },
         bins: [placed, staged],
       }),
     });

@@ -10,7 +10,16 @@ import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-import type { LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
+import type { LayoutLibrary, LayoutEntry, Layout, LayoutId } from '@/core/types';
+import {
+  binId,
+  categoryId,
+  gridUnits,
+  heightUnits,
+  layerId,
+  layoutId as toLayoutId,
+} from '@/core/types';
+import { storageNotFound } from '@/core/result';
 
 // Mock the storage module
 vi.mock('@/core/storage', () => {
@@ -193,8 +202,8 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
   },
 }));
 
-const TEST_LAYOUT_ID = 'test-layout-id';
-const SECOND_LAYOUT_ID = 'second-layout-id';
+const TEST_LAYOUT_ID = toLayoutId('test-layout-id');
+const SECOND_LAYOUT_ID = toLayoutId('second-layout-id');
 
 function createTestLayout(name = 'Test Layout'): Layout {
   const layout = createDefaultLayout();
@@ -202,16 +211,16 @@ function createTestLayout(name = 'Test Layout'): Layout {
   return layout;
 }
 
-function createTestEntry(id: string, name: string): LayoutEntry {
+function createTestEntry(id: LayoutId, name: string): LayoutEntry {
   return {
     id,
     name,
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },
@@ -221,7 +230,7 @@ function createTestEntry(id: string, name: string): LayoutEntry {
 function createTestLibrary(entries: LayoutEntry[]): LayoutLibrary {
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id ?? toLayoutId(''),
     settings: {},
     entries,
   };
@@ -247,13 +256,12 @@ describe('useLayoutSwitcher', () => {
         createTestEntry(SECOND_LAYOUT_ID, 'Second Layout'),
       ]),
       isLoaded: true,
-      showLayoutManager: false,
     });
 
     useSelectionStore.setState({
       selectedBinIds: [],
-      activeLayerId: defaultLayout.layers[0]?.id || '',
-      activeCategoryId: defaultLayout.categories[0]?.id || '',
+      activeLayerId: defaultLayout.layers[0]?.id ?? layerId(''),
+      activeCategoryId: defaultLayout.categories[0]?.id ?? categoryId(''),
     });
 
     useToastStore.setState({ toasts: [] });
@@ -284,7 +292,7 @@ describe('useLayoutSwitcher', () => {
 
       let switchResult: Awaited<ReturnType<typeof result.current.switchLayout>>;
       await act(async () => {
-        switchResult = await result.current.switchLayout('non-existent-id');
+        switchResult = await result.current.switchLayout(toLayoutId('non-existent-id'));
       });
 
       const error = expectErr(switchResult!);
@@ -295,7 +303,7 @@ describe('useLayoutSwitcher', () => {
       // Mock switchActiveLayout to return an error (target layout not found) - use Once to not affect other tests
       vi.mocked(storage.switchActiveLayout).mockResolvedValueOnce({
         ok: false,
-        error: { code: 'STORAGE_NOT_FOUND', message: 'Layout not found' },
+        error: storageNotFound(`gridfinity-layout-${SECOND_LAYOUT_ID}`),
       });
 
       const { result } = renderHook(() => useLayoutSwitcher());
@@ -326,7 +334,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('clears selection on switch', async () => {
-      useSelectionStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin-1'), binId('bin-2')] });
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -366,27 +374,17 @@ describe('useLayoutSwitcher', () => {
     it('sets active layer and category from new layout', async () => {
       // Mock switchActiveLayout to return a specific layout
       const targetLayout = createTestLayout('Second');
-      targetLayout.layers = [{ id: 'new-layer', name: 'New Layer', height: 5 }];
-      targetLayout.categories = [{ id: 'new-cat', name: 'New Cat', color: '#fff' }];
+      targetLayout.layers = [
+        { id: layerId('new-layer'), name: 'New Layer', height: heightUnits(5) },
+      ];
+      targetLayout.categories = [{ id: categoryId('new-cat'), name: 'New Cat', color: '#fff' }];
 
       vi.mocked(storage.switchActiveLayout).mockResolvedValueOnce({
         ok: true,
         value: {
           library: useLibraryStore.getState().library,
           targetLayout,
-          targetEntry: {
-            id: SECOND_LAYOUT_ID,
-            name: 'Second Layout',
-            createdAt: Date.now(),
-            modifiedAt: Date.now(),
-            preview: {
-              drawerWidth: 10,
-              drawerDepth: 8,
-              drawerHeight: 12,
-              binCount: 0,
-              layerCount: 1,
-            },
-          },
+          targetEntry: createTestEntry(SECOND_LAYOUT_ID, 'Second Layout'),
         },
       });
 
@@ -447,7 +445,7 @@ describe('useLayoutSwitcher', () => {
         createResult = await result.current.createNewLayout('My New Layout');
       });
 
-      expect(createResult).toBeDefined();
+      if (!createResult) throw new Error('createNewLayout never resolved');
       const value = expectOk(createResult);
       expect(value).toBeDefined();
       expect(useLayoutStore.getState().layout.name).toBe('My New Layout');
@@ -523,7 +521,6 @@ describe('useLayoutSwitcher', () => {
       useLibraryStore.setState({
         library: createTestLibrary([createTestEntry(TEST_LAYOUT_ID, 'Only Layout')]),
         isLoaded: true,
-        showLayoutManager: false,
       });
 
       const { result } = renderHook(() => useLayoutSwitcher());
@@ -597,7 +594,7 @@ describe('useLayoutSwitcher', () => {
 
       let dupResult: Awaited<ReturnType<typeof result.current.duplicateLayout>>;
       await act(async () => {
-        dupResult = await result.current.duplicateLayout('non-existent');
+        dupResult = await result.current.duplicateLayout(toLayoutId('non-existent'));
       });
 
       const error = expectErr(dupResult!);
@@ -608,7 +605,7 @@ describe('useLayoutSwitcher', () => {
       // Mock duplicateLayoutEntry to fail
       vi.mocked(storage.duplicateLayoutEntry).mockResolvedValueOnce({
         ok: false,
-        error: { code: 'STORAGE_NOT_FOUND', message: 'Layout not found' },
+        error: storageNotFound(`gridfinity-layout-${TEST_LAYOUT_ID}`),
       });
 
       const { result } = renderHook(() => useLayoutSwitcher());
@@ -788,7 +785,7 @@ describe('useLayoutSwitcher', () => {
       // Modify the layout in the store after the hook was rendered
       // This simulates auto-save or another component updating the layout
       const modifiedLayout = createTestLayout('Modified Layout');
-      modifiedLayout.drawer = { ...modifiedLayout.drawer, width: 20 };
+      modifiedLayout.drawer = { ...modifiedLayout.drawer, width: gridUnits(20) };
 
       // Update store directly (simulating external mutation)
       useLayoutStore.setState({ layout: modifiedLayout });
@@ -814,7 +811,7 @@ describe('useLayoutSwitcher', () => {
 
       // Add a new entry to library after hook was rendered
       // This simulates another operation adding a layout
-      const newEntry = createTestEntry('third-layout-id', 'Third Layout');
+      const newEntry = createTestEntry(toLayoutId('third-layout-id'), 'Third Layout');
       const currentLibrary = useLibraryStore.getState().library;
       act(() => {
         useLibraryStore.setState({
@@ -875,7 +872,7 @@ describe('useLayoutSwitcher', () => {
 
       // Add a third entry after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
-      const thirdEntry = createTestEntry('third-layout-id', 'Third Layout');
+      const thirdEntry = createTestEntry(toLayoutId('third-layout-id'), 'Third Layout');
       act(() => {
         useLibraryStore.setState({
           library: {
@@ -959,7 +956,7 @@ describe('useLayoutSwitcher', () => {
 
       // Add a new entry to library after hook was rendered
       const currentLibrary = useLibraryStore.getState().library;
-      const newEntry = createTestEntry('new-entry-id', 'New Entry');
+      const newEntry = createTestEntry(toLayoutId('new-entry-id'), 'New Entry');
       act(() => {
         useLibraryStore.setState({
           library: {
@@ -970,7 +967,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       act(() => {
-        result.current.renameLayout('new-entry-id', 'Renamed Entry');
+        result.current.renameLayout(toLayoutId('new-entry-id'), 'Renamed Entry');
       });
 
       // renameLayoutEntry should be called with the FRESH library
@@ -988,7 +985,7 @@ describe('useLayoutSwitcher', () => {
 
       // Modify layout after hook was rendered
       const modifiedLayout = createTestLayout('Modified');
-      modifiedLayout.drawer = { ...modifiedLayout.drawer, depth: 15 };
+      modifiedLayout.drawer = { ...modifiedLayout.drawer, depth: gridUnits(15) };
       useLayoutStore.setState({ layout: modifiedLayout });
 
       await act(async () => {

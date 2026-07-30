@@ -6,8 +6,12 @@ import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-import { err, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import type { SaveResult } from '@/core/storage';
+import { err, ok, storageNotFound, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import type { Result, StorageError } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
+import type { LayoutLibrary, LayoutPreview } from '@/core/types';
 
 // Mock the storage module with atomic API functions
 // Note: vi.mock is hoisted, so we must define the factory inline
@@ -80,7 +84,27 @@ vi.mock('@/shared/utils/idle', () => ({
 }));
 
 const SAVE_DEBOUNCE_MS = 1000;
-const TEST_LAYOUT_ID = 'test-layout-id';
+const TEST_LAYOUT_ID = layoutId('test-layout-id');
+
+const MOCK_PREVIEW: LayoutPreview = {
+  drawerWidth: gridUnits(10),
+  drawerDepth: gridUnits(8),
+  drawerHeight: heightUnits(12),
+  binCount: 0,
+  layerCount: 1,
+  binMap: [],
+};
+
+/** Mirrors saveLayoutWithMetadata: a missing entry is an error, not a null entry. */
+function saveResultFor(id: string, library: LayoutLibrary): Result<SaveResult, StorageError> {
+  const entry = library.entries.find((e) => e.id === id);
+  if (!entry) return err(storageNotFound(`gridfinity-layout-${id}`));
+  return ok({
+    layoutId: id,
+    entry: { ...entry, modifiedAt: Date.now(), preview: MOCK_PREVIEW },
+    library,
+  });
+}
 
 describe('useAutoSave', () => {
   let timerUtils: ReturnType<typeof setupFakeTimers>;
@@ -95,10 +119,7 @@ describe('useAutoSave', () => {
 
     // Set active layout ID for auto-save tests
     useLayoutStore.setState({ activeLayoutId: TEST_LAYOUT_ID });
-    useLibraryStore.setState({
-      isLoaded: true,
-      showLayoutManager: false,
-    });
+    useLibraryStore.setState({ isLoaded: true });
 
     // Clear localStorage
     localStorage.clear();
@@ -152,7 +173,7 @@ describe('useAutoSave', () => {
 
       // Change layout
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
 
       // Advance another 500ms (would be 1000ms total from original)
@@ -178,15 +199,15 @@ describe('useAutoSave', () => {
 
       // Make multiple rapid changes
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
       act(() => {
         timerUtils.advanceTime(200);
-        useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(14), depth: gridUnits(12) });
       });
       act(() => {
         timerUtils.advanceTime(200);
-        useLayoutStore.getState().updateDrawer({ width: 16, depth: 14 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(16), depth: gridUnits(14) });
       });
 
       // Advance past debounce from last change
@@ -264,11 +285,11 @@ describe('useAutoSave', () => {
         const { addBin, layout } = useLayoutStore.getState();
         addBin({
           layerId: layout.layers[0].id,
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: layout.categories[0].id,
           label: 'Test',
           notes: '',
@@ -368,7 +389,7 @@ describe('useAutoSave', () => {
 
       // Trigger another save by changing layout
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
 
       await act(async () => {
@@ -397,7 +418,7 @@ describe('useAutoSave', () => {
 
       // Second failure
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
       await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
@@ -408,7 +429,7 @@ describe('useAutoSave', () => {
 
       // Third failure - should show persistent (non-auto-dismiss) toast
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(14), depth: gridUnits(12) });
       });
       await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
@@ -425,14 +446,6 @@ describe('useAutoSave', () => {
 
     it('resets error flag after successful save', async () => {
       const saveLayoutWithMetadataMock = vi.mocked(storage.saveLayoutWithMetadata);
-      const mockPreview = {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
-        binMap: [],
-      };
 
       // First call fails
       saveLayoutWithMetadataMock.mockResolvedValueOnce(err(storageQuotaExceeded()));
@@ -451,22 +464,12 @@ describe('useAutoSave', () => {
       useToastStore.setState({ toasts: [] });
 
       // Next save succeeds - return proper structure
-      saveLayoutWithMetadataMock.mockImplementation(
-        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
-          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-          return Promise.resolve({
-            ok: true as const,
-            value: {
-              layoutId,
-              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : null,
-              library,
-            },
-          });
-        }
+      saveLayoutWithMetadataMock.mockImplementation((id, _layout, library) =>
+        Promise.resolve(saveResultFor(id, library))
       );
 
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
 
       await act(async () => {
@@ -481,7 +484,7 @@ describe('useAutoSave', () => {
       saveLayoutWithMetadataMock.mockResolvedValue(err(storageQuotaExceeded()));
 
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(14), depth: gridUnits(12) });
       });
 
       await act(async () => {
@@ -522,7 +525,7 @@ describe('useAutoSave', () => {
 
       // Trigger a layout change
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
       });
 
       await act(async () => {
@@ -538,33 +541,14 @@ describe('useAutoSave', () => {
 
   describe('race condition prevention', () => {
     it('discards save result if layout switched during save', async () => {
-      const mockPreview = {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
-        binMap: [],
-      };
-
       // Make the mock change the activeLayoutId DURING the save
       // to simulate a layout switch that happens while save is in progress
-      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
-        async (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
-          // Simulate layout switch happening during the save operation
-          useLayoutStore.setState({ activeLayoutId: 'different-layout-id' });
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(async (id, _layout, library) => {
+        // Simulate layout switch happening during the save operation
+        useLayoutStore.setState({ activeLayoutId: layoutId('different-layout-id') });
 
-          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-          return {
-            ok: true as const,
-            value: {
-              layoutId,
-              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
-              library,
-            },
-          };
-        }
-      );
+        return saveResultFor(id, library);
+      });
 
       // Track setLibrary calls AFTER mock setup
       const setLibrarySpy = vi.spyOn(useLibraryStore.getState(), 'setLibrary');
@@ -585,28 +569,9 @@ describe('useAutoSave', () => {
     });
 
     it('updates library if layout has not changed during save', async () => {
-      const mockPreview = {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
-        binMap: [],
-      };
-
       // Reset mock to default implementation (no layout switch during save)
-      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
-        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
-          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-          return Promise.resolve({
-            ok: true as const,
-            value: {
-              layoutId,
-              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
-              library,
-            },
-          });
-        }
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation((id, _layout, library) =>
+        Promise.resolve(saveResultFor(id, library))
       );
 
       // Track setLibrary calls AFTER mock setup
@@ -626,28 +591,9 @@ describe('useAutoSave', () => {
     });
 
     it('uses fresh library state when saving (not stale closure)', async () => {
-      const mockPreview = {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
-        binMap: [],
-      };
-
       // Reset mock to default implementation
-      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
-        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
-          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-          return Promise.resolve({
-            ok: true as const,
-            value: {
-              layoutId,
-              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
-              library,
-            },
-          });
-        }
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation((id, _layout, library) =>
+        Promise.resolve(saveResultFor(id, library))
       );
 
       renderHook(() => useAutoSave());
@@ -669,7 +615,7 @@ describe('useAutoSave', () => {
 
       // Trigger a layout change to reset the debounce and use fresh state
       act(() => {
-        useLayoutStore.getState().updateDrawer({ width: 15, depth: 10 });
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(15), depth: gridUnits(10) });
       });
 
       // Complete the debounce

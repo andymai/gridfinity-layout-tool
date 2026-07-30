@@ -8,17 +8,18 @@ import {
 } from '@/shared/utils';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
+import { binId, layerId } from '@/core/types';
 
 describe('bins utilities', () => {
-  const layer1Id = 'layer-1';
-  const layer2Id = 'layer-2';
+  const layer1Id = layerId('layer-1');
+  const layer2Id = layerId('layer-2');
 
   const bins = [
-    createTestBin({ id: 'bin1', layerId: layer1Id }),
-    createTestBin({ id: 'bin2', layerId: layer1Id }),
-    createTestBin({ id: 'bin3', layerId: layer2Id }),
-    createTestBin({ id: 'bin4', layerId: STAGING_ID }),
-    createTestBin({ id: 'bin5', layerId: STAGING_ID }),
+    createTestBin({ id: binId('bin1'), layerId: layer1Id }),
+    createTestBin({ id: binId('bin2'), layerId: layer1Id }),
+    createTestBin({ id: binId('bin3'), layerId: layer2Id }),
+    createTestBin({ id: binId('bin4'), layerId: STAGING_ID }),
+    createTestBin({ id: binId('bin5'), layerId: STAGING_ID }),
   ];
 
   describe('getGridBins', () => {
@@ -31,16 +32,16 @@ describe('bins utilities', () => {
 
     it('should return empty array when all bins are staging', () => {
       const stagingOnly = [
-        createTestBin({ id: 's1', layerId: STAGING_ID }),
-        createTestBin({ id: 's2', layerId: STAGING_ID }),
+        createTestBin({ id: binId('s1'), layerId: STAGING_ID }),
+        createTestBin({ id: binId('s2'), layerId: STAGING_ID }),
       ];
       expect(getGridBins(stagingOnly)).toEqual([]);
     });
 
     it('should return all bins when none are staging', () => {
       const gridOnly = [
-        createTestBin({ id: 'g1', layerId: layer1Id }),
-        createTestBin({ id: 'g2', layerId: layer2Id }),
+        createTestBin({ id: binId('g1'), layerId: layer1Id }),
+        createTestBin({ id: binId('g2'), layerId: layer2Id }),
       ];
       expect(getGridBins(gridOnly)).toHaveLength(2);
     });
@@ -56,8 +57,8 @@ describe('bins utilities', () => {
 
     it('should return empty array when no staging bins', () => {
       const gridOnly = [
-        createTestBin({ id: 'g1', layerId: layer1Id }),
-        createTestBin({ id: 'g2', layerId: layer2Id }),
+        createTestBin({ id: binId('g1'), layerId: layer1Id }),
+        createTestBin({ id: binId('g2'), layerId: layer2Id }),
       ];
       expect(getStagingBins(gridOnly)).toEqual([]);
     });
@@ -77,7 +78,7 @@ describe('bins utilities', () => {
     });
 
     it('should return empty array for non-existent layer', () => {
-      const result = getLayerBins(bins, 'non-existent');
+      const result = getLayerBins(bins, layerId('non-existent'));
       expect(result).toEqual([]);
     });
   });
@@ -93,8 +94,8 @@ describe('bins utilities', () => {
 
     it('should handle all staging bins', () => {
       const allStaging = [
-        createTestBin({ id: 's1', layerId: STAGING_ID }),
-        createTestBin({ id: 's2', layerId: STAGING_ID }),
+        createTestBin({ id: binId('s1'), layerId: STAGING_ID }),
+        createTestBin({ id: binId('s2'), layerId: STAGING_ID }),
       ];
       const { gridBins, stagingBins } = splitBinsByLocation(allStaging);
       expect(gridBins).toEqual([]);
@@ -103,8 +104,8 @@ describe('bins utilities', () => {
 
     it('should handle all grid bins', () => {
       const allGrid = [
-        createTestBin({ id: 'g1', layerId: layer1Id }),
-        createTestBin({ id: 'g2', layerId: layer2Id }),
+        createTestBin({ id: binId('g1'), layerId: layer1Id }),
+        createTestBin({ id: binId('g2'), layerId: layer2Id }),
       ];
       const { gridBins, stagingBins } = splitBinsByLocation(allGrid);
       expect(gridBins).toHaveLength(2);
