@@ -34,7 +34,7 @@ describe('v2 type inference', () => {
     // fixed type made the conditional unmatchable via function-parameter
     // contravariance, and every extractor yielded `never`. `never` satisfies
     // most downstream constraints silently, so assert it directly.
-    it('never collapses to `never`', () => {
+    it('resolves a concrete type for every extractor, not `never`', () => {
       expectTypeOf<PayloadOf<typeof sampleAddBin>>().not.toBeNever();
       expectTypeOf<ValueOf<typeof sampleAddBin>>().not.toBeNever();
       expectTypeOf<ErrorOf<typeof sampleAddBin>>().not.toBeNever();
