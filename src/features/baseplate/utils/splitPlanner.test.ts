@@ -459,7 +459,7 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.isSplit).toBe(true);
     expect(tiling.cols).toBe(2);
     // Verify both pieces physically fit
-    const [a1, b1] = tiling.pieces.sort((a, b) => a.col - b.col);
+    const [a1, b1] = tiling.pieces.toSorted((a, b) => a.col - b.col);
     expect(a1.widthUnits * 42 + a1.paddingLeft + a1.paddingRight).toBeLessThanOrEqual(256);
     expect(b1.widthUnits * 42 + b1.paddingLeft + b1.paddingRight).toBeLessThanOrEqual(256);
     expect(a1.widthUnits + b1.widthUnits).toBe(6);

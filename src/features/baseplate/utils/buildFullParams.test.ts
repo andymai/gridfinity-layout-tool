@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { mm, gridUnits } from '@gridfinity/branded-types';
 import { buildFullParams, maxCornerRadiusMm, plainRoundingLimit } from './buildFullParams';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { CornerCutParams, DrawerOutline } from '@/core/types';
@@ -6,12 +7,12 @@ import type { CornerCutParams, DrawerOutline } from '@/core/types';
 describe('buildFullParams', () => {
   const storedBase = {
     magnetHoles: true,
-    magnetDiameter: 6.5,
-    magnetDepth: 2.4,
-    paddingLeft: 1.0,
-    paddingRight: 2.0,
-    paddingFront: 3.0,
-    paddingBack: 4.0,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2.4),
+    paddingLeft: mm(1.0),
+    paddingRight: mm(2.0),
+    paddingFront: mm(3.0),
+    paddingBack: mm(4.0),
   };
 
   it('passes through all stored fields', () => {
@@ -140,12 +141,12 @@ describe('buildFullParams', () => {
   it('produces correct full result with all distinct values', () => {
     const stored = {
       magnetHoles: false,
-      magnetDiameter: 5.0,
-      magnetDepth: 1.5,
-      paddingLeft: 0.5,
-      paddingRight: 1.5,
-      paddingFront: 2.5,
-      paddingBack: 3.5,
+      magnetDiameter: mm(5.0),
+      magnetDepth: mm(1.5),
+      paddingLeft: mm(0.5),
+      paddingRight: mm(1.5),
+      paddingFront: mm(2.5),
+      paddingBack: mm(3.5),
     };
 
     const result = buildFullParams(stored, 20, 16, 42, 'start', 'start');
@@ -156,13 +157,13 @@ describe('buildFullParams', () => {
       gridUnitMm: 42,
       gridUnitMmY: 42,
       magnetHoles: false,
-      magnetDiameter: 5.0,
-      magnetDepth: 1.5,
+      magnetDiameter: mm(5.0),
+      magnetDepth: mm(1.5),
       magnetAnchor: 'edge',
-      paddingLeft: 0.5,
-      paddingRight: 1.5,
-      paddingFront: 2.5,
-      paddingBack: 3.5,
+      paddingLeft: mm(0.5),
+      paddingRight: mm(1.5),
+      paddingFront: mm(2.5),
+      paddingBack: mm(3.5),
       fractionalEdgeX: 'start',
       fractionalEdgeY: 'start',
       detachMargins: false,
@@ -211,7 +212,7 @@ describe('buildFullParams', () => {
       const result = withFlag({
         connectorNubs: true,
         connectorStyle: 'snapClip',
-        stackPrint: { enabled: true, gapMm: 0.2 },
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
       });
       expect(result.connectorNubs).toBe(false);
       expect(result.connectorSlotsAllEdges).toBeUndefined();
@@ -251,8 +252,8 @@ describe('buildFullParams', () => {
       const stored = {
         ...storedBase,
         syncWithLayout: true,
-        baseplateWidth: 20,
-        baseplateDepth: 16,
+        baseplateWidth: gridUnits(20),
+        baseplateDepth: gridUnits(16),
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.width).toBe(10);
@@ -263,8 +264,8 @@ describe('buildFullParams', () => {
       const stored = {
         ...storedBase,
         syncWithLayout: false,
-        baseplateWidth: 20,
-        baseplateDepth: 16,
+        baseplateWidth: gridUnits(20),
+        baseplateDepth: gridUnits(16),
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.width).toBe(20);
@@ -327,7 +328,7 @@ describe('buildFullParams', () => {
         ...storedBase,
         connectorNubs: true,
         connectorStyle: undefined, // plain dovetail
-        stackPrint: { enabled: true, gapMm: 0.2 as never },
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);
@@ -338,7 +339,7 @@ describe('buildFullParams', () => {
     it('keeps dovetail key connectors when stacking', () => {
       const stored = {
         ...withFeatures,
-        stackPrint: { enabled: true, gapMm: 0.2 as never },
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);
@@ -351,7 +352,7 @@ describe('buildFullParams', () => {
         ...storedBase,
         connectorNubs: true,
         connectorStyle: 'snapClip' as const,
-        stackPrint: { enabled: true, gapMm: 0.2 as never },
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(false);
@@ -365,7 +366,7 @@ describe('buildFullParams', () => {
     it('keeps connectors and magnets when stackPrint exists but is disabled', () => {
       const stored = {
         ...withFeatures,
-        stackPrint: { enabled: false, gapMm: 0.2 as never },
+        stackPrint: { enabled: false, gapMm: mm(0.2) },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);
@@ -376,10 +377,10 @@ describe('buildFullParams', () => {
   describe('detach margins × stack-print composition (#2641)', () => {
     const detached = {
       ...storedBase,
-      paddingLeft: 10,
-      paddingRight: 10,
+      paddingLeft: mm(10),
+      paddingRight: mm(10),
       detachMargins: true,
-      stackPrint: { enabled: true, gapMm: 0.2 as never },
+      stackPrint: { enabled: true, gapMm: mm(0.2) },
     };
 
     it('keeps detachMargins active while stacking', () => {
@@ -417,7 +418,7 @@ describe('buildFullParams', () => {
     });
 
     it('still strips rounding while stacking, so rails inherit square corners', () => {
-      const stored = { ...detached, cornerRadius: 4 };
+      const stored = { ...detached, cornerRadius: mm(4) };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.detachMargins).toBe(true);
       expect(result.cornerRadius).toBe(0);
@@ -428,12 +429,12 @@ describe('buildFullParams', () => {
 describe('drawer outline handling', () => {
   const storedBase = {
     magnetHoles: true,
-    magnetDiameter: 6.5,
-    magnetDepth: 2.4,
-    paddingLeft: 1.0,
-    paddingRight: 2.0,
-    paddingFront: 3.0,
-    paddingBack: 4.0,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2.4),
+    paddingLeft: mm(1.0),
+    paddingRight: mm(2.0),
+    paddingFront: mm(3.0),
+    paddingBack: mm(4.0),
   };
   const outline = {
     vertices: [
@@ -449,8 +450,8 @@ describe('drawer outline handling', () => {
   it('composes padding into a rectilinear shape and zeroes the subsumed params', () => {
     const stored = {
       ...storedBase,
-      cornerRadius: 4,
-      cornerRadii: { tl: 4, tr: 4, bl: 4, br: 4 },
+      cornerRadius: mm(4),
+      cornerRadii: { tl: mm(4), tr: mm(4), bl: mm(4), br: mm(4) },
       detachMargins: true,
       detachMarginConnector: true,
     };
@@ -482,21 +483,21 @@ describe('drawer outline handling', () => {
   });
 
   it('keeps magnets and solid floor working on shaped plates', () => {
-    const stored = { ...storedBase, solidFloor: true, solidFloorThickness: 1.2 };
+    const stored = { ...storedBase, solidFloor: true, solidFloorThickness: mm(1.2) };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
     expect(result.magnetHoles).toBe(true);
     expect(result.solidFloor).toBe(true);
   });
 
   it('ignores the outline for unsynced (custom-size) plates', () => {
-    const stored = { ...storedBase, syncWithLayout: false, paddingLeft: 5 };
+    const stored = { ...storedBase, syncWithLayout: false, paddingLeft: mm(5) };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
     expect(result.outline).toBeUndefined();
     expect(result.paddingLeft).toBe(5);
   });
 
   it('strips the outline under stack printing (uniform rectangular tiles)', () => {
-    const stored = { ...storedBase, stackPrint: { enabled: true, gapMm: 0.2 as never } };
+    const stored = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
     expect(result.outline).toBeUndefined();
   });
@@ -511,12 +512,12 @@ describe('drawer outline handling', () => {
 describe('corner-cut shape + padding composition', () => {
   const storedBase = {
     magnetHoles: true,
-    magnetDiameter: 6.5,
-    magnetDepth: 2.4,
-    paddingLeft: 1.0,
-    paddingRight: 2.0,
-    paddingFront: 3.0,
-    paddingBack: 4.0,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2.4),
+    paddingLeft: mm(1.0),
+    paddingRight: mm(2.0),
+    paddingFront: mm(3.0),
+    paddingBack: mm(4.0),
   };
   const cuts: CornerCutParams = {
     tl: { kind: 'radius', r: 60 },
@@ -544,10 +545,10 @@ describe('corner-cut shape + padding composition', () => {
   it('reuses the stored outline identity at zero padding', () => {
     const stored = {
       ...storedBase,
-      paddingLeft: 0,
-      paddingRight: 0,
-      paddingFront: 0,
-      paddingBack: 0,
+      paddingLeft: mm(0),
+      paddingRight: mm(0),
+      paddingFront: mm(0),
+      paddingBack: mm(0),
     };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, cornerOutline);
     expect(result.outline).toBe(cornerOutline);
@@ -557,8 +558,8 @@ describe('corner-cut shape + padding composition', () => {
   it('still zeroes rounding and detach for corner-cut shapes', () => {
     const stored = {
       ...storedBase,
-      cornerRadius: 4,
-      cornerRadii: { tl: 4, tr: 4, bl: 4, br: 4 },
+      cornerRadius: mm(4),
+      cornerRadii: { tl: mm(4), tr: mm(4), bl: mm(4), br: mm(4) },
       detachMargins: true,
       detachMarginConnector: true,
     };
@@ -588,17 +589,24 @@ describe('corner-cut shape + padding composition', () => {
 describe('large corner radius → outline conversion', () => {
   const storedBase = {
     magnetHoles: false,
-    magnetDiameter: 6.5,
-    magnetDepth: 2.4,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2.4),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
   };
 
   it('keeps the plain rounding path for radii within the limit', () => {
     // Limit with zero padding: 42/2 = 21.
-    const result = buildFullParams({ ...storedBase, cornerRadius: 21 }, 10, 8, 42, 'end', 'end');
+    const result = buildFullParams(
+      { ...storedBase, cornerRadius: mm(21) },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
     expect(result.outline).toBeUndefined();
     expect(result.cornerRadius).toBe(21);
   });
@@ -606,11 +614,11 @@ describe('large corner radius → outline conversion', () => {
   it('padding raises the plain rounding limit', () => {
     const stored = {
       ...storedBase,
-      paddingLeft: 10,
-      paddingRight: 10,
-      paddingFront: 10,
-      paddingBack: 10,
-      cornerRadius: 30,
+      paddingLeft: mm(10),
+      paddingRight: mm(10),
+      paddingFront: mm(10),
+      paddingBack: mm(10),
+      cornerRadius: mm(30),
     };
     expect(plainRoundingLimit(42, 10)).toBe(31);
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
@@ -619,7 +627,14 @@ describe('large corner radius → outline conversion', () => {
   });
 
   it('converts a beyond-limit radius to a radius-cut outline', () => {
-    const result = buildFullParams({ ...storedBase, cornerRadius: 60 }, 10, 8, 42, 'end', 'end');
+    const result = buildFullParams(
+      { ...storedBase, cornerRadius: mm(60) },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
     const r60: CornerCutParams = {
       tl: { kind: 'radius', r: 60 },
       tr: { kind: 'radius', r: 60 },
@@ -633,7 +648,7 @@ describe('large corner radius → outline conversion', () => {
   });
 
   it('converts when ANY per-corner radius exceeds the limit', () => {
-    const stored = { ...storedBase, cornerRadii: { tl: 60, tr: 4, bl: 0, br: 4 } };
+    const stored = { ...storedBase, cornerRadii: { tl: mm(60), tr: mm(4), bl: mm(0), br: mm(4) } };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
     expect(result.outline?.vertices).toEqual(
       cornerCutVertices(420, 336, {
@@ -647,7 +662,14 @@ describe('large corner radius → outline conversion', () => {
 
   it('clamps converted radii to the geometric ceiling', () => {
     // 2×2 grid → 84×84mm; ceiling is 84/2 − 0.1 = 41.9.
-    const result = buildFullParams({ ...storedBase, cornerRadius: 100 }, 2, 2, 42, 'end', 'end');
+    const result = buildFullParams(
+      { ...storedBase, cornerRadius: mm(100) },
+      2,
+      2,
+      42,
+      'end',
+      'end'
+    );
     expect(maxCornerRadiusMm(84, 84)).toBeCloseTo(41.9);
     const r: CornerCutParams['tl'] = { kind: 'radius', r: 41.9 };
     expect(result.outline?.vertices).toEqual(
@@ -658,11 +680,11 @@ describe('large corner radius → outline conversion', () => {
   it('converts with padding kept — the padded extent hosts the arcs', () => {
     const stored = {
       ...storedBase,
-      paddingLeft: 11,
-      paddingRight: 11,
-      paddingFront: 11,
-      paddingBack: 11,
-      cornerRadius: 45,
+      paddingLeft: mm(11),
+      paddingRight: mm(11),
+      paddingFront: mm(11),
+      paddingBack: mm(11),
+      cornerRadius: mm(45),
     };
     const result = buildFullParams(stored, 4, 6, 42, 'end', 'end');
     // totalW = 168 + 22 = 190, totalD = 252 + 22 = 274.
@@ -676,8 +698,8 @@ describe('large corner radius → outline conversion', () => {
   it('never converts while stacking (rounding is stripped instead)', () => {
     const stored = {
       ...storedBase,
-      cornerRadius: 60,
-      stackPrint: { enabled: true, gapMm: 0.2 as never },
+      cornerRadius: mm(60),
+      stackPrint: { enabled: true, gapMm: mm(0.2) },
     };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
     expect(result.outline).toBeUndefined();
@@ -688,9 +710,9 @@ describe('large corner radius → outline conversion', () => {
     const stored = {
       ...storedBase,
       syncWithLayout: false,
-      baseplateWidth: 5,
-      baseplateDepth: 5,
-      cornerRadius: 60,
+      baseplateWidth: gridUnits(5),
+      baseplateDepth: gridUnits(5),
+      cornerRadius: mm(60),
     };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
     const r: CornerCutParams['tl'] = { kind: 'radius', r: 60 };
