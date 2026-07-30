@@ -40,19 +40,20 @@ import {
 } from '@/core/storage/migration';
 
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm, layerId, categoryId } from '@/core/types';
 
 // Test fixtures
 function createTestLayout(overrides: Partial<Layout> = {}): Layout {
   return {
-    version: 1,
+    version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
-    categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    categories: [{ id: categoryId('default'), name: 'Default', color: '#3b82f6' }],
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
     ...overrides,
   };
 }

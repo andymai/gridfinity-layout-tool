@@ -1,22 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore, computePreview, createDefaultLibrary } from '@/core/store/library';
-import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
+import { createDefaultLayout, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { resetAllStores, expectOk, expectErr } from '@/test/testUtils';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, LayoutId } from '@/core/types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '@/core/types';
+import { layoutId, gridUnits, heightUnits, binId, layerId, categoryId } from '@/core/types';
 
 // Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
 function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
   const entries: LayoutEntry[] = [];
   for (let i = 0; i < entryCount; i++) {
     entries.push({
-      id: `layout-${i}`,
+      id: layoutId(`layout-${i}`),
       name: `Test Layout ${i}`,
       createdAt: Date.now() - (entryCount - i) * 1000, // Older layouts have older timestamps
       modifiedAt: Date.now() - (entryCount - i) * 1000,
       preview: {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: i,
         layerCount: 1,
         binMap: [],
@@ -26,7 +27,7 @@ function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
 
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id || layoutId(''),
     settings: {},
     entries,
   };
@@ -69,16 +70,16 @@ describe('library store', () => {
   describe('createEntry', () => {
     it('creates a new entry with correct fields', () => {
       const preview: LayoutPreview = {
-        drawerWidth: 15,
-        drawerDepth: 12,
-        drawerHeight: 10,
+        drawerWidth: gridUnits(15),
+        drawerDepth: gridUnits(12),
+        drawerHeight: heightUnits(10),
         binCount: 5,
         layerCount: 2,
       };
 
       const entry = useLibraryStore
         .getState()
-        .createEntry('New Layout', 'new-layout-id', preview, 'Test Author');
+        .createEntry('New Layout', layoutId('new-layout-id'), preview, 'Test Author');
 
       expect(entry.id).toBe('new-layout-id');
       expect(entry.name).toBe('New Layout');
@@ -89,10 +90,10 @@ describe('library store', () => {
     });
 
     it('handles empty name', () => {
-      const entry = useLibraryStore.getState().createEntry('', 'empty-name-id', {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+      const entry = useLibraryStore.getState().createEntry('', layoutId('empty-name-id'), {
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: 0,
         layerCount: 1,
       });
@@ -102,10 +103,10 @@ describe('library store', () => {
     });
 
     it('handles name with only whitespace', () => {
-      const entry = useLibraryStore.getState().createEntry('   ', 'whitespace-id', {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+      const entry = useLibraryStore.getState().createEntry('   ', layoutId('whitespace-id'), {
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: 0,
         layerCount: 1,
       });
@@ -117,14 +118,18 @@ describe('library store', () => {
     it('handles undefined author (uses settings author)', () => {
       useLibraryStore.getState().setAuthorName('Settings Author');
 
-      const entry = useLibraryStore
-        .getState()
-        .createEntry(
-          'Layout',
-          'id',
-          { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
-          undefined
-        );
+      const entry = useLibraryStore.getState().createEntry(
+        'Layout',
+        layoutId('id'),
+        {
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
+          binCount: 0,
+          layerCount: 1,
+        },
+        undefined
+      );
 
       expect(entry.author).toBe('Settings Author');
     });
@@ -132,10 +137,10 @@ describe('library store', () => {
     it('adds entry to the library', () => {
       const initialCount = useLibraryStore.getState().library.entries.length;
 
-      useLibraryStore.getState().createEntry('New Layout', 'new-id', {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+      useLibraryStore.getState().createEntry('New Layout', layoutId('new-id'), {
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: 0,
         layerCount: 1,
       });
@@ -146,10 +151,10 @@ describe('library store', () => {
     it('truncates name to max length', () => {
       const longName = 'A'.repeat(CONSTRAINTS.NAME_MAX_LENGTH + 20);
 
-      const entry = useLibraryStore.getState().createEntry(longName, 'id', {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+      const entry = useLibraryStore.getState().createEntry(longName, layoutId('id'), {
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: 0,
         layerCount: 1,
       });
@@ -160,10 +165,10 @@ describe('library store', () => {
     it('uses library author name if not provided', () => {
       useLibraryStore.getState().setAuthorName('Default Author');
 
-      const entry = useLibraryStore.getState().createEntry('Layout', 'id', {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
+      const entry = useLibraryStore.getState().createEntry('Layout', layoutId('id'), {
+        drawerWidth: gridUnits(10),
+        drawerDepth: gridUnits(8),
+        drawerHeight: heightUnits(12),
         binCount: 0,
         layerCount: 1,
       });
@@ -181,11 +186,11 @@ describe('library store', () => {
     });
 
     it('returns Ok when deleting an entry', () => {
-      const result = useLibraryStore.getState().deleteEntry('layout-1');
+      const result = useLibraryStore.getState().deleteEntry(layoutId('layout-1'));
 
       expectOk(result);
       expect(useLibraryStore.getState().library.entries).toHaveLength(2);
-      expect(useLibraryStore.getState().getEntry('layout-1')).toBeUndefined();
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-1'))).toBeUndefined();
     });
 
     it('returns Err with LAYOUT_LAST_ENTITY when deleting the only entry', () => {
@@ -194,21 +199,25 @@ describe('library store', () => {
         isLoaded: true,
       });
 
-      const result = useLibraryStore.getState().deleteEntry('layout-0');
+      const result = useLibraryStore.getState().deleteEntry(layoutId('layout-0'));
 
       const error = expectErr(result);
       expect(error.code).toBe('LAYOUT_LAST_ENTITY');
       expect(error.kind).toBe('LayoutError');
-      expect(error.entityType).toBe('layout');
+      if (error.code === 'LAYOUT_LAST_ENTITY') {
+        expect(error.entityType).toBe('layout');
+      } else {
+        throw new Error('Expected LAYOUT_LAST_ENTITY error');
+      }
       expect(useLibraryStore.getState().library.entries).toHaveLength(1);
     });
 
     it('switches activeLayoutId if deleting active layout', () => {
       useLibraryStore.setState((state) => {
-        state.library.activeLayoutId = 'layout-1';
+        state.library.activeLayoutId = layoutId('layout-1');
       });
 
-      const result = useLibraryStore.getState().deleteEntry('layout-1');
+      const result = useLibraryStore.getState().deleteEntry(layoutId('layout-1'));
 
       expectOk(result);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
@@ -216,10 +225,10 @@ describe('library store', () => {
 
     it('does not change activeLayoutId if deleting inactive layout', () => {
       useLibraryStore.setState((state) => {
-        state.library.activeLayoutId = 'layout-0';
+        state.library.activeLayoutId = layoutId('layout-0');
       });
 
-      const result = useLibraryStore.getState().deleteEntry('layout-2');
+      const result = useLibraryStore.getState().deleteEntry(layoutId('layout-2'));
 
       expectOk(result);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
@@ -235,17 +244,17 @@ describe('library store', () => {
     });
 
     it('updates entry name', () => {
-      useLibraryStore.getState().updateEntry('layout-0', { name: 'Updated Name' });
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), { name: 'Updated Name' });
 
-      expect(useLibraryStore.getState().getEntry('layout-0')?.name).toBe('Updated Name');
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.name).toBe('Updated Name');
     });
 
     it('truncates updated name to max length', () => {
       const longName = 'B'.repeat(CONSTRAINTS.NAME_MAX_LENGTH + 10);
 
-      useLibraryStore.getState().updateEntry('layout-0', { name: longName });
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), { name: longName });
 
-      expect(useLibraryStore.getState().getEntry('layout-0')?.name).toHaveLength(
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.name).toHaveLength(
         CONSTRAINTS.NAME_MAX_LENGTH
       );
     });
@@ -253,44 +262,46 @@ describe('library store', () => {
     it('updates modifiedAt', () => {
       const newTime = Date.now() + 10000;
 
-      useLibraryStore.getState().updateEntry('layout-0', { modifiedAt: newTime });
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), { modifiedAt: newTime });
 
-      expect(useLibraryStore.getState().getEntry('layout-0')?.modifiedAt).toBe(newTime);
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.modifiedAt).toBe(newTime);
     });
 
     it('updates preview', () => {
       const newPreview: LayoutPreview = {
-        drawerWidth: 20,
-        drawerDepth: 15,
-        drawerHeight: 10,
+        drawerWidth: gridUnits(20),
+        drawerDepth: gridUnits(15),
+        drawerHeight: heightUnits(10),
         binCount: 50,
         layerCount: 5,
       };
 
-      useLibraryStore.getState().updateEntry('layout-0', { preview: newPreview });
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), { preview: newPreview });
 
-      expect(useLibraryStore.getState().getEntry('layout-0')?.preview).toEqual(newPreview);
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.preview).toEqual(
+        newPreview
+      );
     });
 
     it('updates author', () => {
-      useLibraryStore.getState().updateEntry('layout-0', { author: 'New Author' });
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), { author: 'New Author' });
 
-      expect(useLibraryStore.getState().getEntry('layout-0')?.author).toBe('New Author');
+      expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.author).toBe('New Author');
     });
 
     it('updates forkedFrom', () => {
-      useLibraryStore.getState().updateEntry('layout-0', {
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), {
         forkedFrom: { name: 'Original Layout', author: 'Original Author' },
       });
 
-      const entry = useLibraryStore.getState().getEntry('layout-0');
+      const entry = useLibraryStore.getState().getEntry(layoutId('layout-0'));
       expect(entry?.forkedFrom).toEqual({ name: 'Original Layout', author: 'Original Author' });
     });
 
     it('does nothing for non-existent entry', () => {
       const entriesBefore = [...useLibraryStore.getState().library.entries];
 
-      useLibraryStore.getState().updateEntry('non-existent', { name: 'Whatever' });
+      useLibraryStore.getState().updateEntry(layoutId('non-existent'), { name: 'Whatever' });
 
       expect(useLibraryStore.getState().library.entries).toEqual(entriesBefore);
     });
@@ -305,57 +316,57 @@ describe('library store', () => {
     });
 
     it('creates a copy with (copy) suffix', () => {
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
 
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'new-copy-id');
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('new-copy-id'));
 
       expect(duplicate.id).toBe('new-copy-id');
       expect(duplicate.name).toBe('Test Layout 0 (copy)');
     });
 
     it('copies preview data', () => {
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
 
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'new-copy-id');
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('new-copy-id'));
 
       expect(duplicate.preview).toEqual(source.preview);
     });
 
     it('sets new timestamps', () => {
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
       const before = Date.now();
 
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'new-copy-id');
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('new-copy-id'));
 
       expect(duplicate.createdAt).toBeGreaterThanOrEqual(before);
       expect(duplicate.modifiedAt).toBeGreaterThanOrEqual(before);
     });
 
     it('adds duplicate to library', () => {
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
       const countBefore = useLibraryStore.getState().library.entries.length;
 
-      useLibraryStore.getState().duplicateEntry(source, 'new-copy-id');
+      useLibraryStore.getState().duplicateEntry(source, layoutId('new-copy-id'));
 
       expect(useLibraryStore.getState().library.entries).toHaveLength(countBefore + 1);
     });
 
     it('truncates name if source name + (copy) exceeds max length', () => {
       // Set up a source with a very long name
-      useLibraryStore.getState().updateEntry('layout-0', {
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), {
         name: 'A'.repeat(CONSTRAINTS.NAME_MAX_LENGTH - 2),
       });
 
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'new-copy-id');
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('new-copy-id'));
 
       expect(duplicate.name.length).toBeLessThanOrEqual(CONSTRAINTS.NAME_MAX_LENGTH);
     });
 
     it('creates independent preview copy (not shared reference)', () => {
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
 
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'copy-id');
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('copy-id'));
 
       // The duplicate preview should be a copy, not the same reference
       expect(duplicate.preview).not.toBe(source.preview);
@@ -367,12 +378,12 @@ describe('library store', () => {
     });
 
     it('does not copy forkedFrom from source', () => {
-      useLibraryStore.getState().updateEntry('layout-0', {
+      useLibraryStore.getState().updateEntry(layoutId('layout-0'), {
         forkedFrom: { name: 'Original', author: 'Someone' },
       });
 
-      const source = useLibraryStore.getState().getEntry('layout-0')!;
-      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'copy-id');
+      const source = useLibraryStore.getState().getEntry(layoutId('layout-0'))!;
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, layoutId('copy-id'));
 
       expect(duplicate.forkedFrom).toBeUndefined();
     });
@@ -387,14 +398,14 @@ describe('library store', () => {
     });
 
     it('returns entry by id', () => {
-      const entry = useLibraryStore.getState().getEntry('layout-0');
+      const entry = useLibraryStore.getState().getEntry(layoutId('layout-0'));
 
       expect(entry).toBeDefined();
       expect(entry?.id).toBe('layout-0');
     });
 
     it('returns undefined for non-existent id', () => {
-      const entry = useLibraryStore.getState().getEntry('non-existent');
+      const entry = useLibraryStore.getState().getEntry(layoutId('non-existent'));
 
       expect(entry).toBeUndefined();
     });
@@ -410,7 +421,7 @@ describe('library store', () => {
       library.entries[3].modifiedAt = 4000;
       library.entries[4].modifiedAt = 2000;
 
-      useLibraryStore.setState({ library, isLoaded: true, showLayoutManager: false });
+      useLibraryStore.setState({ library, isLoaded: true });
     });
 
     it('returns entries sorted by modifiedAt descending', () => {
@@ -461,7 +472,7 @@ describe('library store', () => {
         isLoaded: true,
       });
 
-      useLibraryStore.getState().setActiveLayoutId('layout-2');
+      useLibraryStore.getState().setActiveLayoutId(layoutId('layout-2'));
 
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-2');
     });
@@ -489,45 +500,45 @@ describe('library store', () => {
 describe('computePreview', () => {
   it('computes preview from layout including binMap', () => {
     const layout = createDefaultLayout();
-    layout.drawer = { width: 15, depth: 12, height: 10 };
-    layout.categories = [{ id: 'cat1', name: 'Category 1', color: '#3B82F6' }];
+    layout.drawer = { width: gridUnits(15), depth: gridUnits(12), height: heightUnits(10) };
+    layout.categories = [{ id: categoryId('cat1'), name: 'Category 1', color: '#3B82F6' }];
     layout.bins = [
       {
-        id: '1',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'layer1',
-        category: 'cat1',
+        id: binId('1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('cat1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        x: 1,
-        y: 0,
-        width: 2,
-        depth: 3,
-        height: 3,
-        layerId: 'layer1',
-        category: 'cat1',
+        id: binId('2'),
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(3),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('cat1'),
         label: '',
         notes: '',
       },
     ];
     layout.layers = [
-      { id: 'layer1', name: 'Layer 1', height: 3 },
-      { id: 'layer2', name: 'Layer 2', height: 5 },
+      { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+      { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(5) },
     ];
 
     const preview = computePreview(layout);
 
     expect(preview).toEqual({
-      drawerWidth: 15,
-      drawerDepth: 12,
-      drawerHeight: 10,
+      drawerWidth: gridUnits(15),
+      drawerDepth: gridUnits(12),
+      drawerHeight: heightUnits(10),
       binCount: 2,
       layerCount: 2,
       binMap: [
@@ -539,29 +550,29 @@ describe('computePreview', () => {
 
   it('excludes staged bins from binMap', () => {
     const layout = createDefaultLayout();
-    layout.categories = [{ id: 'cat1', name: 'Category', color: '#FF0000' }];
+    layout.categories = [{ id: categoryId('cat1'), name: 'Category', color: '#FF0000' }];
     layout.bins = [
       {
-        id: '1',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'layer1',
-        category: 'cat1',
+        id: binId('1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('cat1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: '__staging__',
-        category: 'cat1',
+        id: binId('2'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: STAGING_ID,
+        category: categoryId('cat1'),
         label: '',
         notes: '',
       },
@@ -580,14 +591,14 @@ describe('computePreview', () => {
     layout.categories = [];
     layout.bins = [
       {
-        id: '1',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'layer1',
-        category: 'unknown',
+        id: binId('1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('unknown'),
         label: '',
         notes: '',
       },
@@ -606,33 +617,33 @@ describe('clearCloudShare', () => {
       id: 'share-123',
       deleteToken: 'token-456',
       permission: 'edit',
-      sharedAt: new Date().toISOString(),
+      sharedAt: Date.now(),
     };
     useLibraryStore.setState({ library, isLoaded: true });
   });
 
   it('clears cloud share from entry', () => {
-    expect(useLibraryStore.getState().getEntry('layout-0')?.cloudShare).toBeDefined();
+    expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.cloudShare).toBeDefined();
 
-    useLibraryStore.getState().clearCloudShare('layout-0');
+    useLibraryStore.getState().clearCloudShare(layoutId('layout-0'));
 
-    expect(useLibraryStore.getState().getEntry('layout-0')?.cloudShare).toBeUndefined();
+    expect(useLibraryStore.getState().getEntry(layoutId('layout-0'))?.cloudShare).toBeUndefined();
   });
 
   it('does nothing for non-existent entry', () => {
     const entriesBefore = useLibraryStore.getState().library.entries.length;
 
-    useLibraryStore.getState().clearCloudShare('non-existent');
+    useLibraryStore.getState().clearCloudShare(layoutId('non-existent'));
 
     expect(useLibraryStore.getState().library.entries.length).toBe(entriesBefore);
   });
 
   it('does nothing for entry without cloud share', () => {
     // layout-1 has no cloud share
-    useLibraryStore.getState().clearCloudShare('layout-1');
+    useLibraryStore.getState().clearCloudShare(layoutId('layout-1'));
 
     // Should not throw or change anything
-    expect(useLibraryStore.getState().getEntry('layout-1')?.cloudShare).toBeUndefined();
+    expect(useLibraryStore.getState().getEntry(layoutId('layout-1'))?.cloudShare).toBeUndefined();
   });
 });
 
@@ -640,13 +651,13 @@ describe('setCloudShare', () => {
   it('sets cloudShare on the entry', () => {
     const store = useLibraryStore.getState();
     const preview: LayoutPreview = {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     };
-    const entry = store.createEntry('Test', 'layout-1' as LayoutId, preview);
+    const entry = store.createEntry('Test', layoutId('layout-1'), preview);
     const share = {
       id: 'share-1',
       deleteToken: 'token-1',
@@ -662,7 +673,7 @@ describe('setCloudShare', () => {
 
 describe('createDefaultLibrary', () => {
   it('creates a library with single entry', () => {
-    const library = createDefaultLibrary('test-id', 'Test Layout');
+    const library = createDefaultLibrary(layoutId('test-id'), 'Test Layout');
 
     expect(library.version).toBe('1.0');
     expect(library.activeLayoutId).toBe('test-id');
@@ -672,12 +683,12 @@ describe('createDefaultLibrary', () => {
   });
 
   it('includes default preview', () => {
-    const library = createDefaultLibrary('test-id', 'Test Layout');
+    const library = createDefaultLibrary(layoutId('test-id'), 'Test Layout');
 
     expect(library.entries[0].preview).toEqual({
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     });
@@ -685,7 +696,7 @@ describe('createDefaultLibrary', () => {
 
   it('sets timestamps', () => {
     const before = Date.now();
-    const library = createDefaultLibrary('test-id', 'Test Layout');
+    const library = createDefaultLibrary(layoutId('test-id'), 'Test Layout');
     const after = Date.now();
 
     expect(library.entries[0].createdAt).toBeGreaterThanOrEqual(before);

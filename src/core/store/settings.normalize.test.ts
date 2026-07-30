@@ -6,6 +6,8 @@ import {
   normalizeViewMode,
 } from './settings.normalize';
 import { DEFAULT_BIN_LIST_SORT_ORDER, DEFAULT_STL_SEARCH_SITES } from './settings.types';
+import type { BinSortField } from './settings.types';
+import { categoryId } from '@/core/types';
 
 describe('normalizeSortOrder', () => {
   it('returns defaults when stored is undefined', () => {
@@ -23,7 +25,7 @@ describe('normalizeSortOrder', () => {
   });
 
   it('adds missing fields as disabled', () => {
-    const stored = [{ field: 'label' as const, enabled: true }];
+    const stored: { field: BinSortField; enabled: boolean }[] = [{ field: 'label', enabled: true }];
     const result = normalizeSortOrder(stored);
     const storedFields = new Set(stored.map((s) => s.field));
     const addedFields = result.filter((s) => !storedFields.has(s.field));
@@ -61,13 +63,13 @@ describe('normalizeCategories', () => {
   });
 
   it('returns valid categories', () => {
-    const categories = [{ id: 'cat-1', name: 'Tools', color: '#ff0000' }];
+    const categories = [{ id: categoryId('cat-1'), name: 'Tools', color: '#ff0000' }];
     expect(normalizeCategories(categories)).toEqual(categories);
   });
 
   it('filters out categories with missing fields', () => {
     const categories = [
-      { id: 'cat-1', name: 'Tools', color: '#ff0000' },
+      { id: categoryId('cat-1'), name: 'Tools', color: '#ff0000' },
       { id: 'cat-2', name: 'Bad' } as never, // missing color
     ];
     const result = normalizeCategories(categories);

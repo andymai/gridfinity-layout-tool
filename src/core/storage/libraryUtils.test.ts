@@ -8,26 +8,27 @@ import {
   removeLibraryEntry,
   addLibraryEntry,
 } from './libraryUtils';
-import type { LayoutEntry, LayoutLibrary } from '../core/types';
+import type { LayoutEntry, LayoutLibrary } from '@/core/types';
+import { layoutId, gridUnits, heightUnits } from '@/core/types';
 
 const createMockEntry = (id: string, name: string): LayoutEntry => ({
-  id,
+  id: layoutId(id),
   name,
   createdAt: Date.now(),
   modifiedAt: Date.now(),
   preview: {
-    drawerWidth: 10,
-    drawerDepth: 8,
-    drawerHeight: 12,
+    drawerWidth: gridUnits(10),
+    drawerDepth: gridUnits(8),
+    drawerHeight: heightUnits(12),
     binCount: 0,
     layerCount: 1,
-    binMap: '',
+    binMap: [],
   },
 });
 
 const createMockLibrary = (entries: LayoutEntry[]): LayoutLibrary => ({
-  version: 1,
-  activeLayoutId: entries[0]?.id ?? 'none',
+  version: '1.0',
+  activeLayoutId: entries[0]?.id ?? layoutId('none'),
   settings: {},
   entries,
 });

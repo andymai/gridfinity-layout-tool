@@ -7,7 +7,8 @@ import {
   expectOk,
   expectErr,
 } from '@/test/testUtils';
-import { layerId } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 // Mock analytics to avoid side effects
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -101,11 +102,11 @@ describe('halfGridMode store', () => {
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
         layerId: layout.layers[0].id,
-        x: 0.5, // Fractional position
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0.5), // Fractional position
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -155,11 +156,11 @@ describe('halfGridMode store', () => {
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
         layerId: layout.layers[0].id,
-        x: 0.5, // Fractional position
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0.5), // Fractional position
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -170,8 +171,12 @@ describe('halfGridMode store', () => {
 
       const error = expectErr(result);
       expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
-      expect(error.reason).toContain('Cannot disable');
-      expect(error.reason).toContain('fractional dimensions');
+      if (error.code === 'LAYOUT_INVALID_OPERATION') {
+        expect(error.reason).toContain('Cannot disable');
+        expect(error.reason).toContain('fractional dimensions');
+      } else {
+        throw new Error('Expected LAYOUT_INVALID_OPERATION error');
+      }
 
       // State should remain enabled
       const { halfGridMode } = useHalfGridModeStore.getState();
@@ -185,11 +190,11 @@ describe('halfGridMode store', () => {
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1.5, // Fractional width
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1.5), // Fractional width
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -208,11 +213,11 @@ describe('halfGridMode store', () => {
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
         layerId: layout.layers[0].id,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 2.5, // Fractional depth
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(2.5), // Fractional depth
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -231,12 +236,12 @@ describe('halfGridMode store', () => {
       // Add a fractional bin to staging (should be ignored)
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
-        layerId: layerId('__staging__'),
-        x: 0.5, // Fractional position in staging
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        layerId: STAGING_ID,
+        x: gridUnits(0.5), // Fractional position in staging
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -282,11 +287,11 @@ describe('halfGridMode store', () => {
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
         layerId: layout.layers[0].id,
-        x: 0.5,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0.5),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -328,11 +333,11 @@ describe('halfGridMode store', () => {
       // Add multiple fractional bins
       addBin({
         layerId: layout.layers[0].id,
-        x: 0.5,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0.5),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -340,11 +345,11 @@ describe('halfGridMode store', () => {
 
       addBin({
         layerId: layout.layers[0].id,
-        x: 2.5,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(2.5),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: layout.categories[0].id,
         label: '',
         notes: '',
@@ -353,7 +358,11 @@ describe('halfGridMode store', () => {
       const result = toggleHalfGridMode();
 
       const error = expectErr(result);
-      expect(error.reason).toContain('2 bins');
+      if (error.code === 'LAYOUT_INVALID_OPERATION') {
+        expect(error.reason).toContain('2 bins');
+      } else {
+        throw new Error('Expected LAYOUT_INVALID_OPERATION error');
+      }
     });
   });
 });

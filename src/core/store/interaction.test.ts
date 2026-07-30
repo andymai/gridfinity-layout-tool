@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import type { Interaction } from '@/core/types';
+import { gridUnits } from '@/core/types';
 
 const getState = () => useInteractionStore.getState();
 
@@ -42,8 +43,8 @@ describe('interaction store', () => {
     it('setInteraction sets the active interaction', () => {
       const interaction: Interaction = {
         type: 'draw',
-        start: { x: 0, y: 0 },
-        current: { x: 2, y: 2 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(2), y: gridUnits(2) },
       };
       getState().setInteraction(interaction);
       expect(getState().interaction).toEqual(interaction);
@@ -52,8 +53,8 @@ describe('interaction store', () => {
     it('setInteraction with null clears the interaction', () => {
       getState().setInteraction({
         type: 'draw',
-        start: { x: 0, y: 0 },
-        current: { x: 1, y: 1 },
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
       });
       getState().setInteraction(null);
       expect(getState().interaction).toBeNull();

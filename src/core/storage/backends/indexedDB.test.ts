@@ -16,20 +16,21 @@ import {
   loadSharedWithMeEntries,
   clearSharedWithMeEntries,
 } from '@/core/storage/backends/indexedDB';
-import type { Layout } from '@/core/types';
+import type { Bin, Layout, SharedWithMeEntry } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 // Test fixtures
 function createTestLayout(overrides: Partial<Layout> = {}): Layout {
   return {
-    version: 1,
+    version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
-    categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    categories: [{ id: categoryId('default'), name: 'Default', color: '#3b82f6' }],
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
     ...overrides,
   };
 }
@@ -122,24 +123,28 @@ describe('indexedDB backend', () => {
         name: 'Layout with Bins',
         bins: [
           {
-            id: 'bin-1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'default',
+            id: binId('bin-1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('default'),
+            label: '',
+            notes: '',
           },
           {
-            id: 'bin-2',
-            x: 2,
-            y: 0,
-            width: 3,
-            depth: 2,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'default',
+            id: binId('bin-2'),
+            x: gridUnits(2),
+            y: gridUnits(0),
+            width: gridUnits(3),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('default'),
+            label: '',
+            notes: '',
           },
         ],
       });
@@ -155,9 +160,9 @@ describe('indexedDB backend', () => {
     it('saves layout with multiple layers', async () => {
       const layout = createTestLayout({
         layers: [
-          { id: 'layer-1', name: 'Bottom', height: 3 },
-          { id: 'layer-2', name: 'Middle', height: 3 },
-          { id: 'layer-3', name: 'Top', height: 3 },
+          { id: layerId('layer-1'), name: 'Bottom', height: heightUnits(3) },
+          { id: layerId('layer-2'), name: 'Middle', height: heightUnits(3) },
+          { id: layerId('layer-3'), name: 'Top', height: heightUnits(3) },
         ],
       });
 
@@ -171,9 +176,9 @@ describe('indexedDB backend', () => {
     it('saves layout with categories', async () => {
       const layout = createTestLayout({
         categories: [
-          { id: 'tools', name: 'Tools', color: '#ff0000' },
-          { id: 'screws', name: 'Screws', color: '#00ff00' },
-          { id: 'misc', name: 'Miscellaneous', color: '#0000ff' },
+          { id: categoryId('tools'), name: 'Tools', color: '#ff0000' },
+          { id: categoryId('screws'), name: 'Screws', color: '#00ff00' },
+          { id: categoryId('misc'), name: 'Miscellaneous', color: '#0000ff' },
         ],
       });
 
@@ -185,14 +190,20 @@ describe('indexedDB backend', () => {
 
     it('saves layout with fractional edges', async () => {
       const layout = createTestLayout({
-        drawer: { width: 10, depth: 8, height: 12, fractionalEdgeX: 0.5, fractionalEdgeY: 0.5 },
+        drawer: {
+          width: gridUnits(10),
+          depth: gridUnits(8),
+          height: heightUnits(12),
+          fractionalEdgeX: 'start',
+          fractionalEdgeY: 'end',
+        },
       });
 
       await saveLayout('fractional-id', layout);
 
       const loaded = await loadLayout('fractional-id');
-      expect(loaded?.drawer.fractionalEdgeX).toBe(0.5);
-      expect(loaded?.drawer.fractionalEdgeY).toBe(0.5);
+      expect(loaded?.drawer.fractionalEdgeX).toBe('start');
+      expect(loaded?.drawer.fractionalEdgeY).toBe('end');
     });
   });
 
@@ -214,34 +225,34 @@ describe('indexedDB backend', () => {
 
     it('preserves all layout properties on round-trip', async () => {
       const original: Layout = {
-        version: 1,
+        version: '1.0',
         name: 'Full Layout',
-        drawer: { width: 15, depth: 10, height: 20 },
+        drawer: { width: gridUnits(15), depth: gridUnits(10), height: heightUnits(20) },
         layers: [
-          { id: 'layer-1', name: 'Layer 1', height: 5 },
-          { id: 'layer-2', name: 'Layer 2', height: 5 },
+          { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(5) },
+          { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(5) },
         ],
         bins: [
           {
-            id: 'bin-1',
-            x: 0,
-            y: 0,
-            width: 3,
-            depth: 3,
-            height: 5,
-            layerId: 'layer-1',
-            category: 'tools',
+            id: binId('bin-1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(3),
+            depth: gridUnits(3),
+            height: heightUnits(5),
+            layerId: layerId('layer-1'),
+            category: categoryId('tools'),
             label: 'Screwdrivers',
             notes: 'Various sizes',
           },
         ],
         categories: [
-          { id: 'tools', name: 'Tools', color: '#e74c3c' },
-          { id: 'parts', name: 'Parts', color: '#3498db' },
+          { id: categoryId('tools'), name: 'Tools', color: '#e74c3c' },
+          { id: categoryId('parts'), name: 'Parts', color: '#3498db' },
         ],
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        printBedSize: 256,
+        gridUnitMm: mm(42),
+        heightUnitMm: mm(7),
+        printBedSize: mm(256),
       };
 
       await saveLayout('full-props-id', original);
@@ -417,15 +428,17 @@ describe('indexedDB backend', () => {
     });
 
     it('handles layout with large number of bins', async () => {
-      const bins = Array.from({ length: 100 }, (_, i) => ({
-        id: `bin-${i}`,
-        x: i % 10,
-        y: Math.floor(i / 10),
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'layer-1',
-        category: 'default',
+      const bins = Array.from({ length: 100 }, (_, i): Bin => ({
+        id: binId(`bin-${i}`),
+        x: gridUnits(i % 10),
+        y: gridUnits(Math.floor(i / 10)),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer-1'),
+        category: categoryId('default'),
+        label: '',
+        notes: '',
       }));
 
       const layout = createTestLayout({ bins });
@@ -469,17 +482,17 @@ describe('indexedDB backend', () => {
       const layout = createTestLayout({
         bins: [
           {
-            id: 'full-bin',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'default',
+            id: binId('full-bin'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('default'),
             label: 'Test Label',
             notes: 'Some notes here',
-            clearanceHeight: 5,
+            clearanceHeight: heightUnits(5),
             customProperties: {
               'custom-key': 'custom-value',
             },
@@ -534,9 +547,27 @@ describe('indexedDB backend', () => {
   });
 
   describe('shared-with-me operations', () => {
-    const testEntries = [
-      { id: 'share-1', name: 'Layout A', sharedAt: Date.now(), sharedBy: 'user1' },
-      { id: 'share-2', name: 'Layout B', sharedAt: Date.now(), sharedBy: 'user2' },
+    const testEntries: SharedWithMeEntry[] = [
+      {
+        id: 'share-1',
+        sourceShareId: 'shareAAA11111',
+        name: 'Layout A',
+        authorName: 'user1',
+        permission: 'view',
+        addedAt: Date.now() - 10000,
+        lastAccessedAt: Date.now(),
+        status: 'available',
+      },
+      {
+        id: 'share-2',
+        sourceShareId: 'shareBBB22222',
+        name: 'Layout B',
+        authorName: 'user2',
+        permission: 'edit',
+        addedAt: Date.now() - 5000,
+        lastAccessedAt: Date.now(),
+        status: 'available',
+      },
     ];
 
     it('saves and loads entries', async () => {

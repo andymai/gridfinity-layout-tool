@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { expectOk, expectErr } from '@/test/testUtils';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('multi-bin operations', () => {
   beforeEach(() => {
@@ -17,33 +18,33 @@ describe('multi-bin operations', () => {
       // Add two bins side by side
       const result1 = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin 1',
         notes: '',
       });
       const result2 = addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Bin 2',
         notes: '',
       });
 
-      expectOk(result1);
-      expectOk(result2);
+      const bin1Id = expectOk(result1);
+      const bin2Id = expectOk(result2);
 
       // Simulate moving both bins (update positions)
-      updateBin(result1.value, { x: 0, y: 4 });
-      updateBin(result2.value, { x: 2, y: 4 });
+      updateBin(bin1Id, { x: gridUnits(0), y: gridUnits(4) });
+      updateBin(bin2Id, { x: gridUnits(2), y: gridUnits(4) });
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].y).toBe(4);
@@ -58,11 +59,11 @@ describe('multi-bin operations', () => {
       // Add first bin
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -71,11 +72,11 @@ describe('multi-bin operations', () => {
       // Add second bin at position that would collide if moved
       addBin({
         layerId,
-        x: 4,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -84,11 +85,11 @@ describe('multi-bin operations', () => {
       // Third bin - if we tried to add at (1,0), it would collide with first
       const collidingResult = addBin({
         layerId,
-        x: 1,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -107,11 +108,11 @@ describe('multi-bin operations', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Original',
         notes: '',
@@ -140,15 +141,15 @@ describe('multi-bin operations', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Test Label',
         notes: 'Test notes',
-        clearanceHeight: 2,
+        clearanceHeight: heightUnits(2),
       });
 
       const addResultValue = expectOk(addResult);
@@ -179,11 +180,11 @@ describe('multi-bin operations', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -198,11 +199,11 @@ describe('multi-bin operations', () => {
       const dup2 = duplicateBin(originalId);
       const dup3 = duplicateBin(originalId);
 
-      expectOk(dup1);
-      expectOk(dup2);
-      expectOk(dup3);
+      const dup1Id = expectOk(dup1);
+      const dup2Id = expectOk(dup2);
+      const dup3Id = expectOk(dup3);
 
-      const ids = [originalId, dup1.value, dup2.value, dup3.value];
+      const ids = [originalId, dup1Id, dup2Id, dup3Id];
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(4);
     });
@@ -216,11 +217,11 @@ describe('multi-bin operations', () => {
       // Add bin directly to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -242,22 +243,22 @@ describe('multi-bin operations', () => {
       // Add bins to layer
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -266,11 +267,11 @@ describe('multi-bin operations', () => {
       // Add bin to staging
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -301,22 +302,22 @@ describe('multi-bin operations', () => {
       // Add bin to each layer
       const bin1Result = addBin({
         layerId: layer1Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const bin2Result = addBin({
         layerId: layer2Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -325,11 +326,11 @@ describe('multi-bin operations', () => {
       // Add to staging
       const bin3Result = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -362,11 +363,11 @@ describe('multi-bin operations', () => {
 
       const addResult = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -375,7 +376,7 @@ describe('multi-bin operations', () => {
       const addResultValue = expectOk(addResult);
 
       // Resize the bin
-      updateBin(addResultValue, { width: 4, depth: 4 });
+      updateBin(addResultValue, { width: gridUnits(4), depth: gridUnits(4) });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.width).toBe(4);
@@ -389,11 +390,11 @@ describe('multi-bin operations', () => {
 
       const addResult = addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -401,7 +402,7 @@ describe('multi-bin operations', () => {
 
       const addResultValue = expectOk(addResult);
 
-      updateBin(addResultValue, { width: 3, depth: 3 });
+      updateBin(addResultValue, { width: gridUnits(3), depth: gridUnits(3) });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.x).toBe(2);
@@ -417,51 +418,51 @@ describe('multi-bin operations', () => {
 
       const bin1Result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const bin2Result = addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const bin3Result = addBin({
         layerId,
-        x: 4,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
 
-      expectOk(bin1Result);
-      expectOk(bin2Result);
-      expectOk(bin3Result);
+      const bin1Id = expectOk(bin1Result);
+      const bin2Id = expectOk(bin2Result);
+      const bin3Id = expectOk(bin3Result);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
       // Delete multiple
-      deleteBin(bin1Result.value);
-      deleteBin(bin3Result.value);
+      deleteBin(bin1Id);
+      deleteBin(bin3Id);
 
       const remaining = useLayoutStore.getState().layout.bins;
       expect(remaining).toHaveLength(1);
-      expect(remaining[0].id).toBe(bin2Result.value);
+      expect(remaining[0].id).toBe(bin2Id);
     });
 
     it('handles batch updates to multiple bins', () => {
@@ -472,33 +473,33 @@ describe('multi-bin operations', () => {
 
       const bin1Result = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
       const bin2Result = addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
 
-      expectOk(bin1Result);
-      expectOk(bin2Result);
+      const bin1Id = expectOk(bin1Result);
+      const bin2Id = expectOk(bin2Result);
 
       // Update category for multiple bins
-      updateBin(bin1Result.value, { category: newCategoryId });
-      updateBin(bin2Result.value, { category: newCategoryId });
+      updateBin(bin1Id, { category: newCategoryId });
+      updateBin(bin2Id, { category: newCategoryId });
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].category).toBe(newCategoryId);

@@ -16,6 +16,7 @@ import {
   type FeatureId,
 } from '@/core/labs';
 import * as features from '@/core/labs/features';
+import type { FeatureFlag } from '@/core/labs/types';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -29,7 +30,7 @@ vi.mock('@/core/labs/features', async () => {
   return {
     ...actual,
     getFeature: vi.fn((id: string) => {
-      const feature = actual.FEATURE_FLAGS.find((f) => f.id === id);
+      const feature: FeatureFlag | undefined = actual.FEATURE_FLAGS.find((f) => f.id === id);
       if (!feature) return undefined;
       // Return feature without comingSoon for store tests
       const { comingSoon: _, ...rest } = feature;
@@ -51,7 +52,8 @@ describe('Labs Feature Registry', () => {
     });
 
     it('returns undefined for unknown ID', () => {
-      const feature = FEATURE_FLAGS.find((f) => f.id === 'unknown_feature');
+      const unknownId: string = 'unknown_feature';
+      const feature = FEATURE_FLAGS.find((f) => f.id === unknownId);
       expect(feature).toBeUndefined();
     });
   });

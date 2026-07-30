@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { expectOk, expectErr } from '@/test/testUtils';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('bin displacement logic', () => {
   beforeEach(() => {
@@ -17,11 +18,11 @@ describe('bin displacement logic', () => {
       // Add bin at far right edge of 10-wide drawer
       addBin({
         layerId,
-        x: 8,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Edge bin',
         notes: '',
@@ -31,7 +32,7 @@ describe('bin displacement logic', () => {
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
 
       // Shrink drawer width to 5 (bin at x=8 is now out of bounds)
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
 
       // Bin should be moved to staging
       const bin = useLayoutStore.getState().layout.bins[0];
@@ -46,11 +47,11 @@ describe('bin displacement logic', () => {
       // Add bin at far top of 8-deep drawer
       addBin({
         layerId,
-        x: 0,
-        y: 6,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(6),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -59,7 +60,7 @@ describe('bin displacement logic', () => {
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
 
       // Shrink drawer depth to 4
-      updateDrawer({ depth: 4 });
+      updateDrawer({ depth: gridUnits(4) });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(STAGING_ID);
@@ -73,18 +74,18 @@ describe('bin displacement logic', () => {
       // Add bin at origin
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
       });
 
       // Shrink drawer but bin still fits
-      updateDrawer({ width: 5, depth: 5 });
+      updateDrawer({ width: gridUnits(5), depth: gridUnits(5) });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(layerId);
@@ -100,11 +101,11 @@ describe('bin displacement logic', () => {
       // Add bin at origin (will survive resize)
       const result1 = addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Survivor',
         notes: '',
@@ -114,11 +115,11 @@ describe('bin displacement logic', () => {
       // Add bin at edge (will be displaced)
       const result2 = addBin({
         layerId,
-        x: 8,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(8),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Displaced',
         notes: '',
@@ -126,7 +127,7 @@ describe('bin displacement logic', () => {
       const result2Value = expectOk(result2);
 
       // Shrink drawer
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
 
       const bins = useLayoutStore.getState().layout.bins;
       const survivorBin = bins.find((b) => b.id === result1Value);
@@ -145,11 +146,11 @@ describe('bin displacement logic', () => {
       // Bin occupies x: 3, 4, 5 (ends at 6)
       addBin({
         layerId,
-        x: 3,
-        y: 0,
-        width: 3,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -157,7 +158,7 @@ describe('bin displacement logic', () => {
 
       // Shrink to width 5 - bin at x=3 with width=3 needs x+width <= 5
       // 3 + 3 = 6 > 5, so bin should be displaced
-      updateDrawer({ width: 5 });
+      updateDrawer({ width: gridUnits(5) });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(STAGING_ID);
@@ -173,7 +174,7 @@ describe('bin displacement logic', () => {
 
       // Total layer height is now 6
       // Try to set drawer height below this
-      updateDrawer({ height: 4 });
+      updateDrawer({ height: heightUnits(4) });
 
       // Drawer height should be clamped to at least 6
       const drawer = useLayoutStore.getState().layout.drawer;
@@ -183,7 +184,7 @@ describe('bin displacement logic', () => {
     it('allows increasing drawer height freely', () => {
       const { updateDrawer } = useLayoutStore.getState();
 
-      updateDrawer({ height: 20 });
+      updateDrawer({ height: heightUnits(20) });
 
       const drawer = useLayoutStore.getState().layout.drawer;
       expect(drawer.height).toBe(20);
@@ -199,11 +200,11 @@ describe('bin displacement logic', () => {
       // Add first bin
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -212,11 +213,11 @@ describe('bin displacement logic', () => {
       // Try to add overlapping bin
       const result = addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -233,11 +234,11 @@ describe('bin displacement logic', () => {
 
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -246,11 +247,11 @@ describe('bin displacement logic', () => {
       // Add adjacent bin (touching but not overlapping)
       const adjacentResult = addBin({
         layerId,
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -269,11 +270,11 @@ describe('bin displacement logic', () => {
       // Layer 1 default height is 3, so bin height must be >= 3
       addBin({
         layerId: layer1Id,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -288,11 +289,11 @@ describe('bin displacement logic', () => {
       // Layer 2 also has height 3, so bin must be >= 3
       const layer2BinResult = addBin({
         layerId: layer2ResultValue,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -312,11 +313,11 @@ describe('bin displacement logic', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -341,11 +342,11 @@ describe('bin displacement logic', () => {
       // Add bin to grid
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -354,11 +355,11 @@ describe('bin displacement logic', () => {
       // Add bin to staging
       const stagingResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -383,11 +384,11 @@ describe('bin displacement logic', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(3),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -412,16 +413,16 @@ describe('bin displacement logic', () => {
       // Add second layer with different height
       const layer2Result = addLayer();
       const layer2ResultValue = expectOk(layer2Result);
-      updateLayer(layer2ResultValue, { height: 5 });
+      updateLayer(layer2ResultValue, { height: heightUnits(5) });
 
       // Add bin to staging with original height
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -466,11 +467,11 @@ describe('bin displacement logic', () => {
       // Add single bin with space around it
       const addResult = addBin({
         layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',

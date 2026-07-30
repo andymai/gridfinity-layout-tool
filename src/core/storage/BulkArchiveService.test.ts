@@ -6,6 +6,7 @@ import {
   importArchive,
 } from '@/core/storage/BulkArchiveService';
 import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
+import { layoutId, layerId, gridUnits, heightUnits, mm } from '@/core/types';
 import { ok, err } from '@/core/result';
 
 // === Mocks ===
@@ -31,26 +32,26 @@ function makeLayout(name = 'Test Layout'): Layout {
   return {
     version: '1.0',
     name,
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories: [],
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
-  } as unknown as Layout;
+  };
 }
 
 function makeEntry(id: string, name: string): LayoutEntry {
   return {
-    id,
+    id: layoutId(id),
     name,
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
       binMap: [],
