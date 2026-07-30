@@ -22,12 +22,16 @@ describe('ML telemetry retention policy', () => {
     expect(isExpiringAggregate(key)).toBe(false);
   });
 
-  // ml_ratelimit:* carries its own 120s TTL and is not an aggregate; the
-  // underscore keeps it out of an `ml:*` SCAN, and out of this predicate.
-  it.each(['ml_ratelimit:be667baa342372ce', 'session:abc', 'users:abc:profile'])(
-    'ignores the non-aggregate key %s',
-    (key) => {
-      expect(isExpiringAggregate(key)).toBe(false);
-    }
-  );
+  // Rate-limit keys carry their own short TTL and are not aggregates. The
+  // legacy `ml_ratelimit:*` namespace stays covered here because its underscore
+  // keeps it out of an `ml:*` SCAN — the property that matters for any such key
+  // outliving the move to the shared `ratelimit:telemetry:*` namespace.
+  it.each([
+    'ml_ratelimit:be667baa342372ce',
+    'ratelimit:telemetry:be667baa342372ce',
+    'session:abc',
+    'users:abc:profile',
+  ])('ignores the non-aggregate key %s', (key) => {
+    expect(isExpiringAggregate(key)).toBe(false);
+  });
 });

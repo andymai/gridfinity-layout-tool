@@ -120,11 +120,8 @@
  * - ml:meta:client_versions   -> HASH of client version -> event count
  */
 
-import { createHash } from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { Redis } from 'ioredis';
-import type { RedisOptions } from 'ioredis';
-import { getClientIP } from './lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import type { Increments } from './lib/mlTelemetry/aggregators.js';
 import { ML_AGGREGATE_TTL_SECONDS } from './lib/mlTelemetry/retention.js';
@@ -150,82 +147,6 @@ import {
   aggregateUndo,
 } from './lib/mlTelemetry/aggregators.js';
 import { validateEvent } from './lib/mlTelemetry/validators.js';
-
-// ============================================
-// REDIS CONNECTION
-// ============================================
-
-/**
- * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
- * ioredis accepts URL strings but uses the legacy url.parse() internally.
- */
-function parseRedisUrl(redisUrl: string): RedisOptions {
-  const url = new URL(redisUrl);
-  return {
-    host: url.hostname,
-    port: url.port ? parseInt(url.port, 10) : 6379,
-    password: url.password || undefined,
-    username: url.username || undefined,
-    tls: url.protocol === 'rediss:' ? {} : undefined,
-    db: url.pathname ? parseInt(url.pathname.slice(1), 10) || 0 : 0,
-  };
-}
-
-let redis: Redis | null = null;
-
-function getRedis(): Redis | null {
-  if (!process.env.REDIS_URL) {
-    return null;
-  }
-  if (!redis) {
-    const urlConfig = parseRedisUrl(process.env.REDIS_URL);
-    redis = new Redis({
-      ...urlConfig,
-      maxRetriesPerRequest: 1,
-      connectTimeout: 5000,
-      commandTimeout: 5000,
-    });
-  }
-  return redis;
-}
-
-// ============================================
-// RATE LIMITING
-// ============================================
-
-/**
- * Internal rate limiting for ML telemetry endpoint.
- * Uses the same Redis client as aggregation operations.
- * 100 requests per minute per IP.
- */
-async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolean> {
-  const hashedIP = hashIP(ip);
-  const key = `ml_ratelimit:${hashedIP}`;
-  const now = Math.floor(Date.now() / 1000);
-  const windowStart = now - 60;
-
-  try {
-    const count = await client.zcount(key, windowStart, '+inf');
-    if (count >= 100) {
-      return false;
-    }
-
-    const pipe = client.pipeline();
-    pipe.zadd(key, now, `${now}-${Math.random()}`);
-    pipe.zremrangebyscore(key, '-inf', windowStart);
-    pipe.expire(key, 120);
-    await pipe.exec();
-
-    return true;
-  } catch {
-    // On error, deny the request (fail-closed, consistent with main rate limiter)
-    return false;
-  }
-}
-
-function hashIP(ip: string): string {
-  return createHash('sha256').update(ip).digest('hex').slice(0, 16);
-}
 
 // ============================================
 // HANDLER
@@ -265,10 +186,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  // Rate limiting
-  const ip = getClientIP(req);
-
-  const allowed = await checkRateLimitInternal(ip, client);
+  const { allowed } = await checkRateLimit(getClientIP(req), 'telemetry');
   if (!allowed) {
     res.status(429).json({ error: 'Rate limit exceeded' });
     return;

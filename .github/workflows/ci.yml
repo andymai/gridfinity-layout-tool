@@ -97,8 +97,10 @@ jobs:
           SHARD: ${{ matrix.shard }}
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
+            # Projects are named explicitly rather than using the default "all":
+            # `integration` needs a Redis service and runs as its own job.
             echo "Running full suite with coverage (main branch)"
-            pnpm vitest run --coverage -u
+            pnpm vitest run --coverage -u --project=unit --project=dom --project=generators
           elif [ "$GROUP" = "generators" ]; then
             echo "Running generators project (shard $SHARD)"
             pnpm vitest run --project=generators --shard="$SHARD" -u
@@ -115,6 +117,40 @@ jobs:
           path: coverage/
           retention-days: 5
 
+  # Tests that need a real Redis. The rate limiter runs as a Lua script, and a
+  # mocked ioredis can only assert the command was issued — it cannot execute
+  # the body, so enforcement and atomicity are unverifiable without a server.
+  # One container here rather than a service on all nine Unit Tests shards.
+  integration:
+    name: Integration Tests
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm + Node and install dependencies
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate artifacts
+        run: pnpm run build:en-locale
+
+      - name: Run integration tests
+        env:
+          REDIS_TEST_URL: redis://localhost:6379
+        run: pnpm vitest run --project=integration
+
   # Single stable gate that passes only if every Unit Tests shard passed.
   # Branch protection requires this one context instead of the individual
   # shard names, so shard/group counts can change without updating the ruleset.
@@ -122,19 +158,25 @@ jobs:
   # release-please PRs in lockstep with the test job above.
   test-gate:
     name: Unit Tests Complete
-    needs: [test]
+    needs: [test, integration]
     if: ${{ always() && !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
       - name: Verify all unit-test shards passed
         env:
           TEST_RESULT: ${{ needs.test.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
         run: |
           if [ "$TEST_RESULT" != "success" ]; then
             echo "Unit test shards did not all pass (result: $TEST_RESULT)"
             exit 1
           fi
-          echo "All unit-test shards passed."
+          # Folded in here so branch protection keeps requiring one context.
+          if [ "$INTEGRATION_RESULT" != "success" ]; then
+            echo "Integration tests did not pass (result: $INTEGRATION_RESULT)"
+            exit 1
+          fi
+          echo "All unit-test shards and integration tests passed."
 
   # PRs + main: Lint, i18n, module boundaries, union exhaustiveness
   # All checks run to completion so every failure is visible in one pass

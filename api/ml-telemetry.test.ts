@@ -28,8 +28,15 @@ vi.mock('ioredis', () => {
     }
     return pipeline;
   };
-  const client = { pipeline: makePipeline, zcount: async () => 0 };
-  // Must be `new`-able: the handler constructs its own client.
+  const client = {
+    pipeline: makePipeline,
+    // The shared limiter registers its Lua script via defineCommand. The script
+    // body is covered by the integration project against real Redis; here it
+    // only has to resolve as "allowed" so the handler proceeds.
+    defineCommand: () => undefined,
+    slidingWindowRateLimit: async (): Promise<[number, number, string]> => [1, 99, '0'],
+  };
+  // Must be `new`-able: the limiter constructs its own client.
   function Ctor(): typeof client {
     return client;
   }
