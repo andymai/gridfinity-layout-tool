@@ -92,6 +92,24 @@ export const FLOOR_PATTERN_BONUS_MS = 15_000;
 export const FLOOR_PATTERN_MS_PER_CELL = 2_000;
 
 /**
+ * Bonus for a wall taper on a multi-compartment bin (#3017).
+ *
+ * The multi-cavity path cuts each compartment out of a *lofted* outer rather
+ * than a prism, and the perimeter ones are clipped to the tapered inner
+ * envelope first. Measured on a 4x4u bin: a 12x12 grid goes 12.5s flat → 29.7s
+ * tapered, right against the base timeout. Most of that is the cut against a
+ * non-prismatic body, not the clip — skipping the clip for interior
+ * compartments only recovered ~2s.
+ *
+ * Single-cavity tapers are untouched; they build one loft and are not
+ * measurably slower than the shelled path.
+ */
+export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 15_000;
+
+/** Per-compartment bonus for a tapered multi-compartment bin. */
+export const TAPER_MS_PER_COMPARTMENT = 250;
+
+/**
  * Bonus per 2 height units above the reference height.
  *
  * Applied **unconditionally** (not gated on the hex pattern) because tessellation
@@ -277,6 +295,15 @@ function binRawBudgetMs(params: BinParams): number {
   ) {
     timeout += FLOOR_PATTERN_BONUS_MS;
     timeout += Math.ceil(safeWidth) * Math.ceil(safeDepth) * FLOOR_PATTERN_MS_PER_CELL;
+  }
+
+  // Mirrors the worker's gate: the taper only reaches the expensive multi-cavity
+  // path on a hollow bin with more than one compartment.
+  const compartmentCount = new Set(params.compartments.cells).size;
+  const taperOn = params.overhang?.taper?.enabled === true && params.overhang.enabled !== false;
+  if (taperOn && !params.base.solid && compartmentCount > 1) {
+    timeout += TAPER_MULTI_COMPARTMENT_BONUS_MS;
+    timeout += compartmentCount * TAPER_MS_PER_COMPARTMENT;
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

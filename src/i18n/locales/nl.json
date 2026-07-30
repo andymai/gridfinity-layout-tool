@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Taps hoogte",
   "inspector.taper.flare": "Verwijding",
   "inspector.taper.flare.hint": "Extra breedte aan de bovenrand, voorbij de lademarge, zodat de bak tot in de gebogen zijkanten van de lade reikt.",
-  "binDesigner.overhang.taper.singleHollowOnly": "Taps toelopen is alleen beschikbaar bij holle bakken met één vak."
+  "binDesigner.overhang.taper.hollowOnly": "Afschuining is alleen beschikbaar bij holle bakken."
 }

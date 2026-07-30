@@ -16,6 +16,7 @@ import {
   unwrap,
   fuse,
   cut,
+  intersect,
   fillet,
   faceFinder,
   edgeFinder,
@@ -42,7 +43,7 @@ import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
-import { buildTaperedBox } from './taperedOuter';
+import { buildTaperedBox, buildTaperedLofts } from './taperedOuter';
 import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
 
@@ -50,6 +51,27 @@ const logger = createLogger('boxBuilder');
 
 function translateDrawing(d: Drawing, offX: number, offY: number): Drawing {
   return offX !== 0 || offY !== 0 ? d.translate(offX, offY) : d;
+}
+
+/**
+ * Whether a compartment footprint sits entirely within a rectangle. Used to
+ * skip the clip against the tapered inner envelope for compartments that can
+ * never reach the wall. Deliberately conservative — the epsilon errs toward
+ * clipping, since a missed clip cuts a slot through the wall while a needless
+ * one only costs time.
+ */
+function fitsInside(
+  d: Drawing,
+  rect: { minX: number; maxX: number; minY: number; maxY: number }
+): boolean {
+  const [min, max] = d.boundingBox.bounds;
+  const eps = 1e-6;
+  return (
+    min[0] >= rect.minX - eps &&
+    max[0] <= rect.maxX + eps &&
+    min[1] >= rect.minY - eps &&
+    max[1] <= rect.maxY + eps
+  );
 }
 
 /**
@@ -331,15 +353,37 @@ export function buildBinBox(
       // extrusion. The resulting wall faces meet the cavity floor as part
       // of a single solid — no fuse seam, no non-manifold T-junction (#1753).
       try {
-        let result: Shape3D = box;
+        // A tapered bin starts from the lofted outer instead of the prism, and
+        // every compartment is clipped to the inner envelope first. Cutting a
+        // rim-sized prism straight from a tapered outer would not just thin the
+        // wall near the floor — below the band the prism spans the whole wall
+        // thickness, so the cut opens a slot clean through it.
+        const lofts = ov?.taper
+          ? buildTaperedLofts(
+              scope,
+              outerW,
+              outerD,
+              wallHeight,
+              wallThickness,
+              ov.taper,
+              offX,
+              offY
+            )
+          : null;
+        const solidBase = lofts?.outer ?? box;
+        let result: Shape3D = solidBase;
         const cavityHeight = wallHeight - wallThickness + COPLANAR_MARGIN;
         for (const cavityDrawing of compartmentCavityDrawings) {
-          const cavity = scope.register(
+          const prism = scope.register(
             sketch(cavityDrawing, 'XY', wallThickness).extrude(cavityHeight)
           );
+          const cavity =
+            lofts && !fitsInside(cavityDrawing, lofts.narrowestInner)
+              ? scope.register(unwrap(intersect(prism as ValidSolid, lofts.cavity as ValidSolid)))
+              : prism;
           const prev = result;
           result = unwrap(cut(prev as ValidSolid, cavity as ValidSolid));
-          if (prev !== box) scope.register(prev);
+          if (prev !== solidBase) scope.register(prev);
         }
         scope.register(box);
         return setBoxCache(boxKey, result);

@@ -273,7 +273,7 @@ describe('OverhangSection', () => {
     expect(stored?.feet).toBe(true);
   });
 
-  it('disables the taper for solid bins (hollow, single-compartment only)', () => {
+  it('disables the taper for solid bins, which have no cavity to cut', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -282,14 +282,12 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    expect(
-      screen.getByText('Taper is available only on hollow, single-compartment bins.')
-    ).toBeDefined();
+    expect(screen.getByText('Taper is available only on hollow bins.')).toBeDefined();
     fireEvent.click(screen.getByText('Taper walls'));
     expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
   });
 
-  it('disables the taper for multi-compartment bins', () => {
+  it('allows the taper on multi-compartment bins (#3017)', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -298,11 +296,8 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    expect(
-      screen.getByText('Taper is available only on hollow, single-compartment bins.')
-    ).toBeDefined();
     fireEvent.click(screen.getByText('Taper walls'));
-    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBe(true);
   });
 
   it('disables the controls for custom-shape bins', () => {

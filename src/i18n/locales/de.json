@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Abschräghöhe",
   "inspector.taper.flare": "Aufweitung",
   "inspector.taper.flare.hint": "Zusätzliche Breite am oberen Rand über den Schubladenrand hinaus, damit der Behälter in die gerundeten Seiten der Schublade reicht.",
-  "binDesigner.overhang.taper.singleHollowOnly": "Die Verjüngung ist nur bei hohlen Behältern mit einem Fach verfügbar."
+  "binDesigner.overhang.taper.hollowOnly": "Die Verjüngung ist nur bei hohlen Behältern verfügbar."
 }
