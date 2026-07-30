@@ -1,0 +1,179 @@
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_bb8f1233002a7e::t_0c2c250e8be64b 289
+  s_bb8f1233002a7e::t_349efbb2e0323b 8,14,18,23,27
+  s_bb8f1233002a7e::t_e1ccb1c0962680 49
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_bb8f1233002a7e::t_425d7c6848ef4e 11,15
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.test.tsx
+  s_bb8f1233002a7e::t_007e6bd23861bd 6
+  s_bb8f1233002a7e::t_587f5d54d69e23 236,238,264-270,280-286,296-302,313,337,364,387,421,449,480,518-524
+src/features/bin-designer/hooks/useDesignerUrlSync.test.ts
+  s_bb8f1233002a7e::t_fa8d128d00c354 9
+  s_bb8f1233002a7e::t_80d79b0fb497b4 35,39
+  s_bb8f1233002a7e::t_622efc24d445a1 91
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/ScanWithPhoneDialog.test.tsx
+  s_bb8f1233002a7e::t_5f9373f1ed4776 5
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.test.tsx
+  s_bb8f1233002a7e::t_8e5d3b5afdc0b7 14
+  s_bb8f1233002a7e::t_3c740e33cb6a63 23,39,54,70,86,102,118,134,150,166,181,195,210,223,236,250,264,280,294,308
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_bb8f1233002a7e::t_91a7c99343f0a0 21,23,27
+  s_bb8f1233002a7e::t_3f23e3f9644c31 18,30-34,52,65,69,78,82,92,96,109,113,116,129,133,136,140-143,147,154,158,181-182,190,194,217-218,226,230,253-254,263,267,271,275,291,295,301-303,315,319,352,356,388,392,395,399,441,445,448,451,456,464,468,471,477,482,490,494,498,501-502,507,524,529,571,575,580,588,593
+  s_bb8f1233002a7e::t_193e4195ff46d5 20,22,24-26,28
+  s_bb8f1233002a7e::t_91b93fae3c5e84 29
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_bb8f1233002a7e::t_838990dc6681b9 8,11-12
+  s_bb8f1233002a7e::t_c9b3e10891ab48 30
+  s_bb8f1233002a7e::t_ded389da3133b5 31-36,46,50,176,199,203,253-259,279-285,324-330,381,410
+src/features/bin-designer/components/ShareDialog/ShareDialog.test.tsx
+  s_bb8f1233002a7e::t_84d0b4c71dbd30 6
+  s_bb8f1233002a7e::t_02ca122dacb257 25
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_bb8f1233002a7e::t_cba6d8889efd4b 51
+src/features/bin-designer/hooks/usePlaceBinInLayout.test.ts
+  s_bb8f1233002a7e::t_6f46707b27982e 57-58
+  s_bb8f1233002a7e::t_5a297d9ccd6291 139
+  s_bb8f1233002a7e::t_63a82c807e40fd 156
+  s_bb8f1233002a7e::t_9fd493d55c8dbd 7
+src/features/bin-designer/utils/a11y.test.ts
+  s_bb8f1233002a7e::t_8ac7103afe1beb 134,137-142
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.test.tsx
+  s_bb8f1233002a7e::t_02dd19adcc9aca 8-9,13-14
+src/features/bin-designer/components/panel/shared/StepperField.test.tsx
+  s_bb8f1233002a7e::t_3539dd95849f4f 24
+  s_bb8f1233002a7e::t_ffb31c408e4750 15
+src/features/bin-designer/components/preview/OverhangHighlight/OverhangHighlight.test.tsx
+  s_bb8f1233002a7e::t_1d1a72d3959d7c 14-17
+src/features/bin-designer/components/panel/ColorsSection/ColorZoneRow.test.tsx
+  s_bb8f1233002a7e::t_8ce31652761ba4 33,35
+src/features/bin-designer/constants/paramMigration.ts
+  s_bb8f1233002a7e::t_fce60adcc7e32a 515-528,547-559
+  s_bb8f1233002a7e::t_68c19144b480a9 777
+  s_bb8f1233002a7e::t_ff8c9ea0f103b6 18
+  s_bb8f1233002a7e::t_1e83491f7eeab1 744-748,755,759,774-776,778-781,783-796
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_bb8f1233002a7e::t_a83c711358af34 550
+  s_bb8f1233002a7e::t_6fce7240141a45 472
+  s_bb8f1233002a7e::t_2e57765e5ba21d 654-655
+src/features/bin-designer/hooks/useDesignThumbnail.test.ts
+  s_bb8f1233002a7e::t_0d8f90d5b8ccda 14,18
+  s_bb8f1233002a7e::t_22c9fe4f7a34ce 96-97
+src/features/bin-designer/utils/binDownloadHelpers.test.ts
+  s_bb8f1233002a7e::t_6cb3fc16cd3a27 46
+  s_bb8f1233002a7e::t_3a3a45768fa162 14-15
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_bb8f1233002a7e::t_101482b05d4400 379
+  s_bb8f1233002a7e::t_2dbb3c5661134e 450,456
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_bb8f1233002a7e::t_29366813005554 138
+  s_bb8f1233002a7e::t_8ee692bd4733c1 62-65
+  s_bb8f1233002a7e::t_a33f8fa998c9ad 21
+  s_bb8f1233002a7e::t_959a946a26570e 18
+  s_bb8f1233002a7e::t_2024d2a38fed6f 67,75,132-137,286,342,346,358
+src/features/bin-designer/components/DesignActions/DesignActions.test.tsx
+  s_bb8f1233002a7e::t_378fd5bf6fb73e 6,9,13
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.test.ts
+  s_bb8f1233002a7e::t_8c105933018ca4 9,11,17-24,26-28,34-41
+src/features/bin-designer/types/lid.test.ts
+  s_bb8f1233002a7e::t_e7f816efd74466 115-124
+src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
+  s_bb8f1233002a7e::t_7018de2c53e07b 154
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_bb8f1233002a7e::t_9a3998555c0c5e 5,12
+  s_bb8f1233002a7e::t_33db6a258f62f3 105-106
+src/features/bin-designer/hooks/useSplitPreview.test.ts
+  s_bb8f1233002a7e::t_417e125b51be16 11
+  s_bb8f1233002a7e::t_3bc826a490daf5 79,82-85
+  s_bb8f1233002a7e::t_9cd0f56f4b8efc 101
+src/features/bin-designer/utils/stlParser.test.ts
+  s_bb8f1233002a7e::t_10571c4765b46e 4,7-12
+  s_bb8f1233002a7e::t_737303a1d83187 13,81-83,94,105
+src/features/bin-designer/hooks/useCustomBins.test.ts
+  s_bb8f1233002a7e::t_62cdbc39e41142 5,9
+  s_bb8f1233002a7e::t_23c31ca02aad37 55
+src/features/bin-designer/hooks/useDesignerInit.test.ts
+  s_bb8f1233002a7e::t_1fbed4913629a2 21,25
+  s_bb8f1233002a7e::t_53fc16a0a03e47 9
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_46dcb5c4a28957 3
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.test.tsx
+  s_bb8f1233002a7e::t_5873ae9c37dc0c 7,21,25-27
+src/features/bin-designer/components/DesignListItem/DesignListItem.test.tsx
+  s_bb8f1233002a7e::t_e245e908d40031 7,21,25-27
+src/features/bin-designer/components/DesignerPage/DesignerHeader.test.tsx
+  s_bb8f1233002a7e::t_7608032506f87d 5-9,49,60
+src/features/bin-designer/components/DesignerPage/DesignerPage.test.tsx
+  s_bb8f1233002a7e::t_7cb18f56345ea2 5-9,77,88
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_bb8f1233002a7e::t_b73a17052e5ff5 5-9,44,58,78,351
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_bb8f1233002a7e::t_55d9ac5c0306f1 16,94,111
+src/features/bin-designer/components/panel/ColorsSection/LipColorEditor.test.tsx
+  s_bb8f1233002a7e::t_2542fd7f5317dc 45,85
+src/features/bin-designer/components/panel/HandleSection/useHandleSection.test.ts
+  s_bb8f1233002a7e::t_cad8afb7fa2015 59,80,102,156-159,219-223
+src/features/bin-designer/components/panel/WallCutoutsSection/useWallCutoutsSection.test.ts
+  s_bb8f1233002a7e::t_facda1d4fe0e67 59-60,84-85,109,193-197
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.test.tsx
+  s_bb8f1233002a7e::t_ef237b7f053f59 40,62,79,86,94,104,113
+src/features/bin-designer/components/panel/WallsSection/WallsSection.test.tsx
+  s_bb8f1233002a7e::t_4f87c07039ac26 326
+src/features/bin-designer/components/preview/BinMesh/BinMesh.test.tsx
+  s_bb8f1233002a7e::t_47938914c4457a 5,79,96,117
+src/features/bin-designer/components/preview/GhostCompartmentPreview/GhostCompartmentPreview.test.tsx
+  s_bb8f1233002a7e::t_545ba263aef74d 5,100,117,131
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.test.tsx
+  s_bb8f1233002a7e::t_504db6d64b2728 5,81,104,123,142,161,182
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.test.tsx
+  s_bb8f1233002a7e::t_2e03cb0d768b86 114,130
+src/features/bin-designer/components/preview/GhostDividers/GhostDividers.test.tsx
+  s_bb8f1233002a7e::t_224bb278834717 5,83,108,130
+src/features/bin-designer/components/preview/GhostHandles/GhostHandles.test.tsx
+  s_bb8f1233002a7e::t_f1f8deb1af1128 5,99,123,144,166
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.test.tsx
+  s_bb8f1233002a7e::t_45a15ee10c1bf1 5,89,97,116,124,140,148,165,173
+src/features/bin-designer/components/preview/GhostScoops/GhostScoops.test.tsx
+  s_bb8f1233002a7e::t_536ae9dcd78a3d 5,54,75,93,112
+src/features/bin-designer/components/preview/GhostSlotLines/GhostSlotLines.test.tsx
+  s_bb8f1233002a7e::t_43a08d0deb7836 5,86,106,112,129,135
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.test.tsx
+  s_bb8f1233002a7e::t_eade8591a88d6d 5,83,104,122
+src/features/bin-designer/components/preview/GhostWireframe/GhostWireframe.test.tsx
+  s_bb8f1233002a7e::t_adf2eed2d1af19 5,90,108,123,149
+src/features/bin-designer/components/preview/LidMesh/LidMesh.test.tsx
+  s_bb8f1233002a7e::t_ba5d11ed95c4d9 5-9,84
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.test.tsx
+  s_bb8f1233002a7e::t_4e4a5ca14f88f0 5-9,65
+src/features/bin-designer/hooks/useExport.test.ts
+  s_bb8f1233002a7e::t_392bacda388124 6-9,63,84,105,144,212,276,419
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_bb8f1233002a7e::t_94087a65bf09ad 5,100-106
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_bb8f1233002a7e::t_151f5cba16cf53 6,12-18
+src/features/bin-designer/hooks/useUnsavedWarning.test.ts
+  s_bb8f1233002a7e::t_9d5b24c6dd3901 26-28,35,40-42,49,54-56,63,69-71,78,84
+src/features/bin-designer/store/designer.test.ts
+  s_bb8f1233002a7e::t_b5d0bba4114679 3-8,15-21,25
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_bb8f1233002a7e::t_1e91979c53f9b0 68,281,296
+src/features/bin-designer/utils/fileNaming.test.ts
+  s_bb8f1233002a7e::t_68602b70ef9f6b 55,90,145
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_bb8f1233002a7e::t_312a119a366103 83,134,281,298,421
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "562fd7b2bdce06464a0c65d685bb08a595730206",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
