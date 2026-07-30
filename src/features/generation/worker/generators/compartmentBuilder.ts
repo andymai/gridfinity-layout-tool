@@ -82,30 +82,50 @@ function cavityDrawing(corners: CavityCorners, cornerRadius: number): Drawing {
   // Cap the radius at half the smaller span so opposing fillets can't overrun.
   const { cavW, cavD } = cavitySpan(corners);
   const r = Math.max(0, Math.min(cornerRadius, cavW / 2 - 0.05, cavD / 2 - 0.05));
-  const rBL = exterior.bl ? r : 0;
-  const rBR = exterior.br ? r : 0;
-  const rTR = exterior.tr ? r : 0;
-  const rTL = exterior.tl ? r : 0;
-
   if (r <= 0.1 || !hasExteriorCorner(exterior)) {
     return draw(bl).lineTo(br).lineTo(tr).lineTo(tl).close();
   }
 
-  // Start at the midpoint of BL→BR so close() forms a real edge through BL,
-  // letting customCorner(rBL) apply to it (mirrors buildSlabProfile in
-  // baseplateSlab.ts). Starting at a corner would make close() degenerate.
-  // Use the true midpoint (not [mid_x, bl[1]]): an override can tilt the
-  // bottom edge (bl[1] !== br[1]), and the start point must stay on it.
-  let pen = draw([(bl[0] + br[0]) / 2, (bl[1] + br[1]) / 2]);
-  pen = pen.lineTo(br);
-  if (rBR > 0) pen = pen.customCorner(rBR);
-  pen = pen.lineTo(tr);
-  if (rTR > 0) pen = pen.customCorner(rTR);
-  pen = pen.lineTo(tl);
-  if (rTL > 0) pen = pen.customCorner(rTL);
-  pen = pen.lineTo(bl);
-  if (rBL > 0) pen = pen.customCorner(rBL);
-  return pen.close();
+  // CCW corner ring (bl→br→tr→tl); only perimeter corners get a nonzero radius.
+  const ring: Array<{ point: [number, number]; radius: number }> = [
+    { point: bl, radius: exterior.bl ? r : 0 },
+    { point: br, radius: exterior.br ? r : 0 },
+    { point: tr, radius: exterior.tr ? r : 0 },
+    { point: tl, radius: exterior.tl ? r : 0 },
+  ];
+
+  // brepjs's customCorner() leaks 2 WASM handles per call when a later lineTo()
+  // consumes its deferred fillet (#2985); closeWithCustomCorner() — which rounds
+  // the corner between the last-drawn segment and the closing edge — does not.
+  // Rotate the ring so the last rounded corner is drawn last and closed via the
+  // leak-free path. A cavity with a single perimeter corner (the common case —
+  // each interior compartment cell touches at most one bin corner) then makes
+  // zero customCorner() calls. An edge-spanning compartment with two perimeter
+  // corners still routes the earlier one through the leaky customCorner(): a
+  // residual that needs an upstream brepjs fix, but it now leaks one corner
+  // instead of both.
+  // hasExteriorCorner() guaranteed at least one rounded corner, so `lastRounded`
+  // is >= 0 and `ordered` is the full ring ending on that rounded corner.
+  const lastRounded = ring.map((c) => c.radius > 0).lastIndexOf(true);
+  const ordered = [...ring.slice(lastRounded + 1), ...ring.slice(0, lastRounded + 1)];
+  const target = ordered[ordered.length - 1];
+  const closeTo = ordered[0];
+
+  // Start on the closing edge's midpoint so close() forms a real edge through
+  // `target` (mirrors buildSlabProfile in baseplateSlab.ts). Starting at a
+  // corner would make the closing edge degenerate. Use the true midpoint: an
+  // override can tilt an edge, and the start point must stay on it.
+  let pen = draw([
+    (target.point[0] + closeTo.point[0]) / 2,
+    (target.point[1] + closeTo.point[1]) / 2,
+  ]);
+  for (let i = 0; i < ordered.length - 1; i++) {
+    const corner = ordered[i];
+    pen = pen.lineTo(corner.point);
+    if (corner.radius > 0) pen = pen.customCorner(corner.radius);
+  }
+  pen = pen.lineTo(target.point);
+  return pen.closeWithCustomCorner(target.radius);
 }
 
 interface CavityCorners {
