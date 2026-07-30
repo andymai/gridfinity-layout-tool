@@ -74,17 +74,21 @@ overrides:
   serialize-javascript: '^7.0.3'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
-  'eslint-plugin-jsx-a11y>minimatch': '^3.1.3'
-  # filelist reaches minimatch only through `minimatch.match(...)`, a named
-  # export 10.x still provides, so it can move off the minimatch@5 line — whose
-  # brace-expansion ^2.0.1 resolves to 2.1.2, unpatched for CVE-2026-14257 with
-  # no 2.x release to upgrade to. 10.2.x is the only line pulling a fixed
-  # brace-expansion (5.0.8).
+  # All minimatch consumers are pinned to the 10.x line, the only line pulling a
+  # brace-expansion that is patched against GHSA-mh99-v99m-4gvg (fixed only in
+  # 5.0.8 — every earlier major, incl. the 1.x/2.x/3.x/4.x lines, is affected
+  # with no backport). filelist reaches minimatch only through the named
+  # `minimatch.match(...)`, so it never needed the default export.
   #
-  # jsx-a11y and @ts-morph/common cannot follow: both call minimatch's *default*
-  # export, which minimatch@10's CJS build does not define (it sets __esModule
-  # with no `default`), so both throw `is not a function` at runtime. That keeps
-  # minimatch@3 in the tree, which is why the 1.x line has to stay patched.
+  # jsx-a11y and @ts-morph/common historically blocked this: both called
+  # minimatch's *default* export, which minimatch@10's CJS build does not define
+  # (it exports named `{ minimatch }` and sets __esModule with no `default`), so
+  # both threw `is not a function` at runtime — keeping minimatch@3 and the
+  # unpatchable brace-expansion@1.x in the tree. Both are now patched to import
+  # the named export (patches/), the same change upstream would make, so they
+  # move to 10.x too and brace-expansion@1.x leaves the tree entirely (#2974).
+  'eslint-plugin-jsx-a11y>minimatch': '^10.2.5'
+  '@ts-morph/common>minimatch': '^10.2.5'
   'filelist>minimatch': '^10.2.5'
   '@vercel/build-utils>minimatch': '^10.2.3'
   '@vercel/python-analysis>minimatch': '^10.2.3'
@@ -98,12 +102,15 @@ overrides:
   'eslint-plugin-i18next>lodash': '^4.18.1'
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
-  'brace-expansion@<1.1.17': '^1.1.17'
-  # Scoped to the 5.x line: minimatch@3 does `var expand = require(...)` and
-  # calls it directly, but brace-expansion@5's CJS build exports `{ expand }`,
-  # so a blanket range would drag the 1.x line up to 5.x and break it at
-  # runtime. 1.1.17 keeps the callable export, so it is safe where 5.x is not.
+  # brace-expansion arrives only via minimatch@10 now (all consumers pinned to
+  # 10.x above), which uses the 5.x line. Force any 5.0.x below 5.0.8 up to the
+  # release patched against GHSA-mh99-v99m-4gvg. The 1.x line is gone, so its old
+  # `brace-expansion@<1.1.17` pin is no longer needed (#2974).
   'brace-expansion@>=5.0.0 <5.0.8': '^5.0.8'
   'tar@<7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
+
+patchedDependencies:
+  '@ts-morph/common@0.11.1': patches/@ts-morph__common@0.11.1.patch
+  eslint-plugin-jsx-a11y@6.10.2: patches/eslint-plugin-jsx-a11y@6.10.2.patch

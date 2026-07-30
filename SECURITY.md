@@ -61,26 +61,28 @@ A finding we can't fix yet stays red rather than being silenced, and "the
 advisory looks wrong" is not grounds for an exception — verify it by running the
 advisory's proof-of-concept against the installed version before believing it.
 
-**Currently open:** `brace-expansion@1.1.17` (CVE-2026-14257, High, build-time
-devDependency only — `pnpm why brace-expansion --prod` is empty, so it is never
-shipped to users) — **reported against a version that carries the fix.** The
-advisory's range is stale, not the dependency.
+**Currently open:** none.
 
-Upstream backported the fix to the 1.x line as 1.1.17 on 2026-07-29. `minimatch@3`
-— still pinned by `eslint-plugin-jsx-a11y`, which calls minimatch as a function, an
-API minimatch@10 dropped — declares `^1.1.7`, so it takes 1.1.17 without the
-minimatch@10 migration that previously looked like the only exit. Verified with the
-advisory's own PoC (`'{a,b}'.repeat(1500)` under `--max-old-space-size=512`): 1.1.17
-returns a bounded 2666 items, 1.1.16 dies with a heap OOM. 1.1.16 did define an
-`EXPANSION_MAX_LENGTH` constant, but the bound was ineffective — which is why that
-marker is not evidence of a fix.
-
-GHSA-mh99-v99m-4gvg declares a single range, `introduced: 0` → `fixed: 5.0.8`, with
-no per-line fixed events, so it sweeps in every backport below 5.0.8 (1.1.17, 2.1.3,
-3.0.3). The scan therefore stays red on a version that is genuinely patched. A range
-correction is filed upstream as github/advisory-database#8877. Per the
-no-suppression rule above this is left red rather than silenced; the fix is an
-upstream correction to the advisory's ranges, not an `osv-scanner.toml`.
+**Resolved — `brace-expansion@1.x` / `minimatch@3` (#2974).**
+`brace-expansion@1.1.17` (2026-07-29) genuinely carries the OOM fix — verified
+with the advisory's own PoC (`'{a,b}'.repeat(1500)` under
+`--max-old-space-size=512`): 1.1.17 returns a bounded 2666 items, 1.1.16 dies
+with a heap OOM — so the tree was never actually vulnerable. But
+`GHSA-mh99-v99m-4gvg` declares a single `introduced: 0` → `fixed: 5.0.8` range
+with no per-line fixed events, so it flags the patched 1.1.17 (and every other
+backport below 5.0.8) and the blocking scan stayed red. Rather than carry a red
+`main` until the upstream range correction (github/advisory-database#8877) lands
+— or suppress the finding, which this policy forbids — this change retires the
+last `minimatch@3` consumers so the tree moves to the advisory's own
+declared-fixed version. The two holdouts, `eslint-plugin-jsx-a11y` and
+`@ts-morph/common` (pinned in by `@vercel/node` → `@vercel/static-config` →
+`ts-morph@12`, so not upgradable), called minimatch's default export, which
+`minimatch@10`'s CJS build does not define. Both are [patched](patches/) to
+import the named `minimatch` export (the same change upstream would make; both
+target versions are frozen, so the patches won't rot), then routed to
+`minimatch@10` via `overrides`. That pulls `brace-expansion@5.0.8` and drops
+`minimatch@3` and `brace-expansion@1.x` from the tree entirely, so the scan goes
+green on the version the advisory itself names as fixed.
 
 **Adding a build script allow-list entry** (`allowBuilds`) is a security
 decision. Audit the package's postinstall behavior before adding.

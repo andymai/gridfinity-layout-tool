@@ -1,0 +1,44 @@
+diff --git a/lib/util/mayContainChildComponent.js b/lib/util/mayContainChildComponent.js
+index 9c12846d93a699b3870fcc682b70318d549a9b11..4c0cd9929b530e671636d570d80a63ec1975a883 100644
+--- a/lib/util/mayContainChildComponent.js
++++ b/lib/util/mayContainChildComponent.js
+@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ exports["default"] = mayContainChildComponent;
+ var _jsxAstUtils = require("jsx-ast-utils");
+-var _minimatch = _interopRequireDefault(require("minimatch"));
++var _minimatch = require("minimatch");
+ function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+ /**
+  * Returns true if it can positively determine that the element lacks an
+@@ -35,7 +35,7 @@ function mayContainChildComponent(root, componentName) {
+           return true;
+         }
+         // Check for components with the provided name.
+-        if (childNode.type === 'JSXElement' && childNode.openingElement && (0, _minimatch["default"])(elementType(childNode.openingElement), componentName)) {
++        if (childNode.type === 'JSXElement' && childNode.openingElement && (0, _minimatch.minimatch)(elementType(childNode.openingElement), componentName)) {
+           return true;
+         }
+         if (traverseChildren(childNode, depth + 1)) {
+diff --git a/lib/util/mayHaveAccessibleLabel.js b/lib/util/mayHaveAccessibleLabel.js
+index 07eb76610957454796da190d118f1b1061bbad20..4ac42aff01bf25c61ab7e53e4e9f4197020a03fb 100644
+--- a/lib/util/mayHaveAccessibleLabel.js
++++ b/lib/util/mayHaveAccessibleLabel.js
+@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
+ exports["default"] = mayHaveAccessibleLabel;
+ var _arrayIncludes = _interopRequireDefault(require("array-includes"));
+ var _jsxAstUtils = require("jsx-ast-utils");
+-var _minimatch = _interopRequireDefault(require("minimatch"));
++var _minimatch = require("minimatch");
+ function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+ /**
+  * Returns true if a labelling element is found or if it cannot determine if
+@@ -72,7 +72,7 @@ function mayHaveAccessibleLabel(root) {
+       var name = getElementType(node.openingElement);
+       var isReactComponent = name.length > 0 && name[0] === name[0].toUpperCase();
+       if (isReactComponent && !controlComponents.some(function (control) {
+-        return (0, _minimatch["default"])(name, control);
++        return (0, _minimatch.minimatch)(name, control);
+       })) {
+         return true;
+       }
