@@ -1,0 +1,85 @@
+src/core/storage/BulkArchiveService.test.ts
+  s_bb8f1233002a7e::t_fecc797af998b2 9,35-38,40,42,47,52-54
+src/core/storage/LayoutManager.test.ts
+  s_bb8f1233002a7e::t_c9cdb04bf6da09 21-22,74-79,82-83,86-91,94-95,99-104,107-108,110,116,121-123,134,145,166-168,182-185,194,201,205,252,310-312,492,506,568,691
+src/core/storage/LayoutService.scenario.errors.test.ts
+  s_bb8f1233002a7e::t_8065874b1179c3 15,191,238,242,247-249,255,260-262,282,286,291-293,320,337-339,359,363,368-370,376,381-383,412,416,421-423
+src/core/storage/LayoutService.scenario.library.test.ts
+  s_bb8f1233002a7e::t_49829fcb92fed4 17,34,39-41,50,289,550,555-560,618-623,628
+src/core/storage/LayoutService.scenario.result.test.ts
+  s_bb8f1233002a7e::t_1d2c88350837ba 275-278
+src/core/storage/LayoutService.test.ts
+  s_bb8f1233002a7e::t_ebf9f2dbd97344 10,161-166,173-178,215-221,287
+src/core/storage/ShareService.scenario.url.test.ts
+  s_bb8f1233002a7e::t_0a2e15e44c109f 19-23,27-33,40-46,53-59,66-72,79-85,92-98,105-111,118-124,131-137,144-150,157-163,170-176,183-189,196-202,210-216,232-236,240-245,254-259,268-273,282-287,296-301
+src/core/storage/ShareService.test.ts
+  s_bb8f1233002a7e::t_776748713dca6d 19,21,49-57,63-68,71-80,417-424,451,453-459,480,489,532,623,635,701-707,763,802,867,886-892,940,944
+src/core/storage/SnapshotService.test.ts
+  s_bb8f1233002a7e::t_52b722e54a3809 14,28-30,234-238
+src/core/storage/backends/indexedDB.test.ts
+  s_bb8f1233002a7e::t_e056f764928152 19-20,25,27-28,30-33,126-135,138-147,163-165,179-181,193-199,205-206,228,230,232-233,237-244,250-251,253-255,431-441,485-492,495,550-570
+src/core/storage/backends/localStorage.test.ts
+  s_bb8f1233002a7e::t_d6c918063a33c9 1,17-24,63,90
+src/core/storage/libraryUtils.test.ts
+  s_bb8f1233002a7e::t_dfd8f820af4fdb 11-12,15,20-22,25,30-31
+src/core/storage/localStorageCleanup.test.ts
+  s_bb8f1233002a7e::t_903c45959288e5 4,20
+src/core/storage/migration.test.ts
+  s_bb8f1233002a7e::t_0983aa7f2bf343 43,48,50-51,53-56
+src/core/storage/preview.test.ts
+  s_bb8f1233002a7e::t_ac8764a6d36f2e 4-5,9-11,22-24,35-38,41,45,50-51,54,56,61-63,66,68,73,76,78,83,86,88,94-95,105-112,115,117
+src/core/store/halfGridMode.test.ts
+  s_bb8f1233002a7e::t_3a31763490fc48 10-11,105-109,159-163,174-179,193-197,216-220,239-244,290-294,336-340,348-352,361-365
+src/core/store/interaction.test.ts
+  s_bb8f1233002a7e::t_30be74f32dab85 5,46-47,56-57
+src/core/store/labs.test.ts
+  s_bb8f1233002a7e::t_b29ddeeb5a13b0 19,33,55-56
+src/core/store/layout.scenario.displacement.test.ts
+  s_bb8f1233002a7e::t_13ab41253fa724 5,21-25,35,50-54,63,77-81,88,104-108,118-122,130,149-153,161,177,187,203-207,216-220,237-241,250-254,273-277,292-296,316-320,345-349,358-362,387-391,416,421-425,470-474
+src/core/store/layout.scenario.multi-bin.test.ts
+  s_bb8f1233002a7e::t_d2346c1a35e12a 5,21-25,32-36,42-43,46-47,62-66,75-79,88-92,111-115,144-148,152,183-187,202-204,206,220-224,246-250,257-261,270-274,305-309,316-320,329-333,366-370,379,393-397,405,421-425,432-436,443-447,453-455,460-461,465,476-480,487-491,497-498,501-502
+src/core/store/layout.test.ts
+  s_bb8f1233002a7e::t_e977bb3ef157c2 7,27-31,50-54,72-76,85-89,105-109,128-132,152-156,162,175-179,201-205,213,227-231,239,252-256,278-282,290,303-307,330-334,377-381,419-423,440,467-471,483-487,511-515,543-548,551-558,630,653-657,664-668,703,713,728-732,739,779-783,860,876-880,897,911-915,935,945-949,956,968-972,981-985,1012,1020,1063,1076-1080,1099-1103,1137,1151-1155,1163-1167,1241,1254,1265-1269,1273,1290,1308-1312,1330-1334,1353-1357,1366-1370,1384-1389,1404-1408,1426-1430,1450-1454,1461,1474-1478,1487-1491,1519,1541-1542,1585,1684-1688,1729
+src/core/store/layout/bulkActions.test.ts
+  s_bb8f1233002a7e::t_5ac7363867c20a 3,25-29,36-40,61-65,72-76,124-128
+src/core/store/layout/categoryActions.test.ts
+  s_bb8f1233002a7e::t_fcaf5bce093e76 4,95-99
+src/core/store/layout/coreActions.test.ts
+  s_bb8f1233002a7e::t_186a3b1ed51498 139,155,172
+src/core/store/layout/drawerActions.test.ts
+  s_bb8f1233002a7e::t_6390f387d7416f 5,15,21,27,33,39,46,60-64,73,83,88,100-104,109
+src/core/store/layout/helpers.test.ts
+  s_bb8f1233002a7e::t_b8ab0ec8709104 3,10-14,23
+src/core/store/layout/layerActions.test.ts
+  s_bb8f1233002a7e::t_b41ab8a10a809d 4,22,56,64,85-89
+src/core/store/library.test.ts
+  s_bb8f1233002a7e::t_8092aa1ba888aa 3,5-6,13,18-20,30,73-75,82,93-96,106-109,121-132,140-143,154-157,168-171,189,193,202,207-211,217,220,228,231,247,249,255,257,265,267,272-274,279,281-283,287,289,293,297,304,319,321,328,330,336,339,346,349,356,360-361,367,369,381,385-386,401,408,424,475,503-504,507-514,519-526,532-533,539-541,553,556-563,568-575,594-601,620,626,628,630,636,643,646,654-656,660,676,686,689-691,699
+src/core/store/selectors.test.ts
+  s_bb8f1233002a7e::t_b0ade58a02d2a8 17,46-48,50-52,68-75,89-91,123,138-155,179-186,189-191,206-211,235-237,241
+src/core/store/settings.normalize.test.ts
+  s_bb8f1233002a7e::t_ce9efe52c32dec 9-10,28,66,72
+src/core/store/settings.test.ts
+  s_bb8f1233002a7e::t_573db3227f5e83 14,567-568,579,591-593
+src/core/store/sharedWithMe.test.ts
+  s_bb8f1233002a7e::t_6b6a50fa6353e2 4,73-75,179-181
+src/core/store/snapshots.test.ts
+  s_bb8f1233002a7e::t_773604a2749767 7,19-21
+src/core/store/view.test.ts
+  s_bb8f1233002a7e::t_e13d1cc1169d24 5,133,142,148,153,163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "d28b9461fb1b31afb3ad207015262232f6b06d8d",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
