@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
 import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
@@ -18,14 +19,14 @@ vi.mock('@/shell/LayoutThumbnail', () => ({
 
 function makeEntry(overrides: Partial<LayoutEntry> = {}): LayoutEntry {
   return {
-    id: 'entry-1',
+    id: layoutId('entry-1'),
     name: 'My Layout',
     createdAt: 0,
     modifiedAt: 0,
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 4,
       layerCount: 1,
       binMap: [],
@@ -47,12 +48,12 @@ const noopHandlers = {
 
 describe('findEntry', () => {
   it('finds an entry by id', () => {
-    const entries = [makeEntry({ id: 'a' }), makeEntry({ id: 'b' })];
+    const entries = [makeEntry({ id: layoutId('a') }), makeEntry({ id: layoutId('b') })];
     expect(findEntry(entries, 'b')?.id).toBe('b');
   });
 
   it('returns undefined when not found', () => {
-    expect(findEntry([makeEntry({ id: 'a' })], 'missing')).toBeUndefined();
+    expect(findEntry([makeEntry({ id: layoutId('a') })], 'missing')).toBeUndefined();
   });
 });
 
@@ -76,7 +77,7 @@ describe('LayoutListItem', () => {
     const onSelect = vi.fn();
     render(
       <LayoutListItem
-        entry={makeEntry({ id: 'entry-1' })}
+        entry={makeEntry({ id: layoutId('entry-1') })}
         isActive={false}
         isSwiping={false}
         swipeX={0}

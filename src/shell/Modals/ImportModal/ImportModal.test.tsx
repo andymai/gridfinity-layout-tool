@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import { ImportModal } from '@/shell/Modals/ImportModal';
 import { createDefaultLayout } from '@/core/constants';
 import { encodeLayoutForURL } from '@/core/storage';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 describe('ImportModal', () => {
   const mockOnClose = vi.fn();
@@ -147,7 +148,7 @@ describe('ImportModal', () => {
 
       const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
-      layout.drawer = { width: 12, depth: 10, height: 40 };
+      layout.drawer = { width: gridUnits(12), depth: gridUnits(10), height: heightUnits(40) };
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
@@ -382,13 +383,13 @@ describe('ImportModal', () => {
       // Add a bin with invalid layer reference
       layout.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          layerId: 'nonexistent-layer',
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          layerId: layerId('nonexistent-layer'),
           category: layout.categories[0].id,
           label: '',
           notes: '',
@@ -409,12 +410,12 @@ describe('ImportModal', () => {
       const layout = createDefaultLayout();
       layout.bins = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           layerId: layout.layers[0].id,
           category: layout.categories[0].id,
           label: '',

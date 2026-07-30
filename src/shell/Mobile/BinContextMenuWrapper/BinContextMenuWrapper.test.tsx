@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { BinContextMenuWrapper } from './BinContextMenuWrapper';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 vi.mock('../BinContextMenu', () => ({
   BinContextMenu: () => <div data-testid="bin-context-menu" />,
@@ -19,13 +20,25 @@ describe('BinContextMenuWrapper', () => {
   });
 
   it('renders without crashing', () => {
-    const { addBin } = useLayoutStore.getState();
-    const layerId = useLayoutStore.getState().layout.layers[0]?.id || 'layer1';
-    addBin({ layerId, x: 0, y: 0, width: 1, depth: 1, height: 3 });
-    const binId = useLayoutStore.getState().layout.bins[0]?.id || 'bin1';
+    const { addBin, layout } = useLayoutStore.getState();
+    const activeLayerId = layout.layers[0]?.id ?? layerId('layer1');
+    addBin({
+      layerId: activeLayerId,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: layout.categories[0]?.id ?? categoryId('cat1'),
+      label: '',
+      notes: '',
+    });
+    const firstBinId = useLayoutStore.getState().layout.bins[0]?.id ?? binId('bin1');
 
     const onClose = vi.fn();
-    render(<BinContextMenuWrapper binIds={[binId]} position={{ x: 0, y: 0 }} onClose={onClose} />);
+    render(
+      <BinContextMenuWrapper binIds={[firstBinId]} position={{ x: 0, y: 0 }} onClose={onClose} />
+    );
   });
 
   it('returns null when binIds is empty', () => {

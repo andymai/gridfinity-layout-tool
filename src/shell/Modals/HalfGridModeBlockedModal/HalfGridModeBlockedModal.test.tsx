@@ -8,10 +8,9 @@ function createViolation(
   binIds: string[] = ['bin-1', 'bin-2', 'bin-3']
 ): HalfGridConstraintViolation {
   return {
-    type: 'fractional_bins',
+    type: 'fractional_bins_exist',
     count,
     binIds,
-    drawerHasFractional: false,
   };
 }
 

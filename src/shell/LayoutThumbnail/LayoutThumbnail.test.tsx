@@ -2,19 +2,33 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { LayoutThumbnail } from './LayoutThumbnail';
 import type { LayoutPreview } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 
 const emptyPreview: LayoutPreview = {
-  drawerWidth: 4,
-  drawerDepth: 3,
+  drawerWidth: gridUnits(4),
+  drawerDepth: gridUnits(3),
+  drawerHeight: heightUnits(5),
+  binCount: 0,
+  layerCount: 1,
   binMap: [],
 };
 
 const previewWithBins: LayoutPreview = {
-  drawerWidth: 4,
-  drawerDepth: 3,
+  drawerWidth: gridUnits(4),
+  drawerDepth: gridUnits(3),
+  drawerHeight: heightUnits(5),
+  binCount: 2,
+  layerCount: 1,
   binMap: [
-    { x: 0, y: 0, w: 2, d: 1, c: '#4a90d9', l: 'Screws' },
-    { x: 2, y: 0, w: 1, d: 1, c: '#e74c3c', l: '' },
+    {
+      x: gridUnits(0),
+      y: gridUnits(0),
+      w: gridUnits(2),
+      d: gridUnits(1),
+      c: '#4a90d9',
+      l: 'Screws',
+    },
+    { x: gridUnits(2), y: gridUnits(0), w: gridUnits(1), d: gridUnits(1), c: '#e74c3c', l: '' },
   ],
 };
 

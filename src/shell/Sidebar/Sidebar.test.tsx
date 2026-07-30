@@ -7,6 +7,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { resetAllStores } from '@/test/testUtils';
+import { gridUnits } from '@/core/types';
 
 // Mock child components to isolate Sidebar tests
 vi.mock('@/features/layers/components/ActiveLayerPanel', () => ({
@@ -258,7 +259,7 @@ describe('Sidebar', () => {
     });
 
     it('disables decrease width at minimum', () => {
-      useLayoutStore.getState().updateDrawer({ width: 0.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(0.5) });
 
       render(<Sidebar />);
 
@@ -266,7 +267,7 @@ describe('Sidebar', () => {
     });
 
     it('disables decrease depth at minimum', () => {
-      useLayoutStore.getState().updateDrawer({ depth: 0.5 });
+      useLayoutStore.getState().updateDrawer({ depth: gridUnits(0.5) });
 
       render(<Sidebar />);
 
@@ -336,7 +337,7 @@ describe('Sidebar', () => {
     });
 
     it('shows edge controls when width is fractional', () => {
-      useLayoutStore.getState().updateDrawer({ width: 10.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(10.5) });
 
       render(<Sidebar />);
 
@@ -347,7 +348,7 @@ describe('Sidebar', () => {
     });
 
     it('shows edge controls when depth is fractional', () => {
-      useLayoutStore.getState().updateDrawer({ depth: 8.5 });
+      useLayoutStore.getState().updateDrawer({ depth: gridUnits(8.5) });
 
       render(<Sidebar />);
 
@@ -358,7 +359,7 @@ describe('Sidebar', () => {
     });
 
     it('shows Left/Right buttons for fractional width', () => {
-      useLayoutStore.getState().updateDrawer({ width: 10.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(10.5) });
 
       render(<Sidebar />);
 
@@ -367,7 +368,7 @@ describe('Sidebar', () => {
     });
 
     it('shows Bottom/Top buttons for fractional depth', () => {
-      useLayoutStore.getState().updateDrawer({ depth: 8.5 });
+      useLayoutStore.getState().updateDrawer({ depth: gridUnits(8.5) });
 
       render(<Sidebar />);
 
@@ -376,7 +377,7 @@ describe('Sidebar', () => {
     });
 
     it('changes fractional edge X position to start', () => {
-      useLayoutStore.getState().updateDrawer({ width: 10.5 });
+      useLayoutStore.getState().updateDrawer({ width: gridUnits(10.5) });
 
       render(<Sidebar />);
 
@@ -386,7 +387,7 @@ describe('Sidebar', () => {
     });
 
     it('changes fractional edge Y position to start', () => {
-      useLayoutStore.getState().updateDrawer({ depth: 8.5 });
+      useLayoutStore.getState().updateDrawer({ depth: gridUnits(8.5) });
 
       render(<Sidebar />);
 

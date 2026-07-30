@@ -42,7 +42,7 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
 
 describe('MobileHeader', () => {
   it('renders the GitHub link', () => {
-    render(<MobileHeader onMenuClick={vi.fn()} onHelpClick={vi.fn()} saveStatus="idle" />);
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     const githubLink = screen.getByText('sidebar.github');
     expect(githubLink.closest('a')).toHaveAttribute(
       'href',
@@ -51,7 +51,7 @@ describe('MobileHeader', () => {
   });
 
   it('renders the tip link', () => {
-    render(<MobileHeader onMenuClick={vi.fn()} onHelpClick={vi.fn()} saveStatus="idle" />);
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     expect(screen.getByText('sidebar.tip')).toBeInTheDocument();
   });
 });
