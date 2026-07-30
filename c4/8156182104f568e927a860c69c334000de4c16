@@ -1,0 +1,51 @@
+api/ml-telemetry.ts
+  s_965615833a8cab::t_314d29428d35d8 7-9
+  s_965615833a8cab::t_6680d8f981c184 125
+  s_965615833a8cab::t_db9c42b56c6e65 389
+  s_965615833a8cab::t_629123633a3773 18
+  s_965615833a8cab::t_5bd51783bb88a1 415,421
+api/lib/mlTelemetry/retention.ts
+  s_965615833a8cab::t_1d4b6be251542c 1-10
+  s_965615833a8cab::t_db4e8e11a2e1b7 11-28
+api/sync/account.ts
+  s_965615833a8cab::t_9cb678b96fb008 15
+  s_965615833a8cab::t_72675dec3ec7c4 26-27
+  s_965615833a8cab::t_9cfb913f71b3e0 85-86
+package.json
+  s_965615833a8cab::t_a38bd23d326ca7 64
+api/lib/mlTelemetry/retention.test.ts
+  s_965615833a8cab::t_2d4a49a9fe0e5b 1-33
+tsconfig.scripts.json
+  s_965615833a8cab::t_db3460c5ceb848 21
+api/ml-telemetry.test.ts
+  s_965615833a8cab::t_ad737b4d876978 6,11-31,36-37,68-96,100,126-170
+  s_965615833a8cab::t_581db6a5b9905e 32-34
+  s_965615833a8cab::t_5834b9631bbc84 35
+  s_bb8f1233002a7e::t_abdcd6550e45d8 171
+scripts/backfill-ml-ttls.ts
+  s_965615833a8cab::t_afec09910ebb35 1-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "c48156182104f568e927a860c69c334000de4c16",
+  "prompts": {},
+  "sessions": {
+    "s_965615833a8cab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55cf7e3-0bdb-43b7-afe9-aef90fafc8c8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
