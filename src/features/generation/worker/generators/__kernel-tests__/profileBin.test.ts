@@ -11,6 +11,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin, getGenerateBaseplate, getKernelName } from './wasmInit';
+import { makeInsert } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
 
@@ -186,7 +187,15 @@ describe(`profile bins (${getKernelName()})`, () => {
       depth: 2,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
       inserts: [
-        { shape: 'circle', x: 0, y: 0, width: 30, depth: 30, cutDepth: 5, cornerRadius: 0 },
+        makeInsert({
+          shape: 'circle',
+          x: 0,
+          y: 0,
+          width: 30,
+          depth: 30,
+          cutDepth: 5,
+          cornerRadius: 0,
+        }),
       ],
     });
   }, 30_000);
@@ -217,20 +226,16 @@ describe(`profile baseplates (${getKernelName()})`, () => {
     width: 2,
     depth: 2,
     gridUnitMm: 42,
-    withMagnet: false,
+    magnetHoles: false,
     magnetDiameter: 6.5,
     magnetDepth: 2,
     paddingLeft: 0,
     paddingRight: 0,
     paddingFront: 0,
     paddingBack: 0,
-    edgeLeft: 'exterior',
-    edgeRight: 'exterior',
-    edgeFront: 'exterior',
-    edgeBack: 'exterior',
+    fractionalEdgeX: 'end',
+    fractionalEdgeY: 'end',
     connectorNubs: false,
-    fractionalX: 'none',
-    fractionalY: 'none',
   };
 
   it('2×2 plain', () => {
@@ -238,7 +243,7 @@ describe(`profile baseplates (${getKernelName()})`, () => {
   }, 30_000);
 
   it('2×2 magnets', () => {
-    runBaseplate('bp 2×2 magnets', { ...BASE_PLATE, withMagnet: true });
+    runBaseplate('bp 2×2 magnets', { ...BASE_PLATE, magnetHoles: true });
   }, 30_000);
 
   it('4×4 plain', () => {
@@ -246,7 +251,7 @@ describe(`profile baseplates (${getKernelName()})`, () => {
   }, 60_000);
 
   it('4×4 magnets', () => {
-    runBaseplate('bp 4×4 magnets', { ...BASE_PLATE, width: 4, depth: 4, withMagnet: true });
+    runBaseplate('bp 4×4 magnets', { ...BASE_PLATE, width: 4, depth: 4, magnetHoles: true });
   }, 60_000);
 
   it('4×4 magnets + connectors', () => {
@@ -254,12 +259,12 @@ describe(`profile baseplates (${getKernelName()})`, () => {
       ...BASE_PLATE,
       width: 4,
       depth: 4,
-      withMagnet: true,
+      magnetHoles: true,
       connectorNubs: true,
     });
   }, 60_000);
 
   it('6×4 magnets', () => {
-    runBaseplate('bp 6×4 magnets', { ...BASE_PLATE, width: 6, depth: 4, withMagnet: true });
+    runBaseplate('bp 6×4 magnets', { ...BASE_PLATE, width: 6, depth: 4, magnetHoles: true });
   }, 120_000);
 });

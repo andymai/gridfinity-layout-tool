@@ -36,7 +36,7 @@ const DISABLED_CONFIG: SplitConnectorConfig = { ...DEFAULT_SPLIT_CONNECTOR_CONFI
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Sum triangle counts across all pieces. */
-function totalTriCount(pieces: { indices: { length: number } }[]): number {
+function totalTriCount(pieces: readonly { indices: { length: number } }[]): number {
   return pieces.reduce((sum, p) => sum + p.indices.length / 3, 0);
 }
 

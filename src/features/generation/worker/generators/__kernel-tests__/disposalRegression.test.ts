@@ -33,18 +33,18 @@ describe('WASM disposal regression', () => {
 
     // Generate with varying grid sizes to force cache evictions (LRU capacity = 5)
     for (let i = 0; i < 10; i++) {
-      const gridW = 1 + (i % 4); // cycles through 1-4
-      const gridD = 1 + ((i + 1) % 3); // cycles through 1-3
-      generateBin(buildParams({ gridW, gridD }));
+      const width = 1 + (i % 4); // cycles through 1-4
+      const depth = 1 + ((i + 1) % 3); // cycles through 1-3
+      generateBin(buildParams({ width, depth }));
     }
 
     const stats5 = getDisposalStats();
 
     // Run 10 more cycles — handle count should not grow linearly
     for (let i = 10; i < 20; i++) {
-      const gridW = 1 + (i % 4);
-      const gridD = 1 + ((i + 1) % 3);
-      generateBin(buildParams({ gridW, gridD }));
+      const width = 1 + (i % 4);
+      const depth = 1 + ((i + 1) % 3);
+      generateBin(buildParams({ width, depth }));
     }
 
     const stats10 = getDisposalStats();
@@ -58,8 +58,8 @@ describe('WASM disposal regression', () => {
     const generateBin = getGenerateBin();
 
     // Generate with several different params to populate all cache types
-    for (let gridW = 1; gridW <= 5; gridW++) {
-      generateBin(buildParams({ gridW, gridD: 1 }));
+    for (let width = 1; width <= 5; width++) {
+      generateBin(buildParams({ width, depth: 1 }));
     }
 
     const beforeClear = getDisposalStats();
@@ -77,8 +77,8 @@ describe('WASM disposal regression', () => {
     const generateBin = getGenerateBin();
 
     // Generate with 7 different shell keys to exceed LRU(5) and trigger evictions
-    for (let gridW = 1; gridW <= 7; gridW++) {
-      generateBin(buildParams({ gridW, gridD: 1 }));
+    for (let width = 1; width <= 7; width++) {
+      generateBin(buildParams({ width, depth: 1 }));
     }
 
     const stats = getDisposalStats();
@@ -90,7 +90,7 @@ describe('WASM disposal regression', () => {
     'diagnostic: baseline leaks on 1x10 without features',
     async () => {
       const generateBin = getGenerateBin();
-      const plainParams = (depth: number) => buildParams({ gridW: 1, gridD: depth });
+      const plainParams = (depth: number) => buildParams({ width: 1, depth });
       const gcFn = (globalThis as { gc: () => void }).gc;
 
       const drainGc = async () => {
@@ -115,7 +115,7 @@ describe('WASM disposal regression', () => {
       // fall through to the FinalizationRegistry.
       for (let w = 1; w <= 5; w++) {
         for (let d = 3; d <= 10; d++) {
-          generateBin(buildParams({ gridW: w, gridD: d }));
+          generateBin(buildParams({ width: w, depth: d }));
         }
       }
       await drainGc();
@@ -142,7 +142,7 @@ describe('WASM disposal regression', () => {
       };
 
       // Baseline — warm everything once
-      generateBin(buildParams({ gridW: 2, gridD: 2 }));
+      generateBin(buildParams({ width: 2, depth: 2 }));
       await drainGc();
       const base = getDisposalStats().gcCollected;
 
@@ -170,48 +170,48 @@ describe('WASM disposal regression', () => {
 
       results.push(
         await churn('wall cutouts', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, width: 70, depth: 50 },
         }))
       );
 
       results.push(
         await churn('handles', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true },
         }))
       );
 
       results.push(
         await churn('scoops', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
         }))
       );
 
       results.push(
         await churn('label tabs', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
         }))
       );
 
       results.push(
         await churn('compartments 2x2', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
         }))
       );
 
       results.push(
         await churn('wall pattern', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           wallPattern: { enabled: true, pattern: 'honeycomb' },
         }))
       );
@@ -220,8 +220,8 @@ describe('WASM disposal regression', () => {
       // which is not exercised by any single-feature probe above.
       results.push(
         await churn('wall cutouts + compartments', (w, d) => ({
-          gridW: w,
-          gridD: d,
+          width: w,
+          depth: d,
           walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, width: 70, depth: 50 },
           compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
         }))
@@ -267,8 +267,8 @@ describe('WASM disposal regression', () => {
 
       const paramsWithCutouts = (depth: number) =>
         buildParams({
-          gridW: 1,
-          gridD: depth,
+          width: 1,
+          depth,
           walls: {
             ...DEFAULT_BIN_PARAMS.walls,
             enabled: true,
@@ -294,7 +294,7 @@ describe('WASM disposal regression', () => {
       for (let w = 1; w <= 5; w++) {
         for (let d = 3; d <= 10; d++) {
           generateBin(paramsWithCutouts(d));
-          if (w % 2 === 0) generateBin(buildParams({ gridW: w, gridD: d }));
+          if (w % 2 === 0) generateBin(buildParams({ width: w, depth: d }));
         }
       }
       await drainGc();
@@ -324,8 +324,8 @@ describe('WASM disposal regression', () => {
     // memory pressure.
     const paramsWithCutouts = (depth: number) =>
       buildParams({
-        gridW: 1,
-        gridD: depth,
+        width: 1,
+        depth,
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
@@ -358,8 +358,8 @@ describe('WASM disposal regression', () => {
     // Generate a bin with features (lip, magnet holes) to exercise full pipeline
     generateBin(
       buildParams({
-        gridW: 2,
-        gridD: 2,
+        width: 2,
+        depth: 2,
         base: {
           ...DEFAULT_BIN_PARAMS.base,
           style: 'standard',

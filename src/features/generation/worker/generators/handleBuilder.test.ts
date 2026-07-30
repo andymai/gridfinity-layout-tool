@@ -6,9 +6,17 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, HandleConfig } from '@/shared/types/bin';
+import type { HandleSide } from '@/features/bin-designer/types/handles';
 import type { CellMask } from '@/shared/utils/cellMask';
 
-function makeParams(handles: Partial<HandleConfig>, label?: { enabled: boolean }): BinParams {
+type PartialHandleConfig = Partial<Omit<HandleConfig, 'front' | 'back' | 'left' | 'right'>> & {
+  front?: Partial<HandleSide>;
+  back?: Partial<HandleSide>;
+  left?: Partial<HandleSide>;
+  right?: Partial<HandleSide>;
+};
+
+function makeParams(handles: PartialHandleConfig, label?: { enabled: boolean }): BinParams {
   return {
     ...DEFAULT_BIN_PARAMS,
     handles: {
