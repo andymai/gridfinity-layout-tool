@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.329.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.2...gridfinity-layout-tool-v4.329.3) (2026-07-30)
+
+
+### Bug Fixes
+
+* **baseplate:** bias split planner toward fewer pieces ([#2988](https://github.com/andymai/gridfinity-layout-tool/issues/2988)) ([#2996](https://github.com/andymai/gridfinity-layout-tool/issues/2996)) ([5c5a5c9](https://github.com/andymai/gridfinity-layout-tool/commit/5c5a5c9a720c042bfabd08e5718fa0d3face1380))
+* **deps:** eliminate brace-expansion@1.x / minimatch@3 from the tree ([#2974](https://github.com/andymai/gridfinity-layout-tool/issues/2974)) ([#3000](https://github.com/andymai/gridfinity-layout-tool/issues/3000)) ([4edecdb](https://github.com/andymai/gridfinity-layout-tool/commit/4edecdb1ef8987dffae209f2d94426c383a91fe5))
+* **staging:** flip rotate button on the visually top row, not the bottom ([#2979](https://github.com/andymai/gridfinity-layout-tool/issues/2979)) ([#2992](https://github.com/andymai/gridfinity-layout-tool/issues/2992)) ([6660f91](https://github.com/andymai/gridfinity-layout-tool/commit/6660f911d5c2d0683e46af6666ceb4f4004c296b))
+
 ## [4.329.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.1...gridfinity-layout-tool-v4.329.2) (2026-07-30)
 
 
