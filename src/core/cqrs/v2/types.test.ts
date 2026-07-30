@@ -30,6 +30,18 @@ describe('v2 type inference', () => {
   });
 
   describe('PayloadOf / ValueOf / ErrorOf extractors', () => {
+    // The failure mode these extractors had: pinning any generic slot to a
+    // fixed type made the conditional unmatchable via function-parameter
+    // contravariance, and every extractor yielded `never`. `never` satisfies
+    // most downstream constraints silently, so assert it directly.
+    it('resolves a concrete type for every extractor, not `never`', () => {
+      expectTypeOf<PayloadOf<typeof sampleAddBin>>().not.toBeNever();
+      expectTypeOf<ValueOf<typeof sampleAddBin>>().not.toBeNever();
+      expectTypeOf<ErrorOf<typeof sampleAddBin>>().not.toBeNever();
+      expectTypeOf<PayloadOf<typeof sampleDeleteBin>>().not.toBeNever();
+      expectTypeOf<ErrorOf<typeof sampleDeleteBin>>().not.toBeNever();
+    });
+
     it('extracts payload from defineCommand return', () => {
       expectTypeOf<PayloadOf<typeof sampleAddBin>>().toEqualTypeOf<{
         layerId: string;

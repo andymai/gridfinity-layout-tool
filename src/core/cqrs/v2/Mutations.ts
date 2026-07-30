@@ -14,33 +14,51 @@
  */
 
 import type { Result } from '@/core/result';
-import type { AggregateName, AnyCommandDef, CommandDefShape } from './types';
+import type { AnyCommandDef, CommandDefShape } from './types';
 import type { Registry } from './createRegistry';
 
 /**
- * Extract the value type from a command def.
+ * Every generic slot of a command def, recovered in one match.
  *
- * The seventh slot uses `AggregateName` (the full union) rather than `never`:
- * `'layout' extends never` is `false`, which would make the conditional
- * collapse to `never` for any concrete command def. `'layout' extends AggregateName`
- * is trivially true, so the conditional matches and `infer V` succeeds.
+ * All seven slots must be `infer`, never a fixed type like `unknown`. Pinning
+ * the payload slot to `unknown` requires `handle: (payload: unknown, …)`, and
+ * function-parameter contravariance means a concrete def — whose `handle` takes
+ * a narrow payload — is not assignable to that. The conditional then fails and
+ * every extractor silently yields `never`. This is the same trap `AnyCommandDef`
+ * documents for the registry constraint.
+ *
+ * Extracting once and indexing keeps that reasoning in a single place, so a
+ * future extractor cannot reintroduce it.
  */
-export type ValueOf<C> =
-  C extends CommandDefShape<string, unknown, infer V, string, unknown, unknown, AggregateName>
-    ? V
+type DefParts<C> =
+  C extends CommandDefShape<
+    infer TType,
+    infer TPayload,
+    infer TValue,
+    infer TEventType,
+    infer TEventPayload,
+    infer TError,
+    infer TAggregate
+  >
+    ? {
+        type: TType;
+        payload: TPayload;
+        value: TValue;
+        eventType: TEventType;
+        eventPayload: TEventPayload;
+        error: TError;
+        aggregate: TAggregate;
+      }
     : never;
+
+/** Extract the value type from a command def. */
+export type ValueOf<C> = DefParts<C>['value'];
 
 /** Extract the error union from a command def — the union of every `err()` return inside `handle`. */
-export type ErrorOf<C> =
-  C extends CommandDefShape<string, unknown, unknown, string, unknown, infer E, AggregateName>
-    ? E
-    : never;
+export type ErrorOf<C> = DefParts<C>['error'];
 
 /** Extract the payload type from a command def. */
-export type PayloadOf<C> =
-  C extends CommandDefShape<string, infer P, unknown, string, unknown, unknown, AggregateName>
-    ? P
-    : never;
+export type PayloadOf<C> = DefParts<C>['payload'];
 
 /**
  * Mutations surface derived from a registry. One method per command,
