@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.332.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.331.1...gridfinity-layout-tool-v4.332.0) (2026-07-30)
+
+
+### Features
+
+* support the wall taper on multi-compartment bins ([#3017](https://github.com/andymai/gridfinity-layout-tool/issues/3017)) ([#3021](https://github.com/andymai/gridfinity-layout-tool/issues/3021)) ([c499894](https://github.com/andymai/gridfinity-layout-tool/commit/c49989464cff3cea2df3fdc442e605c7dfbd6ffd))
+
 ## [4.331.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.331.0...gridfinity-layout-tool-v4.331.1) (2026-07-30)
 
 
