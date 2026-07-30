@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
 import { useViewStore, useInteractionStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
+import { heightUnits, layerId } from '@/core/types';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
@@ -30,14 +31,15 @@ describe('GridToolbar', () => {
     zoom: 1.0,
     canZoomIn: true,
     canZoomOut: true,
+    setZoom: vi.fn(),
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     fitToScreen: vi.fn(),
   };
 
   const mockLayers: Layer[] = [
-    { id: 'layer1', name: 'Layer 1', height: 3 },
-    { id: 'layer2', name: 'Layer 2', height: 3 },
+    { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+    { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
   ];
 
   const mockActiveLayer: Layer = mockLayers[0];

@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useInteractionStore } from '@/core/store/interaction';
+import { gridUnits, heightUnits } from '@/core/types';
 import { getBinId } from '@/test/testUtils';
 import { createMockGridRef, setupStores } from './useInteraction.testUtils';
 
@@ -17,7 +18,7 @@ describe('cancel', () => {
 
     // Set up an interaction
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     expect(useInteractionStore.getState().interaction).not.toBeNull();
@@ -43,7 +44,7 @@ describe('interaction property', () => {
     expect(result.current.interaction).toBeNull();
 
     act(() => {
-      result.current.startDraw({ x: 1, y: 2 });
+      result.current.startDraw({ x: gridUnits(1), y: gridUnits(2) });
     });
 
     expect(result.current.interaction).not.toBeNull();
@@ -61,7 +62,7 @@ describe('pointer cancel clears interaction', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     expect(useInteractionStore.getState().interaction).not.toBeNull();
@@ -88,7 +89,7 @@ describe('cleanup on unmount', () => {
 
     // Start an interaction
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     expect(useInteractionStore.getState().interaction).not.toBeNull();
@@ -105,11 +106,11 @@ describe('cleanup on unmount', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -136,11 +137,11 @@ describe('cleanup on unmount', () => {
     const binId = getBinId(
       addBin({
         layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',

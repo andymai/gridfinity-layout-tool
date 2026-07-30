@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useGridRowColumnSelection } from '@/features/grid-editor/hooks/useGridRowColumnSelection';
 import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
 
 describe('useGridRowColumnSelection', () => {
@@ -11,14 +12,14 @@ describe('useGridRowColumnSelection', () => {
   });
 
   const createBin = (id: string, x: number, y: number, width = 1, depth = 1): Bin => ({
-    id,
-    layerId: 'layer1',
-    x,
-    y,
-    width,
-    depth,
-    height: 3,
-    category: 'coral',
+    id: binId(id),
+    layerId: layerId('layer1'),
+    x: gridUnits(x),
+    y: gridUnits(y),
+    width: gridUnits(width),
+    depth: gridUnits(depth),
+    height: heightUnits(3),
+    category: categoryId('coral'),
     label: '',
     notes: '',
   });
@@ -93,8 +94,8 @@ describe('useGridRowColumnSelection', () => {
     it('resets row anchor when activeLayerId changes', () => {
       const layer1Bins = [createBin('bin1', 0, 0, 1, 1), createBin('bin2', 0, 2, 1, 1)];
       const layer2Bins = [
-        { ...createBin('bin3', 0, 0, 1, 1), layerId: 'layer2' },
-        { ...createBin('bin4', 0, 4, 1, 1), layerId: 'layer2' },
+        { ...createBin('bin3', 0, 0, 1, 1), layerId: layerId('layer2') },
+        { ...createBin('bin4', 0, 4, 1, 1), layerId: layerId('layer2') },
       ];
       const allBins = [...layer1Bins, ...layer2Bins];
 
@@ -128,8 +129,8 @@ describe('useGridRowColumnSelection', () => {
     it('resets column anchor when activeLayerId changes', () => {
       const layer1Bins = [createBin('bin1', 0, 0, 1, 1), createBin('bin2', 2, 0, 1, 1)];
       const layer2Bins = [
-        { ...createBin('bin3', 0, 0, 1, 1), layerId: 'layer2' },
-        { ...createBin('bin4', 4, 0, 1, 1), layerId: 'layer2' },
+        { ...createBin('bin3', 0, 0, 1, 1), layerId: layerId('layer2') },
+        { ...createBin('bin4', 4, 0, 1, 1), layerId: layerId('layer2') },
       ];
       const allBins = [...layer1Bins, ...layer2Bins];
 

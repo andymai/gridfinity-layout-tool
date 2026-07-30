@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { StagingBin } from './StagingBin';
 import { binId, categoryId } from '@/core/types';
 import type { PackedBin } from '@/features/staging/utils/packing';
+
+type StagingBinProps = ComponentProps<typeof StagingBin>;
+type StagingBinOverrides = Partial<Omit<StagingBinProps, 'bin'>> & { bin?: Partial<PackedBin> };
 
 /**
  * Helper to create a grid container wrapper for StagingBin.
@@ -34,7 +38,7 @@ function getBinElement(container: HTMLElement, binIdValue: string): HTMLElement 
 
 describe('StagingBin', () => {
   /** Helper to create default props with all required callbacks */
-  function defaultProps(overrides?: Partial<Parameters<typeof StagingBin>[0]>) {
+  function defaultProps(overrides: StagingBinOverrides = {}): StagingBinProps {
     const defaultBin: PackedBin = {
       id: binId('bin-1'),
       x: 0,
@@ -46,18 +50,18 @@ describe('StagingBin', () => {
       label: 'Tools',
     };
 
-    const bin: PackedBin = overrides?.bin ? { ...defaultBin, ...overrides.bin } : defaultBin;
-
-    // Separate out bin from overrides to avoid duplicate key warning
-    const { bin: _binOverride, ...otherOverrides } = overrides || {};
+    // bin is merged field-by-field into the default bin, so it must not be
+    // re-applied by the rest spread below
+    const { bin: binOverride, ...otherOverrides } = overrides;
 
     return {
-      bin,
+      bin: { ...defaultBin, ...binOverride },
       categoryColor: '#3b82f6',
       isSelected: false,
       isDragging: false,
       isHovered: false,
       isTouchDevice: false,
+      isTopRow: false,
       cellSize: 40,
       gap: 4,
       gridHeight: 10,
@@ -65,14 +69,14 @@ describe('StagingBin', () => {
       integerWidth: 10,
       fractionalWidthPart: 0,
       fractionalCellWidth: 0,
-      onBinClick: vi.fn(),
-      onBinPointerDown: vi.fn(),
-      onBinPointerMove: vi.fn(),
-      onBinPointerEnd: vi.fn(),
-      onBinContextMenu: vi.fn(),
-      onPointerEnter: vi.fn(),
-      onPointerLeave: vi.fn(),
-      onRotate: vi.fn(),
+      onBinClick: vi.fn<StagingBinProps['onBinClick']>(),
+      onBinPointerDown: vi.fn<StagingBinProps['onBinPointerDown']>(),
+      onBinPointerMove: vi.fn<StagingBinProps['onBinPointerMove']>(),
+      onBinPointerEnd: vi.fn<StagingBinProps['onBinPointerEnd']>(),
+      onBinContextMenu: vi.fn<StagingBinProps['onBinContextMenu']>(),
+      onPointerEnter: vi.fn<StagingBinProps['onPointerEnter']>(),
+      onPointerLeave: vi.fn<StagingBinProps['onPointerLeave']>(),
+      onRotate: vi.fn<StagingBinProps['onRotate']>(),
       ...otherOverrides,
     };
   }

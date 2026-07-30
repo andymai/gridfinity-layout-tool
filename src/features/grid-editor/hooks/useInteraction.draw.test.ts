@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useInteractionStore } from '@/core/store/interaction';
+import { gridUnits } from '@/core/types';
 import { createMockGridRef, setupStores } from './useInteraction.testUtils';
 
 describe('startDraw', () => {
@@ -15,7 +16,7 @@ describe('startDraw', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 2, y: 3 });
+      result.current.startDraw({ x: gridUnits(2), y: gridUnits(3) });
     });
 
     const interaction = useInteractionStore.getState().interaction;
@@ -35,7 +36,7 @@ describe('startDraw', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     const interaction = useInteractionStore.getState().interaction;
@@ -57,7 +58,7 @@ describe('draw pointer events', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     const interaction = useInteractionStore.getState().interaction;
@@ -82,7 +83,7 @@ describe('draw pointer events', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     // Update current position
@@ -91,8 +92,8 @@ describe('draw pointer events', () => {
         ...useInteractionStore.getState(),
         interaction: {
           type: 'draw',
-          start: { x: 0, y: 0 },
-          current: { x: 2, y: 2 },
+          start: { x: gridUnits(0), y: gridUnits(0) },
+          current: { x: gridUnits(2), y: gridUnits(2) },
         },
       });
     });
@@ -118,7 +119,7 @@ describe('draw pointer events', () => {
 
     // Start a draw interaction
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     // Simulate pointer move to establish a region
@@ -150,7 +151,7 @@ describe('draw pointer events', () => {
     const { result } = renderHook(() => useInteraction(gridRef));
 
     act(() => {
-      result.current.startDraw({ x: 0, y: 0 });
+      result.current.startDraw({ x: gridUnits(0), y: gridUnits(0) });
     });
 
     expect(useInteractionStore.getState().interaction?.type).toBe('paint');
@@ -162,8 +163,8 @@ describe('draw pointer events', () => {
         interaction: {
           type: 'paint',
           paintSize: { width: 2, depth: 2 },
-          start: { x: 0, y: 0 },
-          current: { x: 3, y: 3 },
+          start: { x: gridUnits(0), y: gridUnits(0) },
+          current: { x: gridUnits(3), y: gridUnits(3) },
         },
       });
     });

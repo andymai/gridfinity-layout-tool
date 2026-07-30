@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { buildBinOverhangStrips } from './binOverhangStrips';
 import type { OverhangStripBin } from './binOverhangStrips';
+import { mm } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
 
 function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
   return {
     magnetHoles: false,
-    magnetDiameter: 6,
-    magnetDepth: 2,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
     ...overrides,
   };
 }
@@ -27,7 +28,9 @@ const GRID = 42;
 
 describe('buildBinOverhangStrips', () => {
   it('returns nothing when the bin does not extend', () => {
-    expect(buildBinOverhangStrips(bin(), DW, DD, baseplate({ paddingLeft: 21 }), GRID)).toEqual([]);
+    expect(buildBinOverhangStrips(bin(), DW, DD, baseplate({ paddingLeft: mm(21) }), GRID)).toEqual(
+      []
+    );
   });
 
   it('returns nothing with no baseplate', () => {
@@ -41,7 +44,7 @@ describe('buildBinOverhangStrips', () => {
       bin({ x: 1, y: 1, extendToMargin: true }),
       DW,
       DD,
-      baseplate({ paddingLeft: 21 }),
+      baseplate({ paddingLeft: mm(21) }),
       GRID
     );
     expect(strips).toEqual([]);
@@ -52,7 +55,7 @@ describe('buildBinOverhangStrips', () => {
       bin({ extendToMargin: true }),
       DW,
       DD,
-      baseplate({ paddingLeft: 21 }),
+      baseplate({ paddingLeft: mm(21) }),
       GRID
     );
     expect(strips).toHaveLength(1);
@@ -70,7 +73,7 @@ describe('buildBinOverhangStrips', () => {
       bin({ extendToMargin: true }),
       DW,
       DD,
-      baseplate({ paddingLeft: 21, paddingFront: 42 }), // left 0.5u, front 1u
+      baseplate({ paddingLeft: mm(21), paddingFront: mm(42) }), // left 0.5u, front 1u
       GRID
     );
     expect(strips).toHaveLength(2);
@@ -88,7 +91,7 @@ describe('buildBinOverhangStrips', () => {
       bin({ x: 4, y: 3, extendToMargin: true }), // top-right corner
       DW,
       DD,
-      baseplate({ paddingRight: 21, paddingBack: 21 }),
+      baseplate({ paddingRight: mm(21), paddingBack: mm(21) }),
       GRID
     );
     expect(strips.map((s) => s.key.slice(-2)).sort()).toEqual(['-b', '-r']);
@@ -113,7 +116,7 @@ describe('buildBinOverhangStrips — explicit per-placement overhang', () => {
       bin({ extendToMargin: true, overhang: { left: 0, right: 21, front: 0, back: 0 } }),
       DW,
       DD,
-      baseplate({ paddingLeft: 21 }),
+      baseplate({ paddingLeft: mm(21) }),
       GRID
     );
     // Padding would have produced a left strip; the explicit overhang wins.

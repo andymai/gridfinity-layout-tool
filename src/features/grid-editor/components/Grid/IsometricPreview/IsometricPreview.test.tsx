@@ -6,6 +6,7 @@ import { IsometricPreview } from './IsometricPreview';
 import { useViewStore } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout } from '@/core/constants';
+import { heightUnits, layerId } from '@/core/types';
 
 // Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
@@ -56,11 +57,16 @@ vi.mock('@react-three/drei', () => ({
 // Mock Three.js
 vi.mock('three', () => {
   class Vector3 {
-    constructor(
-      public x = 0,
-      public y = 0,
-      public z = 0
-    ) {}
+    x: number;
+    y: number;
+    z: number;
+
+    constructor(x = 0, y = 0, z = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+
     set = vi.fn().mockReturnThis();
     clone = vi.fn().mockReturnThis();
     normalize = vi.fn().mockReturnThis();
@@ -109,16 +115,22 @@ vi.mock('three', () => {
       translate = vi.fn();
     },
     Float32BufferAttribute: class {
-      constructor(
-        public array: unknown,
-        public itemSize: number
-      ) {}
+      array: unknown;
+      itemSize: number;
+
+      constructor(array: unknown, itemSize: number) {
+        this.array = array;
+        this.itemSize = itemSize;
+      }
     },
     BufferAttribute: class {
-      constructor(
-        public array: unknown,
-        public itemSize: number
-      ) {}
+      array: unknown;
+      itemSize: number;
+
+      constructor(array: unknown, itemSize: number) {
+        this.array = array;
+        this.itemSize = itemSize;
+      }
     },
     MeshStandardMaterial: class {
       dispose = vi.fn();
@@ -194,6 +206,10 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+// useTranslation is mocked to echo keys, so the layer-mode buttons carry their
+// raw i18n key as the title attribute.
+const LAYER_MODE_BUTTON = '[title="grid.focusShowOnlyActiveLayer"]';
+
 describe('IsometricPreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -238,16 +254,21 @@ describe('IsometricPreview', () => {
   });
 
   it('renders layer view mode selector when multiple layers', () => {
-    const defaultLayout = createDefaultLayout();
-    const layoutWithMultipleLayers = {
-      ...defaultLayout,
-      layers: [
-        { id: 'layer-1', name: 'Layer 1', height: 3 },
-        { id: 'layer-2', name: 'Layer 2', height: 3 },
-      ],
-    };
-    useLayoutStore.setState({ layout: layoutWithMultipleLayers });
+    useLayoutStore.setState({
+      layout: {
+        ...createDefaultLayout(),
+        layers: [
+          { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
+        ],
+      },
+    });
     const { container } = render(<IsometricPreview />);
-    expect(container).toBeTruthy();
+    expect(container.querySelector(LAYER_MODE_BUTTON)).not.toBeNull();
+  });
+
+  it('omits the layer view mode selector for a single layer', () => {
+    const { container } = render(<IsometricPreview />);
+    expect(container.querySelector(LAYER_MODE_BUTTON)).toBeNull();
   });
 });
