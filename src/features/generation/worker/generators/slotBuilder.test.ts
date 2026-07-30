@@ -51,6 +51,7 @@ describe('buildSlotCuts', () => {
   it('returns null when no axes are enabled', () => {
     const params = makeSlottedParams({
       slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
         x: { enabled: false, pitch: 40 },
         y: { enabled: false, pitch: 40 },
       },

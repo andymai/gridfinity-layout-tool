@@ -17,6 +17,8 @@
  */
 import type { ResolvedBaseplateParams, BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import type { ProgressFn } from '@/features/generation/worker/generators/generatorTypes';
+import type { PerfCollector } from '@/features/generation/worker/generators/pipeline/perfCollector';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
@@ -51,8 +53,10 @@ export function getKernelName(): KernelName {
 
 export type GenerateBinFn = (
   params: BinParams,
-  onProgress?: (stage: string, progress: number) => void,
-  forExport?: boolean
+  onProgress?: ProgressFn,
+  forExport?: boolean,
+  signal?: AbortSignal,
+  perfCollector?: PerfCollector
 ) => MeshData;
 
 // ─── Baseplate generation ────────────────────────────────────────────────────

@@ -59,7 +59,7 @@ function benchOne(cols: number, rows: number, labels: boolean): BenchRow {
     width: 8,
     depth: 8,
     height: 4,
-    base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
+    base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
     compartments: {
       cols,
       rows,
