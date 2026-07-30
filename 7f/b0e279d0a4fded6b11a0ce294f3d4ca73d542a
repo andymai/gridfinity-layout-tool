@@ -1,0 +1,41 @@
+CLAUDE.md
+  s_bb8f1233002a7e::t_d941e043211974 54
+scripts/check-test-types.test.ts
+  s_bb8f1233002a7e::t_fa2639147890d3 1,3-35,60-98
+  s_bb8f1233002a7e::t_8a3bc8e97a1725 2
+  s_bb8f1233002a7e::t_3d26cc65fb3854 36-59
+package.json
+  s_bb8f1233002a7e::t_5a471317fb5a97 70-71
+  s_bb8f1233002a7e::t_f8a68cd3d92548 60
+.github/workflows/ci.yml
+  s_bb8f1233002a7e::t_017e04492d0584 192-196
+  s_bb8f1233002a7e::t_0638af6ba414dc 226
+.husky/pre-commit
+  s_bb8f1233002a7e::t_cd4776315fa565 12
+scripts/check-test-types.ts
+  s_bb8f1233002a7e::t_cd3e002719075a 54-69
+  s_bb8f1233002a7e::t_e5a812032aedea 1-53,70-150,154-156,166-168,172-180,183-194
+  s_bb8f1233002a7e::t_898e6ea6330c79 157-165
+  s_bb8f1233002a7e::t_8b6d96ea8c54c4 151-153,169-171,181-182
+  s_bb8f1233002a7e::t_adacb380cdfc01 195-196
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_9daae6bb8673e6 1-388
+tsconfig.test.json
+  s_bb8f1233002a7e::t_1455136c0c0a29 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "7fb0e279d0a4fded6b11a0ce294f3d4ca73d542a",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
