@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.330.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.7...gridfinity-layout-tool-v4.330.0) (2026-07-30)
+
+
+### Features
+
+* **bin-designer:** optional raised lip on label tabs ([#2971](https://github.com/andymai/gridfinity-layout-tool/issues/2971)) ([#3012](https://github.com/andymai/gridfinity-layout-tool/issues/3012)) ([7be22fc](https://github.com/andymai/gridfinity-layout-tool/commit/7be22fce83763cda39dabd0c75166f86b1ded092))
+
 ## [4.329.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.6...gridfinity-layout-tool-v4.329.7) (2026-07-30)
 
 
