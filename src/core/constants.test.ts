@@ -136,6 +136,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);
@@ -157,6 +158,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);
@@ -174,6 +176,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);
@@ -191,6 +194,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);
@@ -208,6 +212,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);
@@ -225,6 +230,7 @@ describe('createLayoutWithSettings', () => {
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
+      defaultCategories: null,
     };
 
     const layout = createLayoutWithSettings(settings);

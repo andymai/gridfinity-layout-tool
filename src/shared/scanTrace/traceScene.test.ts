@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
 import { traceScene, traceSceneSegmented, detectCard, buildToolTraceSoft } from './traceScene';
+import { binarize } from './softContour';
 import type { SoftMask } from './softContour';
 import type { ImageDataLike, Point } from './types';
 
@@ -153,7 +154,7 @@ describe('traceSceneSegmented excludes the tool from card detection', () => {
   });
 
   it('excluding the tool mask picks the real card instead', () => {
-    const card = detectCard(scene(), {}, toolMask());
+    const card = detectCard(scene(), {}, binarize(toolMask()));
     expect(card).not.toBeNull();
     if (!card) return;
     expect(centroidX(card.corners)).toBeLessThan(W / 2); // the left-hand card

@@ -4,6 +4,7 @@ import { LabsDrawer } from './LabsDrawer';
 import { resetAllStores } from '@/test/testUtils';
 import type { FeatureFlag } from '@/core/labs';
 import { useLabsStore } from '@/core/store';
+import { makeLabsState } from '@/features/labs/labs.testUtils';
 import { getToggleableFeatures } from '@/core/labs';
 
 vi.mock('@/core/store');
@@ -15,6 +16,8 @@ const mockToggleableFeatures: FeatureFlag[] = [
     description: 'First test feature',
     status: 'experimental',
     risk: 'low',
+    addedAt: '2026-01-01',
+    requiresRefresh: false,
   },
   {
     id: 'feature-2',
@@ -22,6 +25,8 @@ const mockToggleableFeatures: FeatureFlag[] = [
     description: 'Second test feature',
     status: 'preview',
     risk: 'medium',
+    addedAt: '2026-01-01',
+    requiresRefresh: false,
   },
 ];
 
@@ -76,12 +81,15 @@ function mockLabsStore(
     enabledFeatures?: Record<string, boolean>;
   } = {}
 ) {
-  const state = {
+  const state = makeLabsState({
     isDrawerOpen: overrides.isDrawerOpen ?? true,
     closeDrawer: overrides.closeDrawer ?? vi.fn(),
-    toggleFeature: vi.fn(),
-    preferences: { enabledFeatures: overrides.enabledFeatures ?? {} },
-  };
+    preferences: {
+      enabledFeatures: overrides.enabledFeatures ?? {},
+      lastModified: '2026-01-01T00:00:00.000Z',
+      version: 1,
+    },
+  });
   vi.mocked(useLabsStore).mockImplementation((selector) => (selector ? selector(state) : state));
   return state;
 }

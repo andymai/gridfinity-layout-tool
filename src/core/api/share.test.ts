@@ -8,17 +8,18 @@ import { createShare, updateShare, fetchShare, deleteShare, reportShare } from '
 import { expectOk, expectErr } from '@/test/testUtils';
 import { getUserMessage } from '@/core/result';
 import type { Layout } from '@/core/types';
+import { gridUnits, heightUnits, mm, categoryId, layerId } from '@/core/types';
 
 // Mock layout for testing
 const mockLayout: Layout = {
   version: '1.0',
   name: 'Test Layout',
-  drawer: { width: 10, depth: 8, height: 12 },
-  printBedSize: 256,
-  gridUnitMm: 42,
-  heightUnitMm: 7,
-  categories: [{ id: 'cat1', name: 'Default', color: '#888888' }],
-  layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+  drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+  printBedSize: mm(256),
+  gridUnitMm: mm(42),
+  heightUnitMm: mm(7),
+  categories: [{ id: categoryId('cat1'), name: 'Default', color: '#888888' }],
+  layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
   bins: [],
 };
 

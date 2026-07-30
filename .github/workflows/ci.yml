@@ -189,11 +189,6 @@ jobs:
             echo "ℹ️  No i18n files changed — skipping unused key scan"
           fi
 
-      - name: Check test types against baseline
-        id: test_types
-        continue-on-error: true
-        run: pnpm run check:test-types
-
       - name: Check module boundaries
         id: boundaries
         continue-on-error: true
@@ -223,7 +218,6 @@ jobs:
           check_step "i18n values"         "${{ steps.i18n_values.outcome }}"
           check_step "i18n interpolation"  "${{ steps.i18n_interpolation.outcome }}"
           check_step "i18n unused keys"    "${{ steps.i18n_unused.outcome }}"
-          check_step "test types"          "${{ steps.test_types.outcome }}"
           check_step "module boundaries"   "${{ steps.boundaries.outcome }}"
           check_step "union exhaustiveness" "${{ steps.exhaustiveness.outcome }}"
           if [ "$failed" = "1" ]; then

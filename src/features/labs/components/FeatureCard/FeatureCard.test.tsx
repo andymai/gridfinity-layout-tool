@@ -30,6 +30,8 @@ describe('FeatureCard', () => {
     description: 'Test feature description',
     status: 'experimental',
     risk: 'low',
+    addedAt: '2026-01-01',
+    requiresRefresh: false,
   };
 
   const mockToggle = vi.fn();
