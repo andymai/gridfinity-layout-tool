@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Ihr Browser konnte 3D-Rendering nicht laden",
   "binDesigner.overhang.taper.title": "Wände abschrägen",
   "binDesigner.overhang.taper.hint": "Neigt die Wand oberhalb des Bodens nach außen, damit der Behälter in die gerundeten Seiten einer Schublade reicht. Der Boden behält seine Überhangbreite und steht weiterhin flach auf.",
-  "binDesigner.overhang.taper.feetConflict": "Schalte die Füße unter dem Überhang aus, um die Wände abzuschrägen.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Fase",
   "binDesigner.overhang.taper.profileFillet": "Rundung",

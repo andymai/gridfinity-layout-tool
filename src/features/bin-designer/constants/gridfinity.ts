@@ -121,8 +121,9 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_OVERHANG: 0, // mm
   MAX_OVERHANG: 21, // mm (half a 42mm grid unit — beyond this, add a grid cell)
   OVERHANG_STEP: 0.5, // mm
-  // Outer-wall taper (drawer-fit "curved" bins, #2933). Per-side value is the
-  // base inset (chamfer) or radius (fillet), clamped to that side's overhang.
+  // Outer-wall flare (drawer-fit "curved" bins, #2933). Per-side value is the
+  // width added at the rim above the base overhang — chamfer inset or fillet
+  // radius. Independent of that side's overhang.
   MIN_TAPER: 0, // mm
   // Flare sits above the drawer's curve, where no extra grid cell could ever
   // fit, so MAX_OVERHANG's "add a cell instead" ceiling doesn't apply to it.

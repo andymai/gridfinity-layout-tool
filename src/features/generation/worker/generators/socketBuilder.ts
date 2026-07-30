@@ -36,7 +36,7 @@ import {
   frameCells,
   type CellInfo,
 } from './generatorTypes';
-import { hasOverhang, type ResolvedOverhang } from './overhang';
+import { hasOverhang, overhangBaseSides, type ResolvedOverhang } from './overhang';
 import {
   socketCacheKey,
   getSocketCache,
@@ -555,6 +555,10 @@ export function buildBaseSocket(
  * narrower than the printable threshold are dropped, leaving a flat bottom
  * there. Returns `null` when there's no overhang or every strip is
  * sub-threshold. Caller fuses the result onto the base socket.
+ *
+ * Framed from the overhang at the *base* ({@link overhangBaseSides}), not the
+ * rim: on a tapered wall the two differ by the flare, and feet laid out to the
+ * rim would jut past the wall above them into open air.
  */
 export function buildOverhangFeet(
   gridW: number,
@@ -568,7 +572,7 @@ export function buildOverhangFeet(
   const frame = frameCells(
     gridW,
     gridD,
-    { left: overhang.left, right: overhang.right, front: overhang.front, back: overhang.back },
+    overhangBaseSides(overhang),
     gridUnitMm,
     MIN_PRINTABLE_TILE_MM
   );

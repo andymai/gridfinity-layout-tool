@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Nettleseren din kunne ikke laste 3D-gjengivelse",
   "binDesigner.overhang.taper.title": "Skråne vegger",
   "binDesigner.overhang.taper.hint": "Vinkle veggen utover over bunnen slik at beholderen når inn i skuffens buede sider. Bunnen beholder overhengsbredden og står fortsatt flatt.",
-  "binDesigner.overhang.taper.feetConflict": "Slå av føtter under overhenget for å skråne veggene.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Fas",
   "binDesigner.overhang.taper.profileFillet": "Avrunding",

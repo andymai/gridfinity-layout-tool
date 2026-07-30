@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "브라우저가 3D 렌더링을 불러오지 못했습니다",
   "binDesigner.overhang.taper.title": "벽 테이퍼",
   "binDesigner.overhang.taper.hint": "바닥 위쪽 벽을 바깥으로 기울여 서랍의 곡면까지 닿게 합니다. 바닥은 오버행 너비를 유지하므로 여전히 평평하게 놓입니다.",
-  "binDesigner.overhang.taper.feetConflict": "벽을 테이퍼하려면 오버행 아래 발을 끄세요.",
   "binDesigner.overhang.taper.profile": "프로파일",
   "binDesigner.overhang.taper.profileChamfer": "모따기",
   "binDesigner.overhang.taper.profileFillet": "필렛",

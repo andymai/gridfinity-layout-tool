@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Twoja przeglądarka nie mogła wczytać renderowania 3D",
   "binDesigner.overhang.taper.title": "Zwężaj ścianki",
   "binDesigner.overhang.taper.hint": "Odchyl ściankę nad podstawą na zewnątrz, aby pojemnik sięgał zakrzywionych boków szuflady. Podstawa zachowuje szerokość nawisu, więc nadal stoi płasko.",
-  "binDesigner.overhang.taper.feetConflict": "Wyłącz stopki pod nawisem, aby zwęzić ścianki.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Fazowanie",
   "binDesigner.overhang.taper.profileFillet": "Zaokrąglenie",

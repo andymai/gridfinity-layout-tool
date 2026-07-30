@@ -12,8 +12,8 @@
  * The taper angles the wall outward from the padding-wide base up to the rim so
  * the bin reaches into a drawer's curved sides; the per-side reach is derived
  * from the padding, so only the profile, band height and flare are stored on the
- * Bin. It's unavailable on an over-tiled baseplate (the margin is functional
- * grid, so overhang feet — mutually exclusive with a taper — fill it instead).
+ * Bin. It composes with an over-tiled baseplate: those overhang feet are framed
+ * from the base, which the flare only widens above.
  */
 
 import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
@@ -46,8 +46,7 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
   if (!binCanExtendToMargin(bin, drawer, baseplate)) return null;
 
   const linked = bin.linkedDesignId !== undefined;
-  const overTile = baseplate?.overTile ?? false;
-  const canTaper = linked && bin.extendToMargin === true && !overTile;
+  const canTaper = linked && bin.extendToMargin === true;
 
   const marginTaper = bin.marginTaper;
   const taperOn = marginTaper?.enabled === true;

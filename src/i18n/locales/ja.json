@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "お使いのブラウザは3Dレンダリングを読み込めませんでした",
   "binDesigner.overhang.taper.title": "壁をテーパー",
   "binDesigner.overhang.taper.hint": "底面より上の壁を外側に傾け、引き出しの曲がった側面まで届かせます。底面はオーバーハングの幅を保つため、平らに置いたままです。",
-  "binDesigner.overhang.taper.feetConflict": "壁をテーパーするには、オーバーハング下の脚をオフにしてください。",
   "binDesigner.overhang.taper.profile": "プロファイル",
   "binDesigner.overhang.taper.profileChamfer": "面取り",
   "binDesigner.overhang.taper.profileFillet": "フィレット",

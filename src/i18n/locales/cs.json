@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Tvůj prohlížeč nedokázal načíst 3D vykreslování",
   "binDesigner.overhang.taper.title": "Zkosit stěny",
   "binDesigner.overhang.taper.hint": "Nakloňte stěnu nad základnou směrem ven, aby zásobník dosáhl do zaoblených stěn zásuvky. Základna si ponechá šířku přesahu, takže zásobník stále stojí rovně.",
-  "binDesigner.overhang.taper.feetConflict": "Vypněte nožky pod přesahem, abyste mohli zkosit stěny.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Zkosení",
   "binDesigner.overhang.taper.profileFillet": "Zaoblení",

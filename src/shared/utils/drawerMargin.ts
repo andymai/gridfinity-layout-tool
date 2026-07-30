@@ -112,9 +112,9 @@ export function resolveBinMarginOverhang(
   // a drawer's curved sides, which the flat baseplate padding can't describe.
   // The stored overhang is the width at the rim, so each abutting edge carries
   // padding + flare there and the taper insets by the flare to leave the base at
-  // the padding. Mutually exclusive with over-tile feet, which the generator's
-  // resolve also enforces.
-  const mt = bin.marginTaper?.enabled === true && !feet ? bin.marginTaper : undefined;
+  // the padding. Composes with over-tile feet: those are framed from the base,
+  // which the flare never narrows.
+  const mt = bin.marginTaper?.enabled === true ? bin.marginTaper : undefined;
   const flare = Math.max(0, mt?.flare ?? 0);
   const abuts = abuttingEdges(bin, drawer);
   const flareOf = (side: keyof MarginSides): number => (abuts[side] ? flare : 0);
