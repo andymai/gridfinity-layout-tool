@@ -20,9 +20,10 @@ describe('v2 bin.fillGaps', () => {
     if (!isOk(result)) return;
     expect(result.value.event.payload.fillType).toBe('gaps');
     expect(result.value.event.payload.binsCreated).toBeGreaterThan(0);
-    // Width/depth not set for gap fills (mixed bin sizes possible).
-    expect(result.value.event.payload.width).toBeUndefined();
-    expect(result.value.event.payload.depth).toBeUndefined();
+    // Width/depth not set for gap fills (mixed bin sizes possible) — the
+    // 'gaps' emitted payload never carries these keys, unlike uniform fills.
+    expect('width' in result.value.event.payload).toBe(false);
+    expect('depth' in result.value.event.payload).toBe(false);
   });
 
   it('returns 0 + empty event when the layer is already full', () => {

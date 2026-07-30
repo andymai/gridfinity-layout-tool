@@ -11,7 +11,14 @@ import {
   getAll as outboxGetAll,
   clearAll as clearOutbox,
 } from './outbox';
-import type { AdapterChange, SyncAdapter, SyncAdapters } from './adapters/types';
+import type {
+  AdapterChange,
+  SyncAdapter,
+  SyncAdapters,
+  LayoutAdapter,
+  DesignAdapter,
+  BaseplateAdapter,
+} from './adapters/types';
 
 const fetchMock = vi.fn();
 
@@ -76,7 +83,16 @@ beforeEach(async () => {
   layoutsAdapter = makeMockAdapter();
   designsAdapter = makeMockAdapter();
   baseplatesAdapter = makeMockAdapter();
-  adapters = { layouts: layoutsAdapter, designs: designsAdapter, baseplates: baseplatesAdapter };
+  // MockAdapter's payload is deliberately untyped (`unknown`) — the engine
+  // never inspects payload shape, only `id`/`modifiedAt`. SyncAdapter<Layout
+  // |DesignSyncPayload|BaseplatePayload> is assignable to SyncAdapter<unknown>
+  // (the concrete payload is assignable to `unknown`), so the reverse cast
+  // here is sound, not a type-safety bypass.
+  adapters = {
+    layouts: layoutsAdapter as LayoutAdapter,
+    designs: designsAdapter as DesignAdapter,
+    baseplates: baseplatesAdapter as BaseplateAdapter,
+  };
   // Default: every fetch resolves with 200 + empty body.
   fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
 });
@@ -353,7 +369,11 @@ describe('push: 5xx / network failure', () => {
 
 describe('push: in-flight serialization', () => {
   it('does not double-send the same item if it is already being pushed', async () => {
-    let resolveFirst: (() => void) | null = null;
+    // A plain no-op default (not `null`) sidesteps a tsgo control-flow quirk:
+    // narrowing this to a nullable type collapses to `never` at the call
+    // site below, since the real reassignment only happens inside the
+    // executor closure, which flow analysis can't see as "reachable".
+    let resolveFirst: () => void = () => {};
     fetchMock.mockImplementationOnce(
       () =>
         new Promise<Response>((resolve) => {
@@ -377,7 +397,7 @@ describe('push: in-flight serialization', () => {
     // Only the first push should be in flight; second is queued.
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    resolveFirst?.();
+    resolveFirst();
     await flush();
 
     // After the first resolves, the queued change pushes (now with mtime=2000).

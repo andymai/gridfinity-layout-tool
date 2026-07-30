@@ -65,6 +65,7 @@ describe('getCommandSchema', () => {
 
 describe('bin.add schema', () => {
   const schema = getCommandSchema('bin.add');
+  if (!schema) throw new Error("missing schema for 'bin.add'");
 
   it('accepts valid payload', () => {
     const result = z.safeParse(schema, {
@@ -197,6 +198,7 @@ describe('bin.add schema', () => {
 
 describe('bin.update schema', () => {
   const schema = getCommandSchema('bin.update');
+  if (!schema) throw new Error("missing schema for 'bin.update'");
 
   it('accepts valid partial update', () => {
     const result = z.safeParse(schema, {
@@ -246,6 +248,7 @@ describe('bin.update schema', () => {
 
 describe('bin.deleteBatch schema', () => {
   const schema = getCommandSchema('bin.deleteBatch');
+  if (!schema) throw new Error("missing schema for 'bin.deleteBatch'");
 
   it('accepts array with IDs', () => {
     const result = z.safeParse(schema, { ids: ['bin-1', 'bin-2'] });
@@ -260,6 +263,7 @@ describe('bin.deleteBatch schema', () => {
 
 describe('bin.moveFromStaging schema', () => {
   const schema = getCommandSchema('bin.moveFromStaging');
+  if (!schema) throw new Error("missing schema for 'bin.moveFromStaging'");
 
   it('accepts valid payload', () => {
     const result = z.safeParse(schema, {
@@ -284,6 +288,7 @@ describe('bin.moveFromStaging schema', () => {
 
 describe('bin.fillLayer schema', () => {
   const schema = getCommandSchema('bin.fillLayer');
+  if (!schema) throw new Error("missing schema for 'bin.fillLayer'");
 
   it('accepts valid payload', () => {
     const result = z.safeParse(schema, {
@@ -322,6 +327,7 @@ describe('bin.fillLayer schema', () => {
 
 describe('layer.add schema', () => {
   const schema = getCommandSchema('layer.add');
+  if (!schema) throw new Error("missing schema for 'layer.add'");
 
   it('accepts empty object', () => {
     const result = z.safeParse(schema, {});
@@ -331,6 +337,7 @@ describe('layer.add schema', () => {
 
 describe('layer.update schema', () => {
   const schema = getCommandSchema('layer.update');
+  if (!schema) throw new Error("missing schema for 'layer.update'");
 
   it('accepts valid update', () => {
     const result = z.safeParse(schema, {
@@ -351,6 +358,7 @@ describe('layer.update schema', () => {
 
 describe('layer.reorder schema', () => {
   const schema = getCommandSchema('layer.reorder');
+  if (!schema) throw new Error("missing schema for 'layer.reorder'");
 
   it('accepts valid indices', () => {
     const result = z.safeParse(schema, { fromIndex: 0, toIndex: 2 });
@@ -372,6 +380,7 @@ describe('layer.reorder schema', () => {
 
 describe('category.add schema', () => {
   const schema = getCommandSchema('category.add');
+  if (!schema) throw new Error("missing schema for 'category.add'");
 
   it('accepts valid payload', () => {
     const result = z.safeParse(schema, { name: 'Tools', color: '#ff0000' });
@@ -393,6 +402,7 @@ describe('category.add schema', () => {
 
 describe('drawer.update schema', () => {
   const schema = getCommandSchema('drawer.update');
+  if (!schema) throw new Error("missing schema for 'drawer.update'");
 
   it('accepts partial update', () => {
     const result = z.safeParse(schema, { width: 10 });
@@ -430,6 +440,7 @@ describe('drawer.update schema', () => {
 
 describe('layout.setName schema', () => {
   const schema = getCommandSchema('layout.setName');
+  if (!schema) throw new Error("missing schema for 'layout.setName'");
 
   it('accepts valid name', () => {
     const result = z.safeParse(schema, { name: 'My Layout' });
@@ -449,6 +460,7 @@ describe('layout.setName schema', () => {
 
 describe('layout.setPrintBedSize schema', () => {
   const schema = getCommandSchema('layout.setPrintBedSize');
+  if (!schema) throw new Error("missing schema for 'layout.setPrintBedSize'");
 
   it('accepts valid size', () => {
     const result = z.safeParse(schema, { size: 256 });
@@ -468,6 +480,7 @@ describe('layout.setPrintBedSize schema', () => {
 
 describe('layout.setBaseplateParams schema', () => {
   const schema = getCommandSchema('layout.setBaseplateParams');
+  if (!schema) throw new Error("missing schema for 'layout.setBaseplateParams'");
 
   it('accepts valid params', () => {
     const result = z.safeParse(schema, {
