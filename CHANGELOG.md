@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.6...gridfinity-layout-tool-v4.329.7) (2026-07-30)
+
+
+### Bug Fixes
+
+* **ml-telemetry:** expire every aggregate with a sliding TTL ([#3008](https://github.com/andymai/gridfinity-layout-tool/issues/3008)) ([82c30c2](https://github.com/andymai/gridfinity-layout-tool/commit/82c30c24b6bf52d326eaddea206786f7bef58a32))
+
 ## [4.329.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.5...gridfinity-layout-tool-v4.329.6) (2026-07-30)
 
 
