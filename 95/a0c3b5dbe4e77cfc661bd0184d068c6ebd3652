@@ -1,0 +1,124 @@
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_4532216d1d4b70::t_bda60aece7d842 284-324
+src/features/bin-designer/utils/printEstimates.ts
+  s_4532216d1d4b70::t_7b24e582a2cb1a 560-568,570-572,575
+  s_4532216d1d4b70::t_3db98185f93fca 39
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_4532216d1d4b70::t_cb5efdad27fd88 170,173
+  s_4532216d1d4b70::t_6d92d224eba243 102-104
+  s_4532216d1d4b70::t_fc81220a3b17fc 99-101,105-121
+  s_4532216d1d4b70::t_a0849e1709a4a6 125
+  s_4532216d1d4b70::t_a5e83332217746 252-255
+  s_4532216d1d4b70::t_4f26f3b515f7c7 269
+  s_4532216d1d4b70::t_df2ca7689778b3 165-169,171-172,174
+  s_4532216d1d4b70::t_86ce95f3d176b4 12-17,19-20
+src/shared/utils/wallPatternSides.ts
+  s_4532216d1d4b70::t_d165ae8d3082a8 1-18,23-36
+  s_4532216d1d4b70::t_9f0868ed84f7ec 19-22
+src/i18n/locales/zh-CN.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_4532216d1d4b70::t_b606d99b25f574 51
+  s_4532216d1d4b70::t_3dca776770b7e2 937-938
+  s_4532216d1d4b70::t_8dce514b7f6638 939-944,949
+  s_4532216d1d4b70::t_2f2f117321d49b 985-992
+src/i18n/locales/nb.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/shared/utils/wallPatternSides.test.ts
+  s_4532216d1d4b70::t_67ddf118eeda95 1-61
+src/i18n/locales/ko.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/bin-designer/constants/defaults.ts
+  s_4532216d1d4b70::t_ccd7bc69be22d8 17
+  s_4532216d1d4b70::t_848b51ba3c6a34 57-64,71
+src/i18n/locales/uk.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/generation/worker/generators/wallPatterns.test.ts
+  s_4532216d1d4b70::t_6a38e7c927b1b3 144-148,150-153,155-156,158-190,192-193,195-200,215-218,220-221,223-224,226-233,235-243
+  s_4532216d1d4b70::t_e61b8b07992e66 11
+  s_4532216d1d4b70::t_007495adedb39f 149,154,157
+  s_4532216d1d4b70::t_033d07977202c9 203-212,214
+  s_4532216d1d4b70::t_70f673a3538d57 191,194,201-202,213,219,222,225,234
+src/i18n/locales/fr.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/bin-designer/components/panel/WallsSection/WallsSection.test.tsx
+  s_4532216d1d4b70::t_ce1b278a00dcbc 161-246
+  s_c0ab702bd20c78::t_1a4d9f356c8f23 247
+src/i18n/locales/ja.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_4532216d1d4b70::t_057c8c9f1fdf98 26
+  s_4532216d1d4b70::t_620a2d7c0c9f54 190-197
+src/i18n/locales/pl.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/i18n/locales/it.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/i18n/locales/es.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/shared/types/bin.ts
+  s_4532216d1d4b70::t_74101662415097 106
+  s_4532216d1d4b70::t_0bd10927ba62ab 46
+src/i18n/locales/de.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/i18n/locales/nl.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/i18n/locales/pt-BR.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/i18n/locales/en.ts
+  s_4532216d1d4b70::t_2e86b4209a8ff4 2390-2394
+src/features/bin-designer/components/panel/WallsSection/WallsSection.tsx
+  s_4532216d1d4b70::t_01a9392751c714 84-100
+  s_4532216d1d4b70::t_86d9e5217fd964 13-17,25
+  s_4532216d1d4b70::t_d7e583f6f432af 7-8
+  s_4532216d1d4b70::t_918a620b484176 37-49
+src/i18n/locales/cs.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_4532216d1d4b70::t_844ccca941fd32 108-132
+  s_c0ab702bd20c78::t_67903739675c81 687-690,712-715,723-726
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_4532216d1d4b70::t_0c4cc77a1b51c2 74-90
+  s_4532216d1d4b70::t_c6b7379fd1288d 336-361
+src/i18n/locales/sv.json
+  s_4532216d1d4b70::t_0288a4048a192f 1272-1275
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_4532216d1d4b70::t_4db3d0e150554b 83-125,127
+  s_4532216d1d4b70::t_0dbade303e81d1 11-12
+src/features/generation/worker/generators/wallPatterns.ts
+  s_4532216d1d4b70::t_358258cf2ce34f 147-150
+  s_4532216d1d4b70::t_aec1e52113566a 208-211
+  s_4532216d1d4b70::t_73771406f65689 195
+  s_4532216d1d4b70::t_5ca19da8fd9281 14
+src/features/bin-designer/types/walls.ts
+  s_4532216d1d4b70::t_0d2597b6cce9bb 100-105
+  s_4532216d1d4b70::t_7e0eedc9c2e465 123-128
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_4532216d1d4b70::t_03be4c0377544a 523-551
+src/features/bin-designer/constants/paramMigration.ts
+  s_4532216d1d4b70::t_2ba1a811b76969 747,758-765
+  s_4532216d1d4b70::t_2344953ceb032f 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "95a0c3b5dbe4e77cfc661bd0184d068c6ebd3652",
+  "prompts": {},
+  "sessions": {
+    "s_4532216d1d4b70": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b8a477a2-c44b-44d7-be4b-7ae2eb2cb12b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_c0ab702bd20c78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b32d991-9945-4cca-9fe0-1387b9bf9431",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
