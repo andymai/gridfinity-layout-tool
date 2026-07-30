@@ -9,9 +9,11 @@ import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 /**
  * JetBrains Mono metrics, measured from the shipped Regular TTF (unitsPerEm 1000)
- * for the digit + sign glyphs the fit-offset labels are made of:
- *  - a digit's thinnest vertical stem is ~0.086·fontSize,
- *  - its ink is ~0.75·fontSize tall (digits carry no descenders), and
+ * for the glyphs the fit-offset labels use (digits, sign, and the decimal point):
+ *  - the thinnest digit stem is ~0.086·fontSize (the printability-limiting
+ *    feature — the sign and "." are chunkier),
+ *  - the digits' ink is ~0.75·fontSize tall (they carry no descenders, so they
+ *    set the label's ink height), and
  *  - every glyph advances 0.6·fontSize (monospace).
  * The coupon generators size their labels from these so the raised strokes stay
  * printable and the text still fits the coupon.
@@ -34,13 +36,16 @@ const LABEL_LEGIBLE_MIN_FONT = 3.5;
 /**
  * Smallest JetBrains Mono font size (mm) whose digit stems still lay down as a
  * full nozzle bead, so an embossed fit-offset label survives slicing (issue
- * #3019). Scales with the nozzle exactly as the connector features do; a
- * non-finite or non-positive nozzle falls back to the 0.4mm baseline.
+ * #3019). Grows with the nozzle (a wider bead needs a bigger stem), floored at
+ * {@link LABEL_LEGIBLE_MIN_FONT} so a sub-baseline nozzle still gets readable
+ * text. Unlike the connector-feature scalers, it isn't clamped to the 0.4mm
+ * baseline — a finer nozzle can carry a smaller (but still legible) label. A
+ * non-finite or non-positive nozzle falls back to the baseline.
  */
 export function minPrintableLabelFontMm(nozzleSizeMm: number | undefined): number {
   const nozzle =
-    Number.isFinite(nozzleSizeMm) && (nozzleSizeMm ?? 0) > 0
-      ? (nozzleSizeMm as number)
+    typeof nozzleSizeMm === 'number' && Number.isFinite(nozzleSizeMm) && nozzleSizeMm > 0
+      ? nozzleSizeMm
       : NOZZLE_BASELINE;
   return Math.max(
     LABEL_LEGIBLE_MIN_FONT,
