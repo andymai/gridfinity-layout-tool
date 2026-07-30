@@ -95,7 +95,7 @@ The existing share endpoints (`/api/share`) run `filterLayoutContent` because sh
 
 1. `SMEMBERS users:{uid}:sessions` → `DEL session:{token}` for each
 2. `HKEYS users:{uid}:index:{layouts|designs}` → `del()` each blob
-3. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt)
+3. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt)
 4. Clear session cookie on responding device
 
 Idempotent: each step uses unconditional `DEL`, so a partial-failure replay is safe. Per-blob errors are logged but don't block the cascade — leftover blobs are storage cost only. Worst-case time at 200 items × ~50 ms = ~10 s, well within Vercel's 60 s function limit.
