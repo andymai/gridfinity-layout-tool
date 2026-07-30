@@ -6,28 +6,53 @@ import {
   computeEdgeUsage,
 } from '@/shared/analytics/layoutPatterns';
 import { createDefaultLayout } from '@/core/constants';
-import type { Bin, Layout } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Bin, Category, Drawer, Layer, Layout } from '@/core/types';
+
+interface BinSpec {
+  id?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  depth?: number;
+  height?: number;
+  layerId?: string;
+  category?: string;
+}
 
 // Helper to create a test bin
-function createBin(overrides: Partial<Bin> = {}): Bin {
+function createBin(overrides: BinSpec = {}): Bin {
   return {
-    id: `bin-${Math.random().toString(36).substring(2, 11)}`,
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 1,
-    layerId: 'layer-1',
-    category: 'cat-1',
-    ...overrides,
+    id: binId(overrides.id ?? `bin-${Math.random().toString(36).substring(2, 11)}`),
+    x: gridUnits(overrides.x ?? 0),
+    y: gridUnits(overrides.y ?? 0),
+    width: gridUnits(overrides.width ?? 1),
+    depth: gridUnits(overrides.depth ?? 1),
+    height: heightUnits(overrides.height ?? 1),
+    layerId: layerId(overrides.layerId ?? 'layer-1'),
+    category: categoryId(overrides.category ?? 'cat-1'),
+    label: '',
+    notes: '',
   };
 }
 
 // Helper to create a test layout with bins
-function createTestLayout(bins: Partial<Bin>[]): Layout {
+function createTestLayout(bins: BinSpec[]): Layout {
   const layout = createDefaultLayout();
   layout.bins = bins.map((b, i) => createBin({ ...b, id: b.id || `bin-${i}` }));
   return layout;
+}
+
+function createDrawer(width: number, depth: number, height: number): Drawer {
+  return { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(height) };
+}
+
+function createLayer(id: string, name: string, height: number): Layer {
+  return { id: layerId(id), name, height: heightUnits(height) };
+}
+
+function createCategory(id: string, name: string, color: string): Category {
+  return { id: categoryId(id), name, color };
 }
 
 describe('layoutPatterns', () => {
@@ -38,7 +63,7 @@ describe('layoutPatterns', () => {
     });
 
     it('returns uniform when >80% bins are same size', () => {
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         { x: 0, y: 0, width: 2, depth: 2, height: 3 },
         { x: 2, y: 0, width: 2, depth: 2, height: 3 },
         { x: 4, y: 0, width: 2, depth: 2, height: 3 },
@@ -51,7 +76,7 @@ describe('layoutPatterns', () => {
     });
 
     it('returns mixed when sizes are varied', () => {
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         { x: 0, y: 0, width: 1, depth: 1, height: 1 },
         { x: 1, y: 0, width: 2, depth: 2, height: 2 },
         { x: 3, y: 0, width: 3, depth: 3, height: 3 },
@@ -64,8 +89,8 @@ describe('layoutPatterns', () => {
 
     it('returns border_fill when bins on 3+ edges with center bins', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 6, depth: 6, height: 10 };
-      const bins: Partial<Bin>[] = [
+      layout.drawer = createDrawer(6, 6, 10);
+      const bins: BinSpec[] = [
         // Left edge
         { x: 0, y: 0, width: 1, depth: 2 },
         { x: 0, y: 2, width: 1, depth: 2 },
@@ -86,14 +111,11 @@ describe('layoutPatterns', () => {
 
     it('returns layered when layers have different size patterns', () => {
       const layout = createDefaultLayout();
-      layout.layers = [
-        { id: 'layer-1', name: 'Layer 1', height: 5 },
-        { id: 'layer-2', name: 'Layer 2', height: 5 },
-      ];
+      layout.layers = [createLayer('layer-1', 'Layer 1', 5), createLayer('layer-2', 'Layer 2', 5)];
       // Layer 1 has small bins (1x1, 2x1)
       // Layer 2 has large bins (3x3, 4x4)
       // Different size sets with <50% overlap
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         // Layer 1 - small bins
         { x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer-1' },
         { x: 1, y: 0, width: 2, depth: 1, height: 3, layerId: 'layer-1' },
@@ -113,13 +135,13 @@ describe('layoutPatterns', () => {
       // The exact result depends on algorithm details (uniform may take precedence
       // if all bins are same size)
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 10, height: 12 };
+      layout.drawer = createDrawer(10, 10, 12);
       layout.categories = [
-        { id: 'cat-a', name: 'A', color: '#ff0000' },
-        { id: 'cat-b', name: 'B', color: '#00ff00' },
+        createCategory('cat-a', 'A', '#ff0000'),
+        createCategory('cat-b', 'B', '#00ff00'),
       ];
       // Two distinct clusters of same-category bins with different sizes
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         // Cluster A - different sizes
         { x: 1, y: 1, width: 2, depth: 2, category: 'cat-a' },
         { x: 3, y: 1, width: 1, depth: 2, category: 'cat-a' },
@@ -143,8 +165,8 @@ describe('layoutPatterns', () => {
 
     it('detects edge_aligned when >60% bins touch edge', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
-      const bins: Partial<Bin>[] = [
+      layout.drawer = createDrawer(10, 8, 12);
+      const bins: BinSpec[] = [
         // Bins on edges
         { x: 0, y: 0, width: 2, depth: 2 },
         { x: 0, y: 2, width: 2, depth: 2 },
@@ -161,9 +183,9 @@ describe('layoutPatterns', () => {
 
     it('detects corner_start when early bins are near corners', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       // Use sortable IDs (a < b < c etc)
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         // Early bins (start of alphabet) near corners
         { id: 'a', x: 0, y: 0, width: 2, depth: 2 },
         { id: 'b', x: 0, y: 1, width: 1, depth: 1 },
@@ -181,7 +203,7 @@ describe('layoutPatterns', () => {
     it('detects large_first when sizes decrease over time', () => {
       const layout = createDefaultLayout();
       // Use sortable IDs
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         // Early bins are large
         { id: 'a', x: 0, y: 0, width: 3, depth: 3, height: 3 },
         { id: 'b', x: 3, y: 0, width: 3, depth: 3, height: 3 },
@@ -199,10 +221,10 @@ describe('layoutPatterns', () => {
     it('detects category_grouped when same categories are adjacent', () => {
       const layout = createDefaultLayout();
       layout.categories = [
-        { id: 'cat-a', name: 'A', color: '#ff0000' },
-        { id: 'cat-b', name: 'B', color: '#00ff00' },
+        createCategory('cat-a', 'A', '#ff0000'),
+        createCategory('cat-b', 'B', '#00ff00'),
       ];
-      const bins: Partial<Bin>[] = [
+      const bins: BinSpec[] = [
         // Category A bins adjacent to each other
         { x: 0, y: 0, width: 1, depth: 1, category: 'cat-a' },
         { x: 1, y: 0, width: 1, depth: 1, category: 'cat-a' },
@@ -283,35 +305,35 @@ describe('layoutPatterns', () => {
 
     it('detects left edge usage', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       const bins = [createBin({ x: 0, y: 3, width: 2, depth: 2 })];
       expect(computeEdgeUsage(bins, layout.drawer).left).toBe(true);
     });
 
     it('detects right edge usage', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       const bins = [createBin({ x: 8, y: 3, width: 2, depth: 2 })];
       expect(computeEdgeUsage(bins, layout.drawer).right).toBe(true);
     });
 
     it('detects top edge usage', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       const bins = [createBin({ x: 3, y: 6, width: 2, depth: 2 })];
       expect(computeEdgeUsage(bins, layout.drawer).top).toBe(true);
     });
 
     it('detects bottom edge usage', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       const bins = [createBin({ x: 3, y: 0, width: 2, depth: 2 })];
       expect(computeEdgeUsage(bins, layout.drawer).bottom).toBe(true);
     });
 
     it('detects multiple edges', () => {
       const layout = createDefaultLayout();
-      layout.drawer = { width: 10, depth: 8, height: 12 };
+      layout.drawer = createDrawer(10, 8, 12);
       const bins = [
         createBin({ x: 0, y: 0, width: 2, depth: 2 }), // Left and bottom
         createBin({ x: 8, y: 6, width: 2, depth: 2 }), // Right and top

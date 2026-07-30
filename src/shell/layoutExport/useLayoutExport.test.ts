@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { ok } from '@/core/result';
-import { designId } from '@/core/types';
+import { designId, gridUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { useLayoutStore } from '@/core/store/layout';
 import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtils';
@@ -76,8 +76,8 @@ beforeEach(() => {
 
   const bins: Bin[] = [
     createTestBin({ linkedDesignId: designId('d1') }),
-    { ...createTestBin({ x: 1 }), x: 1, linkedDesignId: designId('d1') },
-    { ...createTestBin({ x: 2 }), x: 2, linkedDesignId: designId('d2') },
+    { ...createTestBin({ x: gridUnits(1) }), x: gridUnits(1), linkedDesignId: designId('d1') },
+    { ...createTestBin({ x: gridUnits(2) }), x: gridUnits(2), linkedDesignId: designId('d2') },
   ];
   useLayoutStore.setState({ layout: createTestLayout({ name: 'My Drawer', bins }) });
 });
