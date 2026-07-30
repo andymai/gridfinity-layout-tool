@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLayerAutoExpansion } from './layerAutoExpansion';
+import { binId, categoryId, gridUnits, heightUnits, layerId as toLayerId } from '@/core/types';
 import type { Layer, Bin } from '@/core/types';
 
 // Helper to create a test bin with required fields
 const createBin = (id: string, layerId: string, height: number): Bin => ({
-  id,
-  layerId,
-  x: 0,
-  y: 0,
-  width: 1,
-  depth: 1,
-  height,
-  category: 'default',
+  id: binId(id),
+  layerId: toLayerId(layerId),
+  x: gridUnits(0),
+  y: gridUnits(0),
+  width: gridUnits(1),
+  depth: gridUnits(1),
+  height: heightUnits(height),
+  category: categoryId('default'),
   label: '',
   notes: '',
 });
@@ -19,7 +20,7 @@ const createBin = (id: string, layerId: string, height: number): Bin => ({
 describe('calculateLayerAutoExpansion', () => {
   describe('no expansion needed', () => {
     it('returns needsExpansion: false when no bins on layer', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [];
 
       const result = calculateLayerAutoExpansion(topLayer, bins, 2, 10);
@@ -29,7 +30,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('returns needsExpansion: false when all bins fit within layer height', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 3 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 2),
         createBin('bin2', 'layer1', 3),
@@ -43,7 +44,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('ignores bins on other layers', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 2), // fits
         createBin('bin2', 'layer2', 5), // on different layer, ignored
@@ -57,7 +58,7 @@ describe('calculateLayerAutoExpansion', () => {
 
   describe('expansion needed and fits', () => {
     it('expands to smallest exceeding bin height when all bins exceed', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 4), // exceeds by 2
         createBin('bin2', 'layer1', 5), // exceeds by 3
@@ -73,7 +74,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('expands to smallest exceeding bin height, preserving intentionally tall bins', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 2), // fits exactly
         createBin('bin2', 'layer1', 3), // exceeds by 1 (smallest exceeding)
@@ -88,7 +89,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('handles single exceeding bin', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer1', 4)];
 
       const result = calculateLayerAutoExpansion(topLayer, bins, 2, 10);
@@ -101,7 +102,7 @@ describe('calculateLayerAutoExpansion', () => {
 
   describe('expansion would exceed capacity', () => {
     it('returns wouldExceedCapacity: true when expansion + new layer exceeds drawer', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer1', 4)]; // needs 2 more units
       // totalLayerHeight=2, expansion=2, new layer needs at least 1
       // 2 + 2 + 1 = 5, but drawer is only 4
@@ -115,7 +116,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('fits exactly when expansion + new layer equals drawer height', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer1', 4)]; // needs 2 more units
       // totalLayerHeight=2, expansion=2, new layer=1
       // 2 + 2 + 1 = 5 = drawer height
@@ -128,7 +129,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('accounts for multiple existing layers in totalLayerHeight', () => {
-      const topLayer: Layer = { id: 'layer2', name: 'Layer 2', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer2', 3)]; // needs 1 more unit
       // totalLayerHeight=5 (layer1=3 + layer2=2), expansion=1, new layer=1
       // 5 + 1 + 1 = 7, drawer=8
@@ -141,7 +142,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('fails when multiple layers leave no room for expansion', () => {
-      const topLayer: Layer = { id: 'layer2', name: 'Layer 2', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer2'), name: 'Layer 2', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer2', 4)]; // needs 2 more units
       // totalLayerHeight=6, expansion=2, new layer=1
       // 6 + 2 + 1 = 9 > drawer=8
@@ -155,7 +156,7 @@ describe('calculateLayerAutoExpansion', () => {
 
   describe('edge cases', () => {
     it('handles bins with height exactly equal to layer height', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 3 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 3), // exactly equal, does NOT exceed
       ];
@@ -166,7 +167,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('handles mixed bins - some fit, some exceed', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [
         createBin('bin1', 'layer1', 1), // fits
         createBin('bin2', 'layer1', 2), // fits exactly
@@ -180,7 +181,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('handles layer height of 1 (minimum)', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 1 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(1) };
       const bins: Bin[] = [createBin('bin1', 'layer1', 2)];
 
       const result = calculateLayerAutoExpansion(topLayer, bins, 1, 10);
@@ -190,9 +191,9 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('accounts for clearanceHeight when determining if expansion is needed', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 3 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(3) };
       // Bin height (3) fits within layer, but clearanceHeight (2) makes effective height 5
-      const bins: Bin[] = [{ ...createBin('bin1', 'layer1', 3), clearanceHeight: 2 }];
+      const bins: Bin[] = [{ ...createBin('bin1', 'layer1', 3), clearanceHeight: heightUnits(2) }];
 
       const result = calculateLayerAutoExpansion(topLayer, bins, 3, 10);
 
@@ -202,7 +203,7 @@ describe('calculateLayerAutoExpansion', () => {
     });
 
     it('handles drawer at exact capacity (no room for any layer)', () => {
-      const topLayer: Layer = { id: 'layer1', name: 'Layer 1', height: 2 };
+      const topLayer: Layer = { id: toLayerId('layer1'), name: 'Layer 1', height: heightUnits(2) };
       const bins: Bin[] = [createBin('bin1', 'layer1', 3)];
       // totalLayerHeight=2, expansion=1, new layer=1
       // 2 + 1 + 1 = 4, drawer=3 (already over capacity just from layers)

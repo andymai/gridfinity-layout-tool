@@ -5,6 +5,8 @@ import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
+import type { Layout } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from '@/core/types';
 
 // Mock storage utilities
 vi.mock('@/core/storage', () => ({
@@ -30,25 +32,25 @@ vi.mock('@/shared/analytics/posthog', async () => {
 });
 
 describe('ShareModal', () => {
-  const mockLayout = {
+  const mockLayout: Layout = {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [
       {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'coral',
+        id: binId('bin1'),
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('coral'),
         label: '',
         notes: '',
       },
@@ -66,7 +68,7 @@ describe('ShareModal', () => {
       isLoaded: true,
       library: {
         version: '1.0',
-        activeLayoutId: 'layout-123',
+        activeLayoutId: layoutId('layout-123'),
         settings: {},
         entries: [],
       },

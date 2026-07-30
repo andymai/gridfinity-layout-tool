@@ -7,7 +7,8 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import { categoryId } from '@/core/types';
+import { binId, categoryId } from '@/core/types';
+import type { CategoryId } from '@/core/types';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -32,7 +33,7 @@ describe('useCategoryManager', () => {
     mutations.updateBin.mockReturnValue(ok(undefined));
   });
 
-  function firstCategoryId(): string {
+  function firstCategoryId(): CategoryId {
     return useLayoutStore.getState().layout.categories[0].id;
   }
 
@@ -50,11 +51,11 @@ describe('useCategoryManager', () => {
 
   it('reassigns only bins not already in the category and reports the changed count', () => {
     const catId = firstCategoryId();
-    const inCategory = createTestBin({ id: 'bin-1', category: catId });
-    const other = createTestBin({ id: 'bin-2' });
+    const inCategory = createTestBin({ id: binId('bin-1'), category: catId });
+    const other = createTestBin({ id: binId('bin-2') });
     const state = useLayoutStore.getState();
     useLayoutStore.setState({ layout: { ...state.layout, bins: [inCategory, other] } });
-    useSelectionStore.getState().setSelectedBins(['bin-1', 'bin-2']);
+    useSelectionStore.getState().setSelectedBins([binId('bin-1'), binId('bin-2')]);
 
     const onSelectionApplied = vi.fn();
     const { result } = renderHook(() => useCategoryManager({ onSelectionApplied }));
@@ -73,10 +74,10 @@ describe('useCategoryManager', () => {
 
   it('does not fire onSelectionApplied when every selected bin already matches', () => {
     const catId = firstCategoryId();
-    const bin = createTestBin({ id: 'bin-1', category: catId });
+    const bin = createTestBin({ id: binId('bin-1'), category: catId });
     const state = useLayoutStore.getState();
     useLayoutStore.setState({ layout: { ...state.layout, bins: [bin] } });
-    useSelectionStore.getState().setSelectedBins(['bin-1']);
+    useSelectionStore.getState().setSelectedBins([binId('bin-1')]);
 
     const onSelectionApplied = vi.fn();
     const { result } = renderHook(() => useCategoryManager({ onSelectionApplied }));

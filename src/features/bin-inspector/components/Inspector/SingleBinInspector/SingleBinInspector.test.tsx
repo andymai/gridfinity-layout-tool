@@ -2,8 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SingleBinInspector } from '@/features/bin-inspector';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useHalfGridModeStore } from '@/core/store';
+import { STAGING_ID } from '@/core/constants';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Category, Layer } from '@/core/types';
 
 // Mock the DeferredNumberInput component to simplify testing
 vi.mock('@/shared/components/DeferredNumberInput', () => ({
@@ -26,52 +29,52 @@ vi.mock('@/shared/components/DeferredNumberInput', () => ({
 }));
 
 describe('SingleBinInspector', () => {
-  const mockBin = {
-    id: 'bin1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer1',
-    category: 'coral',
+  const mockBin = createTestBin({
+    id: binId('bin1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer1'),
+    category: categoryId('coral'),
     label: 'Test Label',
     notes: 'Test notes',
-    clearanceHeight: 1,
-  };
+    clearanceHeight: heightUnits(1),
+  });
 
-  const mockCategory = { id: 'coral', name: 'Coral', color: '#FF6B6B' };
-  const mockLayer = { id: 'layer1', name: 'Layer 1', height: 3 };
+  const mockCategory: Category = { id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' };
+  const mockLayer: Layer = { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) };
 
-  const mockLayout = {
-    drawer: { width: 10, depth: 8, height: 12 },
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
-    categories: [mockCategory, { id: 'sky', name: 'Sky', color: '#38bdf8' }],
-    layers: [mockLayer, { id: 'layer2', name: 'Layer 2', height: 6 }],
+  const mockLayout = createTestLayout({
+    categories: [mockCategory, { id: categoryId('sky'), name: 'Sky', color: '#38bdf8' }],
+    layers: [mockLayer, { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(6) }],
     bins: [mockBin],
-  };
+  });
 
   const createMockInspector = (
     overrides?: Partial<UseBinInspectorReturn>
   ): UseBinInspectorReturn => ({
     bin: mockBin,
     selectedBins: [mockBin],
+    isMultiSelect: false,
     category: mockCategory,
     layer: mockLayer,
-    layout: mockLayout as UseBinInspectorReturn['layout'],
+    layout: mockLayout,
     categories: mockLayout.categories,
     constraints: {
       minHeight: 3,
       maxHeight: 12,
       maxClearance: 5,
-      maxGridUnits: 6,
+      maxGridUnits: { width: 6, depth: 6 },
+      needsSplit: false,
       heightRange: '3-12u',
       minHeightReason: 'layer_height',
       maxHeightReason: 'remaining_space',
     },
     updateField: vi.fn(),
+    updateCustomProperties: vi.fn(),
+    updateMultiCustomProperty: vi.fn(),
     updateMultiCategory: vi.fn(),
     updateMultiHeight: vi.fn(),
     updateMultiClearance: vi.fn(),
@@ -81,8 +84,12 @@ describe('SingleBinInspector', () => {
     moveToStaging: vi.fn(),
     clearSelection: vi.fn(),
     rotateBin: vi.fn(),
-    confirmDelete: null,
-    setConfirmDelete: vi.fn(),
+    applySuggestedSize: vi.fn(),
+    canApplySuggestedSize: vi.fn(),
+    confirmDelete: vi.fn(),
+    cancelDelete: vi.fn(),
+    deleteConfirmState: null,
+    existingPropertyKeys: [],
     ...overrides,
   });
 
@@ -162,7 +169,8 @@ describe('SingleBinInspector', () => {
           minHeight: 3,
           maxHeight: 12,
           maxClearance: 0,
-          maxGridUnits: 6,
+          maxGridUnits: { width: 6, depth: 6 },
+          needsSplit: false,
           heightRange: '3-12u',
           minHeightReason: 'layer_height' as const,
           maxHeightReason: 'remaining_space' as const,
@@ -206,7 +214,7 @@ describe('SingleBinInspector', () => {
         layout: {
           ...mockLayout,
           layers: [mockLayer],
-        } as UseBinInspectorReturn['layout'],
+        },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
@@ -284,7 +292,7 @@ describe('SingleBinInspector', () => {
     });
 
     it('warns when the height will not stack with standard bins', () => {
-      const inspector = createMockInspector({ bin: { ...mockBin, height: 4.5 } });
+      const inspector = createMockInspector({ bin: { ...mockBin, height: heightUnits(4.5) } });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
       // 4.5u * 7mm = 31.5mm, not a multiple of 7mm.
@@ -300,7 +308,7 @@ describe('SingleBinInspector', () => {
 
     it('disables height decrease at min', () => {
       const inspector = createMockInspector({
-        bin: { ...mockBin, height: 3 },
+        bin: { ...mockBin, height: heightUnits(3) },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
@@ -309,7 +317,7 @@ describe('SingleBinInspector', () => {
 
     it('disables height increase at max', () => {
       const inspector = createMockInspector({
-        bin: { ...mockBin, height: 12 },
+        bin: { ...mockBin, height: heightUnits(12) },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
@@ -404,7 +412,7 @@ describe('SingleBinInspector', () => {
     it('shows fractional dimensions when half-bin mode enabled', () => {
       useHalfGridModeStore.setState({ halfGridMode: true });
       const inspector = createMockInspector({
-        bin: { ...mockBin, width: 2.5, depth: 1.5 },
+        bin: { ...mockBin, width: gridUnits(2.5), depth: gridUnits(1.5) },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
@@ -415,7 +423,7 @@ describe('SingleBinInspector', () => {
   describe('staging bins', () => {
     it('hides To Stash button for bins already in staging', () => {
       const inspector = createMockInspector({
-        bin: { ...mockBin, layerId: '__staging__' },
+        bin: { ...mockBin, layerId: STAGING_ID },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
@@ -424,7 +432,7 @@ describe('SingleBinInspector', () => {
 
     it('hides layer dropdown for staging bins', () => {
       const inspector = createMockInspector({
-        bin: { ...mockBin, layerId: '__staging__' },
+        bin: { ...mockBin, layerId: STAGING_ID },
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 

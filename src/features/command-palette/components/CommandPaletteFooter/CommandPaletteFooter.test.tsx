@@ -24,10 +24,9 @@ vi.mock('../ShortcutBadge', () => ({
 describe('CommandPaletteFooter', () => {
   const mockCommand: CommandDefinition & { isAvailable: boolean } = {
     id: 'test-command',
-    name: 'Test Command',
-    description: 'Test description',
+    labelKey: 'commandPalette.testCommand',
+    category: 'edit',
     keywords: [],
-    handler: vi.fn(),
     isAvailable: true,
     shortcut: {
       keys: 'K',

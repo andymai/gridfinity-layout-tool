@@ -7,7 +7,7 @@ import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
-import { layoutId } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -30,9 +30,9 @@ function createTestLibrary(cloudShare?: CloudShareInfo): LayoutLibrary {
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 0,
           layerCount: 1,
         },
@@ -47,8 +47,7 @@ function createCloudShareInfo(): CloudShareInfo {
     id: TEST_SHARE_ID,
     deleteToken: TEST_DELETE_TOKEN,
     permission: 'view',
-    url: 'https://example.com/share/123',
-    createdAt: Date.now(),
+    sharedAt: Date.now(),
   };
 }
 
@@ -68,11 +67,12 @@ describe('useOwnedShareSync', () => {
     useLibraryStore.setState({
       library: createTestLibrary(),
       isLoaded: true,
-      showLayoutManager: false,
     });
 
     // Default mock for updateShare
-    vi.mocked(shareApi.updateShare).mockResolvedValue(ok(undefined));
+    vi.mocked(shareApi.updateShare).mockResolvedValue(
+      ok({ id: TEST_SHARE_ID, url: `https://example.com/l/${TEST_SHARE_ID}`, permission: 'view' })
+    );
   });
 
   afterEach(() => {
@@ -386,8 +386,7 @@ describe('useOwnedShareSync', () => {
           id: '',
           deleteToken: TEST_DELETE_TOKEN,
           permission: 'view',
-          url: '',
-          createdAt: Date.now(),
+          sharedAt: Date.now(),
         }),
       });
 
@@ -406,8 +405,7 @@ describe('useOwnedShareSync', () => {
           id: TEST_SHARE_ID,
           deleteToken: '',
           permission: 'view',
-          url: '',
-          createdAt: Date.now(),
+          sharedAt: Date.now(),
         }),
       });
 

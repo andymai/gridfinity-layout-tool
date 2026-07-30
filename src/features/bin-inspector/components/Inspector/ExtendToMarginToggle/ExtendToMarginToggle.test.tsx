@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ExtendToMarginToggle } from './ExtendToMarginToggle';
 import { createTestBin } from '@/test/testUtils';
-import { designId, gridUnits, heightUnits } from '@/core/types';
+import { designId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 
 const updateBin = vi.fn();
@@ -15,12 +15,12 @@ const DRAWER: Drawer = { width: gridUnits(5), depth: gridUnits(4), height: heigh
 function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBaseplateParams {
   return {
     magnetHoles: false,
-    magnetDiameter: 6,
-    magnetDepth: 2,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingFront: 0,
-    paddingBack: 0,
+    magnetDiameter: mm(6),
+    magnetDepth: mm(2),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
     ...overrides,
   };
 }
@@ -28,10 +28,10 @@ function baseplate(overrides: Partial<StoredBaseplateParams> = {}): StoredBasepl
 function edgeBin(overrides: Partial<Bin> = {}): Bin {
   // Bottom-left corner, linked → abuts the left/front edges.
   return createTestBin({
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
     linkedDesignId: designId('d1'),
     ...overrides,
   });
@@ -45,9 +45,9 @@ describe('ExtendToMarginToggle', () => {
   it('renders nothing for an interior bin (no adjacent margin)', () => {
     const { container } = render(
       <ExtendToMarginToggle
-        bin={edgeBin({ x: 1, y: 1 })}
+        bin={edgeBin({ x: gridUnits(1), y: gridUnits(1) })}
         drawer={DRAWER}
-        baseplate={baseplate({ paddingLeft: 3 })}
+        baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
     expect(container.firstChild).toBeNull();
@@ -58,7 +58,7 @@ describe('ExtendToMarginToggle', () => {
       <ExtendToMarginToggle
         bin={edgeBin()}
         drawer={DRAWER}
-        baseplate={baseplate({ paddingLeft: 3 })}
+        baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
     const box = screen.getByRole('checkbox', { name: /extend into drawer margin/i });
@@ -70,7 +70,11 @@ describe('ExtendToMarginToggle', () => {
   it('dispatches updateBin with the new flag when toggled', () => {
     const bin = edgeBin();
     render(
-      <ExtendToMarginToggle bin={bin} drawer={DRAWER} baseplate={baseplate({ paddingLeft: 3 })} />
+      <ExtendToMarginToggle
+        bin={bin}
+        drawer={DRAWER}
+        baseplate={baseplate({ paddingLeft: mm(3) })}
+      />
     );
     fireEvent.click(screen.getByRole('checkbox', { name: /extend into drawer margin/i }));
     expect(updateBin).toHaveBeenCalledWith(bin.id, { extendToMargin: true });
@@ -81,7 +85,7 @@ describe('ExtendToMarginToggle', () => {
       <ExtendToMarginToggle
         bin={edgeBin({ linkedDesignId: undefined })}
         drawer={DRAWER}
-        baseplate={baseplate({ paddingLeft: 3 })}
+        baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
     expect(screen.getByRole('checkbox', { name: /extend into drawer margin/i })).toHaveAttribute(
