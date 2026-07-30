@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getPreviewSummary } from './previewSummary';
 import { STAGING_ID } from '@/core/constants';
+import { binId } from '@/core/types';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 
 describe('getPreviewSummary', () => {
@@ -15,7 +16,11 @@ describe('getPreviewSummary', () => {
   it('counts bins and layers and reads drawer dimensions', () => {
     // createTestLayout defaults: 10x8 drawer, one layer.
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'a' }), createTestBin({ id: 'b' }), createTestBin({ id: 'c' })],
+      bins: [
+        createTestBin({ id: binId('a') }),
+        createTestBin({ id: binId('b') }),
+        createTestBin({ id: binId('c') }),
+      ],
     });
 
     const summary = getPreviewSummary(layout);
@@ -34,9 +39,9 @@ describe('getPreviewSummary', () => {
   it('excludes staging (off-grid stash) bins, which the preview does not render', () => {
     const layout = createTestLayout({
       bins: [
-        createTestBin({ id: 'placed' }),
-        createTestBin({ id: 'stashed-1', layerId: STAGING_ID }),
-        createTestBin({ id: 'stashed-2', layerId: STAGING_ID }),
+        createTestBin({ id: binId('placed') }),
+        createTestBin({ id: binId('stashed-1'), layerId: STAGING_ID }),
+        createTestBin({ id: binId('stashed-2'), layerId: STAGING_ID }),
       ],
     });
 
@@ -47,7 +52,7 @@ describe('getPreviewSummary', () => {
 
   it('reports empty when only staging bins exist', () => {
     const layout = createTestLayout({
-      bins: [createTestBin({ id: 'stashed', layerId: STAGING_ID })],
+      bins: [createTestBin({ id: binId('stashed'), layerId: STAGING_ID })],
     });
 
     const summary = getPreviewSummary(layout);

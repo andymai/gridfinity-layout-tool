@@ -8,6 +8,7 @@ import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { createDefaultLayout } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
 
 // Mock useResponsive to avoid matchMedia issues
@@ -106,12 +107,12 @@ describe('GridCanvas', () => {
     it('renders bins on the active layer', () => {
       // Add a bin to the layout
       const testBin: Bin = {
-        id: 'test-bin-1',
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin-1'),
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: 'Test Bin',
@@ -136,12 +137,12 @@ describe('GridCanvas', () => {
       // Add a bin to a different layer
       const secondLayer = defaultLayout.layers[1] || { id: 'layer-2' };
       const testBin: Bin = {
-        id: 'other-layer-bin',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        id: binId('other-layer-bin'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         layerId: secondLayer.id,
         category: defaultLayout.categories[0].id,
         label: '',
@@ -152,7 +153,10 @@ describe('GridCanvas', () => {
       const layers =
         defaultLayout.layers.length > 1
           ? defaultLayout.layers
-          : [...defaultLayout.layers, { id: 'layer-2', name: 'Layer 2', height: 3 }];
+          : [
+              ...defaultLayout.layers,
+              { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
+            ];
 
       useLayoutStore.setState({
         layout: {
@@ -179,16 +183,19 @@ describe('GridCanvas', () => {
 
     it('renders ghost bins from lower layers when showOtherLayers is true', () => {
       // Create a second layer
-      const layers = [defaultLayout.layers[0], { id: 'layer-2', name: 'Layer 2', height: 6 }];
+      const layers = [
+        defaultLayout.layers[0],
+        { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(6) },
+      ];
 
       // Add a bin to the first layer
       const ghostBin: Bin = {
-        id: 'ghost-bin',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('ghost-bin'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layers[0].id,
         category: defaultLayout.categories[0].id,
         label: '',
@@ -205,7 +212,7 @@ describe('GridCanvas', () => {
 
       // Set active layer to second layer, show other layers
       useSelectionStore.setState({
-        activeLayerId: 'layer-2',
+        activeLayerId: layerId('layer-2'),
       });
       useViewStore.setState({
         showOtherLayers: true,
@@ -220,12 +227,12 @@ describe('GridCanvas', () => {
 
     it('renders selected bin with selection state', () => {
       const testBin: Bin = {
-        id: 'selected-bin',
-        x: 1,
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('selected-bin'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: '',
@@ -241,7 +248,7 @@ describe('GridCanvas', () => {
 
       useSelectionStore.setState({
         activeLayerId: defaultLayout.layers[0].id,
-        selectedBinIds: ['selected-bin'],
+        selectedBinIds: [binId('selected-bin')],
       });
 
       const { container } = renderGridCanvas();
@@ -254,36 +261,36 @@ describe('GridCanvas', () => {
     it('renders multiple bins correctly', () => {
       const bins: Bin[] = [
         {
-          id: 'bin-1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           layerId: defaultLayout.layers[0].id,
           category: defaultLayout.categories[0].id,
           label: '',
           notes: '',
         },
         {
-          id: 'bin-2',
-          x: 3,
-          y: 0,
-          width: 1,
-          depth: 3,
-          height: 3,
+          id: binId('bin-2'),
+          x: gridUnits(3),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(3),
+          height: heightUnits(3),
           layerId: defaultLayout.layers[0].id,
           category: defaultLayout.categories[0].id,
           label: '',
           notes: '',
         },
         {
-          id: 'bin-3',
-          x: 5,
-          y: 3,
-          width: 3,
-          depth: 2,
-          height: 3,
+          id: binId('bin-3'),
+          x: gridUnits(5),
+          y: gridUnits(3),
+          width: gridUnits(3),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           layerId: defaultLayout.layers[0].id,
           category: defaultLayout.categories[0].id,
           label: '',
@@ -343,8 +350,8 @@ describe('GridCanvas', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'draw',
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          start: { x: gridUnits(0), y: gridUnits(0) },
+          current: { x: gridUnits(1), y: gridUnits(1) },
         },
       });
 
@@ -386,12 +393,12 @@ describe('GridCanvas', () => {
 
     it('does not call onStartDraw when clicking on a bin', () => {
       const testBin: Bin = {
-        id: 'test-bin-click',
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin-click'),
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: '',
@@ -435,19 +442,19 @@ describe('GridCanvas', () => {
     it('renders blocked zones from tall bins in lower layers', () => {
       // Create two layers
       const layers = [
-        { id: 'layer-1', name: 'Layer 1', height: 3 },
-        { id: 'layer-2', name: 'Layer 2', height: 3 },
+        { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
       ];
 
       // Tall bin in layer 1 that extends into layer 2
       const tallBin: Bin = {
-        id: 'tall-bin',
-        x: 1,
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 6, // Taller than layer height, extends into layer 2
-        layerId: 'layer-1',
+        id: binId('tall-bin'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(6), // Taller than layer height, extends into layer 2
+        layerId: layerId('layer-1'),
         category: defaultLayout.categories[0].id,
         label: '',
         notes: '',
@@ -463,7 +470,7 @@ describe('GridCanvas', () => {
 
       // Set active layer to layer 2 to see blocked zones
       useSelectionStore.setState({
-        activeLayerId: 'layer-2',
+        activeLayerId: layerId('layer-2'),
       });
 
       const { container } = renderGridCanvas();
@@ -476,19 +483,19 @@ describe('GridCanvas', () => {
     it('clicking blocked zone switches to source layer and selects bin', () => {
       // Create two layers
       const layers = [
-        { id: 'layer-1', name: 'Layer 1', height: 3 },
-        { id: 'layer-2', name: 'Layer 2', height: 3 },
+        { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
       ];
 
       // Tall bin in layer 1
       const tallBin: Bin = {
-        id: 'tall-bin',
-        x: 1,
-        y: 1,
-        width: 2,
-        depth: 2,
-        height: 6,
-        layerId: 'layer-1',
+        id: binId('tall-bin'),
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(6),
+        layerId: layerId('layer-1'),
         category: defaultLayout.categories[0].id,
         label: '',
         notes: '',
@@ -503,7 +510,7 @@ describe('GridCanvas', () => {
       });
 
       useSelectionStore.setState({
-        activeLayerId: 'layer-2',
+        activeLayerId: layerId('layer-2'),
         selectedBinIds: [],
       });
 
@@ -520,7 +527,7 @@ describe('GridCanvas', () => {
 
   describe('Fractional drawer dimensions', () => {
     it('renders fractional column cells when drawer width is fractional', () => {
-      const fractionalDrawer = { ...defaultLayout.drawer, width: 10.5 };
+      const fractionalDrawer = { ...defaultLayout.drawer, width: gridUnits(10.5) };
 
       useLayoutStore.setState({
         layout: {
@@ -541,7 +548,7 @@ describe('GridCanvas', () => {
     });
 
     it('renders fractional row cells when drawer depth is fractional', () => {
-      const fractionalDrawer = { ...defaultLayout.drawer, depth: 8.5 };
+      const fractionalDrawer = { ...defaultLayout.drawer, depth: gridUnits(8.5) };
 
       useLayoutStore.setState({
         layout: {
@@ -562,8 +569,8 @@ describe('GridCanvas', () => {
     it('renders corner cell when both width and depth are fractional', () => {
       const fractionalDrawer = {
         ...defaultLayout.drawer,
-        width: 10.5,
-        depth: 8.5,
+        width: gridUnits(10.5),
+        depth: gridUnits(8.5),
       };
 
       useLayoutStore.setState({
@@ -583,7 +590,7 @@ describe('GridCanvas', () => {
     it('handles fractionalEdgeX start position', () => {
       const fractionalDrawer = {
         ...defaultLayout.drawer,
-        width: 10.5,
+        width: gridUnits(10.5),
         fractionalEdgeX: 'start' as const,
       };
 
@@ -605,7 +612,7 @@ describe('GridCanvas', () => {
     it('handles fractionalEdgeY start position', () => {
       const fractionalDrawer = {
         ...defaultLayout.drawer,
-        depth: 8.5,
+        depth: gridUnits(8.5),
         fractionalEdgeY: 'start' as const,
       };
 
@@ -632,12 +639,12 @@ describe('GridCanvas', () => {
 
       // Add a bin to the layout
       const testBin: Bin = {
-        id: 'test-bin-paint',
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin-paint'),
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: 'Test Bin',
@@ -673,12 +680,12 @@ describe('GridCanvas', () => {
 
       // Add a bin to the layout
       const testBin: Bin = {
-        id: 'test-bin-click',
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin-click'),
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: 'Test Bin',
@@ -719,12 +726,12 @@ describe('GridCanvas', () => {
 
       // Add a bin to the layout
       const testBin: Bin = {
-        id: 'test-bin-select',
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        id: binId('test-bin-select'),
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: defaultLayout.layers[0].id,
         category: defaultLayout.categories[0].id,
         label: 'Test Bin',

@@ -5,6 +5,7 @@ import { BinOverhangExtensions } from './BinOverhangExtensions';
 import { useLayoutStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { createTestBin } from '@/test/testUtils';
+import { gridUnits, mm } from '@/core/types';
 import type { Bin, StoredBaseplateParams } from '@/core/types';
 import type { BinRenderData } from '@/shared/hooks/useExplodedLayerView';
 
@@ -12,15 +13,15 @@ function setup(padding: Partial<StoredBaseplateParams> = {}) {
   useLayoutStore.setState({
     layout: {
       ...createDefaultLayout(),
-      gridUnitMm: 42,
+      gridUnitMm: mm(42),
       baseplateParams: {
         magnetHoles: false,
-        magnetDiameter: 6,
-        magnetDepth: 2,
-        paddingLeft: 0,
-        paddingRight: 0,
-        paddingFront: 0,
-        paddingBack: 0,
+        magnetDiameter: mm(6),
+        magnetDepth: mm(2),
+        paddingLeft: mm(0),
+        paddingRight: mm(0),
+        paddingFront: mm(0),
+        paddingBack: mm(0),
         ...padding,
       },
     },
@@ -28,15 +29,31 @@ function setup(padding: Partial<StoredBaseplateParams> = {}) {
 }
 
 function renderData(bin: Bin): BinRenderData {
-  return { bin, x: bin.x, y: bin.y, z: 0, height: 2, color: '#abc', opacity: 1 };
+  return {
+    bin,
+    x: bin.x,
+    y: bin.y,
+    z: 0,
+    height: 2,
+    clearanceHeight: 0,
+    color: '#abc',
+    opacity: 1,
+  };
 }
 
-const edgeBin = (o: Partial<Bin> = {}) => createTestBin({ x: 0, y: 0, width: 1, depth: 1, ...o });
+const edgeBin = (o: Partial<Bin> = {}) =>
+  createTestBin({
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    ...o,
+  });
 
 describe('BinOverhangExtensions', () => {
   beforeEach(() => {
     resetAllStores();
-    setup({ paddingLeft: 21 });
+    setup({ paddingLeft: mm(21) });
   });
 
   it('renders nothing when no bin extends', () => {
@@ -62,7 +79,7 @@ describe('BinOverhangExtensions', () => {
   });
 
   it('renders two strips for a corner bin', () => {
-    setup({ paddingLeft: 21, paddingFront: 42 });
+    setup({ paddingLeft: mm(21), paddingFront: mm(42) });
     const { container } = render(
       <BinOverhangExtensions
         bins={[renderData(edgeBin({ extendToMargin: true }))]}

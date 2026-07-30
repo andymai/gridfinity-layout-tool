@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { BinMesh } from './BinMesh';
 
@@ -109,18 +110,17 @@ vi.mock('@/shared/hooks/useBinGeometry', () => ({
 }));
 
 describe('BinMesh', () => {
-  const mockBin: Bin = {
-    id: 'test-bin-1',
-    x: 2,
-    y: 2,
-    width: 2,
-    depth: 2,
-    height: 3,
-    layerId: 'layer-1',
-    category: 'cat-1',
+  const mockBin: Bin = createTestBin({
+    id: binId('test-bin-1'),
+    x: gridUnits(2),
+    y: gridUnits(2),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+    height: heightUnits(3),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: 'Test Bin',
-    notes: '',
-  };
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();

@@ -4,6 +4,7 @@ import { useInteraction } from '@/features/grid-editor/hooks/useInteraction';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
+import { gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { getBinId } from '@/test/testUtils';
 import { createMockGridRef, setupStores } from './useInteraction.testUtils';
@@ -21,11 +22,11 @@ describe('stagingDrag interaction', () => {
     const binId = getBinId(
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -38,7 +39,7 @@ describe('stagingDrag interaction', () => {
       interaction: {
         type: 'stagingDrag',
         binId: binId,
-        currentCoord: { x: 0, y: 0 },
+        currentCoord: { x: gridUnits(0), y: gridUnits(0) },
         valid: false,
       },
     });
@@ -69,11 +70,11 @@ describe('stagingDrag interaction', () => {
     const binId = getBinId(
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -95,7 +96,7 @@ describe('stagingDrag interaction', () => {
       interaction: {
         type: 'stagingDrag',
         binId: binId,
-        currentCoord: { x: 2, y: 2 },
+        currentCoord: { x: gridUnits(2), y: gridUnits(2) },
         valid: true,
       },
     });
@@ -124,11 +125,11 @@ describe('stagingDrag interaction', () => {
     const binId = getBinId(
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: '',
         notes: '',
@@ -141,7 +142,7 @@ describe('stagingDrag interaction', () => {
       interaction: {
         type: 'stagingDrag',
         binId: binId,
-        currentCoord: { x: 100, y: 100 }, // Out of bounds
+        currentCoord: { x: gridUnits(100), y: gridUnits(100) }, // Out of bounds
         valid: false,
       },
     });
@@ -167,17 +168,17 @@ describe('stagingDrag interaction', () => {
 
     // Update the layer to have a higher minimum height (5u)
     // Note: Layer "minimum height" is a default for new bins, not a constraint
-    updateLayer(tallLayerId, { height: 5 });
+    updateLayer(tallLayerId, { height: heightUnits(5) });
 
     // Add a shorter bin (3u) to staging
     const binId = getBinId(
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3, // Shorter than the layer's "default" height of 5
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3), // Shorter than the layer's "default" height of 5
         category: categoryId,
         label: '',
         notes: '',
@@ -202,7 +203,7 @@ describe('stagingDrag interaction', () => {
       interaction: {
         type: 'stagingDrag',
         binId: binId,
-        currentCoord: { x: 2, y: 2 },
+        currentCoord: { x: gridUnits(2), y: gridUnits(2) },
         valid: true,
       },
     });
@@ -239,11 +240,11 @@ describe('staging drag', () => {
     const binId = getBinId(
       addBin({
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         category: categoryId,
         label: 'Staged bin',
         notes: '',

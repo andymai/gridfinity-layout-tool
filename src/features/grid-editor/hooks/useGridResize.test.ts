@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
+import { gridUnits, heightUnits } from '@/core/types';
 
 describe('useGridResize', () => {
   beforeEach(() => {
@@ -380,11 +381,11 @@ describe('useGridResize', () => {
       getBinId(
         addBin({
           layerId: STAGING_ID,
-          x: 100, // Out of bounds but in staging
-          y: 100,
-          width: 2,
-          depth: 2,
-          height: 3,
+          x: gridUnits(100), // Out of bounds but in staging
+          y: gridUnits(100),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
           category: categoryId,
           label: 'Staged bin',
           notes: '',
