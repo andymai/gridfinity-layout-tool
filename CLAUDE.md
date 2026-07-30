@@ -51,6 +51,7 @@ See `src/core/cqrs/README.md` for architecture details, adding new commands/even
 - **Infrastructure (`src/test/`):** `setup.ts`, `testUtils.ts`, `mocks/` — shared test utilities (stays centralized)
 - Pre-commit **blocks** if edited component file has no sibling test
 - Run `pnpm run test:coverage` before commit
+- **Test files are type-checked separately.** `tsconfig.test.json` is not in the root `tsconfig.json` references, so `pnpm run typecheck` skips every test. `pnpm run check:test-types` gates them against `scripts/test-type-baseline.json` — a per-file error count that must only go down. Fix errors and run `pnpm run check:test-types -- --update`. When the baseline hits zero, add the reference and delete the ratchet.
 
 ## Debugging & Bug Fixing
 
