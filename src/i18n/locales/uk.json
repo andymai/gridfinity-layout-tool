@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Ваш браузер не зміг завантажити 3D-рендеринг",
   "binDesigner.overhang.taper.title": "Звузити стінки",
   "binDesigner.overhang.taper.hint": "Нахиліть стінку назовні над основою, щоб контейнер сягав вигнутих стінок шухляди. Основа зберігає ширину виступу, тож і далі стоїть рівно.",
-  "binDesigner.overhang.taper.feetConflict": "Вимкніть ніжки під виступом, щоб звузити стінки.",
   "binDesigner.overhang.taper.profile": "Профіль",
   "binDesigner.overhang.taper.profileChamfer": "Фаска",
   "binDesigner.overhang.taper.profileFillet": "Заокруглення",

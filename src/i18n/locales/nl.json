@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Je browser kon 3D-weergave niet laden",
   "binDesigner.overhang.taper.title": "Wanden taps maken",
   "binDesigner.overhang.taper.hint": "Kantel de wand boven de bodem naar buiten zodat de bak tot in de gebogen zijkanten van een lade reikt. De bodem behoudt zijn overhangbreedte en blijft dus vlak staan.",
-  "binDesigner.overhang.taper.feetConflict": "Schakel voetjes onder de overhang uit om de wanden taps te maken.",
   "binDesigner.overhang.taper.profile": "Profiel",
   "binDesigner.overhang.taper.profileChamfer": "Afschuining",
   "binDesigner.overhang.taper.profileFillet": "Afronding",

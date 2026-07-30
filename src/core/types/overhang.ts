@@ -12,7 +12,13 @@ export type WallTaperProfile = 'chamfer' | 'fillet';
  * insetting each side by up to that side's overhang so the base returns toward
  * the nominal footprint (never below it). `profile` + `bandHeight` are shared;
  * per-side magnitude is the base inset (chamfer) or radius (fillet); 0 = that
- * side stays vertical. Requires overhang on a side for that side to taper.
+ * side stays vertical.
+ *
+ * Stored rim-anchored, authored base-anchored: the designer panel presents this
+ * as a `flare` added on top of a base overhang and writes `overhang = base +
+ * flare`, `taper = flare`. The per-side clamp against overhang therefore never
+ * binds in practice — it enforces "the base never drops below nominal", which
+ * the additive form satisfies by construction.
  */
 export interface WallTaperConfig {
   /** Absent (legacy) → enabled is inferred from any non-zero side. */
@@ -71,8 +77,9 @@ export interface OverhangConfig {
   /**
    * Optional bottom-band taper on the outer wall (#2933). Insets within the
    * overhang region only — the base never goes below nominal, so feet never
-   * protrude. Mutually exclusive with {@link feet} (frame feet would protrude
-   * past the tapered base). Suppressed for custom-shape (`cellMask`) bins.
+   * protrude. Composes with {@link feet}: the frame is laid out from the
+   * overhang at the base (`overhangBaseSides`), not the rim, so feet stop where
+   * the tapered wall does. Suppressed for custom-shape (`cellMask`) bins.
    */
   readonly taper?: WallTaperConfig;
 }

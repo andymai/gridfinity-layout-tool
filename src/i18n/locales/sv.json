@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Din webbläsare kunde inte ladda 3D-rendering",
   "binDesigner.overhang.taper.title": "Fasa väggar",
   "binDesigner.overhang.taper.hint": "Luta väggen utåt ovanför botten så att facket når in i lådans böjda sidor. Botten behåller sin utskjutsbredd och står fortfarande plant.",
-  "binDesigner.overhang.taper.feetConflict": "Stäng av fötter under överhänget för att fasa väggarna.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Fas",
   "binDesigner.overhang.taper.profileFillet": "Rundning",

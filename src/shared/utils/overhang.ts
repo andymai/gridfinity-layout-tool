@@ -68,14 +68,9 @@ export interface OverhangExpansion {
 /** Clamp a `WallTaperConfig` to per-side ≤ overhang, outward-only; null when none. */
 function resolveTaper(
   taper: WallTaperConfig | undefined,
-  overhang: { left: number; right: number; front: number; back: number },
-  feet: boolean
+  overhang: { left: number; right: number; front: number; back: number }
 ): ResolvedTaper | null {
   if (!taper || taper.enabled === false) return null;
-  // Taper and overhang feet are mutually exclusive — the frame feet under the
-  // overhang region would protrude past a tapered base. Feet win defensively;
-  // the UI prevents both being enabled at once.
-  if (feet) return null;
   const clamp = (v: number, max: number): number => Math.min(Math.max(0, v), max);
   const left = clamp(taper.left, overhang.left);
   const right = clamp(taper.right, overhang.right);
@@ -102,7 +97,7 @@ export function resolveOverhang(overhang: OverhangConfig | undefined): ResolvedO
     front,
     back,
     feet,
-    taper: resolveTaper(overhang.taper, { left, right, front, back }, feet),
+    taper: resolveTaper(overhang.taper, { left, right, front, back }),
   };
 }
 
@@ -114,6 +109,28 @@ export function hasOverhang(o: ResolvedOverhang): boolean {
 /** True when a resolved outer-wall taper applies. */
 export function hasTaper(o: ResolvedOverhang): boolean {
   return o.taper !== null;
+}
+
+/**
+ * Per-side overhang at the *base* rather than the rim: the taper's inset
+ * removed. Anything that sits under the bin — overhang feet above all — has to
+ * be framed from this, not from the rim values, or it protrudes past a tapered
+ * wall into open air.
+ */
+export function overhangBaseSides(o: ResolvedOverhang): {
+  left: number;
+  right: number;
+  front: number;
+  back: number;
+} {
+  const t = o.taper;
+  if (!t) return { left: o.left, right: o.right, front: o.front, back: o.back };
+  return {
+    left: Math.max(0, o.left - t.left),
+    right: Math.max(0, o.right - t.right),
+    front: Math.max(0, o.front - t.front),
+    back: Math.max(0, o.back - t.back),
+  };
 }
 
 /** Derive the footprint expansion + asymmetry offset from a resolved overhang. */

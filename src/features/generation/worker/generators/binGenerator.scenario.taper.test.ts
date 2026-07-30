@@ -182,4 +182,82 @@ describe('bin wall taper geometry (#2933)', () => {
     // Taper is stripped for multi-compartment bins → identical geometry.
     expect(meshVolume(withTaper)).toBeCloseTo(meshVolume(noTaper), 3);
   });
+
+  // Cutouts are cut from the wall top down, the taper band rises from the
+  // floor, so only a deep cutout reaches into the non-vertical stretch. That
+  // overlap is the case worth pinning: the wall it cuts is a loft, not a prism.
+  it('deep wall cutouts survive a tapered wall', () => {
+    const generateBin = getGenerateBin();
+    const walls = {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, width: 70, depth: 90 },
+      right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true, width: 70, depth: 90 },
+    };
+    const taper = {
+      profile: 'chamfer' as const,
+      bandHeight: 20,
+      left: 10,
+      right: 10,
+      front: 10,
+      back: 10,
+    };
+    const noCutout = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVH, taper } }),
+      undefined,
+      true
+    );
+    const cutout = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVH, taper }, walls }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(cutout, 'tapered bin with deep wall cutouts');
+    expect(meshVolume(cutout)).toBeLessThan(meshVolume(noCutout));
+  });
+
+  // Overhang feet frame the region under the wall. On a tapered bin the wall at
+  // the floor is `flare` mm narrower than at the rim, so feet framed from the
+  // rim would jut out past it. The bounding box can't see that (the rim is the
+  // widest part either way) — measure the footprint at the floor instead.
+  it('overhang feet are framed from the base, not the rim', () => {
+    const generateBin = getGenerateBin();
+    const taper = {
+      profile: 'chamfer' as const,
+      bandHeight: 12,
+      left: 10,
+      right: 10,
+      front: 10,
+      back: 10,
+    };
+    const feetFlat = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVH, feet: true } }),
+      undefined,
+      true
+    );
+    const feetTapered = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVH, feet: true, taper } }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(feetTapered, 'overhang feet + taper');
+
+    // Span across vertices on the floor plane. Measured as a difference between
+    // the two bins so the gridfinity foot's own bottom chamfer cancels out.
+    const floorSpanX = ({ vertices }: { vertices: Float32Array }): number => {
+      const minZ = boundingBox(vertices).minZ;
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let i = 0; i < vertices.length; i += 3) {
+        if (Math.abs(vertices[i + 2] - minZ) > 0.05) continue;
+        lo = Math.min(lo, vertices[i]);
+        hi = Math.max(hi, vertices[i]);
+      }
+      return hi - lo;
+    };
+
+    // The taper fully retracts both X sides, so the tapered bin's feet stop a
+    // full 10mm/side short of where the flat bin's reach.
+    expect(floorSpanX(feetFlat) - floorSpanX(feetTapered)).toBeCloseTo(taper.left + taper.right, 0);
+  });
 });

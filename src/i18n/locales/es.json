@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Tu navegador no pudo cargar el renderizado 3D",
   "binDesigner.overhang.taper.title": "Estrechar paredes",
   "binDesigner.overhang.taper.hint": "Inclina la pared hacia fuera por encima de la base para que la caja alcance los lados curvos de un cajón. La base conserva su ancho de voladizo, así que sigue apoyando plana.",
-  "binDesigner.overhang.taper.feetConflict": "Desactiva los pies bajo el voladizo para estrechar las paredes.",
   "binDesigner.overhang.taper.profile": "Perfil",
   "binDesigner.overhang.taper.profileChamfer": "Chaflán",
   "binDesigner.overhang.taper.profileFillet": "Redondeo",

@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "Votre navigateur n'a pas pu charger le rendu 3D",
   "binDesigner.overhang.taper.title": "Biseauter les parois",
   "binDesigner.overhang.taper.hint": "Incline la paroi vers l'extérieur au-dessus de la base pour que le bac atteigne les côtés incurvés d'un tiroir. La base conserve sa largeur de débord et reste donc bien à plat.",
-  "binDesigner.overhang.taper.feetConflict": "Désactivez les pieds sous le débord pour biseauter les parois.",
   "binDesigner.overhang.taper.profile": "Profil",
   "binDesigner.overhang.taper.profileChamfer": "Chanfrein",
   "binDesigner.overhang.taper.profileFillet": "Congé",

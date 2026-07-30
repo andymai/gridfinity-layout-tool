@@ -8,7 +8,8 @@
  * width and the wall angles outward to the rim, so a bin can reach into the
  * curved upper part of a drawer wall its base can't sit in. Flare is
  * independent of overhang — a side with no overhang can still flare, since the
- * base only ever stays at or above nominal. Mutually exclusive with feet.
+ * base only ever stays at or above nominal. Composes with feet, which are framed
+ * from the base overhang and so need one to exist.
  * A feature toggle gates the per-side controls; values are retained while off.
  * Suppressed for custom-shape bins.
  *
@@ -36,13 +37,12 @@ export function OverhangSection() {
   ];
 
   const { taper } = state;
-  const feetEnabled = state.hasBaseOverhang && !taper.enabled;
-  const taperToggleEnabled = taper.canTaper && !state.feet;
+  const feetEnabled = state.hasBaseOverhang;
+  const taperToggleEnabled = taper.canTaper;
   const stacked = meta.stackedSliders;
 
   let taperHintKey = 'binDesigner.overhang.taper.hint';
-  if (state.feet) taperHintKey = 'binDesigner.overhang.taper.feetConflict';
-  else if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.singleHollowOnly';
+  if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.singleHollowOnly';
 
   return (
     <FeatureToggle

@@ -168,7 +168,6 @@ export function useOverhangSection() {
       right: base.right + seed.right,
       front: base.front + seed.front,
       back: base.back + seed.back,
-      feet: false,
       taper: {
         enabled: true,
         profile: prev?.profile ?? 'chamfer',

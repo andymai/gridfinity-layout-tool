@@ -227,7 +227,7 @@ describe('OverhangSection', () => {
     expect(stored?.taper?.right).toBe(20);
   });
 
-  it('cannot enable the taper while feet are on (mutually exclusive)', () => {
+  it('keeps feet on when the taper is enabled (they compose)', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -235,9 +235,11 @@ describe('OverhangSection', () => {
       },
     });
     render(<OverhangSection />);
-    expect(screen.getByText('Turn off feet under overhang to taper the walls.')).toBeDefined();
     fireEvent.click(screen.getByText('Taper walls'));
-    expect(useDesignerStore.getState().params.overhang?.taper?.enabled).toBeFalsy();
+    const stored = useDesignerStore.getState().params.overhang;
+    expect(stored?.taper?.enabled).toBe(true);
+    // Feet are framed from the base overhang, which the flare only widens above.
+    expect(stored?.feet).toBe(true);
   });
 
   it('disables the taper for solid bins (hollow, single-compartment only)', () => {

@@ -3004,7 +3004,6 @@
   "webgl.fallback.title": "你的浏览器无法加载 3D 渲染",
   "binDesigner.overhang.taper.title": "锥化侧壁",
   "binDesigner.overhang.taper.hint": "让底部以上的侧壁向外倾斜，使收纳盒延伸至抽屉的弧形侧壁。底部保持悬出宽度，因此仍能平稳放置。",
-  "binDesigner.overhang.taper.feetConflict": "关闭外伸下方的支脚即可锥化侧壁。",
   "binDesigner.overhang.taper.profile": "轮廓",
   "binDesigner.overhang.taper.profileChamfer": "倒角",
   "binDesigner.overhang.taper.profileFillet": "圆角",
