@@ -12,13 +12,20 @@
  * connector profile (reused verbatim from `baseplateConnectors` so the printed
  * fit matches the real plate — the tolerance lives in the female groove/pocket,
  * not the surrounding socket, which is why a plain block coupon fits identically
- * to a full 42 mm cell). Both halves of every pair are embossed with their
- * style + offset so detached pieces stay identifiable.
+ * to a full 42 mm cell). Both halves of every pair are embossed with the offset
+ * so detached coupons stay identifiable; the style is implicit (the whole tray
+ * is one style), so it is NOT repeated on every coupon — that kept the label
+ * short enough to render at a printable stem width (see below).
  *
  * The dovetail KEY and snap CLIP are nominal parts — the offset rides entirely
  * on the female pocket — so each of those rows ships ONE shared loose part the
  * maker inserts into each offset's pair to feel the fit, rather than five
  * redundant copies.
+ *
+ * The embossed offset label is sized so its thinnest glyph stem stays at least
+ * one nozzle bead wide (`minPrintableLabelFontMm`); the coupon is then sized to
+ * hold that label. Older, smaller labels sliced away to nothing on a 0.4mm
+ * nozzle, leaving the card useless (issue #3019).
  *
  * Pieces are separate, non-fused solids resting on the bed (Z≥0); the export
  * compounds them into one ready-to-slice file.
@@ -40,7 +47,13 @@ import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
-import { formatOffset, roundedRect } from './couponHelpers';
+import {
+  formatOffset,
+  roundedRect,
+  minPrintableLabelFontMm,
+  JBM_ADVANCE_PER_GLYPH,
+  JBM_DIGIT_INK_PER_FONT,
+} from './couponHelpers';
 import {
   SOCKET_HEIGHT,
   MAGNET_FLOOR,
@@ -72,36 +85,54 @@ const SAMPLE_OFFSETS: readonly number[] = [-0.1, -0.05, 0, 0.05, 0.1];
 
 interface SampleStyle {
   readonly key: 'dovetail' | 'puzzle' | 'dovetailKey' | 'snapClip';
-  readonly abbr: string;
   /** Shared loose part this row ships (inserted into each pair to feel the fit), if any. */
   readonly loose: 'key' | 'clip' | null;
 }
 
 const SAMPLE_STYLES: readonly SampleStyle[] = [
-  { key: 'dovetail', abbr: 'DT', loose: null },
+  { key: 'dovetail', loose: null },
   // Puzzle is an integral tongue/groove like the dovetail (no loose part); it just
   // carries the stronger jigsaw-lobe profile (issue #2241).
-  { key: 'puzzle', abbr: 'PZ', loose: null },
-  { key: 'dovetailKey', abbr: 'DK', loose: 'key' },
-  { key: 'snapClip', abbr: 'SC', loose: 'clip' },
+  { key: 'puzzle', loose: null },
+  { key: 'dovetailKey', loose: 'key' },
+  { key: 'snapClip', loose: 'clip' },
 ];
 
-// Tray layout (mm). A coupon's long axis is X so the embossed label reads
+// Tray layout (mm). A coupon's long axis is X so the embossed offset label reads
 // left-to-right; the seam runs along X, so a pair stacks front/back along Y.
-const COUPON_X = 15;
-const COUPON_Y = 9;
 const COUPON_FILLET = 1.4;
 const SEAM_GAP = 5;
 const COL_GAP = 7;
 const ROW_GAP = 10;
 const LABEL_DEPTH = 0.6;
 const LABEL_MARGIN = 1.4;
-const LABEL_MIN_FONT = 1.0;
-const LABEL_MAX_FONT = 2.4;
 
-const CELL_Y = 2 * COUPON_Y + SEAM_GAP;
-const COL_PITCH = COUPON_X + COL_GAP;
-const ROW_PITCH = CELL_Y + ROW_GAP;
+/** Widest offset label, e.g. "+0.05" / "-0.10" (5 glyphs); "0.00" is shorter. */
+const LABEL_MAX_GLYPHS = 5;
+/** Coupon headroom past the label so auto-fit lands exactly on the target font
+ *  instead of tripping the fit verifier's epsilon at the razor's edge (mm). */
+const LABEL_FIT_SLACK = 0.4;
+/** Floor for coupon depth — keeps the body generous for the seam feature (mm). */
+const COUPON_Y_MIN = 9;
+
+/** Coupon footprint sized to hold the widest offset label at `fontMm`. Grows
+ *  with the nozzle (via `fontMm`) so bigger-nozzle labels still fit. */
+function couponDims(fontMm: number): { readonly x: number; readonly y: number } {
+  const labelW = LABEL_MAX_GLYPHS * JBM_ADVANCE_PER_GLYPH * fontMm;
+  const labelInkH = JBM_DIGIT_INK_PER_FONT * fontMm;
+  return {
+    x: labelW + 2 * LABEL_MARGIN + LABEL_FIT_SLACK,
+    y: Math.max(COUPON_Y_MIN, labelInkH + 2 * LABEL_MARGIN + LABEL_FIT_SLACK),
+  };
+}
+
+/** Per-tray geometry shared by every coupon: footprint, label font, height. */
+interface CouponLayout {
+  readonly couponX: number;
+  readonly couponY: number;
+  readonly fontMm: number;
+  readonly totalHeight: number;
+}
 
 /** Map (wall, boundary) → XY point for a seam running along X (protrude on Y). */
 function ptY(wall: number, bp: number): [number, number] {
@@ -120,17 +151,18 @@ type CouponFeature =
  * the whole tray onto the bed.
  */
 function buildCoupon(
+  layout: CouponLayout,
   cx: number,
   cy: number,
-  totalHeight: number,
   label: string,
   wallY: number,
   d: -1 | 1,
   feature: CouponFeature
 ): Shape3D {
+  const { couponX, couponY, fontMm, totalHeight } = layout;
   return withScope((scope: DisposalScope): Shape3D => {
     let solid: Shape3D = scope.register(
-      sketch(roundedRect(cx, cy, COUPON_X, COUPON_Y, COUPON_FILLET), 'XY', 0).extrude(-totalHeight)
+      sketch(roundedRect(cx, cy, couponX, couponY, COUPON_FILLET), 'XY', 0).extrude(-totalHeight)
     );
 
     switch (feature.kind) {
@@ -181,23 +213,27 @@ function buildCoupon(
       }
     }
 
-    // Emboss the style+offset on the top face (raised letters). Degrades to an
-    // unlabeled coupon if the font isn't loaded or auto-fit can't satisfy the
-    // floor — a single label must never tank the whole tray.
+    // Emboss the offset on the top face (raised letters). Pinned to `fontMm` (min
+    // == max) so every coupon reads at the same nozzle-printable size, measured
+    // against the glyph ink (`inkBox`) — the digits have no descenders, so the
+    // full ascender→descender band would waste vertical room and shrink the font.
+    // Degrades to an unlabeled coupon if the font isn't loaded or auto-fit can't
+    // fit the pinned size — a single label must never tank the whole tray.
     const text = buildTextSolid(scope, {
       text: label,
       fontFamily: 'jetbrains-mono',
       mode: 'emboss',
-      availW: COUPON_X,
-      availD: COUPON_Y,
+      availW: couponX,
+      availD: couponY,
       centerX: cx,
       centerY: cy,
       topZ: 0,
       depth: LABEL_DEPTH,
       hostThickness: totalHeight,
       margin: LABEL_MARGIN,
-      minFontSize: LABEL_MIN_FONT,
-      maxFontSize: LABEL_MAX_FONT,
+      minFontSize: fontMm,
+      maxFontSize: fontMm,
+      verticalFit: 'inkBox',
     });
     if (text) {
       try {
@@ -228,6 +264,15 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
   const totalHeight = couponHeight(params);
   const gridUnitMm = params.gridUnitMm;
 
+  // Size the offset label so its stems clear the nozzle bead, then size the
+  // coupon (and hence the tray pitch) to hold it — both grow with the nozzle.
+  const fontMm = minPrintableLabelFontMm(params.nozzleSizeMm);
+  const { x: couponX, y: couponY } = couponDims(fontMm);
+  const layout: CouponLayout = { couponX, couponY, fontMm, totalHeight };
+  const cellYSpan = 2 * couponY + SEAM_GAP;
+  const colPitch = couponX + COL_GAP;
+  const rowPitch = cellYSpan + ROW_GAP;
+
   // Only build the row for the connector style the user actually picked — a
   // calibration card for the other two styles is wasted geometry/print time.
   // `connectorStyle` is undefined for the default integral dovetail.
@@ -238,21 +283,23 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
   const nRows = styles.length;
   const nCols = SAMPLE_OFFSETS.length;
   // Center the grid on the origin (columns 0..nCols include the loose column).
-  const originX = -(nCols * COL_PITCH) / 2;
-  const originY = ((nRows - 1) * ROW_PITCH) / 2;
+  const originX = -(nCols * colPitch) / 2;
+  const originY = ((nRows - 1) * rowPitch) / 2;
 
   const pieces: Shape3D[] = [];
 
   styles.forEach((style, r) => {
-    const cellY = originY - r * ROW_PITCH;
+    const cellY = originY - r * rowPitch;
     const frontWallY = cellY - SEAM_GAP / 2; // +Y face of the front coupon
     const backWallY = cellY + SEAM_GAP / 2; // -Y face of the back coupon
-    const frontCenterY = cellY - SEAM_GAP / 2 - COUPON_Y / 2;
-    const backCenterY = cellY + SEAM_GAP / 2 + COUPON_Y / 2;
+    const frontCenterY = cellY - SEAM_GAP / 2 - couponY / 2;
+    const backCenterY = cellY + SEAM_GAP / 2 + couponY / 2;
 
     SAMPLE_OFFSETS.forEach((offset, c) => {
-      const cx = originX + c * COL_PITCH;
-      const label = `${style.abbr} ${formatOffset(offset)}`;
+      const cx = originX + c * colPitch;
+      // Offset only — the style is implicit (one style per tray), and keeping the
+      // label short is what lets the font grow to a printable stem width (#3019).
+      const label = formatOffset(offset);
 
       let frontFeature: CouponFeature;
       let backFeature: CouponFeature;
@@ -277,15 +324,15 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
         };
       }
 
-      pieces.push(buildCoupon(cx, frontCenterY, totalHeight, label, frontWallY, 1, frontFeature));
-      pieces.push(buildCoupon(cx, backCenterY, totalHeight, label, backWallY, -1, backFeature));
+      pieces.push(buildCoupon(layout, cx, frontCenterY, label, frontWallY, 1, frontFeature));
+      pieces.push(buildCoupon(layout, cx, backCenterY, label, backWallY, -1, backFeature));
     });
 
     // One shared loose part per key/clip row, placed in the column beyond the
     // ladder. Built at nominal size (the offset is in the pocket), shifted down
     // into the pre-lift frame so it rests on the bed after the global lift.
     if (style.loose) {
-      const looseX = originX + nCols * COL_PITCH;
+      const looseX = originX + nCols * colPitch;
       const part =
         style.loose === 'clip'
           ? buildSnapClipForPrint(totalHeight, gridUnitMm, params.nozzleSizeMm)
